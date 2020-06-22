@@ -1,0 +1,22 @@
+[package]
+name = "hpke"
+version = "0.1.0"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# RustCrypto
+digest = "0.8"
+sha2 = "0.8"
+hkdf = "0.8"
+aes-gcm = "0.6"
+aead = "0.3"
+
+# Rust Core
+rand_core = "0.5"
+rand = "0.7"
+
+# Zcash
+x25519-dalek = "0.6"
