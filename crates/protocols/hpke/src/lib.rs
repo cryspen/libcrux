@@ -109,6 +109,44 @@ impl Hpke {
         }
     }
 
+    pub fn seal_base(
+        mode: Mode,
+        pk_r: &[u8],
+        info: &[u8],
+        aad: &[u8],
+        ptxt: &[u8],
+    ) -> (Vec<u8>, Vec<u8>) {
+        // FIXME
+        let mut hpke = Self::new(
+            mode,
+            kem::Mode::DhKem25519,
+            kdf::Mode::HkdfSha256,
+            aead::Mode::AesGcm128,
+        );
+        let enc = hpke.setup_base_sender(pk_r, info);
+        let ct = hpke.seal(aad, ptxt);
+        (enc, ct)
+    }
+
+    pub fn open_base(
+        mode: Mode,
+        enc: &[u8],
+        sk_r: &[u8],
+        info: &[u8],
+        aad: &[u8],
+        ct: &[u8],
+    ) -> Vec<u8> {
+        // FIXME
+        let mut hpke = Self::new(
+            mode,
+            kem::Mode::DhKem25519,
+            kdf::Mode::HkdfSha256,
+            aead::Mode::AesGcm128,
+        );
+        hpke.setup_base_receiver(enc, sk_r, info);
+        hpke.open(aad, ct)
+    }
+
     fn verify_psk_inputs(&self, psk: &[u8], psk_id: &[u8]) {
         let got_psk = !psk.is_empty();
         let got_psk_id = !psk_id.is_empty();
@@ -245,8 +283,8 @@ mod test {
             hex_to_bytes("232ce0da9fd45b8d500781a5ee1b0a2cf64411dd08d6442400ab05a4d29733a8");
         let pk_em =
             hex_to_bytes("ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258");
-
         let enc = hex_to_bytes("ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258");
+
         let zz = hex_to_bytes("44807c99177b0f3761d66f422945a21317a1532ca038e976594487a6a7e58fbf");
         let key_schedule_context = hex_to_bytes("002000010001005d0f5548cb13d7eba5320ae0e21b1ee274aac7ea1cce02570cf993d1b2456449debcca602075cf6f8ef506613a82e1c73727e2c912d0c49f16cd56fc524af4ce");
         let secret =
@@ -286,17 +324,37 @@ mod test {
         let ctxt = hpke.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
 
+        // Encryptiont to public key pk_rm
+        let mut hpke_sender = Hpke::new(mode, kem_id, kdf_id, aead_id);
+        let enc = hpke_sender.setup_base_sender(&pk_rm, &info);
+        let ctxt = hpke_sender.seal(&aad, &ptxt);
+        let mut hpke_receiver = Hpke::new(mode, kem_id, kdf_id, aead_id);
+        hpke_receiver.setup_base_receiver(&enc, &sk_rm, &info);
+        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        assert_eq!(ptxt_out, ptxt);
+
+        // Singe-shot API
+        let (enc, ct) = Hpke::seal_base(mode, &pk_rm, &info, &aad, &ptxt);
+        let ptxt_out = Hpke::open_base(mode, &enc, &sk_rm, &info, &aad, &ct);
+        assert_eq!(ptxt_out, ptxt);
+
         // seqno 1, same ptxt
         let aad = hex_to_bytes("436f756e742d31");
         let ctxt_expected = hex_to_bytes("2ed9ff66c33bad2f7c0326881f05aa9616ccba13bdb126a0d2a5a3dfa6b95bd4de78a98ff64c1fb64b366074d4");
         let ctxt = hpke.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
+        let ctxt = hpke_sender.seal(&aad, &ptxt);
+        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        assert_eq!(ptxt_out, ptxt);
 
         // seqno 2, same ptxt
         let aad = hex_to_bytes("436f756e742d32");
         let ctxt_expected = hex_to_bytes("4bfc8da6f1da808be2c1c141e864fe536bd1e9c4e01376cd383370b8095438a06f372e663739b30af9355da8a3");
         let ctxt = hpke.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
+        let ctxt = hpke_sender.seal(&aad, &ptxt);
+        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        assert_eq!(ptxt_out, ptxt);
 
         // Skip one seqno
         hpke.ctx.sequence_number += 1;
@@ -306,5 +364,8 @@ mod test {
         let ctxt_expected = hex_to_bytes("6314e60548cfdc30552303be4cb19875e335554bce186e1b41f9d15b4b4a4af77d68c09ebf883a9cbb51f3be9d");
         let ctxt = hpke.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
+        let ctxt = hpke_sender.seal(&aad, &ptxt);
+        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        assert_eq!(ptxt_out, ptxt);
     }
 }

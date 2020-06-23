@@ -4,5 +4,4 @@ mod test_util;
 use test_util::*;
 
 #[test]
-fn test_kat() {
-}
+fn test_kat() {}
