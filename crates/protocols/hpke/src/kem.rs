@@ -1,4 +1,5 @@
 use crate::dh_kem;
+use crate::kdf;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Mode {
@@ -22,8 +23,19 @@ impl From<u16> for Mode {
     }
 }
 
+// Map KEM to KDF according to spec.
+fn get_kdf(mode: Mode) -> kdf::Mode {
+    match mode {
+        Mode::DhKemP256 => kdf::Mode::HkdfSha256,
+        Mode::DhKemP384 => kdf::Mode::HkdfSha384,
+        Mode::DhKemP521 => kdf::Mode::HkdfSha512,
+        Mode::DhKem25519 => kdf::Mode::HkdfSha256,
+        Mode::DhKem448 => kdf::Mode::HkdfSha512,
+    }
+}
+
 pub(crate) trait KemTrait {
-    fn new() -> Self
+    fn new(kdf_id: kdf::Mode) -> Self
     where
         Self: Sized;
 
@@ -33,7 +45,6 @@ pub(crate) trait KemTrait {
     fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8>;
 
     fn get_secret_len(&self) -> usize;
-    fn get_seed_len(&self) -> usize;
     fn get_encoded_pk_len(&self) -> usize;
 }
 
@@ -41,9 +52,9 @@ pub struct Kem {
     kem: Box<dyn KemTrait>,
 }
 
-fn get_kem_object(mode: Mode) -> Box<dyn KemTrait> {
+fn get_kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {
     match mode {
-        Mode::DhKem25519 => Box::new(dh_kem::X25519Kem::new()),
+        Mode::DhKem25519 => Box::new(dh_kem::X25519Kem::new(kdf_id)),
         _ => panic!("KEM {:?} is note implemented", mode),
     }
 }
@@ -51,7 +62,12 @@ fn get_kem_object(mode: Mode) -> Box<dyn KemTrait> {
 impl Kem {
     pub fn new(mode: Mode) -> Self {
         Self {
-            kem: get_kem_object(mode),
+            kem: get_kem_object(mode, get_kdf(mode)),
+        }
+    }
+    pub fn new_kdf(mode: Mode, kdf_id: kdf::Mode) -> Self {
+        Self {
+            kem: get_kem_object(mode, kdf_id),
         }
     }
 

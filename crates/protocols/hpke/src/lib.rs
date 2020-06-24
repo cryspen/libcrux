@@ -140,7 +140,7 @@ impl Hpke {
                     None => panic!("Called setup_sender on Mode::Auth without sk_s"),
                 };
                 self.kem.auth_encaps(pk_r, sk_s)
-            },
+            }
         };
         (
             enc,
@@ -170,7 +170,7 @@ impl Hpke {
                     None => panic!("Called setup_sender on Mode::Auth without sk_s"),
                 };
                 self.kem.auth_decaps(enc, sk_r, pk_s)
-            },
+            }
         };
         self.key_schedule(
             &zz,

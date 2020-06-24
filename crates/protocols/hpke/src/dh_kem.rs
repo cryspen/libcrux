@@ -9,16 +9,20 @@ use crate::util::*;
 type PK = Vec<u8>;
 type SK = Vec<u8>;
 
-pub trait Curve {
-    const SK_LEN: usize;
-    const ENC_PK_LEN: usize;
-}
-
 pub(crate) struct X25519Kem {
+    encoded_pk_len: usize,
+    sk_len: usize,
     kdf: kdf::Kdf,
 }
 
 impl X25519Kem {
+    fn init(kdf_id: kdf::Mode) -> Self {
+        Self {
+            sk_len: 32,
+            encoded_pk_len: 32,
+            kdf: kdf::Kdf::new(kdf_id),
+        }
+    }
     fn dh(&self, sk: &[u8], pk: &[u8]) -> [u8; 32] {
         x25519_dalek::x25519(
             sk.try_into().expect("secret key has incorrect length"),
@@ -54,19 +58,14 @@ impl X25519Kem {
 
 impl KemTrait for X25519Kem {
     fn get_secret_len(&self) -> usize {
-        32 // K::HASH_LEN
-    }
-    fn get_seed_len(&self) -> usize {
-        32 // C::SK_LEN
+        self.sk_len
     }
     fn get_encoded_pk_len(&self) -> usize {
-        32 // C::ENCODED_PK_LEN
+        self.encoded_pk_len
     }
 
-    fn new() -> Self {
-        Self {
-            kdf: kdf::Kdf::new(kdf::Mode::HkdfSha256),
-        }
+    fn new(kdf_id: kdf::Mode) -> Self {
+        Self::init(kdf_id)
     }
 
     fn encaps(&self, pk_r: &[u8]) -> (Vec<u8>, Vec<u8>) {
