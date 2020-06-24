@@ -15,38 +15,63 @@ pub enum Mode {
     AuthPsk = 0x03,
 }
 
-type MarshalledPk = Vec<u8>;
-type PK = Vec<u8>;
-type SK = Vec<u8>;
-type MD = Vec<u8>;
-type Key = Vec<u8>;
-type Nonce = Vec<u8>;
-
-struct HpkeContext {
-    // Mode and algorithms
-    mode: Mode,
-    kem_id: kem::Mode,
-    kdf_id: kdf::Mode,
-    aead_id: aead::Mode,
-
-    // Public inputs to this key exchange
-    enc: MarshalledPk,
-    pk_r: PK,
-    pk_i: MarshalledPk,
-
-    // Cryptographic hash of application-supplied pskID
-    psk_id_hash: MD,
-
-    // Cryptographic hash of application-supplied info
-    info_hash: MD,
+// TODO: Do we need this?
+#[allow(dead_code)]
+fn get_kdf_for_kem(mode: kem::Mode) -> kdf::Mode {
+    match mode {
+        kem::Mode::DhKemP256 => kdf::Mode::HkdfSha256,
+        kem::Mode::DhKemP384 => kdf::Mode::HkdfSha384,
+        kem::Mode::DhKemP521 => kdf::Mode::HkdfSha512,
+        kem::Mode::DhKem25519 => kdf::Mode::HkdfSha256,
+        kem::Mode::DhKem448 => kdf::Mode::HkdfSha512,
+    }
 }
 
-#[derive(Default, Debug)]
-pub struct Context {
-    key: Key,
-    nonce: Nonce,
-    exporter_secret: Key,
+// TODO: add types
+
+pub struct Context<'a> {
+    key: Vec<u8>,
+    nonce: Vec<u8>,
+    exporter_secret: Vec<u8>,
     sequence_number: u32,
+    hpke: &'a Hpke,
+}
+
+impl<'a> Context<'a> {
+    pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Vec<u8> {
+        let ctxt = self
+            .hpke
+            .aead
+            .seal(&self.key, &self.compute_nonce(), aad, plain_txt);
+        self.increment_seq();
+        ctxt
+    }
+
+    pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Vec<u8> {
+        match self
+            .hpke
+            .aead
+            .open(&self.key, &self.compute_nonce(), aad, cipher_txt)
+        {
+            Ok(plain_txt) => {
+                self.increment_seq();
+                plain_txt
+            }
+            Err(e) => panic!("Error in open {:?}", e),
+        }
+    }
+
+    // TODO: not cool
+    fn compute_nonce(&self) -> Vec<u8> {
+        let seq = self.sequence_number.to_be_bytes();
+        let mut enc_seq = vec![0u8; self.nonce.len() - seq.len()];
+        enc_seq.append(&mut seq.to_vec());
+        util::xor_bytes(&enc_seq, &self.nonce)
+    }
+
+    fn increment_seq(&mut self) {
+        self.sequence_number += 1;
+    }
 }
 
 pub struct Hpke {
@@ -60,7 +85,6 @@ pub struct Hpke {
     nk: usize,
     nn: usize,
     nh: usize,
-    ctx: Context,
 }
 
 impl Hpke {
@@ -79,33 +103,6 @@ impl Hpke {
             kem: kem,
             kdf: kdf,
             aead: aead,
-            ctx: Context::default(),
-        }
-    }
-
-    pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Vec<u8> {
-        let ctxt = self.aead.seal(
-            &self.ctx.key,
-            &self.compute_nonce(self.ctx.sequence_number),
-            aad,
-            plain_txt,
-        );
-        self.increment_seq();
-        ctxt
-    }
-
-    pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Vec<u8> {
-        match self.aead.open(
-            &self.ctx.key,
-            &self.compute_nonce(self.ctx.sequence_number),
-            aad,
-            cipher_txt,
-        ) {
-            Ok(plain_txt) => {
-                self.increment_seq();
-                plain_txt
-            }
-            Err(e) => panic!("Error in open {:?}", e),
         }
     }
 
@@ -116,16 +113,14 @@ impl Hpke {
         aad: &[u8],
         ptxt: &[u8],
     ) -> (Vec<u8>, Vec<u8>) {
-        // FIXME
-        let mut hpke = Self::new(
+        let hpke = Self::new(
             mode,
             kem::Mode::DhKem25519,
             kdf::Mode::HkdfSha256,
             aead::Mode::AesGcm128,
         );
-        let enc = hpke.setup_base_sender(pk_r, info);
-        let ct = hpke.seal(aad, ptxt);
-        (enc, ct)
+        let (enc, mut context) = hpke.setup_base_sender(pk_r, info);
+        (enc, context.seal(aad, ptxt))
     }
 
     pub fn open_base(
@@ -137,16 +132,17 @@ impl Hpke {
         ct: &[u8],
     ) -> Vec<u8> {
         // FIXME
-        let mut hpke = Self::new(
+        let hpke = Self::new(
             mode,
             kem::Mode::DhKem25519,
             kdf::Mode::HkdfSha256,
             aead::Mode::AesGcm128,
         );
-        hpke.setup_base_receiver(enc, sk_r, info);
-        hpke.open(aad, ct)
+        let mut context = hpke.setup_base_receiver(enc, sk_r, info);
+        context.open(aad, ct)
     }
 
+    #[inline]
     fn verify_psk_inputs(&self, psk: &[u8], psk_id: &[u8]) {
         let got_psk = !psk.is_empty();
         let got_psk_id = !psk_id.is_empty();
@@ -162,6 +158,7 @@ impl Hpke {
         }
     }
 
+    #[inline]
     fn get_ciphersuite(&self) -> Vec<u8> {
         util::concat(&[
             &(self.kem_id as u16).to_be_bytes(),
@@ -192,7 +189,7 @@ impl Hpke {
         self.kdf.labeled_extract(&psk_hash, "secret", zz)
     }
 
-    fn key_schedule(&mut self, zz: &[u8], info: &[u8], psk: &[u8], psk_id: &[u8]) {
+    fn key_schedule(&self, zz: &[u8], info: &[u8], psk: &[u8], psk_id: &[u8]) -> Context {
         self.verify_psk_inputs(psk, psk_id);
         let key_schedule_context = self.get_key_schedule_context(info, psk_id);
         let secret = self.get_secret(psk, zz);
@@ -207,43 +204,32 @@ impl Hpke {
             self.kdf
                 .labeled_expand(&secret, "exp", &key_schedule_context, self.nh);
 
-        self.ctx = Context {
+        Context {
             key: key,
             nonce: nonce,
             exporter_secret: exporter_secret,
             sequence_number: 0,
-        };
+            hpke: self,
+        }
     }
 
-    fn setup_base_sender(&mut self, pk_r: &[u8], info: &[u8]) -> Vec<u8> {
+    fn setup_base_sender(&self, pk_r: &[u8], info: &[u8]) -> (Vec<u8>, Context) {
         assert_eq!(self.mode, Mode::Base);
         let (zz, enc) = self.kem.encaps(pk_r);
-        self.key_schedule(&zz, info, &[], &[]);
-        enc
+        (enc, self.key_schedule(&zz, info, &[], &[]))
     }
 
-    fn setup_base_receiver(&mut self, enc: &[u8], sk_r: &[u8], info: &[u8]) {
+    fn setup_base_receiver(&self, enc: &[u8], sk_r: &[u8], info: &[u8]) -> Context {
         assert_eq!(self.mode, Mode::Base);
         let zz = self.kem.decaps(enc, sk_r);
-        self.key_schedule(&zz, info, &[], &[]);
-    }
-
-    // TODO: not cool
-    fn compute_nonce(&self, seq: u32) -> Vec<u8> {
-        let seq = seq.to_be_bytes();
-        let mut enc_seq = vec![0u8; self.nn - seq.len()];
-        enc_seq.append(&mut seq.to_vec());
-        util::xor_bytes(&enc_seq, &self.ctx.nonce)
-    }
-
-    fn increment_seq(&mut self) {
-        self.ctx.sequence_number += 1;
+        self.key_schedule(&zz, info, &[], &[])
     }
 }
 
-// ==== Unit and AKT test for internal functions ====
+// ==== Unit and KAT test for internal functions ====
 
 mod test {
+    #![allow(unused_imports)]
     use super::*;
     use util::*;
 
@@ -279,11 +265,11 @@ mod test {
         let pk_rm =
             hex_to_bytes("ac511615dee12b2e11170f1272c3972e6e2268d8fb05fc93c6b008065f61f22f");
 
-        let sk_em =
+        let _sk_em =
             hex_to_bytes("232ce0da9fd45b8d500781a5ee1b0a2cf64411dd08d6442400ab05a4d29733a8");
-        let pk_em =
+        let _pk_em =
             hex_to_bytes("ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258");
-        let enc = hex_to_bytes("ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258");
+        let _enc = hex_to_bytes("ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258");
 
         let zz = hex_to_bytes("44807c99177b0f3761d66f422945a21317a1532ca038e976594487a6a7e58fbf");
         let key_schedule_context = hex_to_bytes("002000010001005d0f5548cb13d7eba5320ae0e21b1ee274aac7ea1cce02570cf993d1b2456449debcca602075cf6f8ef506613a82e1c73727e2c912d0c49f16cd56fc524af4ce");
@@ -294,8 +280,8 @@ mod test {
         let exporter_secret =
             hex_to_bytes("93c6a28ec7af55f669612d5d64fe680ae38ca88d14fb6ecba647606eee668124");
 
-        let mut hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
-        hpke.key_schedule(&zz, &info, &[], &[]);
+        let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
+        let mut context = hpke.key_schedule(&zz, &info, &[], &[]);
 
         // Check setup info
         assert_eq!(
@@ -303,10 +289,10 @@ mod test {
             hpke.get_key_schedule_context(&info, &[])
         );
         assert_eq!(secret, hpke.get_secret(&[], &zz));
-        assert_eq!(hpke.ctx.key, key);
-        assert_eq!(hpke.ctx.nonce, nonce);
-        assert_eq!(hpke.ctx.exporter_secret, exporter_secret);
-        assert_eq!(hpke.ctx.sequence_number, 0);
+        assert_eq!(context.key, key);
+        assert_eq!(context.nonce, nonce);
+        assert_eq!(context.exporter_secret, exporter_secret);
+        assert_eq!(context.sequence_number, 0);
 
         // Encryptions
         // sequence number: 0
@@ -319,18 +305,16 @@ mod test {
         let aad = hex_to_bytes("436f756e742d30");
         let nonce = hex_to_bytes("2764228860619e140920c7d7");
         let ctxt_expected = hex_to_bytes("1811cf5d39f857f80175f96ca4d3600bfb0585e4ce119bc46396da4b371966a358924e5a97a7b53ea255971f6b");
-        assert_eq!(hpke.ctx.nonce, nonce);
+        assert_eq!(context.nonce, nonce);
 
-        let ctxt = hpke.seal(&aad, &ptxt);
+        let ctxt = context.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
 
         // Encryptiont to public key pk_rm
-        let mut hpke_sender = Hpke::new(mode, kem_id, kdf_id, aead_id);
-        let enc = hpke_sender.setup_base_sender(&pk_rm, &info);
-        let ctxt = hpke_sender.seal(&aad, &ptxt);
-        let mut hpke_receiver = Hpke::new(mode, kem_id, kdf_id, aead_id);
-        hpke_receiver.setup_base_receiver(&enc, &sk_rm, &info);
-        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        let (enc, mut sender_context) = hpke.setup_base_sender(&pk_rm, &info);
+        let ctxt = sender_context.seal(&aad, &ptxt);
+        let mut receiver_context = hpke.setup_base_receiver(&enc, &sk_rm, &info);
+        let ptxt_out = receiver_context.open(&aad, &ctxt);
         assert_eq!(ptxt_out, ptxt);
 
         // Singe-shot API
@@ -341,31 +325,31 @@ mod test {
         // seqno 1, same ptxt
         let aad = hex_to_bytes("436f756e742d31");
         let ctxt_expected = hex_to_bytes("2ed9ff66c33bad2f7c0326881f05aa9616ccba13bdb126a0d2a5a3dfa6b95bd4de78a98ff64c1fb64b366074d4");
-        let ctxt = hpke.seal(&aad, &ptxt);
+        let ctxt = context.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
-        let ctxt = hpke_sender.seal(&aad, &ptxt);
-        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        let ctxt = sender_context.seal(&aad, &ptxt);
+        let ptxt_out = receiver_context.open(&aad, &ctxt);
         assert_eq!(ptxt_out, ptxt);
 
         // seqno 2, same ptxt
         let aad = hex_to_bytes("436f756e742d32");
         let ctxt_expected = hex_to_bytes("4bfc8da6f1da808be2c1c141e864fe536bd1e9c4e01376cd383370b8095438a06f372e663739b30af9355da8a3");
-        let ctxt = hpke.seal(&aad, &ptxt);
+        let ctxt = context.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
-        let ctxt = hpke_sender.seal(&aad, &ptxt);
-        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        let ctxt = sender_context.seal(&aad, &ptxt);
+        let ptxt_out = receiver_context.open(&aad, &ctxt);
         assert_eq!(ptxt_out, ptxt);
 
         // Skip one seqno
-        hpke.ctx.sequence_number += 1;
+        context.sequence_number += 1;
 
         // seqno 4, same ptxt
         let aad = hex_to_bytes("436f756e742d34");
         let ctxt_expected = hex_to_bytes("6314e60548cfdc30552303be4cb19875e335554bce186e1b41f9d15b4b4a4af77d68c09ebf883a9cbb51f3be9d");
-        let ctxt = hpke.seal(&aad, &ptxt);
+        let ctxt = context.seal(&aad, &ptxt);
         assert_eq!(ctxt_expected, ctxt);
-        let ctxt = hpke_sender.seal(&aad, &ptxt);
-        let ptxt_out = hpke_receiver.open(&aad, &ctxt);
+        let ctxt = sender_context.seal(&aad, &ptxt);
+        let ptxt_out = receiver_context.open(&aad, &ctxt);
         assert_eq!(ptxt_out, ptxt);
     }
 }

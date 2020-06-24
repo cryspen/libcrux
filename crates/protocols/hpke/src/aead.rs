@@ -29,7 +29,6 @@ pub(crate) trait AeadTrait {
 }
 
 pub struct Aead {
-    mode: Mode,
     aead: Box<dyn AeadTrait>,
 }
 
@@ -43,7 +42,6 @@ fn get_aead_object(mode: Mode) -> Box<dyn AeadTrait> {
 impl Aead {
     pub fn new(mode: Mode) -> Self {
         Self {
-            mode: mode,
             aead: get_aead_object(mode),
         }
     }

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use rand_core::{OsRng, RngCore};
 
 #[inline]

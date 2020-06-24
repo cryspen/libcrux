@@ -14,14 +14,6 @@ pub trait Curve {
     const ENC_PK_LEN: usize;
 }
 
-pub(crate) enum Group {
-    P256,
-    P384,
-    P521,
-    X25519,
-    X448,
-}
-
 pub(crate) struct X25519Kem {
     kdf: kdf::Kdf,
 }
@@ -98,10 +90,10 @@ impl KemTrait for X25519Kem {
 
         self.extract_and_expand(dh_pk.to_vec(), &kem_context)
     }
-    fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    fn auth_encaps(&self, _pk_r: &[u8], _sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
         unimplemented!();
     }
-    fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8> {
+    fn auth_decaps(&self, _enc: &[u8], _sk_r: &[u8], _pk_s: &[u8]) -> Vec<u8> {
         unimplemented!();
     }
 }

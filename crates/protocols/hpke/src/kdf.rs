@@ -1,5 +1,3 @@
-use std::convert::TryInto;
-
 use crate::hkdf;
 use crate::util::*;
 
@@ -11,7 +9,6 @@ pub enum Mode {
 }
 
 pub(crate) trait KdfTrait {
-    // const HASH_LEN: usize;
     fn new() -> Self
     where
         Self: Sized;
@@ -21,18 +18,13 @@ pub(crate) trait KdfTrait {
 }
 
 pub struct Kdf {
-    mode: Mode,
-    hash_len: usize,
     kdf: Box<dyn KdfTrait>,
 }
 
 impl Kdf {
     pub fn new(mode: Mode) -> Self {
-        let kdf = get_kdf_object(mode);
         Self {
-            mode: mode,
-            hash_len: kdf.digest_length(),
-            kdf: kdf,
+            kdf: get_kdf_object(mode),
         }
     }
 

@@ -1,5 +1,4 @@
 use crate::dh_kem;
-use crate::kdf;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Mode {
@@ -8,16 +7,6 @@ pub enum Mode {
     DhKemP521 = 0x0012,
     DhKem25519 = 0x0020,
     DhKem448 = 0x0021,
-}
-
-fn get_kdf(mode: Mode) -> kdf::Mode {
-    match mode {
-        Mode::DhKemP256 => kdf::Mode::HkdfSha256,
-        Mode::DhKemP384 => kdf::Mode::HkdfSha384,
-        Mode::DhKemP521 => kdf::Mode::HkdfSha512,
-        Mode::DhKem25519 => kdf::Mode::HkdfSha256,
-        Mode::DhKem448 => kdf::Mode::HkdfSha512,
-    }
 }
 
 pub(crate) trait KemTrait {
@@ -36,7 +25,6 @@ pub(crate) trait KemTrait {
 }
 
 pub struct Kem {
-    mode: Mode,
     kem: Box<dyn KemTrait>,
 }
 
@@ -50,7 +38,6 @@ fn get_kem_object(mode: Mode) -> Box<dyn KemTrait> {
 impl Kem {
     pub fn new(mode: Mode) -> Self {
         Self {
-            mode: mode,
             kem: get_kem_object(mode),
         }
     }
