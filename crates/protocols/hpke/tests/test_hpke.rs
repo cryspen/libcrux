@@ -70,11 +70,6 @@ fn test_kat() {
         let kdf_id: kdf::Mode = test.kdfID.into();
         let aead_id: aead::Mode = test.aeadID.into();
 
-        if mode != Mode::Base && mode != Mode::Psk {
-            println!(" > Mode {:?} not implemented yet", mode);
-            continue;
-        }
-
         if kem_id != kem::Mode::DhKem25519 {
             println!(" > KEM {:?} not implemented yet", kem_id);
             continue;
@@ -91,13 +86,18 @@ fn test_kat() {
         // Set up sender and receiver.
         let pk_rm = hex_to_bytes(&test.pkRm);
         let sk_rm = hex_to_bytes(&test.skRm);
+        let pk_sm = hex_to_bytes_option(test.pkSm);
+        let pk_sm = vec_to_option_slice(&pk_sm);
+        let sk_sm = hex_to_bytes_option(test.skSm);
+        let sk_sm = vec_to_option_slice(&sk_sm);
         let info = hex_to_bytes(&test.info);
         let psk = hex_to_bytes_option(test.psk);
         let psk = vec_to_option_slice(&psk);
         let psk_id = hex_to_bytes_option(test.pskID);
         let psk_id = vec_to_option_slice(&psk_id);
-        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id);
-        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id);
+
+        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id, sk_sm);
+        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm);
 
         // Encrypt
         for encryption in test.encryptions {
@@ -108,8 +108,8 @@ fn test_kat() {
             assert_eq!(ptxt_out, ptxt);
 
             // Test single-shot API
-            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id);
-            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id);
+            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm);
+            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm);
             assert_eq!(ptxt_out, ptxt);
         }
 

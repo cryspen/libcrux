@@ -74,7 +74,9 @@ impl<'a> Context<'a> {
     }
 
     pub fn export(&self, exporter_context: &[u8], length: usize) -> Vec<u8> {
-        self.hpke.kdf.labeled_expand(&self.exporter_secret, "sec", exporter_context, length)
+        self.hpke
+            .kdf
+            .labeled_expand(&self.exporter_secret, "sec", exporter_context, length)
     }
 
     // TODO: not cool
@@ -122,6 +124,62 @@ impl Hpke {
         }
     }
 
+    pub fn setup_sender(
+        &self,
+        pk_r: &[u8],
+        info: &[u8],
+        psk: Option<&[u8]>,
+        psk_id: Option<&[u8]>,
+        sk_s: Option<&[u8]>,
+    ) -> (Vec<u8>, Context) {
+        let (zz, enc) = match self.mode {
+            Mode::Base | Mode::Psk => self.kem.encaps(pk_r),
+            Mode::Auth | Mode::AuthPsk => {
+                let sk_s = match sk_s {
+                    Some(s) => s,
+                    None => panic!("Called setup_sender on Mode::Auth without sk_s"),
+                };
+                self.kem.auth_encaps(pk_r, sk_s)
+            },
+        };
+        (
+            enc,
+            self.key_schedule(
+                &zz,
+                info,
+                psk.unwrap_or_default(),
+                psk_id.unwrap_or_default(),
+            ),
+        )
+    }
+
+    pub fn setup_receiver(
+        &self,
+        enc: &[u8],
+        sk_r: &[u8],
+        info: &[u8],
+        psk: Option<&[u8]>,
+        psk_id: Option<&[u8]>,
+        pk_s: Option<&[u8]>,
+    ) -> Context {
+        let zz = match self.mode {
+            Mode::Base | Mode::Psk => self.kem.decaps(enc, sk_r),
+            Mode::Auth | Mode::AuthPsk => {
+                let pk_s = match pk_s {
+                    Some(s) => s,
+                    None => panic!("Called setup_sender on Mode::Auth without sk_s"),
+                };
+                self.kem.auth_decaps(enc, sk_r, pk_s)
+            },
+        };
+        self.key_schedule(
+            &zz,
+            info,
+            psk.unwrap_or_default(),
+            psk_id.unwrap_or_default(),
+        )
+    }
+
     pub fn seal(
         &self,
         pk_r: &[u8],
@@ -130,8 +188,9 @@ impl Hpke {
         ptxt: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
+        sk_s: Option<&[u8]>,
     ) -> (Vec<u8>, Vec<u8>) {
-        let (enc, mut context) = self.setup_sender(pk_r, info, psk, psk_id);
+        let (enc, mut context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s);
         (enc, context.seal(aad, ptxt))
     }
 
@@ -144,8 +203,9 @@ impl Hpke {
         ct: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
+        pk_s: Option<&[u8]>,
     ) -> Vec<u8> {
-        let mut context = self.setup_receiver(enc, sk_r, info, psk, psk_id);
+        let mut context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s);
         context.open(aad, ct)
     }
 
@@ -218,16 +278,6 @@ impl Hpke {
             sequence_number: 0,
             hpke: self,
         }
-    }
-
-    pub fn setup_sender(&self, pk_r: &[u8], info: &[u8], psk: Option<&[u8]>, psk_id: Option<&[u8]>) -> (Vec<u8>, Context) {
-        let (zz, enc) = self.kem.encaps(pk_r);
-        (enc, self.key_schedule(&zz, info, psk.unwrap_or_default(), psk_id.unwrap_or_default()))
-    }
-
-    pub fn setup_receiver(&self, enc: &[u8], sk_r: &[u8], info: &[u8], psk: Option<&[u8]>, psk_id: Option<&[u8]>) -> Context {
-        let zz = self.kem.decaps(enc, sk_r);
-        self.key_schedule(&zz, info, psk.unwrap_or_default(), psk_id.unwrap_or_default())
     }
 }
 
@@ -316,15 +366,15 @@ mod test {
         assert_eq!(ctxt_expected, ctxt);
 
         // Encryptiont to public key pk_rm
-        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, None, None);
+        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, None, None, None);
         let ctxt = sender_context.seal(&aad, &ptxt);
-        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, None, None);
+        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, None, None, None);
         let ptxt_out = receiver_context.open(&aad, &ctxt);
         assert_eq!(ptxt_out, ptxt);
 
         // Singe-shot API
-        let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, None, None);
-        let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, None, None);
+        let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, None, None, None);
+        let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, None, None, None);
         assert_eq!(ptxt_out, ptxt);
 
         // seqno 1, same ptxt

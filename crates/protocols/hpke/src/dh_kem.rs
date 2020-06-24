@@ -90,10 +90,27 @@ impl KemTrait for X25519Kem {
 
         self.extract_and_expand(dh_pk.to_vec(), &kem_context)
     }
-    fn auth_encaps(&self, _pk_r: &[u8], _sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
-        unimplemented!();
+    fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        let (pk_e, sk_e) = self.derive_key_pair(&random(self.get_secret_len()));
+        let dh_pk = concat(&[&self.dh(&sk_e, pk_r), &self.dh(&sk_s, pk_r)]);
+
+        let enc = self.marshal(&pk_e);
+        let pk_rm = self.marshal(&pk_r);
+        let pk_sm = self.marshal(&self.dh_base(&sk_s));
+
+        let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
+
+        let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context);
+        (zz, enc)
     }
-    fn auth_decaps(&self, _enc: &[u8], _sk_r: &[u8], _pk_s: &[u8]) -> Vec<u8> {
-        unimplemented!();
+    fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8> {
+        let pk_e = self.unmarshal(enc);
+        let dh_pk = concat(&[&self.dh(sk_r, &pk_e), &self.dh(sk_r, &pk_s)]);
+
+        let pk_rm = self.marshal(&self.dh_base(sk_r));
+        let pk_sm = self.marshal(&pk_s);
+        let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
+
+        self.extract_and_expand(dh_pk.to_vec(), &kem_context)
     }
 }
