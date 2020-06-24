@@ -15,6 +15,18 @@ pub enum Mode {
     AuthPsk = 0x03,
 }
 
+impl From<u16> for Mode {
+    fn from(x: u16) -> Mode {
+        match x {
+            0x00 => Mode::Base,
+            0x01 => Mode::Psk,
+            0x02 => Mode::Auth,
+            0x03 => Mode::AuthPsk,
+            _ => panic!("Unknown HPKE Mode {}", x),
+        }
+    }
+}
+
 // TODO: Do we need this?
 #[allow(dead_code)]
 fn get_kdf_for_kem(mode: kem::Mode) -> kdf::Mode {
@@ -131,7 +143,6 @@ impl Hpke {
         aad: &[u8],
         ct: &[u8],
     ) -> Vec<u8> {
-        // FIXME
         let hpke = Self::new(
             mode,
             kem::Mode::DhKem25519,
@@ -210,6 +221,20 @@ impl Hpke {
             exporter_secret: exporter_secret,
             sequence_number: 0,
             hpke: self,
+        }
+    }
+
+    pub fn setup_sender(&self, pk_r: &[u8], info: &[u8]) -> (Vec<u8>, Context) {
+        match self.mode {
+            Mode::Base => self.setup_base_sender(pk_r, info),
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn setup_receiver(&self, enc: &[u8], sk_r: &[u8], info: &[u8]) -> Context {
+        match self.mode {
+            Mode::Base => self.setup_base_receiver(enc, sk_r, info),
+            _ => unimplemented!(),
         }
     }
 

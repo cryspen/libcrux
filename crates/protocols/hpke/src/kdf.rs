@@ -8,6 +8,17 @@ pub enum Mode {
     HkdfSha512 = 0x0003,
 }
 
+impl From<u16> for Mode {
+    fn from(x: u16) -> Mode {
+        match x {
+            0x0001 => Mode::HkdfSha256,
+            0x0002 => Mode::HkdfSha384,
+            0x0003 => Mode::HkdfSha512,
+            _ => panic!("Unknown KDF Mode {}", x),
+        }
+    }
+}
+
 pub(crate) trait KdfTrait {
     fn new() -> Self
     where

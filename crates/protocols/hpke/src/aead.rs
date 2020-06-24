@@ -1,10 +1,21 @@
 use crate::aes_gcm;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Mode {
     AesGcm128 = 0x0001,
     AesGcm256 = 0x0002,
     ChaCha20Polz1305 = 0x0003,
+}
+
+impl From<u16> for Mode {
+    fn from(x: u16) -> Mode {
+        match x {
+            0x0001 => Mode::AesGcm128,
+            0x0002 => Mode::AesGcm256,
+            0x0003 => Mode::ChaCha20Polz1305,
+            _ => panic!("Unknown AEAD Mode {}", x),
+        }
+    }
 }
 
 #[derive(Debug)]

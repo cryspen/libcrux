@@ -9,6 +9,19 @@ pub enum Mode {
     DhKem448 = 0x0021,
 }
 
+impl From<u16> for Mode {
+    fn from(x: u16) -> Mode {
+        match x {
+            0x0010 => Mode::DhKemP256,
+            0x0011 => Mode::DhKemP384,
+            0x0012 => Mode::DhKemP521,
+            0x0020 => Mode::DhKem25519,
+            0x0021 => Mode::DhKem448,
+            _ => panic!("Unknown KEM Mode {}", x),
+        }
+    }
+}
+
 pub(crate) trait KemTrait {
     fn new() -> Self
     where
