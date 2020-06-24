@@ -80,11 +80,6 @@ fn test_kat() {
             continue;
         }
 
-        if aead_id != aead::Mode::AesGcm128 {
-            println!(" > AEAD {:?} not implemented yet", aead_id);
-            continue;
-        }
-
         println!(
             "Testing mode {:?} with ciphersuite {:?}_{:?}_{:?}",
             mode, kem_id, kdf_id, aead_id
@@ -110,8 +105,8 @@ fn test_kat() {
         }
 
         // TODO: test exports
-        for export in test.exports {
-            println!(" > Exports not implemented yet.");
+        for _export in test.exports {
+            println!(" > > Exports not implemented yet.");
         }
     }
 }

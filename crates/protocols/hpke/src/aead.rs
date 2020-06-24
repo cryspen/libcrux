@@ -1,10 +1,11 @@
 use crate::aes_gcm;
+use crate::chacha20poly1305;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Mode {
     AesGcm128 = 0x0001,
     AesGcm256 = 0x0002,
-    ChaCha20Polz1305 = 0x0003,
+    ChaCha20Poly1305 = 0x0003,
 }
 
 impl From<u16> for Mode {
@@ -12,7 +13,7 @@ impl From<u16> for Mode {
         match x {
             0x0001 => Mode::AesGcm128,
             0x0002 => Mode::AesGcm256,
-            0x0003 => Mode::ChaCha20Polz1305,
+            0x0003 => Mode::ChaCha20Poly1305,
             _ => panic!("Unknown AEAD Mode {}", x),
         }
     }
@@ -46,6 +47,8 @@ pub struct Aead {
 fn get_aead_object(mode: Mode) -> Box<dyn AeadTrait> {
     match mode {
         Mode::AesGcm128 => Box::new(aes_gcm::AesGcm128::new()),
+        Mode::AesGcm256 => Box::new(aes_gcm::AesGcm256::new()),
+        Mode::ChaCha20Poly1305 => Box::new(chacha20poly1305::ChaCha20Poly1305::new()),
         _ => panic!("AEAD {:?} is note implemented", mode),
     }
 }
