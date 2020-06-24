@@ -92,8 +92,12 @@ fn test_kat() {
         let pk_rm = hex_to_bytes(&test.pkRm);
         let sk_rm = hex_to_bytes(&test.skRm);
         let info = hex_to_bytes(&test.info);
-        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info);
-        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info);
+        let psk = hex_to_bytes_option(test.psk);
+        let psk = vec_to_option_slice(&psk);
+        let psk_id = hex_to_bytes_option(test.pskID);
+        let psk_id = vec_to_option_slice(&psk_id);
+        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id);
+        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id);
 
         // Encrypt
         for encryption in test.encryptions {
@@ -101,6 +105,11 @@ fn test_kat() {
             let ptxt = hex_to_bytes(&encryption.plaintext);
             let ctxt_out = sender_context.seal(&aad, &ptxt);
             let ptxt_out = receiver_context.open(&aad, &ctxt_out);
+            assert_eq!(ptxt_out, ptxt);
+
+            // Test single-shot API
+            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt);
+            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct);
             assert_eq!(ptxt_out, ptxt);
         }
 

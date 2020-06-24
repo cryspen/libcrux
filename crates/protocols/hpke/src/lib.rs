@@ -118,38 +118,53 @@ impl Hpke {
         }
     }
 
-    pub fn seal_base(
-        mode: Mode,
+    pub fn seal(
+        &self,
         pk_r: &[u8],
         info: &[u8],
         aad: &[u8],
         ptxt: &[u8],
     ) -> (Vec<u8>, Vec<u8>) {
-        let hpke = Self::new(
-            mode,
-            kem::Mode::DhKem25519,
-            kdf::Mode::HkdfSha256,
-            aead::Mode::AesGcm128,
-        );
-        let (enc, mut context) = hpke.setup_base_sender(pk_r, info);
-        (enc, context.seal(aad, ptxt))
+        match self.mode {
+            Mode::Base => self.seal_base(pk_r, info, aad, ptxt),
+            _ => unimplemented!(),
+        }
     }
 
-    pub fn open_base(
-        mode: Mode,
+    pub fn open(
+        &self,
         enc: &[u8],
         sk_r: &[u8],
         info: &[u8],
         aad: &[u8],
         ct: &[u8],
     ) -> Vec<u8> {
-        let hpke = Self::new(
-            mode,
-            kem::Mode::DhKem25519,
-            kdf::Mode::HkdfSha256,
-            aead::Mode::AesGcm128,
-        );
-        let mut context = hpke.setup_base_receiver(enc, sk_r, info);
+        match self.mode {
+            Mode::Base => self.open_base(enc, sk_r, info, aad, ct),
+            _ => unimplemented!(),
+        }
+    }
+
+    fn seal_base(
+        &self,
+        pk_r: &[u8],
+        info: &[u8],
+        aad: &[u8],
+        ptxt: &[u8],
+    ) -> (Vec<u8>, Vec<u8>) {
+        let (enc, mut context) = self.setup_sender(pk_r, info, None, None);
+        (enc, context.seal(aad, ptxt))
+    }
+
+    fn open_base(
+        &self,
+        enc: &[u8],
+        sk_r: &[u8],
+        info: &[u8],
+        aad: &[u8],
+        ct: &[u8],
+    ) -> Vec<u8> {
+        let mut context = self.setup_receiver(enc, sk_r, info, None, None);
         context.open(aad, ct)
     }
 
@@ -224,30 +239,14 @@ impl Hpke {
         }
     }
 
-    pub fn setup_sender(&self, pk_r: &[u8], info: &[u8]) -> (Vec<u8>, Context) {
-        match self.mode {
-            Mode::Base => self.setup_base_sender(pk_r, info),
-            _ => unimplemented!(),
-        }
-    }
-
-    pub fn setup_receiver(&self, enc: &[u8], sk_r: &[u8], info: &[u8]) -> Context {
-        match self.mode {
-            Mode::Base => self.setup_base_receiver(enc, sk_r, info),
-            _ => unimplemented!(),
-        }
-    }
-
-    fn setup_base_sender(&self, pk_r: &[u8], info: &[u8]) -> (Vec<u8>, Context) {
-        assert_eq!(self.mode, Mode::Base);
+    pub fn setup_sender(&self, pk_r: &[u8], info: &[u8], psk: Option<&[u8]>, psk_id: Option<&[u8]>) -> (Vec<u8>, Context) {
         let (zz, enc) = self.kem.encaps(pk_r);
-        (enc, self.key_schedule(&zz, info, &[], &[]))
+        (enc, self.key_schedule(&zz, info, psk.unwrap_or_default(), psk_id.unwrap_or_default()))
     }
 
-    fn setup_base_receiver(&self, enc: &[u8], sk_r: &[u8], info: &[u8]) -> Context {
-        assert_eq!(self.mode, Mode::Base);
+    pub fn setup_receiver(&self, enc: &[u8], sk_r: &[u8], info: &[u8], psk: Option<&[u8]>, psk_id: Option<&[u8]>) -> Context {
         let zz = self.kem.decaps(enc, sk_r);
-        self.key_schedule(&zz, info, &[], &[])
+        self.key_schedule(&zz, info, psk.unwrap_or_default(), psk_id.unwrap_or_default())
     }
 }
 
@@ -336,15 +335,15 @@ mod test {
         assert_eq!(ctxt_expected, ctxt);
 
         // Encryptiont to public key pk_rm
-        let (enc, mut sender_context) = hpke.setup_base_sender(&pk_rm, &info);
+        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, None, None);
         let ctxt = sender_context.seal(&aad, &ptxt);
-        let mut receiver_context = hpke.setup_base_receiver(&enc, &sk_rm, &info);
+        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, None, None);
         let ptxt_out = receiver_context.open(&aad, &ctxt);
         assert_eq!(ptxt_out, ptxt);
 
         // Singe-shot API
-        let (enc, ct) = Hpke::seal_base(mode, &pk_rm, &info, &aad, &ptxt);
-        let ptxt_out = Hpke::open_base(mode, &enc, &sk_rm, &info, &aad, &ct);
+        let (enc, ct) = hpke.seal_base(&pk_rm, &info, &aad, &ptxt);
+        let ptxt_out = hpke.open_base(&enc, &sk_rm, &info, &aad, &ct);
         assert_eq!(ptxt_out, ptxt);
 
         // seqno 1, same ptxt
