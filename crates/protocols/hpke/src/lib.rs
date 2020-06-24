@@ -1,6 +1,5 @@
 pub mod aead;
-mod aes_gcm;
-mod chacha20poly1305;
+mod aead_impl;
 pub mod dh_kem;
 mod hkdf;
 pub mod kdf;

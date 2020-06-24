@@ -1,9 +1,10 @@
 use aead::{Aead, NewAead, Payload};
 use aes_gcm::{Aes128Gcm, Aes256Gcm};
+use chacha20poly1305::ChaCha20Poly1305 as chacha;
 
 use crate::aead::{AeadTrait, Error};
 
-macro_rules! implement_aes {
+macro_rules! implement_aead {
     ($name:ident, $base:ident, $key_length:literal) => {
         pub(crate) struct $name {}
 
@@ -51,5 +52,6 @@ macro_rules! implement_aes {
     };
 }
 
-implement_aes!(AesGcm128, Aes128Gcm, 16);
-implement_aes!(AesGcm256, Aes256Gcm, 32);
+implement_aead!(AesGcm128, Aes128Gcm, 16);
+implement_aead!(AesGcm256, Aes256Gcm, 32);
+implement_aead!(ChaCha20Poly1305, chacha, 32);
