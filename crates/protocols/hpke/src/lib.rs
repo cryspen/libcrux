@@ -73,6 +73,10 @@ impl<'a> Context<'a> {
         }
     }
 
+    pub fn export(&self, exporter_context: &[u8], length: usize) -> Vec<u8> {
+        self.hpke.kdf.labeled_expand(&self.exporter_secret, "sec", exporter_context, length)
+    }
+
     // TODO: not cool
     fn compute_nonce(&self) -> Vec<u8> {
         let seq = self.sequence_number.to_be_bytes();
@@ -124,11 +128,11 @@ impl Hpke {
         info: &[u8],
         aad: &[u8],
         ptxt: &[u8],
+        psk: Option<&[u8]>,
+        psk_id: Option<&[u8]>,
     ) -> (Vec<u8>, Vec<u8>) {
-        match self.mode {
-            Mode::Base => self.seal_base(pk_r, info, aad, ptxt),
-            _ => unimplemented!(),
-        }
+        let (enc, mut context) = self.setup_sender(pk_r, info, psk, psk_id);
+        (enc, context.seal(aad, ptxt))
     }
 
     pub fn open(
@@ -138,33 +142,10 @@ impl Hpke {
         info: &[u8],
         aad: &[u8],
         ct: &[u8],
+        psk: Option<&[u8]>,
+        psk_id: Option<&[u8]>,
     ) -> Vec<u8> {
-        match self.mode {
-            Mode::Base => self.open_base(enc, sk_r, info, aad, ct),
-            _ => unimplemented!(),
-        }
-    }
-
-    fn seal_base(
-        &self,
-        pk_r: &[u8],
-        info: &[u8],
-        aad: &[u8],
-        ptxt: &[u8],
-    ) -> (Vec<u8>, Vec<u8>) {
-        let (enc, mut context) = self.setup_sender(pk_r, info, None, None);
-        (enc, context.seal(aad, ptxt))
-    }
-
-    fn open_base(
-        &self,
-        enc: &[u8],
-        sk_r: &[u8],
-        info: &[u8],
-        aad: &[u8],
-        ct: &[u8],
-    ) -> Vec<u8> {
-        let mut context = self.setup_receiver(enc, sk_r, info, None, None);
+        let mut context = self.setup_receiver(enc, sk_r, info, psk, psk_id);
         context.open(aad, ct)
     }
 
@@ -342,8 +323,8 @@ mod test {
         assert_eq!(ptxt_out, ptxt);
 
         // Singe-shot API
-        let (enc, ct) = hpke.seal_base(&pk_rm, &info, &aad, &ptxt);
-        let ptxt_out = hpke.open_base(&enc, &sk_rm, &info, &aad, &ct);
+        let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, None, None);
+        let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, None, None);
         assert_eq!(ptxt_out, ptxt);
 
         // seqno 1, same ptxt

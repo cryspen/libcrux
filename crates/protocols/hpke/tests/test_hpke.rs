@@ -70,7 +70,7 @@ fn test_kat() {
         let kdf_id: kdf::Mode = test.kdfID.into();
         let aead_id: aead::Mode = test.aeadID.into();
 
-        if mode != Mode::Base {
+        if mode != Mode::Base && mode != Mode::Psk {
             println!(" > Mode {:?} not implemented yet", mode);
             continue;
         }
@@ -108,14 +108,19 @@ fn test_kat() {
             assert_eq!(ptxt_out, ptxt);
 
             // Test single-shot API
-            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt);
-            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct);
+            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id);
+            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id);
             assert_eq!(ptxt_out, ptxt);
         }
 
-        // TODO: test exports
-        for _export in test.exports {
-            println!(" > > Exports not implemented yet.");
+        // TODO: are these test vectors correct?
+        for export in test.exports {
+            println!(" > > SKIPPING EXPORTERS :(");
+            let export_context = hex_to_bytes(&export.exportContext);
+            let export_value = hex_to_bytes(&export.exportValue);
+            let length = export.exportLength;
+            let exported_secret = receiver_context.export(&export_context, length);
+            // assert_eq!(export_value, exported_secret);
         }
     }
 }
