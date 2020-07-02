@@ -38,9 +38,11 @@ impl X25519Kem {
     }
 
     fn extract_and_expand(&self, pk: PK, kem_context: &[u8]) -> Vec<u8> {
-        let prk = self.kdf.labeled_extract(&[], "dh", &pk);
+        // TODO: hard-coded kem_id in here with ugly conversion
+        let label = String::from_utf8([&0x0020u16.to_be_bytes(), "eae_prk".as_bytes()].join(&[][..])).unwrap();
+        let prk = self.kdf.labeled_extract(&[], &label, &pk);
         self.kdf
-            .labeled_expand(&prk, "prk", kem_context, self.get_secret_len())
+            .labeled_expand(&prk, "zz", kem_context, self.get_secret_len())
     }
 
     fn derive_key_pair(&self, ikm: &[u8]) -> (PK, SK) {

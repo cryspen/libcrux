@@ -124,27 +124,39 @@ fn test_kat() {
         let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id, sk_sm);
         let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm);
 
+        // Setup KAT receiver.
+        let mut receiver_context_kat = hpke.setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm);
+
+        // TODO: test KAT sender (encaps). Requires to inject randomness.
+
         // Encrypt
-        for encryption in test.encryptions {
+        for (i, encryption) in test.encryptions.iter().enumerate() {
+            println!("Test encryption {} ...", i);
             let aad = hex_to_bytes(&encryption.aad);
             let ptxt = hex_to_bytes(&encryption.plaintext);
+            let ctxt_kat = hex_to_bytes(&encryption.ciphertext);
+
+            // Test context API self-test
             let ctxt_out = sender_context.seal(&aad, &ptxt);
             let ptxt_out = receiver_context.open(&aad, &ctxt_out);
             assert_eq!(ptxt_out, ptxt);
 
-            // Test single-shot API
+            // Test single-shot API self-test
             let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm);
             let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm);
             assert_eq!(ptxt_out, ptxt);
 
-            // Test KAT on direct_ctx
+            // Test KAT receiver context open
+            let ptxt_out = receiver_context_kat.open(&aad, &ctxt_kat);
+            assert_eq!(ptxt_out, ptxt);
+
+            // Test KAT seal on direct_ctx
             let ct = direct_ctx.seal(&aad, &ptxt);
-            assert_eq!(hex_to_bytes(&encryption.ciphertext), ct);
+            assert_eq!(ctxt_kat, ct);
         }
 
         // Test KAT on direct_ctx for exporters
         for export in test.exports {
-            println!(" > > SKIPPING EXPORTERS :(");
             let export_context = hex_to_bytes(&export.exportContext);
             let export_value = hex_to_bytes(&export.exportValue);
             let length = export.exportLength;
