@@ -39,14 +39,24 @@ fn get_kdf_for_kem(mode: kem::Mode) -> kdf::Mode {
     }
 }
 
-// TODO: add types
+// TODO: add types and don't make it all pub
 
 pub struct Context<'a> {
-    key: Vec<u8>,
-    nonce: Vec<u8>,
-    exporter_secret: Vec<u8>,
-    sequence_number: u32,
-    hpke: &'a Hpke,
+    pub key: Vec<u8>,
+    pub nonce: Vec<u8>,
+    pub exporter_secret: Vec<u8>,
+    pub sequence_number: u32,
+    pub hpke: &'a Hpke,
+}
+
+impl<'a> std::fmt::Debug for Context<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Context {{\n  key: {:?}\n  nonce: {:?}\n exporter_secret: {:?}\n seq no: {:?}\n}}",
+            self.key, self.nonce, self.exporter_secret, self.sequence_number
+        )
+    }
 }
 
 impl<'a> Context<'a> {
@@ -245,18 +255,11 @@ impl Hpke {
 
     #[inline]
     fn get_secret(&self, psk: &[u8], zz: &[u8]) -> Vec<u8> {
-        let psk = if psk.is_empty() {
-            vec![0; self.kdf.get_nh()]
-        } else {
-            psk.to_vec()
-        };
-        let psk_hash = self
-            .kdf
-            .labeled_extract(&vec![0; self.kdf.get_nh()], "psk_hash", &psk);
+        let psk_hash = self.kdf.labeled_extract(&[], "psk_hash", psk);
         self.kdf.labeled_extract(&psk_hash, "secret", zz)
     }
 
-    fn key_schedule(&self, zz: &[u8], info: &[u8], psk: &[u8], psk_id: &[u8]) -> Context {
+    pub fn key_schedule(&self, zz: &[u8], info: &[u8], psk: &[u8], psk_id: &[u8]) -> Context {
         self.verify_psk_inputs(psk, psk_id);
         let key_schedule_context = self.get_key_schedule_context(info, psk_id);
         let secret = self.get_secret(psk, zz);
@@ -278,133 +281,5 @@ impl Hpke {
             sequence_number: 0,
             hpke: self,
         }
-    }
-}
-
-// ==== Unit and KAT test for internal functions ====
-
-mod test {
-    #![allow(unused_imports)]
-    use super::*;
-    use util::*;
-
-    #[test]
-    fn test_kat_a11_unit() {
-        // mode: 0
-        // kemID: 32
-        // kdfID: 1
-        // aeadID: 1
-        // info: 4f6465206f6e2061204772656369616e2055726e
-        // skRm: 919f0e1b7c361d1e5a3d0086ba94edeb6d2df9f756654741731f4e84cb813bdb
-        // skEm: 232ce0da9fd45b8d500781a5ee1b0a2cf64411dd08d6442400ab05a4d29733a8
-        // pkRm: ac511615dee12b2e11170f1272c3972e6e2268d8fb05fc93c6b008065f61f22f
-        // pkEm: ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258
-        // enc: ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258
-        // zz: 44807c99177b0f3761d66f422945a21317a1532ca038e976594487a6a7e58fbf
-        // key_schedule_context: 002000010001005d0f5548cb13d7eba5320ae0e21b1ee274aa
-        // c7ea1cce02570cf993d1b2456449debcca602075cf6f8ef506613a82e1c73727e2c912d0
-        // c49f16cd56fc524af4ce
-        // secret: c104521df56de97b517165011f09e0ea2a36b9af339a9de402c8b88547c8b67e
-        // key: e34afc8f8f4c2906b310d8e4e4d526f0
-        // nonce: 2764228860619e140920c7d7
-        // exporterSecret:
-        // 93c6a28ec7af55f669612d5d64fe680ae38ca88d14fb6ecba647606eee668124
-        let mode = Mode::Base;
-        let kem_id = kem::Mode::DhKem25519;
-        let kdf_id = kdf::Mode::HkdfSha256;
-        let aead_id = aead::Mode::AesGcm128;
-        let info = hex_to_bytes("4f6465206f6e2061204772656369616e2055726e");
-
-        let sk_rm =
-            hex_to_bytes("919f0e1b7c361d1e5a3d0086ba94edeb6d2df9f756654741731f4e84cb813bdb");
-        let pk_rm =
-            hex_to_bytes("ac511615dee12b2e11170f1272c3972e6e2268d8fb05fc93c6b008065f61f22f");
-
-        let _sk_em =
-            hex_to_bytes("232ce0da9fd45b8d500781a5ee1b0a2cf64411dd08d6442400ab05a4d29733a8");
-        let _pk_em =
-            hex_to_bytes("ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258");
-        let _enc = hex_to_bytes("ab8b7fdda7ed10c410079909350948ff63bc044b40575cc85636f3981bb8d258");
-
-        let zz = hex_to_bytes("44807c99177b0f3761d66f422945a21317a1532ca038e976594487a6a7e58fbf");
-        let key_schedule_context = hex_to_bytes("002000010001005d0f5548cb13d7eba5320ae0e21b1ee274aac7ea1cce02570cf993d1b2456449debcca602075cf6f8ef506613a82e1c73727e2c912d0c49f16cd56fc524af4ce");
-        let secret =
-            hex_to_bytes("c104521df56de97b517165011f09e0ea2a36b9af339a9de402c8b88547c8b67e");
-        let key = hex_to_bytes("e34afc8f8f4c2906b310d8e4e4d526f0");
-        let nonce = hex_to_bytes("2764228860619e140920c7d7");
-        let exporter_secret =
-            hex_to_bytes("93c6a28ec7af55f669612d5d64fe680ae38ca88d14fb6ecba647606eee668124");
-
-        let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
-        let mut context = hpke.key_schedule(&zz, &info, &[], &[]);
-
-        // Check setup info
-        assert_eq!(
-            key_schedule_context,
-            hpke.get_key_schedule_context(&info, &[])
-        );
-        assert_eq!(secret, hpke.get_secret(&[], &zz));
-        assert_eq!(context.key, key);
-        assert_eq!(context.nonce, nonce);
-        assert_eq!(context.exporter_secret, exporter_secret);
-        assert_eq!(context.sequence_number, 0);
-
-        // Encryptions
-        // sequence number: 0
-        // plaintext: 4265617574792069732074727574682c20747275746820626561757479
-        // aad: 436f756e742d30
-        // nonce: 2764228860619e140920c7d7
-        // ciphertext: 1811cf5d39f857f80175f96ca4d3600bfb0585e4ce119bc46396da4b3719
-        // 66a358924e5a97a7b53ea255971f6b
-        let ptxt = hex_to_bytes("4265617574792069732074727574682c20747275746820626561757479");
-        let aad = hex_to_bytes("436f756e742d30");
-        let nonce = hex_to_bytes("2764228860619e140920c7d7");
-        let ctxt_expected = hex_to_bytes("1811cf5d39f857f80175f96ca4d3600bfb0585e4ce119bc46396da4b371966a358924e5a97a7b53ea255971f6b");
-        assert_eq!(context.nonce, nonce);
-
-        let ctxt = context.seal(&aad, &ptxt);
-        assert_eq!(ctxt_expected, ctxt);
-
-        // Encryptiont to public key pk_rm
-        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, None, None, None);
-        let ctxt = sender_context.seal(&aad, &ptxt);
-        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, None, None, None);
-        let ptxt_out = receiver_context.open(&aad, &ctxt);
-        assert_eq!(ptxt_out, ptxt);
-
-        // Singe-shot API
-        let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, None, None, None);
-        let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, None, None, None);
-        assert_eq!(ptxt_out, ptxt);
-
-        // seqno 1, same ptxt
-        let aad = hex_to_bytes("436f756e742d31");
-        let ctxt_expected = hex_to_bytes("2ed9ff66c33bad2f7c0326881f05aa9616ccba13bdb126a0d2a5a3dfa6b95bd4de78a98ff64c1fb64b366074d4");
-        let ctxt = context.seal(&aad, &ptxt);
-        assert_eq!(ctxt_expected, ctxt);
-        let ctxt = sender_context.seal(&aad, &ptxt);
-        let ptxt_out = receiver_context.open(&aad, &ctxt);
-        assert_eq!(ptxt_out, ptxt);
-
-        // seqno 2, same ptxt
-        let aad = hex_to_bytes("436f756e742d32");
-        let ctxt_expected = hex_to_bytes("4bfc8da6f1da808be2c1c141e864fe536bd1e9c4e01376cd383370b8095438a06f372e663739b30af9355da8a3");
-        let ctxt = context.seal(&aad, &ptxt);
-        assert_eq!(ctxt_expected, ctxt);
-        let ctxt = sender_context.seal(&aad, &ptxt);
-        let ptxt_out = receiver_context.open(&aad, &ctxt);
-        assert_eq!(ptxt_out, ptxt);
-
-        // Skip one seqno
-        context.sequence_number += 1;
-
-        // seqno 4, same ptxt
-        let aad = hex_to_bytes("436f756e742d34");
-        let ctxt_expected = hex_to_bytes("6314e60548cfdc30552303be4cb19875e335554bce186e1b41f9d15b4b4a4af77d68c09ebf883a9cbb51f3be9d");
-        let ctxt = context.seal(&aad, &ptxt);
-        assert_eq!(ctxt_expected, ctxt);
-        let ctxt = sender_context.seal(&aad, &ptxt);
-        let ptxt_out = receiver_context.open(&aad, &ctxt);
-        assert_eq!(ptxt_out, ptxt);
     }
 }

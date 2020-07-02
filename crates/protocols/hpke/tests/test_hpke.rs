@@ -15,6 +15,9 @@ struct HpkeTestVecor {
     kdfID: u16,
     aeadID: u16,
     info: String,
+    seedR: String,
+    seedS: Option<String>,
+    seedE: String,
     skRm: String,
     skSm: Option<String>,
     skEm: String,
@@ -25,7 +28,7 @@ struct HpkeTestVecor {
     pkEm: String,
     enc: String,
     zz: String,
-    key_schedule_context: String,
+    keyScheduleContext: String,
     secret: String,
     key: String,
     nonce: String,
@@ -95,7 +98,29 @@ fn test_kat() {
         let psk = vec_to_option_slice(&psk);
         let psk_id = hex_to_bytes_option(test.pskID);
         let psk_id = vec_to_option_slice(&psk_id);
+        let zz = hex_to_bytes(&test.zz);
+        // let key_schedule_context = hex_to_bytes(&test.keyScheduleContext);
+        // let secret = hex_to_bytes(&test.secret);
+        let key = hex_to_bytes(&test.key);
+        let nonce = hex_to_bytes(&test.nonce);
+        let exporter_secret = hex_to_bytes(&test.exporterSecret);
 
+        // Use internal `key_schedule` function for KAT.
+        let mut direct_ctx = hpke.key_schedule(
+            &zz,
+            &info,
+            psk.unwrap_or_default(),
+            psk_id.unwrap_or_default(),
+        );
+
+        // Check setup info
+        assert_eq!(direct_ctx.key, key);
+        assert_eq!(direct_ctx.nonce, nonce);
+        assert_eq!(direct_ctx.exporter_secret, exporter_secret);
+        assert_eq!(direct_ctx.sequence_number, 0);
+
+        // Setup sender and receiver.
+        // These use randomness and hence can't be fully checked against the test vectors.
         let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id, sk_sm);
         let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm);
 
@@ -111,16 +136,21 @@ fn test_kat() {
             let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm);
             let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm);
             assert_eq!(ptxt_out, ptxt);
+
+            // Test KAT on direct_ctx
+            let ct = direct_ctx.seal(&aad, &ptxt);
+            assert_eq!(hex_to_bytes(&encryption.ciphertext), ct);
         }
 
-        // TODO: are these test vectors correct?
+        // Test KAT on direct_ctx for exporters
         for export in test.exports {
             println!(" > > SKIPPING EXPORTERS :(");
             let export_context = hex_to_bytes(&export.exportContext);
             let export_value = hex_to_bytes(&export.exportValue);
             let length = export.exportLength;
-            let exported_secret = receiver_context.export(&export_context, length);
-            // assert_eq!(export_value, exported_secret);
+
+            let exported_secret = direct_ctx.export(&export_context, length);
+            assert_eq!(export_value, exported_secret);
         }
     }
 }
