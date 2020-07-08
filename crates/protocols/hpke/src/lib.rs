@@ -84,9 +84,13 @@ impl<'a> Context<'a> {
     }
 
     pub fn export(&self, exporter_context: &[u8], length: usize) -> Vec<u8> {
-        self.hpke
-            .kdf
-            .labeled_expand(&self.exporter_secret, "sec", exporter_context, length)
+        self.hpke.kdf.labeled_expand(
+            &self.exporter_secret,
+            &self.hpke.get_ciphersuite(),
+            "sec",
+            exporter_context,
+            length,
+        )
     }
 
     // TODO: not cool
@@ -238,6 +242,7 @@ impl Hpke {
     #[inline]
     fn get_ciphersuite(&self) -> Vec<u8> {
         util::concat(&[
+            &"HPKE".as_bytes(),
             &(self.kem_id as u16).to_be_bytes(),
             &(self.kdf_id as u16).to_be_bytes(),
             &(self.aead_id as u16).to_be_bytes(),
@@ -245,34 +250,35 @@ impl Hpke {
     }
 
     #[inline]
-    fn get_key_schedule_context(&self, info: &[u8], psk_id: &[u8]) -> Vec<u8> {
-        let ciphersuite = self.get_ciphersuite();
-
-        let psk_id_hash = self.kdf.labeled_extract(&[0], "pskID_hash", psk_id);
-        let info_hash = self.kdf.labeled_extract(&[0], "info_hash", info);
-        util::concat(&[&ciphersuite, &[self.mode as u8], &psk_id_hash, &info_hash])
+    fn get_key_schedule_context(&self, info: &[u8], psk_id: &[u8], suite_id: &[u8]) -> Vec<u8> {
+        let psk_id_hash = self
+            .kdf
+            .labeled_extract(&[0], suite_id, "pskID_hash", psk_id);
+        let info_hash = self.kdf.labeled_extract(&[0], suite_id, "info_hash", info);
+        util::concat(&[&[self.mode as u8], &psk_id_hash, &info_hash])
     }
 
     #[inline]
-    fn get_secret(&self, psk: &[u8], zz: &[u8]) -> Vec<u8> {
-        let psk_hash = self.kdf.labeled_extract(&[], "psk_hash", psk);
-        self.kdf.labeled_extract(&psk_hash, "secret", zz)
+    fn get_secret(&self, psk: &[u8], zz: &[u8], suite_id: &[u8]) -> Vec<u8> {
+        let psk_hash = self.kdf.labeled_extract(&[], suite_id, "psk_hash", psk);
+        self.kdf.labeled_extract(&psk_hash, suite_id, "secret", zz)
     }
 
     pub fn key_schedule(&self, zz: &[u8], info: &[u8], psk: &[u8], psk_id: &[u8]) -> Context {
         self.verify_psk_inputs(psk, psk_id);
-        let key_schedule_context = self.get_key_schedule_context(info, psk_id);
-        let secret = self.get_secret(psk, zz);
+        let suite_id = self.get_ciphersuite();
+        let key_schedule_context = self.get_key_schedule_context(info, psk_id, &suite_id);
+        let secret = self.get_secret(psk, zz, &suite_id);
 
-        let key = self
-            .kdf
-            .labeled_expand(&secret, "key", &key_schedule_context, self.nk);
-        let nonce = self
-            .kdf
-            .labeled_expand(&secret, "nonce", &key_schedule_context, self.nn);
+        let key =
+            self.kdf
+                .labeled_expand(&secret, &suite_id, "key", &key_schedule_context, self.nk);
+        let nonce =
+            self.kdf
+                .labeled_expand(&secret, &suite_id, "nonce", &key_schedule_context, self.nn);
         let exporter_secret =
             self.kdf
-                .labeled_expand(&secret, "exp", &key_schedule_context, self.nh);
+                .labeled_expand(&secret, &suite_id, "exp", &key_schedule_context, self.nh);
 
         Context {
             key: key,

@@ -1,5 +1,6 @@
 use crate::dh_kem;
 use crate::kdf;
+use crate::util;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Mode {
@@ -39,16 +40,17 @@ pub(crate) trait KemTrait {
     where
         Self: Sized;
 
-    fn encaps(&self, pk_r: &[u8]) -> (Vec<u8>, Vec<u8>);
-    fn decaps(&self, enc: &[u8], sk_r: &[u8]) -> Vec<u8>;
-    fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8]) -> (Vec<u8>, Vec<u8>);
-    fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8>;
+    fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>);
+    fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Vec<u8>;
+    fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>);
+    fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8], suite_id: &[u8]) -> Vec<u8>;
 
     fn get_secret_len(&self) -> usize;
     fn get_encoded_pk_len(&self) -> usize;
 }
 
 pub struct Kem {
+    mode: Mode,
     kem: Box<dyn KemTrait>,
 }
 
@@ -62,25 +64,33 @@ fn get_kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {
 impl Kem {
     pub fn new(mode: Mode) -> Self {
         Self {
+            mode: mode,
             kem: get_kem_object(mode, get_kdf(mode)),
         }
     }
     pub fn new_kdf(mode: Mode, kdf_id: kdf::Mode) -> Self {
         Self {
+            mode: mode,
             kem: get_kem_object(mode, kdf_id),
         }
     }
 
+    #[inline]
+    fn get_ciphersuite(&self) -> Vec<u8> {
+        util::concat(&[&"KEM".as_bytes(), &(self.mode as u16).to_be_bytes()])
+    }
+
     pub fn encaps(&self, pk_r: &[u8]) -> (Vec<u8>, Vec<u8>) {
-        self.kem.encaps(pk_r)
+        self.kem.encaps(pk_r, &self.get_ciphersuite())
     }
     pub fn decaps(&self, enc: &[u8], sk_r: &[u8]) -> Vec<u8> {
-        self.kem.decaps(enc, sk_r)
+        self.kem.decaps(enc, sk_r, &self.get_ciphersuite())
     }
     pub fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
-        self.kem.auth_encaps(pk_r, sk_s)
+        self.kem.auth_encaps(pk_r, sk_s, &self.get_ciphersuite())
     }
     pub fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8> {
-        self.kem.auth_decaps(enc, sk_r, pk_s)
+        self.kem
+            .auth_decaps(enc, sk_r, pk_s, &self.get_ciphersuite())
     }
 }

@@ -125,7 +125,8 @@ fn test_kat() {
         let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm);
 
         // Setup KAT receiver.
-        let mut receiver_context_kat = hpke.setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm);
+        let mut receiver_context_kat =
+            hpke.setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm);
 
         // TODO: test KAT sender (encaps). Requires to inject randomness.
 

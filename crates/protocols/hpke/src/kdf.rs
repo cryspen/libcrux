@@ -43,23 +43,31 @@ impl Kdf {
         self.kdf.digest_length()
     }
 
-    pub(crate) fn labeled_extract(&self, salt: &[u8], label: &str, ikm: &[u8]) -> Vec<u8> {
-        let labeled_ikm = concat(&[&"RFCXXXX ".as_bytes(), &label.as_bytes(), ikm]);
+    pub(crate) fn labeled_extract(
+        &self,
+        salt: &[u8],
+        suite_id: &[u8],
+        label: &str,
+        ikm: &[u8],
+    ) -> Vec<u8> {
+        let labeled_ikm = concat(&[&"RFCXXXX ".as_bytes(), suite_id, &label.as_bytes(), ikm]);
         self.kdf.extract(salt, &labeled_ikm)
     }
 
     pub(crate) fn labeled_expand(
         &self,
         prk: &[u8],
+        suite_id: &[u8],
         label: &'static str,
         info: &[u8],
         len: usize,
     ) -> Vec<u8> {
-        let len_bytes = len.to_be_bytes();
         assert!(len < 256);
+        let len_bytes = (len as u16).to_be_bytes();
         let labeled_info = concat(&[
-            &len_bytes[len_bytes.len() - 2..],
+            &len_bytes,
             &"RFCXXXX ".as_bytes(),
+            suite_id,
             &label.as_bytes(),
             info,
         ]);
