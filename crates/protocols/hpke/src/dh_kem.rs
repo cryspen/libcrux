@@ -1,6 +1,4 @@
-use std::convert::TryInto;
-
-use x25519_dalek;
+use evercrypt::x25519::{x25519, x25519_base};
 
 use crate::kdf;
 use crate::kem::*;
@@ -24,17 +22,12 @@ impl X25519Kem {
         }
     }
     fn dh(&self, sk: &[u8], pk: &[u8]) -> [u8; 32] {
-        x25519_dalek::x25519(
-            sk.try_into().expect("secret key has incorrect length"),
-            pk.try_into().expect("public key has incorrect length"),
-        )
+        // TODO: error handling
+        x25519(pk, sk).unwrap()
     }
 
     fn dh_base(&self, sk: &[u8]) -> [u8; 32] {
-        x25519_dalek::x25519(
-            sk.try_into().expect("secret key has incorrect length"),
-            x25519_dalek::X25519_BASEPOINT_BYTES,
-        )
+        x25519_base(sk)
     }
 
     fn extract_and_expand(&self, pk: PK, kem_context: &[u8], suite_id: &[u8]) -> Vec<u8> {
@@ -44,8 +37,6 @@ impl X25519Kem {
     }
 
     fn derive_key_pair(&self, ikm: &[u8], suite_id: &[u8]) -> (PK, SK) {
-        //   dkp_prk = LabeledExtract(zero(0), "dkp_prk", ikm)
-        //   sk = LabeledExpand(dkp_prk, "sk", zero(0), Nsk)
         let dpk_prk = self.kdf.labeled_extract(&[], suite_id, "dpk_prk", ikm);
         let sk = self
             .kdf

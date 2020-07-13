@@ -1,11 +1,9 @@
-use aead::{Aead, NewAead, Payload};
-use aes_gcm::{Aes128Gcm, Aes256Gcm};
-use chacha20poly1305::ChaCha20Poly1305 as chacha;
+use evercrypt::aead::{Aead, Mode as EvercryptMode};
 
 use crate::aead::{AeadTrait, Error};
 
 macro_rules! implement_aead {
-    ($name:ident, $base:ident, $key_length:literal) => {
+    ($name:ident, $algorithm:expr, $key_length:literal) => {
         pub(crate) struct $name {}
 
         impl AeadTrait for $name {
@@ -14,15 +12,11 @@ macro_rules! implement_aead {
             }
             fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Vec<u8> {
                 // XXX: Only works with 12 byte nonce!
-                $base::new(key.into())
-                    .encrypt(
-                        nonce.into(),
-                        Payload {
-                            msg: plain_txt,
-                            aad: aad,
-                        },
-                    )
-                    .unwrap()
+                // TODO: fix unwrap
+                let cipher = Aead::new($algorithm, &key).unwrap();
+                let (mut ctxt, tag) = cipher.encrypt(&plain_txt, &nonce, &aad).unwrap();
+                ctxt.extend(tag);
+                ctxt
             }
             fn open(
                 &self,
@@ -31,14 +25,17 @@ macro_rules! implement_aead {
                 aad: &[u8],
                 cipher_txt: &[u8],
             ) -> Result<Vec<u8>, Error> {
-                match $base::new(key.into()).decrypt(
-                    nonce.into(),
-                    Payload {
-                        msg: cipher_txt,
-                        aad: aad,
-                    },
+                let cipher = match Aead::new($algorithm, &key) {
+                    Ok(c) => c,
+                    Err(_) => return Err(Error::InvalidConfig),
+                };
+                match cipher.decrypt(
+                    &cipher_txt[..cipher_txt.len() - 16],
+                    &cipher_txt[cipher_txt.len() - 16..],
+                    &nonce,
+                    &aad,
                 ) {
-                    Ok(p) => Ok(p),
+                    Ok(m) => Ok(m),
                     Err(_) => Err(Error::OpenError),
                 }
             }
@@ -52,6 +49,6 @@ macro_rules! implement_aead {
     };
 }
 
-implement_aead!(AesGcm128, Aes128Gcm, 16);
-implement_aead!(AesGcm256, Aes256Gcm, 32);
-implement_aead!(ChaCha20Poly1305, chacha, 32);
+implement_aead!(AesGcm128, EvercryptMode::Aes128Gcm, 16);
+implement_aead!(AesGcm256, EvercryptMode::Aes256Gcm, 32);
+implement_aead!(ChaCha20Poly1305, EvercryptMode::Chacha20Poly1305, 32);

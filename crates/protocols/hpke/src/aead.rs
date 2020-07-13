@@ -21,6 +21,7 @@ impl From<u16> for Mode {
 #[derive(Debug)]
 pub enum Error {
     OpenError,
+    InvalidConfig,
 }
 
 pub(crate) trait AeadTrait {
