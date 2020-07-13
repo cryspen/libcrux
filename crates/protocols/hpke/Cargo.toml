@@ -8,8 +8,8 @@ edition = "2018"
 
 [dependencies]
 # Evercrypt
-# evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust", branch = "master" }
-evercrypt = { path = "../evercrypt-rust/evercrypt-rs" }
+evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust", branch = "master" }
+# evercrypt = { path = "../evercrypt-rust/evercrypt-rs" }
 
 # Rust Core
 rand_core = "0.5"
