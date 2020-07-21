@@ -1,4 +1,4 @@
-use evercrypt::x25519::{x25519, x25519_base};
+use evercrypt::ecdh::{self, Ecdh};
 
 use crate::kdf;
 use crate::kem::*;
@@ -7,27 +7,54 @@ use crate::util::*;
 type PK = Vec<u8>;
 type SK = Vec<u8>;
 
-pub(crate) struct X25519Kem {
+pub(crate) struct DhKem {
     encoded_pk_len: usize,
     sk_len: usize,
     kdf: kdf::Kdf,
+    dh_id: ecdh::Mode,
 }
 
-impl X25519Kem {
-    fn init(kdf_id: kdf::Mode) -> Self {
+impl DhKem {
+    pub fn init(kdf_id: kdf::Mode, dh_id: ecdh::Mode) -> Self {
         Self {
             sk_len: 32,
-            encoded_pk_len: 32,
+            encoded_pk_len: match dh_id {
+                ecdh::Mode::X25519 => 32,
+                ecdh::Mode::P256 => 64,
+            },
             kdf: kdf::Kdf::new(kdf_id),
+            dh_id: dh_id,
         }
     }
-    fn dh(&self, sk: &[u8], pk: &[u8]) -> [u8; 32] {
+    fn dh(&self, sk: &[u8], pk: &[u8]) -> Vec<u8> {
         // TODO: error handling
-        x25519(pk, sk).unwrap()
+        let out = Ecdh::derive(self.dh_id, pk, sk).unwrap();
+        let out = match self.dh_id {
+            ecdh::Mode::X25519 => {
+                out
+            },
+            ecdh::Mode::P256 => {
+                // This isn't great :(
+                let mut tmp = vec![0x04];
+                tmp.extend(out);
+                tmp
+            },
+        };
+        out
     }
 
-    fn dh_base(&self, sk: &[u8]) -> [u8; 32] {
-        x25519_base(sk)
+    fn dh_base(&self, sk: &[u8]) -> Vec<u8> {
+        let out = Ecdh::derive_base(self.dh_id, sk).unwrap();
+        match self.dh_id {
+            ecdh::Mode::X25519 => {
+                out
+            },
+            ecdh::Mode::P256 => {
+                let mut tmp = vec![0x04];
+                tmp.extend(out);
+                tmp
+            },
+        }
     }
 
     fn extract_and_expand(&self, pk: PK, kem_context: &[u8], suite_id: &[u8]) -> Vec<u8> {
@@ -38,9 +65,26 @@ impl X25519Kem {
 
     fn derive_key_pair(&self, ikm: &[u8], suite_id: &[u8]) -> (PK, SK) {
         let dpk_prk = self.kdf.labeled_extract(&[], suite_id, "dpk_prk", ikm);
-        let sk = self
-            .kdf
-            .labeled_expand(&dpk_prk, suite_id, "sk", &[], self.sk_len);
+
+        let sk = match self.dh_id {
+            ecdh::Mode::X25519 => {
+                self.kdf
+                    .labeled_expand(&dpk_prk, suite_id, "sk", &[], self.sk_len)
+            }
+            ecdh::Mode::P256 => {
+                let ctr = 0u8;
+                // FIXME: this currently produces invalid keys sometimes.
+                // loop {
+                self.kdf.labeled_expand(
+                    &dpk_prk,
+                    suite_id,
+                    "candidate",
+                    &ctr.to_be_bytes(),
+                    self.sk_len - 1,
+                )
+                // }
+            }
+        };
         (self.dh_base(&sk).to_vec(), sk)
     }
 
@@ -53,7 +97,7 @@ impl X25519Kem {
     }
 }
 
-impl KemTrait for X25519Kem {
+impl KemTrait for DhKem {
     fn get_secret_len(&self) -> usize {
         self.sk_len
     }
@@ -61,8 +105,8 @@ impl KemTrait for X25519Kem {
         self.encoded_pk_len
     }
 
-    fn new(kdf_id: kdf::Mode) -> Self {
-        Self::init(kdf_id)
+    fn new(_kdf_id: kdf::Mode) -> Self {
+        panic!("Don't use this please");
     }
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {

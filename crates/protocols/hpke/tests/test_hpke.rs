@@ -73,7 +73,7 @@ fn test_kat() {
         let kdf_id: kdf::Mode = test.kdfID.into();
         let aead_id: aead::Mode = test.aeadID.into();
 
-        if kem_id != kem::Mode::DhKem25519 {
+        if kem_id != kem::Mode::DhKem25519 && kem_id != kem::Mode::DhKemP256 {
             println!(" > KEM {:?} not implemented yet", kem_id);
             continue;
         }
@@ -157,7 +157,8 @@ fn test_kat() {
         }
 
         // Test KAT on direct_ctx for exporters
-        for export in test.exports {
+        for (i, export) in test.exports.iter().enumerate() {
+            println!("Test exporter {} ...", i);
             let export_context = hex_to_bytes(&export.exportContext);
             let export_value = hex_to_bytes(&export.exportValue);
             let length = export.exportLength;
