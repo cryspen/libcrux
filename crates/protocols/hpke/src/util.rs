@@ -1,16 +1,8 @@
 #![allow(dead_code)]
 
-use rand_core::{OsRng, RngCore};
-
 #[inline]
 pub(crate) fn concat(values: &[&[u8]]) -> Vec<u8> {
     values.join(&[][..])
-}
-
-pub(crate) fn random(l: usize) -> Vec<u8> {
-    let mut r = vec![0u8; l];
-    OsRng.fill_bytes(&mut r);
-    r
 }
 
 #[inline]

@@ -1,4 +1,4 @@
-use evercrypt::ecdh::{self, Ecdh};
+use evercrypt::prelude::*;
 
 use crate::kdf;
 use crate::kem::*;
@@ -28,7 +28,7 @@ impl DhKem {
     }
     fn dh(&self, sk: &[u8], pk: &[u8]) -> Vec<u8> {
         // TODO: error handling
-        let out = Ecdh::derive(self.dh_id, pk, sk).unwrap();
+        let out = ecdh_derive(self.dh_id, pk, sk).unwrap();
         let out = match self.dh_id {
             ecdh::Mode::X25519 => {
                 out
@@ -44,7 +44,7 @@ impl DhKem {
     }
 
     fn dh_base(&self, sk: &[u8]) -> Vec<u8> {
-        let out = Ecdh::derive_base(self.dh_id, sk).unwrap();
+        let out = ecdh_derive_base(self.dh_id, sk).unwrap();
         match self.dh_id {
             ecdh::Mode::X25519 => {
                 out
@@ -110,7 +110,7 @@ impl KemTrait for DhKem {
     }
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {
-        let (pk_e, sk_e) = self.derive_key_pair(&random(self.get_secret_len()), suite_id);
+        let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
         let dh_pk = self.dh(&sk_e, pk_r);
         let enc = self.marshal(&pk_e);
 
@@ -131,7 +131,7 @@ impl KemTrait for DhKem {
         self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id)
     }
     fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {
-        let (pk_e, sk_e) = self.derive_key_pair(&random(self.get_secret_len()), suite_id);
+        let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
         let dh_pk = concat(&[&self.dh(&sk_e, pk_r), &self.dh(&sk_s, pk_r)]);
 
         let enc = self.marshal(&pk_e);

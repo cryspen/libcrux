@@ -22,13 +22,14 @@ impl From<u16> for Mode {
 pub enum Error {
     OpenError,
     InvalidConfig,
+    InvalidNonce,
 }
 
 pub(crate) trait AeadTrait {
     fn new() -> Self
     where
         Self: Sized;
-    fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Vec<u8>;
+    fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Result<Vec<u8>, Error>;
     fn open(
         &self,
         key: &[u8],
@@ -64,7 +65,7 @@ impl Aead {
     pub fn get_nn(&self) -> usize {
         self.aead.get_nonce_length()
     }
-    pub fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Vec<u8> {
+    pub fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Result<Vec<u8>, Error> {
         self.aead.seal(key, nonce, aad, plain_txt)
     }
     pub fn open(

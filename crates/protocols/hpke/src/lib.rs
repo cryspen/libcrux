@@ -61,10 +61,11 @@ impl<'a> std::fmt::Debug for Context<'a> {
 
 impl<'a> Context<'a> {
     pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Vec<u8> {
+        // FIXME: handle error
         let ctxt = self
             .hpke
             .aead
-            .seal(&self.key, &self.compute_nonce(), aad, plain_txt);
+            .seal(&self.key, &self.compute_nonce(), aad, plain_txt).unwrap();
         self.increment_seq();
         ctxt
     }

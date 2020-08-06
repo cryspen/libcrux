@@ -15,7 +15,7 @@ fn test_aes_gcm_128_self() {
     ];
     let aad = [0x03, 0x04, 0x05];
     let msg = b"test message";
-    let ctxt = aead.seal(&key, &nonce, &aad, msg);
+    let ctxt = aead.seal(&key, &nonce, &aad, msg).unwrap();
     let ptxt = aead.open(&key, &nonce, &aad, &ctxt).unwrap();
     assert_eq!(&ptxt, msg);
 }

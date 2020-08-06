@@ -1,13 +1,5 @@
 #![allow(dead_code)]
 
-use rand_core::{OsRng, RngCore};
-
-pub(crate) fn random(l: usize) -> Vec<u8> {
-    let mut r = vec![0u8; l];
-    OsRng.fill_bytes(&mut r);
-    r
-}
-
 pub(crate) fn bytes_to_hex(bytes: &[u8]) -> String {
     let mut hex = String::new();
     for &b in bytes {

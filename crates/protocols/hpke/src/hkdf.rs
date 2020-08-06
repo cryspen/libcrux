@@ -1,5 +1,4 @@
-use evercrypt::hkdf::{hkdf_expand, hkdf_extract};
-use evercrypt::hmac::{get_tag_size, Mode as HmacMode};
+use evercrypt::prelude::*;
 
 use crate::kdf::*;
 
