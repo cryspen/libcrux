@@ -126,16 +126,16 @@ impl Hpke {
         let kdf = kdf::Kdf::new(kdf_id);
         let aead = aead::Aead::new(aead_id);
         Self {
-            mode: mode,
-            kem_id: kem_id,
-            kdf_id: kdf_id,
-            aead_id: aead_id,
+            mode,
+            kem_id,
+            kdf_id,
+            aead_id,
             nk: aead.get_nk(),
             nn: aead.get_nn(),
             nh: kdf.get_nh(),
-            kem: kem,
-            kdf: kdf,
-            aead: aead,
+            kem,
+            kdf,
+            aead,
         }
     }
 
@@ -243,7 +243,7 @@ impl Hpke {
     #[inline]
     fn get_ciphersuite(&self) -> Vec<u8> {
         util::concat(&[
-            &"HPKE".as_bytes(),
+            b"HPKE",
             &(self.kem_id as u16).to_be_bytes(),
             &(self.kdf_id as u16).to_be_bytes(),
             &(self.aead_id as u16).to_be_bytes(),
@@ -282,9 +282,9 @@ impl Hpke {
                 .labeled_expand(&secret, &suite_id, "exp", &key_schedule_context, self.nh);
 
         Context {
-            key: key,
-            nonce: nonce,
-            exporter_secret: exporter_secret,
+            key,
+            nonce,
+            exporter_secret,
             sequence_number: 0,
             hpke: self,
         }

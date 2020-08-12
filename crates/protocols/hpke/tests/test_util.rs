@@ -24,10 +24,11 @@ pub(crate) fn hex_to_bytes_option(hex: Option<String>) -> Vec<u8> {
     }
 }
 
-pub(crate) fn vec_to_option_slice<'a>(v: &'a Vec<u8>) -> Option<&'a [u8]> {
+#[allow(clippy::needless_lifetimes)]
+pub(crate) fn vec_to_option_slice<'a>(v: &'a [u8]) -> Option<&'a [u8]> {
     if v.is_empty() {
         None
     } else {
-        Some(&v[..])
+        Some(v)
     }
 }

@@ -23,24 +23,23 @@ impl DhKem {
                 ecdh::Mode::P256 => 64,
             },
             kdf: kdf::Kdf::new(kdf_id),
-            dh_id: dh_id,
+            dh_id,
         }
     }
     fn dh(&self, sk: &[u8], pk: &[u8]) -> Vec<u8> {
         // TODO: error handling
-        let out = ecdh_derive(self.dh_id, pk, sk).unwrap();
-        let out = match self.dh_id {
+        let dh = ecdh_derive(self.dh_id, pk, sk).unwrap();
+        match self.dh_id {
             ecdh::Mode::X25519 => {
-                out
+                dh
             },
             ecdh::Mode::P256 => {
                 // This isn't great :(
                 let mut tmp = vec![0x04];
-                tmp.extend(out);
+                tmp.extend(dh);
                 tmp
             },
-        };
-        out
+        }
     }
 
     fn dh_base(&self, sk: &[u8]) -> Vec<u8> {

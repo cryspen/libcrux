@@ -65,20 +65,20 @@ fn get_kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {
 impl Kem {
     pub fn new(mode: Mode) -> Self {
         Self {
-            mode: mode,
+            mode,
             kem: get_kem_object(mode, get_kdf(mode)),
         }
     }
     pub fn new_kdf(mode: Mode, kdf_id: kdf::Mode) -> Self {
         Self {
-            mode: mode,
+            mode,
             kem: get_kem_object(mode, kdf_id),
         }
     }
 
     #[inline]
     fn get_ciphersuite(&self) -> Vec<u8> {
-        util::concat(&[&"KEM".as_bytes(), &(self.mode as u16).to_be_bytes()])
+        util::concat(&[b"KEM", &(self.mode as u16).to_be_bytes()])
     }
 
     pub fn encaps(&self, pk_r: &[u8]) -> (Vec<u8>, Vec<u8>) {
