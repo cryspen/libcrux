@@ -35,10 +35,12 @@ fn get_kdf(mode: Mode) -> kdf::Mode {
     }
 }
 
-pub(crate) trait KemTrait {
+pub(crate) trait KemTrait: std::fmt::Debug {
     fn new(kdf_id: kdf::Mode) -> Self
     where
         Self: Sized;
+
+    fn key_gen(&self) -> (Vec<u8>, Vec<u8>);
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>);
     fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Vec<u8>;
@@ -49,6 +51,7 @@ pub(crate) trait KemTrait {
     fn get_encoded_pk_len(&self) -> usize;
 }
 
+#[derive(Debug)]
 pub struct Kem {
     mode: Mode,
     kem: Box<dyn KemTrait>,
@@ -93,5 +96,8 @@ impl Kem {
     pub fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8> {
         self.kem
             .auth_decaps(enc, sk_r, pk_s, &self.get_ciphersuite())
+    }
+    pub fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
+        self.kem.key_gen()
     }
 }

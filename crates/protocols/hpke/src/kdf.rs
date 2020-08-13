@@ -1,6 +1,8 @@
 use crate::hkdf;
 use crate::util::*;
 
+use std::fmt::Debug;
+
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Mode {
     HkdfSha256 = 0x0001,
@@ -19,7 +21,7 @@ impl From<u16> for Mode {
     }
 }
 
-pub(crate) trait KdfTrait {
+pub(crate) trait KdfTrait: Debug {
     fn new() -> Self
     where
         Self: Sized;
@@ -28,6 +30,7 @@ pub(crate) trait KdfTrait {
     fn digest_length(&self) -> usize;
 }
 
+#[derive(Debug)]
 pub struct Kdf {
     kdf: Box<dyn KdfTrait>,
 }

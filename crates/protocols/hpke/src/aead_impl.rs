@@ -4,6 +4,7 @@ use crate::aead::{AeadTrait, Error};
 
 macro_rules! implement_aead {
     ($name:ident, $algorithm:expr, $key_length:literal) => {
+        #[derive(Debug)]
         pub(crate) struct $name {}
 
         impl AeadTrait for $name {

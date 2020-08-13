@@ -1,5 +1,7 @@
 use crate::aead_impl::*;
 
+use std::fmt::Debug;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Mode {
     AesGcm128 = 0x0001,
@@ -25,7 +27,7 @@ pub enum Error {
     InvalidNonce,
 }
 
-pub(crate) trait AeadTrait {
+pub(crate) trait AeadTrait: Debug {
     fn new() -> Self
     where
         Self: Sized;
@@ -41,6 +43,7 @@ pub(crate) trait AeadTrait {
     fn get_nonce_length(&self) -> usize;
 }
 
+#[derive(Debug)]
 pub struct Aead {
     aead: Box<dyn AeadTrait>,
 }

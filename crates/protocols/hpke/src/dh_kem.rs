@@ -7,6 +7,7 @@ use crate::util::*;
 type PK = Vec<u8>;
 type SK = Vec<u8>;
 
+#[derive(Debug)]
 pub(crate) struct DhKem {
     encoded_pk_len: usize,
     sk_len: usize,
@@ -106,6 +107,12 @@ impl KemTrait for DhKem {
 
     fn new(_kdf_id: kdf::Mode) -> Self {
         panic!("Don't use this please");
+    }
+
+    fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
+        let sk = ecdh::key_gen(self.dh_id);
+        let pk = ecdh_derive_base(self.dh_id, &sk).unwrap();
+        (sk, pk)
     }
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {

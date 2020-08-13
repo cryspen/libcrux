@@ -4,6 +4,7 @@ use crate::kdf::*;
 
 macro_rules! implement_hkdfs {
     ($hmac_mode:expr, $name:ident) => {
+        #[derive(Debug)]
         pub(crate) struct $name {}
         impl $name {}
         impl KdfTrait for $name {

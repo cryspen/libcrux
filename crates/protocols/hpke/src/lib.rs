@@ -107,6 +107,7 @@ impl<'a> Context<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct Hpke {
     mode: Mode,
     kem_id: kem::Mode,
@@ -195,6 +196,7 @@ impl Hpke {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn seal(
         &self,
         pk_r: &[u8],
@@ -209,6 +211,7 @@ impl Hpke {
         (enc, context.seal(aad, ptxt))
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn open(
         &self,
         enc: &[u8],
@@ -288,5 +291,12 @@ impl Hpke {
             sequence_number: 0,
             hpke: self,
         }
+    }
+
+    /// Generate a random key pair for the used KEM.
+    /// 
+    /// Returns `(sk, pk)` as two vectors.
+    pub fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
+        self.kem.key_gen()
     }
 }
