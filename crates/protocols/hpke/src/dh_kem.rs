@@ -35,10 +35,7 @@ impl DhKem {
                 dh
             },
             ecdh::Mode::P256 => {
-                // This isn't great :(
-                let mut tmp = vec![0x04];
-                tmp.extend(dh);
-                tmp
+                dh[0..32].to_vec()
             },
         }
     }
@@ -60,7 +57,7 @@ impl DhKem {
     fn extract_and_expand(&self, pk: PK, kem_context: &[u8], suite_id: &[u8]) -> Vec<u8> {
         let prk = self.kdf.labeled_extract(&[], suite_id, "eae_prk", &pk);
         self.kdf
-            .labeled_expand(&prk, suite_id, "zz", kem_context, self.get_secret_len())
+            .labeled_expand(&prk, suite_id, "shared_secret", kem_context, self.get_secret_len())
     }
 
     fn derive_key_pair(&self, ikm: &[u8], suite_id: &[u8]) -> (PK, SK) {

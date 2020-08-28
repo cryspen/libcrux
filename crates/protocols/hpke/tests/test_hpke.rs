@@ -11,9 +11,9 @@ use test_util::*;
 #[allow(non_snake_case)]
 struct HpkeTestVecor {
     mode: u16,
-    kemID: u16,
-    kdfID: u16,
-    aeadID: u16,
+    kem_id: u16,
+    kdf_id: u16,
+    aead_id: u16,
     info: String,
     seedR: String,
     seedS: Option<String>,
@@ -22,17 +22,17 @@ struct HpkeTestVecor {
     skSm: Option<String>,
     skEm: String,
     psk: Option<String>,
-    pskID: Option<String>,
+    psk_id: Option<String>,
     pkRm: String,
     pkSm: Option<String>,
     pkEm: String,
     enc: String,
-    zz: String,
-    keyScheduleContext: String,
+    shared_secret: String,
+    key_schedule_context: String,
     secret: String,
     key: String,
     nonce: String,
-    exporterSecret: String,
+    exporter_secret: String,
     encryptions: Vec<CiphertextKAT>,
     exports: Vec<ExportsKAT>,
 }
@@ -69,9 +69,9 @@ fn test_kat() {
 
     for test in tests {
         let mode: Mode = test.mode.into();
-        let kem_id: kem::Mode = test.kemID.into();
-        let kdf_id: kdf::Mode = test.kdfID.into();
-        let aead_id: aead::Mode = test.aeadID.into();
+        let kem_id: kem::Mode = test.kem_id.into();
+        let kdf_id: kdf::Mode = test.kdf_id.into();
+        let aead_id: aead::Mode = test.aead_id.into();
 
         if kem_id != kem::Mode::DhKem25519 && kem_id != kem::Mode::DhKemP256 {
             println!(" > KEM {:?} not implemented yet", kem_id);
@@ -96,18 +96,18 @@ fn test_kat() {
         let info = hex_to_bytes(&test.info);
         let psk = hex_to_bytes_option(test.psk);
         let psk = vec_to_option_slice(&psk);
-        let psk_id = hex_to_bytes_option(test.pskID);
+        let psk_id = hex_to_bytes_option(test.psk_id);
         let psk_id = vec_to_option_slice(&psk_id);
-        let zz = hex_to_bytes(&test.zz);
-        // let key_schedule_context = hex_to_bytes(&test.keyScheduleContext);
+        let shared_secret = hex_to_bytes(&test.shared_secret);
+        // let key_schedule_context = hex_to_bytes(&test.key_schedule_context);
         // let secret = hex_to_bytes(&test.secret);
         let key = hex_to_bytes(&test.key);
         let nonce = hex_to_bytes(&test.nonce);
-        let exporter_secret = hex_to_bytes(&test.exporterSecret);
+        let exporter_secret = hex_to_bytes(&test.exporter_secret);
 
         // Use internal `key_schedule` function for KAT.
         let mut direct_ctx = hpke.key_schedule(
-            &zz,
+            &shared_secret,
             &info,
             psk.unwrap_or_default(),
             psk_id.unwrap_or_default(),

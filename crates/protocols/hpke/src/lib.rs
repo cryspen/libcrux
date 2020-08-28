@@ -257,7 +257,7 @@ impl Hpke {
     fn get_key_schedule_context(&self, info: &[u8], psk_id: &[u8], suite_id: &[u8]) -> Vec<u8> {
         let psk_id_hash = self
             .kdf
-            .labeled_extract(&[0], suite_id, "pskID_hash", psk_id);
+            .labeled_extract(&[0], suite_id, "psk_id_hash", psk_id);
         let info_hash = self.kdf.labeled_extract(&[0], suite_id, "info_hash", info);
         util::concat(&[&[self.mode as u8], &psk_id_hash, &info_hash])
     }
