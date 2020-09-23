@@ -41,6 +41,7 @@ pub(crate) trait KemTrait: std::fmt::Debug {
         Self: Sized;
 
     fn key_gen(&self) -> (Vec<u8>, Vec<u8>);
+    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (Vec<u8>, Vec<u8>);
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>);
     fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Vec<u8>;
@@ -99,5 +100,8 @@ impl Kem {
     }
     pub fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
         self.kem.key_gen()
+    }
+    pub fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        self.kem.derive_key_pair(suite_id, ikm)
     }
 }

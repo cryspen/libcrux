@@ -60,31 +60,6 @@ impl DhKem {
             .labeled_expand(&prk, suite_id, "shared_secret", kem_context, self.get_secret_len())
     }
 
-    fn derive_key_pair(&self, ikm: &[u8], suite_id: &[u8]) -> (PK, SK) {
-        let dpk_prk = self.kdf.labeled_extract(&[], suite_id, "dpk_prk", ikm);
-
-        let sk = match self.dh_id {
-            ecdh::Mode::X25519 => {
-                self.kdf
-                    .labeled_expand(&dpk_prk, suite_id, "sk", &[], self.sk_len)
-            }
-            ecdh::Mode::P256 => {
-                let ctr = 0u8;
-                // FIXME: this currently produces invalid keys sometimes.
-                // loop {
-                self.kdf.labeled_expand(
-                    &dpk_prk,
-                    suite_id,
-                    "candidate",
-                    &ctr.to_be_bytes(),
-                    self.sk_len - 1,
-                )
-                // }
-            }
-        };
-        (self.dh_base(&sk).to_vec(), sk)
-    }
-
     fn marshal(&self, pk: &[u8]) -> Vec<u8> {
         pk.to_vec()
     }
@@ -110,6 +85,31 @@ impl KemTrait for DhKem {
         let sk = ecdh::key_gen(self.dh_id);
         let pk = ecdh_derive_base(self.dh_id, &sk).unwrap();
         (sk, pk)
+    }
+
+    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (PK, SK) {
+        let dpk_prk = self.kdf.labeled_extract(&[], suite_id, "dpk_prk", ikm);
+
+        let sk = match self.dh_id {
+            ecdh::Mode::X25519 => {
+                self.kdf
+                    .labeled_expand(&dpk_prk, suite_id, "sk", &[], self.sk_len)
+            }
+            ecdh::Mode::P256 => {
+                let ctr = 0u8;
+                // FIXME: this currently produces invalid keys sometimes.
+                // loop {
+                self.kdf.labeled_expand(
+                    &dpk_prk,
+                    suite_id,
+                    "candidate",
+                    &ctr.to_be_bytes(),
+                    self.sk_len - 1,
+                )
+                // }
+            }
+        };
+        (self.dh_base(&sk).to_vec(), sk)
     }
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {

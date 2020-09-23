@@ -1,3 +1,7 @@
+//! This implements the work-in-progress Hybrid Public Key Encryption RFC.
+//! https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html
+//!
+
 pub mod aead;
 mod aead_impl;
 pub mod dh_kem;
@@ -7,6 +11,27 @@ pub mod kem;
 
 mod util;
 
+/// An HPKE public key is a byte vector.
+#[derive(Debug, PartialEq, Clone, Default)]
+pub struct HPKEPublicKey {
+    value: Vec<u8>,
+}
+
+/// An HPKE private key is a byte vector.
+#[derive(Debug, Default)]
+pub struct HPKEPrivateKey {
+    value: Vec<u8>,
+}
+
+/// An HPKE key pair has an HPKE private and public key.
+#[derive(Debug, Default)]
+pub struct HPKEKeyPair {
+    private_key: HPKEPrivateKey,
+    public_key: HPKEPublicKey,
+}
+
+/// HPKE supports four modes.
+/// The `Base` mode i
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Mode {
     Base = 0x00,
@@ -65,7 +90,8 @@ impl<'a> Context<'a> {
         let ctxt = self
             .hpke
             .aead
-            .seal(&self.key, &self.compute_nonce(), aad, plain_txt).unwrap();
+            .seal(&self.key, &self.compute_nonce(), aad, plain_txt)
+            .unwrap();
         self.increment_seq();
         ctxt
     }
@@ -294,9 +320,15 @@ impl Hpke {
     }
 
     /// Generate a random key pair for the used KEM.
-    /// 
+    ///
     /// Returns `(sk, pk)` as two vectors.
     pub fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
         self.kem.key_gen()
+    }
+
+    /// 7.1.2. DeriveKeyPair
+    /// Derive a key pair for the used KEM with the given input key material.
+    pub fn derive_keypair(&self, ikm: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        self.kem.derive_key_pair(&self.get_ciphersuite(), ikm)
     }
 }
