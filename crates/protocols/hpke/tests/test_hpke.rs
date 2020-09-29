@@ -114,19 +114,19 @@ fn test_kat() {
         );
 
         // Check setup info
-        assert_eq!(direct_ctx.key, key);
-        assert_eq!(direct_ctx.nonce, nonce);
-        assert_eq!(direct_ctx.exporter_secret, exporter_secret);
-        assert_eq!(direct_ctx.sequence_number, 0);
+        assert_eq!(direct_ctx.get_key_ref(), key);
+        assert_eq!(direct_ctx.get_nonce_ref(), nonce);
+        assert_eq!(direct_ctx.get_exporter_secret_ref(), exporter_secret);
+        assert_eq!(direct_ctx.get_sequence_number(), 0);
 
         // Setup sender and receiver.
         // These use randomness and hence can't be fully checked against the test vectors.
-        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id, sk_sm);
-        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm);
+        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id, sk_sm).unwrap();
+        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm).unwrap();
 
         // Setup KAT receiver.
         let mut receiver_context_kat =
-            hpke.setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm);
+            hpke.setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm).unwrap();
 
         // TODO: test KAT sender (encaps). Requires to inject randomness.
 
@@ -138,21 +138,21 @@ fn test_kat() {
             let ctxt_kat = hex_to_bytes(&encryption.ciphertext);
 
             // Test context API self-test
-            let ctxt_out = sender_context.seal(&aad, &ptxt);
-            let ptxt_out = receiver_context.open(&aad, &ctxt_out);
+            let ctxt_out = sender_context.seal(&aad, &ptxt).unwrap();
+            let ptxt_out = receiver_context.open(&aad, &ctxt_out).unwrap();
             assert_eq!(ptxt_out, ptxt);
 
             // Test single-shot API self-test
-            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm);
-            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm);
+            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm).unwrap();
+            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm).unwrap();
             assert_eq!(ptxt_out, ptxt);
 
             // Test KAT receiver context open
-            let ptxt_out = receiver_context_kat.open(&aad, &ctxt_kat);
+            let ptxt_out = receiver_context_kat.open(&aad, &ctxt_kat).unwrap();
             assert_eq!(ptxt_out, ptxt);
 
             // Test KAT seal on direct_ctx
-            let ct = direct_ctx.seal(&aad, &ptxt);
+            let ct = direct_ctx.seal(&aad, &ptxt).unwrap();
             assert_eq!(ctxt_kat, ct);
         }
 

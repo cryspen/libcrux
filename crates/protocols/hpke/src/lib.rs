@@ -11,6 +11,13 @@ pub mod kem;
 
 mod util;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum HPKEError {
+    OpenError,
+    InvalidConfig,
+    InvalidInput,
+}
+
 /// An HPKE public key is a byte vector.
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct HPKEPublicKey {
@@ -52,26 +59,27 @@ impl From<u16> for Mode {
     }
 }
 
-// TODO: Do we need this?
-#[allow(dead_code)]
-fn get_kdf_for_kem(mode: kem::Mode) -> kdf::Mode {
-    match mode {
-        kem::Mode::DhKemP256 => kdf::Mode::HkdfSha256,
-        kem::Mode::DhKemP384 => kdf::Mode::HkdfSha384,
-        kem::Mode::DhKemP521 => kdf::Mode::HkdfSha512,
-        kem::Mode::DhKem25519 => kdf::Mode::HkdfSha256,
-        kem::Mode::DhKem448 => kdf::Mode::HkdfSha512,
-    }
-}
+/// Type alias for encapsulated secrets.
+/// A byte vector.
+type EncapsulatedSecret = Vec<u8>;
 
-// TODO: add types and don't make it all pub
+/// Type alias for ciphertexts.
+/// A byte vector.
+type Ciphertext = Vec<u8>;
 
+/// Type alias for plain text.
+/// A byte vector.
+type Plaintext = Vec<u8>;
+
+/// The HPKE context.
+/// Note that the RFC currently doesn't define this.
+/// Also see https://github.com/cfrg/draft-irtf-cfrg-hpke/issues/161.
 pub struct Context<'a> {
-    pub key: Vec<u8>,
-    pub nonce: Vec<u8>,
-    pub exporter_secret: Vec<u8>,
-    pub sequence_number: u32,
-    pub hpke: &'a Hpke,
+    key: Vec<u8>,
+    nonce: Vec<u8>,
+    exporter_secret: Vec<u8>,
+    sequence_number: u32,
+    hpke: &'a Hpke,
 }
 
 impl<'a> std::fmt::Debug for Context<'a> {
@@ -85,31 +93,57 @@ impl<'a> std::fmt::Debug for Context<'a> {
 }
 
 impl<'a> Context<'a> {
-    pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Vec<u8> {
-        // FIXME: handle error
+    /// 5.2. Encryption and Decryption
+    ///
+    /// Takes the associated data and the plain text as byte slices and returns
+    /// the ciphertext or an error.
+    ///
+    /// ```text
+    /// def Context.Seal(aad, pt):
+    ///   ct = Seal(self.key, self.ComputeNonce(self.seq), aad, pt)
+    ///   self.IncrementSeq()
+    ///   return ct
+    /// ```
+    pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Result<Ciphertext, HPKEError> {
         let ctxt = self
             .hpke
             .aead
-            .seal(&self.key, &self.compute_nonce(), aad, plain_txt)
-            .unwrap();
+            .seal(&self.key, &self.compute_nonce(), aad, plain_txt)?;
         self.increment_seq();
-        ctxt
+        Ok(ctxt)
     }
 
-    pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Vec<u8> {
-        match self
+    /// 5.2. Encryption and Decryption
+    ///
+    /// Takes the associated data and the ciphertext as byte slices and returns
+    /// the plain text or an error.
+    ///
+    /// ```text
+    /// def Context.Open(aad, ct):
+    ///   pt = Open(self.key, self.ComputeNonce(self.seq), aad, ct)
+    ///   if pt == OpenError:
+    ///     raise OpenError
+    ///   self.IncrementSeq()
+    ///   return pt
+    /// ```
+    pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Result<Plaintext, HPKEError> {
+        let ptxt = self
             .hpke
             .aead
-            .open(&self.key, &self.compute_nonce(), aad, cipher_txt)
-        {
-            Ok(plain_txt) => {
-                self.increment_seq();
-                plain_txt
-            }
-            Err(e) => panic!("Error in open {:?}", e),
-        }
+            .open(&self.key, &self.compute_nonce(), aad, cipher_txt)?;
+        self.increment_seq();
+        Ok(ptxt)
     }
 
+    /// 5.3. Secret Export
+    ///
+    /// Takes a serialised exporter context as byte slice and a length for the
+    /// output secret and returns an exporter secret as byte vector.
+    ///
+    /// ```text
+    /// def Context.Export(exporter_context, L):
+    ///  return LabeledExpand(self.exporter_secret, "sec", exporter_context, L)
+    ///```
     pub fn export(&self, exporter_context: &[u8], length: usize) -> Vec<u8> {
         self.hpke.kdf.labeled_expand(
             &self.exporter_secret,
@@ -133,6 +167,11 @@ impl<'a> Context<'a> {
     }
 }
 
+/// The HPKE configuration struct.
+/// This holds the configuration for HPKE but no state.
+/// To use HPKE first instantiate the configuration with
+/// `let hpke = Hpke::new(mode, kem_mode, kdf_mode, aead_mode)`.
+/// Now one can use the `hpke` configuration.
 #[derive(Debug)]
 pub struct Hpke {
     mode: Mode,
@@ -148,6 +187,7 @@ pub struct Hpke {
 }
 
 impl Hpke {
+    /// Set up the configuration for HPKE.
     pub fn new(mode: Mode, kem_id: kem::Mode, kdf_id: kdf::Mode, aead_id: aead::Mode) -> Self {
         let kem = kem::Kem::new(kem_id);
         let kdf = kdf::Kdf::new(kdf_id);
@@ -166,6 +206,15 @@ impl Hpke {
         }
     }
 
+    /// Set up an HPKE sender.
+    ///
+    /// For the base and PSK modes this encapsulates the public key `pk_r`
+    /// of the receiver.
+    /// For the Auth and AuthPSK modes this encapsulates and authenticates
+    /// the public key `pk_r` of the receiver with the senders secret key `sk_s`.
+    ///
+    /// The encapsulated secret is returned together with the context.
+    /// If the secret key is missing in an authenticated mode, an error is returned.
     pub fn setup_sender(
         &self,
         pk_r: &[u8],
@@ -173,18 +222,18 @@ impl Hpke {
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
         sk_s: Option<&[u8]>,
-    ) -> (Vec<u8>, Context) {
+    ) -> Result<(EncapsulatedSecret, Context), HPKEError> {
         let (zz, enc) = match self.mode {
             Mode::Base | Mode::Psk => self.kem.encaps(pk_r),
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
                     Some(s) => s,
-                    None => panic!("Called setup_sender on Mode::Auth without sk_s"),
+                    None => return Err(HPKEError::InvalidInput),
                 };
                 self.kem.auth_encaps(pk_r, sk_s)
             }
         };
-        (
+        Ok((
             enc,
             self.key_schedule(
                 &zz,
@@ -192,9 +241,19 @@ impl Hpke {
                 psk.unwrap_or_default(),
                 psk_id.unwrap_or_default(),
             ),
-        )
+        ))
     }
 
+    /// Set up an HPKE receiver.
+    ///
+    /// For the base and PSK modes this decapsulates `enc` with the secret key
+    /// `sk_r` of the receiver.
+    /// For the Auth and AuthPSK modes this decapsulates and authenticates `enc`
+    /// with the secret key `sk_r` of the receiver and the senders public key `pk_s`.
+    ///
+    /// The context based on the decapsulated values and, if present, the PSK is
+    /// returned.
+    /// If the secret key is missing in an authenticated mode, an error is returned.
     pub fn setup_receiver(
         &self,
         enc: &[u8],
@@ -203,40 +262,54 @@ impl Hpke {
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
         pk_s: Option<&[u8]>,
-    ) -> Context {
+    ) -> Result<Context, HPKEError> {
         let zz = match self.mode {
             Mode::Base | Mode::Psk => self.kem.decaps(enc, sk_r),
             Mode::Auth | Mode::AuthPsk => {
                 let pk_s = match pk_s {
                     Some(s) => s,
-                    None => panic!("Called setup_sender on Mode::Auth without sk_s"),
+                    None => return Err(HPKEError::InvalidInput),
                 };
                 self.kem.auth_decaps(enc, sk_r, pk_s)
             }
         };
-        self.key_schedule(
+        Ok(self.key_schedule(
             &zz,
             info,
             psk.unwrap_or_default(),
             psk_id.unwrap_or_default(),
-        )
+        ))
     }
 
+    /// 6. Single-Shot APIs
+    /// 6.1. Encryption and Decryption
+    ///
+    /// Single shot API to encrypt the bytes in `plain_text` to the public key
+    /// `pk_r`.
+    ///
+    /// Returns the encapsulated secret and the ciphertext, or an error.
     #[allow(clippy::too_many_arguments)]
     pub fn seal(
         &self,
         pk_r: &[u8],
         info: &[u8],
         aad: &[u8],
-        ptxt: &[u8],
+        plain_txt: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
         sk_s: Option<&[u8]>,
-    ) -> (Vec<u8>, Vec<u8>) {
-        let (enc, mut context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s);
-        (enc, context.seal(aad, ptxt))
+    ) -> Result<(EncapsulatedSecret, Ciphertext), HPKEError> {
+        let (enc, mut context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s)?;
+        let ctxt = context.seal(aad, plain_txt)?;
+        Ok((enc, ctxt))
     }
 
+    /// 6. Single-Shot APIs
+    /// 6.1. Encryption and Decryption
+    ///
+    /// Single shot API to decrypt the bytes in `ct` with the private key `sk_r`.
+    ///
+    /// Returns the decrypted plain text, or an error.
     #[allow(clippy::too_many_arguments)]
     pub fn open(
         &self,
@@ -248,9 +321,55 @@ impl Hpke {
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
         pk_s: Option<&[u8]>,
-    ) -> Vec<u8> {
-        let mut context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s);
+    ) -> Result<Plaintext, HPKEError> {
+        let mut context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s)?;
         context.open(aad, ct)
+    }
+
+    /// 6. Single-Shot APIs
+    /// 6.2. Secret Export
+    ///
+    /// Single shot API to derive an exporter secret for receiver with public key
+    /// `pk_r`.
+    ///
+    /// Returns the encapsulated secret and the exporter secret for the given
+    /// exporter context and length.
+    #[allow(clippy::too_many_arguments)]
+    pub fn send_export(
+        &self,
+        pk_r: &[u8],
+        info: &[u8],
+        psk: Option<&[u8]>,
+        psk_id: Option<&[u8]>,
+        sk_s: Option<&[u8]>,
+        exporter_context: &[u8],
+        length: usize,
+    ) -> Result<(EncapsulatedSecret, Vec<u8>), HPKEError> {
+        let (enc, context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s)?;
+        Ok((enc, context.export(exporter_context, length)))
+    }
+
+    /// 6. Single-Shot APIs
+    /// 6.2. Secret Export
+    ///
+    /// Single shot API to derive an exporter secret for receiver with private key
+    /// `sk_r`.
+    ///
+    /// Returns the exporter secret for the given exporter context and length.
+    #[allow(clippy::too_many_arguments)]
+    pub fn receiver_export(
+        &self,
+        enc: &[u8],
+        sk_r: &[u8],
+        info: &[u8],
+        psk: Option<&[u8]>,
+        psk_id: Option<&[u8]>,
+        pk_s: Option<&[u8]>,
+        exporter_context: &[u8],
+        length: usize,
+    ) -> Result<Vec<u8>, HPKEError> {
+        let context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s)?;
+        Ok(context.export(exporter_context, length))
     }
 
     #[inline]
@@ -294,6 +413,41 @@ impl Hpke {
         self.kdf.labeled_extract(&psk_hash, suite_id, "secret", zz)
     }
 
+    /// 5.1. Creating the Encryption Context
+    /// Generate the HPKE context from the given input.
+    ///
+    /// ```text
+    /// default_psk = ""
+    /// default_psk_id = ""
+    ///
+    /// def VerifyPSKInputs(mode, psk, psk_id):
+    ///   got_psk = (psk != default_psk)
+    ///   got_psk_id = (psk_id != default_psk_id)
+    ///   if got_psk != got_psk_id:
+    ///     raise Exception("Inconsistent PSK inputs")
+    ///
+    ///   if got_psk and (mode in [mode_base, mode_auth]):
+    ///     raise Exception("PSK input provided when not needed")
+    ///   if (not got_psk) and (mode in [mode_psk, mode_auth_psk]):
+    ///     raise Exception("Missing required PSK input")
+    ///
+    /// def KeySchedule(mode, shared_secret, info, psk, psk_id):
+    ///   VerifyPSKInputs(mode, psk, psk_id)
+    ///
+    ///   psk_id_hash = LabeledExtract("", "psk_id_hash", psk_id)
+    ///   info_hash = LabeledExtract("", "info_hash", info)
+    ///   key_schedule_context = concat(mode, psk_id_hash, info_hash)
+    ///
+    ///   psk_hash = LabeledExtract("", "psk_hash", psk)
+    ///
+    ///   secret = LabeledExtract(psk_hash, "secret", shared_secret)
+    ///
+    ///   key = LabeledExpand(secret, "key", key_schedule_context, Nk)
+    ///   nonce = LabeledExpand(secret, "nonce", key_schedule_context, Nn)
+    ///   exporter_secret = LabeledExpand(secret, "exp", key_schedule_context, Nh)
+    ///
+    ///   return Context(key, nonce, 0, exporter_secret)
+    /// ```
     pub fn key_schedule(&self, zz: &[u8], info: &[u8], psk: &[u8], psk_id: &[u8]) -> Context {
         self.verify_psk_inputs(psk, psk_id);
         let suite_id = self.get_ciphersuite();
@@ -319,16 +473,95 @@ impl Hpke {
         }
     }
 
-    /// Generate a random key pair for the used KEM.
+    /// 4. Cryptographic Dependencies
+    /// Randomized algorithm to generate a key pair `(skX, pkX)` for the KEM.
+    /// This is equivalent to `derive_key_pair(get_random_vector(sk.len()))`
     ///
-    /// Returns `(sk, pk)` as two vectors.
-    pub fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
-        self.kem.key_gen()
+    /// Returns an `HPKEKeyPair`.
+    pub fn generate_key_pair(&self) -> HPKEKeyPair {
+        let (sk, pk) = self.kem.key_gen();
+        HPKEKeyPair::new(sk, pk)
     }
 
     /// 7.1.2. DeriveKeyPair
     /// Derive a key pair for the used KEM with the given input key material.
-    pub fn derive_keypair(&self, ikm: &[u8]) -> (Vec<u8>, Vec<u8>) {
-        self.kem.derive_key_pair(&self.get_ciphersuite(), ikm)
+    ///
+    /// Returns (PublicKey, PrivateKey)
+    pub fn derive_key_pair(&self, ikm: &[u8]) -> HPKEKeyPair {
+        let (sk, pk) = self.kem.derive_key_pair(&self.get_ciphersuite(), ikm);
+        HPKEKeyPair::new(sk, pk)
+    }
+}
+
+impl HPKEKeyPair {
+    /// Create a new HPKE key pair.
+    /// Consumes the private and public key bytes.
+    pub fn new(sk: Vec<u8>, pk: Vec<u8>) -> Self {
+        Self {
+            private_key: HPKEPrivateKey::new(sk),
+            public_key: HPKEPublicKey::new(pk),
+        }
+    }
+
+    /// Get a reference to the HPKE private key of this key pair.
+    pub fn get_private_key_ref(&self) -> &HPKEPrivateKey {
+        &self.private_key
+    }
+
+    /// Get a reference to the HPKE public key of this key pair.
+    pub fn get_public_key_ref(&self) -> &HPKEPublicKey {
+        &self.public_key
+    }
+}
+
+impl HPKEPrivateKey {
+    /// Create a new HPKE private key.
+    /// Consumes the private key bytes.
+    pub fn new(b: Vec<u8>) -> Self {
+        Self { value: b }
+    }
+}
+
+impl HPKEPublicKey {
+    /// Create a new HPKE public key.
+    /// Consumes the public key bytes.
+    pub fn new(b: Vec<u8>) -> Self {
+        Self { value: b }
+    }
+}
+
+pub mod test_util {
+    // TODO: don't build for release
+    impl<'a> super::Context<'_> {
+        /// Get a reference to the key in the context.
+        #[doc(hidden)]
+        pub fn get_key_ref(&'a self) -> &'a [u8] {
+            &self.key
+        }
+        /// Get a reference to the nonce in the context.
+        #[doc(hidden)]
+        pub fn get_nonce_ref(&'a self) -> &'a [u8] {
+            &self.nonce
+        }
+        /// Get a reference to the exporter secret in the context.
+        #[doc(hidden)]
+        pub fn get_exporter_secret_ref(&'a self) -> &'a [u8] {
+            &self.exporter_secret
+        }
+        /// Get a reference to the sequence number in the context.
+        #[doc(hidden)]
+        pub fn get_sequence_number(&self) -> u32 {
+            self.sequence_number
+        }
+    }
+}
+
+impl From<aead::Error> for HPKEError {
+    fn from(e: aead::Error) -> Self {
+        match e {
+            aead::Error::OpenError => HPKEError::OpenError,
+            aead::Error::InvalidNonce => HPKEError::InvalidConfig,
+            aead::Error::InvalidConfig => HPKEError::InvalidInput,
+        }
     }
 }
