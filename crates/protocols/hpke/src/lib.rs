@@ -217,20 +217,20 @@ impl Hpke {
     /// If the secret key is missing in an authenticated mode, an error is returned.
     pub fn setup_sender(
         &self,
-        pk_r: &[u8],
+        pk_r: &HPKEPublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        sk_s: Option<&[u8]>,
+        sk_s: Option<&HPKEPrivateKey>,
     ) -> Result<(EncapsulatedSecret, Context), HPKEError> {
         let (zz, enc) = match self.mode {
-            Mode::Base | Mode::Psk => self.kem.encaps(pk_r),
+            Mode::Base | Mode::Psk => self.kem.encaps(&pk_r.value),
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
-                    Some(s) => s,
+                    Some(s) => &s.value,
                     None => return Err(HPKEError::InvalidInput),
                 };
-                self.kem.auth_encaps(pk_r, sk_s)
+                self.kem.auth_encaps(&pk_r.value, sk_s)
             }
         };
         Ok((
@@ -257,20 +257,20 @@ impl Hpke {
     pub fn setup_receiver(
         &self,
         enc: &[u8],
-        sk_r: &[u8],
+        sk_r: &HPKEPrivateKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        pk_s: Option<&[u8]>,
+        pk_s: Option<&HPKEPublicKey>,
     ) -> Result<Context, HPKEError> {
         let zz = match self.mode {
-            Mode::Base | Mode::Psk => self.kem.decaps(enc, sk_r),
+            Mode::Base | Mode::Psk => self.kem.decaps(enc, &sk_r.value),
             Mode::Auth | Mode::AuthPsk => {
                 let pk_s = match pk_s {
-                    Some(s) => s,
+                    Some(s) => &s.value,
                     None => return Err(HPKEError::InvalidInput),
                 };
-                self.kem.auth_decaps(enc, sk_r, pk_s)
+                self.kem.auth_decaps(enc, &sk_r.value, pk_s)
             }
         };
         Ok(self.key_schedule(
@@ -291,13 +291,13 @@ impl Hpke {
     #[allow(clippy::too_many_arguments)]
     pub fn seal(
         &self,
-        pk_r: &[u8],
+        pk_r: &HPKEPublicKey,
         info: &[u8],
         aad: &[u8],
         plain_txt: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        sk_s: Option<&[u8]>,
+        sk_s: Option<&HPKEPrivateKey>,
     ) -> Result<(EncapsulatedSecret, Ciphertext), HPKEError> {
         let (enc, mut context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s)?;
         let ctxt = context.seal(aad, plain_txt)?;
@@ -314,13 +314,13 @@ impl Hpke {
     pub fn open(
         &self,
         enc: &[u8],
-        sk_r: &[u8],
+        sk_r: &HPKEPrivateKey,
         info: &[u8],
         aad: &[u8],
         ct: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        pk_s: Option<&[u8]>,
+        pk_s: Option<&HPKEPublicKey>,
     ) -> Result<Plaintext, HPKEError> {
         let mut context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s)?;
         context.open(aad, ct)
@@ -337,11 +337,11 @@ impl Hpke {
     #[allow(clippy::too_many_arguments)]
     pub fn send_export(
         &self,
-        pk_r: &[u8],
+        pk_r: &HPKEPublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        sk_s: Option<&[u8]>,
+        sk_s: Option<&HPKEPrivateKey>,
         exporter_context: &[u8],
         length: usize,
     ) -> Result<(EncapsulatedSecret, Vec<u8>), HPKEError> {
@@ -360,11 +360,11 @@ impl Hpke {
     pub fn receiver_export(
         &self,
         enc: &[u8],
-        sk_r: &[u8],
+        sk_r: &HPKEPrivateKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        pk_s: Option<&[u8]>,
+        pk_s: Option<&HPKEPublicKey>,
         exporter_context: &[u8],
         length: usize,
     ) -> Result<Vec<u8>, HPKEError> {
@@ -520,6 +520,11 @@ impl HPKEPrivateKey {
     pub fn new(b: Vec<u8>) -> Self {
         Self { value: b }
     }
+
+    /// Get the raw key as byte slice.
+    pub fn as_slice(&self) -> &[u8] {
+        &self.value
+    }
 }
 
 impl HPKEPublicKey {
@@ -527,6 +532,11 @@ impl HPKEPublicKey {
     /// Consumes the public key bytes.
     pub fn new(b: Vec<u8>) -> Self {
         Self { value: b }
+    }
+
+    /// Get the raw key as byte slice.
+    pub fn as_slice(&self) -> &[u8] {
+        &self.value
     }
 }
 

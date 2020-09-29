@@ -87,12 +87,22 @@ fn test_kat() {
         let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
 
         // Set up sender and receiver.
-        let pk_rm = hex_to_bytes(&test.pkRm);
-        let sk_rm = hex_to_bytes(&test.skRm);
+        let pk_rm = HPKEPublicKey::new(hex_to_bytes(&test.pkRm));
+        let sk_rm = HPKEPrivateKey::new(hex_to_bytes(&test.skRm));
         let pk_sm = hex_to_bytes_option(test.pkSm);
-        let pk_sm = vec_to_option_slice(&pk_sm);
+        let pk_sm = if pk_sm.is_empty() {
+            None
+        } else {
+            Some(HPKEPublicKey::new(pk_sm))
+        };
+        let pk_sm = pk_sm.as_ref();
         let sk_sm = hex_to_bytes_option(test.skSm);
-        let sk_sm = vec_to_option_slice(&sk_sm);
+        let sk_sm = if sk_sm.is_empty() {
+            None
+        } else {
+            Some(HPKEPrivateKey::new(sk_sm))
+        };
+        let sk_sm = sk_sm.as_ref();
         let info = hex_to_bytes(&test.info);
         let psk = hex_to_bytes_option(test.psk);
         let psk = vec_to_option_slice(&psk);
@@ -121,12 +131,17 @@ fn test_kat() {
 
         // Setup sender and receiver.
         // These use randomness and hence can't be fully checked against the test vectors.
-        let (enc, mut sender_context) = hpke.setup_sender(&pk_rm, &info, psk, psk_id, sk_sm).unwrap();
-        let mut receiver_context = hpke.setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm).unwrap();
+        let (enc, mut sender_context) = hpke
+            .setup_sender(&pk_rm, &info, psk, psk_id, sk_sm)
+            .unwrap();
+        let mut receiver_context = hpke
+            .setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm)
+            .unwrap();
 
         // Setup KAT receiver.
-        let mut receiver_context_kat =
-            hpke.setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm).unwrap();
+        let mut receiver_context_kat = hpke
+            .setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm)
+            .unwrap();
 
         // TODO: test KAT sender (encaps). Requires to inject randomness.
 
@@ -143,8 +158,12 @@ fn test_kat() {
             assert_eq!(ptxt_out, ptxt);
 
             // Test single-shot API self-test
-            let (enc, ct) = hpke.seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm).unwrap();
-            let ptxt_out = hpke.open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm).unwrap();
+            let (enc, ct) = hpke
+                .seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm)
+                .unwrap();
+            let ptxt_out = hpke
+                .open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm)
+                .unwrap();
             assert_eq!(ptxt_out, ptxt);
 
             // Test KAT receiver context open
