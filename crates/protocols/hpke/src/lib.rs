@@ -488,7 +488,7 @@ impl Hpke {
     ///
     /// Returns (PublicKey, PrivateKey)
     pub fn derive_key_pair(&self, ikm: &[u8]) -> HPKEKeyPair {
-        let (sk, pk) = self.kem.derive_key_pair(&self.get_ciphersuite(), ikm);
+        let (pk, sk) = self.kem.derive_key_pair(&self.get_ciphersuite(), ikm);
         HPKEKeyPair::new(sk, pk)
     }
 }
