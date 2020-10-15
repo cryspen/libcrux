@@ -512,6 +512,11 @@ impl HPKEKeyPair {
     pub fn get_public_key_ref(&self) -> &HPKEPublicKey {
         &self.public_key
     }
+
+    /// Split the key pair into the two keys
+    pub fn to_keys(self) -> (HPKEPrivateKey, HPKEPublicKey) {
+        (self.private_key, self.public_key)
+    }
 }
 
 impl HPKEPrivateKey {
