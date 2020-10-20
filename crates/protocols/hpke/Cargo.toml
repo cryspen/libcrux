@@ -15,6 +15,9 @@ evercrypt = { version = "0.0.3-dev3" }
 evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust", package = "evercrypt" }
 evercrypt-sys = { git = "https://github.com/franziskuskiefer/evercrypt-rust", package = "evercrypt-sys" }
 
+[features]
+rust-crypto = ["evercrypt/rust-crypto-aes"]
+
 [dev-dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }

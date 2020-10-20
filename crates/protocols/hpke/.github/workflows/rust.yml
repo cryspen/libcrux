@@ -12,12 +12,22 @@ env:
 
 jobs:
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          # - windows-latest
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
+    - name: Build Release
+      run: cargo build --release --verbose
     - name: Run tests
-      run: cargo test --verbose
+      # Always enabling rust crypto AES for now.
+      run: cargo test --verbose --features rust-crypto

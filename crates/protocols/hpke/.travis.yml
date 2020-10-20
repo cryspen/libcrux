@@ -24,4 +24,4 @@ jobs:
 script:
   - cargo build --verbose
   - cargo build --release --verbose
-  - cargo test --verbose
+  - cargo test --verbose --features rust-crypto
