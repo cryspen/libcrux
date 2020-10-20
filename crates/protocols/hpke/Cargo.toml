@@ -1,6 +1,6 @@
 [package]
 name = "hpke"
-version = "0.0.2-dev"
+version = "0.0.2-dev2"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -9,10 +9,11 @@ description = "HPKE Implementation using Evercrypt"
 readme = "README.md"
 
 [dependencies]
-evercrypt = { version = "0.0.1" }
+evercrypt = { version = "0.0.3-dev3" }
 
 [patch.crates-io]
-evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust" }
+evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust", package = "evercrypt" }
+evercrypt-sys = { git = "https://github.com/franziskuskiefer/evercrypt-rust", package = "evercrypt-sys" }
 
 [dev-dependencies]
 serde_json = "1.0"
