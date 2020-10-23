@@ -187,3 +187,35 @@ fn test_kat() {
         }
     }
 }
+
+#[cfg(feature = "serialization")]
+#[cfg(feature = "hazmat")]
+#[test]
+fn test_serialization() {
+    // TODO: test for all combinations.
+    let mode: Mode = Mode::Base;
+    let kem_id: kem::Mode = kem::Mode::DhKemP256;
+    let kdf_id: kdf::Mode = kdf::Mode::HkdfSha256;
+    let aead_id: aead::Mode = aead::Mode::AesGcm128;
+    let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
+
+    // JSON: Public, Private, KeyPair
+    let key_pair = hpke.generate_key_pair();
+
+    let serialized_key_pair = serde_json::to_string(&key_pair).unwrap();
+    let deserialized_key_pair: HPKEKeyPair = serde_json::from_str(&serialized_key_pair).unwrap();
+
+    let (sk, pk) = key_pair.into_keys();
+
+    let serialized_sk = serde_json::to_string(&sk).unwrap();
+    let deserialized_sk: HPKEPrivateKey = serde_json::from_str(&serialized_sk).unwrap();
+    let serialized_pk = serde_json::to_string(&pk).unwrap();
+    let deserialized_pk: HPKEPublicKey = serde_json::from_str(&serialized_pk).unwrap();
+
+    let (des_sk, des_pk) = deserialized_key_pair.into_keys();
+
+    assert_eq!(pk, des_pk);
+    assert_eq!(pk, deserialized_pk);
+    assert_eq!(sk.as_slice(), des_sk.as_slice());
+    assert_eq!(sk.as_slice(), deserialized_sk.as_slice());
+}

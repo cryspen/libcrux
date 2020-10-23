@@ -31,3 +31,6 @@ jobs:
     - name: Run tests
       # Always enabling rust crypto AES for now.
       run: cargo test --verbose --features rust-crypto
+    - name: Run tests all features
+      # Always enabling rust crypto AES for now.
+      run: cargo test --verbose --features "serialization hazmat rust-crypto"

@@ -2,6 +2,9 @@
 //! https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html
 //!
 
+#[cfg(feature = "serialization")]
+use serde::{Deserialize, Serialize};
+
 pub mod aead;
 mod aead_impl;
 pub mod dh_kem;
@@ -20,18 +23,21 @@ pub enum HPKEError {
 
 /// An HPKE public key is a byte vector.
 #[derive(Debug, PartialEq, Clone, Default)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct HPKEPublicKey {
     value: Vec<u8>,
 }
 
 /// An HPKE private key is a byte vector.
 #[derive(Debug, Default)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct HPKEPrivateKey {
     value: Vec<u8>,
 }
 
 /// An HPKE key pair has an HPKE private and public key.
 #[derive(Debug, Default)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct HPKEKeyPair {
     private_key: HPKEPrivateKey,
     public_key: HPKEPublicKey,
@@ -514,8 +520,16 @@ impl HPKEKeyPair {
     }
 
     /// Split the key pair into the two keys
-    pub fn to_keys(self) -> (HPKEPrivateKey, HPKEPublicKey) {
+    pub fn into_keys(self) -> (HPKEPrivateKey, HPKEPublicKey) {
         (self.private_key, self.public_key)
+    }
+
+    /// Build a key pair from two keys
+    pub fn from_keys(private_key: HPKEPrivateKey, public_key: HPKEPublicKey) -> Self {
+        Self {
+            private_key,
+            public_key,
+        }
     }
 }
 
@@ -527,6 +541,7 @@ impl HPKEPrivateKey {
     }
 
     /// Get the raw key as byte slice.
+    #[cfg(feature = "hazmat")]
     pub fn as_slice(&self) -> &[u8] {
         &self.value
     }
