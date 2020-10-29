@@ -3,6 +3,7 @@ use crate::aead_impl::*;
 use std::fmt::Debug;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[repr(u16)]
 pub enum Mode {
     AesGcm128 = 0x0001,
     AesGcm256 = 0x0002,
@@ -31,7 +32,13 @@ pub(crate) trait AeadTrait: Debug {
     fn new() -> Self
     where
         Self: Sized;
-    fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Result<Vec<u8>, Error>;
+    fn seal(
+        &self,
+        key: &[u8],
+        nonce: &[u8],
+        aad: &[u8],
+        plain_txt: &[u8],
+    ) -> Result<Vec<u8>, Error>;
     fn open(
         &self,
         key: &[u8],
@@ -68,7 +75,13 @@ impl Aead {
     pub fn get_nn(&self) -> usize {
         self.aead.get_nonce_length()
     }
-    pub fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Result<Vec<u8>, Error> {
+    pub fn seal(
+        &self,
+        key: &[u8],
+        nonce: &[u8],
+        aad: &[u8],
+        plain_txt: &[u8],
+    ) -> Result<Vec<u8>, Error> {
         self.aead.seal(key, nonce, aad, plain_txt)
     }
     pub fn open(

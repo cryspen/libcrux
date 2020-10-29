@@ -46,6 +46,7 @@ pub struct HPKEKeyPair {
 /// HPKE supports four modes.
 /// The `Base` mode i
 #[derive(PartialEq, Copy, Clone, Debug)]
+#[repr(u8)]
 pub enum Mode {
     Base = 0x00,
     Psk = 0x01,
@@ -413,12 +414,6 @@ impl Hpke {
         util::concat(&[&[self.mode as u8], &psk_id_hash, &info_hash])
     }
 
-    #[inline]
-    fn get_secret(&self, psk: &[u8], zz: &[u8], suite_id: &[u8]) -> Vec<u8> {
-        let psk_hash = self.kdf.labeled_extract(&[], suite_id, "psk_hash", psk);
-        self.kdf.labeled_extract(&psk_hash, suite_id, "secret", zz)
-    }
-
     /// 5.1. Creating the Encryption Context
     /// Generate the HPKE context from the given input.
     ///
@@ -444,35 +439,45 @@ impl Hpke {
     ///   info_hash = LabeledExtract("", "info_hash", info)
     ///   key_schedule_context = concat(mode, psk_id_hash, info_hash)
     ///
-    ///   psk_hash = LabeledExtract("", "psk_hash", psk)
-    ///
-    ///   secret = LabeledExtract(psk_hash, "secret", shared_secret)
+    ///   secret = LabeledExtract(shared_secret, "secret", psk)
     ///
     ///   key = LabeledExpand(secret, "key", key_schedule_context, Nk)
-    ///   nonce = LabeledExpand(secret, "nonce", key_schedule_context, Nn)
+    ///   base_nonce = LabeledExpand(secret, "base_nonce", key_schedule_context, Nn)
     ///   exporter_secret = LabeledExpand(secret, "exp", key_schedule_context, Nh)
     ///
-    ///   return Context(key, nonce, 0, exporter_secret)
+    ///   return Context(key, base_nonce, 0, exporter_secret)
     /// ```
-    pub fn key_schedule(&self, zz: &[u8], info: &[u8], psk: &[u8], psk_id: &[u8]) -> Context {
+    pub fn key_schedule(
+        &self,
+        shared_secret: &[u8],
+        info: &[u8],
+        psk: &[u8],
+        psk_id: &[u8],
+    ) -> Context {
         self.verify_psk_inputs(psk, psk_id);
         let suite_id = self.get_ciphersuite();
         let key_schedule_context = self.get_key_schedule_context(info, psk_id, &suite_id);
-        let secret = self.get_secret(psk, zz, &suite_id);
+        let secret = self
+            .kdf
+            .labeled_extract(shared_secret, &suite_id, "secret", psk);
 
         let key =
             self.kdf
                 .labeled_expand(&secret, &suite_id, "key", &key_schedule_context, self.nk);
-        let nonce =
-            self.kdf
-                .labeled_expand(&secret, &suite_id, "nonce", &key_schedule_context, self.nn);
+        let base_nonce = self.kdf.labeled_expand(
+            &secret,
+            &suite_id,
+            "base_nonce",
+            &key_schedule_context,
+            self.nn,
+        );
         let exporter_secret =
             self.kdf
                 .labeled_expand(&secret, &suite_id, "exp", &key_schedule_context, self.nh);
 
         Context {
             key,
-            nonce,
+            nonce: base_nonce,
             exporter_secret,
             sequence_number: 0,
             hpke: self,

@@ -11,7 +11,13 @@ macro_rules! implement_aead {
             fn new() -> Self {
                 Self {}
             }
-            fn seal(&self, key: &[u8], nonce: &[u8], aad: &[u8], plain_txt: &[u8]) -> Result<Vec<u8>, Error> {
+            fn seal(
+                &self,
+                key: &[u8],
+                nonce: &[u8],
+                aad: &[u8],
+                plain_txt: &[u8],
+            ) -> Result<Vec<u8>, Error> {
                 if nonce.len() != 12 {
                     return Err(Error::InvalidNonce);
                 }

@@ -15,9 +15,9 @@ struct HpkeTestVecor {
     kdf_id: u16,
     aead_id: u16,
     info: String,
-    seedR: String,
-    seedS: Option<String>,
-    seedE: String,
+    ikmR: String,
+    ikmS: Option<String>,
+    ikmE: String,
     skRm: String,
     skSm: Option<String>,
     skEm: String,
@@ -31,7 +31,7 @@ struct HpkeTestVecor {
     key_schedule_context: String,
     secret: String,
     key: String,
-    nonce: String,
+    base_nonce: String,
     exporter_secret: String,
     encryptions: Vec<CiphertextKAT>,
     exports: Vec<ExportsKAT>,
@@ -112,7 +112,7 @@ fn test_kat() {
         // let key_schedule_context = hex_to_bytes(&test.key_schedule_context);
         // let secret = hex_to_bytes(&test.secret);
         let key = hex_to_bytes(&test.key);
-        let nonce = hex_to_bytes(&test.nonce);
+        let nonce = hex_to_bytes(&test.base_nonce);
         let exporter_secret = hex_to_bytes(&test.exporter_secret);
 
         // Use internal `key_schedule` function for KAT.

@@ -3,6 +3,7 @@ use crate::kdf;
 use crate::util;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
+#[repr(u16)]
 pub enum Mode {
     DhKemP256 = 0x0010,
     DhKemP384 = 0x0011,
