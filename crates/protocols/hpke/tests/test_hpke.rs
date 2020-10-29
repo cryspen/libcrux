@@ -211,6 +211,7 @@ fn test_kat() {
 #[cfg(feature = "hazmat")]
 #[test]
 fn test_serialization() {
+    use hpke::HPKEKeyPair;
     // TODO: test for all combinations.
     let mode: Mode = Mode::Base;
     let kem_id: kem::Mode = kem::Mode::DhKemP256;
