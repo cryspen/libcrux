@@ -1,5 +1,5 @@
 use crate::hkdf;
-use crate::util::*;
+use crate::util::concat;
 
 use std::fmt::Debug;
 
@@ -37,13 +37,13 @@ pub struct Kdf {
 }
 
 impl Kdf {
-    pub fn new(mode: Mode) -> Self {
+    pub(crate) fn new(mode: Mode) -> Self {
         Self {
             kdf: get_kdf_object(mode),
         }
     }
 
-    pub fn get_nh(&self) -> usize {
+    pub(crate) fn get_nh(&self) -> usize {
         self.kdf.digest_length()
     }
 
@@ -72,11 +72,13 @@ impl Kdf {
         self.kdf.expand(prk, &labeled_info, len)
     }
 
-    pub fn extract(&self, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
+    #[cfg(test)]
+    pub(crate) fn extract(&self, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
         self.kdf.extract(salt, ikm)
     }
 
-    pub fn expand(&self, prk: &[u8], info: &[u8], output_size: usize) -> Vec<u8> {
+    #[cfg(test)]
+    pub(crate) fn expand(&self, prk: &[u8], info: &[u8], output_size: usize) -> Vec<u8> {
         self.kdf.expand(prk, info, output_size)
     }
 }

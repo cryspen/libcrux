@@ -14,6 +14,11 @@ pub mod kem;
 
 mod util;
 
+#[cfg(test)]
+mod test_aead;
+#[cfg(test)]
+mod test_kdf;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum HPKEError {
     OpenError,
@@ -89,12 +94,24 @@ pub struct Context<'a> {
     hpke: &'a Hpke,
 }
 
+#[cfg(feature = "hazmat")]
 impl<'a> std::fmt::Debug for Context<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "Context {{\n  key: {:?}\n  nonce: {:?}\n exporter_secret: {:?}\n seq no: {:?}\n}}",
             self.key, self.nonce, self.exporter_secret, self.sequence_number
+        )
+    }
+}
+
+#[cfg(not(feature = "hazmat"))]
+impl<'a> std::fmt::Debug for Context<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Context {{\n  key: {:?}\n  nonce: {:?}\n exporter_secret: {:?}\n seq no: {:?}\n}}",
+            &"***", &"***", &"***", &"***"
         )
     }
 }
@@ -515,12 +532,12 @@ impl HPKEKeyPair {
     }
 
     /// Get a reference to the HPKE private key of this key pair.
-    pub fn get_private_key_ref(&self) -> &HPKEPrivateKey {
+    pub fn private_key(&self) -> &HPKEPrivateKey {
         &self.private_key
     }
 
     /// Get a reference to the HPKE public key of this key pair.
-    pub fn get_public_key_ref(&self) -> &HPKEPublicKey {
+    pub fn public_key(&self) -> &HPKEPublicKey {
         &self.public_key
     }
 
@@ -604,23 +621,55 @@ pub mod test_util {
     impl<'a> super::Context<'_> {
         /// Get a reference to the key in the context.
         #[doc(hidden)]
-        pub fn get_key_ref(&'a self) -> &'a [u8] {
+        pub fn key(&'a self) -> &'a [u8] {
             &self.key
         }
         /// Get a reference to the nonce in the context.
         #[doc(hidden)]
-        pub fn get_nonce_ref(&'a self) -> &'a [u8] {
+        pub fn nonce(&'a self) -> &'a [u8] {
             &self.nonce
         }
         /// Get a reference to the exporter secret in the context.
         #[doc(hidden)]
-        pub fn get_exporter_secret_ref(&'a self) -> &'a [u8] {
+        pub fn exporter_secret(&'a self) -> &'a [u8] {
             &self.exporter_secret
         }
         /// Get a reference to the sequence number in the context.
         #[doc(hidden)]
-        pub fn get_sequence_number(&self) -> u32 {
+        pub fn sequence_number(&self) -> u32 {
             self.sequence_number
+        }
+    }
+
+    pub fn bytes_to_hex(bytes: &[u8]) -> String {
+        let mut hex = String::new();
+        for &b in bytes {
+            hex += &format!("{:02X}", b);
+        }
+        hex
+    }
+
+    pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
+        assert!(hex.len() % 2 == 0);
+        let mut bytes = Vec::new();
+        for i in 0..(hex.len() / 2) {
+            bytes.push(u8::from_str_radix(&hex[2 * i..2 * i + 2], 16).unwrap());
+        }
+        bytes
+    }
+
+    pub fn hex_to_bytes_option(hex: Option<String>) -> Vec<u8> {
+        match hex {
+            Some(s) => hex_to_bytes(&s),
+            None => vec![],
+        }
+    }
+
+    pub fn vec_to_option_slice(v: &[u8]) -> Option<&[u8]> {
+        if v.is_empty() {
+            None
+        } else {
+            Some(v)
         }
     }
 }

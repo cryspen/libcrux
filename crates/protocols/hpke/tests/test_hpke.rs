@@ -2,10 +2,11 @@ use serde::{self, Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
 
-use hpke::*;
-
-mod test_util;
-use test_util::*;
+use hpke::{
+    aead, kdf, kem,
+    test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice},
+    HPKEPrivateKey, HPKEPublicKey, Hpke, Mode,
+};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_snake_case)]
@@ -131,10 +132,10 @@ fn test_kat() {
         );
 
         // Check setup info
-        assert_eq!(direct_ctx.get_key_ref(), key);
-        assert_eq!(direct_ctx.get_nonce_ref(), nonce);
-        assert_eq!(direct_ctx.get_exporter_secret_ref(), exporter_secret);
-        assert_eq!(direct_ctx.get_sequence_number(), 0);
+        assert_eq!(direct_ctx.key(), key);
+        assert_eq!(direct_ctx.nonce(), nonce);
+        assert_eq!(direct_ctx.exporter_secret(), exporter_secret);
+        assert_eq!(direct_ctx.sequence_number(), 0);
 
         // Test key pair derivation.
         let (my_sk_r, my_pk_r) = hpke.derive_key_pair(&ikm_r).into_keys();

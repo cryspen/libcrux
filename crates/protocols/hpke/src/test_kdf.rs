@@ -1,7 +1,4 @@
-use hpke::kdf;
-
-mod test_util;
-use test_util::*;
+use crate::{kdf, test_util::hex_to_bytes};
 
 #[test]
 fn test_hkdf_sha256() {

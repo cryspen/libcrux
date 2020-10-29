@@ -58,11 +58,11 @@ impl DhKem {
         )
     }
 
-    fn marshal(&self, pk: &[u8]) -> Vec<u8> {
+    fn serialize(&self, pk: &[u8]) -> Vec<u8> {
         pk.to_vec()
     }
 
-    fn unmarshal(&self, enc: &[u8]) -> Vec<u8> {
+    fn deserialize(&self, enc: &[u8]) -> Vec<u8> {
         enc.to_vec()
     }
 }
@@ -123,9 +123,9 @@ impl KemTrait for DhKem {
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {
         let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
         let dh_pk = self.dh(&sk_e, pk_r);
-        let enc = self.marshal(&pk_e);
+        let enc = self.serialize(&pk_e);
 
-        let pk_rm = self.marshal(pk_r);
+        let pk_rm = self.serialize(pk_r);
         let kem_context = concat(&[&enc, &pk_rm]);
 
         let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id);
@@ -133,10 +133,10 @@ impl KemTrait for DhKem {
     }
 
     fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Vec<u8> {
-        let pk_e = self.unmarshal(enc);
+        let pk_e = self.deserialize(enc);
         let dh_pk = self.dh(sk_r, &pk_e);
 
-        let pk_rm = self.marshal(&self.dh_base(sk_r));
+        let pk_rm = self.serialize(&self.dh_base(sk_r));
         let kem_context = concat(&[&enc, &pk_rm]);
 
         self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id)
@@ -145,9 +145,9 @@ impl KemTrait for DhKem {
         let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
         let dh_pk = concat(&[&self.dh(&sk_e, pk_r), &self.dh(&sk_s, pk_r)]);
 
-        let enc = self.marshal(&pk_e);
-        let pk_rm = self.marshal(&pk_r);
-        let pk_sm = self.marshal(&self.dh_base(&sk_s));
+        let enc = self.serialize(&pk_e);
+        let pk_rm = self.serialize(&pk_r);
+        let pk_sm = self.serialize(&self.dh_base(&sk_s));
 
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
@@ -155,11 +155,11 @@ impl KemTrait for DhKem {
         (zz, enc)
     }
     fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8], suite_id: &[u8]) -> Vec<u8> {
-        let pk_e = self.unmarshal(enc);
+        let pk_e = self.deserialize(enc);
         let dh_pk = concat(&[&self.dh(sk_r, &pk_e), &self.dh(sk_r, &pk_s)]);
 
-        let pk_rm = self.marshal(&self.dh_base(sk_r));
-        let pk_sm = self.marshal(&pk_s);
+        let pk_rm = self.serialize(&self.dh_base(sk_r));
+        let pk_sm = self.serialize(&pk_s);
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
         self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id)

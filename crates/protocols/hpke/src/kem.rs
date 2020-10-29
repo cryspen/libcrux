@@ -71,16 +71,10 @@ fn get_kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {
 }
 
 impl Kem {
-    pub fn new(mode: Mode) -> Self {
+    pub(crate) fn new(mode: Mode) -> Self {
         Self {
             mode,
             kem: get_kem_object(mode, get_kdf(mode)),
-        }
-    }
-    pub fn new_kdf(mode: Mode, kdf_id: kdf::Mode) -> Self {
-        Self {
-            mode,
-            kem: get_kem_object(mode, kdf_id),
         }
     }
 
