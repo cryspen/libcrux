@@ -29,7 +29,7 @@ pub struct HPKEPublicKey {
 }
 
 /// An HPKE private key is a byte vector.
-#[derive(Debug, Default)]
+#[derive(Default)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct HPKEPrivateKey {
     value: Vec<u8>,
@@ -565,6 +565,24 @@ impl PartialEq for HPKEPrivateKey {
             different_bits |= byte_a ^ byte_b;
         }
         (1u8 & ((different_bits.wrapping_sub(1)).wrapping_shr(8)).wrapping_sub(1)) == 0
+    }
+}
+
+#[cfg(feature = "hazmat")]
+impl std::fmt::Debug for HPKEPrivateKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        f.debug_struct("HPKEPrivateKey")
+            .field("value", &"***")
+            .finish()
+    }
+}
+
+#[cfg(not(feature = "hazmat"))]
+impl std::fmt::Debug for HPKEPrivateKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        f.debug_struct("HPKEPrivateKey")
+            .field("value", &self.value)
+            .finish()
     }
 }
 
