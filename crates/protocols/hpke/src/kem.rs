@@ -36,13 +36,16 @@ fn get_kdf(mode: Mode) -> kdf::Mode {
     }
 }
 
+pub(crate) type PrivateKey = Vec<u8>;
+pub(crate) type PublicKey = Vec<u8>;
+
 pub(crate) trait KemTrait: std::fmt::Debug {
     fn new(kdf_id: kdf::Mode) -> Self
     where
         Self: Sized;
 
     fn key_gen(&self) -> (Vec<u8>, Vec<u8>);
-    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (Vec<u8>, Vec<u8>);
+    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (PublicKey, PrivateKey);
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>);
     fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Vec<u8>;
@@ -86,23 +89,27 @@ impl Kem {
         util::concat(&[b"KEM", &(self.mode as u16).to_be_bytes()])
     }
 
-    pub fn encaps(&self, pk_r: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    pub(crate) fn encaps(&self, pk_r: &[u8]) -> (Vec<u8>, Vec<u8>) {
         self.kem.encaps(pk_r, &self.get_ciphersuite())
     }
-    pub fn decaps(&self, enc: &[u8], sk_r: &[u8]) -> Vec<u8> {
+    pub(crate) fn decaps(&self, enc: &[u8], sk_r: &[u8]) -> Vec<u8> {
         self.kem.decaps(enc, sk_r, &self.get_ciphersuite())
     }
-    pub fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    pub(crate) fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
         self.kem.auth_encaps(pk_r, sk_s, &self.get_ciphersuite())
     }
-    pub fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8> {
+    pub(crate) fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8> {
         self.kem
             .auth_decaps(enc, sk_r, pk_s, &self.get_ciphersuite())
     }
-    pub fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
+    pub(crate) fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
         self.kem.key_gen()
     }
-    pub fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (Vec<u8>, Vec<u8>) {
-        self.kem.derive_key_pair(suite_id, ikm)
+
+    /// Derive key pair from the input key material `ikm`.
+    ///
+    /// Returns (PublicKey, PrivateKey).
+    pub(crate) fn derive_key_pair(&self, ikm: &[u8]) -> (PublicKey, PrivateKey) {
+        self.kem.derive_key_pair(&self.get_ciphersuite(), ikm)
     }
 }

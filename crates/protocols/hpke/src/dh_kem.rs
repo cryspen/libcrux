@@ -4,9 +4,6 @@ use crate::kdf;
 use crate::kem::*;
 use crate::util::*;
 
-type PK = Vec<u8>;
-type SK = Vec<u8>;
-
 #[derive(Debug)]
 pub(crate) struct DhKem {
     encoded_pk_len: usize,
@@ -50,7 +47,7 @@ impl DhKem {
         }
     }
 
-    fn extract_and_expand(&self, pk: PK, kem_context: &[u8], suite_id: &[u8]) -> Vec<u8> {
+    fn extract_and_expand(&self, pk: PublicKey, kem_context: &[u8], suite_id: &[u8]) -> Vec<u8> {
         let prk = self.kdf.labeled_extract(&[], suite_id, "eae_prk", &pk);
         self.kdf.labeled_expand(
             &prk,
@@ -88,13 +85,13 @@ impl KemTrait for DhKem {
         (sk, pk)
     }
 
-    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (PK, SK) {
-        let dpk_prk = self.kdf.labeled_extract(&[], suite_id, "dpk_prk", ikm);
+    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (PublicKey, PrivateKey) {
+        let dkp_prk = self.kdf.labeled_extract(&[], suite_id, "dkp_prk", ikm);
 
         let sk = match self.dh_id {
             ecdh::Mode::X25519 => {
                 self.kdf
-                    .labeled_expand(&dpk_prk, suite_id, "sk", &[], self.sk_len)
+                    .labeled_expand(&dkp_prk, suite_id, "sk", &[], self.sk_len)
             }
             ecdh::Mode::P256 => {
                 let mut ctr = 0u8;
@@ -103,7 +100,7 @@ impl KemTrait for DhKem {
                 // the loop will always terminate.
                 loop {
                     let candidate = self.kdf.labeled_expand(
-                        &dpk_prk,
+                        &dkp_prk,
                         suite_id,
                         "candidate",
                         &ctr.to_be_bytes(),

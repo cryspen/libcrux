@@ -89,6 +89,8 @@ fn test_kat() {
         // Set up sender and receiver.
         let pk_rm = HPKEPublicKey::new(hex_to_bytes(&test.pkRm));
         let sk_rm = HPKEPrivateKey::new(hex_to_bytes(&test.skRm));
+        let pk_em = HPKEPublicKey::new(hex_to_bytes(&test.pkEm));
+        let sk_em = HPKEPrivateKey::new(hex_to_bytes(&test.skEm));
         let pk_sm = hex_to_bytes_option(test.pkSm);
         let pk_sm = if pk_sm.is_empty() {
             None
@@ -115,6 +117,11 @@ fn test_kat() {
         let nonce = hex_to_bytes(&test.base_nonce);
         let exporter_secret = hex_to_bytes(&test.exporter_secret);
 
+        // Input key material.
+        let ikm_r = hex_to_bytes(&test.ikmR);
+        let ikm_e = hex_to_bytes(&test.ikmE);
+        let ikm_s = hex_to_bytes_option(test.ikmS);
+
         // Use internal `key_schedule` function for KAT.
         let mut direct_ctx = hpke.key_schedule(
             &shared_secret,
@@ -129,6 +136,19 @@ fn test_kat() {
         assert_eq!(direct_ctx.get_exporter_secret_ref(), exporter_secret);
         assert_eq!(direct_ctx.get_sequence_number(), 0);
 
+        // Test key pair derivation.
+        let (my_sk_r, my_pk_r) = hpke.derive_key_pair(&ikm_r).into_keys();
+        assert_eq!(sk_rm, my_sk_r);
+        assert_eq!(pk_rm, my_pk_r);
+        let (my_sk_e, my_pk_e) = hpke.derive_key_pair(&ikm_e).into_keys();
+        assert_eq!(sk_em, my_sk_e);
+        assert_eq!(pk_em, my_pk_e);
+        if let (Some(sk_sm), Some(pk_sm)) = (sk_sm, pk_sm) {
+            let (my_sk_s, my_pk_s) = hpke.derive_key_pair(&ikm_s).into_keys();
+            assert_eq!(sk_sm, &my_sk_s);
+            assert_eq!(pk_sm, &my_pk_s);
+        }
+
         // Setup sender and receiver.
         // These use randomness and hence can't be fully checked against the test vectors.
         let (enc, mut sender_context) = hpke
@@ -142,8 +162,6 @@ fn test_kat() {
         let mut receiver_context_kat = hpke
             .setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm)
             .unwrap();
-
-        // TODO: test KAT sender (encaps). Requires to inject randomness.
 
         // Encrypt
         for (i, encryption) in test.encryptions.iter().enumerate() {

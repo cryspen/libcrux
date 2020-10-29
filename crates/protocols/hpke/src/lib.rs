@@ -497,9 +497,9 @@ impl Hpke {
     /// 7.1.2. DeriveKeyPair
     /// Derive a key pair for the used KEM with the given input key material.
     ///
-    /// Returns (PublicKey, PrivateKey)
+    /// Returns `HPKEKeyPair`
     pub fn derive_key_pair(&self, ikm: &[u8]) -> HPKEKeyPair {
-        let (pk, sk) = self.kem.derive_key_pair(&self.get_ciphersuite(), ikm);
+        let (pk, sk) = self.kem.derive_key_pair(ikm);
         HPKEKeyPair::new(sk, pk)
     }
 }
@@ -549,6 +549,22 @@ impl HPKEPrivateKey {
     #[cfg(feature = "hazmat")]
     pub fn as_slice(&self) -> &[u8] {
         &self.value
+    }
+}
+
+/// Hopefully constant time comparison of the two values as long as they have the
+/// same length.
+impl PartialEq for HPKEPrivateKey {
+    fn eq(&self, other: &Self) -> bool {
+        if self.value.len() != other.value.len() {
+            return false;
+        }
+
+        let mut different_bits = 0u8;
+        for (&byte_a, &byte_b) in self.value.iter().zip(other.value.iter()) {
+            different_bits |= byte_a ^ byte_b;
+        }
+        (1u8 & ((different_bits.wrapping_sub(1)).wrapping_shr(8)).wrapping_sub(1)) == 0
     }
 }
 
