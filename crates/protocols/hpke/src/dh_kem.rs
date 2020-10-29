@@ -28,36 +28,37 @@ impl DhKem {
         }
     }
     fn dh(&self, sk: &[u8], pk: &[u8]) -> Vec<u8> {
-        // TODO: error handling
+        // Unwrapping here is fine because we have to make sure that the input
+        // keys are valid before we get here.
         let dh = ecdh_derive(self.dh_id, pk, sk).unwrap();
+
         match self.dh_id {
-            ecdh::Mode::X25519 => {
-                dh
-            },
-            ecdh::Mode::P256 => {
-                dh[0..32].to_vec()
-            },
+            ecdh::Mode::X25519 => dh,
+            ecdh::Mode::P256 => dh[0..32].to_vec(),
         }
     }
 
     fn dh_base(&self, sk: &[u8]) -> Vec<u8> {
         let out = ecdh_derive_base(self.dh_id, sk).unwrap();
         match self.dh_id {
-            ecdh::Mode::X25519 => {
-                out
-            },
+            ecdh::Mode::X25519 => out,
             ecdh::Mode::P256 => {
                 let mut tmp = vec![0x04];
                 tmp.extend(out);
                 tmp
-            },
+            }
         }
     }
 
     fn extract_and_expand(&self, pk: PK, kem_context: &[u8], suite_id: &[u8]) -> Vec<u8> {
         let prk = self.kdf.labeled_extract(&[], suite_id, "eae_prk", &pk);
-        self.kdf
-            .labeled_expand(&prk, suite_id, "shared_secret", kem_context, self.get_secret_len())
+        self.kdf.labeled_expand(
+            &prk,
+            suite_id,
+            "shared_secret",
+            kem_context,
+            self.get_secret_len(),
+        )
     }
 
     fn marshal(&self, pk: &[u8]) -> Vec<u8> {
@@ -96,17 +97,27 @@ impl KemTrait for DhKem {
                     .labeled_expand(&dpk_prk, suite_id, "sk", &[], self.sk_len)
             }
             ecdh::Mode::P256 => {
-                let ctr = 0u8;
-                // FIXME: this currently produces invalid keys sometimes.
-                // loop {
-                self.kdf.labeled_expand(
-                    &dpk_prk,
-                    suite_id,
-                    "candidate",
-                    &ctr.to_be_bytes(),
-                    self.sk_len - 1,
-                )
-                // }
+                let mut ctr = 0u8;
+                // Do rejection sampling trying to find a valid key.
+                // It is expected that there aren't too many iteration and that
+                // the loop will always terminate.
+                loop {
+                    let candidate = self.kdf.labeled_expand(
+                        &dpk_prk,
+                        suite_id,
+                        "candidate",
+                        &ctr.to_be_bytes(),
+                        self.sk_len,
+                    );
+                    if let Ok(sk) = p256_validate_sk(&candidate) {
+                        break sk.to_vec();
+                    }
+                    if ctr == u8::MAX {
+                        // If we get here we lost. This should never happen.
+                        panic!("Can't derive a secret key for P256");
+                    }
+                    ctr += 1;
+                }
             }
         };
         (self.dh_base(&sk).to_vec(), sk)
