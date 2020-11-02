@@ -1,241 +1,608 @@
-use serde::{self, Deserialize, Serialize};
-use std::fs::File;
-use std::io::BufReader;
+use evercrypt::prelude::*;
+use hpke::prelude::*;
+use lazy_static::lazy_static;
 
-use hpke::{
-    aead, kdf, kem,
-    test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice},
-    HPKEPrivateKey, HPKEPublicKey, Hpke, Mode,
-};
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[allow(non_snake_case)]
-struct HpkeTestVecor {
-    mode: u16,
-    kem_id: u16,
-    kdf_id: u16,
-    aead_id: u16,
-    info: String,
-    ikmR: String,
-    ikmS: Option<String>,
-    ikmE: String,
-    skRm: String,
-    skSm: Option<String>,
-    skEm: String,
-    psk: Option<String>,
-    psk_id: Option<String>,
-    pkRm: String,
-    pkSm: Option<String>,
-    pkEm: String,
-    enc: String,
-    shared_secret: String,
-    key_schedule_context: String,
-    secret: String,
-    key: String,
-    base_nonce: String,
-    exporter_secret: String,
-    encryptions: Vec<CiphertextKAT>,
-    exports: Vec<ExportsKAT>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[allow(non_snake_case)]
-struct CiphertextKAT {
-    aad: String,
-    ciphertext: String,
-    nonce: String,
-    plaintext: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[allow(non_snake_case)]
-struct ExportsKAT {
-    exportContext: String,
-    exportLength: usize,
-    exportValue: String,
-}
-
-#[test]
-fn test_kat() {
-    let file = "tests/test_vectors.json";
-    let file = match File::open(file) {
-        Ok(f) => f,
-        Err(_) => panic!("Couldn't open file {}.", file),
+lazy_static! {
+    static ref TEST_CASES: Vec<(Mode, HpkeKemMode, HpkeKdfMode, HpkeAeadMode)> = {
+        let mut tests = Vec::new();
+        for mode in 0u16..4 {
+            let hpke_mode = Mode::try_from(mode).unwrap();
+            for aead_mode in 1u16..4 {
+                let aead_mode = HpkeAeadMode::try_from(aead_mode).unwrap();
+                for kdf_mode in 1u16..4 {
+                    let kdf_mode = HpkeKdfMode::try_from(kdf_mode).unwrap();
+                    for &kem_mode in &[0x10u16, 0x20] {
+                        let kem_mode = HpkeKemMode::try_from(kem_mode).unwrap();
+                        tests.push((hpke_mode, kem_mode, kdf_mode, aead_mode));
+                        println!(
+                            "generate_test_case!({}, HpkeMode::{:?}, HpkeKemMode::{:?}, HpkeKdfMode::{:?}, HpkeAeadMode::{:?});",
+                            Hpke::new(hpke_mode, kem_mode, kdf_mode, aead_mode),
+                            hpke_mode,
+                            kem_mode,
+                            kdf_mode,
+                            aead_mode
+                        );
+                    }
+                }
+            }
+        }
+        tests
     };
-    let reader = BufReader::new(file);
-    let tests: Vec<HpkeTestVecor> = match serde_json::from_reader(reader) {
-        Ok(r) => r,
-        Err(e) => panic!("Error reading file.\n{:?}", e),
+}
+
+macro_rules! generate_test_case {
+    ($name:ident, $hpke_mode:expr, $kem_mode:expr, $kdf_mode:expr, $aead_mode:expr) => {
+        #[test]
+        fn $name() {
+            let hpke = Hpke::new($hpke_mode, $kem_mode, $kdf_mode, $aead_mode);
+            println!("Self test {}", hpke);
+
+            // Self test seal and open with random keys.
+            let (sk_r, pk_r) = hpke.generate_key_pair().into_keys();
+            let (sk_s, pk_s) = hpke.generate_key_pair().into_keys();
+            let info = b"HPKE self test info";
+            let aad = b"HPKE self test aad";
+            let plain_txt = b"HPKE self test plain text";
+            let exporter_context = b"HPKE self test exporter context";
+            let psk = get_random_vec(32);
+            let psk_id = get_random_vec(32);
+            let (psk, psk_id): (Option<&[u8]>, Option<&[u8]>) = match $hpke_mode {
+                Mode::Base | Mode::Auth => (None, None),
+                Mode::Psk | Mode::AuthPsk => (Some(&psk), Some(&psk_id)),
+            };
+            let (sk_s_option, pk_s_option) = match $hpke_mode {
+                Mode::Auth | Mode::AuthPsk => (Some(&sk_s), Some(&pk_s)),
+                Mode::Psk | Mode::Base => (None, None),
+            };
+            let (enc, ctxt) = hpke
+                .seal(&pk_r, info, aad, plain_txt, psk, psk_id, sk_s_option)
+                .unwrap();
+            let ptxt = hpke
+                .open(&enc, &sk_r, info, aad, &ctxt, psk, psk_id, pk_s_option)
+                .unwrap();
+            assert_eq!(ptxt, plain_txt);
+
+            // Exporter test
+            let (enc, sender_exporter) = hpke
+                .send_export(&pk_r, info, psk, psk_id, sk_s_option, exporter_context, 64)
+                .unwrap();
+            let receiver_exporter = hpke
+                .receiver_export(
+                    &enc,
+                    &sk_r,
+                    info,
+                    psk,
+                    psk_id,
+                    pk_s_option,
+                    exporter_context,
+                    64,
+                )
+                .unwrap();
+            assert_eq!(sender_exporter, receiver_exporter);
+
+            // Self test with context
+            let (enc, mut sender_context) = hpke
+                .setup_sender(&pk_r, info, psk, psk_id, sk_s_option)
+                .unwrap();
+            let mut receiver_context = hpke
+                .setup_receiver(&enc, &sk_r, info, psk, psk_id, pk_s_option)
+                .unwrap();
+
+            for _ in 0..17 {
+                let ctxt = sender_context.seal(aad, plain_txt).unwrap();
+                let ptxt = receiver_context.open(aad, &ctxt).unwrap();
+                assert_eq!(ptxt, plain_txt);
+            }
+
+            // Exporter test
+            let sender_exporter = sender_context.export(exporter_context, 64);
+            let receiver_exporter = receiver_context.export(exporter_context, 64);
+            assert_eq!(sender_exporter, receiver_exporter);
+        }
     };
-
-    for test in tests {
-        let mode: Mode = test.mode.into();
-        let kem_id: kem::Mode = test.kem_id.into();
-        let kdf_id: kdf::Mode = test.kdf_id.into();
-        let aead_id: aead::Mode = test.aead_id.into();
-
-        if kem_id != kem::Mode::DhKem25519 && kem_id != kem::Mode::DhKemP256 {
-            println!(" > KEM {:?} not implemented yet", kem_id);
-            continue;
-        }
-
-        println!(
-            "Testing mode {:?} with ciphersuite {:?}_{:?}_{:?}",
-            mode, kem_id, kdf_id, aead_id
-        );
-
-        // Init HPKE with the given mode and ciphersuite.
-        let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
-
-        // Set up sender and receiver.
-        let pk_rm = HPKEPublicKey::new(hex_to_bytes(&test.pkRm));
-        let sk_rm = HPKEPrivateKey::new(hex_to_bytes(&test.skRm));
-        let pk_em = HPKEPublicKey::new(hex_to_bytes(&test.pkEm));
-        let sk_em = HPKEPrivateKey::new(hex_to_bytes(&test.skEm));
-        let pk_sm = hex_to_bytes_option(test.pkSm);
-        let pk_sm = if pk_sm.is_empty() {
-            None
-        } else {
-            Some(HPKEPublicKey::new(pk_sm))
-        };
-        let pk_sm = pk_sm.as_ref();
-        let sk_sm = hex_to_bytes_option(test.skSm);
-        let sk_sm = if sk_sm.is_empty() {
-            None
-        } else {
-            Some(HPKEPrivateKey::new(sk_sm))
-        };
-        let sk_sm = sk_sm.as_ref();
-        let info = hex_to_bytes(&test.info);
-        let psk = hex_to_bytes_option(test.psk);
-        let psk = vec_to_option_slice(&psk);
-        let psk_id = hex_to_bytes_option(test.psk_id);
-        let psk_id = vec_to_option_slice(&psk_id);
-        let shared_secret = hex_to_bytes(&test.shared_secret);
-        // let key_schedule_context = hex_to_bytes(&test.key_schedule_context);
-        // let secret = hex_to_bytes(&test.secret);
-        let key = hex_to_bytes(&test.key);
-        let nonce = hex_to_bytes(&test.base_nonce);
-        let exporter_secret = hex_to_bytes(&test.exporter_secret);
-
-        // Input key material.
-        let ikm_r = hex_to_bytes(&test.ikmR);
-        let ikm_e = hex_to_bytes(&test.ikmE);
-        let ikm_s = hex_to_bytes_option(test.ikmS);
-
-        // Use internal `key_schedule` function for KAT.
-        let mut direct_ctx = hpke.key_schedule(
-            &shared_secret,
-            &info,
-            psk.unwrap_or_default(),
-            psk_id.unwrap_or_default(),
-        );
-
-        // Check setup info
-        assert_eq!(direct_ctx.key(), key);
-        assert_eq!(direct_ctx.nonce(), nonce);
-        assert_eq!(direct_ctx.exporter_secret(), exporter_secret);
-        assert_eq!(direct_ctx.sequence_number(), 0);
-
-        // Test key pair derivation.
-        let (my_sk_r, my_pk_r) = hpke.derive_key_pair(&ikm_r).into_keys();
-        assert_eq!(sk_rm, my_sk_r);
-        assert_eq!(pk_rm, my_pk_r);
-        let (my_sk_e, my_pk_e) = hpke.derive_key_pair(&ikm_e).into_keys();
-        assert_eq!(sk_em, my_sk_e);
-        assert_eq!(pk_em, my_pk_e);
-        if let (Some(sk_sm), Some(pk_sm)) = (sk_sm, pk_sm) {
-            let (my_sk_s, my_pk_s) = hpke.derive_key_pair(&ikm_s).into_keys();
-            assert_eq!(sk_sm, &my_sk_s);
-            assert_eq!(pk_sm, &my_pk_s);
-        }
-
-        // Setup sender and receiver.
-        // These use randomness and hence can't be fully checked against the test vectors.
-        let (enc, mut sender_context) = hpke
-            .setup_sender(&pk_rm, &info, psk, psk_id, sk_sm)
-            .unwrap();
-        let mut receiver_context = hpke
-            .setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm)
-            .unwrap();
-
-        // Setup KAT receiver.
-        let mut receiver_context_kat = hpke
-            .setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm)
-            .unwrap();
-
-        // Encrypt
-        for (i, encryption) in test.encryptions.iter().enumerate() {
-            println!("Test encryption {} ...", i);
-            let aad = hex_to_bytes(&encryption.aad);
-            let ptxt = hex_to_bytes(&encryption.plaintext);
-            let ctxt_kat = hex_to_bytes(&encryption.ciphertext);
-
-            // Test context API self-test
-            let ctxt_out = sender_context.seal(&aad, &ptxt).unwrap();
-            let ptxt_out = receiver_context.open(&aad, &ctxt_out).unwrap();
-            assert_eq!(ptxt_out, ptxt);
-
-            // Test single-shot API self-test
-            let (enc, ct) = hpke
-                .seal(&pk_rm, &info, &aad, &ptxt, psk, psk_id, sk_sm)
-                .unwrap();
-            let ptxt_out = hpke
-                .open(&enc, &sk_rm, &info, &aad, &ct, psk, psk_id, pk_sm)
-                .unwrap();
-            assert_eq!(ptxt_out, ptxt);
-
-            // Test KAT receiver context open
-            let ptxt_out = receiver_context_kat.open(&aad, &ctxt_kat).unwrap();
-            assert_eq!(ptxt_out, ptxt);
-
-            // Test KAT seal on direct_ctx
-            let ct = direct_ctx.seal(&aad, &ptxt).unwrap();
-            assert_eq!(ctxt_kat, ct);
-        }
-
-        // Test KAT on direct_ctx for exporters
-        for (i, export) in test.exports.iter().enumerate() {
-            println!("Test exporter {} ...", i);
-            let export_context = hex_to_bytes(&export.exportContext);
-            let export_value = hex_to_bytes(&export.exportValue);
-            let length = export.exportLength;
-
-            let exported_secret = direct_ctx.export(&export_context, length);
-            assert_eq!(export_value, exported_secret);
-        }
-    }
 }
 
-#[cfg(feature = "serialization")]
-#[cfg(feature = "hazmat")]
-#[test]
-fn test_serialization() {
-    use hpke::HPKEKeyPair;
-    // TODO: test for all combinations.
-    let mode: Mode = Mode::Base;
-    let kem_id: kem::Mode = kem::Mode::DhKemP256;
-    let kdf_id: kdf::Mode = kdf::Mode::HkdfSha256;
-    let aead_id: aead::Mode = aead::Mode::AesGcm128;
-    let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
-
-    // JSON: Public, Private, KeyPair
-    let key_pair = hpke.generate_key_pair();
-
-    let serialized_key_pair = serde_json::to_string(&key_pair).unwrap();
-    let deserialized_key_pair: HPKEKeyPair = serde_json::from_str(&serialized_key_pair).unwrap();
-
-    let (sk, pk) = key_pair.into_keys();
-
-    let serialized_sk = serde_json::to_string(&sk).unwrap();
-    let deserialized_sk: HPKEPrivateKey = serde_json::from_str(&serialized_sk).unwrap();
-    let serialized_pk = serde_json::to_string(&pk).unwrap();
-    let deserialized_pk: HPKEPublicKey = serde_json::from_str(&serialized_pk).unwrap();
-
-    let (des_sk, des_pk) = deserialized_key_pair.into_keys();
-
-    assert_eq!(pk, des_pk);
-    assert_eq!(pk, deserialized_pk);
-    assert_eq!(sk.as_slice(), des_sk.as_slice());
-    assert_eq!(sk.as_slice(), deserialized_sk.as_slice());
-}
+generate_test_case!(
+    base_dhkemp256_hkdfsha256_aesgcm128,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha256_aesgcm128,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha384_aesgcm128,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha384_aesgcm128,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha512_aesgcm128,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha512_aesgcm128,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha256_aesgcm256,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha256_aesgcm256,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha384_aesgcm256,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha384_aesgcm256,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha512_aesgcm256,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha512_aesgcm256,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha256_chacha20poly1305,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha256_chacha20poly1305,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha384_chacha20poly1305,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha384_chacha20poly1305,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    base_dhkemp256_hkdfsha512_chacha20poly1305,
+    HpkeMode::Base,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    base_dhkem25519_hkdfsha512_chacha20poly1305,
+    HpkeMode::Base,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha256_aesgcm128,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha256_aesgcm128,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha384_aesgcm128,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha384_aesgcm128,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha512_aesgcm128,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha512_aesgcm128,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha256_aesgcm256,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha256_aesgcm256,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha384_aesgcm256,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha384_aesgcm256,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha512_aesgcm256,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha512_aesgcm256,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha256_chacha20poly1305,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha256_chacha20poly1305,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha384_chacha20poly1305,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha384_chacha20poly1305,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    psk_dhkemp256_hkdfsha512_chacha20poly1305,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    psk_dhkem25519_hkdfsha512_chacha20poly1305,
+    HpkeMode::Psk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha256_aesgcm128,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha256_aesgcm128,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha384_aesgcm128,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha384_aesgcm128,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha512_aesgcm128,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha512_aesgcm128,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha256_aesgcm256,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha256_aesgcm256,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha384_aesgcm256,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha384_aesgcm256,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha512_aesgcm256,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha512_aesgcm256,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha256_chacha20poly1305,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha256_chacha20poly1305,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha384_chacha20poly1305,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha384_chacha20poly1305,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    auth_dhkemp256_hkdfsha512_chacha20poly1305,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    auth_dhkem25519_hkdfsha512_chacha20poly1305,
+    HpkeMode::Auth,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha256_aesgcm128,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha256_aesgcm128,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha384_aesgcm128,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha384_aesgcm128,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha512_aesgcm128,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha512_aesgcm128,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm128
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha256_aesgcm256,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha256_aesgcm256,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha384_aesgcm256,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha384_aesgcm256,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha512_aesgcm256,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha512_aesgcm256,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::AesGcm256
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha256_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha256_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha256,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha384_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha384_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha384,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    authpsk_dhkemp256_hkdfsha512_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKemP256,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);
+generate_test_case!(
+    authpsk_dhkem25519_hkdfsha512_chacha20poly1305,
+    HpkeMode::AuthPsk,
+    HpkeKemMode::DhKem25519,
+    HpkeKdfMode::HkdfSha512,
+    HpkeAeadMode::ChaCha20Poly1305
+);

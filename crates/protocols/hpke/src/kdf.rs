@@ -11,15 +11,27 @@ pub enum Mode {
     HkdfSha512 = 0x0003,
 }
 
-impl From<u16> for Mode {
-    fn from(x: u16) -> Mode {
+impl std::fmt::Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::convert::TryFrom<u16> for Mode {
+    type Error = Error;
+    fn try_from(x: u16) -> Result<Mode, Error> {
         match x {
-            0x0001 => Mode::HkdfSha256,
-            0x0002 => Mode::HkdfSha384,
-            0x0003 => Mode::HkdfSha512,
-            _ => panic!("Unknown KDF Mode {}", x),
+            0x0001 => Ok(Mode::HkdfSha256),
+            0x0002 => Ok(Mode::HkdfSha384),
+            0x0003 => Ok(Mode::HkdfSha512),
+            _ => Err(Error::UnknownMode),
         }
     }
+}
+
+#[derive(Debug)]
+pub enum Error {
+    UnknownMode,
 }
 
 pub(crate) trait KdfTrait: Debug {

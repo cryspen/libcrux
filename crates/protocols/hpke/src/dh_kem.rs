@@ -35,15 +35,19 @@ impl DhKem {
         }
     }
 
+    /// Prepend 0x04 for uncompressed NIST curve points.
+    #[inline(always)]
+    fn nist_format_uncompressed(pk: &[u8]) -> Vec<u8> {
+        let mut tmp = vec![0x04];
+        tmp.extend(pk);
+        tmp
+    }
+
     fn dh_base(&self, sk: &[u8]) -> Vec<u8> {
         let out = ecdh_derive_base(self.dh_id, sk).unwrap();
         match self.dh_id {
             ecdh::Mode::X25519 => out,
-            ecdh::Mode::P256 => {
-                let mut tmp = vec![0x04];
-                tmp.extend(out);
-                tmp
-            }
+            ecdh::Mode::P256 => Self::nist_format_uncompressed(&out),
         }
     }
 
@@ -58,6 +62,10 @@ impl DhKem {
         )
     }
 
+    /// Serialize public key.
+    /// This is an identity function for X25519.
+    /// Because P256 public keys are already encoded before it is the identity
+    /// function here as well.
     fn serialize(&self, pk: &[u8]) -> Vec<u8> {
         pk.to_vec()
     }
@@ -81,7 +89,7 @@ impl KemTrait for DhKem {
 
     fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
         let sk = ecdh::key_gen(self.dh_id);
-        let pk = ecdh_derive_base(self.dh_id, &sk).unwrap();
+        let pk = self.dh_base(&sk);
         (sk, pk)
     }
 

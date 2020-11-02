@@ -12,17 +12,29 @@ pub enum Mode {
     DhKem448 = 0x0021,
 }
 
-impl From<u16> for Mode {
-    fn from(x: u16) -> Mode {
+impl std::fmt::Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::convert::TryFrom<u16> for Mode {
+    type Error = Error;
+    fn try_from(x: u16) -> Result<Mode, Error> {
         match x {
-            0x0010 => Mode::DhKemP256,
-            0x0011 => Mode::DhKemP384,
-            0x0012 => Mode::DhKemP521,
-            0x0020 => Mode::DhKem25519,
-            0x0021 => Mode::DhKem448,
-            _ => panic!("Unknown KEM Mode {}", x),
+            0x0010 => Ok(Mode::DhKemP256),
+            0x0011 => Ok(Mode::DhKemP384),
+            0x0012 => Ok(Mode::DhKemP521),
+            0x0020 => Ok(Mode::DhKem25519),
+            0x0021 => Ok(Mode::DhKem448),
+            _ => Err(Error::UnknownMode),
         }
     }
+}
+
+#[derive(Debug)]
+pub enum Error {
+    UnknownMode,
 }
 
 // Map KEM to KDF according to spec.
@@ -60,6 +72,12 @@ pub(crate) trait KemTrait: std::fmt::Debug {
 pub struct Kem {
     mode: Mode,
     kem: Box<dyn KemTrait>,
+}
+
+impl std::fmt::Display for Kem {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.mode)
+    }
 }
 
 fn get_kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {

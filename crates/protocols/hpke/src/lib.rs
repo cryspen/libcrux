@@ -5,12 +5,13 @@
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 
-pub mod aead;
+pub(crate) mod aead;
 mod aead_impl;
-pub mod dh_kem;
+mod dh_kem;
 mod hkdf;
-pub mod kdf;
-pub mod kem;
+pub(crate) mod kdf;
+pub(crate) mod kem;
+pub mod prelude;
 
 mod util;
 
@@ -24,6 +25,11 @@ pub enum HPKEError {
     OpenError,
     InvalidConfig,
     InvalidInput,
+    UnknownMode,
+    InconsistentPsk,
+    MissingPsk,
+    UnnecessaryPsk,
+    InsecurePsk,
 }
 
 /// An HPKE public key is a byte vector.
@@ -59,14 +65,21 @@ pub enum Mode {
     AuthPsk = 0x03,
 }
 
-impl From<u16> for Mode {
-    fn from(x: u16) -> Mode {
+impl std::fmt::Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::convert::TryFrom<u16> for Mode {
+    type Error = HPKEError;
+    fn try_from(x: u16) -> Result<Mode, HPKEError> {
         match x {
-            0x00 => Mode::Base,
-            0x01 => Mode::Psk,
-            0x02 => Mode::Auth,
-            0x03 => Mode::AuthPsk,
-            _ => panic!("Unknown HPKE Mode {}", x),
+            0x00 => Ok(Mode::Base),
+            0x01 => Ok(Mode::Psk),
+            0x02 => Ok(Mode::Auth),
+            0x03 => Ok(Mode::AuthPsk),
+            _ => Err(HPKEError::UnknownMode),
         }
     }
 }
@@ -210,6 +223,19 @@ pub struct Hpke {
     nh: usize,
 }
 
+impl std::fmt::Display for Hpke {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}_{}_{}_{}",
+            self.mode.to_string().to_lowercase(),
+            self.kem_id.to_string().to_lowercase(),
+            self.kdf_id.to_string().to_lowercase(),
+            self.aead_id.to_string().to_lowercase()
+        )
+    }
+}
+
 impl Hpke {
     /// Set up the configuration for HPKE.
     pub fn new(mode: Mode, kem_id: kem::Mode, kdf_id: kdf::Mode, aead_id: aead::Mode) -> Self {
@@ -257,6 +283,7 @@ impl Hpke {
                 self.kem.auth_encaps(&pk_r.value, sk_s)
             }
         };
+        println!("setup_sender zz: {:?}", zz);
         Ok((
             enc,
             self.key_schedule(
@@ -264,7 +291,7 @@ impl Hpke {
                 info,
                 psk.unwrap_or_default(),
                 psk_id.unwrap_or_default(),
-            ),
+            )?,
         ))
     }
 
@@ -297,12 +324,13 @@ impl Hpke {
                 self.kem.auth_decaps(enc, &sk_r.value, pk_s)
             }
         };
-        Ok(self.key_schedule(
+        println!("setup_receiver zz: {:?}", zz);
+        self.key_schedule(
             &zz,
             info,
             psk.unwrap_or_default(),
             psk_id.unwrap_or_default(),
-        ))
+        )
     }
 
     /// 6. Single-Shot APIs
@@ -396,20 +424,28 @@ impl Hpke {
         Ok(context.export(exporter_context, length))
     }
 
-    #[inline]
-    fn verify_psk_inputs(&self, psk: &[u8], psk_id: &[u8]) {
+    /// Verify PSKs.
+    #[inline(always)]
+    fn verify_psk_inputs(&self, psk: &[u8], psk_id: &[u8]) -> Result<(), HPKEError> {
         let got_psk = !psk.is_empty();
         let got_psk_id = !psk_id.is_empty();
         if (got_psk && !got_psk_id) || (!got_psk && got_psk_id) {
-            panic!("Inconsistent PSK inputs");
+            return Err(HPKEError::InconsistentPsk);
         }
 
         if got_psk && (self.mode == Mode::Base || self.mode == Mode::Auth) {
-            panic!("PSK input provided when not needed");
+            return Err(HPKEError::UnnecessaryPsk);
         }
         if !got_psk && (self.mode == Mode::Psk || self.mode == Mode::AuthPsk) {
-            panic!("Missing required PSK input");
+            return Err(HPKEError::MissingPsk);
         }
+
+        // The PSK MUST have at least 32 bytes of entropy and SHOULD be of length Nh bytes or longer.
+        if (self.mode == Mode::Psk || self.mode == Mode::AuthPsk) && psk.len() < 32 {
+            return Err(HPKEError::InsecurePsk);
+        }
+
+        Ok(())
     }
 
     #[inline]
@@ -470,8 +506,8 @@ impl Hpke {
         info: &[u8],
         psk: &[u8],
         psk_id: &[u8],
-    ) -> Context {
-        self.verify_psk_inputs(psk, psk_id);
+    ) -> Result<Context, HPKEError> {
+        self.verify_psk_inputs(psk, psk_id)?;
         let suite_id = self.get_ciphersuite();
         let key_schedule_context = self.get_key_schedule_context(info, psk_id, &suite_id);
         let secret = self
@@ -492,13 +528,13 @@ impl Hpke {
             self.kdf
                 .labeled_expand(&secret, &suite_id, "exp", &key_schedule_context, self.nh);
 
-        Context {
+        Ok(Context {
             key,
             nonce: base_nonce,
             exporter_secret,
             sequence_number: 0,
             hpke: self,
-        }
+        })
     }
 
     /// 4. Cryptographic Dependencies
@@ -680,6 +716,7 @@ impl From<aead::Error> for HPKEError {
             aead::Error::OpenError => HPKEError::OpenError,
             aead::Error::InvalidNonce => HPKEError::InvalidConfig,
             aead::Error::InvalidConfig => HPKEError::InvalidInput,
+            aead::Error::UnknownMode => HPKEError::UnknownMode,
         }
     }
 }
