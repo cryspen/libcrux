@@ -13,7 +13,7 @@
 )]
 
 #[cfg(feature = "serialization")]
-use serde::{Deserialize, Serialize};
+pub(crate) use serde::{Deserialize, Serialize};
 
 pub(crate) mod aead;
 mod aead_impl;
@@ -82,6 +82,7 @@ pub struct HPKEKeyPair {
 
 /// HPKE supports four modes.
 #[derive(PartialEq, Copy, Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[repr(u8)]
 pub enum Mode {
     /// HPKE Base mode.
@@ -242,6 +243,7 @@ impl<'a> Context<'a> {
 /// `let hpke = Hpke::new(mode, kem_mode, kdf_mode, aead_mode)`.
 /// Now one can use the `hpke` configuration.
 #[derive(Debug)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub struct Hpke {
     mode: Mode,
     kem_id: kem::Mode,

@@ -1,9 +1,13 @@
+#[cfg(feature = "serialization")]
+pub(crate) use serde::{Deserialize, Serialize};
+
 use crate::dh_kem;
 use crate::kdf;
 use crate::util;
 
 /// KEM Modes
 #[derive(PartialEq, Copy, Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[repr(u16)]
 pub enum Mode {
     /// DH KEM on P256
@@ -63,7 +67,7 @@ fn get_kdf(mode: Mode) -> kdf::Mode {
 pub(crate) type PrivateKey = Vec<u8>;
 pub(crate) type PublicKey = Vec<u8>;
 
-pub(crate) trait KemTrait: std::fmt::Debug {
+pub(crate) trait KemTrait: std::fmt::Debug + Sync {
     fn new(kdf_id: kdf::Mode) -> Self
     where
         Self: Sized;
@@ -84,6 +88,27 @@ pub(crate) trait KemTrait: std::fmt::Debug {
 pub struct Kem {
     mode: Mode,
     kem: Box<dyn KemTrait>,
+}
+
+#[cfg(feature = "serialization")]
+impl Serialize for Kem {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        self.mode.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl<'de> Deserialize<'de> for Kem {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let mode = Mode::deserialize(deserializer)?;
+        Ok(Self::new(mode))
+    }
 }
 
 impl std::fmt::Display for Kem {

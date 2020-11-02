@@ -1,3 +1,6 @@
+#[cfg(feature = "serialization")]
+pub(crate) use serde::{Deserialize, Serialize};
+
 use crate::hkdf;
 use crate::util::concat;
 
@@ -5,6 +8,7 @@ use std::fmt::Debug;
 
 /// KDF Modes
 #[derive(PartialEq, Copy, Clone, Debug)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[repr(u16)]
 pub enum Mode {
     /// HKDF SHA 256
@@ -42,7 +46,7 @@ pub enum Error {
     UnknownMode,
 }
 
-pub(crate) trait KdfTrait: Debug {
+pub(crate) trait KdfTrait: Debug + Sync {
     fn new() -> Self
     where
         Self: Sized;
@@ -53,12 +57,35 @@ pub(crate) trait KdfTrait: Debug {
 
 #[derive(Debug)]
 pub struct Kdf {
+    mode: Mode,
     kdf: Box<dyn KdfTrait>,
+}
+
+#[cfg(feature = "serialization")]
+impl Serialize for Kdf {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        self.mode.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl<'de> Deserialize<'de> for Kdf {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let mode = Mode::deserialize(deserializer)?;
+        Ok(Self::new(mode))
+    }
 }
 
 impl Kdf {
     pub(crate) fn new(mode: Mode) -> Self {
         Self {
+            mode,
             kdf: get_kdf_object(mode),
         }
     }

@@ -1,9 +1,13 @@
+#[cfg(feature = "serialization")]
+pub(crate) use serde::{Deserialize, Serialize};
+
 use crate::aead_impl::*;
 
 use std::fmt::Debug;
 
 /// AEAD modes.
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[repr(u16)]
 pub enum Mode {
     /// AES GCM 128
@@ -36,6 +40,7 @@ impl std::convert::TryFrom<u16> for Mode {
 
 /// AEAD Errors
 #[derive(Debug)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 pub enum Error {
     /// Error opening a ciphertext
     OpenError,
@@ -50,7 +55,7 @@ pub enum Error {
     UnknownMode,
 }
 
-pub(crate) trait AeadTrait: Debug {
+pub(crate) trait AeadTrait: Debug + Sync {
     fn new() -> Self
     where
         Self: Sized;
@@ -74,7 +79,29 @@ pub(crate) trait AeadTrait: Debug {
 
 #[derive(Debug)]
 pub struct Aead {
+    mode: Mode,
     aead: Box<dyn AeadTrait>,
+}
+
+#[cfg(feature = "serialization")]
+impl Serialize for Aead {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        self.mode.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl<'de> Deserialize<'de> for Aead {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let mode = Mode::deserialize(deserializer)?;
+        Ok(Self::new(mode))
+    }
 }
 
 fn get_aead_object(mode: Mode) -> Box<dyn AeadTrait> {
@@ -88,6 +115,7 @@ fn get_aead_object(mode: Mode) -> Box<dyn AeadTrait> {
 impl Aead {
     pub fn new(mode: Mode) -> Self {
         Self {
+            mode,
             aead: get_aead_object(mode),
         }
     }
