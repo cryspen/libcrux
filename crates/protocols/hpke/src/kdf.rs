@@ -3,11 +3,17 @@ use crate::util::concat;
 
 use std::fmt::Debug;
 
+/// KDF Modes
 #[derive(PartialEq, Copy, Clone, Debug)]
 #[repr(u16)]
 pub enum Mode {
+    /// HKDF SHA 256
     HkdfSha256 = 0x0001,
+
+    /// HKDF SHA 384
     HkdfSha384 = 0x0002,
+
+    /// HKDF SHA 512
     HkdfSha512 = 0x0003,
 }
 
@@ -29,8 +35,10 @@ impl std::convert::TryFrom<u16> for Mode {
     }
 }
 
+/// KDF Errors
 #[derive(Debug)]
 pub enum Error {
+    /// The KDF mode is unknown.
     UnknownMode,
 }
 

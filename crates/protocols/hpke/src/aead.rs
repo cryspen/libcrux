@@ -2,11 +2,17 @@ use crate::aead_impl::*;
 
 use std::fmt::Debug;
 
+/// AEAD modes.
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(u16)]
 pub enum Mode {
+    /// AES GCM 128
     AesGcm128 = 0x0001,
+
+    /// AES GCM 256
     AesGcm256 = 0x0002,
+
+    /// ChaCha20 Poly1305
     ChaCha20Poly1305 = 0x0003,
 }
 
@@ -28,11 +34,19 @@ impl std::convert::TryFrom<u16> for Mode {
     }
 }
 
+/// AEAD Errors
 #[derive(Debug)]
 pub enum Error {
+    /// Error opening a ciphertext
     OpenError,
+
+    /// Invalid configuration
     InvalidConfig,
+
+    /// Invalid Nonce
     InvalidNonce,
+
+    /// Unknown AEAD mode
     UnknownMode,
 }
 

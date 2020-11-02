@@ -2,13 +2,23 @@ use crate::dh_kem;
 use crate::kdf;
 use crate::util;
 
+/// KEM Modes
 #[derive(PartialEq, Copy, Clone, Debug)]
 #[repr(u16)]
 pub enum Mode {
+    /// DH KEM on P256
     DhKemP256 = 0x0010,
+
+    /// DH KEM on P384
     DhKemP384 = 0x0011,
+
+    /// DH KEM on P521
     DhKemP521 = 0x0012,
+
+    /// DH KEM on x25519
     DhKem25519 = 0x0020,
+
+    /// DH KEM on x448
     DhKem448 = 0x0021,
 }
 
@@ -32,8 +42,10 @@ impl std::convert::TryFrom<u16> for Mode {
     }
 }
 
+/// KEM Errors
 #[derive(Debug)]
 pub enum Error {
+    /// The KEM mode is unknown.
     UnknownMode,
 }
 

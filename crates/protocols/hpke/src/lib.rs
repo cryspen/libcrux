@@ -2,6 +2,16 @@
 //! https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html
 //!
 
+#![forbid(unsafe_code, unused_must_use, unstable_features)]
+#![deny(
+    trivial_casts,
+    trivial_numeric_casts,
+    missing_docs,
+    unused_import_braces,
+    unused_extern_crates,
+    unused_qualifications
+)]
+
 #[cfg(feature = "serialization")]
 use serde::{Deserialize, Serialize};
 
@@ -20,15 +30,31 @@ mod test_aead;
 #[cfg(test)]
 mod test_kdf;
 
+/// HPKE Error types.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum HPKEError {
+    /// Error opening an HPKE ciphertext.
     OpenError,
+
+    /// Invalid configuration or arguments.
     InvalidConfig,
+
+    /// Invalid input.
     InvalidInput,
+
+    /// Unknown HPKE mode.
     UnknownMode,
+
+    /// Inconsistent PSK input.
     InconsistentPsk,
+
+    /// PSK input is required but missing.
     MissingPsk,
+
+    /// PSK input is provided but not needed.
     UnnecessaryPsk,
+
+    /// PSK input is too short (needs to be at least 32 bytes).
     InsecurePsk,
 }
 
@@ -55,13 +81,19 @@ pub struct HPKEKeyPair {
 }
 
 /// HPKE supports four modes.
-/// The `Base` mode i
 #[derive(PartialEq, Copy, Clone, Debug)]
 #[repr(u8)]
 pub enum Mode {
+    /// HPKE Base mode.
     Base = 0x00,
+
+    /// HPKE with PSK.
     Psk = 0x01,
+
+    /// Authenticated HPKE.
     Auth = 0x02,
+
+    /// Authenticated HPKE with PSK.
     AuthPsk = 0x03,
 }
 
@@ -623,7 +655,7 @@ impl PartialEq for HPKEPrivateKey {
 
 #[cfg(feature = "hazmat")]
 impl std::fmt::Debug for HPKEPrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         f.debug_struct("HPKEPrivateKey")
             .field("value", &"***")
             .finish()
@@ -632,7 +664,7 @@ impl std::fmt::Debug for HPKEPrivateKey {
 
 #[cfg(not(feature = "hazmat"))]
 impl std::fmt::Debug for HPKEPrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         f.debug_struct("HPKEPrivateKey")
             .field("value", &self.value)
             .finish()
@@ -652,6 +684,7 @@ impl HPKEPublicKey {
     }
 }
 
+/// Test util module. Should be moved really.
 pub mod test_util {
     // TODO: don't build for release
     impl<'a> super::Context<'_> {
@@ -677,6 +710,7 @@ pub mod test_util {
         }
     }
 
+    /// Convert `bytes` to a hex string.
     pub fn bytes_to_hex(bytes: &[u8]) -> String {
         let mut hex = String::new();
         for &b in bytes {
@@ -685,6 +719,7 @@ pub mod test_util {
         hex
     }
 
+    /// Convert a hex string to a byte vector.
     pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
         assert!(hex.len() % 2 == 0);
         let mut bytes = Vec::new();
@@ -694,6 +729,8 @@ pub mod test_util {
         bytes
     }
 
+    /// Convert a hex string to a byte vector.
+    /// If the input is `None`, this returns an empty vector.
     pub fn hex_to_bytes_option(hex: Option<String>) -> Vec<u8> {
         match hex {
             Some(s) => hex_to_bytes(&s),
@@ -701,6 +738,8 @@ pub mod test_util {
         }
     }
 
+    /// Convert a byte slice into byte slice option.
+    /// Returns `Nonce` if the byte slice is empty and `Some(v)` otherwise.
     pub fn vec_to_option_slice(v: &[u8]) -> Option<&[u8]> {
         if v.is_empty() {
             None
