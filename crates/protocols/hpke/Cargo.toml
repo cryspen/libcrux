@@ -19,7 +19,7 @@ evercrypt-sys = { git = "https://github.com/franziskuskiefer/evercrypt-rust", pa
 
 [features]
 rust-crypto = ["evercrypt/rust-crypto-aes"]
-serialization = ["serde", "serde_json"]
+serialization = ["serde", "serde_json", "evercrypt/serialization"]
 hazmat = []
 
 [dev-dependencies]
