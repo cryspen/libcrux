@@ -1,3 +1,5 @@
+extern crate hpke_rs as hpke;
+
 use serde::{self, Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fs::File;

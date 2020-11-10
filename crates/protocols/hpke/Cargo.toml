@@ -1,5 +1,5 @@
 [package]
-name = "hpke"
+name = "hpke-rs"
 version = "0.0.2"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2018"

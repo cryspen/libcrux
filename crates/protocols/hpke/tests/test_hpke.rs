@@ -1,3 +1,5 @@
+extern crate hpke_rs as hpke;
+
 use evercrypt::prelude::*;
 use hpke::prelude::*;
 use lazy_static::lazy_static;

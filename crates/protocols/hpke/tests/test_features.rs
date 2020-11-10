@@ -1,3 +1,5 @@
+extern crate hpke_rs as hpke;
+
 #[cfg(feature = "serialization")]
 use evercrypt::prelude::*;
 
