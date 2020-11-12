@@ -13,10 +13,6 @@ evercrypt = { version = "0.0.3" }
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
-[patch.crates-io]
-evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust", package = "evercrypt", branch = "0.0.3" }
-evercrypt-sys = { git = "https://github.com/franziskuskiefer/evercrypt-rust", package = "evercrypt-sys", branch = "0.0.3" }
-
 [features]
 rust-crypto = ["evercrypt/rust-crypto-aes"]
 serialization = ["serde", "serde_json", "evercrypt/serialization"]
