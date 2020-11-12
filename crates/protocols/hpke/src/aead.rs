@@ -132,7 +132,6 @@ impl Aead {
         aad: &[u8],
         plain_txt: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        println!("seal key: {:?}", key);
         self.aead.seal(key, nonce, aad, plain_txt)
     }
     pub fn open(
@@ -142,7 +141,6 @@ impl Aead {
         aad: &[u8],
         cipher_txt: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        println!("open key: {:?}", key);
         self.aead.open(key, nonce, aad, cipher_txt)
     }
 }
