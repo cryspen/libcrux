@@ -317,7 +317,6 @@ impl Hpke {
                 self.kem.auth_encaps(&pk_r.value, sk_s)
             }
         };
-        println!("setup_sender zz: {:?}", zz);
         Ok((
             enc,
             self.key_schedule(
@@ -358,7 +357,6 @@ impl Hpke {
                 self.kem.auth_decaps(enc, &sk_r.value, pk_s)
             }
         };
-        println!("setup_receiver zz: {:?}", zz);
         self.key_schedule(
             &zz,
             info,
