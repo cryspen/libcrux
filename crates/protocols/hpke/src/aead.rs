@@ -51,6 +51,9 @@ pub enum Error {
     /// Invalid Nonce
     InvalidNonce,
 
+    /// Invalid Ciphertext
+    InvalidCiphertext,
+
     /// Unknown AEAD mode
     UnknownMode,
 }

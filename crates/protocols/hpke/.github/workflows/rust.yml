@@ -33,4 +33,28 @@ jobs:
       run: cargo test --verbose --features rust-crypto
     - name: Run tests all features
       # Always enabling rust crypto AES for now.
-      run: cargo test --verbose --features "serialization hazmat rust-crypto"
+      run: cargo test --verbose --all-features
+    - name: Run tests all features
+      # Always enabling rust crypto AES for now.
+      run: cargo test --release --verbose --all-features
+  fuzz:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          default: true
+      - uses: actions-rs/install@v0.1
+        with:
+          crate: cargo-fuzz
+          version: latest
+      - name: Fuzz AEAD
+        run: cargo fuzz run base -- -runs=10000

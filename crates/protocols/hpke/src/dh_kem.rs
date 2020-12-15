@@ -24,14 +24,19 @@ impl DhKem {
             dh_id,
         }
     }
-    fn dh(&self, sk: &[u8], pk: &[u8]) -> Vec<u8> {
+    fn dh(&self, sk: &[u8], pk: &[u8]) -> Result<Vec<u8>, Error> {
         // Unwrapping here is fine because we have to make sure that the input
         // keys are valid before we get here.
-        let dh = ecdh_derive(self.dh_id, pk, sk).unwrap();
+        let dh = ecdh_derive(self.dh_id, pk, sk)?;
 
         match self.dh_id {
-            ecdh::Mode::X25519 => dh,
-            ecdh::Mode::P256 => dh[0..32].to_vec(),
+            ecdh::Mode::X25519 => Ok(dh),
+            ecdh::Mode::P256 => {
+                if dh.len() <= 32 {
+                    return Err(Error::CryptoError);
+                }
+                Ok(dh[0..32].to_vec())
+            }
         }
     }
 
@@ -128,30 +133,35 @@ impl KemTrait for DhKem {
         (self.dh_base(&sk).to_vec(), sk)
     }
 
-    fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
         let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
-        let dh_pk = self.dh(&sk_e, pk_r);
+        let dh_pk = self.dh(&sk_e, pk_r)?;
         let enc = self.serialize(&pk_e);
 
         let pk_rm = self.serialize(pk_r);
         let kem_context = concat(&[&enc, &pk_rm]);
 
         let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id);
-        (zz, enc)
+        Ok((zz, enc))
     }
 
-    fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Vec<u8> {
+    fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Result<Vec<u8>, Error> {
         let pk_e = self.deserialize(enc);
-        let dh_pk = self.dh(sk_r, &pk_e);
+        let dh_pk = self.dh(sk_r, &pk_e)?;
 
         let pk_rm = self.serialize(&self.dh_base(sk_r));
         let kem_context = concat(&[&enc, &pk_rm]);
 
-        self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id)
+        Ok(self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id))
     }
-    fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    fn auth_encaps(
+        &self,
+        pk_r: &[u8],
+        sk_s: &[u8],
+        suite_id: &[u8],
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
-        let dh_pk = concat(&[&self.dh(&sk_e, pk_r), &self.dh(&sk_s, pk_r)]);
+        let dh_pk = concat(&[&self.dh(&sk_e, pk_r)?, &self.dh(&sk_s, pk_r)?]);
 
         let enc = self.serialize(&pk_e);
         let pk_rm = self.serialize(&pk_r);
@@ -160,16 +170,31 @@ impl KemTrait for DhKem {
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
         let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id);
-        (zz, enc)
+        Ok((zz, enc))
     }
-    fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8], suite_id: &[u8]) -> Vec<u8> {
+    fn auth_decaps(
+        &self,
+        enc: &[u8],
+        sk_r: &[u8],
+        pk_s: &[u8],
+        suite_id: &[u8],
+    ) -> Result<Vec<u8>, Error> {
         let pk_e = self.deserialize(enc);
-        let dh_pk = concat(&[&self.dh(sk_r, &pk_e), &self.dh(sk_r, &pk_s)]);
+        let dh_pk = concat(&[&self.dh(sk_r, &pk_e)?, &self.dh(sk_r, &pk_s)?]);
 
         let pk_rm = self.serialize(&self.dh_base(sk_r));
         let pk_sm = self.serialize(&pk_s);
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
-        self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id)
+        Ok(self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id))
+    }
+}
+
+impl From<EcdhError> for Error {
+    fn from(e: EcdhError) -> Self {
+        match e {
+            EcdhError::UnkownAlgorithm => Self::UnknownMode,
+            _ => Self::CryptoError,
+        }
     }
 }

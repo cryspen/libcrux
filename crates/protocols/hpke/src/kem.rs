@@ -51,6 +51,9 @@ impl std::convert::TryFrom<u16> for Mode {
 pub enum Error {
     /// The KEM mode is unknown.
     UnknownMode,
+
+    /// A cryptographic operation failed.
+    CryptoError,
 }
 
 // Map KEM to KDF according to spec.
@@ -75,10 +78,21 @@ pub(crate) trait KemTrait: std::fmt::Debug + Sync {
     fn key_gen(&self) -> (Vec<u8>, Vec<u8>);
     fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (PublicKey, PrivateKey);
 
-    fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>);
-    fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Vec<u8>;
-    fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8], suite_id: &[u8]) -> (Vec<u8>, Vec<u8>);
-    fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8], suite_id: &[u8]) -> Vec<u8>;
+    fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error>;
+    fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Result<Vec<u8>, Error>;
+    fn auth_encaps(
+        &self,
+        pk_r: &[u8],
+        sk_s: &[u8],
+        suite_id: &[u8],
+    ) -> Result<(Vec<u8>, Vec<u8>), Error>;
+    fn auth_decaps(
+        &self,
+        enc: &[u8],
+        sk_r: &[u8],
+        pk_s: &[u8],
+        suite_id: &[u8],
+    ) -> Result<Vec<u8>, Error>;
 
     fn get_secret_len(&self) -> usize;
     fn get_encoded_pk_len(&self) -> usize;
@@ -138,16 +152,25 @@ impl Kem {
         util::concat(&[b"KEM", &(self.mode as u16).to_be_bytes()])
     }
 
-    pub(crate) fn encaps(&self, pk_r: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    pub(crate) fn encaps(&self, pk_r: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
         self.kem.encaps(pk_r, &self.get_ciphersuite())
     }
-    pub(crate) fn decaps(&self, enc: &[u8], sk_r: &[u8]) -> Vec<u8> {
+    pub(crate) fn decaps(&self, enc: &[u8], sk_r: &[u8]) -> Result<Vec<u8>, Error> {
         self.kem.decaps(enc, sk_r, &self.get_ciphersuite())
     }
-    pub(crate) fn auth_encaps(&self, pk_r: &[u8], sk_s: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    pub(crate) fn auth_encaps(
+        &self,
+        pk_r: &[u8],
+        sk_s: &[u8],
+    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         self.kem.auth_encaps(pk_r, sk_s, &self.get_ciphersuite())
     }
-    pub(crate) fn auth_decaps(&self, enc: &[u8], sk_r: &[u8], pk_s: &[u8]) -> Vec<u8> {
+    pub(crate) fn auth_decaps(
+        &self,
+        enc: &[u8],
+        sk_r: &[u8],
+        pk_s: &[u8],
+    ) -> Result<Vec<u8>, Error> {
         self.kem
             .auth_decaps(enc, sk_r, pk_s, &self.get_ciphersuite())
     }

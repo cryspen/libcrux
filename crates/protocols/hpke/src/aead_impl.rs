@@ -44,6 +44,9 @@ macro_rules! implement_aead {
                 if nonce.len() != 12 {
                     return Err(Error::InvalidNonce);
                 }
+                if cipher_txt.len() <= 16 {
+                    return Err(Error::InvalidCiphertext);
+                }
 
                 let cipher = match Aead::new($algorithm, &key) {
                     Ok(c) => c,

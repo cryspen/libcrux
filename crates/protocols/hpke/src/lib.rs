@@ -56,6 +56,9 @@ pub enum HPKEError {
 
     /// PSK input is too short (needs to be at least 32 bytes).
     InsecurePsk,
+
+    /// An error in the crypto library occurred.
+    CryptoError,
 }
 
 /// An HPKE public key is a byte vector.
@@ -308,13 +311,13 @@ impl Hpke {
         sk_s: Option<&HPKEPrivateKey>,
     ) -> Result<(EncapsulatedSecret, Context), HPKEError> {
         let (zz, enc) = match self.mode {
-            Mode::Base | Mode::Psk => self.kem.encaps(&pk_r.value),
+            Mode::Base | Mode::Psk => self.kem.encaps(&pk_r.value)?,
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
                     Some(s) => &s.value,
                     None => return Err(HPKEError::InvalidInput),
                 };
-                self.kem.auth_encaps(&pk_r.value, sk_s)
+                self.kem.auth_encaps(&pk_r.value, sk_s)?
             }
         };
         Ok((
@@ -348,13 +351,13 @@ impl Hpke {
         pk_s: Option<&HPKEPublicKey>,
     ) -> Result<Context, HPKEError> {
         let zz = match self.mode {
-            Mode::Base | Mode::Psk => self.kem.decaps(enc, &sk_r.value),
+            Mode::Base | Mode::Psk => self.kem.decaps(enc, &sk_r.value)?,
             Mode::Auth | Mode::AuthPsk => {
                 let pk_s = match pk_s {
                     Some(s) => &s.value,
                     None => return Err(HPKEError::InvalidInput),
                 };
-                self.kem.auth_decaps(enc, &sk_r.value, pk_s)
+                self.kem.auth_decaps(enc, &sk_r.value, pk_s)?
             }
         };
         self.key_schedule(
@@ -753,9 +756,18 @@ impl From<aead::Error> for HPKEError {
     fn from(e: aead::Error) -> Self {
         match e {
             aead::Error::OpenError => HPKEError::OpenError,
-            aead::Error::InvalidNonce => HPKEError::InvalidConfig,
-            aead::Error::InvalidConfig => HPKEError::InvalidInput,
+            aead::Error::InvalidNonce | aead::Error::InvalidCiphertext => HPKEError::InvalidInput,
+            aead::Error::InvalidConfig => HPKEError::InvalidConfig,
             aead::Error::UnknownMode => HPKEError::UnknownMode,
+        }
+    }
+}
+
+impl From<kem::Error> for HPKEError {
+    fn from(e: kem::Error) -> Self {
+        match e {
+            kem::Error::UnknownMode => HPKEError::UnknownMode,
+            _ => HPKEError::CryptoError,
         }
     }
 }

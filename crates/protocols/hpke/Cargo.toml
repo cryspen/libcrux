@@ -1,15 +1,16 @@
 [package]
 name = "hpke-rs"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs"
 description = "HPKE Implementation using Evercrypt"
 readme = "README.md"
+repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
-evercrypt = { version = "0.0.3" }
+evercrypt = { version = "0.0.5" }
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
