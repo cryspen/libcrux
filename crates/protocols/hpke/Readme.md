@@ -4,3 +4,5 @@ An implementation of [HPKE](https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-ir
 [![Docs](https://img.shields.io/badge/docs-master-blue.svg)](https://www.franziskuskiefer.de/hpke-rs/hpke_rs/index.html)
 [![codecov](https://codecov.io/gh/franziskuskiefer/hpke-rs/branch/master/graph/badge.svg?token=RO2Q0YTSNY)](https://codecov.io/gh/franziskuskiefer/hpke-rs/)
 ![Beta](https://img.shields.io/badge/maturity-beta-orange.svg)
+
+This version is compatible with draft-07.

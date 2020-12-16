@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
@@ -10,7 +10,7 @@ readme = "README.md"
 repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
-evercrypt = { version = "0.0.5" }
+evercrypt = "0.0.6"
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
@@ -23,3 +23,7 @@ hazmat = []
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
+
+[patch.crates-io]
+evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust/", branch = "0.0.6" }
+evercrypt-sys = { git = "https://github.com/franziskuskiefer/evercrypt-rust/", branch = "0.0.6" }

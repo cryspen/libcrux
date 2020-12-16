@@ -193,7 +193,7 @@ impl KemTrait for DhKem {
 impl From<EcdhError> for Error {
     fn from(e: EcdhError) -> Self {
         match e {
-            EcdhError::UnkownAlgorithm => Self::UnknownMode,
+            EcdhError::UnknownAlgorithm => Self::UnknownMode,
             _ => Self::CryptoError,
         }
     }
