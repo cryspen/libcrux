@@ -1,0 +1,34 @@
+kind: pipeline
+type: docker
+name: arm64
+
+platform:
+  arch: arm64
+
+steps:
+- name: test
+  image: rust:latest
+  commands:
+  - apt-get update -qq --yes && apt-get install -qq --yes clang
+  - git submodule update --init --recursive
+  - cargo build --verbose
+  - cargo test --verbose
+  - cargo test --verbose --all-features
+
+---
+kind: pipeline
+type: docker
+name: arm
+
+platform:
+  arch: arm
+
+steps:
+- name: test
+  image: rust:latest
+  commands:
+  - apt-get update -qq --yes && apt-get install -qq --yes clang
+  - git submodule update --init --recursive
+  - cargo build --verbose
+  - cargo test --verbose
+  - cargo test --verbose --all-features
