@@ -12,7 +12,6 @@ steps:
   - apt-get update -qq --yes && apt-get install -qq --yes clang
   - git submodule update --init --recursive
   - cargo build --verbose
-  - cargo test --verbose
   - cargo test --verbose --all-features
 
 ---
@@ -30,5 +29,4 @@ steps:
   - apt-get update -qq --yes && apt-get install -qq --yes clang
   - git submodule update --init --recursive
   - cargo build --verbose
-  - cargo test --verbose
   - cargo test --verbose --all-features
