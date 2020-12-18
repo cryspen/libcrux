@@ -23,7 +23,3 @@ hazmat = []
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
-
-[patch.crates-io]
-evercrypt = { git = "https://github.com/franziskuskiefer/evercrypt-rust/", branch = "0.0.6" }
-evercrypt-sys = { git = "https://github.com/franziskuskiefer/evercrypt-rust/", branch = "0.0.6" }
