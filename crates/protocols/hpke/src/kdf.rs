@@ -101,7 +101,7 @@ impl Kdf {
         label: &str,
         ikm: &[u8],
     ) -> Vec<u8> {
-        let labeled_ikm = concat(&[b"HPKE-06", suite_id, &label.as_bytes(), ikm]);
+        let labeled_ikm = concat(&[b"HPKE-07", suite_id, &label.as_bytes(), ikm]);
         self.kdf.extract(salt, &labeled_ikm)
     }
 
@@ -115,7 +115,7 @@ impl Kdf {
     ) -> Vec<u8> {
         assert!(len < 256);
         let len_bytes = (len as u16).to_be_bytes();
-        let labeled_info = concat(&[&len_bytes, b"HPKE-06", suite_id, &label.as_bytes(), info]);
+        let labeled_info = concat(&[&len_bytes, b"HPKE-07", suite_id, &label.as_bytes(), info]);
         self.kdf.expand(prk, &labeled_info, len)
     }
 

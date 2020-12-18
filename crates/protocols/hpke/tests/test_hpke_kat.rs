@@ -50,9 +50,9 @@ struct CiphertextKAT {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_snake_case)]
 struct ExportsKAT {
-    exportContext: String,
-    exportLength: usize,
-    exportValue: String,
+    exporter_context: String,
+    L: usize,
+    exported_value: String,
 }
 
 #[test]
@@ -73,6 +73,11 @@ fn test_kat() {
         let kem_id: HpkeKemMode = test.kem_id.try_into().unwrap();
         let kdf_id: HpkeKdfMode = test.kdf_id.try_into().unwrap();
         let aead_id: HpkeAeadMode = test.aead_id.try_into().unwrap();
+
+        if aead_id == HpkeAeadMode::Export {
+            print!("Exporter only AEAD is not implemented yet.");
+            continue;
+        }
 
         if kem_id != HpkeKemMode::DhKem25519 && kem_id != HpkeKemMode::DhKemP256 {
             println!(" > KEM {:?} not implemented yet", kem_id);
@@ -199,9 +204,9 @@ fn test_kat() {
         // Test KAT on direct_ctx for exporters
         for (i, export) in test.exports.iter().enumerate() {
             println!("Test exporter {} ...", i);
-            let export_context = hex_to_bytes(&export.exportContext);
-            let export_value = hex_to_bytes(&export.exportValue);
-            let length = export.exportLength;
+            let export_context = hex_to_bytes(&export.exporter_context);
+            let export_value = hex_to_bytes(&export.exported_value);
+            let length = export.L;
 
             let exported_secret = direct_ctx.export(&export_context, length);
             assert_eq!(export_value, exported_secret);

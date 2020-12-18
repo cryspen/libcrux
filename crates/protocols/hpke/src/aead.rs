@@ -18,6 +18,9 @@ pub enum Mode {
 
     /// ChaCha20 Poly1305
     ChaCha20Poly1305 = 0x0003,
+
+    /// Export-only
+    Export = 0xFFFF,
 }
 
 impl std::fmt::Display for Mode {
@@ -33,6 +36,7 @@ impl std::convert::TryFrom<u16> for Mode {
             0x0001 => Ok(Mode::AesGcm128),
             0x0002 => Ok(Mode::AesGcm256),
             0x0003 => Ok(Mode::ChaCha20Poly1305),
+            0xFFFF => Ok(Mode::Export),
             _ => Err(Error::UnknownMode),
         }
     }
@@ -112,6 +116,7 @@ fn get_aead_object(mode: Mode) -> Box<dyn AeadTrait> {
         Mode::AesGcm128 => Box::new(AesGcm128::new()),
         Mode::AesGcm256 => Box::new(AesGcm256::new()),
         Mode::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305::new()),
+        Mode::Export => panic!("Exporter only interface is not implemented yet."),
     }
 }
 
