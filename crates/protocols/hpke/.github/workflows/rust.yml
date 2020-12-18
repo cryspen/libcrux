@@ -24,16 +24,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --verbose
-    - name: Build Release
-      run: cargo build --release --verbose
     - name: Run tests
       # Always enabling rust crypto AES for now.
       run: cargo test --verbose --features rust-crypto
     - name: Run tests all features
       # Always enabling rust crypto AES for now.
       run: cargo test --verbose --all-features
+      # Release
+    - name: Build Release
+      run: cargo build --release --verbose
     - name: Run tests all features
       # Always enabling rust crypto AES for now.
       run: cargo test --release --verbose --all-features
