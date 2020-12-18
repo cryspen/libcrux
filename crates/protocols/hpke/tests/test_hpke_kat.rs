@@ -4,6 +4,7 @@ use serde::{self, Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::BufReader;
+use rayon::prelude::*;
 
 use hpke::prelude::*;
 use hpke::test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice};
@@ -68,7 +69,7 @@ fn test_kat() {
         Err(e) => panic!("Error reading file.\n{:?}", e),
     };
 
-    for test in tests {
+    tests.par_iter().for_each(|test| {
         let mode: HpkeMode = test.mode.try_into().unwrap();
         let kem_id: HpkeKemMode = test.kem_id.try_into().unwrap();
         let kdf_id: HpkeKdfMode = test.kdf_id.try_into().unwrap();
@@ -76,12 +77,12 @@ fn test_kat() {
 
         if aead_id == HpkeAeadMode::Export {
             print!("Exporter only AEAD is not implemented yet.");
-            continue;
+            return;
         }
 
         if kem_id != HpkeKemMode::DhKem25519 && kem_id != HpkeKemMode::DhKemP256 {
             println!(" > KEM {:?} not implemented yet", kem_id);
-            continue;
+            return;
         }
 
         println!(
@@ -97,14 +98,14 @@ fn test_kat() {
         let sk_rm = HPKEPrivateKey::new(hex_to_bytes(&test.skRm));
         let pk_em = HPKEPublicKey::new(hex_to_bytes(&test.pkEm));
         let sk_em = HPKEPrivateKey::new(hex_to_bytes(&test.skEm));
-        let pk_sm = hex_to_bytes_option(test.pkSm);
+        let pk_sm = hex_to_bytes_option(test.pkSm.clone());
         let pk_sm = if pk_sm.is_empty() {
             None
         } else {
             Some(HPKEPublicKey::new(pk_sm))
         };
         let pk_sm = pk_sm.as_ref();
-        let sk_sm = hex_to_bytes_option(test.skSm);
+        let sk_sm = hex_to_bytes_option(test.skSm.clone());
         let sk_sm = if sk_sm.is_empty() {
             None
         } else {
@@ -112,9 +113,9 @@ fn test_kat() {
         };
         let sk_sm = sk_sm.as_ref();
         let info = hex_to_bytes(&test.info);
-        let psk = hex_to_bytes_option(test.psk);
+        let psk = hex_to_bytes_option(test.psk.clone());
         let psk = vec_to_option_slice(&psk);
-        let psk_id = hex_to_bytes_option(test.psk_id);
+        let psk_id = hex_to_bytes_option(test.psk_id.clone());
         let psk_id = vec_to_option_slice(&psk_id);
         let shared_secret = hex_to_bytes(&test.shared_secret);
         // let key_schedule_context = hex_to_bytes(&test.key_schedule_context);
@@ -126,7 +127,7 @@ fn test_kat() {
         // Input key material.
         let ikm_r = hex_to_bytes(&test.ikmR);
         let ikm_e = hex_to_bytes(&test.ikmE);
-        let ikm_s = hex_to_bytes_option(test.ikmS);
+        let ikm_s = hex_to_bytes_option(test.ikmS.clone());
 
         // Use internal `key_schedule` function for KAT.
         let mut direct_ctx = hpke
@@ -211,7 +212,7 @@ fn test_kat() {
             let exported_secret = direct_ctx.export(&export_context, length);
             assert_eq!(export_value, exported_secret);
         }
-    }
+    });
 }
 
 #[cfg(feature = "serialization")]
