@@ -8,4 +8,4 @@
 
 An implementation of [HPKE](https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html) using [Evercrypt](https://github.com/franziskuskiefer/evercrypt-rust/tree/master/evercrypt-rs).
 
-This version is compatible with draft-07.
+This version is compatible with draft-08.
