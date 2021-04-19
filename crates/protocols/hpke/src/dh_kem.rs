@@ -92,7 +92,7 @@ impl DhKem {
     }
 
     #[cfg(not(feature = "deterministic"))]
-    fn random(&self, l: usize) -> Vec<u8> {
+    fn random(&self) -> Vec<u8> {
         random(self.secret_len())
     }
 }
