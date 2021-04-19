@@ -94,8 +94,11 @@ pub(crate) trait KemTrait: std::fmt::Debug + Sync {
         suite_id: &[u8],
     ) -> Result<Vec<u8>, Error>;
 
-    fn get_secret_len(&self) -> usize;
-    fn get_encoded_pk_len(&self) -> usize;
+    fn secret_len(&self) -> usize;
+    fn encoded_pk_len(&self) -> usize;
+
+    #[cfg(feature = "deterministic")]
+    fn set_random(&mut self, r: &[u8]);
 }
 
 #[derive(Debug)]
@@ -131,7 +134,7 @@ impl std::fmt::Display for Kem {
     }
 }
 
-fn get_kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {
+fn kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {
     match mode {
         Mode::DhKem25519 => Box::new(dh_kem::DhKem::init(kdf_id, evercrypt::ecdh::Mode::X25519)),
         Mode::DhKemP256 => Box::new(dh_kem::DhKem::init(kdf_id, evercrypt::ecdh::Mode::P256)),
@@ -143,27 +146,27 @@ impl Kem {
     pub(crate) fn new(mode: Mode) -> Self {
         Self {
             mode,
-            kem: get_kem_object(mode, get_kdf(mode)),
+            kem: kem_object(mode, get_kdf(mode)),
         }
     }
 
     #[inline]
-    fn get_ciphersuite(&self) -> Vec<u8> {
+    fn ciphersuite(&self) -> Vec<u8> {
         util::concat(&[b"KEM", &(self.mode as u16).to_be_bytes()])
     }
 
     pub(crate) fn encaps(&self, pk_r: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        self.kem.encaps(pk_r, &self.get_ciphersuite())
+        self.kem.encaps(pk_r, &self.ciphersuite())
     }
     pub(crate) fn decaps(&self, enc: &[u8], sk_r: &[u8]) -> Result<Vec<u8>, Error> {
-        self.kem.decaps(enc, sk_r, &self.get_ciphersuite())
+        self.kem.decaps(enc, sk_r, &self.ciphersuite())
     }
     pub(crate) fn auth_encaps(
         &self,
         pk_r: &[u8],
         sk_s: &[u8],
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        self.kem.auth_encaps(pk_r, sk_s, &self.get_ciphersuite())
+        self.kem.auth_encaps(pk_r, sk_s, &self.ciphersuite())
     }
     pub(crate) fn auth_decaps(
         &self,
@@ -172,7 +175,7 @@ impl Kem {
         pk_s: &[u8],
     ) -> Result<Vec<u8>, Error> {
         self.kem
-            .auth_decaps(enc, sk_r, pk_s, &self.get_ciphersuite())
+            .auth_decaps(enc, sk_r, pk_s, &self.ciphersuite())
     }
     pub(crate) fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
         self.kem.key_gen()
@@ -182,6 +185,11 @@ impl Kem {
     ///
     /// Returns (PublicKey, PrivateKey).
     pub(crate) fn derive_key_pair(&self, ikm: &[u8]) -> (PublicKey, PrivateKey) {
-        self.kem.derive_key_pair(&self.get_ciphersuite(), ikm)
+        self.kem.derive_key_pair(&self.ciphersuite(), ikm)
+    }
+
+    #[cfg(feature = "deterministic")]
+    pub(crate) fn set_random(&mut self, r: &[u8]) {
+        self.kem.set_random(r);
     }
 }

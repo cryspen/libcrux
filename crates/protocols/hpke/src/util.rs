@@ -1,4 +1,9 @@
-#![allow(dead_code)]
+use evercrypt::prelude::get_random_vec;
+
+#[inline]
+pub(crate) fn random(l: usize) -> Vec<u8> {
+    get_random_vec(l)
+}
 
 #[inline]
 pub(crate) fn concat(values: &[&[u8]]) -> Vec<u8> {
@@ -9,23 +14,6 @@ pub(crate) fn concat(values: &[&[u8]]) -> Vec<u8> {
 pub(crate) fn xor_bytes(a: &[u8], b: &[u8]) -> Vec<u8> {
     assert_eq!(a.len(), b.len());
     a.iter().zip(b).map(|(x, y)| x ^ y).collect()
-}
-
-pub(crate) fn hex_to_bytes(hex: &str) -> Vec<u8> {
-    assert!(hex.len() % 2 == 0);
-    let mut bytes = Vec::new();
-    for i in 0..(hex.len() / 2) {
-        bytes.push(u8::from_str_radix(&hex[2 * i..2 * i + 2], 16).unwrap());
-    }
-    bytes
-}
-
-pub(crate) fn bytes_to_hex(bytes: &[u8]) -> String {
-    let mut hex = String::new();
-    for &b in bytes {
-        hex += &format!("{:02x}", b);
-    }
-    hex
 }
 
 #[test]

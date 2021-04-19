@@ -71,6 +71,7 @@ pub struct HPKEPublicKey {
 /// An HPKE private key is a byte vector.
 #[derive(Default)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hazmat", derive(Clone))]
 pub struct HPKEPrivateKey {
     value: Vec<u8>,
 }
@@ -78,6 +79,7 @@ pub struct HPKEPrivateKey {
 /// An HPKE key pair has an HPKE private and public key.
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "hazmat", derive(Clone))]
 pub struct HPKEKeyPair {
     private_key: HPKEPrivateKey,
     public_key: HPKEPublicKey,
@@ -590,6 +592,13 @@ impl Hpke {
         let (pk, sk) = self.kem.derive_key_pair(ikm);
         HPKEKeyPair::new(sk, pk)
     }
+
+    /// Set randomness for testing HPKE (KEM) without randomness.
+    #[cfg(feature = "deterministic")]
+    pub fn set_kem_random(mut self, r: &[u8]) -> Self {
+        self.kem.set_random(r);
+        self
+    }
 }
 
 impl HPKEKeyPair {
@@ -688,22 +697,23 @@ impl HPKEPublicKey {
 }
 
 /// Test util module. Should be moved really.
+#[cfg(feature = "hpke-test")]
 pub mod test_util {
     // TODO: don't build for release
     impl<'a> super::Context<'_> {
         /// Get a reference to the key in the context.
         #[doc(hidden)]
-        pub fn key(&'a self) -> &'a [u8] {
+        pub fn key(&self) -> &[u8] {
             &self.key
         }
         /// Get a reference to the nonce in the context.
         #[doc(hidden)]
-        pub fn nonce(&'a self) -> &'a [u8] {
+        pub fn nonce(&self) -> &[u8] {
             &self.nonce
         }
         /// Get a reference to the exporter secret in the context.
         #[doc(hidden)]
-        pub fn exporter_secret(&'a self) -> &'a [u8] {
+        pub fn exporter_secret(&self) -> &[u8] {
             &self.exporter_secret
         }
         /// Get a reference to the sequence number in the context.
