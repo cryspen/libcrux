@@ -30,9 +30,17 @@ mod test_aead;
 #[cfg(test)]
 mod test_kdf;
 
+#[deprecated(
+    since = "0.0.7",
+    note = "Please use HpkeError instead. This alias will be removed with the first stable  0.1 release."
+)]
+#[allow(dead_code)]
+#[allow(clippy::upper_case_acronyms)]
+type HPKEError = HpkeError;
+
 /// HPKE Error types.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum HPKEError {
+pub enum HpkeError {
     /// Error opening an HPKE ciphertext.
     OpenError,
 
@@ -61,28 +69,52 @@ pub enum HPKEError {
     CryptoError,
 }
 
+#[deprecated(
+    since = "0.0.7",
+    note = "Please use HpkePublicKey instead. This alias will be removed with the first stable  0.1 release."
+)]
+#[allow(clippy::upper_case_acronyms)]
+#[allow(missing_docs)]
+pub type HPKEPublicKey = HpkePublicKey;
+
 /// An HPKE public key is a byte vector.
 #[derive(Debug, PartialEq, Clone, Default)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
-pub struct HPKEPublicKey {
+pub struct HpkePublicKey {
     value: Vec<u8>,
 }
+
+#[deprecated(
+    since = "0.0.7",
+    note = "Please use HpkePrivateKey instead. This alias will be removed with the first stable  0.1 release."
+)]
+#[allow(clippy::upper_case_acronyms)]
+#[allow(missing_docs)]
+pub type HPKEPrivateKey = HpkePrivateKey;
 
 /// An HPKE private key is a byte vector.
 #[derive(Default)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hazmat", derive(Clone))]
-pub struct HPKEPrivateKey {
+pub struct HpkePrivateKey {
     value: Vec<u8>,
 }
+
+#[deprecated(
+    since = "0.0.7",
+    note = "Please use HpkeKeyPair instead. This alias will be removed with the first stable  0.1 release."
+)]
+#[allow(clippy::upper_case_acronyms)]
+#[allow(missing_docs)]
+pub type HPKEKeyPair = HpkeKeyPair;
 
 /// An HPKE key pair has an HPKE private and public key.
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hazmat", derive(Clone))]
-pub struct HPKEKeyPair {
-    private_key: HPKEPrivateKey,
-    public_key: HPKEPublicKey,
+pub struct HpkeKeyPair {
+    private_key: HpkePrivateKey,
+    public_key: HpkePublicKey,
 }
 
 /// HPKE supports four modes.
@@ -110,14 +142,14 @@ impl std::fmt::Display for Mode {
 }
 
 impl std::convert::TryFrom<u16> for Mode {
-    type Error = HPKEError;
-    fn try_from(x: u16) -> Result<Mode, HPKEError> {
+    type Error = HpkeError;
+    fn try_from(x: u16) -> Result<Mode, HpkeError> {
         match x {
             0x00 => Ok(Mode::Base),
             0x01 => Ok(Mode::Psk),
             0x02 => Ok(Mode::Auth),
             0x03 => Ok(Mode::AuthPsk),
-            _ => Err(HPKEError::UnknownMode),
+            _ => Err(HpkeError::UnknownMode),
         }
     }
 }
@@ -179,7 +211,7 @@ impl<'a> Context<'a> {
     ///   self.IncrementSeq()
     ///   return ct
     /// ```
-    pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Result<Ciphertext, HPKEError> {
+    pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Result<Ciphertext, HpkeError> {
         let ctxt = self
             .hpke
             .aead
@@ -201,7 +233,7 @@ impl<'a> Context<'a> {
     ///   self.IncrementSeq()
     ///   return pt
     /// ```
-    pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Result<Plaintext, HPKEError> {
+    pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Result<Plaintext, HpkeError> {
         let ptxt = self
             .hpke
             .aead
@@ -306,18 +338,18 @@ impl Hpke {
     /// If the secret key is missing in an authenticated mode, an error is returned.
     pub fn setup_sender(
         &self,
-        pk_r: &HPKEPublicKey,
+        pk_r: &HpkePublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        sk_s: Option<&HPKEPrivateKey>,
-    ) -> Result<(EncapsulatedSecret, Context), HPKEError> {
+        sk_s: Option<&HpkePrivateKey>,
+    ) -> Result<(EncapsulatedSecret, Context), HpkeError> {
         let (zz, enc) = match self.mode {
             Mode::Base | Mode::Psk => self.kem.encaps(&pk_r.value)?,
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
                     Some(s) => &s.value,
-                    None => return Err(HPKEError::InvalidInput),
+                    None => return Err(HpkeError::InvalidInput),
                 };
                 self.kem.auth_encaps(&pk_r.value, sk_s)?
             }
@@ -346,18 +378,18 @@ impl Hpke {
     pub fn setup_receiver(
         &self,
         enc: &[u8],
-        sk_r: &HPKEPrivateKey,
+        sk_r: &HpkePrivateKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        pk_s: Option<&HPKEPublicKey>,
-    ) -> Result<Context, HPKEError> {
+        pk_s: Option<&HpkePublicKey>,
+    ) -> Result<Context, HpkeError> {
         let zz = match self.mode {
             Mode::Base | Mode::Psk => self.kem.decaps(enc, &sk_r.value)?,
             Mode::Auth | Mode::AuthPsk => {
                 let pk_s = match pk_s {
                     Some(s) => &s.value,
-                    None => return Err(HPKEError::InvalidInput),
+                    None => return Err(HpkeError::InvalidInput),
                 };
                 self.kem.auth_decaps(enc, &sk_r.value, pk_s)?
             }
@@ -380,14 +412,14 @@ impl Hpke {
     #[allow(clippy::too_many_arguments)]
     pub fn seal(
         &self,
-        pk_r: &HPKEPublicKey,
+        pk_r: &HpkePublicKey,
         info: &[u8],
         aad: &[u8],
         plain_txt: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        sk_s: Option<&HPKEPrivateKey>,
-    ) -> Result<(EncapsulatedSecret, Ciphertext), HPKEError> {
+        sk_s: Option<&HpkePrivateKey>,
+    ) -> Result<(EncapsulatedSecret, Ciphertext), HpkeError> {
         let (enc, mut context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s)?;
         let ctxt = context.seal(aad, plain_txt)?;
         Ok((enc, ctxt))
@@ -403,14 +435,14 @@ impl Hpke {
     pub fn open(
         &self,
         enc: &[u8],
-        sk_r: &HPKEPrivateKey,
+        sk_r: &HpkePrivateKey,
         info: &[u8],
         aad: &[u8],
         ct: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        pk_s: Option<&HPKEPublicKey>,
-    ) -> Result<Plaintext, HPKEError> {
+        pk_s: Option<&HpkePublicKey>,
+    ) -> Result<Plaintext, HpkeError> {
         let mut context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s)?;
         context.open(aad, ct)
     }
@@ -426,14 +458,14 @@ impl Hpke {
     #[allow(clippy::too_many_arguments)]
     pub fn send_export(
         &self,
-        pk_r: &HPKEPublicKey,
+        pk_r: &HpkePublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        sk_s: Option<&HPKEPrivateKey>,
+        sk_s: Option<&HpkePrivateKey>,
         exporter_context: &[u8],
         length: usize,
-    ) -> Result<(EncapsulatedSecret, Vec<u8>), HPKEError> {
+    ) -> Result<(EncapsulatedSecret, Vec<u8>), HpkeError> {
         let (enc, context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s)?;
         Ok((enc, context.export(exporter_context, length)))
     }
@@ -449,37 +481,37 @@ impl Hpke {
     pub fn receiver_export(
         &self,
         enc: &[u8],
-        sk_r: &HPKEPrivateKey,
+        sk_r: &HpkePrivateKey,
         info: &[u8],
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
-        pk_s: Option<&HPKEPublicKey>,
+        pk_s: Option<&HpkePublicKey>,
         exporter_context: &[u8],
         length: usize,
-    ) -> Result<Vec<u8>, HPKEError> {
+    ) -> Result<Vec<u8>, HpkeError> {
         let context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s)?;
         Ok(context.export(exporter_context, length))
     }
 
     /// Verify PSKs.
     #[inline(always)]
-    fn verify_psk_inputs(&self, psk: &[u8], psk_id: &[u8]) -> Result<(), HPKEError> {
+    fn verify_psk_inputs(&self, psk: &[u8], psk_id: &[u8]) -> Result<(), HpkeError> {
         let got_psk = !psk.is_empty();
         let got_psk_id = !psk_id.is_empty();
         if (got_psk && !got_psk_id) || (!got_psk && got_psk_id) {
-            return Err(HPKEError::InconsistentPsk);
+            return Err(HpkeError::InconsistentPsk);
         }
 
         if got_psk && (self.mode == Mode::Base || self.mode == Mode::Auth) {
-            return Err(HPKEError::UnnecessaryPsk);
+            return Err(HpkeError::UnnecessaryPsk);
         }
         if !got_psk && (self.mode == Mode::Psk || self.mode == Mode::AuthPsk) {
-            return Err(HPKEError::MissingPsk);
+            return Err(HpkeError::MissingPsk);
         }
 
         // The PSK MUST have at least 32 bytes of entropy and SHOULD be of length Nh bytes or longer.
         if (self.mode == Mode::Psk || self.mode == Mode::AuthPsk) && psk.len() < 32 {
-            return Err(HPKEError::InsecurePsk);
+            return Err(HpkeError::InsecurePsk);
         }
 
         Ok(())
@@ -543,7 +575,7 @@ impl Hpke {
         info: &[u8],
         psk: &[u8],
         psk_id: &[u8],
-    ) -> Result<Context, HPKEError> {
+    ) -> Result<Context, HpkeError> {
         self.verify_psk_inputs(psk, psk_id)?;
         let suite_id = self.get_ciphersuite();
         let key_schedule_context = self.get_key_schedule_context(info, psk_id, &suite_id);
@@ -578,19 +610,19 @@ impl Hpke {
     /// Randomized algorithm to generate a key pair `(skX, pkX)` for the KEM.
     /// This is equivalent to `derive_key_pair(get_random_vector(sk.len()))`
     ///
-    /// Returns an `HPKEKeyPair`.
-    pub fn generate_key_pair(&self) -> HPKEKeyPair {
+    /// Returns an `HpkeKeyPair`.
+    pub fn generate_key_pair(&self) -> HpkeKeyPair {
         let (sk, pk) = self.kem.key_gen();
-        HPKEKeyPair::new(sk, pk)
+        HpkeKeyPair::new(sk, pk)
     }
 
     /// 7.1.2. DeriveKeyPair
     /// Derive a key pair for the used KEM with the given input key material.
     ///
-    /// Returns `HPKEKeyPair`
-    pub fn derive_key_pair(&self, ikm: &[u8]) -> HPKEKeyPair {
+    /// Returns `HpkeKeyPair`
+    pub fn derive_key_pair(&self, ikm: &[u8]) -> HpkeKeyPair {
         let (pk, sk) = self.kem.derive_key_pair(ikm);
-        HPKEKeyPair::new(sk, pk)
+        HpkeKeyPair::new(sk, pk)
     }
 
     /// Set randomness for testing HPKE (KEM) without randomness.
@@ -601,33 +633,33 @@ impl Hpke {
     }
 }
 
-impl HPKEKeyPair {
+impl HpkeKeyPair {
     /// Create a new HPKE key pair.
     /// Consumes the private and public key bytes.
     pub fn new(sk: Vec<u8>, pk: Vec<u8>) -> Self {
         Self {
-            private_key: HPKEPrivateKey::new(sk),
-            public_key: HPKEPublicKey::new(pk),
+            private_key: HpkePrivateKey::new(sk),
+            public_key: HpkePublicKey::new(pk),
         }
     }
 
     /// Get a reference to the HPKE private key of this key pair.
-    pub fn private_key(&self) -> &HPKEPrivateKey {
+    pub fn private_key(&self) -> &HpkePrivateKey {
         &self.private_key
     }
 
     /// Get a reference to the HPKE public key of this key pair.
-    pub fn public_key(&self) -> &HPKEPublicKey {
+    pub fn public_key(&self) -> &HpkePublicKey {
         &self.public_key
     }
 
     /// Split the key pair into the two keys
-    pub fn into_keys(self) -> (HPKEPrivateKey, HPKEPublicKey) {
+    pub fn into_keys(self) -> (HpkePrivateKey, HpkePublicKey) {
         (self.private_key, self.public_key)
     }
 
     /// Build a key pair from two keys
-    pub fn from_keys(private_key: HPKEPrivateKey, public_key: HPKEPublicKey) -> Self {
+    pub fn from_keys(private_key: HpkePrivateKey, public_key: HpkePublicKey) -> Self {
         Self {
             private_key,
             public_key,
@@ -635,7 +667,19 @@ impl HPKEKeyPair {
     }
 }
 
-impl HPKEPrivateKey {
+impl From<(Vec<u8>, Vec<u8>)> for HpkeKeyPair {
+    fn from((sk, pk): (Vec<u8>, Vec<u8>)) -> Self {
+        Self::new(sk, pk)
+    }
+}
+
+impl From<(&[u8], &[u8])> for HpkeKeyPair {
+    fn from((sk, pk): (&[u8], &[u8])) -> Self {
+        Self::new(sk.to_vec(), pk.to_vec())
+    }
+}
+
+impl HpkePrivateKey {
     /// Create a new HPKE private key.
     /// Consumes the private key bytes.
     pub fn new(b: Vec<u8>) -> Self {
@@ -649,9 +693,21 @@ impl HPKEPrivateKey {
     }
 }
 
+impl From<Vec<u8>> for HpkePrivateKey {
+    fn from(b: Vec<u8>) -> Self {
+        Self::new(b)
+    }
+}
+
+impl From<&[u8]> for HpkePrivateKey {
+    fn from(b: &[u8]) -> Self {
+        Self::new(b.to_vec())
+    }
+}
+
 /// Hopefully constant time comparison of the two values as long as they have the
 /// same length.
-impl PartialEq for HPKEPrivateKey {
+impl PartialEq for HpkePrivateKey {
     fn eq(&self, other: &Self) -> bool {
         if self.value.len() != other.value.len() {
             return false;
@@ -665,25 +721,25 @@ impl PartialEq for HPKEPrivateKey {
     }
 }
 
-#[cfg(feature = "hazmat")]
-impl std::fmt::Debug for HPKEPrivateKey {
+#[cfg(not(feature = "hazmat"))]
+impl std::fmt::Debug for HpkePrivateKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-        f.debug_struct("HPKEPrivateKey")
+        f.debug_struct("HpkePrivateKey")
             .field("value", &"***")
             .finish()
     }
 }
 
-#[cfg(not(feature = "hazmat"))]
-impl std::fmt::Debug for HPKEPrivateKey {
+#[cfg(feature = "hazmat")]
+impl std::fmt::Debug for HpkePrivateKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-        f.debug_struct("HPKEPrivateKey")
+        f.debug_struct("HpkePrivateKey")
             .field("value", &self.value)
             .finish()
     }
 }
 
-impl HPKEPublicKey {
+impl HpkePublicKey {
     /// Create a new HPKE public key.
     /// Consumes the public key bytes.
     pub fn new(b: Vec<u8>) -> Self {
@@ -693,6 +749,18 @@ impl HPKEPublicKey {
     /// Get the raw key as byte slice.
     pub fn as_slice(&self) -> &[u8] {
         &self.value
+    }
+}
+
+impl From<Vec<u8>> for HpkePublicKey {
+    fn from(b: Vec<u8>) -> Self {
+        Self::new(b)
+    }
+}
+
+impl From<&[u8]> for HpkePublicKey {
+    fn from(b: &[u8]) -> Self {
+        Self::new(b.to_vec())
     }
 }
 
@@ -762,22 +830,22 @@ pub mod test_util {
     }
 }
 
-impl From<aead::Error> for HPKEError {
+impl From<aead::Error> for HpkeError {
     fn from(e: aead::Error) -> Self {
         match e {
-            aead::Error::OpenError => HPKEError::OpenError,
-            aead::Error::InvalidNonce | aead::Error::InvalidCiphertext => HPKEError::InvalidInput,
-            aead::Error::InvalidConfig => HPKEError::InvalidConfig,
-            aead::Error::UnknownMode => HPKEError::UnknownMode,
+            aead::Error::OpenError => HpkeError::OpenError,
+            aead::Error::InvalidNonce | aead::Error::InvalidCiphertext => HpkeError::InvalidInput,
+            aead::Error::InvalidConfig => HpkeError::InvalidConfig,
+            aead::Error::UnknownMode => HpkeError::UnknownMode,
         }
     }
 }
 
-impl From<kem::Error> for HPKEError {
+impl From<kem::Error> for HpkeError {
     fn from(e: kem::Error) -> Self {
         match e {
-            kem::Error::UnknownMode => HPKEError::UnknownMode,
-            _ => HPKEError::CryptoError,
+            kem::Error::UnknownMode => HpkeError::UnknownMode,
+            _ => HpkeError::CryptoError,
         }
     }
 }

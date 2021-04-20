@@ -174,8 +174,7 @@ impl Kem {
         sk_r: &[u8],
         pk_s: &[u8],
     ) -> Result<Vec<u8>, Error> {
-        self.kem
-            .auth_decaps(enc, sk_r, pk_s, &self.ciphersuite())
+        self.kem.auth_decaps(enc, sk_r, pk_s, &self.ciphersuite())
     }
     pub(crate) fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
         self.kem.key_gen()
