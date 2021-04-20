@@ -10,6 +10,8 @@ pub(crate) struct DhKem {
     sk_len: usize,
     kdf: kdf::Kdf,
     dh_id: ecdh::Mode,
+    #[cfg(feature = "deterministic")]
+    randomness: Vec<u8>,
 }
 
 impl DhKem {
@@ -22,11 +24,11 @@ impl DhKem {
             },
             kdf: kdf::Kdf::new(kdf_id),
             dh_id,
+            #[cfg(feature = "deterministic")]
+            randomness: Vec::new(),
         }
     }
     fn dh(&self, sk: &[u8], pk: &[u8]) -> Result<Vec<u8>, Error> {
-        // Unwrapping here is fine because we have to make sure that the input
-        // keys are valid before we get here.
         let dh = ecdh_derive(self.dh_id, pk, sk)?;
 
         match self.dh_id {
@@ -63,7 +65,7 @@ impl DhKem {
             suite_id,
             "shared_secret",
             kem_context,
-            self.get_secret_len(),
+            self.secret_len(),
         )
     }
 
@@ -78,13 +80,28 @@ impl DhKem {
     fn deserialize(&self, enc: &[u8]) -> Vec<u8> {
         enc.to_vec()
     }
+
+    #[cfg(feature = "deterministic")]
+    fn random(&self) -> Vec<u8> {
+        if self.randomness.len() == self.secret_len() {
+            self.randomness.clone()
+        } else {
+            // In this case the randomness wasn't set. Just use real randomness.
+            random(self.secret_len())
+        }
+    }
+
+    #[cfg(not(feature = "deterministic"))]
+    fn random(&self) -> Vec<u8> {
+        random(self.secret_len())
+    }
 }
 
 impl KemTrait for DhKem {
-    fn get_secret_len(&self) -> usize {
+    fn secret_len(&self) -> usize {
         self.sk_len
     }
-    fn get_encoded_pk_len(&self) -> usize {
+    fn encoded_pk_len(&self) -> usize {
         self.encoded_pk_len
     }
 
@@ -134,7 +151,7 @@ impl KemTrait for DhKem {
     }
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
+        let (pk_e, sk_e) = self.derive_key_pair(suite_id, &self.random());
         let dh_pk = self.dh(&sk_e, pk_r)?;
         let enc = self.serialize(&pk_e);
 
@@ -160,7 +177,7 @@ impl KemTrait for DhKem {
         sk_s: &[u8],
         suite_id: &[u8],
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let (pk_e, sk_e) = self.derive_key_pair(&get_random_vec(self.get_secret_len()), suite_id);
+        let (pk_e, sk_e) = self.derive_key_pair(suite_id, &self.random());
         let dh_pk = concat(&[&self.dh(&sk_e, pk_r)?, &self.dh(&sk_s, pk_r)?]);
 
         let enc = self.serialize(&pk_e);
@@ -187,6 +204,11 @@ impl KemTrait for DhKem {
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
         Ok(self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id))
+    }
+
+    #[cfg(feature = "deterministic")]
+    fn set_random(&mut self, r: &[u8]) {
+        self.randomness = r.to_vec();
     }
 }
 

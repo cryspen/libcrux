@@ -93,22 +93,22 @@ fn test_kat() {
         let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
 
         // Set up sender and receiver.
-        let pk_rm = HPKEPublicKey::new(hex_to_bytes(&test.pkRm));
-        let sk_rm = HPKEPrivateKey::new(hex_to_bytes(&test.skRm));
-        let pk_em = HPKEPublicKey::new(hex_to_bytes(&test.pkEm));
-        let sk_em = HPKEPrivateKey::new(hex_to_bytes(&test.skEm));
+        let pk_rm = HpkePublicKey::new(hex_to_bytes(&test.pkRm));
+        let sk_rm = HpkePrivateKey::new(hex_to_bytes(&test.skRm));
+        let pk_em = HpkePublicKey::new(hex_to_bytes(&test.pkEm));
+        let sk_em = HpkePrivateKey::new(hex_to_bytes(&test.skEm));
         let pk_sm = hex_to_bytes_option(test.pkSm);
         let pk_sm = if pk_sm.is_empty() {
             None
         } else {
-            Some(HPKEPublicKey::new(pk_sm))
+            Some(HpkePublicKey::new(pk_sm))
         };
         let pk_sm = pk_sm.as_ref();
         let sk_sm = hex_to_bytes_option(test.skSm);
         let sk_sm = if sk_sm.is_empty() {
             None
         } else {
-            Some(HPKEPrivateKey::new(sk_sm))
+            Some(HpkePrivateKey::new(sk_sm))
         };
         let sk_sm = sk_sm.as_ref();
         let info = hex_to_bytes(&test.info);
@@ -157,18 +157,36 @@ fn test_kat() {
             assert_eq!(pk_sm, &my_pk_s);
         }
 
-        // Setup sender and receiver.
-        // These use randomness and hence can't be fully checked against the test vectors.
+        // Setup KAT receiver.
+        let kat_enc = hex_to_bytes(&test.enc);
+        let mut receiver_context_kat = hpke
+            .setup_receiver(&kat_enc, &sk_rm, &info, psk, psk_id, pk_sm)
+            .unwrap();
+
+        // Setup sender and receiver with KAT randomness.
+        // We first have to inject the randomness (ikmE).
+        let hpke_sender = Hpke::new(mode, kem_id, kdf_id, aead_id).set_kem_random(&ikm_e);
+        let (enc, _sender_context_kat) = hpke_sender
+            .setup_sender(&pk_rm, &info, psk, psk_id, sk_sm)
+            .unwrap();
+        let receiver_context = hpke
+            .setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm)
+            .unwrap();
+        assert_eq!(enc, kat_enc);
+        assert_eq!(receiver_context.key(), receiver_context_kat.key());
+        assert_eq!(receiver_context.nonce(), receiver_context_kat.nonce());
+        assert_eq!(
+            receiver_context.exporter_secret(),
+            receiver_context_kat.exporter_secret()
+        );
+        receiver_context_kat = receiver_context;
+
+        // Setup sender and receiver for self tests.
         let (enc, mut sender_context) = hpke
             .setup_sender(&pk_rm, &info, psk, psk_id, sk_sm)
             .unwrap();
         let mut receiver_context = hpke
             .setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm)
-            .unwrap();
-
-        // Setup KAT receiver.
-        let mut receiver_context_kat = hpke
-            .setup_receiver(&hex_to_bytes(&test.enc), &sk_rm, &info, psk, psk_id, pk_sm)
             .unwrap();
 
         // Encrypt
@@ -218,7 +236,7 @@ fn test_kat() {
 #[cfg(feature = "hazmat")]
 #[test]
 fn test_serialization() {
-    use hpke::HPKEKeyPair;
+    use hpke::HpkeKeyPair;
 
     // XXX: Make these individual tests.
     for mode in 0u16..4 {
@@ -238,16 +256,16 @@ fn test_serialization() {
                     let key_pair = hpke.generate_key_pair();
 
                     let serialized_key_pair = serde_json::to_string(&key_pair).unwrap();
-                    let deserialized_key_pair: HPKEKeyPair =
+                    let deserialized_key_pair: HpkeKeyPair =
                         serde_json::from_str(&serialized_key_pair).unwrap();
 
                     let (sk, pk) = key_pair.into_keys();
 
                     let serialized_sk = serde_json::to_string(&sk).unwrap();
-                    let deserialized_sk: HPKEPrivateKey =
+                    let deserialized_sk: HpkePrivateKey =
                         serde_json::from_str(&serialized_sk).unwrap();
                     let serialized_pk = serde_json::to_string(&pk).unwrap();
-                    let deserialized_pk: HPKEPublicKey =
+                    let deserialized_pk: HpkePublicKey =
                         serde_json::from_str(&serialized_pk).unwrap();
 
                     let (des_sk, des_pk) = deserialized_key_pair.into_keys();
