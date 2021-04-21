@@ -57,7 +57,7 @@ pub enum Error {
 }
 
 // Map KEM to KDF according to spec.
-fn get_kdf(mode: Mode) -> kdf::Mode {
+fn kdf(mode: Mode) -> kdf::Mode {
     match mode {
         Mode::DhKemP256 => kdf::Mode::HkdfSha256,
         Mode::DhKemP384 => kdf::Mode::HkdfSha384,
@@ -146,7 +146,7 @@ impl Kem {
     pub(crate) fn new(mode: Mode) -> Self {
         Self {
             mode,
-            kem: kem_object(mode, get_kdf(mode)),
+            kem: kem_object(mode, kdf(mode)),
         }
     }
 

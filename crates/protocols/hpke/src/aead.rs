@@ -80,8 +80,8 @@ pub(crate) trait AeadTrait: Debug + Sync {
         aad: &[u8],
         cipher_txt: &[u8],
     ) -> Result<Vec<u8>, Error>;
-    fn get_key_length(&self) -> usize;
-    fn get_nonce_length(&self) -> usize;
+    fn key_length(&self) -> usize;
+    fn nonce_length(&self) -> usize;
 }
 
 #[derive(Debug)]
@@ -111,7 +111,7 @@ impl<'de> Deserialize<'de> for Aead {
     }
 }
 
-fn get_aead_object(mode: Mode) -> Box<dyn AeadTrait> {
+fn aead_object(mode: Mode) -> Box<dyn AeadTrait> {
     match mode {
         Mode::AesGcm128 => Box::new(AesGcm128::new()),
         Mode::AesGcm256 => Box::new(AesGcm256::new()),
@@ -121,18 +121,30 @@ fn get_aead_object(mode: Mode) -> Box<dyn AeadTrait> {
 }
 
 impl Aead {
+    /// Create a new Aead with the given `mode`.
     pub fn new(mode: Mode) -> Self {
         Self {
             mode,
-            aead: get_aead_object(mode),
+            aead: aead_object(mode),
         }
     }
-    pub fn get_nk(&self) -> usize {
-        self.aead.get_key_length()
+
+    /// Get the key length of the used scheme.
+    pub fn nk(&self) -> usize {
+        self.aead.key_length()
     }
-    pub fn get_nn(&self) -> usize {
-        self.aead.get_nonce_length()
+
+    /// Get the nonce length of the used scheme.
+    pub fn nn(&self) -> usize {
+        self.aead.nonce_length()
     }
+
+    /// Encrypt the given `plain_txt` with the `aad`, `key`, and `nonce`. All
+    /// values are passed in as byte slices.
+    ///
+    /// The function returns a `Result`.
+    /// A byte vector with the cipher text and tag concatenated if successful.
+    /// Or an `Error` if any of the parameters are invalid.
     pub fn seal(
         &self,
         key: &[u8],
@@ -142,6 +154,13 @@ impl Aead {
     ) -> Result<Vec<u8>, Error> {
         self.aead.seal(key, nonce, aad, plain_txt)
     }
+
+    /// Decrypt a given `cipher_txt` with the `aad`, `key`, and `nonce`. All
+    /// values are passed in as byte slices.
+    ///
+    /// The function returns a `Result`.
+    /// A byte vector with the plaintext.
+    /// Or an `Error` if any of the parameters are invalid or the opening fails.
     pub fn open(
         &self,
         key: &[u8],
@@ -150,5 +169,11 @@ impl Aead {
         cipher_txt: &[u8],
     ) -> Result<Vec<u8>, Error> {
         self.aead.open(key, nonce, aad, cipher_txt)
+    }
+
+    /// Get the message limit for this AEAD.
+    /// If the message limit is reached, the key must be rotated.
+    pub fn message_limit(&self) -> u32 {
+        (1 << self.nn()) - 1
     }
 }

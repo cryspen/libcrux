@@ -92,7 +92,7 @@ impl Kdf {
         }
     }
 
-    pub(crate) fn get_nh(&self) -> usize {
+    pub(crate) fn nh(&self) -> usize {
         self.kdf.digest_length()
     }
 

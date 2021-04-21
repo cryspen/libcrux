@@ -66,10 +66,10 @@ macro_rules! implement_aead {
                     Err(_) => Err(Error::OpenError),
                 }
             }
-            fn get_key_length(&self) -> usize {
+            fn key_length(&self) -> usize {
                 $key_length
             }
-            fn get_nonce_length(&self) -> usize {
+            fn nonce_length(&self) -> usize {
                 12
             }
         }

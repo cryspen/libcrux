@@ -67,6 +67,9 @@ pub enum HpkeError {
 
     /// An error in the crypto library occurred.
     CryptoError,
+
+    /// The message limit for this AEAD, key, and nonce.
+    MessageLimitReached,
 }
 
 #[deprecated(
@@ -216,7 +219,7 @@ impl<'a> Context<'a> {
             .hpke
             .aead
             .seal(&self.key, &self.compute_nonce(), aad, plain_txt)?;
-        self.increment_seq();
+        self.increment_seq()?;
         Ok(ctxt)
     }
 
@@ -238,7 +241,7 @@ impl<'a> Context<'a> {
             .hpke
             .aead
             .open(&self.key, &self.compute_nonce(), aad, cipher_txt)?;
-        self.increment_seq();
+        self.increment_seq()?;
         Ok(ptxt)
     }
 
@@ -254,14 +257,16 @@ impl<'a> Context<'a> {
     pub fn export(&self, exporter_context: &[u8], length: usize) -> Vec<u8> {
         self.hpke.kdf.labeled_expand(
             &self.exporter_secret,
-            &self.hpke.get_ciphersuite(),
+            &self.hpke.ciphersuite(),
             "sec",
             exporter_context,
             length,
         )
     }
 
-    // TODO: not cool
+    /// def Context<ROLE>.ComputeNonce(seq):
+    ///     seq_bytes = I2OSP(seq, Nn)
+    ///     return xor(self.base_nonce, seq_bytes)
     fn compute_nonce(&self) -> Vec<u8> {
         let seq = self.sequence_number.to_be_bytes();
         let mut enc_seq = vec![0u8; self.nonce.len() - seq.len()];
@@ -269,8 +274,16 @@ impl<'a> Context<'a> {
         util::xor_bytes(&enc_seq, &self.nonce)
     }
 
-    fn increment_seq(&mut self) {
+    /// def Context<ROLE>.IncrementSeq():
+    ///     if self.seq >= (1 << (8*Nn)) - 1:
+    ///       raise MessageLimitReached
+    ///     self.seq += 1
+    fn increment_seq(&mut self) -> Result<(), HpkeError> {
+        if self.sequence_number >= self.hpke.aead.message_limit() {
+            return Err(HpkeError::MessageLimitReached);
+        }
         self.sequence_number += 1;
+        Ok(())
     }
 }
 
@@ -318,9 +331,9 @@ impl Hpke {
             kem_id,
             kdf_id,
             aead_id,
-            nk: aead.get_nk(),
-            nn: aead.get_nn(),
-            nh: kdf.get_nh(),
+            nk: aead.nk(),
+            nn: aead.nn(),
+            nh: kdf.nh(),
             kem,
             kdf,
             aead,
@@ -518,7 +531,7 @@ impl Hpke {
     }
 
     #[inline]
-    fn get_ciphersuite(&self) -> Vec<u8> {
+    fn ciphersuite(&self) -> Vec<u8> {
         util::concat(&[
             b"HPKE",
             &(self.kem_id as u16).to_be_bytes(),
@@ -528,7 +541,7 @@ impl Hpke {
     }
 
     #[inline]
-    fn get_key_schedule_context(&self, info: &[u8], psk_id: &[u8], suite_id: &[u8]) -> Vec<u8> {
+    fn key_schedule_context(&self, info: &[u8], psk_id: &[u8], suite_id: &[u8]) -> Vec<u8> {
         let psk_id_hash = self
             .kdf
             .labeled_extract(&[0], suite_id, "psk_id_hash", psk_id);
@@ -577,8 +590,8 @@ impl Hpke {
         psk_id: &[u8],
     ) -> Result<Context, HpkeError> {
         self.verify_psk_inputs(psk, psk_id)?;
-        let suite_id = self.get_ciphersuite();
-        let key_schedule_context = self.get_key_schedule_context(info, psk_id, &suite_id);
+        let suite_id = self.ciphersuite();
+        let key_schedule_context = self.key_schedule_context(info, psk_id, &suite_id);
         let secret = self
             .kdf
             .labeled_extract(shared_secret, &suite_id, "secret", psk);
@@ -608,7 +621,7 @@ impl Hpke {
 
     /// 4. Cryptographic Dependencies
     /// Randomized algorithm to generate a key pair `(skX, pkX)` for the KEM.
-    /// This is equivalent to `derive_key_pair(get_random_vector(sk.len()))`
+    /// This is equivalent to `derive_key_pair(random_vector(sk.len()))`
     ///
     /// Returns an `HpkeKeyPair`.
     pub fn generate_key_pair(&self) -> HpkeKeyPair {
