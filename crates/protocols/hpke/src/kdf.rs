@@ -48,7 +48,7 @@ pub enum Error {
     UnknownMode,
 }
 
-pub(crate) trait KdfTrait: Debug + Sync {
+pub(crate) trait KdfTrait: Debug + Send + Sync {
     fn new() -> Self
     where
         Self: Sized;

@@ -62,7 +62,7 @@ pub enum Error {
     UnknownMode,
 }
 
-pub(crate) trait AeadTrait: Debug + Sync {
+pub(crate) trait AeadTrait: Debug + Send + Sync {
     fn new() -> Self
     where
         Self: Sized;
