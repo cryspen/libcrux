@@ -70,7 +70,7 @@ fn kdf(mode: Mode) -> kdf::Mode {
 pub(crate) type PrivateKey = Vec<u8>;
 pub(crate) type PublicKey = Vec<u8>;
 
-pub(crate) trait KemTrait: std::fmt::Debug + Sync {
+pub(crate) trait KemTrait: std::fmt::Debug + Send + Sync {
     fn new(kdf_id: kdf::Mode) -> Self
     where
         Self: Sized;
