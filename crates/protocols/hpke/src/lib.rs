@@ -624,18 +624,18 @@ impl Hpke {
     /// This is equivalent to `derive_key_pair(random_vector(sk.len()))`
     ///
     /// Returns an `HpkeKeyPair`.
-    pub fn generate_key_pair(&self) -> HpkeKeyPair {
-        let (sk, pk) = self.kem.key_gen();
-        HpkeKeyPair::new(sk, pk)
+    pub fn generate_key_pair(&self) -> Result<HpkeKeyPair, HpkeError> {
+        let (sk, pk) = self.kem.key_gen()?;
+        Ok(HpkeKeyPair::new(sk, pk))
     }
 
     /// 7.1.2. DeriveKeyPair
     /// Derive a key pair for the used KEM with the given input key material.
     ///
-    /// Returns `HpkeKeyPair`
-    pub fn derive_key_pair(&self, ikm: &[u8]) -> HpkeKeyPair {
-        let (pk, sk) = self.kem.derive_key_pair(ikm);
-        HpkeKeyPair::new(sk, pk)
+    /// Returns an `HpkeKeyPair` result or an `HpkeError` if key derivation fails.
+    pub fn derive_key_pair(&self, ikm: &[u8]) -> Result<HpkeKeyPair, HpkeError> {
+        let (pk, sk) = self.kem.derive_key_pair(ikm)?;
+        Ok(HpkeKeyPair::new(sk, pk))
     }
 
     /// Set randomness for testing HPKE (KEM) without randomness.

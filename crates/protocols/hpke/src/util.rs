@@ -1,8 +1,8 @@
-use evercrypt::prelude::get_random_vec;
+use evercrypt::prelude::random_vec;
 
 #[inline]
 pub(crate) fn random(l: usize) -> Vec<u8> {
-    get_random_vec(l)
+    random_vec(l)
 }
 
 #[inline]
