@@ -270,7 +270,7 @@ impl<'a> Context<'a> {
     fn compute_nonce(&self) -> Vec<u8> {
         let seq = self.sequence_number.to_be_bytes();
         let mut enc_seq = vec![0u8; self.nonce.len() - seq.len()];
-        enc_seq.append(&mut seq.to_vec());
+        enc_seq.extend_from_slice(&seq);
         util::xor_bytes(&enc_seq, &self.nonce)
     }
 
@@ -850,6 +850,7 @@ impl From<aead::Error> for HpkeError {
             aead::Error::InvalidNonce | aead::Error::InvalidCiphertext => HpkeError::InvalidInput,
             aead::Error::InvalidConfig => HpkeError::InvalidConfig,
             aead::Error::UnknownMode => HpkeError::UnknownMode,
+            aead::Error::CryptoLibError(_) => HpkeError::CryptoError,
         }
     }
 }

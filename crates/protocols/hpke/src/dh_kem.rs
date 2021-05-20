@@ -163,7 +163,7 @@ impl KemTrait for DhKem {
         let pk_rm = self.serialize(pk_r);
         let kem_context = concat(&[&enc, &pk_rm]);
 
-        let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id);
+        let zz = self.extract_and_expand(dh_pk, &kem_context, suite_id);
         Ok((zz, enc))
     }
 
@@ -174,7 +174,7 @@ impl KemTrait for DhKem {
         let pk_rm = self.serialize(&self.dh_base(sk_r)?);
         let kem_context = concat(&[&enc, &pk_rm]);
 
-        Ok(self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id))
+        Ok(self.extract_and_expand(dh_pk, &kem_context, suite_id))
     }
     fn auth_encaps(
         &self,
@@ -191,7 +191,7 @@ impl KemTrait for DhKem {
 
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
-        let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id);
+        let zz = self.extract_and_expand(dh_pk, &kem_context, suite_id);
         Ok((zz, enc))
     }
     fn auth_decaps(
@@ -208,7 +208,7 @@ impl KemTrait for DhKem {
         let pk_sm = self.serialize(&pk_s);
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
-        Ok(self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id))
+        Ok(self.extract_and_expand(dh_pk, &kem_context, suite_id))
     }
 
     #[cfg(feature = "deterministic")]
