@@ -24,6 +24,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Setup MacOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
+        sudo xcode-select -s /Applications/Xcode_12.4.app
+        rustup target install aarch64-apple-darwin
+        rustup target install aarch64-apple-ios
     - name: Run tests
       # Always enabling rust crypto AES for now.
       run: cargo test --verbose --features rust-crypto
@@ -36,6 +43,16 @@ jobs:
     - name: Run tests all features
       # Always enabling rust crypto AES for now.
       run: cargo test --release --verbose --all-features
+    - name: Apple Silicon Build
+      if: matrix.os == 'macos-latest'
+      run: |
+        cargo build --target aarch64-apple-darwin --tests --verbose --features rust-crypto
+        cargo build --release --target aarch64-apple-darwin --tests --verbose --features rust-crypto
+    - name: iOS build
+      if: matrix.os == 'macos-latest'
+      run: |
+        cargo build --target aarch64-apple-ios --tests --verbose --features rust-crypto
+        cargo build --release --target aarch64-apple-ios --tests --verbose --features rust-crypto
   fuzz:
     strategy:
       fail-fast: false
