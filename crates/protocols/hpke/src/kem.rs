@@ -75,8 +75,12 @@ pub(crate) trait KemTrait: std::fmt::Debug + Send + Sync {
     where
         Self: Sized;
 
-    fn key_gen(&self) -> (Vec<u8>, Vec<u8>);
-    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (PublicKey, PrivateKey);
+    fn key_gen(&self) -> Result<(Vec<u8>, Vec<u8>), Error>;
+    fn derive_key_pair(
+        &self,
+        suite_id: &[u8],
+        ikm: &[u8],
+    ) -> Result<(PublicKey, PrivateKey), Error>;
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error>;
     fn decaps(&self, enc: &[u8], sk_r: &[u8], suite_id: &[u8]) -> Result<Vec<u8>, Error>;
@@ -176,14 +180,14 @@ impl Kem {
     ) -> Result<Vec<u8>, Error> {
         self.kem.auth_decaps(enc, sk_r, pk_s, &self.ciphersuite())
     }
-    pub(crate) fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
+    pub(crate) fn key_gen(&self) -> Result<(Vec<u8>, Vec<u8>), Error> {
         self.kem.key_gen()
     }
 
     /// Derive key pair from the input key material `ikm`.
     ///
     /// Returns (PublicKey, PrivateKey).
-    pub(crate) fn derive_key_pair(&self, ikm: &[u8]) -> (PublicKey, PrivateKey) {
+    pub(crate) fn derive_key_pair(&self, ikm: &[u8]) -> Result<(PublicKey, PrivateKey), Error> {
         self.kem.derive_key_pair(&self.ciphersuite(), ikm)
     }
 

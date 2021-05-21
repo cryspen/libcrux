@@ -60,6 +60,9 @@ pub enum Error {
 
     /// Unknown AEAD mode
     UnknownMode,
+
+    /// Error from the crypto library
+    CryptoLibError(String),
 }
 
 pub(crate) trait AeadTrait: Debug + Send + Sync {
@@ -82,6 +85,7 @@ pub(crate) trait AeadTrait: Debug + Send + Sync {
     ) -> Result<Vec<u8>, Error>;
     fn key_length(&self) -> usize;
     fn nonce_length(&self) -> usize;
+    fn tag_length(&self) -> usize;
 }
 
 #[derive(Debug)]

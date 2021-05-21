@@ -12,7 +12,7 @@ macro_rules! implement_hkdfs {
                 Self {}
             }
             fn digest_length(&self) -> usize {
-                get_tag_size($hmac_mode)
+                tag_size($hmac_mode)
             }
             fn extract(&self, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
                 hkdf_extract($hmac_mode, &salt, &ikm)

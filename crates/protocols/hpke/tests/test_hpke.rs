@@ -40,14 +40,14 @@ macro_rules! generate_test_case {
             println!("Self test {}", hpke);
 
             // Self test seal and open with random keys.
-            let (sk_r, pk_r) = hpke.generate_key_pair().into_keys();
-            let (sk_s, pk_s) = hpke.generate_key_pair().into_keys();
+            let (sk_r, pk_r) = hpke.generate_key_pair().unwrap().into_keys();
+            let (sk_s, pk_s) = hpke.generate_key_pair().unwrap().into_keys();
             let info = b"HPKE self test info";
             let aad = b"HPKE self test aad";
             let plain_txt = b"HPKE self test plain text";
             let exporter_context = b"HPKE self test exporter context";
-            let psk = get_random_vec(32);
-            let psk_id = get_random_vec(32);
+            let psk = random_vec(32);
+            let psk_id = random_vec(32);
             let (psk, psk_id): (Option<&[u8]>, Option<&[u8]>) = match $hpke_mode {
                 Mode::Base | Mode::Auth => (None, None),
                 Mode::Psk | Mode::AuthPsk => (Some(&psk), Some(&psk_id)),

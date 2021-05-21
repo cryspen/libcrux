@@ -145,14 +145,14 @@ fn test_kat() {
         assert_eq!(direct_ctx.sequence_number(), 0);
 
         // Test key pair derivation.
-        let (my_sk_r, my_pk_r) = hpke.derive_key_pair(&ikm_r).into_keys();
+        let (my_sk_r, my_pk_r) = hpke.derive_key_pair(&ikm_r).unwrap().into_keys();
         assert_eq!(sk_rm, my_sk_r);
         assert_eq!(pk_rm, my_pk_r);
-        let (my_sk_e, my_pk_e) = hpke.derive_key_pair(&ikm_e).into_keys();
+        let (my_sk_e, my_pk_e) = hpke.derive_key_pair(&ikm_e).unwrap().into_keys();
         assert_eq!(sk_em, my_sk_e);
         assert_eq!(pk_em, my_pk_e);
         if let (Some(sk_sm), Some(pk_sm)) = (sk_sm, pk_sm) {
-            let (my_sk_s, my_pk_s) = hpke.derive_key_pair(&ikm_s).into_keys();
+            let (my_sk_s, my_pk_s) = hpke.derive_key_pair(&ikm_s).unwrap().into_keys();
             assert_eq!(sk_sm, &my_sk_s);
             assert_eq!(pk_sm, &my_pk_s);
         }
@@ -253,7 +253,7 @@ fn test_serialization() {
                     println!("Self test {:?}", hpke);
 
                     // JSON: Public, Private, KeyPair
-                    let key_pair = hpke.generate_key_pair();
+                    let key_pair = hpke.generate_key_pair().unwrap();
 
                     let serialized_key_pair = serde_json::to_string(&key_pair).unwrap();
                     let deserialized_key_pair: HpkeKeyPair =

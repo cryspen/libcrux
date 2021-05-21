@@ -44,17 +44,18 @@ impl DhKem {
 
     /// Prepend 0x04 for uncompressed NIST curve points.
     #[inline(always)]
-    fn nist_format_uncompressed(pk: &[u8]) -> Vec<u8> {
-        let mut tmp = vec![0x04];
-        tmp.extend(pk);
+    fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
+        let mut tmp = Vec::with_capacity(pk.len() + 1);
+        tmp.push(0x04);
+        tmp.append(&mut pk);
         tmp
     }
 
-    fn dh_base(&self, sk: &[u8]) -> Vec<u8> {
-        let out = ecdh_derive_base(self.dh_id, sk).unwrap();
+    fn dh_base(&self, sk: &[u8]) -> Result<Vec<u8>, Error> {
+        let out = ecdh_derive_base(self.dh_id, sk)?;
         match self.dh_id {
-            ecdh::Mode::X25519 => out,
-            ecdh::Mode::P256 => Self::nist_format_uncompressed(&out),
+            ecdh::Mode::X25519 => Ok(out),
+            ecdh::Mode::P256 => Ok(Self::nist_format_uncompressed(out)),
         }
     }
 
@@ -109,13 +110,17 @@ impl KemTrait for DhKem {
         panic!("Don't use this please");
     }
 
-    fn key_gen(&self) -> (Vec<u8>, Vec<u8>) {
-        let sk = ecdh::key_gen(self.dh_id);
-        let pk = self.dh_base(&sk);
-        (sk, pk)
+    fn key_gen(&self) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        let sk = ecdh::key_gen(self.dh_id)?;
+        let pk = self.dh_base(&sk)?;
+        Ok((sk, pk))
     }
 
-    fn derive_key_pair(&self, suite_id: &[u8], ikm: &[u8]) -> (PublicKey, PrivateKey) {
+    fn derive_key_pair(
+        &self,
+        suite_id: &[u8],
+        ikm: &[u8],
+    ) -> Result<(PublicKey, PrivateKey), Error> {
         let dkp_prk = self.kdf.labeled_extract(&[], suite_id, "dkp_prk", ikm);
 
         let sk = match self.dh_id {
@@ -147,18 +152,18 @@ impl KemTrait for DhKem {
                 }
             }
         };
-        (self.dh_base(&sk).to_vec(), sk)
+        Ok((self.dh_base(&sk)?, sk))
     }
 
     fn encaps(&self, pk_r: &[u8], suite_id: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let (pk_e, sk_e) = self.derive_key_pair(suite_id, &self.random());
+        let (pk_e, sk_e) = self.derive_key_pair(suite_id, &self.random())?;
         let dh_pk = self.dh(&sk_e, pk_r)?;
         let enc = self.serialize(&pk_e);
 
         let pk_rm = self.serialize(pk_r);
         let kem_context = concat(&[&enc, &pk_rm]);
 
-        let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id);
+        let zz = self.extract_and_expand(dh_pk, &kem_context, suite_id);
         Ok((zz, enc))
     }
 
@@ -166,10 +171,10 @@ impl KemTrait for DhKem {
         let pk_e = self.deserialize(enc);
         let dh_pk = self.dh(sk_r, &pk_e)?;
 
-        let pk_rm = self.serialize(&self.dh_base(sk_r));
+        let pk_rm = self.serialize(&self.dh_base(sk_r)?);
         let kem_context = concat(&[&enc, &pk_rm]);
 
-        Ok(self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id))
+        Ok(self.extract_and_expand(dh_pk, &kem_context, suite_id))
     }
     fn auth_encaps(
         &self,
@@ -177,16 +182,16 @@ impl KemTrait for DhKem {
         sk_s: &[u8],
         suite_id: &[u8],
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let (pk_e, sk_e) = self.derive_key_pair(suite_id, &self.random());
+        let (pk_e, sk_e) = self.derive_key_pair(suite_id, &self.random())?;
         let dh_pk = concat(&[&self.dh(&sk_e, pk_r)?, &self.dh(&sk_s, pk_r)?]);
 
         let enc = self.serialize(&pk_e);
         let pk_rm = self.serialize(&pk_r);
-        let pk_sm = self.serialize(&self.dh_base(&sk_s));
+        let pk_sm = self.serialize(&self.dh_base(&sk_s)?);
 
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
-        let zz = self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id);
+        let zz = self.extract_and_expand(dh_pk, &kem_context, suite_id);
         Ok((zz, enc))
     }
     fn auth_decaps(
@@ -199,11 +204,11 @@ impl KemTrait for DhKem {
         let pk_e = self.deserialize(enc);
         let dh_pk = concat(&[&self.dh(sk_r, &pk_e)?, &self.dh(sk_r, &pk_s)?]);
 
-        let pk_rm = self.serialize(&self.dh_base(sk_r));
+        let pk_rm = self.serialize(&self.dh_base(sk_r)?);
         let pk_sm = self.serialize(&pk_s);
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
-        Ok(self.extract_and_expand(dh_pk.to_vec(), &kem_context, suite_id))
+        Ok(self.extract_and_expand(dh_pk, &kem_context, suite_id))
     }
 
     #[cfg(feature = "deterministic")]
