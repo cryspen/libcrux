@@ -42,9 +42,9 @@ struct HpkeTestVecor {
 #[allow(non_snake_case)]
 struct CiphertextKAT {
     aad: String,
-    ciphertext: String,
+    ct: String,
     nonce: String,
-    plaintext: String,
+    pt: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -193,8 +193,8 @@ fn test_kat() {
         for (i, encryption) in test.encryptions.iter().enumerate() {
             println!("Test encryption {} ...", i);
             let aad = hex_to_bytes(&encryption.aad);
-            let ptxt = hex_to_bytes(&encryption.plaintext);
-            let ctxt_kat = hex_to_bytes(&encryption.ciphertext);
+            let ptxt = hex_to_bytes(&encryption.pt);
+            let ctxt_kat = hex_to_bytes(&encryption.ct);
 
             // Test context API self-test
             let ctxt_out = sender_context.seal(&aad, &ptxt).unwrap();

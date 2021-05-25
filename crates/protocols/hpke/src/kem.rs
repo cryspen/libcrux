@@ -54,6 +54,9 @@ pub enum Error {
 
     /// A cryptographic operation failed.
     CryptoError,
+
+    /// Key generation error.
+    KeyGenerationError,
 }
 
 // Map KEM to KDF according to spec.

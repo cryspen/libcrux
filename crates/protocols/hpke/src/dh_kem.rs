@@ -146,7 +146,7 @@ impl KemTrait for DhKem {
                     }
                     if ctr == u8::MAX {
                         // If we get here we lost. This should never happen.
-                        panic!("Can't derive a secret key for P256");
+                        return Err(Error::KeyGenerationError);
                     }
                     ctr += 1;
                 }
