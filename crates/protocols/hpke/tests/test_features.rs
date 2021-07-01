@@ -6,8 +6,6 @@ use evercrypt::prelude::*;
 #[cfg(feature = "serialization")]
 use hpke::prelude::*;
 
-use hpke::{HPKEKeyPair, HPKEPrivateKey, HPKEPublicKey};
-
 #[test]
 #[cfg(feature = "serialization")]
 fn test_serialization() {
@@ -25,11 +23,4 @@ fn test_serialization() {
     let serialized_mode = serde_json::to_string(&aead_mode).unwrap();
     let aead_mode_out: AeadMode = serde_json::from_str(&serialized_mode).unwrap();
     assert_eq!(aead_mode, aead_mode_out);
-}
-
-#[test]
-fn deprecation() {
-    let _pk = HPKEPublicKey::new(vec![1, 2, 3, 4]);
-    let _sk = HPKEPrivateKey::new(vec![1, 2, 3, 4]);
-    let _key_pair = HPKEKeyPair::new(vec![1, 2, 3, 4], vec![1, 2, 3, 4]);
 }

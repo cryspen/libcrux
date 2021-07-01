@@ -115,12 +115,43 @@ impl<'de> Deserialize<'de> for Aead {
     }
 }
 
+/// This is a dummy AEAD that doesn't do anything and is used for the exporter
+/// only cipher suite.
+#[derive(Debug)]
+pub(crate) struct ExporterAead {}
+
+impl AeadTrait for ExporterAead {
+    fn new() -> Self {
+        Self {}
+    }
+
+    fn seal(&self, _: &[u8], _: &[u8], _: &[u8], _: &[u8]) -> Result<Vec<u8>, Error> {
+        unimplemented!()
+    }
+
+    fn open(&self, _: &[u8], _: &[u8], _: &[u8], _: &[u8]) -> Result<Vec<u8>, Error> {
+        unimplemented!()
+    }
+
+    fn key_length(&self) -> usize {
+        0
+    }
+
+    fn nonce_length(&self) -> usize {
+        0
+    }
+
+    fn tag_length(&self) -> usize {
+        0
+    }
+}
+
 fn aead_object(mode: Mode) -> Box<dyn AeadTrait> {
     match mode {
         Mode::AesGcm128 => Box::new(AesGcm128::new()),
         Mode::AesGcm256 => Box::new(AesGcm256::new()),
         Mode::ChaCha20Poly1305 => Box::new(ChaCha20Poly1305::new()),
-        Mode::Export => panic!("Exporter only interface is not implemented yet."),
+        Mode::Export => Box::new(ExporterAead::new()),
     }
 }
 

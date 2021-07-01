@@ -13,10 +13,11 @@ repository = "https://github.com/franziskuskiefer/hpke-rs"
 evercrypt = { version = "0.0.9" }
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
+tls_codec = { version = "0.1", git = "https://github.com/openmls/tls-codec.git", branch = "main", features = ["derive"], optional = true }
 
 [features]
 rust-crypto = ["evercrypt/rust-crypto-aes"]
-serialization = ["serde", "serde_json", "evercrypt/serialization"]
+serialization = ["serde", "serde_json", "evercrypt/serialization", "tls_codec", "tls_codec/serde_serialize"]
 hazmat = []
 deterministic = []
 hpke-test = []

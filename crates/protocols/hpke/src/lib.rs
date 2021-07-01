@@ -39,7 +39,7 @@ mod test_kdf;
 type HPKEError = HpkeError;
 
 /// HPKE Error types.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum HpkeError {
     /// Error opening an HPKE ciphertext.
     OpenError,
@@ -144,9 +144,9 @@ impl std::fmt::Display for Mode {
     }
 }
 
-impl std::convert::TryFrom<u16> for Mode {
+impl std::convert::TryFrom<u8> for Mode {
     type Error = HpkeError;
-    fn try_from(x: u16) -> Result<Mode, HpkeError> {
+    fn try_from(x: u8) -> Result<Mode, HpkeError> {
         match x {
             0x00 => Ok(Mode::Base),
             0x01 => Ok(Mode::Psk),
@@ -358,13 +358,13 @@ impl Hpke {
         sk_s: Option<&HpkePrivateKey>,
     ) -> Result<(EncapsulatedSecret, Context), HpkeError> {
         let (zz, enc) = match self.mode {
-            Mode::Base | Mode::Psk => self.kem.encaps(&pk_r.value)?,
+            Mode::Base | Mode::Psk => self.kem.encaps(pk_r.value.as_slice())?,
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
                     Some(s) => &s.value,
                     None => return Err(HpkeError::InvalidInput),
                 };
-                self.kem.auth_encaps(&pk_r.value, sk_s)?
+                self.kem.auth_encaps(pk_r.value.as_slice(), sk_s)?
             }
         };
         Ok((
@@ -401,7 +401,7 @@ impl Hpke {
             Mode::Base | Mode::Psk => self.kem.decaps(enc, &sk_r.value)?,
             Mode::Auth | Mode::AuthPsk => {
                 let pk_s = match pk_s {
-                    Some(s) => &s.value,
+                    Some(s) => s.value.as_slice(),
                     None => return Err(HpkeError::InvalidInput),
                 };
                 self.kem.auth_decaps(enc, &sk_r.value, pk_s)?
@@ -755,13 +755,13 @@ impl std::fmt::Debug for HpkePrivateKey {
 impl HpkePublicKey {
     /// Create a new HPKE public key.
     /// Consumes the public key bytes.
-    pub fn new(b: Vec<u8>) -> Self {
-        Self { value: b }
+    pub fn new(value: Vec<u8>) -> Self {
+        Self { value }
     }
 
     /// Get the raw key as byte slice.
     pub fn as_slice(&self) -> &[u8] {
-        &self.value
+        self.value.as_slice()
     }
 }
 
@@ -774,6 +774,58 @@ impl From<Vec<u8>> for HpkePublicKey {
 impl From<&[u8]> for HpkePublicKey {
     fn from(b: &[u8]) -> Self {
         Self::new(b.to_vec())
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl tls_codec::TlsSize for HpkePublicKey {
+    #[inline(always)]
+    fn serialized_len(&self) -> usize {
+        tls_codec::TlsSliceU16(self.as_slice()).serialized_len()
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl tls_codec::Serialize for HpkePublicKey {
+    #[inline(always)]
+    fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
+        tls_codec::TlsSliceU16(self.as_slice()).tls_serialize(writer)
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl tls_codec::TlsSize for &HpkePublicKey {
+    #[inline(always)]
+    fn serialized_len(&self) -> usize {
+        tls_codec::TlsSliceU16(self.as_slice()).serialized_len()
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl tls_codec::Serialize for &HpkePublicKey {
+    #[inline(always)]
+    fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
+        tls_codec::TlsSliceU16(self.as_slice()).tls_serialize(writer)
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl tls_codec::Deserialize for HpkePublicKey {
+    #[inline(always)]
+    fn tls_deserialize<R: std::io::Read>(bytes: &mut R) -> Result<Self, tls_codec::Error> {
+        Ok(Self {
+            value: tls_codec::TlsVecU16::tls_deserialize(bytes)?.into(),
+        })
+    }
+}
+
+#[cfg(feature = "serialization")]
+impl tls_codec::Deserialize for &HpkePublicKey {
+    #[inline(always)]
+    fn tls_deserialize<R: std::io::Read>(_: &mut R) -> Result<Self, tls_codec::Error> {
+        Err(tls_codec::Error::DecodingError(format!(
+            "Error trying to deserialize a reference."
+        )))
     }
 }
 

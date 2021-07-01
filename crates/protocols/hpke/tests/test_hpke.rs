@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 lazy_static! {
     static ref TEST_CASES: Vec<(Mode, HpkeKemMode, HpkeKdfMode, HpkeAeadMode)> = {
         let mut tests = Vec::new();
-        for mode in 0u16..4 {
+        for mode in 0u8..4 {
             let hpke_mode = Mode::try_from(mode).unwrap();
             for aead_mode in 1u16..4 {
                 let aead_mode = HpkeAeadMode::try_from(aead_mode).unwrap();

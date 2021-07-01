@@ -10,8 +10,8 @@ use hpke::test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_snake_case)]
-struct HpkeTestVecor {
-    mode: u16,
+struct HpkeTestVector {
+    mode: u8,
     kem_id: u16,
     kdf_id: u16,
     aead_id: u16,
@@ -63,7 +63,7 @@ fn test_kat() {
         Err(_) => panic!("Couldn't open file {}.", file),
     };
     let reader = BufReader::new(file);
-    let tests: Vec<HpkeTestVecor> = match serde_json::from_reader(reader) {
+    let tests: Vec<HpkeTestVector> = match serde_json::from_reader(reader) {
         Ok(r) => r,
         Err(e) => panic!("Error reading file.\n{:?}", e),
     };
@@ -73,11 +73,6 @@ fn test_kat() {
         let kem_id: HpkeKemMode = test.kem_id.try_into().unwrap();
         let kdf_id: HpkeKdfMode = test.kdf_id.try_into().unwrap();
         let aead_id: HpkeAeadMode = test.aead_id.try_into().unwrap();
-
-        if aead_id == HpkeAeadMode::Export {
-            print!("Exporter only AEAD is not implemented yet.");
-            continue;
-        }
 
         if kem_id != HpkeKemMode::DhKem25519 && kem_id != HpkeKemMode::DhKemP256 {
             println!(" > KEM {:?} not implemented yet", kem_id);
@@ -117,8 +112,6 @@ fn test_kat() {
         let psk_id = hex_to_bytes_option(test.psk_id);
         let psk_id = vec_to_option_slice(&psk_id);
         let shared_secret = hex_to_bytes(&test.shared_secret);
-        // let key_schedule_context = hex_to_bytes(&test.key_schedule_context);
-        // let secret = hex_to_bytes(&test.secret);
         let key = hex_to_bytes(&test.key);
         let nonce = hex_to_bytes(&test.base_nonce);
         let exporter_secret = hex_to_bytes(&test.exporter_secret);
@@ -139,6 +132,7 @@ fn test_kat() {
             .unwrap();
 
         // Check setup info
+        // Note that key and nonce are empty for exporter only key derivation.
         assert_eq!(direct_ctx.key(), key);
         assert_eq!(direct_ctx.nonce(), nonce);
         assert_eq!(direct_ctx.exporter_secret(), exporter_secret);
@@ -239,7 +233,7 @@ fn test_serialization() {
     use hpke::HpkeKeyPair;
 
     // XXX: Make these individual tests.
-    for mode in 0u16..4 {
+    for mode in 0u8..4 {
         let hpke_mode = HpkeMode::try_from(mode).unwrap();
         for aead_mode in 1u16..4 {
             let aead_mode = HpkeAeadMode::try_from(aead_mode).unwrap();

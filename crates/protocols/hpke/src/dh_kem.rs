@@ -172,7 +172,7 @@ impl KemTrait for DhKem {
         let dh_pk = self.dh(sk_r, &pk_e)?;
 
         let pk_rm = self.serialize(&self.dh_base(sk_r)?);
-        let kem_context = concat(&[&enc, &pk_rm]);
+        let kem_context = concat(&[enc, &pk_rm]);
 
         Ok(self.extract_and_expand(dh_pk, &kem_context, suite_id))
     }
@@ -183,11 +183,11 @@ impl KemTrait for DhKem {
         suite_id: &[u8],
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
         let (pk_e, sk_e) = self.derive_key_pair(suite_id, &self.random())?;
-        let dh_pk = concat(&[&self.dh(&sk_e, pk_r)?, &self.dh(&sk_s, pk_r)?]);
+        let dh_pk = concat(&[&self.dh(&sk_e, pk_r)?, &self.dh(sk_s, pk_r)?]);
 
         let enc = self.serialize(&pk_e);
-        let pk_rm = self.serialize(&pk_r);
-        let pk_sm = self.serialize(&self.dh_base(&sk_s)?);
+        let pk_rm = self.serialize(pk_r);
+        let pk_sm = self.serialize(&self.dh_base(sk_s)?);
 
         let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
 
@@ -202,11 +202,11 @@ impl KemTrait for DhKem {
         suite_id: &[u8],
     ) -> Result<Vec<u8>, Error> {
         let pk_e = self.deserialize(enc);
-        let dh_pk = concat(&[&self.dh(sk_r, &pk_e)?, &self.dh(sk_r, &pk_s)?]);
+        let dh_pk = concat(&[&self.dh(sk_r, &pk_e)?, &self.dh(sk_r, pk_s)?]);
 
         let pk_rm = self.serialize(&self.dh_base(sk_r)?);
-        let pk_sm = self.serialize(&pk_s);
-        let kem_context = concat(&[&enc, &pk_rm, &pk_sm]);
+        let pk_sm = self.serialize(pk_s);
+        let kem_context = concat(&[enc, &pk_rm, &pk_sm]);
 
         Ok(self.extract_and_expand(dh_pk, &kem_context, suite_id))
     }
