@@ -778,9 +778,9 @@ impl From<&[u8]> for HpkePublicKey {
 }
 
 #[cfg(feature = "serialization")]
-impl tls_codec::TlsSize for HpkePublicKey {
+impl tls_codec::Size for HpkePublicKey {
     #[inline(always)]
-    fn serialized_len(&self) -> usize {
+    fn tls_serialized_len(&self) -> usize {
         tls_codec::TlsSliceU16(self.as_slice()).serialized_len()
     }
 }
@@ -794,9 +794,9 @@ impl tls_codec::Serialize for HpkePublicKey {
 }
 
 #[cfg(feature = "serialization")]
-impl tls_codec::TlsSize for &HpkePublicKey {
+impl tls_codec::Size for &HpkePublicKey {
     #[inline(always)]
-    fn serialized_len(&self) -> usize {
+    fn tls_serialized_len(&self) -> usize {
         tls_codec::TlsSliceU16(self.as_slice()).serialized_len()
     }
 }
