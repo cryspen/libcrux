@@ -781,7 +781,7 @@ impl From<&[u8]> for HpkePublicKey {
 impl tls_codec::Size for HpkePublicKey {
     #[inline(always)]
     fn tls_serialized_len(&self) -> usize {
-        tls_codec::TlsSliceU16(self.as_slice()).serialized_len()
+        tls_codec::TlsByteSliceU16(self.as_slice()).tls_serialized_len()
     }
 }
 
@@ -789,7 +789,7 @@ impl tls_codec::Size for HpkePublicKey {
 impl tls_codec::Serialize for HpkePublicKey {
     #[inline(always)]
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
-        tls_codec::TlsSliceU16(self.as_slice()).tls_serialize(writer)
+        tls_codec::TlsByteSliceU16(self.as_slice()).tls_serialize(writer)
     }
 }
 
@@ -797,7 +797,7 @@ impl tls_codec::Serialize for HpkePublicKey {
 impl tls_codec::Size for &HpkePublicKey {
     #[inline(always)]
     fn tls_serialized_len(&self) -> usize {
-        tls_codec::TlsSliceU16(self.as_slice()).serialized_len()
+        tls_codec::TlsByteSliceU16(self.as_slice()).tls_serialized_len()
     }
 }
 
@@ -805,7 +805,7 @@ impl tls_codec::Size for &HpkePublicKey {
 impl tls_codec::Serialize for &HpkePublicKey {
     #[inline(always)]
     fn tls_serialize<W: std::io::Write>(&self, writer: &mut W) -> Result<usize, tls_codec::Error> {
-        tls_codec::TlsSliceU16(self.as_slice()).tls_serialize(writer)
+        tls_codec::TlsByteSliceU16(self.as_slice()).tls_serialize(writer)
     }
 }
 
@@ -814,7 +814,7 @@ impl tls_codec::Deserialize for HpkePublicKey {
     #[inline(always)]
     fn tls_deserialize<R: std::io::Read>(bytes: &mut R) -> Result<Self, tls_codec::Error> {
         Ok(Self {
-            value: tls_codec::TlsVecU16::tls_deserialize(bytes)?.into(),
+            value: tls_codec::TlsByteVecU16::tls_deserialize(bytes)?.into(),
         })
     }
 }
