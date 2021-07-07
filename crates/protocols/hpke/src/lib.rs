@@ -823,9 +823,9 @@ impl tls_codec::Deserialize for HpkePublicKey {
 impl tls_codec::Deserialize for &HpkePublicKey {
     #[inline(always)]
     fn tls_deserialize<R: std::io::Read>(_: &mut R) -> Result<Self, tls_codec::Error> {
-        Err(tls_codec::Error::DecodingError(format!(
-            "Error trying to deserialize a reference."
-        )))
+        Err(tls_codec::Error::DecodingError(
+            "Error trying to deserialize a reference.".to_string(),
+        ))
     }
 }
 
