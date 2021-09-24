@@ -1,7 +1,14 @@
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
 
-use crate::aead_impl::*;
+#[cfg(feature = "evercrypt-backend")]
+mod evercrypt;
+#[cfg(feature = "evercrypt-backend")]
+use self::evercrypt::*;
+#[cfg(all(feature = "rust-crypto", not(feature = "evercrypt-backend")))]
+mod rust_crypto;
+#[cfg(all(feature = "rust-crypto", not(feature = "evercrypt-backend")))]
+use rust_crypto::*;
 
 use std::fmt::Debug;
 

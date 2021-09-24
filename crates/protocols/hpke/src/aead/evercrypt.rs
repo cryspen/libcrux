@@ -33,9 +33,9 @@ macro_rules! implement_aead {
                     Err(_) => return Err(Error::InvalidConfig),
                 };
 
-                let (mut ctxt, tag) = cipher.encrypt(&plain_txt, &nonce, &aad)?;
-                ctxt.extend(tag.to_vec());
-                Ok(ctxt)
+                cipher
+                    .encrypt_combined(&plain_txt, &nonce, &aad)
+                    .map_err(|e| e.into())
             }
             fn open(
                 &self,
@@ -58,15 +58,9 @@ macro_rules! implement_aead {
                     Err(_) => return Err(Error::InvalidConfig),
                 };
 
-                match cipher.decrypt(
-                    &cipher_txt[..cipher_txt.len() - tag_length],
-                    &cipher_txt[cipher_txt.len() - tag_length..],
-                    &nonce,
-                    &aad,
-                ) {
-                    Ok(m) => Ok(m),
-                    Err(_) => Err(Error::OpenError),
-                }
+                cipher
+                    .decrypt_combined(&cipher_txt, &nonce, &aad)
+                    .map_err(|_| Error::OpenError)
             }
             fn key_length(&self) -> usize {
                 aead_key_size($algorithm)

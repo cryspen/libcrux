@@ -23,36 +23,31 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+    # Only RustCrypto for now, the macOS CI machines are too old
     - uses: actions/checkout@v2
-    - name: Setup MacOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
-        sudo xcode-select -s /Applications/Xcode_12.4.app
-        rustup target install aarch64-apple-darwin
-        rustup target install aarch64-apple-ios
+    - name: Run tests w/ RustCrypto
+      run: cargo test --verbose --no-default-features --features="rust-crypto"
+    - name: Run tests all features w/ RustCrypto
+      run: cargo test --verbose --no-default-features --features="rust-crypto serialization"
+      # Release
+    - name: Build Release w/ RustCrypto
+      run: cargo build --release --verbose --no-default-features --features="rust-crypto"
+    - name: Run tests all features w/ RustCrypto
+      run: cargo test --release --verbose --no-default-features --features="rust-crypto serialization"
+    # Evercrypt backend only on non-macOS
     - name: Run tests
-      # Always enabling rust crypto AES for now.
-      run: cargo test --verbose --features rust-crypto
+      if: matrix.os != 'macos-latest'
+      run: cargo test --verbose
     - name: Run tests all features
-      # Always enabling rust crypto AES for now.
-      run: cargo test --verbose --all-features
+      if: matrix.os != 'macos-latest'
+      run: cargo test --verbose --features="serialization"
       # Release
     - name: Build Release
+      if: matrix.os != 'macos-latest'
       run: cargo build --release --verbose
     - name: Run tests all features
-      # Always enabling rust crypto AES for now.
-      run: cargo test --release --verbose --all-features
-    - name: Apple Silicon Build
-      if: matrix.os == 'macos-latest'
-      run: |
-        cargo build --target aarch64-apple-darwin --tests --verbose --features rust-crypto
-        cargo build --release --target aarch64-apple-darwin --tests --verbose --features rust-crypto
-    - name: iOS build
-      if: matrix.os == 'macos-latest'
-      run: |
-        cargo build --target aarch64-apple-ios --tests --verbose --features rust-crypto
-        cargo build --release --target aarch64-apple-ios --tests --verbose --features rust-crypto
+      if: matrix.os != 'macos-latest'
+      run: cargo test --release --verbose --features="serialization"
   fuzz:
     strategy:
       fail-fast: false
@@ -72,5 +67,8 @@ jobs:
         with:
           crate: cargo-fuzz
           version: latest
-      - name: Fuzz AEAD
+      - name: Fuzz Base
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo fuzz run base -- -runs=10000
+      - name: Fuzz Base w/ RustCrypto
         run: cargo fuzz run base -- -runs=10000

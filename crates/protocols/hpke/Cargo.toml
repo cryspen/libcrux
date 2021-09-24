@@ -10,14 +10,28 @@ readme = "README.md"
 repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
-evercrypt = { version = "0.0.10" }
+rand = "0.8"
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 tls_codec = { version = "0.1", git = "https://github.com/openmls/tls-codec.git", branch = "main", features = ["derive"], optional = true }
+# Evercrypt
+evercrypt = { version = "0.0.10", features = ["serialization"], optional = true }
+# Rust crypto
+hkdf = { version = "0.11", optional = true }
+sha2 = { version = "0.9", optional = true }
+p256 = { version = "0.9", features = ["arithmetic", "ecdh", "zeroize"], optional = true }
+p384 = { version = "0.8", optional = true }
+x25519-dalek-ng = { version = "1.1", optional = true }
+chacha20poly1305 = { version = "0.9", optional = true }
+aes-gcm = { version = "0.9", optional = true }
 
 [features]
-rust-crypto = ["evercrypt/rust-crypto-aes"]
-serialization = ["serde", "serde_json", "evercrypt/serialization", "tls_codec", "tls_codec/serde_serialize"]
+default = ["evercrypt-backend"] # Default to using evercrypt
+# The evercrypt crypto backend
+evercrypt-backend = ["evercrypt"]
+# The Rust crypto backend
+rust-crypto = ["hkdf", "p256", "p384", "x25519-dalek-ng", "sha2", "chacha20poly1305", "aes-gcm"]
+serialization = ["serde", "serde_json", "tls_codec", "tls_codec/serde_serialize"]
 hazmat = []
 deterministic = []
 hpke-test = []
@@ -26,4 +40,10 @@ hpke-test = []
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
-hpke-rs = { path = ".", features = ["deterministic", "hpke-test", "hazmat"]}
+rayon = "1.5"
+hpke-rs = { path = ".", features = ["deterministic", "hpke-test", "hazmat"], default-features = false}
+
+[package.metadata.docs.rs]
+# the evercrypt build is too heavy for docs.rs right now
+no-default-features = true
+features = ["rust-crypto"]

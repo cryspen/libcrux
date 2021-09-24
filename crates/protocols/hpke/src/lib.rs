@@ -1,6 +1,60 @@
-//! This implements the work-in-progress Hybrid Public Key Encryption RFC.
-//! https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html
+//! # Hybrid Public Key Encryption (HPKE).
+//! <https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html>
 //!
+//! From the RFC:
+//! > This scheme provides a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. It also includes three authenticated variants, including one which authenticates possession of a pre-shared key, and two optional ones which authenticate possession of a KEM private key.
+//!
+//! ## Cryptographic Provider
+//! This crate does not implement its own cryptographic primitives.
+//! Instead it uses cryptographic libraries or provider that implement the necessary
+//! primitives.
+//!
+//! ### Evercrypt
+//! This is the default provider.
+//! Here we use the [Evercrypt Rust](https://github.com/franziskuskiefer/evercrypt-rust/)
+//! bindings for the formally verified cryptography library [Evercrypt](https://github.com/project-everest/hacl-star).
+//!
+//! ### Rust Crypto
+//! In order to use native rust crypto,
+//! i.e. [hkdf], [sha2], [p256], [p384], [x25519-dalek-ng], [chacha20poly1305], [aes-gcm]
+//! the default features have to disabled and the `rust-crypto` feature has to be enabled.
+//! ```ignore
+//! cargo build --no-default-features --features="rust-crypto"
+//! ```
+//!
+//! ## Supported algorithms
+//!
+//! Key encapsulation Mechanisms
+//! * P-256
+//! * P-384 (rust-crypto only)
+//! * X25519
+//!
+//! Key derivation functions
+//! * HKDF-SHA256
+//! * HKDF-SHA384
+//! * HKDF-SHA512
+//!
+//! AEADs
+//! * AES-GCM-128
+//! * AES-GCM-256
+//! * ChaCha20Poly1305
+//!
+//! ## A note on randomness
+//! This crate either relies on the crypto provider to generate randomness or uses
+//! [`rand::rngs::OsRng`] for generating randomness.
+//! The latter is cryptographically secure but not ideal because it taps into the
+//! OS entropy source directly, which might block or return bad entropy when
+//! queried too rapidly.
+//! This should change in future.
+//! See [#25](https://github.com/franziskuskiefer/hpke-rs/issues/25) for more information.
+//!
+//! [hkdf]: https://docs.rs/hkdf/
+//! [sha2]: https://docs.rs/sha2
+//! [p256]: https://docs.rs/p256
+//! [p384]: https://docs.rs/p384
+//! [x25519-dalek-ng]: https://docs.rs/x25519-dalek-ng
+//! [chacha20poly1305]: https://docs.rs/chacha20poly1305
+//! [aes-gcm]: https://docs.rs/aes-gcm
 
 #![forbid(unsafe_code, unused_must_use, unstable_features)]
 #![deny(
@@ -15,12 +69,11 @@
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
 
-pub(crate) mod aead;
-mod aead_impl;
+mod aead;
 mod dh_kem;
 mod hkdf;
 pub(crate) mod kdf;
-pub(crate) mod kem;
+mod kem;
 pub mod prelude;
 
 mod util;
@@ -171,7 +224,7 @@ type Plaintext = Vec<u8>;
 
 /// The HPKE context.
 /// Note that the RFC currently doesn't define this.
-/// Also see https://github.com/cfrg/draft-irtf-cfrg-hpke/issues/161.
+/// Also see <https://github.com/cfrg/draft-irtf-cfrg-hpke/issues/161>.
 pub struct Context<'a> {
     key: Vec<u8>,
     nonce: Vec<u8>,
@@ -255,13 +308,16 @@ impl<'a> Context<'a> {
     ///  return LabeledExpand(self.exporter_secret, "sec", exporter_context, L)
     ///```
     pub fn export(&self, exporter_context: &[u8], length: usize) -> Vec<u8> {
-        self.hpke.kdf.labeled_expand(
-            &self.exporter_secret,
-            &self.hpke.ciphersuite(),
-            "sec",
-            exporter_context,
-            length,
-        )
+        self.hpke
+            .kdf
+            .labeled_expand(
+                &self.exporter_secret,
+                &self.hpke.ciphersuite(),
+                "sec",
+                exporter_context,
+                length,
+            )
+            .unwrap() // FIXME
     }
 
     /// def Context<ROLE>.ComputeNonce(seq):
@@ -596,19 +652,24 @@ impl Hpke {
             .kdf
             .labeled_extract(shared_secret, &suite_id, "secret", psk);
 
-        let key =
-            self.kdf
-                .labeled_expand(&secret, &suite_id, "key", &key_schedule_context, self.nk);
-        let base_nonce = self.kdf.labeled_expand(
-            &secret,
-            &suite_id,
-            "base_nonce",
-            &key_schedule_context,
-            self.nn,
-        );
-        let exporter_secret =
-            self.kdf
-                .labeled_expand(&secret, &suite_id, "exp", &key_schedule_context, self.nh);
+        let key = self
+            .kdf
+            .labeled_expand(&secret, &suite_id, "key", &key_schedule_context, self.nk)
+            .unwrap(); // FIXME
+        let base_nonce = self
+            .kdf
+            .labeled_expand(
+                &secret,
+                &suite_id,
+                "base_nonce",
+                &key_schedule_context,
+                self.nn,
+            )
+            .unwrap(); // FIXME
+        let exporter_secret = self
+            .kdf
+            .labeled_expand(&secret, &suite_id, "exp", &key_schedule_context, self.nh)
+            .unwrap(); // FIXME
 
         Ok(Context {
             key,

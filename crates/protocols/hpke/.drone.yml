@@ -12,21 +12,23 @@ steps:
   - apt-get update -qq --yes && apt-get install -qq --yes clang
   - git submodule update --init --recursive
   - cargo build --verbose
-  - cargo test --verbose --all-features
+  - cargo build --verbose --no-default-features --features="rust-crypto"
+  - cargo test --verbose --no-default-features --features="rust-crypto"
 
----
-kind: pipeline
-type: docker
-name: arm
+# ---
+# kind: pipeline
+# type: docker
+# name: arm
 
-platform:
-  arch: arm
+# platform:
+#   arch: arm
 
-steps:
-- name: test
-  image: rust:latest
-  commands:
-  - apt-get update -qq --yes && apt-get install -qq --yes clang
-  - git submodule update --init --recursive
-  - cargo build --verbose
-  - cargo test --verbose --all-features
+# steps:
+# - name: test
+#   image: rust:latest
+#   commands:
+#   - apt-get update -qq --yes && apt-get install -qq --yes clang
+#   - git submodule update --init --recursive
+#   - cargo build --verbose
+#   - cargo build --verbose --no-default-features --features="rust-crypto"
+#   - cargo test --verbose --no-default-features --features="rust-crypto"

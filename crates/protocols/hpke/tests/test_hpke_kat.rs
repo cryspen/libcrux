@@ -1,5 +1,6 @@
 extern crate hpke_rs as hpke;
 
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::{self, Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fs::File;
@@ -68,7 +69,7 @@ fn test_kat() {
         Err(e) => panic!("Error reading file.\n{:?}", e),
     };
 
-    for test in tests {
+    tests.into_par_iter().for_each(|test| {
         let mode: HpkeMode = test.mode.try_into().unwrap();
         let kem_id: HpkeKemMode = test.kem_id.try_into().unwrap();
         let kdf_id: HpkeKdfMode = test.kdf_id.try_into().unwrap();
@@ -76,7 +77,7 @@ fn test_kat() {
 
         if kem_id != HpkeKemMode::DhKem25519 && kem_id != HpkeKemMode::DhKemP256 {
             println!(" > KEM {:?} not implemented yet", kem_id);
-            continue;
+            return;
         }
 
         println!(
@@ -223,7 +224,7 @@ fn test_kat() {
             let exported_secret = direct_ctx.export(&export_context, length);
             assert_eq!(export_value, exported_secret);
         }
-    }
+    });
 }
 
 #[cfg(feature = "serialization")]

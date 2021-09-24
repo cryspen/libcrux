@@ -1,8 +1,8 @@
 extern crate hpke_rs as hpke;
 
-use evercrypt::prelude::*;
 use hpke::prelude::*;
 use lazy_static::lazy_static;
+use rand::{rngs::OsRng, RngCore};
 
 lazy_static! {
     static ref TEST_CASES: Vec<(Mode, HpkeKemMode, HpkeKdfMode, HpkeAeadMode)> = {
@@ -46,8 +46,10 @@ macro_rules! generate_test_case {
             let aad = b"HPKE self test aad";
             let plain_txt = b"HPKE self test plain text";
             let exporter_context = b"HPKE self test exporter context";
-            let psk = random_vec(32);
-            let psk_id = random_vec(32);
+            let mut psk = [0u8; 32];
+            OsRng.fill_bytes(&mut psk);
+            let mut psk_id = [0u8; 32];
+            OsRng.fill_bytes(&mut psk_id);
             let (psk, psk_id): (Option<&[u8]>, Option<&[u8]>) = match $hpke_mode {
                 Mode::Base | Mode::Auth => (None, None),
                 Mode::Psk | Mode::AuthPsk => (Some(&psk), Some(&psk_id)),

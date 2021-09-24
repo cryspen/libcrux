@@ -26,6 +26,30 @@ pub enum Mode {
     DhKem448 = 0x0021,
 }
 
+/// KEM key types.
+/// This uses the TLS IANA parameters
+/// https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
+#[allow(dead_code)]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[repr(u16)]
+pub(crate) enum KemKeyType {
+    /// ECDH Curve25519 key
+    X25519 = 29,
+
+    /// ECDH Curve448 key
+    X448 = 30,
+
+    /// ECDH NIST P256 key (secp256r1)
+    P256 = 23,
+
+    /// ECDH NIST P384 key (secp384r1)
+    P384 = 24,
+
+    /// ECDH NIST P521 key (secp521r1)
+    P521 = 25,
+}
+
 impl std::fmt::Display for Mode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{:?}", self)
@@ -57,6 +81,12 @@ pub enum Error {
 
     /// Key generation error.
     KeyGenerationError,
+
+    /// Invalid secret key.
+    InvalidSecretKey,
+
+    /// Invalid public key.
+    InvalidPublicKey,
 }
 
 // Map KEM to KDF according to spec.
@@ -143,8 +173,8 @@ impl std::fmt::Display for Kem {
 
 fn kem_object(mode: Mode, kdf_id: kdf::Mode) -> Box<dyn KemTrait> {
     match mode {
-        Mode::DhKem25519 => Box::new(dh_kem::DhKem::init(kdf_id, evercrypt::ecdh::Mode::X25519)),
-        Mode::DhKemP256 => Box::new(dh_kem::DhKem::init(kdf_id, evercrypt::ecdh::Mode::P256)),
+        Mode::DhKem25519 => Box::new(dh_kem::DhKem::init(kdf_id, KemKeyType::X25519)),
+        Mode::DhKemP256 => Box::new(dh_kem::DhKem::init(kdf_id, KemKeyType::P256)),
         _ => panic!("KEM {:?} is not implemented", mode),
     }
 }

@@ -46,6 +46,9 @@ impl std::convert::TryFrom<u16> for Mode {
 pub enum Error {
     /// The KDF mode is unknown.
     UnknownMode,
+
+    /// Invalid output length.
+    InvalidOutputLength,
 }
 
 pub(crate) trait KdfTrait: Debug + Send + Sync {
@@ -53,7 +56,7 @@ pub(crate) trait KdfTrait: Debug + Send + Sync {
     where
         Self: Sized;
     fn extract(&self, salt: &[u8], ikm: &[u8]) -> Vec<u8>;
-    fn expand(&self, prk: &[u8], info: &[u8], output_size: usize) -> Vec<u8>;
+    fn expand(&self, prk: &[u8], info: &[u8], output_size: usize) -> Result<Vec<u8>, Error>;
     fn digest_length(&self) -> usize;
 }
 
@@ -114,8 +117,8 @@ impl Kdf {
         label: &'static str,
         info: &[u8],
         len: usize,
-    ) -> Vec<u8> {
-        assert!(len < 256);
+    ) -> Result<Vec<u8>, Error> {
+        debug_assert!(len < 256);
         let len_bytes = (len as u16).to_be_bytes();
         let labeled_info = concat(&[&len_bytes, HPKE_VERSION, suite_id, label.as_bytes(), info]);
         self.kdf.expand(prk, &labeled_info, len)
@@ -128,14 +131,24 @@ impl Kdf {
 
     #[cfg(test)]
     pub(crate) fn expand(&self, prk: &[u8], info: &[u8], output_size: usize) -> Vec<u8> {
-        self.kdf.expand(prk, info, output_size)
+        self.kdf.expand(prk, info, output_size).unwrap()
     }
 }
 
+#[cfg(all(feature = "evercrypt-backend", not(feature = "rust-crypto")))]
 fn get_kdf_object(mode: Mode) -> Box<dyn KdfTrait> {
     match mode {
-        Mode::HkdfSha256 => Box::new(hkdf::HkdfSha256::new()),
-        Mode::HkdfSha384 => Box::new(hkdf::HkdfSha384::new()),
-        Mode::HkdfSha512 => Box::new(hkdf::HkdfSha512::new()),
+        Mode::HkdfSha256 => Box::new(self::hkdf::evercrypt::HkdfSha256::new()),
+        Mode::HkdfSha384 => Box::new(self::hkdf::evercrypt::HkdfSha384::new()),
+        Mode::HkdfSha512 => Box::new(self::hkdf::evercrypt::HkdfSha512::new()),
+    }
+}
+
+#[cfg(all(feature = "rust-crypto", not(feature = "evercrypt-backend")))]
+fn get_kdf_object(mode: Mode) -> Box<dyn KdfTrait> {
+    match mode {
+        Mode::HkdfSha256 => Box::new(self::hkdf::rust_crypto::HkdfSha256::new()),
+        Mode::HkdfSha384 => Box::new(self::hkdf::rust_crypto::HkdfSha384::new()),
+        Mode::HkdfSha512 => Box::new(self::hkdf::rust_crypto::HkdfSha512::new()),
     }
 }

@@ -1,26 +1,37 @@
-use evercrypt::prelude::*;
-
 use crate::kdf;
 use crate::kem::*;
 use crate::util::*;
+
+#[cfg(feature = "evercrypt-backend")]
+mod evercrypt;
+#[cfg(feature = "evercrypt-backend")]
+use self::evercrypt::*;
+
+#[cfg(all(feature = "rust-crypto", not(feature = "evercrypt-backend")))]
+mod rust_crypto;
+#[cfg(all(feature = "rust-crypto", not(feature = "evercrypt-backend")))]
+use self::rust_crypto::*;
 
 #[derive(Debug)]
 pub(crate) struct DhKem {
     encoded_pk_len: usize,
     sk_len: usize,
     kdf: kdf::Kdf,
-    dh_id: ecdh::Mode,
+    dh_id: KemKeyType,
     #[cfg(feature = "deterministic")]
     randomness: Vec<u8>,
 }
 
 impl DhKem {
-    pub fn init(kdf_id: kdf::Mode, dh_id: ecdh::Mode) -> Self {
+    pub fn init(kdf_id: kdf::Mode, dh_id: KemKeyType) -> Self {
         Self {
             sk_len: 32,
             encoded_pk_len: match dh_id {
-                ecdh::Mode::X25519 => 32,
-                ecdh::Mode::P256 => 64,
+                KemKeyType::X25519 => 32,
+                KemKeyType::P256 => 65,
+                _ => {
+                    panic!("This should be unreachable. Only x25519 and P256 KEMs are implemented")
+                }
             },
             kdf: kdf::Kdf::new(kdf_id),
             dh_id,
@@ -29,45 +40,37 @@ impl DhKem {
         }
     }
     fn dh(&self, sk: &[u8], pk: &[u8]) -> Result<Vec<u8>, Error> {
-        let dh = ecdh_derive(self.dh_id, pk, sk)?;
+        let dh = derive(self.dh_id, pk, sk)?;
 
         match self.dh_id {
-            ecdh::Mode::X25519 => Ok(dh),
-            ecdh::Mode::P256 => {
-                if dh.len() <= 32 {
+            KemKeyType::X25519 => Ok(dh),
+            KemKeyType::P256 => {
+                if dh.len() < 32 {
                     return Err(Error::CryptoError);
                 }
                 Ok(dh[0..32].to_vec())
             }
+            _ => {
+                panic!("This should be unreachable. Only x25519 and P256 KEMs are implemented")
+            }
         }
-    }
-
-    /// Prepend 0x04 for uncompressed NIST curve points.
-    #[inline(always)]
-    fn nist_format_uncompressed(mut pk: Vec<u8>) -> Vec<u8> {
-        let mut tmp = Vec::with_capacity(pk.len() + 1);
-        tmp.push(0x04);
-        tmp.append(&mut pk);
-        tmp
     }
 
     fn dh_base(&self, sk: &[u8]) -> Result<Vec<u8>, Error> {
-        let out = ecdh_derive_base(self.dh_id, sk)?;
-        match self.dh_id {
-            ecdh::Mode::X25519 => Ok(out),
-            ecdh::Mode::P256 => Ok(Self::nist_format_uncompressed(out)),
-        }
+        derive_base(self.dh_id, sk)
     }
 
     fn extract_and_expand(&self, pk: PublicKey, kem_context: &[u8], suite_id: &[u8]) -> Vec<u8> {
         let prk = self.kdf.labeled_extract(&[], suite_id, "eae_prk", &pk);
-        self.kdf.labeled_expand(
-            &prk,
-            suite_id,
-            "shared_secret",
-            kem_context,
-            self.secret_len(),
-        )
+        self.kdf
+            .labeled_expand(
+                &prk,
+                suite_id,
+                "shared_secret",
+                kem_context,
+                self.secret_len(),
+            )
+            .unwrap() // FIXME
     }
 
     /// Serialize public key.
@@ -111,7 +114,7 @@ impl KemTrait for DhKem {
     }
 
     fn key_gen(&self) -> Result<(Vec<u8>, Vec<u8>), Error> {
-        let sk = ecdh::key_gen(self.dh_id)?;
+        let sk = key_gen(self.dh_id)?;
         let pk = self.dh_base(&sk)?;
         Ok((sk, pk))
     }
@@ -124,11 +127,11 @@ impl KemTrait for DhKem {
         let dkp_prk = self.kdf.labeled_extract(&[], suite_id, "dkp_prk", ikm);
 
         let sk = match self.dh_id {
-            ecdh::Mode::X25519 => {
-                self.kdf
-                    .labeled_expand(&dkp_prk, suite_id, "sk", &[], self.sk_len)
-            }
-            ecdh::Mode::P256 => {
+            KemKeyType::X25519 => self
+                .kdf
+                .labeled_expand(&dkp_prk, suite_id, "sk", &[], self.sk_len)
+                .map_err(|_| Error::InvalidSecretKey)?,
+            KemKeyType::P256 => {
                 let mut ctr = 0u8;
                 // Do rejection sampling trying to find a valid key.
                 // It is expected that there aren't too many iteration and that
@@ -141,8 +144,11 @@ impl KemTrait for DhKem {
                         &ctr.to_be_bytes(),
                         self.sk_len,
                     );
-                    if let Ok(sk) = p256_validate_sk(&candidate) {
-                        break sk.to_vec();
+                    // XXX: Check!
+                    if let Ok(sk) = &candidate {
+                        if let Ok(sk) = validate_p256_sk(sk) {
+                            break sk;
+                        }
                     }
                     if ctr == u8::MAX {
                         // If we get here we lost. This should never happen.
@@ -150,6 +156,9 @@ impl KemTrait for DhKem {
                     }
                     ctr += 1;
                 }
+            }
+            _ => {
+                panic!("This should be unreachable. Only x25519 and P256 KEMs are implemented")
             }
         };
         Ok((self.dh_base(&sk)?, sk))
@@ -214,14 +223,5 @@ impl KemTrait for DhKem {
     #[cfg(feature = "deterministic")]
     fn set_random(&mut self, r: &[u8]) {
         self.randomness = r.to_vec();
-    }
-}
-
-impl From<EcdhError> for Error {
-    fn from(e: EcdhError) -> Self {
-        match e {
-            EcdhError::UnknownAlgorithm => Self::UnknownMode,
-            _ => Self::CryptoError,
-        }
     }
 }
