@@ -118,8 +118,5 @@ jobs:
         with:
           crate: cargo-fuzz
           version: latest
-      - name: Fuzz Base
-        if: matrix.os == 'ubuntu-latest'
-        run: cargo fuzz run base -- -runs=10000
       - name: Fuzz Base w/ RustCrypto
         run: cargo fuzz run base -- -runs=10000
