@@ -6,7 +6,7 @@
 
 An implementation of [HPKE] using [Evercrypt].
 
-This version is compatible with draft-09.
+This version is compatible with draft-12.
 
 ## Supported HPKE modes
 
@@ -35,6 +35,17 @@ This version is compatible with draft-09.
 - HKDF SHA-384
 - HKDF SHA-512
 
+## Other Crypto Backend
+
+Because [Evercrypt] does not support all platforms and algorithms at this point it is possible to use an alternative cryptography backend.
+
+In order to use the alternative rust crypto backend,
+([hkdf], [sha2], [p256], [p384], [x25519-dalek-ng], [chacha20poly1305], [aes-gcm])
+the default features have to disabled and the `rust-crypto` feature has to be enabled.
+```ignore
+cargo build --no-default-features --features="rust-crypto"
+```
+
 [maturity-badge]: https://img.shields.io/badge/maturity-beta-orange.svg?style=for-the-badge
 [github-actions-badge]: https://img.shields.io/github/workflow/status/franziskuskiefer/hpke-rs/Build%20&%20Test?label=build%20%26%20tests&logo=github&style=for-the-badge
 [github-actions-link]: https://github.com/franziskuskiefer/hpke-rs/actions/workflows/rust.yml?query=branch%3Amain
@@ -46,3 +57,11 @@ This version is compatible with draft-09.
 [docs-main-link]: https://www.franziskuskiefer.de/hpke-rs/hpke_rs/index.html
 [Evercrypt]: https://github.com/franziskuskiefer/evercrypt-rust
 [HPKE]: https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html
+
+[hkdf]: https://docs.rs/hkdf/
+[sha2]: https://docs.rs/sha2
+[p256]: https://docs.rs/p256
+[p384]: https://docs.rs/p384
+[x25519-dalek-ng]: https://docs.rs/x25519-dalek-ng
+[chacha20poly1305]: https://docs.rs/chacha20poly1305
+[aes-gcm]: https://docs.rs/aes-gcm

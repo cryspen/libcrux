@@ -16,7 +16,7 @@
 //!
 //! ### Rust Crypto
 //! In order to use native rust crypto,
-//! i.e. [hkdf], [sha2], [p256], [p384], [x25519-dalek-ng], [chacha20poly1305], [aes-gcm]
+//! i.e. [hkdf], [sha2], [p256], [p384], [x25519-dalek-ng], [chacha20poly1305], [aes-gcm],
 //! the default features have to disabled and the `rust-crypto` feature has to be enabled.
 //! ```ignore
 //! cargo build --no-default-features --features="rust-crypto"

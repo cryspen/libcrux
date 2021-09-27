@@ -1,12 +1,12 @@
 [package]
 name = "hpke-rs"
-version = "0.0.10"
+version = "0.0.11"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2018"
 license = "MPL-2.0"
 documentation = "https://www.franziskuskiefer.de/hpke-rs"
 description = "HPKE Implementation using Evercrypt"
-readme = "README.md"
+readme = "Readme.md"
 repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
