@@ -10,7 +10,7 @@ readme = "Readme.md"
 repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { path = "../traits" }
+hpke-rs-crypto = { version = "0.1", path = "../traits" }
 # Evercrypt
 evercrypt = { version = "0.0.10", features = ["serialization"] }
 # Randomness

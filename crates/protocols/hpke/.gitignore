@@ -4,3 +4,4 @@ Cargo.lock
 .vscode/
 evercrypt_provider/target
 rust_crypto_provider/target
+traits/target/

@@ -6,6 +6,8 @@
 
 This crate provides an implementation of the [HpkeCrypto] trait using [Evercrypt].
 
+Please see [hpke-rs] for more details.
+
 [evercrypt]: https://crates.io/crates/evercrypt
 [hpkecrypto]: https://github.com/franziskuskiefer/hpke-rs/tree/main/traits
 [rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg?style=for-the-badge
@@ -13,3 +15,4 @@ This crate provides an implementation of the [HpkeCrypto] trait using [Evercrypt
 [docs-link]: https://docs.rs/hpke-rs-evercrypt
 [crate-badge]: https://img.shields.io/crates/v/hpke-rs-evercrypt.svg?style=for-the-badge
 [crate-link]: https://crates.io/crates/hpke-rs-evercrypt
+[hpke-rs]: https://github.com/franziskuskiefer/hpke-rs
