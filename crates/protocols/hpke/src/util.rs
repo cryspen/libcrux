@@ -1,17 +1,3 @@
-use rand::{rngs::OsRng, RngCore};
-
-#[inline]
-pub(crate) fn random(l: usize) -> Vec<u8> {
-    // TODO: This function must be replaced with a proper PRNG call.
-    debug_assert!(
-        l < 128,
-        "We only want to take a little bit of randomness here."
-    );
-    let mut out = vec![0u8; l];
-    OsRng.fill_bytes(&mut out);
-    out
-}
-
 #[inline]
 pub(crate) fn concat(values: &[&[u8]]) -> Vec<u8> {
     values.join(&[][..])

@@ -1,0 +1,37 @@
+[package]
+name = "hpke-rs-evercrypt"
+version = "0.1.0"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2021"
+license = "MPL-2.0"
+documentation = "https://docs.rs/hpke-rs-evercrypt"
+description = "Crypto backend for HPKE using formally verified code from Evercrypt."
+readme = "Readme.md"
+repository = "https://github.com/franziskuskiefer/hpke-rs"
+
+[dependencies]
+hpke-rs-crypto = { path = "../traits" }
+# Evercrypt
+evercrypt = { version = "0.0.10", features = ["serialization"] }
+# Randomness
+rand = { version = "0.8" }
+getrandom = { version = "0.2", features = ["js"] }
+rand_chacha = { version = "0.3" }
+
+[dev-dependencies]
+criterion = { version = "0.3", features = ["html_reports"] }
+
+[features]
+deterministic-prng = [] # ⚠️ FOR TESTING ONLY.
+
+[[bench]]
+name = "bench_hkdf"
+harness = false
+
+[[bench]]
+name = "bench_p256"
+harness = false
+
+[[bench]]
+name = "bench_x25519"
+harness = false

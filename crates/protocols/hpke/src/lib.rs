@@ -1,61 +1,4 @@
-//! # Hybrid Public Key Encryption (HPKE).
-//! <https://cfrg.github.io/draft-irtf-cfrg-hpke/draft-irtf-cfrg-hpke.html>
-//!
-//! From the RFC:
-//! > This scheme provides a variant of public-key encryption of arbitrary-sized plaintexts for a recipient public key. It also includes three authenticated variants, including one which authenticates possession of a pre-shared key, and two optional ones which authenticate possession of a KEM private key.
-//!
-//! ## Cryptographic Provider
-//! This crate does not implement its own cryptographic primitives.
-//! Instead it uses cryptographic libraries or provider that implement the necessary
-//! primitives.
-//!
-//! ### Evercrypt
-//! This is the default provider.
-//! Here we use the [Evercrypt Rust](https://github.com/franziskuskiefer/evercrypt-rust/)
-//! bindings for the formally verified cryptography library [Evercrypt](https://github.com/project-everest/hacl-star).
-//!
-//! ### Rust Crypto
-//! In order to use native rust crypto,
-//! i.e. [hkdf], [sha2], [p256], [p384], [x25519-dalek-ng], [chacha20poly1305], [aes-gcm],
-//! the default features have to disabled and the `rust-crypto` feature has to be enabled.
-//! ```ignore
-//! cargo build --no-default-features --features="rust-crypto"
-//! ```
-//!
-//! ## Supported algorithms
-//!
-//! Key encapsulation Mechanisms
-//! * P-256
-//! * P-384 (rust-crypto only)
-//! * X25519
-//!
-//! Key derivation functions
-//! * HKDF-SHA256
-//! * HKDF-SHA384
-//! * HKDF-SHA512
-//!
-//! AEADs
-//! * AES-GCM-128
-//! * AES-GCM-256
-//! * ChaCha20Poly1305
-//!
-//! ## A note on randomness
-//! This crate either relies on the crypto provider to generate randomness or uses
-//! [`rand::rngs::OsRng`] for generating randomness.
-//! The latter is cryptographically secure but not ideal because it taps into the
-//! OS entropy source directly, which might block or return bad entropy when
-//! queried too rapidly.
-//! This should change in future.
-//! See [#25](https://github.com/franziskuskiefer/hpke-rs/issues/25) for more information.
-//!
-//! [hkdf]: https://docs.rs/hkdf/
-//! [sha2]: https://docs.rs/sha2
-//! [p256]: https://docs.rs/p256
-//! [p384]: https://docs.rs/p384
-//! [x25519-dalek-ng]: https://docs.rs/x25519-dalek-ng
-//! [chacha20poly1305]: https://docs.rs/chacha20poly1305
-//! [aes-gcm]: https://docs.rs/aes-gcm
-
+#![doc = include_str!("../Readme.md")]
 #![forbid(unsafe_code, unused_must_use, unstable_features)]
 #![deny(
     trivial_casts,
@@ -66,12 +9,21 @@
     unused_qualifications
 )]
 
+use std::sync::RwLock;
+
+#[cfg(feature = "hpke-test-prng")]
+use hpke_rs_crypto::HpkeTestRng;
+#[cfg(not(feature = "hpke-test-prng"))]
+use hpke_rs_crypto::RngCore;
+use hpke_rs_crypto::{
+    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
+    HpkeCrypto,
+};
+use prelude::kdf::{labeled_expand, labeled_extract};
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
 
-mod aead;
 mod dh_kem;
-mod hkdf;
 pub(crate) mod kdf;
 mod kem;
 pub mod prelude;
@@ -119,10 +71,16 @@ pub enum HpkeError {
     InsecurePsk,
 
     /// An error in the crypto library occurred.
-    CryptoError,
+    CryptoError(String),
 
     /// The message limit for this AEAD, key, and nonce.
     MessageLimitReached,
+
+    /// Unable to collect enough randomness.
+    InsufficientRandomness,
+
+    /// A concurrency issue with an [`RwLock`].
+    LockPoisoned,
 }
 
 #[deprecated(
@@ -197,7 +155,7 @@ impl std::fmt::Display for Mode {
     }
 }
 
-impl std::convert::TryFrom<u8> for Mode {
+impl TryFrom<u8> for Mode {
     type Error = HpkeError;
     fn try_from(x: u8) -> Result<Mode, HpkeError> {
         match x {
@@ -225,16 +183,16 @@ type Plaintext = Vec<u8>;
 /// The HPKE context.
 /// Note that the RFC currently doesn't define this.
 /// Also see <https://github.com/cfrg/draft-irtf-cfrg-hpke/issues/161>.
-pub struct Context<'a> {
+pub struct Context<Crypto: 'static + HpkeCrypto> {
     key: Vec<u8>,
     nonce: Vec<u8>,
     exporter_secret: Vec<u8>,
     sequence_number: u32,
-    hpke: &'a Hpke,
+    hpke: Hpke<Crypto>,
 }
 
 #[cfg(feature = "hazmat")]
-impl<'a> std::fmt::Debug for Context<'a> {
+impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -245,7 +203,7 @@ impl<'a> std::fmt::Debug for Context<'a> {
 }
 
 #[cfg(not(feature = "hazmat"))]
-impl<'a> std::fmt::Debug for Context<'a> {
+impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -255,7 +213,7 @@ impl<'a> std::fmt::Debug for Context<'a> {
     }
 }
 
-impl<'a> Context<'a> {
+impl<Crypto: HpkeCrypto> Context<Crypto> {
     /// 5.2. Encryption and Decryption
     ///
     /// Takes the associated data and the plain text as byte slices and returns
@@ -268,10 +226,13 @@ impl<'a> Context<'a> {
     ///   return ct
     /// ```
     pub fn seal(&mut self, aad: &[u8], plain_txt: &[u8]) -> Result<Ciphertext, HpkeError> {
-        let ctxt = self
-            .hpke
-            .aead
-            .seal(&self.key, &self.compute_nonce(), aad, plain_txt)?;
+        let ctxt = Crypto::aead_seal(
+            self.hpke.aead_id,
+            &self.key,
+            &self.compute_nonce(),
+            aad,
+            plain_txt,
+        )?;
         self.increment_seq()?;
         Ok(ctxt)
     }
@@ -290,10 +251,13 @@ impl<'a> Context<'a> {
     ///   return pt
     /// ```
     pub fn open(&mut self, aad: &[u8], cipher_txt: &[u8]) -> Result<Plaintext, HpkeError> {
-        let ptxt = self
-            .hpke
-            .aead
-            .open(&self.key, &self.compute_nonce(), aad, cipher_txt)?;
+        let ptxt = Crypto::aead_open(
+            self.hpke.aead_id,
+            &self.key,
+            &self.compute_nonce(),
+            aad,
+            cipher_txt,
+        )?;
         self.increment_seq()?;
         Ok(ptxt)
     }
@@ -307,17 +271,16 @@ impl<'a> Context<'a> {
     /// def Context.Export(exporter_context, L):
     ///  return LabeledExpand(self.exporter_secret, "sec", exporter_context, L)
     ///```
-    pub fn export(&self, exporter_context: &[u8], length: usize) -> Vec<u8> {
-        self.hpke
-            .kdf
-            .labeled_expand(
-                &self.exporter_secret,
-                &self.hpke.ciphersuite(),
-                "sec",
-                exporter_context,
-                length,
-            )
-            .unwrap() // FIXME
+    pub fn export(&self, exporter_context: &[u8], length: usize) -> Result<Vec<u8>, HpkeError> {
+        labeled_expand::<Crypto>(
+            self.hpke.kdf_id,
+            &self.exporter_secret,
+            &self.hpke.ciphersuite(),
+            "sec",
+            exporter_context,
+            length,
+        )
+        .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))
     }
 
     /// def Context<ROLE>.ComputeNonce(seq):
@@ -335,7 +298,7 @@ impl<'a> Context<'a> {
     ///       raise MessageLimitReached
     ///     self.seq += 1
     fn increment_seq(&mut self) -> Result<(), HpkeError> {
-        if self.sequence_number >= self.hpke.aead.message_limit() {
+        if self.sequence_number >= ((1 << Crypto::aead_nonce_length(self.hpke.aead_id)) - 1) {
             return Err(HpkeError::MessageLimitReached);
         }
         self.sequence_number += 1;
@@ -348,22 +311,30 @@ impl<'a> Context<'a> {
 /// To use HPKE first instantiate the configuration with
 /// `let hpke = Hpke::new(mode, kem_mode, kdf_mode, aead_mode)`.
 /// Now one can use the `hpke` configuration.
+///
+/// Note that cloning does NOT clone the PRNG state.
 #[derive(Debug)]
-#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
-pub struct Hpke {
+pub struct Hpke<Crypto: 'static + HpkeCrypto> {
     mode: Mode,
-    kem_id: kem::Mode,
-    kdf_id: kdf::Mode,
-    aead_id: aead::Mode,
-    kem: kem::Kem,
-    kdf: kdf::Kdf,
-    aead: aead::Aead,
-    nk: usize,
-    nn: usize,
-    nh: usize,
+    kem_id: KemAlgorithm,
+    kdf_id: KdfAlgorithm,
+    aead_id: AeadAlgorithm,
+    prng: RwLock<Crypto::HpkePrng>,
 }
 
-impl std::fmt::Display for Hpke {
+impl<Crypto: 'static + HpkeCrypto> Clone for Hpke<Crypto> {
+    fn clone(&self) -> Self {
+        Self {
+            mode: self.mode.clone(),
+            kem_id: self.kem_id.clone(),
+            kdf_id: self.kdf_id.clone(),
+            aead_id: self.aead_id.clone(),
+            prng: RwLock::new(Crypto::prng()),
+        }
+    }
+}
+
+impl<Crypto: HpkeCrypto> std::fmt::Display for Hpke<Crypto> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
@@ -376,23 +347,20 @@ impl std::fmt::Display for Hpke {
     }
 }
 
-impl Hpke {
+impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// Set up the configuration for HPKE.
-    pub fn new(mode: Mode, kem_id: kem::Mode, kdf_id: kdf::Mode, aead_id: aead::Mode) -> Self {
-        let kem = kem::Kem::new(kem_id);
-        let kdf = kdf::Kdf::new(kdf_id);
-        let aead = aead::Aead::new(aead_id);
+    pub fn new(
+        mode: Mode,
+        kem_id: KemAlgorithm,
+        kdf_id: KdfAlgorithm,
+        aead_id: AeadAlgorithm,
+    ) -> Self {
         Self {
             mode,
             kem_id,
             kdf_id,
             aead_id,
-            nk: aead.nk(),
-            nn: aead.nn(),
-            nh: kdf.nh(),
-            kem,
-            kdf,
-            aead,
+            prng: RwLock::new(Crypto::prng()),
         }
     }
 
@@ -412,20 +380,23 @@ impl Hpke {
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
         sk_s: Option<&HpkePrivateKey>,
-    ) -> Result<(EncapsulatedSecret, Context), HpkeError> {
+    ) -> Result<(EncapsulatedSecret, Context<Crypto>), HpkeError> {
+        let randomness = self.random(self.kem_id.private_key_len())?;
         let (zz, enc) = match self.mode {
-            Mode::Base | Mode::Psk => self.kem.encaps(pk_r.value.as_slice())?,
+            Mode::Base | Mode::Psk => {
+                kem::encaps::<Crypto>(self.kem_id, pk_r.value.as_slice(), &randomness)?
+            }
             Mode::Auth | Mode::AuthPsk => {
                 let sk_s = match sk_s {
                     Some(s) => &s.value,
                     None => return Err(HpkeError::InvalidInput),
                 };
-                self.kem.auth_encaps(pk_r.value.as_slice(), sk_s)?
+                kem::auth_encaps::<Crypto>(self.kem_id, pk_r.value.as_slice(), sk_s, &randomness)?
             }
         };
         Ok((
             enc,
-            self.key_schedule(
+            self.clone().key_schedule(
                 &zz,
                 info,
                 psk.unwrap_or_default(),
@@ -452,18 +423,18 @@ impl Hpke {
         psk: Option<&[u8]>,
         psk_id: Option<&[u8]>,
         pk_s: Option<&HpkePublicKey>,
-    ) -> Result<Context, HpkeError> {
+    ) -> Result<Context<Crypto>, HpkeError> {
         let zz = match self.mode {
-            Mode::Base | Mode::Psk => self.kem.decaps(enc, &sk_r.value)?,
+            Mode::Base | Mode::Psk => kem::decaps::<Crypto>(self.kem_id, enc, &sk_r.value)?,
             Mode::Auth | Mode::AuthPsk => {
                 let pk_s = match pk_s {
                     Some(s) => s.value.as_slice(),
                     None => return Err(HpkeError::InvalidInput),
                 };
-                self.kem.auth_decaps(enc, &sk_r.value, pk_s)?
+                kem::auth_decaps::<Crypto>(self.kem_id, enc, &sk_r.value, pk_s)?
             }
         };
-        self.key_schedule(
+        self.clone().key_schedule(
             &zz,
             info,
             psk.unwrap_or_default(),
@@ -536,7 +507,7 @@ impl Hpke {
         length: usize,
     ) -> Result<(EncapsulatedSecret, Vec<u8>), HpkeError> {
         let (enc, context) = self.setup_sender(pk_r, info, psk, psk_id, sk_s)?;
-        Ok((enc, context.export(exporter_context, length)))
+        Ok((enc, context.export(exporter_context, length)?))
     }
 
     /// 6. Single-Shot APIs
@@ -559,7 +530,7 @@ impl Hpke {
         length: usize,
     ) -> Result<Vec<u8>, HpkeError> {
         let context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s)?;
-        Ok(context.export(exporter_context, length))
+        Ok(context.export(exporter_context, length)?)
     }
 
     /// Verify PSKs.
@@ -598,85 +569,61 @@ impl Hpke {
 
     #[inline]
     fn key_schedule_context(&self, info: &[u8], psk_id: &[u8], suite_id: &[u8]) -> Vec<u8> {
-        let psk_id_hash = self
-            .kdf
-            .labeled_extract(&[0], suite_id, "psk_id_hash", psk_id);
-        let info_hash = self.kdf.labeled_extract(&[0], suite_id, "info_hash", info);
+        let psk_id_hash =
+            labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "psk_id_hash", psk_id);
+        let info_hash = labeled_extract::<Crypto>(self.kdf_id, &[0], suite_id, "info_hash", info);
         util::concat(&[&[self.mode as u8], &psk_id_hash, &info_hash])
     }
 
-    /// 5.1. Creating the Encryption Context
+    /// Creating the Encryption Context
     /// Generate the HPKE context from the given input.
-    ///
-    /// ```text
-    /// default_psk = ""
-    /// default_psk_id = ""
-    ///
-    /// def VerifyPSKInputs(mode, psk, psk_id):
-    ///   got_psk = (psk != default_psk)
-    ///   got_psk_id = (psk_id != default_psk_id)
-    ///   if got_psk != got_psk_id:
-    ///     raise Exception("Inconsistent PSK inputs")
-    ///
-    ///   if got_psk and (mode in [mode_base, mode_auth]):
-    ///     raise Exception("PSK input provided when not needed")
-    ///   if (not got_psk) and (mode in [mode_psk, mode_auth_psk]):
-    ///     raise Exception("Missing required PSK input")
-    ///
-    /// def KeySchedule(mode, shared_secret, info, psk, psk_id):
-    ///   VerifyPSKInputs(mode, psk, psk_id)
-    ///
-    ///   psk_id_hash = LabeledExtract("", "psk_id_hash", psk_id)
-    ///   info_hash = LabeledExtract("", "info_hash", info)
-    ///   key_schedule_context = concat(mode, psk_id_hash, info_hash)
-    ///
-    ///   secret = LabeledExtract(shared_secret, "secret", psk)
-    ///
-    ///   key = LabeledExpand(secret, "key", key_schedule_context, Nk)
-    ///   base_nonce = LabeledExpand(secret, "base_nonce", key_schedule_context, Nn)
-    ///   exporter_secret = LabeledExpand(secret, "exp", key_schedule_context, Nh)
-    ///
-    ///   return Context(key, base_nonce, 0, exporter_secret)
-    /// ```
     pub fn key_schedule(
         &self,
         shared_secret: &[u8],
         info: &[u8],
         psk: &[u8],
         psk_id: &[u8],
-    ) -> Result<Context, HpkeError> {
+    ) -> Result<Context<Crypto>, HpkeError> {
         self.verify_psk_inputs(psk, psk_id)?;
         let suite_id = self.ciphersuite();
         let key_schedule_context = self.key_schedule_context(info, psk_id, &suite_id);
-        let secret = self
-            .kdf
-            .labeled_extract(shared_secret, &suite_id, "secret", psk);
+        let secret =
+            labeled_extract::<Crypto>(self.kdf_id, shared_secret, &suite_id, "secret", psk);
 
-        let key = self
-            .kdf
-            .labeled_expand(&secret, &suite_id, "key", &key_schedule_context, self.nk)
-            .unwrap(); // FIXME
-        let base_nonce = self
-            .kdf
-            .labeled_expand(
-                &secret,
-                &suite_id,
-                "base_nonce",
-                &key_schedule_context,
-                self.nn,
-            )
-            .unwrap(); // FIXME
-        let exporter_secret = self
-            .kdf
-            .labeled_expand(&secret, &suite_id, "exp", &key_schedule_context, self.nh)
-            .unwrap(); // FIXME
+        let key = labeled_expand::<Crypto>(
+            self.kdf_id,
+            &secret,
+            &suite_id,
+            "key",
+            &key_schedule_context,
+            Crypto::aead_key_length(self.aead_id),
+        )
+        .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
+        let base_nonce = labeled_expand::<Crypto>(
+            self.kdf_id,
+            &secret,
+            &suite_id,
+            "base_nonce",
+            &key_schedule_context,
+            Crypto::aead_nonce_length(self.aead_id),
+        )
+        .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
+        let exporter_secret = labeled_expand::<Crypto>(
+            self.kdf_id,
+            &secret,
+            &suite_id,
+            "exp",
+            &key_schedule_context,
+            Crypto::kdf_digest_length(self.kdf_id),
+        )
+        .map_err(|e| HpkeError::CryptoError(format!("Crypto error: {}", e)))?;
 
         Ok(Context {
             key,
             nonce: base_nonce,
             exporter_secret,
             sequence_number: 0,
-            hpke: self,
+            hpke: self.clone(),
         })
     }
 
@@ -686,7 +633,8 @@ impl Hpke {
     ///
     /// Returns an `HpkeKeyPair`.
     pub fn generate_key_pair(&self) -> Result<HpkeKeyPair, HpkeError> {
-        let (sk, pk) = self.kem.key_gen()?;
+        let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
+        let (sk, pk) = kem::key_gen::<Crypto>(self.kem_id, &mut prng)?;
         Ok(HpkeKeyPair::new(sk, pk))
     }
 
@@ -695,15 +643,23 @@ impl Hpke {
     ///
     /// Returns an `HpkeKeyPair` result or an `HpkeError` if key derivation fails.
     pub fn derive_key_pair(&self, ikm: &[u8]) -> Result<HpkeKeyPair, HpkeError> {
-        let (pk, sk) = self.kem.derive_key_pair(ikm)?;
+        let (pk, sk) = kem::derive_key_pair::<Crypto>(self.kem_id, ikm)?;
         Ok(HpkeKeyPair::new(sk, pk))
     }
 
-    /// Set randomness for testing HPKE (KEM) without randomness.
-    #[cfg(feature = "deterministic")]
-    pub fn set_kem_random(mut self, r: &[u8]) -> Self {
-        self.kem.set_random(r);
-        self
+    #[inline]
+    pub(crate) fn random(&self, len: usize) -> Result<Vec<u8>, HpkeError> {
+        let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
+        let mut out = vec![0u8; len];
+
+        #[cfg(feature = "hpke-test-prng")]
+        prng.try_fill_test_bytes(&mut out)
+            .map_err(|_| HpkeError::InsufficientRandomness)?;
+        #[cfg(not(feature = "hpke-test-prng"))]
+        prng.try_fill_bytes(&mut out)
+            .map_err(|_| HpkeError::InsufficientRandomness)?;
+
+        Ok(out)
     }
 }
 
@@ -893,8 +849,19 @@ impl tls_codec::Deserialize for &HpkePublicKey {
 /// Test util module. Should be moved really.
 #[cfg(feature = "hpke-test")]
 pub mod test_util {
-    // TODO: don't build for release
-    impl<'a> super::Context<'_> {
+    use crate::HpkeError;
+    use hpke_rs_crypto::{HpkeCrypto, HpkeTestRng};
+
+    impl<Crypto: HpkeCrypto> super::Hpke<Crypto> {
+        /// Set PRNG state for testing.
+        pub fn seed(&self, seed: &[u8]) -> Result<(), HpkeError> {
+            let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
+            prng.seed(seed);
+            Ok(())
+        }
+    }
+
+    impl<Crypto: HpkeCrypto> super::Context<Crypto> {
         /// Get a reference to the key in the context.
         #[doc(hidden)]
         pub fn key(&self) -> &[u8] {
@@ -956,23 +923,32 @@ pub mod test_util {
     }
 }
 
-impl From<aead::Error> for HpkeError {
-    fn from(e: aead::Error) -> Self {
+impl From<hpke_rs_crypto::error::Error> for HpkeError {
+    fn from(e: hpke_rs_crypto::error::Error) -> Self {
         match e {
-            aead::Error::OpenError => HpkeError::OpenError,
-            aead::Error::InvalidNonce | aead::Error::InvalidCiphertext => HpkeError::InvalidInput,
-            aead::Error::InvalidConfig => HpkeError::InvalidConfig,
-            aead::Error::UnknownMode => HpkeError::UnknownMode,
-            aead::Error::CryptoLibError(_) => HpkeError::CryptoError,
-        }
-    }
-}
-
-impl From<kem::Error> for HpkeError {
-    fn from(e: kem::Error) -> Self {
-        match e {
-            kem::Error::UnknownMode => HpkeError::UnknownMode,
-            _ => HpkeError::CryptoError,
+            hpke_rs_crypto::error::Error::AeadOpenError => HpkeError::OpenError,
+            hpke_rs_crypto::error::Error::AeadInvalidNonce
+            | hpke_rs_crypto::error::Error::AeadInvalidCiphertext => HpkeError::InvalidInput,
+            hpke_rs_crypto::error::Error::UnknownAeadAlgorithm => HpkeError::UnknownMode,
+            hpke_rs_crypto::error::Error::CryptoLibraryError(s) => HpkeError::CryptoError(s),
+            hpke_rs_crypto::error::Error::HpkeInvalidOutputLength => {
+                HpkeError::CryptoError(format!("Invalid HPKE output length"))
+            }
+            hpke_rs_crypto::error::Error::UnknownKdfAlgorithm => {
+                HpkeError::CryptoError(format!("Unknown KDF algorithm."))
+            }
+            hpke_rs_crypto::error::Error::KemInvalidSecretKey => {
+                HpkeError::CryptoError(format!("Invalid KEM secret key"))
+            }
+            hpke_rs_crypto::error::Error::KemInvalidPublicKey => {
+                HpkeError::CryptoError(format!("Invalid KEM public key"))
+            }
+            hpke_rs_crypto::error::Error::UnknownKemAlgorithm => {
+                HpkeError::CryptoError(format!("Unknown KEM algorithm"))
+            }
+            hpke_rs_crypto::error::Error::InsufficientRandomness => {
+                HpkeError::InsufficientRandomness
+            }
         }
     }
 }

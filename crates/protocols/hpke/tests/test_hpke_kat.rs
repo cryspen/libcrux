@@ -1,13 +1,17 @@
 extern crate hpke_rs as hpke;
 
+use hpke_rs_evercrypt::HpkeEvercrypt;
+use hpke_rs_rust_crypto::HpkeRustCrypto;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::{self, Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::BufReader;
+use std::time::Instant;
 
 use hpke::prelude::*;
 use hpke::test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice};
+use hpke_rs_crypto::{types::*, HpkeCrypto};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_snake_case)]
@@ -56,37 +60,36 @@ struct ExportsKAT {
     exported_value: String,
 }
 
-#[test]
-fn test_kat() {
-    let file = "tests/test_vectors.json";
-    let file = match File::open(file) {
-        Ok(f) => f,
-        Err(_) => panic!("Couldn't open file {}.", file),
-    };
-    let reader = BufReader::new(file);
-    let tests: Vec<HpkeTestVector> = match serde_json::from_reader(reader) {
-        Ok(r) => r,
-        Err(e) => panic!("Error reading file.\n{:?}", e),
-    };
-
+fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>, skip_aes: bool) {
     tests.into_par_iter().for_each(|test| {
         let mode: HpkeMode = test.mode.try_into().unwrap();
-        let kem_id: HpkeKemMode = test.kem_id.try_into().unwrap();
-        let kdf_id: HpkeKdfMode = test.kdf_id.try_into().unwrap();
-        let aead_id: HpkeAeadMode = test.aead_id.try_into().unwrap();
+        let kem_id: KemAlgorithm = test.kem_id.try_into().unwrap();
+        let kdf_id: KdfAlgorithm = test.kdf_id.try_into().unwrap();
+        let aead_id: AeadAlgorithm = test.aead_id.try_into().unwrap();
 
-        if kem_id != HpkeKemMode::DhKem25519 && kem_id != HpkeKemMode::DhKemP256 {
-            println!(" > KEM {:?} not implemented yet", kem_id);
+        if kem_id != KemAlgorithm::DhKem25519 && kem_id != KemAlgorithm::DhKemP256 {
+            log::trace!(" > KEM {:?} not implemented yet", kem_id);
             return;
         }
 
-        println!(
+        if skip_aes && aead_id == AeadAlgorithm::Aes128Gcm || aead_id == AeadAlgorithm::Aes256Gcm {
+            log::trace!(
+                " > AEAD {:?} not fully implemented yet for evercrypt",
+                aead_id
+            );
+            return;
+        }
+
+        log::trace!(
             "Testing mode {:?} with ciphersuite {:?}_{:?}_{:?}",
-            mode, kem_id, kdf_id, aead_id
+            mode,
+            kem_id,
+            kdf_id,
+            aead_id
         );
 
         // Init HPKE with the given mode and ciphersuite.
-        let hpke = Hpke::new(mode, kem_id, kdf_id, aead_id);
+        let mut hpke = Hpke::<Crypto>::new(mode, kem_id, kdf_id, aead_id);
 
         // Set up sender and receiver.
         let pk_rm = HpkePublicKey::new(hex_to_bytes(&test.pkRm));
@@ -160,21 +163,32 @@ fn test_kat() {
 
         // Setup sender and receiver with KAT randomness.
         // We first have to inject the randomness (ikmE).
-        let hpke_sender = Hpke::new(mode, kem_id, kdf_id, aead_id).set_kem_random(&ikm_e);
-        let (enc, _sender_context_kat) = hpke_sender
-            .setup_sender(&pk_rm, &info, psk, psk_id, sk_sm)
-            .unwrap();
-        let receiver_context = hpke
-            .setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm)
-            .unwrap();
-        assert_eq!(enc, kat_enc);
-        assert_eq!(receiver_context.key(), receiver_context_kat.key());
-        assert_eq!(receiver_context.nonce(), receiver_context_kat.nonce());
-        assert_eq!(
-            receiver_context.exporter_secret(),
-            receiver_context_kat.exporter_secret()
-        );
-        receiver_context_kat = receiver_context;
+
+        #[cfg(feature = "hpke-test-prng")]
+        {
+            log::trace!("Testing with known ikmE ...");
+            let hpke_sender = Hpke::<Crypto>::new(mode, kem_id, kdf_id, aead_id);
+            // This only works when seeding the PRNG with ikmE.
+            hpke_sender.seed(&ikm_e).expect("Error injecting ikm_e");
+            let (enc, _sender_context_kat) = hpke_sender
+                .setup_sender(&pk_rm, &info, psk, psk_id, sk_sm)
+                .unwrap();
+            let receiver_context = hpke
+                .setup_receiver(&enc, &sk_rm, &info, psk, psk_id, pk_sm)
+                .unwrap();
+            assert_eq!(enc, kat_enc);
+            assert_eq!(receiver_context.key(), receiver_context_kat.key());
+            assert_eq!(receiver_context.nonce(), receiver_context_kat.nonce());
+            assert_eq!(
+                receiver_context.exporter_secret(),
+                receiver_context_kat.exporter_secret()
+            );
+            receiver_context_kat = receiver_context;
+            assert_eq!(receiver_context_kat.key(), key);
+            assert_eq!(receiver_context_kat.nonce(), nonce);
+            assert_eq!(receiver_context_kat.exporter_secret(), exporter_secret);
+            assert_eq!(receiver_context_kat.sequence_number(), 0);
+        }
 
         // Setup sender and receiver for self tests.
         let (enc, mut sender_context) = hpke
@@ -185,8 +199,10 @@ fn test_kat() {
             .unwrap();
 
         // Encrypt
-        for (i, encryption) in test.encryptions.iter().enumerate() {
-            println!("Test encryption {} ...", i);
+        for (_i, encryption) in test.encryptions.iter().enumerate() {
+            // Cloning the Hpke object renews the test PRNG.
+            hpke = hpke.clone();
+            println!("Test encryption {} ...", _i);
             let aad = hex_to_bytes(&encryption.aad);
             let ptxt = hex_to_bytes(&encryption.pt);
             let ctxt_kat = hex_to_bytes(&encryption.ct);
@@ -215,16 +231,41 @@ fn test_kat() {
         }
 
         // Test KAT on direct_ctx for exporters
-        for (i, export) in test.exports.iter().enumerate() {
-            println!("Test exporter {} ...", i);
+        for (_i, export) in test.exports.iter().enumerate() {
+            println!("Test exporter {} ...", _i);
             let export_context = hex_to_bytes(&export.exporter_context);
             let export_value = hex_to_bytes(&export.exported_value);
             let length = export.L;
 
-            let exported_secret = direct_ctx.export(&export_context, length);
+            let exported_secret = direct_ctx.export(&export_context, length).unwrap();
             assert_eq!(export_value, exported_secret);
         }
     });
+}
+
+#[test]
+fn test_kat() {
+    let _ = pretty_env_logger::try_init();
+    let file = "tests/test_vectors.json";
+    let file = match File::open(file) {
+        Ok(f) => f,
+        Err(_) => panic!("Couldn't open file {}.", file),
+    };
+    let reader = BufReader::new(file);
+    let tests: Vec<HpkeTestVector> = match serde_json::from_reader(reader) {
+        Ok(r) => r,
+        Err(e) => panic!("Error reading file.\n{:?}", e),
+    };
+
+    let now = Instant::now();
+    kat::<HpkeRustCrypto>(tests.clone(), false);
+    let time = now.elapsed();
+    log::info!("Test vectors with Rust Crypto took: {}s", time.as_secs());
+
+    let now = Instant::now();
+    kat::<HpkeEvercrypt>(tests, true);
+    let time = now.elapsed();
+    log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
 }
 
 #[cfg(feature = "serialization")]
@@ -237,15 +278,14 @@ fn test_serialization() {
     for mode in 0u8..4 {
         let hpke_mode = HpkeMode::try_from(mode).unwrap();
         for aead_mode in 1u16..4 {
-            let aead_mode = HpkeAeadMode::try_from(aead_mode).unwrap();
+            let aead_mode = AeadAlgorithm::try_from(aead_mode).unwrap();
             for kdf_mode in 1u16..4 {
-                let kdf_mode = HpkeKdfMode::try_from(kdf_mode).unwrap();
+                let kdf_mode = KdfAlgorithm::try_from(kdf_mode).unwrap();
                 for &kem_mode in &[0x10u16, 0x20] {
-                    let kem_mode = HpkeKemMode::try_from(kem_mode).unwrap();
+                    let kem_mode = KemAlgorithm::try_from(kem_mode).unwrap();
 
-                    let hpke = Hpke::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
-
-                    println!("Self test {:?}", hpke);
+                    let hpke =
+                        Hpke::<HpkeRustCrypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
 
                     // JSON: Public, Private, KeyPair
                     let key_pair = hpke.generate_key_pair().unwrap();

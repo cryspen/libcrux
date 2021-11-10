@@ -2,3 +2,5 @@
 Cargo.lock
 **/*.rs.bk
 .vscode/
+evercrypt_provider/target
+rust_crypto_provider/target

@@ -1,0 +1,17 @@
+[package]
+name = "hpke-rs-crypto"
+version = "0.1.0"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+edition = "2021"
+license = "MPL-2.0"
+documentation = "https://docs.rs/hpke-rs-crypto"
+description = "Traits and types for HPKE crypto backends"
+readme = "Readme.md"
+repository = "https://github.com/franziskuskiefer/hpke-rs"
+
+[dependencies]
+serde_json = { version = "1.0" }
+serde = { version = "1.0", features = ["derive"] }
+rand = { version = "0.8" }
+getrandom = { version = "0.2", features = ["js"] }
+tls_codec = { version = "0.1", features = ["derive"] }

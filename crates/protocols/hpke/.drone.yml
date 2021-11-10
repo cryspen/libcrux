@@ -12,8 +12,8 @@ steps:
   - apt-get update -qq --yes && apt-get install -qq --yes clang
   - git submodule update --init --recursive
   - cargo build --verbose
-  - cargo build --verbose --no-default-features --features="rust-crypto"
-  - cargo test --verbose --no-default-features --features="rust-crypto"
+  - cargo build --verbose --all-features
+  - cargo test --verbose --all-features
 
 # ---
 # kind: pipeline

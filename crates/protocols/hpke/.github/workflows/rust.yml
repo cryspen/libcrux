@@ -23,31 +23,19 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    # Only RustCrypto for now, the macOS CI machines are too old
     - uses: actions/checkout@v2
-    - name: Run tests w/ RustCrypto
-      run: cargo test --verbose --no-default-features --features="rust-crypto"
-    - name: Run tests all features w/ RustCrypto
-      run: cargo test --verbose --no-default-features --features="rust-crypto serialization"
-      # Release
-    - name: Build Release w/ RustCrypto
-      run: cargo build --release --verbose --no-default-features --features="rust-crypto"
-    - name: Run tests all features w/ RustCrypto
-      run: cargo test --release --verbose --no-default-features --features="rust-crypto serialization"
-    # Evercrypt backend only on non-macOS
-    - name: Run tests
-      if: matrix.os != 'macos-latest'
-      run: cargo test --verbose
     - name: Run tests all features
-      if: matrix.os != 'macos-latest'
-      run: cargo test --verbose --features="serialization"
+      run: cargo test --verbose --no-default-features --all-features
       # Release
     - name: Build Release
-      if: matrix.os != 'macos-latest'
       run: cargo build --release --verbose
     - name: Run tests all features
-      if: matrix.os != 'macos-latest'
-      run: cargo test --release --verbose --features="serialization"
+      run: cargo test --release --verbose --all-features
+      # Release
+    - name: Build Release
+      run: cargo build --release --verbose
+    - name: Run tests all features
+      run: cargo test --release --verbose --all-features
     # Apple Silicon
     - if: matrix.os == 'macos-latest'
       run: |
@@ -61,14 +49,14 @@ jobs:
     - name: Apple Silicon Build
       if: matrix.os == 'macos-latest'
       run: |
-        cargo build --target aarch64-apple-darwin --tests --verbose --no-default-features --features="rust-crypto"
-        cargo build --release --target aarch64-apple-darwin --tests --verbose --no-default-features --features="rust-crypto"
+        cargo build --target aarch64-apple-darwin --tests --verbose
+        cargo build --release --target aarch64-apple-darwin --tests --verbose
     # ARM64 iOS
     - name: iOS aarch64
       if: matrix.os == 'macos-latest'
       run: |
-        cargo build --target aarch64-apple-ios --tests --verbose --no-default-features --features="rust-crypto"
-        cargo build --release --target aarch64-apple-ios --tests --verbose --no-default-features --features="rust-crypto"
+        cargo build --target aarch64-apple-ios --tests --verbose
+        cargo build --release --target aarch64-apple-ios --tests --verbose
   cross-build:
     runs-on: ubuntu-latest
     strategy:
@@ -96,8 +84,8 @@ jobs:
           profile: minimal
           override: true
       - run: ${{ matrix.deps }}
-      - run: cargo build --target ${{ matrix.target }} --no-default-features --features="rust-crypto"
-      - run: cargo build --target ${{ matrix.target }} --release --no-default-features --features="rust-crypto"
+      - run: cargo build --target ${{ matrix.target }}
+      - run: cargo build --target ${{ matrix.target }} --release
 
   fuzz:
     strategy:

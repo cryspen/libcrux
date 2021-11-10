@@ -24,9 +24,9 @@ jobs:
         rustup target install aarch64-apple-ios
     - name: Apple Silicon Build
       run: |
-        cargo build --target aarch64-apple-darwin --tests --verbose --no-default-features --features="rust-crypto"
-        cargo build --release --target aarch64-apple-darwin --tests --verbose --no-default-features --features="rust-crypto"
+        cargo build --target aarch64-apple-darwin --tests --verbose
+        cargo build --release --target aarch64-apple-darwin --tests --verbose
     - name: iOS build
       run: |
-        cargo build --target aarch64-apple-ios --tests --verbose --no-default-features --features="rust-crypto"
-        cargo build --release --target aarch64-apple-ios --tests --verbose --no-default-features --features="rust-crypto"
+        cargo build --target aarch64-apple-ios --tests --verbose
+        cargo build --release --target aarch64-apple-ios --tests --verbose
