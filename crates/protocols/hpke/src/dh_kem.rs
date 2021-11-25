@@ -85,9 +85,9 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
                 }
                 if ctr == u8::MAX {
                     // If we get here we lost. This should never happen.
-                    return Err(Error::CryptoLibraryError(format!(
-                        "Unable to generate a valid P256 private key"
-                    )));
+                    return Err(Error::CryptoLibraryError(
+                        "Unable to generate a valid P256 private key".to_string(),
+                    ));
                 }
                 ctr += 1;
             }

@@ -325,10 +325,10 @@ pub struct Hpke<Crypto: 'static + HpkeCrypto> {
 impl<Crypto: 'static + HpkeCrypto> Clone for Hpke<Crypto> {
     fn clone(&self) -> Self {
         Self {
-            mode: self.mode.clone(),
-            kem_id: self.kem_id.clone(),
-            kdf_id: self.kdf_id.clone(),
-            aead_id: self.aead_id.clone(),
+            mode: self.mode,
+            kem_id: self.kem_id,
+            kdf_id: self.kdf_id,
+            aead_id: self.aead_id,
             prng: RwLock::new(Crypto::prng()),
         }
     }
@@ -530,7 +530,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
         length: usize,
     ) -> Result<Vec<u8>, HpkeError> {
         let context = self.setup_receiver(enc, sk_r, info, psk, psk_id, pk_s)?;
-        Ok(context.export(exporter_context, length)?)
+        context.export(exporter_context, length)
     }
 
     /// Verify PSKs.
@@ -932,19 +932,19 @@ impl From<hpke_rs_crypto::error::Error> for HpkeError {
             hpke_rs_crypto::error::Error::UnknownAeadAlgorithm => HpkeError::UnknownMode,
             hpke_rs_crypto::error::Error::CryptoLibraryError(s) => HpkeError::CryptoError(s),
             hpke_rs_crypto::error::Error::HpkeInvalidOutputLength => {
-                HpkeError::CryptoError(format!("Invalid HPKE output length"))
+                HpkeError::CryptoError("Invalid HPKE output length".to_string())
             }
             hpke_rs_crypto::error::Error::UnknownKdfAlgorithm => {
-                HpkeError::CryptoError(format!("Unknown KDF algorithm."))
+                HpkeError::CryptoError("Unknown KDF algorithm.".to_string())
             }
             hpke_rs_crypto::error::Error::KemInvalidSecretKey => {
-                HpkeError::CryptoError(format!("Invalid KEM secret key"))
+                HpkeError::CryptoError("Invalid KEM secret key".to_string())
             }
             hpke_rs_crypto::error::Error::KemInvalidPublicKey => {
-                HpkeError::CryptoError(format!("Invalid KEM public key"))
+                HpkeError::CryptoError("Invalid KEM public key".to_string())
             }
             hpke_rs_crypto::error::Error::UnknownKemAlgorithm => {
-                HpkeError::CryptoError(format!("Unknown KEM algorithm"))
+                HpkeError::CryptoError("Unknown KEM algorithm".to_string())
             }
             hpke_rs_crypto::error::Error::InsufficientRandomness => {
                 HpkeError::InsufficientRandomness
