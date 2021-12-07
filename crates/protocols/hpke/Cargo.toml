@@ -29,8 +29,8 @@ serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 rayon = "1.5"
 hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
-hpke-rs-rust-crypto = { version = "0.1.1-pre.1", path = "./rust_crypto_provider", features = ["deterministic-prng"] }
-hpke-rs-evercrypt = { version = "0.1.1-pre.1", path = "./evercrypt_provider", features = ["deterministic-prng"] }
+hpke-rs-rust-crypto = { version = "0.1.1-pre.2", path = "./rust_crypto_provider", features = ["deterministic-prng"] }
+hpke-rs-evercrypt = { version = "0.1.1-pre.2", path = "./evercrypt_provider", features = ["deterministic-prng"] }
 rand = { version = "0.8" }
 getrandom = { version = "0.2", features = ["js"] }
 pretty_env_logger = "0.4"

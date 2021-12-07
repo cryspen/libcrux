@@ -171,6 +171,29 @@ impl HpkeCrypto for HpkeRustCrypto {
             rng: RwLock::new(rand_chacha::ChaCha20Rng::from_entropy()),
         }
     }
+
+    /// Returns an error if the KDF algorithm is not supported by this crypto provider.
+    fn supports_kdf(_: KdfAlgorithm) -> Result<(), Error> {
+        Ok(())
+    }
+
+    /// Returns an error if the KEM algorithm is not supported by this crypto provider.
+    fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
+        match alg {
+            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 => Ok(()),
+            _ => Err(Error::UnknownKemAlgorithm),
+        }
+    }
+
+    /// Returns an error if the AEAD algorithm is not supported by this crypto provider.
+    fn supports_aead(alg: AeadAlgorithm) -> Result<(), Error> {
+        match alg {
+            AeadAlgorithm::Aes128Gcm
+            | AeadAlgorithm::Aes256Gcm
+            | AeadAlgorithm::ChaCha20Poly1305 => Ok(()),
+            AeadAlgorithm::HpkeExport => Err(Error::UnknownAeadAlgorithm),
+        }
+    }
 }
 
 impl RngCore for HpkeRustCryptoPrng {

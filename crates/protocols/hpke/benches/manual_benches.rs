@@ -40,36 +40,38 @@ const AEAD_IDS: [AeadAlgorithm; 3] = [
     AeadAlgorithm::Aes256Gcm,
     AeadAlgorithm::ChaCha20Poly1305,
 ];
-const KDF_IDS: [KdfAlgorithm; 1] = [
+const KDF_IDS: [KdfAlgorithm; 3] = [
     KdfAlgorithm::HkdfSha256,
-    // KdfAlgorithm::HkdfSha384,
-    // KdfAlgorithm::HkdfSha512,
+    KdfAlgorithm::HkdfSha384,
+    KdfAlgorithm::HkdfSha512,
 ];
-const KEM_IDS: [KemAlgorithm; 2] = [
+const KEM_IDS: [KemAlgorithm; 5] = [
     KemAlgorithm::DhKemP256,
-    // KemAlgorithm::DhKemP384,
-    // KemAlgorithm::DhKemP521,
+    KemAlgorithm::DhKemP384,
+    KemAlgorithm::DhKemP521,
     KemAlgorithm::DhKem25519,
-    // KemAlgorithm::DhKem448,
+    KemAlgorithm::DhKem448,
 ];
 
 const AEAD_PAYLOAD: usize = 128;
 const AEAD_AAD: usize = 48;
 
-const ITERATIONS: usize = 100;
+const ITERATIONS: usize = 1;
 
 fn benchmark<Crypto: HpkeCrypto + ProviderName + 'static>() {
     for hpke_mode in MODES {
         for aead_mode in AEAD_IDS {
-            #[cfg(any(not(target_arch = "x86_64"), target_os = "macos"))]
-            if Crypto::name() == "Evercrypt"
-                && (aead_mode == AeadAlgorithm::Aes128Gcm || aead_mode == AeadAlgorithm::Aes256Gcm)
-            {
-                // Evercrypt AES only works on x64 (and there only with the necessary extensions)
+            if Crypto::supports_aead(aead_mode).is_err() {
                 continue;
             }
             for kdf_mode in KDF_IDS {
+                if Crypto::supports_kdf(kdf_mode).is_err() {
+                    continue;
+                }
                 for kem_mode in KEM_IDS {
+                    if Crypto::supports_kem(kem_mode).is_err() {
+                        continue;
+                    }
                     let hpke = Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                     let label = format!(
                         "{} {} {} {} {}",

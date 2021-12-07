@@ -1,6 +1,9 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use hpke_rs::{prelude::*, test_util::hex_to_bytes};
-use hpke_rs_crypto::{types::*, HpkeCrypto, RngCore};
+use hpke_rs_crypto::{
+    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
+    HpkeCrypto, RngCore,
+};
 use hpke_rs_evercrypt::*;
 use hpke_rs_rust_crypto::*;
 use rand::rngs::OsRng;
@@ -21,15 +24,47 @@ impl ProviderName for HpkeEvercrypt {
     }
 }
 
-fn criterion_benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Criterion) {
-    for mode in 0u8..4 {
-        let hpke_mode = HpkeMode::try_from(mode).unwrap();
-        for aead_mode in 3u16..4 {
-            let aead_mode = AeadAlgorithm::try_from(aead_mode).unwrap();
-            for kdf_mode in 1u16..4 {
-                let kdf_mode = KdfAlgorithm::try_from(kdf_mode).unwrap();
-                for &kem_mode in &[0x10u16, 0x20] {
-                    let kem_mode = KemAlgorithm::try_from(kem_mode).unwrap();
+const MODES: [Mode; 4] = [
+    HpkeMode::Base,
+    HpkeMode::Auth,
+    HpkeMode::Psk,
+    HpkeMode::AuthPsk,
+];
+const AEAD_IDS: [AeadAlgorithm; 3] = [
+    AeadAlgorithm::Aes128Gcm,
+    AeadAlgorithm::Aes256Gcm,
+    AeadAlgorithm::ChaCha20Poly1305,
+];
+const KDF_IDS: [KdfAlgorithm; 3] = [
+    KdfAlgorithm::HkdfSha256,
+    KdfAlgorithm::HkdfSha384,
+    KdfAlgorithm::HkdfSha512,
+];
+const KEM_IDS: [KemAlgorithm; 5] = [
+    KemAlgorithm::DhKemP256,
+    KemAlgorithm::DhKemP384,
+    KemAlgorithm::DhKemP521,
+    KemAlgorithm::DhKem25519,
+    KemAlgorithm::DhKem448,
+];
+
+const AEAD_PAYLOAD: usize = 128;
+const AEAD_AAD: usize = 48;
+
+fn benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Criterion) {
+    for hpke_mode in MODES {
+        for aead_mode in AEAD_IDS {
+            if Crypto::supports_aead(aead_mode).is_err() {
+                continue;
+            }
+            for kdf_mode in KDF_IDS {
+                if Crypto::supports_kdf(kdf_mode).is_err() {
+                    continue;
+                }
+                for kem_mode in KEM_IDS {
+                    if Crypto::supports_kem(kem_mode).is_err() {
+                        continue;
+                    }
                     let hpke = Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                     let label = format!("{} {}", Crypto::name(), hpke);
                     let kp = hpke.generate_key_pair().unwrap();
@@ -60,7 +95,23 @@ fn criterion_benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Crit
                         } else {
                             (None, None)
                         };
-                    c.bench_function(&format!("Setup Receiver {}", label), |b| {
+
+                    let mut group = c.benchmark_group(format!("{}", label));
+                    group.bench_function("Setup Sender", |b| {
+                        b.iter(|| {
+                            let hpke =
+                                Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
+                            hpke.setup_sender(
+                                &pk_rm,
+                                &info,
+                                psk.as_ref().map(Vec::as_ref),
+                                psk_id.as_ref().map(Vec::as_ref),
+                                sk_sm.as_ref(),
+                            )
+                            .unwrap();
+                        })
+                    });
+                    group.bench_function("Setup Receiver", |b| {
                         b.iter(|| {
                             let hpke =
                                 Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
@@ -75,21 +126,8 @@ fn criterion_benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Crit
                             .unwrap();
                         })
                     });
-                    c.bench_function(&format!("Setup Sender {}", label), |b| {
-                        b.iter(|| {
-                            let hpke =
-                                Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
-                            hpke.setup_sender(
-                                &pk_rm,
-                                &info,
-                                psk.as_ref().map(Vec::as_ref),
-                                psk_id.as_ref().map(Vec::as_ref),
-                                sk_sm.as_ref(),
-                            )
-                            .unwrap();
-                        })
-                    });
-                    c.bench_function(&format!("Seal {}", label), |b| {
+
+                    group.bench_function(&format!("Seal {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
                         b.iter_batched(
                             || {
                                 let hpke =
@@ -103,9 +141,9 @@ fn criterion_benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Crit
                                         sk_sm.as_ref(),
                                     )
                                     .unwrap();
-                                let mut aad = vec![0u8; 44];
+                                let mut aad = vec![0u8; AEAD_AAD];
                                 OsRng.fill_bytes(&mut aad);
-                                let mut ptxt = vec![0u8; 199];
+                                let mut ptxt = vec![0u8; AEAD_PAYLOAD];
                                 OsRng.fill_bytes(&mut ptxt);
                                 (context, aad, ptxt)
                             },
@@ -115,7 +153,7 @@ fn criterion_benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Crit
                             BatchSize::SmallInput,
                         )
                     });
-                    c.bench_function(&format!("Open {}", label), |b| {
+                    group.bench_function(&format!("Open {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
                         b.iter_batched(
                             || {
                                 let hpke =
@@ -129,9 +167,9 @@ fn criterion_benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Crit
                                         sk_sm.as_ref(),
                                     )
                                     .unwrap();
-                                let mut aad = vec![0u8; 44];
+                                let mut aad = vec![0u8; AEAD_AAD];
                                 OsRng.fill_bytes(&mut aad);
-                                let mut ptxt = vec![0u8; 199];
+                                let mut ptxt = vec![0u8; AEAD_PAYLOAD];
                                 OsRng.fill_bytes(&mut ptxt);
                                 let ctxt = sender_context.seal(&aad, &ptxt).unwrap();
 
@@ -153,19 +191,90 @@ fn criterion_benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Crit
                             BatchSize::SmallInput,
                         )
                     });
-                    break;
+
+                    group.bench_function(
+                        &format!("Single-Shot Seal {}({})", AEAD_PAYLOAD, AEAD_AAD),
+                        |b| {
+                            b.iter_batched(
+                                || {
+                                    let hpke = Hpke::<Crypto>::new(
+                                        hpke_mode, kem_mode, kdf_mode, aead_mode,
+                                    );
+                                    let mut aad = vec![0u8; AEAD_AAD];
+                                    OsRng.fill_bytes(&mut aad);
+                                    let mut ptxt = vec![0u8; AEAD_PAYLOAD];
+                                    OsRng.fill_bytes(&mut ptxt);
+                                    (hpke, aad, ptxt)
+                                },
+                                |(hpke, aad, ptxt)| {
+                                    let _ctxt = hpke
+                                        .seal(
+                                            &pk_rm,
+                                            &info,
+                                            &aad,
+                                            &ptxt,
+                                            psk.as_ref().map(Vec::as_ref),
+                                            psk_id.as_ref().map(Vec::as_ref),
+                                            sk_sm.as_ref(),
+                                        )
+                                        .unwrap();
+                                },
+                                BatchSize::SmallInput,
+                            )
+                        },
+                    );
+                    group.bench_function(
+                        &format!("Single-Shot Open {}({})", AEAD_PAYLOAD, AEAD_AAD),
+                        |b| {
+                            b.iter_batched(
+                                || {
+                                    let hpke = Hpke::<Crypto>::new(
+                                        hpke_mode, kem_mode, kdf_mode, aead_mode,
+                                    );
+                                    let (enc, mut sender_context) = hpke
+                                        .setup_sender(
+                                            &pk_rm,
+                                            &info,
+                                            psk.as_ref().map(Vec::as_ref),
+                                            psk_id.as_ref().map(Vec::as_ref),
+                                            sk_sm.as_ref(),
+                                        )
+                                        .unwrap();
+                                    let mut aad = vec![0u8; AEAD_AAD];
+                                    OsRng.fill_bytes(&mut aad);
+                                    let mut ptxt = vec![0u8; AEAD_PAYLOAD];
+                                    OsRng.fill_bytes(&mut ptxt);
+                                    let ctxt = sender_context.seal(&aad, &ptxt).unwrap();
+
+                                    (hpke, aad, ctxt, enc)
+                                },
+                                |(hpke, aad, ctxt, enc)| {
+                                    let _ctxt_out = hpke
+                                        .open(
+                                            &enc,
+                                            &sk_rm,
+                                            &info,
+                                            &aad,
+                                            &ctxt,
+                                            psk.as_ref().map(Vec::as_ref),
+                                            psk_id.as_ref().map(Vec::as_ref),
+                                            pk_sm.as_ref(),
+                                        )
+                                        .unwrap();
+                                },
+                                BatchSize::SmallInput,
+                            )
+                        },
+                    );
                 }
-                break;
             }
-            break;
         }
-        break;
     }
 }
 
 criterion_group!(
     benches,
-    criterion_benchmark::<HpkeEvercrypt>,
-    criterion_benchmark::<HpkeRustCrypto>,
+    benchmark::<HpkeEvercrypt>,
+    benchmark::<HpkeRustCrypto>,
 );
 criterion_main!(benches);

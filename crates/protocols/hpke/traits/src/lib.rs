@@ -15,6 +15,15 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     /// The PRNG implementation returned in [`HpkeCrypto::prng()`].
     type HpkePrng: rand::RngCore + rand::CryptoRng + HpkeTestRng;
 
+    /// Returns an error if the KDF algorithm is not supported by this crypto provider.
+    fn supports_kdf(alg: types::KdfAlgorithm) -> Result<(), Error>;
+
+    /// Returns an error if the KEM algorithm is not supported by this crypto provider.
+    fn supports_kem(alg: types::KemAlgorithm) -> Result<(), Error>;
+
+    /// Returns an error if the AEAD algorithm is not supported by this crypto provider.
+    fn supports_aead(alg: types::AeadAlgorithm) -> Result<(), Error>;
+
     /// Get a stateful PRNG.
     /// Note that this will create a new PRNG state.
     fn prng() -> Self::HpkePrng;
