@@ -298,7 +298,9 @@ impl<Crypto: HpkeCrypto> Context<Crypto> {
     ///       raise MessageLimitReached
     ///     self.seq += 1
     fn increment_seq(&mut self) -> Result<(), HpkeError> {
-        if self.sequence_number >= ((1 << Crypto::aead_nonce_length(self.hpke.aead_id)) - 1) {
+        if u128::from(self.sequence_number)
+            >= ((1u128 << (8 * Crypto::aead_nonce_length(self.hpke.aead_id))) - 1)
+        {
             return Err(HpkeError::MessageLimitReached);
         }
         self.sequence_number += 1;

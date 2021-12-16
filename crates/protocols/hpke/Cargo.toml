@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs"
-version = "0.1.0-pre.1"
+version = "0.1.0-pre.2"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -38,4 +38,8 @@ criterion = { version = "0.3", features = ["html_reports"] }
 
 [[bench]]
 name = "bench"
+harness = false
+
+[[bench]]
+name = "manual_benches"
 harness = false
