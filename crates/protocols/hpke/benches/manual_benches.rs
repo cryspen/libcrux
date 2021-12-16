@@ -61,7 +61,7 @@ const ITERATIONS: usize = 10_000;
 fn benchmark<Crypto: HpkeCrypto + ProviderName + 'static>() {
     for hpke_mode in MODES {
         for aead_mode in AEAD_IDS {
-            #[cfg(not(target_arch = "x86_64"))]
+            #[cfg(any(not(target_arch = "x86_64"), target_os = "macos"))]
             if Crypto::name() == "Evercrypt"
                 && (aead_mode == AeadAlgorithm::Aes128Gcm || aead_mode == AeadAlgorithm::Aes256Gcm)
             {
