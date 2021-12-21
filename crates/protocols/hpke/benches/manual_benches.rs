@@ -56,7 +56,7 @@ const KEM_IDS: [KemAlgorithm; 2] = [
 const AEAD_PAYLOAD: usize = 128;
 const AEAD_AAD: usize = 48;
 
-const ITERATIONS: usize = 10_000;
+const ITERATIONS: usize = 100;
 
 fn benchmark<Crypto: HpkeCrypto + ProviderName + 'static>() {
     for hpke_mode in MODES {
