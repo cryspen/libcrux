@@ -22,6 +22,7 @@ use hpke_rs_crypto::{
 use prelude::kdf::{labeled_expand, labeled_extract};
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
+use zeroize::Zeroize;
 
 mod dh_kem;
 pub(crate) mod kdf;
@@ -107,7 +108,8 @@ pub struct HpkePublicKey {
 pub type HPKEPrivateKey = HpkePrivateKey;
 
 /// An HPKE private key is a byte vector.
-#[derive(Default)]
+#[derive(Default, Zeroize)]
+#[zeroize(drop)] // XXX: Change to `ZeroizeOnDrop` when moving to 1.5
 #[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "hazmat", derive(Clone))]
 pub struct HpkePrivateKey {
