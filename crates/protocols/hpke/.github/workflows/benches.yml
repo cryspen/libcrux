@@ -25,7 +25,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: HPKE Benchmarks
-      run: cargo bench
+      run: cargo bench manual_benches
     - name: HPKE Rust Crypto Benchmarks
       working-directory: rust_crypto_provider
       run: cargo bench
