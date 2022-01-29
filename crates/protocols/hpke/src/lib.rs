@@ -375,6 +375,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// For the Auth and AuthPSK modes this encapsulates and authenticates
     /// the public key `pk_r` of the receiver with the senders secret key `sk_s`.
     ///
+    /// **Note** that this API expects the public key to be encoded.
+    /// This differs from the RFC.
+    /// But the public keys will be present in encoded form rather than raw form
+    /// such that it doesn't make sense to deserialize before passing it in.
+    ///
     /// The encapsulated secret is returned together with the context.
     /// If the secret key is missing in an authenticated mode, an error is returned.
     pub fn setup_sender(
@@ -416,6 +421,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// For the Auth and AuthPSK modes this decapsulates and authenticates `enc`
     /// with the secret key `sk_r` of the receiver and the senders public key `pk_s`.
     ///
+    /// **Note** that this API expects the public key to be encoded.
+    /// This differs from the RFC.
+    /// But the public keys will be present in encoded form rather than raw form
+    /// such that it doesn't make sense to deserialize before passing it in.
+    ///
     /// The context based on the decapsulated values and, if present, the PSK is
     /// returned.
     /// If the secret key is missing in an authenticated mode, an error is returned.
@@ -452,6 +462,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// Single shot API to encrypt the bytes in `plain_text` to the public key
     /// `pk_r`.
     ///
+    /// **Note** that this API expects the public key to be encoded.
+    /// This differs from the RFC.
+    /// But the public keys will be present in encoded form rather than raw form
+    /// such that it doesn't make sense to deserialize before passing it in.
+    ///
     /// Returns the encapsulated secret and the ciphertext, or an error.
     #[allow(clippy::too_many_arguments)]
     pub fn seal(
@@ -473,6 +488,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// 6.1. Encryption and Decryption
     ///
     /// Single shot API to decrypt the bytes in `ct` with the private key `sk_r`.
+    ///
+    /// **Note** that this API expects the public key to be encoded.
+    /// This differs from the RFC.
+    /// But the public keys will be present in encoded form rather than raw form
+    /// such that it doesn't make sense to deserialize before passing it in.
     ///
     /// Returns the decrypted plain text, or an error.
     #[allow(clippy::too_many_arguments)]
@@ -497,6 +517,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// Single shot API to derive an exporter secret for receiver with public key
     /// `pk_r`.
     ///
+    /// **Note** that this API expects the public key to be encoded.
+    /// This differs from the RFC.
+    /// But the public keys will be present in encoded form rather than raw form
+    /// such that it doesn't make sense to deserialize before passing it in.
+    ///
     /// Returns the encapsulated secret and the exporter secret for the given
     /// exporter context and length.
     #[allow(clippy::too_many_arguments)]
@@ -519,6 +544,11 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     ///
     /// Single shot API to derive an exporter secret for receiver with private key
     /// `sk_r`.
+    ///
+    /// **Note** that this API expects the public key to be encoded.
+    /// This differs from the RFC.
+    /// But the public keys will be present in encoded form rather than raw form
+    /// such that it doesn't make sense to deserialize before passing it in.
     ///
     /// Returns the exporter secret for the given exporter context and length.
     #[allow(clippy::too_many_arguments)]
