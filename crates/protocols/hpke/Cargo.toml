@@ -13,7 +13,7 @@ repository = "https://github.com/franziskuskiefer/hpke-rs"
 log = "0.4"
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
-tls_codec = { version = "0.2.0-pre.2", features = ["derive"], optional = true }
+tls_codec = { version = "0.2.0-pre.4", features = ["derive"], optional = true }
 zeroize = { version = "1.4", features = ["zeroize_derive"] } # 1.5 is incompatible with most of Rust Crypto right now.
 hpke-rs-crypto = { version = "0.1.1-pre.1", path = "./traits" }
 
