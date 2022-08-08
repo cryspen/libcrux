@@ -208,7 +208,7 @@ fn aead_type_to_mode(alg: AeadAlgorithm) -> Result<AeadMode, Error> {
         AeadAlgorithm::Aes128Gcm => Ok(AeadMode::Aes128Gcm),
         AeadAlgorithm::Aes256Gcm => Ok(AeadMode::Aes256Gcm),
         AeadAlgorithm::ChaCha20Poly1305 => Ok(AeadMode::Chacha20Poly1305),
-        _ => Err(Error::UnknownKemAlgorithm),
+        _ => Err(Error::UnknownAeadAlgorithm),
     }
 }
 
