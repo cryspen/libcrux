@@ -13,22 +13,6 @@ fn duration(d: Duration) -> f64 {
     ((d.as_secs() as f64) + (d.subsec_nanos() as f64 * 1e-9)) * 1000000f64
 }
 
-pub trait ProviderName {
-    fn name() -> &'static str;
-}
-
-impl ProviderName for HpkeRustCrypto {
-    fn name() -> &'static str {
-        "RustCrypto"
-    }
-}
-
-impl ProviderName for HpkeEvercrypt {
-    fn name() -> &'static str {
-        "Evercrypt"
-    }
-}
-
 const MODES: [Mode; 4] = [
     HpkeMode::Base,
     HpkeMode::Auth,
@@ -58,7 +42,7 @@ const AEAD_AAD: usize = 48;
 
 const ITERATIONS: usize = 1;
 
-fn benchmark<Crypto: HpkeCrypto + ProviderName + 'static>() {
+fn benchmark<Crypto: HpkeCrypto + 'static>() {
     for hpke_mode in MODES {
         for aead_mode in AEAD_IDS {
             if Crypto::supports_aead(aead_mode).is_err() {

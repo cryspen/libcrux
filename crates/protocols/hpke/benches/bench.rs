@@ -8,22 +8,6 @@ use hpke_rs_evercrypt::*;
 use hpke_rs_rust_crypto::*;
 use rand::rngs::OsRng;
 
-pub trait ProviderName {
-    fn name() -> &'static str;
-}
-
-impl ProviderName for HpkeRustCrypto {
-    fn name() -> &'static str {
-        "RustCrypto"
-    }
-}
-
-impl ProviderName for HpkeEvercrypt {
-    fn name() -> &'static str {
-        "Evercrypt"
-    }
-}
-
 const MODES: [Mode; 4] = [
     HpkeMode::Base,
     HpkeMode::Auth,
@@ -51,7 +35,7 @@ const KEM_IDS: [KemAlgorithm; 5] = [
 const AEAD_PAYLOAD: usize = 128;
 const AEAD_AAD: usize = 48;
 
-fn benchmark<Crypto: HpkeCrypto + ProviderName + 'static>(c: &mut Criterion) {
+fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
     for hpke_mode in MODES {
         for aead_mode in AEAD_IDS {
             if Crypto::supports_aead(aead_mode).is_err() {
