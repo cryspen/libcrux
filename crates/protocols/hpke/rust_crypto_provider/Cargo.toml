@@ -14,18 +14,18 @@ hpke-rs-crypto = { version = "0.1.1", path = "../traits" }
 # Rust crypto
 hkdf = { version = "0.12" }
 sha2 = { version = "0.10" }
-p256 = { version = "0.10", features = ["arithmetic", "ecdh"] }
-p384 = { version = "0.9" }
+p256 = { version = "0.11", features = ["arithmetic", "ecdh"] }
+p384 = { version = "0.11" }
 x25519-dalek-ng = { version = "1.1" }
-chacha20poly1305 = { version = "0.9" }
-aes-gcm = { version = "0.9" }
+chacha20poly1305 = { version = "0.10" }
+aes-gcm = { version = "0.10" }
 # Randomness
 rand = { version = "0.8" }
 getrandom = { version = "0.2", features = ["js"] }
 rand_chacha = { version = "0.3" }
 
 [dev-dependencies]
-criterion = { version = "0.3", features = ["html_reports"] }
+criterion = { version = "0.4", features = ["html_reports"] }
 
 [features]
 deterministic-prng = [] # ⚠️ FOR TESTING ONLY.

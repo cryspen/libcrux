@@ -37,7 +37,7 @@ hpke-rs-evercrypt = { version = "0.1.1", path = "./evercrypt_provider", features
 rand = { version = "0.8" }
 getrandom = { version = "0.2", features = ["js"] }
 pretty_env_logger = "0.4"
-criterion = { version = "0.3", features = ["html_reports"] }
+criterion = { version = "0.4", features = ["html_reports"] }
 
 [[bench]]
 name = "bench"

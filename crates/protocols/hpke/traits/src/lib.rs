@@ -15,6 +15,9 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     /// The PRNG implementation returned in [`HpkeCrypto::prng()`].
     type HpkePrng: rand::RngCore + rand::CryptoRng + HpkeTestRng;
 
+    /// The name of the implementation.
+    fn name() -> String;
+
     /// Returns an error if the KDF algorithm is not supported by this crypto provider.
     fn supports_kdf(alg: types::KdfAlgorithm) -> Result<(), Error>;
 

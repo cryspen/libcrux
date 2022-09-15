@@ -1,6 +1,6 @@
 #![doc = include_str!("../Readme.md")]
 
-use std::sync::RwLock;
+use std::{fmt::Display, sync::RwLock};
 
 use hpke_rs_crypto::{
     error::Error,
@@ -31,6 +31,10 @@ pub struct HpkeRustCryptoPrng {
 }
 
 impl HpkeCrypto for HpkeRustCrypto {
+    fn name() -> String {
+        "RustCrypto".into()
+    }
+
     fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
         match alg {
             KdfAlgorithm::HkdfSha256 => sha256_extract(salt, ikm),
@@ -75,7 +79,7 @@ impl HpkeCrypto for HpkeRustCrypto {
                 let sk = SecretKey::from_be_bytes(sk).map_err(|_| Error::KemInvalidSecretKey)?;
                 let pk = PublicKey::from_sec1_bytes(pk).map_err(|_| Error::KemInvalidPublicKey)?;
                 Ok(diffie_hellman(sk.to_nonzero_scalar(), pk.as_affine())
-                    .as_bytes()
+                    .raw_secret_bytes()
                     .as_slice()
                     .into())
             }
@@ -188,8 +192,8 @@ impl HpkeCrypto for HpkeRustCrypto {
         match alg {
             AeadAlgorithm::Aes128Gcm
             | AeadAlgorithm::Aes256Gcm
-            | AeadAlgorithm::ChaCha20Poly1305 => Ok(()),
-            AeadAlgorithm::HpkeExport => Err(Error::UnknownAeadAlgorithm),
+            | AeadAlgorithm::ChaCha20Poly1305
+            | AeadAlgorithm::HpkeExport => Ok(()),
         }
     }
 }
@@ -240,4 +244,10 @@ impl HpkeTestRng for HpkeRustCryptoPrng {
 
     #[cfg(not(feature = "deterministic-prng"))]
     fn seed(&mut self, _: &[u8]) {}
+}
+
+impl Display for HpkeRustCrypto {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Self::name())
+    }
 }

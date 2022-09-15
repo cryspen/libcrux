@@ -1,6 +1,6 @@
 #![doc = include_str!("../Readme.md")]
 
-use std::sync::RwLock;
+use std::{fmt::Display, sync::RwLock};
 
 use evercrypt::prelude::*;
 use hpke_rs_crypto::{
@@ -22,6 +22,10 @@ pub struct HpkeEvercryptPrng {
 }
 
 impl HpkeCrypto for HpkeEvercrypt {
+    fn name() -> String {
+        "Evercrypt".into()
+    }
+
     fn kdf_extract(alg: KdfAlgorithm, salt: &[u8], ikm: &[u8]) -> Vec<u8> {
         match alg {
             KdfAlgorithm::HkdfSha256 => hkdf_extract(HmacMode::Sha256, salt, ikm),
@@ -168,8 +172,7 @@ impl HpkeCrypto for HpkeEvercrypt {
     fn supports_aead(alg: AeadAlgorithm) -> Result<(), Error> {
         match alg {
             AeadAlgorithm::Aes128Gcm | AeadAlgorithm::Aes256Gcm => aes_support(),
-            AeadAlgorithm::ChaCha20Poly1305 => Ok(()),
-            AeadAlgorithm::HpkeExport => Err(Error::UnknownAeadAlgorithm),
+            AeadAlgorithm::ChaCha20Poly1305 | AeadAlgorithm::HpkeExport => Ok(()),
         }
     }
 }
@@ -256,4 +259,10 @@ impl HpkeTestRng for HpkeEvercryptPrng {
     }
     #[cfg(not(feature = "deterministic-prng"))]
     fn seed(&mut self, _: &[u8]) {}
+}
+
+impl Display for HpkeEvercrypt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Self::name())
+    }
 }

@@ -60,22 +60,36 @@ struct ExportsKAT {
     exported_value: String,
 }
 
-fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>, skip_aes: bool) {
+fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
     tests.into_par_iter().for_each(|test| {
         let mode: HpkeMode = test.mode.try_into().unwrap();
         let kem_id: KemAlgorithm = test.kem_id.try_into().unwrap();
         let kdf_id: KdfAlgorithm = test.kdf_id.try_into().unwrap();
         let aead_id: AeadAlgorithm = test.aead_id.try_into().unwrap();
 
-        if kem_id != KemAlgorithm::DhKem25519 && kem_id != KemAlgorithm::DhKemP256 {
-            log::trace!(" > KEM {:?} not implemented yet", kem_id);
+        if Crypto::supports_kem(kem_id).is_err() {
+            log::trace!(
+                " > KEM {:?} not implemented yet for {}",
+                kem_id,
+                Crypto::name()
+            );
             return;
         }
 
-        if skip_aes && aead_id == AeadAlgorithm::Aes128Gcm || aead_id == AeadAlgorithm::Aes256Gcm {
+        if Crypto::supports_aead(aead_id).is_err() {
             log::trace!(
-                " > AEAD {:?} not fully implemented yet for evercrypt",
-                aead_id
+                " > AEAD {:?} not implemented yet for {}",
+                aead_id,
+                Crypto::name()
+            );
+            return;
+        }
+
+        if Crypto::supports_kdf(kdf_id).is_err() {
+            log::trace!(
+                " > KDF {:?} not implemented yet for {}",
+                kdf_id,
+                Crypto::name()
             );
             return;
         }
@@ -258,12 +272,12 @@ fn test_kat() {
     };
 
     let now = Instant::now();
-    kat::<HpkeRustCrypto>(tests.clone(), false);
+    kat::<HpkeRustCrypto>(tests.clone());
     let time = now.elapsed();
     log::info!("Test vectors with Rust Crypto took: {}s", time.as_secs());
 
     let now = Instant::now();
-    kat::<HpkeEvercrypt>(tests, true);
+    kat::<HpkeEvercrypt>(tests);
     let time = now.elapsed();
     log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
 }
