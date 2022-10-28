@@ -1,0 +1,17 @@
+[package]
+name = "libcrux-hacl"
+version = "0.1.0"
+edition = "2021"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+license = "Apache2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[build-dependencies]
+libc = { version = "0.2", default-features = false }
+fs_extra = "1.2"
+
+[target.'cfg(not(windows))'.build-dependencies]
+bindgen = "0.59"

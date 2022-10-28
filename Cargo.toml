@@ -1,0 +1,13 @@
+[package]
+name = "libcrux"
+version = "0.0.1"
+edition = "2021"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+license = "Apache2.0"
+
+
+[lib]
+crate-type = ["staticlib", "cdylib", "lib"]
+
+[dependencies]
+libcrux-hacl = { path = "sys/hacl" }
