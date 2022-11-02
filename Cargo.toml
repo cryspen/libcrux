@@ -13,5 +13,8 @@ crate-type = ["staticlib", "cdylib", "lib"]
 libcrux-hacl = { path = "sys/hacl" }
 log = "0.4"
 
+[target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]
+libjade_sha256 = { path = "sys/libjade/sha256" }
+
 [dev-dependencies]
 pretty_env_logger = "0.4"
