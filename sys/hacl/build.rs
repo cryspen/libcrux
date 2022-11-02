@@ -20,46 +20,20 @@ fn includes(home_dir: &Path) -> Vec<String> {
     ]
 }
 
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-fn simd128_support() -> bool {
-    std::arch::is_x86_feature_detected!("sse2")
-        && std::arch::is_x86_feature_detected!("sse3")
-        && std::arch::is_x86_feature_detected!("sse4.1")
-        && std::arch::is_x86_feature_detected!("avx")
-}
-
-#[cfg(target_arch = "aarch64")]
-fn simd128_support() -> bool {
-    true
-}
-
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")))]
-fn simd128_support() -> bool {
-    // XXX: Check for z14 or z15
-    false
-}
-
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-fn simd256_support() -> bool {
-    simd128_support() && std::arch::is_x86_feature_detected!("avx2")
-}
-
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-fn simd256_support() -> bool {
-    // XXX: Check for z14 or z15
-    false
+fn append_simd_flags(flags: &mut Vec<String>) {
+    // Platform detection
+    if cfg!(simd128) {
+        flags.push("-DSIMD128".to_string());
+    }
+    if cfg!(simd256) {
+        flags.push("-DSIMD256".to_string());
+    }
 }
 
 #[cfg(not(windows))]
 fn create_bindings(home_dir: &Path) {
     let mut clang_args = includes(home_dir);
-    // Platform detection
-    if simd128_support() {
-        clang_args.push("-DSIMD128".to_string());
-    }
-    if simd256_support() {
-        clang_args.push("-DSIMD256".to_string());
-    }
+    append_simd_flags(&mut clang_args);
 
     let bindings = bindgen::Builder::default()
         // Header to wrap HACL headers
@@ -88,11 +62,6 @@ fn create_bindings(home_dir: &Path) {
 #[cfg(windows)]
 fn create_bindings(_: &Path, _: &Path) {}
 
-// const CFLAGS: &'static str = "-c";
-// const DEBUG_CFLAGS: &'static str = "-g";
-// const RELEASE_CFLAGS: &'static str = "-O3";
-// const OUTPUT_FLAGS: &'static str = "-o chacha20poly1305_32.o";
-
 fn copy_files(home_path: &Path, out_path: &Path) {
     let mut options = fs_extra::dir::CopyOptions::new();
     options.overwrite = true;
@@ -101,13 +70,8 @@ fn copy_files(home_path: &Path, out_path: &Path) {
 
 fn compile_files(files: &[String], out_path: &Path) {
     let mut clang_args = includes(out_path);
-    // Platform detection
-    if simd128_support() {
-        clang_args.push("-DSIMD128".to_string());
-    }
-    if simd256_support() {
-        clang_args.push("-DSIMD256".to_string());
-    }
+    append_simd_flags(&mut clang_args);
+
     clang_args.push("-O3".to_string());
     clang_args.push("-c".to_string());
 
@@ -143,14 +107,14 @@ fn build_chacha20poly1305(out_path: &Path) {
         "Hacl_Poly1305_32.c",
     ];
     // Platform detection
-    if simd128_support() {
+    if cfg!(simd128) {
         files.append(&mut vec![
             "Hacl_Chacha20Poly1305_128.c",
             "Hacl_Chacha20_Vec128.c",
             "Hacl_Poly1305_128.c",
         ]);
     }
-    if simd256_support() {
+    if cfg!(simd256) {
         files.append(&mut vec![
             "Hacl_Chacha20Poly1305_256.c",
             "Hacl_Chacha20_Vec256.c",

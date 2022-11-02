@@ -2,6 +2,8 @@ use libcrux::aead::{decrypt, encrypt, Algorithm::Chacha20Poly1305, Key};
 
 #[test]
 fn chachapoly_self_test() {
+    let _ = pretty_env_logger::try_init();
+
     let orig_msg = b"hacspec rulez";
     let mut msg = orig_msg.clone();
     let aad = b"associated data" as &[u8];

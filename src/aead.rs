@@ -1,4 +1,4 @@
-use crate::hacl::ChaCha20Poly1305;
+use crate::hacl;
 
 /// The AEAD Algorithm Identifier.
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -85,7 +85,7 @@ pub fn encrypt(
                 Key::Aes128(_) | Key::Aes256(_) => return Err("Invalid key"),
                 Key::Chacha20Poly1305(k) => k,
             };
-            Ok(ChaCha20Poly1305::encrypt(key, msg_ctxt, iv, aad))
+            Ok(hacl::chacha20poly1305::encrypt(key, msg_ctxt, iv, aad))
         }
     }
 }
@@ -106,7 +106,7 @@ pub fn decrypt(
                 Key::Aes128(_) | Key::Aes256(_) => return Err("Invalid key"),
                 Key::Chacha20Poly1305(k) => k,
             };
-            ChaCha20Poly1305::decrypt(key, ctxt_msg, iv, aad, tag)
+            hacl::chacha20poly1305::decrypt(key, ctxt_msg, iv, aad, tag)
         }
     }
 }
