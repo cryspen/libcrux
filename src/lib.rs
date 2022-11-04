@@ -13,6 +13,7 @@ pub mod cobra;
 pub mod hacl;
 
 // Jasmin
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub mod jasmin;
 
 // libcrux
