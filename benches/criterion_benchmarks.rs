@@ -1,9 +1,11 @@
 #[macro_use]
 extern crate criterion;
+extern crate libcrux;
 extern crate libjade;
 extern crate rand;
 
 use criterion::{BatchSize, Criterion};
+use libcrux::hacl;
 
 fn randombytes(n: usize) -> Vec<u8> {
     use rand::rngs::OsRng;
@@ -24,7 +26,7 @@ fn x25519(c: &mut Criterion) {
     //         BatchSize::SmallInput,
     //     )
     // });
-    c.bench_function("X25519 DH", |b| {
+    c.bench_function("X25519 DH Jasmin", |b| {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
@@ -34,6 +36,20 @@ fn x25519(c: &mut Criterion) {
             },
             |(pk1, sk2)| {
                 let _zz = libjade::x25519(&sk2, &pk1).unwrap();
+            },
+            BatchSize::SmallInput,
+        )
+    });
+    c.bench_function("X25519 DH HACL", |b| {
+        b.iter_batched(
+            || {
+                let sk1 = randombytes(32);
+                let pk1 = libjade::x25519_base(&sk1).unwrap();
+                let sk2 = randombytes(32);
+                (pk1, sk2)
+            },
+            |(pk1, sk2)| {
+                let _zz = hacl::curve25519::derive(&sk2, &pk1).unwrap();
             },
             BatchSize::SmallInput,
         )

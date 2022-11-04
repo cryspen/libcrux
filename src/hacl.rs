@@ -4,4 +4,5 @@
 
 mod hw_detection;
 
-pub(crate) mod chacha20poly1305;
+pub mod chacha20poly1305;
+pub mod curve25519;

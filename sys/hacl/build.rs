@@ -53,6 +53,7 @@ fn create_bindings(home_dir: &Path) {
         .clang_args(clang_args)
         // Allow function we want to have in
         .allowlist_function("Hacl_Chacha20Poly1305.*")
+        .allowlist_function("Hacl_Curve25519.*")
         // .allowlist_var("Spec_.*")
         // .allowlist_type("Spec_.*")
         // Block everything we don't need or define ourselves.
@@ -102,11 +103,13 @@ fn compile_files(files: &[String], out_path: &Path, args: &[String]) {
     assert!(build_status.success());
 }
 
-fn build_chacha20poly1305(out_path: &Path) {
+fn build(out_path: &Path) {
     let files = vec![
         "Hacl_Chacha20.c".to_string(),
         "Hacl_Chacha20Poly1305_32.c".to_string(),
         "Hacl_Poly1305_32.c".to_string(),
+        "Hacl_Curve25519_51.c".to_string(),
+        "Hacl_Curve25519_64.c".to_string(),
     ];
     let mut all_files = files.clone();
 
@@ -149,7 +152,7 @@ fn build_chacha20poly1305(out_path: &Path) {
         .current_dir(out_path.join("c").join("src"))
         .args(&[
             "-r",
-            &out_path.join("libchacha20poly1305.a").display().to_string(),
+            &out_path.join("libhacl.a").display().to_string(),
         ])
         .args(&object_files);
     println!(" >>> build_cmd: {:?}", build_cmd);
@@ -172,10 +175,10 @@ fn main() {
     eprintln!(" >>> out {:?}", out_path);
 
     // Build the C files
-    build_chacha20poly1305(out_path);
+    build(out_path);
 
     // Set library name to look up
-    let library_name = "chacha20poly1305";
+    let library_name = "hacl";
 
     // Set re-run trigger for all of c
     println!("cargo:rerun-if-changed=c");

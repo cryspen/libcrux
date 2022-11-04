@@ -26,3 +26,53 @@ extern "C" {
         mac: *mut u8,
     ) -> u32;
 }
+extern "C" {
+    #[doc = "Compute the scalar multiple of a point."]
+    #[doc = ""]
+    #[doc = "@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to."]
+    #[doc = "@param priv Pointer to 32 bytes of memory where the secret/private key is read from."]
+    #[doc = "@param pub Pointer to 32 bytes of memory where the public point is read from."]
+    pub fn Hacl_Curve25519_51_scalarmult(out: *mut u8, priv_: *mut u8, pub_: *mut u8);
+}
+extern "C" {
+    #[doc = "Calculate a public point from a secret/private key."]
+    #[doc = ""]
+    #[doc = "This computes a scalar multiplication of the secret/private key with the curve's basepoint."]
+    #[doc = ""]
+    #[doc = "@param pub Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to."]
+    #[doc = "@param priv Pointer to 32 bytes of memory where the secret/private key is read from."]
+    pub fn Hacl_Curve25519_51_secret_to_public(pub_: *mut u8, priv_: *mut u8);
+}
+extern "C" {
+    #[doc = "Execute the diffie-hellmann key exchange."]
+    #[doc = ""]
+    #[doc = "@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to."]
+    #[doc = "@param priv Pointer to 32 bytes of memory where **our** secret/private key is read from."]
+    #[doc = "@param pub Pointer to 32 bytes of memory where **their** public point is read from."]
+    pub fn Hacl_Curve25519_51_ecdh(out: *mut u8, priv_: *mut u8, pub_: *mut u8) -> bool;
+}
+extern "C" {
+    #[doc = "Compute the scalar multiple of a point."]
+    #[doc = ""]
+    #[doc = "@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to."]
+    #[doc = "@param priv Pointer to 32 bytes of memory where the secret/private key is read from."]
+    #[doc = "@param pub Pointer to 32 bytes of memory where the public point is read from."]
+    pub fn Hacl_Curve25519_64_scalarmult(out: *mut u8, priv_: *mut u8, pub_: *mut u8);
+}
+extern "C" {
+    #[doc = "Calculate a public point from a secret/private key."]
+    #[doc = ""]
+    #[doc = "This computes a scalar multiplication of the secret/private key with the curve's basepoint."]
+    #[doc = ""]
+    #[doc = "@param pub Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to."]
+    #[doc = "@param priv Pointer to 32 bytes of memory where the secret/private key is read from."]
+    pub fn Hacl_Curve25519_64_secret_to_public(pub_: *mut u8, priv_: *mut u8);
+}
+extern "C" {
+    #[doc = "Execute the diffie-hellmann key exchange."]
+    #[doc = ""]
+    #[doc = "@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to."]
+    #[doc = "@param priv Pointer to 32 bytes of memory where **our** secret/private key is read from."]
+    #[doc = "@param pub Pointer to 32 bytes of memory where **their** public point is read from."]
+    pub fn Hacl_Curve25519_64_ecdh(out: *mut u8, priv_: *mut u8, pub_: *mut u8) -> bool;
+}

@@ -2,14 +2,16 @@
 //! 
 //! The unified, formally verified, cryptography library.
 
+// TODO: Make languages private
+
 // Coq
-mod cobra;
+pub mod cobra;
 
 // HACL
-mod hacl;
+pub mod hacl;
 
 // Jasmin
-mod jasmin;
+pub mod jasmin;
 
 // libcrux
 pub mod aead;
