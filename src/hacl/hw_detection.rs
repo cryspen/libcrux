@@ -29,3 +29,13 @@ pub(super) fn simd256_support() -> bool {
     // XXX: Check for z14 or z15
     false
 }
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+pub(super) fn x25519_cpu_support() -> bool {
+    std::arch::is_x86_feature_detected!("bmi2") && std::arch::is_x86_feature_detected!("adx")
+}
+
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+pub(super) fn x25519_cpu_support() -> bool {
+    false
+}
