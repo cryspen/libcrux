@@ -20,20 +20,31 @@ fn includes(home_dir: &Path) -> Vec<String> {
     ]
 }
 
-fn append_simd_flags(flags: &mut Vec<String>) {
+fn append_simd128_flags(flags: &mut Vec<String>) {
     // Platform detection
     if cfg!(simd128) {
         flags.push("-DSIMD128".to_string());
+        if cfg!(any(target_arch = "x86", target_arch = "x86_64")) {
+            flags.push("-msse4.1".to_string());
+            flags.push("-msse4.2".to_string());
+            flags.push("-mavx".to_string());
+        }
     }
+}
+
+fn append_simd256_flags(flags: &mut Vec<String>) {
+    // Platform detection
     if cfg!(simd256) {
         flags.push("-DSIMD256".to_string());
+        flags.push("-mavx2".to_string());
     }
 }
 
 #[cfg(not(windows))]
 fn create_bindings(home_dir: &Path) {
     let mut clang_args = includes(home_dir);
-    append_simd_flags(&mut clang_args);
+    append_simd128_flags(&mut clang_args);
+    append_simd256_flags(&mut clang_args);
 
     let bindings = bindgen::Builder::default()
         // Header to wrap HACL headers
@@ -68,24 +79,15 @@ fn copy_files(home_path: &Path, out_path: &Path) {
     fs_extra::dir::copy(home_path.join("c"), out_path, &options).unwrap();
 }
 
-fn compile_files(files: &[String], out_path: &Path) {
+fn compile_files(files: &[String], out_path: &Path, args: &[String]) {
     let mut clang_args = includes(out_path);
-    append_simd_flags(&mut clang_args);
 
     clang_args.push("-O3".to_string());
     clang_args.push("-c".to_string());
+    clang_args.extend_from_slice(args);
 
-    // let object_file = out_path.join(file).with_extension("o");
     let mut build_cmd = Command::new("clang");
     let mut build_args = clang_args;
-    // vec![
-    //     CFLAGS.to_string(),
-    //     RELEASE_CFLAGS.to_string(),
-    //     // "-o".to_string(),
-    //     // object_file.to_str().unwrap().to_string(),
-    // ];
-    // build_args.append(&mut clang_args);
-    // build_args.append(&mut includes(out_path));
     build_args.extend_from_slice(files);
     println!(" >>> {}", out_path.join("c").join("src").display());
     println!(" >>> {}", build_args.join(" "));
@@ -101,31 +103,43 @@ fn compile_files(files: &[String], out_path: &Path) {
 }
 
 fn build_chacha20poly1305(out_path: &Path) {
-    let mut files = vec![
-        "Hacl_Chacha20.c",
-        "Hacl_Chacha20Poly1305_32.c",
-        "Hacl_Poly1305_32.c",
+    let files = vec![
+        "Hacl_Chacha20.c".to_string(),
+        "Hacl_Chacha20Poly1305_32.c".to_string(),
+        "Hacl_Poly1305_32.c".to_string(),
     ];
+    let mut all_files = files.clone();
+
     // Platform detection
     if cfg!(simd128) {
-        files.append(&mut vec![
-            "Hacl_Chacha20Poly1305_128.c",
-            "Hacl_Chacha20_Vec128.c",
-            "Hacl_Poly1305_128.c",
-        ]);
+        let files128 = vec![
+            format!("Hacl_Chacha20Poly1305_128.c"),
+            format!("Hacl_Chacha20_Vec128.c"),
+            format!("Hacl_Poly1305_128.c"),
+        ];
+        all_files.extend_from_slice(&files128);
+
+        let mut simd128_flags = vec![];
+        append_simd128_flags(&mut simd128_flags);
+        compile_files(&files128, out_path, &simd128_flags);
     }
     if cfg!(simd256) {
-        files.append(&mut vec![
-            "Hacl_Chacha20Poly1305_256.c",
-            "Hacl_Chacha20_Vec256.c",
-            "Hacl_Poly1305_256.c",
-        ]);
+        let files256 = vec![
+            "Hacl_Chacha20Poly1305_256.c".to_string(),
+            "Hacl_Chacha20_Vec256.c".to_string(),
+            "Hacl_Poly1305_256.c".to_string(),
+        ];
+        all_files.extend_from_slice(&files256);
+
+        let mut simd256_flags = vec![];
+        append_simd256_flags(&mut simd256_flags);
+        compile_files(&files256, out_path, &simd256_flags);
     }
 
     let mut object_files = vec![];
-    let files: Vec<String> = files.drain(..).map(|f| f.to_string()).collect();
-    compile_files(&files, out_path);
-    for file in files {
+
+    compile_files(&files, out_path, &[]);
+    for file in all_files {
         object_files.push(Path::new(&file).with_extension("o"));
     }
 
