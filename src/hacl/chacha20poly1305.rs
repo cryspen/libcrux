@@ -1,7 +1,9 @@
 use libcrux_hacl::*;
 
-use super::hw_detection::*;
-use crate::aead::*;
+use crate::{
+    aead::*,
+    hw_detection::{simd128_support, simd256_support},
+};
 
 #[cfg(simd256)]
 fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: &Iv, aad: &[u8]) -> Tag {

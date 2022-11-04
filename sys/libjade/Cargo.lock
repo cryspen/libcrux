@@ -191,28 +191,11 @@ checksum = "fc7fcc620a3bff7cdd7a365be3376c97191aeaccc2a603e600951e452615bf89"
 name = "libjade"
 version = "0.1.0"
 dependencies = [
- "libjade_sha256",
- "libjade_x25519",
+ "bindgen",
+ "fs_extra",
+ "libc",
  "log",
  "pretty_env_logger",
-]
-
-[[package]]
-name = "libjade_sha256"
-version = "0.1.0"
-dependencies = [
- "bindgen",
- "fs_extra",
- "libc",
-]
-
-[[package]]
-name = "libjade_x25519"
-version = "0.1.0"
-dependencies = [
- "bindgen",
- "fs_extra",
- "libc",
 ]
 
 [[package]]

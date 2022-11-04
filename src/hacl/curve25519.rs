@@ -2,7 +2,7 @@ use libcrux_hacl::{
     Hacl_Curve25519_51_ecdh, Hacl_Curve25519_51_secret_to_public, Hacl_Curve25519_64_ecdh,
 };
 
-use super::hw_detection::{self, x25519_cpu_support};
+use crate::hw_detection::x25519_cpu_support;
 
 pub fn derive(p: &[u8], s: &[u8]) -> Result<[u8; 32], &'static str> {
     let mut result = [0u8; 32];

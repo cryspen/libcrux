@@ -1,3 +1,5 @@
+use crate::jasmin;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     InvalidPoint,
@@ -27,7 +29,7 @@ pub fn derive(mode: Algorithm, p: &[u8], s: &[u8]) -> Result<Vec<u8>, Error> {
             }
 
             // FIXME: x64 only. Switch between jasmin and hacl here
-            libjade::x25519(s, p)
+            jasmin::x25519::x25519(s, p)
                 .map_err(|e| Error::Custom(e))
                 .map(|r| r.into())
         }

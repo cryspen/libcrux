@@ -19,7 +19,8 @@ fn create_bindings(home_dir: &Path) {
         // Allow function we want to have in
         .allowlist_function("jade_hash_.*")
         .allowlist_var("JADE_HASH_.*")
-        // .allowlist_type("Spec_.*")
+        .allowlist_function("jade_scalarmult_curve25519_.*")
+        .allowlist_var("JADE_SCALARMULT_CURVE25519_.*")
         // Block everything we don't need or define ourselves.
         .blocklist_type("__.*")
         // Disable tests to avoid warnings and keep it portable
@@ -62,8 +63,8 @@ fn compile_files(files: &[String], out_path: &Path) {
     assert!(build_status.success());
 }
 
-fn build_sha256(out_path: &Path) {
-    let mut files = vec!["sha256.s"];
+fn build(out_path: &Path) {
+    let mut files = vec!["sha256.s", "x25519_ref.s", "x25519_mulx.s"];
 
     let mut object_files = vec![];
     let files: Vec<String> = files.drain(..).map(|f| f.to_string()).collect();
@@ -78,7 +79,7 @@ fn build_sha256(out_path: &Path) {
         .current_dir(out_path.join("jazz"))
         .args(&[
             "-r",
-            &out_path.join("libsha256.a").display().to_string(),
+            &out_path.join("libjade.a").display().to_string(),
         ])
         .args(&object_files);
     println!(" >>> build_cmd: {:?}", build_cmd);
@@ -101,10 +102,10 @@ fn main() {
     eprintln!(" >>> out {:?}", out_path);
 
     // Build the C/ASM files
-    build_sha256(out_path);
+    build(out_path);
 
     // Set library name to look up
-    let library_name = "sha256";
+    let library_name = "jade";
 
     // Set re-run trigger for all of s
     println!("cargo:rerun-if-changed=cs");

@@ -1,97 +1,100 @@
-use libjade_sha256::jade_hash_sha256_amd64_ref;
-use libjade_x25519::*;
+//! #Libjade Rust bindings
 
-pub type Sha256Digest = [u8; 32];
+mod bindings;
+pub use bindings::*;
 
-pub fn sha256(input: &[u8]) -> Result<Sha256Digest, &'static str> {
-    let mut digest = Sha256Digest::default();
-    let r = unsafe {
-        jade_hash_sha256_amd64_ref(
-            digest.as_mut_ptr(),
-            input.as_ptr() as _,
-            input.len().try_into().unwrap(),
-        )
-    };
-    if r != 0 {
-        Err("Error while hashing.")
-    } else {
-        Ok(digest)
-    }
-}
-
-pub type Curve25519Point = [u8; 32];
-pub type Curve25519Scalar = [u8; 32];
-
-fn x25519_cpu_support() -> bool {
-    std::arch::is_x86_feature_detected!("bmi2") && std::arch::is_x86_feature_detected!("adx")
-}
-
-pub fn x25519(scalar: &[u8], point: &[u8]) -> Result<Curve25519Point, &'static str> {
-    let mut result = Curve25519Point::default();
-    let r = if x25519_cpu_support() {
-        log::trace!("Jasmin x25519 mulx");
-        unsafe {
-            jade_scalarmult_curve25519_amd64_mulx(
-                result.as_mut_ptr(),
-                scalar.as_ptr() as _,
-                point.as_ptr() as _,
-            )
-        }
-    } else {
-        log::trace!("Jasmin x25519 ref");
-        unsafe {
-            jade_scalarmult_curve25519_amd64_ref5(
-                result.as_mut_ptr(),
-                scalar.as_ptr() as _,
-                point.as_ptr() as _,
-            )
-        }
-    };
-    if r != 0 {
-        Err("Error while computing x25519.")
-    } else {
-        Ok(result)
-    }
-}
-
-pub fn x25519_base(scalar: &[u8]) -> Result<Curve25519Point, &'static str> {
-    let mut result = Curve25519Point::default();
-    let base = [
-        0x09u8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00,
-    ];
-
-    let r = if x25519_cpu_support() {
-        log::trace!("Jasmin x25519 mulx");
-        unsafe {
-            jade_scalarmult_curve25519_amd64_mulx(
-                result.as_mut_ptr(),
-                scalar.as_ptr() as _,
-                base.as_ptr() as _,
-            )
-        }
-    } else {
-        log::trace!("Jasmin x25519 ref");
-        unsafe {
-            jade_scalarmult_curve25519_amd64_ref5(
-                result.as_mut_ptr(),
-                scalar.as_ptr() as _,
-                base.as_ptr() as _,
-            )
-        }
-    };
-    if r != 0 {
-        Err("Error while computing x25519.")
-    } else {
-        Ok(result)
-    }
-}
+// ===
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fmt::Write;
+
+    type Sha256Digest = [u8; 32];
+
+    fn sha256(input: &[u8]) -> Result<Sha256Digest, &'static str> {
+        let mut digest = Sha256Digest::default();
+        let r = unsafe {
+            jade_hash_sha256_amd64_ref(
+                digest.as_mut_ptr(),
+                input.as_ptr() as _,
+                input.len().try_into().unwrap(),
+            )
+        };
+        if r != 0 {
+            Err("Error while hashing.")
+        } else {
+            Ok(digest)
+        }
+    }
+
+    type Curve25519Point = [u8; 32];
+
+    fn x25519_cpu_support() -> bool {
+        std::arch::is_x86_feature_detected!("bmi2") && std::arch::is_x86_feature_detected!("adx")
+    }
+
+    fn x25519(scalar: &[u8], point: &[u8]) -> Result<Curve25519Point, &'static str> {
+        let mut result = Curve25519Point::default();
+        let r = if x25519_cpu_support() {
+            log::trace!("Jasmin x25519 mulx");
+            unsafe {
+                jade_scalarmult_curve25519_amd64_mulx(
+                    result.as_mut_ptr(),
+                    scalar.as_ptr() as _,
+                    point.as_ptr() as _,
+                )
+            }
+        } else {
+            log::trace!("Jasmin x25519 ref");
+            unsafe {
+                jade_scalarmult_curve25519_amd64_ref5(
+                    result.as_mut_ptr(),
+                    scalar.as_ptr() as _,
+                    point.as_ptr() as _,
+                )
+            }
+        };
+        if r != 0 {
+            Err("Error while computing x25519.")
+        } else {
+            Ok(result)
+        }
+    }
+
+    fn x25519_base(scalar: &[u8]) -> Result<Curve25519Point, &'static str> {
+        let mut result = Curve25519Point::default();
+        let base = [
+            0x09u8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+        ];
+
+        let r = if x25519_cpu_support() {
+            log::trace!("Jasmin x25519 mulx");
+            unsafe {
+                jade_scalarmult_curve25519_amd64_mulx(
+                    result.as_mut_ptr(),
+                    scalar.as_ptr() as _,
+                    base.as_ptr() as _,
+                )
+            }
+        } else {
+            log::trace!("Jasmin x25519 ref");
+            unsafe {
+                jade_scalarmult_curve25519_amd64_ref5(
+                    result.as_mut_ptr(),
+                    scalar.as_ptr() as _,
+                    base.as_ptr() as _,
+                )
+            }
+        };
+        if r != 0 {
+            Err("Error while computing x25519.")
+        } else {
+            Ok(result)
+        }
+    }
 
     fn bytes_to_hex(bytes: &[u8]) -> String {
         let mut s = String::with_capacity(2 * bytes.len());

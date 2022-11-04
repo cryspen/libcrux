@@ -2,6 +2,8 @@
 //! 
 //! The unified, formally verified, cryptography library.
 
+mod hw_detection;
+
 // TODO: Make languages private
 
 // Coq

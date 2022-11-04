@@ -1,11 +1,13 @@
 #[macro_use]
 extern crate criterion;
 extern crate libcrux;
-extern crate libjade;
 extern crate rand;
 
 use criterion::{BatchSize, Criterion};
-use libcrux::hacl;
+use libcrux::{
+    hacl,
+    jasmin::x25519::{x25519 as libjade_x25519, x25519_base},
+};
 
 fn randombytes(n: usize) -> Vec<u8> {
     use rand::rngs::OsRng;
@@ -30,12 +32,12 @@ fn x25519(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
-                let pk1 = libjade::x25519_base(&sk1).unwrap();
+                let pk1 = x25519_base(&sk1).unwrap();
                 let sk2 = randombytes(32);
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = libjade::x25519(&sk2, &pk1).unwrap();
+                let _zz = libjade_x25519(&sk2, &pk1).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -44,12 +46,12 @@ fn x25519(c: &mut Criterion) {
         b.iter_batched(
             || {
                 let sk1 = randombytes(32);
-                let pk1 = libjade::x25519_base(&sk1).unwrap();
+                let pk1 = x25519_base(&sk1).unwrap();
                 let sk2 = randombytes(32);
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = hacl::curve25519::derive(&sk2, &pk1).unwrap();
+                let _zz = libcrux::hacl::curve25519::derive(&sk2, &pk1).unwrap();
             },
             BatchSize::SmallInput,
         )
