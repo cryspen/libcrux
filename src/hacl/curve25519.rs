@@ -4,7 +4,13 @@ use crate::hw_detection::x25519_cpu_support;
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 fn fast_x25519(result: &mut [u8], private: &[u8], public: &[u8]) -> bool {
-    unsafe { Hacl_Curve25519_64_ecdh(result.as_mut_ptr(), s.as_ptr() as _, p.as_ptr() as _) }
+    unsafe {
+        Hacl_Curve25519_64_ecdh(
+            result.as_mut_ptr(),
+            private.as_ptr() as _,
+            public.as_ptr() as _,
+        )
+    }
 }
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 fn fast_x25519(_: &mut [u8], _: &[u8], _: &[u8]) -> bool {
