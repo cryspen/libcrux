@@ -36,7 +36,7 @@ extern "C" {
 
 
 
-#include "evercrypt_targetconfig.h"
+
 static inline uint32_t FStar_UInt32_eq_mask(uint32_t a, uint32_t b);
 
 static inline uint32_t FStar_UInt32_gte_mask(uint32_t a, uint32_t b);
@@ -72,8 +72,6 @@ static inline FStar_UInt128_uint128 FStar_UInt128_uint64_to_uint128(uint64_t a);
 static inline uint64_t FStar_UInt128_uint128_to_uint64(FStar_UInt128_uint128 a);
 
 static inline FStar_UInt128_uint128 FStar_UInt128_mul_wide(uint64_t x, uint64_t y);
-
-static inline void store128_le(uint8_t *x0, FStar_UInt128_uint128 x1);
 
 static inline void store128_be(uint8_t *x0, FStar_UInt128_uint128 x1);
 

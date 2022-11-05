@@ -5,6 +5,8 @@
 
 #include "Hacl_Chacha20Poly1305_32.h"
 #include "Hacl_Curve25519_51.h"
+#include "Hacl_Hash_SHA2.h"
+#include "Hacl_Streaming_SHA2.h"
 
 #ifdef SIMD128
 #define HACL_CAN_COMPILE_VEC128 1

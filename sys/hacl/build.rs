@@ -3,6 +3,10 @@ extern crate bindgen;
 
 use std::{env, path::Path, process::Command};
 
+macro_rules! svec {
+    ($($x:expr),*$(,)?) => (vec![$($x.to_string()),*]);
+}
+
 fn includes(home_dir: &Path) -> Vec<String> {
     let c_path = home_dir.join("c");
     vec![
@@ -54,10 +58,18 @@ fn create_bindings(home_dir: &Path) {
         // Allow function we want to have in
         .allowlist_function("Hacl_Chacha20Poly1305.*")
         .allowlist_function("Hacl_Curve25519.*")
+        .allowlist_function("Hacl_Hash_SHA2.*")
+        .allowlist_function("Hacl_Streaming_SHA2.*")
         // .allowlist_var("Spec_.*")
-        // .allowlist_type("Spec_.*")
+        .allowlist_type("Spec_.*")
+        .allowlist_type("Hacl_Streaming_SHA2.*")
         // Block everything we don't need or define ourselves.
-        // .blocklist_type("Hacl_Streaming_.*")
+        .blocklist_type("__.*")
+        // XXX: These functions can't be used right now in Rust
+        .blocklist_function("Hacl_Hash_SHA2_update_.*_384")
+        .blocklist_function("Hacl_Hash_SHA2_update_.*_512")
+        .blocklist_function("Hacl_Hash_SHA2_finish_.*_384")
+        .blocklist_function("Hacl_Hash_SHA2_finish_.*_512")
         // Disable tests to avoid warnings and keep it portable
         .layout_tests(false)
         // Generate bindings
@@ -104,21 +116,23 @@ fn compile_files(files: &[String], out_path: &Path, args: &[String]) {
 }
 
 fn build(out_path: &Path) {
-    let files = vec![
-        "Hacl_Chacha20.c".to_string(),
-        "Hacl_Chacha20Poly1305_32.c".to_string(),
-        "Hacl_Poly1305_32.c".to_string(),
-        "Hacl_Curve25519_51.c".to_string(),
-        "Hacl_Curve25519_64.c".to_string(),
+    let files = svec![
+        "Hacl_Chacha20.c",
+        "Hacl_Chacha20Poly1305_32.c",
+        "Hacl_Poly1305_32.c",
+        "Hacl_Curve25519_51.c",
+        "Hacl_Curve25519_64.c",
+        "Hacl_Hash_SHA2.c",
+        "Hacl_Streaming_SHA2.c",
     ];
     let mut all_files = files.clone();
 
     // Platform detection
     if cfg!(simd128) {
-        let files128 = vec![
-            format!("Hacl_Chacha20Poly1305_128.c"),
-            format!("Hacl_Chacha20_Vec128.c"),
-            format!("Hacl_Poly1305_128.c"),
+        let files128 = svec![
+            "Hacl_Chacha20Poly1305_128.c",
+            "Hacl_Chacha20_Vec128.c",
+            "Hacl_Poly1305_128.c",
         ];
         all_files.extend_from_slice(&files128);
 
@@ -127,10 +141,10 @@ fn build(out_path: &Path) {
         compile_files(&files128, out_path, &simd128_flags);
     }
     if cfg!(simd256) {
-        let files256 = vec![
-            "Hacl_Chacha20Poly1305_256.c".to_string(),
-            "Hacl_Chacha20_Vec256.c".to_string(),
-            "Hacl_Poly1305_256.c".to_string(),
+        let files256 = svec![
+            "Hacl_Chacha20Poly1305_256.c",
+            "Hacl_Chacha20_Vec256.c",
+            "Hacl_Poly1305_256.c",
         ];
         all_files.extend_from_slice(&files256);
 
@@ -150,10 +164,7 @@ fn build(out_path: &Path) {
     let mut build_cmd = Command::new("ar");
     build_cmd
         .current_dir(out_path.join("c").join("src"))
-        .args(&[
-            "-r",
-            &out_path.join("libhacl.a").display().to_string(),
-        ])
+        .args(&["-r", &out_path.join("libhacl.a").display().to_string()])
         .args(&object_files);
     println!(" >>> build_cmd: {:?}", build_cmd);
     println!("     current dir: {:?}", build_cmd.get_current_dir());
