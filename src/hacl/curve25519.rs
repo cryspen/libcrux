@@ -20,8 +20,10 @@ fn fast_x25519(_: &mut [u8], _: &[u8], _: &[u8]) -> bool {
 pub fn derive(p: &[u8], s: &[u8]) -> Result<[u8; 32], &'static str> {
     let mut result = [0u8; 32];
     let r = if x25519_cpu_support() {
+        log::trace!("HACL x25519 mulx");
         fast_x25519(&mut result, s, p)
     } else {
+        log::trace!("HACL x25519 ref");
         unsafe { Hacl_Curve25519_51_ecdh(result.as_mut_ptr(), s.as_ptr() as _, p.as_ptr() as _) }
     };
     if !r {

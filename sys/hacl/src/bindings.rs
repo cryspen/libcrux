@@ -214,6 +214,54 @@ extern "C" {
     pub fn Hacl_Streaming_SHA2_free_512(s: *mut Hacl_Streaming_SHA2_state_sha2_384);
 }
 extern "C" {
+    pub fn Hacl_SHA3_shake128_hacl(
+        inputByteLen: u32,
+        input: *mut u8,
+        outputByteLen: u32,
+        output: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_SHA3_shake256_hacl(
+        inputByteLen: u32,
+        input: *mut u8,
+        outputByteLen: u32,
+        output: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_SHA3_sha3_224(inputByteLen: u32, input: *mut u8, output: *mut u8);
+}
+extern "C" {
+    pub fn Hacl_SHA3_sha3_256(inputByteLen: u32, input: *mut u8, output: *mut u8);
+}
+extern "C" {
+    pub fn Hacl_SHA3_sha3_384(inputByteLen: u32, input: *mut u8, output: *mut u8);
+}
+extern "C" {
+    pub fn Hacl_SHA3_sha3_512(inputByteLen: u32, input: *mut u8, output: *mut u8);
+}
+extern "C" {
+    pub fn Hacl_Streaming_SHA3_create_in_256() -> *mut Hacl_Streaming_SHA2_state_sha2_384;
+}
+extern "C" {
+    pub fn Hacl_Streaming_SHA3_init_256(s: *mut Hacl_Streaming_SHA2_state_sha2_384);
+}
+extern "C" {
+    #[doc = "0 = success, 1 = max length exceeded. Due to internal limitations, there is currently an arbitrary limit of 2^64-1 bytes that can be hashed through this interface."]
+    pub fn Hacl_Streaming_SHA3_update_256(
+        p: *mut Hacl_Streaming_SHA2_state_sha2_384,
+        data: *mut u8,
+        len: u32,
+    ) -> u32;
+}
+extern "C" {
+    pub fn Hacl_Streaming_SHA3_finish_256(p: *mut Hacl_Streaming_SHA2_state_sha2_384, dst: *mut u8);
+}
+extern "C" {
+    pub fn Hacl_Streaming_SHA3_free_256(s: *mut Hacl_Streaming_SHA2_state_sha2_384);
+}
+extern "C" {
     #[doc = "Compute the scalar multiple of a point."]
     #[doc = ""]
     #[doc = "@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to."]
@@ -237,4 +285,61 @@ extern "C" {
     #[doc = "@param priv Pointer to 32 bytes of memory where **our** secret/private key is read from."]
     #[doc = "@param pub Pointer to 32 bytes of memory where **their** public point is read from."]
     pub fn Hacl_Curve25519_64_ecdh(out: *mut u8, priv_: *mut u8, pub_: *mut u8) -> bool;
+}
+extern "C" {
+    #[doc = "Encrypt a message `m` with key `k`."]
+    #[doc = ""]
+    #[doc = "The arguments `k`, `n`, `aadlen`, and `aad` are same in encryption/decryption."]
+    #[doc = "Note: Encryption and decryption can be executed in-place, i.e., `m` and `cipher` can point to the same memory."]
+    #[doc = ""]
+    #[doc = "@param k Pointer to 32 bytes of memory where the AEAD key is read from."]
+    #[doc = "@param n Pointer to 12 bytes of memory where the AEAD nonce is read from."]
+    #[doc = "@param aadlen Length of the associated data."]
+    #[doc = "@param aad Pointer to `aadlen` bytes of memory where the associated data is read from."]
+    #[doc = ""]
+    #[doc = "@param mlen Length of the message."]
+    #[doc = "@param m Pointer to `mlen` bytes of memory where the message is read from."]
+    #[doc = "@param cipher Pointer to `mlen` bytes of memory where the ciphertext is written to."]
+    #[doc = "@param mac Pointer to 16 bytes of memory where the mac is written to."]
+    pub fn Hacl_Chacha20Poly1305_256_aead_encrypt(
+        k: *mut u8,
+        n: *mut u8,
+        aadlen: u32,
+        aad: *mut u8,
+        mlen: u32,
+        m: *mut u8,
+        cipher: *mut u8,
+        mac: *mut u8,
+    );
+}
+extern "C" {
+    #[doc = "Decrypt a ciphertext `cipher` with key `k`."]
+    #[doc = ""]
+    #[doc = "The arguments `k`, `n`, `aadlen`, and `aad` are same in encryption/decryption."]
+    #[doc = "Note: Encryption and decryption can be executed in-place, i.e., `m` and `cipher` can point to the same memory."]
+    #[doc = ""]
+    #[doc = "If decryption succeeds, the resulting plaintext is stored in `m` and the function returns the success code 0."]
+    #[doc = "If decryption fails, the array `m` remains unchanged and the function returns the error code 1."]
+    #[doc = ""]
+    #[doc = "@param k Pointer to 32 bytes of memory where the AEAD key is read from."]
+    #[doc = "@param n Pointer to 12 bytes of memory where the AEAD nonce is read from."]
+    #[doc = "@param aadlen Length of the associated data."]
+    #[doc = "@param aad Pointer to `aadlen` bytes of memory where the associated data is read from."]
+    #[doc = ""]
+    #[doc = "@param mlen Length of the ciphertext."]
+    #[doc = "@param m Pointer to `mlen` bytes of memory where the message is written to."]
+    #[doc = "@param cipher Pointer to `mlen` bytes of memory where the ciphertext is read from."]
+    #[doc = "@param mac Pointer to 16 bytes of memory where the mac is read from."]
+    #[doc = ""]
+    #[doc = "@returns 0 on succeess; 1 on failure."]
+    pub fn Hacl_Chacha20Poly1305_256_aead_decrypt(
+        k: *mut u8,
+        n: *mut u8,
+        aadlen: u32,
+        aad: *mut u8,
+        mlen: u32,
+        m: *mut u8,
+        cipher: *mut u8,
+        mac: *mut u8,
+    ) -> u32;
 }

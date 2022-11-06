@@ -60,6 +60,8 @@ fn create_bindings(home_dir: &Path) {
         .allowlist_function("Hacl_Curve25519.*")
         .allowlist_function("Hacl_Hash_SHA2.*")
         .allowlist_function("Hacl_Streaming_SHA2.*")
+        .allowlist_function("Hacl_SHA3.*")
+        .allowlist_function("Hacl_Streaming_SHA3.*")
         // .allowlist_var("Spec_.*")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
@@ -124,6 +126,9 @@ fn build(out_path: &Path) {
         "Hacl_Curve25519_64.c",
         "Hacl_Hash_SHA2.c",
         "Hacl_Streaming_SHA2.c",
+        "Hacl_SHA3.c",
+        "Hacl_Streaming_SHA3.c",
+        "Lib_Memzero0.c"
     ];
     let mut all_files = files.clone();
 
@@ -181,6 +186,10 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_path = Path::new(&out_dir);
 
+    // Set re-run trigger for all of c
+    println!("cargo:rerun-if-changed=c");
+    println!("cargo:rerun-if-changed=h");
+
     // Moving C library to output to make build easier.
     copy_files(home_path, out_path);
     eprintln!(" >>> out {:?}", out_path);
@@ -190,9 +199,6 @@ fn main() {
 
     // Set library name to look up
     let library_name = "hacl";
-
-    // Set re-run trigger for all of c
-    println!("cargo:rerun-if-changed=c");
 
     // Generate new bindings. This is a no-op on Windows.
     create_bindings(home_path);
