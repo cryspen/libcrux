@@ -4,10 +4,11 @@ use libcrux_hacl::{
     Hacl_SHA3_sha3_512,
 };
 
-use crate::digest::Algorithm;
+use crate::digest::{digest_size, Algorithm};
 
 pub fn hacl_hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> [u8; LEN] {
     let mut digest = [0u8; LEN];
+    assert_eq!(LEN, digest_size(alg), "Invalid output digest size");
     match alg {
         Algorithm::Sha1 => todo!(),
         Algorithm::Sha224 => unsafe {

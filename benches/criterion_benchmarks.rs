@@ -129,12 +129,41 @@ fn jasmin_sha3(_: &mut Criterion) {}
 
 fn sha2(c: &mut Criterion) {
     jasmin_sha2(c);
+    c.bench_function("SHA2 224 HACL", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha2_224Digest = hacl_hash(Algorithm::Sha224, &payload);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
     c.bench_function("SHA2 256 HACL", |b| {
         b.iter_batched(
             || randombytes(3756),
             |payload| {
-                let _zz: [u8; digest_size(Algorithm::Sha256)] =
-                    hacl_hash(Algorithm::Sha256, &payload);
+                let _zz: Sha2_256Digest = hacl_hash(Algorithm::Sha256, &payload);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    c.bench_function("SHA2 384 HACL", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha2_384Digest = hacl_hash(Algorithm::Sha384, &payload);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    c.bench_function("SHA2 512 HACL", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha2_512Digest = hacl_hash(Algorithm::Sha512, &payload);
             },
             BatchSize::SmallInput,
         )
@@ -143,12 +172,41 @@ fn sha2(c: &mut Criterion) {
 
 fn sha3(c: &mut Criterion) {
     jasmin_sha3(c);
+    c.bench_function("SHA3 224 HACL", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha3_224Digest = hacl_hash(Algorithm::Sha3_224, &payload);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
     c.bench_function("SHA3 256 HACL", |b| {
         b.iter_batched(
             || randombytes(3756),
             |payload| {
-                let _zz: [u8; digest_size(Algorithm::Sha3_256)] =
-                    hacl_hash(Algorithm::Sha3_256, &payload);
+                let _zz: Sha3_256Digest = hacl_hash(Algorithm::Sha3_256, &payload);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    c.bench_function("SHA3 384 HACL", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha3_384Digest = hacl_hash(Algorithm::Sha3_384, &payload);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    c.bench_function("SHA3 512 HACL", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha3_512Digest = hacl_hash(Algorithm::Sha3_512, &payload);
             },
             BatchSize::SmallInput,
         )
