@@ -93,13 +93,21 @@ fn build(out_path: &Path) {
         "sha256.s",
         "x25519_ref.s",
         "x25519_mulx.s",
+        "sha3_224_ref.s",
         "sha3_256_ref.s",
+        "sha3_384_ref.s",
+        "sha3_512_ref.s",
     ];
     let mut all_files = files.clone();
 
     // Platform detection
     if cfg!(simd256) {
-        let files256 = svec!["sha3_256_avx2.s",];
+        let files256 = svec![
+            "sha3_224_avx2.s",
+            "sha3_256_avx2.s",
+            "sha3_384_avx2.s",
+            "sha3_512_avx2.s",
+        ];
         all_files.extend_from_slice(&files256);
 
         let mut simd256_flags = vec![];

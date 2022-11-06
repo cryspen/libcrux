@@ -81,7 +81,12 @@ impl Algorithm {
     }
 }
 
-pub fn hash<const LEN:usize>(alg: Algorithm, _payload: &[u8]) -> [u8; LEN] {
+pub type Sha3_224Digest = [u8; digest_size(Algorithm::Sha3_224)];
+pub type Sha3_256Digest = [u8; digest_size(Algorithm::Sha3_256)];
+pub type Sha3_384Digest = [u8; digest_size(Algorithm::Sha3_384)];
+pub type Sha3_512Digest = [u8; digest_size(Algorithm::Sha3_512)];
+
+pub fn hash<const LEN: usize>(alg: Algorithm, _payload: &[u8]) -> [u8; LEN] {
     match alg {
         Algorithm::Sha1 => todo!(),
         Algorithm::Sha224 => todo!(),

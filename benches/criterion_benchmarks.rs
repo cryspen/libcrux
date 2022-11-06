@@ -5,12 +5,13 @@ extern crate rand;
 
 use criterion::{BatchSize, Criterion};
 use libcrux::{
-    digest::{self, digest_size, Algorithm},
-    hacl::{self, sha2::hacl_hash},
+    digest::*,
+    hacl::{self, sha::hacl_hash},
 };
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use libcrux::jasmin::{
+    sha::hash as libjade_hash,
     sha2::sha256 as libjade_sha256,
     sha3::sha3_256 as libjade_sha3_256,
     x25519::{x25519 as libjade_x25519, x25519_base},
@@ -82,11 +83,41 @@ fn x25519(c: &mut Criterion) {
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 fn jasmin_sha3(c: &mut Criterion) {
+    c.bench_function("SHA3 224 Jasmin", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha3_224Digest = libjade_hash(Algorithm::Sha3_224, &payload).unwrap();
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
     c.bench_function("SHA3 256 Jasmin", |b| {
         b.iter_batched(
             || randombytes(3756),
             |payload| {
-                let _zz = libjade_sha3_256(&payload).unwrap();
+                let _zz: Sha3_256Digest = libjade_hash(Algorithm::Sha3_256, &payload).unwrap();
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    c.bench_function("SHA3 384 Jasmin", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha3_384Digest = libjade_hash(Algorithm::Sha3_384, &payload).unwrap();
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    c.bench_function("SHA3 512 Jasmin", |b| {
+        b.iter_batched(
+            || randombytes(3756),
+            |payload| {
+                let _zz: Sha3_512Digest = libjade_hash(Algorithm::Sha3_512, &payload).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -125,8 +156,8 @@ fn sha3(c: &mut Criterion) {
 }
 
 fn benchmarks(c: &mut Criterion) {
-    // x25519(c);
-    // sha2(c);
+    x25519(c);
+    sha2(c);
     sha3(c);
 }
 

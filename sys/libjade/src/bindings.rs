@@ -8,10 +8,22 @@ pub const JADE_SCALARMULT_CURVE25519_AMD64_REF5_ALGNAME: &[u8; 11usize] = b"Curv
 pub const JADE_SCALARMULT_CURVE25519_AMD64_MULX_BYTES: u32 = 32;
 pub const JADE_SCALARMULT_CURVE25519_AMD64_MULX_SCALARBYTES: u32 = 32;
 pub const JADE_SCALARMULT_CURVE25519_AMD64_MULX_ALGNAME: &[u8; 11usize] = b"Curve25519\0";
+pub const JADE_HASH_SHA3_224_AMD64_REF_BYTES: u32 = 28;
+pub const JADE_HASH_SHA3_224_AMD64_REF_ALGNAME: &[u8; 9usize] = b"SHA3-224\0";
 pub const JADE_HASH_SHA3_256_AMD64_REF_BYTES: u32 = 32;
 pub const JADE_HASH_SHA3_256_AMD64_REF_ALGNAME: &[u8; 9usize] = b"SHA3-256\0";
+pub const JADE_HASH_SHA3_384_AMD64_REF_BYTES: u32 = 48;
+pub const JADE_HASH_SHA3_384_AMD64_REF_ALGNAME: &[u8; 9usize] = b"SHA3-384\0";
+pub const JADE_HASH_SHA3_512_AMD64_REF_BYTES: u32 = 64;
+pub const JADE_HASH_SHA3_512_AMD64_REF_ALGNAME: &[u8; 9usize] = b"SHA3-512\0";
+pub const JADE_HASH_SHA3_224_AMD64_AVX2_BYTES: u32 = 28;
+pub const JADE_HASH_SHA3_224_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-224\0";
 pub const JADE_HASH_SHA3_256_AMD64_AVX2_BYTES: u32 = 32;
 pub const JADE_HASH_SHA3_256_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-256\0";
+pub const JADE_HASH_SHA3_384_AMD64_AVX2_BYTES: u32 = 48;
+pub const JADE_HASH_SHA3_384_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-384\0";
+pub const JADE_HASH_SHA3_512_AMD64_AVX2_BYTES: u32 = 64;
+pub const JADE_HASH_SHA3_512_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-512\0";
 extern "C" {
     pub fn jade_hash_sha256_amd64_ref(
         out: *mut u8,
@@ -46,6 +58,13 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    pub fn jade_hash_sha3_224_amd64_ref(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
     pub fn jade_hash_sha3_256_amd64_ref(
         out: *mut u8,
         in_: *mut u8,
@@ -53,7 +72,42 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    pub fn jade_hash_sha3_384_amd64_ref(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_512_amd64_ref(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_224_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
     pub fn jade_hash_sha3_256_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_384_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_512_amd64_avx2(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
