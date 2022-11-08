@@ -45,6 +45,10 @@ fn create_bindings(home_dir: &Path) {
         .allowlist_var("JADE_SCALARMULT_CURVE25519_.*")
         .allowlist_function("jade_hash_sha3_.*")
         .allowlist_var("JADE_HASH_SHA3_.*")
+        .allowlist_function("jade_onetimeauth_poly1305_.*")
+        .allowlist_var("JADE_ONETIMEAUTH_POLY1305_.*")
+        .allowlist_function("jade_stream_chacha_chacha20.*")
+        .allowlist_var("JADE_STREAM_CHACHA_CHACHA20_.*")
         // Block everything we don't need or define ourselves.
         .blocklist_type("__.*")
         // Disable tests to avoid warnings and keep it portable
@@ -97,6 +101,8 @@ fn build(out_path: &Path) {
         "sha3_256_ref.s",
         "sha3_384_ref.s",
         "sha3_512_ref.s",
+        "chacha20_ref.s",
+        "poly1305_ref.s",
     ];
     let mut all_files = files.clone();
 
@@ -107,12 +113,22 @@ fn build(out_path: &Path) {
             "sha3_256_avx2.s",
             "sha3_384_avx2.s",
             "sha3_512_avx2.s",
+            "chacha20_avx2.s",
+            "poly1305_avx2.s",
         ];
         all_files.extend_from_slice(&files256);
 
         let mut simd256_flags = vec![];
         append_simd256_flags(&mut simd256_flags);
         compile_files(&files256, out_path, &simd256_flags);
+    }
+    if cfg!(simd128) {
+        let files128 = svec!["chacha20_avx.s", "poly1305_avx.s",];
+        all_files.extend_from_slice(&files128);
+
+        let mut simd128_flags = vec![];
+        append_simd128_flags(&mut simd128_flags);
+        compile_files(&files128, out_path, &simd128_flags);
     }
 
     let mut object_files = vec![];
