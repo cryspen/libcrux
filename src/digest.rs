@@ -81,6 +81,11 @@ impl Algorithm {
     }
 }
 
+pub type Sha2_224Digest = [u8; digest_size(Algorithm::Sha3_224)];
+pub type Sha2_256Digest = [u8; digest_size(Algorithm::Sha3_256)];
+pub type Sha2_384Digest = [u8; digest_size(Algorithm::Sha3_384)];
+pub type Sha2_512Digest = [u8; digest_size(Algorithm::Sha3_512)];
+
 pub type Sha3_224Digest = [u8; digest_size(Algorithm::Sha3_224)];
 pub type Sha3_256Digest = [u8; digest_size(Algorithm::Sha3_256)];
 pub type Sha3_384Digest = [u8; digest_size(Algorithm::Sha3_384)];
