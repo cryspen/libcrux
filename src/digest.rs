@@ -1,3 +1,5 @@
+use crate::hacl;
+
 #[derive(Debug)]
 pub enum Error {
     InvalidStateFinished,
@@ -90,8 +92,12 @@ pub type Sha3_224Digest = [u8; digest_size(Algorithm::Sha3_224)];
 pub type Sha3_256Digest = [u8; digest_size(Algorithm::Sha3_256)];
 pub type Sha3_384Digest = [u8; digest_size(Algorithm::Sha3_384)];
 pub type Sha3_512Digest = [u8; digest_size(Algorithm::Sha3_512)];
+// Single-shot API
 
+/// Create the digest for the given `data` and mode `alg`.
+/// The output has length `get_digest_size(alg)`.
 pub fn hash<const LEN: usize>(alg: Algorithm, _payload: &[u8]) -> [u8; LEN] {
+    assert!(LEN == digest_size(alg));
     match alg {
         Algorithm::Sha1 => todo!(),
         Algorithm::Sha224 => todo!(),
@@ -105,4 +111,16 @@ pub fn hash<const LEN: usize>(alg: Algorithm, _payload: &[u8]) -> [u8; LEN] {
         Algorithm::Sha3_384 => todo!(),
         Algorithm::Sha3_512 => todo!(),
     }
+}
+
+// SHAKE messages from SHA 3
+
+/// SHAKE 128
+pub fn shake128(data: &[u8], out_len: usize) -> Vec<u8> {
+    hacl::hash::shake128(data, out_len)
+}
+
+/// SHAKE 256
+pub fn shake256(data: &[u8], out_len: usize) -> Vec<u8> {
+    hacl::hash::shake256(data, out_len)
 }

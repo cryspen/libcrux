@@ -11,4 +11,4 @@
 //! implementations, while abstracting over a number of parameters such as prime
 //! modulos, system bitwidth and curve-defining parameters.
 
-mod bls12;
+pub use au_curves::*;

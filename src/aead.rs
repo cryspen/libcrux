@@ -1,5 +1,8 @@
 use crate::hacl;
 
+pub mod chacha20poly1305;
+use chacha20poly1305::*;
+
 /// The AEAD Algorithm Identifier.
 #[derive(Clone, Copy, PartialEq, Debug)]
 #[repr(u32)]

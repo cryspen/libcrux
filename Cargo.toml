@@ -10,7 +10,9 @@ license = "Apache2.0"
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [dependencies]
+hacspec-lib = { git = "https://github.com/hacspec/hacspec" }
 libcrux-hacl = { path = "sys/hacl" }
+au_curves = { path = "au_curves" }
 log = "0.4"
 
 [target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]

@@ -6,8 +6,8 @@ mod hw_detection;
 
 // TODO: Make languages private
 
-// Coq
-pub mod cobra;
+// AU Curves
+pub mod au_curves;
 
 // HACL
 pub mod hacl;

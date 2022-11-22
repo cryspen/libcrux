@@ -62,6 +62,7 @@ fn create_bindings(home_dir: &Path) {
         .allowlist_function("Hacl_Streaming_SHA2.*")
         .allowlist_function("Hacl_SHA3.*")
         .allowlist_function("Hacl_Streaming_SHA3.*")
+        .allowlist_function("Hacl_Blake2.*")
         // .allowlist_var("Spec_.*")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
@@ -128,7 +129,8 @@ fn build(out_path: &Path) {
         "Hacl_Streaming_SHA2.c",
         "Hacl_SHA3.c",
         "Hacl_Streaming_SHA3.c",
-        "Lib_Memzero0.c"
+        "Lib_Memzero0.c",
+        "Hacl_Hash_Blake2.c",
     ];
     let mut all_files = files.clone();
 
@@ -138,6 +140,7 @@ fn build(out_path: &Path) {
             "Hacl_Chacha20Poly1305_128.c",
             "Hacl_Chacha20_Vec128.c",
             "Hacl_Poly1305_128.c",
+            "Hacl_Hash_Blake2s_128.c",
         ];
         all_files.extend_from_slice(&files128);
 
@@ -150,6 +153,7 @@ fn build(out_path: &Path) {
             "Hacl_Chacha20Poly1305_256.c",
             "Hacl_Chacha20_Vec256.c",
             "Hacl_Poly1305_256.c",
+            "Hacl_Hash_Blake2b_256.c",
         ];
         all_files.extend_from_slice(&files256);
 

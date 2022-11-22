@@ -6,7 +6,7 @@ extern crate rand;
 use criterion::{BatchSize, Criterion};
 use libcrux::{
     digest::*,
-    hacl::{self, sha::hacl_hash},
+    hacl::{self, hash::hacl_hash},
 };
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

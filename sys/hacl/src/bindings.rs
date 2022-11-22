@@ -286,3 +286,109 @@ extern "C" {
 extern "C" {
     pub fn Hacl_Streaming_SHA3_free_256(s: *mut Hacl_Streaming_SHA2_state_sha2_384);
 }
+extern "C" {
+    pub fn Hacl_Blake2b_32_blake2b_init(hash: *mut u64, kk: u32, nn: u32);
+}
+extern "C" {
+    pub fn Hacl_Blake2b_32_blake2b_update_key(
+        wv: *mut u64,
+        hash: *mut u64,
+        kk: u32,
+        k: *mut u8,
+        ll: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Blake2b_32_blake2b_update_multi(
+        len: u32,
+        wv: *mut u64,
+        hash: *mut u64,
+        prev: FStar_UInt128_uint128,
+        blocks: *mut u8,
+        nb: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Blake2b_32_blake2b_update_last(
+        len: u32,
+        wv: *mut u64,
+        hash: *mut u64,
+        prev: FStar_UInt128_uint128,
+        rem: u32,
+        d: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_Blake2b_32_blake2b_finish(nn: u32, output: *mut u8, hash: *mut u64);
+}
+extern "C" {
+    #[doc = "Write the BLAKE2b digest of message `d` using key `k` into `output`."]
+    #[doc = ""]
+    #[doc = "@param nn Length of the to-be-generated digest with 1 <= `nn` <= 64."]
+    #[doc = "@param output Pointer to `nn` bytes of memory where the digest is written to."]
+    #[doc = "@param ll Length of the input message."]
+    #[doc = "@param d Pointer to `ll` bytes of memory where the input message is read from."]
+    #[doc = "@param kk Length of the key. Can be 0."]
+    #[doc = "@param k Pointer to `kk` bytes of memory where the key is read from."]
+    pub fn Hacl_Blake2b_32_blake2b(
+        nn: u32,
+        output: *mut u8,
+        ll: u32,
+        d: *mut u8,
+        kk: u32,
+        k: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_Blake2s_32_blake2s_init(hash: *mut u32, kk: u32, nn: u32);
+}
+extern "C" {
+    pub fn Hacl_Blake2s_32_blake2s_update_key(
+        wv: *mut u32,
+        hash: *mut u32,
+        kk: u32,
+        k: *mut u8,
+        ll: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Blake2s_32_blake2s_update_multi(
+        len: u32,
+        wv: *mut u32,
+        hash: *mut u32,
+        prev: u64,
+        blocks: *mut u8,
+        nb: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Blake2s_32_blake2s_update_last(
+        len: u32,
+        wv: *mut u32,
+        hash: *mut u32,
+        prev: u64,
+        rem: u32,
+        d: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_Blake2s_32_blake2s_finish(nn: u32, output: *mut u8, hash: *mut u32);
+}
+extern "C" {
+    #[doc = "Write the BLAKE2s digest of message `d` using key `k` into `output`."]
+    #[doc = ""]
+    #[doc = "@param nn Length of to-be-generated digest with 1 <= `nn` <= 32."]
+    #[doc = "@param output Pointer to `nn` bytes of memory where the digest is written to."]
+    #[doc = "@param ll Length of the input message."]
+    #[doc = "@param d Pointer to `ll` bytes of memory where the input message is read from."]
+    #[doc = "@param kk Length of the key. Can be 0."]
+    #[doc = "@param k Pointer to `kk` bytes of memory where the key is read from."]
+    pub fn Hacl_Blake2s_32_blake2s(
+        nn: u32,
+        output: *mut u8,
+        ll: u32,
+        d: *mut u8,
+        kk: u32,
+        k: *mut u8,
+    );
+}

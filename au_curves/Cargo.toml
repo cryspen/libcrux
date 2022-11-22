@@ -1,0 +1,8 @@
+[package]
+name = "au_curves"
+version = "0.1.0"
+edition = "2021"
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+license = "Apache2.0"
+
+[dependencies]
