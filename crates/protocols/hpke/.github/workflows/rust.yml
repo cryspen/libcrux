@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
+          - macos-11
           - ubuntu-latest
           - windows-latest
 
@@ -37,7 +37,7 @@ jobs:
     - name: Run tests all features
       run: cargo test --release --verbose --all-features
     # Apple Silicon
-    - if: matrix.os == 'macos-latest'
+    - if: matrix.os == 'macos-11'
       run: |
         brew install pkg-config
         sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
@@ -47,13 +47,13 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Apple Silicon Build
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-11'
       run: |
         cargo build --target aarch64-apple-darwin --tests --verbose
         cargo build --release --target aarch64-apple-darwin --tests --verbose
     # ARM64 iOS
     - name: iOS aarch64
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-11'
       run: |
         cargo build --target aarch64-apple-ios --tests --verbose
         cargo build --release --target aarch64-apple-ios --tests --verbose
@@ -92,7 +92,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
+          - macos-11
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
