@@ -1,6 +1,8 @@
 use crate::hacl;
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub mod chacha20poly1305;
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use chacha20poly1305::*;
 
 /// The AEAD Algorithm Identifier.
