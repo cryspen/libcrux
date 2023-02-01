@@ -14,8 +14,8 @@ hpke-rs-crypto = { version = "0.1.1", path = "../traits" }
 # Rust crypto
 hkdf = { version = "0.12" }
 sha2 = { version = "0.10" }
-p256 = { version = "0.11", features = ["arithmetic", "ecdh"] }
-p384 = { version = "0.11" }
+p256 = { version = "0.12", features = ["arithmetic", "ecdh"] }
+p384 = { version = "0.12" }
 x25519-dalek-ng = { version = "1.1" }
 chacha20poly1305 = { version = "0.10" }
 aes-gcm = { version = "0.10" }

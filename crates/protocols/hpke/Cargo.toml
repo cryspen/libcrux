@@ -14,9 +14,7 @@ log = "0.4"
 serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 tls_codec = { version = "0.2.0", features = ["derive"], optional = true }
-# zeroize 1.5 is incompatible with most of Rust Crypto right now.
-# See https://github.com/RustCrypto/utils/issues/723
-zeroize = { version = "1.4", features = ["zeroize_derive"] }
+zeroize = { version = "1.5", features = ["zeroize_derive"] }
 hpke-rs-crypto = { version = "0.1.1", path = "./traits" }
 
 [features]
@@ -38,6 +36,9 @@ rand = { version = "0.8" }
 getrandom = { version = "0.2", features = ["js"] }
 pretty_env_logger = "0.4"
 criterion = { version = "0.4", features = ["html_reports"] }
+
+[patch.crates-io.tls_codec]
+git = "https://github.com/RustCrypto/formats.git"
 
 [[bench]]
 name = "bench"
