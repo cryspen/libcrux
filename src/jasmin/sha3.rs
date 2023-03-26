@@ -6,6 +6,7 @@ use crate::{
     hw_detection::simd256_support,
 };
 
+#[cfg(simd256)]
 macro_rules! sha3_simd256 {
     ($name:ident, $alg:expr, $avx2_fun:expr, $ref_fun:expr) => {
         pub fn $name(input: &[u8]) -> [u8; digest_size($alg)] {

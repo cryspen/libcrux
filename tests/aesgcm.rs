@@ -5,13 +5,18 @@ use libcrux::{
         Algorithm::{Aes128Gcm, Aes256Gcm},
         Iv, Key,
     },
-    digest,
+    aes_ni_support, digest,
     drbg::Drbg,
 };
 
 #[cfg(aes_ni)]
 #[test]
 fn aesgcm_self_test() {
+    if !aes_ni_support() {
+        eprintln!("AES not supported on this architecture.");
+        return;
+    }
+
     let _ = pretty_env_logger::try_init();
 
     let orig_msg = b"hacspec rulez";
@@ -44,6 +49,11 @@ fn aesgcm_self_test() {
 #[cfg(aes_ni)]
 #[test]
 fn aesgcm_self_test_rand() {
+    if !aes_ni_support() {
+        eprintln!("AES not supported on this architecture.");
+        return;
+    }
+
     let _ = pretty_env_logger::try_init();
 
     let orig_msg = b"hacspec rulez";
