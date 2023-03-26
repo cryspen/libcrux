@@ -48,7 +48,7 @@ pub enum Algorithm {
 pub(crate) mod x25519 {
     use super::Error;
 
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
     pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
         use crate::hw_detection::x25519_cpu_support;
         use hacl::hazmat::curve25519;
@@ -66,6 +66,21 @@ pub(crate) mod x25519 {
             // crate::jasmin::x25519::derive(s, p)
             //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
         }
+    }
+
+    #[cfg(any(
+        all(target_arch = "x86_64", any(not(bmi2), not(adx))),
+        target_arch = "x86"
+    ))]
+    pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
+        use hacl::hazmat::curve25519;
+        // On x64 we use vale if available or hacl as fallback.
+        // Jasmin exists but is not verified yet.
+
+        curve25519::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+        // XXX: not verified yet
+        // crate::jasmin::x25519::derive(s, p)
+        //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
     }
 
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
