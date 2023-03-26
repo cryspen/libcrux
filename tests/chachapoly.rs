@@ -171,6 +171,10 @@ fn wycheproof() {
                     Err(e) => {
                         if invalid_iv {
                             assert_eq!(e, Error::InvalidIv);
+                        } else if matches!(e, Error::UnsupportedAlgorithm) {
+                            eprintln!("AES not supported on this architecture.");
+                            *skipped_tests += 1;
+                            continue;
                         } else {
                             println!("Encrypt failed unexpectedly {:?}", e);
                             assert!(false);
