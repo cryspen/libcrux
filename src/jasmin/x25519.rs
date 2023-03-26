@@ -1,68 +1,80 @@
-use libjade::{jade_scalarmult_curve25519_amd64_mulx, jade_scalarmult_curve25519_amd64_ref5};
+// Allow dead code for now.
+// The libjade code here isn't verified yet and thus isn't used.
+#![allow(dead_code)]
 
-use crate::hw_detection::x25519_cpu_support;
+use libjade_sys::{
+    jade_scalarmult_curve25519_amd64_ref5, jade_scalarmult_curve25519_amd64_ref5_base,
+};
 
-type Curve25519Point = [u8; 32];
-type Curve25519Scalar = [u8; 32];
+type Point = [u8; 32];
+type Scalar = [u8; 32];
 
-pub fn x25519(scalar: &[u8], point: &[u8]) -> Result<Curve25519Point, &'static str> {
-    let mut result = Curve25519Point::default();
-    let r = if x25519_cpu_support() {
-        log::trace!("Jasmin x25519 mulx");
-        unsafe {
-            jade_scalarmult_curve25519_amd64_mulx(
-                result.as_mut_ptr(),
-                scalar.as_ptr() as _,
-                point.as_ptr() as _,
-            )
-        }
-    } else {
-        log::trace!("Jasmin x25519 ref");
-        unsafe {
-            jade_scalarmult_curve25519_amd64_ref5(
-                result.as_mut_ptr(),
-                scalar.as_ptr() as _,
-                point.as_ptr() as _,
-            )
-        }
-    };
-    if r != 0 {
+pub(crate) fn derive(scalar: &Scalar, point: &Point) -> Result<Point, &'static str> {
+    let mut result = Point::default();
+    log::trace!("Jasmin x25519 ref");
+    if unsafe {
+        jade_scalarmult_curve25519_amd64_ref5(
+            result.as_mut_ptr(),
+            scalar.as_ptr() as _,
+            point.as_ptr() as _,
+        )
+    } != 0
+    {
         Err("Error while computing x25519.")
     } else {
         Ok(result)
     }
 }
 
-pub fn x25519_base(scalar: &[u8]) -> Result<Curve25519Point, &'static str> {
-    let mut result = Curve25519Point::default();
-    let base = [
-        0x09u8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00,
-    ];
+pub(crate) fn secret_to_public(scalar: &Scalar) -> Result<Point, &'static str> {
+    log::trace!("Jasmin x25519 ref");
+    let mut result = Point::default();
+    if unsafe {
+        jade_scalarmult_curve25519_amd64_ref5_base(result.as_mut_ptr(), scalar.as_ptr() as _)
+    } != 0
+    {
+        Err("Error while computing x25519 base.")
+    } else {
+        Ok(result)
+    }
+}
 
-    let r = if x25519_cpu_support() {
+/// This module requires mulx support, i.e. [`x25519_cpu_support`] needs to be
+/// checked before calling into this module.
+pub(crate) mod mulx {
+    use libjade_sys::{
+        jade_scalarmult_curve25519_amd64_mulx, jade_scalarmult_curve25519_amd64_mulx_base,
+    };
+
+    use super::{Point, Scalar};
+
+    pub fn derive(scalar: &Scalar, point: &Point) -> Result<Point, &'static str> {
         log::trace!("Jasmin x25519 mulx");
-        unsafe {
+        let mut result = Point::default();
+        if unsafe {
             jade_scalarmult_curve25519_amd64_mulx(
                 result.as_mut_ptr(),
                 scalar.as_ptr() as _,
-                base.as_ptr() as _,
+                point.as_ptr() as _,
             )
+        } == 0
+        {
+            Ok(result)
+        } else {
+            Err("Error while computing x25519.")
         }
-    } else {
-        log::trace!("Jasmin x25519 ref");
-        unsafe {
-            jade_scalarmult_curve25519_amd64_ref5(
-                result.as_mut_ptr(),
-                scalar.as_ptr() as _,
-                base.as_ptr() as _,
-            )
+    }
+
+    pub fn secret_to_public(scalar: &Scalar) -> Result<Point, &'static str> {
+        log::trace!("Jasmin x25519 mulx");
+        let mut result = Point::default();
+        if unsafe {
+            jade_scalarmult_curve25519_amd64_mulx_base(result.as_mut_ptr(), scalar.as_ptr() as _)
+        } == 0
+        {
+            Ok(result)
+        } else {
+            Err("Error while computing x25519 base.")
         }
-    };
-    if r != 0 {
-        Err("Error while computing x25519.")
-    } else {
-        Ok(result)
     }
 }

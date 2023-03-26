@@ -1,29 +1,72 @@
 [package]
 name = "libcrux"
-version = "0.0.1"
+version = "0.0.1-dev.1"
 edition = "2021"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
-license = "Apache2.0"
-
+license = "Apache-2.0"
+documentation = "https://docs.rs/libcrux/"
+description = "Formally Verified Cryptography"
+readme = "Readme.md"
+repository = "https://github.com/cryspen/libcrux"
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [dependencies]
-hacspec-lib = { git = "https://github.com/hacspec/hacspec" }
-libcrux-hacl = { path = "sys/hacl" }
-au_curves = { path = "au_curves" }
+hacspec-lib = { version = "0.1.0-beta.1", features = ["release"] }
+hacl = { version = "0.0.2-dev.1", features = ["hazmat"] }
+rand = { version = "0.8" }
 log = "0.4"
 
 [target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]
-libjade = { path = "sys/libjade" }
+libjade-sys = { version = "0.0.1-dev.1", path = "sys/libjade" }
 
 [dev-dependencies]
+libcrux = { path = ".", features = ["rand"] }
 pretty_env_logger = "0.4"
 rand = { version = "0.8" }
 rand_core = { version = "0.6" }
 criterion = "0.4"
+quickcheck = "1"
+quickcheck_macros = "1"
+serde_json = { version = "1.0" }
+serde = { version = "1.0", features = ["derive"] }
+# Benchmarking "RustCrypto"
+chacha20poly1305 = "0.10"
+sha2 = "0.10"
+x25519-dalek-ng = "1.1"
+sha3 = "0.10"
+# Benchmarking "Ring"
+ring = "0.16"
+# Benchmarking "OpenSSL"
+openssl = "0.10"
 
 [[bench]]
-name = "criterion_benchmarks"
+name = "sha2"
 harness = false
+
+[[bench]]
+name = "sha3"
+harness = false
+
+[[bench]]
+name = "x25519"
+harness = false
+
+[[bench]]
+name = "aead"
+harness = false
+
+[[bench]]
+name = "hpke"
+harness = false
+
+[features]
+hacspec = [] # re-export the hacspec lib
+rand = []
+
+# [patch.crates-io]
+# hacl = { path = "../../hacl-packages/rust" }
+
+# [patch.'https://github.com/hacspec/hacspec']
+# hacspec-lib = { path = "../../hacspec/lib" }

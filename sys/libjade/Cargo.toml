@@ -1,9 +1,10 @@
 [package]
-name = "libjade"
-version = "0.1.0"
+name = "libjade-sys"
+version = "0.0.1-dev.1"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
+description = "Rust bindings for libjade, a formally verified cryptographic library written in jasmin."
+license = "Apache-2.0"
 
 [dependencies]
 log = "0.4"
@@ -13,7 +14,7 @@ libc = { version = "0.2", default-features = false }
 fs_extra = "1.2"
 
 [target.'cfg(not(windows))'.build-dependencies]
-bindgen = "0.63"
+bindgen = "0.64"
 
 [dev-dependencies]
 pretty_env_logger = "0.4"

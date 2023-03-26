@@ -1,4 +1,8 @@
-use libjade::jade_hash_sha256_amd64_ref;
+// Allow dead code for now.
+// The libjade code here isn't verified yet and thus isn't used.
+#![allow(dead_code)]
+
+use libjade_sys::jade_hash_sha256_amd64_ref;
 
 type Sha256Digest = [u8; 32];
 

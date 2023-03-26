@@ -1,4 +1,28 @@
-use crate::hacl;
+//! # Hashing
+//!
+//! Depending on the platform and available features the most efficient implementation
+//! is chosen.
+//!
+//! ## SHA 2
+//!
+//! The HACL streaming implementations are used for all SHA2 variants on all platforms.
+//!
+//! ## SHA 3
+//!
+//! The portable HACL implementations are used unless running on an x64 CPU.
+//! On x64 CPUs the libjade implementation is used and if AVX2 is available, the
+//! optimised libjade implementation is used.
+
+use hacl::hazmat::{
+    blake2,
+    sha2::{
+        self,
+        streaming::{Sha224, Sha256, Sha384, Sha512},
+    },
+    sha3,
+};
+
+use crate::hw_detection::{simd128_support, simd256_support};
 
 #[derive(Debug)]
 pub enum Error {
@@ -83,44 +107,180 @@ impl Algorithm {
     }
 }
 
-pub type Sha2_224Digest = [u8; digest_size(Algorithm::Sha3_224)];
-pub type Sha2_256Digest = [u8; digest_size(Algorithm::Sha3_256)];
-pub type Sha2_384Digest = [u8; digest_size(Algorithm::Sha3_384)];
-pub type Sha2_512Digest = [u8; digest_size(Algorithm::Sha3_512)];
+pub type Sha2_224Digest = [u8; digest_size(Algorithm::Sha224)];
+pub type Sha2_256Digest = [u8; digest_size(Algorithm::Sha256)];
+pub type Sha2_384Digest = [u8; digest_size(Algorithm::Sha384)];
+pub type Sha2_512Digest = [u8; digest_size(Algorithm::Sha512)];
 
 pub type Sha3_224Digest = [u8; digest_size(Algorithm::Sha3_224)];
 pub type Sha3_256Digest = [u8; digest_size(Algorithm::Sha3_256)];
 pub type Sha3_384Digest = [u8; digest_size(Algorithm::Sha3_384)];
 pub type Sha3_512Digest = [u8; digest_size(Algorithm::Sha3_512)];
+
 // Single-shot API
 
+macro_rules! sha3_impl {
+    ($fun_name:ident, $output:ty, $jasmin_fun:expr, $hacl_fun:expr) => {
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+        pub fn $fun_name(payload: &[u8]) -> $output {
+            // On x64 we use Jasmin for AVX2 and fallback.
+            $jasmin_fun(payload)
+        }
+
+        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+        pub fn $fun_name(payload: &[u8]) -> $output {
+            // On all other platforms we use HACL
+            $hacl_fun(payload)
+        }
+    };
+}
+
+sha3_impl!(
+    sha3_224,
+    Sha3_224Digest,
+    crate::jasmin::sha3::sha3_224,
+    sha3::sha224
+);
+sha3_impl!(
+    sha3_256,
+    Sha3_256Digest,
+    crate::jasmin::sha3::sha3_256,
+    sha3::sha256
+);
+sha3_impl!(
+    sha3_384,
+    Sha3_384Digest,
+    crate::jasmin::sha3::sha3_384,
+    sha3::sha384
+);
+sha3_impl!(
+    sha3_512,
+    Sha3_512Digest,
+    crate::jasmin::sha3::sha3_512,
+    sha3::sha512
+);
+
 /// Create the digest for the given `data` and mode `alg`.
-/// The output has length `get_digest_size(alg)`.
-pub fn hash<const LEN: usize>(alg: Algorithm, _payload: &[u8]) -> [u8; LEN] {
-    assert!(LEN == digest_size(alg));
+/// The output has length [`digest_size(alg)`], i.e. blake2 returns a full-sized
+/// digest.
+///
+/// Note that this will return a vector on the heap. Use functions like [`sha2_256`]
+/// if you want an array.
+pub fn hash(alg: Algorithm, payload: &[u8]) -> Vec<u8> {
+    // Note that one-shot hacl functions are slower than streaming.
+    // So we only use streaming.
     match alg {
         Algorithm::Sha1 => todo!(),
-        Algorithm::Sha224 => todo!(),
-        Algorithm::Sha256 => todo!(),
-        Algorithm::Sha384 => todo!(),
-        Algorithm::Sha512 => todo!(),
-        Algorithm::Blake2s => todo!(),
-        Algorithm::Blake2b => todo!(),
-        Algorithm::Sha3_224 => todo!(),
-        Algorithm::Sha3_256 => todo!(),
-        Algorithm::Sha3_384 => todo!(),
-        Algorithm::Sha3_512 => todo!(),
+        Algorithm::Sha224 => sha2::sha224(payload).into(),
+        Algorithm::Sha256 => sha2::sha256(payload).into(),
+        Algorithm::Sha384 => sha2::sha384(payload).into(),
+        Algorithm::Sha512 => sha2::sha512(payload).into(),
+        Algorithm::Blake2s => blake2s(payload, &[]),
+        Algorithm::Blake2b => blake2b(payload, &[]),
+        Algorithm::Sha3_224 => sha3_224(payload).into(),
+        Algorithm::Sha3_256 => sha3_256(payload).into(),
+        Algorithm::Sha3_384 => sha3_384(payload).into(),
+        Algorithm::Sha3_512 => sha3_512(payload).into(),
     }
 }
+
+#[cfg(simd128)]
+fn blake2s_128<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
+    log::trace!("HACL Blake2s SIMD 128");
+    blake2::simd128::blake2s(payload, key)
+}
+
+#[cfg(not(simd128))]
+fn blake2s_128<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
+    log::trace!("Using fallback HACL Blake2s portable because SIMD 128 wasn't compiled");
+    blake2::blake2s::<LEN>(payload, key)
+}
+
+/// A simple wrapper to multiplex
+fn blake2s(payload: &[u8], key: &[u8]) -> Vec<u8> {
+    const DIGEST_LEN: usize = digest_size(Algorithm::Blake2s);
+    if simd128_support() {
+        blake2s_128::<DIGEST_LEN>(payload, key)
+    } else {
+        blake2::blake2s::<DIGEST_LEN>(payload, key)
+    }
+    .into()
+}
+
+#[cfg(simd256)]
+fn blake2b_256<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
+    log::trace!("HACL Blake2b SIMD 256");
+    blake2::simd256::blake2b(payload, key)
+}
+
+#[cfg(not(simd256))]
+fn blake2b_256<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
+    log::trace!("Using fallback HACL Blake2b portable because SIMD 256 wasn't compiled");
+    blake2::blake2b::<LEN>(payload, key)
+}
+
+/// Blake2b
+fn blake2b(payload: &[u8], key: &[u8]) -> Vec<u8> {
+    const DIGEST_LEN: usize = digest_size(Algorithm::Blake2b);
+    if simd256_support() {
+        blake2b_256::<DIGEST_LEN>(payload, key)
+    } else {
+        blake2::blake2b::<DIGEST_LEN>(payload, key)
+    }
+    .into()
+}
+
+/// SHA2 256
+pub fn sha2_256(payload: &[u8]) -> Sha2_256Digest {
+    sha2::sha256(payload)
+}
+
+// Streaming API - This is the recommended one.
+macro_rules! impl_streaming {
+    ($name:ident, $state:ty, $result:ty) => {
+        pub struct $name {
+            state: $state,
+        }
+        impl $name {
+            /// Initialize a new digest state.
+            pub fn new() -> Self {
+                Self {
+                    state: <$state>::new(),
+                }
+            }
+
+            /// Add the `payload` to the digest.
+            pub fn update(&mut self, payload: &[u8]) {
+                self.state.update(payload);
+            }
+
+            /// Get the digest.
+            ///
+            /// Note that the digest state can be continued to be used, to extend the
+            /// digest.
+            pub fn finish(&mut self) -> $result {
+                self.state.finish()
+            }
+        }
+    };
+}
+impl_streaming!(Sha2_224, Sha224, Sha2_224Digest);
+impl_streaming!(Sha2_256, Sha256, Sha2_256Digest);
+impl_streaming!(Sha2_384, Sha384, Sha2_384Digest);
+impl_streaming!(Sha2_512, Sha512, Sha2_512Digest);
 
 // SHAKE messages from SHA 3
 
 /// SHAKE 128
-pub fn shake128(data: &[u8], out_len: usize) -> Vec<u8> {
-    hacl::hash::shake128(data, out_len)
+///
+/// The caller must define the size of the output in the return type.
+pub fn shake128<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
+    sha3::shake128(data)
 }
 
 /// SHAKE 256
-pub fn shake256(data: &[u8], out_len: usize) -> Vec<u8> {
-    hacl::hash::shake256(data, out_len)
+///
+/// The caller must define the size of the output in the return type.
+pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
+    sha3::shake256(data)
 }
