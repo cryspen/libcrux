@@ -76,7 +76,7 @@ impl HpkeCrypto for HpkeRustCrypto {
                     .to_vec())
             }
             KemAlgorithm::DhKemP256 => {
-                let sk = SecretKey::from_be_bytes(sk).map_err(|_| Error::KemInvalidSecretKey)?;
+                let sk = SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
                 let pk = PublicKey::from_sec1_bytes(pk).map_err(|_| Error::KemInvalidPublicKey)?;
                 Ok(diffie_hellman(sk.to_nonzero_scalar(), pk.as_affine())
                     .raw_secret_bytes()
@@ -99,7 +99,7 @@ impl HpkeCrypto for HpkeRustCrypto {
                 Ok(X25519PublicKey::from(&sk).as_bytes().to_vec())
             }
             KemAlgorithm::DhKemP256 => {
-                let sk = SecretKey::from_be_bytes(sk).map_err(|_| Error::KemInvalidSecretKey)?;
+                let sk = SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
                 Ok(sk.public_key().to_encoded_point(false).as_bytes().into())
             }
             _ => Err(Error::UnknownKemAlgorithm),
@@ -111,7 +111,7 @@ impl HpkeCrypto for HpkeRustCrypto {
         match alg {
             KemAlgorithm::DhKem25519 => Ok(X25519StaticSecret::new(&mut *rng).to_bytes().to_vec()),
             KemAlgorithm::DhKemP256 => {
-                Ok(SecretKey::random(&mut *rng).to_be_bytes().as_slice().into())
+                Ok(SecretKey::random(&mut *rng).to_bytes().as_slice().into())
             }
             _ => Err(Error::UnknownKemAlgorithm),
         }
@@ -119,7 +119,7 @@ impl HpkeCrypto for HpkeRustCrypto {
 
     fn kem_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
-            KemAlgorithm::DhKemP256 => SecretKey::from_be_bytes(sk)
+            KemAlgorithm::DhKemP256 => SecretKey::from_slice(sk)
                 .map_err(|_| Error::KemInvalidSecretKey)
                 .map(|_| sk.into()),
             _ => Err(Error::UnknownKemAlgorithm),
