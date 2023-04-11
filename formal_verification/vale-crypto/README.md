@@ -10,7 +10,7 @@ Each assembly implementation in Vale is verified for:
 * Secret Independence, i.e. that control flow and memory accesses do not depend on secrets
 
 Vale Crypto includes verified Intel assembly implementations of
-AES-GCM, SHA-2, Poly1305, and the field arithmetic used in Curve25510
+AES-GCM, SHA-2, Poly1305, and the field arithmetic used in Curve25519
 
 ## Vale Algorithms in libcrux
 
