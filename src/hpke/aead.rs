@@ -30,8 +30,11 @@
     non_upper_case_globals
 )]
 
-use crate::{hmac::tag_size, specs::aead::*};
-use hacspec_lib::*;
+use crate::{
+    aead::{self, *},
+    hmac::tag_size,
+    hpke::hacspec_lib::*,
+};
 
 use super::errors::*;
 
@@ -140,8 +143,9 @@ pub fn AeadSeal(
     pt: &Bytes,
 ) -> HpkeBytesResult {
     let algorithm = alg_for_aead(aead_id)?;
-    match encrypt(algorithm, key, pt, nonce.clone(), aad) {
-        Ok((ct, tag)) => HpkeBytesResult::Ok(ct.concat_owned(tag)),
+    let key = aead::Key::from_slice(algorithm, key)?;
+    match encrypt_detached(&key, pt, Iv::new(nonce)?, aad) {
+        Ok((tag, ct)) => HpkeBytesResult::Ok(Bytes(ct).concat_slice(tag)),
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
     }
 }
@@ -158,9 +162,10 @@ pub fn AeadOpen(
     ct: &Bytes,
 ) -> HpkeBytesResult {
     let algorithm = alg_for_aead(aead_id)?;
+    let key = aead::Key::from_slice(algorithm, key)?;
     let (ct, tag) = ct.clone().split_off(ct.len() - Nt(aead_id));
-    match decrypt(algorithm, key, &ct, nonce.clone(), aad, &tag) {
-        Ok(pt) => HpkeBytesResult::Ok(pt),
+    match decrypt_detached(&key, ct, Iv::new(nonce)?, aad, &Tag::from_slice(tag)?) {
+        Ok(pt) => HpkeBytesResult::Ok(pt.into()),
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
     }
 }

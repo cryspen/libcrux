@@ -1,5 +1,7 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
+// XXX: temporary hacspec lib
+pub(crate) mod hacspec_lib;
 use hacspec_lib::*;
 
 use super::aead::*;
@@ -37,7 +39,7 @@ pub struct HPKEConfig(pub Mode, pub KEM, pub KDF, pub AEAD);
 
 pub type KemOutput = Bytes;
 pub type Ciphertext = Bytes;
-#[derive(Default)]
+// #[derive(Default)]
 pub struct HPKECiphertext(pub KemOutput, pub Ciphertext);
 
 pub type HpkePrivateKey = Bytes;
@@ -161,9 +163,9 @@ pub type EmptyResult = Result<(), HpkeError>;
 fn suite_id(config: HPKEConfig) -> Bytes {
     let HPKEConfig(_, kem, kdf, aead) = config;
     create_bytes!(0x48u8, 0x50u8, 0x4bu8, 0x45u8) // "HPKE"
-        .concat_owned(kem_value(kem).into_bytes())
-        .concat_owned(kdf_value(kdf).into_bytes())
-        .concat_owned(hpke_aead_value(aead).into_bytes())
+        .concat_owned(Bytes::from(kem_value(kem)))
+        .concat_owned(Bytes::from(kdf_value(kdf)))
+        .concat_owned(Bytes::from(hpke_aead_value(aead)))
 }
 
 /// The default PSK ""
@@ -632,10 +634,10 @@ pub fn SetupAuthPSKR(
 ///   return xor(self.base_nonce, seq_bytes)
 /// ```
 pub fn ComputeNonce(aead_id: AEAD, base_nonce: &Nonce, seq: SequenceCounter) -> Bytes {
-    let seq = U32(seq).into_bytes();
+    let seq = Bytes::from(U32(seq));
     let Nn = Nn(aead_id);
-    let mut seq_bytes = Bytes::new(Nn);
-    seq_bytes = seq_bytes.update_slice(Nn - 4, &seq, 0, 4);
+    let seq_bytes = Bytes::new(Nn);
+    let seq_bytes = seq_bytes.update_slice(Nn - 4, &seq, 0, 4);
     base_nonce.clone() ^ seq_bytes
 }
 

@@ -22,6 +22,7 @@ pub mod kem;
 pub mod signature;
 
 // hacspec utils
+#[cfg(feature = "hacspec")]
 pub(crate) mod specs;
 
 /// Re-export hacspec functions with the hacspec feature.

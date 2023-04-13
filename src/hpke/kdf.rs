@@ -1,15 +1,9 @@
 #![doc = include_str!("KDF_Readme.md")]
 #![allow(non_snake_case, non_camel_case_types)]
 
-use hacspec_lib::*;
-
 use super::errors::*;
-use crate::{
-    hkdf::{Algorithm, Error as CryptoError},
-    specs,
-};
-
-type CryptoResult = Result<Bytes, CryptoError>;
+use super::hacspec_lib::*;
+use crate::hkdf::Algorithm;
 
 /// ## Key Derivation Functions (KDFs)
 ///
@@ -55,11 +49,11 @@ pub type Info = Bytes;
 /// Get the numeric value of the `kdf_id`.
 ///
 /// See [`KDF`] for details.
-pub fn kdf_value(kdf_id: KDF) -> U16 {
+pub fn kdf_value(kdf_id: KDF) -> u16 {
     match kdf_id {
-        KDF::HKDF_SHA256 => U16(0x0001u16),
-        KDF::HKDF_SHA384 => U16(0x0002u16),
-        KDF::HKDF_SHA512 => U16(0x0003u16),
+        KDF::HKDF_SHA256 => 0x0001u16,
+        KDF::HKDF_SHA384 => 0x0002u16,
+        KDF::HKDF_SHA512 => 0x0003u16,
     }
 }
 
@@ -79,7 +73,7 @@ pub fn Nh(kdf_id: KDF) -> usize {
 /// and version, even when possibly derived from the same Diffie-Hellman or
 /// KEM shared secret as in another scheme or version.
 fn hpke_version_label() -> Bytes {
-    create_bytes!(0x48u8, 0x50u8, 0x4bu8, 0x45u8, 0x2du8, 0x76u8, 0x31u8)
+    create_bytes![0x48u8, 0x50u8, 0x4bu8, 0x45u8, 0x2du8, 0x76u8, 0x31u8]
 }
 
 fn hkdf_algorithm(alg: KDF) -> Algorithm {
@@ -104,14 +98,15 @@ pub fn LabeledExtract(
     label: Bytes,
     ikm: &InputKeyMaterial,
 ) -> HpkeBytesResult {
-    Ok(specs::hkdf::extract(
+    Ok(crate::hkdf::extract(
         hkdf_algorithm(alg),
         salt,
         &hpke_version_label()
             .concat_owned(suite_id)
             .concat_owned(label)
             .concat(ikm),
-    ))
+    )
+    .into())
 }
 
 /// KDF: Labeled Expand
@@ -136,19 +131,18 @@ pub fn LabeledExpand(
         // The check comes from HKDF and will be performed there again.
         HpkeBytesResult::Err(HpkeError::InvalidParameters)
     } else {
-        match specs::hkdf::expand(
+        match crate::hkdf::expand(
             hkdf_algorithm(alg),
             prk,
-            &U16(L as u16)
-                .into_bytes()
+            &Bytes::from(L as u16)
                 .concat_owned(hpke_version_label())
                 .concat_owned(suite_id)
                 .concat_owned(label)
                 .concat_owned(info),
             L,
         ) {
-            CryptoResult::Ok(r) => HpkeBytesResult::Ok(r),
-            CryptoResult::Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
+            Ok(r) => HpkeBytesResult::Ok(Bytes(r)),
+            Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
         }
     }
 }

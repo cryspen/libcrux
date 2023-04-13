@@ -3,12 +3,10 @@
 #![allow(non_camel_case_types, non_snake_case)]
 
 use super::kdf::*;
-use crate::{kem::*, *};
-use hacspec_lib::*;
+use crate::kem::*;
 
 use super::errors::*;
-
-type CryptoResult = Result<Bytes, Error>;
+use super::hacspec_lib::*;
 
 /// ## Key Encapsulation Mechanisms (KEMs)
 ///
@@ -209,13 +207,13 @@ fn shared_secret_label() -> Bytes {
 
 /// Get an empty byte sequence.
 fn empty() -> Bytes {
-    Bytes::new(0)
+    Bytes(vec![])
 }
 
 /// Get the label for the KEM with the cipher suite ID.
 /// "KEM"
 fn suite_id(alg: KEM) -> Bytes {
-    create_bytes!(0x4bu8, 0x45u8, 0x4du8).concat_owned(kem_value(alg).into_bytes())
+    create_bytes!(0x4bu8, 0x45u8, 0x4du8).concat_owned(Bytes::from(kem_value(alg)))
 }
 
 /// For the variants of DHKEM defined in this document, the size [`Nsecret`] of the
@@ -240,15 +238,15 @@ fn shared_secret_from_dh(alg: KEM, secret: Bytes) -> Bytes {
 /// [`ValidationError`](`HpkeError::ValidationError`) as described in
 /// [validation](#validation-of-inputs-and-outputs).
 pub fn DH(alg: KEM, sk: &PrivateKey, pk: &PublicKey) -> Result<SharedSecret, HpkeError> {
-    match specs::ecdh::derive(kem_to_named_group(alg).into(), pk, sk) {
-        Ok(secret) => HpkeBytesResult::Ok(shared_secret_from_dh(alg, secret)),
+    match crate::ecdh::derive(kem_to_named_group(alg).into(), pk, sk) {
+        Ok(secret) => HpkeBytesResult::Ok(shared_secret_from_dh(alg, Bytes(secret))),
         Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
     }
 }
 
 fn pk(alg: KEM, sk: &PrivateKey) -> Result<PublicKey, HpkeError> {
-    match specs::kem::secret_to_public(kem_to_named_group(alg), sk) {
-        Ok(pk) => HpkeBytesResult::Ok(pk),
+    match crate::kem::secret_to_public(kem_to_named_group(alg), sk) {
+        Ok(pk) => HpkeBytesResult::Ok(pk.into()),
         Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
     }
 }
@@ -351,9 +349,9 @@ pub fn DeriveKeyPairX(alg: KEM, ikm: InputKeyMaterial) -> Result<KeyPair, HpkeEr
 
     let sk = LabeledExpand(kdf, suite_id(alg), &dkp_prk, sk_label(), empty(), Nsk(alg))?;
 
-    match specs::kem::secret_to_public(kem_to_named_group(alg), &sk) {
-        CryptoResult::Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, PublicKey::from_seq(&pk))),
-        CryptoResult::Err(_) => Result::<KeyPair, HpkeError>::Err(HpkeError::CryptoError),
+    match crate::kem::secret_to_public(kem_to_named_group(alg), &sk) {
+        Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, Bytes(pk))),
+        Err(_) => Result::<KeyPair, HpkeError>::Err(HpkeError::CryptoError),
     }
 }
 
@@ -443,7 +441,7 @@ pub fn DeriveKeyPair(alg: KEM, ikm: InputKeyMaterial) -> Result<KeyPair, HpkeErr
                 )?;
                 bytes[0] = bytes[0] & bitmask;
                 // This check ensure sk != 0 or sk < order
-                if specs::ecdh::validate_scalar(named_group.into(), &bytes).is_ok() {
+                if crate::ecdh::validate_scalar(named_group.into(), &bytes).is_ok() {
                     sk = bytes;
                 }
             }
@@ -452,11 +450,9 @@ pub fn DeriveKeyPair(alg: KEM, ikm: InputKeyMaterial) -> Result<KeyPair, HpkeErr
     if sk.len() == 0 {
         Result::<KeyPair, HpkeError>::Err(HpkeError::DeriveKeyPairError)
     } else {
-        match specs::kem::secret_to_public(named_group, &sk) {
-            CryptoResult::Ok(pk) => {
-                Result::<KeyPair, HpkeError>::Ok((sk, PublicKey::from_seq(&pk)))
-            }
-            CryptoResult::Err(_) => Result::<KeyPair, HpkeError>::Err(HpkeError::CryptoError),
+        match crate::kem::secret_to_public(named_group, &sk) {
+            Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, Bytes(pk))),
+            Err(_) => Result::<KeyPair, HpkeError>::Err(HpkeError::CryptoError),
         }
     }
 }
@@ -595,8 +591,8 @@ fn derive_x25519() {
     let (sk_r, pk_r) =
         DeriveKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, ikm_r).expect("Error deriving key pair");
 
-    assert_eq!(expected_sk_e.to_native(), sk_e.to_native());
-    assert_eq!(expected_sk_r.to_native(), sk_r.to_native());
-    assert_eq!(expected_pk_e.to_native(), pk_e.to_native());
-    assert_eq!(expected_pk_r.to_native(), pk_r.to_native());
+    assert_eq!(expected_sk_e.as_ref(), sk_e.as_ref());
+    assert_eq!(expected_sk_r.as_ref(), sk_r.as_ref());
+    assert_eq!(expected_pk_e.as_ref(), pk_e.as_ref());
+    assert_eq!(expected_pk_r.as_ref(), pk_r.as_ref());
 }
