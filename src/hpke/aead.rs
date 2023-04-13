@@ -145,7 +145,10 @@ pub fn AeadSeal(
     let algorithm = alg_for_aead(aead_id)?;
     let key = aead::Key::from_slice(algorithm, key)?;
     match encrypt_detached(&key, pt, Iv::new(nonce)?, aad) {
-        Ok((tag, ct)) => HpkeBytesResult::Ok(Bytes(ct).concat_slice(tag)),
+        Ok((tag, mut ct)) => {
+            ct.extend_from_slice(tag.as_ref());
+            HpkeBytesResult::Ok(ct)
+        }
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
     }
 }
@@ -163,7 +166,7 @@ pub fn AeadOpen(
 ) -> HpkeBytesResult {
     let algorithm = alg_for_aead(aead_id)?;
     let key = aead::Key::from_slice(algorithm, key)?;
-    let (ct, tag) = ct.clone().split_off(ct.len() - Nt(aead_id));
+    let (ct, tag) = ct.clone().split(ct.len() - Nt(aead_id));
     match decrypt_detached(&key, ct, Iv::new(nonce)?, aad, &Tag::from_slice(tag)?) {
         Ok(pt) => HpkeBytesResult::Ok(pt.into()),
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),

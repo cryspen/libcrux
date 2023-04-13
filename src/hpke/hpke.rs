@@ -56,51 +56,55 @@ pub type PskId = Bytes;
 ///
 /// See [`KeySchedule`] for details.
 fn info_hash_label() -> Bytes {
-    create_bytes!(0x69u8, 0x6eu8, 0x66u8, 0x6fu8, 0x5fu8, 0x68u8, 0x61u8, 0x73u8, 0x68u8)
+    vec![
+        0x69u8, 0x6eu8, 0x66u8, 0x6fu8, 0x5fu8, 0x68u8, 0x61u8, 0x73u8, 0x68u8,
+    ]
 }
 
 /// "psk_id_hash" label for [`LabeledExtract()`].
 ///
 /// See [`KeySchedule`] for details.
 fn psk_id_hash_label() -> Bytes {
-    create_bytes!(
-        0x70u8, 0x73u8, 0x6bu8, 0x5fu8, 0x69u8, 0x64u8, 0x5fu8, 0x68u8, 0x61u8, 0x73u8, 0x68u8
-    )
+    vec![
+        0x70u8, 0x73u8, 0x6bu8, 0x5fu8, 0x69u8, 0x64u8, 0x5fu8, 0x68u8, 0x61u8, 0x73u8, 0x68u8,
+    ]
 }
 
 /// "secret" label for [`LabeledExtract()`].
 ///
 /// See [`KeySchedule`] for details.
 fn secret_label() -> Bytes {
-    create_bytes!(0x73u8, 0x65u8, 0x63u8, 0x72u8, 0x65u8, 0x74u8)
+    vec![0x73u8, 0x65u8, 0x63u8, 0x72u8, 0x65u8, 0x74u8]
 }
 
 /// "key" label for [`LabeledExpand()`].
 ///
 /// See [`KeySchedule`] for details.
 fn key_label() -> Bytes {
-    create_bytes!(0x6bu8, 0x65u8, 0x79u8)
+    vec![0x6bu8, 0x65u8, 0x79u8]
 }
 
 /// "base_nonce" label for [`LabeledExpand()`].
 ///
 /// See [`KeySchedule`] for details.
 fn base_nonce_label() -> Bytes {
-    create_bytes!(0x62u8, 0x61u8, 0x73u8, 0x65u8, 0x5fu8, 0x6eu8, 0x6fu8, 0x6eu8, 0x63u8, 0x65u8)
+    vec![
+        0x62u8, 0x61u8, 0x73u8, 0x65u8, 0x5fu8, 0x6eu8, 0x6fu8, 0x6eu8, 0x63u8, 0x65u8,
+    ]
 }
 
 /// "exp" label for [`LabeledExpand()`].
 ///
 /// See [`KeySchedule`] for details.
 fn exp_label() -> Bytes {
-    create_bytes!(0x65u8, 0x78u8, 0x70u8)
+    vec![0x65u8, 0x78u8, 0x70u8]
 }
 
 /// "sec" label for [`LabeledExpand()`].
 ///
 /// See [`Context_Export`] for details.
 fn sec_label() -> Bytes {
-    create_bytes!(0x73u8, 0x65u8, 0x63u8)
+    vec![0x73u8, 0x65u8, 0x63u8]
 }
 
 /// Get the numeric value of the `mode`.
@@ -108,22 +112,22 @@ fn sec_label() -> Bytes {
 /// See [`Mode`] for details.
 fn hpke_mode_label(mode: Mode) -> Bytes {
     match mode {
-        Mode::mode_base => create_bytes!(0x00u8),
-        Mode::mode_psk => create_bytes!(0x01u8),
-        Mode::mode_auth => create_bytes!(0x02u8),
-        Mode::mode_auth_psk => create_bytes!(0x03u8),
+        Mode::mode_base => vec![0x00u8],
+        Mode::mode_psk => vec![0x01u8],
+        Mode::mode_auth => vec![0x02u8],
+        Mode::mode_auth_psk => vec![0x03u8],
     }
 }
 
 /// Get the numeric value of the `aead_id`.
 ///
 /// See [`AEAD`] for details.
-fn hpke_aead_value(aead_id: AEAD) -> U16 {
+fn hpke_aead_value(aead_id: AEAD) -> u16 {
     match aead_id {
-        AEAD::AES_128_GCM => U16(0x0001u16),
-        AEAD::AES_256_GCM => U16(0x0002u16),
-        AEAD::ChaCha20Poly1305 => U16(0x0003u16),
-        AEAD::Export_only => U16(0xFFFFu16),
+        AEAD::AES_128_GCM => 0x0001u16,
+        AEAD::AES_256_GCM => 0x0002u16,
+        AEAD::ChaCha20Poly1305 => 0x0003u16,
+        AEAD::Export_only => 0xFFFFu16,
     }
 }
 
@@ -162,10 +166,10 @@ pub type EmptyResult = Result<(), HpkeError>;
 /// ```
 fn suite_id(config: HPKEConfig) -> Bytes {
     let HPKEConfig(_, kem, kdf, aead) = config;
-    create_bytes!(0x48u8, 0x50u8, 0x4bu8, 0x45u8) // "HPKE"
-        .concat_owned(Bytes::from(kem_value(kem)))
-        .concat_owned(Bytes::from(kdf_value(kdf)))
-        .concat_owned(Bytes::from(hpke_aead_value(aead)))
+    vec![0x48u8, 0x50u8, 0x4bu8, 0x45u8] // "HPKE"
+        .concat(Bytes::from_u16(kem_value(kem)))
+        .concat(Bytes::from_u16(kdf_value(kdf)))
+        .concat(Bytes::from_u16(hpke_aead_value(aead)))
 }
 
 /// The default PSK ""
@@ -176,7 +180,7 @@ fn suite_id(config: HPKEConfig) -> Bytes {
 ///
 /// See [`KeySchedule`] for more details.
 fn default_psk() -> Bytes {
-    Bytes::new(0)
+    Bytes::create(0)
 }
 
 /// The default PSK ID ""
@@ -187,11 +191,11 @@ fn default_psk() -> Bytes {
 ///
 /// See [`KeySchedule`] for more details.
 fn default_psk_id() -> Bytes {
-    Bytes::new(0)
+    Bytes::create(0)
 }
 
 fn empty_bytes() -> Bytes {
-    Bytes::new(0)
+    Bytes::create(0)
 }
 
 /// Creating the Encryption Context
@@ -337,9 +341,7 @@ pub fn KeySchedule(
         info_hash_label(),
         info,
     )?;
-    let key_schedule_context = hpke_mode_label(mode)
-        .concat_owned(psk_id_hash)
-        .concat_owned(info_hash);
+    let key_schedule_context = hpke_mode_label(mode).concat(psk_id_hash).concat(info_hash);
 
     let secret = LabeledExtract(kdf, suite_id(config), shared_secret, secret_label(), psk)?;
 
@@ -634,11 +636,11 @@ pub fn SetupAuthPSKR(
 ///   return xor(self.base_nonce, seq_bytes)
 /// ```
 pub fn ComputeNonce(aead_id: AEAD, base_nonce: &Nonce, seq: SequenceCounter) -> Bytes {
-    let seq = Bytes::from(U32(seq));
+    let seq = Bytes::from_u32(seq);
     let Nn = Nn(aead_id);
-    let seq_bytes = Bytes::new(Nn);
+    let seq_bytes = Bytes::create(Nn);
     let seq_bytes = seq_bytes.update_slice(Nn - 4, &seq, 0, 4);
-    base_nonce.clone() ^ seq_bytes
+    bitxor(base_nonce.clone(), seq_bytes)
 }
 
 /// ## Encryption and Decryption

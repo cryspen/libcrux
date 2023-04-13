@@ -61,13 +61,13 @@ pub enum KEM {
 /// [`u16`] value of the `kem_id`.
 ///
 /// See [`KEM`] for details.
-pub fn kem_value(kem_id: KEM) -> U16 {
+pub fn kem_value(kem_id: KEM) -> u16 {
     match kem_id {
-        KEM::DHKEM_P256_HKDF_SHA256 => U16(0x0010u16),
-        KEM::DHKEM_P384_HKDF_SHA384 => U16(0x0011u16),
-        KEM::DHKEM_P521_HKDF_SHA512 => U16(0x0012u16),
-        KEM::DHKEM_X25519_HKDF_SHA256 => U16(0x00020u16),
-        KEM::DHKEM_X448_HKDF_SHA512 => U16(0x0021u16),
+        KEM::DHKEM_P256_HKDF_SHA256 => 0x0010u16,
+        KEM::DHKEM_P384_HKDF_SHA384 => 0x0011u16,
+        KEM::DHKEM_P521_HKDF_SHA512 => 0x0012u16,
+        KEM::DHKEM_X25519_HKDF_SHA256 => 0x00020u16,
+        KEM::DHKEM_X448_HKDF_SHA512 => 0x0021u16,
     }
 }
 
@@ -179,41 +179,43 @@ pub type EncapResult = Result<(SharedSecret, SerializedPublicKey), HpkeError>;
 
 /// "dkp_prk"
 fn dkp_prk_label() -> Bytes {
-    create_bytes!(0x64u8, 0x6bu8, 0x70u8, 0x5fu8, 0x70u8, 0x72u8, 0x6bu8)
+    vec![0x64u8, 0x6bu8, 0x70u8, 0x5fu8, 0x70u8, 0x72u8, 0x6bu8]
 }
 
 /// "eae_prk"
 fn eae_prk_label() -> Bytes {
-    create_bytes!(0x65u8, 0x61u8, 0x65u8, 0x5fu8, 0x70u8, 0x72u8, 0x6bu8)
+    vec![0x65u8, 0x61u8, 0x65u8, 0x5fu8, 0x70u8, 0x72u8, 0x6bu8]
 }
 
 /// "sk"
 fn sk_label() -> Bytes {
-    create_bytes!(0x73u8, 0x6bu8)
+    vec![0x73u8, 0x6bu8]
 }
 
 /// "candidate"
 fn candidate_label() -> Bytes {
-    create_bytes!(0x63u8, 0x61u8, 0x6eu8, 0x64u8, 0x69u8, 0x64u8, 0x61u8, 0x74u8, 0x65u8)
+    vec![
+        0x63u8, 0x61u8, 0x6eu8, 0x64u8, 0x69u8, 0x64u8, 0x61u8, 0x74u8, 0x65u8,
+    ]
 }
 
 /// "shared_secret"
 fn shared_secret_label() -> Bytes {
-    create_bytes!(
+    vec![
         0x73u8, 0x68u8, 0x61u8, 0x72u8, 0x65u8, 0x64u8, 0x5fu8, 0x73u8, 0x65u8, 0x63u8, 0x72u8,
-        0x65u8, 0x74u8
-    )
+        0x65u8, 0x74u8,
+    ]
 }
 
 /// Get an empty byte sequence.
 fn empty() -> Bytes {
-    Bytes(vec![])
+    vec![]
 }
 
 /// Get the label for the KEM with the cipher suite ID.
 /// "KEM"
 fn suite_id(alg: KEM) -> Bytes {
-    create_bytes!(0x4bu8, 0x45u8, 0x4du8).concat_owned(Bytes::from(kem_value(alg)))
+    vec![0x4bu8, 0x45u8, 0x4du8].concat(Bytes::from_u16(kem_value(alg)))
 }
 
 /// For the variants of DHKEM defined in this document, the size [`Nsecret`] of the
@@ -239,7 +241,7 @@ fn shared_secret_from_dh(alg: KEM, secret: Bytes) -> Bytes {
 /// [validation](#validation-of-inputs-and-outputs).
 pub fn DH(alg: KEM, sk: &PrivateKey, pk: &PublicKey) -> Result<SharedSecret, HpkeError> {
     match crate::ecdh::derive(kem_to_named_group(alg).into(), pk, sk) {
-        Ok(secret) => HpkeBytesResult::Ok(shared_secret_from_dh(alg, Bytes(secret))),
+        Ok(secret) => HpkeBytesResult::Ok(shared_secret_from_dh(alg, secret)),
         Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
     }
 }
@@ -252,9 +254,9 @@ fn pk(alg: KEM, sk: &PrivateKey) -> Result<PublicKey, HpkeError> {
 }
 
 /// Prepend 0x04 to the byte sequence.
-fn nist_curve_to_uncompressed(pk: &PublicKey) -> PublicKey {
-    let mut out = Bytes::new(1);
-    out[0] = Byte(0x04u8);
+fn nist_curve_to_uncompressed(pk: PublicKey) -> PublicKey {
+    let mut out = Bytes::create(1);
+    out[0] = 0x04u8;
     out.concat(pk)
 }
 
@@ -272,7 +274,7 @@ fn nist_curve_to_uncompressed(pk: &PublicKey) -> PublicKey {
 /// Some deserialized public keys MUST be validated before they can be used.
 ///
 /// [secg]: https://secg.org/sec1-v2.pdf
-pub fn SerializePublicKey(alg: KEM, pk: &PublicKey) -> PublicKey {
+pub fn SerializePublicKey(alg: KEM, pk: PublicKey) -> PublicKey {
     match alg {
         KEM::DHKEM_P256_HKDF_SHA256 => nist_curve_to_uncompressed(pk),
         KEM::DHKEM_P384_HKDF_SHA384 => nist_curve_to_uncompressed(pk),
@@ -284,7 +286,7 @@ pub fn SerializePublicKey(alg: KEM, pk: &PublicKey) -> PublicKey {
 
 /// Remove the leading 0x04 from the public key.
 fn nist_curve_from_uncompressed(pk: &PublicKey) -> Bytes {
-    if pk[0] == Byte(0x04) {
+    if pk[0] == 0x04 {
         pk.slice(1, pk.len() - 1)
     } else {
         pk.clone()
@@ -330,8 +332,8 @@ fn ExtractAndExpand(
 }
 
 fn I2OSP(counter: usize) -> Bytes {
-    let mut bytes = Bytes::new(1);
-    bytes[0] = Byte(counter as u8);
+    let mut bytes = Bytes::create(1);
+    bytes[0] = counter as u8;
     bytes
 }
 
@@ -350,7 +352,7 @@ pub fn DeriveKeyPairX(alg: KEM, ikm: InputKeyMaterial) -> Result<KeyPair, HpkeEr
     let sk = LabeledExpand(kdf, suite_id(alg), &dkp_prk, sk_label(), empty(), Nsk(alg))?;
 
     match crate::kem::secret_to_public(kem_to_named_group(alg), &sk) {
-        Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, Bytes(pk))),
+        Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, pk)),
         Err(_) => Result::<KeyPair, HpkeError>::Err(HpkeError::CryptoError),
     }
 }
@@ -420,13 +422,13 @@ pub fn DeriveKeyPair(alg: KEM, ikm: InputKeyMaterial) -> Result<KeyPair, HpkeErr
     let dkp_prk = LabeledExtract(kdf, suite_id(alg), &empty(), dkp_prk_label(), &ikm)?;
 
     let named_group = kem_to_named_group(alg);
-    let mut sk = Bytes::new(0);
+    let mut sk = Bytes::create(0);
     if alg == KEM::DHKEM_X25519_HKDF_SHA256 || alg == KEM::DHKEM_X448_HKDF_SHA512 {
         sk = LabeledExpand(kdf, suite_id(alg), &dkp_prk, sk_label(), empty(), 32)?;
     } else {
-        let mut bitmask = Byte(0xFFu8);
+        let mut bitmask = 0xFFu8;
         if alg == KEM::DHKEM_P521_HKDF_SHA512 {
-            bitmask = Byte(0x01u8);
+            bitmask = 0x01u8;
         }
         for counter in 0..256 {
             if sk.len() == 0 {
@@ -451,7 +453,7 @@ pub fn DeriveKeyPair(alg: KEM, ikm: InputKeyMaterial) -> Result<KeyPair, HpkeErr
         Result::<KeyPair, HpkeError>::Err(HpkeError::DeriveKeyPairError)
     } else {
         match crate::kem::secret_to_public(named_group, &sk) {
-            Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, Bytes(pk))),
+            Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, pk)),
             Err(_) => Result::<KeyPair, HpkeError>::Err(HpkeError::CryptoError),
         }
     }
@@ -476,10 +478,10 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
 pub fn Encap(alg: KEM, pkR: &PublicKey, randomness: Randomness) -> EncapResult {
     let (skE, pkE) = GenerateKeyPair(alg, randomness)?;
     let dh = DH(alg, &skE, pkR)?;
-    let enc = SerializePublicKey(alg, &pkE);
+    let enc = SerializePublicKey(alg, pkE);
 
-    let pkRm = SerializePublicKey(alg, pkR);
-    let kem_context = enc.clone().concat_owned(pkRm);
+    let pkRm = SerializePublicKey(alg, pkR.clone());
+    let kem_context = enc.clone().concat(pkRm);
 
     let shared_secret = ExtractAndExpand(alg, suite_id(alg), dh, kem_context)?;
     EncapResult::Ok((shared_secret, enc))
@@ -501,8 +503,8 @@ pub fn Decap(alg: KEM, enc: &Bytes, skR: &PrivateKey) -> Result<SharedSecret, Hp
     let dh = DH(alg, skR, &pkE)?;
 
     let pkR = pk(alg, skR)?;
-    let pkRm = SerializePublicKey(alg, &pkR);
-    let kem_context = enc.clone().concat_owned(pkRm);
+    let pkRm = SerializePublicKey(alg, pkR);
+    let kem_context = enc.clone().concat(pkRm);
 
     ExtractAndExpand(alg, suite_id(alg), dh, kem_context)
 }
@@ -529,13 +531,13 @@ pub fn AuthEncap(
     let (skE, pkE) = GenerateKeyPair(alg, randomness)?;
     let dhE = DH(alg, &skE, pkR)?;
     let dhS = DH(alg, skS, pkR)?;
-    let dh = dhE.concat_owned(dhS);
-    let enc = SerializePublicKey(alg, &pkE);
+    let dh = dhE.concat(dhS);
+    let enc = SerializePublicKey(alg, pkE);
 
-    let pkRm = SerializePublicKey(alg, pkR);
+    let pkRm = SerializePublicKey(alg, pkR.clone());
     let pkS = pk(alg, skS)?;
-    let pkSm = SerializePublicKey(alg, &pkS);
-    let kem_context = enc.clone().concat_owned(pkRm).concat_owned(pkSm);
+    let pkSm = SerializePublicKey(alg, pkS);
+    let kem_context = enc.clone().concat(pkRm).concat(pkSm);
 
     let shared_secret = ExtractAndExpand(alg, suite_id(alg), dh, kem_context)?;
     EncapResult::Ok((shared_secret, enc))
@@ -562,12 +564,12 @@ pub fn AuthDecap(
     let pkE = DeserializePublicKey(alg, enc)?;
     let dhE = DH(alg, skR, &pkE)?;
     let dhS = DH(alg, skR, pkS)?;
-    let dh = dhE.concat_owned(dhS);
+    let dh = dhE.concat(dhS);
 
     let pkR = pk(alg, skR)?;
-    let pkRm = SerializePublicKey(alg, &pkR);
-    let pkSm = SerializePublicKey(alg, pkS);
-    let kem_context = enc.clone().concat_owned(pkRm).concat_owned(pkSm);
+    let pkRm = SerializePublicKey(alg, pkR);
+    let pkSm = SerializePublicKey(alg, pkS.clone());
+    let kem_context = enc.clone().concat(pkRm).concat(pkSm);
 
     ExtractAndExpand(alg, suite_id(alg), dh, kem_context)
 }
@@ -591,8 +593,8 @@ fn derive_x25519() {
     let (sk_r, pk_r) =
         DeriveKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, ikm_r).expect("Error deriving key pair");
 
-    assert_eq!(expected_sk_e.as_ref(), sk_e.as_ref());
-    assert_eq!(expected_sk_r.as_ref(), sk_r.as_ref());
-    assert_eq!(expected_pk_e.as_ref(), pk_e.as_ref());
-    assert_eq!(expected_pk_r.as_ref(), pk_r.as_ref());
+    assert_eq!(expected_sk_e, sk_e);
+    assert_eq!(expected_sk_r, sk_r);
+    assert_eq!(expected_pk_e, pk_e);
+    assert_eq!(expected_pk_r, pk_r);
 }

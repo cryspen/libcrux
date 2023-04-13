@@ -73,7 +73,7 @@ pub fn Nh(kdf_id: KDF) -> usize {
 /// and version, even when possibly derived from the same Diffie-Hellman or
 /// KEM shared secret as in another scheme or version.
 fn hpke_version_label() -> Bytes {
-    create_bytes![0x48u8, 0x50u8, 0x4bu8, 0x45u8, 0x2du8, 0x76u8, 0x31u8]
+    vec![0x48u8, 0x50u8, 0x4bu8, 0x45u8, 0x2du8, 0x76u8, 0x31u8]
 }
 
 fn hkdf_algorithm(alg: KDF) -> Algorithm {
@@ -102,9 +102,9 @@ pub fn LabeledExtract(
         hkdf_algorithm(alg),
         salt,
         &hpke_version_label()
-            .concat_owned(suite_id)
-            .concat_owned(label)
-            .concat(ikm),
+            .concat(suite_id)
+            .concat(label)
+            .concat(ikm.clone()),
     )
     .into())
 }
@@ -134,14 +134,14 @@ pub fn LabeledExpand(
         match crate::hkdf::expand(
             hkdf_algorithm(alg),
             prk,
-            &Bytes::from(L as u16)
-                .concat_owned(hpke_version_label())
-                .concat_owned(suite_id)
-                .concat_owned(label)
-                .concat_owned(info),
+            &Bytes::from_u16(L as u16)
+                .concat(hpke_version_label())
+                .concat(suite_id)
+                .concat(label)
+                .concat(info),
             L,
         ) {
-            Ok(r) => HpkeBytesResult::Ok(Bytes(r)),
+            Ok(r) => HpkeBytesResult::Ok(r),
             Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
         }
     }
