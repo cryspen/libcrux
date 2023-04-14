@@ -1,11 +1,19 @@
+use std::num::ParseIntError;
 use std::time::{Duration, Instant};
 
-use hacspec_lib::Bytes;
 use libcrux::hpke::aead::*;
 use libcrux::hpke::kdf::KDF;
 use libcrux::hpke::kem::{GenerateKeyPair, KEM};
 use libcrux::hpke::*;
 use rand::{rngs::OsRng, RngCore};
+
+pub(crate) fn hex_str_to_bytes(val: &str) -> Vec<u8> {
+    let b: Result<Vec<u8>, ParseIntError> = (0..val.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&val[i..i + 2], 16))
+        .collect();
+    b.expect("Error parsing hex string")
+}
 
 fn duration(d: Duration) -> f64 {
     ((d.as_secs() as f64) + (d.subsec_nanos() as f64 * 1e-9)) * 1000000f64
@@ -48,21 +56,19 @@ fn benchmark() {
 
                     let mut randomness = [0u8; 32];
                     OsRng.fill_bytes(&mut randomness);
-                    let randomness = Bytes::from_public_slice(&randomness);
-                    let (_sk, enc) = GenerateKeyPair(kem_mode, randomness).unwrap();
+                    let (_sk, enc) = GenerateKeyPair(kem_mode, randomness.to_vec()).unwrap();
                     let mut randomness = [0u8; 32];
                     OsRng.fill_bytes(&mut randomness);
-                    let randomness = Bytes::from_public_slice(&randomness);
-                    let (sk_rm, pk_rm) = GenerateKeyPair(kem_mode, randomness).unwrap();
-                    let info = Bytes::from_hex("4f6465206f6e2061204772656369616e2055726e");
+                    let (sk_rm, pk_rm) = GenerateKeyPair(kem_mode, randomness.to_vec()).unwrap();
+                    let info = hex_str_to_bytes("4f6465206f6e2061204772656369616e2055726e");
                     let psk = if hpke_mode == Mode::mode_auth_psk || hpke_mode == Mode::mode_psk {
-                        Some(Bytes::from_hex("0247fd33b913760fa1fa51e1892d9f30"))
+                        Some(hex_str_to_bytes("0247fd33b913760fa1fa51e1892d9f30"))
                     } else {
                         None
                     };
                     let psk_id = if hpke_mode == Mode::mode_auth_psk || hpke_mode == Mode::mode_psk
                     {
-                        Some(Bytes::from_hex("456e6e796e204475"))
+                        Some(hex_str_to_bytes("456e6e796e204475"))
                     } else {
                         None
                     };
@@ -70,8 +76,7 @@ fn benchmark() {
                         if hpke_mode == Mode::mode_auth_psk || hpke_mode == Mode::mode_auth {
                             let mut randomness = [0u8; 32];
                             OsRng.fill_bytes(&mut randomness);
-                            let randomness = Bytes::from_public_slice(&randomness);
-                            let (sk, pk) = GenerateKeyPair(kem_mode, randomness).unwrap();
+                            let (sk, pk) = GenerateKeyPair(kem_mode, randomness.to_vec()).unwrap();
                             (Some(pk), Some(sk))
                         } else {
                             (None, None)
@@ -81,7 +86,7 @@ fn benchmark() {
 
                     let mut randomness = [0u8; 32];
                     OsRng.fill_bytes(&mut randomness);
-                    let randomness = Bytes::from_public_slice(&randomness);
+                    let randomness = randomness.to_vec();
                     let start = Instant::now();
                     for _ in 0..ITERATIONS {
                         let _sender = match hpke_mode {
@@ -181,10 +186,10 @@ fn benchmark() {
 
                     let mut aad = vec![0u8; AEAD_AAD];
                     OsRng.fill_bytes(&mut aad);
-                    let aad = Bytes::from_public_slice(&aad);
+                    let aad = aad.to_vec();
                     let mut ptxt = vec![0u8; AEAD_PAYLOAD];
                     OsRng.fill_bytes(&mut ptxt);
-                    let ptxt = Bytes::from_public_slice(&ptxt);
+                    let ptxt = ptxt.to_vec();
 
                     let mut ctxts = Vec::with_capacity((AEAD_PAYLOAD + 16) * ITERATIONS);
                     let start = Instant::now();
@@ -248,15 +253,15 @@ fn benchmark() {
 
                     let mut aad = vec![0u8; AEAD_AAD];
                     OsRng.fill_bytes(&mut aad);
-                    let aad = Bytes::from_public_slice(&aad);
+                    let aad = aad.to_vec();
                     let mut ptxt = vec![0u8; AEAD_PAYLOAD];
                     OsRng.fill_bytes(&mut ptxt);
-                    let ptxt = Bytes::from_public_slice(&ptxt);
+                    let ptxt = ptxt.to_vec();
                     let mut randomness = [0u8; 32];
                     OsRng.fill_bytes(&mut randomness);
-                    let randomness = Bytes::from_public_slice(&randomness);
+                    let randomness = randomness.to_vec();
 
-                    let mut ctxt = HPKECiphertext(Bytes::new(0), Bytes::new(0));
+                    let mut ctxt = HPKECiphertext(vec![], vec![]);
                     let start = Instant::now();
                     for _ in 0..ITERATIONS {
                         ctxt = HpkeSeal(
@@ -281,7 +286,7 @@ fn benchmark() {
                         time / (ITERATIONS as f64)
                     );
 
-                    let mut ptxt_out = Bytes::new(0);
+                    let mut ptxt_out = vec![];
                     let start = Instant::now();
                     for _ in 0..ITERATIONS {
                         ptxt_out = HpkeOpen(
