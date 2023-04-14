@@ -2,11 +2,11 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use super::kdf::*;
+use crate::hacspec_lib::*;
 use crate::kem::*;
 
 use super::errors::*;
-use super::hacspec_lib::*;
+use super::kdf::*;
 
 /// ## Key Encapsulation Mechanisms (KEMs)
 ///

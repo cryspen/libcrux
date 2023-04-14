@@ -1,8 +1,6 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
-// XXX: temporary hacspec lib
-pub(crate) mod hacspec_lib;
-use hacspec_lib::*;
+use crate::hacspec_lib::*;
 
 use super::aead::*;
 use super::kdf::*;
@@ -640,7 +638,8 @@ pub fn ComputeNonce(aead_id: AEAD, base_nonce: &Nonce, seq: SequenceCounter) -> 
     let Nn = Nn(aead_id);
     let seq_bytes = Bytes::create(Nn);
     let seq_bytes = seq_bytes.update_slice(Nn - 4, &seq, 0, 4);
-    bitxor(base_nonce.clone(), seq_bytes)
+    // Other option: bitxor(base_nonce.clone(), seq_bytes)
+    (NumericVec(base_nonce.clone()) ^ NumericVec(seq_bytes)).into()
 }
 
 /// ## Encryption and Decryption

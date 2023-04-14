@@ -32,8 +32,8 @@
 
 use crate::{
     aead::{self, *},
+    hacspec_lib::*,
     hmac::tag_size,
-    hpke::hacspec_lib::*,
 };
 
 use super::errors::*;

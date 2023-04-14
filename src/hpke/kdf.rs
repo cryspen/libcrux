@@ -1,9 +1,10 @@
 #![doc = include_str!("KDF_Readme.md")]
 #![allow(non_snake_case, non_camel_case_types)]
 
-use super::errors::*;
-use super::hacspec_lib::*;
+use crate::hacspec_lib::*;
 use crate::hkdf::Algorithm;
+
+use super::errors::*;
 
 /// ## Key Derivation Functions (KDFs)
 ///

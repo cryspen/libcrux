@@ -62,7 +62,7 @@
 //! - `InvalidParameters`: Parameters to an algorithm are inconsistent or wrong.
 //! - `CryptoError`: An opaque error happened in a crypto operation outside of this code.
 
-use super::hacspec_lib::*;
+use crate::hacspec_lib::*;
 
 /// Explicit errors generated throughout this specification.
 #[derive(Debug, Copy, Clone, PartialEq)]
