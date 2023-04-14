@@ -306,8 +306,16 @@ fn kat(tests: Vec<HpkeTestVector>) {
         // Setup sender and receiver for self tests.
         let mut receiver_context =
             setup_r(mode, config, &kat_enc, &sk_rm, &info, psk, psk_id, pk_sm);
-        let (_enc, mut sender_context) =
-            setup_s(mode, config, ikm_e, &pk_r, &info, psk, psk_id, sk_sm);
+        let (_enc, mut sender_context) = setup_s(
+            mode,
+            config,
+            ikm_e.clone(),
+            &pk_r,
+            &info,
+            psk,
+            psk_id,
+            sk_sm,
+        );
 
         // Encrypt
         for (_i, encryption) in test.encryptions.iter().enumerate() {
@@ -325,33 +333,6 @@ fn kat(tests: Vec<HpkeTestVector>) {
                 ContextR_Open(aead_id, receiver_context, &aad, &ctxt_out).unwrap();
             receiver_context = new_receiver_context;
             assert_eq!(ptxt_out, ptxt);
-
-            // Test single-shot API self-test
-            // XXX: SLOW! 🐢
-            // let ct = HpkeSeal(
-            //     config,
-            //     &pk_rm,
-            //     &info,
-            //     &aad,
-            //     &ptxt,
-            //     psk.map(|v| v.clone()),
-            //     psk_id.map(|v| v.clone()),
-            //     sk_sm.map(|v| v.clone()),
-            //     ikm_e.clone(),
-            // )
-            // .unwrap();
-            // let ptxt_out = HpkeOpen(
-            //     config,
-            //     &ct,
-            //     &sk_rm,
-            //     &info,
-            //     &aad,
-            //     psk.map(|v| v.clone()),
-            //     psk_id.map(|v| v.clone()),
-            //     pk_sm.map(|v| v.clone()),
-            // )
-            // .unwrap();
-            // assert_eq!(ptxt_out, ptxt);
 
             // Test KAT receiver context open
             let (ptxt_out, new_receiver_context_kat) =

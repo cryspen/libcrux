@@ -32,12 +32,11 @@ pub enum Mode {
 
 // === Types ===
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct HPKEConfig(pub Mode, pub KEM, pub KDF, pub AEAD);
 
 pub type KemOutput = Bytes;
 pub type Ciphertext = Bytes;
-// #[derive(Default)]
 pub struct HPKECiphertext(pub KemOutput, pub Ciphertext);
 
 pub type HpkePrivateKey = Bytes;
@@ -638,8 +637,7 @@ pub fn ComputeNonce(aead_id: AEAD, base_nonce: &Nonce, seq: SequenceCounter) -> 
     let Nn = Nn(aead_id);
     let seq_bytes = Bytes::create(Nn);
     let seq_bytes = seq_bytes.update_slice(Nn - 4, &seq, 0, 4);
-    // Other option: bitxor(base_nonce.clone(), seq_bytes)
-    (NumericVec(base_nonce.clone()) ^ NumericVec(seq_bytes)).into()
+    base_nonce.clone().bitxor(seq_bytes)
 }
 
 /// ## Encryption and Decryption
