@@ -199,6 +199,12 @@ impl AsRef<[u8]> for Tag {
     }
 }
 
+impl AsMut<[u8]> for Tag {
+    fn as_mut(&mut self) -> &mut [u8] {
+        &mut self.0
+    }
+}
+
 #[derive(Default)]
 pub struct Iv(pub [u8; 12]);
 
