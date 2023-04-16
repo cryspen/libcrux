@@ -39,13 +39,8 @@ pub enum KDF {
     HKDF_SHA512,
 }
 
-// pub type Error = u8;
-// pub const UNKNOWN_ALGORITHM: Error = 1u8;
-// pub const HKDF_INVALID_OUTPUT_LENGTH: Error = 2u8;
-// pub const CRYPTO_ERROR: Error = 3u8;
-
-pub type InputKeyMaterial = Bytes;
-pub type Info = Bytes;
+pub type InputKeyMaterial = [u8];
+pub type Info = [u8];
 
 /// Get the numeric value of the `kdf_id`.
 ///
@@ -95,7 +90,7 @@ fn hkdf_algorithm(alg: KDF) -> Algorithm {
 pub fn LabeledExtract(
     alg: KDF,
     suite_id: Bytes,
-    salt: &Bytes,
+    salt: &[u8],
     label: Bytes,
     ikm: &InputKeyMaterial,
 ) -> HpkeBytesResult {
@@ -105,7 +100,7 @@ pub fn LabeledExtract(
         &hpke_version_label()
             .concat(suite_id)
             .concat(label)
-            .concat(ikm.clone()),
+            .concat_slice(ikm),
     )
     .into())
 }
@@ -121,9 +116,9 @@ pub fn LabeledExtract(
 pub fn LabeledExpand(
     alg: KDF,
     suite_id: Bytes,
-    prk: &Bytes,
+    prk: &[u8],
     label: Bytes,
-    info: Info,
+    info: &Info,
     L: usize,
 ) -> HpkeBytesResult {
     if L > (255 * Nh(alg)) {
@@ -139,7 +134,7 @@ pub fn LabeledExpand(
                 .concat(hpke_version_label())
                 .concat(suite_id)
                 .concat(label)
-                .concat(info),
+                .concat_slice(info),
             L,
         ) {
             Ok(r) => HpkeBytesResult::Ok(r),

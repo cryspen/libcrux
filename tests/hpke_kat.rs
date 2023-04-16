@@ -258,16 +258,16 @@ fn kat(tests: Vec<HpkeTestVector>) {
         assert_eq!(direct_ctx.3, exporter_secret);
 
         // Test key pair derivation.
-        let (my_sk_r, my_pk_r) = DeriveKeyPair(kem_id, ikm_r).unwrap();
+        let (my_sk_r, my_pk_r) = DeriveKeyPair(kem_id, &ikm_r).unwrap();
         let my_pk_rm = SerializePublicKey(kem_id, my_pk_r);
         assert_eq!(sk_rm, my_sk_r);
         assert_eq!(pk_rm, my_pk_rm);
-        let (my_sk_e, my_pk_e) = DeriveKeyPair(kem_id, ikm_e.clone()).unwrap();
+        let (my_sk_e, my_pk_e) = DeriveKeyPair(kem_id, &ikm_e).unwrap();
         let my_pk_em = SerializePublicKey(kem_id, my_pk_e);
         assert_eq!(sk_em, my_sk_e);
         assert_eq!(pk_em, my_pk_em);
         if let (Some(sk_sm), Some(pk_sm)) = (sk_sm, pk_sm) {
-            let (my_sk_s, my_pk_s) = DeriveKeyPair(kem_id, ikm_s.unwrap()).unwrap();
+            let (my_sk_s, my_pk_s) = DeriveKeyPair(kem_id, &ikm_s.unwrap()).unwrap();
             let my_pk_sm = SerializePublicKey(kem_id, my_pk_s);
             assert_eq!(sk_sm, &my_sk_s);
             assert_eq!(pk_sm, &my_pk_sm);

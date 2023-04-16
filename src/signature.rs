@@ -49,13 +49,22 @@ pub struct EcDsaP256Signature {
 /// A [`Algorithm::Ed25519`] Signature
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ed25519Signature {
-    signature: [u8; 32],
+    signature: [u8; 64],
 }
 
 impl Ed25519Signature {
-    /// Generate a signature from the raw 32 bytes.
-    pub fn from_bytes(signature: [u8; 32]) -> Self {
+    /// Generate a signature from the raw 64 bytes.
+    pub fn from_bytes(signature: [u8; 64]) -> Self {
         Self { signature }
+    }
+
+    /// Generate a signature from the raw bytes slice.
+    ///
+    /// Returns an error if the slice has lignth != 64.
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
+        Ok(Self {
+            signature: bytes.try_into().map_err(|_| Error::InvalidSignature)?,
+        })
     }
 }
 

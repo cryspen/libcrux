@@ -1,5 +1,5 @@
 // === hacspec helper - remove
-pub type Bytes = Vec<u8>;
+
 use std::{
     num::ParseIntError,
     ops::{BitXor, Deref},
@@ -45,12 +45,13 @@ impl BitXor for NumericVec {
     }
 }
 
-// === end hacspec helper - remove
+pub type Bytes = Vec<u8>;
 
 pub trait HacspecVec {
     fn slice(&self, start_out: usize, len: usize) -> Self;
     fn into_slice(self, start_out: usize, len: usize) -> Self;
     fn concat(self, next: Self) -> Self;
+    fn concat_slice(self, next: &[u8]) -> Self;
     fn create(arg: usize) -> Self;
     fn update_slice(
         self,
@@ -138,5 +139,10 @@ impl HacspecVec for Vec<u8> {
             out[i] = self[i] ^ rhs[i]
         }
         out
+    }
+
+    fn concat_slice(mut self, next: &[u8]) -> Self {
+        self.extend_from_slice(next);
+        self
     }
 }

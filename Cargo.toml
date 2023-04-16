@@ -66,6 +66,7 @@ hacspec = ["hacspec-lib"] # re-export the hacspec lib
 rand = []
 
 [patch.crates-io]
+# hacl = { git = "https://github.com/cryspen/hacl-packages" }
 hacl = { path = "../hacl-packages/rust" }
 
 # [patch.'https://github.com/hacspec/hacspec']

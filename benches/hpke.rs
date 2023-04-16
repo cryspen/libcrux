@@ -270,9 +270,9 @@ fn benchmark() {
                             &info,
                             &aad,
                             &ptxt,
-                            psk.as_ref(),
-                            psk_id.as_ref(),
-                            sk_sm.clone(),
+                            psk.as_ref().map(|v| v.as_slice()),
+                            psk_id.as_ref().map(|v| v.as_slice()),
+                            sk_sm.as_ref().map(|v| v.as_slice()),
                             randomness.clone(),
                         )
                         .unwrap();
@@ -295,9 +295,9 @@ fn benchmark() {
                             &sk_rm,
                             &info,
                             &aad,
-                            psk.as_ref(),
-                            psk_id.as_ref(),
-                            pk_sm.clone(),
+                            psk.as_ref().map(|v| v.as_slice()),
+                            psk_id.as_ref().map(|v| v.as_slice()),
+                            pk_sm.as_ref().map(|v| v.as_slice()),
                         )
                         .unwrap();
                     }

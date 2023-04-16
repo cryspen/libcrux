@@ -39,13 +39,13 @@ pub type KemOutput = Bytes;
 pub type Ciphertext = Bytes;
 pub struct HPKECiphertext(pub KemOutput, pub Ciphertext);
 
-pub type HpkePrivateKey = Bytes;
-pub type HpkePublicKey = Bytes;
-pub struct HPKEKeyPair(pub HpkePrivateKey, pub HpkePublicKey);
+pub type HpkePrivateKey = [u8];
+pub type HpkePublicKey = [u8];
+pub struct HPKEKeyPair(pub Bytes, pub Bytes); // Private, Public
 
-pub type AdditionalData = Bytes;
-pub type Psk = Bytes;
-pub type PskId = Bytes;
+pub type AdditionalData = [u8];
+pub type Psk = [u8];
+pub type PskId = [u8];
 
 // === String labels ===
 
@@ -137,6 +137,7 @@ fn kem(config: HPKEConfig) -> KEM {
 // === Context Helper ===
 
 type EncodedHpkePublicKey = Bytes;
+type EncodedHpkePublicKeyIn = [u8];
 type ExporterSecret = Bytes;
 type SequenceCounter = u32;
 type Context = (Key, Nonce, SequenceCounter, ExporterSecret);
@@ -347,7 +348,7 @@ pub fn KeySchedule(
         suite_id(config),
         &secret,
         key_label(),
-        key_schedule_context.clone(),
+        &key_schedule_context,
         Nk(aead),
     )?;
     let base_nonce = LabeledExpand(
@@ -355,7 +356,7 @@ pub fn KeySchedule(
         suite_id(config),
         &secret,
         base_nonce_label(),
-        key_schedule_context.clone(),
+        &key_schedule_context,
         Nn(aead),
     )?;
     let exporter_secret = LabeledExpand(
@@ -363,7 +364,7 @@ pub fn KeySchedule(
         suite_id(config),
         &secret,
         exp_label(),
-        key_schedule_context,
+        &key_schedule_context,
         Nh(kdf),
     )?;
 
@@ -415,7 +416,7 @@ pub fn SetupBaseS(
 /// ```
 pub fn SetupBaseR(
     config: HPKEConfig,
-    enc: &EncodedHpkePublicKey,
+    enc: &EncodedHpkePublicKeyIn,
     skR: &HpkePrivateKey,
     info: &Info,
 ) -> ContextResult {
@@ -472,7 +473,7 @@ pub fn SetupPSKS(
 /// ```
 pub fn SetupPSKR(
     config: HPKEConfig,
-    enc: &EncodedHpkePublicKey,
+    enc: &EncodedHpkePublicKeyIn,
     skR: &HpkePrivateKey,
     info: &Info,
     psk: &Psk,
@@ -521,7 +522,7 @@ pub fn SetupAuthS(
     config: HPKEConfig,
     pkR: &HpkePublicKey,
     info: &Info,
-    skS: &PrivateKey,
+    skS: &PrivateKeyIn,
     randomness: Randomness,
 ) -> SenderContextResult {
     let (shared_secret, enc) = AuthEncap(kem(config), pkR, skS, randomness)?;
@@ -547,10 +548,10 @@ pub fn SetupAuthS(
 /// ```
 pub fn SetupAuthR(
     config: HPKEConfig,
-    enc: &EncodedHpkePublicKey,
+    enc: &EncodedHpkePublicKeyIn,
     skR: &HpkePrivateKey,
     info: &Info,
-    pkS: &PublicKey,
+    pkS: &PublicKeyIn,
 ) -> ContextResult {
     let shared_secret = AuthDecap(kem(config), enc, skR, pkS)?;
     let key_schedule = KeySchedule(
@@ -604,12 +605,12 @@ pub fn SetupAuthPSKS(
 /// ```
 pub fn SetupAuthPSKR(
     config: HPKEConfig,
-    enc: &EncodedHpkePublicKey,
+    enc: &EncodedHpkePublicKeyIn,
     skR: &HpkePrivateKey,
     info: &Info,
     psk: &Psk,
     psk_id: &PskId,
-    pkS: &PublicKey,
+    pkS: &PublicKeyIn,
 ) -> ContextResult {
     let shared_secret = AuthDecap(kem(config), enc, skR, pkS)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
@@ -799,7 +800,7 @@ pub fn Context_Export(
         suite_id(config),
         exporter_secret,
         sec_label(),
-        exporter_context,
+        &exporter_context,
         L,
     )
 }
@@ -829,17 +830,17 @@ pub fn HpkeSeal(
     pkR: &HpkePublicKey,
     info: &Info,
     aad: &AdditionalData,
-    ptxt: &Bytes,
+    ptxt: &[u8],
     psk: Option<&Psk>,
     psk_id: Option<&PskId>,
-    skS: Option<HpkePrivateKey>,
+    skS: Option<&HpkePrivateKey>,
     randomness: Randomness,
 ) -> Result<HPKECiphertext, HpkeError> {
     let HPKEConfig(mode, _kem, _kdf, aead) = config;
     let (enc, (key, nonce, _, _)) = match mode {
         Mode::mode_base => SetupBaseS(config, pkR, info, randomness),
         Mode::mode_psk => SetupPSKS(config, pkR, info, psk.unwrap(), psk_id.unwrap(), randomness),
-        Mode::mode_auth => SetupAuthS(config, pkR, info, &skS.unwrap(), randomness),
+        Mode::mode_auth => SetupAuthS(config, pkR, info, skS.unwrap(), randomness),
         Mode::mode_auth_psk => SetupAuthPSKS(
             config,
             pkR,
@@ -873,7 +874,7 @@ pub fn HpkeOpen(
     aad: &AdditionalData,
     psk: Option<&Psk>,
     psk_id: Option<&PskId>,
-    pkS: Option<HpkePublicKey>,
+    pkS: Option<&HpkePublicKey>,
 ) -> HpkeBytesResult {
     let HPKEConfig(mode, _kem, _kdf, aead) = config;
     let HPKECiphertext(enc, ct) = ctxt;
@@ -881,7 +882,7 @@ pub fn HpkeOpen(
     let (key, nonce, _, _) = match mode {
         Mode::mode_base => SetupBaseR(config, enc, skR, info),
         Mode::mode_psk => SetupPSKR(config, enc, skR, info, psk.unwrap(), psk_id.unwrap()),
-        Mode::mode_auth => SetupAuthR(config, enc, skR, info, &pkS.unwrap()),
+        Mode::mode_auth => SetupAuthR(config, enc, skR, info, pkS.unwrap()),
         Mode::mode_auth_psk => SetupAuthPSKR(
             config,
             enc,
@@ -889,7 +890,7 @@ pub fn HpkeOpen(
             info,
             psk.unwrap(),
             psk_id.unwrap(),
-            &pkS.unwrap(),
+            pkS.unwrap(),
         ),
     }?;
 
@@ -913,7 +914,7 @@ pub fn SendExport(
     L: usize,
     psk: Option<&Psk>,
     psk_id: Option<&PskId>,
-    skS: Option<HpkePrivateKey>,
+    skS: Option<&HpkePrivateKey>,
     randomness: Randomness,
 ) -> Result<HPKECiphertext, HpkeError> {
     let HPKEConfig(mode, _kem, _kdf, _aead) = config;
@@ -944,17 +945,16 @@ pub fn SendExport(
 /// ```
 pub fn ReceiveExport(
     config: HPKEConfig,
-    ctxt: &HPKECiphertext,
+    enc: &EncodedHpkePublicKeyIn,
     skR: &HpkePrivateKey,
     info: &Info,
     exporter_context: Bytes,
     L: usize,
     psk: Option<&Psk>,
     psk_id: Option<&PskId>,
-    pkS: Option<HpkePublicKey>,
+    pkS: Option<&HpkePublicKey>,
 ) -> HpkeBytesResult {
     let HPKEConfig(mode, _kem, _kdf, _aead) = config;
-    let HPKECiphertext(enc, _ct) = ctxt;
 
     let ctx = match mode {
         Mode::mode_base => SetupBaseR(config, enc, skR, info),

@@ -129,7 +129,7 @@ fn single_kat_auth() {
         &ptxt,
         None,
         None,
-        Some(sk_s),
+        Some(&sk_s),
         randomness,
     )
     .expect("Error in hpke seal");
@@ -150,7 +150,7 @@ fn single_kat_auth() {
         &aad,
         None,
         None,
-        Some(pk_s),
+        Some(&pk_s),
     )
     .expect("Error openening hpke cihpertext");
     assert_eq!(ptxt, decrypted_ptxt);
@@ -185,7 +185,7 @@ fn single_kat_auth_psk() {
         &ptxt,
         Some(psk),
         Some(psk_id),
-        Some(sk_s),
+        Some(&sk_s),
         randomness,
     )
     .expect("Error in hpke seal");
@@ -206,7 +206,7 @@ fn single_kat_auth_psk() {
         &aad,
         Some(psk),
         Some(psk_id),
-        Some(pk_s),
+        Some(&pk_s),
     )
     .expect("Error openening hpke cihpertext");
     assert_eq!(ptxt, decrypted_ptxt);
