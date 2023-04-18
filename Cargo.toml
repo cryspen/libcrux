@@ -1,6 +1,6 @@
 [package]
 name = "libcrux"
-version = "0.0.1-dev.2"
+version = "0.0.1-dev.3"
 edition = "2021"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 license = "Apache-2.0"
@@ -69,9 +69,9 @@ harness = false
 hacspec = ["hacspec-lib"] # re-export the hacspec lib
 rand = []
 
-[patch.crates-io]
+# [patch.crates-io]
 # hacl = { git = "https://github.com/cryspen/hacl-packages" }
-hacl = { path = "../hacl-packages/rust" }
+# hacl = { path = "../hacl-packages/rust" }
 
 # [patch.'https://github.com/hacspec/hacspec']
 # hacspec-lib = { path = "../../hacspec/lib" }
