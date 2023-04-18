@@ -78,6 +78,7 @@ impl Drbg {
 
     /// Automatically reseed after a while.
     #[cfg(feature = "rand")]
+    #[inline(always)]
     fn auto_reseed(&mut self) -> Result<(), Error> {
         if self.ctr > 512 {
             let mut entropy = [0u8; 16];
@@ -89,12 +90,14 @@ impl Drbg {
         }
         Ok(())
     }
+
     #[cfg(not(feature = "rand"))]
-    fn auto_reseed(&mut self) {}
+    #[inline(always)]
+    fn auto_reseed(&mut self) -> Result<(), Error> {
+        Ok(())
+    }
 
     /// Reseed the DRBG state.
-    ///
-    /// It is very unlikely that you will need this function.
     pub fn reseed(&mut self, entropy: &[u8], additional_input: &[u8]) -> Result<(), Error> {
         self.state
             .reseed(entropy, additional_input)
@@ -102,6 +105,10 @@ impl Drbg {
     }
 
     /// Generate random bytes.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate(&mut self, output: &mut [u8]) -> Result<(), Error> {
         self.auto_reseed()?;
         self.state
@@ -110,6 +117,10 @@ impl Drbg {
     }
 
     /// Generate random bytes with additional input mixed into the state.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate_with_input(
         &mut self,
         output: &mut [u8],
@@ -123,6 +134,10 @@ impl Drbg {
 
     /// Generate random bytes.
     /// Allocates the vector of length `len`.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate_vec(&mut self, len: usize) -> Result<Vec<u8>, Error> {
         self.auto_reseed()?;
         let mut output = vec![0u8; len];
@@ -134,6 +149,10 @@ impl Drbg {
 
     /// Generate random bytes.
     /// Allocates the array of length `LEN`.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate_array<const LEN: usize>(&mut self) -> Result<[u8; LEN], Error> {
         self.auto_reseed()?;
         let mut output = [0u8; LEN];
