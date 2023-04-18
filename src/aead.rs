@@ -211,7 +211,7 @@ pub struct Iv(pub [u8; 12]);
 #[cfg(simd256)]
 fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
     log::trace!("HACL Chacha20Poly1305 Encrypt SIMD 256");
-    chacha20_poly1305::simd256::encrypt(&key.0, msg_ctxt, iv.0, aad)
+    chacha20_poly1305::simd256::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
 }
 
 /// Fallback when simd256 is detected at runtime but it wasn't compiled.
@@ -248,7 +248,7 @@ fn decrypt_256(
     tag: &Tag,
 ) -> Result<(), Error> {
     log::trace!("HACL Chacha20Poly1305 Decrypt SIMD 256");
-    chacha20_poly1305::simd256::decrypt(&key.0, ctxt_msg, iv.0, aad, tag)
+    chacha20_poly1305::simd256::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
         .map_err(|_| Error::DecryptionFailed)
 }
 
@@ -307,10 +307,12 @@ fn decrypt_32(
 fn aes_encrypt_128(key: &Aes128Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad).map_err(|e| match e {
-        hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-        _ => Error::EncryptionError,
-    })
+    hazmat::aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
+        .map_err(|e| match e {
+            hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+            _ => Error::EncryptionError,
+        })
+        .map(|t| t.into())
 }
 
 #[cfg(not(aes_ni))]
@@ -322,10 +324,12 @@ fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag,
 fn aes_encrypt_256(key: &Aes256Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad).map_err(|e| match e {
-        hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-        _ => Error::EncryptionError,
-    })
+    hazmat::aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
+        .map_err(|e| match e {
+            hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+            _ => Error::EncryptionError,
+        })
+        .map(|t| t.into())
 }
 
 #[cfg(not(aes_ni))]
@@ -343,7 +347,7 @@ fn aes_decrypt_128(
 ) -> Result<(), Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, tag).map_err(|e| match e {
+    hazmat::aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,
     })
@@ -364,7 +368,7 @@ fn aes_decrypt_256(
 ) -> Result<(), Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, tag).map_err(|e| match e {
+    hazmat::aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,
     })
