@@ -161,17 +161,24 @@ pub use p256::validate_scalar as p256_validate_scalar;
 
 /// Derive the ECDH shared secret.
 /// Returns `Ok(point * scalar)` on the provided curve [`Algorithm`] or an error.
-pub fn derive(alg: Algorithm, point: &[u8], scalar: &[u8]) -> Result<Vec<u8>, Error> {
+pub fn derive(
+    alg: Algorithm,
+    point: impl AsRef<[u8]>,
+    scalar: impl AsRef<[u8]>,
+) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::X25519 => x25519::derive(
-            point.try_into().map_err(|_| Error::InvalidPoint)?,
-            scalar.try_into().map_err(|_| Error::InvalidScalar)?,
+            point.as_ref().try_into().map_err(|_| Error::InvalidPoint)?,
+            scalar
+                .as_ref()
+                .try_into()
+                .map_err(|_| Error::InvalidScalar)?,
         )
         .map(|r| r.into()),
         Algorithm::P256 => {
-            let point = p256::prepare_public_key(point)?;
-            let scalar =
-                hazmat::p256::validate_scalar_slice(scalar).map_err(|_| Error::InvalidScalar)?;
+            let point = p256::prepare_public_key(point.as_ref())?;
+            let scalar = hazmat::p256::validate_scalar_slice(scalar.as_ref())
+                .map_err(|_| Error::InvalidScalar)?;
 
             p256::derive(&point, &scalar).map(|r| r.into())
         }
@@ -195,17 +202,19 @@ pub fn secret_to_public(alg: Algorithm, scalar: &[u8]) -> Result<Vec<u8>, Error>
 }
 
 /// Validate a secret key.
-pub fn validate_scalar(alg: Algorithm, s: &[u8]) -> Result<(), Error> {
+pub fn validate_scalar(alg: Algorithm, s: impl AsRef<[u8]>) -> Result<(), Error> {
     match alg {
         Algorithm::X25519 => {
-            if s.iter().all(|&b| b == 0) {
+            if s.as_ref().iter().all(|&b| b == 0) {
                 Err(Error::InvalidScalar)
             } else {
                 Ok(())
             }
         }
-        Algorithm::P256 => p256::validate_scalar(s.try_into().map_err(|_| Error::InvalidScalar)?)
-            .map_err(|e| e.into()),
+        Algorithm::P256 => {
+            p256::validate_scalar(s.as_ref().try_into().map_err(|_| Error::InvalidScalar)?)
+                .map_err(|e| e.into())
+        }
         _ => Err(Error::UnknownAlgorithm),
     }
 }

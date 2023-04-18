@@ -30,8 +30,11 @@
     non_upper_case_globals
 )]
 
-use crate::{hmac::tag_size, specs::aead::*};
-use hacspec_lib::*;
+use crate::{
+    aead::{self, *},
+    hacspec_lib::*,
+    hmac::tag_size,
+};
 
 use super::errors::*;
 
@@ -132,16 +135,14 @@ fn alg_for_aead(aead_id: AEAD) -> AeadAlgResult {
 /// Encrypt and authenticate plaintext `pt` with associated data `aad` using
 /// symmetric key `key` and nonce `nonce`, yielding ciphertext and tag `ct`.
 /// This function can raise a [`MessageLimitReachedError`](`HpkeError::MessageLimitReachedError`) upon failure.
-pub fn AeadSeal(
-    aead_id: AEAD,
-    key: &Key,
-    nonce: &Nonce,
-    aad: &Bytes,
-    pt: &Bytes,
-) -> HpkeBytesResult {
+pub fn AeadSeal(aead_id: AEAD, key: &Key, nonce: &Nonce, aad: &[u8], pt: &[u8]) -> HpkeBytesResult {
     let algorithm = alg_for_aead(aead_id)?;
-    match encrypt(algorithm, key, pt, nonce.clone(), aad) {
-        Ok((ct, tag)) => HpkeBytesResult::Ok(ct.concat_owned(tag)),
+    let key = aead::Key::from_slice(algorithm, key)?;
+    match encrypt_detached(&key, pt, Iv::new(nonce)?, aad) {
+        Ok((tag, mut ct)) => {
+            ct.extend_from_slice(tag.as_ref());
+            HpkeBytesResult::Ok(ct)
+        }
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
     }
 }
@@ -150,17 +151,12 @@ pub fn AeadSeal(
 /// associated data `aad` with symmetric key `key` and nonce `nonce`,
 /// returning plaintext message `pt`. This function can raise an
 /// [`OpenError`](`HpkeError::OpenError`) or [`MessageLimitReachedError`](`HpkeError::MessageLimitReachedError`) upon failure.
-pub fn AeadOpen(
-    aead_id: AEAD,
-    key: &Key,
-    nonce: &Nonce,
-    aad: &Bytes,
-    ct: &Bytes,
-) -> HpkeBytesResult {
+pub fn AeadOpen(aead_id: AEAD, key: &Key, nonce: &Nonce, aad: &[u8], ct: &[u8]) -> HpkeBytesResult {
     let algorithm = alg_for_aead(aead_id)?;
-    let (ct, tag) = ct.clone().split_off(ct.len() - Nt(aead_id));
-    match decrypt(algorithm, key, &ct, nonce.clone(), aad, &tag) {
-        Ok(pt) => HpkeBytesResult::Ok(pt),
+    let key = aead::Key::from_slice(algorithm, key)?;
+    let (ct, tag) = ct.to_vec().split(ct.len() - Nt(aead_id));
+    match decrypt_detached(&key, ct, Iv::new(nonce)?, aad, &Tag::from_slice(tag)?) {
+        Ok(pt) => HpkeBytesResult::Ok(pt.into()),
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
     }
 }

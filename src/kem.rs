@@ -58,10 +58,10 @@ pub enum PublicKey {
 }
 
 /// Compute the public key for a private key of the given [`Algorithm`].
-pub fn secret_to_public(alg: Algorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
+pub fn secret_to_public(alg: Algorithm, sk: impl AsRef<[u8]>) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {
-            ecdh::secret_to_public(alg.into(), sk).map_err(|e| e.into())
+            ecdh::secret_to_public(alg.into(), sk.as_ref()).map_err(|e| e.into())
         }
         _ => Err(Error::UnsupportedAlgorithm),
     }

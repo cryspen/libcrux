@@ -4,13 +4,16 @@
 //! * EdDSA 25519
 
 use hacl::hazmat::{self, ed25519, p256};
-use rand::{CryptoRng, RngCore};
+use rand::{CryptoRng, Rng, RngCore};
+
+use crate::ecdh;
 
 /// Signature Errors
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
     SigningError,
     InvalidSignature,
+    KeyGenError,
 }
 
 /// The digest algorithm used for the signature scheme (when required).
@@ -46,7 +49,23 @@ pub struct EcDsaP256Signature {
 /// A [`Algorithm::Ed25519`] Signature
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ed25519Signature {
-    signature: [u8; 32],
+    signature: [u8; 64],
+}
+
+impl Ed25519Signature {
+    /// Generate a signature from the raw 64 bytes.
+    pub fn from_bytes(signature: [u8; 64]) -> Self {
+        Self { signature }
+    }
+
+    /// Generate a signature from the raw bytes slice.
+    ///
+    /// Returns an error if the slice has lignth != 64.
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
+        Ok(Self {
+            signature: bytes.try_into().map_err(|_| Error::InvalidSignature)?,
+        })
+    }
 }
 
 impl EcDsaP256Signature {
@@ -201,6 +220,44 @@ pub fn verify(payload: &[u8], signature: &Signature, public_key: &[u8]) -> Resul
         Signature::Ed25519(signature) => {
             let public_key = public_key.try_into().map_err(|_| Error::InvalidSignature)?;
             ed25519::verify(payload, public_key, &signature.signature).map_err(into_verify_error)
+        }
+    }
+}
+
+/// Generate a fresh key pair.
+///
+/// The function returns the (secret key, public key) tuple, or an [`Error`].
+pub fn key_gen(
+    alg: Algorithm,
+    rng: &mut (impl CryptoRng + Rng),
+) -> Result<(Vec<u8>, Vec<u8>), Error> {
+    match alg {
+        Algorithm::EcDsaP256(_) => {
+            ecdh::key_gen(ecdh::Algorithm::P256, rng).map_err(|_| Error::KeyGenError)
+        }
+        Algorithm::Ed25519 => {
+            const LIMIT: usize = 100;
+            let mut sk = [0u8; 32];
+            for _ in 0..LIMIT {
+                rng.try_fill_bytes(&mut sk)
+                    .map_err(|_| Error::KeyGenError)?;
+
+                // We don't want a 0 key.
+                if sk.iter().all(|&b| b == 0) {
+                    sk = [0u8; 32];
+                    continue;
+                }
+
+                // We clamp the key already to make sure it can't be misused.
+                sk[0] = sk[0] & 248u8;
+                sk[31] = sk[31] & 127u8;
+                sk[31] = sk[31] | 64u8;
+
+                break;
+            }
+            let pk = ed25519::secret_to_public(&sk);
+
+            Ok((sk.to_vec(), pk.to_vec()))
         }
     }
 }

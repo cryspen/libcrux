@@ -62,7 +62,7 @@
 //! - `InvalidParameters`: Parameters to an algorithm are inconsistent or wrong.
 //! - `CryptoError`: An opaque error happened in a crypto operation outside of this code.
 
-use hacspec_lib::*;
+use crate::hacspec_lib::*;
 
 /// Explicit errors generated throughout this specification.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -99,3 +99,16 @@ pub enum HpkeError {
 
 /// A [`Result`] type that returns a [`Bytes`] or an [`HpkeError`].
 pub type HpkeBytesResult = Result<Bytes, HpkeError>;
+
+impl From<crate::aead::Error> for HpkeError {
+    fn from(value: crate::aead::Error) -> Self {
+        match value {
+            crate::aead::Error::UnsupportedAlgorithm => Self::UnsupportedAlgorithm,
+            crate::aead::Error::EncryptionError => Self::EncapError,
+            crate::aead::Error::DecryptionFailed => Self::DecapError,
+            crate::aead::Error::InvalidKey
+            | crate::aead::Error::InvalidIv
+            | crate::aead::Error::InvalidTag => Self::InvalidParameters,
+        }
+    }
+}

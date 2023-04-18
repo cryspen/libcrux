@@ -25,6 +25,7 @@ pub enum Error {
     InvalidKey,
     DecryptionFailed,
     InvalidIv,
+    InvalidTag,
 }
 
 /// The AEAD Algorithm Identifier.
@@ -123,10 +124,16 @@ mod keygen {
     }
 
     impl Iv {
+        /// Generate a new random Iv
         pub fn generate(rng: &mut (impl RngCore + CryptoRng)) -> Self {
             let mut n = Self::default();
             rng.fill_bytes(&mut n.0);
             n
+        }
+
+        /// Wrap an array.
+        pub fn new(iv: impl AsRef<[u8]>) -> Result<Self, Error> {
+            Ok(Self(iv.as_ref().try_into().map_err(|_| Error::InvalidIv)?))
         }
     }
 }
@@ -153,9 +160,50 @@ impl Key {
             )),
         })
     }
+
+    /// Generate a [`Key`] for the [`Algorithm`] from the raw `bytes` slice.
+    pub fn from_slice(alg: Algorithm, bytes: impl AsRef<[u8]>) -> Result<Self, Error> {
+        Ok(match alg {
+            Algorithm::Aes128Gcm => Self::Aes128(Aes128Key(
+                bytes.as_ref().try_into().map_err(|_| Error::InvalidKey)?,
+            )),
+            Algorithm::Aes256Gcm => Self::Aes256(Aes256Key(
+                bytes.as_ref().try_into().map_err(|_| Error::InvalidKey)?,
+            )),
+            Algorithm::Chacha20Poly1305 => Self::Chacha20Poly1305(Chacha20Key(
+                bytes.as_ref().try_into().map_err(|_| Error::InvalidKey)?,
+            )),
+        })
+    }
 }
 
-pub type Tag = [u8; 16];
+#[derive(Default, PartialEq, Eq, Debug)]
+pub struct Tag([u8; 16]);
+
+impl Tag {
+    /// Convert slice into a [`Tag`]
+    pub fn from_slice(t: impl AsRef<[u8]>) -> Result<Self, Error> {
+        Ok(Self(t.as_ref().try_into().map_err(|_| Error::InvalidTag)?))
+    }
+}
+
+impl From<[u8; 16]> for Tag {
+    fn from(value: [u8; 16]) -> Self {
+        Self(value)
+    }
+}
+
+impl AsRef<[u8]> for Tag {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl AsMut<[u8]> for Tag {
+    fn as_mut(&mut self) -> &mut [u8] {
+        &mut self.0
+    }
+}
 
 #[derive(Default)]
 pub struct Iv(pub [u8; 12]);
@@ -163,7 +211,7 @@ pub struct Iv(pub [u8; 12]);
 #[cfg(simd256)]
 fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
     log::trace!("HACL Chacha20Poly1305 Encrypt SIMD 256");
-    chacha20_poly1305::simd256::encrypt(&key.0, msg_ctxt, iv.0, aad)
+    chacha20_poly1305::simd256::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
 }
 
 /// Fallback when simd256 is detected at runtime but it wasn't compiled.
@@ -176,7 +224,7 @@ fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 #[cfg(simd128)]
 fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
     log::trace!("HACL Chacha20Poly1305 Encrypt SIMD 128");
-    chacha20_poly1305::simd128::encrypt(&key.0, msg_ctxt, iv.0, aad)
+    chacha20_poly1305::simd128::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
 }
 
 /// Fallback when simd128 is detected at runtime but it wasn't compiled.
@@ -188,7 +236,7 @@ fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 
 fn encrypt_32(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
     log::trace!("HACL Chacha20Poly1305 Encrypt Portable");
-    chacha20_poly1305::encrypt(&key.0, msg_ctxt, iv.0, aad)
+    chacha20_poly1305::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
 }
 
 #[cfg(simd256)]
@@ -200,7 +248,7 @@ fn decrypt_256(
     tag: &Tag,
 ) -> Result<(), Error> {
     log::trace!("HACL Chacha20Poly1305 Decrypt SIMD 256");
-    chacha20_poly1305::simd256::decrypt(&key.0, ctxt_msg, iv.0, aad, tag)
+    chacha20_poly1305::simd256::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
         .map_err(|_| Error::DecryptionFailed)
 }
 
@@ -226,7 +274,7 @@ fn decrypt_128(
     tag: &Tag,
 ) -> Result<(), Error> {
     log::trace!("HACL Chacha20Poly1305 Decrypt SIMD 128");
-    chacha20_poly1305::simd128::decrypt(&key.0, ctxt_msg, iv.0, aad, tag)
+    chacha20_poly1305::simd128::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
         .map_err(|_| Error::DecryptionFailed)
 }
 
@@ -251,7 +299,7 @@ fn decrypt_32(
     tag: &Tag,
 ) -> Result<(), Error> {
     log::trace!("HACL Chacha20Poly1305 Decrypt Portable");
-    chacha20_poly1305::decrypt(&key.0, ctxt_msg, iv.0, aad, tag)
+    chacha20_poly1305::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
         .map_err(|_| Error::DecryptionFailed)
 }
 
@@ -259,10 +307,12 @@ fn decrypt_32(
 fn aes_encrypt_128(key: &Aes128Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad).map_err(|e| match e {
-        hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-        _ => Error::EncryptionError,
-    })
+    hazmat::aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
+        .map_err(|e| match e {
+            hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+            _ => Error::EncryptionError,
+        })
+        .map(|t| t.into())
 }
 
 #[cfg(not(aes_ni))]
@@ -274,10 +324,12 @@ fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag,
 fn aes_encrypt_256(key: &Aes256Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad).map_err(|e| match e {
-        hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-        _ => Error::EncryptionError,
-    })
+    hazmat::aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
+        .map_err(|e| match e {
+            hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+            _ => Error::EncryptionError,
+        })
+        .map(|t| t.into())
 }
 
 #[cfg(not(aes_ni))]
@@ -295,7 +347,7 @@ fn aes_decrypt_128(
 ) -> Result<(), Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, tag).map_err(|e| match e {
+    hazmat::aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,
     })
@@ -316,7 +368,7 @@ fn aes_decrypt_256(
 ) -> Result<(), Error> {
     // XXX: Note that this might still fail because we don't check all
     //      the required features (movbe)
-    hazmat::aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, tag).map_err(|e| match e {
+    hazmat::aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,
     })
@@ -356,6 +408,20 @@ pub fn encrypt(key: &Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag
     }
 }
 
+/// AEAD encrypt the message in `msg` with the `key`, `iv` and `aad`.
+///
+/// Returns the `Tag` and the ciphertext tuple.
+pub fn encrypt_detached(
+    key: &Key,
+    msg: impl AsRef<[u8]>,
+    iv: Iv,
+    aad: impl AsRef<[u8]>,
+) -> Result<(Tag, Vec<u8>), Error> {
+    let mut msg_ctxt = msg.as_ref().to_vec();
+    let tag = encrypt(key, &mut msg_ctxt, iv, aad.as_ref())?;
+    Ok((tag, msg_ctxt))
+}
+
 /// AEAD decrypt the ciphertext in `ctxt_msg` with the `key`, `iv`, `aad`, and
 /// `tag`.
 ///
@@ -386,4 +452,20 @@ pub fn decrypt(key: &Key, ctxt_msg: &mut [u8], iv: Iv, aad: &[u8], tag: &Tag) ->
             }
         }
     }
+}
+
+/// AEAD decrypt the ciphertext in `ctxt` with the `key`, `iv`, `aad`, and
+/// `tag`.
+///
+/// Returns the plaintext in `ctxt_msg` or an error if the decryption fails.
+pub fn decrypt_detached(
+    key: &Key,
+    ctxt: impl AsRef<[u8]>,
+    iv: Iv,
+    aad: impl AsRef<[u8]>,
+    tag: &Tag,
+) -> Result<Vec<u8>, Error> {
+    let mut ctxt_msg = ctxt.as_ref().to_vec();
+    decrypt(key, &mut ctxt_msg, iv, aad.as_ref(), tag)?;
+    Ok(ctxt_msg)
 }

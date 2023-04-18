@@ -21,7 +21,11 @@ pub mod hpke;
 pub mod kem;
 pub mod signature;
 
+// XXX: temporary hacspec lib
+pub(crate) mod hacspec_lib;
+
 // hacspec utils
+#[cfg(feature = "hacspec")]
 pub(crate) mod specs;
 
 /// Re-export hacspec functions with the hacspec feature.

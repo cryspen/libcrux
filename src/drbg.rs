@@ -26,6 +26,7 @@ impl std::error::Error for Error {}
 
 pub struct Drbg {
     state: drbg::Drbg,
+    ctr: u32, // automatic reseed after 512 invocations. It has to happen at least every 1024 times.
 }
 
 impl Drbg {
@@ -72,12 +73,31 @@ impl Drbg {
 
         let state = drbg::Drbg::new(algorithm, entropy, nonce, personalization)
             .map_err(|_| Error::InvalidInput)?;
-        Ok(Self { state })
+        Ok(Self { state, ctr: 0 })
+    }
+
+    /// Automatically reseed after a while.
+    #[cfg(feature = "rand")]
+    #[inline(always)]
+    fn auto_reseed(&mut self) -> Result<(), Error> {
+        if self.ctr > 512 {
+            let mut entropy = [0u8; 16];
+            rand::rngs::OsRng.fill_bytes(&mut entropy);
+            self.reseed(&entropy, b"reseed")?;
+            self.ctr = 0;
+        } else {
+            self.ctr += 1;
+        }
+        Ok(())
+    }
+
+    #[cfg(not(feature = "rand"))]
+    #[inline(always)]
+    fn auto_reseed(&mut self) -> Result<(), Error> {
+        Ok(())
     }
 
     /// Reseed the DRBG state.
-    ///
-    /// It is very unlikely that you will need this function.
     pub fn reseed(&mut self, entropy: &[u8], additional_input: &[u8]) -> Result<(), Error> {
         self.state
             .reseed(entropy, additional_input)
@@ -85,18 +105,28 @@ impl Drbg {
     }
 
     /// Generate random bytes.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate(&mut self, output: &mut [u8]) -> Result<(), Error> {
+        self.auto_reseed()?;
         self.state
             .generate(output, &[])
             .map_err(|_| Error::UnableToGenerate)
     }
 
     /// Generate random bytes with additional input mixed into the state.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate_with_input(
         &mut self,
         output: &mut [u8],
         additional_input: &[u8],
     ) -> Result<(), Error> {
+        self.auto_reseed()?;
         self.state
             .generate(output, additional_input)
             .map_err(|_| Error::UnableToGenerate)
@@ -104,7 +134,12 @@ impl Drbg {
 
     /// Generate random bytes.
     /// Allocates the vector of length `len`.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate_vec(&mut self, len: usize) -> Result<Vec<u8>, Error> {
+        self.auto_reseed()?;
         let mut output = vec![0u8; len];
         self.state
             .generate(&mut output, &[])
@@ -114,12 +149,22 @@ impl Drbg {
 
     /// Generate random bytes.
     /// Allocates the array of length `LEN`.
+    ///
+    /// Note that you will need to call `reseed()` when `reseed_required` is true
+    /// and the `rand` feature is not enabled. If the `rand` feature is enabled,
+    /// the Drbg reseeds itself when needed, using `OsRng`.
     pub fn generate_array<const LEN: usize>(&mut self) -> Result<[u8; LEN], Error> {
+        self.auto_reseed()?;
         let mut output = [0u8; LEN];
         self.state
             .generate(&mut output, &[])
             .map_err(|_| Error::UnableToGenerate)
             .map(|()| output)
+    }
+
+    /// Returns true if a reseed is required and false otherwise.
+    pub fn reseed_required(&self) -> bool {
+        self.ctr > 512
     }
 }
 
