@@ -4,17 +4,17 @@
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 mod cpuid;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-use cpuid::*;
+use cpuid::{self as cpu_id, Feature};
 
 #[cfg(test)]
 mod test;
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub(super) fn simd128_support() -> bool {
-    std::arch::is_x86_feature_detected!("sse2")
-        && std::arch::is_x86_feature_detected!("sse3")
-        && std::arch::is_x86_feature_detected!("sse4.1")
-        && std::arch::is_x86_feature_detected!("avx")
+    cpu_id::supported(Feature::sse2)
+        && cpu_id::supported(Feature::sse3)
+        && cpu_id::supported(Feature::sse4_1)
+        && cpu_id::supported(Feature::avx)
 }
 
 #[cfg(target_arch = "aarch64")]
@@ -30,7 +30,7 @@ pub(super) fn simd128_support() -> bool {
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub(super) fn simd256_support() -> bool {
-    std::arch::is_x86_feature_detected!("avx2")
+    cpu_id::supported(Feature::avx2)
 }
 
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
@@ -41,7 +41,7 @@ pub(super) fn simd256_support() -> bool {
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub(super) fn x25519_cpu_support() -> bool {
-    std::arch::is_x86_feature_detected!("bmi2") && std::arch::is_x86_feature_detected!("adx")
+    cpu_id::supported(Feature::bmi2) && cpu_id::supported(Feature::adx)
 }
 
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
@@ -52,7 +52,7 @@ pub(super) fn x25519_cpu_support() -> bool {
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub(super) fn bmi2_adx_support() -> bool {
-    std::arch::is_x86_feature_detected!("bmi2") && std::arch::is_x86_feature_detected!("adx")
+    cpu_id::supported(Feature::bmi2) && cpu_id::supported(Feature::adx)
 }
 
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
@@ -63,14 +63,11 @@ pub(super) fn bmi2_adx_support() -> bool {
 /// Check whether AES is supported
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn aes_ni_support() -> bool {
-    let cpu_id = CpuId::init();
-    let movbe = supported(Feature::movbe, &cpu_id);
-
-    std::arch::is_x86_feature_detected!("avx")
-        && std::arch::is_x86_feature_detected!("sse")
-        && std::arch::is_x86_feature_detected!("aes")
-        && std::arch::is_x86_feature_detected!("pclmulqdq")
-        && movbe
+    cpu_id::supported(Feature::avx)
+        && cpu_id::supported(Feature::sse)
+        && cpu_id::supported(Feature::aes)
+        && cpu_id::supported(Feature::pclmulqdq)
+        && cpu_id::supported(Feature::movbe)
 }
 
 /// Check whether AES is supported
