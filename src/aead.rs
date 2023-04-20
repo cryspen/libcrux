@@ -83,6 +83,16 @@ impl Algorithm {
             Algorithm::Chacha20Poly1305 => 12,
         }
     }
+
+    /// Make sure the algorithm is supported by the hardware.
+    #[inline]
+    fn supported(self) -> Result<(), Error> {
+        if matches!(self, Algorithm::Aes128Gcm | Algorithm::Aes256Gcm) && !aes_ni_support() {
+            Err(Error::UnsupportedAlgorithm)
+        } else {
+            Ok(())
+        }
+    }
 }
 
 #[derive(Default)]
@@ -148,6 +158,8 @@ pub enum Key {
 impl Key {
     /// Generate a [`Key`] for the [`Algorithm`] from the raw `bytes`.
     pub fn from_bytes(alg: Algorithm, bytes: Vec<u8>) -> Result<Self, Error> {
+        alg.supported()?;
+
         Ok(match alg {
             Algorithm::Aes128Gcm => {
                 Self::Aes128(Aes128Key(bytes.try_into().map_err(|_| Error::InvalidKey)?))
@@ -163,6 +175,8 @@ impl Key {
 
     /// Generate a [`Key`] for the [`Algorithm`] from the raw `bytes` slice.
     pub fn from_slice(alg: Algorithm, bytes: impl AsRef<[u8]>) -> Result<Self, Error> {
+        alg.supported()?;
+
         Ok(match alg {
             Algorithm::Aes128Gcm => Self::Aes128(Aes128Key(
                 bytes.as_ref().try_into().map_err(|_| Error::InvalidKey)?,
