@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 
+use libcrux::aes_ni_support;
 use serde::{Deserialize, Serialize};
 use std::{fs::File, io::BufReader, time::Instant};
 
@@ -194,7 +195,12 @@ fn kat(tests: Vec<HpkeTestVector>) {
         }
         #[cfg(not(target_arch = "x86_64"))]
         if aead_id == AEAD::AES_128_GCM {
-            // Evercrypt AES only works on x64 (and there only with the necessary extensions)
+            // libcrux AES only works on x64 (and there only with the necessary extensions)
+            return;
+        }
+        if !aes_ni_support() {
+            // libcrux AES only works on x64 (and there only with the necessary extensions)
+            eprintln!("skipping AES on x64 because we're missing features.");
             return;
         }
 

@@ -1,9 +1,6 @@
-use crate::{
-    digest::{
-        digest_size,
-        Algorithm::{Sha3_224, Sha3_256, Sha3_384, Sha3_512},
-    },
-    hw_detection::simd256_support,
+use crate::digest::{
+    digest_size,
+    Algorithm::{Sha3_224, Sha3_256, Sha3_384, Sha3_512},
 };
 
 #[cfg(simd256)]
@@ -11,7 +8,7 @@ macro_rules! sha3_simd256 {
     ($name:ident, $alg:expr, $avx2_fun:expr, $ref_fun:expr) => {
         pub fn $name(input: &[u8]) -> [u8; digest_size($alg)] {
             let mut digest = [0u8; digest_size($alg)];
-            let r = if simd256_support() {
+            let r = if hw_detection::simd256_support() {
                 log::trace!("Jasmin SHA3 avx2");
                 unsafe {
                     $avx2_fun(
