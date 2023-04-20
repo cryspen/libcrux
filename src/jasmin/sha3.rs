@@ -68,7 +68,8 @@ sha3_simd256!(
     libjade_sys::jade_hash_sha3_512_amd64_ref
 );
 
-macro_rules! sha3 {
+#[cfg(not(simd256))]
+macro_rules! sha3_ref {
     ($name:ident, $alg:expr, $ref_fun:expr) => {
         pub fn $name(input: &[u8]) -> [u8; digest_size($alg)] {
             log::trace!("Jasmin SHA3 ref");
@@ -90,28 +91,28 @@ macro_rules! sha3 {
 }
 
 #[cfg(not(simd256))]
-sha3!(
+sha3_ref!(
     sha3_224,
     Sha3_224,
     libjade_sys::jade_hash_sha3_224_amd64_ref
 );
 
 #[cfg(not(simd256))]
-sha3!(
+sha3_ref!(
     sha3_256,
     Sha3_256,
     libjade_sys::jade_hash_sha3_256_amd64_ref
 );
 
 #[cfg(not(simd256))]
-sha3!(
+sha3_ref!(
     sha3_384,
     Sha3_384,
     libjade_sys::jade_hash_sha3_384_amd64_ref
 );
 
 #[cfg(not(simd256))]
-sha3!(
+sha3_ref!(
     sha3_512,
     Sha3_512,
     libjade_sys::jade_hash_sha3_512_amd64_ref

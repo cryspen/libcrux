@@ -22,6 +22,20 @@ pub const JADE_ONETIMEAUTH_POLY1305_AMD64_REF_ALGNAME: &[u8; 9usize] = b"Poly130
 pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_REF_KEYBYTES: u32 = 32;
 pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_REF_NONCEBYTES: u32 = 12;
 pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_REF_ALGNAME: &[u8; 14usize] = b"ChaCha20-ietf\0";
+pub const JADE_HASH_SHA3_224_AMD64_AVX2_BYTES: u32 = 28;
+pub const JADE_HASH_SHA3_224_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-224\0";
+pub const JADE_HASH_SHA3_256_AMD64_AVX2_BYTES: u32 = 32;
+pub const JADE_HASH_SHA3_256_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-256\0";
+pub const JADE_HASH_SHA3_384_AMD64_AVX2_BYTES: u32 = 48;
+pub const JADE_HASH_SHA3_384_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-384\0";
+pub const JADE_HASH_SHA3_512_AMD64_AVX2_BYTES: u32 = 64;
+pub const JADE_HASH_SHA3_512_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-512\0";
+pub const JADE_ONETIMEAUTH_POLY1305_AMD64_AVX2_BYTES: u32 = 16;
+pub const JADE_ONETIMEAUTH_POLY1305_AMD64_AVX2_KEYBYTES: u32 = 32;
+pub const JADE_ONETIMEAUTH_POLY1305_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"Poly1305\0";
+pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX2_KEYBYTES: u32 = 32;
+pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX2_NONCEBYTES: u32 = 12;
+pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX2_ALGNAME: &[u8; 14usize] = b"ChaCha20-ietf\0";
 pub const JADE_ONETIMEAUTH_POLY1305_AMD64_AVX_BYTES: u32 = 16;
 pub const JADE_ONETIMEAUTH_POLY1305_AMD64_AVX_KEYBYTES: u32 = 32;
 pub const JADE_ONETIMEAUTH_POLY1305_AMD64_AVX_ALGNAME: &[u8; 9usize] = b"Poly1305\0";
@@ -116,6 +130,67 @@ extern "C" {
 }
 extern "C" {
     pub fn jade_stream_chacha_chacha20_ietf_amd64_ref(
+        stream: *mut u8,
+        length: u64,
+        nonce: *mut u8,
+        key: *mut u8,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_224_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_256_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_384_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_hash_sha3_512_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        length: u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_onetimeauth_poly1305_amd64_avx2(
+        out: *mut u8,
+        in_: *mut u8,
+        inlen: u64,
+        key: *mut u8,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_onetimeauth_poly1305_amd64_avx2_verify(
+        h: *mut u8,
+        in_: *mut u8,
+        inlen: u64,
+        key: *mut u8,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor(
+        ciphertext: *mut u8,
+        plaintext: *mut u8,
+        length: u64,
+        nonce: *mut u8,
+        key: *mut u8,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_stream_chacha_chacha20_ietf_amd64_avx2(
         stream: *mut u8,
         length: u64,
         nonce: *mut u8,
