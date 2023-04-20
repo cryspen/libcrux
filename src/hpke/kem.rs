@@ -460,10 +460,8 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
     if sk.len() == 0 {
         Result::<KeyPair, HpkeError>::Err(HpkeError::DeriveKeyPairError)
     } else {
-        match crate::kem::secret_to_public(named_group, &sk) {
-            Ok(pk) => Result::<KeyPair, HpkeError>::Ok((sk, pk)),
-            Err(_) => Result::<KeyPair, HpkeError>::Err(HpkeError::CryptoError),
-        }
+        let pk = pk(alg, &sk)?;
+        Ok((sk, pk))
     }
 }
 

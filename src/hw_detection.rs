@@ -63,8 +63,6 @@ pub(super) fn bmi2_adx_support() -> bool {
 /// Check whether AES is supported
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn aes_ni_support() -> bool {
-    // FIXME: std::arch::is_x86_feature_detected!("movbe") is not supported yet
-    //        we assume here that it is supported :|
     let cpu_id = CpuId::init();
     let movbe = supported(Feature::movbe, &cpu_id);
 
