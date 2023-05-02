@@ -14,7 +14,7 @@ crate-type = ["staticlib", "cdylib", "lib"]
 
 [dependencies]
 hacspec-lib = { version = "=0.1.0-beta.1", features = ["release"], optional = true }
-hacl = { version = "=0.0.2-dev.2", features = ["hazmat"] }
+hacl = { version = "=0.0.2-dev.3", features = ["hazmat"] }
 rand = { version = "0.8" }
 log = "0.4"
 
