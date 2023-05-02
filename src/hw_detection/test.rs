@@ -1,4 +1,4 @@
-use super::{cpuid::supported, *};
+use super::*;
 
 #[test]
 fn dump_features() {
@@ -46,8 +46,10 @@ fn dump_raw() {
     eprintln!("avx512vl\t{:?}", supported(Feature::avx512vl));
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[test]
 fn cpuid() {
+    use super::cpuid::supported;
     use std::time::Instant;
 
     let now = Instant::now();

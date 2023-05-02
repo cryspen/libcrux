@@ -67,7 +67,7 @@ mod x64_build {
     }
 
     #[cfg(windows)]
-    pub fn create_bindings(_: &Path, _: &Path) {}
+    pub fn create_bindings(_: &Path) {}
 
     pub fn compile_files(files: &[String], out_path: &Path, args: &[String]) {
         let jazz_dir = out_path.join("jazz");

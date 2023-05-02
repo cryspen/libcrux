@@ -1,6 +1,6 @@
 [package]
 name = "libjade-sys"
-version = "0.0.1-dev.1"
+version = "0.0.1-dev.2"
 edition = "2021"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 description = "Rust bindings for libjade, a formally verified cryptographic library written in jasmin."
