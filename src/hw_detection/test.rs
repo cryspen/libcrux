@@ -1,4 +1,4 @@
-use super::*;
+use super::{cpuid::supported, *};
 
 #[test]
 fn dump_features() {
@@ -12,37 +12,61 @@ fn dump_features() {
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[test]
 fn dump_raw() {
-    use super::cpuid::{supported, CpuId, Feature};
-    let id = CpuId::init();
-    eprintln!("mmx\t\t{:?}", supported(Feature::mmx, &id));
-    eprintln!("sse\t\t{:?}", supported(Feature::sse, &id));
-    eprintln!("sse2\t\t{:?}", supported(Feature::sse2, &id));
-    eprintln!("sse3\t\t{:?}", supported(Feature::sse3, &id));
-    eprintln!("pclmulqdq\t{:?}", supported(Feature::pclmulqdq, &id));
-    eprintln!("ssse3\t\t{:?}", supported(Feature::ssse3, &id));
-    eprintln!("fma\t\t{:?}", supported(Feature::fma, &id));
-    eprintln!("movbe\t\t{:?}", supported(Feature::movbe, &id));
-    eprintln!("sse4_1\t\t{:?}", supported(Feature::sse4_1, &id));
-    eprintln!("sse4_2\t\t{:?}", supported(Feature::sse4_2, &id));
-    eprintln!("popcnt\t\t{:?}", supported(Feature::popcnt, &id));
-    eprintln!("aes\t\t{:?}", supported(Feature::aes, &id));
-    eprintln!("xsave\t\t{:?}", supported(Feature::xsave, &id));
-    eprintln!("osxsave\t\t{:?}", supported(Feature::osxsave, &id));
-    eprintln!("avx\t\t{:?}", supported(Feature::avx, &id));
-    eprintln!("rdrand\t\t{:?}", supported(Feature::rdrand, &id));
-    eprintln!("sgx\t\t{:?}", supported(Feature::sgx, &id));
-    eprintln!("bmi1\t\t{:?}", supported(Feature::bmi1, &id));
-    eprintln!("avx2\t\t{:?}", supported(Feature::avx2, &id));
-    eprintln!("bmi2\t\t{:?}", supported(Feature::bmi2, &id));
-    eprintln!("avx512f\t\t{:?}", supported(Feature::avx512f, &id));
-    eprintln!("avx512dq\t{:?}", supported(Feature::avx512dq, &id));
-    eprintln!("rdseed\t\t{:?}", supported(Feature::rdseed, &id));
-    eprintln!("adx\t\t{:?}", supported(Feature::adx, &id));
-    eprintln!("avx512ifma\t{:?}", supported(Feature::avx512ifma, &id));
-    eprintln!("avx512pf\t{:?}", supported(Feature::avx512pf, &id));
-    eprintln!("avx512er\t{:?}", supported(Feature::avx512er, &id));
-    eprintln!("avx512cd\t{:?}", supported(Feature::avx512cd, &id));
-    eprintln!("sha\t\t{:?}", supported(Feature::sha, &id));
-    eprintln!("avx512bw\t{:?}", supported(Feature::avx512bw, &id));
-    eprintln!("avx512vl\t{:?}", supported(Feature::avx512vl, &id));
+    use super::cpuid::{supported, Feature};
+    eprintln!("mmx\t\t{:?}", supported(Feature::mmx));
+    eprintln!("sse\t\t{:?}", supported(Feature::sse));
+    eprintln!("sse2\t\t{:?}", supported(Feature::sse2));
+    eprintln!("sse3\t\t{:?}", supported(Feature::sse3));
+    eprintln!("pclmulqdq\t{:?}", supported(Feature::pclmulqdq));
+    eprintln!("ssse3\t\t{:?}", supported(Feature::ssse3));
+    eprintln!("fma\t\t{:?}", supported(Feature::fma));
+    eprintln!("movbe\t\t{:?}", supported(Feature::movbe));
+    eprintln!("sse4_1\t\t{:?}", supported(Feature::sse4_1));
+    eprintln!("sse4_2\t\t{:?}", supported(Feature::sse4_2));
+    eprintln!("popcnt\t\t{:?}", supported(Feature::popcnt));
+    eprintln!("aes\t\t{:?}", supported(Feature::aes));
+    eprintln!("xsave\t\t{:?}", supported(Feature::xsave));
+    eprintln!("osxsave\t\t{:?}", supported(Feature::osxsave));
+    eprintln!("avx\t\t{:?}", supported(Feature::avx));
+    eprintln!("rdrand\t\t{:?}", supported(Feature::rdrand));
+    eprintln!("sgx\t\t{:?}", supported(Feature::sgx));
+    eprintln!("bmi1\t\t{:?}", supported(Feature::bmi1));
+    eprintln!("avx2\t\t{:?}", supported(Feature::avx2));
+    eprintln!("bmi2\t\t{:?}", supported(Feature::bmi2));
+    eprintln!("avx512f\t\t{:?}", supported(Feature::avx512f));
+    eprintln!("avx512dq\t{:?}", supported(Feature::avx512dq));
+    eprintln!("rdseed\t\t{:?}", supported(Feature::rdseed));
+    eprintln!("adx\t\t{:?}", supported(Feature::adx));
+    eprintln!("avx512ifma\t{:?}", supported(Feature::avx512ifma));
+    eprintln!("avx512pf\t{:?}", supported(Feature::avx512pf));
+    eprintln!("avx512er\t{:?}", supported(Feature::avx512er));
+    eprintln!("avx512cd\t{:?}", supported(Feature::avx512cd));
+    eprintln!("sha\t\t{:?}", supported(Feature::sha));
+    eprintln!("avx512bw\t{:?}", supported(Feature::avx512bw));
+    eprintln!("avx512vl\t{:?}", supported(Feature::avx512vl));
+}
+
+#[test]
+fn cpuid() {
+    use std::time::Instant;
+
+    let now = Instant::now();
+    let _avx2 = supported(Feature::avx2);
+    let elapsed = now.elapsed();
+    eprintln!("libcrux init: {elapsed:.2?}");
+
+    let now = Instant::now();
+    let _avx2 = supported(Feature::avx2);
+    let elapsed = now.elapsed();
+    eprintln!("libcrux after: {elapsed:.2?}");
+
+    let now = Instant::now();
+    let _avx2 = std::arch::is_x86_feature_detected!("avx2");
+    let elapsed = now.elapsed();
+    eprintln!("std init: {elapsed:.2?}");
+
+    let now = Instant::now();
+    let _avx2 = std::arch::is_x86_feature_detected!("avx2");
+    let elapsed = now.elapsed();
+    eprintln!("std after: {elapsed:.2?}");
 }
