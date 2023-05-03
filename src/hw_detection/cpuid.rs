@@ -125,8 +125,15 @@ pub(super) fn init() {
         __cpuid_count(leaf, sub_leaf)
     }
 
+    // XXX[no_std]: no good way to do this in no_std
+    std::panic::catch_unwind(|| {
+        // If there's no CPU ID because we're in SGX or whatever other reason,
+        // we'll consider the hw detection as initialized but always return false.
+        unsafe {
+            CPU_ID = [cpuid(1), cpuid_count(7, 0)];
+        }
+    });
     unsafe {
-        CPU_ID = [cpuid(1), cpuid_count(7, 0)];
         INITIALIZED = true;
     }
 }
