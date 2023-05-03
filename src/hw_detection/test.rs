@@ -12,7 +12,7 @@ fn dump_features() {
 // XXX[windows]: Something is running into a STATUS_ACCESS_VIOLATION here.
 #[cfg(all(
     any(target_arch = "x86", target_arch = "x86_64"),
-    target_os = "windows"
+    not(target_os = "windows")
 ))]
 #[test]
 fn dump_raw() {
@@ -52,7 +52,7 @@ fn dump_raw() {
 
 #[cfg(all(
     any(target_arch = "x86", target_arch = "x86_64"),
-    target_os = "windows"
+    not(target_os = "windows")
 ))]
 #[test]
 fn cpuid() {
