@@ -84,6 +84,7 @@ fn comparisons_encrypt(c: &mut Criterion) {
             },
         );
 
+        #[cfg(not(windows))]
         group.bench_with_input(
             BenchmarkId::new("OpenSSL", fmt(*payload_size)),
             payload_size,
@@ -202,6 +203,7 @@ fn comparisons_decrypt(c: &mut Criterion) {
             },
         );
 
+        #[cfg(not(windows))]
         group.bench_with_input(
             BenchmarkId::new("OpenSSL", fmt(*payload_size)),
             payload_size,

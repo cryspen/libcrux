@@ -8,6 +8,8 @@ use libcrux::hpke::{Mode::*, *};
 
 #[test]
 fn single_kat_base() {
+    let _ = pretty_env_logger::try_init();
+
     // A.2.1.1.
     let config = HPKEConfig(
         mode_base,
