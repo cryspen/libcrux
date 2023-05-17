@@ -91,15 +91,13 @@ pub(crate) mod x25519 {
         curve25519::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
     }
 
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    pub(super) fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 32], Error> {
-        // On x64 we use Jasmin by default.
-        use crate::jasmin::x25519::secret_to_public;
+    // XXX: libjade's secret to public is broken on Windows (overflows the stack).
+    // #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    // pub(super) fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 32], Error> {
+    //     crate::jasmin::x25519::secret_to_public(s).map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
+    // }
 
-        secret_to_public(s).map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
-    }
-
-    #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+    // #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
     pub(super) fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 32], Error> {
         // On any other platform we use the portable HACL implementation.
         use hacl::hazmat::curve25519;

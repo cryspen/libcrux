@@ -78,6 +78,7 @@ fn generate(c: &mut Criterion) {
         )
     });
 
+    #[cfg(not(windows))]
     group.bench_function("OpenSSL", |b| {
         use openssl::rand::rand_bytes;
 

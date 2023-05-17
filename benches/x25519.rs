@@ -68,6 +68,7 @@ fn derive(c: &mut Criterion) {
         )
     });
 
+    #[cfg(not(windows))]
     group.bench_function("OpenSSL", |b| {
         use openssl::derive::Deriver;
         use openssl::pkey::{Id, PKey};
@@ -142,6 +143,7 @@ fn secret_to_public(c: &mut Criterion) {
         )
     });
 
+    #[cfg(not(windows))]
     group.bench_function("OpenSSL", |b| {
         use openssl::pkey::PKey;
 

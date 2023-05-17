@@ -65,6 +65,7 @@ macro_rules! impl_comp {
                     },
                 );
 
+                #[cfg(not(windows))]
                 group.bench_with_input(
                     BenchmarkId::new("OpenSSL", fmt(*payload_size)),
                     payload_size,

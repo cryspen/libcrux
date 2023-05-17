@@ -39,6 +39,8 @@ sha3 = "0.10"
 # Benchmarking "Ring"
 ring = "0.16"
 # Benchmarking "OpenSSL"
+# XXX: We don't do this for Windows right now.
+[target.'cfg(not(windows))'.build-dependencies]
 openssl = "0.10"
 
 [[bench]]
