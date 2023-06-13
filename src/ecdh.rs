@@ -141,8 +141,8 @@ pub(crate) mod p256 {
             pk
         } else {
             // Might be uncompressed
-            if let Ok(pk) = p256::compressed_to_coordinates(public_key) {
-                pk
+            if public_key.len() == 33 {
+                p256::compressed_to_coordinates(public_key).map_err(|_| Error::InvalidPoint)?
             } else {
                 // Might be a simple concatenation
                 public_key.try_into().map_err(|_| Error::InvalidPoint)?
