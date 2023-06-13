@@ -38,6 +38,22 @@ pub enum Signature {
     Ed25519(Ed25519Signature),
 }
 
+impl Signature {
+    /// Convert the signature into a raw byte vector.
+    ///
+    /// NIST P Curve signatures are returned as `r || s`.
+    pub fn into_vec(self) -> Vec<u8> {
+        match self {
+            Signature::EcDsaP256(s) => {
+                let mut out = s.r.to_vec();
+                out.extend_from_slice(&s.s);
+                out
+            }
+            Signature::Ed25519(s) => s.signature.to_vec(),
+        }
+    }
+}
+
 /// A [`Algorithm::EcDsaP256`] Signature
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EcDsaP256Signature {
@@ -60,11 +76,16 @@ impl Ed25519Signature {
 
     /// Generate a signature from the raw bytes slice.
     ///
-    /// Returns an error if the slice has lignth != 64.
+    /// Returns an error if the slice has legnth != 64.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             signature: bytes.try_into().map_err(|_| Error::InvalidSignature)?,
         })
+    }
+
+    /// Get the signature as the raw 64 bytes.
+    pub fn as_bytes(&self) -> &[u8; 64] {
+        &self.signature
     }
 }
 
@@ -81,6 +102,11 @@ impl EcDsaP256Signature {
             s: signature_bytes[32..].try_into().unwrap(),
             alg,
         }
+    }
+
+    /// Get the signature as the two raw 32 bytes `(r, s)`.
+    pub fn as_bytes(&self) -> (&[u8; 32], &[u8; 32]) {
+        (&self.r, &self.s)
     }
 }
 

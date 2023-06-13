@@ -75,7 +75,7 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || randombytes(*payload_size),
                             |payload| {
-                                let _result = hash($openssl, &payload).unwrap();
+                                let _result = hash($openssl, &payload);
                             },
                             BatchSize::SmallInput,
                         )

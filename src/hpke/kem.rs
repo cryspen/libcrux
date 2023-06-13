@@ -244,18 +244,14 @@ fn shared_secret_from_dh(alg: KEM, secret: Bytes) -> Bytes {
 pub fn DH(alg: KEM, sk: &PrivateKeyIn, pk: &PublicKeyIn) -> Result<SharedSecret, HpkeError> {
     match crate::ecdh::derive(kem_to_named_group(alg).into(), pk, sk) {
         Ok(secret) => HpkeBytesResult::Ok(shared_secret_from_dh(alg, secret)),
-        Err(e) => {
-            HpkeBytesResult::Err(HpkeError::ValidationError)
-        }
+        Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
     }
 }
 
 fn pk(alg: KEM, sk: &PrivateKeyIn) -> Result<PublicKey, HpkeError> {
     match crate::kem::secret_to_public(kem_to_named_group(alg), sk) {
         Ok(pk) => HpkeBytesResult::Ok(pk.into()),
-        Err(e) => {
-            HpkeBytesResult::Err(HpkeError::ValidationError)
-        }
+        Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
     }
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "libcrux"
-version = "0.0.1-dev.4"
+version = "0.0.1"
 edition = "2021"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 license = "Apache-2.0"
@@ -13,13 +13,16 @@ repository = "https://github.com/cryspen/libcrux"
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [dependencies]
-hacspec-lib = { version = "=0.1.0-beta.1", features = ["release"], optional = true }
-hacl = { version = "=0.0.2-dev.3", features = ["hazmat"] }
+# XXX: This shulod go away soon.
+hacspec-lib = { version = "=0.1.0-beta.1", features = [
+    "release",
+], optional = true }
+hacl = { version = "=0.0.2", features = ["hazmat"] }
 rand = { version = "0.8" }
 log = "0.4"
 
 [target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]
-libjade-sys = { version = "0.0.1-dev.2", path = "sys/libjade" }
+libjade-sys = { version = "0.0.1", path = "sys/libjade" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand"] }
@@ -38,9 +41,10 @@ x25519-dalek-ng = "1.1"
 sha3 = "0.10"
 # Benchmarking "Ring"
 ring = "0.16"
+
 # Benchmarking "OpenSSL"
 # XXX: We don't do this for Windows right now.
-[target.'cfg(not(windows))'.build-dependencies]
+[target.'cfg(not(windows))'.dev-dependencies]
 openssl = "0.10"
 
 [[bench]]
