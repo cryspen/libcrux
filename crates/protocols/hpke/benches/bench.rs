@@ -4,7 +4,7 @@ use hpke_rs_crypto::{
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto, RngCore,
 };
-use hpke_rs_evercrypt::*;
+// use hpke_rs_evercrypt::*;
 use hpke_rs_rust_crypto::*;
 use rand::rngs::OsRng;
 
@@ -258,7 +258,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    benchmark::<HpkeEvercrypt>,
+    // benchmark::<HpkeEvercrypt>,
     benchmark::<HpkeRustCrypto>,
 );
 criterion_main!(benches);

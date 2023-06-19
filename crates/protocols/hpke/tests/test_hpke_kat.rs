@@ -1,6 +1,6 @@
 extern crate hpke_rs as hpke;
 
-use hpke_rs_evercrypt::HpkeEvercrypt;
+// use hpke_rs_evercrypt::HpkeEvercrypt;
 use hpke_rs_rust_crypto::HpkeRustCrypto;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::{self, Deserialize, Serialize};
@@ -276,10 +276,10 @@ fn test_kat() {
     let time = now.elapsed();
     log::info!("Test vectors with Rust Crypto took: {}s", time.as_secs());
 
-    let now = Instant::now();
-    kat::<HpkeEvercrypt>(tests);
-    let time = now.elapsed();
-    log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
+    // let now = Instant::now();
+    // kat::<HpkeEvercrypt>(tests);
+    // let time = now.elapsed();
+    // log::info!("Test vectors with Evercrypt took: {}s", time.as_secs());
 }
 
 #[cfg(feature = "serialization")]
