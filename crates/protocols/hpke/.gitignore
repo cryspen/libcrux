@@ -5,3 +5,4 @@ Cargo.lock
 evercrypt_provider/target
 rust_crypto_provider/target
 traits/target/
+.DS_Store
