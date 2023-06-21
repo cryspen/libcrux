@@ -153,7 +153,8 @@ pub fn AeadSeal(aead_id: AEAD, key: &Key, nonce: &Nonce, aad: &[u8], pt: &[u8]) 
 pub fn AeadOpen(aead_id: AEAD, key: &Key, nonce: &Nonce, aad: &[u8], ct: &[u8]) -> HpkeBytesResult {
     let algorithm = alg_for_aead(aead_id)?;
     let key = aead::Key::from_slice(algorithm, key)?;
-    let tag = ct.to_vec().split_off(ct.len() - Nt(aead_id));
+    let mut ct = ct.to_vec();
+    let tag = ct.split_off(ct.len() - Nt(aead_id));
     match decrypt_detached(&key, ct, Iv::new(nonce)?, aad, &Tag::from_slice(tag)?) {
         Ok(pt) => HpkeBytesResult::Ok(pt.into()),
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),

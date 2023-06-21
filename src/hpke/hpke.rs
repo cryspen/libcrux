@@ -369,7 +369,7 @@ pub fn KeySchedule(
         Nh(kdf),
     )?;
 
-    ContextResult::Ok((key, base_nonce, 0u32, exporter_secret))
+    Ok((key, base_nonce, 0u32, exporter_secret))
 }
 
 /// ## Encryption to a Public Key - Sender
@@ -402,7 +402,7 @@ pub fn SetupBaseS(
         &default_psk(),
         &default_psk_id(),
     )?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Encryption to a Public Key - Receiver
@@ -429,7 +429,7 @@ pub fn SetupBaseR(
         &default_psk(),
         &default_psk_id(),
     )?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 /// ## Authentication using a Pre-Shared Key - Sender
@@ -460,7 +460,7 @@ pub fn SetupPSKS(
 ) -> SenderContextResult {
     let (shared_secret, enc) = Encap(kem(config), pkR, randomness)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Authentication using a Pre-Shared Key - Receiver
@@ -482,7 +482,7 @@ pub fn SetupPSKR(
 ) -> ContextResult {
     let shared_secret = Decap(kem(config), enc, skR)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 /// ## Authentication using an Asymmetric Key - Sender
@@ -534,7 +534,7 @@ pub fn SetupAuthS(
         &default_psk(),
         &default_psk_id(),
     )?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Authentication using an Asymmetric Key - Receiver
@@ -562,7 +562,7 @@ pub fn SetupAuthR(
         &default_psk(),
         &default_psk_id(),
     )?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 /// ## Authentication using both a PSK and an Asymmetric Key - Sender
@@ -592,7 +592,7 @@ pub fn SetupAuthPSKS(
 ) -> SenderContextResult {
     let (shared_secret, enc) = AuthEncap(kem(config), pkR, skS, randomness)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Authentication using both a PSK and an Asymmetric Key - Receiver
@@ -615,7 +615,7 @@ pub fn SetupAuthPSKR(
 ) -> ContextResult {
     let shared_secret = AuthDecap(kem(config), enc, skR, pkS)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 // === Stateful API ===
@@ -861,7 +861,7 @@ pub fn HpkeSeal(
         ),
     }?;
     let ct = AeadSeal(aead, &key, &nonce, aad, ptxt)?;
-    Result::<HPKECiphertext, HpkeError>::Ok(HPKECiphertext(enc, ct))
+    Ok(HPKECiphertext(enc, ct))
 }
 
 /// ## Decryption
@@ -904,7 +904,7 @@ pub fn HpkeOpen(
     }?;
 
     let ptxt = AeadOpen(aead, &key, &nonce, aad, ct)?;
-    HpkeBytesResult::Ok(ptxt)
+    Ok(ptxt)
 }
 
 /// ## "single-shot" secret export sender
@@ -942,7 +942,7 @@ pub fn SendExport(
         ),
     }?;
     let exported = Context_Export(config, &ctx, exporter_context, L)?;
-    Result::<HPKECiphertext, HpkeError>::Ok(HPKECiphertext(enc, exported))
+    Ok(HPKECiphertext(enc, exported))
 }
 
 /// ## "single-shot" secret export receiver

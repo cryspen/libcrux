@@ -46,7 +46,7 @@ fn single_kat_base() {
         None,
         None,
     )
-    .expect("Error openening hpke cihpertext");
+    .expect("Error opening hpke ciphertext");
     assert_eq!(ptxt, decrypted_ptxt);
 }
 
@@ -100,7 +100,7 @@ fn single_kat_psk() {
         Some(psk_id),
         None,
     )
-    .expect("Error openening hpke cihpertext");
+    .expect("Error opening hpke ciphertext");
     assert_eq!(ptxt, decrypted_ptxt);
 }
 
@@ -154,7 +154,7 @@ fn single_kat_auth() {
         None,
         Some(&pk_s),
     )
-    .expect("Error openening hpke cihpertext");
+    .expect("Error opening hpke ciphertext");
     assert_eq!(ptxt, decrypted_ptxt);
 }
 
@@ -210,6 +210,6 @@ fn single_kat_auth_psk() {
         Some(psk_id),
         Some(&pk_s),
     )
-    .expect("Error openening hpke cihpertext");
+    .expect("Error opening hpke ciphertext");
     assert_eq!(ptxt, decrypted_ptxt);
 }
