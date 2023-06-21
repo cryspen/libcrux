@@ -251,7 +251,7 @@ pub fn DH(alg: KEM, sk: &PrivateKeyIn, pk: &PublicKeyIn) -> Result<SharedSecret,
 
 fn pk(alg: KEM, sk: &PrivateKeyIn) -> Result<PublicKey, HpkeError> {
     match crate::kem::secret_to_public(kem_to_named_group(alg), sk) {
-        Ok(pk) => HpkeBytesResult::Ok(pk.into()),
+        Ok(pk) => HpkeBytesResult::Ok(pk),
         Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
     }
 }
@@ -282,8 +282,8 @@ pub fn SerializePublicKey(alg: KEM, pk: PublicKey) -> PublicKey {
         KEM::DHKEM_P256_HKDF_SHA256 => nist_curve_to_uncompressed(pk),
         KEM::DHKEM_P384_HKDF_SHA384 => nist_curve_to_uncompressed(pk),
         KEM::DHKEM_P521_HKDF_SHA512 => nist_curve_to_uncompressed(pk),
-        KEM::DHKEM_X25519_HKDF_SHA256 => pk.clone(),
-        KEM::DHKEM_X448_HKDF_SHA512 => pk.clone(),
+        KEM::DHKEM_X25519_HKDF_SHA256 => pk,
+        KEM::DHKEM_X448_HKDF_SHA512 => pk,
     }
 }
 
@@ -348,7 +348,7 @@ fn I2OSP(counter: usize) -> Vec<u8> {
 /// ```
 pub fn DeriveKeyPairX(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeError> {
     let kdf = kdf_for_kem(alg);
-    let dkp_prk = LabeledExtract(kdf, suite_id(alg), &empty(), dkp_prk_label(), &ikm)?;
+    let dkp_prk = LabeledExtract(kdf, suite_id(alg), &empty(), dkp_prk_label(), ikm)?;
 
     let sk = LabeledExpand(kdf, suite_id(alg), &dkp_prk, sk_label(), &empty(), Nsk(alg))?;
 
@@ -420,7 +420,7 @@ pub fn DeriveKeyPairX(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeE
 /// [NISTCurves]: https://doi.org/10.6028/nist.fips.186-4
 pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeError> {
     let kdf = kdf_for_kem(alg);
-    let dkp_prk = LabeledExtract(kdf, suite_id(alg), &empty(), dkp_prk_label(), &ikm)?;
+    let dkp_prk = LabeledExtract(kdf, suite_id(alg), &empty(), dkp_prk_label(), ikm)?;
 
     let named_group = kem_to_named_group(alg);
     let sk = if alg == KEM::DHKEM_X25519_HKDF_SHA256 || alg == KEM::DHKEM_X448_HKDF_SHA512 {

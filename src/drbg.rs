@@ -183,7 +183,7 @@ impl RngCore for Drbg {
     }
 
     fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-        self.generate(dest).map_err(|e| rand::Error::new(e))
+        self.generate(dest).map_err(rand::Error::new)
     }
 }
 

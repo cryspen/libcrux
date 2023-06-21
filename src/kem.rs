@@ -27,12 +27,12 @@ pub enum Error {
     UnsupportedAlgorithm,
 }
 
-impl Into<ecdh::Algorithm> for Algorithm {
-    fn into(self) -> ecdh::Algorithm {
-        match self {
+impl From<Algorithm> for ecdh::Algorithm {
+    fn from(value: Algorithm) -> Self {
+        match value {
             Algorithm::X25519 => ecdh::Algorithm::X25519,
-            Algorithm::Secp256r1 => ecdh::Algorithm::P256,
             Algorithm::X448 => ecdh::Algorithm::X448,
+            Algorithm::Secp256r1 => ecdh::Algorithm::P256,
             Algorithm::Secp384r1 => ecdh::Algorithm::P384,
             Algorithm::Secp521r1 => ecdh::Algorithm::P521,
         }

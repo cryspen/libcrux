@@ -98,7 +98,11 @@ pub fn LabeledExtract(
     labeled_ikm.extend_from_slice(&label);
     labeled_ikm.extend_from_slice(ikm);
 
-    Ok(crate::hkdf::extract(hkdf_algorithm(alg), salt, &labeled_ikm).into())
+    Ok(crate::hkdf::extract(
+        hkdf_algorithm(alg),
+        salt,
+        &labeled_ikm,
+    ))
 }
 
 /// KDF: Labeled Expand

@@ -321,7 +321,7 @@ pub fn KeySchedule(
     psk: &Psk,
     psk_id: &PskId,
 ) -> ContextResult {
-    VerifyPSKInputs(config, &psk, &psk_id)?;
+    VerifyPSKInputs(config, &psk, psk_id)?;
     let HPKEConfig(mode, _kem, kdf, aead) = config;
 
     let psk_id_hash = LabeledExtract(
@@ -856,7 +856,7 @@ pub fn HpkeSeal(
             info,
             psk.unwrap(),
             psk_id.unwrap(),
-            &skS.unwrap(),
+            skS.unwrap(),
             randomness,
         ),
     }?;
@@ -968,7 +968,7 @@ pub fn ReceiveExport(
     let ctx = match mode {
         Mode::mode_base => SetupBaseR(config, enc, skR, info),
         Mode::mode_psk => SetupPSKR(config, enc, skR, info, psk.unwrap(), psk_id.unwrap()),
-        Mode::mode_auth => SetupAuthR(config, enc, skR, info, &pkS.unwrap()),
+        Mode::mode_auth => SetupAuthR(config, enc, skR, info, pkS.unwrap()),
         Mode::mode_auth_psk => SetupAuthPSKR(
             config,
             enc,
@@ -976,7 +976,7 @@ pub fn ReceiveExport(
             info,
             psk.unwrap(),
             psk_id.unwrap(),
-            &pkS.unwrap(),
+            pkS.unwrap(),
         ),
     }?;
     Context_Export(config, &ctx, exporter_context, L)

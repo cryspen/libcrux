@@ -69,5 +69,5 @@ pub fn hkdf(
     okm_len: usize,
 ) -> Result<Vec<u8>, Error> {
     let prk = extract(mode, salt, ikm);
-    expand(mode, &prk, info, okm_len)
+    expand(mode, prk, info, okm_len)
 }

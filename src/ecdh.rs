@@ -211,7 +211,6 @@ pub fn validate_scalar(alg: Algorithm, s: impl AsRef<[u8]>) -> Result<(), Error>
         }
         Algorithm::P256 => {
             p256::validate_scalar(s.as_ref().try_into().map_err(|_| Error::InvalidScalar)?)
-                .map_err(|e| e.into())
         }
         _ => Err(Error::UnknownAlgorithm),
     }
