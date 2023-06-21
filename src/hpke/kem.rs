@@ -2,7 +2,6 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use crate::hacspec_lib::*;
 use crate::kem::*;
 
 use super::errors::*;
@@ -166,43 +165,43 @@ pub fn Ndh(kem_id: KEM) -> usize {
     }
 }
 
-pub type PrivateKey = Bytes;
-pub type PublicKey = Bytes;
+pub type PrivateKey = Vec<u8>;
+pub type PublicKey = Vec<u8>;
 pub type KeyPair = (PrivateKey, PublicKey);
 pub type PublicKeyIn = [u8];
 pub type PrivateKeyIn = [u8];
-pub type SharedSecret = Bytes;
-pub type SerializedPublicKey = Bytes;
-pub type Randomness = Bytes;
+pub type SharedSecret = Vec<u8>;
+pub type SerializedPublicKey = Vec<u8>;
+pub type Randomness = Vec<u8>;
 
 pub type EncapResult = Result<(SharedSecret, SerializedPublicKey), HpkeError>;
 
 // === Label ===
 
 /// "dkp_prk"
-fn dkp_prk_label() -> Bytes {
+fn dkp_prk_label() -> Vec<u8> {
     vec![0x64u8, 0x6bu8, 0x70u8, 0x5fu8, 0x70u8, 0x72u8, 0x6bu8]
 }
 
 /// "eae_prk"
-fn eae_prk_label() -> Bytes {
+fn eae_prk_label() -> Vec<u8> {
     vec![0x65u8, 0x61u8, 0x65u8, 0x5fu8, 0x70u8, 0x72u8, 0x6bu8]
 }
 
 /// "sk"
-fn sk_label() -> Bytes {
+fn sk_label() -> Vec<u8> {
     vec![0x73u8, 0x6bu8]
 }
 
 /// "candidate"
-fn candidate_label() -> Bytes {
+fn candidate_label() -> Vec<u8> {
     vec![
         0x63u8, 0x61u8, 0x6eu8, 0x64u8, 0x69u8, 0x64u8, 0x61u8, 0x74u8, 0x65u8,
     ]
 }
 
 /// "shared_secret"
-fn shared_secret_label() -> Bytes {
+fn shared_secret_label() -> Vec<u8> {
     vec![
         0x73u8, 0x68u8, 0x61u8, 0x72u8, 0x65u8, 0x64u8, 0x5fu8, 0x73u8, 0x65u8, 0x63u8, 0x72u8,
         0x65u8, 0x74u8,
@@ -210,14 +209,16 @@ fn shared_secret_label() -> Bytes {
 }
 
 /// Get an empty byte sequence.
-fn empty() -> Bytes {
+fn empty() -> Vec<u8> {
     vec![]
 }
 
 /// Get the label for the KEM with the cipher suite ID.
 /// "KEM"
-fn suite_id(alg: KEM) -> Bytes {
-    vec![0x4bu8, 0x45u8, 0x4du8].concat(Bytes::from_u16(kem_value(alg)))
+fn suite_id(alg: KEM) -> Vec<u8> {
+    let mut suite_id = vec![0x4bu8, 0x45u8, 0x4du8]; // "KEM"
+    suite_id.extend_from_slice(&kem_value(alg).to_be_bytes());
+    suite_id
 }
 
 /// For the variants of DHKEM defined in this document, the size [`Nsecret`] of the
@@ -226,11 +227,11 @@ fn suite_id(alg: KEM) -> Bytes {
 /// Diffie-Hellman shared secret is equal to 32, 48, and 66, respectively,
 /// corresponding to the x-coordinate of the resulting elliptic curve point.
 /// For X25519 and X448, the size [`Ndh`] of is equal to 32 and 56, respectively.
-fn shared_secret_from_dh(alg: KEM, secret: Bytes) -> Bytes {
+fn shared_secret_from_dh(alg: KEM, mut secret: Vec<u8>) -> Vec<u8> {
     match alg {
-        KEM::DHKEM_P256_HKDF_SHA256 => secret.into_slice(0, Ndh(alg)),
-        KEM::DHKEM_P384_HKDF_SHA384 => secret.into_slice(0, Ndh(alg)),
-        KEM::DHKEM_P521_HKDF_SHA512 => secret.into_slice(0, Ndh(alg)),
+        KEM::DHKEM_P256_HKDF_SHA256 => secret.drain(0..Ndh(alg)).collect(),
+        KEM::DHKEM_P384_HKDF_SHA384 => secret.drain(0..Ndh(alg)).collect(),
+        KEM::DHKEM_P521_HKDF_SHA512 => secret.drain(0..Ndh(alg)).collect(),
         KEM::DHKEM_X25519_HKDF_SHA256 => secret,
         KEM::DHKEM_X448_HKDF_SHA512 => secret,
     }
@@ -257,9 +258,9 @@ fn pk(alg: KEM, sk: &PrivateKeyIn) -> Result<PublicKey, HpkeError> {
 
 /// Prepend 0x04 to the byte sequence.
 fn nist_curve_to_uncompressed(pk: PublicKey) -> PublicKey {
-    let mut out = Bytes::create(1);
-    out[0] = 0x04u8;
-    out.concat(pk)
+    let mut out = vec![0x04u8];
+    out.extend_from_slice(&pk);
+    out
 }
 
 /// Produce a byte string of length `Npk` encoding the public key `pkX`.
@@ -287,7 +288,7 @@ pub fn SerializePublicKey(alg: KEM, pk: PublicKey) -> PublicKey {
 }
 
 /// Remove the leading 0x04 from the public key.
-fn nist_curve_from_uncompressed(pk: &PublicKeyIn) -> Bytes {
+fn nist_curve_from_uncompressed(pk: &PublicKeyIn) -> Vec<u8> {
     if pk[0] == 0x04 {
         pk[1..].to_vec()
     } else {
@@ -317,7 +318,7 @@ pub fn DeserializePublicKey(alg: KEM, enc: &[u8]) -> HpkeBytesResult {
 /// ```
 fn ExtractAndExpand(
     alg: KEM,
-    suite_id: Bytes,
+    suite_id: Vec<u8>,
     dh: SharedSecret,
     kem_context: &[u8],
 ) -> HpkeBytesResult {
@@ -333,10 +334,8 @@ fn ExtractAndExpand(
     )
 }
 
-fn I2OSP(counter: usize) -> Bytes {
-    let mut bytes = Bytes::create(1);
-    bytes[0] = counter as u8;
-    bytes
+fn I2OSP(counter: usize) -> Vec<u8> {
+    vec![counter as u8]
 }
 
 /// For X25519 and X448, the `DeriveKeyPair()` function applies a KDF to the input:
@@ -424,14 +423,14 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
     let dkp_prk = LabeledExtract(kdf, suite_id(alg), &empty(), dkp_prk_label(), &ikm)?;
 
     let named_group = kem_to_named_group(alg);
-    let mut sk = Bytes::create(0);
-    if alg == KEM::DHKEM_X25519_HKDF_SHA256 || alg == KEM::DHKEM_X448_HKDF_SHA512 {
-        sk = LabeledExpand(kdf, suite_id(alg), &dkp_prk, sk_label(), &empty(), 32)?;
+    let sk = if alg == KEM::DHKEM_X25519_HKDF_SHA256 || alg == KEM::DHKEM_X448_HKDF_SHA512 {
+        LabeledExpand(kdf, suite_id(alg), &dkp_prk, sk_label(), &empty(), 32)?
     } else {
         let mut bitmask = 0xFFu8;
         if alg == KEM::DHKEM_P521_HKDF_SHA512 {
             bitmask = 0x01u8;
         }
+        let mut sk = Vec::new();
         for counter in 0..256 {
             if sk.len() == 0 {
                 // Only keep looking if we didn't find one.
@@ -450,7 +449,8 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
                 }
             }
         }
-    }
+        sk
+    };
     if sk.len() == 0 {
         Result::<KeyPair, HpkeError>::Err(HpkeError::DeriveKeyPairError)
     } else {
@@ -485,7 +485,8 @@ pub fn Encap(alg: KEM, pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult
     let enc = SerializePublicKey(alg, pkE);
 
     let pkRm = SerializePublicKey(alg, pkR.to_vec());
-    let kem_context = enc.clone().concat(pkRm);
+    let mut kem_context = enc.clone();
+    kem_context.extend_from_slice(&pkRm);
 
     let shared_secret = ExtractAndExpand(alg, suite_id(alg), dh, &kem_context)?;
     EncapResult::Ok((shared_secret, enc))
@@ -508,7 +509,8 @@ pub fn Decap(alg: KEM, enc: &[u8], skR: &PrivateKeyIn) -> Result<SharedSecret, H
 
     let pkR = pk(alg, skR)?;
     let pkRm = SerializePublicKey(alg, pkR);
-    let kem_context = enc.to_vec().concat(pkRm);
+    let mut kem_context = enc.to_vec();
+    kem_context.extend_from_slice(&pkRm);
 
     ExtractAndExpand(alg, suite_id(alg), dh, &kem_context)
 }
@@ -535,13 +537,16 @@ pub fn AuthEncap(
     let (skE, pkE) = GenerateKeyPair(alg, randomness)?;
     let dhE = DH(alg, &skE, pkR)?;
     let dhS = DH(alg, skS, pkR)?;
-    let dh = dhE.concat(dhS);
+    let mut dh = dhE;
+    dh.extend_from_slice(&dhS);
     let enc = SerializePublicKey(alg, pkE);
 
     let pkRm = SerializePublicKey(alg, pkR.to_vec());
     let pkS = pk(alg, skS)?;
     let pkSm = SerializePublicKey(alg, pkS);
-    let kem_context = enc.clone().concat(pkRm).concat(pkSm);
+    let mut kem_context = enc.clone();
+    kem_context.extend_from_slice(&pkRm);
+    kem_context.extend_from_slice(&pkSm);
 
     let shared_secret = ExtractAndExpand(alg, suite_id(alg), dh, &kem_context)?;
     EncapResult::Ok((shared_secret, enc))
@@ -568,29 +573,43 @@ pub fn AuthDecap(
     let pkE = DeserializePublicKey(alg, enc)?;
     let dhE = DH(alg, skR, &pkE)?;
     let dhS = DH(alg, skR, pkS)?;
-    let dh = dhE.concat(dhS);
+    let mut dh = dhE;
+    dh.extend_from_slice(&dhS);
 
     let pkR = pk(alg, skR)?;
     let pkRm = SerializePublicKey(alg, pkR);
     let pkSm = SerializePublicKey(alg, pkS.to_vec());
-    let kem_context = enc.to_vec().concat(pkRm).concat(pkSm);
+    let mut kem_context = enc.to_vec();
+    kem_context.extend_from_slice(&pkRm);
+    kem_context.extend_from_slice(&pkSm);
 
     ExtractAndExpand(alg, suite_id(alg), dh, &kem_context)
 }
 
 #[test]
 fn derive_x25519() {
+    use std::num::ParseIntError;
+
+    fn from_hex(s: &str) -> Vec<u8> {
+        debug_assert!(s.len() % 2 == 0);
+        let b: Result<Vec<u8>, ParseIntError> = (0..s.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&s[i..i + 2], 16))
+            .collect();
+        b.expect("Error parsing hex string")
+    }
+
     // A.1.1. test vector
-    let ikm_e = Bytes::from_hex("7268600d403fce431561aef583ee1613527cff655c1343f29812e66706df3234");
-    let ikm_r = Bytes::from_hex("6db9df30aa07dd42ee5e8181afdb977e538f5e1fec8a06223f33f7013e525037");
+    let ikm_e = from_hex("7268600d403fce431561aef583ee1613527cff655c1343f29812e66706df3234");
+    let ikm_r = from_hex("6db9df30aa07dd42ee5e8181afdb977e538f5e1fec8a06223f33f7013e525037");
     let expected_sk_e =
-        Bytes::from_hex("52c4a758a802cd8b936eceea314432798d5baf2d7e9235dc084ab1b9cfa2f736");
+        from_hex("52c4a758a802cd8b936eceea314432798d5baf2d7e9235dc084ab1b9cfa2f736");
     let expected_pk_e =
-        Bytes::from_hex("37fda3567bdbd628e88668c3c8d7e97d1d1253b6d4ea6d44c150f741f1bf4431");
+        from_hex("37fda3567bdbd628e88668c3c8d7e97d1d1253b6d4ea6d44c150f741f1bf4431");
     let expected_sk_r =
-        Bytes::from_hex("4612c550263fc8ad58375df3f557aac531d26850903e55a9f23f21d8534e8ac8");
+        from_hex("4612c550263fc8ad58375df3f557aac531d26850903e55a9f23f21d8534e8ac8");
     let expected_pk_r =
-        Bytes::from_hex("3948cfe0ad1ddb695d780e59077195da6c56506b027329794ab02bca80815c4d");
+        from_hex("3948cfe0ad1ddb695d780e59077195da6c56506b027329794ab02bca80815c4d");
 
     let (sk_e, pk_e) =
         DeriveKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, &ikm_e).expect("Error deriving key pair");

@@ -11,6 +11,7 @@ pub enum Algorithm {
 }
 
 /// HKDF Errors
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
     OkmLengthTooLarge,
 }

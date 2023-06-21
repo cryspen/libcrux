@@ -32,7 +32,6 @@
 
 use crate::{
     aead::{self, *},
-    hacspec_lib::*,
     hmac::tag_size,
 };
 
@@ -118,10 +117,10 @@ pub fn Nn(aead_id: AEAD) -> usize {
 }
 
 /// An AEAD key is a sequence of bytes.
-pub type Key = Bytes;
+pub type Key = Vec<u8>;
 
 /// An AEAD nonce is a sequence of bytes.
-pub type Nonce = Bytes;
+pub type Nonce = Vec<u8>;
 
 fn alg_for_aead(aead_id: AEAD) -> AeadAlgResult {
     match aead_id {
@@ -154,7 +153,7 @@ pub fn AeadSeal(aead_id: AEAD, key: &Key, nonce: &Nonce, aad: &[u8], pt: &[u8]) 
 pub fn AeadOpen(aead_id: AEAD, key: &Key, nonce: &Nonce, aad: &[u8], ct: &[u8]) -> HpkeBytesResult {
     let algorithm = alg_for_aead(aead_id)?;
     let key = aead::Key::from_slice(algorithm, key)?;
-    let (ct, tag) = ct.to_vec().split(ct.len() - Nt(aead_id));
+    let tag = ct.to_vec().split_off(ct.len() - Nt(aead_id));
     match decrypt_detached(&key, ct, Iv::new(nonce)?, aad, &Tag::from_slice(tag)?) {
         Ok(pt) => HpkeBytesResult::Ok(pt.into()),
         Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
