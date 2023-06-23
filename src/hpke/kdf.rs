@@ -1,7 +1,6 @@
 #![doc = include_str!("KDF_Readme.md")]
 #![allow(non_snake_case, non_camel_case_types)]
 
-use crate::hacspec_lib::*;
 use crate::hkdf::Algorithm;
 
 use super::errors::*;
@@ -68,7 +67,7 @@ pub fn Nh(kdf_id: KDF) -> usize {
 /// ensures that any secrets derived in HPKE are bound to the scheme's name
 /// and version, even when possibly derived from the same Diffie-Hellman or
 /// KEM shared secret as in another scheme or version.
-fn hpke_version_label() -> Bytes {
+fn hpke_version_label() -> Vec<u8> {
     vec![0x48u8, 0x50u8, 0x4bu8, 0x45u8, 0x2du8, 0x76u8, 0x31u8]
 }
 
@@ -89,20 +88,21 @@ fn hkdf_algorithm(alg: KDF) -> Algorithm {
 /// ```
 pub fn LabeledExtract(
     alg: KDF,
-    suite_id: Bytes,
+    suite_id: Vec<u8>,
     salt: &[u8],
-    label: Bytes,
+    label: Vec<u8>,
     ikm: &InputKeyMaterial,
 ) -> HpkeBytesResult {
+    let mut labeled_ikm = hpke_version_label();
+    labeled_ikm.extend_from_slice(&suite_id);
+    labeled_ikm.extend_from_slice(&label);
+    labeled_ikm.extend_from_slice(ikm);
+
     Ok(crate::hkdf::extract(
         hkdf_algorithm(alg),
         salt,
-        &hpke_version_label()
-            .concat(suite_id)
-            .concat(label)
-            .concat_slice(ikm),
-    )
-    .into())
+        &labeled_ikm,
+    ))
 }
 
 /// KDF: Labeled Expand
@@ -115,9 +115,9 @@ pub fn LabeledExtract(
 /// ```
 pub fn LabeledExpand(
     alg: KDF,
-    suite_id: Bytes,
+    suite_id: Vec<u8>,
     prk: &[u8],
-    label: Bytes,
+    label: Vec<u8>,
     info: &Info,
     L: usize,
 ) -> HpkeBytesResult {
@@ -125,20 +125,17 @@ pub fn LabeledExpand(
         // This check is mentioned explicitly in the spec because because it
         // must be adhered to when exporting secrets.
         // The check comes from HKDF and will be performed there again.
-        HpkeBytesResult::Err(HpkeError::InvalidParameters)
+        Err(HpkeError::InvalidParameters)
     } else {
-        match crate::hkdf::expand(
-            hkdf_algorithm(alg),
-            prk,
-            &Bytes::from_u16(L as u16)
-                .concat(hpke_version_label())
-                .concat(suite_id)
-                .concat(label)
-                .concat_slice(info),
-            L,
-        ) {
-            Ok(r) => HpkeBytesResult::Ok(r),
-            Err(_) => HpkeBytesResult::Err(HpkeError::CryptoError),
+        let mut labeled_info = (L as u16).to_be_bytes().to_vec();
+        labeled_info.extend_from_slice(&hpke_version_label());
+        labeled_info.extend_from_slice(&suite_id);
+        labeled_info.extend_from_slice(&label);
+        labeled_info.extend_from_slice(info);
+
+        match crate::hkdf::expand(hkdf_algorithm(alg), prk, &labeled_info, L) {
+            Ok(r) => Ok(r),
+            Err(_) => Err(HpkeError::CryptoError),
         }
     }
 }

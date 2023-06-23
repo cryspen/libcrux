@@ -1,7 +1,5 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
-use crate::hacspec_lib::*;
-
 use super::aead::*;
 use super::kdf::*;
 use super::kem::*;
@@ -35,13 +33,13 @@ pub enum Mode {
 #[derive(Clone, Copy, Debug)]
 pub struct HPKEConfig(pub Mode, pub KEM, pub KDF, pub AEAD);
 
-pub type KemOutput = Bytes;
-pub type Ciphertext = Bytes;
+pub type KemOutput = Vec<u8>;
+pub type Ciphertext = Vec<u8>;
 pub struct HPKECiphertext(pub KemOutput, pub Ciphertext);
 
 pub type HpkePrivateKey = [u8];
 pub type HpkePublicKey = [u8];
-pub struct HPKEKeyPair(pub Bytes, pub Bytes); // Private, Public
+pub struct HPKEKeyPair(pub Vec<u8>, pub Vec<u8>); // Private, Public
 
 pub type AdditionalData = [u8];
 pub type Psk = [u8];
@@ -52,7 +50,7 @@ pub type PskId = [u8];
 /// "info_hash" label for [`LabeledExtract()`].
 ///
 /// See [`KeySchedule`] for details.
-fn info_hash_label() -> Bytes {
+fn info_hash_label() -> Vec<u8> {
     vec![
         0x69u8, 0x6eu8, 0x66u8, 0x6fu8, 0x5fu8, 0x68u8, 0x61u8, 0x73u8, 0x68u8,
     ]
@@ -61,7 +59,7 @@ fn info_hash_label() -> Bytes {
 /// "psk_id_hash" label for [`LabeledExtract()`].
 ///
 /// See [`KeySchedule`] for details.
-fn psk_id_hash_label() -> Bytes {
+fn psk_id_hash_label() -> Vec<u8> {
     vec![
         0x70u8, 0x73u8, 0x6bu8, 0x5fu8, 0x69u8, 0x64u8, 0x5fu8, 0x68u8, 0x61u8, 0x73u8, 0x68u8,
     ]
@@ -70,21 +68,21 @@ fn psk_id_hash_label() -> Bytes {
 /// "secret" label for [`LabeledExtract()`].
 ///
 /// See [`KeySchedule`] for details.
-fn secret_label() -> Bytes {
+fn secret_label() -> Vec<u8> {
     vec![0x73u8, 0x65u8, 0x63u8, 0x72u8, 0x65u8, 0x74u8]
 }
 
 /// "key" label for [`LabeledExpand()`].
 ///
 /// See [`KeySchedule`] for details.
-fn key_label() -> Bytes {
+fn key_label() -> Vec<u8> {
     vec![0x6bu8, 0x65u8, 0x79u8]
 }
 
 /// "base_nonce" label for [`LabeledExpand()`].
 ///
 /// See [`KeySchedule`] for details.
-fn base_nonce_label() -> Bytes {
+fn base_nonce_label() -> Vec<u8> {
     vec![
         0x62u8, 0x61u8, 0x73u8, 0x65u8, 0x5fu8, 0x6eu8, 0x6fu8, 0x6eu8, 0x63u8, 0x65u8,
     ]
@@ -93,21 +91,21 @@ fn base_nonce_label() -> Bytes {
 /// "exp" label for [`LabeledExpand()`].
 ///
 /// See [`KeySchedule`] for details.
-fn exp_label() -> Bytes {
+fn exp_label() -> Vec<u8> {
     vec![0x65u8, 0x78u8, 0x70u8]
 }
 
 /// "sec" label for [`LabeledExpand()`].
 ///
 /// See [`Context_Export`] for details.
-fn sec_label() -> Bytes {
+fn sec_label() -> Vec<u8> {
     vec![0x73u8, 0x65u8, 0x63u8]
 }
 
 /// Get the numeric value of the `mode`.
 ///
 /// See [`Mode`] for details.
-fn hpke_mode_label(mode: Mode) -> Bytes {
+fn hpke_mode_label(mode: Mode) -> Vec<u8> {
     match mode {
         Mode::mode_base => vec![0x00u8],
         Mode::mode_psk => vec![0x01u8],
@@ -136,9 +134,9 @@ fn kem(config: HPKEConfig) -> KEM {
 
 // === Context Helper ===
 
-type EncodedHpkePublicKey = Bytes;
+type EncodedHpkePublicKey = Vec<u8>;
 type EncodedHpkePublicKeyIn = [u8];
-type ExporterSecret = Bytes;
+type ExporterSecret = Vec<u8>;
 type SequenceCounter = u32;
 type Context = (Key, Nonce, SequenceCounter, ExporterSecret);
 type SenderContext = (EncodedHpkePublicKey, Context);
@@ -162,12 +160,13 @@ pub type EmptyResult = Result<(), HpkeError>;
 ///     I2OSP(aead_id, 2)
 ///   )
 /// ```
-fn suite_id(config: HPKEConfig) -> Bytes {
+fn suite_id(config: HPKEConfig) -> Vec<u8> {
     let HPKEConfig(_, kem, kdf, aead) = config;
-    vec![0x48u8, 0x50u8, 0x4bu8, 0x45u8] // "HPKE"
-        .concat(Bytes::from_u16(kem_value(kem)))
-        .concat(Bytes::from_u16(kdf_value(kdf)))
-        .concat(Bytes::from_u16(hpke_aead_value(aead)))
+    let mut suite_id = vec![0x48u8, 0x50u8, 0x4bu8, 0x45u8]; // "HPKE"
+    suite_id.extend_from_slice(&kem_value(kem).to_be_bytes());
+    suite_id.extend_from_slice(&kdf_value(kdf).to_be_bytes());
+    suite_id.extend_from_slice(&hpke_aead_value(aead).to_be_bytes());
+    suite_id
 }
 
 /// The default PSK ""
@@ -177,8 +176,8 @@ fn suite_id(config: HPKEConfig) -> Bytes {
 /// ```
 ///
 /// See [`KeySchedule`] for more details.
-fn default_psk() -> Bytes {
-    Bytes::create(0)
+fn default_psk() -> Vec<u8> {
+    Vec::new()
 }
 
 /// The default PSK ID ""
@@ -188,12 +187,12 @@ fn default_psk() -> Bytes {
 /// ```
 ///
 /// See [`KeySchedule`] for more details.
-fn default_psk_id() -> Bytes {
-    Bytes::create(0)
+fn default_psk_id() -> Vec<u8> {
+    Vec::new()
 }
 
-fn empty_bytes() -> Bytes {
-    Bytes::create(0)
+fn empty_bytes() -> Vec<u8> {
+    Vec::new()
 }
 
 /// Creating the Encryption Context
@@ -322,7 +321,7 @@ pub fn KeySchedule(
     psk: &Psk,
     psk_id: &PskId,
 ) -> ContextResult {
-    VerifyPSKInputs(config, &psk, &psk_id)?;
+    VerifyPSKInputs(config, &psk, psk_id)?;
     let HPKEConfig(mode, _kem, kdf, aead) = config;
 
     let psk_id_hash = LabeledExtract(
@@ -339,7 +338,9 @@ pub fn KeySchedule(
         info_hash_label(),
         info,
     )?;
-    let key_schedule_context = hpke_mode_label(mode).concat(psk_id_hash).concat(info_hash);
+    let mut key_schedule_context = hpke_mode_label(mode);
+    key_schedule_context.extend_from_slice(&psk_id_hash);
+    key_schedule_context.extend_from_slice(&info_hash);
 
     let secret = LabeledExtract(kdf, suite_id(config), shared_secret, secret_label(), psk)?;
 
@@ -368,7 +369,7 @@ pub fn KeySchedule(
         Nh(kdf),
     )?;
 
-    ContextResult::Ok((key, base_nonce, 0u32, exporter_secret))
+    Ok((key, base_nonce, 0u32, exporter_secret))
 }
 
 /// ## Encryption to a Public Key - Sender
@@ -401,7 +402,7 @@ pub fn SetupBaseS(
         &default_psk(),
         &default_psk_id(),
     )?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Encryption to a Public Key - Receiver
@@ -428,7 +429,7 @@ pub fn SetupBaseR(
         &default_psk(),
         &default_psk_id(),
     )?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 /// ## Authentication using a Pre-Shared Key - Sender
@@ -459,7 +460,7 @@ pub fn SetupPSKS(
 ) -> SenderContextResult {
     let (shared_secret, enc) = Encap(kem(config), pkR, randomness)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Authentication using a Pre-Shared Key - Receiver
@@ -481,7 +482,7 @@ pub fn SetupPSKR(
 ) -> ContextResult {
     let shared_secret = Decap(kem(config), enc, skR)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 /// ## Authentication using an Asymmetric Key - Sender
@@ -533,7 +534,7 @@ pub fn SetupAuthS(
         &default_psk(),
         &default_psk_id(),
     )?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Authentication using an Asymmetric Key - Receiver
@@ -561,7 +562,7 @@ pub fn SetupAuthR(
         &default_psk(),
         &default_psk_id(),
     )?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 /// ## Authentication using both a PSK and an Asymmetric Key - Sender
@@ -591,7 +592,7 @@ pub fn SetupAuthPSKS(
 ) -> SenderContextResult {
     let (shared_secret, enc) = AuthEncap(kem(config), pkR, skS, randomness)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    SenderContextResult::Ok((enc, key_schedule))
+    Ok((enc, key_schedule))
 }
 
 /// ## Authentication using both a PSK and an Asymmetric Key - Receiver
@@ -614,10 +615,18 @@ pub fn SetupAuthPSKR(
 ) -> ContextResult {
     let shared_secret = AuthDecap(kem(config), enc, skR, pkS)?;
     let key_schedule = KeySchedule(config, &shared_secret, info, psk, psk_id)?;
-    ContextResult::Ok(key_schedule)
+    Ok(key_schedule)
 }
 
 // === Stateful API ===
+
+fn bitxor(mut lhs: Vec<u8>, rhs: Vec<u8>) -> Vec<u8> {
+    assert_eq!(lhs.len(), rhs.len());
+    for i in 0..lhs.len() {
+        lhs[i] = lhs[i] ^ rhs[i]
+    }
+    lhs
+}
 
 /// ### Compute Nonce
 ///
@@ -633,12 +642,12 @@ pub fn SetupAuthPSKR(
 ///   seq_bytes = I2OSP(seq, Nn)
 ///   return xor(self.base_nonce, seq_bytes)
 /// ```
-pub fn ComputeNonce(aead_id: AEAD, base_nonce: &Nonce, seq: SequenceCounter) -> Bytes {
-    let seq = Bytes::from_u32(seq);
+pub fn ComputeNonce(aead_id: AEAD, base_nonce: &Nonce, seq: SequenceCounter) -> Vec<u8> {
+    let seq = seq.to_be_bytes();
     let Nn = Nn(aead_id);
-    let seq_bytes = Bytes::create(Nn);
-    let seq_bytes = seq_bytes.update_slice(Nn - 4, &seq, 0, 4);
-    base_nonce.clone().bitxor(seq_bytes)
+    let mut seq_bytes = vec![0u8; Nn - 4];
+    seq_bytes.extend_from_slice(&seq);
+    bitxor(base_nonce.clone(), seq_bytes)
 }
 
 /// ## Encryption and Decryption
@@ -702,14 +711,14 @@ pub fn ComputeNonce(aead_id: AEAD, base_nonce: &Nonce, seq: SequenceCounter) -> 
 pub fn ContextS_Seal(
     aead_id: AEAD,
     context: Context,
-    aad: &Bytes,
-    pt: &Bytes,
+    aad: &[u8],
+    pt: &[u8],
 ) -> Result<(Ciphertext, Context), HpkeError> {
     let (key, base_nonce, seq, exp) = context;
     let nonce = ComputeNonce(aead_id, &base_nonce, seq);
     let ct = AeadSeal(aead_id, &key, &nonce, aad, pt)?;
     let seq = IncrementSeq(aead_id, seq)?;
-    Result::<(Ciphertext, Context), HpkeError>::Ok((ct, (key, base_nonce, seq, exp)))
+    Ok((ct, (key, base_nonce, seq, exp)))
 }
 
 /// ## Stateful open.
@@ -730,14 +739,14 @@ pub fn ContextS_Seal(
 pub fn ContextR_Open(
     aead_id: AEAD,
     context: Context,
-    aad: &Bytes,
-    ct: &Bytes,
-) -> Result<(Bytes, Context), HpkeError> {
+    aad: &[u8],
+    ct: &[u8],
+) -> Result<(Vec<u8>, Context), HpkeError> {
     let (key, base_nonce, seq, exp) = context;
     let nonce = ComputeNonce(aead_id, &base_nonce, seq);
     let pt = AeadOpen(aead_id, &key, &nonce, aad, ct)?;
     let seq = IncrementSeq(aead_id, seq)?;
-    Result::<(Bytes, Context), HpkeError>::Ok((pt, (key, base_nonce, seq, exp)))
+    Ok((pt, (key, base_nonce, seq, exp)))
 }
 
 /// ### Increment Sequence
@@ -753,9 +762,9 @@ pub fn ContextR_Open(
 /// ```
 pub fn IncrementSeq(aead_id: AEAD, seq: SequenceCounter) -> Result<SequenceCounter, HpkeError> {
     if seq as u128 >= (1u128 << (8 * Nn(aead_id))) - 1u128 {
-        Result::<SequenceCounter, HpkeError>::Err(HpkeError::MessageLimitReachedError)
+        Err(HpkeError::MessageLimitReachedError)
     } else {
-        Result::<SequenceCounter, HpkeError>::Ok(seq + 1u32)
+        Ok(seq + 1u32)
     }
 }
 
@@ -790,7 +799,7 @@ pub fn IncrementSeq(aead_id: AEAD, seq: SequenceCounter) -> Result<SequenceCount
 pub fn Context_Export(
     config: HPKEConfig,
     context: &Context,
-    exporter_context: Bytes,
+    exporter_context: Vec<u8>,
     L: usize,
 ) -> HpkeBytesResult {
     let (_, _, _, exporter_secret) = context;
@@ -847,12 +856,12 @@ pub fn HpkeSeal(
             info,
             psk.unwrap(),
             psk_id.unwrap(),
-            &skS.unwrap(),
+            skS.unwrap(),
             randomness,
         ),
     }?;
     let ct = AeadSeal(aead, &key, &nonce, aad, ptxt)?;
-    Result::<HPKECiphertext, HpkeError>::Ok(HPKECiphertext(enc, ct))
+    Ok(HPKECiphertext(enc, ct))
 }
 
 /// ## Decryption
@@ -895,7 +904,7 @@ pub fn HpkeOpen(
     }?;
 
     let ptxt = AeadOpen(aead, &key, &nonce, aad, ct)?;
-    HpkeBytesResult::Ok(ptxt)
+    Ok(ptxt)
 }
 
 /// ## "single-shot" secret export sender
@@ -910,7 +919,7 @@ pub fn SendExport(
     config: HPKEConfig,
     pkR: &HpkePublicKey,
     info: &Info,
-    exporter_context: Bytes,
+    exporter_context: Vec<u8>,
     L: usize,
     psk: Option<&Psk>,
     psk_id: Option<&PskId>,
@@ -933,7 +942,7 @@ pub fn SendExport(
         ),
     }?;
     let exported = Context_Export(config, &ctx, exporter_context, L)?;
-    Result::<HPKECiphertext, HpkeError>::Ok(HPKECiphertext(enc, exported))
+    Ok(HPKECiphertext(enc, exported))
 }
 
 /// ## "single-shot" secret export receiver
@@ -948,7 +957,7 @@ pub fn ReceiveExport(
     enc: &EncodedHpkePublicKeyIn,
     skR: &HpkePrivateKey,
     info: &Info,
-    exporter_context: Bytes,
+    exporter_context: Vec<u8>,
     L: usize,
     psk: Option<&Psk>,
     psk_id: Option<&PskId>,
@@ -959,7 +968,7 @@ pub fn ReceiveExport(
     let ctx = match mode {
         Mode::mode_base => SetupBaseR(config, enc, skR, info),
         Mode::mode_psk => SetupPSKR(config, enc, skR, info, psk.unwrap(), psk_id.unwrap()),
-        Mode::mode_auth => SetupAuthR(config, enc, skR, info, &pkS.unwrap()),
+        Mode::mode_auth => SetupAuthR(config, enc, skR, info, pkS.unwrap()),
         Mode::mode_auth_psk => SetupAuthPSKR(
             config,
             enc,
@@ -967,7 +976,7 @@ pub fn ReceiveExport(
             info,
             psk.unwrap(),
             psk_id.unwrap(),
-            &pkS.unwrap(),
+            pkS.unwrap(),
         ),
     }?;
     Context_Export(config, &ctx, exporter_context, L)

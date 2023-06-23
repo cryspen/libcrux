@@ -262,6 +262,12 @@ macro_rules! impl_streaming {
                 self.state.finish()
             }
         }
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
     };
 }
 impl_streaming!(Sha2_224, Sha224, Sha2_224Digest);
