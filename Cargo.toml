@@ -14,10 +14,6 @@ exclude = ["/tests"]
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [dependencies]
-# XXX: This shulod go away soon.
-hacspec-lib = { version = "=0.1.0-beta.1", features = [
-    "release",
-], optional = true }
 hacl = { version = "=0.0.2", features = ["hazmat"] }
 rand = { version = "0.8" }
 log = "0.4"
@@ -75,7 +71,7 @@ name = "drbg"
 harness = false
 
 [features]
-hacspec = ["hacspec-lib"] # re-export the hacspec lib
+hacspec = [] # TODO: #7 Use specs instead of efficient implementations
 rand = []
 
 # [patch.crates-io]
