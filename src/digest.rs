@@ -230,9 +230,24 @@ fn blake2b(payload: &[u8], key: &[u8]) -> Vec<u8> {
     .into()
 }
 
+/// SHA2 224
+pub fn sha2_224(payload: &[u8]) -> Sha2_224Digest {
+    sha2::sha224(payload)
+}
+
 /// SHA2 256
 pub fn sha2_256(payload: &[u8]) -> Sha2_256Digest {
     sha2::sha256(payload)
+}
+
+/// SHA2 384
+pub fn sha2_384(payload: &[u8]) -> Sha2_384Digest {
+    sha2::sha384(payload)
+}
+
+/// SHA2 512
+pub fn sha2_512(payload: &[u8]) -> Sha2_512Digest {
+    sha2::sha512(payload)
 }
 
 // Streaming API - This is the recommended one.
