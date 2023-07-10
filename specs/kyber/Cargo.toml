@@ -1,0 +1,7 @@
+[package]
+name = "hacspec-kyber"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+getrandom = "0.2.9"
