@@ -23,6 +23,7 @@ pub(crate) fn ring_element_to_bits(r : &RingElement) -> Vec<u8> {
     out
 }
 
+#[allow(dead_code)]
 pub(crate) fn bits_to_u16(bit_vector : &[u8]) -> u16 {
     assert_eq!(bit_vector.len(), parameters::L);
     let mut result : u16 = 0;

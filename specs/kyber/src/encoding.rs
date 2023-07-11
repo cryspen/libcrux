@@ -1,4 +1,5 @@
-use crate::ring::{FieldElement, RingElement};
+use crate::ring::RingElement;
+use crate::field::FieldElement;
 use crate::bit_vector::*;
 use crate::parameters;
 
@@ -14,7 +15,7 @@ pub(crate) fn encode(r : &RingElement) -> [u8; parameters::L * 32] {
     out
 }
 //generate_array<const LEN: usize>(&[u8]) -> Result<[u8; LEN], Error>
-
+#[allow(dead_code)]
 pub(crate) fn decode(bytes : [u8; parameters::L * 32]) -> RingElement {
     let bit_vector = bytes_to_bits(&bytes[..]);
     assert_eq!(bit_vector.len(), parameters::L * 32 * (u8::BITS as usize));

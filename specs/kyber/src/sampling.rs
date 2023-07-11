@@ -1,4 +1,5 @@
-use crate::ring::{FieldElement, RingElement};
+use crate::ring::RingElement;
+use crate::field::FieldElement;
 use crate::bit_vector::bytes_to_bits;
 use crate::parameters;
 
@@ -34,7 +35,7 @@ pub(crate) fn parse(random_bytes : [u8; parameters::REJECTION_SAMPLING_BYTES]) -
 
 pub(crate) fn cbd(random_bytes : [u8; parameters::ETA * 64]) -> RingElement {
     let bit_vector = bytes_to_bits(&random_bytes[..]);
-    assert_eq!(bit_vector.len(), parameters::ETA * 64 * usize::try_from(u8::BITS).unwrap());
+    assert_eq!(bit_vector.len(), parameters::ETA * 64 * (u8::BITS as usize));
 
     let mut out : RingElement = RingElement::ZERO;
 
@@ -43,13 +44,15 @@ pub(crate) fn cbd(random_bytes : [u8; parameters::ETA * 64]) -> RingElement {
         for j in 0..parameters::ETA {
             a += bit_vector[2 * i * parameters::ETA + j];
         }
+        let a = FieldElement::from_u16(u16::from(a));
 
         let mut b : u8 = 0;
         for j in 0..parameters::ETA {
             b += bit_vector[2 * i * parameters::ETA + parameters::ETA + j];
         }
+        let b = FieldElement::from_u16(u16::from(b));
 
-        out.coefficients[i] = FieldElement::from_u8(a - b);
+        out.coefficients[i] = a.subtract(&b);
     }
 
     out

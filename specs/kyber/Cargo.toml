@@ -1,7 +1,10 @@
 [package]
-name = "hacspec-kyber"
+name = "hacspec_kyber"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+libcrux = { path = "../../" }
+
+[dev-dependencies]
 getrandom = "0.2.9"
