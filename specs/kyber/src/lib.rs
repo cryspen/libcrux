@@ -6,6 +6,10 @@ mod sampling;
 mod encoding;
 mod ind_cpa;
 
+#[cfg(test)]
+#[macro_use]
+extern crate quickcheck;
+
 use libcrux::digest;
 
 pub const KYBER768_KEYGEN_SEED_BYTES : usize = 64;

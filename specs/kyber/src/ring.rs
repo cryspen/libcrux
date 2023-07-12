@@ -1,12 +1,13 @@
 use crate::parameters;
 use crate::field::FieldElement;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct RingElement {
-    pub coefficients : [FieldElement; parameters::N]
+    pub coefficients : [FieldElement; parameters::NUMBER_OF_COEFFICIENTS]
 }
 
 impl RingElement {
-    // We use `256` instead of `parameters::N` due to
+    // Using constant due to:
     // https://github.com/hacspec/hacspec-v2/issues/27
     pub const ZERO : Self = Self { coefficients : [FieldElement::ZERO; 256] };
 
@@ -48,7 +49,7 @@ impl RingElement {
 
         let mut zeta_i = 0;
         for layer in [128, 64, 32, 16, 8, 4, 2] {
-            for offset in (0..parameters::N-layer).step_by(2*layer) {
+            for offset in (0..(parameters::NUMBER_OF_COEFFICIENTS - layer)).step_by(2*layer) {
                 zeta_i += 1;
                 let zeta = FieldElement::from_u16(Self::ZETAS[zeta_i]);
 
@@ -73,7 +74,7 @@ impl RingElement {
     pub fn ntt_multiply(&self, rhs: &Self) -> Self {
         let mut out = RingElement::ZERO;
 
-        for i in (0..self.coefficients.len()).step_by(2) {
+        for i in (0..parameters::NUMBER_OF_COEFFICIENTS).step_by(2) {
             let a1_times_a2 = self.coefficients[i].multiply(&rhs.coefficients[i]);
             let b1_times_b2 = self.coefficients[i + 1].multiply(&rhs.coefficients[i + 1]);
 
@@ -98,4 +99,24 @@ pub(crate) fn multiply_A_transpose_by_s(A : &[[RingElement; parameters::K]; para
         }
     }
     result
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for RingElement {
+    fn arbitrary(_g: &mut quickcheck::Gen) -> RingElement {
+
+        use rand::distributions::{Distribution, Uniform};
+
+        let between = Uniform::from(0..parameters::Q);
+        let mut rng = rand::thread_rng();
+
+        let mut ring_element = RingElement::ZERO;
+
+        for i in 0..ring_element.coefficients.len() {
+            let coefficient = between.sample(&mut rng);
+            ring_element.coefficients[i] = FieldElement::from_u16(coefficient);
+        }
+
+        ring_element
+    }
 }

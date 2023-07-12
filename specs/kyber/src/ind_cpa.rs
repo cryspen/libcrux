@@ -14,10 +14,7 @@ pub(crate) fn key_gen(d : &[u8]) -> ([u8; parameters::CPA_PKE_PUBLIC_KEY_BYTES],
     let mut xof_input : [u8; 34] = [0; 34];
     let mut prf_input : [u8; 33] = [0; 33];
 
-    let mut A = [[RingElement::ZERO; parameters::K], 
-                 [RingElement::ZERO; parameters::K], 
-                 [RingElement::ZERO; parameters::K]];
-
+    let mut A = [[RingElement::ZERO; parameters::K]; parameters::K]; 
     let mut s = [RingElement::ZERO; parameters::K];
     let mut e = [RingElement::ZERO; parameters::K];
 
@@ -48,7 +45,7 @@ pub(crate) fn key_gen(d : &[u8]) -> ([u8; parameters::CPA_PKE_PUBLIC_KEY_BYTES],
             // and https://github.com/hacspec/hacspec-v2/issues/27
             let xof_bytes : [u8; 2304] = digest::shake128::<2304>(&xof_input);
 
-            A[i][j] = parse(xof_bytes).unwrap();
+            A[i][j] = sample_ring_element_uniform(xof_bytes).unwrap();
         }
     }
 
@@ -64,7 +61,7 @@ pub(crate) fn key_gen(d : &[u8]) -> ([u8; parameters::CPA_PKE_PUBLIC_KEY_BYTES],
         // https://github.com/hacspec/hacspec-v2/issues/27
         let prf_output = digest::shake256::<128>(&prf_input);
 
-        s[i] = cbd(prf_output);
+        s[i] = sample_ring_element_binomial(prf_output);
 
         N += 1;
     }
@@ -76,7 +73,7 @@ pub(crate) fn key_gen(d : &[u8]) -> ([u8; parameters::CPA_PKE_PUBLIC_KEY_BYTES],
         // https://github.com/hacspec/hacspec-v2/issues/27
         let prf_output = digest::shake256::<128>(&prf_input);
 
-        e[i] = cbd(prf_output);
+        e[i] = sample_ring_element_binomial(prf_output);
 
         N += 1;
     }

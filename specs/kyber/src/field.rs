@@ -1,6 +1,6 @@
 use crate::parameters;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct FieldElement {
     pub value : u16
 }
