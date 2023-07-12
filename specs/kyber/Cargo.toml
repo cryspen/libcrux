@@ -8,3 +8,6 @@ libcrux = { path = "../../" }
 
 [dev-dependencies]
 getrandom = "0.2.9"
+hex = { version = "0.4.3", features = ["serde"] }
+serde = { version = "1.0.171", features = ["derive"] }
+serde_json = "1.0.102"

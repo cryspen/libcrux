@@ -47,7 +47,7 @@ impl RingElement {
         }
 
         let mut zeta_i = 0;
-        for layer in [128, 64, 32, 16, 8, 2] {
+        for layer in [128, 64, 32, 16, 8, 4, 2] {
             for offset in (0..parameters::N-layer).step_by(2*layer) {
                 zeta_i += 1;
                 let zeta = FieldElement::from_u16(Self::ZETAS[zeta_i]);

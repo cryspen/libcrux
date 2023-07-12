@@ -52,6 +52,8 @@ pub(crate) fn key_gen(d : &[u8]) -> ([u8; parameters::CPA_PKE_PUBLIC_KEY_BYTES],
         }
     }
 
+    // Can't use copy_from_slice due to
+    // https://github.com/hacspec/hacspec-v2/issues/151
     for i in 0..sigma.len() {
         prf_input[i] = sigma[i];
     }
