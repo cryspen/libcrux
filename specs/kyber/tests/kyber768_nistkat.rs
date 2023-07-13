@@ -5,10 +5,7 @@ use serde_json;
 
 use libcrux::digest;
 
-use std::{
-    fs::File,
-    io::BufReader,
-};
+use std::{fs::File, io::BufReader};
 
 #[derive(Deserialize)]
 struct Kyber768NISTKAT {
@@ -27,10 +24,11 @@ fn kyber768_known_answer_tests() {
     let katfile = File::open("tests/kyber768_nistkats.json").expect("Could not open KAT file.");
     let reader = BufReader::new(katfile);
 
-    let nistkats : Vec<Kyber768NISTKAT> = serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
+    let nistkats: Vec<Kyber768NISTKAT> =
+        serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
     for kat in nistkats {
-        let (pk_actual, sk_actual) = hacspec_kyber::keygen(kat.key_generation_seed);
+        let (pk_actual, sk_actual) = hacspec_kyber::generate_keypair(kat.key_generation_seed);
 
         let pk_hash = digest::sha3_256(&pk_actual);
         for i in 0..pk_hash.len() {

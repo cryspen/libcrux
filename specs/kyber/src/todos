@@ -1,0 +1,5 @@
+- look into using generate_array<const LEN: usize>(&[u8]) -> Result<[u8; LEN], Error>
+- format pseudocode algorithms
+- Add distribution testing
+- more property testing
+

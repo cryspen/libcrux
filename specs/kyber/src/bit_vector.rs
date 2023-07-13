@@ -1,9 +1,15 @@
 use crate::parameters;
 use crate::ring::RingElement;
 
-//TODO: look into using generate_array<const LEN: usize>(&[u8]) -> Result<[u8; LEN], Error>
-
-pub(crate) fn bytes_to_bits(bytes : &[u8]) -> Vec<u8> {
+///
+/// Given an array of |bytes|, convert it into a bit vector of u8s such that
+/// each u8 stores a 0 or a 1. The output bits are written in little-endian order,
+/// i.e., if the output vector is |out|, then
+/// - the least significant bit of |bytes[0]| is |out[0]|
+/// - the next least significant bit of |bytes[0]| is |out[1]|
+/// ... and so on.
+///
+pub(crate) fn bytes_to_bit_vector(bytes : &[u8]) -> Vec<u8> {
     let mut out = Vec::with_capacity(bytes.len() * usize::try_from(u8::BITS).unwrap());
 
     for byte in bytes {
@@ -14,32 +20,51 @@ pub(crate) fn bytes_to_bits(bytes : &[u8]) -> Vec<u8> {
     out
 }
 
-pub(crate) fn ring_element_to_bits(r : &RingElement) -> Vec<u8> {
-    let mut out = Vec::with_capacity(r.coefficients.len() * parameters::BITS_PER_COEFFICIENT);
+///
+/// Given a RingElement |r|, convert it into a bit vector of u8s such that
+/// each u8 stores a 0 or a 1. The output bits are written in little-endian order,
+/// i.e., if the output vector is |out|, then
+/// - the least significant bit of |r.coefficients.value[0]| is |out[0]|
+/// - the next least significant bit of |r.coefficients.value[0]| is |out[1]|
+/// ... and so on.
+///
+pub(crate) fn ring_element_to_bit_vector(r : &RingElement) -> [u8; parameters::COEFFICIENTS_IN_RING_ELEMENT * parameters::BITS_PER_COEFFICIENT] {
+    let mut out = [0u8; parameters::COEFFICIENTS_IN_RING_ELEMENT * parameters::BITS_PER_COEFFICIENT];
+    let mut out_index : usize = 0;
 
-    for coeff in &r.coefficients {
+    for coefficient in r.coefficients.iter() {
         for j in 0..parameters::BITS_PER_COEFFICIENT {
-            out.push(((coeff.value >> j) & 1).try_into().unwrap());
+            out[out_index] = ((coefficient.value >> j) & 1).try_into().unwrap();
+            out_index += 1;
         }
     }
     out
 }
 
-#[allow(dead_code)]
-pub(crate) fn bits_to_u16(bit_vector : &[u8]) -> u16 {
-    assert_eq!(bit_vector.len(), parameters::BITS_PER_COEFFICIENT);
-    let mut result : u16 = 0;
-    for i in 0..parameters::BITS_PER_COEFFICIENT {
-        result += u16::from(bit_vector[i]) * 2u16.pow(i.try_into().unwrap());
+///
+/// Given a ring coefficient stored as a bit vector in |ring_coefficient_bits|,
+/// output the value it represents as a u16. The coefficient is assumed to be
+/// stored in |ring_coefficient_bits| in little-endian order.
+///
+pub(crate) fn ring_coefficient_bits_as_u16(ring_coefficient_bits : &[u8; parameters::BITS_PER_COEFFICIENT]) -> u16 {
+    let mut ring_coefficient : u16 = 0;
+    for (i, bit) in ring_coefficient_bits.iter().enumerate() {
+        ring_coefficient |= u16::from(*bit) << i;
     }
-    result
+    ring_coefficient
 }
 
-pub(crate) fn bits_to_u8(bit_vector : &[u8]) -> u8 {
-    assert_eq!(bit_vector.len(), usize::try_from(u8::BITS).unwrap());
-    let mut result : u8 = 0;
-    for i in 0..8 {
-        result += bit_vector[i] * 2u8.pow(i.try_into().unwrap());
+///
+/// Given a byte stored as a bit vector in |bit_vector|, output the value it
+/// represents as a u8. The byte is assumed to be stored in |bit_vector| in
+/// little-endian order.
+///
+pub(crate) fn bit_vector_as_u8(bit_vector : &[u8; 8]) -> u8 {
+    let mut byte_value : u8 = 0;
+
+    for (i, bit) in bit_vector.iter().enumerate() {
+        byte_value |= *bit << i;
     }
-    result
+
+    byte_value
 }

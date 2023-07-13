@@ -6,7 +6,7 @@ pub(crate) struct FieldElement {
 }
 
 impl FieldElement {
-    const MODULUS : u16 = parameters::Q;
+    const MODULUS : u16 = parameters::FIELD_MODULUS;
     pub const ZERO: Self = Self { value: 0 };
 
     pub fn from_u16(inp : u16) -> Self {
@@ -49,12 +49,12 @@ mod tests {
         let rhs = FieldElement::from_u16(2);
 
         assert_eq!(lhs.subtract(&rhs).value, 1);
-        assert_eq!(rhs.subtract(&lhs).value, parameters::Q - 1);
+        assert_eq!(rhs.subtract(&lhs).value, parameters::FIELD_MODULUS - 1);
 
-        let lhs = FieldElement::from_u16(parameters::Q - 1);
+        let lhs = FieldElement::from_u16(parameters::FIELD_MODULUS - 1);
         let rhs = FieldElement::from_u16(0);
 
-        assert_eq!(lhs.subtract(&rhs).value, parameters::Q - 1);
+        assert_eq!(lhs.subtract(&rhs).value, parameters::FIELD_MODULUS - 1);
         assert_eq!(rhs.subtract(&lhs).value, 1);
     }
 
@@ -66,7 +66,7 @@ mod tests {
         assert_eq!(lhs.add(&rhs).value, 5);
         assert_eq!(rhs.add(&lhs).value, 5);
 
-        let lhs = FieldElement::from_u16(parameters::Q - 1);
+        let lhs = FieldElement::from_u16(parameters::FIELD_MODULUS - 1);
         let rhs = FieldElement::from_u16(10);
 
         assert_eq!(lhs.add(&rhs).value, 9);

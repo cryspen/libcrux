@@ -3,7 +3,7 @@ use crate::field::FieldElement;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct RingElement {
-    pub coefficients : [FieldElement; parameters::NUMBER_OF_COEFFICIENTS]
+    pub coefficients : [FieldElement; parameters::COEFFICIENTS_IN_RING_ELEMENT]
 }
 
 impl RingElement {
@@ -49,7 +49,7 @@ impl RingElement {
 
         let mut zeta_i = 0;
         for layer in [128, 64, 32, 16, 8, 4, 2] {
-            for offset in (0..(parameters::NUMBER_OF_COEFFICIENTS - layer)).step_by(2*layer) {
+            for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2*layer) {
                 zeta_i += 1;
                 let zeta = FieldElement::from_u16(Self::ZETAS[zeta_i]);
 
@@ -74,7 +74,7 @@ impl RingElement {
     pub fn ntt_multiply(&self, rhs: &Self) -> Self {
         let mut out = RingElement::ZERO;
 
-        for i in (0..parameters::NUMBER_OF_COEFFICIENTS).step_by(2) {
+        for i in (0..parameters::COEFFICIENTS_IN_RING_ELEMENT).step_by(2) {
             let a1_times_a2 = self.coefficients[i].multiply(&rhs.coefficients[i]);
             let b1_times_b2 = self.coefficients[i + 1].multiply(&rhs.coefficients[i + 1]);
 
@@ -89,12 +89,12 @@ impl RingElement {
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn multiply_A_transpose_by_s(A : &[[RingElement; parameters::K]; parameters::K], s : &[RingElement; parameters::K]) -> [RingElement; parameters::K] {
-    let mut result = [RingElement::ZERO; parameters::K];
+pub(crate) fn multiply_matrix_by_vector(matrix : &[[RingElement; parameters::RANK]; parameters::RANK], vector : &[RingElement; parameters::RANK]) -> [RingElement; parameters::RANK] {
+    let mut result = [RingElement::ZERO; parameters::RANK];
 
-    for i in 0..parameters::K {
-        for j in 0..parameters::K {
-            let product = A[j][i].ntt_multiply(&s[j]);
+    for i in 0..parameters::RANK {
+        for j in 0..parameters::RANK {
+            let product = matrix[i][j].ntt_multiply(&vector[j]);
             result[i] = result[i].add(&product);
         }
     }
@@ -107,7 +107,7 @@ impl quickcheck::Arbitrary for RingElement {
 
         use rand::distributions::{Distribution, Uniform};
 
-        let between = Uniform::from(0..parameters::Q);
+        let between = Uniform::from(0..parameters::FIELD_MODULUS);
         let mut rng = rand::thread_rng();
 
         let mut ring_element = RingElement::ZERO;
