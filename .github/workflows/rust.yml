@@ -2,9 +2,14 @@ name: Build & Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,31 +19,60 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        bits: [32, 64]
         os:
           - macos-latest
           - ubuntu-latest
           - windows-latest
+        exclude:
+          - bits: 32
+            os: "macos-latest"
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    
+    - uses: actions/checkout@v3
+
     - name: Setup Ubuntu
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get install ninja-build
+      run: |
+        sudo apt-get update
+        sudo apt-get install ninja-build gcc-multilib g++-multilib
+        rustup target add i686-unknown-linux-gnu
+
     - name: Setup MacOS
       if: matrix.os == 'macos-latest'
       run: brew install ninja
+    
+    - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+      shell: bash
+      if: ${{ matrix.bits == 64 }}
+    
+    - run: |
+        echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        echo "VPKG_SETUP_FLAG=x64-windows-static-md" > $GITHUB_ENV
+      shell: bash
+      if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
+    
+    - run: |
+        echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        echo "VPKG_SETUP_FLAG=x86-windows-static-md" > $GITHUB_ENV
+      shell: bash
+      if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
+
     - name: Setup Windows
-      if: matrix.os == 'windows-latest'
       run: |
         echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-        vcpkg install openssl:x64-windows-static-md
-
-    - uses: actions/checkout@v3
+        vcpkg install openssl:$VPKG_SETUP_FLAG
 
     - name: Build
-      run: cargo build --verbose
+      if: ${{ !(matrix.bits == 32 && matrix.os == 'macos-latest' ) }}
+      run: cargo build --verbose $RUST_TARGET_FLAG
 
     - name: Run tests
-      run: cargo test --verbose
+      if: ${{ !(matrix.bits == 32 && matrix.os == 'macos-latest' ) }}
+      run: cargo test --verbose $RUST_TARGET_FLAG
+
+    - name: Run tests release
+      if: ${{ !(matrix.bits == 32 && matrix.os == 'macos-latest' ) }}
+      run: cargo test --verbose --release $RUST_TARGET_FLAG
