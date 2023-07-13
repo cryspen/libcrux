@@ -3,7 +3,10 @@
 //! * EcDSA P256 with Sha256, Sha384, and Sha512
 //! * EdDSA 25519
 
-use hacl::hazmat::{self, ed25519, p256};
+use hacl::{
+    hazmat::{self, ed25519, p256},
+    rsa_pss,
+};
 use rand::{CryptoRng, Rng, RngCore};
 
 use crate::ecdh;
@@ -14,6 +17,7 @@ pub enum Error {
     SigningError,
     InvalidSignature,
     KeyGenError,
+    InvalidKey,
 }
 
 /// The digest algorithm used for the signature scheme (when required).
@@ -29,6 +33,7 @@ pub enum DigestAlgorithm {
 pub enum Algorithm {
     EcDsaP256(DigestAlgorithm),
     Ed25519,
+    RsaPss(DigestAlgorithm),
 }
 
 /// The signature
@@ -36,12 +41,14 @@ pub enum Algorithm {
 pub enum Signature {
     EcDsaP256(EcDsaP256Signature),
     Ed25519(Ed25519Signature),
+    RsaPss(RsaPssSignature),
 }
 
 impl Signature {
     /// Convert the signature into a raw byte vector.
     ///
-    /// NIST P Curve signatures are returned as `r || s`.
+    /// * NIST P Curve signatures are returned as `r || s`.
+    /// * RSA PSS signatures are returned as the raw bytes.
     pub fn into_vec(self) -> Vec<u8> {
         match self {
             Signature::EcDsaP256(s) => {
@@ -50,6 +57,7 @@ impl Signature {
                 out
             }
             Signature::Ed25519(s) => s.signature.to_vec(),
+            Signature::RsaPss(s) => s.signature,
         }
     }
 }
@@ -66,6 +74,77 @@ pub struct EcDsaP256Signature {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ed25519Signature {
     signature: [u8; 64],
+}
+
+/// A [`Algorithm::RsaPss`] Signature
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RsaPssSignature {
+    signature: Vec<u8>,
+}
+
+/// A [`Algorithm::RsaPss`] public key.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RsaPssPublicKey {
+    value: rsa_pss::PublicKey,
+}
+
+fn rsa_pss_digest(hash_algorithm: DigestAlgorithm) -> hacl::digest::Algorithm {
+    match hash_algorithm {
+        DigestAlgorithm::Sha256 => hacl::digest::Algorithm::Sha256,
+        DigestAlgorithm::Sha384 => hacl::digest::Algorithm::Sha384,
+        DigestAlgorithm::Sha512 => hacl::digest::Algorithm::Sha512,
+    }
+}
+
+impl RsaPssPublicKey {
+    pub fn new(key_size: rsa_pss::KeySize, n: &[u8]) -> Result<Self, Error> {
+        Ok(Self {
+            value: rsa_pss::PublicKey::new(key_size, n).map_err(|_| Error::InvalidKey)?,
+        })
+    }
+
+    pub fn verify(
+        &self,
+        hash_algorithm: DigestAlgorithm,
+        msg: &[u8],
+        salt_len: usize,
+        signature: &RsaPssSignature,
+    ) -> Result<(), Error> {
+        let hash_algorithm = rsa_pss_digest(hash_algorithm);
+        rsa_pss::verify(
+            hash_algorithm,
+            &self.value,
+            &signature.signature,
+            msg,
+            salt_len,
+        )
+        .map_err(|_| Error::InvalidSignature)
+    }
+}
+
+/// A [`Algorithm::RsaPss`] private key.
+pub struct RsaPssPrivateKey<'a> {
+    value: rsa_pss::PrivateKey<'a>,
+}
+
+impl<'a> RsaPssPrivateKey<'a> {
+    pub fn new(pk: &'a RsaPssPublicKey, value: &[u8]) -> Result<Self, Error> {
+        Ok(Self {
+            value: rsa_pss::PrivateKey::new(&pk.value, value).map_err(|_| Error::InvalidKey)?,
+        })
+    }
+
+    pub fn sign(
+        &self,
+        hash_algorithm: DigestAlgorithm,
+        salt: &[u8],
+        msg: &[u8],
+    ) -> Result<RsaPssSignature, Error> {
+        let hash_algorithm = rsa_pss_digest(hash_algorithm);
+        rsa_pss::sign(hash_algorithm, &self.value, salt, msg)
+            .map(|signature| RsaPssSignature { signature })
+            .map_err(|_| Error::SigningError)
+    }
 }
 
 impl Ed25519Signature {
@@ -189,6 +268,9 @@ pub fn sign(
             .map_err(into_signing_error)?;
             Signature::Ed25519(Ed25519Signature { signature })
         }
+        Algorithm::RsaPss(_) => {
+            todo!()
+        }
     };
 
     Ok(signature)
@@ -247,6 +329,7 @@ pub fn verify(payload: &[u8], signature: &Signature, public_key: &[u8]) -> Resul
             let public_key = public_key.try_into().map_err(|_| Error::InvalidSignature)?;
             ed25519::verify(payload, public_key, &signature.signature).map_err(into_verify_error)
         }
+        Signature::RsaPss(_) => todo!(),
     }
 }
 
@@ -285,5 +368,6 @@ pub fn key_gen(
 
             Ok((sk.to_vec(), pk.to_vec()))
         }
+        Algorithm::RsaPss(_) => todo!(),
     }
 }
