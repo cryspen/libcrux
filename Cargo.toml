@@ -18,7 +18,7 @@ hacl = { version = "=0.0.3-pre.1", features = ["hazmat"] }
 rand = { version = "0.8" }
 log = "0.4"
 
-[target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]
+[target.'cfg(target_arch = "x86_64")'.dependencies]
 libjade-sys = { version = "0.0.1", path = "sys/libjade" }
 
 [dev-dependencies]

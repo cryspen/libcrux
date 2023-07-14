@@ -6,7 +6,7 @@ pub(crate) mod hw_detection;
 pub use hw_detection::aes_ni_support;
 
 // Jasmin
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[cfg(target_arch = "x86_64")]
 pub(crate) mod jasmin;
 
 // libcrux
