@@ -105,20 +105,19 @@ pub(crate) fn multiply_matrix_by_vector(
 }
 
 #[cfg(test)]
-impl quickcheck::Arbitrary for RingElement {
-    fn arbitrary(_g: &mut quickcheck::Gen) -> RingElement {
-        use rand::distributions::{Distribution, Uniform};
+pub(crate) mod testing {
+    use super::*;
+    use proptest::prelude::*;
+    use proptest::collection::vec;
 
-        let between = Uniform::from(0..parameters::FIELD_MODULUS);
-        let mut rng = rand::thread_rng();
+    use crate::field::testing::arb_field_element;
 
-        let mut ring_element = RingElement::ZERO;
-
-        for i in 0..ring_element.coefficients.len() {
-            let coefficient = between.sample(&mut rng);
-            ring_element.coefficients[i] = FieldElement::from_u16(coefficient);
+    prop_compose! {
+        pub(crate) fn arb_ring_element()(
+            arb_ring_coefficients in vec(arb_field_element(), parameters::COEFFICIENTS_IN_RING_ELEMENT)) -> RingElement {
+                RingElement {
+                    coefficients: arb_ring_coefficients.try_into().unwrap(),
+            }
         }
-
-        ring_element
     }
 }

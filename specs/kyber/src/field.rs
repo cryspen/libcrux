@@ -9,6 +9,12 @@ impl FieldElement {
     const MODULUS: u16 = parameters::FIELD_MODULUS;
     pub const ZERO: Self = Self { value: 0 };
 
+    pub fn from_u8(inp: u8) -> Self {
+        Self {
+            value: u16::from(inp)
+        }
+    }
+
     pub fn from_u16(inp: u16) -> Self {
         Self {
             value: inp % Self::MODULUS,
@@ -41,6 +47,19 @@ impl FieldElement {
     pub fn multiply_by_u16(&self, other: u16) -> Self {
         let product: u32 = u32::from(self.value) * u32::from(other);
         Self::from_u32(product)
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod testing {
+    use super::*;
+    use proptest::prelude::*;
+
+    prop_compose! {
+        pub(crate) fn arb_field_element() (
+            representative in 0u16..parameters::FIELD_MODULUS) -> FieldElement {
+                FieldElement::from_u16(representative)
+            }
     }
 }
 

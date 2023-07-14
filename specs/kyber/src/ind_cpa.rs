@@ -9,9 +9,9 @@ use crate::serialize::*;
 /// reproduced below:
 ///
 /// ```plaintext
-/// Output: Secret key sk ∈ B12·k·n/8
-/// Output: Public key pk ∈ B12·k·n/8+32
-/// d←B32
+/// Output: Secret key sk ∈ B^{12·k·n/8}
+/// Output: Public key pk ∈ B^{12·k·n/8+32}
+/// d←B^{32}
 /// (ρ,σ):=G(d)
 /// N := 0
 /// for i from 0 to k−1 do
@@ -20,18 +20,18 @@ use crate::serialize::*;
 ///     end for
 /// end for
 /// for i from 0 to k−1 do
-///     s[i] := CBDη1 (PRF(σ, N ))
+///     s[i] := CBD_{η1}(PRF(σ, N ))
 ///     N := N + 1
 /// end for
 /// for i from 0 to k−1 do
-///     e[i] := CBDη1 (PRF(σ, N ))
+///     e[i] := CBD_{η1}(PRF(σ, N ))
 ///     N := N + 1
 /// end for
-/// ˆs := NTT(s)
+/// sˆ := NTT(s)
 /// eˆ := NTT(e)
-/// ˆt := Aˆ ◦ ˆs + eˆ
-/// pk := (Encode12(ˆt mod+q) || ρ)
-/// sk := Encode12(ˆs mod+q)
+/// tˆ := Aˆ ◦ sˆ + eˆ
+/// pk := (Encode12(tˆ mod^{+}q) || ρ)
+/// sk := Encode12(sˆ mod^{+}q)
 /// return (pk,sk)
 /// ```
 ///
@@ -55,15 +55,15 @@ pub(crate) fn generate_keypair(
     let mut domain_separator: u8 = 0;
 
     let hashed = parameters::hash_functions::G!(key_generation_seed);
-    let (rho, sigma) = hashed.split_at(32);
+    let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     // Can't use copy_from_slice due to:
     // https://github.com/hacspec/hacspec-v2/issues/151
-    for (i, rho_i) in rho.iter().enumerate() {
-        xof_input[i] = *rho_i;
+    for (i, seed_for_A_ith_element) in seed_for_A.iter().enumerate() {
+        xof_input[i] = *seed_for_A_ith_element;
     }
-    for (i, sigma_i) in sigma.iter().enumerate() {
-        prf_input[i] = *sigma_i;
+    for (i, seed_for_secret_and_error_ith_element) in seed_for_secret_and_error.iter().enumerate() {
+        prf_input[i] = *seed_for_secret_and_error_ith_element;
     }
 
     for i in 0..parameters::RANK {
@@ -110,16 +110,12 @@ pub(crate) fn generate_keypair(
         t_as_ntt[i] = t_as_ntt[i].add(&error_as_ntt[i]);
     }
 
-    // Using constant due to:
-    // https://github.com/hacspec/hacspec-v2/issues/27
     let public_key_serialized = t_as_ntt
         .iter()
         .flat_map(serialize_ring_element)
-        .chain(rho.iter().cloned())
+        .chain(seed_for_A.iter().cloned())
         .collect::<Vec<u8>>();
 
-    // Using constant due to:
-    // https://github.com/hacspec/hacspec-v2/issues/27
     let secret_key_serialized = secret_as_ntt
         .iter()
         .flat_map(serialize_ring_element)

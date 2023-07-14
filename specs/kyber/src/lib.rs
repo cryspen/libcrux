@@ -6,10 +6,6 @@ mod sampling;
 mod serialize;
 mod ind_cpa;
 
-#[cfg(test)]
-#[macro_use]
-extern crate quickcheck;
-
 pub const KYBER768_KEY_GENERATION_SEED_SIZE: usize =
     parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE + parameters::KEM_SHARED_SECRET_SIZE;
 pub const KYBER768_PUBLIC_KEY_SIZE: usize = parameters::CPA_PKE_PUBLIC_KEY_SIZE;
@@ -25,9 +21,9 @@ pub const KYBER768_SECRET_KEY_SIZE: usize = parameters::CPA_PKE_SECRET_KEY_SIZE
 /// reproduced below:
 ///
 /// ```plaintext
-/// Output: Public key pk ∈ B12·k·n/8+32
-/// Output: Secret key sk ∈ B24·k·n/8+96
-/// z←B32
+/// Output: Public key pk ∈ B^{12·k·n/8+32}
+/// Output: Secret key sk ∈ B^{24·k·n/8+96}
+/// z←B^{32}
 /// (pk , sk′) := Kyber.CPAPKE.KeyGen()
 /// sk := (sk′ || pk || H(pk) || z)
 /// return (pk,sk)

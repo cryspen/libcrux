@@ -4,8 +4,8 @@ use crate::parameters;
 use crate::ring::RingElement;
 
 ///
-/// Given a series of uniformly random bytes in |randomness|, sample uniformly
-/// at random a ring element r_, which is treated as being the NTT representation
+/// Given a series of uniformly random bytes in `|randomness|`, sample uniformly
+/// at random a ring element rˆ, which is treated as being the NTT representation
 /// of a corresponding polynomial r.
 ///
 /// This implementation uses rejection sampling; it is therefore possible the
@@ -16,22 +16,24 @@ use crate::ring::RingElement;
 /// which is reproduced below:
 ///
 /// ```plaintext
-/// Input: Byte stream B = b_0, b_1, b_2 ... ∈ B^*
-/// Output: NTT-representation aˆ ∈ Rq of a ∈ Rq
+/// Input: Byte stream B = b_0, b_1, b_2 ... ∈ B^{*}
+/// Output: NTT-representation aˆ ∈ R_q of a ∈ R_q
 /// i := 0
 /// j := 0
 /// while j < n do
-///     d1 := bi + 256 · (bi+1 mod+16) d2 := ⌊bi+1/16⌋ + 16 · bi+2
-///     if d1 < q then
-///         aˆ j : = d 1
+///     d_1 := b_i + 256·(b_{i+1} mod^{+}16)
+///     d_2 := ⌊b_{i+1}/16⌋ + 16·b_{i+2}
+///     if d_1 < q then
+///         aˆ_{j} := d_1
 ///         j := j + 1
 ///     end if
-///     if d2 < q and j < n then aˆ j : = d 2
+///     if d_2 < q and j < n then
+///         aˆ_{j} := d_2
 ///         j := j + 1
 ///     end if
 ///     i := i + 3
 /// end while
-/// return aˆ0 + aˆ1X + · · · + aˆn−1Xn−1
+/// return aˆ0 + aˆ1X + · · · + aˆ{n−1}X^{n−1}
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
@@ -74,9 +76,17 @@ pub(crate) fn sample_ring_element_uniform(
 }
 
 ///
-/// Given a series of uniformly random bytes in |randomness|, sample
+/// Given a series of uniformly random bytes in `|randomness|`, sample
 /// a ring element from a binomial distribution centered at 0 that uses two sets
-/// of |parameters::BINOMIAL_SAMPLING_COINS| coin flips.
+/// of `|BINOMIAL_SAMPLING_COINS|` coin flips. If, for example,
+/// `|BINOMIAL_SAMPLING_COINS| = ETA`, each ring coefficient is a value `v` such
+/// such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
+///
+/// - If v < 0, Pr[v] = Pr[-v]
+/// - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA + i) / 2 ^ (2 * ETA)
+///
+/// where -2 denotes the representative `|MODULUS| - 2`, and -1 the representative
+/// `|MODULUS| - 1`.
 ///
 /// This function implements Algorithm 2 of the Kyber Round 3 specification,
 /// which is reproduced below:
@@ -108,17 +118,17 @@ pub(crate) fn sample_ring_element_binomial(
     let mut sampled: RingElement = RingElement::ZERO;
 
     for i in 0..sampled.coefficients.len() {
-        let mut a: u8 = 0;
+        let mut coin_tosses: u8 = 0;
         for j in 0..parameters::BINOMIAL_SAMPLING_COINS {
-            a += random_bits[(2 * i) * parameters::BINOMIAL_SAMPLING_COINS + j];
+            coin_tosses += random_bits[(2 * i) * parameters::BINOMIAL_SAMPLING_COINS + j];
         }
-        let coin_tosses_a = FieldElement::from_u16(u16::from(a));
+        let coin_tosses_a = FieldElement::from_u8(coin_tosses);
 
-        let mut b: u8 = 0;
+        coin_tosses = 0;
         for j in 0..parameters::BINOMIAL_SAMPLING_COINS {
-            b += random_bits[(2 * i + 1) * parameters::BINOMIAL_SAMPLING_COINS + j];
+            coin_tosses += random_bits[(2 * i + 1) * parameters::BINOMIAL_SAMPLING_COINS + j];
         }
-        let coin_tosses_b = FieldElement::from_u16(u16::from(b));
+        let coin_tosses_b = FieldElement::from_u8(coin_tosses);
 
         sampled.coefficients[i] = coin_tosses_a.subtract(&coin_tosses_b);
     }
@@ -128,6 +138,9 @@ pub(crate) fn sample_ring_element_binomial(
 
 #[cfg(test)]
 mod tests {
+    use proptest::prelude::*;
+    use proptest::collection::vec;
+
     use super::*;
     use parameters::REJECTION_SAMPLING_SEED_SIZE;
 
@@ -145,4 +158,64 @@ mod tests {
     fn uniform_sample_from_all_u8_max() {
         let _ = sample_ring_element_uniform([u8::MAX; REJECTION_SAMPLING_SEED_SIZE]).unwrap();
     }
+
+    proptest! {
+
+        fn binomial_sampler_calculate_variance(sampling_coins : usize) {
+
+        }
+
+        #[test]
+        fn test_binomial_sampler_mean_and_variance(randomness in vec(any::<u8>(), 2 * (parameters::BINOMIAL_SAMPLING_COINS * 64))) {
+            // TODO: Make this function general.
+            assert_eq!(parameters::BINOMIAL_SAMPLING_COINS, 2);
+
+            let mut expected_mean : f64 = 0.0;
+            let mut expected_variance : f64 = 0.0;
+
+            let mut mean : f64 = 0.0;
+            let mut variance : f64 = 0.0;
+
+            let ring_element_1 = sample_ring_element_binomial(randomness[0..parameters::BINOMIAL_SAMPLING_COINS * 64].try_into().unwrap());
+            let ring_element_2 = sample_ring_element_binomial(randomness[parameters::BINOMIAL_SAMPLING_COINS * 64..].try_into().unwrap());
+
+            let ring_elements_chained = ring_element_1.coefficients
+                                        .iter()
+                                        .chain(ring_element_2.coefficients.iter());
+
+            for coefficient in ring_elements_chained.clone() {
+                mean += match coefficient.value {
+                            3327 => -2.0,
+                            3328 => -1.0,
+                            0 => 0.0,
+                            1 => 1.0,
+                            2 => 2.0,
+                            other => panic!("{} should not be a coefficient.", other)
+                        }
+            }
+            mean /= (ring_element_1.coefficients.len() + ring_element_2.coefficients.len()) as f64;
+
+            for coefficient in ring_elements_chained {
+                let (coefficient_value, coefficient_probability) = match coefficient.value {
+                            3327 => (-2.0, 0.0625),
+                            3328 => (-1.0, 0.25),
+                            0 => (0.0, 0.375),
+                            1 => (1.0, 0.25),
+                            2 => (2.0, 0.0625),
+                            other => panic!("{} should not be a coefficient.", other)
+                        };
+                variance += (coefficient_value - mean) * (coefficient_value - mean);
+                variance *= coefficient_probability;
+            }
+
+            // The expected mean is 0.
+            // If we sampled more elements, we could use a tighter tolerance.
+            assert!(mean < 1.0, "The mean is {}.", mean);
+
+            // The expected variance is 1.
+            // If we sampled more elements, we could use a tighter tolerance.
+            assert!((variance - 1.0).abs() < 1.0, "The variance is {}.", variance);
+        }
+    }
+
 }
