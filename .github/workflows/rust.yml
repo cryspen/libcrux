@@ -50,15 +50,8 @@ jobs:
     - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
       if: ${{ matrix.bits == 64 }}
     
-    - name: Config Windows x64
-      run: |
-        echo "VPKG_SETUP_FLAG=x64-windows-static-md" > $GITHUB_ENV
-      if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
-    
     - name: Config Windows x86
-      run: |
-        echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
-        echo "VPKG_SETUP_FLAG=x86-windows-static-md" > $GITHUB_ENV
+      run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
       if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
     
     - name: Config Linux x86
@@ -66,11 +59,19 @@ jobs:
         echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
       if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
 
-    - name: Setup Windows
+    - name: Setup Windows x86
       if: ${{ matrix.os == 'windows-latest' }}
+      shell: pwsh
       run: |
         echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-        vcpkg install openssl:$VPKG_SETUP_FLAG
+        vcpkg install openssl:x86-windows-static-md
+
+    - name: Setup Windows x64
+      if: ${{ matrix.os == 'windows-latest' }}
+      shell: pwsh
+      run: |
+        echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+        vcpkg install openssl:x64-windows-static-md
 
     - name: Build
       if: ${{ !(matrix.bits == 32 && matrix.os == 'macos-latest' ) }}
