@@ -1,7 +1,7 @@
-use crate::serialize::*;
+use crate::parameters;
 use crate::ring::*;
 use crate::sampling::*;
-use crate::parameters;
+use crate::serialize::*;
 
 ///
 /// This function implements Algorithm 4 of the Kyber Round 3 specification;
@@ -39,15 +39,20 @@ use crate::parameters;
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 ///
 #[allow(non_snake_case)]
-pub(crate) fn generate_keypair(key_generation_seed : &[u8 ; parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE]) -> ([u8; parameters::CPA_PKE_PUBLIC_KEY_SIZE], [u8; parameters::CPA_PKE_SECRET_KEY_SIZE]) {
-    let mut xof_input : [u8; 34] = [0; 34];
-    let mut prf_input : [u8; 33] = [0; 33];
+pub(crate) fn generate_keypair(
+    key_generation_seed: &[u8; parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE],
+) -> (
+    [u8; parameters::CPA_PKE_PUBLIC_KEY_SIZE],
+    [u8; parameters::CPA_PKE_SECRET_KEY_SIZE],
+) {
+    let mut xof_input: [u8; 34] = [0; 34];
+    let mut prf_input: [u8; 33] = [0; 33];
 
-    let mut A_transpose = [[RingElement::ZERO; parameters::RANK]; parameters::RANK]; 
+    let mut A_transpose = [[RingElement::ZERO; parameters::RANK]; parameters::RANK];
     let mut secret_as_ntt = [RingElement::ZERO; parameters::RANK];
     let mut error_as_ntt = [RingElement::ZERO; parameters::RANK];
 
-    let mut domain_separator : u8 = 0;
+    let mut domain_separator: u8 = 0;
 
     let hashed = parameters::hash_functions::G!(key_generation_seed);
     let (rho, sigma) = hashed.split_at(32);
@@ -107,17 +112,21 @@ pub(crate) fn generate_keypair(key_generation_seed : &[u8 ; parameters::CPA_PKE_
 
     // Using constant due to:
     // https://github.com/hacspec/hacspec-v2/issues/27
-    let public_key_serialized = t_as_ntt.iter()
-                                   .flat_map(serialize_ring_element)
-                                   .chain(rho.iter().cloned())
-                                   .collect::<Vec<u8>>();
+    let public_key_serialized = t_as_ntt
+        .iter()
+        .flat_map(serialize_ring_element)
+        .chain(rho.iter().cloned())
+        .collect::<Vec<u8>>();
 
     // Using constant due to:
     // https://github.com/hacspec/hacspec-v2/issues/27
-    let secret_key_serialized = secret_as_ntt.iter()
-                                        .flat_map(serialize_ring_element)
-                                        .collect::<Vec<u8>>();
+    let secret_key_serialized = secret_as_ntt
+        .iter()
+        .flat_map(serialize_ring_element)
+        .collect::<Vec<u8>>();
 
-    (public_key_serialized.try_into().unwrap(),
-     secret_key_serialized.try_into().unwrap())
+    (
+        public_key_serialized.try_into().unwrap(),
+        secret_key_serialized.try_into().unwrap(),
+    )
 }

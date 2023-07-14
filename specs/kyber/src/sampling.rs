@@ -1,7 +1,7 @@
-use crate::ring::RingElement;
-use crate::field::FieldElement;
 use crate::bit_vector::bytes_to_bit_vector;
+use crate::field::FieldElement;
 use crate::parameters;
+use crate::ring::RingElement;
 
 ///
 /// Given a series of uniformly random bytes in |randomness|, sample uniformly
@@ -37,9 +37,11 @@ use crate::parameters;
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 ///
-pub(crate) fn sample_ring_element_uniform(randomness : [u8; parameters::REJECTION_SAMPLING_SEED_SIZE]) -> Result<RingElement, &'static str> {
-    let mut j : usize = 0;
-    let mut sampled : RingElement = RingElement::ZERO;
+pub(crate) fn sample_ring_element_uniform(
+    randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
+) -> Result<RingElement, &'static str> {
+    let mut j: usize = 0;
+    let mut sampled: RingElement = RingElement::ZERO;
 
     for i in (0..randomness.len()).step_by(3) {
         let byte = u16::from(randomness[i]);
@@ -49,7 +51,7 @@ pub(crate) fn sample_ring_element_uniform(randomness : [u8; parameters::REJECTIO
         let d1 = byte + (256 * (byte1 % 16));
 
         // Integer division is flooring in Rust.
-        let d2 = (byte1 / 16) + (16 * byte2); 
+        let d2 = (byte1 / 16) + (16 * byte2);
 
         if d1 < parameters::FIELD_MODULUS && j < sampled.coefficients.len() {
             sampled.coefficients[j] = FieldElement::from_u16(d1);
@@ -94,22 +96,27 @@ pub(crate) fn sample_ring_element_uniform(randomness : [u8; parameters::REJECTIO
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 ///
-pub(crate) fn sample_ring_element_binomial(randomness : [u8; parameters::BINOMIAL_SAMPLING_COINS * 64]) -> RingElement {
+pub(crate) fn sample_ring_element_binomial(
+    randomness: [u8; parameters::BINOMIAL_SAMPLING_COINS * 64],
+) -> RingElement {
     let random_bits = bytes_to_bit_vector(&randomness[..]);
-    assert_eq!(random_bits.len(), parameters::BINOMIAL_SAMPLING_COINS * 64 * (u8::BITS as usize));
+    assert_eq!(
+        random_bits.len(),
+        parameters::BINOMIAL_SAMPLING_COINS * 64 * (u8::BITS as usize)
+    );
 
-    let mut sampled : RingElement = RingElement::ZERO;
+    let mut sampled: RingElement = RingElement::ZERO;
 
     for i in 0..sampled.coefficients.len() {
-        let mut a : u8 = 0;
+        let mut a: u8 = 0;
         for j in 0..parameters::BINOMIAL_SAMPLING_COINS {
             a += random_bits[(2 * i) * parameters::BINOMIAL_SAMPLING_COINS + j];
         }
         let coin_tosses_a = FieldElement::from_u16(u16::from(a));
 
-        let mut b : u8 = 0;
+        let mut b: u8 = 0;
         for j in 0..parameters::BINOMIAL_SAMPLING_COINS {
-            b += random_bits[(2 * i + 1)* parameters::BINOMIAL_SAMPLING_COINS + j];
+            b += random_bits[(2 * i + 1) * parameters::BINOMIAL_SAMPLING_COINS + j];
         }
         let coin_tosses_b = FieldElement::from_u16(u16::from(b));
 
