@@ -11,7 +11,7 @@ impl FieldElement {
 
     pub fn from_u8(inp: u8) -> Self {
         Self {
-            value: u16::from(inp)
+            value: u16::from(inp),
         }
     }
 

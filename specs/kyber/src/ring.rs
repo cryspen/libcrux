@@ -107,8 +107,8 @@ pub(crate) fn multiply_matrix_by_vector(
 #[cfg(test)]
 pub(crate) mod testing {
     use super::*;
-    use proptest::prelude::*;
     use proptest::collection::vec;
+    use proptest::prelude::*;
 
     use crate::field::testing::arb_field_element;
 

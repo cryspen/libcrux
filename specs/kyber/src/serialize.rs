@@ -42,7 +42,7 @@ pub(crate) fn deserialize_ring_element(
             &ring_element_bits
                 [i * parameters::BITS_PER_COEFFICIENT..(i + 1) * parameters::BITS_PER_COEFFICIENT]
                 .try_into()
-                .unwrap(),
+                .expect("Slice have length parameters::BITS_PER_COEFFICIENT elements."),
         );
         ring_element.coefficients[i] = FieldElement::from_u16(coefficient);
     }
@@ -72,7 +72,7 @@ pub(crate) fn serialize_ring_element(
 
     for i in 0..serialized.len() {
         serialized[i] =
-            bit_vector_as_u8(&ring_element_bits[i * 8..(i + 1) * 8].try_into().unwrap());
+            bit_vector_as_u8(&ring_element_bits[i * 8..(i + 1) * 8].try_into().expect("Slice should have 8 elements."));
     }
     serialized
 }

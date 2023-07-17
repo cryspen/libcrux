@@ -2,6 +2,7 @@ use crate::bit_vector::bytes_to_bit_vector;
 use crate::field::FieldElement;
 use crate::parameters;
 use crate::ring::RingElement;
+use crate::BadRejectionSamplingRandomnessError;
 
 ///
 /// Given a series of uniformly random bytes in `|randomness|`, sample uniformly
@@ -41,7 +42,7 @@ use crate::ring::RingElement;
 ///
 pub(crate) fn sample_ring_element_uniform(
     randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
-) -> Result<RingElement, &'static str> {
+) -> Result<RingElement, BadRejectionSamplingRandomnessError> {
     let mut j: usize = 0;
     let mut sampled: RingElement = RingElement::ZERO;
 
@@ -71,7 +72,7 @@ pub(crate) fn sample_ring_element_uniform(
     if j == sampled.coefficients.len() {
         Ok(sampled)
     } else {
-        Err("Not enough randomness to sample the ring element.")
+        Err(BadRejectionSamplingRandomnessError)
     }
 }
 
@@ -83,24 +84,24 @@ pub(crate) fn sample_ring_element_uniform(
 /// such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
 ///
 /// - If v < 0, Pr[v] = Pr[-v]
-/// - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA + i) / 2 ^ (2 * ETA)
+/// - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
 ///
-/// where -2 denotes the representative `|MODULUS| - 2`, and -1 the representative
-/// `|MODULUS| - 1`.
+/// The values v < 0 are mapped to the appropriate representative in
+/// [0, `|parameters::MODULUS|`).
 ///
 /// This function implements Algorithm 2 of the Kyber Round 3 specification,
 /// which is reproduced below:
 ///
 /// ```plaintext
-/// Input: Byte array B = (b0, b1, . . . , b64η−1) ∈ B64η
-/// Output: Polynomial f ∈ Rq
-/// (β0, . . . , β512η−1) := BytesToBits(B)
+/// Input: Byte array B = (b_0, b_1, . . . , b_{64η−1}) ∈ B^{64η}
+/// Output: Polynomial f ∈ R_q
+/// (β_0, . . . , β_{512η−1}) := BytesToBits(B)
 /// for i from 0 to 255 do
-///     a := sum(j = 0 to η−1)(β2iη+j)
-///     b := sum(j = 0 to η−1)(β2iη+η+j)
+///     a := sum(j = 0 to η−1)(β_{2iη+j})
+///     b := sum(j = 0 to η−1)(β_{2iη+η+j})
 ///     fi := a − b
 /// end for
-/// return f0 +f1X +f2X2 +···+f255X255
+/// return f_0 +f_1X +f_2X^2 +···+f_255X^255
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
@@ -138,15 +139,52 @@ pub(crate) fn sample_ring_element_binomial(
 
 #[cfg(test)]
 mod tests {
-    use proptest::prelude::*;
     use proptest::collection::vec;
+    use proptest::prelude::*;
 
     use super::*;
-    use parameters::REJECTION_SAMPLING_SEED_SIZE;
+
+    fn field_coefficient_to_binomial_sample(sampling_coins: usize, coefficient: u16) -> f64 {
+        if sampling_coins == 2 {
+            match coefficient {
+                3327 => -2.0,
+                3328 => -1.0,
+                0 => 0.0,
+                1 => 1.0,
+                2 => 2.0,
+                other => panic!(
+                    "{} should not be a coefficient when ETA = {}.",
+                    other, sampling_coins
+                ),
+            }
+        } else if sampling_coins == 3 {
+            match coefficient {
+                3326 => -3.0,
+                3327 => -2.0,
+                3328 => -1.0,
+                0 => 0.0,
+                1 => 1.0,
+                2 => 2.0,
+                3 => 3.0,
+                other => panic!(
+                    "{} should not be a coefficient when ETA = {}.",
+                    other, sampling_coins
+                ),
+            }
+        } else {
+            panic!("ETA is neither 2 nor 3.");
+        }
+    }
+
+    fn percentage_error(actual: f64, expected: f64) -> f64 {
+        ((actual - expected).abs() / expected.abs()) * 100.0
+    }
+
+    const REJECTION_SAMPLING_ATTEMPTS: usize = 3;
 
     #[test]
     fn uniform_sample_from_all_zeros() {
-        let r = sample_ring_element_uniform([0; REJECTION_SAMPLING_SEED_SIZE]).unwrap();
+        let r = sample_ring_element_uniform([0; parameters::REJECTION_SAMPLING_SEED_SIZE]).unwrap();
 
         for coefficient in r.coefficients.iter() {
             assert_eq!(coefficient.value, 0);
@@ -156,22 +194,61 @@ mod tests {
     #[test]
     #[should_panic]
     fn uniform_sample_from_all_u8_max() {
-        let _ = sample_ring_element_uniform([u8::MAX; REJECTION_SAMPLING_SEED_SIZE]).unwrap();
+        let _ = sample_ring_element_uniform([u8::MAX; parameters::REJECTION_SAMPLING_SEED_SIZE])
+            .unwrap();
     }
 
     proptest! {
 
-        fn binomial_sampler_calculate_variance(sampling_coins : usize) {
+        #[test]
+        fn test_uniform_sampler_mean_and_variance(randomness in vec(any::<u8>(), REJECTION_SAMPLING_ATTEMPTS * parameters::REJECTION_SAMPLING_SEED_SIZE)) {
+            let mut sampled_ring_element = RingElement::ZERO;
 
+            let mut sampling_attempts = (0..REJECTION_SAMPLING_ATTEMPTS).peekable();
+            while let Some(attempt) = sampling_attempts.next() {
+                let sampled = sample_ring_element_uniform(randomness[attempt*parameters::REJECTION_SAMPLING_SEED_SIZE..(attempt+1)*parameters::REJECTION_SAMPLING_SEED_SIZE].try_into().unwrap());
+
+                if sampled.is_ok() {
+                    sampled_ring_element = sampled.unwrap();
+                    break;
+                } else if sampling_attempts.peek().is_none() {
+                    panic!("Unable to uniformly sample a ring element with the given randomness.");
+                }
+            }
+
+            // Mean = (a + b) / 2 = (0 + 3328) / 2
+            let expected_mean : f64 = 1664.0;
+
+            // Variance = (n^2 - 1) / 12 where:
+            // n = b - a + 1 = 3328 - 0 + 1 = 3329
+            let expected_variance : f64 = 923_520.0;
+
+            let mut mean : f64 = 0.0;
+            let mut variance : f64 = 0.0;
+
+            for coefficient in sampled_ring_element.coefficients {
+                mean += f64::from(coefficient.value);
+            }
+            mean /= sampled_ring_element.coefficients.len() as f64;
+
+            for coefficient in sampled_ring_element.coefficients {
+                let coefficient_value : f64 = coefficient.value.try_into().unwrap();
+                variance += (coefficient_value - mean) * (coefficient_value - mean);
+            }
+            variance /= (sampled_ring_element.coefficients.len() - 1) as f64;
+
+            // We use looser tolerances here as compared to in the binomial
+            // sampling test since we're not sampling as many elements here
+            // (we can never be sure that what randomness we have will allow for
+            // a ring element to be sampled uniformly).
+            assert!(percentage_error(mean, expected_mean) < 25.0, "The variance is {}.", variance);
+            assert!(percentage_error(variance, expected_variance) < 25.0, "The variance is {}.", variance);
         }
 
         #[test]
         fn test_binomial_sampler_mean_and_variance(randomness in vec(any::<u8>(), 2 * (parameters::BINOMIAL_SAMPLING_COINS * 64))) {
-            // TODO: Make this function general.
-            assert_eq!(parameters::BINOMIAL_SAMPLING_COINS, 2);
 
-            let mut expected_mean : f64 = 0.0;
-            let mut expected_variance : f64 = 0.0;
+            let expected_variance : f64 = (parameters::BINOMIAL_SAMPLING_COINS as f64) / 2.0;
 
             let mut mean : f64 = 0.0;
             let mut variance : f64 = 0.0;
@@ -179,43 +256,26 @@ mod tests {
             let ring_element_1 = sample_ring_element_binomial(randomness[0..parameters::BINOMIAL_SAMPLING_COINS * 64].try_into().unwrap());
             let ring_element_2 = sample_ring_element_binomial(randomness[parameters::BINOMIAL_SAMPLING_COINS * 64..].try_into().unwrap());
 
+            let total_samples = ring_element_1.coefficients.len() + ring_element_2.coefficients.len();
+
             let ring_elements_chained = ring_element_1.coefficients
                                         .iter()
                                         .chain(ring_element_2.coefficients.iter());
 
             for coefficient in ring_elements_chained.clone() {
-                mean += match coefficient.value {
-                            3327 => -2.0,
-                            3328 => -1.0,
-                            0 => 0.0,
-                            1 => 1.0,
-                            2 => 2.0,
-                            other => panic!("{} should not be a coefficient.", other)
-                        }
+                mean += field_coefficient_to_binomial_sample(parameters::BINOMIAL_SAMPLING_COINS, coefficient.value);
             }
-            mean /= (ring_element_1.coefficients.len() + ring_element_2.coefficients.len()) as f64;
+            mean /= total_samples as f64;
 
             for coefficient in ring_elements_chained {
-                let (coefficient_value, coefficient_probability) = match coefficient.value {
-                            3327 => (-2.0, 0.0625),
-                            3328 => (-1.0, 0.25),
-                            0 => (0.0, 0.375),
-                            1 => (1.0, 0.25),
-                            2 => (2.0, 0.0625),
-                            other => panic!("{} should not be a coefficient.", other)
-                        };
-                variance += (coefficient_value - mean) * (coefficient_value - mean);
-                variance *= coefficient_probability;
+                let binomial_sample = field_coefficient_to_binomial_sample(parameters::BINOMIAL_SAMPLING_COINS, coefficient.value);
+                variance += (binomial_sample - mean) * (binomial_sample - mean);
             }
+            variance /= (total_samples - 1) as f64;
 
             // The expected mean is 0.
-            // If we sampled more elements, we could use a tighter tolerance.
-            assert!(mean < 1.0, "The mean is {}.", mean);
-
-            // The expected variance is 1.
-            // If we sampled more elements, we could use a tighter tolerance.
-            assert!((variance - 1.0).abs() < 1.0, "The variance is {}.", variance);
+            assert!(mean < 0.3, "The mean is {}.", mean);
+            assert!(percentage_error(variance, expected_variance) < 20.0, "The variance is {}.", variance);
         }
     }
-
 }

@@ -10,7 +10,7 @@ use crate::ring::RingElement;
 /// ... and so on.
 ///
 pub(crate) fn bytes_to_bit_vector(bytes: &[u8]) -> Vec<u8> {
-    let mut out = Vec::with_capacity(bytes.len() * usize::try_from(u8::BITS).unwrap());
+    let mut out = Vec::with_capacity(bytes.len() * 8);
 
     for byte in bytes {
         for j in 0..u8::BITS {
@@ -38,7 +38,7 @@ pub(crate) fn ring_element_to_bit_vector(
 
     for coefficient in ring_element.coefficients.iter() {
         for j in 0..parameters::BITS_PER_COEFFICIENT {
-            out[out_index] = ((coefficient.value >> j) & 1).try_into().unwrap();
+            out[out_index] = ((coefficient.value >> j) & 1).try_into().expect("u16 -> u8 conversion should succeed since, for any x, x & 1 is either 0 or 1.");
             out_index += 1;
         }
     }
@@ -77,8 +77,8 @@ pub(crate) fn bit_vector_as_u8(bit_vector: &[u8; 8]) -> u8 {
 
 #[cfg(test)]
 mod tests {
-    use proptest::prelude::*;
     use proptest::array;
+    use proptest::prelude::*;
 
     use super::*;
     use crate::ring::testing::arb_ring_element;

@@ -28,7 +28,7 @@ fn kyber768_known_answer_tests() {
         serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
     for kat in nistkats {
-        let (pk_actual, sk_actual) = hacspec_kyber::generate_keypair(kat.key_generation_seed);
+        let (pk_actual, sk_actual) = hacspec_kyber::generate_keypair(kat.key_generation_seed).unwrap();
 
         let pk_hash = digest::sha3_256(&pk_actual);
         for i in 0..pk_hash.len() {

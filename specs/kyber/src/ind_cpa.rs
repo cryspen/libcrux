@@ -2,6 +2,7 @@ use crate::parameters;
 use crate::ring::*;
 use crate::sampling::*;
 use crate::serialize::*;
+use crate::BadRejectionSamplingRandomnessError;
 
 ///
 /// This function implements Algorithm 4 of the Kyber Round 3 specification;
@@ -41,10 +42,12 @@ use crate::serialize::*;
 #[allow(non_snake_case)]
 pub(crate) fn generate_keypair(
     key_generation_seed: &[u8; parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE],
-) -> (
-    [u8; parameters::CPA_PKE_PUBLIC_KEY_SIZE],
-    [u8; parameters::CPA_PKE_SECRET_KEY_SIZE],
-) {
+) ->
+    Result<
+        ([u8; parameters::CPA_PKE_PUBLIC_KEY_SIZE],
+         [u8; parameters::CPA_PKE_SECRET_KEY_SIZE]),
+        BadRejectionSamplingRandomnessError>
+ {
     let mut xof_input: [u8; 34] = [0; 34];
     let mut prf_input: [u8; 33] = [0; 33];
 
@@ -68,19 +71,20 @@ pub(crate) fn generate_keypair(
 
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
-            xof_input[32] = i.try_into().unwrap();
-            xof_input[33] = j.try_into().unwrap();
+            xof_input[32] = i.try_into().expect("usize -> u8 conversion should succeed since 0 <= i < parameters::RANK.");
+            xof_input[33] = j.try_into().expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK.");
 
             // Using constant due to:
             // https://github.com/hacspec/hacspec-v2/issues/27
             let xof_bytes = parameters::hash_functions::XOF!(2304, xof_input);
 
-            A_transpose[j][i] = sample_ring_element_uniform(xof_bytes).unwrap();
+            A_transpose[j][i] = sample_ring_element_uniform(xof_bytes)?;
         }
     }
 
     for i in 0..secret_as_ntt.len() {
         prf_input[32] = domain_separator;
+        domain_separator += 1;
 
         // Using constant due to:
         // https://github.com/hacspec/hacspec-v2/issues/27
@@ -88,12 +92,11 @@ pub(crate) fn generate_keypair(
 
         let secret = sample_ring_element_binomial(prf_output);
         secret_as_ntt[i] = secret.ntt_representation();
-
-        domain_separator += 1;
     }
 
     for i in 0..error_as_ntt.len() {
         prf_input[32] = domain_separator;
+        domain_separator += 1;
 
         // Using constant due to:
         // https://github.com/hacspec/hacspec-v2/issues/27
@@ -101,8 +104,6 @@ pub(crate) fn generate_keypair(
 
         let error = sample_ring_element_binomial(prf_output);
         error_as_ntt[i] = error.ntt_representation();
-
-        domain_separator += 1;
     }
 
     let mut t_as_ntt = multiply_matrix_by_vector(&A_transpose, &secret_as_ntt);
@@ -121,8 +122,9 @@ pub(crate) fn generate_keypair(
         .flat_map(serialize_ring_element)
         .collect::<Vec<u8>>();
 
-    (
-        public_key_serialized.try_into().unwrap(),
-        secret_key_serialized.try_into().unwrap(),
+    Ok(
+        (public_key_serialized.try_into().unwrap_or_else(|_| panic!("public_key_serialized should have length {}.", parameters::CPA_PKE_PUBLIC_KEY_SIZE)),
+        secret_key_serialized.try_into().unwrap_or_else(|_| panic!("secret_key_serialized should have length {}.", parameters::CPA_PKE_SECRET_KEY_SIZE))
+        )
     )
 }
