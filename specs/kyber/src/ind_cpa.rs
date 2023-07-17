@@ -21,11 +21,11 @@ use crate::BadRejectionSamplingRandomnessError;
 ///     end for
 /// end for
 /// for i from 0 to k−1 do
-///     s[i] := CBD_{η1}(PRF(σ, N ))
+///     s[i] := CBD_{η1}(PRF(σ, N))
 ///     N := N + 1
 /// end for
 /// for i from 0 to k−1 do
-///     e[i] := CBD_{η1}(PRF(σ, N ))
+///     e[i] := CBD_{η1}(PRF(σ, N))
 ///     N := N + 1
 /// end for
 /// sˆ := NTT(s)
@@ -56,27 +56,23 @@ pub(crate) fn generate_keypair(
     let mut secret_as_ntt = [RingElement::ZERO; parameters::RANK];
     let mut error_as_ntt = [RingElement::ZERO; parameters::RANK];
 
+    // N := 0
     let mut domain_separator: u8 = 0;
 
-    let hashed = parameters::hash_functions::G!(key_generation_seed);
-
     // (ρ,σ) := G(d)
+    let hashed = parameters::hash_functions::G!(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
-
-    // Can't use copy_from_slice due to:
-    // https://github.com/hacspec/hacspec-v2/issues/151
-    for (i, seed_for_A_ith_element) in seed_for_A.iter().enumerate() {
-        xof_input[i] = *seed_for_A_ith_element;
-    }
-    for (i, seed_for_secret_and_error_ith_element) in seed_for_secret_and_error.iter().enumerate() {
-        prf_input[i] = *seed_for_secret_and_error_ith_element;
-    }
 
     // for i from 0 to k−1 do
     //     for j from 0 to k − 1 do
     //         Aˆ [i][j] := Parse(XOF(ρ, j, i))
     //     end for
     // end for
+    for (i, seed_for_A_ith_element) in seed_for_A.iter().enumerate() {
+        // Can't use copy_from_slice due to:
+        // https://github.com/hacspec/hacspec-v2/issues/151
+        xof_input[i] = *seed_for_A_ith_element;
+    }
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
             xof_input[32] = i
@@ -95,10 +91,15 @@ pub(crate) fn generate_keypair(
     }
 
     // for i from 0 to k−1 do
-    //     s[i] := CBD_{η1}(PRF(σ, N ))
+    //     s[i] := CBD_{η1}(PRF(σ, N))
     //     N := N + 1
     // end for
     // sˆ := NTT(s)
+    for (i, seed_for_secret_and_error_ith_element) in seed_for_secret_and_error.iter().enumerate() {
+        // Can't use copy_from_slice due to:
+        // https://github.com/hacspec/hacspec-v2/issues/151
+        prf_input[i] = *seed_for_secret_and_error_ith_element;
+    }
     for i in 0..secret_as_ntt.len() {
         prf_input[32] = domain_separator;
         domain_separator += 1;
@@ -112,7 +113,7 @@ pub(crate) fn generate_keypair(
     }
 
     // for i from 0 to k−1 do
-    //     e[i] := CBD_{η1}(PRF(σ, N ))
+    //     e[i] := CBD_{η1}(PRF(σ, N))
     //     N := N + 1
     // end for
     // eˆ := NTT(e)

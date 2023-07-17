@@ -1,10 +1,10 @@
 mod parameters;
-mod field;
-mod ring;
 mod bit_vector;
+mod field;
+mod ind_cpa;
+mod ring;
 mod sampling;
 mod serialize;
-mod ind_cpa;
 
 pub const KYBER768_KEY_GENERATION_SEED_SIZE: usize =
     parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE + parameters::KEM_SHARED_SECRET_SIZE;
