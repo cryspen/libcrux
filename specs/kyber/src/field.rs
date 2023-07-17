@@ -1,3 +1,5 @@
+use std::ops;
+
 use crate::parameters;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -9,44 +11,60 @@ impl FieldElement {
     const MODULUS: u16 = parameters::FIELD_MODULUS;
     pub const ZERO: Self = Self { value: 0 };
 
-    pub fn from_u8(inp: u8) -> Self {
+    pub fn new(number: u16) -> Self {
         Self {
-            value: u16::from(inp),
+            value: number % Self::MODULUS,
         }
     }
+}
 
-    pub fn from_u16(inp: u16) -> Self {
+impl From<u8> for FieldElement {
+    fn from(number: u8) -> Self {
         Self {
-            value: inp % Self::MODULUS,
+            value: u16::from(number),
         }
     }
-
-    pub fn from_u32(inp: u32) -> Self {
+}
+impl From<u16> for FieldElement {
+    fn from(number: u16) -> Self {
+        FieldElement::new(number)
+    }
+}
+impl From<u32> for FieldElement {
+    fn from(number: u32) -> Self {
         Self {
-            value: (inp % u32::from(Self::MODULUS)).try_into().unwrap(),
+            value: (number % u32::from(Self::MODULUS)).try_into().unwrap(),
         }
     }
+}
 
-    pub fn add(&self, other: &Self) -> Self {
+impl ops::Add for FieldElement {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
         let sum: u32 = u32::from(self.value) + u32::from(other.value);
-        Self::from_u32(sum)
-    }
 
-    pub fn subtract(&self, other: &Self) -> Self {
+        sum.into()
+    }
+}
+impl ops::Sub for FieldElement {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
         let difference: i32 =
             i32::try_from(self.value).unwrap() - i32::try_from(other.value).unwrap();
         let representative = difference.rem_euclid(Self::MODULUS.into());
-        Self::from_u16(u16::try_from(representative).unwrap())
-    }
 
-    pub fn multiply(&self, other: &Self) -> Self {
+        u16::try_from(representative).unwrap().into()
+    }
+}
+impl ops::Mul for FieldElement {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
         let product: u32 = u32::from(self.value) * u32::from(other.value);
-        Self::from_u32(product)
-    }
 
-    pub fn multiply_by_u16(&self, other: u16) -> Self {
-        let product: u32 = u32::from(self.value) * u32::from(other);
-        Self::from_u32(product)
+        product.into()
     }
 }
 
@@ -58,7 +76,7 @@ pub(crate) mod testing {
     prop_compose! {
         pub(crate) fn arb_field_element() (
             representative in 0u16..parameters::FIELD_MODULUS) -> FieldElement {
-                FieldElement::from_u16(representative)
+                representative.into()
             }
     }
 }
@@ -69,30 +87,30 @@ mod tests {
 
     #[test]
     fn subtraction() {
-        let lhs = FieldElement::from_u16(3);
-        let rhs = FieldElement::from_u16(2);
+        let lhs = FieldElement::new(3);
+        let rhs = FieldElement::new(2);
 
-        assert_eq!(lhs.subtract(&rhs).value, 1);
-        assert_eq!(rhs.subtract(&lhs).value, parameters::FIELD_MODULUS - 1);
+        assert_eq!((lhs - rhs).value, 1);
+        assert_eq!((rhs - lhs).value, parameters::FIELD_MODULUS - 1);
 
-        let lhs = FieldElement::from_u16(parameters::FIELD_MODULUS - 1);
-        let rhs = FieldElement::from_u16(0);
+        let lhs = FieldElement::new(parameters::FIELD_MODULUS - 1);
+        let rhs = FieldElement::new(0);
 
-        assert_eq!(lhs.subtract(&rhs).value, parameters::FIELD_MODULUS - 1);
-        assert_eq!(rhs.subtract(&lhs).value, 1);
+        assert_eq!((lhs - rhs).value, parameters::FIELD_MODULUS - 1);
+        assert_eq!((rhs - lhs).value, 1);
     }
 
     #[test]
     fn addition() {
-        let lhs = FieldElement::from_u16(3);
-        let rhs = FieldElement::from_u16(2);
+        let lhs = FieldElement::new(3);
+        let rhs = FieldElement::new(2);
 
-        assert_eq!(lhs.add(&rhs).value, 5);
-        assert_eq!(rhs.add(&lhs).value, 5);
+        assert_eq!((lhs + rhs).value, 5);
+        assert_eq!((rhs + lhs).value, 5);
 
-        let lhs = FieldElement::from_u16(parameters::FIELD_MODULUS - 1);
-        let rhs = FieldElement::from_u16(10);
+        let lhs = FieldElement::new(parameters::FIELD_MODULUS - 1);
+        let rhs = FieldElement::new(10);
 
-        assert_eq!(lhs.add(&rhs).value, 9);
+        assert_eq!((lhs + rhs).value, 9);
     }
 }

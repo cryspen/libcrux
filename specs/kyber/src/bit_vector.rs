@@ -38,7 +38,9 @@ pub(crate) fn ring_element_to_bit_vector(
 
     for coefficient in ring_element.coefficients.iter() {
         for j in 0..parameters::BITS_PER_COEFFICIENT {
-            out[out_index] = ((coefficient.value >> j) & 1).try_into().expect("u16 -> u8 conversion should succeed since, for any x, x & 1 is either 0 or 1.");
+            out[out_index] = ((coefficient.value >> j) & 1).try_into().expect(
+                "u16 -> u8 conversion should succeed since, for any x, x & 1 is either 0 or 1.",
+            );
             out_index += 1;
         }
     }

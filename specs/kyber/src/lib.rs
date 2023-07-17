@@ -37,17 +37,23 @@ pub struct BadRejectionSamplingRandomnessError;
 ///
 pub fn generate_keypair(
     key_generation_seed: [u8; KYBER768_KEY_GENERATION_SEED_SIZE],
-) ->
-    Result<([u8; KYBER768_PUBLIC_KEY_SIZE],
-    [u8; KYBER768_SECRET_KEY_SIZE]), BadRejectionSamplingRandomnessError>
- {
+) -> Result<
+    (
+        [u8; KYBER768_PUBLIC_KEY_SIZE],
+        [u8; KYBER768_SECRET_KEY_SIZE],
+    ),
+    BadRejectionSamplingRandomnessError,
+> {
     let ind_cpa_key_generation_seed =
         &key_generation_seed[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value =
         &key_generation_seed[parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let (ind_cpa_public_key, ind_cpa_secret_key) =
-        ind_cpa::generate_keypair(ind_cpa_key_generation_seed.try_into().expect("Key generation seed should be 32 bytes long."))?;
+    let (ind_cpa_public_key, ind_cpa_secret_key) = ind_cpa::generate_keypair(
+        ind_cpa_key_generation_seed
+            .try_into()
+            .expect("Key generation seed should be 32 bytes long."),
+    )?;
 
     let secret_key_serialized = ind_cpa_secret_key
         .into_iter()
@@ -56,8 +62,13 @@ pub fn generate_keypair(
         .chain(implicit_rejection_value.iter().cloned())
         .collect::<Vec<u8>>();
 
-    Ok(
-        (ind_cpa_public_key,
-        secret_key_serialized.try_into().unwrap_or_else(|_| panic!("secret_key_serialized should have length {}.", KYBER768_SECRET_KEY_SIZE))),
-    )
+    Ok((
+        ind_cpa_public_key,
+        secret_key_serialized.try_into().unwrap_or_else(|_| {
+            panic!(
+                "secret_key_serialized should have length {}.",
+                KYBER768_SECRET_KEY_SIZE
+            )
+        }),
+    ))
 }

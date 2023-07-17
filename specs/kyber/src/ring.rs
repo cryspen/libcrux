@@ -1,3 +1,5 @@
+use std::ops;
+
 use crate::field::FieldElement;
 use crate::parameters;
 
@@ -50,41 +52,46 @@ impl RingElement {
             for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer)
             {
                 zeta_i += 1;
-                let zeta = FieldElement::from_u16(Self::ZETAS[zeta_i]);
+                let zeta: FieldElement = Self::ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
-                    let t = zeta.multiply(&out.coefficients[j + layer]);
-                    out.coefficients[j + layer] = out.coefficients[j].subtract(&t);
-                    out.coefficients[j] = out.coefficients[j].add(&t);
+                    let t = zeta * out.coefficients[j + layer];
+                    out.coefficients[j + layer] = out.coefficients[j] - t;
+                    out.coefficients[j] = out.coefficients[j] + t;
                 }
             }
         }
         out
     }
 
-    pub fn add(&self, rhs: &Self) -> Self {
-        let mut result = RingElement::ZERO;
-        for i in 0..self.coefficients.len() {
-            result.coefficients[i] = self.coefficients[i].add(&rhs.coefficients[i]);
-        }
-        result
-    }
-
-    pub fn ntt_multiply(&self, rhs: &Self) -> Self {
+    pub fn ntt_multiply(&self, other: &Self) -> Self {
         let mut out = RingElement::ZERO;
 
         for i in (0..parameters::COEFFICIENTS_IN_RING_ELEMENT).step_by(2) {
-            let a1_times_a2 = self.coefficients[i].multiply(&rhs.coefficients[i]);
-            let b1_times_b2 = self.coefficients[i + 1].multiply(&rhs.coefficients[i + 1]);
+            let mod_root: FieldElement = Self::MOD_ROOTS[i / 2].into();
 
-            let a2_times_b1 = self.coefficients[i + 1].multiply(&rhs.coefficients[i]);
-            let a1_times_b2 = self.coefficients[i].multiply(&rhs.coefficients[i + 1]);
+            let a1_times_a2 = self.coefficients[i] * other.coefficients[i];
+            let b1_times_b2 = self.coefficients[i + 1] * other.coefficients[i + 1];
 
-            out.coefficients[i] =
-                a1_times_a2.add(&b1_times_b2.multiply_by_u16(Self::MOD_ROOTS[i / 2]));
-            out.coefficients[i + 1] = a2_times_b1.add(&a1_times_b2);
+            let a2_times_b1 = self.coefficients[i + 1] * other.coefficients[i];
+            let a1_times_b2 = self.coefficients[i] * other.coefficients[i + 1];
+
+            out.coefficients[i] = a1_times_a2 + (b1_times_b2 * mod_root);
+            out.coefficients[i + 1] = a2_times_b1 + a1_times_b2;
         }
         out
+    }
+}
+
+impl ops::Add for RingElement {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        let mut result = RingElement::ZERO;
+        for i in 0..self.coefficients.len() {
+            result.coefficients[i] = self.coefficients[i] + other.coefficients[i];
+        }
+        result
     }
 }
 
@@ -98,7 +105,7 @@ pub(crate) fn multiply_matrix_by_vector(
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
             let product = matrix[i][j].ntt_multiply(&vector[j]);
-            result[i] = result[i].add(&product);
+            result[i] = result[i] + product;
         }
     }
     result

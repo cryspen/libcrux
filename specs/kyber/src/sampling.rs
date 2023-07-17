@@ -57,11 +57,11 @@ pub(crate) fn sample_ring_element_uniform(
         let d2 = (byte1 / 16) + (16 * byte2);
 
         if d1 < parameters::FIELD_MODULUS && j < sampled.coefficients.len() {
-            sampled.coefficients[j] = FieldElement::from_u16(d1);
+            sampled.coefficients[j] = d1.into();
             j += 1
         }
         if d2 < parameters::FIELD_MODULUS && j < sampled.coefficients.len() {
-            sampled.coefficients[j] = FieldElement::from_u16(d2);
+            sampled.coefficients[j] = d2.into();
             j += 1;
         }
         // In an efficient implementation, we'd break when
@@ -123,15 +123,15 @@ pub(crate) fn sample_ring_element_binomial(
         for j in 0..parameters::BINOMIAL_SAMPLING_COINS {
             coin_tosses += random_bits[(2 * i) * parameters::BINOMIAL_SAMPLING_COINS + j];
         }
-        let coin_tosses_a = FieldElement::from_u8(coin_tosses);
+        let coin_tosses_a: FieldElement = coin_tosses.into();
 
         coin_tosses = 0;
         for j in 0..parameters::BINOMIAL_SAMPLING_COINS {
             coin_tosses += random_bits[(2 * i + 1) * parameters::BINOMIAL_SAMPLING_COINS + j];
         }
-        let coin_tosses_b = FieldElement::from_u8(coin_tosses);
+        let coin_tosses_b: FieldElement = coin_tosses.into();
 
-        sampled.coefficients[i] = coin_tosses_a.subtract(&coin_tosses_b);
+        sampled.coefficients[i] = coin_tosses_a - coin_tosses_b;
     }
 
     sampled

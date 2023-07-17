@@ -1,5 +1,4 @@
 use crate::bit_vector::*;
-use crate::field::FieldElement;
 use crate::parameters;
 use crate::ring::RingElement;
 
@@ -44,7 +43,7 @@ pub(crate) fn deserialize_ring_element(
                 .try_into()
                 .expect("Slice have length parameters::BITS_PER_COEFFICIENT elements."),
         );
-        ring_element.coefficients[i] = FieldElement::from_u16(coefficient);
+        ring_element.coefficients[i] = coefficient.into();
     }
     ring_element
 }
@@ -71,8 +70,11 @@ pub(crate) fn serialize_ring_element(
     let mut serialized = [0u8; parameters::BITS_PER_RING_ELEMENT / 8];
 
     for i in 0..serialized.len() {
-        serialized[i] =
-            bit_vector_as_u8(&ring_element_bits[i * 8..(i + 1) * 8].try_into().expect("Slice should have 8 elements."));
+        serialized[i] = bit_vector_as_u8(
+            &ring_element_bits[i * 8..(i + 1) * 8]
+                .try_into()
+                .expect("Slice should have 8 elements."),
+        );
     }
     serialized
 }
