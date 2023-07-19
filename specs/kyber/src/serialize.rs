@@ -29,19 +29,18 @@ use crate::ring::RingElement;
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 ///
 pub(crate) fn deserialize_ring_element(
-    ring_element_bytes: [u8; parameters::BITS_PER_RING_ELEMENT / 8],
+    bits_per_coefficient : usize,
+    ring_element_bytes: &[u8],
 ) -> RingElement {
-    let ring_element_bits = bytes_to_bit_vector(&ring_element_bytes[..]);
-    assert_eq!(ring_element_bits.len(), parameters::BITS_PER_RING_ELEMENT);
+    let ring_element_bits = bytes_to_bit_vector(ring_element_bytes);
+    assert_eq!(ring_element_bits.len(), bits_per_coefficient * parameters::COEFFICIENTS_IN_RING_ELEMENT);
 
     let mut ring_element: RingElement = RingElement::ZERO;
 
     for i in 0..ring_element.coefficients.len() {
-        let coefficient = ring_coefficient_bits_as_u16(
+        let coefficient = ring_coefficient_bits_as_u16(bits_per_coefficient,
             &ring_element_bits
-                [i * parameters::BITS_PER_COEFFICIENT..(i + 1) * parameters::BITS_PER_COEFFICIENT]
-                .try_into()
-                .expect("Slice have length parameters::BITS_PER_COEFFICIENT elements."),
+                [i * bits_per_coefficient..(i + 1) * bits_per_coefficient]
         );
         ring_element.coefficients[i] = coefficient.into();
     }
@@ -63,19 +62,23 @@ pub(crate) fn deserialize_ring_element(
 /// is not injective, it has no left inverse.
 ///
 pub(crate) fn serialize_ring_element(
+    bits_per_coefficient : usize,
     ring_element: &RingElement,
-) -> [u8; parameters::BITS_PER_RING_ELEMENT / 8] {
-    let ring_element_bits = ring_element_to_bit_vector(ring_element);
+) -> Vec<u8> {
+    let serialized_len = (bits_per_coefficient * ring_element.coefficients.len()) / 8;
+    let mut serialized : Vec<u8> = Vec::new();
 
-    let mut serialized = [0u8; parameters::BITS_PER_RING_ELEMENT / 8];
+    let ring_element_bits = ring_element_to_bit_vector(bits_per_coefficient, ring_element);
+    assert_eq!(ring_element_bits.len(), serialized_len * 8);
 
-    for i in 0..serialized.len() {
-        serialized[i] = bit_vector_as_u8(
+    for i in 0..serialized_len {
+        serialized.push(bit_vector_as_u8(
             &ring_element_bits[i * 8..(i + 1) * 8]
                 .try_into()
                 .expect("Slice should have 8 elements."),
-        );
+        ));
     }
+
     serialized
 }
 
@@ -89,13 +92,14 @@ mod tests {
     proptest! {
         #[test]
         fn deserialize_is_left_inverse_of_serialize(ring_element in arb_ring_element()) {
-            assert_eq!(ring_element, deserialize_ring_element(serialize_ring_element(&ring_element)));
+            let ring_element_serialized = serialize_ring_element(12, &ring_element);
+            assert_eq!(ring_element, deserialize_ring_element(parameters::BITS_PER_COEFFICIENT, &ring_element_serialized[..]));
         }
 
         #[test]
         fn serialize_is_sometimes_left_inverse_of_deserialize(ring_element in arb_ring_element()) {
-            let ring_element_serialized = serialize_ring_element(&ring_element);
-            assert_eq!(ring_element_serialized, serialize_ring_element(&deserialize_ring_element(ring_element_serialized)));
+            let ring_element_serialized = serialize_ring_element(12, &ring_element);
+            assert_eq!(ring_element_serialized, serialize_ring_element(12, &deserialize_ring_element(parameters::BITS_PER_COEFFICIENT, &ring_element_serialized)));
         }
     }
 }

@@ -15,6 +15,12 @@ impl RingElement {
         coefficients: [FieldElement::ZERO; 256],
     };
 
+    const INVERSE_OF_2 : FieldElement = FieldElement {
+        value : (parameters::FIELD_MODULUS + 1) / 2
+    };
+
+    const NTT_LAYERS : [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
+
     // ZETAS = [pow(17, bitreverse(i), p) for i in range(128)]
     const ZETAS: [u16; 128] = [
         17, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746,
@@ -42,13 +48,13 @@ impl RingElement {
     ];
 
     pub fn ntt_representation(&self) -> Self {
-        let mut out = RingElement::ZERO;
+        let mut out = Self::ZERO;
         for i in 0..self.coefficients.len() {
             out.coefficients[i].value = self.coefficients[i].value;
         }
 
         let mut zeta_i = 0;
-        for layer in [128, 64, 32, 16, 8, 4, 2] {
+        for layer in Self::NTT_LAYERS.iter().rev() {
             for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer)
             {
                 zeta_i += 1;
@@ -64,8 +70,32 @@ impl RingElement {
         out
     }
 
+    pub fn invert_ntt(&self) -> Self {
+        let mut out = Self::ZERO;
+        for i in 0..self.coefficients.len() {
+            out.coefficients[i].value = self.coefficients[i].value;
+        }
+
+        let mut zeta_i = parameters::COEFFICIENTS_IN_RING_ELEMENT / 2;
+
+        for layer in Self::NTT_LAYERS {
+            for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer) {
+                zeta_i -= 1;
+                let zeta: FieldElement = Self::ZETAS[zeta_i].into();
+
+                for j in offset..offset + layer {
+                    let t = out.coefficients[j+layer] - out.coefficients[j];
+                    out.coefficients[j] = Self::INVERSE_OF_2 * (out.coefficients[j] + out.coefficients[j+layer]);
+                    out.coefficients[j+layer] = Self::INVERSE_OF_2 * zeta * t;
+                }
+            }
+        }
+
+        out
+    }
+
     pub fn ntt_multiply(&self, other: &Self) -> Self {
-        let mut out = RingElement::ZERO;
+        let mut out = Self::ZERO;
 
         for i in (0..parameters::COEFFICIENTS_IN_RING_ELEMENT).step_by(2) {
             let mod_root: FieldElement = Self::MOD_ROOTS[i / 2].into();
@@ -81,6 +111,17 @@ impl RingElement {
         }
         out
     }
+
+    pub fn compress(&self, bits_per_compressed_coefficient : u8) -> Self {
+        RingElement {
+            coefficients: self.coefficients.map(|coefficient| coefficient.compress(bits_per_compressed_coefficient))
+        }
+    }
+    pub fn decompress(&self, bits_per_compressed_coefficient : u8) -> Self {
+        RingElement {
+            coefficients: self.coefficients.map(|coefficient| coefficient.decompress(bits_per_compressed_coefficient))
+        }
+    }
 }
 
 impl ops::Add for RingElement {
@@ -90,6 +131,17 @@ impl ops::Add for RingElement {
         let mut result = RingElement::ZERO;
         for i in 0..self.coefficients.len() {
             result.coefficients[i] = self.coefficients[i] + other.coefficients[i];
+        }
+        result
+    }
+}
+impl ops::Sub for RingElement {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        let mut result = RingElement::ZERO;
+        for i in 0..self.coefficients.len() {
+            result.coefficients[i] = self.coefficients[i] - other.coefficients[i];
         }
         result
     }
@@ -108,6 +160,19 @@ pub(crate) fn multiply_matrix_by_vector(
             result[i] = result[i] + product;
         }
     }
+    result
+}
+
+pub(crate) fn multiply_row_by_column(
+    row_vector: &[RingElement; parameters::RANK],
+    column_vector: &[RingElement; parameters::RANK],
+) -> RingElement {
+    let mut result = RingElement::ZERO;
+
+    for i in 0..parameters::RANK {
+            result = result + row_vector[i].ntt_multiply(&column_vector[i]);
+    }
+
     result
 }
 

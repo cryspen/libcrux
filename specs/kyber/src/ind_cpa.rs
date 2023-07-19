@@ -86,6 +86,7 @@ pub(crate) fn generate_keypair(
             // https://github.com/hacspec/hacspec-v2/issues/27
             let xof_bytes = parameters::hash_functions::XOF!(2304, xof_input);
 
+            // A[i][j] = A_transpose[j][i]
             A_transpose[j][i] = sample_ring_element_uniform(xof_bytes)?;
         }
     }
@@ -135,17 +136,18 @@ pub(crate) fn generate_keypair(
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
 
+
     // pk := (Encode12(tˆ mod^{+}q) || ρ)
     let public_key_serialized = t_as_ntt
         .iter()
-        .flat_map(serialize_ring_element)
+        .flat_map(|r| serialize_ring_element(12, r))
         .chain(seed_for_A.iter().cloned())
         .collect::<Vec<u8>>();
 
     // sk := Encode12(sˆ mod^{+}q)
     let secret_key_serialized = secret_as_ntt
         .iter()
-        .flat_map(serialize_ring_element)
+        .flat_map(|r| serialize_ring_element(12, r))
         .collect::<Vec<u8>>();
 
     Ok((
@@ -162,4 +164,136 @@ pub(crate) fn generate_keypair(
             )
         }),
     ))
+}
+
+#[allow(non_snake_case)]
+pub(crate) fn encrypt(
+    public_key: &[u8; parameters::CPA_PKE_PUBLIC_KEY_SIZE],
+    message: [u8; 32],
+    randomness: &[u8; 32],
+) -> Result<[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE], BadRejectionSamplingRandomnessError> {
+
+    let mut xof_input: [u8; 34] = [0; 34];
+    let mut prf_input: [u8; 33] = [0; 33];
+
+    let mut A_transpose = [[RingElement::ZERO; parameters::RANK]; parameters::RANK];
+    let mut r_as_ntt = [RingElement::ZERO; parameters::RANK];
+    let mut error_1 = [RingElement::ZERO; parameters::RANK];
+
+    let mut domain_separator : u8 = 0;
+
+    let message_as_ring_element = deserialize_ring_element(1, &message);
+
+    let mut t_as_ntt = [RingElement::ZERO; parameters::RANK];
+    for i in 0..t_as_ntt.len() {
+        t_as_ntt[i] = deserialize_ring_element(parameters::BITS_PER_COEFFICIENT, public_key[i*(parameters::BITS_PER_RING_ELEMENT / 8)..(i+1)*(parameters::BITS_PER_RING_ELEMENT) / 8].try_into().unwrap());
+    }
+
+    let seed_for_A = &public_key[parameters::T_AS_NTT_ENCODED_SIZE..];
+
+    // for i from 0 to k−1 do
+    //     for j from 0 to k − 1 do
+    //         AˆT [i][j] := Parse(XOF(ρ, j, i))
+    //     end for
+    // end for
+    for (i, seed_for_A_ith_element) in seed_for_A.iter().enumerate() {
+        // Can't use copy_from_slice due to:
+        // https://github.com/hacspec/hacspec-v2/issues/151
+        xof_input[i] = *seed_for_A_ith_element;
+    }
+    for i in 0..parameters::RANK {
+        for j in 0..parameters::RANK {
+            xof_input[32] = i
+                .try_into()
+                .expect("usize -> u8 conversion should succeed since 0 <= i < parameters::RANK.");
+            xof_input[33] = j
+                .try_into()
+                .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK.");
+
+            // Using constant due to:
+            // https://github.com/hacspec/hacspec-v2/issues/27
+            let xof_bytes = parameters::hash_functions::XOF!(2304, xof_input);
+
+            A_transpose[i][j] = sample_ring_element_uniform(xof_bytes)?;
+        }
+    }
+
+    for (i, randomness_ith_element) in randomness.iter().enumerate() {
+        // Can't use copy_from_slice due to:
+        // https://github.com/hacspec/hacspec-v2/issues/151
+        prf_input[i] = *randomness_ith_element;
+    }
+    for i in 0..r_as_ntt.len() {
+        prf_input[32] = domain_separator;
+        domain_separator += 1;
+
+        // Using constant due to:
+        // https://github.com/hacspec/hacspec-v2/issues/27
+        let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+
+        let r = sample_ring_element_binomial(prf_output);
+        r_as_ntt[i] = r.ntt_representation();
+    }
+
+    for i in 0..error_1.len() {
+        prf_input[32] = domain_separator;
+        domain_separator += 1;
+
+        // Using constant due to:
+        // https://github.com/hacspec/hacspec-v2/issues/27
+        let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+
+        error_1[i] = sample_ring_element_binomial(prf_output);
+    }
+
+    prf_input[32] = domain_separator;
+    let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+    let error_2 = sample_ring_element_binomial(prf_output);
+
+    let mut u = multiply_matrix_by_vector(&A_transpose, &r_as_ntt).map(|r| r.invert_ntt());
+    for i in 0..u.len() {
+        u[i] = u[i] + error_1[i];
+    }
+
+    let v = multiply_row_by_column(&t_as_ntt, &r_as_ntt).invert_ntt() 
+              + error_2
+              + message_as_ring_element.decompress(1);
+
+    let c1 = u
+        .iter()
+        .map(|r| r.compress(parameters::U_COMPRESSION_FACTOR.try_into().unwrap()))
+        .flat_map(|r| serialize_ring_element(parameters::U_COMPRESSION_FACTOR, &r))
+        .collect::<Vec<u8>>();
+
+    let c2 = serialize_ring_element(parameters::V_COMPRESSION_FACTOR, &v.compress(parameters::V_COMPRESSION_FACTOR.try_into().unwrap()));
+
+    let ciphertext = c1.into_iter()
+        .chain(c2.into_iter())
+        .collect::<Vec<u8>>();
+
+    Ok(ciphertext.try_into().unwrap())
+}
+
+#[allow(non_snake_case)]
+pub(crate) fn decrypt(
+    secret_key: &[u8; parameters::CPA_PKE_SECRET_KEY_SIZE],
+    ciphertext: &[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE],
+) -> [u8; 32] {
+    let mut u_as_ntt = [RingElement::ZERO; parameters::RANK];
+    let mut secret_as_ntt = [RingElement::ZERO; parameters::RANK];
+
+    for i in 0..u_as_ntt.len() {
+        let deserialized = deserialize_ring_element(10, &ciphertext[i*(32 * 10)..(i+1)*(32*10)]);
+        u_as_ntt[i] = deserialized.decompress(10).ntt_representation();
+    }
+
+    let v = deserialize_ring_element(parameters::V_COMPRESSION_FACTOR, &ciphertext[parameters::U_VECTOR_SIZE..]).decompress(usize::from(parameters::V_COMPRESSION_FACTOR).try_into().unwrap());
+
+    for i in 0..secret_as_ntt.len() {
+        secret_as_ntt[i] = deserialize_ring_element(12, &secret_key[i*(32 * 12)..(i+1)*(32*12)]);
+    }
+
+    let message = v - multiply_row_by_column(&secret_as_ntt, &u_as_ntt).invert_ntt();
+
+    serialize_ring_element(1, &message.compress(1)).try_into().unwrap()
 }

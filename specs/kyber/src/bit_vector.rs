@@ -1,4 +1,3 @@
-use crate::parameters;
 use crate::ring::RingElement;
 
 ///
@@ -30,18 +29,16 @@ pub(crate) fn bytes_to_bit_vector(bytes: &[u8]) -> Vec<u8> {
 /// ... and so on.
 ///
 pub(crate) fn ring_element_to_bit_vector(
+    bits_per_coefficient : usize,
     ring_element: &RingElement,
-) -> [u8; parameters::COEFFICIENTS_IN_RING_ELEMENT * parameters::BITS_PER_COEFFICIENT] {
-    let mut out =
-        [0u8; parameters::COEFFICIENTS_IN_RING_ELEMENT * parameters::BITS_PER_COEFFICIENT];
-    let mut out_index: usize = 0;
+) -> Vec<u8> {
+    let mut out : Vec<u8> = Vec::new();
 
     for coefficient in ring_element.coefficients.iter() {
-        for j in 0..parameters::BITS_PER_COEFFICIENT {
-            out[out_index] = ((coefficient.value >> j) & 1).try_into().expect(
+        for j in 0..bits_per_coefficient {
+            out.push(((coefficient.value >> j) & 1).try_into().expect(
                 "u16 -> u8 conversion should succeed since, for any x, x & 1 is either 0 or 1.",
-            );
-            out_index += 1;
+            ));
         }
     }
     out
@@ -53,8 +50,12 @@ pub(crate) fn ring_element_to_bit_vector(
 /// stored in `|ring_coefficient_bits|` in little-endian order.
 ///
 pub(crate) fn ring_coefficient_bits_as_u16(
-    ring_coefficient_bits: &[u8; parameters::BITS_PER_COEFFICIENT],
+    bits_per_coefficient : usize,
+    ring_coefficient_bits: &[u8],
 ) -> u16 {
+    assert!(bits_per_coefficient <= u16::BITS.try_into().unwrap());
+    assert_eq!(ring_coefficient_bits.len(), bits_per_coefficient);
+
     let mut ring_coefficient: u16 = 0;
     for (i, bit) in ring_coefficient_bits.iter().enumerate() {
         ring_coefficient |= u16::from(*bit) << i;
@@ -84,6 +85,7 @@ mod tests {
 
     use super::*;
     use crate::ring::testing::arb_ring_element;
+    use crate::parameters;
 
     proptest! {
         #[test]
@@ -98,12 +100,12 @@ mod tests {
 
         #[test]
         fn ring_element_to_bit_vector_and_back(ring_element in arb_ring_element()) {
-            let ring_element_as_bits = ring_element_to_bit_vector(&ring_element);
+            let ring_element_as_bits = ring_element_to_bit_vector(12, &ring_element);
 
             for (i, coefficient) in ring_element.coefficients.into_iter().enumerate() {
                 let bit_vector_of_ring_coefficient = &ring_element_as_bits[i*parameters::BITS_PER_COEFFICIENT..(i+1)*parameters::BITS_PER_COEFFICIENT];
 
-                assert_eq!(coefficient.value, ring_coefficient_bits_as_u16(bit_vector_of_ring_coefficient.try_into().unwrap()));
+                assert_eq!(coefficient.value, ring_coefficient_bits_as_u16(12, bit_vector_of_ring_coefficient.try_into().unwrap()));
             }
         }
     }

@@ -107,6 +107,8 @@ pub(crate) fn sample_ring_element_uniform(
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 ///
+/// TODO: This requires a different parameter ETA = 3 only when Kyber-512 is
+/// used; generalize it.
 pub(crate) fn sample_ring_element_binomial(
     randomness: [u8; parameters::BINOMIAL_SAMPLING_COINS * 64],
 ) -> RingElement {
