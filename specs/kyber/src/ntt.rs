@@ -1,22 +1,11 @@
-use std::ops;
-
-use crate::field::FieldElement;
 use crate::parameters;
+use crate::parameters::KyberPolynomialRingElement;
+use crate::parameters::KyberFieldElement;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct RingElement {
-    pub coefficients: [FieldElement; parameters::COEFFICIENTS_IN_RING_ELEMENT],
-}
-
-impl RingElement {
-    // Using constant due to:
-    // https://github.com/hacspec/hacspec-v2/issues/27
-    pub const ZERO: Self = Self {
-        coefficients: [FieldElement::ZERO; 256],
-    };
-
-    const INVERSE_OF_2 : FieldElement = FieldElement {
-        value : (parameters::FIELD_MODULUS + 1) / 2
+impl KyberPolynomialRingElement {
+    const INVERSE_OF_2 : KyberFieldElement = KyberFieldElement {
+        value : (parameters::FIELD_MODULUS + 1) / 2,
+        bits_to_represent_value: 12,
     };
 
     const NTT_LAYERS : [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
@@ -58,7 +47,7 @@ impl RingElement {
             for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer)
             {
                 zeta_i += 1;
-                let zeta: FieldElement = Self::ZETAS[zeta_i].into();
+                let zeta: KyberFieldElement = Self::ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
                     let t = zeta * out.coefficients[j + layer];
@@ -81,7 +70,7 @@ impl RingElement {
         for layer in Self::NTT_LAYERS {
             for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer) {
                 zeta_i -= 1;
-                let zeta: FieldElement = Self::ZETAS[zeta_i].into();
+                let zeta: KyberFieldElement = Self::ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
                     let t = out.coefficients[j+layer] - out.coefficients[j];
@@ -98,7 +87,7 @@ impl RingElement {
         let mut out = Self::ZERO;
 
         for i in (0..parameters::COEFFICIENTS_IN_RING_ELEMENT).step_by(2) {
-            let mod_root: FieldElement = Self::MOD_ROOTS[i / 2].into();
+            let mod_root: KyberFieldElement = Self::MOD_ROOTS[i / 2].into();
 
             let a1_times_a2 = self.coefficients[i] * other.coefficients[i];
             let b1_times_b2 = self.coefficients[i + 1] * other.coefficients[i + 1];
@@ -111,48 +100,14 @@ impl RingElement {
         }
         out
     }
-
-    pub fn compress(&self, bits_per_compressed_coefficient : u8) -> Self {
-        RingElement {
-            coefficients: self.coefficients.map(|coefficient| coefficient.compress(bits_per_compressed_coefficient))
-        }
-    }
-    pub fn decompress(&self, bits_per_compressed_coefficient : u8) -> Self {
-        RingElement {
-            coefficients: self.coefficients.map(|coefficient| coefficient.decompress(bits_per_compressed_coefficient))
-        }
-    }
-}
-
-impl ops::Add for RingElement {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        let mut result = RingElement::ZERO;
-        for i in 0..self.coefficients.len() {
-            result.coefficients[i] = self.coefficients[i] + other.coefficients[i];
-        }
-        result
-    }
-}
-impl ops::Sub for RingElement {
-    type Output = Self;
-
-    fn sub(self, other: Self) -> Self {
-        let mut result = RingElement::ZERO;
-        for i in 0..self.coefficients.len() {
-            result.coefficients[i] = self.coefficients[i] - other.coefficients[i];
-        }
-        result
-    }
 }
 
 #[allow(non_snake_case)]
 pub(crate) fn multiply_matrix_by_vector(
-    matrix: &[[RingElement; parameters::RANK]; parameters::RANK],
-    vector: &[RingElement; parameters::RANK],
-) -> [RingElement; parameters::RANK] {
-    let mut result = [RingElement::ZERO; parameters::RANK];
+    matrix: &[[KyberPolynomialRingElement; parameters::RANK]; parameters::RANK],
+    vector: &[KyberPolynomialRingElement; parameters::RANK],
+) -> [KyberPolynomialRingElement; parameters::RANK] {
+    let mut result = [KyberPolynomialRingElement::ZERO; parameters::RANK];
 
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
@@ -164,32 +119,14 @@ pub(crate) fn multiply_matrix_by_vector(
 }
 
 pub(crate) fn multiply_row_by_column(
-    row_vector: &[RingElement; parameters::RANK],
-    column_vector: &[RingElement; parameters::RANK],
-) -> RingElement {
-    let mut result = RingElement::ZERO;
+    row_vector: &[KyberPolynomialRingElement; parameters::RANK],
+    column_vector: &[KyberPolynomialRingElement; parameters::RANK],
+) -> KyberPolynomialRingElement {
+    let mut result = KyberPolynomialRingElement::ZERO;
 
     for i in 0..parameters::RANK {
             result = result + row_vector[i].ntt_multiply(&column_vector[i]);
     }
 
     result
-}
-
-#[cfg(test)]
-pub(crate) mod testing {
-    use super::*;
-    use proptest::collection::vec;
-    use proptest::prelude::*;
-
-    use crate::field::testing::arb_field_element;
-
-    prop_compose! {
-        pub(crate) fn arb_ring_element()(
-            arb_ring_coefficients in vec(arb_field_element(), parameters::COEFFICIENTS_IN_RING_ELEMENT)) -> RingElement {
-                RingElement {
-                    coefficients: arb_ring_coefficients.try_into().unwrap(),
-            }
-        }
-    }
 }

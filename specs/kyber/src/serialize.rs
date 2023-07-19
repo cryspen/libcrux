@@ -1,105 +1,72 @@
-use crate::bit_vector::*;
-use crate::parameters;
-use crate::ring::RingElement;
+use crate::helpers;
+use crate::parameters::KyberFieldElement;
+use crate::parameters::KyberPolynomialRingElement;
 
-///
-/// Given a series of bytes representing a ring element in `|ring_element_bytes|`,
-/// first convert them into a vector of bits in little-endian order; i.e.
-/// the least significant `|BITS_PER_COEFFICIENT|` of `|ring_element_bytes[0]|`
-/// are the first set of bits in the bitstream.
+impl KyberFieldElement {
+    pub fn new_from_bit_vector(bits_to_represent_value : usize, bit_vector : &[u8]) -> Self {
+        assert!(bits_to_represent_value <= 12);
 
-/// This vector is deserialized into a RingElement structure. The first
-/// `|BITS_PER_COEFFICIENT|` represent the first coefficient of the ring element,
-/// the second `|BITS_PER_COEFFICIENT|` the second coefficient, and so on.
-///
-/// This function implements Algorithm 3 of the Kyber Round 3 specification,
-/// which is reproduced below:
-///
-/// ```plaintext
-/// Input: Byte array B ∈ B^{32*l}
-/// Output: Polynomial f ∈ R_q
-/// (β_0, . . . , β_{256l−1}) := BytesToBits(B)
-/// for i from 0 to 255 do
-///     f_i := sum(j = 0 to l−1)(β_{il+j}*2^{j})
-/// end for
-/// return f0 +f_1X +f_2X^2 +···+f_255X^255
-/// ```
-///
-/// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
-pub(crate) fn deserialize_ring_element(
-    bits_per_coefficient : usize,
-    ring_element_bytes: &[u8],
-) -> RingElement {
-    let ring_element_bits = bytes_to_bit_vector(ring_element_bytes);
-    assert_eq!(ring_element_bits.len(), bits_per_coefficient * parameters::COEFFICIENTS_IN_RING_ELEMENT);
-
-    let mut ring_element: RingElement = RingElement::ZERO;
-
-    for i in 0..ring_element.coefficients.len() {
-        let coefficient = ring_coefficient_bits_as_u16(bits_per_coefficient,
-            &ring_element_bits
-                [i * bits_per_coefficient..(i + 1) * bits_per_coefficient]
-        );
-        ring_element.coefficients[i] = coefficient.into();
-    }
-    ring_element
-}
-
-///
-/// Given a `|ring_element|`, convert it into a vector of `|BITS_PER_RING_ELEMENT|`
-/// bits, and output this vector as a byte array such that the first 8 bits of
-/// the vector represent the first byte of the output, and so on.
-///
-/// N.B.: While the specification states that `serialize_ring_element` is the
-/// inverse of `deserialize_ring_element`, this is strictly speaking not the case
-/// in this implementation: While `deserialize_ring_element` is the left inverse
-/// of `serialize_ring_element`, since `deserialize_ring_element` operates on
-/// `|BITS_PER_COEFFICIENT|` bits at a time, it is not injective:
-/// the values 3329 + 1 and 1 for example both fit into `|BITS_PER_COEFFICIENT|`
-/// bits and map to the same field representative. Since `deserialize_ring_element`
-/// is not injective, it has no left inverse.
-///
-pub(crate) fn serialize_ring_element(
-    bits_per_coefficient : usize,
-    ring_element: &RingElement,
-) -> Vec<u8> {
-    let serialized_len = (bits_per_coefficient * ring_element.coefficients.len()) / 8;
-    let mut serialized : Vec<u8> = Vec::new();
-
-    let ring_element_bits = ring_element_to_bit_vector(bits_per_coefficient, ring_element);
-    assert_eq!(ring_element_bits.len(), serialized_len * 8);
-
-    for i in 0..serialized_len {
-        serialized.push(bit_vector_as_u8(
-            &ring_element_bits[i * 8..(i + 1) * 8]
-                .try_into()
-                .expect("Slice should have 8 elements."),
-        ));
-    }
-
-    serialized
-}
-
-#[cfg(test)]
-mod tests {
-    use proptest::prelude::*;
-
-    use super::*;
-    use crate::ring::testing::arb_ring_element;
-
-    proptest! {
-        #[test]
-        fn deserialize_is_left_inverse_of_serialize(ring_element in arb_ring_element()) {
-            let ring_element_serialized = serialize_ring_element(12, &ring_element);
-            assert_eq!(ring_element, deserialize_ring_element(parameters::BITS_PER_COEFFICIENT, &ring_element_serialized[..]));
+        let mut value : u16 = 0;
+        for (i, bit) in bit_vector.iter().enumerate() {
+            value |= u16::from(*bit) << i;
         }
 
-        #[test]
-        fn serialize_is_sometimes_left_inverse_of_deserialize(ring_element in arb_ring_element()) {
-            let ring_element_serialized = serialize_ring_element(12, &ring_element);
-            assert_eq!(ring_element_serialized, serialize_ring_element(12, &deserialize_ring_element(parameters::BITS_PER_COEFFICIENT, &ring_element_serialized)));
+        Self {
+            value,
+            bits_to_represent_value
         }
+    }
+
+    pub fn as_bit_vector(&self) -> Vec<u8> {
+        let mut bit_vector : Vec<u8> = Vec::new();
+
+        for i in 0..self.bits_to_represent_value {
+            bit_vector.push(((self.value >> i) & 1).try_into().unwrap());
+        }
+
+        bit_vector
+    }
+}
+
+impl KyberPolynomialRingElement {
+    fn as_bit_vector(&self) -> Vec<u8> {
+        let mut ring_element_bits : Vec<u8> = Vec::new();
+
+        for coefficient in self.coefficients {
+            for bit in coefficient.as_bit_vector().iter() {
+                ring_element_bits.push(*bit);
+            }
+        }
+
+        ring_element_bits
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut serialized : Vec<u8> = Vec::new();
+
+        for bit_vector in self.as_bit_vector().chunks(8) {
+            let mut byte_value: u8 = 0;
+            for (i, bit) in bit_vector.iter().enumerate() {
+                byte_value |= *bit << i;
+            }
+
+            serialized.push(byte_value);
+        }
+
+        serialized
+    }
+
+
+    pub fn new_from_bytes(bits_per_coefficient: usize, serialized: &[u8]) -> Self {
+        let bit_vector = helpers::bytes_to_bit_vector(serialized);
+        let mut bit_vector_chunks = bit_vector.chunks(bits_per_coefficient);
+
+        let mut deserialized = KyberPolynomialRingElement::ZERO;
+
+        for i in 0..deserialized.coefficients.len() {
+            deserialized.coefficients[i] = KyberFieldElement::new_from_bit_vector(bits_per_coefficient, bit_vector_chunks.next().unwrap());
+        }
+
+        deserialized
     }
 }

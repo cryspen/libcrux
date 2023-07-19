@@ -61,3 +61,6 @@ pub(crate) mod hash_functions {
     pub(crate) use XOF;
     pub(crate) use KDF;
 }
+
+pub(crate) type KyberFieldElement = crate::helpers::field::FieldElement::<3329>;
+pub(crate) type KyberPolynomialRingElement = crate::helpers::ring::PolynomialRingElement::<3329, 256>;

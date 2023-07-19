@@ -1,11 +1,11 @@
 mod parameters;
-mod bit_vector;
-mod field;
 mod ind_cpa;
-mod ring;
 mod sampling;
 mod serialize;
+mod compress;
+mod ntt;
 
+mod helpers;
 
 pub const KYBER768_SHARED_SECRET_SIZE : usize = 32;
 
