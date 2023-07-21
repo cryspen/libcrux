@@ -61,12 +61,10 @@ pub fn generate_keypair(
             .expect("Key generation seed should be 32 bytes long."),
     )?;
 
-    let secret_key_serialized = ind_cpa_secret_key
-        .into_iter()
-        .chain(ind_cpa_public_key.into_iter())
-        .chain(parameters::hash_functions::H!(ind_cpa_public_key).into_iter())
-        .chain(implicit_rejection_value.iter().cloned())
-        .collect::<Vec<u8>>();
+    let mut secret_key_serialized = ind_cpa_secret_key.to_vec();
+    secret_key_serialized.extend_from_slice(&ind_cpa_public_key);
+    secret_key_serialized.extend_from_slice(&parameters::hash_functions::H(&ind_cpa_public_key));
+    secret_key_serialized.extend_from_slice(implicit_rejection_value);
 
     Ok((
         ind_cpa_public_key,
@@ -85,24 +83,23 @@ pub fn encapsulate(
     ([u8; KYBER768_CIPHERTEXT_SIZE], [u8; KYBER768_SHARED_SECRET_SIZE]),
     BadRejectionSamplingRandomnessError> {
 
-        let message_hashed : [u8; 32] = parameters::hash_functions::H!(message);
-        let public_key_hashed : [u8; 32] = parameters::hash_functions::H!(public_key);
+        let message_hashed : [u8; 32] = parameters::hash_functions::H(&message);
+        let public_key_hashed : [u8; 32] = parameters::hash_functions::H(&public_key);
 
-        let to_hash : &[u8] = &message_hashed.iter().cloned()
-            .chain(public_key_hashed.iter().cloned())
-            .collect::<Vec<u8>>();
+        let mut to_hash = Vec::<u8>::new();
+        to_hash.extend_from_slice(&message_hashed);
+        to_hash.extend_from_slice(&public_key_hashed);
 
-        let hashed = parameters::hash_functions::G!(to_hash);
+        let hashed = parameters::hash_functions::G(&to_hash);
         let (k_not, pseudorandomness) = hashed.split_at(32);
 
         let ciphertext = ind_cpa::encrypt(&public_key, message_hashed, pseudorandomness[..].try_into().unwrap())?;
-        let ciphertext_hashed = parameters::hash_functions::H!(ciphertext);
+        let ciphertext_hashed = parameters::hash_functions::H(&ciphertext);
 
-        let to_hash : &[u8] = &k_not.iter().cloned()
-            .chain(ciphertext_hashed.iter().cloned())
-            .collect::<Vec<u8>>();
+        to_hash = k_not.to_vec();
+        to_hash.extend_from_slice(&ciphertext_hashed);
 
-        let shared_secret = parameters::hash_functions::KDF!(32, to_hash);
+        let shared_secret = parameters::hash_functions::KDF::<32>(&to_hash);
 
         Ok((ciphertext, shared_secret))
 }
@@ -126,30 +123,27 @@ pub fn decapsulate(
 
     let decrypted = ind_cpa::decrypt(ind_cpa_secret_key.try_into().unwrap(), &ciphertext);
 
-    let to_hash : &[u8] = &decrypted.iter().cloned()
-            .chain(ind_cpa_public_key_hash.iter().cloned())
-            .collect::<Vec<u8>>();
+    let mut to_hash = decrypted.to_vec();
+    to_hash.extend_from_slice(&ind_cpa_public_key_hash);
 
-    let hashed = parameters::hash_functions::G!(to_hash);
+    let hashed = parameters::hash_functions::G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let ciphertext_hashed = parameters::hash_functions::H!(ciphertext);
+    let ciphertext_hashed = parameters::hash_functions::H(&ciphertext);
 
     let actual_ciphertext = ind_cpa::encrypt(ind_cpa_public_key.try_into().unwrap(), decrypted, pseudorandomness.try_into().unwrap());
 
-    let kdf_input = if let Ok(actual_c) = actual_ciphertext {
-        if ciphertext == actual_c {
-            k_not
-        } else {
-            implicit_rejection_value
-        }
-    } else {
-        implicit_rejection_value
-    };
+    to_hash = if let Ok(actual_c) = actual_ciphertext {
+                  if ciphertext == actual_c {
+                      k_not.to_vec()
+                  } else {
+                      implicit_rejection_value.to_vec()
+                  }
+              } else {
+                  implicit_rejection_value.to_vec()
+              };
 
-    let to_hash : &[u8] = &kdf_input.iter().cloned()
-        .chain(ciphertext_hashed.iter().cloned())
-        .collect::<Vec<u8>>();
+    to_hash.extend_from_slice(&ciphertext_hashed);
 
-    parameters::hash_functions::KDF!(32, to_hash)
+    parameters::hash_functions::KDF::<32>(&to_hash)
 }

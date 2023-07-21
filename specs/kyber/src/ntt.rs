@@ -5,7 +5,6 @@ use crate::parameters::KyberFieldElement;
 impl KyberPolynomialRingElement {
     const INVERSE_OF_2 : KyberFieldElement = KyberFieldElement {
         value : (parameters::FIELD_MODULUS + 1) / 2,
-        bits_to_represent_value: 12,
     };
 
     const NTT_LAYERS : [usize; 7] = [2, 4, 8, 16, 32, 64, 128];

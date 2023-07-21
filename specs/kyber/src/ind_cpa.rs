@@ -30,8 +30,8 @@ use crate::ntt::*;
 /// sˆ := NTT(s)
 /// eˆ := NTT(e)
 /// tˆ := Aˆ ◦ sˆ + eˆ
-/// pk := (Encode12(tˆ mod^{+}q) || ρ)
-/// sk := Encode12(sˆ mod^{+}q)
+/// pk := Encode_12(tˆ mod^{+}q) || ρ
+/// sk := Encode_12(sˆ mod^{+}q)
 /// return (pk,sk)
 /// ```
 ///
@@ -59,7 +59,7 @@ pub(crate) fn generate_keypair(
     let mut domain_separator: u8 = 0;
 
     // (ρ,σ) := G(d)
-    let hashed = parameters::hash_functions::G!(key_generation_seed);
+    let hashed = parameters::hash_functions::G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     // for i from 0 to k−1 do
@@ -67,23 +67,18 @@ pub(crate) fn generate_keypair(
     //         Aˆ [i][j] := Parse(XOF(ρ, j, i))
     //     end for
     // end for
-    for (i, seed_for_A_ith_element) in seed_for_A.iter().enumerate() {
-        // Can't use copy_from_slice due to:
-        // https://github.com/hacspec/hacspec-v2/issues/151
-        xof_input[i] = *seed_for_A_ith_element;
-    }
+    xof_input[0..seed_for_A.len()].copy_from_slice(seed_for_A);
+
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
             xof_input[32] = i
                 .try_into()
-                .expect("usize -> u8 conversion should succeed since 0 <= i < parameters::RANK.");
+                .expect("usize -> u8 conversion should succeed since 0 <= i < parameters::RANK <= 4.");
             xof_input[33] = j
                 .try_into()
-                .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK.");
+                .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK <= 4.");
 
-            // Using constant due to:
-            // https://github.com/hacspec/hacspec-v2/issues/27
-            let xof_bytes = parameters::hash_functions::XOF!(2304, xof_input);
+            let xof_bytes = parameters::hash_functions::XOF::<{parameters::REJECTION_SAMPLING_SEED_SIZE}>(&xof_input);
 
             // A[i][j] = A_transpose[j][i]
             A_transpose[j][i] = KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
@@ -95,18 +90,13 @@ pub(crate) fn generate_keypair(
     //     N := N + 1
     // end for
     // sˆ := NTT(s)
-    for (i, seed_for_secret_and_error_ith_element) in seed_for_secret_and_error.iter().enumerate() {
-        // Can't use copy_from_slice due to:
-        // https://github.com/hacspec/hacspec-v2/issues/151
-        prf_input[i] = *seed_for_secret_and_error_ith_element;
-    }
+    prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
+
     for i in 0..secret_as_ntt.len() {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // Using constant due to:
-        // https://github.com/hacspec/hacspec-v2/issues/27
-        let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+        let prf_output = parameters::hash_functions::PRF::<{parameters::BINOMIAL_SAMPLER_SEED_SIZE}>(&prf_input);
 
         let secret = KyberPolynomialRingElement::sample_from_binomial_distribution(prf_output);
         secret_as_ntt[i] = secret.ntt_representation();
@@ -121,9 +111,7 @@ pub(crate) fn generate_keypair(
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // Using constant due to:
-        // https://github.com/hacspec/hacspec-v2/issues/27
-        let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+        let prf_output = parameters::hash_functions::PRF::<{parameters::BINOMIAL_SAMPLER_SEED_SIZE}>(&prf_input);
 
         let error = KyberPolynomialRingElement::sample_from_binomial_distribution(prf_output);
         error_as_ntt[i] = error.ntt_representation();
@@ -136,17 +124,17 @@ pub(crate) fn generate_keypair(
     }
 
 
-    // pk := (Encode12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized = t_as_ntt
+    // pk := (Encode_12(tˆ mod^{+}q) || ρ)
+    let mut public_key_serialized = t_as_ntt
         .iter()
-        .flat_map(|r| r.serialize())
-        .chain(seed_for_A.iter().cloned())
+        .flat_map(|r| r.serialize(12))
         .collect::<Vec<u8>>();
+    public_key_serialized.extend_from_slice(seed_for_A);
 
-    // sk := Encode12(sˆ mod^{+}q)
+    // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = secret_as_ntt
         .iter()
-        .flat_map(|r| r.serialize())
+        .flat_map(|r| r.serialize(12))
         .collect::<Vec<u8>>();
 
     Ok((
@@ -183,9 +171,10 @@ pub(crate) fn encrypt(
 
     let message_as_ring_element = KyberPolynomialRingElement::new_from_bytes(1, &message);
 
+    let mut t_as_ntt_ring_element_bytes = public_key.chunks(parameters::BITS_PER_RING_ELEMENT / 8);
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
     for i in 0..t_as_ntt.len() {
-        t_as_ntt[i] = KyberPolynomialRingElement::new_from_bytes(parameters::BITS_PER_COEFFICIENT, public_key[i*(parameters::BITS_PER_RING_ELEMENT / 8)..(i+1)*(parameters::BITS_PER_RING_ELEMENT) / 8].try_into().unwrap());
+        t_as_ntt[i] = KyberPolynomialRingElement::new_from_bytes(parameters::BITS_PER_COEFFICIENT, t_as_ntt_ring_element_bytes.next().unwrap());
     }
 
     let seed_for_A = &public_key[parameters::T_AS_NTT_ENCODED_SIZE..];
@@ -195,11 +184,8 @@ pub(crate) fn encrypt(
     //         AˆT [i][j] := Parse(XOF(ρ, j, i))
     //     end for
     // end for
-    for (i, seed_for_A_ith_element) in seed_for_A.iter().enumerate() {
-        // Can't use copy_from_slice due to:
-        // https://github.com/hacspec/hacspec-v2/issues/151
-        xof_input[i] = *seed_for_A_ith_element;
-    }
+    xof_input[0..seed_for_A.len()].copy_from_slice(seed_for_A);
+
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
             xof_input[32] = i
@@ -209,26 +195,19 @@ pub(crate) fn encrypt(
                 .try_into()
                 .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK.");
 
-            // Using constant due to:
-            // https://github.com/hacspec/hacspec-v2/issues/27
-            let xof_bytes = parameters::hash_functions::XOF!(2304, xof_input);
+            let xof_bytes = parameters::hash_functions::XOF::<{parameters::REJECTION_SAMPLING_SEED_SIZE}>(&xof_input);
 
             A_transpose[i][j] = KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
         }
     }
 
-    for (i, randomness_ith_element) in randomness.iter().enumerate() {
-        // Can't use copy_from_slice due to:
-        // https://github.com/hacspec/hacspec-v2/issues/151
-        prf_input[i] = *randomness_ith_element;
-    }
+    prf_input[0..randomness.len()].copy_from_slice(randomness);
+
     for i in 0..r_as_ntt.len() {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // Using constant due to:
-        // https://github.com/hacspec/hacspec-v2/issues/27
-        let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+        let prf_output = parameters::hash_functions::PRF::<{parameters::BINOMIAL_SAMPLER_SEED_SIZE}>(&prf_input);
 
         let r = KyberPolynomialRingElement::sample_from_binomial_distribution(prf_output);
         r_as_ntt[i] = r.ntt_representation();
@@ -238,15 +217,13 @@ pub(crate) fn encrypt(
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // Using constant due to:
-        // https://github.com/hacspec/hacspec-v2/issues/27
-        let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+        let prf_output = parameters::hash_functions::PRF::<{parameters::BINOMIAL_SAMPLER_SEED_SIZE}>(&prf_input);
 
         error_1[i] = KyberPolynomialRingElement::sample_from_binomial_distribution(prf_output);
     }
 
     prf_input[32] = domain_separator;
-    let prf_output = parameters::hash_functions::PRF!(128, prf_input);
+    let prf_output = parameters::hash_functions::PRF::<{parameters::BINOMIAL_SAMPLER_SEED_SIZE}>(&prf_input);
     let error_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(prf_output);
 
     let mut u = multiply_matrix_by_vector(&A_transpose, &r_as_ntt).map(|r| r.invert_ntt());
@@ -261,13 +238,11 @@ pub(crate) fn encrypt(
     let c1 = u
         .iter()
         .map(|r| r.compress(parameters::U_COMPRESSION_FACTOR.try_into().unwrap()))
-        .flat_map(|r| r.serialize())
-        .collect::<Vec<u8>>();
+        .flat_map(|r| r.serialize(parameters::U_COMPRESSION_FACTOR));
 
-    let c2 = v.compress(parameters::V_COMPRESSION_FACTOR.try_into().unwrap()).serialize();
+    let c2 = v.compress(parameters::V_COMPRESSION_FACTOR.try_into().unwrap()).serialize(parameters::V_COMPRESSION_FACTOR);
 
-    let ciphertext = c1.into_iter()
-        .chain(c2.into_iter())
+    let ciphertext = c1.chain(c2.into_iter())
         .collect::<Vec<u8>>();
 
     Ok(ciphertext.try_into().unwrap())
@@ -281,18 +256,20 @@ pub(crate) fn decrypt(
     let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
 
+    let mut u_as_ntt_ring_element_bytes = ciphertext.chunks((u_as_ntt[0].coefficients.len() * 10) / 8);
     for i in 0..u_as_ntt.len() {
-        let u = KyberPolynomialRingElement::new_from_bytes(10, &ciphertext[i*(32 * 10)..(i+1)*(32*10)]);
+        let u = KyberPolynomialRingElement::new_from_bytes(10, u_as_ntt_ring_element_bytes.next().unwrap());
         u_as_ntt[i] = u.decompress(10).ntt_representation();
     }
 
     let v = KyberPolynomialRingElement::new_from_bytes(parameters::V_COMPRESSION_FACTOR, &ciphertext[parameters::U_VECTOR_SIZE..]).decompress(usize::from(parameters::V_COMPRESSION_FACTOR).try_into().unwrap());
 
+    let mut secret_as_ntt_ring_element_bytes = secret_key.chunks((secret_as_ntt[0].coefficients.len() * 12) / 8);
     for i in 0..secret_as_ntt.len() {
-        secret_as_ntt[i] = KyberPolynomialRingElement::new_from_bytes(12, &secret_key[i*(32 * 12)..(i+1)*(32*12)]);
+        secret_as_ntt[i] = KyberPolynomialRingElement::new_from_bytes(12, secret_as_ntt_ring_element_bytes.next().unwrap());
     }
 
     let message = v - multiply_row_by_column(&secret_as_ntt, &u_as_ntt).invert_ntt();
 
-    message.compress(1).serialize().try_into().unwrap()
+    message.compress(1).serialize(1).try_into().unwrap()
 }

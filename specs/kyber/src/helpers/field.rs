@@ -1,38 +1,52 @@
 use std::ops;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct FieldElement<const MODULUS: u16> {
-    pub value: u16,
-    pub bits_to_represent_value: usize,
+pub(crate) trait FieldElement:
+    Copy
+    + Clone
+    + PartialEq
+    + From<u8>
+    + From<u16>
+    + From<u32>
+    + ops::Add<Output = Self>
+    + ops::Sub<Output = Self>
+    + ops::Mul<Output = Self>
+{
+    const ZERO : Self;
+    const MODULUS : u16;
+
+    fn new(number: u16) -> Self;
 }
 
-impl<const MODULUS: u16> FieldElement<MODULUS> {
-    pub const MODULUS: u16 = MODULUS;
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct PrimeFieldElement<const MODULUS: u16> {
+    pub value: u16,
+}
 
-    pub const ZERO : Self = Self {
+impl<const MODULUS: u16> FieldElement for PrimeFieldElement<MODULUS> {
+    const MODULUS : u16 = MODULUS;
+
+    const ZERO : Self = Self {
         value: 0,
-        bits_to_represent_value: 12,
     };
 
-    pub fn new(number: u16) -> Self {
+    fn new(number: u16) -> Self {
         Self {
             value: number % Self::MODULUS,
-            bits_to_represent_value: 12,
         }
     }
 }
 
-impl<const MODULUS: u16> From<u8> for FieldElement<MODULUS> {
+impl<const MODULUS: u16> From<u8> for PrimeFieldElement<MODULUS> {
     fn from(number: u8) -> Self {
         Self::new(u16::from(number))
     }
 }
-impl<const MODULUS: u16> From<u16> for FieldElement<MODULUS> {
+impl<const MODULUS: u16> From<u16> for PrimeFieldElement<MODULUS> {
     fn from(number: u16) -> Self {
         Self::new(number)
     }
 }
-impl<const MODULUS: u16> From<u32> for FieldElement<MODULUS> {
+impl<const MODULUS: u16> From<u32> for PrimeFieldElement<MODULUS> {
     fn from(number: u32) -> Self {
         let remainder_as_u32 = number % u32::from(Self::MODULUS);
 
@@ -40,7 +54,7 @@ impl<const MODULUS: u16> From<u32> for FieldElement<MODULUS> {
     }
 }
 
-impl<const MODULUS: u16> ops::Add for FieldElement<MODULUS> {
+impl<const MODULUS: u16> ops::Add for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
@@ -49,7 +63,7 @@ impl<const MODULUS: u16> ops::Add for FieldElement<MODULUS> {
         sum.into()
     }
 }
-impl<const MODULUS: u16> ops::Sub for FieldElement<MODULUS> {
+impl<const MODULUS: u16> ops::Sub for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
@@ -60,7 +74,7 @@ impl<const MODULUS: u16> ops::Sub for FieldElement<MODULUS> {
         u16::try_from(representative).unwrap().into()
     }
 }
-impl<const MODULUS: u16> ops::Mul for FieldElement<MODULUS> {
+impl<const MODULUS: u16> ops::Mul for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {

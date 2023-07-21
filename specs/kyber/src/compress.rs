@@ -1,16 +1,14 @@
-use crate::helpers::field::FieldElement;
+use crate::parameters::KyberFieldElement;
 use crate::parameters::KyberPolynomialRingElement;
+use crate::helpers::field::FieldElement;
 
-impl<const MODULUS: u16> FieldElement<MODULUS> {
+impl KyberFieldElement {
     pub fn compress(&self, to_bit_size : u8) -> Self {
         let compression_factor : f64 = f64::from(2u16.pow(u32::from(to_bit_size))) / f64::from(Self::MODULUS);
 
         let compressed : u16 = ((compression_factor * f64::from(self.value)).round() as u16) % Self::MODULUS;
 
-        Self {
-            value: compressed,
-            bits_to_represent_value: to_bit_size.try_into().unwrap(),
-        }
+        compressed.into()
     }
 
     pub fn decompress(&self, to_bit_size : u8) -> Self {
@@ -18,10 +16,7 @@ impl<const MODULUS: u16> FieldElement<MODULUS> {
 
         let decompressed : u16 = (decompression_factor * f64::from(self.value)).round() as u16;
 
-        Self {
-            value: decompressed,
-            bits_to_represent_value: to_bit_size.try_into().unwrap(),
-        }
+        decompressed.into()
     }
 }
 

@@ -4,7 +4,7 @@ use crate::BadRejectionSamplingRandomnessError;
 use crate::parameters::KyberFieldElement;
 use crate::parameters::KyberPolynomialRingElement;
 
-use crate::helpers;
+use crate::helpers::bit_vector::BitVector;
 
 impl KyberPolynomialRingElement {
     pub fn sample_from_uniform_distribution(
@@ -46,7 +46,7 @@ impl KyberPolynomialRingElement {
     pub fn sample_from_binomial_distribution(
         randomness: [u8; parameters::BINOMIAL_SAMPLING_COINS * 64],
     ) -> KyberPolynomialRingElement {
-        let random_bits = helpers::bytes_to_bit_vector(&randomness[..]);
+        let random_bits : BitVector = randomness[..].into();
         let mut random_bits = random_bits.chunks(parameters::BINOMIAL_SAMPLING_COINS);
 
         let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
