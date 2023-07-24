@@ -1,34 +1,124 @@
-use crate::parameters::KyberFieldElement;
-use crate::parameters::KyberPolynomialRingElement;
-use crate::helpers::field::FieldElement;
+use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
 
 impl KyberFieldElement {
-    pub fn compress(&self, to_bit_size : u8) -> Self {
-        let compression_factor : f64 = f64::from(2u16.pow(u32::from(to_bit_size))) / f64::from(Self::MODULUS);
+    ///
+    /// This function implements the `Compress` function defined on Page 5 of the
+    /// Kyber Round 3 specification, which is defined as:
+    ///
+    /// ```plaintext
+    /// Compress_q(x, d) = round((2^{d} / q) * x) mod^{+}2^{d}
+    /// ```
+    ///
+    /// Since `round(x) = floor(x + 0.5)` we have:
+    ///
+    /// ```plaintext
+    /// Compress_q(x,d) = floor(x*2^d/q + 1/2) mod^{+}2^d
+    ///                 = floor((2^{d+1} * x + q) / 2q) mod^{+}2^d
+    /// ```
+    ///
+    /// this latter expression is what the code computes, since it enables us to
+    /// avoid the use of floating point arithmetic.
+    ///
+    /// The Kyber Round 3 specification can be found at:
+    /// httpsa/kyber-specification-round3-20210131.pdf
+    ///
+    pub fn compress(&self, to_bit_size: usize) -> Self {
+        assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
 
-        let compressed : u16 = ((compression_factor * f64::from(self.value)).round() as u16) % Self::MODULUS;
+        let two_pow_bit_size = 2u32.pow(to_bit_size.try_into().unwrap_or_else(|_| {
+            panic!(
+                "Conversion should work since to_bit_size is never greater than {}.",
+                parameters::BITS_PER_COEFFICIENT
+            )
+        }));
 
-        compressed.into()
+        let compressed = ((u32::from(self.value) * 2 * two_pow_bit_size)
+            + u32::from(Self::MODULUS))
+            / u32::from(2 * Self::MODULUS);
+
+        (compressed % two_pow_bit_size).into()
     }
 
-    pub fn decompress(&self, to_bit_size : u8) -> Self {
-        let decompression_factor : f64 = f64::from(Self::MODULUS) / f64::from(2u16.pow(u32::from(to_bit_size)));
+    ///
+    /// This function implements the `Decompress` function defined on Page 5 of
+    /// the Kyber Round 3 secification, which is defined as:
+    ///
+    /// ```plaintext
+    /// Decompress_q(x, d) = round((q / 2^{d}) * x)
+    /// ```
+    ///
+    /// Since `round(x) = floor(x + 0.5)` we have:
+    ///
+    /// ```plaintext
+    /// Decompress_q(x,d) = floor((x * q) / 2^d + 1/2)
+    ///                   = floor((2 * x * q + 2^d) / 2^{d+1})
+    /// ```
+    ///
+    /// this latter expression is what the code computes, since it enables us to
+    /// avoid the use of floating point arithmetic.
+    ///
+    /// The Kyber Round 3 specification can be found at:
+    /// httpsa/kyber-specification-round3-20210131.pdf
+    ///
+    pub fn decompress(&self, to_bit_size: usize) -> Self {
+        assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
 
-        let decompressed : u16 = (decompression_factor * f64::from(self.value)).round() as u16;
+        let decompressed = (2 * u32::from(self.value) * u32::from(Self::MODULUS)
+            + (1 << to_bit_size))
+            >> (to_bit_size + 1);
 
         decompressed.into()
     }
 }
 
 impl KyberPolynomialRingElement {
-    pub fn compress(&self, bits_per_compressed_coefficient : u8) -> Self {
+    ///
+    /// According to the Kyber Round 3 specification, compressing a polynomial
+    /// ring element is accomplished by `compress()`ing its constituent field
+    /// coefficients.
+    ///
+    /// The Kyber Round 3 specification can be found at:
+    /// httpsa/kyber-specification-round3-20210131.pdf
+    ///
+    pub fn compress(&self, bits_per_compressed_coefficient: usize) -> Self {
         KyberPolynomialRingElement {
-            coefficients: self.coefficients.map(|coefficient| coefficient.compress(bits_per_compressed_coefficient))
+            coefficients: self
+                .coefficients
+                .map(|coefficient| coefficient.compress(bits_per_compressed_coefficient)),
         }
     }
-    pub fn decompress(&self, bits_per_compressed_coefficient : u8) -> Self {
+
+    ///
+    /// According to the Kyber Round 3 specification, decompressing a polynomial
+    /// ring element is accomplished by `decompress()`ing its constituent field
+    /// coefficients.
+    ///
+    /// The Kyber Round 3 specification can be found at:
+    /// httpsa/kyber-specification-round3-20210131.pdf
+    ///
+    pub fn decompress(&self, bits_per_compressed_coefficient: usize) -> Self {
         KyberPolynomialRingElement {
-            coefficients: self.coefficients.map(|coefficient| coefficient.decompress(bits_per_compressed_coefficient))
+            coefficients: self
+                .coefficients
+                .map(|coefficient| coefficient.decompress(bits_per_compressed_coefficient)),
         }
     }
+}
+
+#[cfg(test)]
+pub(crate) mod tests {
+    use super::*;
+    use crate::helpers::testing::arb_field_element;
+
+    use proptest::prelude::*;
+
+    /*proptest! {
+        #[test]
+        fn distance_between_decompressed_and_original(bit_size in 10u8..13, field_element in arb_field_element()) {
+            let original : i32 = field_element.value.into();
+            let decompressed : i32 = field_element.compress(bit_size).decompress(bit_size).value.into();
+
+            let diff = original.abs_diff(decompressed);
+        }
+    }*/
 }

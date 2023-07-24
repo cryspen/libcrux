@@ -1,13 +1,13 @@
 use crate::parameters;
-use crate::parameters::KyberPolynomialRingElement;
 use crate::parameters::KyberFieldElement;
+use crate::parameters::KyberPolynomialRingElement;
 
 impl KyberPolynomialRingElement {
-    const INVERSE_OF_2 : KyberFieldElement = KyberFieldElement {
-        value : (parameters::FIELD_MODULUS + 1) / 2,
+    const INVERSE_OF_2: KyberFieldElement = KyberFieldElement {
+        value: (parameters::FIELD_MODULUS + 1) / 2,
     };
 
-    const NTT_LAYERS : [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
+    const NTT_LAYERS: [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
 
     // ZETAS = [pow(17, bitreverse(i), p) for i in range(128)]
     const ZETAS: [u16; 128] = [
@@ -67,14 +67,16 @@ impl KyberPolynomialRingElement {
         let mut zeta_i = parameters::COEFFICIENTS_IN_RING_ELEMENT / 2;
 
         for layer in Self::NTT_LAYERS {
-            for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer) {
+            for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer)
+            {
                 zeta_i -= 1;
                 let zeta: KyberFieldElement = Self::ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
-                    let t = out.coefficients[j+layer] - out.coefficients[j];
-                    out.coefficients[j] = Self::INVERSE_OF_2 * (out.coefficients[j] + out.coefficients[j+layer]);
-                    out.coefficients[j+layer] = Self::INVERSE_OF_2 * zeta * t;
+                    let t = out.coefficients[j + layer] - out.coefficients[j];
+                    out.coefficients[j] =
+                        Self::INVERSE_OF_2 * (out.coefficients[j] + out.coefficients[j + layer]);
+                    out.coefficients[j + layer] = Self::INVERSE_OF_2 * zeta * t;
                 }
             }
         }
@@ -124,7 +126,7 @@ pub(crate) fn multiply_row_by_column(
     let mut result = KyberPolynomialRingElement::ZERO;
 
     for i in 0..parameters::RANK {
-            result = result + row_vector[i].ntt_multiply(&column_vector[i]);
+        result = result + row_vector[i].ntt_multiply(&column_vector[i]);
     }
 
     result

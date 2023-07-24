@@ -7,14 +7,15 @@ pub(crate) struct PolynomialRingElement<F: FieldElement, const COEFFICIENTS: usi
     pub coefficients: [F; COEFFICIENTS],
 }
 
-impl<F: FieldElement, const COEFFICIENTS: usize> PolynomialRingElement<F, COEFFICIENTS>
-{
+impl<F: FieldElement, const COEFFICIENTS: usize> PolynomialRingElement<F, COEFFICIENTS> {
     pub const ZERO: Self = Self {
         coefficients: [F::ZERO; COEFFICIENTS],
     };
 }
 
-impl<F: FieldElement, const COEFFICIENTS: usize> ops::Add for PolynomialRingElement<F, COEFFICIENTS> {
+impl<F: FieldElement, const COEFFICIENTS: usize> ops::Add
+    for PolynomialRingElement<F, COEFFICIENTS>
+{
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
@@ -25,7 +26,9 @@ impl<F: FieldElement, const COEFFICIENTS: usize> ops::Add for PolynomialRingElem
         result
     }
 }
-impl<F: FieldElement, const COEFFICIENTS: usize> ops::Sub for PolynomialRingElement<F, COEFFICIENTS> {
+impl<F: FieldElement, const COEFFICIENTS: usize> ops::Sub
+    for PolynomialRingElement<F, COEFFICIENTS>
+{
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {

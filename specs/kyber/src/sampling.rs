@@ -44,10 +44,11 @@ impl KyberPolynomialRingElement {
     }
 
     pub fn sample_from_binomial_distribution(
-        randomness: [u8; parameters::BINOMIAL_SAMPLING_COINS * 64],
+        sampling_coins: usize,
+        randomness: &[u8],
     ) -> KyberPolynomialRingElement {
-        let random_bits : BitVector = randomness[..].into();
-        let mut random_bits = random_bits.chunks(parameters::BINOMIAL_SAMPLING_COINS);
+        let random_bits: BitVector = randomness.into();
+        let mut random_bits = random_bits.chunks(sampling_coins);
 
         let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
@@ -69,5 +70,4 @@ impl KyberPolynomialRingElement {
 
         sampled
     }
-
 }

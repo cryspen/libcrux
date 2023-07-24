@@ -66,6 +66,5 @@ fn kyber768_known_answer_tests() {
         for i in 0..shared_secret.len() {
             assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
         }
-
     }
 }

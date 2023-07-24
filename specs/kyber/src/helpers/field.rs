@@ -11,8 +11,7 @@ pub(crate) trait FieldElement:
     + ops::Sub<Output = Self>
     + ops::Mul<Output = Self>
 {
-    const ZERO : Self;
-    const MODULUS : u16;
+    const ZERO: Self;
 
     fn new(number: u16) -> Self;
 }
@@ -23,17 +22,17 @@ pub(crate) struct PrimeFieldElement<const MODULUS: u16> {
 }
 
 impl<const MODULUS: u16> FieldElement for PrimeFieldElement<MODULUS> {
-    const MODULUS : u16 = MODULUS;
-
-    const ZERO : Self = Self {
-        value: 0,
-    };
+    const ZERO: Self = Self { value: 0 };
 
     fn new(number: u16) -> Self {
         Self {
-            value: number % Self::MODULUS,
+            value: number % MODULUS,
         }
     }
+}
+
+impl<const MODULUS: u16> PrimeFieldElement<MODULUS> {
+    pub const MODULUS: u16 = MODULUS;
 }
 
 impl<const MODULUS: u16> From<u8> for PrimeFieldElement<MODULUS> {
@@ -48,7 +47,7 @@ impl<const MODULUS: u16> From<u16> for PrimeFieldElement<MODULUS> {
 }
 impl<const MODULUS: u16> From<u32> for PrimeFieldElement<MODULUS> {
     fn from(number: u32) -> Self {
-        let remainder_as_u32 = number % u32::from(Self::MODULUS);
+        let remainder_as_u32 = number % u32::from(MODULUS);
 
         Self::new(remainder_as_u32.try_into().unwrap())
     }
@@ -69,7 +68,7 @@ impl<const MODULUS: u16> ops::Sub for PrimeFieldElement<MODULUS> {
     fn sub(self, other: Self) -> Self {
         let difference: i32 =
             i32::try_from(self.value).unwrap() - i32::try_from(other.value).unwrap();
-        let representative = difference.rem_euclid(Self::MODULUS.into());
+        let representative = difference.rem_euclid(MODULUS.into());
 
         u16::try_from(representative).unwrap().into()
     }
