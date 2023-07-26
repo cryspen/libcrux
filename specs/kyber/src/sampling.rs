@@ -88,6 +88,22 @@ impl KyberPolynomialRingElement {
     /// The values v < 0 are mapped to the appropriate
     /// `|parameters::KyberFieldElement|`.
     ///
+    /// The expected value is:
+    ///
+    /// ```plaintext
+    /// E[X] = (-ETA)Pr[-ETA] + (-(ETA - 1))Pr[-(ETA - 1)] + ... + (ETA - 1)Pr[ETA - 1] + (ETA)Pr[ETA]
+    ///      = 0 since Pr[-v] = Pr[v] when v < 0.
+    /// ```
+    ///
+    /// And the variance is:
+    ///
+    /// ```plaintext
+    /// Var(X) = E[(X - E[X])^2]
+    ///        = E[X^2]
+    ///        = sum_(v=-ETA to ETA)v^2 * (BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2^(2 * ETA))
+    ///        = ETA / 2
+    /// ```
+    ///
     /// This function implements Algorithm 2 of the Kyber Round 3 specification,
     /// which is reproduced below:
     ///
