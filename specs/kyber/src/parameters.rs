@@ -24,6 +24,10 @@ pub(crate) const CPA_PKE_SECRET_KEY_SIZE: usize =
 pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE: usize = T_AS_NTT_ENCODED_SIZE + 32;
 pub(crate) const CPA_PKE_CIPHERTEXT_SIZE: usize = VECTOR_U_SIZE + VECTOR_V_SIZE;
 pub(crate) const CPA_PKE_MESSAGE_SIZE: usize = 32;
+pub(crate) const CPA_SERIALIZED_KEY_LEN: usize = CPA_PKE_SECRET_KEY_SIZE
+    + CPA_PKE_PUBLIC_KEY_SIZE
+    + hash_functions::H_DIGEST_SIZE
+    + CPA_PKE_MESSAGE_SIZE;
 
 #[allow(non_snake_case)]
 pub(crate) mod hash_functions {

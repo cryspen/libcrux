@@ -75,7 +75,6 @@ impl KyberPolynomialRingElement {
         }
     }
 
-    ///
     /// Given a series of uniformly random bytes in `|randomness|`, sample
     /// a ring element from a binomial distribution centered at 0 that uses two sets
     /// of `|sampling_coins|` coin flips. If, for example,
@@ -212,7 +211,6 @@ mod tests {
     }
 
     proptest! {
-
         #[test]
         fn uniform_sampler_mean_and_variance(randomness in vec(any::<u8>(), REJECTION_SAMPLING_ATTEMPTS * parameters::REJECTION_SAMPLING_SEED_SIZE)) {
             let mut sampled_ring_element = KyberPolynomialRingElement::ZERO;
@@ -270,8 +268,8 @@ mod tests {
             let mut mean : f64 = 0.0;
             let mut variance : f64 = 0.0;
 
-            let ring_element_1 = KyberPolynomialRingElement::sample_from_binomial_distribution(sampling_coins, randomness[0..sampling_coins * 64].try_into().unwrap());
-            let ring_element_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(sampling_coins, randomness[sampling_coins * 64..].try_into().unwrap());
+            let ring_element_1 = KyberPolynomialRingElement::sample_from_binomial_distribution(sampling_coins, &randomness[0..sampling_coins * 64]);
+            let ring_element_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(sampling_coins, &randomness[sampling_coins * 64..]);
 
             let total_samples = ring_element_1.coefficients.len() + ring_element_2.coefficients.len();
 

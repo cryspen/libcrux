@@ -1,3 +1,5 @@
+use parameters::{CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE};
+
 mod compress;
 mod ind_cpa;
 mod ntt;
@@ -10,7 +12,7 @@ mod helpers;
 pub const KYBER768_SHARED_SECRET_SIZE: usize = parameters::CPA_PKE_MESSAGE_SIZE;
 
 pub const KYBER768_KEY_GENERATION_RANDOMNESS_SIZE: usize =
-    parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE + KYBER768_SHARED_SECRET_SIZE;
+    CPA_PKE_KEY_GENERATION_SEED_SIZE + KYBER768_SHARED_SECRET_SIZE;
 
 pub const KYBER768_PUBLIC_KEY_SIZE: usize = parameters::CPA_PKE_PUBLIC_KEY_SIZE;
 
@@ -24,7 +26,6 @@ pub const KYBER768_CIPHERTEXT_SIZE: usize = parameters::CPA_PKE_CIPHERTEXT_SIZE;
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
 
-///
 /// This function implements Algorithm 7 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CCA-KEM key generation algorithm, and is
 /// reproduced below:
@@ -40,7 +41,6 @@ pub struct BadRejectionSamplingRandomnessError;
 ///
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
 pub fn generate_keypair(
     randomness: [u8; KYBER768_KEY_GENERATION_RANDOMNESS_SIZE],
 ) -> Result<
@@ -50,34 +50,24 @@ pub fn generate_keypair(
     ),
     BadRejectionSamplingRandomnessError,
 > {
-    let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
-    let implicit_rejection_value = &randomness[parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
+    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let (ind_cpa_public_key, ind_cpa_secret_key) =
+    let ind_cpa_key_pair =
         ind_cpa::generate_keypair(ind_cpa_keypair_randomness.try_into().unwrap_or_else(|_| {
             panic!(
                 "Key generation seed should be {} bytes long.",
-                parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE
+                CPA_PKE_KEY_GENERATION_SEED_SIZE
             )
         }))?;
 
-    let mut secret_key_serialized = ind_cpa_secret_key.to_vec();
-    secret_key_serialized.extend_from_slice(&ind_cpa_public_key);
-    secret_key_serialized.extend_from_slice(&parameters::hash_functions::H(&ind_cpa_public_key));
-    secret_key_serialized.extend_from_slice(implicit_rejection_value);
+    // assert!(implicit_rejection_value.len() == 32);
+    let secret_key_serialized =
+        ind_cpa_key_pair.serialize_secret_key(implicit_rejection_value.try_into().unwrap());
 
-    Ok((
-        ind_cpa_public_key,
-        secret_key_serialized.try_into().unwrap_or_else(|_| {
-            panic!(
-                "secret_key_serialized should have length {}.",
-                KYBER768_SECRET_KEY_SIZE
-            )
-        }),
-    ))
+    Ok((ind_cpa_key_pair.pk(), secret_key_serialized))
 }
 
-///
 /// This function implements Algorithm 8 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CCA-KEM encapsulation algorithm, and is
 /// reproduced below:
@@ -96,7 +86,6 @@ pub fn generate_keypair(
 ///
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
 pub fn encapsulate(
     public_key: [u8; KYBER768_PUBLIC_KEY_SIZE],
     randomness: [u8; KYBER768_SHARED_SECRET_SIZE],
@@ -136,7 +125,6 @@ pub fn encapsulate(
     Ok((ciphertext, shared_secret))
 }
 
-///
 /// This function implements Algorithm 9 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CCA-KEM decapsulation algorithm, and is
 /// reproduced below:
@@ -161,7 +149,6 @@ pub fn encapsulate(
 ///
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
 pub fn decapsulate(
     secret_key: [u8; KYBER768_SECRET_KEY_SIZE],
     ciphertext: [u8; KYBER768_CIPHERTEXT_SIZE],

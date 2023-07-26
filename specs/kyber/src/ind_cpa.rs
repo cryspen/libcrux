@@ -1,8 +1,43 @@
+use crate::helpers::{
+    PanickingArrayConversion, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
+};
 use crate::ntt::*;
-use crate::parameters::{self, KyberPolynomialRingElement};
+use crate::parameters::hash_functions::{H, PRF, XOF};
+use crate::parameters::{
+    self, KyberPolynomialRingElement, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
+    CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN,
+};
 use crate::BadRejectionSamplingRandomnessError;
 
-///
+/// A Kyber key pair
+pub struct KeyPair {
+    sk: [u8; CPA_PKE_SECRET_KEY_SIZE],
+    pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE],
+}
+
+impl KeyPair {
+    /// Creates a new [`KeyPair`].
+    pub fn new(sk: [u8; CPA_PKE_SECRET_KEY_SIZE], pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE]) -> Self {
+        Self { sk, pk }
+    }
+
+    pub fn serialize_secret_key(
+        &self,
+        implicit_rejection_value: &[u8; CPA_PKE_MESSAGE_SIZE],
+    ) -> [u8; CPA_SERIALIZED_KEY_LEN] {
+        UpdatableArray::new([0u8; CPA_SERIALIZED_KEY_LEN])
+            .push(&self.sk)
+            .push(&self.pk)
+            .push(&H(&self.pk))
+            .push(implicit_rejection_value)
+            .into()
+    }
+
+    pub fn pk(&self) -> [u8; 1184] {
+        self.pk
+    }
+}
+
 /// This function implements Algorithm 4 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CPA-PKE key generation algorithm, and is
 /// reproduced below:
@@ -36,17 +71,10 @@ use crate::BadRejectionSamplingRandomnessError;
 ///
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
 #[allow(non_snake_case)]
 pub(crate) fn generate_keypair(
     key_generation_seed: &[u8; parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE],
-) -> Result<
-    (
-        [u8; parameters::CPA_PKE_PUBLIC_KEY_SIZE],
-        [u8; parameters::CPA_PKE_SECRET_KEY_SIZE],
-    ),
-    BadRejectionSamplingRandomnessError,
-> {
+) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
     let mut xof_input: [u8; 34] = [0; 34];
     let mut prf_input: [u8; 33] = [0; 33];
 
@@ -70,16 +98,10 @@ pub(crate) fn generate_keypair(
 
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
-            xof_input[32] = i.try_into().expect(
-                "usize -> u8 conversion should succeed since 0 <= i < parameters::RANK <= 4",
-            );
-            xof_input[33] = j.try_into().expect(
-                "usize -> u8 conversion should succeed since 0 <= j < parameters::RANK <= 4",
-            );
+            xof_input[32] = i.as_u8();
+            xof_input[33] = j.as_u8();
 
-            let xof_bytes = parameters::hash_functions::XOF::<
-                { parameters::REJECTION_SAMPLING_SEED_SIZE },
-            >(&xof_input);
+            let xof_bytes: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
 
             // A[i][j] = A_transpose[j][i]
             A_transpose[j][i] =
@@ -98,9 +120,8 @@ pub(crate) fn generate_keypair(
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        let prf_output = parameters::hash_functions::PRF::<
-            128, // 2 sampling coins * 64
-        >(&prf_input);
+        // 2 sampling coins * 64
+        let prf_output: [u8; 128] = PRF(&prf_input);
 
         let secret =
             KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
@@ -116,9 +137,8 @@ pub(crate) fn generate_keypair(
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        let prf_output = parameters::hash_functions::PRF::<
-            128, // 2 sampling coins * 64
-        >(&prf_input);
+        // 2 sampling coins * 64
+        let prf_output: [u8; 128] = PRF(&prf_input);
 
         let error =
             KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
@@ -144,19 +164,9 @@ pub(crate) fn generate_keypair(
         .flat_map(|r| r.serialize_little_endian(12))
         .collect::<Vec<u8>>();
 
-    Ok((
-        public_key_serialized.try_into().unwrap_or_else(|_| {
-            panic!(
-                "public_key_serialized should have length {}",
-                parameters::CPA_PKE_PUBLIC_KEY_SIZE
-            )
-        }),
-        secret_key_serialized.try_into().unwrap_or_else(|_| {
-            panic!(
-                "secret_key_serialized should have length {}",
-                parameters::CPA_PKE_SECRET_KEY_SIZE
-            )
-        }),
+    Ok(KeyPair::new(
+        secret_key_serialized.into_array(), // FIXME: conversion shouldn't be necessary!
+        public_key_serialized.into_array(), // FIXME: conversion shouldn't be necessary!
     ))
 }
 
@@ -200,7 +210,7 @@ pub(crate) fn generate_keypair(
 ///
 #[allow(non_snake_case)]
 pub(crate) fn encrypt(
-    public_key: &[u8; parameters::CPA_PKE_PUBLIC_KEY_SIZE],
+    public_key: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
     message: [u8; parameters::CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8; 32],
 ) -> Result<[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE], BadRejectionSamplingRandomnessError> {
@@ -246,9 +256,7 @@ pub(crate) fn encrypt(
                 .try_into()
                 .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK");
 
-            let xof_bytes = parameters::hash_functions::XOF::<
-                { parameters::REJECTION_SAMPLING_SEED_SIZE },
-            >(&xof_input);
+            let xof_bytes = XOF::<{ parameters::REJECTION_SAMPLING_SEED_SIZE }>(&xof_input);
 
             A_transpose[i][j] =
                 KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
@@ -266,7 +274,7 @@ pub(crate) fn encrypt(
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        let prf_output = parameters::hash_functions::PRF::<
+        let prf_output = PRF::<
             128, // 2 sampling coins * 64
         >(&prf_input);
 
@@ -282,7 +290,7 @@ pub(crate) fn encrypt(
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        let prf_output = parameters::hash_functions::PRF::<
+        let prf_output = PRF::<
             128, // 2 sampling coins * 64
         >(&prf_input);
         error_1[i] =
@@ -291,7 +299,7 @@ pub(crate) fn encrypt(
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
-    let prf_output = parameters::hash_functions::PRF::<
+    let prf_output = PRF::<
         128, // 2 sampling coins * 64
     >(&prf_input);
     let error_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
@@ -349,7 +357,7 @@ pub(crate) fn encrypt(
 ///
 #[allow(non_snake_case)]
 pub(crate) fn decrypt(
-    secret_key: &[u8; parameters::CPA_PKE_SECRET_KEY_SIZE],
+    secret_key: &[u8; CPA_PKE_SECRET_KEY_SIZE],
     ciphertext: &[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE],
 ) -> [u8; parameters::CPA_PKE_MESSAGE_SIZE] {
     let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
