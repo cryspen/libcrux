@@ -1,6 +1,5 @@
 use crate::ntt::*;
-use crate::parameters;
-use crate::parameters::KyberPolynomialRingElement;
+use crate::parameters::{self, KyberPolynomialRingElement};
 use crate::BadRejectionSamplingRandomnessError;
 
 ///
@@ -72,10 +71,10 @@ pub(crate) fn generate_keypair(
     for i in 0..parameters::RANK {
         for j in 0..parameters::RANK {
             xof_input[32] = i.try_into().expect(
-                "usize -> u8 conversion should succeed since 0 <= i < parameters::RANK <= 4.",
+                "usize -> u8 conversion should succeed since 0 <= i < parameters::RANK <= 4",
             );
             xof_input[33] = j.try_into().expect(
-                "usize -> u8 conversion should succeed since 0 <= j < parameters::RANK <= 4.",
+                "usize -> u8 conversion should succeed since 0 <= j < parameters::RANK <= 4",
             );
 
             let xof_bytes = parameters::hash_functions::XOF::<
@@ -127,7 +126,7 @@ pub(crate) fn generate_keypair(
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    let mut t_as_ntt = multiply_matrix_by_vector(&A_transpose, &secret_as_ntt);
+    let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
     for i in 0..t_as_ntt.len() {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
@@ -135,26 +134,26 @@ pub(crate) fn generate_keypair(
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let mut public_key_serialized = t_as_ntt
         .iter()
-        .flat_map(|r| r.serialize(12))
+        .flat_map(|r| r.serialize_little_endian(12))
         .collect::<Vec<u8>>();
     public_key_serialized.extend_from_slice(seed_for_A);
 
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = secret_as_ntt
         .iter()
-        .flat_map(|r| r.serialize(12))
+        .flat_map(|r| r.serialize_little_endian(12))
         .collect::<Vec<u8>>();
 
     Ok((
         public_key_serialized.try_into().unwrap_or_else(|_| {
             panic!(
-                "public_key_serialized should have length {}.",
+                "public_key_serialized should have length {}",
                 parameters::CPA_PKE_PUBLIC_KEY_SIZE
             )
         }),
         secret_key_serialized.try_into().unwrap_or_else(|_| {
             panic!(
-                "secret_key_serialized should have length {}.",
+                "secret_key_serialized should have length {}",
                 parameters::CPA_PKE_SECRET_KEY_SIZE
             )
         }),
@@ -214,13 +213,14 @@ pub(crate) fn encrypt(
 
     let mut domain_separator: u8 = 0;
 
-    let message_as_ring_element = KyberPolynomialRingElement::new_from_bytes(1, &message);
+    let message_as_ring_element =
+        KyberPolynomialRingElement::deserialize_little_endian(1, &message);
 
     // tˆ := Decode_12(pk)
     let mut t_as_ntt_ring_element_bytes = public_key.chunks(parameters::BITS_PER_RING_ELEMENT / 8);
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
     for i in 0..t_as_ntt.len() {
-        t_as_ntt[i] = KyberPolynomialRingElement::new_from_bytes(
+        t_as_ntt[i] = KyberPolynomialRingElement::deserialize_little_endian(
             12,
             t_as_ntt_ring_element_bytes.next().expect(
                 "t_as_ntt_ring_element_bytes should have enough bytes to deserialize to t_as_ntt",
@@ -241,10 +241,10 @@ pub(crate) fn encrypt(
         for j in 0..parameters::RANK {
             xof_input[32] = i
                 .try_into()
-                .expect("usize -> u8 conversion should succeed since 0 <= i < parameters::RANK.");
+                .expect("usize -> u8 conversion should succeed since 0 <= i < parameters::RANK");
             xof_input[33] = j
                 .try_into()
-                .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK.");
+                .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK");
 
             let xof_bytes = parameters::hash_functions::XOF::<
                 { parameters::REJECTION_SAMPLING_SEED_SIZE },
@@ -297,7 +297,7 @@ pub(crate) fn encrypt(
     let error_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_vector(&A_transpose, &r_as_ntt).map(|r| r.invert_ntt());
+    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| r.invert_ntt());
     for i in 0..u.len() {
         u[i] = u[i] + error_1[i];
     }
@@ -311,18 +311,18 @@ pub(crate) fn encrypt(
     let c1 = u
         .iter()
         .map(|r| r.compress(parameters::VECTOR_U_COMPRESSION_FACTOR))
-        .flat_map(|r| r.serialize(parameters::VECTOR_U_COMPRESSION_FACTOR));
+        .flat_map(|r| r.serialize_little_endian(parameters::VECTOR_U_COMPRESSION_FACTOR));
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = v
         .compress(parameters::VECTOR_V_COMPRESSION_FACTOR)
-        .serialize(parameters::VECTOR_V_COMPRESSION_FACTOR);
+        .serialize_little_endian(parameters::VECTOR_V_COMPRESSION_FACTOR);
 
     let ciphertext = c1.chain(c2.into_iter()).collect::<Vec<u8>>();
 
     Ok(ciphertext.try_into().unwrap_or_else(|_| {
         panic!(
-            "ciphertext should have length {}.",
+            "ciphertext should have length {}",
             parameters::CPA_PKE_CIPHERTEXT_SIZE
         )
     }))
@@ -359,7 +359,7 @@ pub(crate) fn decrypt(
     let mut u_as_ntt_ring_element_bytes =
         ciphertext.chunks((u_as_ntt[0].coefficients.len() * 10) / 8);
     for i in 0..u_as_ntt.len() {
-        let u = KyberPolynomialRingElement::new_from_bytes(
+        let u = KyberPolynomialRingElement::deserialize_little_endian(
             10,
             u_as_ntt_ring_element_bytes.next().expect(
                 "u_as_ntt_ring_element_bytes should have enough bytes to deserialize to u_as_ntt",
@@ -369,7 +369,7 @@ pub(crate) fn decrypt(
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = KyberPolynomialRingElement::new_from_bytes(
+    let v = KyberPolynomialRingElement::deserialize_little_endian(
         parameters::VECTOR_V_COMPRESSION_FACTOR,
         &ciphertext[parameters::VECTOR_U_SIZE..],
     )
@@ -379,7 +379,7 @@ pub(crate) fn decrypt(
     let mut secret_as_ntt_ring_element_bytes =
         secret_key.chunks((secret_as_ntt[0].coefficients.len() * 12) / 8);
     for i in 0..secret_as_ntt.len() {
-        secret_as_ntt[i] = KyberPolynomialRingElement::new_from_bytes(
+        secret_as_ntt[i] = KyberPolynomialRingElement::deserialize_little_endian(
             12,
             secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt"),
         );
@@ -389,7 +389,12 @@ pub(crate) fn decrypt(
     let message = v - multiply_row_by_column(&secret_as_ntt, &u_as_ntt).invert_ntt();
     message
         .compress(1)
-        .serialize(1)
+        .serialize_little_endian(1)
         .try_into()
-        .expect("Message should be 32 bytes long.")
+        .unwrap_or_else(|_| {
+            panic!(
+                "Message should be {} bytes long",
+                parameters::CPA_PKE_MESSAGE_SIZE
+            )
+        })
 }

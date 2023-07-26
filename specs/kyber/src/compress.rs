@@ -106,19 +106,29 @@ impl KyberPolynomialRingElement {
 }
 
 #[cfg(test)]
-pub(crate) mod tests {
-    use super::*;
-    use crate::helpers::testing::arb_field_element;
-
+mod tests {
     use proptest::prelude::*;
 
-    /*proptest! {
-        #[test]
-        fn distance_between_decompressed_and_original(bit_size in 10u8..13, field_element in arb_field_element()) {
-            let original : i32 = field_element.value.into();
-            let decompressed : i32 = field_element.compress(bit_size).decompress(bit_size).value.into();
+    use crate::helpers::testing::arb_ring_element;
 
-            let diff = original.abs_diff(decompressed);
+    // TODO: Check that for a randomly chosen x in Z_q, the expression:
+    // Decompress_q(Compress_q(x, d), d) - x mod q
+    // is almost uniform over the integers of magnitude at most B_q, where
+    // B_q = round(q / 2^{d + 1})
+    proptest! {
+        #[test]
+        fn compress_to_zero_bits(ring_element in arb_ring_element(12)) {
+            let compressed = ring_element.compress(0);
+            for coefficient in compressed.coefficients {
+                assert_eq!(coefficient.value, 0);
+            }
         }
-    }*/
+
+        fn compress_and_decompress_are_inverses_when_no_compression(ring_element in arb_ring_element(12)) {
+            let compressed = ring_element.compress(12);
+            let decompressed = compressed.decompress(12);
+
+            assert_eq!(compressed, decompressed);
+        }
+    }
 }

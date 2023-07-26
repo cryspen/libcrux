@@ -51,6 +51,6 @@ pub(crate) mod hash_functions {
     }
 }
 
-pub(crate) type KyberFieldElement = crate::helpers::field::PrimeFieldElement<3329>;
+pub(crate) type KyberFieldElement = crate::helpers::field::PrimeFieldElement<FIELD_MODULUS>;
 pub(crate) type KyberPolynomialRingElement =
-    crate::helpers::ring::PolynomialRingElement<KyberFieldElement, 256>;
+    crate::helpers::ring::PolynomialRingElement<KyberFieldElement, COEFFICIENTS_IN_RING_ELEMENT>;
