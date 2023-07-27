@@ -99,6 +99,10 @@ impl<const LEN: usize> UpdatableArray<LEN> {
     pub fn new(value: [u8; LEN]) -> Self {
         Self { value, pointer: 0 }
     }
+
+    pub fn array(self) -> [u8; LEN] {
+        self.value
+    }
 }
 
 impl<const LEN: usize> UpdatingArray for UpdatableArray<LEN> {
@@ -118,6 +122,28 @@ impl<const LEN: usize> From<[u8; LEN]> for UpdatableArray<LEN> {
 impl<const LEN: usize> From<UpdatableArray<LEN>> for [u8; LEN] {
     fn from(value: UpdatableArray<LEN>) -> Self {
         value.value
+    }
+}
+
+pub trait UpdatingArray2<const OLEN: usize> {
+    fn push(self, other: &[u8]) -> [u8; OLEN];
+}
+
+impl<const LEN: usize, const OLEN: usize> UpdatingArray2<OLEN> for [u8; LEN] {
+    fn push(self, other: &[u8]) -> [u8; OLEN] {
+        let mut out = [0u8; OLEN];
+        out[0..self.len()].copy_from_slice(&self);
+        out[self.len()..].copy_from_slice(other);
+        out
+    }
+}
+
+impl<const OLEN: usize> UpdatingArray2<OLEN> for &[u8] {
+    fn push(self, other: &[u8]) -> [u8; OLEN] {
+        let mut out = [0u8; OLEN];
+        out[0..self.len()].copy_from_slice(&self);
+        out[self.len()..].copy_from_slice(other);
+        out
     }
 }
 

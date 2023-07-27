@@ -4,13 +4,13 @@ use crate::helpers::{
 use crate::ntt::*;
 use crate::parameters::hash_functions::{H, PRF, XOF};
 use crate::parameters::{
-    self, KyberPolynomialRingElement, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
-    CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
-    REJECTION_SAMPLING_SEED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+    self, KyberPolynomialRingElement, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
+    CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN,
+    RANK, REJECTION_SAMPLING_SEED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
 };
 use crate::BadRejectionSamplingRandomnessError;
 
-pub type CiphertextCpa = [u8; parameters::CPA_PKE_CIPHERTEXT_SIZE];
+pub type CiphertextCpa = [u8; CPA_PKE_CIPHERTEXT_SIZE];
 
 /// A Kyber key pair
 pub struct KeyPair {
@@ -241,7 +241,7 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
 #[allow(non_snake_case)]
 pub(crate) fn encrypt(
     public_key: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
-    message: [u8; parameters::CPA_PKE_MESSAGE_SIZE],
+    message: [u8; CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8; 32],
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
@@ -345,8 +345,8 @@ pub(crate) fn encrypt(
 #[allow(non_snake_case)]
 pub(crate) fn decrypt(
     secret_key: &[u8; CPA_PKE_SECRET_KEY_SIZE],
-    ciphertext: &[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE],
-) -> [u8; parameters::CPA_PKE_MESSAGE_SIZE] {
+    ciphertext: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
+) -> [u8; CPA_PKE_MESSAGE_SIZE] {
     let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
 

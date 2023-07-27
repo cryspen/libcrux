@@ -1,7 +1,8 @@
-use helpers::ArrayConversion;
+use helpers::{ArrayConversion, UpdatingArray2};
 use parameters::{
-    hash_functions::{H, H_DIGEST_SIZE, KDF},
+    hash_functions::{G, H, H_DIGEST_SIZE, KDF},
     CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
+    CPA_PKE_SECRET_KEY_SIZE,
 };
 
 mod compress;
@@ -20,10 +21,8 @@ pub const KYBER768_KEY_GENERATION_RANDOMNESS_SIZE: usize =
 
 pub const KYBER768_PUBLIC_KEY_SIZE: usize = CPA_PKE_PUBLIC_KEY_SIZE;
 
-pub const KYBER768_SECRET_KEY_SIZE: usize = parameters::CPA_PKE_SECRET_KEY_SIZE
-    + CPA_PKE_PUBLIC_KEY_SIZE
-    + H_DIGEST_SIZE
-    + KYBER768_SHARED_SECRET_SIZE;
+pub const KYBER768_SECRET_KEY_SIZE: usize =
+    CPA_PKE_SECRET_KEY_SIZE + CPA_PKE_PUBLIC_KEY_SIZE + H_DIGEST_SIZE + KYBER768_SHARED_SECRET_SIZE;
 
 pub const KYBER768_CIPHERTEXT_SIZE: usize = parameters::CPA_PKE_CIPHERTEXT_SIZE;
 
@@ -115,7 +114,7 @@ pub fn encapsulate(
     let mut to_hash = randomness_hashed.to_vec();
     to_hash.extend_from_slice(&H(&public_key));
 
-    let hashed = parameters::hash_functions::G(&to_hash);
+    let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
     let ciphertext =
@@ -157,55 +156,35 @@ pub fn decapsulate(
     secret_key: PrivateKey,
     ciphertext: [u8; KYBER768_CIPHERTEXT_SIZE],
 ) -> [u8; KYBER768_SHARED_SECRET_SIZE] {
-    let mut secret_key_index = 0;
-
-    let ind_cpa_secret_key =
-        &secret_key[secret_key_index..secret_key_index + parameters::CPA_PKE_SECRET_KEY_SIZE];
-    secret_key_index += parameters::CPA_PKE_SECRET_KEY_SIZE;
-
-    let ind_cpa_public_key =
-        &secret_key[secret_key_index..secret_key_index + CPA_PKE_PUBLIC_KEY_SIZE];
-    secret_key_index += CPA_PKE_PUBLIC_KEY_SIZE;
-
-    let ind_cpa_public_key_hash = &secret_key[secret_key_index..secret_key_index + H_DIGEST_SIZE];
-    secret_key_index += H_DIGEST_SIZE;
-
-    let implicit_rejection_value = &secret_key[secret_key_index..];
+    let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE);
+    let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE);
+    let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 
     let decrypted = ind_cpa::decrypt(&ind_cpa_secret_key.as_array(), &ciphertext);
 
-    let mut to_hash = decrypted.to_vec();
-    to_hash.extend_from_slice(ind_cpa_public_key_hash);
+    let to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] =
+        decrypted.push(ind_cpa_public_key_hash);
 
-    let hashed = parameters::hash_functions::G(&to_hash);
+    let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
     let reencrypted_ciphertext = ind_cpa::encrypt(
-        ind_cpa_public_key.try_into().unwrap_or_else(|_| {
-            panic!(
-                "IND-CPA public key cannot be other than {} bytes long.",
-                parameters::CPA_PKE_PUBLIC_KEY_SIZE
-            )
-        }),
+        &ind_cpa_public_key.as_array(),
         decrypted,
-        pseudorandomness.try_into().unwrap_or_else(|_| {
-            panic!(
-                "(Pseudo)randomness cannot be other than {} bytes long.",
-                parameters::CPA_PKE_MESSAGE_SIZE
-            )
-        }),
+        &pseudorandomness.as_array(),
     );
 
-    to_hash = if let Ok(reencrypted) = reencrypted_ciphertext {
+    let to_hash = if let Ok(reencrypted) = reencrypted_ciphertext {
         if ciphertext == reencrypted {
-            k_not.to_vec()
+            k_not
         } else {
-            implicit_rejection_value.to_vec()
+            implicit_rejection_value
         }
     } else {
-        implicit_rejection_value.to_vec()
+        implicit_rejection_value
     };
-    to_hash.extend_from_slice(&H(&ciphertext));
+    assert!(to_hash.len() == 32);
+    let to_hash: [u8; 32 + H_DIGEST_SIZE] = to_hash.push(&H(&ciphertext));
 
     KDF(&to_hash)
 }
