@@ -9,7 +9,7 @@ mod helpers;
 
 pub const KYBER768_SHARED_SECRET_SIZE: usize = parameters::CPA_PKE_MESSAGE_SIZE;
 
-pub const KYBER768_KEY_GENERATION_RANDOMNESS_SIZE: usize =
+pub const KYBER768_KEY_GENERATION_SEED_SIZE: usize =
     parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE + KYBER768_SHARED_SECRET_SIZE;
 
 pub const KYBER768_PUBLIC_KEY_SIZE: usize = parameters::CPA_PKE_PUBLIC_KEY_SIZE;
@@ -42,7 +42,7 @@ pub struct BadRejectionSamplingRandomnessError;
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 ///
 pub fn generate_keypair(
-    randomness: [u8; KYBER768_KEY_GENERATION_RANDOMNESS_SIZE],
+    randomness: [u8; KYBER768_KEY_GENERATION_SEED_SIZE],
 ) -> Result<
     (
         [u8; KYBER768_PUBLIC_KEY_SIZE],
@@ -251,7 +251,7 @@ mod tests {
 
     proptest! {
         #[test]
-        fn consistency(key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_RANDOMNESS_SIZE), encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE)) {
+        fn consistency(key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE), encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE)) {
             if let Ok((public_key, secret_key)) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
                 if let Ok((ciphertext, shared_secret)) = encapsulate(public_key, encapsulation_randomness.try_into().unwrap()) {
                     let shared_secret_decapsulated = decapsulate(secret_key, ciphertext);
@@ -266,7 +266,7 @@ mod tests {
 
         #[test]
         fn modified_ciphertext(
-            key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_RANDOMNESS_SIZE),
+            key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE),
             encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE),
 
             ciphertext_position in 0usize..KYBER768_CIPHERTEXT_SIZE,
@@ -291,7 +291,7 @@ mod tests {
 
         #[test]
         fn modified_secret_key(
-            key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_RANDOMNESS_SIZE),
+            key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE),
             encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE),
 
             secret_key_position in 0usize..(KYBER768_SECRET_KEY_SIZE - KYBER768_SHARED_SECRET_SIZE),
@@ -312,7 +312,7 @@ mod tests {
 
         #[test]
         fn modified_ciphertext_and_implicit_rejection_value(
-            key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_RANDOMNESS_SIZE),
+            key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE),
             encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE),
 
             secret_key_position in IMPLICIT_REJECTION_VALUE_POSITION..KYBER768_SECRET_KEY_SIZE,
