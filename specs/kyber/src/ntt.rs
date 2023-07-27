@@ -1,4 +1,4 @@
-use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
+use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement, RANK};
 
 impl KyberPolynomialRingElement {
     // [ pow(17, br(i), p) for 0 <= i < 128 ]
@@ -31,33 +31,28 @@ impl KyberPolynomialRingElement {
 
     const NTT_LAYERS: [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
 
-    //
-    // Use the Cooley–Tukey butterfly to compute an in-place NTT representation
-    // of a `KyberPolynomialRingElement`.
-    //
-    // This can be seen[1] as 128 applications of the linear map CT where
-    //
-    // CT_i(a, b) => (a + zeta^i * b, a - zeta^i * b) mod q
-    //
-    // for the appropriate i.
-    //
-    // Because the Kyber base field has 256th roots of unity but not 512th roots
-    // of unity, the resulting NTT representation is an element in:
-    //
-    // ```plaintext
-    // Product(i = 0 to 255) F_{3329}[x] / (x^2 - zeta^{2i+1}),
-    // ```
-    //
-    // This is isomorphic to `F_{3329}[x] / (x^{256} + 1)` by the
-    // Chinese Remainder Theorem.
-    //
-    // [1]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
-    //
+    /// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
+    /// of a `KyberPolynomialRingElement`.
+    ///
+    /// This can be seen[1] as 128 applications of the linear map CT where
+    ///
+    /// CT_i(a, b) => (a + zeta^i * b, a - zeta^i * b) mod q
+    ///
+    /// for the appropriate i.
+    ///
+    /// Because the Kyber base field has 256th roots of unity but not 512th roots
+    /// of unity, the resulting NTT representation is an element in:
+    ///
+    /// ```plaintext
+    /// Product(i = 0 to 255) F_{3329}[x] / (x^2 - zeta^{2i+1}),
+    /// ```
+    ///
+    /// This is isomorphic to `F_{3329}[x] / (x^{256} + 1)` by the
+    /// Chinese Remainder Theorem.
+    ///
+    /// [1]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
     pub fn ntt_representation(&self) -> Self {
-        let mut out = Self::ZERO;
-        for i in 0..self.coefficients.len() {
-            out.coefficients[i].value = self.coefficients[i].value;
-        }
+        let mut out = self.clone();
 
         let mut zeta_i = 0;
         for layer in Self::NTT_LAYERS.iter().rev() {
@@ -76,7 +71,6 @@ impl KyberPolynomialRingElement {
         out
     }
 
-    //
     // Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
     // of a `KyberPolynomialRingElement`. The inverse NTT can be computed[1] by
     // replacing CS_i by GS_j and
@@ -88,7 +82,6 @@ impl KyberPolynomialRingElement {
     // for the appropriate j.
     //
     // [1]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
-    //
     const INVERSE_OF_2: KyberFieldElement = KyberFieldElement {
         value: (parameters::FIELD_MODULUS + 1) / 2,
     };
@@ -118,24 +111,22 @@ impl KyberPolynomialRingElement {
         out
     }
 
-    //
-    // Two elements `a, b ∈ F_{3329}[x] / (x^2 - zeta^{2i+1})` in the Kyber NTT
-    // domain:
-    //
-    // ```plaintext
-    // a = a_0 + a_1 * x
-    // b = b_0 + b_1 * x
-    // ```
-    //
-    // can be multiplied as follows:
-    //
-    // ```plaintext
-    // (a_2 * x + a_1)(b_2 * x + b_1) =
-    //      (a_0 * b_0 + a_1 * b_1 * zeta^{2i + 1}) + (a_0 * b_1 + a_1 * b_0) * x
-    // ```
-    //
-    //  for the appropriate i.
-    //
+    /// Two elements `a, b ∈ F_{3329}[x] / (x^2 - zeta^{2i+1})` in the Kyber NTT
+    /// domain:
+    ///
+    /// ```plaintext
+    /// a = a_0 + a_1 * x
+    /// b = b_0 + b_1 * x
+    /// ```
+    ///
+    /// can be multiplied as follows:
+    ///
+    /// ```plaintext
+    /// (a_2 * x + a_1)(b_2 * x + b_1) =
+    ///      (a_0 * b_0 + a_1 * b_1 * zeta^{2i + 1}) + (a_0 * b_1 + a_1 * b_0) * x
+    /// ```
+    ///
+    ///  for the appropriate i.
     pub fn ntt_multiply(&self, other: &Self) -> Self {
         let mut out = Self::ZERO;
 
@@ -157,10 +148,10 @@ impl KyberPolynomialRingElement {
 
 #[allow(non_snake_case)]
 pub(crate) fn multiply_matrix_by_column(
-    matrix: &[[KyberPolynomialRingElement; parameters::RANK]; parameters::RANK],
-    vector: &[KyberPolynomialRingElement; parameters::RANK],
-) -> [KyberPolynomialRingElement; parameters::RANK] {
-    let mut result = [KyberPolynomialRingElement::ZERO; parameters::RANK];
+    matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
+    vector: &[KyberPolynomialRingElement; RANK],
+) -> [KyberPolynomialRingElement; RANK] {
+    let mut result = [KyberPolynomialRingElement::ZERO; RANK];
 
     for (i, row) in matrix.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {
@@ -172,8 +163,8 @@ pub(crate) fn multiply_matrix_by_column(
 }
 
 pub(crate) fn multiply_row_by_column(
-    row_vector: &[KyberPolynomialRingElement; parameters::RANK],
-    column_vector: &[KyberPolynomialRingElement; parameters::RANK],
+    row_vector: &[KyberPolynomialRingElement; RANK],
+    column_vector: &[KyberPolynomialRingElement; RANK],
 ) -> KyberPolynomialRingElement {
     let mut result = KyberPolynomialRingElement::ZERO;
 
