@@ -29,6 +29,11 @@ pub const KYBER768_CIPHERTEXT_SIZE: usize = parameters::CPA_PKE_CIPHERTEXT_SIZE;
 pub type PublicKey = [u8; KYBER768_PUBLIC_KEY_SIZE];
 pub type PrivateKey = [u8; KYBER768_SECRET_KEY_SIZE];
 
+pub type Ciphertext = [u8; KYBER768_CIPHERTEXT_SIZE];
+pub type Enc = [u8; KYBER768_SHARED_SECRET_SIZE];
+pub type SharedSecret = [u8; KYBER768_SHARED_SECRET_SIZE];
+pub type Randomness = [u8; KYBER768_KEY_GENERATION_RANDOMNESS_SIZE];
+
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
 
@@ -67,7 +72,7 @@ impl KeyPair {
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 pub fn generate_keypair(
-    randomness: [u8; KYBER768_KEY_GENERATION_RANDOMNESS_SIZE],
+    randomness: Randomness,
 ) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
@@ -102,17 +107,10 @@ pub fn generate_keypair(
 pub fn encapsulate(
     public_key: PublicKey,
     randomness: [u8; KYBER768_SHARED_SECRET_SIZE],
-) -> Result<
-    (
-        [u8; KYBER768_CIPHERTEXT_SIZE],
-        [u8; KYBER768_SHARED_SECRET_SIZE],
-    ),
-    BadRejectionSamplingRandomnessError,
-> {
+) -> Result<(Ciphertext, Enc), BadRejectionSamplingRandomnessError> {
     let randomness_hashed = H(&randomness);
 
-    let mut to_hash = randomness_hashed.to_vec();
-    to_hash.extend_from_slice(&H(&public_key));
+    let to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness_hashed.push(&H(&public_key));
 
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
@@ -120,10 +118,8 @@ pub fn encapsulate(
     let ciphertext =
         ind_cpa::encrypt(&public_key, randomness_hashed, &pseudorandomness.as_array())?;
 
-    to_hash = k_not.to_vec();
-    to_hash.extend_from_slice(&H(&ciphertext));
-
-    let shared_secret: [u8; KYBER768_SHARED_SECRET_SIZE] = KDF(&to_hash);
+    let to_hash: [u8; 2 * H_DIGEST_SIZE] = k_not.push(&H(&ciphertext));
+    let shared_secret: SharedSecret = KDF(&to_hash);
 
     Ok((ciphertext, shared_secret))
 }
@@ -154,8 +150,8 @@ pub fn encapsulate(
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 pub fn decapsulate(
     secret_key: PrivateKey,
-    ciphertext: [u8; KYBER768_CIPHERTEXT_SIZE],
-) -> [u8; KYBER768_SHARED_SECRET_SIZE] {
+    ciphertext: Ciphertext,
+) -> SharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
@@ -203,7 +199,7 @@ mod tests {
     pub fn decapsulate_with_implicit_rejection_value(
         secret_key: PrivateKey,
         ciphertext: [u8; KYBER768_CIPHERTEXT_SIZE],
-    ) -> [u8; KYBER768_SHARED_SECRET_SIZE] {
+    ) -> SharedSecret {
         let mut to_hash = secret_key[IMPLICIT_REJECTION_VALUE_POSITION..].to_vec();
         to_hash.extend_from_slice(&parameters::hash_functions::H(&ciphertext));
 
