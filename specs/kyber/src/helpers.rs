@@ -22,22 +22,22 @@ impl PanickingIntegerCasts for usize {
     }
 }
 
-pub trait ArrayConversion {
-    fn as_array<const LEN: usize>(&self) -> [u8; LEN];
-    fn into_array<const LEN: usize>(self) -> [u8; LEN];
-    fn into_padded_array<const LEN: usize>(&self) -> [u8; LEN];
+pub trait ArrayConversion<const LEN: usize> {
+    fn as_array(&self) -> [u8; LEN];
+    fn into_array(self) -> [u8; LEN];
+    fn into_padded_array(&self) -> [u8; LEN];
 }
 
-impl ArrayConversion for Vec<u8> {
-    fn as_array<const LEN: usize>(&self) -> [u8; LEN] {
+impl<const LEN: usize> ArrayConversion<LEN> for Vec<u8> {
+    fn as_array(&self) -> [u8; LEN] {
         self.clone().try_into().unwrap()
     }
 
-    fn into_array<const LEN: usize>(self) -> [u8; LEN] {
+    fn into_array(self) -> [u8; LEN] {
         self.try_into().unwrap()
     }
 
-    fn into_padded_array<const LEN: usize>(&self) -> [u8; LEN] {
+    fn into_padded_array(&self) -> [u8; LEN] {
         assert!(self.len() <= LEN);
         let mut out = [0u8; LEN];
         out[0..self.len()].copy_from_slice(self);
@@ -45,19 +45,32 @@ impl ArrayConversion for Vec<u8> {
     }
 }
 
-impl ArrayConversion for &[u8] {
-    fn as_array<const LEN: usize>(&self) -> [u8; LEN] {
+impl<const LEN: usize> ArrayConversion<LEN> for &[u8] {
+    fn as_array(&self) -> [u8; LEN] {
         self.to_vec().try_into().unwrap()
     }
 
-    fn into_array<const LEN: usize>(self) -> [u8; LEN] {
+    fn into_array(self) -> [u8; LEN] {
         self.try_into().unwrap()
     }
 
-    fn into_padded_array<const LEN: usize>(&self) -> [u8; LEN] {
+    fn into_padded_array(&self) -> [u8; LEN] {
         assert!(self.len() <= LEN);
         let mut out = [0u8; LEN];
         out[0..self.len()].copy_from_slice(self);
+        out
+    }
+}
+
+pub trait ArrayPadding<const LEN: usize> {
+    fn into_padded_array<const OLEN: usize>(&self) -> [u8; OLEN];
+}
+
+impl<const LEN: usize> ArrayPadding<LEN> for &[u8; LEN] {
+    fn into_padded_array<const OLEN: usize>(&self) -> [u8; OLEN] {
+        assert!(self.len() <= OLEN);
+        let mut out = [0u8; OLEN];
+        out[0..self.len()].copy_from_slice(*self);
         out
     }
 }

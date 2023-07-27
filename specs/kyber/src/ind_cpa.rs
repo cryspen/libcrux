@@ -1,12 +1,16 @@
-use crate::helpers::{ArrayConversion, PanickingIntegerCasts, UpdatableArray, UpdatingArray};
+use crate::helpers::{
+    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
+};
 use crate::ntt::*;
 use crate::parameters::hash_functions::{H, PRF, XOF};
 use crate::parameters::{
     self, KyberPolynomialRingElement, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
     CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
-    REJECTION_SAMPLING_SEED_SIZE,
+    REJECTION_SAMPLING_SEED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
 };
 use crate::BadRejectionSamplingRandomnessError;
+
+pub type CiphertextCpa = [u8; parameters::CPA_PKE_CIPHERTEXT_SIZE];
 
 /// A Kyber key pair
 pub struct KeyPair {
@@ -181,6 +185,23 @@ fn parse_a(
     Ok(a_transpose)
 }
 
+#[inline(always)]
+fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
+    let mut domain_separator = 0;
+    let mut r_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    for i in 0..r_as_ntt.len() {
+        prf_input[32] = domain_separator;
+        domain_separator += 1;
+
+        // 2 sampling coins * 64
+        let prf_output: [u8; 128] = PRF(&prf_input);
+
+        let r = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output);
+        r_as_ntt[i] = r.ntt_representation();
+    }
+    (r_as_ntt, domain_separator)
+}
+
 /// This function implements Algorithm 5 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CPA-PKE encryption algorithm, and is reproduced
 /// below:
@@ -222,17 +243,7 @@ pub(crate) fn encrypt(
     public_key: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
     message: [u8; parameters::CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8; 32],
-) -> Result<[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE], BadRejectionSamplingRandomnessError> {
-    let mut prf_input: [u8; 33] = [0; 33];
-
-    let mut r_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    let mut error_1 = [KyberPolynomialRingElement::ZERO; RANK];
-
-    let mut domain_separator: u8 = 0;
-
-    let message_as_ring_element =
-        KyberPolynomialRingElement::deserialize_little_endian(1, &message);
-
+) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
     let mut t_as_ntt_ring_element_bytes = public_key.chunks(parameters::BITS_PER_RING_ELEMENT / 8);
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
@@ -259,41 +270,28 @@ pub(crate) fn encrypt(
     //     N := N + 1
     // end for
     // rˆ := NTT(r)
-    prf_input[0..randomness.len()].copy_from_slice(randomness);
-
-    for i in 0..r_as_ntt.len() {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        let prf_output = PRF::<
-            128, // 2 sampling coins * 64
-        >(&prf_input);
-
-        let r = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
-        r_as_ntt[i] = r.ntt_representation();
-    }
+    let mut prf_input: [u8; 33] = randomness.into_padded_array();
+    let (r_as_ntt, mut domain_separator) = cbd(prf_input);
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
+    let mut error_1 = [KyberPolynomialRingElement::ZERO; RANK];
     for i in 0..error_1.len() {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        let prf_output = PRF::<
-            128, // 2 sampling coins * 64
-        >(&prf_input);
-        error_1[i] =
-            KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
+        // 2 sampling coins * 64
+        let prf_output: [u8; 128] = PRF(&prf_input);
+        error_1[i] = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
-    let prf_output = PRF::<
-        128, // 2 sampling coins * 64
-    >(&prf_input);
-    let error_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
+    // 2 sampling coins * 64
+    let prf_output: [u8; 128] = PRF(&prf_input);
+    let error_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| r.invert_ntt());
@@ -302,6 +300,8 @@ pub(crate) fn encrypt(
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
+    let message_as_ring_element =
+        KyberPolynomialRingElement::deserialize_little_endian(1, &message);
     let v = multiply_row_by_column(&t_as_ntt, &r_as_ntt).invert_ntt()
         + error_2
         + message_as_ring_element.decompress(1);
@@ -314,17 +314,13 @@ pub(crate) fn encrypt(
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = v
-        .compress(parameters::VECTOR_V_COMPRESSION_FACTOR)
-        .serialize_little_endian(parameters::VECTOR_V_COMPRESSION_FACTOR);
+        .compress(VECTOR_V_COMPRESSION_FACTOR)
+        .serialize_little_endian(VECTOR_V_COMPRESSION_FACTOR);
 
-    let ciphertext = c1.chain(c2.into_iter()).collect::<Vec<u8>>();
+    // XXX: For the implementation: not collecting would be nicer because we don't need a vector then.
+    let ciphertext = c1.chain(c2.into_iter()).collect::<Vec<u8>>().as_array();
 
-    Ok(ciphertext.try_into().unwrap_or_else(|_| {
-        panic!(
-            "ciphertext should have length {}",
-            parameters::CPA_PKE_CIPHERTEXT_SIZE
-        )
-    }))
+    Ok(ciphertext)
 }
 
 ///
@@ -369,10 +365,10 @@ pub(crate) fn decrypt(
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = KyberPolynomialRingElement::deserialize_little_endian(
-        parameters::VECTOR_V_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
         &ciphertext[parameters::VECTOR_U_SIZE..],
     )
-    .decompress(parameters::VECTOR_V_COMPRESSION_FACTOR);
+    .decompress(VECTOR_V_COMPRESSION_FACTOR);
 
     // sˆ := Decode_12(sk)
     let mut secret_as_ntt_ring_element_bytes =
