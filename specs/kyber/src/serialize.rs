@@ -29,7 +29,6 @@ impl KyberPolynomialRingElement {
         ring_element_bits
     }
 
-    ///
     /// Convert the associated ring element into a vector of
     /// `|parameters::COEFFICIENTS_IN_RING_ELEMENT| * |bits_per_coefficient|`
     /// bits, and output this vector as a byte array such that the first 8 bits of
@@ -49,7 +48,6 @@ impl KyberPolynomialRingElement {
     ///
     /// Otherwise `deserialize_little_endian` is not injective and therefore has
     /// no left inverse.
-    ///
     pub fn serialize_little_endian(&self, bits_per_coefficient: usize) -> Vec<u8> {
         let mut serialized: Vec<u8> = Vec::new();
 
@@ -77,7 +75,6 @@ impl KyberPolynomialRingElement {
         value.into()
     }
 
-    ///
     /// Given a series of bytes representing a ring element in `|ring_element_bytes|`,
     /// first convert them into a vector of bits in little-endian order; i.e.
     /// the least significant `|bits_per_coefficient|` of `|ring_element_bytes[0]|`
@@ -103,7 +100,6 @@ impl KyberPolynomialRingElement {
     ///
     /// The Kyber Round 3 specification can be found at:
     /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-    ///
     pub fn deserialize_little_endian(
         bits_per_coefficient: usize,
         ring_element_bytes: &[u8],

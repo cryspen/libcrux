@@ -351,15 +351,10 @@ pub(crate) fn decrypt(
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    let mut u_as_ntt_ring_element_bytes =
-        ciphertext.chunks((u_as_ntt[0].coefficients.len() * 10) / 8);
-    for i in 0..u_as_ntt.len() {
-        let u = KyberPolynomialRingElement::deserialize_little_endian(
-            10,
-            u_as_ntt_ring_element_bytes.next().expect(
-                "u_as_ntt_ring_element_bytes should have enough bytes to deserialize to u_as_ntt",
-            ),
-        );
+    for (i, u_bytes) in
+        (0..u_as_ntt.len()).zip(ciphertext.chunks((u_as_ntt[0].coefficients.len() * 10) / 8))
+    {
+        let u = KyberPolynomialRingElement::deserialize_little_endian(10, u_bytes);
         u_as_ntt[i] = u.decompress(10).ntt_representation();
     }
 
