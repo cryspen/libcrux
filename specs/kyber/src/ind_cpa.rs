@@ -1,11 +1,10 @@
-use crate::helpers::{
-    PanickingArrayConversion, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
-};
+use crate::helpers::{ArrayConversion, PanickingIntegerCasts, UpdatableArray, UpdatingArray};
 use crate::ntt::*;
 use crate::parameters::hash_functions::{H, PRF, XOF};
 use crate::parameters::{
-    self, KyberPolynomialRingElement, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
-    CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN,
+    self, KyberPolynomialRingElement, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
+    CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
+    REJECTION_SAMPLING_SEED_SIZE,
 };
 use crate::BadRejectionSamplingRandomnessError;
 
@@ -73,14 +72,12 @@ impl KeyPair {
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
 #[allow(non_snake_case)]
 pub(crate) fn generate_keypair(
-    key_generation_seed: &[u8; parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE],
+    key_generation_seed: &[u8; CPA_PKE_KEY_GENERATION_SEED_SIZE],
 ) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
-    let mut xof_input: [u8; 34] = [0; 34];
     let mut prf_input: [u8; 33] = [0; 33];
 
-    let mut A_transpose = [[KyberPolynomialRingElement::ZERO; parameters::RANK]; parameters::RANK];
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
-    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
+    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
 
     // N := 0
     let mut domain_separator: u8 = 0;
@@ -89,25 +86,7 @@ pub(crate) fn generate_keypair(
     let hashed = parameters::hash_functions::G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    // for i from 0 to k−1 do
-    //     for j from 0 to k − 1 do
-    //         Aˆ [i][j] := Parse(XOF(ρ, j, i))
-    //     end for
-    // end for
-    xof_input[0..seed_for_A.len()].copy_from_slice(seed_for_A);
-
-    for i in 0..parameters::RANK {
-        for j in 0..parameters::RANK {
-            xof_input[32] = i.as_u8();
-            xof_input[33] = j.as_u8();
-
-            let xof_bytes: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
-
-            // A[i][j] = A_transpose[j][i]
-            A_transpose[j][i] =
-                KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
-        }
-    }
+    let A_transpose = parse_a(seed_for_A.into_padded_array(), true)?;
 
     // for i from 0 to k−1 do
     //     s[i] := CBD_{η1}(PRF(σ, N))
@@ -170,7 +149,38 @@ pub(crate) fn generate_keypair(
     ))
 }
 
-///
+/// for i from 0 to k−1 do
+///     for j from 0 to k − 1 do
+///         Aˆ [i][j] := Parse(XOF(ρ, j, i))
+///     end for
+/// end for
+#[inline(always)]
+fn parse_a(
+    mut seed: [u8; 34],
+    transpose: bool,
+) -> Result<[[KyberPolynomialRingElement; RANK]; RANK], BadRejectionSamplingRandomnessError> {
+    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
+
+    for i in 0..RANK {
+        for j in 0..RANK {
+            seed[32] = i.as_u8();
+            seed[33] = j.as_u8();
+
+            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
+
+            // A[i][j] = A_transpose[j][i]
+            if transpose {
+                a_transpose[j][i] =
+                    KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
+            } else {
+                a_transpose[i][j] =
+                    KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
+            }
+        }
+    }
+    Ok(a_transpose)
+}
+
 /// This function implements Algorithm 5 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CPA-PKE encryption algorithm, and is reproduced
 /// below:
@@ -207,19 +217,16 @@ pub(crate) fn generate_keypair(
 ///
 /// The Kyber Round 3 specification can be found at:
 /// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
 #[allow(non_snake_case)]
 pub(crate) fn encrypt(
     public_key: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
     message: [u8; parameters::CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8; 32],
 ) -> Result<[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE], BadRejectionSamplingRandomnessError> {
-    let mut xof_input: [u8; 34] = [0; 34];
     let mut prf_input: [u8; 33] = [0; 33];
 
-    let mut A_transpose = [[KyberPolynomialRingElement::ZERO; parameters::RANK]; parameters::RANK];
-    let mut r_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
-    let mut error_1 = [KyberPolynomialRingElement::ZERO; parameters::RANK];
+    let mut r_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    let mut error_1 = [KyberPolynomialRingElement::ZERO; RANK];
 
     let mut domain_separator: u8 = 0;
 
@@ -228,7 +235,7 @@ pub(crate) fn encrypt(
 
     // tˆ := Decode_12(pk)
     let mut t_as_ntt_ring_element_bytes = public_key.chunks(parameters::BITS_PER_RING_ELEMENT / 8);
-    let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
+    let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
     for i in 0..t_as_ntt.len() {
         t_as_ntt[i] = KyberPolynomialRingElement::deserialize_little_endian(
             12,
@@ -244,24 +251,8 @@ pub(crate) fn encrypt(
     //         AˆT[i][j] := Parse(XOF(ρ, i, j))
     //     end for
     // end for
-    let seed_for_A = &public_key[parameters::T_AS_NTT_ENCODED_SIZE..];
-    xof_input[0..seed_for_A.len()].copy_from_slice(seed_for_A);
-
-    for i in 0..parameters::RANK {
-        for j in 0..parameters::RANK {
-            xof_input[32] = i
-                .try_into()
-                .expect("usize -> u8 conversion should succeed since 0 <= i < parameters::RANK");
-            xof_input[33] = j
-                .try_into()
-                .expect("usize -> u8 conversion should succeed since 0 <= j < parameters::RANK");
-
-            let xof_bytes = XOF::<{ parameters::REJECTION_SAMPLING_SEED_SIZE }>(&xof_input);
-
-            A_transpose[i][j] =
-                KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
-        }
-    }
+    let seed = &public_key[parameters::T_AS_NTT_ENCODED_SIZE..];
+    let A_transpose = parse_a(seed.into_padded_array(), false)?;
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
@@ -360,8 +351,8 @@ pub(crate) fn decrypt(
     secret_key: &[u8; CPA_PKE_SECRET_KEY_SIZE],
     ciphertext: &[u8; parameters::CPA_PKE_CIPHERTEXT_SIZE],
 ) -> [u8; parameters::CPA_PKE_MESSAGE_SIZE] {
-    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; parameters::RANK];
+    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     let mut u_as_ntt_ring_element_bytes =

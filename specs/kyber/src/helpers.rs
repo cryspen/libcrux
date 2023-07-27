@@ -22,18 +22,43 @@ impl PanickingIntegerCasts for usize {
     }
 }
 
-pub trait PanickingArrayConversion {
+pub trait ArrayConversion {
     fn as_array<const LEN: usize>(&self) -> [u8; LEN];
     fn into_array<const LEN: usize>(self) -> [u8; LEN];
+    fn into_padded_array<const LEN: usize>(&self) -> [u8; LEN];
 }
 
-impl PanickingArrayConversion for Vec<u8> {
+impl ArrayConversion for Vec<u8> {
     fn as_array<const LEN: usize>(&self) -> [u8; LEN] {
         self.clone().try_into().unwrap()
     }
 
     fn into_array<const LEN: usize>(self) -> [u8; LEN] {
         self.try_into().unwrap()
+    }
+
+    fn into_padded_array<const LEN: usize>(&self) -> [u8; LEN] {
+        assert!(self.len() <= LEN);
+        let mut out = [0u8; LEN];
+        out[0..self.len()].copy_from_slice(self);
+        out
+    }
+}
+
+impl ArrayConversion for &[u8] {
+    fn as_array<const LEN: usize>(&self) -> [u8; LEN] {
+        self.to_vec().try_into().unwrap()
+    }
+
+    fn into_array<const LEN: usize>(self) -> [u8; LEN] {
+        self.try_into().unwrap()
+    }
+
+    fn into_padded_array<const LEN: usize>(&self) -> [u8; LEN] {
+        assert!(self.len() <= LEN);
+        let mut out = [0u8; LEN];
+        out[0..self.len()].copy_from_slice(self);
+        out
     }
 }
 

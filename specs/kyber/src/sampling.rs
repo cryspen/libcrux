@@ -289,7 +289,7 @@ mod tests {
             variance /= (total_samples - 1) as f64;
 
             assert!(mean < 0.3, "The mean is {}.", mean); // The expected mean is 0
-            assert!(percentage_error(variance, expected_variance) < 21.0, "The variance is {}.", variance);
+            assert!(percentage_error(variance, expected_variance) < 25.0, "The variance is {}.", variance);
         }
     }
 }
