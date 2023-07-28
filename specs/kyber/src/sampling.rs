@@ -42,8 +42,8 @@ impl KyberPolynomialRingElement {
     pub fn sample_from_uniform_distribution(
         randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
     ) -> Result<KyberPolynomialRingElement, BadRejectionSamplingRandomnessError> {
-        let mut j: usize = 0;
-        let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+        let mut sampled_coefficients: usize = 0;
+        let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
         for bytes in randomness.chunks(3) {
             let b = u16::from(bytes[0]);
@@ -55,24 +55,21 @@ impl KyberPolynomialRingElement {
             // Integer division is flooring in Rust.
             let d2 = (b1 / 16) + (16 * b2);
 
-            if d1 < parameters::FIELD_MODULUS && j < sampled.coefficients.len() {
-                sampled.coefficients[j] = d1.into();
-                j += 1
+            if d1 < parameters::FIELD_MODULUS && sampled_coefficients < out.coefficients.len() {
+                out.coefficients[sampled_coefficients] = d1.into();
+                sampled_coefficients += 1
             }
-            if d2 < parameters::FIELD_MODULUS && j < sampled.coefficients.len() {
-                sampled.coefficients[j] = d2.into();
-                j += 1;
+            if d2 < parameters::FIELD_MODULUS && sampled_coefficients < out.coefficients.len() {
+                out.coefficients[sampled_coefficients] = d2.into();
+                sampled_coefficients += 1;
             }
-            // In an efficient implementation, we'd break when
-            // j == sampled.coefficients.len, but we've forgone this to make
-            // the implementation easier to read.
+
+            if sampled_coefficients == out.coefficients.len() {
+                return Ok(out);
+            }
         }
 
-        if j == sampled.coefficients.len() {
-            Ok(sampled)
-        } else {
-            Err(BadRejectionSamplingRandomnessError)
-        }
+        Err(BadRejectionSamplingRandomnessError)
     }
 
     /// Given a series of uniformly random bytes in `|randomness|`, sample
