@@ -1,29 +1,12 @@
 use crate::helpers::bit_vector::BitVector;
+use crate::helpers::ring::Bits;
 use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
 
 impl KyberPolynomialRingElement {
-    fn field_element_to_little_endian_bit_vector(
-        field_element: KyberFieldElement,
-        bits_to_represent_value: usize,
-    ) -> BitVector {
-        let mut bits: Vec<u8> = Vec::new();
-
-        for i in 0..bits_to_represent_value {
-            bits.push(((field_element.value >> i) & 1).try_into().unwrap());
-        }
-
-        BitVector::new(bits)
-    }
     fn to_little_endian_bit_vector(self, bits_per_coefficient: usize) -> Vec<u8> {
         let mut ring_element_bits: Vec<u8> = Vec::new();
-
-        for coefficient in self.coefficients {
-            for bit in
-                Self::field_element_to_little_endian_bit_vector(coefficient, bits_per_coefficient)
-                    .into_iter()
-            {
-                ring_element_bits.push(bit);
-            }
+        for bits in (&self.coefficients).bits_chunks(bits_per_coefficient) {
+            ring_element_bits.extend_from_slice(&bits);
         }
 
         ring_element_bits
@@ -56,8 +39,8 @@ impl KyberPolynomialRingElement {
             .chunks(8)
         {
             let mut byte_value: u8 = 0;
-            for (i, bit) in bit_vector.iter().enumerate() {
-                byte_value |= *bit << i;
+            for (i, &bit) in bit_vector.iter().enumerate() {
+                byte_value |= bit << i;
             }
 
             serialized.push(byte_value);
@@ -106,6 +89,7 @@ impl KyberPolynomialRingElement {
     ) -> Self {
         assert!(bits_per_coefficient <= parameters::BITS_PER_COEFFICIENT);
 
+        // FIXME: rewrite like serialization without the `BitVector`.
         let ring_element_bits: BitVector = ring_element_bytes.into();
         let mut ring_element_bits = ring_element_bits.chunks(bits_per_coefficient);
 

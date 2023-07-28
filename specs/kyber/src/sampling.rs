@@ -129,6 +129,8 @@ impl KyberPolynomialRingElement {
     ) -> KyberPolynomialRingElement {
         assert_eq!(randomness.len(), sampling_coins * 64);
 
+        let randomness_bytes = randomness.to_vec();
+        let mut random_bytes = randomness_bytes.chunks(sampling_coins);
         let random_bits: BitVector = randomness.into();
         let mut random_bits = random_bits.chunks(sampling_coins);
 
@@ -140,6 +142,7 @@ impl KyberPolynomialRingElement {
                 .next()
                 .expect("the assertion ensures there are enough sampling coins")
             {
+                // assert_eq!(randomness_bytes.bit(7), bit);
                 coin_tosses += bit;
             }
             let coin_tosses_a: KyberFieldElement = coin_tosses.into();
