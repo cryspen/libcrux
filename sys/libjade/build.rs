@@ -51,6 +51,8 @@ mod x64_build {
             .allowlist_var("JADE_ONETIMEAUTH_POLY1305_.*")
             .allowlist_function("jade_stream_chacha_chacha20.*")
             .allowlist_var("JADE_STREAM_CHACHA_CHACHA20_.*")
+            .allowlist_function("jade_kem_kyber_kyber768_.*")
+            .allowlist_var("JADE_KEM_KYBER_KYBER768_.*")
             // Block everything we don't need or define ourselves.
             .blocklist_type("__.*")
             // Disable tests to avoid warnings and keep it portable
@@ -114,6 +116,7 @@ mod x64_build {
             "sha3_512_ref.s",
             "chacha20_ref.s",
             "poly1305_ref.s",
+            "kyber_kyber768_ref.s",
         ];
         let mut all_files = files.clone();
 

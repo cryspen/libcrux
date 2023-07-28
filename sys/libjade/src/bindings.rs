@@ -22,6 +22,13 @@ pub const JADE_ONETIMEAUTH_POLY1305_AMD64_REF_ALGNAME: &[u8; 9usize] = b"Poly130
 pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_REF_KEYBYTES: u32 = 32;
 pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_REF_NONCEBYTES: u32 = 12;
 pub const JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_REF_ALGNAME: &[u8; 14usize] = b"ChaCha20-ietf\0";
+pub const JADE_KEM_KYBER_KYBER768_AMD64_REF_SECRETKEYBYTES: u32 = 2400;
+pub const JADE_KEM_KYBER_KYBER768_AMD64_REF_PUBLICKEYBYTES: u32 = 1184;
+pub const JADE_KEM_KYBER_KYBER768_AMD64_REF_CIPHERTEXTBYTES: u32 = 1088;
+pub const JADE_KEM_KYBER_KYBER768_AMD64_REF_KEYPAIRCOINBYTES: u32 = 64;
+pub const JADE_KEM_KYBER_KYBER768_AMD64_REF_ENCCOINBYTES: u32 = 32;
+pub const JADE_KEM_KYBER_KYBER768_AMD64_REF_BYTES: u32 = 32;
+pub const JADE_KEM_KYBER_KYBER768_AMD64_REF_ALGNAME: &[u8; 9usize] = b"Kyber768\0";
 pub const JADE_HASH_SHA3_224_AMD64_AVX2_BYTES: u32 = 28;
 pub const JADE_HASH_SHA3_224_AMD64_AVX2_ALGNAME: &[u8; 9usize] = b"SHA3-224\0";
 pub const JADE_HASH_SHA3_256_AMD64_AVX2_BYTES: u32 = 32;
@@ -134,6 +141,28 @@ extern "C" {
         length: u64,
         nonce: *mut u8,
         key: *mut u8,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_kem_kyber_kyber768_amd64_ref_keypair_derand(
+        public_key: *mut u8,
+        secret_key: *mut u8,
+        coins: *const u8,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_kem_kyber_kyber768_amd64_ref_enc_derand(
+        ciphertext: *mut u8,
+        shared_secret: *mut u8,
+        public_key: *const u8,
+        coins: *const u8,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn jade_kem_kyber_kyber768_amd64_ref_dec(
+        shared_secret: *mut u8,
+        ciphertext: *const u8,
+        secret_key: *const u8,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {

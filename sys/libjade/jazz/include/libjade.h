@@ -9,6 +9,7 @@
 #include "sha3_512_ref.h"
 #include "poly1305_ref.h"
 #include "chacha20_ref.h"
+#include "kyber_kyber768_ref.h"
 
 #ifdef SIMD256
 #include "sha3_224_avx2.h"
