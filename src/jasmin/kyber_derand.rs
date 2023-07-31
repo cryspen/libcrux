@@ -13,7 +13,7 @@ type Kyber768KeypairSeed = [u8; 64];
 type Kyber768PublicKey = [u8; 1184];
 type Kyber768SecretKey = [u8; 2400];
 
-type Kyber768EncSeed = [u8; 32];
+type Kyber768EncapsulateSeed = [u8; 32];
 
 type Kyber768Ciphertext = [u8; 1088];
 type Kyber768SharedSecret = [u8; 32];
@@ -39,7 +39,7 @@ fn kyber768_keypair_derand_ref(seed : Kyber768KeypairSeed) -> Result<(Kyber768Pu
 }
 
 
-fn kyber768_enc_derand_ref(public_key : Kyber768PublicKey, seed : Kyber768EncSeed) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), &'static str> {
+fn kyber768_enc_derand_ref(public_key : Kyber768PublicKey, seed : Kyber768EncapsulateSeed) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), &'static str> {
     let mut ciphertext : Kyber768Ciphertext = [0; 1088];
     let mut shared_secret = Kyber768SharedSecret::default();
 
