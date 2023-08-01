@@ -1,14 +1,25 @@
-use crate::helpers::{
+use hacspec_lib::{
     ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
 };
-use crate::ntt::*;
-use crate::parameters::hash_functions::{H, PRF, XOF};
-use crate::parameters::{
-    self, KyberPolynomialRingElement, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
-    CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN,
-    RANK, REJECTION_SAMPLING_SEED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+
+use crate::{
+    compress::{compress, decompress},
+    ntt::{
+        KyberPolynomialRingElementMod::{invert_ntt, ntt_representation},
+        *,
+    },
+    parameters::{
+        self,
+        hash_functions::{H, PRF, XOF},
+        KyberPolynomialRingElement, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
+        CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
+        CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+    },
+    sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
+    serialize::{deserialize_little_endian, serialize_little_endian},
+    BadRejectionSamplingRandomnessError,
 };
-use crate::BadRejectionSamplingRandomnessError;
 
 pub type CiphertextCpa = [u8; CPA_PKE_CIPHERTEXT_SIZE];
 
@@ -106,9 +117,8 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let secret =
-            KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
-        secret_as_ntt[i] = secret.ntt_representation();
+        let secret = sample_from_binomial_distribution(2, &prf_output[..]);
+        secret_as_ntt[i] = ntt_representation(secret);
     }
 
     // for i from 0 to k−1 do
@@ -123,9 +133,8 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let error =
-            KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output[..]);
-        error_as_ntt[i] = error.ntt_representation();
+        let error = sample_from_binomial_distribution(2, &prf_output[..]);
+        error_as_ntt[i] = ntt_representation(error);
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ
@@ -136,15 +145,15 @@ pub(crate) fn generate_keypair(
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let mut public_key_serialized = t_as_ntt
-        .iter()
-        .flat_map(|r| r.serialize_little_endian(12))
+        .into_iter()
+        .flat_map(|r| serialize_little_endian(r, 12))
         .collect::<Vec<u8>>();
     public_key_serialized.extend_from_slice(seed_for_A);
 
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = secret_as_ntt
-        .iter()
-        .flat_map(|r| r.serialize_little_endian(12))
+        .into_iter()
+        .flat_map(|r| serialize_little_endian(r, 12))
         .collect::<Vec<u8>>();
 
     Ok(KeyPair::new(
@@ -174,11 +183,9 @@ fn parse_a(
 
             // A[i][j] = A_transpose[j][i]
             if transpose {
-                a_transpose[j][i] =
-                    KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
+                a_transpose[j][i] = sample_from_uniform_distribution(xof_bytes)?;
             } else {
-                a_transpose[i][j] =
-                    KyberPolynomialRingElement::sample_from_uniform_distribution(xof_bytes)?;
+                a_transpose[i][j] = sample_from_uniform_distribution(xof_bytes)?;
             }
         }
     }
@@ -196,8 +203,8 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let r = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output);
-        r_as_ntt[i] = r.ntt_representation();
+        let r = sample_from_binomial_distribution(2, &prf_output);
+        r_as_ntt[i] = ntt_representation(r);
     }
     (r_as_ntt, domain_separator)
 }
@@ -247,8 +254,9 @@ pub(crate) fn encrypt(
     // tˆ := Decode_12(pk)
     let mut t_as_ntt_ring_element_bytes = public_key.chunks(parameters::BITS_PER_RING_ELEMENT / 8);
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    // FIXME: use bit iter
     for i in 0..t_as_ntt.len() {
-        t_as_ntt[i] = KyberPolynomialRingElement::deserialize_little_endian(
+        t_as_ntt[i] = deserialize_little_endian(
             12,
             t_as_ntt_ring_element_bytes.next().expect(
                 "t_as_ntt_ring_element_bytes should have enough bytes to deserialize to t_as_ntt",
@@ -284,38 +292,38 @@ pub(crate) fn encrypt(
 
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
-        error_1[i] = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output);
+        error_1[i] = sample_from_binomial_distribution(2, &prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
     // 2 sampling coins * 64
     let prf_output: [u8; 128] = PRF(&prf_input);
-    let error_2 = KyberPolynomialRingElement::sample_from_binomial_distribution(2, &prf_output);
+    let error_2 = sample_from_binomial_distribution(2, &prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| r.invert_ntt());
+    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| invert_ntt(r));
     for i in 0..u.len() {
         u[i] = u[i] + error_1[i];
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element =
-        KyberPolynomialRingElement::deserialize_little_endian(1, &message);
-    let v = multiply_row_by_column(&t_as_ntt, &r_as_ntt).invert_ntt()
+    let message_as_ring_element = deserialize_little_endian(1, &message);
+    let v = invert_ntt(multiply_row_by_column(&t_as_ntt, &r_as_ntt))
         + error_2
-        + message_as_ring_element.decompress(1);
+        + decompress(message_as_ring_element, 1);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
     let c1 = u
-        .iter()
-        .map(|r| r.compress(parameters::VECTOR_U_COMPRESSION_FACTOR))
-        .flat_map(|r| r.serialize_little_endian(parameters::VECTOR_U_COMPRESSION_FACTOR));
+        .into_iter()
+        .map(|r| compress(r, VECTOR_U_COMPRESSION_FACTOR))
+        .flat_map(|r| serialize_little_endian(r, VECTOR_U_COMPRESSION_FACTOR));
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = v
-        .compress(VECTOR_V_COMPRESSION_FACTOR)
-        .serialize_little_endian(VECTOR_V_COMPRESSION_FACTOR);
+    let c2 = serialize_little_endian(
+        compress(v, VECTOR_V_COMPRESSION_FACTOR),
+        VECTOR_V_COMPRESSION_FACTOR,
+    );
 
     // XXX: For the implementation: not collecting would be nicer because we don't need a vector then.
     let ciphertext = c1.chain(c2.into_iter()).collect::<Vec<u8>>().as_array();
@@ -352,39 +360,34 @@ pub(crate) fn decrypt(
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     for (i, u_bytes) in
-        (0..u_as_ntt.len()).zip(ciphertext.chunks((u_as_ntt[0].coefficients.len() * 10) / 8))
+        (0..u_as_ntt.len()).zip(ciphertext.chunks((u_as_ntt[0].coefficients().len() * 10) / 8))
+    // FIXME: use constants
     {
-        let u = KyberPolynomialRingElement::deserialize_little_endian(10, u_bytes);
-        u_as_ntt[i] = u.decompress(10).ntt_representation();
+        let u = deserialize_little_endian(10, u_bytes);
+        u_as_ntt[i] = ntt_representation(decompress(u, 10));
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = KyberPolynomialRingElement::deserialize_little_endian(
+    let v = decompress(
+        deserialize_little_endian(VECTOR_V_COMPRESSION_FACTOR, &ciphertext[VECTOR_U_SIZE..]),
         VECTOR_V_COMPRESSION_FACTOR,
-        &ciphertext[parameters::VECTOR_U_SIZE..],
-    )
-    .decompress(VECTOR_V_COMPRESSION_FACTOR);
+    );
 
     // sˆ := Decode_12(sk)
     let mut secret_as_ntt_ring_element_bytes =
-        secret_key.chunks((secret_as_ntt[0].coefficients.len() * 12) / 8);
+        secret_key.chunks((secret_as_ntt[0].coefficients().len() * 12) / 8); // FIXME: use constants
     for i in 0..secret_as_ntt.len() {
-        secret_as_ntt[i] = KyberPolynomialRingElement::deserialize_little_endian(
+        secret_as_ntt[i] = deserialize_little_endian(
             12,
             secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt"),
         );
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
-    let message = v - multiply_row_by_column(&secret_as_ntt, &u_as_ntt).invert_ntt();
-    message
-        .compress(1)
-        .serialize_little_endian(1)
+    let message = v - invert_ntt(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
+
+    // FIXME: remove conversion
+    serialize_little_endian(compress(message, 1), 1)
         .try_into()
-        .unwrap_or_else(|_| {
-            panic!(
-                "Message should be {} bytes long",
-                parameters::CPA_PKE_MESSAGE_SIZE
-            )
-        })
+        .unwrap()
 }

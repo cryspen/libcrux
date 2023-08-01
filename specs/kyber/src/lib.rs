@@ -1,4 +1,4 @@
-use helpers::{ArrayConversion, UpdatingArray2};
+use hacspec_lib::{ArrayConversion, UpdatingArray2};
 use parameters::{
     hash_functions::{G, H, H_DIGEST_SIZE, KDF},
     CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
@@ -11,8 +11,6 @@ mod ntt;
 mod parameters;
 mod sampling;
 mod serialize;
-
-mod helpers;
 
 pub const KYBER768_SHARED_SECRET_SIZE: usize = CPA_PKE_MESSAGE_SIZE;
 

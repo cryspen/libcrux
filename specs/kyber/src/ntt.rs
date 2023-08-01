@@ -1,6 +1,14 @@
-use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement, RANK};
+use crate::parameters::{KyberPolynomialRingElement, RANK};
 
-impl KyberPolynomialRingElement {
+use self::KyberPolynomialRingElementMod::ntt_multiply;
+
+pub(crate) mod KyberPolynomialRingElementMod {
+    use hacspec_lib::field::FieldElement;
+
+    use crate::parameters::{
+        self, KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
+    };
+
     // [ pow(17, br(i), p) for 0 <= i < 128 ]
     // br(i) is the bit reversal of i regarded as a 7-bit number.
     const ZETAS: [u16; 128] = [
@@ -51,24 +59,21 @@ impl KyberPolynomialRingElement {
     /// Chinese Remainder Theorem.
     ///
     /// [1]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
-    pub fn ntt_representation(&self) -> Self {
-        let mut out = self.clone();
-
+    pub fn ntt_representation(mut re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
         let mut zeta_i = 0;
-        for layer in Self::NTT_LAYERS.iter().rev() {
-            for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer)
-            {
+        for layer in NTT_LAYERS.iter().rev() {
+            for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer) {
                 zeta_i += 1;
-                let zeta: KyberFieldElement = Self::ZETAS[zeta_i].into();
+                let zeta: KyberFieldElement = ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
-                    let t = zeta * out.coefficients[j + layer];
-                    out.coefficients[j + layer] = out.coefficients[j] - t;
-                    out.coefficients[j] = out.coefficients[j] + t;
+                    let t = zeta * re[j + layer];
+                    re[j + layer] = re[j] - t;
+                    re[j] = re[j] + t;
                 }
             }
         }
-        out
+        re
     }
 
     // Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
@@ -82,28 +87,26 @@ impl KyberPolynomialRingElement {
     // for the appropriate j.
     //
     // [1]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
-    const INVERSE_OF_2: KyberFieldElement = KyberFieldElement {
-        value: (parameters::FIELD_MODULUS + 1) / 2,
-    };
-    pub fn invert_ntt(&self) -> Self {
-        let mut out = Self::ZERO;
-        for i in 0..self.coefficients.len() {
-            out.coefficients[i].value = self.coefficients[i].value;
+    pub fn invert_ntt(re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
+        let inverse_of_2: KyberFieldElement =
+            KyberFieldElement::new((parameters::FIELD_MODULUS + 1) / 2);
+
+        let mut out = KyberPolynomialRingElement::ZERO;
+        for i in 0..re.len() {
+            out[i].value = re[i].value;
         }
 
-        let mut zeta_i = parameters::COEFFICIENTS_IN_RING_ELEMENT / 2;
+        let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
-        for layer in Self::NTT_LAYERS {
-            for offset in (0..(parameters::COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer)
-            {
+        for layer in NTT_LAYERS {
+            for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer) {
                 zeta_i -= 1;
-                let zeta: KyberFieldElement = Self::ZETAS[zeta_i].into();
+                let zeta: KyberFieldElement = ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
-                    let a_minus_b = out.coefficients[j + layer] - out.coefficients[j];
-                    out.coefficients[j] =
-                        Self::INVERSE_OF_2 * (out.coefficients[j] + out.coefficients[j + layer]);
-                    out.coefficients[j + layer] = Self::INVERSE_OF_2 * zeta * a_minus_b;
+                    let a_minus_b = out[j + layer] - out[j];
+                    out[j] = inverse_of_2 * (out[j] + out[j + layer]);
+                    out[j + layer] = inverse_of_2 * zeta * a_minus_b;
                 }
             }
         }
@@ -127,20 +130,23 @@ impl KyberPolynomialRingElement {
     /// ```
     ///
     ///  for the appropriate i.
-    pub fn ntt_multiply(&self, other: &Self) -> Self {
-        let mut out = Self::ZERO;
+    pub fn ntt_multiply(
+        left: &KyberPolynomialRingElement,
+        other: &KyberPolynomialRingElement,
+    ) -> KyberPolynomialRingElement {
+        let mut out = KyberPolynomialRingElement::ZERO;
 
-        for i in (0..parameters::COEFFICIENTS_IN_RING_ELEMENT).step_by(2) {
-            let mod_root: KyberFieldElement = Self::MOD_ROOTS[i / 2].into();
+        for i in (0..COEFFICIENTS_IN_RING_ELEMENT).step_by(2) {
+            let mod_root: KyberFieldElement = MOD_ROOTS[i / 2].into();
 
-            let a0_times_b0 = self.coefficients[i] * other.coefficients[i];
-            let a1_times_b1 = self.coefficients[i + 1] * other.coefficients[i + 1];
+            let a0_times_b0 = left[i] * other[i];
+            let a1_times_b1 = left[i + 1] * other[i + 1];
 
-            let a0_times_b1 = self.coefficients[i + 1] * other.coefficients[i];
-            let a1_times_b0 = self.coefficients[i] * other.coefficients[i + 1];
+            let a0_times_b1 = left[i + 1] * other[i];
+            let a1_times_b0 = left[i] * other[i + 1];
 
-            out.coefficients[i] = a0_times_b0 + (a1_times_b1 * mod_root);
-            out.coefficients[i + 1] = a0_times_b1 + a1_times_b0;
+            out[i] = a0_times_b0 + (a1_times_b1 * mod_root);
+            out[i + 1] = a0_times_b1 + a1_times_b0;
         }
         out
     }
@@ -155,7 +161,7 @@ pub(crate) fn multiply_matrix_by_column(
 
     for (i, row) in matrix.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {
-            let product = matrix_element.ntt_multiply(&vector[j]);
+            let product = ntt_multiply(matrix_element, &vector[j]);
             result[i] = result[i] + product;
         }
     }
@@ -169,7 +175,7 @@ pub(crate) fn multiply_row_by_column(
     let mut result = KyberPolynomialRingElement::ZERO;
 
     for (row_element, column_element) in row_vector.iter().zip(column_vector.iter()) {
-        result = result + row_element.ntt_multiply(column_element);
+        result = result + ntt_multiply(row_element, column_element);
     }
 
     result
@@ -179,12 +185,15 @@ pub(crate) fn multiply_row_by_column(
 mod tests {
     use proptest::prelude::*;
 
-    use crate::helpers::testing::arb_ring_element;
+    use crate::{
+        compress::tests::arb_ring_element,
+        ntt::KyberPolynomialRingElementMod::{invert_ntt, ntt_representation},
+    };
 
     proptest! {
         #[test]
         fn to_ntt_and_back(ring_element in arb_ring_element(12)) {
-            assert_eq!(ring_element, ring_element.ntt_representation().invert_ntt());
+            assert_eq!(ring_element, invert_ntt(ntt_representation(ring_element)));
         }
     }
 }
