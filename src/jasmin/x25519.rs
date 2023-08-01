@@ -82,15 +82,7 @@ pub(crate) mod mulx {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fmt::Write;
-
-    fn bytes_to_hex(bytes: &[u8]) -> String {
-        let mut s = String::with_capacity(2 * bytes.len());
-        for byte in bytes {
-            write!(s, "{:02x}", byte).unwrap();
-        }
-        s
-    }
+    use crate::jasmin::testing::bytes_to_hex;
 
     fn bmi2_and_adx_are_supported() -> bool {
         std::arch::is_x86_feature_detected!("bmi2") && std::arch::is_x86_feature_detected!("adx")

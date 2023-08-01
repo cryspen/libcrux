@@ -26,15 +26,7 @@ pub fn sha256(input: &[u8]) -> Result<Sha256Digest, &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fmt::Write;
-
-    fn bytes_to_hex(bytes: &[u8]) -> String {
-        let mut s = String::with_capacity(2 * bytes.len());
-        for byte in bytes {
-            write!(s, "{:02x}", byte).unwrap();
-        }
-        s
-    }
+    use crate::jasmin::testing::bytes_to_hex;
 
     #[test]
     fn test_hash() {
