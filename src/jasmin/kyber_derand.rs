@@ -3,9 +3,8 @@
 #![allow(dead_code)]
 
 use libjade_sys::{
+    jade_kem_kyber_kyber768_amd64_ref_dec, jade_kem_kyber_kyber768_amd64_ref_enc_derand,
     jade_kem_kyber_kyber768_amd64_ref_keypair_derand,
-    jade_kem_kyber_kyber768_amd64_ref_enc_derand,
-    jade_kem_kyber_kyber768_amd64_ref_dec,
 };
 
 type Kyber768KeypairSeed = [u8; 64];
@@ -18,9 +17,11 @@ type Kyber768EncapsulateSeed = [u8; 32];
 type Kyber768Ciphertext = [u8; 1088];
 type Kyber768SharedSecret = [u8; 32];
 
-fn kyber768_keypair_derand_ref(seed : Kyber768KeypairSeed) -> Result<(Kyber768PublicKey, Kyber768SecretKey), &'static str> {
-    let mut public_key : Kyber768PublicKey = [0; 1184];
-    let mut secret_key : Kyber768SecretKey = [0; 2400];
+fn kyber768_keypair_derand_ref(
+    seed: Kyber768KeypairSeed,
+) -> Result<(Kyber768PublicKey, Kyber768SecretKey), &'static str> {
+    let mut public_key: Kyber768PublicKey = [0; 1184];
+    let mut secret_key: Kyber768SecretKey = [0; 2400];
 
     log::trace!("Jasmin kyber768 keypair_derand ref");
     let r = unsafe {
@@ -38,9 +39,11 @@ fn kyber768_keypair_derand_ref(seed : Kyber768KeypairSeed) -> Result<(Kyber768Pu
     }
 }
 
-
-fn kyber768_enc_derand_ref(public_key : Kyber768PublicKey, seed : Kyber768EncapsulateSeed) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), &'static str> {
-    let mut ciphertext : Kyber768Ciphertext = [0; 1088];
+fn kyber768_enc_derand_ref(
+    public_key: Kyber768PublicKey,
+    seed: Kyber768EncapsulateSeed,
+) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), &'static str> {
+    let mut ciphertext: Kyber768Ciphertext = [0; 1088];
     let mut shared_secret = Kyber768SharedSecret::default();
 
     log::trace!("Jasmin kyber768 enc_derand ref");
@@ -60,7 +63,10 @@ fn kyber768_enc_derand_ref(public_key : Kyber768PublicKey, seed : Kyber768Encaps
     }
 }
 
-fn kyber768_dec_ref(ciphertext : Kyber768Ciphertext, secret_key : Kyber768SecretKey) -> Result<Kyber768SharedSecret, &'static str> {
+fn kyber768_dec_ref(
+    ciphertext: Kyber768Ciphertext,
+    secret_key: Kyber768SecretKey,
+) -> Result<Kyber768SharedSecret, &'static str> {
     let mut shared_secret = Kyber768SharedSecret::default();
 
     log::trace!("Jasmin kyber768 dec ref");
