@@ -84,7 +84,7 @@ fn field_element_from_little_endian_bit_vector(bit_vector: BitVector) -> KyberFi
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 pub fn deserialize_little_endian(
     bits_per_coefficient: usize,
     ring_element_bytes: &[u8],

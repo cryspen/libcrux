@@ -1,7 +1,4 @@
-use std::{
-    array::IntoIter,
-    ops::{self, Index, IndexMut},
-};
+use std::ops::{self, Index, IndexMut};
 
 use crate::field::FieldElement;
 
@@ -116,7 +113,7 @@ impl<F: FieldElement, const COEFFICIENTS: usize> IntoIterator
 {
     type Item = F;
 
-    type IntoIter = IntoIter<F, COEFFICIENTS>;
+    type IntoIter = std::array::IntoIter<F, COEFFICIENTS>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.coefficients.into_iter()

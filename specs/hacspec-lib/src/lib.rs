@@ -86,6 +86,17 @@ impl<const LEN: usize> ArrayUpdate for [u8; LEN] {
     }
 }
 
+pub trait VecUpdate {
+    fn concat(self, other: &[u8]) -> Self;
+}
+
+impl VecUpdate for Vec<u8> {
+    fn concat(mut self, other: &[u8]) -> Self {
+        self.extend_from_slice(&other);
+        self
+    }
+}
+
 pub trait UpdatingArray {
     fn push(self, other: &[u8]) -> Self;
 }

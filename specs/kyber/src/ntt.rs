@@ -1,16 +1,16 @@
 use crate::parameters::{KyberPolynomialRingElement, RANK};
 
-use self::KyberPolynomialRingElementMod::ntt_multiply;
+use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 
-pub(crate) mod KyberPolynomialRingElementMod {
+pub(crate) mod kyber_polynomial_ring_element_mod {
     use hacspec_lib::field::FieldElement;
 
     use crate::parameters::{
         self, KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
     };
 
-    // [ pow(17, br(i), p) for 0 <= i < 128 ]
-    // br(i) is the bit reversal of i regarded as a 7-bit number.
+    /// [ pow(17, br(i), p) for 0 <= i < 128 ]
+    /// br(i) is the bit reversal of i regarded as a 7-bit number.
     const ZETAS: [u16; 128] = [
         1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746,
         296, 2447, 1339, 1476, 3046, 56, 2240, 1333, 1426, 2094, 535, 2882, 2393, 2879, 1974, 821,
@@ -23,8 +23,8 @@ pub(crate) mod KyberPolynomialRingElementMod {
         2154,
     ];
 
-    // [ pow(17, 2 * br(i) + 1, p) for 0 <= i < 128 ]
-    // br(i) is the bit reversal of i regarded as a 7-bit number.
+    /// [ pow(17, 2 * br(i) + 1, p) for 0 <= i < 128 ]
+    /// br(i) is the bit reversal of i regarded as a 7-bit number.
     const MOD_ROOTS: [u16; 128] = [
         17, 3312, 2761, 568, 583, 2746, 2649, 680, 1637, 1692, 723, 2606, 2288, 1041, 1100, 2229,
         1409, 1920, 2662, 667, 3281, 48, 233, 3096, 756, 2573, 2156, 1173, 3015, 314, 3050, 279,
@@ -42,7 +42,7 @@ pub(crate) mod KyberPolynomialRingElementMod {
     /// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
     /// of a `KyberPolynomialRingElement`.
     ///
-    /// This can be seen[1] as 128 applications of the linear map CT where
+    /// This can be seen (see [CFRG draft]) as 128 applications of the linear map CT where
     ///
     /// CT_i(a, b) => (a + zeta^i * b, a - zeta^i * b) mod q
     ///
@@ -58,7 +58,7 @@ pub(crate) mod KyberPolynomialRingElementMod {
     /// This is isomorphic to `F_{3329}[x] / (x^{256} + 1)` by the
     /// Chinese Remainder Theorem.
     ///
-    /// [1]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
+    /// [CFRG draft]: <https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/>
     pub fn ntt_representation(mut re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
         let mut zeta_i = 0;
         for layer in NTT_LAYERS.iter().rev() {
@@ -76,17 +76,17 @@ pub(crate) mod KyberPolynomialRingElementMod {
         re
     }
 
-    // Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
-    // of a `KyberPolynomialRingElement`. The inverse NTT can be computed[1] by
-    // replacing CS_i by GS_j and
-    //
-    // ```plaintext
-    // GS_j(a, b) => ( (a + b) / 2, zeta^{2*j + 1} * (a - b) / 2 ) mod q
-    // ```
-    //
-    // for the appropriate j.
-    //
-    // [1]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
+    /// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
+    /// of a `KyberPolynomialRingElement`. The inverse NTT can be computed (see [CFRG draft]) by
+    /// replacing CS_i by GS_j and
+    ///
+    /// ```plaintext
+    /// GS_j(a, b) => ( (a + b) / 2, zeta^{2*j + 1} * (a - b) / 2 ) mod q
+    /// ```
+    ///
+    /// for the appropriate j.
+    ///
+    /// [CFRG draft]: https://datatracker.ietf.org/doc/draft-cfrg-schwabe-kyber/
     pub fn invert_ntt(re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
         let inverse_of_2: KyberFieldElement =
             KyberFieldElement::new((parameters::FIELD_MODULUS + 1) / 2);
@@ -152,7 +152,6 @@ pub(crate) mod KyberPolynomialRingElementMod {
     }
 }
 
-#[allow(non_snake_case)]
 pub(crate) fn multiply_matrix_by_column(
     matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
     vector: &[KyberPolynomialRingElement; RANK],
@@ -187,7 +186,7 @@ mod tests {
 
     use crate::{
         compress::tests::arb_ring_element,
-        ntt::KyberPolynomialRingElementMod::{invert_ntt, ntt_representation},
+        ntt::kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
     };
 
     proptest! {

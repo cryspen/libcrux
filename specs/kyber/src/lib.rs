@@ -68,7 +68,7 @@ impl KeyPair {
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 pub fn generate_keypair(
     randomness: [u8; KYBER768_KEY_GENERATION_SEED_SIZE],
 ) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
@@ -101,7 +101,7 @@ pub fn generate_keypair(
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 pub fn encapsulate(
     public_key: PublicKey,
     randomness: [u8; KYBER768_SHARED_SECRET_SIZE],
@@ -145,7 +145,7 @@ pub fn encapsulate(
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 pub fn decapsulate(secret_key: PrivateKey, ciphertext: Ciphertext) -> SharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE);

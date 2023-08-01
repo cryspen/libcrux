@@ -14,7 +14,7 @@ pub(crate) const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 1
 
 /// Seed size for rejection sampling.
 ///
-/// See https://eprint.iacr.org/2023/708 for some background regarding
+/// See <https://eprint.iacr.org/2023/708> for some background regarding
 /// this choice.
 pub(crate) const REJECTION_SAMPLING_SEED_SIZE: usize = 168 * 5;
 
@@ -82,13 +82,3 @@ pub(crate) type KyberFieldElement = PrimeFieldElement<FIELD_MODULUS>;
 /// A Kyber ring element
 pub(crate) type KyberPolynomialRingElement =
     PolynomialRingElement<KyberFieldElement, COEFFICIENTS_IN_RING_ELEMENT>;
-
-// impl KyberPolynomialRingElement {
-//     pub(crate) fn new(coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT]) -> Self {
-//         Self(PolynomialRingElement::new(coefficients))
-//     }
-
-//     pub(crate) fn coefficients(&self) -> &[PrimeFieldElement<3329>; 256] {
-//         self.0.coefficients()
-//     }
-// }

@@ -1,19 +1,19 @@
 use hacspec_lib::{
-    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
+    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray, VecUpdate,
 };
 
 use crate::{
     compress::{compress, decompress},
     ntt::{
-        KyberPolynomialRingElementMod::{invert_ntt, ntt_representation},
+        kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
         *,
     },
     parameters::{
-        self,
-        hash_functions::{H, PRF, XOF},
-        KyberPolynomialRingElement, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
-        CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
-        CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
+        hash_functions::{G, H, PRF, XOF},
+        KyberPolynomialRingElement, BITS_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
+        CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
+        CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
+        REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
@@ -52,6 +52,15 @@ impl KeyPair {
     }
 }
 
+fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
+    let mut out = Vec::new();
+    for re in input.into_iter() {
+        out.extend_from_slice(&serialize_little_endian(re, 12));
+    }
+
+    out
+}
+
 /// This function implements Algorithm 4 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CPA-PKE key generation algorithm, and is
 /// reproduced below:
@@ -84,7 +93,7 @@ impl KeyPair {
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 #[allow(non_snake_case)]
 pub(crate) fn generate_keypair(
     key_generation_seed: &[u8; CPA_PKE_KEY_GENERATION_SEED_SIZE],
@@ -98,7 +107,7 @@ pub(crate) fn generate_keypair(
     let mut domain_separator: u8 = 0;
 
     // (ρ,σ) := G(d)
-    let hashed = parameters::hash_functions::G(key_generation_seed);
+    let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let A_transpose = parse_a(seed_for_A.into_padded_array(), true)?;
@@ -144,29 +153,24 @@ pub(crate) fn generate_keypair(
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let mut public_key_serialized = t_as_ntt
-        .into_iter()
-        .flat_map(|r| serialize_little_endian(r, 12))
-        .collect::<Vec<u8>>();
-    public_key_serialized.extend_from_slice(seed_for_A);
+    let public_key_serialized = encode_12(t_as_ntt).concat(seed_for_A);
 
     // sk := Encode_12(sˆ mod^{+}q)
-    let secret_key_serialized = secret_as_ntt
-        .into_iter()
-        .flat_map(|r| serialize_little_endian(r, 12))
-        .collect::<Vec<u8>>();
+    let secret_key_serialized = encode_12(secret_as_ntt);
 
     Ok(KeyPair::new(
-        secret_key_serialized.into_array(), // FIXME: conversion shouldn't be necessary!
-        public_key_serialized.into_array(), // FIXME: conversion shouldn't be necessary!
+        secret_key_serialized.into_array(),
+        public_key_serialized.into_array(),
     ))
 }
 
+/// ```text
 /// for i from 0 to k−1 do
 ///     for j from 0 to k − 1 do
 ///         Aˆ [i][j] := Parse(XOF(ρ, j, i))
 ///     end for
 /// end for
+/// ```
 #[inline(always)]
 fn parse_a(
     mut seed: [u8; 34],
@@ -209,6 +213,18 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
     (r_as_ntt, domain_separator)
 }
 
+fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
+    let mut out = Vec::new();
+    for re in input.into_iter() {
+        out.extend_from_slice(&serialize_little_endian(
+            compress(re, VECTOR_U_COMPRESSION_FACTOR),
+            VECTOR_U_COMPRESSION_FACTOR,
+        ));
+    }
+
+    out
+}
+
 /// This function implements Algorithm 5 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CPA-PKE encryption algorithm, and is reproduced
 /// below:
@@ -244,7 +260,7 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 #[allow(non_snake_case)]
 pub(crate) fn encrypt(
     public_key: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
@@ -252,9 +268,8 @@ pub(crate) fn encrypt(
     randomness: &[u8; 32],
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
-    let mut t_as_ntt_ring_element_bytes = public_key.chunks(parameters::BITS_PER_RING_ELEMENT / 8);
+    let mut t_as_ntt_ring_element_bytes = public_key.chunks(BITS_PER_RING_ELEMENT / 8);
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    // FIXME: use bit iter
     for i in 0..t_as_ntt.len() {
         t_as_ntt[i] = deserialize_little_endian(
             12,
@@ -270,7 +285,7 @@ pub(crate) fn encrypt(
     //         AˆT[i][j] := Parse(XOF(ρ, i, j))
     //     end for
     // end for
-    let seed = &public_key[parameters::T_AS_NTT_ENCODED_SIZE..];
+    let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
     let A_transpose = parse_a(seed.into_padded_array(), false)?;
 
     // for i from 0 to k−1 do
@@ -314,10 +329,7 @@ pub(crate) fn encrypt(
         + decompress(message_as_ring_element, 1);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
-    let c1 = u
-        .into_iter()
-        .map(|r| compress(r, VECTOR_U_COMPRESSION_FACTOR))
-        .flat_map(|r| serialize_little_endian(r, VECTOR_U_COMPRESSION_FACTOR));
+    let c1 = encode_and_compress_u(u);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = serialize_little_endian(
@@ -325,13 +337,15 @@ pub(crate) fn encrypt(
         VECTOR_V_COMPRESSION_FACTOR,
     );
 
-    // XXX: For the implementation: not collecting would be nicer because we don't need a vector then.
-    let ciphertext = c1.chain(c2.into_iter()).collect::<Vec<u8>>().as_array();
+    let ciphertext = c1
+        .into_iter()
+        .chain(c2.into_iter())
+        .collect::<Vec<u8>>()
+        .as_array();
 
     Ok(ciphertext)
 }
 
-///
 /// This function implements Algorithm 6 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CPA-PKE decryption algorithm, and is reproduced
 /// below:
@@ -348,8 +362,7 @@ pub(crate) fn encrypt(
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 #[allow(non_snake_case)]
 pub(crate) fn decrypt(
     secret_key: &[u8; CPA_PKE_SECRET_KEY_SIZE],
@@ -360,8 +373,7 @@ pub(crate) fn decrypt(
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     for (i, u_bytes) in
-        (0..u_as_ntt.len()).zip(ciphertext.chunks((u_as_ntt[0].coefficients().len() * 10) / 8))
-    // FIXME: use constants
+        (0..u_as_ntt.len()).zip(ciphertext.chunks((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8))
     {
         let u = deserialize_little_endian(10, u_bytes);
         u_as_ntt[i] = ntt_representation(decompress(u, 10));
@@ -374,8 +386,7 @@ pub(crate) fn decrypt(
     );
 
     // sˆ := Decode_12(sk)
-    let mut secret_as_ntt_ring_element_bytes =
-        secret_key.chunks((secret_as_ntt[0].coefficients().len() * 12) / 8); // FIXME: use constants
+    let mut secret_as_ntt_ring_element_bytes = secret_key.chunks(BITS_PER_RING_ELEMENT / 8);
     for i in 0..secret_as_ntt.len() {
         secret_as_ntt[i] = deserialize_little_endian(
             12,
@@ -387,7 +398,5 @@ pub(crate) fn decrypt(
     let message = v - invert_ntt(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
 
     // FIXME: remove conversion
-    serialize_little_endian(compress(message, 1), 1)
-        .try_into()
-        .unwrap()
+    serialize_little_endian(compress(message, 1), 1).as_array()
 }
