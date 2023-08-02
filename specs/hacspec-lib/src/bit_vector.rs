@@ -55,7 +55,6 @@ impl BitVector {
 pub trait Bits {
     fn bit(&self, bit: usize) -> u8;
     fn iter(&self) -> BitsIter<'_>;
-    fn iter_sliced(&self, window_size: usize) -> BitsSlicedIter<'_>;
 }
 
 pub struct BitsIter<'a> {
@@ -79,35 +78,6 @@ impl Iterator for BitsIter<'_> {
     }
 }
 
-/// Iterator over bits with a windows size.
-///
-/// Each element of the iterator are `window_size` bits.
-pub struct BitsSlicedIter<'a> {
-    bytes: &'a [u8],
-    bit: usize,
-    window_size: usize,
-}
-
-impl Iterator for BitsSlicedIter<'_> {
-    type Item = u16;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        // let byte_index = self.bit / 8;
-        let last_byte_index = (self.bit + self.window_size) / 8;
-        if last_byte_index >= self.bytes.len() {
-            return None;
-        }
-
-        let mut out = 0u16;
-        for i in self.bit..self.bit + (self.window_size) {
-            out |= self.bytes.bit(i) as u16;
-        }
-        self.bit += self.window_size;
-
-        Some(out)
-    }
-}
-
 impl Bits for &[u8] {
     fn bit(&self, bit: usize) -> u8 {
         let byte = bit / 8;
@@ -121,14 +91,6 @@ impl Bits for &[u8] {
             bit: 0,
         }
     }
-
-    fn iter_sliced(&self, window_size: usize) -> BitsSlicedIter<'_> {
-        BitsSlicedIter {
-            bytes: self,
-            bit: 0,
-            window_size,
-        }
-    }
 }
 
 impl Bits for Vec<u8> {
@@ -140,14 +102,6 @@ impl Bits for Vec<u8> {
         BitsIter {
             bytes: self,
             bit: 0,
-        }
-    }
-
-    fn iter_sliced(&self, window_size: usize) -> BitsSlicedIter<'_> {
-        BitsSlicedIter {
-            bytes: self,
-            bit: 0,
-            window_size,
         }
     }
 }
@@ -181,28 +135,5 @@ mod tests {
             eprint!("{bit}");
         }
         eprintln!();
-    }
-
-    #[test]
-    fn better_bits() {
-
-        // 00000001 00000010 00000011 00000100 00000101 00000110 ...
-        //        1        2        3        4        5        6
-        let v = vec![1u8, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-
-        let mut it = v.iter_sliced(7);
-        for i in bit..7 {
-            assert_eq!(v.bit(i), 0);
-        }
-        bit += 7;
-        assert_eq!(v.bit(bit), 1);
-        bit = 8;
-        for i in bit..14 {
-            assert_eq!(v.bit(i), 0);
-        }
-        bit = 14;
-        assert_eq!(v.bit(bit), 1);
-        bit += 1;
-        assert_eq!(v.bit(bit), 0);
     }
 }
