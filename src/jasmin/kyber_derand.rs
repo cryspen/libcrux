@@ -1,7 +1,3 @@
-// Allow dead code for now.
-// The libjade code here isn't verified yet and thus isn't used.
-#![allow(dead_code)]
-
 use libjade_sys::{
     jade_kem_kyber_kyber768_amd64_ref_dec, jade_kem_kyber_kyber768_amd64_ref_enc_derand,
     jade_kem_kyber_kyber768_amd64_ref_keypair_derand,
@@ -17,7 +13,7 @@ type Kyber768EncapsulateSeed = [u8; 32];
 type Kyber768Ciphertext = [u8; 1088];
 type Kyber768SharedSecret = [u8; 32];
 
-fn kyber768_keypair_derand_ref(
+pub fn kyber768_keypair_derand_ref(
     seed: Kyber768KeypairSeed,
 ) -> Result<(Kyber768PublicKey, Kyber768SecretKey), &'static str> {
     let mut public_key: Kyber768PublicKey = [0; 1184];
@@ -39,7 +35,7 @@ fn kyber768_keypair_derand_ref(
     }
 }
 
-fn kyber768_enc_derand_ref(
+pub fn kyber768_enc_derand_ref(
     public_key: Kyber768PublicKey,
     seed: Kyber768EncapsulateSeed,
 ) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), &'static str> {
@@ -63,7 +59,7 @@ fn kyber768_enc_derand_ref(
     }
 }
 
-fn kyber768_dec_ref(
+pub fn kyber768_dec_ref(
     ciphertext: Kyber768Ciphertext,
     secret_key: Kyber768SecretKey,
 ) -> Result<Kyber768SharedSecret, &'static str> {
