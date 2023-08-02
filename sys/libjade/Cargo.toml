@@ -14,7 +14,7 @@ libc = { version = "0.2", default-features = false }
 fs_extra = "1.2"
 
 [target.'cfg(not(windows))'.build-dependencies]
-bindgen = "0.64"
+bindgen = "0.66"
 
 [dev-dependencies]
-pretty_env_logger = "0.4"
+pretty_env_logger = "0.5"

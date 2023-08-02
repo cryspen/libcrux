@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    
+
     - name: Setup Ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get install ninja-build
