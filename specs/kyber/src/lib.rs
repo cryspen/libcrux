@@ -1,3 +1,10 @@
+use hacspec_lib::{ArrayConversion, UpdatingArray2};
+use parameters::{
+    hash_functions::{G, H, H_DIGEST_SIZE, KDF},
+    CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
+    CPA_PKE_SECRET_KEY_SIZE,
+};
+
 mod compress;
 mod ind_cpa;
 mod ntt;
@@ -5,26 +12,48 @@ mod parameters;
 mod sampling;
 mod serialize;
 
-mod helpers;
-
-pub const KYBER768_SHARED_SECRET_SIZE: usize = parameters::CPA_PKE_MESSAGE_SIZE;
+pub const KYBER768_SHARED_SECRET_SIZE: usize = CPA_PKE_MESSAGE_SIZE;
 
 pub const KYBER768_KEY_GENERATION_SEED_SIZE: usize =
-    parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE + KYBER768_SHARED_SECRET_SIZE;
+    CPA_PKE_KEY_GENERATION_SEED_SIZE + KYBER768_SHARED_SECRET_SIZE;
 
-pub const KYBER768_PUBLIC_KEY_SIZE: usize = parameters::CPA_PKE_PUBLIC_KEY_SIZE;
+pub const KYBER768_PUBLIC_KEY_SIZE: usize = CPA_PKE_PUBLIC_KEY_SIZE;
 
-pub const KYBER768_SECRET_KEY_SIZE: usize = parameters::CPA_PKE_SECRET_KEY_SIZE
-    + parameters::CPA_PKE_PUBLIC_KEY_SIZE
-    + parameters::hash_functions::H_DIGEST_SIZE
-    + KYBER768_SHARED_SECRET_SIZE;
+pub const KYBER768_SECRET_KEY_SIZE: usize =
+    CPA_PKE_SECRET_KEY_SIZE + CPA_PKE_PUBLIC_KEY_SIZE + H_DIGEST_SIZE + KYBER768_SHARED_SECRET_SIZE;
 
 pub const KYBER768_CIPHERTEXT_SIZE: usize = parameters::CPA_PKE_CIPHERTEXT_SIZE;
+
+pub type PublicKey = [u8; KYBER768_PUBLIC_KEY_SIZE];
+pub type PrivateKey = [u8; KYBER768_SECRET_KEY_SIZE];
+
+pub type Ciphertext = [u8; KYBER768_CIPHERTEXT_SIZE];
+pub type Enc = [u8; KYBER768_SHARED_SECRET_SIZE];
+pub type SharedSecret = [u8; KYBER768_SHARED_SECRET_SIZE];
+pub type Randomness = [u8; KYBER768_KEY_GENERATION_SEED_SIZE];
 
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
 
-///
+pub struct KeyPair {
+    pk: PublicKey,
+    sk: PrivateKey,
+}
+
+impl KeyPair {
+    pub fn new(pk: PublicKey, sk: PrivateKey) -> Self {
+        Self { pk, sk }
+    }
+
+    pub fn pk(&self) -> &PublicKey {
+        &self.pk
+    }
+
+    pub fn sk(&self) -> &PrivateKey {
+        &self.sk
+    }
+}
+
 /// This function implements Algorithm 7 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CCA-KEM key generation algorithm, and is
 /// reproduced below:
@@ -39,45 +68,22 @@ pub struct BadRejectionSamplingRandomnessError;
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 pub fn generate_keypair(
     randomness: [u8; KYBER768_KEY_GENERATION_SEED_SIZE],
-) -> Result<
-    (
-        [u8; KYBER768_PUBLIC_KEY_SIZE],
-        [u8; KYBER768_SECRET_KEY_SIZE],
-    ),
-    BadRejectionSamplingRandomnessError,
-> {
+) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
     let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let (ind_cpa_public_key, ind_cpa_secret_key) =
-        ind_cpa::generate_keypair(ind_cpa_keypair_randomness.try_into().unwrap_or_else(|_| {
-            panic!(
-                "Key generation seed should be {} bytes long.",
-                parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE
-            )
-        }))?;
+    let ind_cpa_key_pair = ind_cpa::generate_keypair(&ind_cpa_keypair_randomness.as_array())?;
 
-    let mut secret_key_serialized = ind_cpa_secret_key.to_vec();
-    secret_key_serialized.extend_from_slice(&ind_cpa_public_key);
-    secret_key_serialized.extend_from_slice(&parameters::hash_functions::H(&ind_cpa_public_key));
-    secret_key_serialized.extend_from_slice(implicit_rejection_value);
+    let secret_key_serialized =
+        ind_cpa_key_pair.serialize_secret_key(&implicit_rejection_value.as_array());
 
-    Ok((
-        ind_cpa_public_key,
-        secret_key_serialized.try_into().unwrap_or_else(|_| {
-            panic!(
-                "secret_key_serialized should have length {}.",
-                KYBER768_SECRET_KEY_SIZE
-            )
-        }),
-    ))
+    let key_pair = KeyPair::new(ind_cpa_key_pair.pk(), secret_key_serialized);
+    Ok(key_pair)
 }
 
-///
 /// This function implements Algorithm 8 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CCA-KEM encapsulation algorithm, and is
 /// reproduced below:
@@ -95,48 +101,27 @@ pub fn generate_keypair(
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 pub fn encapsulate(
-    public_key: [u8; KYBER768_PUBLIC_KEY_SIZE],
+    public_key: PublicKey,
     randomness: [u8; KYBER768_SHARED_SECRET_SIZE],
-) -> Result<
-    (
-        [u8; KYBER768_CIPHERTEXT_SIZE],
-        [u8; KYBER768_SHARED_SECRET_SIZE],
-    ),
-    BadRejectionSamplingRandomnessError,
-> {
-    let randomness_hashed: [u8; parameters::hash_functions::H_DIGEST_SIZE] =
-        parameters::hash_functions::H(&randomness);
+) -> Result<(Ciphertext, Enc), BadRejectionSamplingRandomnessError> {
+    let randomness_hashed = H(&randomness);
 
-    let mut to_hash = randomness_hashed.to_vec();
-    to_hash.extend_from_slice(&parameters::hash_functions::H(&public_key));
+    let to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness_hashed.push(&H(&public_key));
 
-    let hashed = parameters::hash_functions::G(&to_hash);
+    let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let ciphertext = ind_cpa::encrypt(
-        &public_key,
-        randomness_hashed,
-        pseudorandomness[..].try_into().unwrap_or_else(|_| {
-            panic!(
-                "(Pseudo)randomness should be {} bytes long.",
-                parameters::CPA_PKE_MESSAGE_SIZE
-            )
-        }),
-    )?;
+    let ciphertext =
+        ind_cpa::encrypt(&public_key, randomness_hashed, &pseudorandomness.as_array())?;
 
-    to_hash = k_not.to_vec();
-    to_hash.extend_from_slice(&parameters::hash_functions::H(&ciphertext));
-
-    let shared_secret =
-        parameters::hash_functions::KDF::<{ KYBER768_SHARED_SECRET_SIZE }>(&to_hash);
+    let to_hash: [u8; 2 * H_DIGEST_SIZE] = k_not.push(&H(&ciphertext));
+    let shared_secret: SharedSecret = KDF(&to_hash);
 
     Ok((ciphertext, shared_secret))
 }
 
-///
 /// This function implements Algorithm 9 of the Kyber Round 3 specification;
 /// This is the Kyber Round 3 CCA-KEM decapsulation algorithm, and is
 /// reproduced below:
@@ -160,72 +145,39 @@ pub fn encapsulate(
 /// ```
 ///
 /// The Kyber Round 3 specification can be found at:
-/// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf
-///
-pub fn decapsulate(
-    secret_key: [u8; KYBER768_SECRET_KEY_SIZE],
-    ciphertext: [u8; KYBER768_CIPHERTEXT_SIZE],
-) -> [u8; KYBER768_SHARED_SECRET_SIZE] {
-    let mut secret_key_index = 0;
+/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
+pub fn decapsulate(secret_key: PrivateKey, ciphertext: Ciphertext) -> SharedSecret {
+    let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE);
+    let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE);
+    let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 
-    let ind_cpa_secret_key =
-        &secret_key[secret_key_index..secret_key_index + parameters::CPA_PKE_SECRET_KEY_SIZE];
-    secret_key_index += parameters::CPA_PKE_SECRET_KEY_SIZE;
+    let decrypted = ind_cpa::decrypt(&ind_cpa_secret_key.as_array(), &ciphertext);
 
-    let ind_cpa_public_key =
-        &secret_key[secret_key_index..secret_key_index + parameters::CPA_PKE_PUBLIC_KEY_SIZE];
-    secret_key_index += parameters::CPA_PKE_PUBLIC_KEY_SIZE;
+    let to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] =
+        decrypted.push(ind_cpa_public_key_hash);
 
-    let ind_cpa_public_key_hash =
-        &secret_key[secret_key_index..secret_key_index + parameters::hash_functions::H_DIGEST_SIZE];
-    secret_key_index += parameters::hash_functions::H_DIGEST_SIZE;
-
-    let implicit_rejection_value = &secret_key[secret_key_index..];
-
-    let decrypted = ind_cpa::decrypt(
-        ind_cpa_secret_key.try_into().unwrap_or_else(|_| {
-            panic!(
-                "IND-CPA secret key cannot be other than {} bytes long.",
-                parameters::CPA_PKE_SECRET_KEY_SIZE
-            );
-        }),
-        &ciphertext,
-    );
-
-    let mut to_hash = decrypted.to_vec();
-    to_hash.extend_from_slice(ind_cpa_public_key_hash);
-
-    let hashed = parameters::hash_functions::G(&to_hash);
+    let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
     let reencrypted_ciphertext = ind_cpa::encrypt(
-        ind_cpa_public_key.try_into().unwrap_or_else(|_| {
-            panic!(
-                "IND-CPA public key cannot be other than {} bytes long.",
-                parameters::CPA_PKE_PUBLIC_KEY_SIZE
-            )
-        }),
+        &ind_cpa_public_key.as_array(),
         decrypted,
-        pseudorandomness.try_into().unwrap_or_else(|_| {
-            panic!(
-                "(Pseudo)randomness cannot be other than {} bytes long.",
-                parameters::CPA_PKE_MESSAGE_SIZE
-            )
-        }),
+        &pseudorandomness.as_array(),
     );
 
-    to_hash = if let Ok(reencrypted) = reencrypted_ciphertext {
+    let to_hash = if let Ok(reencrypted) = reencrypted_ciphertext {
         if ciphertext == reencrypted {
-            k_not.to_vec()
+            k_not
         } else {
-            implicit_rejection_value.to_vec()
+            implicit_rejection_value
         }
     } else {
-        implicit_rejection_value.to_vec()
+        implicit_rejection_value
     };
-    to_hash.extend_from_slice(&parameters::hash_functions::H(&ciphertext));
+    assert!(to_hash.len() == 32);
+    let to_hash: [u8; 32 + H_DIGEST_SIZE] = to_hash.push(&H(&ciphertext));
 
-    parameters::hash_functions::KDF::<{ KYBER768_SHARED_SECRET_SIZE }>(&to_hash)
+    KDF(&to_hash)
 }
 
 #[cfg(test)]
@@ -240,21 +192,21 @@ mod tests {
         + parameters::hash_functions::H_DIGEST_SIZE;
 
     pub fn decapsulate_with_implicit_rejection_value(
-        secret_key: [u8; KYBER768_SECRET_KEY_SIZE],
+        secret_key: PrivateKey,
         ciphertext: [u8; KYBER768_CIPHERTEXT_SIZE],
-    ) -> [u8; KYBER768_SHARED_SECRET_SIZE] {
+    ) -> SharedSecret {
         let mut to_hash = secret_key[IMPLICIT_REJECTION_VALUE_POSITION..].to_vec();
         to_hash.extend_from_slice(&parameters::hash_functions::H(&ciphertext));
 
-        parameters::hash_functions::KDF::<{ KYBER768_SHARED_SECRET_SIZE }>(&to_hash)
+        parameters::hash_functions::KDF(&to_hash)
     }
 
     proptest! {
         #[test]
         fn consistency(key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE), encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE)) {
-            if let Ok((public_key, secret_key)) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
-                if let Ok((ciphertext, shared_secret)) = encapsulate(public_key, encapsulation_randomness.try_into().unwrap()) {
-                    let shared_secret_decapsulated = decapsulate(secret_key, ciphertext);
+            if let Ok(key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
+                if let Ok((ciphertext, shared_secret)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
+                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
 
                     assert_eq!(shared_secret, shared_secret_decapsulated);
                 }
@@ -272,14 +224,14 @@ mod tests {
             ciphertext_position in 0usize..KYBER768_CIPHERTEXT_SIZE,
             random_byte in 1u8..u8::MAX
             ) {
-            if let Ok((public_key, secret_key)) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
-                if let Ok((mut ciphertext, shared_secret)) = encapsulate(public_key, encapsulation_randomness.try_into().unwrap()) {
+            if let Ok(key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
+                if let Ok((mut ciphertext, shared_secret)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
                     ciphertext[ciphertext_position] ^= random_byte;
-                    let shared_secret_decapsulated = decapsulate(secret_key, ciphertext);
+                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
 
                     assert_ne!(shared_secret, shared_secret_decapsulated);
 
-                    let implicit_rejection_shared_secret = decapsulate_with_implicit_rejection_value(secret_key, ciphertext);
+                    let implicit_rejection_shared_secret = decapsulate_with_implicit_rejection_value(key_pair.sk, ciphertext);
                     assert_eq!(shared_secret_decapsulated, implicit_rejection_shared_secret);
 
                 }
@@ -297,10 +249,10 @@ mod tests {
             secret_key_position in 0usize..(KYBER768_SECRET_KEY_SIZE - KYBER768_SHARED_SECRET_SIZE),
             random_byte in 1u8..u8::MAX
             ) {
-            if let Ok((public_key, mut secret_key)) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
-                if let Ok((ciphertext, shared_secret)) = encapsulate(public_key, encapsulation_randomness.try_into().unwrap()) {
-                    secret_key[secret_key_position] ^= random_byte;
-                    let shared_secret_decapsulated = decapsulate(secret_key, ciphertext);
+            if let Ok(mut key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
+                if let Ok((ciphertext, shared_secret)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
+                    key_pair.sk[secret_key_position] ^= random_byte;
+                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
 
                     assert_ne!(shared_secret, shared_secret_decapsulated);
                 }
@@ -321,13 +273,13 @@ mod tests {
             ciphertext_position in 0usize..KYBER768_CIPHERTEXT_SIZE,
             random_byte_for_ciphertext in 1u8..u8::MAX
             ) {
-            if let Ok((public_key, mut secret_key)) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
-                if let Ok((mut ciphertext, _)) = encapsulate(public_key, encapsulation_randomness.try_into().unwrap()) {
+            if let Ok(mut key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
+                if let Ok((mut ciphertext, _)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
                     ciphertext[ciphertext_position] ^= random_byte_for_ciphertext;
-                    let shared_secret_decapsulated = decapsulate(secret_key, ciphertext);
+                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
 
-                    secret_key[secret_key_position] ^= random_byte_for_secret_key;
-                    let shared_secret_decapsulated_2 = decapsulate(secret_key, ciphertext);
+                    key_pair.sk[secret_key_position] ^= random_byte_for_secret_key;
+                    let shared_secret_decapsulated_2 = decapsulate(key_pair.sk, ciphertext);
 
                     assert_ne!(shared_secret_decapsulated, shared_secret_decapsulated_2);
                 }

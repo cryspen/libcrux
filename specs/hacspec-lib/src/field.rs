@@ -1,12 +1,13 @@
 use std::ops;
 
-pub(crate) trait FieldElement:
+pub trait FieldElement:
     Copy
     + Clone
     + PartialEq
     + From<u8>
     + From<u16>
     + From<u32>
+    + Into<u16>
     + ops::Add<Output = Self>
     + ops::Sub<Output = Self>
     + ops::Mul<Output = Self>
@@ -14,10 +15,11 @@ pub(crate) trait FieldElement:
     const ZERO: Self;
 
     fn new(number: u16) -> Self;
+    fn bit(&self, bit: usize) -> u8;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct PrimeFieldElement<const MODULUS: u16> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PrimeFieldElement<const MODULUS: u16> {
     pub value: u16,
 }
 
@@ -28,6 +30,10 @@ impl<const MODULUS: u16> FieldElement for PrimeFieldElement<MODULUS> {
         Self {
             value: number % MODULUS,
         }
+    }
+
+    fn bit(&self, bit: usize) -> u8 {
+        ((self.value >> bit) & 1) as u8
     }
 }
 
@@ -43,6 +49,11 @@ impl<const MODULUS: u16> From<u8> for PrimeFieldElement<MODULUS> {
 impl<const MODULUS: u16> From<u16> for PrimeFieldElement<MODULUS> {
     fn from(number: u16) -> Self {
         Self::new(number)
+    }
+}
+impl<const MODULUS: u16> From<PrimeFieldElement<MODULUS>> for u16 {
+    fn from(value: PrimeFieldElement<MODULUS>) -> Self {
+        value.value
     }
 }
 impl<const MODULUS: u16> From<u32> for PrimeFieldElement<MODULUS> {

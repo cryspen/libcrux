@@ -1,5 +1,6 @@
 extern crate hacspec_kyber;
 
+use hacspec_kyber::generate_keypair;
 use serde::Deserialize;
 use serde_json;
 
@@ -37,21 +38,20 @@ fn kyber768_known_answer_tests() {
         serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
     for kat in nist_kats {
-        let (public_key, secret_key) =
-            hacspec_kyber::generate_keypair(kat.key_generation_seed).unwrap();
+        let key_pair = generate_keypair(kat.key_generation_seed).unwrap();
 
-        let public_key_hash = digest::sha3_256(&public_key);
+        let public_key_hash = digest::sha3_256(key_pair.pk());
         for i in 0..public_key_hash.len() {
             assert_eq!(public_key_hash[i], kat.sha3_256_hash_of_public_key[i]);
         }
 
-        let secret_key_hash = digest::sha3_256(&secret_key);
+        let secret_key_hash = digest::sha3_256(key_pair.sk());
         for i in 0..secret_key_hash.len() {
             assert_eq!(secret_key_hash[i], kat.sha3_256_hash_of_secret_key[i]);
         }
 
         let (ciphertext, shared_secret) =
-            hacspec_kyber::encapsulate(public_key, kat.encapsulation_seed).unwrap();
+            hacspec_kyber::encapsulate(key_pair.pk().clone(), kat.encapsulation_seed).unwrap();
 
         let ciphertext_hash = digest::sha3_256(&ciphertext);
         for i in 0..ciphertext_hash.len() {
@@ -62,7 +62,7 @@ fn kyber768_known_answer_tests() {
             assert_eq!(shared_secret[i], kat.shared_secret[i]);
         }
 
-        let shared_secret_from_decapsulate = hacspec_kyber::decapsulate(secret_key, ciphertext);
+        let shared_secret_from_decapsulate = hacspec_kyber::decapsulate(*key_pair.sk(), ciphertext);
         for i in 0..shared_secret.len() {
             assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
         }

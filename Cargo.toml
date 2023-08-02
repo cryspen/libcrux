@@ -8,7 +8,7 @@ documentation = "https://docs.rs/libcrux/"
 description = "Formally Verified Cryptography"
 readme = "Readme.md"
 repository = "https://github.com/cryspen/libcrux"
-exclude = ["/tests", "specs/kyber"]
+exclude = ["/tests", "/specs"]
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]

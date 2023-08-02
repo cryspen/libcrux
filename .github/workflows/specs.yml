@@ -38,7 +38,9 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Build
+      working-directory: specs
       run: cargo build --verbose
 
     - name: Run tests
+      working-directory: specs
       run: cargo test --verbose

@@ -1,4 +1,4 @@
-use criterion::{BatchSize, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use pqcrypto::kem::kyber768;
 
@@ -19,22 +19,21 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     group.bench_function("libcrux specification", |b| {
         b.iter_batched(
             || {
-                let seed = randombytes::<{hacspec_kyber::KYBER768_KEY_GENERATION_SEED_SIZE}>();
+                let seed = randombytes::<{ hacspec_kyber::KYBER768_KEY_GENERATION_SEED_SIZE }>();
                 seed
             },
             |seed| {
-                let (_public_key, _secret_key) = hacspec_kyber::generate_keypair(seed).unwrap();
+                let _key_pair = hacspec_kyber::generate_keypair(seed).unwrap();
             },
             BatchSize::SmallInput,
         )
     });
 
-    group.bench_function(
-        "pqclean reference implementation",
-        |b| b.iter(|| {
+    group.bench_function("pqclean reference implementation", |b| {
+        b.iter(|| {
             let (_public_key, _secret_key) = kyber768::keypair();
-        }),
-    );
+        })
+    });
 }
 
 pub fn comparisons_encapsulation(c: &mut Criterion) {
@@ -43,15 +42,17 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
     group.bench_function("libcrux specification", |b| {
         b.iter_batched(
             || {
-                let keygen_seed = randombytes::<{hacspec_kyber::KYBER768_KEY_GENERATION_SEED_SIZE}>();
-                let (public_key, _) = hacspec_kyber::generate_keypair(keygen_seed).unwrap();
+                let keygen_seed =
+                    randombytes::<{ hacspec_kyber::KYBER768_KEY_GENERATION_SEED_SIZE }>();
+                let key_pair = hacspec_kyber::generate_keypair(keygen_seed).unwrap();
 
-                let encaps_seed = randombytes::<{hacspec_kyber::KYBER768_SHARED_SECRET_SIZE}>();
+                let encaps_seed = randombytes::<{ hacspec_kyber::KYBER768_SHARED_SECRET_SIZE }>();
 
-                (public_key, encaps_seed)
+                (key_pair.pk().clone(), encaps_seed)
             },
             |(public_key, encaps_seed)| {
-                let (_ciphertext, _shared_secret) = hacspec_kyber::encapsulate(public_key, encaps_seed).unwrap();
+                let (_ciphertext, _shared_secret) =
+                    hacspec_kyber::encapsulate(public_key, encaps_seed).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -78,13 +79,15 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
     group.bench_function("libcrux specification", |b| {
         b.iter_batched(
             || {
-                let keygen_seed = randombytes::<{hacspec_kyber::KYBER768_KEY_GENERATION_SEED_SIZE}>();
-                let (public_key, secret_key) = hacspec_kyber::generate_keypair(keygen_seed).unwrap();
+                let keygen_seed =
+                    randombytes::<{ hacspec_kyber::KYBER768_KEY_GENERATION_SEED_SIZE }>();
+                let key_pair = hacspec_kyber::generate_keypair(keygen_seed).unwrap();
 
-                let encaps_seed = randombytes::<{hacspec_kyber::KYBER768_SHARED_SECRET_SIZE}>();
-                let (ciphertext, _shared_secret) = hacspec_kyber::encapsulate(public_key, encaps_seed).unwrap();
+                let encaps_seed = randombytes::<{ hacspec_kyber::KYBER768_SHARED_SECRET_SIZE }>();
+                let (ciphertext, _shared_secret) =
+                    hacspec_kyber::encapsulate(key_pair.pk().clone(), encaps_seed).unwrap();
 
-                (secret_key, ciphertext)
+                (key_pair.sk().clone(), ciphertext)
             },
             |(secret_key, ciphertext)| {
                 let _shared_secret = hacspec_kyber::decapsulate(secret_key, ciphertext);
