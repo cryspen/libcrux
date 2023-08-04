@@ -2,39 +2,49 @@ use std::ops::{self, Index, IndexMut};
 
 use crate::field::FieldElement;
 
-pub trait Bits<F: FieldElement, const COEFFICIENTS: usize> {
-    fn bit(&self, bit: usize) -> u8;
-    fn bits_iter(&self) -> BitsIter<'_, F, COEFFICIENTS>;
-    fn bits_chunks(&self, chunk_len: usize) -> BitsIter<'_, F, COEFFICIENTS>;
+pub trait LittleEndianBitStream<F: FieldElement, const COEFFICIENTS: usize> {
+    fn nth_bit(&self, n: usize) -> u8;
+    fn nth_bit_with_coefficient_bit_size(&self, n: usize, coefficient_bit_size: usize) -> u8;
+    fn bits_iter(&self) -> LittleEndianBitStreamIter<'_, F, COEFFICIENTS>;
+    fn bits_chunks(&self, chunk_len: usize) -> LittleEndianBitStreamIter<'_, F, COEFFICIENTS>;
 }
 
-pub struct BitsIter<'a, F: FieldElement, const COEFFICIENTS: usize> {
+pub struct LittleEndianBitStreamIter<'a, F: FieldElement, const COEFFICIENTS: usize> {
     values: &'a [F; COEFFICIENTS],
     bit: usize,
     chunk_len: usize,
 }
 
-impl<F: FieldElement, const COEFFICIENTS: usize> Bits<F, COEFFICIENTS> for &[F; COEFFICIENTS] {
-    fn bit(&self, bit: usize) -> u8 {
-        let index = bit / 16;
-        let bit_mod = bit % 16;
+impl<F: FieldElement, const COEFFICIENTS: usize> LittleEndianBitStream<F, COEFFICIENTS>
+    for &[F; COEFFICIENTS]
+{
+    fn nth_bit(&self, n: usize) -> u8 {
+        let index = n / 16;
+        let bit_mod = n % 16;
         // eprintln!(" >>> self[{index}] >> {bit_mod}");
         ((Into::<u16>::into(self[index]) >> bit_mod) & 1) as u8
     }
 
-    fn bits_iter(&self) -> BitsIter<'_, F, COEFFICIENTS> {
-        BitsIter {
+    fn nth_bit_with_coefficient_bit_size(&self, n: usize, coefficient_bit_size: usize) -> u8 {
+        let coefficient_index = n / coefficient_bit_size;
+        let coefficient_bit = n % coefficient_bit_size;
+
+        self[coefficient_index].nth_bit_little_endian(coefficient_bit)
+    }
+
+    fn bits_iter(&self) -> LittleEndianBitStreamIter<'_, F, COEFFICIENTS> {
+        LittleEndianBitStreamIter {
             values: self,
             bit: 0,
             chunk_len: 1,
         }
     }
 
-    fn bits_chunks(&self, chunk_len: usize) -> BitsIter<'_, F, COEFFICIENTS> {
+    fn bits_chunks(&self, chunk_len: usize) -> LittleEndianBitStreamIter<'_, F, COEFFICIENTS> {
         // This iterator allows setting the number of bits used to encode one limb.
         // It is NOT chunking.
         assert!(chunk_len <= 16);
-        BitsIter {
+        LittleEndianBitStreamIter {
             values: self,
             bit: 0,
             chunk_len,
@@ -42,7 +52,9 @@ impl<F: FieldElement, const COEFFICIENTS: usize> Bits<F, COEFFICIENTS> for &[F; 
     }
 }
 
-impl<F: FieldElement, const COEFFICIENTS: usize> Iterator for BitsIter<'_, F, COEFFICIENTS> {
+impl<F: FieldElement, const COEFFICIENTS: usize> Iterator
+    for LittleEndianBitStreamIter<'_, F, COEFFICIENTS>
+{
     type Item = Vec<u8>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -59,7 +71,7 @@ impl<F: FieldElement, const COEFFICIENTS: usize> Iterator for BitsIter<'_, F, CO
         //     self.bit / 16
         // );
         for i in 0..self.chunk_len {
-            out[i] = self.values.bit(self.bit + i);
+            out[i] = self.values.nth_bit(self.bit + i);
         }
         self.bit += 16;
 

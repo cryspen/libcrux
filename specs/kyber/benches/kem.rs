@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
-use pqcrypto::kem::kyber768;
+use pqcrypto_kyber::kyber768;
 
 use rand;
 

@@ -15,7 +15,7 @@ pub trait FieldElement:
     const ZERO: Self;
 
     fn new(number: u16) -> Self;
-    fn bit(&self, bit: usize) -> u8;
+    fn nth_bit_little_endian(&self, n: usize) -> u8;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -32,8 +32,8 @@ impl<const MODULUS: u16> FieldElement for PrimeFieldElement<MODULUS> {
         }
     }
 
-    fn bit(&self, bit: usize) -> u8 {
-        ((self.value >> bit) & 1) as u8
+    fn nth_bit_little_endian(&self, n: usize) -> u8 {
+        ((self.value >> n) & 1) as u8
     }
 }
 
