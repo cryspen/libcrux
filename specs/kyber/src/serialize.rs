@@ -1,4 +1,4 @@
-use hacspec_lib::{bit_vector::BitVector, ring::Bits};
+use hacspec_lib::{bit_vector::BitVector, ring::LittleEndianBitStream};
 
 use crate::parameters::{KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT};
 
