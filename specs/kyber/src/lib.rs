@@ -28,9 +28,7 @@ pub type PublicKey = [u8; KYBER768_PUBLIC_KEY_SIZE];
 pub type PrivateKey = [u8; KYBER768_SECRET_KEY_SIZE];
 
 pub type Ciphertext = [u8; KYBER768_CIPHERTEXT_SIZE];
-pub type Enc = [u8; KYBER768_SHARED_SECRET_SIZE];
 pub type SharedSecret = [u8; KYBER768_SHARED_SECRET_SIZE];
-pub type Randomness = [u8; KYBER768_KEY_GENERATION_SEED_SIZE];
 
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
@@ -105,7 +103,7 @@ pub fn generate_keypair(
 pub fn encapsulate(
     public_key: PublicKey,
     randomness: [u8; KYBER768_SHARED_SECRET_SIZE],
-) -> Result<(Ciphertext, Enc), BadRejectionSamplingRandomnessError> {
+) -> Result<(Ciphertext, SharedSecret), BadRejectionSamplingRandomnessError> {
     let randomness_hashed = H(&randomness);
 
     let to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness_hashed.push(&H(&public_key));
