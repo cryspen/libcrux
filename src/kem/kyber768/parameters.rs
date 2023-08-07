@@ -1,4 +1,4 @@
-use crate::kyber768::utils::{field::PrimeFieldElement, ring::PolynomialRingElement};
+use crate::kem::kyber768::utils::{field::PrimeFieldElement, ring::PolynomialRingElement};
 
 /// Field modulus: 3329
 pub(crate) const FIELD_MODULUS: u16 = 3329;

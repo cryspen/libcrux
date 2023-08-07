@@ -1,8 +1,8 @@
-use crate::kyber768::utils::{
+use crate::kem::kyber768::utils::{
     ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray, VecUpdate,
 };
 
-use crate::kyber768::{
+use crate::kem::kyber768::{
     compress::{compress, decompress},
     ntt::{
         kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},

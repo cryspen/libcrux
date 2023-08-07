@@ -1,11 +1,11 @@
-use crate::kyber768::parameters::{KyberPolynomialRingElement, RANK};
+use crate::kem::kyber768::parameters::{KyberPolynomialRingElement, RANK};
 
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 
 pub(crate) mod kyber_polynomial_ring_element_mod {
-    use crate::kyber768::utils::field::FieldElement;
+    use crate::kem::kyber768::utils::field::FieldElement;
 
-    use crate::kyber768::parameters::{
+    use crate::kem::kyber768::parameters::{
         self, KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
     };
 

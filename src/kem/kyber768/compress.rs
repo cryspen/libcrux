@@ -1,4 +1,4 @@
-use crate::kyber768::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
+use crate::kem::kyber768::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
 
 pub fn compress(
     re: KyberPolynomialRingElement,

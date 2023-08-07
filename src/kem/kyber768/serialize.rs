@@ -1,6 +1,6 @@
-use crate::kyber768::utils::{bit_vector::BitVector, ring::LittleEndianBitStream};
+use crate::kem::kyber768::utils::{bit_vector::BitVector, ring::LittleEndianBitStream};
 
-use crate::kyber768::parameters::{
+use crate::kem::kyber768::parameters::{
     KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT,
 };
 

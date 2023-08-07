@@ -1,6 +1,6 @@
 use std::ops::{self, Index, IndexMut};
 
-use crate::kyber768::utils::field::FieldElement;
+use crate::kem::kyber768::utils::field::FieldElement;
 
 pub trait LittleEndianBitStream<F: FieldElement, const COEFFICIENTS: usize> {
     fn nth_bit(&self, n: usize) -> u8;

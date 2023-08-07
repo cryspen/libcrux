@@ -1,4 +1,4 @@
-use crate::kyber768::{
+use crate::kem::kyber768::{
     parameters::{self, KyberFieldElement, KyberPolynomialRingElement},
     utils::bit_vector::LittleEndianBitStream,
     BadRejectionSamplingRandomnessError,

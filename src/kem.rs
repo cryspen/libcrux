@@ -5,7 +5,8 @@
 use rand::{CryptoRng, Rng};
 
 use crate::ecdh;
-use crate::kyber768;
+
+mod kyber768;
 
 /// KEM Algorithms
 ///
@@ -54,17 +55,16 @@ impl From<ecdh::Error> for Error {
 pub enum PrivateKey {
     X25519([u8; 32]),
     P256([u8; 32]),
-    Kyber768([u8; kyber768::SECRET_KEY_SIZE]),
 }
 
 /// A KEM public key.
 pub enum PublicKey {
     X25519([u8; 32]),
     P256([u8; 64]),
-    Kyber768([u8; kyber768::PUBLIC_KEY_SIZE]),
 }
 
 /// Compute the public key for a private key of the given [`Algorithm`].
+/// Applicable only to X25519 and secp256r1.
 pub fn secret_to_public(alg: Algorithm, sk: impl AsRef<[u8]>) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {

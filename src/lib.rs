@@ -22,5 +22,4 @@ pub mod hkdf;
 pub mod hmac;
 pub mod hpke;
 pub mod kem;
-pub(crate) mod kyber768;
 pub mod signature;
