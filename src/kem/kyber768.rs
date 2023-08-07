@@ -34,7 +34,7 @@ pub type Kyber768SharedSecret = [u8; SHARED_SECRET_SIZE];
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
 
-pub(crate) fn generate_keypair(
+pub fn generate_keypair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<(Kyber768PublicKey, Kyber768PrivateKey), BadRejectionSamplingRandomnessError> {
     let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
@@ -48,7 +48,7 @@ pub(crate) fn generate_keypair(
     Ok((ind_cpa_key_pair.pk(), secret_key_serialized))
 }
 
-pub(crate) fn encapsulate(
+pub fn encapsulate(
     public_key: Kyber768PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), BadRejectionSamplingRandomnessError> {
@@ -68,7 +68,7 @@ pub(crate) fn encapsulate(
     Ok((ciphertext, shared_secret))
 }
 
-pub(crate) fn decapsulate(
+pub fn decapsulate(
     secret_key: Kyber768PrivateKey,
     ciphertext: Kyber768Ciphertext,
 ) -> Kyber768SharedSecret {

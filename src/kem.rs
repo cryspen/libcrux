@@ -8,6 +8,15 @@ use crate::ecdh;
 
 mod kyber768;
 
+// TODO: These functions are currently exposed simply in order to make NIST KAT
+// testing possible without an implementation of the NIST AES-CTR DRBG. Remove them
+// (and change the visibility of the exported functions to pub(crate)) the
+// moment we have an implementation of one. This is tracked by:
+// https://github.com/cryspen/libcrux/issues/36
+pub use kyber768::generate_keypair as kyber768_generate_keypair_derand;
+pub use kyber768::encapsulate as kyber768_encapsulate_derand;
+pub use kyber768::decapsulate as kyber768_decapsulate_derand;
+
 /// KEM Algorithms
 ///
 /// This includes named elliptic curves or dedicated KEM algorithms like Kyber.
@@ -119,6 +128,8 @@ pub fn encapsulate(
             let mut seed = [0; kyber768::SHARED_SECRET_SIZE];
             rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
 
+            // TODO: Don't unwrap() here. See
+            // https://github.com/cryspen/libcrux/issues/35
             if let Ok((ct, ss)) = kyber768::encapsulate(pk.try_into().unwrap(), seed) {
                 Ok((ss.into(), ct.into()))
             } else {
@@ -138,6 +149,8 @@ pub fn decapsulate(alg: Algorithm, ct: &[u8], sk: &[u8]) -> Result<Vec<u8>, Erro
             Ok(gxy)
         }
         Algorithm::Kyber768 => {
+            // TODO: Don't unwrap() here. See
+            // https://github.com/cryspen/libcrux/issues/35
             let ss = kyber768::decapsulate(sk.try_into().unwrap(), ct.try_into().unwrap());
 
             Ok(ss.into())
