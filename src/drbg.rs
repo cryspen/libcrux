@@ -171,7 +171,13 @@ impl Drbg {
 /// Implementation of the [`RngCore`] trait for the [`Drbg`].
 impl RngCore for Drbg {
     fn next_u32(&mut self) -> u32 {
-        todo!()
+        let mut bytes : [u8; 4] = [0; 4];
+        self.generate(&mut bytes).unwrap();
+
+        (bytes[0] as u32) |
+        (bytes[1] as u32) << 8 |
+        (bytes[2] as u32) << 16 |
+        (bytes[3] as u32) << 24
     }
 
     fn next_u64(&mut self) -> u64 {

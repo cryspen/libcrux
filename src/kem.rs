@@ -39,7 +39,7 @@ impl TryFrom<Algorithm> for ecdh::Algorithm {
             Algorithm::Secp256r1 => Ok(ecdh::Algorithm::P256),
             Algorithm::Secp384r1 => Ok(ecdh::Algorithm::P384),
             Algorithm::Secp521r1 => Ok(ecdh::Algorithm::P521),
-            _ => Err("provided algorithm is not an ECDH algorithm")
+            _ => Err("provided algorithm is not an ECDH algorithm"),
         }
     }
 }

@@ -1,7 +1,7 @@
 use crate::kyber768::{
     parameters::{self, KyberFieldElement, KyberPolynomialRingElement},
+    utils::bit_vector::LittleEndianBitStream,
     BadRejectionSamplingRandomnessError,
-    utils::bit_vector::LittleEndianBitStream
 };
 
 pub fn sample_from_uniform_distribution(
@@ -47,18 +47,14 @@ pub fn sample_from_binomial_distribution(
 
     for i in 0..sampled.len() {
         let mut coin_tosses: u8 = 0;
-        for j in 0..sampling_coins
-        {
+        for j in 0..sampling_coins {
             coin_tosses += randomness.nth_bit(i * sampling_coins + j);
-
         }
         let coin_tosses_a: KyberFieldElement = coin_tosses.into();
 
         coin_tosses = 0;
-        for j in 0..sampling_coins
-        {
+        for j in 0..sampling_coins {
             coin_tosses += randomness.nth_bit((i + 1) * sampling_coins + j);
-
         }
         let coin_tosses_b: KyberFieldElement = coin_tosses.into();
 
