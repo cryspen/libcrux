@@ -13,9 +13,9 @@ mod kyber768;
 // (and change the visibility of the exported functions to pub(crate)) the
 // moment we have an implementation of one. This is tracked by:
 // https://github.com/cryspen/libcrux/issues/36
-pub use kyber768::generate_keypair as kyber768_generate_keypair_derand;
-pub use kyber768::encapsulate as kyber768_encapsulate_derand;
 pub use kyber768::decapsulate as kyber768_decapsulate_derand;
+pub use kyber768::encapsulate as kyber768_encapsulate_derand;
+pub use kyber768::generate_keypair as kyber768_generate_keypair_derand;
 
 /// KEM Algorithms
 ///

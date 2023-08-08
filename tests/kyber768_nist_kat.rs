@@ -36,7 +36,8 @@ fn kyber768_known_answer_tests() {
         serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
     for kat in nist_kats {
-        let (public_key, secret_key) = kem::kyber768_generate_keypair_derand(kat.key_generation_seed).unwrap();
+        let (public_key, secret_key) =
+            kem::kyber768_generate_keypair_derand(kat.key_generation_seed).unwrap();
 
         let public_key_hash = digest::sha3_256(&public_key);
         for i in 0..public_key_hash.len() {
@@ -60,7 +61,8 @@ fn kyber768_known_answer_tests() {
             assert_eq!(shared_secret[i], kat.shared_secret[i]);
         }
 
-        let shared_secret_from_decapsulate = kem::kyber768_decapsulate_derand(secret_key, ciphertext);
+        let shared_secret_from_decapsulate =
+            kem::kyber768_decapsulate_derand(secret_key, ciphertext);
         for i in 0..shared_secret.len() {
             assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
         }
