@@ -6,11 +6,20 @@ use rand::{CryptoRng, Rng};
 
 use crate::ecdh;
 
+mod kyber768;
+
+// TODO: These functions are currently exposed simply in order to make NIST KAT
+// testing possible without an implementation of the NIST AES-CTR DRBG. Remove them
+// (and change the visibility of the exported functions to pub(crate)) the
+// moment we have an implementation of one. This is tracked by:
+// https://github.com/cryspen/libcrux/issues/36
+pub use kyber768::generate_keypair as kyber768_generate_keypair_derand;
+pub use kyber768::encapsulate as kyber768_encapsulate_derand;
+pub use kyber768::decapsulate as kyber768_decapsulate_derand;
+
 /// KEM Algorithms
 ///
 /// This includes named elliptic curves or dedicated KEM algorithms like Kyber.
-///
-/// Currently only `Secp256r1` and `X25519` are supported.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Algorithm {
     X25519,
@@ -18,23 +27,29 @@ pub enum Algorithm {
     Secp256r1,
     Secp384r1,
     Secp521r1,
+    Kyber768,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     EcDhError(ecdh::Error),
     KeyGen,
+    Encapsulate,
+    Decapsulate,
     UnsupportedAlgorithm,
 }
 
-impl From<Algorithm> for ecdh::Algorithm {
-    fn from(value: Algorithm) -> Self {
+impl TryFrom<Algorithm> for ecdh::Algorithm {
+    type Error = &'static str;
+
+    fn try_from(value: Algorithm) -> Result<Self, Self::Error> {
         match value {
-            Algorithm::X25519 => ecdh::Algorithm::X25519,
-            Algorithm::X448 => ecdh::Algorithm::X448,
-            Algorithm::Secp256r1 => ecdh::Algorithm::P256,
-            Algorithm::Secp384r1 => ecdh::Algorithm::P384,
-            Algorithm::Secp521r1 => ecdh::Algorithm::P521,
+            Algorithm::X25519 => Ok(ecdh::Algorithm::X25519),
+            Algorithm::X448 => Ok(ecdh::Algorithm::X448),
+            Algorithm::Secp256r1 => Ok(ecdh::Algorithm::P256),
+            Algorithm::Secp384r1 => Ok(ecdh::Algorithm::P384),
+            Algorithm::Secp521r1 => Ok(ecdh::Algorithm::P521),
+            _ => Err("provided algorithm is not an ECDH algorithm"),
         }
     }
 }
@@ -58,10 +73,11 @@ pub enum PublicKey {
 }
 
 /// Compute the public key for a private key of the given [`Algorithm`].
+/// Applicable only to X25519 and secp256r1.
 pub fn secret_to_public(alg: Algorithm, sk: impl AsRef<[u8]>) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {
-            ecdh::secret_to_public(alg.into(), sk.as_ref()).map_err(|e| e.into())
+            ecdh::secret_to_public(alg.try_into().unwrap(), sk.as_ref()).map_err(|e| e.into())
         }
         _ => Err(Error::UnsupportedAlgorithm),
     }
@@ -78,7 +94,18 @@ pub fn key_gen(
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {
-            ecdh::key_gen(alg.into(), rng).map_err(|e| e.into())
+            ecdh::key_gen(alg.try_into().unwrap(), rng).map_err(|e| e.into())
+        }
+
+        Algorithm::Kyber768 => {
+            let mut seed = [0; kyber768::KEY_GENERATION_SEED_SIZE];
+            rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
+
+            if let Ok((pk, sk)) = kyber768::generate_keypair(seed) {
+                Ok((sk.into(), pk.into()))
+            } else {
+                Err(Error::KeyGen)
+            }
         }
         _ => Err(Error::UnsupportedAlgorithm),
     }
@@ -93,9 +120,23 @@ pub fn encapsulate(
     let (new_sk, new_pk) = key_gen(alg, rng)?;
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {
-            let gxy = ecdh::derive(alg.into(), pk, &new_sk)?;
+            let gxy = ecdh::derive(alg.try_into().unwrap(), pk, &new_sk)?;
             Ok((gxy, new_pk))
         }
+
+        Algorithm::Kyber768 => {
+            let mut seed = [0; kyber768::SHARED_SECRET_SIZE];
+            rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
+
+            // TODO: Don't unwrap() here. See
+            // https://github.com/cryspen/libcrux/issues/35
+            if let Ok((ct, ss)) = kyber768::encapsulate(pk.try_into().unwrap(), seed) {
+                Ok((ss.into(), ct.into()))
+            } else {
+                Err(Error::Encapsulate)
+            }
+        }
+
         _ => Err(Error::UnsupportedAlgorithm),
     }
 }
@@ -104,8 +145,15 @@ pub fn encapsulate(
 pub fn decapsulate(alg: Algorithm, ct: &[u8], sk: &[u8]) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {
-            let gxy = ecdh::derive(alg.into(), ct, sk)?;
+            let gxy = ecdh::derive(alg.try_into().unwrap(), ct, sk)?;
             Ok(gxy)
+        }
+        Algorithm::Kyber768 => {
+            // TODO: Don't unwrap() here. See
+            // https://github.com/cryspen/libcrux/issues/35
+            let ss = kyber768::decapsulate(sk.try_into().unwrap(), ct.try_into().unwrap());
+
+            Ok(ss.into())
         }
         _ => Err(Error::UnsupportedAlgorithm),
     }

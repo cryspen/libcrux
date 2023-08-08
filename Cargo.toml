@@ -31,7 +31,8 @@ quickcheck = "1"
 quickcheck_macros = "1"
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
-hex = "0.4"
+hex = { version = "0.4.3", features = ["serde"] }
+pqcrypto-kyber = { version = "0.7.6", default-features = false }
 
 # Benchmarking "RustCrypto"
 chacha20poly1305 = "0.10"
@@ -68,6 +69,10 @@ harness = false
 
 [[bench]]
 name = "drbg"
+harness = false
+
+[[bench]]
+name = "kyber768"
 harness = false
 
 [features]
