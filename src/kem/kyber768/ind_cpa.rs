@@ -17,7 +17,7 @@ use crate::kem::kyber768::{
         VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
-    serialize::{deserialize_little_endian, serialize_little_endian},
+    serialize::{deserialize_little_endian, serialize_little_endian, serialize_little_endian_12},
     BadRejectionSamplingRandomnessError,
 };
 
@@ -53,9 +53,11 @@ impl KeyPair {
 }
 
 fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
-    let mut out = Vec::new();
+    let bytes_per_encoded_ring_element = (input[0].coefficients.len() * 12) / 8;
+    let mut out = Vec::with_capacity(bytes_per_encoded_ring_element * input.len());
+
     for re in input.into_iter() {
-        out.extend_from_slice(&serialize_little_endian(re, 12));
+        out.extend_from_slice(&serialize_little_endian_12(re));
     }
 
     out
