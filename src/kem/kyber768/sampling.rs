@@ -1,6 +1,5 @@
 use crate::kem::kyber768::{
     parameters::{self, KyberPolynomialRingElement},
-    utils::bit_vector::LittleEndianBitStream,
     BadRejectionSamplingRandomnessError,
 };
 
@@ -35,29 +34,6 @@ pub fn sample_from_uniform_distribution(
     }
 
     Err(BadRejectionSamplingRandomnessError)
-}
-
-pub fn sample_from_binomial_distribution(
-    sampling_coins: usize,
-    randomness: &[u8],
-) -> KyberPolynomialRingElement {
-    assert_eq!(randomness.len(), sampling_coins * 64);
-
-    let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
-
-    for i in 0..sampled.len() {
-        let mut coin_tosses_a: u8 = 0;
-        let mut coin_tosses_b: u8 = 0;
-
-        for j in 0..sampling_coins {
-            coin_tosses_a += randomness.nth_bit(2 * i * sampling_coins + j);
-            coin_tosses_b += randomness.nth_bit(2 * i * sampling_coins + sampling_coins + j);
-        }
-
-        sampled[i] = ((coin_tosses_a as i16) - (coin_tosses_b as i16)).into();
-    }
-
-    sampled
 }
 
 pub fn sample_from_binomial_distribution_with_2_coins(

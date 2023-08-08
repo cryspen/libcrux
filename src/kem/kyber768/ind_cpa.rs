@@ -17,7 +17,7 @@ use crate::kem::kyber768::{
         VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{
-        sample_from_binomial_distribution, sample_from_binomial_distribution_with_2_coins,
+        sample_from_binomial_distribution_with_2_coins,
         sample_from_uniform_distribution,
     },
     serialize::{deserialize_little_endian, serialize_little_endian, serialize_little_endian_12},
@@ -172,7 +172,7 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let r = sample_from_binomial_distribution(2, &prf_output);
+        let r = sample_from_binomial_distribution_with_2_coins(&prf_output);
         r_as_ntt[i] = ntt_representation(r);
     }
     (r_as_ntt, domain_separator)
@@ -236,14 +236,14 @@ pub(crate) fn encrypt(
 
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
-        error_1[i] = sample_from_binomial_distribution(2, &prf_output);
+        error_1[i] = sample_from_binomial_distribution_with_2_coins(&prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
     // 2 sampling coins * 64
     let prf_output: [u8; 128] = PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution(2, &prf_output);
+    let error_2 = sample_from_binomial_distribution_with_2_coins(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| invert_ntt(r));
