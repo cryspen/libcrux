@@ -27,9 +27,7 @@ pub fn serialize_little_endian(
     serialized
 }
 
-pub fn serialize_little_endian_12(
-    re: KyberPolynomialRingElement,
-) -> [u8; 384] {
+pub fn serialize_little_endian_12(re: KyberPolynomialRingElement) -> [u8; 384] {
     let mut serialized = [0u8; 384];
 
     for (i, chunks) in re.coefficients.chunks(2).enumerate() {
@@ -37,7 +35,9 @@ pub fn serialize_little_endian_12(
         let coefficient1 = chunks[1].value;
 
         serialized[3 * i] = (coefficient & 0xFF).try_into().unwrap();
-        serialized[3 * i + 1] = ((coefficient >> 8) | ((coefficient1 & 0xF) << 4)).try_into().unwrap();
+        serialized[3 * i + 1] = ((coefficient >> 8) | ((coefficient1 & 0xF) << 4))
+            .try_into()
+            .unwrap();
         serialized[3 * i + 2] = ((coefficient1 >> 4) & 0xFF).try_into().unwrap();
     }
 

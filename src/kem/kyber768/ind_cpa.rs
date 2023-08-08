@@ -16,7 +16,10 @@ use crate::kem::kyber768::{
         REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
-    sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
+    sampling::{
+        sample_from_binomial_distribution, sample_from_binomial_distribution_with_2_coins,
+        sample_from_uniform_distribution,
+    },
     serialize::{deserialize_little_endian, serialize_little_endian, serialize_little_endian_12},
     BadRejectionSamplingRandomnessError,
 };
@@ -95,7 +98,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let secret = sample_from_binomial_distribution(2, &prf_output[..]);
+        let secret = sample_from_binomial_distribution_with_2_coins(&prf_output[..]);
         secret_as_ntt[i] = ntt_representation(secret);
     }
 
@@ -111,7 +114,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let error = sample_from_binomial_distribution(2, &prf_output[..]);
+        let error = sample_from_binomial_distribution_with_2_coins(&prf_output[..]);
         error_as_ntt[i] = ntt_representation(error);
     }
 

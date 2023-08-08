@@ -8,6 +8,7 @@ pub trait FieldElement:
     + From<u16>
     + From<u32>
     + Into<u16>
+    + From<i16>
     + ops::Add<Output = Self>
     + ops::Sub<Output = Self>
     + ops::Mul<Output = Self>
@@ -61,6 +62,13 @@ impl<const MODULUS: u16> From<u32> for PrimeFieldElement<MODULUS> {
         let remainder_as_u32 = number % u32::from(MODULUS);
 
         Self::new(remainder_as_u32.try_into().unwrap())
+    }
+}
+impl<const MODULUS: u16> From<i16> for PrimeFieldElement<MODULUS> {
+    fn from(number: i16) -> Self {
+        let representative = number.rem_euclid(MODULUS.try_into().unwrap());
+
+        Self::new(representative.try_into().unwrap())
     }
 }
 
