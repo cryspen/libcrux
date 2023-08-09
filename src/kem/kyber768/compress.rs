@@ -1,4 +1,4 @@
-use crate::kem::kyber768::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
+use crate::kem::kyber768::{parameters::{self, KyberPolynomialRingElement}, field_element::KyberFieldElement};
 
 pub fn compress(
     re: KyberPolynomialRingElement,
@@ -21,28 +21,27 @@ pub fn decompress(
 }
 
 fn compress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
-    assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
+    debug_assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
 
-    let two_pow_bit_size = 2u32.pow(to_bit_size.try_into().unwrap_or_else(|_| {
-        panic!(
-            "Conversion should work since to_bit_size is never greater than {}.",
-            parameters::BITS_PER_COEFFICIENT
-        )
-    }));
+    let two_pow_bit_size = 1u32 << to_bit_size;
 
-    let compressed = ((u32::from(fe.value) * 2 * two_pow_bit_size)
-        + u32::from(KyberFieldElement::MODULUS))
-        / u32::from(2 * KyberFieldElement::MODULUS);
+    let mut compressed = u32::from(fe.value) * (two_pow_bit_size << 1);
+    compressed += u32::from(KyberFieldElement::MODULUS);
+    compressed /= u32::from(KyberFieldElement::MODULUS << 1);
 
-    (compressed % two_pow_bit_size).into()
+    KyberFieldElement {
+        value: (compressed & (two_pow_bit_size - 1)).try_into().unwrap()
+    }
 }
 
 fn decompress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
-    assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
+    debug_assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
 
-    let decompressed = (2 * u32::from(fe.value) * u32::from(KyberFieldElement::MODULUS)
-        + (1 << to_bit_size))
-        >> (to_bit_size + 1);
+    let mut decompressed = u32::from(fe.value) * u32::from(KyberFieldElement::MODULUS);
+    decompressed = (decompressed << 1) + (1 << to_bit_size);
+    decompressed >>= to_bit_size + 1;
 
-    decompressed.into()
+    KyberFieldElement {
+        value: decompressed.try_into().unwrap()
+    }
 }

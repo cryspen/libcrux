@@ -1,8 +1,10 @@
 use crate::kem::kyber768::utils::{bit_vector::BitVector, ring::LittleEndianBitStream};
 
 use crate::kem::kyber768::parameters::{
-    KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT, BYTES_PER_RING_ELEMENT,
+    KyberPolynomialRingElement, BITS_PER_COEFFICIENT, BYTES_PER_RING_ELEMENT,
 };
+
+use crate::kem::kyber768::field_element::KyberFieldElement;
 
 pub fn serialize_little_endian(
     re: KyberPolynomialRingElement,
@@ -48,7 +50,9 @@ fn field_element_from_little_endian_bit_vector(bit_vector: BitVector) -> KyberFi
         value |= u16::from(bit) << i;
     }
 
-    value.into()
+    KyberFieldElement {
+        value
+    }
 }
 
 pub fn deserialize_little_endian(

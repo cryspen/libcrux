@@ -5,6 +5,7 @@ mod parameters;
 mod sampling;
 mod serialize;
 mod utils;
+mod field_element;
 
 use utils::{ArrayConversion, UpdatingArray2};
 
