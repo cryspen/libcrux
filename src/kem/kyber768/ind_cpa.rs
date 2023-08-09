@@ -11,15 +11,12 @@ use crate::kem::kyber768::{
     parameters::{
         hash_functions::{G, H, PRF, XOF},
         KyberPolynomialRingElement, BITS_PER_RING_ELEMENT, BYTES_PER_RING_ELEMENT,
-        COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_CIPHERTEXT_SIZE,
-        CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
-        CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE,
-        T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+        COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
+        CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
+        CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
-    sampling::{
-        sample_from_binomial_distribution_with_2_coins,
-        sample_from_uniform_distribution,
-    },
+    sampling::{sample_from_binomial_distribution_with_2_coins, sample_from_uniform_distribution},
     serialize::{deserialize_little_endian, serialize_little_endian, serialize_little_endian_12},
     BadRejectionSamplingRandomnessError,
 };
@@ -59,7 +56,8 @@ fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> [u8; RANK * BYTES_PER
     let mut out = [0u8; RANK * BYTES_PER_RING_ELEMENT];
 
     for (i, re) in input.into_iter().enumerate() {
-        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT].copy_from_slice(&serialize_little_endian_12(re));
+        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
+            .copy_from_slice(&serialize_little_endian_12(re));
     }
 
     out

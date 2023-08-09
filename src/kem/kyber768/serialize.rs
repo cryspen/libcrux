@@ -1,8 +1,7 @@
 use crate::kem::kyber768::utils::{bit_vector::BitVector, ring::LittleEndianBitStream};
 
 use crate::kem::kyber768::parameters::{
-    KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT,
-    BYTES_PER_RING_ELEMENT
+    KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT, BYTES_PER_RING_ELEMENT,
 };
 
 pub fn serialize_little_endian(

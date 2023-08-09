@@ -54,10 +54,10 @@ pub fn sample_from_binomial_distribution_with_2_coins(
 
         for outcome_set in (0..u32::BITS).step_by(4) {
             let outcome_1: u16 = ((coin_toss_outcomes >> outcome_set) & 0x3) as u16;
-            let outcome_1 : KyberFieldElement = outcome_1.into();
+            let outcome_1: KyberFieldElement = outcome_1.into();
 
             let outcome_2: u16 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as u16;
-            let outcome_2 : KyberFieldElement = outcome_2.into();
+            let outcome_2: KyberFieldElement = outcome_2.into();
 
             let offset = usize::try_from(outcome_set >> 2).unwrap();
             sampled[8 * chunk_number + offset] = outcome_1 - outcome_2;

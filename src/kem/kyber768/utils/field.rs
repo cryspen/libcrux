@@ -69,12 +69,12 @@ impl<const MODULUS: u16> ops::Add for PrimeFieldElement<MODULUS> {
 
     fn add(self, other: Self) -> Self {
         let sum: u16 = self.value + other.value;
-        let difference : u16 = sum.wrapping_sub(MODULUS);
+        let difference: u16 = sum.wrapping_sub(MODULUS);
 
         let mask = 0u16.wrapping_sub((difference >> 15) & 1);
 
         Self {
-            value: (mask & sum) | (!mask & difference)
+            value: (mask & sum) | (!mask & difference),
         }
     }
 }
@@ -86,12 +86,12 @@ impl<const MODULUS: u16> ops::Sub for PrimeFieldElement<MODULUS> {
         let rhs = MODULUS - other.value;
 
         let sum: u16 = lhs + rhs;
-        let difference : u16 = sum.wrapping_sub(MODULUS);
+        let difference: u16 = sum.wrapping_sub(MODULUS);
 
         let mask = 0u16.wrapping_sub((difference >> 15) & 1);
 
         Self {
-            value: (mask & sum) | (!mask & difference)
+            value: (mask & sum) | (!mask & difference),
         }
     }
 }
