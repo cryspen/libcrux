@@ -9,8 +9,11 @@ pub(crate) const BITS_PER_COEFFICIENT: usize = 12;
 /// Coefficients per ring element
 pub(crate) const COEFFICIENTS_IN_RING_ELEMENT: usize = 256;
 
-/// Bits required per ring element
+/// Bits required per (uncompressed) ring element
 pub(crate) const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 12;
+
+/// Bytes required per (uncompressed) ring element
+pub(crate) const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
 
 /// Seed size for rejection sampling.
 ///

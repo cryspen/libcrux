@@ -68,22 +68,34 @@ impl<const MODULUS: u16> ops::Add for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        let sum: u32 = u32::from(self.value) + u32::from(other.value);
+        let sum: u16 = self.value + other.value;
+        let difference: u16 = sum.wrapping_sub(MODULUS);
 
-        sum.into()
+        let mask = 0u16.wrapping_sub((difference >> 15) & 1);
+
+        Self {
+            value: (mask & sum) | (!mask & difference),
+        }
     }
 }
 impl<const MODULUS: u16> ops::Sub for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        let difference: i32 =
-            i32::try_from(self.value).unwrap() - i32::try_from(other.value).unwrap();
-        let representative = difference.rem_euclid(MODULUS.into());
+        let lhs = self.value;
+        let rhs = MODULUS - other.value;
 
-        u16::try_from(representative).unwrap().into()
+        let sum: u16 = lhs + rhs;
+        let difference: u16 = sum.wrapping_sub(MODULUS);
+
+        let mask = 0u16.wrapping_sub((difference >> 15) & 1);
+
+        Self {
+            value: (mask & sum) | (!mask & difference),
+        }
     }
 }
+
 impl<const MODULUS: u16> ops::Mul for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
