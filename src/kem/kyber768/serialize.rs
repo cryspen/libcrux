@@ -2,6 +2,7 @@ use crate::kem::kyber768::utils::{bit_vector::BitVector, ring::LittleEndianBitSt
 
 use crate::kem::kyber768::parameters::{
     KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT,
+    BYTES_PER_RING_ELEMENT
 };
 
 pub fn serialize_little_endian(
@@ -27,18 +28,16 @@ pub fn serialize_little_endian(
     serialized
 }
 
-pub fn serialize_little_endian_12(re: KyberPolynomialRingElement) -> [u8; 384] {
-    let mut serialized = [0u8; 384];
+pub fn serialize_little_endian_12(re: KyberPolynomialRingElement) -> [u8; BYTES_PER_RING_ELEMENT] {
+    let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
-    for (i, chunks) in re.coefficients.chunks(2).enumerate() {
-        let coefficient = chunks[0].value;
-        let coefficient1 = chunks[1].value;
+    for (i, chunks) in re.coefficients.chunks_exact(2).enumerate() {
+        let coefficient_1 = chunks[0].value;
+        let coefficient_2 = chunks[1].value;
 
-        serialized[3 * i] = (coefficient & 0xFF).try_into().unwrap();
-        serialized[3 * i + 1] = ((coefficient >> 8) | ((coefficient1 & 0xF) << 4))
-            .try_into()
-            .unwrap();
-        serialized[3 * i + 2] = ((coefficient1 >> 4) & 0xFF).try_into().unwrap();
+        serialized[3 * i] = (coefficient_1 & 0xFF) as u8;
+        serialized[3 * i + 1] = ((coefficient_1 >> 8) | ((coefficient_2 & 0xF) << 4)) as u8;
+        serialized[3 * i + 2] = ((coefficient_2 >> 4) & 0xFF) as u8;
     }
 
     serialized

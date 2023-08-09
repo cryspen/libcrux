@@ -8,7 +8,6 @@ pub trait FieldElement:
     + From<u16>
     + From<u32>
     + Into<u16>
-    + From<i16>
     + ops::Add<Output = Self>
     + ops::Sub<Output = Self>
     + ops::Mul<Output = Self>
@@ -64,34 +63,39 @@ impl<const MODULUS: u16> From<u32> for PrimeFieldElement<MODULUS> {
         Self::new(remainder_as_u32.try_into().unwrap())
     }
 }
-impl<const MODULUS: u16> From<i16> for PrimeFieldElement<MODULUS> {
-    fn from(number: i16) -> Self {
-        let representative = number.rem_euclid(MODULUS.try_into().unwrap());
-
-        Self::new(representative.try_into().unwrap())
-    }
-}
 
 impl<const MODULUS: u16> ops::Add for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        let sum: u32 = u32::from(self.value) + u32::from(other.value);
+        let sum: u16 = self.value + other.value;
+        let difference : u16 = sum.wrapping_sub(MODULUS);
 
-        sum.into()
+        let mask = 0u16.wrapping_sub((difference >> 15) & 1);
+
+        Self {
+            value: (mask & sum) | (!mask & difference)
+        }
     }
 }
 impl<const MODULUS: u16> ops::Sub for PrimeFieldElement<MODULUS> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        let difference: i32 =
-            i32::try_from(self.value).unwrap() - i32::try_from(other.value).unwrap();
-        let representative = difference.rem_euclid(MODULUS.into());
+        let lhs = self.value;
+        let rhs = MODULUS - other.value;
 
-        u16::try_from(representative).unwrap().into()
+        let sum: u16 = lhs + rhs;
+        let difference : u16 = sum.wrapping_sub(MODULUS);
+
+        let mask = 0u16.wrapping_sub((difference >> 15) & 1);
+
+        Self {
+            value: (mask & sum) | (!mask & difference)
+        }
     }
 }
+
 impl<const MODULUS: u16> ops::Mul for PrimeFieldElement<MODULUS> {
     type Output = Self;
 

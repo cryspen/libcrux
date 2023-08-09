@@ -1,5 +1,5 @@
 use crate::kem::kyber768::utils::{
-    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray, VecUpdate,
+    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
 };
 
 use crate::kem::kyber768::{
@@ -10,11 +10,11 @@ use crate::kem::kyber768::{
     },
     parameters::{
         hash_functions::{G, H, PRF, XOF},
-        KyberPolynomialRingElement, BITS_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
-        CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
-        CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
-        REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
-        VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+        KyberPolynomialRingElement, BITS_PER_RING_ELEMENT, BYTES_PER_RING_ELEMENT,
+        COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_CIPHERTEXT_SIZE,
+        CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
+        CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE,
+        T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{
         sample_from_binomial_distribution_with_2_coins,
@@ -55,12 +55,11 @@ impl KeyPair {
     }
 }
 
-fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
-    let bytes_per_encoded_ring_element = (input[0].coefficients.len() * 12) / 8;
-    let mut out = Vec::with_capacity(bytes_per_encoded_ring_element * input.len());
+fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> [u8; RANK * BYTES_PER_RING_ELEMENT] {
+    let mut out = [0u8; RANK * BYTES_PER_RING_ELEMENT];
 
-    for re in input.into_iter() {
-        out.extend_from_slice(&serialize_little_endian_12(re));
+    for (i, re) in input.into_iter().enumerate() {
+        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT].copy_from_slice(&serialize_little_endian_12(re));
     }
 
     out
@@ -98,7 +97,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let secret = sample_from_binomial_distribution_with_2_coins(&prf_output[..]);
+        let secret = sample_from_binomial_distribution_with_2_coins(prf_output);
         secret_as_ntt[i] = ntt_representation(secret);
     }
 
@@ -114,7 +113,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let error = sample_from_binomial_distribution_with_2_coins(&prf_output[..]);
+        let error = sample_from_binomial_distribution_with_2_coins(prf_output);
         error_as_ntt[i] = ntt_representation(error);
     }
 
@@ -125,13 +124,13 @@ pub(crate) fn generate_keypair(
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized = encode_12(t_as_ntt).concat(seed_for_A);
+    let public_key_serialized = [&encode_12(t_as_ntt), seed_for_A].concat();
 
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = encode_12(secret_as_ntt);
 
     Ok(KeyPair::new(
-        secret_key_serialized.into_array(),
+        secret_key_serialized,
         public_key_serialized.into_array(),
     ))
 }
@@ -172,7 +171,7 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let r = sample_from_binomial_distribution_with_2_coins(&prf_output);
+        let r = sample_from_binomial_distribution_with_2_coins(prf_output);
         r_as_ntt[i] = ntt_representation(r);
     }
     (r_as_ntt, domain_separator)
@@ -236,14 +235,14 @@ pub(crate) fn encrypt(
 
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
-        error_1[i] = sample_from_binomial_distribution_with_2_coins(&prf_output);
+        error_1[i] = sample_from_binomial_distribution_with_2_coins(prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
     // 2 sampling coins * 64
     let prf_output: [u8; 128] = PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution_with_2_coins(&prf_output);
+    let error_2 = sample_from_binomial_distribution_with_2_coins(prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| invert_ntt(r));
