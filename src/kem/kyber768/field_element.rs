@@ -15,10 +15,10 @@ impl KyberFieldElement {
 
     pub fn barrett_reduce(value : u32) -> Self {
         let product : u64 = u64::from(value) * u64::from(Self::BARRETT_MULTIPLIER);
-        let quotient : u32 = (product >> Self::BARRETT_SHIFT).try_into().unwrap();
+        let quotient : u32 = (product >> Self::BARRETT_SHIFT) as u32;
 
         let remainder = value - (quotient * u32::from(Self::MODULUS));
-        let remainder : u16 = remainder.try_into().unwrap();
+        let remainder : u16 = remainder as u16;
 
         let remainder_minus_modulus = remainder.wrapping_sub(Self::MODULUS);
 

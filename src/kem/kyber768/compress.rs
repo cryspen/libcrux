@@ -30,7 +30,7 @@ fn compress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     compressed /= u32::from(KyberFieldElement::MODULUS << 1);
 
     KyberFieldElement {
-        value: (compressed & (two_pow_bit_size - 1)).try_into().unwrap()
+        value: (compressed & (two_pow_bit_size - 1)) as u16
     }
 }
 
@@ -42,6 +42,6 @@ fn decompress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement 
     decompressed >>= to_bit_size + 1;
 
     KyberFieldElement {
-        value: decompressed.try_into().unwrap()
+        value: decompressed as u16
     }
 }
