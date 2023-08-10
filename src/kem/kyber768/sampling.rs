@@ -37,7 +37,7 @@ pub fn sample_from_uniform_distribution(
     Err(BadRejectionSamplingRandomnessError)
 }
 
-pub fn sample_from_binomial_distribution_with_2_coins(
+pub fn sample_from_binomial_distribution_2(
     randomness: [u8; 128],
 ) -> KyberPolynomialRingElement {
     let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;

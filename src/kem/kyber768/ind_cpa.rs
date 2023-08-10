@@ -16,8 +16,8 @@ use crate::kem::kyber768::{
         CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE,
         VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
-    sampling::{sample_from_binomial_distribution_with_2_coins, sample_from_uniform_distribution},
-    serialize::{deserialize_little_endian, serialize_little_endian, serialize_little_endian_12},
+    sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
+    serialize::{deserialize_little_endian, serialize_little_endian_1, serialize_little_endian_4, serialize_little_endian_10, serialize_little_endian_12},
     BadRejectionSamplingRandomnessError,
 };
 
@@ -88,7 +88,7 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let r = sample_from_binomial_distribution_with_2_coins(prf_output);
+        let r = sample_from_binomial_distribution_2(prf_output);
         re_as_ntt[i] = ntt_representation(r);
     }
     (re_as_ntt, domain_separator)
@@ -137,7 +137,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let secret = sample_from_binomial_distribution_with_2_coins(prf_output);
+        let secret = sample_from_binomial_distribution_2(prf_output);
         secret_as_ntt[i] = ntt_representation(secret);
     }
 
@@ -153,7 +153,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let error = sample_from_binomial_distribution_with_2_coins(prf_output);
+        let error = sample_from_binomial_distribution_2(prf_output);
         error_as_ntt[i] = ntt_representation(error);
     }
 
@@ -179,9 +179,8 @@ pub(crate) fn generate_keypair(
 fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
     let mut out = Vec::new();
     for re in input.into_iter() {
-        out.extend_from_slice(&serialize_little_endian(
-            compress(re, VECTOR_U_COMPRESSION_FACTOR),
-            VECTOR_U_COMPRESSION_FACTOR,
+        out.extend_from_slice(&serialize_little_endian_10(
+            compress(re, VECTOR_U_COMPRESSION_FACTOR)
         ));
     }
 
@@ -234,14 +233,14 @@ pub(crate) fn encrypt(
 
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
-        error_1[i] = sample_from_binomial_distribution_with_2_coins(prf_output);
+        error_1[i] = sample_from_binomial_distribution_2(prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
     // 2 sampling coins * 64
     let prf_output: [u8; 128] = PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution_with_2_coins(prf_output);
+    let error_2 = sample_from_binomial_distribution_2(prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| invert_ntt(r));
@@ -259,9 +258,8 @@ pub(crate) fn encrypt(
     let c1 = encode_and_compress_u(u);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = serialize_little_endian(
+    let c2 = serialize_little_endian_4(
         compress(v, VECTOR_V_COMPRESSION_FACTOR),
-        VECTOR_V_COMPRESSION_FACTOR,
     );
 
     let ciphertext = c1
@@ -307,6 +305,5 @@ pub(crate) fn decrypt(
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
     let message = v - invert_ntt(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
 
-    // FIXME: remove conversion
-    serialize_little_endian(compress(message, 1), 1).as_array()
+    serialize_little_endian_1(compress(message, 1))
 }
