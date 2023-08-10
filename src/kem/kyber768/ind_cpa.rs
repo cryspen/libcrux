@@ -52,6 +52,48 @@ impl KeyPair {
     }
 }
 
+#[inline(always)]
+fn parse_a(
+    mut seed: [u8; 34],
+    transpose: bool,
+) -> Result<[[KyberPolynomialRingElement; RANK]; RANK], BadRejectionSamplingRandomnessError> {
+    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
+
+    for i in 0..RANK {
+        for j in 0..RANK {
+            seed[32] = i.as_u8();
+            seed[33] = j.as_u8();
+
+            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
+
+            // A[i][j] = A_transpose[j][i]
+            if transpose {
+                a_transpose[j][i] = sample_from_uniform_distribution(xof_bytes)?;
+            } else {
+                a_transpose[i][j] = sample_from_uniform_distribution(xof_bytes)?;
+            }
+        }
+    }
+    Ok(a_transpose)
+}
+
+#[inline(always)]
+fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
+    let mut domain_separator = 0;
+    let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    for i in 0..re_as_ntt.len() {
+        prf_input[32] = domain_separator;
+        domain_separator += 1;
+
+        // 2 sampling coins * 64
+        let prf_output: [u8; 128] = PRF(&prf_input);
+
+        let r = sample_from_binomial_distribution_with_2_coins(prf_output);
+        re_as_ntt[i] = ntt_representation(r);
+    }
+    (re_as_ntt, domain_separator)
+}
+
 fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> [u8; RANK * BYTES_PER_RING_ELEMENT] {
     let mut out = [0u8; RANK * BYTES_PER_RING_ELEMENT];
 
@@ -133,47 +175,6 @@ pub(crate) fn generate_keypair(
     ))
 }
 
-#[inline(always)]
-fn parse_a(
-    mut seed: [u8; 34],
-    transpose: bool,
-) -> Result<[[KyberPolynomialRingElement; RANK]; RANK], BadRejectionSamplingRandomnessError> {
-    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
-
-    for i in 0..RANK {
-        for j in 0..RANK {
-            seed[32] = i.as_u8();
-            seed[33] = j.as_u8();
-
-            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
-
-            // A[i][j] = A_transpose[j][i]
-            if transpose {
-                a_transpose[j][i] = sample_from_uniform_distribution(xof_bytes)?;
-            } else {
-                a_transpose[i][j] = sample_from_uniform_distribution(xof_bytes)?;
-            }
-        }
-    }
-    Ok(a_transpose)
-}
-
-#[inline(always)]
-fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
-    let mut domain_separator = 0;
-    let mut r_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..r_as_ntt.len() {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
-
-        let r = sample_from_binomial_distribution_with_2_coins(prf_output);
-        r_as_ntt[i] = ntt_representation(r);
-    }
-    (r_as_ntt, domain_separator)
-}
 
 fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
     let mut out = Vec::new();
