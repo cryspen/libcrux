@@ -3,11 +3,10 @@ use crate::kem::kyber768::parameters::{KyberPolynomialRingElement, RANK};
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 
 pub(crate) mod kyber_polynomial_ring_element_mod {
-    use crate::kem::kyber768::utils::field::FieldElement;
-
     use crate::kem::kyber768::parameters::{
-        self, KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
+        self, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
     };
+    use crate::kem::kyber768::field_element::KyberFieldElement;
 
     const ZETAS: [u16; 128] = [
         1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746,
@@ -40,10 +39,9 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         for layer in NTT_LAYERS.iter().rev() {
             for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer) {
                 zeta_i += 1;
-                let zeta: KyberFieldElement = ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
-                    let t = zeta * re[j + layer];
+                    let t = re[j + layer] * ZETAS[zeta_i];
                     re[j + layer] = re[j] - t;
                     re[j] = re[j] + t;
                 }
@@ -53,8 +51,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     }
 
     pub fn invert_ntt(re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
-        let inverse_of_2: KyberFieldElement =
-            KyberFieldElement::new((parameters::FIELD_MODULUS + 1) / 2);
+        let inverse_of_2: u16 = (parameters::FIELD_MODULUS + 1) >> 1;
 
         let mut out = KyberPolynomialRingElement::ZERO;
         for i in 0..re.len() {
@@ -66,12 +63,11 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         for layer in NTT_LAYERS {
             for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - layer)).step_by(2 * layer) {
                 zeta_i -= 1;
-                let zeta: KyberFieldElement = ZETAS[zeta_i].into();
 
                 for j in offset..offset + layer {
                     let a_minus_b = out[j + layer] - out[j];
-                    out[j] = inverse_of_2 * (out[j] + out[j + layer]);
-                    out[j + layer] = inverse_of_2 * zeta * a_minus_b;
+                    out[j] = (out[j] + out[j + layer]) * inverse_of_2;
+                    out[j + layer] = (a_minus_b * ZETAS[zeta_i]) * inverse_of_2;
                 }
             }
         }
@@ -79,23 +75,27 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         out
     }
 
+    fn ntt_multiply_binomials((a0, a1): (KyberFieldElement, KyberFieldElement),
+                              (b0, b1): (KyberFieldElement, KyberFieldElement),
+                              zeta: u16) -> (KyberFieldElement, KyberFieldElement) {
+            ((a0 * b0) + ((a1 * b1) * zeta),
+             (a0 * b1) + (a1 * b0))
+    }
+
     pub fn ntt_multiply(
         left: &KyberPolynomialRingElement,
-        other: &KyberPolynomialRingElement,
+        right: &KyberPolynomialRingElement,
     ) -> KyberPolynomialRingElement {
         let mut out = KyberPolynomialRingElement::ZERO;
 
-        for i in (0..COEFFICIENTS_IN_RING_ELEMENT).step_by(2) {
-            let mod_root: KyberFieldElement = MOD_ROOTS[i / 2].into();
+        for i in (0..out.coefficients.len()).step_by(4) {
+            let product = ntt_multiply_binomials((left[i], left[i+1]), (right[i], right[i + 1]), MOD_ROOTS[i / 2]);
+            out[i] = product.0;
+            out[i + 1] = product.1;
 
-            let a0_times_b0 = left[i] * other[i];
-            let a1_times_b1 = left[i + 1] * other[i + 1];
-
-            let a0_times_b1 = left[i + 1] * other[i];
-            let a1_times_b0 = left[i] * other[i + 1];
-
-            out[i] = a0_times_b0 + (a1_times_b1 * mod_root);
-            out[i + 1] = a0_times_b1 + a1_times_b0;
+            let product = ntt_multiply_binomials((left[i + 2], left[i + 3]), (right[i + 2], right[i + 3]), MOD_ROOTS[(i + 2) / 2]);
+            out[i + 2] = product.0;
+            out[i + 3] = product.1;
         }
         out
     }
