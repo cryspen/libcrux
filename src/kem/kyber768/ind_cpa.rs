@@ -10,7 +10,7 @@ use crate::kem::kyber768::{
     },
     parameters::{
         hash_functions::{G, H, PRF, XOF},
-        KyberPolynomialRingElement, BITS_PER_RING_ELEMENT, BYTES_PER_RING_ELEMENT,
+        KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT,
         COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
         CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
         CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE,
@@ -198,13 +198,13 @@ pub(crate) fn encrypt(
     randomness: &[u8; 32],
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
-    let mut t_as_ntt_ring_element_bytes = public_key.chunks(BITS_PER_RING_ELEMENT / 8);
+    let mut t_as_ntt_ring_element_bytes = public_key.chunks(BYTES_PER_RING_ELEMENT);
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
     for i in 0..t_as_ntt.len() {
         t_as_ntt[i] = deserialize_little_endian_12(
             t_as_ntt_ring_element_bytes.next().expect(
                 "t_as_ntt_ring_element_bytes should have enough bytes to deserialize to t_as_ntt",
-            ).try_into().unwrap(),
+            ).into_array(),
         );
     }
 
@@ -284,21 +284,21 @@ pub(crate) fn decrypt(
     for (i, u_bytes) in
         (0..u_as_ntt.len()).zip(ciphertext.chunks((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8))
     {
-        let u = deserialize_little_endian_10(u_bytes.try_into().unwrap());
+        let u = deserialize_little_endian_10(u_bytes.into_array());
         u_as_ntt[i] = ntt_representation(decompress(u, 10));
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = decompress(
-        deserialize_little_endian_4(ciphertext[VECTOR_U_SIZE..].try_into().unwrap()),
+        deserialize_little_endian_4(ciphertext[VECTOR_U_SIZE..].into_array()),
         VECTOR_V_COMPRESSION_FACTOR,
     );
 
     // sˆ := Decode_12(sk)
-    let mut secret_as_ntt_ring_element_bytes = secret_key.chunks(BITS_PER_RING_ELEMENT / 8);
+    let mut secret_as_ntt_ring_element_bytes = secret_key.chunks(BYTES_PER_RING_ELEMENT);
     for i in 0..secret_as_ntt.len() {
         secret_as_ntt[i] = deserialize_little_endian_12(
-            secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt").try_into().unwrap(),
+            secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt").into_array(),
         );
     }
 
