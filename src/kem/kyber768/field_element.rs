@@ -10,15 +10,15 @@ pub struct KyberFieldElement {
 impl KyberFieldElement {
     pub const MODULUS: u16 = FIELD_MODULUS;
 
-    const BARRETT_SHIFT : u32 = 24; // 2 * ceil(log_2(FIELD_MODULUS))
-    const BARRETT_MULTIPLIER : u32 = (1u32 << Self::BARRETT_SHIFT) / (Self::MODULUS as u32);
+    const BARRETT_SHIFT: u32 = 24; // 2 * ceil(log_2(FIELD_MODULUS))
+    const BARRETT_MULTIPLIER: u32 = (1u32 << Self::BARRETT_SHIFT) / (Self::MODULUS as u32);
 
-    pub fn barrett_reduce(value : u32) -> Self {
-        let product : u64 = u64::from(value) * u64::from(Self::BARRETT_MULTIPLIER);
-        let quotient : u32 = (product >> Self::BARRETT_SHIFT) as u32;
+    pub fn barrett_reduce(value: u32) -> Self {
+        let product: u64 = u64::from(value) * u64::from(Self::BARRETT_MULTIPLIER);
+        let quotient: u32 = (product >> Self::BARRETT_SHIFT) as u32;
 
         let remainder = value - (quotient * u32::from(Self::MODULUS));
-        let remainder : u16 = remainder as u16;
+        let remainder: u16 = remainder as u16;
 
         let remainder_minus_modulus = remainder.wrapping_sub(Self::MODULUS);
 
@@ -43,7 +43,7 @@ impl FieldElement for KyberFieldElement {
 impl From<u8> for KyberFieldElement {
     fn from(number: u8) -> Self {
         Self {
-            value: u16::from(number)
+            value: u16::from(number),
         }
     }
 }

@@ -1,9 +1,10 @@
 use crate::kem::kyber768::parameters::{
-    KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT,
-    COEFFICIENTS_IN_RING_ELEMENT
+    KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
 };
 
-pub fn serialize_little_endian_1(re: KyberPolynomialRingElement) -> [u8; COEFFICIENTS_IN_RING_ELEMENT / 8] {
+pub fn serialize_little_endian_1(
+    re: KyberPolynomialRingElement,
+) -> [u8; COEFFICIENTS_IN_RING_ELEMENT / 8] {
     let mut serialized = [0u8; COEFFICIENTS_IN_RING_ELEMENT / 8];
 
     for (i, chunk) in re.coefficients.chunks_exact(8).enumerate() {
@@ -14,7 +15,9 @@ pub fn serialize_little_endian_1(re: KyberPolynomialRingElement) -> [u8; COEFFIC
 
     serialized
 }
-pub fn deserialize_little_endian_1(serialized: [u8; COEFFICIENTS_IN_RING_ELEMENT / 8]) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_1(
+    serialized: [u8; COEFFICIENTS_IN_RING_ELEMENT / 8],
+) -> KyberPolynomialRingElement {
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
@@ -26,7 +29,9 @@ pub fn deserialize_little_endian_1(serialized: [u8; COEFFICIENTS_IN_RING_ELEMENT
     re
 }
 
-pub fn serialize_little_endian_4(re: KyberPolynomialRingElement) -> [u8; (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8] {
+pub fn serialize_little_endian_4(
+    re: KyberPolynomialRingElement,
+) -> [u8; (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8] {
     let mut serialized = [0u8; (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8];
 
     for (i, chunk) in re.coefficients.chunks_exact(2).enumerate() {
@@ -38,7 +43,9 @@ pub fn serialize_little_endian_4(re: KyberPolynomialRingElement) -> [u8; (COEFFI
 
     serialized
 }
-pub fn deserialize_little_endian_4(serialized: [u8; (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8]) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_4(
+    serialized: [u8; (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8],
+) -> KyberPolynomialRingElement {
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
@@ -49,7 +56,9 @@ pub fn deserialize_little_endian_4(serialized: [u8; (COEFFICIENTS_IN_RING_ELEMEN
     re
 }
 
-pub fn serialize_little_endian_10(re: KyberPolynomialRingElement) -> [u8; (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8] {
+pub fn serialize_little_endian_10(
+    re: KyberPolynomialRingElement,
+) -> [u8; (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8] {
     let mut serialized = [0u8; (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8];
 
     for (i, chunk) in re.coefficients.chunks_exact(4).enumerate() {
@@ -59,15 +68,20 @@ pub fn serialize_little_endian_10(re: KyberPolynomialRingElement) -> [u8; (COEFF
         let coefficient4 = chunk[3].value;
 
         serialized[5 * i] = (coefficient1 & 0xFF) as u8;
-        serialized[5 * i + 1] = ((coefficient2 & 0x3F) as u8) << 2 | ((coefficient1 >> 8) & 0x03) as u8;
-        serialized[5 * i + 2] = ((coefficient3 & 0x0F) as u8) << 4 | ((coefficient2 >> 6) & 0x0F) as u8;
-        serialized[5 * i + 3] = ((coefficient4 & 0x03) as u8) << 6 | ((coefficient3 >> 4) & 0x3F) as u8;
+        serialized[5 * i + 1] =
+            ((coefficient2 & 0x3F) as u8) << 2 | ((coefficient1 >> 8) & 0x03) as u8;
+        serialized[5 * i + 2] =
+            ((coefficient3 & 0x0F) as u8) << 4 | ((coefficient2 >> 6) & 0x0F) as u8;
+        serialized[5 * i + 3] =
+            ((coefficient4 & 0x03) as u8) << 6 | ((coefficient3 >> 4) & 0x3F) as u8;
         serialized[5 * i + 4] = ((coefficient4 >> 2) & 0xFF) as u8;
     }
 
     serialized
 }
-pub fn deserialize_little_endian_10(serialized: [u8; (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8]) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_10(
+    serialized: [u8; (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8],
+) -> KyberPolynomialRingElement {
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks(5).enumerate() {
@@ -100,7 +114,9 @@ pub fn serialize_little_endian_12(re: KyberPolynomialRingElement) -> [u8; BYTES_
 
     serialized
 }
-pub fn deserialize_little_endian_12(serialized: [u8; BYTES_PER_RING_ELEMENT]) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_12(
+    serialized: [u8; BYTES_PER_RING_ELEMENT],
+) -> KyberPolynomialRingElement {
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(3).enumerate() {

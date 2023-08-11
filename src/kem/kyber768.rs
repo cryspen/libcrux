@@ -1,11 +1,11 @@
 mod compress;
+mod field_element;
 mod ind_cpa;
 mod ntt;
 mod parameters;
 mod sampling;
 mod serialize;
 mod utils;
-mod field_element;
 
 use utils::{ArrayConversion, UpdatingArray2};
 

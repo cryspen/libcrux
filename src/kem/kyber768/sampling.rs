@@ -1,8 +1,8 @@
+use crate::kem::kyber768::field_element::KyberFieldElement;
 use crate::kem::kyber768::{
     parameters::{self, KyberPolynomialRingElement},
     BadRejectionSamplingRandomnessError,
 };
-use crate::kem::kyber768::field_element::KyberFieldElement;
 
 pub fn sample_from_uniform_distribution(
     randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
@@ -21,11 +21,11 @@ pub fn sample_from_uniform_distribution(
         let d2 = (b1 / 16) + (16 * b2);
 
         if d1 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = KyberFieldElement { value : d1 };
+            out[sampled_coefficients] = KyberFieldElement { value: d1 };
             sampled_coefficients += 1
         }
         if d2 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = KyberFieldElement { value : d2 };
+            out[sampled_coefficients] = KyberFieldElement { value: d2 };
             sampled_coefficients += 1;
         }
 
@@ -37,9 +37,7 @@ pub fn sample_from_uniform_distribution(
     Err(BadRejectionSamplingRandomnessError)
 }
 
-pub fn sample_from_binomial_distribution_2(
-    randomness: [u8; 128],
-) -> KyberPolynomialRingElement {
+pub fn sample_from_binomial_distribution_2(randomness: [u8; 128]) -> KyberPolynomialRingElement {
     let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
