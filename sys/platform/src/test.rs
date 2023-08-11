@@ -7,6 +7,9 @@ fn dump_features() {
     eprintln!("x25519\t\t{:?}", x25519_cpu_support());
     eprintln!("bmi2 & adx\t{:?}", bmi2_adx_support());
     eprintln!("aes\t\t{:?}", aes_ni_support());
+    eprintln!("advSimd\t\t{:?}", adv_simd_support());
+    eprintln!("pmull\t\t{:?}", pmull_support());
+    eprintln!("sha256\t\t{:?}", sha256_support());
 }
 
 // XXX[windows]: Something is running into a STATUS_ACCESS_VIOLATION here.

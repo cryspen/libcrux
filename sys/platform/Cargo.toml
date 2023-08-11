@@ -1,5 +1,5 @@
 [package]
-name = "libcrux-platform"
+name = "libcrux_platform"
 version = "0.1.0"
 edition = "2021"
 

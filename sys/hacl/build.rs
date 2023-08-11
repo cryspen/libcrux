@@ -1,19 +1,24 @@
 #[cfg(not(windows))]
 extern crate bindgen;
 
-use std::{env, path::Path, process::Command};
+use std::{env, path::Path};
 
 macro_rules! svec {
     ($($x:expr),*$(,)?) => (vec![$($x.to_string()),*]);
 }
 
-fn includes(home_dir: &Path) -> Vec<String> {
+fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
     let c_path = home_dir.join("c");
     vec![
-        format!("-I{}", c_path.join("include").display()),
-        format!("-I{}", c_path.join("karamel").join("include").display()),
+        format!("{}{}", include_str, c_path.join("include").display()),
         format!(
-            "-I{}",
+            "{}{}",
+            include_str,
+            c_path.join("karamel").join("include").display()
+        ),
+        format!(
+            "{}{}",
+            include_str,
             c_path
                 .join("karamel")
                 .join("krmllib")
@@ -27,7 +32,7 @@ fn includes(home_dir: &Path) -> Vec<String> {
 fn append_simd128_flags(flags: &mut Vec<String>) {
     // Platform detection
     if cfg!(simd128) {
-        flags.push("-DSIMD128".to_string());
+        panic!("fooo");
         if cfg!(any(target_arch = "x86", target_arch = "x86_64")) {
             flags.push("-msse4.1".to_string());
             flags.push("-msse4.2".to_string());
@@ -39,14 +44,13 @@ fn append_simd128_flags(flags: &mut Vec<String>) {
 fn append_simd256_flags(flags: &mut Vec<String>) {
     // Platform detection
     if cfg!(simd256) {
-        flags.push("-DSIMD256".to_string());
         flags.push("-mavx2".to_string());
     }
 }
 
 #[cfg(not(windows))]
 fn create_bindings(home_dir: &Path) {
-    let mut clang_args = includes(home_dir);
+    let mut clang_args = includes(home_dir, "-I");
     append_simd128_flags(&mut clang_args);
     append_simd256_flags(&mut clang_args);
 
@@ -95,27 +99,24 @@ fn copy_files(home_path: &Path, out_path: &Path) {
     fs_extra::dir::copy(home_path.join("c"), out_path, &options).unwrap();
 }
 
-fn compile_files(files: &[String], out_path: &Path, args: &[String]) {
-    let mut clang_args = includes(out_path);
+fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[String]) {
+    let src_prefix = out_path.join("c").join("src");
 
-    clang_args.push("-O3".to_string());
-    clang_args.push("-c".to_string());
-    clang_args.extend_from_slice(args);
+    let mut build = cc::Build::new();
+    build
+        .files(files.iter().map(|fname| src_prefix.join(fname)))
+        // .warnings_into_errors(true)
+        .no_default_flags(true);
 
-    let mut build_cmd = Command::new("clang");
-    let mut build_args = clang_args;
-    build_args.extend_from_slice(files);
-    println!(" >>> {}", out_path.join("c").join("src").display());
-    println!(" >>> {}", build_args.join(" "));
-    build_cmd
-        .current_dir(out_path.join("c").join("src"))
-        .args(&build_args);
-    println!(" >>> build_cmd: {:?}", build_cmd);
-    println!("     current dir: {:?}", build_cmd.get_current_dir());
-    let build_status = build_cmd.status().expect("Failed to run build.");
-    println!(" >>> build status: {:?}", build_status);
-    println!(" >>> out {:?}", out_path);
-    assert!(build_status.success());
+    for include in includes(out_path, "") {
+        build.include(include);
+    }
+    build.flag("-O3").flag("-c");
+    for arg in args {
+        build.flag(arg);
+    }
+
+    build.compile(library_name);
 }
 
 fn build(out_path: &Path) {
@@ -146,7 +147,7 @@ fn build(out_path: &Path) {
 
         let mut simd128_flags = vec![];
         append_simd128_flags(&mut simd128_flags);
-        compile_files(&files128, out_path, &simd128_flags);
+        compile_files("libhacl_128.a", &files128, out_path, &simd128_flags);
     }
     if cfg!(simd256) {
         let files256 = svec![
@@ -159,28 +160,10 @@ fn build(out_path: &Path) {
 
         let mut simd256_flags = vec![];
         append_simd256_flags(&mut simd256_flags);
-        compile_files(&files256, out_path, &simd256_flags);
+        compile_files("libhacl_256.a", &files256, out_path, &simd256_flags);
     }
 
-    let mut object_files = vec![];
-
-    compile_files(&files, out_path, &[]);
-    for file in all_files {
-        object_files.push(Path::new(&file).with_extension("o"));
-    }
-
-    // Link
-    let mut build_cmd = Command::new("ar");
-    build_cmd
-        .current_dir(out_path.join("c").join("src"))
-        .args(&["-r", &out_path.join("libhacl.a").display().to_string()])
-        .args(&object_files);
-    println!(" >>> build_cmd: {:?}", build_cmd);
-    println!("     current dir: {:?}", build_cmd.get_current_dir());
-
-    let build_status = build_cmd.status().expect("Failed to link.");
-    println!("{:?}", build_status);
-    assert!(build_status.success());
+    compile_files("libhacl.a", &files, out_path, &[]);
 }
 
 fn main() {
@@ -189,6 +172,11 @@ fn main() {
     let home_path = Path::new(&home_dir);
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_path = Path::new(&out_dir);
+
+    // Check platform support
+    let simd128 = libcrux_platform::simd128_support();
+    let simd256 = libcrux_platform::simd256_support();
+    let aes_ni = libcrux_platform::aes_ni_support();
 
     // Set re-run trigger for all of c
     println!("cargo:rerun-if-changed=c");
@@ -210,6 +198,12 @@ fn main() {
     // Link hacl library.
     let mode = "static";
     println!("cargo:rustc-link-lib={}={}", mode, library_name);
+    if cfg!(simd128) {
+        println!("cargo:rustc-link-lib={}={}", mode, "hacl_128");
+    }
+    if cfg!(simd256) {
+        println!("cargo:rustc-link-lib={}={}", mode, "hacl_256");
+    }
     println!("cargo:rustc-link-search=native={}", out_path.display());
     println!("cargo:lib={}", out_path.display());
 }

@@ -93,11 +93,11 @@ pub(super) fn init() {
         return;
     }
     // XXX[no_std]: no good way to do this in no_std
-    let _ = std::panic::catch_unwind(|| {
-        // If there's no CPU ID because we're in SGX or whatever other reason,
-        // we'll consider the hw detection as initialized but always return false.
-        sysctl();
-    });
+    // let _ = std::panic::catch_unwind(|| {
+    // If there's no CPU ID because we're in SGX or whatever other reason,
+    // we'll consider the hw detection as initialized but always return false.
+    sysctl();
+    // });
     unsafe {
         INITIALIZED = true;
     }
