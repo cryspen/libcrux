@@ -9,7 +9,7 @@
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64)
-// We always asume inline assembly for now
+// We always assume inline assembly for now
 #define HACL_CAN_COMPILE_INLINE_ASM 1
 #include "Hacl_Curve25519_64.h"
 #endif

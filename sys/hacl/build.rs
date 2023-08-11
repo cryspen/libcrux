@@ -30,29 +30,26 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
 }
 
 fn append_simd128_flags(flags: &mut Vec<String>) {
-    // Platform detection
-    if cfg!(simd128) {
-        panic!("fooo");
-        if cfg!(any(target_arch = "x86", target_arch = "x86_64")) {
-            flags.push("-msse4.1".to_string());
-            flags.push("-msse4.2".to_string());
-            flags.push("-mavx".to_string());
-        }
+    if cfg!(any(target_arch = "x86", target_arch = "x86_64")) {
+        flags.push("-msse4.1".to_string());
+        flags.push("-msse4.2".to_string());
+        flags.push("-mavx".to_string());
     }
 }
 
 fn append_simd256_flags(flags: &mut Vec<String>) {
-    // Platform detection
-    if cfg!(simd256) {
-        flags.push("-mavx2".to_string());
-    }
+    flags.push("-mavx2".to_string());
 }
 
 #[cfg(not(windows))]
-fn create_bindings(home_dir: &Path) {
+fn create_bindings(platform: Platform, home_dir: &Path) {
     let mut clang_args = includes(home_dir, "-I");
-    append_simd128_flags(&mut clang_args);
-    append_simd256_flags(&mut clang_args);
+    if platform.simd128 {
+        append_simd128_flags(&mut clang_args);
+    }
+    if platform.simd256 {
+        append_simd256_flags(&mut clang_args);
+    }
 
     let bindings = bindgen::Builder::default()
         // Header to wrap HACL headers
@@ -99,12 +96,19 @@ fn copy_files(home_path: &Path, out_path: &Path) {
     fs_extra::dir::copy(home_path.join("c"), out_path, &options).unwrap();
 }
 
-fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[String]) {
+fn compile_files(
+    library_name: &str,
+    files: &[String],
+    out_path: &Path,
+    args: &[String],
+    defines: &[(&str, &str)],
+) {
     let src_prefix = out_path.join("c").join("src");
 
     let mut build = cc::Build::new();
     build
         .files(files.iter().map(|fname| src_prefix.join(fname)))
+        // XXX: There are too many warnings for now
         // .warnings_into_errors(true)
         .no_default_flags(true);
 
@@ -115,11 +119,14 @@ fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[
     for arg in args {
         build.flag(arg);
     }
+    for define in defines {
+        build.define(define.0, define.1);
+    }
 
     build.compile(library_name);
 }
 
-fn build(out_path: &Path) {
+fn build(platform: Platform, out_path: &Path) {
     let files = svec![
         "Hacl_Chacha20.c",
         "Hacl_Chacha20Poly1305_32.c",
@@ -133,37 +140,62 @@ fn build(out_path: &Path) {
         "Lib_Memzero0.c",
         "Hacl_Hash_Blake2.c",
     ];
-    let mut all_files = files.clone();
+    let mut defines = vec![];
 
     // Platform detection
-    if cfg!(simd128) {
+    if platform.simd128 {
         let files128 = svec![
             "Hacl_Chacha20Poly1305_128.c",
             "Hacl_Chacha20_Vec128.c",
             "Hacl_Poly1305_128.c",
             "Hacl_Hash_Blake2s_128.c",
         ];
-        all_files.extend_from_slice(&files128);
+        defines.append(&mut vec![("HACL_CAN_COMPILE_VEC128", "1")]);
 
         let mut simd128_flags = vec![];
         append_simd128_flags(&mut simd128_flags);
-        compile_files("libhacl_128.a", &files128, out_path, &simd128_flags);
+        compile_files(
+            "libhacl_128.a",
+            &files128,
+            out_path,
+            &simd128_flags,
+            &defines,
+        );
     }
-    if cfg!(simd256) {
+    if platform.simd256 {
         let files256 = svec![
             "Hacl_Chacha20Poly1305_256.c",
             "Hacl_Chacha20_Vec256.c",
             "Hacl_Poly1305_256.c",
             "Hacl_Hash_Blake2b_256.c",
         ];
-        all_files.extend_from_slice(&files256);
+        defines.append(&mut vec![("HACL_CAN_COMPILE_VEC256", "1")]);
 
         let mut simd256_flags = vec![];
         append_simd256_flags(&mut simd256_flags);
-        compile_files("libhacl_256.a", &files256, out_path, &simd256_flags);
+        compile_files(
+            "libhacl_256.a",
+            &files256,
+            out_path,
+            &simd256_flags,
+            &defines,
+        );
     }
 
-    compile_files("libhacl.a", &files, out_path, &[]);
+    compile_files("libhacl.a", &files, out_path, &[], &defines);
+}
+
+#[derive(Clone, Copy, Debug)]
+#[allow(dead_code)]
+struct Platform {
+    simd128: bool,
+    simd256: bool,
+    x25519: bool,
+    bmi2_adx_support: bool,
+    aes_ni: bool,
+    pmull: bool,
+    adv_simd: bool,
+    sha256: bool,
 }
 
 fn main() {
@@ -174,9 +206,16 @@ fn main() {
     let out_path = Path::new(&out_dir);
 
     // Check platform support
-    let simd128 = libcrux_platform::simd128_support();
-    let simd256 = libcrux_platform::simd256_support();
-    let aes_ni = libcrux_platform::aes_ni_support();
+    let platform = Platform {
+        simd128: libcrux_platform::simd128_support(),
+        simd256: libcrux_platform::simd256_support(),
+        aes_ni: libcrux_platform::aes_ni_support(),
+        x25519: libcrux_platform::x25519_support(),
+        bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
+        pmull: libcrux_platform::pmull_support(),
+        adv_simd: libcrux_platform::adv_simd_support(),
+        sha256: libcrux_platform::sha256_support(),
+    };
 
     // Set re-run trigger for all of c
     println!("cargo:rerun-if-changed=c");
@@ -187,21 +226,21 @@ fn main() {
     eprintln!(" >>> out {:?}", out_path);
 
     // Build the C files
-    build(out_path);
+    build(platform, out_path);
 
     // Set library name to look up
     let library_name = "hacl";
 
     // Generate new bindings. This is a no-op on Windows.
-    create_bindings(home_path);
+    create_bindings(platform, home_path);
 
     // Link hacl library.
     let mode = "static";
     println!("cargo:rustc-link-lib={}={}", mode, library_name);
-    if cfg!(simd128) {
+    if platform.simd128 {
         println!("cargo:rustc-link-lib={}={}", mode, "hacl_128");
     }
-    if cfg!(simd256) {
+    if platform.simd256 {
         println!("cargo:rustc-link-lib={}={}", mode, "hacl_256");
     }
     println!("cargo:rustc-link-search=native={}", out_path.display());

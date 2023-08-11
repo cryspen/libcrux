@@ -48,13 +48,13 @@ pub fn simd256_support() -> bool {
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-pub fn x25519_cpu_support() -> bool {
+pub fn x25519_support() -> bool {
     cpu_id::supported(Feature::bmi2) && cpu_id::supported(Feature::adx)
 }
 
 #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
 #[allow(unused)]
-pub fn x25519_cpu_support() -> bool {
+pub fn x25519_support() -> bool {
     false
 }
 
