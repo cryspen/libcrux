@@ -38,10 +38,6 @@ impl FieldElement for KyberFieldElement {
     fn new(number: u16) -> Self {
         Self::barrett_reduce(u32::from(number))
     }
-
-    fn nth_bit_little_endian(&self, n: usize) -> u8 {
-        ((self.value >> n) & 1) as u8
-    }
 }
 
 impl From<u8> for KyberFieldElement {

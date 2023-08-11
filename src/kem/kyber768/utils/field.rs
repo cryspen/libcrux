@@ -13,5 +13,4 @@ pub trait FieldElement:
     const ZERO: Self;
 
     fn new(number: u16) -> Self;
-    fn nth_bit_little_endian(&self, n: usize) -> u8;
 }
