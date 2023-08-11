@@ -1,4 +1,3 @@
-pub(crate) mod bit_vector;
 pub(crate) mod field;
 pub(crate) mod ring;
 

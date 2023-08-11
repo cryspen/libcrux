@@ -1,9 +1,7 @@
 use crate::kem::kyber768::parameters::{
-    KyberPolynomialRingElement, BITS_PER_COEFFICIENT, BYTES_PER_RING_ELEMENT,
+    KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT,
     COEFFICIENTS_IN_RING_ELEMENT
 };
-
-use crate::kem::kyber768::field_element::KyberFieldElement;
 
 pub fn serialize_little_endian_1(re: KyberPolynomialRingElement) -> [u8; COEFFICIENTS_IN_RING_ELEMENT / 8] {
     let mut serialized = [0u8; COEFFICIENTS_IN_RING_ELEMENT / 8];
