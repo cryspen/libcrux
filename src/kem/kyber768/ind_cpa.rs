@@ -204,7 +204,7 @@ pub(crate) fn encrypt(
         t_as_ntt[i] = deserialize_little_endian_12(
             t_as_ntt_ring_element_bytes.next().expect(
                 "t_as_ntt_ring_element_bytes should have enough bytes to deserialize to t_as_ntt",
-            ).into_array(),
+            ),
         );
     }
 
@@ -252,7 +252,7 @@ pub(crate) fn encrypt(
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element = deserialize_little_endian_1(message);
+    let message_as_ring_element = deserialize_little_endian_1(&message);
     let v = invert_ntt(multiply_row_by_column(&t_as_ntt, &r_as_ntt))
         + error_2
         + decompress(message_as_ring_element, 1);
@@ -284,13 +284,13 @@ pub(crate) fn decrypt(
     for (i, u_bytes) in
         (0..u_as_ntt.len()).zip(ciphertext.chunks((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8))
     {
-        let u = deserialize_little_endian_10(u_bytes.into_array());
+        let u = deserialize_little_endian_10(u_bytes);
         u_as_ntt[i] = ntt_representation(decompress(u, 10));
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = decompress(
-        deserialize_little_endian_4(ciphertext[VECTOR_U_SIZE..].into_array()),
+        deserialize_little_endian_4(&ciphertext[VECTOR_U_SIZE..]),
         VECTOR_V_COMPRESSION_FACTOR,
     );
 
@@ -298,7 +298,7 @@ pub(crate) fn decrypt(
     let mut secret_as_ntt_ring_element_bytes = secret_key.chunks(BYTES_PER_RING_ELEMENT);
     for i in 0..secret_as_ntt.len() {
         secret_as_ntt[i] = deserialize_little_endian_12(
-            secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt").into_array(),
+            secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt"),
         );
     }
 
