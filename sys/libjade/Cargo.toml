@@ -12,6 +12,8 @@ log = "0.4"
 [build-dependencies]
 libc = { version = "0.2", default-features = false }
 fs_extra = "1.2"
+cc = { version = "1.0", features = ["parallel"] }
+libcrux_platform = { path = "../platform" }
 
 [target.'cfg(not(windows))'.build-dependencies]
 bindgen = "0.66"
