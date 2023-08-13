@@ -19,7 +19,7 @@ fn dump_features() {
 ))]
 #[test]
 fn dump_raw() {
-    use super::cpuid::{supported, Feature};
+    use super::x86::{supported, Feature};
     eprintln!("mmx\t\t{:?}", supported(Feature::mmx));
     eprintln!("sse\t\t{:?}", supported(Feature::sse));
     eprintln!("sse2\t\t{:?}", supported(Feature::sse2));
@@ -59,7 +59,7 @@ fn dump_raw() {
 ))]
 #[test]
 fn cpuid() {
-    use super::cpuid::supported;
+    use super::x86::supported;
     use std::time::Instant;
 
     let now = Instant::now();

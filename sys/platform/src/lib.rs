@@ -73,6 +73,11 @@ pub fn pmull_support() -> bool {
         pmull()
     }
 
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    {
+        cpu_id::supported(Feature::pclmulqdq)
+    }
+
     #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
     false
 }
@@ -86,7 +91,14 @@ pub fn adv_simd_support() -> bool {
     }
 
     #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
-    false
+    {
+        false
+    }
+
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    {
+        false
+    }
 }
 
 /// Check whether AES is supported
@@ -98,7 +110,18 @@ pub fn aes_ni_support() -> bool {
     }
 
     #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
-    false
+    {
+        false
+    }
+
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    {
+        cpu_id::supported(Feature::avx)
+            && cpu_id::supported(Feature::sse)
+            && cpu_id::supported(Feature::aes)
+            && cpu_id::supported(Feature::pclmulqdq)
+            && cpu_id::supported(Feature::movbe)
+    }
 }
 
 /// Check whether SHA256 is supported
@@ -110,32 +133,15 @@ pub fn sha256_support() -> bool {
     }
 
     #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
-    false
-}
-
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-mod x86 {
-    /// Check whether p(cl)mull is supported
-    pub fn pmull_support() -> bool {
-        cpu_id::supported(Feature::pclmulqdq)
-    }
-
-    /// Check whether advanced SIMD features are supported
-    pub fn adv_simd_support() -> bool {
+    {
         false
     }
 
-    /// Check whether AES is supported
-    pub fn aes_ni_support() -> bool {
-        cpu_id::supported(Feature::avx)
-            && cpu_id::supported(Feature::sse)
-            && cpu_id::supported(Feature::aes)
-            && cpu_id::supported(Feature::pclmulqdq)
-            && cpu_id::supported(Feature::movbe)
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    {
+        cpu_id::supported(Feature::sha)
     }
 }
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-pub use x86::*;
 
 #[cfg(not(any(
     target_arch = "x86",

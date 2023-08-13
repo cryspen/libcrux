@@ -7,6 +7,7 @@ use core::arch::x86_64::{CpuidResult, __cpuid, __cpuid_count};
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 pub(super) enum Feature {
     mmx,
     sse,
@@ -126,13 +127,13 @@ pub(super) fn init() {
     }
 
     // XXX[no_std]: no good way to do this in no_std
-    std::panic::catch_unwind(|| {
-        // If there's no CPU ID because we're in SGX or whatever other reason,
-        // we'll consider the hw detection as initialized but always return false.
-        unsafe {
-            CPU_ID = [cpuid(1), cpuid_count(7, 0)];
-        }
-    });
+    // std::panic::catch_unwind(|| {
+    // If there's no CPU ID because we're in SGX or whatever other reason,
+    // we'll consider the hw detection as initialized but always return false.
+    unsafe {
+        CPU_ID = [cpuid(1), cpuid_count(7, 0)];
+    }
+    // });
     unsafe {
         INITIALIZED = true;
     }
