@@ -4,7 +4,7 @@ use super::*;
 fn dump_features() {
     eprintln!("simd128\t\t{:?}", simd128_support());
     eprintln!("simd256\t\t{:?}", simd256_support());
-    eprintln!("x25519\t\t{:?}", x25519_cpu_support());
+    eprintln!("x25519\t\t{:?}", x25519_support());
     eprintln!("bmi2 & adx\t{:?}", bmi2_adx_support());
     eprintln!("aes\t\t{:?}", aes_ni_support());
     eprintln!("advSimd\t\t{:?}", adv_simd_support());
