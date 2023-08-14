@@ -62,18 +62,16 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .allowlist_function("Hacl_Hash_SHA2.*")
         .allowlist_function("Hacl_Streaming_SHA2.*")
         .allowlist_function("Hacl_SHA3.*")
-        .allowlist_function("Hacl_Streaming_SHA3.*")
+        .allowlist_function("Hacl_Hash_SHA3.*")
         .allowlist_function("Hacl_Blake2.*")
-        // .allowlist_var("Spec_.*")
+        .allowlist_function("Hacl_Streaming_Keccak.*")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
         // Block everything we don't need or define ourselves.
         .blocklist_type("__.*")
-        // XXX: These functions can't be used right now in Rust
-        .blocklist_function("Hacl_Hash_SHA2_update_.*_384")
-        .blocklist_function("Hacl_Hash_SHA2_update_.*_512")
-        .blocklist_function("Hacl_Hash_SHA2_finish_.*_384")
-        .blocklist_function("Hacl_Hash_SHA2_finish_.*_512")
+        // XXX: These functions use uint128 in the API, which is not FFI safe
+        .blocklist_function("Hacl_Blake2b_32_blake2b_update_multi")
+        .blocklist_function("Hacl_Blake2b_32_blake2b_update_last")
         // Disable tests to avoid warnings and keep it portable
         .layout_tests(false)
         // Generate bindings
@@ -111,7 +109,9 @@ fn compile_files(
         .files(files.iter().map(|fname| src_prefix.join(fname)))
         // XXX: There are too many warnings for now
         // .warnings_into_errors(true)
-        .no_default_flags(true);
+        .warnings(true)
+        .extra_warnings(true);
+        // .no_default_flags(true);
 
     for include in includes(out_path, "") {
         build.include(include);
@@ -129,27 +129,61 @@ fn compile_files(
 
 fn build(platform: Platform, out_path: &Path) {
     let files = svec![
-        "Hacl_Chacha20.c",
-        "Hacl_Chacha20Poly1305_32.c",
+        "Hacl_NaCl.c",
+        "Hacl_Salsa20.c",
         "Hacl_Poly1305_32.c",
         "Hacl_Curve25519_51.c",
-        "Hacl_Curve25519_64.c",
+        // "Hacl_Gf128_CT64.c",
+        // "Hacl_AES_128_CTR32_BitSlice.c",
+        // "Hacl_AES_128_GCM_CT64.c",
+        // "Hacl_AES_256_CTR32_BitSlice.c",
+        // "Hacl_AES_256_GCM_CT64.c",
+        "Hacl_HMAC_DRBG.c",
+        "Hacl_HMAC.c",
         "Hacl_Hash_SHA2.c",
-        "Hacl_Streaming_SHA2.c",
-        "Hacl_SHA3.c",
-        "Hacl_Streaming_SHA3.c",
-        "Lib_Memzero0.c",
         "Hacl_Hash_Blake2.c",
+        "Lib_Memzero0.c",
+        "Hacl_Ed25519.c",
+        "Hacl_EC_Ed25519.c",
+        "Hacl_Hash_Base.c",
+        "Hacl_Streaming_Blake2.c",
+        "Hacl_Bignum256_32.c",
+        "Hacl_Bignum.c",
+        "Hacl_Bignum256.c",
+        "Hacl_Bignum32.c",
+        "Hacl_Bignum4096_32.c",
+        "Hacl_GenericField32.c",
+        "Hacl_Chacha20Poly1305_32.c",
+        "Hacl_Chacha20.c",
+        "Hacl_Streaming_Poly1305_32.c",
+        "Hacl_Chacha20_Vec32.c",
+        "Hacl_P256.c",
+        "Hacl_K256_ECDSA.c",
+        "Hacl_EC_K256.c",
+        "Hacl_FFDHE.c",
+        "Hacl_Hash_SHA3.c",
+        "Hacl_Hash_SHA1.c",
+        "Hacl_Hash_MD5.c",
+        "Hacl_HKDF.c",
+        "Hacl_RSAPSS.c",
     ];
     let mut defines = vec![];
 
     // Platform detection
     if platform.simd128 {
         let files128 = svec![
-            "Hacl_Chacha20Poly1305_128.c",
-            "Hacl_Chacha20_Vec128.c",
-            "Hacl_Poly1305_128.c",
             "Hacl_Hash_Blake2s_128.c",
+            "Hacl_Streaming_Blake2s_128.c",
+            "Hacl_Bignum4096.c",
+            "Hacl_Bignum64.c",
+            "Hacl_GenericField64.c",
+            "Hacl_Chacha20Poly1305_128.c",
+            "Hacl_Poly1305_128.c",
+            "Hacl_Chacha20_Vec128.c",
+            "Hacl_Streaming_Poly1305_128.c",
+            "Hacl_SHA2_Vec128.c",
+            "Hacl_HKDF_Blake2s_128.c",
+            "Hacl_HMAC_Blake2s_128.c",
         ];
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC128", "1")]);
 
@@ -165,10 +199,15 @@ fn build(platform: Platform, out_path: &Path) {
     }
     if platform.simd256 {
         let files256 = svec![
-            "Hacl_Chacha20Poly1305_256.c",
-            "Hacl_Chacha20_Vec256.c",
-            "Hacl_Poly1305_256.c",
             "Hacl_Hash_Blake2b_256.c",
+            "Hacl_Streaming_Blake2b_256.c",
+            "Hacl_Chacha20Poly1305_256.c",
+            "Hacl_Poly1305_256.c",
+            "Hacl_Chacha20_Vec256.c",
+            "Hacl_Streaming_Poly1305_256.c",
+            "Hacl_SHA2_Vec256.c",
+            "Hacl_HKDF_Blake2b_256.c",
+            "Hacl_HMAC_Blake2b_256.c",
         ];
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC256", "1")]);
 

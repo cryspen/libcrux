@@ -1,6 +1,7 @@
 /* MIT License
  *
- * Copyright (c) 2016-2020 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2016-2022 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2022-2023 HACL* Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +25,16 @@
 
 #include "Hacl_HKDF.h"
 
+/**
+Expand pseudorandom key to desired length.
 
-
+@param okm Pointer to `len` bytes of memory where output keying material is written to.
+@param prk Pointer to at least `HashLen` bytes of memory where pseudorandom key is read from. Usually, this points to the output from the extract step.
+@param prklen Length of pseudorandom key.
+@param info Pointer to `infolen` bytes of memory where context and application specific information is read from. Can be a zero-length string.
+@param infolen Length of context and application specific information.
+@param len Length of output keying material.
+*/
 void
 Hacl_HKDF_expand_sha2_256(
   uint8_t *okm,
@@ -75,6 +84,15 @@ Hacl_HKDF_expand_sha2_256(
   }
 }
 
+/**
+Extract a fixed-length pseudorandom key from input keying material.
+
+@param prk Pointer to `HashLen` bytes of memory where pseudorandom key is written to.
+@param salt Pointer to `saltlen` bytes of memory where salt value is read from.
+@param saltlen Length of salt value.
+@param ikm Pointer to `ikmlen` bytes of memory where input keying material is read from.
+@param ikmlen Length of input keying material.
+*/
 void
 Hacl_HKDF_extract_sha2_256(
   uint8_t *prk,
@@ -87,6 +105,96 @@ Hacl_HKDF_extract_sha2_256(
   Hacl_HMAC_compute_sha2_256(prk, salt, saltlen, ikm, ikmlen);
 }
 
+/**
+Expand pseudorandom key to desired length.
+
+@param okm Pointer to `len` bytes of memory where output keying material is written to.
+@param prk Pointer to at least `HashLen` bytes of memory where pseudorandom key is read from. Usually, this points to the output from the extract step.
+@param prklen Length of pseudorandom key.
+@param info Pointer to `infolen` bytes of memory where context and application specific information is read from. Can be a zero-length string.
+@param infolen Length of context and application specific information.
+@param len Length of output keying material.
+*/
+void
+Hacl_HKDF_expand_sha2_384(
+  uint8_t *okm,
+  uint8_t *prk,
+  uint32_t prklen,
+  uint8_t *info,
+  uint32_t infolen,
+  uint32_t len
+)
+{
+  uint32_t tlen = (uint32_t)48U;
+  uint32_t n = len / tlen;
+  uint8_t *output = okm;
+  KRML_CHECK_SIZE(sizeof (uint8_t), tlen + infolen + (uint32_t)1U);
+  uint8_t text[tlen + infolen + (uint32_t)1U];
+  memset(text, 0U, (tlen + infolen + (uint32_t)1U) * sizeof (uint8_t));
+  uint8_t *text0 = text + tlen;
+  uint8_t *tag = text;
+  uint8_t *ctr = text + tlen + infolen;
+  memcpy(text + tlen, info, infolen * sizeof (uint8_t));
+  for (uint32_t i = (uint32_t)0U; i < n; i++)
+  {
+    ctr[0U] = (uint8_t)(i + (uint32_t)1U);
+    if (i == (uint32_t)0U)
+    {
+      Hacl_HMAC_compute_sha2_384(tag, prk, prklen, text0, infolen + (uint32_t)1U);
+    }
+    else
+    {
+      Hacl_HMAC_compute_sha2_384(tag, prk, prklen, text, tlen + infolen + (uint32_t)1U);
+    }
+    memcpy(output + i * tlen, tag, tlen * sizeof (uint8_t));
+  }
+  if (n * tlen < len)
+  {
+    ctr[0U] = (uint8_t)(n + (uint32_t)1U);
+    if (n == (uint32_t)0U)
+    {
+      Hacl_HMAC_compute_sha2_384(tag, prk, prklen, text0, infolen + (uint32_t)1U);
+    }
+    else
+    {
+      Hacl_HMAC_compute_sha2_384(tag, prk, prklen, text, tlen + infolen + (uint32_t)1U);
+    }
+    uint8_t *block = okm + n * tlen;
+    memcpy(block, tag, (len - n * tlen) * sizeof (uint8_t));
+  }
+}
+
+/**
+Extract a fixed-length pseudorandom key from input keying material.
+
+@param prk Pointer to `HashLen` bytes of memory where pseudorandom key is written to.
+@param salt Pointer to `saltlen` bytes of memory where salt value is read from.
+@param saltlen Length of salt value.
+@param ikm Pointer to `ikmlen` bytes of memory where input keying material is read from.
+@param ikmlen Length of input keying material.
+*/
+void
+Hacl_HKDF_extract_sha2_384(
+  uint8_t *prk,
+  uint8_t *salt,
+  uint32_t saltlen,
+  uint8_t *ikm,
+  uint32_t ikmlen
+)
+{
+  Hacl_HMAC_compute_sha2_384(prk, salt, saltlen, ikm, ikmlen);
+}
+
+/**
+Expand pseudorandom key to desired length.
+
+@param okm Pointer to `len` bytes of memory where output keying material is written to.
+@param prk Pointer to at least `HashLen` bytes of memory where pseudorandom key is read from. Usually, this points to the output from the extract step.
+@param prklen Length of pseudorandom key.
+@param info Pointer to `infolen` bytes of memory where context and application specific information is read from. Can be a zero-length string.
+@param infolen Length of context and application specific information.
+@param len Length of output keying material.
+*/
 void
 Hacl_HKDF_expand_sha2_512(
   uint8_t *okm,
@@ -136,6 +244,15 @@ Hacl_HKDF_expand_sha2_512(
   }
 }
 
+/**
+Extract a fixed-length pseudorandom key from input keying material.
+
+@param prk Pointer to `HashLen` bytes of memory where pseudorandom key is written to.
+@param salt Pointer to `saltlen` bytes of memory where salt value is read from.
+@param saltlen Length of salt value.
+@param ikm Pointer to `ikmlen` bytes of memory where input keying material is read from.
+@param ikmlen Length of input keying material.
+*/
 void
 Hacl_HKDF_extract_sha2_512(
   uint8_t *prk,
@@ -148,6 +265,16 @@ Hacl_HKDF_extract_sha2_512(
   Hacl_HMAC_compute_sha2_512(prk, salt, saltlen, ikm, ikmlen);
 }
 
+/**
+Expand pseudorandom key to desired length.
+
+@param okm Pointer to `len` bytes of memory where output keying material is written to.
+@param prk Pointer to at least `HashLen` bytes of memory where pseudorandom key is read from. Usually, this points to the output from the extract step.
+@param prklen Length of pseudorandom key.
+@param info Pointer to `infolen` bytes of memory where context and application specific information is read from. Can be a zero-length string.
+@param infolen Length of context and application specific information.
+@param len Length of output keying material.
+*/
 void
 Hacl_HKDF_expand_blake2s_32(
   uint8_t *okm,
@@ -197,6 +324,15 @@ Hacl_HKDF_expand_blake2s_32(
   }
 }
 
+/**
+Extract a fixed-length pseudorandom key from input keying material.
+
+@param prk Pointer to `HashLen` bytes of memory where pseudorandom key is written to.
+@param salt Pointer to `saltlen` bytes of memory where salt value is read from.
+@param saltlen Length of salt value.
+@param ikm Pointer to `ikmlen` bytes of memory where input keying material is read from.
+@param ikmlen Length of input keying material.
+*/
 void
 Hacl_HKDF_extract_blake2s_32(
   uint8_t *prk,
@@ -209,6 +345,16 @@ Hacl_HKDF_extract_blake2s_32(
   Hacl_HMAC_compute_blake2s_32(prk, salt, saltlen, ikm, ikmlen);
 }
 
+/**
+Expand pseudorandom key to desired length.
+
+@param okm Pointer to `len` bytes of memory where output keying material is written to.
+@param prk Pointer to at least `HashLen` bytes of memory where pseudorandom key is read from. Usually, this points to the output from the extract step.
+@param prklen Length of pseudorandom key.
+@param info Pointer to `infolen` bytes of memory where context and application specific information is read from. Can be a zero-length string.
+@param infolen Length of context and application specific information.
+@param len Length of output keying material.
+*/
 void
 Hacl_HKDF_expand_blake2b_32(
   uint8_t *okm,
@@ -258,6 +404,15 @@ Hacl_HKDF_expand_blake2b_32(
   }
 }
 
+/**
+Extract a fixed-length pseudorandom key from input keying material.
+
+@param prk Pointer to `HashLen` bytes of memory where pseudorandom key is written to.
+@param salt Pointer to `saltlen` bytes of memory where salt value is read from.
+@param saltlen Length of salt value.
+@param ikm Pointer to `ikmlen` bytes of memory where input keying material is read from.
+@param ikmlen Length of input keying material.
+*/
 void
 Hacl_HKDF_extract_blake2b_32(
   uint8_t *prk,

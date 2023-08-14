@@ -1,6 +1,7 @@
 /* MIT License
  *
- * Copyright (c) 2016-2020 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2016-2022 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2022-2023 HACL* Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,7 @@
 
 #include "Hacl_Frodo976.h"
 
+#include "internal/Hacl_Spec.h"
 #include "internal/Hacl_Frodo_KEM.h"
 
 uint32_t Hacl_Frodo976_crypto_bytes = (uint32_t)24U;
@@ -59,6 +61,7 @@ uint32_t Hacl_Frodo976_crypto_kem_keypair(uint8_t *pk, uint8_t *sk)
     r + (uint32_t)15616U,
     e_matrix);
   uint16_t b_matrix[7808U] = { 0U };
+  KRML_CHECK_SIZE(sizeof (uint16_t), (uint32_t)952576U);
   uint16_t a_matrix[952576U] = { 0U };
   Hacl_Impl_Frodo_Params_frodo_gen_matrix(Spec_Frodo_Params_SHAKE128,
     (uint32_t)976U,
@@ -122,6 +125,7 @@ uint32_t Hacl_Frodo976_crypto_kem_enc(uint8_t *ct, uint8_t *ss, uint8_t *pk)
   uint8_t *c1 = ct;
   uint8_t *c2 = ct + (uint32_t)15616U;
   uint16_t bp_matrix[7808U] = { 0U };
+  KRML_CHECK_SIZE(sizeof (uint16_t), (uint32_t)952576U);
   uint16_t a_matrix[952576U] = { 0U };
   Hacl_Impl_Frodo_Params_frodo_gen_matrix(Spec_Frodo_Params_SHAKE128,
     (uint32_t)976U,
@@ -233,6 +237,7 @@ uint32_t Hacl_Frodo976_crypto_kem_dec(uint8_t *ss, uint8_t *ct, uint8_t *sk)
   uint8_t *pk = sk + (uint32_t)24U;
   uint8_t *seed_a = pk;
   uint8_t *b = pk + (uint32_t)16U;
+  KRML_CHECK_SIZE(sizeof (uint16_t), (uint32_t)952576U);
   uint16_t a_matrix[952576U] = { 0U };
   Hacl_Impl_Frodo_Params_frodo_gen_matrix(Spec_Frodo_Params_SHAKE128,
     (uint32_t)976U,
