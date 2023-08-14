@@ -10,11 +10,9 @@ readme = "Readme.md"
 repository = "https://github.com/cryspen/libcrux"
 exclude = ["/tests"]
 
-[lib]
-crate-type = ["staticlib", "cdylib", "lib"]
-
 [dependencies]
 hacl = { version = "=0.0.2", features = ["hazmat"] }
+libcrux-hacl = { version = "=0.0.1", path = "sys/hacl" }
 rand = { version = "0.8" }
 log = "0.4"
 

@@ -78,6 +78,7 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .layout_tests(false)
         // Generate bindings
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .use_core()
         .generate()
         .expect("Unable to generate bindings");
 

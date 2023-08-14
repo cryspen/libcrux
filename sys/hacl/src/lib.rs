@@ -1,7 +1,7 @@
 //! # HACL Sys
 //!
 //! Bindings to HACL C code
-
+#![no_std]
 #![allow(non_camel_case_types, non_snake_case)]
 
 mod bindings;
@@ -19,7 +19,10 @@ mod tests {
                 input.len() as u32,
                 digest.as_mut_ptr(),
             );
-            eprintln!("digest: {:x?}", digest);
+            assert_eq!(
+                "35f1be59fa32bb37e2aea1ca1844d56a5bfc8a17851b40933045db837df8e7f1",
+                hex::encode(&digest)
+            );
         }
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-hacl"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 build = "build.rs"
 
@@ -16,3 +16,6 @@ libcrux_platform = { path = "../platform" }
 
 [target.'cfg(not(windows))'.build-dependencies]
 bindgen = "0.66"
+
+[dev-dependencies]
+hex = "0.4.3"

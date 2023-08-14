@@ -1,5 +1,6 @@
 #![no_std]
 
+// Use std for tests
 #[cfg(test)]
 #[macro_use]
 extern crate std;
