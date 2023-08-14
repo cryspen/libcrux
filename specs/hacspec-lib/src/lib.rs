@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 pub mod bit_vector;
 pub mod field;
 pub mod ring;
@@ -84,6 +86,16 @@ impl<const LEN: usize> ArrayUpdate for [u8; LEN] {
         self[start..start + other.len()].copy_from_slice(other);
         self
     }
+}
+
+/// Wrapping copy_from_slice for extraction until hacspec/hacspec-v2#90 is fixed.
+pub fn copy_from_slice<const LEN: usize>(
+    mut array: [u8; LEN],
+    range: Range<usize>,
+    other: &[u8],
+) -> [u8; LEN] {
+    array[range.start..range.end].copy_from_slice(other);
+    array
 }
 
 pub trait VecUpdate {

@@ -1,5 +1,6 @@
 use hacspec_lib::{
-    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray, VecUpdate,
+    copy_from_slice, ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray,
+    UpdatingArray, VecUpdate,
 };
 
 use crate::{
@@ -117,7 +118,11 @@ pub(crate) fn generate_keypair(
     //     N := N + 1
     // end for
     // sˆ := NTT(s)
-    prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
+    prf_input = copy_from_slice(
+        prf_input,
+        0..seed_for_secret_and_error.len(),
+        seed_for_secret_and_error,
+    );
 
     for i in 0..secret_as_ntt.len() {
         prf_input[32] = domain_separator;
