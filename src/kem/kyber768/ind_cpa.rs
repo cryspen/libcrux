@@ -10,11 +10,11 @@ use crate::kem::kyber768::{
     },
     parameters::{
         hash_functions::{G, H, PRF, XOF},
-        KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT,
+        KyberPolynomialRingElement, BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT,
         COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
         CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
         CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE,
-        BYTES_PER_ENCODED_ELEMENT_OF_U, VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_ENCODED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+        VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_ENCODED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{
@@ -182,10 +182,11 @@ pub(crate) fn generate_keypair(
 fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> [u8; VECTOR_U_ENCODED_SIZE] {
     let mut out = [0u8; VECTOR_U_ENCODED_SIZE];
     for (i, re) in input.into_iter().enumerate() {
-        out[i * BYTES_PER_ENCODED_ELEMENT_OF_U..(i + 1)* BYTES_PER_ENCODED_ELEMENT_OF_U].copy_from_slice(&serialize_little_endian_10(compress(
-            re,
-            VECTOR_U_COMPRESSION_FACTOR,
-        )));
+        out[i * BYTES_PER_ENCODED_ELEMENT_OF_U..(i + 1) * BYTES_PER_ENCODED_ELEMENT_OF_U]
+            .copy_from_slice(&serialize_little_endian_10(compress(
+                re,
+                VECTOR_U_COMPRESSION_FACTOR,
+            )));
     }
 
     out
@@ -199,7 +200,10 @@ pub(crate) fn encrypt(
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE].chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
+    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
+        .chunks_exact(BYTES_PER_RING_ELEMENT)
+        .enumerate()
+    {
         t_as_ntt[i] = deserialize_little_endian_12(t_as_ntt_bytes);
     }
 
@@ -258,7 +262,7 @@ pub(crate) fn encrypt(
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR));
 
-    let mut ciphertext : CiphertextCpa = (&c1).into_padded_array();
+    let mut ciphertext: CiphertextCpa = (&c1).into_padded_array();
     ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
 
     Ok(ciphertext)
@@ -273,7 +277,9 @@ pub(crate) fn decrypt(
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE].chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8).enumerate()
+    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
+        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8)
+        .enumerate()
     {
         let u = deserialize_little_endian_10(u_bytes);
         u_as_ntt[i] = ntt_representation(decompress(u, 10));

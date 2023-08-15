@@ -45,9 +45,7 @@ pub fn serialize_little_endian_1(
 
     serialized
 }
-pub fn deserialize_little_endian_1(
-    serialized: &[u8],
-) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_1(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), COEFFICIENTS_IN_RING_ELEMENT / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -75,9 +73,7 @@ pub fn serialize_little_endian_4(
 
     serialized
 }
-pub fn deserialize_little_endian_4(
-    serialized: &[u8],
-) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -113,9 +109,7 @@ pub fn serialize_little_endian_10(
 
     serialized
 }
-pub fn deserialize_little_endian_10(
-    serialized: &[u8],
-) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -150,9 +144,7 @@ pub fn serialize_little_endian_12(re: KyberPolynomialRingElement) -> [u8; BYTES_
 
     serialized
 }
-pub fn deserialize_little_endian_12(
-    serialized: &[u8],
-) -> KyberPolynomialRingElement {
+pub fn deserialize_little_endian_12(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), BYTES_PER_RING_ELEMENT);
 
     let mut re = KyberPolynomialRingElement::ZERO;

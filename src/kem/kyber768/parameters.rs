@@ -36,7 +36,8 @@ pub(crate) const VECTOR_U_COMPRESSION_FACTOR: usize = 10;
 pub(crate) const VECTOR_V_COMPRESSION_FACTOR: usize = 4;
 
 /// `U` encoding size in bytes
-pub(crate) const BYTES_PER_ENCODED_ELEMENT_OF_U : usize = (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8;
+pub(crate) const BYTES_PER_ENCODED_ELEMENT_OF_U: usize =
+    (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8;
 pub(crate) const VECTOR_U_ENCODED_SIZE: usize = RANK * BYTES_PER_ENCODED_ELEMENT_OF_U;
 
 /// `V` encoding size in bytes
