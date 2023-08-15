@@ -198,14 +198,9 @@ pub(crate) fn encrypt(
     randomness: &[u8; 32],
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
-    let mut t_as_ntt_ring_element_bytes = public_key.chunks(BYTES_PER_RING_ELEMENT);
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..t_as_ntt.len() {
-        t_as_ntt[i] = deserialize_little_endian_12(
-            t_as_ntt_ring_element_bytes.next().expect(
-                "t_as_ntt_ring_element_bytes should have enough bytes to deserialize to t_as_ntt",
-            ),
-        );
+    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE].chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
+        t_as_ntt[i] = deserialize_little_endian_12(t_as_ntt_bytes);
     }
 
     // ρ := pk + 12·k·n / 8
@@ -281,8 +276,7 @@ pub(crate) fn decrypt(
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    for (i, u_bytes) in
-        (0..u_as_ntt.len()).zip(ciphertext.chunks((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8))
+    for (i, u_bytes) in ciphertext[..VECTOR_U_SIZE].chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8).enumerate()
     {
         let u = deserialize_little_endian_10(u_bytes);
         u_as_ntt[i] = ntt_representation(decompress(u, 10));
@@ -295,11 +289,8 @@ pub(crate) fn decrypt(
     );
 
     // sˆ := Decode_12(sk)
-    let mut secret_as_ntt_ring_element_bytes = secret_key.chunks(BYTES_PER_RING_ELEMENT);
-    for i in 0..secret_as_ntt.len() {
-        secret_as_ntt[i] = deserialize_little_endian_12(
-            secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt"),
-        );
+    for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
+        secret_as_ntt[i] = deserialize_little_endian_12(secret_bytes);
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))

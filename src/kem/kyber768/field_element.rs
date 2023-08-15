@@ -40,20 +40,6 @@ impl FieldElement for KyberFieldElement {
     }
 }
 
-impl From<u8> for KyberFieldElement {
-    fn from(number: u8) -> Self {
-        Self {
-            value: u16::from(number),
-        }
-    }
-}
-
-impl From<KyberFieldElement> for u16 {
-    fn from(fe: KyberFieldElement) -> Self {
-        fe.value
-    }
-}
-
 impl ops::Add for KyberFieldElement {
     type Output = Self;
 

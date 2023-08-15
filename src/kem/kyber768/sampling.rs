@@ -52,11 +52,11 @@ pub fn sample_from_binomial_distribution_2(randomness: [u8; 128]) -> KyberPolyno
         let coin_toss_outcomes = even_bits + odd_bits;
 
         for outcome_set in (0..u32::BITS).step_by(4) {
-            let outcome_1: u8 = ((coin_toss_outcomes >> outcome_set) & 0x3) as u8;
-            let outcome_1: KyberFieldElement = outcome_1.into();
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as u16;
+            let outcome_1 = KyberFieldElement { value: outcome_1 };
 
-            let outcome_2: u8 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as u8;
-            let outcome_2: KyberFieldElement = outcome_2.into();
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as u16;
+            let outcome_2 = KyberFieldElement { value: outcome_2 };
 
             let offset = (outcome_set >> 2) as usize;
             sampled[8 * chunk_number + offset] = outcome_1 - outcome_2;
