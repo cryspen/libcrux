@@ -44,16 +44,26 @@ fn append_simd256_flags(flags: &mut Vec<String>) {
 #[cfg(not(windows))]
 fn create_bindings(platform: Platform, home_dir: &Path) {
     let mut clang_args = includes(home_dir, "-I");
+
+    let mut bindings = bindgen::Builder::default();
+    bindings = bindings
+        // Header to wrap HACL headers
+        .header("c/include/hacl.h");
+
     if platform.simd128 {
         append_simd128_flags(&mut clang_args);
+        bindings = bindings
+            // Header to wrap HACL SIMD 128 headers
+            .header("c/include/hacl128.h");
     }
     if platform.simd256 {
         append_simd256_flags(&mut clang_args);
+        bindings = bindings
+            // Header to wrap HACL SIMD 256 headers
+            .header("c/include/hacl256.h");
     }
 
-    let bindings = bindgen::Builder::default()
-        // Header to wrap HACL headers
-        .header("c/include/hacl.h")
+    let generated_bindings = bindings
         // Set include paths for HACL headers
         .clang_args(clang_args)
         // Allow function we want to have in
@@ -81,7 +91,7 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .expect("Unable to generate bindings");
 
     let home_bindings = home_dir.join("src/bindings.rs");
-    bindings
+    generated_bindings
         .write_to_file(home_bindings)
         .expect("Couldn't write bindings!");
 }
@@ -111,7 +121,7 @@ fn compile_files(
         // .warnings_into_errors(true)
         .warnings(true)
         .extra_warnings(true);
-        // .no_default_flags(true);
+    // .no_default_flags(true);
 
     for include in includes(out_path, "") {
         build.include(include);

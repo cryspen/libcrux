@@ -11,13 +11,3 @@
 #include "Hacl_Hash_SHA2.h"
 #include "Hacl_Hash_SHA3.h"
 #include "Hacl_Hash_Blake2.h"
-
-#ifdef SIMD128
-#include "Hacl_Chacha20Poly1305_128.h"
-#include "Hacl_Hash_Blake2s_128.h"
-#endif
-
-#ifdef SIMD256
-#include "Hacl_Chacha20Poly1305_256.h"
-#include "Hacl_Hash_Blake2b_256.h"
-#endif
