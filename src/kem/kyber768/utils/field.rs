@@ -4,8 +4,6 @@ pub trait FieldElement:
     Copy
     + Clone
     + PartialEq
-    + From<u8>
-    + Into<u16>
     + ops::Add<Output = Self>
     + ops::Sub<Output = Self>
     + ops::Mul<Output = Self>
@@ -13,5 +11,4 @@ pub trait FieldElement:
     const ZERO: Self;
 
     fn new(number: u16) -> Self;
-    fn nth_bit_little_endian(&self, n: usize) -> u8;
 }

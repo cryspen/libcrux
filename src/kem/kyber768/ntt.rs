@@ -3,10 +3,10 @@ use crate::kem::kyber768::parameters::{KyberPolynomialRingElement, RANK};
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 
 pub(crate) mod kyber_polynomial_ring_element_mod {
+    use crate::kem::kyber768::field_element::KyberFieldElement;
     use crate::kem::kyber768::parameters::{
         self, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
     };
-    use crate::kem::kyber768::field_element::KyberFieldElement;
 
     const ZETAS: [u16; 128] = [
         1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746,
@@ -75,11 +75,12 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         out
     }
 
-    fn ntt_multiply_binomials((a0, a1): (KyberFieldElement, KyberFieldElement),
-                              (b0, b1): (KyberFieldElement, KyberFieldElement),
-                              zeta: u16) -> (KyberFieldElement, KyberFieldElement) {
-            ((a0 * b0) + ((a1 * b1) * zeta),
-             (a0 * b1) + (a1 * b0))
+    fn ntt_multiply_binomials(
+        (a0, a1): (KyberFieldElement, KyberFieldElement),
+        (b0, b1): (KyberFieldElement, KyberFieldElement),
+        zeta: u16,
+    ) -> (KyberFieldElement, KyberFieldElement) {
+        ((a0 * b0) + ((a1 * b1) * zeta), (a0 * b1) + (a1 * b0))
     }
 
     pub fn ntt_multiply(
@@ -89,11 +90,19 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         let mut out = KyberPolynomialRingElement::ZERO;
 
         for i in (0..out.coefficients.len()).step_by(4) {
-            let product = ntt_multiply_binomials((left[i], left[i+1]), (right[i], right[i + 1]), MOD_ROOTS[i / 2]);
+            let product = ntt_multiply_binomials(
+                (left[i], left[i + 1]),
+                (right[i], right[i + 1]),
+                MOD_ROOTS[i / 2],
+            );
             out[i] = product.0;
             out[i + 1] = product.1;
 
-            let product = ntt_multiply_binomials((left[i + 2], left[i + 3]), (right[i + 2], right[i + 3]), MOD_ROOTS[(i + 2) / 2]);
+            let product = ntt_multiply_binomials(
+                (left[i + 2], left[i + 3]),
+                (right[i + 2], right[i + 3]),
+                MOD_ROOTS[(i + 2) / 2],
+            );
             out[i + 2] = product.0;
             out[i + 3] = product.1;
         }

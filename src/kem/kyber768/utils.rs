@@ -1,4 +1,3 @@
-pub(crate) mod bit_vector;
 pub(crate) mod field;
 pub(crate) mod ring;
 
@@ -92,7 +91,7 @@ pub trait VecUpdate {
 
 impl VecUpdate for Vec<u8> {
     fn concat(mut self, other: &[u8]) -> Self {
-        self.extend_from_slice(&other);
+        self.extend_from_slice(other);
         self
     }
 }
