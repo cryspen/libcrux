@@ -3,6 +3,7 @@ use crate::kem::kyber768::{
     parameters::{self, KyberPolynomialRingElement},
     BadRejectionSamplingRandomnessError,
 };
+use crate::kem::kyber768::utils::field::FieldElement;
 
 pub fn sample_from_uniform_distribution(
     randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
@@ -92,7 +93,7 @@ pub fn sample_from_binomial_distribution_2(randomness: [u8; 128]) -> KyberPolyno
             let outcome_2 = KyberFieldElement { value: outcome_2 };
 
             let offset = (outcome_set >> 2) as usize;
-            sampled[8 * chunk_number + offset] = outcome_1 - outcome_2;
+            sampled[8 * chunk_number + offset] = FieldElement::sub(outcome_1, outcome_2);
         }
     }
 

@@ -1,5 +1,3 @@
-use std::ops;
-
 use crate::kem::kyber768::{parameters::FIELD_MODULUS, utils::field::FieldElement};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,10 +36,6 @@ impl FieldElement for KyberFieldElement {
     fn new(number: u16) -> Self {
         Self::barrett_reduce(u32::from(number))
     }
-}
-
-impl ops::Add for KyberFieldElement {
-    type Output = Self;
 
     fn add(self, other: Self) -> Self {
         let sum: u16 = self.value + other.value;
@@ -53,9 +47,6 @@ impl ops::Add for KyberFieldElement {
             value: (mask & sum) | (!mask & difference),
         }
     }
-}
-impl ops::Sub for KyberFieldElement {
-    type Output = Self;
 
     fn sub(self, other: Self) -> Self {
         let lhs = self.value;
@@ -70,22 +61,14 @@ impl ops::Sub for KyberFieldElement {
             value: (mask & sum) | (!mask & difference),
         }
     }
-}
-
-impl ops::Mul for KyberFieldElement {
-    type Output = Self;
 
     fn mul(self, other: Self) -> Self {
         let product: u32 = u32::from(self.value) * u32::from(other.value);
 
         Self::barrett_reduce(product)
     }
-}
 
-impl ops::Mul<u16> for KyberFieldElement {
-    type Output = Self;
-
-    fn mul(self, other: u16) -> Self {
+    fn mul_by_u16(self, other: u16) -> Self {
         let product: u32 = u32::from(self.value) * u32::from(other);
 
         Self::barrett_reduce(product)

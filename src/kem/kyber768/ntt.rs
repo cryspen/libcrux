@@ -7,6 +7,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     use crate::kem::kyber768::parameters::{
         self, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
     };
+    use crate::kem::kyber768::utils::field::FieldElement;
 
     const ZETAS: [u16; 128] = [
         1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746,
@@ -41,9 +42,9 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i += 1;
 
                 for j in offset..offset + layer {
-                    let t = re[j + layer] * ZETAS[zeta_i];
-                    re[j + layer] = re[j] - t;
-                    re[j] = re[j] + t;
+                    let t = FieldElement::mul_by_u16(re[j + layer], ZETAS[zeta_i]);
+                    re[j + layer] = FieldElement::sub(re[j], t);
+                    re[j] = FieldElement::add(re[j], t);
                 }
             }
         }
@@ -65,9 +66,9 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i -= 1;
 
                 for j in offset..offset + layer {
-                    let a_minus_b = out[j + layer] - out[j];
-                    out[j] = (out[j] + out[j + layer]) * inverse_of_2;
-                    out[j + layer] = (a_minus_b * ZETAS[zeta_i]) * inverse_of_2;
+                    let a_minus_b = FieldElement::sub(out[j + layer], out[j]);
+                    out[j] = FieldElement::mul_by_u16(FieldElement::add(out[j], out[j + layer]), inverse_of_2);
+                    out[j + layer] = FieldElement::mul_by_u16(FieldElement::mul_by_u16(a_minus_b, ZETAS[zeta_i]), inverse_of_2);
                 }
             }
         }
@@ -80,7 +81,8 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         (b0, b1): (KyberFieldElement, KyberFieldElement),
         zeta: u16,
     ) -> (KyberFieldElement, KyberFieldElement) {
-        ((a0 * b0) + ((a1 * b1) * zeta), (a0 * b1) + (a1 * b0))
+       (FieldElement::add(FieldElement::mul(a0, b0), FieldElement::mul_by_u16(FieldElement::mul(a1, b1), zeta)),
+        FieldElement::add(FieldElement::mul(a0, b1), FieldElement::mul(a1, b0)))
     }
 
     pub fn ntt_multiply(

@@ -63,7 +63,7 @@ impl<F: FieldElement, const COEFFICIENTS: usize> ops::Add
     fn add(self, other: Self) -> Self {
         let mut result = PolynomialRingElement::<F, COEFFICIENTS>::ZERO;
         for i in 0..self.coefficients.len() {
-            result.coefficients[i] = self.coefficients[i] + other.coefficients[i];
+            result.coefficients[i] = FieldElement::add(self.coefficients[i], other.coefficients[i]);
         }
         result
     }
@@ -76,7 +76,7 @@ impl<F: FieldElement, const COEFFICIENTS: usize> ops::Sub
     fn sub(self, other: Self) -> Self {
         let mut result = PolynomialRingElement::<F, COEFFICIENTS>::ZERO;
         for i in 0..self.coefficients.len() {
-            result.coefficients[i] = self.coefficients[i] - other.coefficients[i];
+            result.coefficients[i] = FieldElement::sub(self.coefficients[i], other.coefficients[i]);
         }
         result
     }
