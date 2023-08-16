@@ -2,70 +2,49 @@ use std::ops::{self, Index, IndexMut};
 
 use crate::kem::kyber768::parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct KyberFieldElement {
-    pub value: i16,
+pub(crate) type KyberFieldElement = i16;
+
+const BARRETT_SHIFT: u32 = 24; // 2 * ceil(log_2(FIELD_MODULUS))
+const BARRETT_MULTIPLIER: u32 = (1u32 << BARRETT_SHIFT) / (FIELD_MODULUS as u32);
+
+pub(crate) fn barrett_reduce(value: i32) -> KyberFieldElement {
+    let product: u64 = (value as u64) * u64::from(BARRETT_MULTIPLIER);
+    let quotient: u32 = (product >> BARRETT_SHIFT) as u32;
+
+    let remainder = (value as u32) - (quotient * (FIELD_MODULUS as u32));
+    let remainder: i16 = remainder as i16;
+
+    let remainder_minus_modulus = remainder - FIELD_MODULUS;
+
+    // TODO: Check if LLVM detects this and optimizes it away into a
+    // conditional.
+    let selector = remainder_minus_modulus >> 15;
+
+    (selector & remainder) | (!selector & remainder_minus_modulus)
 }
 
-impl KyberFieldElement {
-    pub const ZERO: Self = Self { value: 0 };
+pub(crate) fn fe_add(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFieldElement {
+    let sum: i16 = lhs + rhs;
+    let difference: i16 = sum - FIELD_MODULUS;
 
-    pub const MODULUS: i16 = FIELD_MODULUS as i16;
+    let mask = difference >> 15;
 
-    const BARRETT_SHIFT: u32 = 24; // 2 * ceil(log_2(FIELD_MODULUS))
-    const BARRETT_MULTIPLIER: u32 = (1u32 << Self::BARRETT_SHIFT) / (Self::MODULUS as u32);
+    (mask & sum) | (!mask & difference)
+}
 
-    pub fn barrett_reduce(value: i32) -> Self {
-        let product: u64 = (value as u64) * u64::from(Self::BARRETT_MULTIPLIER);
-        let quotient: u32 = (product >> Self::BARRETT_SHIFT) as u32;
+pub(crate) fn fe_sub(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFieldElement {
+    let difference = lhs - rhs;
+    let difference_plus_modulus: i16 = difference + FIELD_MODULUS;
 
-        let remainder = (value as u32) - (quotient * (Self::MODULUS as u32));
-        let remainder: i16 = remainder as i16;
+    let mask = difference >> 15;
 
-        let remainder_minus_modulus = remainder - Self::MODULUS;
+    (!mask & difference) | (mask & difference_plus_modulus)
+}
 
-        // TODO: Check if LLVM detects this and optimizes it away into a
-        // conditional.
-        let selector = remainder_minus_modulus >> 15;
+pub(crate) fn fe_mul(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFieldElement {
+    let product: i32 = i32::from(lhs) * i32::from(rhs);
 
-        Self {
-            value: (selector & remainder) | (!selector & remainder_minus_modulus),
-        }
-    }
-
-    pub fn add(self, other: Self) -> Self {
-        let sum: i16 = self.value + other.value;
-        let difference: i16 = sum - Self::MODULUS;
-
-        let mask = difference >> 15;
-
-        Self {
-            value: (mask & sum) | (!mask & difference),
-        }
-    }
-
-    pub fn sub(self, other: Self) -> Self {
-        let difference = self.value - other.value;
-        let difference_plus_modulus: i16 = difference + Self::MODULUS;
-
-        let mask = difference >> 15;
-
-        Self {
-            value: (!mask & difference) | (mask & difference_plus_modulus),
-        }
-    }
-
-    pub fn mul(self, other: Self) -> Self {
-        let product: i32 = i32::from(self.value) * i32::from(other.value);
-
-        Self::barrett_reduce(product)
-    }
-
-    pub fn mul_by_u16(self, other: u16) -> Self {
-        let product: i32 = i32::from(self.value) * i32::from(other);
-
-        Self::barrett_reduce(product)
-    }
+    barrett_reduce(product)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -75,7 +54,7 @@ pub struct KyberPolynomialRingElement {
 
 impl KyberPolynomialRingElement {
     pub const ZERO: Self = Self {
-        coefficients: [KyberFieldElement::ZERO; COEFFICIENTS_IN_RING_ELEMENT],
+        coefficients: [0i16; COEFFICIENTS_IN_RING_ELEMENT],
     };
 
     pub fn new(coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT]) -> Self {
@@ -124,7 +103,7 @@ impl ops::Add for KyberPolynomialRingElement
     fn add(self, other: Self) -> Self {
         let mut result = KyberPolynomialRingElement::ZERO;
         for i in 0..self.coefficients.len() {
-            result.coefficients[i] = KyberFieldElement::add(self.coefficients[i], other.coefficients[i]);
+            result.coefficients[i] = fe_add(self.coefficients[i], other.coefficients[i]);
         }
         result
     }
@@ -137,7 +116,7 @@ impl ops::Sub for KyberPolynomialRingElement
     fn sub(self, other: Self) -> Self {
         let mut result = KyberPolynomialRingElement::ZERO;
         for i in 0..self.coefficients.len() {
-            result.coefficients[i] = KyberFieldElement::sub(self.coefficients[i], other.coefficients[i]);
+            result.coefficients[i] = fe_sub(self.coefficients[i], other.coefficients[i]);
         }
         result
     }
