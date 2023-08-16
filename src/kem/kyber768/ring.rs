@@ -1,11 +1,9 @@
 use std::ops::{self, Index, IndexMut};
 
 use crate::kem::kyber768::{
-    field_element::KyberFieldElement,
     parameters::COEFFICIENTS_IN_RING_ELEMENT,
+    field_element::KyberFieldElement,
 };
-
-use crate::kem::kyber768::utils::field::FieldElement;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct KyberPolynomialRingElement {
@@ -63,7 +61,7 @@ impl ops::Add for KyberPolynomialRingElement
     fn add(self, other: Self) -> Self {
         let mut result = KyberPolynomialRingElement::ZERO;
         for i in 0..self.coefficients.len() {
-            result.coefficients[i] = FieldElement::add(self.coefficients[i], other.coefficients[i]);
+            result.coefficients[i] = KyberFieldElement::add(self.coefficients[i], other.coefficients[i]);
         }
         result
     }
@@ -76,7 +74,7 @@ impl ops::Sub for KyberPolynomialRingElement
     fn sub(self, other: Self) -> Self {
         let mut result = KyberPolynomialRingElement::ZERO;
         for i in 0..self.coefficients.len() {
-            result.coefficients[i] = FieldElement::sub(self.coefficients[i], other.coefficients[i]);
+            result.coefficients[i] = KyberFieldElement::sub(self.coefficients[i], other.coefficients[i]);
         }
         result
     }

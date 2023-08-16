@@ -1,4 +1,4 @@
-use crate::kem::kyber768::{parameters::FIELD_MODULUS, utils::field::FieldElement};
+use crate::kem::kyber768::parameters::FIELD_MODULUS;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct KyberFieldElement {
@@ -6,13 +6,14 @@ pub struct KyberFieldElement {
 }
 
 impl KyberFieldElement {
+    pub const ZERO: Self = Self { value: 0 };
+
     pub const MODULUS: i16 = FIELD_MODULUS as i16;
 
     const BARRETT_SHIFT: u32 = 24; // 2 * ceil(log_2(FIELD_MODULUS))
     const BARRETT_MULTIPLIER: u32 = (1u32 << Self::BARRETT_SHIFT) / (Self::MODULUS as u32);
 
     pub fn barrett_reduce(value: i32) -> Self {
-        println!("Value is: {}", value);
         let product: u64 = (value as u64) * u64::from(Self::BARRETT_MULTIPLIER);
         let quotient: u32 = (product >> Self::BARRETT_SHIFT) as u32;
 
@@ -29,16 +30,8 @@ impl KyberFieldElement {
             value: (selector & remainder) | (!selector & remainder_minus_modulus),
         }
     }
-}
 
-impl FieldElement for KyberFieldElement {
-    const ZERO: Self = Self { value: 0 };
-
-    fn new(number: i16) -> Self {
-        Self::barrett_reduce(i32::from(number))
-    }
-
-    fn add(self, other: Self) -> Self {
+    pub fn add(self, other: Self) -> Self {
         let sum: i16 = self.value + other.value;
         let difference: i16 = sum - Self::MODULUS;
 
@@ -49,7 +42,7 @@ impl FieldElement for KyberFieldElement {
         }
     }
 
-    fn sub(self, other: Self) -> Self {
+    pub fn sub(self, other: Self) -> Self {
         let difference = self.value - other.value;
         let difference_plus_modulus: i16 = difference + Self::MODULUS;
 
@@ -60,13 +53,13 @@ impl FieldElement for KyberFieldElement {
         }
     }
 
-    fn mul(self, other: Self) -> Self {
+    pub fn mul(self, other: Self) -> Self {
         let product: i32 = i32::from(self.value) * i32::from(other.value);
 
         Self::barrett_reduce(product)
     }
 
-    fn mul_by_u16(self, other: u16) -> Self {
+    pub fn mul_by_u16(self, other: u16) -> Self {
         let product: i32 = i32::from(self.value) * i32::from(other);
 
         Self::barrett_reduce(product)
