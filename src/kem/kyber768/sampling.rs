@@ -1,8 +1,7 @@
-use crate::kem::kyber768::field_element::KyberFieldElement;
 use crate::kem::kyber768::{
     parameters,
     BadRejectionSamplingRandomnessError,
-    ring::KyberPolynomialRingElement
+    arithmetic::{KyberFieldElement, KyberPolynomialRingElement}
 };
 
 pub fn sample_from_uniform_distribution(

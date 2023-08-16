@@ -8,7 +8,7 @@ use crate::kem::kyber768::{
         kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
         *,
     },
-    ring::KyberPolynomialRingElement,
+    arithmetic::KyberPolynomialRingElement,
     parameters::{
         hash_functions::{G, H, PRF, XOF},
         BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT,

@@ -1,6 +1,5 @@
 mod compress;
-mod field_element;
-mod ring;
+mod arithmetic;
 mod ind_cpa;
 mod ntt;
 mod parameters;

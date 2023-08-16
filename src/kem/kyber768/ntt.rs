@@ -1,13 +1,12 @@
 use crate::kem::kyber768::parameters::RANK;
-use crate::kem::kyber768::ring::KyberPolynomialRingElement;
+use crate::kem::kyber768::arithmetic::KyberPolynomialRingElement;
 
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 
 pub(crate) mod kyber_polynomial_ring_element_mod {
-    use crate::kem::kyber768::field_element::KyberFieldElement;
-    use crate::kem::kyber768::ring::KyberPolynomialRingElement;
-    use crate::kem::kyber768::parameters::{
-        self, COEFFICIENTS_IN_RING_ELEMENT,
+    use crate::kem::kyber768::{
+        parameters::{self, COEFFICIENTS_IN_RING_ELEMENT},
+        arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     };
 
     const ZETAS: [u16; 128] = [
