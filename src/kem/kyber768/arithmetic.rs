@@ -70,23 +70,20 @@ impl KyberPolynomialRingElement {
     }
 }
 
-impl Index<usize> for KyberPolynomialRingElement
-{
+impl Index<usize> for KyberPolynomialRingElement {
     type Output = KyberFieldElement;
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.coefficients[index]
     }
 }
-impl IndexMut<usize> for KyberPolynomialRingElement
-{
+impl IndexMut<usize> for KyberPolynomialRingElement {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.coefficients[index]
     }
 }
 
-impl IntoIterator for KyberPolynomialRingElement
-{
+impl IntoIterator for KyberPolynomialRingElement {
     type Item = KyberFieldElement;
 
     type IntoIter = std::array::IntoIter<KyberFieldElement, COEFFICIENTS_IN_RING_ELEMENT>;
@@ -96,8 +93,7 @@ impl IntoIterator for KyberPolynomialRingElement
     }
 }
 
-impl ops::Add for KyberPolynomialRingElement
-{
+impl ops::Add for KyberPolynomialRingElement {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
@@ -109,8 +105,7 @@ impl ops::Add for KyberPolynomialRingElement
     }
 }
 
-impl ops::Sub for KyberPolynomialRingElement
-{
+impl ops::Sub for KyberPolynomialRingElement {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {

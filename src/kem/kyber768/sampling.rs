@@ -1,7 +1,6 @@
 use crate::kem::kyber768::{
-    parameters,
-    BadRejectionSamplingRandomnessError,
-    arithmetic::{fe_sub, KyberPolynomialRingElement}
+    arithmetic::{fe_sub, KyberPolynomialRingElement},
+    parameters, BadRejectionSamplingRandomnessError,
 };
 
 pub fn sample_from_uniform_distribution(
