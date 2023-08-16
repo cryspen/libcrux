@@ -1,11 +1,13 @@
-use crate::kem::kyber768::parameters::{KyberPolynomialRingElement, RANK};
+use crate::kem::kyber768::parameters::RANK;
+use crate::kem::kyber768::ring::KyberPolynomialRingElement;
 
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 
 pub(crate) mod kyber_polynomial_ring_element_mod {
     use crate::kem::kyber768::field_element::KyberFieldElement;
+    use crate::kem::kyber768::ring::KyberPolynomialRingElement;
     use crate::kem::kyber768::parameters::{
-        self, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
+        self, COEFFICIENTS_IN_RING_ELEMENT,
     };
     use crate::kem::kyber768::utils::field::FieldElement;
 
@@ -91,7 +93,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     ) -> KyberPolynomialRingElement {
         let mut out = KyberPolynomialRingElement::ZERO;
 
-        for i in (0..out.coefficients.len()).step_by(4) {
+        for i in (0..out.len()).step_by(4) {
             let product = ntt_multiply_binomials(
                 (left[i], left[i + 1]),
                 (right[i], right[i + 1]),

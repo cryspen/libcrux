@@ -8,9 +8,10 @@ use crate::kem::kyber768::{
         kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
         *,
     },
+    ring::KyberPolynomialRingElement,
     parameters::{
         hash_functions::{G, H, PRF, XOF},
-        KyberPolynomialRingElement, BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT,
+        BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT,
         COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
         CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
         CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE,

@@ -1,5 +1,6 @@
-use crate::kem::kyber768::parameters::{
-    KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
+use crate::kem::kyber768::{
+    parameters::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
+    ring::KyberPolynomialRingElement,
 };
 
 /// This file contains instantiations of the functions

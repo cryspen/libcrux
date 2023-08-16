@@ -1,6 +1,3 @@
-use crate::kem::kyber768::field_element::KyberFieldElement;
-use crate::kem::kyber768::utils::ring::PolynomialRingElement;
-
 /// Field modulus: 3329
 pub(crate) const FIELD_MODULUS: u16 = 3329;
 
@@ -80,7 +77,3 @@ pub(crate) mod hash_functions {
         digest::shake256::<LEN>(input)
     }
 }
-
-/// A Kyber ring element
-pub(crate) type KyberPolynomialRingElement =
-    PolynomialRingElement<KyberFieldElement, COEFFICIENTS_IN_RING_ELEMENT>;

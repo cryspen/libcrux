@@ -1,5 +1,4 @@
 pub(crate) mod field;
-pub(crate) mod ring;
 
 pub trait PanickingIntegerCasts {
     fn as_u8(self) -> u8;

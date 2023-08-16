@@ -1,6 +1,7 @@
 use crate::kem::kyber768::{
     field_element::KyberFieldElement,
-    parameters::{self, KyberPolynomialRingElement},
+    parameters,
+    ring::KyberPolynomialRingElement,
 };
 
 pub fn compress(

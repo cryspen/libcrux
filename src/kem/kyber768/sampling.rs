@@ -1,7 +1,8 @@
 use crate::kem::kyber768::field_element::KyberFieldElement;
 use crate::kem::kyber768::{
-    parameters::{self, KyberPolynomialRingElement},
+    parameters,
     BadRejectionSamplingRandomnessError,
+    ring::KyberPolynomialRingElement
 };
 use crate::kem::kyber768::utils::field::FieldElement;
 
