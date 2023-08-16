@@ -52,7 +52,7 @@ pub fn deserialize_little_endian_1(serialized: &[u8]) -> KyberPolynomialRingElem
 
     for (i, byte) in serialized.iter().enumerate() {
         for j in 0..8 {
-            re.coefficients[8 * i + j].value = ((byte >> j) & 0x1) as u16;
+            re.coefficients[8 * i + j].value = ((byte >> j) & 0x1) as i16;
         }
     }
 
@@ -79,8 +79,8 @@ pub fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElem
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
-        re.coefficients[2 * i].value = (byte & 0x0F) as u16;
-        re.coefficients[2 * i + 1].value = ((byte >> 4) & 0x0F) as u16;
+        re.coefficients[2 * i].value = (byte & 0x0F) as i16;
+        re.coefficients[2 * i + 1].value = ((byte >> 4) & 0x0F) as i16;
     }
 
     re
@@ -115,11 +115,11 @@ pub fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingEle
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks(5).enumerate() {
-        let byte1 = bytes[0] as u16;
-        let byte2 = bytes[1] as u16;
-        let byte3 = bytes[2] as u16;
-        let byte4 = bytes[3] as u16;
-        let byte5 = bytes[4] as u16;
+        let byte1 = bytes[0] as i16;
+        let byte2 = bytes[1] as i16;
+        let byte3 = bytes[2] as i16;
+        let byte4 = bytes[3] as i16;
+        let byte5 = bytes[4] as i16;
 
         re.coefficients[4 * i].value = (byte2 & 0x03) << 8 | (byte1 & 0xFF);
         re.coefficients[4 * i + 1].value = (byte3 & 0x0F) << 6 | (byte2 >> 2);
@@ -150,9 +150,9 @@ pub fn deserialize_little_endian_12(serialized: &[u8]) -> KyberPolynomialRingEle
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(3).enumerate() {
-        let byte1 = bytes[0] as u16;
-        let byte2 = bytes[1] as u16;
-        let byte3 = bytes[2] as u16;
+        let byte1 = bytes[0] as i16;
+        let byte2 = bytes[1] as i16;
+        let byte3 = bytes[2] as i16;
 
         re.coefficients[2 * i].value = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
         re.coefficients[2 * i + 1].value = (byte3 << 4) | ((byte2 >> 4) & 0x0F);

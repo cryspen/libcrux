@@ -22,11 +22,11 @@ pub fn sample_from_uniform_distribution(
         let d2 = (b1 / 16) + (16 * b2);
 
         if d1 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = KyberFieldElement { value: d1 };
+            out[sampled_coefficients] = KyberFieldElement { value: d1 as i16 };
             sampled_coefficients += 1
         }
         if d2 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = KyberFieldElement { value: d2 };
+            out[sampled_coefficients] = KyberFieldElement { value: d2 as i16 };
             sampled_coefficients += 1;
         }
 
@@ -87,10 +87,10 @@ pub fn sample_from_binomial_distribution_2(randomness: [u8; 128]) -> KyberPolyno
 
         for outcome_set in (0..u32::BITS).step_by(4) {
             let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as u16;
-            let outcome_1 = KyberFieldElement { value: outcome_1 };
+            let outcome_1 = KyberFieldElement { value: outcome_1 as i16 };
 
             let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as u16;
-            let outcome_2 = KyberFieldElement { value: outcome_2 };
+            let outcome_2 = KyberFieldElement { value: outcome_2 as i16 };
 
             let offset = (outcome_set >> 2) as usize;
             sampled[8 * chunk_number + offset] = FieldElement::sub(outcome_1, outcome_2);

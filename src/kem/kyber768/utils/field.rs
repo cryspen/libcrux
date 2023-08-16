@@ -5,7 +5,7 @@ pub trait FieldElement:
 {
     const ZERO: Self;
 
-    fn new(number: u16) -> Self;
+    fn new(number: i16) -> Self;
     fn add(self, other: Self) -> Self;
     fn sub(self, other: Self) -> Self;
     fn mul(self, other: Self) -> Self;

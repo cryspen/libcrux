@@ -2,27 +2,28 @@ use crate::kem::kyber768::{parameters::FIELD_MODULUS, utils::field::FieldElement
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct KyberFieldElement {
-    pub value: u16,
+    pub value: i16,
 }
 
 impl KyberFieldElement {
-    pub const MODULUS: u16 = FIELD_MODULUS;
+    pub const MODULUS: i16 = FIELD_MODULUS as i16;
 
     const BARRETT_SHIFT: u32 = 24; // 2 * ceil(log_2(FIELD_MODULUS))
     const BARRETT_MULTIPLIER: u32 = (1u32 << Self::BARRETT_SHIFT) / (Self::MODULUS as u32);
 
-    pub fn barrett_reduce(value: u32) -> Self {
-        let product: u64 = u64::from(value) * u64::from(Self::BARRETT_MULTIPLIER);
+    pub fn barrett_reduce(value: i32) -> Self {
+        println!("Value is: {}", value);
+        let product: u64 = (value as u64) * u64::from(Self::BARRETT_MULTIPLIER);
         let quotient: u32 = (product >> Self::BARRETT_SHIFT) as u32;
 
-        let remainder = value - (quotient * u32::from(Self::MODULUS));
-        let remainder: u16 = remainder as u16;
+        let remainder = (value as u32) - (quotient * (Self::MODULUS as u32));
+        let remainder: i16 = remainder as i16;
 
-        let remainder_minus_modulus = remainder.wrapping_sub(Self::MODULUS);
+        let remainder_minus_modulus = remainder - Self::MODULUS;
 
         // TODO: Check if LLVM detects this and optimizes it away into a
         // conditional.
-        let selector = 0u16.wrapping_sub((remainder_minus_modulus >> 15) & 1);
+        let selector = remainder_minus_modulus >> 15;
 
         Self {
             value: (selector & remainder) | (!selector & remainder_minus_modulus),
@@ -33,15 +34,15 @@ impl KyberFieldElement {
 impl FieldElement for KyberFieldElement {
     const ZERO: Self = Self { value: 0 };
 
-    fn new(number: u16) -> Self {
-        Self::barrett_reduce(u32::from(number))
+    fn new(number: i16) -> Self {
+        Self::barrett_reduce(i32::from(number))
     }
 
     fn add(self, other: Self) -> Self {
-        let sum: u16 = self.value + other.value;
-        let difference: u16 = sum.wrapping_sub(Self::MODULUS);
+        let sum: i16 = self.value + other.value;
+        let difference: i16 = sum - Self::MODULUS;
 
-        let mask = 0u16.wrapping_sub((difference >> 15) & 1);
+        let mask = difference >> 15;
 
         Self {
             value: (mask & sum) | (!mask & difference),
@@ -49,27 +50,24 @@ impl FieldElement for KyberFieldElement {
     }
 
     fn sub(self, other: Self) -> Self {
-        let lhs = self.value;
-        let rhs = Self::MODULUS - other.value;
+        let difference = self.value - other.value;
+        let difference_plus_modulus: i16 = difference + Self::MODULUS;
 
-        let sum: u16 = lhs + rhs;
-        let difference: u16 = sum.wrapping_sub(Self::MODULUS);
-
-        let mask = 0u16.wrapping_sub((difference >> 15) & 1);
+        let mask = difference >> 15;
 
         Self {
-            value: (mask & sum) | (!mask & difference),
+            value: (!mask & difference) | (mask & difference_plus_modulus),
         }
     }
 
     fn mul(self, other: Self) -> Self {
-        let product: u32 = u32::from(self.value) * u32::from(other.value);
+        let product: i32 = i32::from(self.value) * i32::from(other.value);
 
         Self::barrett_reduce(product)
     }
 
     fn mul_by_u16(self, other: u16) -> Self {
-        let product: u32 = u32::from(self.value) * u32::from(other);
+        let product: i32 = i32::from(self.value) * i32::from(other);
 
         Self::barrett_reduce(product)
     }
