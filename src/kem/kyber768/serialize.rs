@@ -1,6 +1,6 @@
 use crate::kem::kyber768::{
     arithmetic::KyberPolynomialRingElement,
-    parameters::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
+    parameters::{FIELD_MODULUS, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
 };
 
 /// This file contains instantiations of the functions
@@ -135,8 +135,11 @@ pub fn serialize_little_endian_12(re: KyberPolynomialRingElement) -> [u8; BYTES_
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
     for (i, chunks) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient1 = chunks[0];
-        let coefficient2 = chunks[1];
+        let mut coefficient1 = chunks[0];
+        coefficient1 += (coefficient1 >> 15) & FIELD_MODULUS;
+
+        let mut coefficient2 = chunks[1];
+        coefficient2 += (coefficient2 >> 15) & FIELD_MODULUS;
 
         serialized[3 * i] = (coefficient1 & 0xFF) as u8;
         serialized[3 * i + 1] = ((coefficient1 >> 8) | ((coefficient2 & 0xF) << 4)) as u8;

@@ -1,6 +1,6 @@
 use crate::kem::kyber768::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
-    parameters,
+    parameters::{self, FIELD_MODULUS},
 };
 
 pub fn compress(
@@ -27,6 +27,8 @@ fn compress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     debug_assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
 
     let two_pow_bit_size = 1u32 << to_bit_size;
+
+    let fe = fe + ((fe >> 15) & FIELD_MODULUS);
 
     let mut compressed = (fe as u32) * (two_pow_bit_size << 1);
     compressed += parameters::FIELD_MODULUS as u32;
