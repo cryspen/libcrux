@@ -11,14 +11,14 @@ pub fn sample_from_uniform_distribution(
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
     for bytes in randomness.chunks(3) {
-        let b = i16::from(bytes[0]);
-        let b1 = i16::from(bytes[1]);
-        let b2 = i16::from(bytes[2]);
+        let b1 = i16::from(bytes[0]);
+        let b2 = i16::from(bytes[1]);
+        let b3 = i16::from(bytes[2]);
 
-        let d1 = b + (256 * (b1 % 16));
+        let d1 = ((b2 & 0xF) << 8) | b1;
 
         // Integer division is flooring in Rust.
-        let d2 = (b1 / 16) + (16 * b2);
+        let d2 = (b3 << 4) | (b2 >> 4);
 
         if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
             out[sampled_coefficients] = d1 as i16;
