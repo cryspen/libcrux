@@ -1,6 +1,6 @@
 use crate::kem::kyber768::{
     arithmetic::{fe_sub, KyberPolynomialRingElement},
-    parameters::{FIELD_MODULUS, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE},
+    parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
     BadRejectionSamplingRandomnessError,
 };
 
