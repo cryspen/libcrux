@@ -13,7 +13,6 @@
 
 #[cfg(aes_ni)]
 use hacl::hazmat;
-use hacl::hazmat::chacha20_poly1305;
 
 use crate::hw_detection::{aes_ni_support, simd128_support, simd256_support};
 
@@ -238,7 +237,23 @@ fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 #[cfg(simd128)]
 fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
     log::trace!("HACL Chacha20Poly1305 Encrypt SIMD 128");
-    chacha20_poly1305::simd128::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
+
+    use libcrux_hacl::Hacl_Chacha20Poly1305_128_aead_encrypt;
+
+    let mut tag = Tag::default();
+    unsafe {
+        Hacl_Chacha20Poly1305_128_aead_encrypt(
+            key.0.as_ptr() as _,
+            iv.0.as_ptr() as _,
+            aad.len() as u32,
+            aad.as_ptr() as _,
+            msg_ctxt.len() as u32,
+            msg_ctxt.as_ptr() as _,
+            msg_ctxt.as_mut_ptr(),
+            tag.0.as_mut_ptr(),
+        );
+    }
+    tag
 }
 
 /// Fallback when simd128 is detected at runtime but it wasn't compiled.
@@ -249,8 +264,24 @@ fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 }
 
 fn encrypt_32(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
+    use libcrux_hacl::Hacl_Chacha20Poly1305_32_aead_encrypt;
+
     log::trace!("HACL Chacha20Poly1305 Encrypt Portable");
-    chacha20_poly1305::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
+
+    let mut tag = Tag::default();
+    unsafe {
+        Hacl_Chacha20Poly1305_32_aead_encrypt(
+            key.0.as_ptr() as _,
+            iv.0.as_ptr() as _,
+            aad.len() as u32,
+            aad.as_ptr() as _,
+            msg_ctxt.len() as u32,
+            msg_ctxt.as_ptr() as _,
+            msg_ctxt.as_mut_ptr(),
+            tag.0.as_mut_ptr(),
+        );
+    }
+    tag
 }
 
 #[cfg(simd256)]
@@ -287,9 +318,26 @@ fn decrypt_128(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
+    use libcrux_hacl::Hacl_Chacha20Poly1305_128_aead_decrypt;
+
     log::trace!("HACL Chacha20Poly1305 Decrypt SIMD 128");
-    chacha20_poly1305::simd128::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
-        .map_err(|_| Error::DecryptionFailed)
+
+    if unsafe {
+        Hacl_Chacha20Poly1305_128_aead_decrypt(
+            key.0.as_ptr() as _,
+            iv.0.as_ptr() as _,
+            aad.len() as u32,
+            aad.as_ptr() as _,
+            ctxt_msg.len() as u32,
+            ctxt_msg.as_ptr() as _,
+            ctxt_msg.as_mut_ptr(),
+            tag.0.as_ptr() as _,
+        ) == 0
+    } {
+        Ok(())
+    } else {
+        Err(Error::DecryptionFailed)
+    }
 }
 
 /// Fallback when simd128 is detected at runtime but it wasn't compiled.
@@ -312,9 +360,26 @@ fn decrypt_32(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
+    use libcrux_hacl::Hacl_Chacha20Poly1305_32_aead_decrypt;
+
     log::trace!("HACL Chacha20Poly1305 Decrypt Portable");
-    chacha20_poly1305::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
-        .map_err(|_| Error::DecryptionFailed)
+
+    if unsafe {
+        Hacl_Chacha20Poly1305_32_aead_decrypt(
+            key.0.as_ptr() as _,
+            iv.0.as_ptr() as _,
+            aad.len() as u32,
+            aad.as_ptr() as _,
+            ctxt_msg.len() as u32,
+            ctxt_msg.as_ptr() as _,
+            ctxt_msg.as_mut_ptr(),
+            tag.0.as_ptr() as _,
+        ) == 0
+    } {
+        Ok(())
+    } else {
+        Err(Error::DecryptionFailed)
+    }
 }
 
 #[cfg(aes_ni)]
