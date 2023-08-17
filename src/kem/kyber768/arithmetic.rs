@@ -5,12 +5,14 @@ use crate::kem::kyber768::parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODUL
 pub(crate) type KyberFieldElement = i16;
 
 const BARRETT_SHIFT: u32 = 24; // 2 * ceil(log_2(FIELD_MODULUS))
-const BARRETT_MULTIPLIER: u32 = (1u32 << BARRETT_SHIFT) / (FIELD_MODULUS as u32);
+const BARRETT_MULTIPLIER: u64 = (1u64 << BARRETT_SHIFT) / (FIELD_MODULUS as u64);
 
 pub(crate) fn barrett_reduce(value: i32) -> KyberFieldElement {
-    let product: u64 = (value as u64) * u64::from(BARRETT_MULTIPLIER);
+    let product: u64 = (value as u64) * BARRETT_MULTIPLIER;
     let quotient: u32 = (product >> BARRETT_SHIFT) as u32;
 
+    // TODO: Justify in the comments (and subsequently in the proofs) that these
+    // operations do not lead to overflow/underflow.
     let remainder = (value as u32) - (quotient * (FIELD_MODULUS as u32));
     let remainder: i16 = remainder as i16;
 
