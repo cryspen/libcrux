@@ -66,10 +66,6 @@ impl KyberPolynomialRingElement {
     pub fn coefficients(&self) -> &[KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT] {
         &self.coefficients
     }
-
-    pub fn len(&self) -> usize {
-        self.coefficients.len()
-    }
 }
 
 impl Index<usize> for KyberPolynomialRingElement {
@@ -100,7 +96,7 @@ impl ops::Add for KyberPolynomialRingElement {
 
     fn add(self, other: Self) -> Self {
         let mut result = KyberPolynomialRingElement::ZERO;
-        for i in 0..self.coefficients.len() {
+        for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
             result.coefficients[i] = fe_add(self.coefficients[i], other.coefficients[i]);
         }
         result
@@ -112,7 +108,7 @@ impl ops::Sub for KyberPolynomialRingElement {
 
     fn sub(self, other: Self) -> Self {
         let mut result = KyberPolynomialRingElement::ZERO;
-        for i in 0..self.coefficients.len() {
+        for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
             result.coefficients[i] = fe_sub(self.coefficients[i], other.coefficients[i]);
         }
         result

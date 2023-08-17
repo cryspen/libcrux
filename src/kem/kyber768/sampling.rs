@@ -1,10 +1,11 @@
 use crate::kem::kyber768::{
     arithmetic::{fe_sub, KyberPolynomialRingElement},
-    parameters, BadRejectionSamplingRandomnessError,
+    parameters::{FIELD_MODULUS, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE},
+    BadRejectionSamplingRandomnessError,
 };
 
 pub fn sample_from_uniform_distribution(
-    randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
+    randomness: [u8; REJECTION_SAMPLING_SEED_SIZE],
 ) -> Result<KyberPolynomialRingElement, BadRejectionSamplingRandomnessError> {
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
@@ -19,16 +20,16 @@ pub fn sample_from_uniform_distribution(
         // Integer division is flooring in Rust.
         let d2 = (b1 / 16) + (16 * b2);
 
-        if d1 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
+        if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
             out[sampled_coefficients] = d1 as i16;
             sampled_coefficients += 1
         }
-        if d2 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
+        if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
             out[sampled_coefficients] = d2 as i16;
             sampled_coefficients += 1;
         }
 
-        if sampled_coefficients == out.len() {
+        if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
             return Ok(out);
         }
     }

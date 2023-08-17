@@ -86,7 +86,7 @@ fn parse_a(
 fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
     let mut domain_separator = 0;
     let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..re_as_ntt.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -135,7 +135,7 @@ pub(crate) fn generate_keypair(
     // sˆ := NTT(s)
     prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
 
-    for i in 0..secret_as_ntt.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -151,7 +151,7 @@ pub(crate) fn generate_keypair(
     //     N := N + 1
     // end for
     // eˆ := NTT(e)
-    for i in 0..error_as_ntt.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -164,7 +164,7 @@ pub(crate) fn generate_keypair(
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
-    for i in 0..t_as_ntt.len() {
+    for i in 0..RANK {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
 
@@ -230,7 +230,7 @@ pub(crate) fn encrypt(
     //     N := N + 1
     // end for
     let mut error_1 = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..error_1.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -247,7 +247,7 @@ pub(crate) fn encrypt(
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(invert_ntt);
-    for i in 0..u.len() {
+    for i in 0..RANK {
         u[i] = u[i] + error_1[i];
     }
 

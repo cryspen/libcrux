@@ -55,7 +55,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         let inverse_of_2: i16 = (parameters::FIELD_MODULUS + 1) >> 1;
 
         let mut out = KyberPolynomialRingElement::ZERO;
-        for i in 0..re.len() {
+        for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
             out[i] = re[i];
         }
 
@@ -93,7 +93,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     ) -> KyberPolynomialRingElement {
         let mut out = KyberPolynomialRingElement::ZERO;
 
-        for i in (0..out.len()).step_by(4) {
+        for i in (0..COEFFICIENTS_IN_RING_ELEMENT).step_by(4) {
             let product = ntt_multiply_binomials(
                 (left[i], left[i + 1]),
                 (right[i], right[i + 1]),
