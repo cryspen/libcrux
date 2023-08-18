@@ -1,14 +1,15 @@
-use crate::kem::kyber768::parameters::{KyberPolynomialRingElement, RANK};
+use crate::kem::kyber768::arithmetic::KyberPolynomialRingElement;
+use crate::kem::kyber768::parameters::RANK;
 
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 
 pub(crate) mod kyber_polynomial_ring_element_mod {
-    use crate::kem::kyber768::field_element::KyberFieldElement;
-    use crate::kem::kyber768::parameters::{
-        self, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
+    use crate::kem::kyber768::{
+        arithmetic::{fe_add, fe_mul, fe_sub, KyberFieldElement, KyberPolynomialRingElement},
+        parameters::{self, COEFFICIENTS_IN_RING_ELEMENT},
     };
 
-    const ZETAS: [u16; 128] = [
+    const ZETAS: [i16; 128] = [
         1, 1729, 2580, 3289, 2642, 630, 1897, 848, 1062, 1919, 193, 797, 2786, 3260, 569, 1746,
         296, 2447, 1339, 1476, 3046, 56, 2240, 1333, 1426, 2094, 535, 2882, 2393, 2879, 1974, 821,
         289, 331, 3253, 1756, 1197, 2304, 2277, 2055, 650, 1977, 2513, 632, 2865, 33, 1320, 1915,
@@ -20,7 +21,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         2154,
     ];
 
-    const MOD_ROOTS: [u16; 128] = [
+    const MOD_ROOTS: [i16; 128] = [
         17, 3312, 2761, 568, 583, 2746, 2649, 680, 1637, 1692, 723, 2606, 2288, 1041, 1100, 2229,
         1409, 1920, 2662, 667, 3281, 48, 233, 3096, 756, 2573, 2156, 1173, 3015, 314, 3050, 279,
         1703, 1626, 1651, 1678, 2789, 540, 1789, 1540, 1847, 1482, 952, 2377, 1461, 1868, 2687,
@@ -41,9 +42,9 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i += 1;
 
                 for j in offset..offset + layer {
-                    let t = re[j + layer] * ZETAS[zeta_i];
-                    re[j + layer] = re[j] - t;
-                    re[j] = re[j] + t;
+                    let t = fe_mul(re[j + layer], ZETAS[zeta_i]);
+                    re[j + layer] = fe_sub(re[j], t);
+                    re[j] = fe_add(re[j], t);
                 }
             }
         }
@@ -51,11 +52,11 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     }
 
     pub fn invert_ntt(re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
-        let inverse_of_2: u16 = (parameters::FIELD_MODULUS + 1) >> 1;
+        let inverse_of_2: i16 = (parameters::FIELD_MODULUS + 1) >> 1;
 
         let mut out = KyberPolynomialRingElement::ZERO;
-        for i in 0..re.len() {
-            out[i].value = re[i].value;
+        for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            out[i] = re[i];
         }
 
         let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
@@ -65,9 +66,9 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i -= 1;
 
                 for j in offset..offset + layer {
-                    let a_minus_b = out[j + layer] - out[j];
-                    out[j] = (out[j] + out[j + layer]) * inverse_of_2;
-                    out[j + layer] = (a_minus_b * ZETAS[zeta_i]) * inverse_of_2;
+                    let a_minus_b = fe_sub(out[j + layer], out[j]);
+                    out[j] = fe_mul(fe_add(out[j], out[j + layer]), inverse_of_2);
+                    out[j + layer] = fe_mul(fe_mul(a_minus_b, ZETAS[zeta_i]), inverse_of_2);
                 }
             }
         }
@@ -78,9 +79,12 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     fn ntt_multiply_binomials(
         (a0, a1): (KyberFieldElement, KyberFieldElement),
         (b0, b1): (KyberFieldElement, KyberFieldElement),
-        zeta: u16,
+        zeta: i16,
     ) -> (KyberFieldElement, KyberFieldElement) {
-        ((a0 * b0) + ((a1 * b1) * zeta), (a0 * b1) + (a1 * b0))
+        (
+            fe_add(fe_mul(a0, b0), fe_mul(fe_mul(a1, b1), zeta)),
+            fe_add(fe_mul(a0, b1), fe_mul(a1, b0)),
+        )
     }
 
     pub fn ntt_multiply(
@@ -89,7 +93,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     ) -> KyberPolynomialRingElement {
         let mut out = KyberPolynomialRingElement::ZERO;
 
-        for i in (0..out.coefficients.len()).step_by(4) {
+        for i in (0..COEFFICIENTS_IN_RING_ELEMENT).step_by(4) {
             let product = ntt_multiply_binomials(
                 (left[i], left[i + 1]),
                 (right[i], right[i + 1]),

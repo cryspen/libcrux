@@ -1,35 +1,35 @@
-use crate::kem::kyber768::field_element::KyberFieldElement;
 use crate::kem::kyber768::{
-    parameters::{self, KyberPolynomialRingElement},
+    arithmetic::{fe_sub, KyberPolynomialRingElement},
+    parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
     BadRejectionSamplingRandomnessError,
 };
 
 pub fn sample_from_uniform_distribution(
-    randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
+    randomness: [u8; REJECTION_SAMPLING_SEED_SIZE],
 ) -> Result<KyberPolynomialRingElement, BadRejectionSamplingRandomnessError> {
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
     for bytes in randomness.chunks(3) {
-        let b = u16::from(bytes[0]);
-        let b1 = u16::from(bytes[1]);
-        let b2 = u16::from(bytes[2]);
+        let b = i16::from(bytes[0]);
+        let b1 = i16::from(bytes[1]);
+        let b2 = i16::from(bytes[2]);
 
         let d1 = b + (256 * (b1 % 16));
 
         // Integer division is flooring in Rust.
         let d2 = (b1 / 16) + (16 * b2);
 
-        if d1 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = KyberFieldElement { value: d1 };
+        if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+            out[sampled_coefficients] = d1 as i16;
             sampled_coefficients += 1
         }
-        if d2 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = KyberFieldElement { value: d2 };
+        if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+            out[sampled_coefficients] = d2 as i16;
             sampled_coefficients += 1;
         }
 
-        if sampled_coefficients == out.len() {
+        if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
             return Ok(out);
         }
     }
@@ -85,14 +85,11 @@ pub fn sample_from_binomial_distribution_2(randomness: [u8; 128]) -> KyberPolyno
         let coin_toss_outcomes = even_bits + odd_bits;
 
         for outcome_set in (0..u32::BITS).step_by(4) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as u16;
-            let outcome_1 = KyberFieldElement { value: outcome_1 };
-
-            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as u16;
-            let outcome_2 = KyberFieldElement { value: outcome_2 };
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i16;
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
 
             let offset = (outcome_set >> 2) as usize;
-            sampled[8 * chunk_number + offset] = outcome_1 - outcome_2;
+            sampled[8 * chunk_number + offset] = fe_sub(outcome_1, outcome_2);
         }
     }
 

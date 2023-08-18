@@ -3,6 +3,7 @@ use crate::kem::kyber768::utils::{
 };
 
 use crate::kem::kyber768::{
+    arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     ntt::{
         kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
@@ -10,11 +11,11 @@ use crate::kem::kyber768::{
     },
     parameters::{
         hash_functions::{G, H, PRF, XOF},
-        KyberPolynomialRingElement, BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT,
-        COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE,
-        CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
-        CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE,
-        VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_ENCODED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+        BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
+        CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
+        CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
+        REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_U_ENCODED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{
@@ -85,7 +86,7 @@ fn parse_a(
 fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
     let mut domain_separator = 0;
     let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..re_as_ntt.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -134,7 +135,7 @@ pub(crate) fn generate_keypair(
     // sˆ := NTT(s)
     prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
 
-    for i in 0..secret_as_ntt.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -150,7 +151,7 @@ pub(crate) fn generate_keypair(
     //     N := N + 1
     // end for
     // eˆ := NTT(e)
-    for i in 0..error_as_ntt.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -163,7 +164,7 @@ pub(crate) fn generate_keypair(
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
-    for i in 0..t_as_ntt.len() {
+    for i in 0..RANK {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
 
@@ -229,7 +230,7 @@ pub(crate) fn encrypt(
     //     N := N + 1
     // end for
     let mut error_1 = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..error_1.len() {
+    for i in 0..RANK {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -246,7 +247,7 @@ pub(crate) fn encrypt(
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(invert_ntt);
-    for i in 0..u.len() {
+    for i in 0..RANK {
         u[i] = u[i] + error_1[i];
     }
 
