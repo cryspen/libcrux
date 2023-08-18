@@ -27,7 +27,10 @@ fn modified_ciphertext() {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
 
     let random_u32 = drbg.next_u32();
-    let random_byte: u8 = (random_u32 & 0xFF).try_into().unwrap();
+    let mut random_byte: u8 = (random_u32 & 0xFF).try_into().unwrap();
+    if random_byte == 0 {
+        random_byte += 1;
+    }
 
     let ciphertext_position: usize = (random_u32 % 1088).try_into().unwrap();
 
@@ -53,7 +56,10 @@ fn modified_secret_key() {
 
     let random_u32 = drbg.next_u32();
 
-    let random_byte: u8 = (random_u32 & 0xFF).try_into().unwrap();
+    let mut random_byte: u8 = (random_u32 & 0xFF).try_into().unwrap();
+    if random_byte == 0 {
+        random_byte += 1;
+    }
 
     let secret_key_position: usize = ((random_u32 >> 8) % (2400 - 32)).try_into().unwrap();
 
@@ -78,11 +84,21 @@ fn modified_ciphertext_and_implicit_rejection_value() {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
 
     let random_u32 = drbg.next_u32();
-    let random_byte_for_ciphertext: u8 = (random_u32 & 0xFF).try_into().unwrap();
+
+    let mut random_byte_for_ciphertext: u8 = (random_u32 & 0xFF).try_into().unwrap();
+    if random_byte_for_ciphertext == 0 {
+        random_byte_for_ciphertext += 1;
+    }
+
     let ciphertext_position: usize = ((random_u32 >> 8) % 1088).try_into().unwrap();
 
     let random_u32 = drbg.next_u32();
-    let random_byte_for_secret_key: u8 = (random_u32 & 0xFF).try_into().unwrap();
+
+    let mut random_byte_for_secret_key: u8 = (random_u32 & 0xFF).try_into().unwrap();
+    if random_byte_for_secret_key == 0 {
+        random_byte_for_secret_key += 1;
+    }
+
     let secret_key_position: usize = ((random_u32 >> 8) % 32).try_into().unwrap();
 
     if let Ok((mut secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
