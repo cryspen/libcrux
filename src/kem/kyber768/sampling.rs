@@ -16,16 +16,14 @@ pub fn sample_from_uniform_distribution(
         let b3 = i16::from(bytes[2]);
 
         let d1 = ((b2 & 0xF) << 8) | b1;
-
-        // Integer division is flooring in Rust.
         let d2 = (b3 << 4) | (b2 >> 4);
 
         if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out[sampled_coefficients] = d1 as i16;
+            out[sampled_coefficients] = d1;
             sampled_coefficients += 1
         }
         if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out[sampled_coefficients] = d2 as i16;
+            out[sampled_coefficients] = d2;
             sampled_coefficients += 1;
         }
 

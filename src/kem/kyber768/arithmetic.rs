@@ -4,15 +4,20 @@ use crate::kem::kyber768::parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODUL
 
 pub(crate) type KyberFieldElement = i16;
 
-pub(crate) fn barrett_reduce(a : i16) ->  KyberFieldElement {
-    let v = (((1i32 << 26) + i32::from(FIELD_MODULUS) / 2) / i32::from(FIELD_MODULUS)) as i16;
+const BARRETT_SHIFT: i32 = 26;
+const BARRETT_R: i32 = 1i32 << BARRETT_SHIFT;
+const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
 
-    let t  = ((i32::from(v) * i32::from(a) + (1i32 << 25)) >> 26) as i16;
+pub(crate) fn barrett_reduce(value: i16) -> KyberFieldElement {
+    let quotient = (i32::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    let quotient = (quotient >> BARRETT_SHIFT) as i16;
 
-    a - (t * FIELD_MODULUS)
+    value - (quotient * FIELD_MODULUS)
 }
 
 pub(crate) fn fe_mul(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFieldElement {
+    // TODO: This will shortly be replaced by an implementation of
+    // montgomery reduction.
     let product: i32 = i32::from(lhs) * i32::from(rhs);
 
     let reduced = (product % i32::from(FIELD_MODULUS)) as i16;
@@ -24,7 +29,6 @@ pub(crate) fn fe_mul(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFie
     } else {
         reduced
     }
-
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -36,14 +40,6 @@ impl KyberPolynomialRingElement {
     pub const ZERO: Self = Self {
         coefficients: [0i16; COEFFICIENTS_IN_RING_ELEMENT],
     };
-
-    pub fn new(coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT]) -> Self {
-        Self { coefficients }
-    }
-
-    pub fn coefficients(&self) -> &[KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT] {
-        &self.coefficients
-    }
 }
 
 impl Index<usize> for KyberPolynomialRingElement {
