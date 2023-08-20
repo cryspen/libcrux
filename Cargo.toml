@@ -10,8 +10,12 @@ readme = "Readme.md"
 repository = "https://github.com/cryspen/libcrux"
 exclude = ["/tests"]
 
+[build-dependencies]
+libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
+
 [dependencies]
 libcrux-hacl = { version = "=0.0.1", path = "sys/hacl" }
+libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
 rand = { version = "0.8" }
 log = "0.4"
 

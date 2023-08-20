@@ -75,8 +75,18 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .allowlist_function("Hacl_Hash_SHA3.*")
         .allowlist_function("Hacl_Blake2.*")
         .allowlist_function("Hacl_Streaming_Keccak.*")
+        .allowlist_function("Hacl_HMAC_DRBG.*")
+        .allowlist_function("Hacl_Ed25519.*")
+        .allowlist_function("Hacl_HKDF_.*")
+        .allowlist_function("Hacl_HMAC_.*")
+        .allowlist_function("Hacl_P256_.*")
+        .allowlist_function("EverCrypt_AEAD_.*")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
+        .allowlist_type("Hacl_HMAC_DRBG.*")
+        .allowlist_type("Hacl_Streaming.*")
+        .allowlist_var("Spec_.*")
+        .allowlist_var("Hacl_Streaming.*")
         // Block everything we don't need or define ourselves.
         .blocklist_type("__.*")
         // XXX: These functions use uint128 in the API, which is not FFI safe
