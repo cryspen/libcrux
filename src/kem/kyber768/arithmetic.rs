@@ -28,6 +28,11 @@ pub(crate) fn montgomery_reduce(value: i32) -> KyberFieldElement {
     (t >> MONTGOMERY_SHIFT) as i16
 }
 
+const MONTGOMERY_F : i32 = 1353; // 2^32 mod 3329
+pub(crate) fn from_montgomery_domain(value: i32) -> KyberFieldElement {
+    montgomery_reduce(MONTGOMERY_F * value)
+}
+
 pub(crate) fn fe_mul(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFieldElement {
     // TODO: This will shortly be replaced by an implementation of
     // montgomery reduction.

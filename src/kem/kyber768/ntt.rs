@@ -1,5 +1,5 @@
 use crate::kem::kyber768::{
-    arithmetic::{barrett_reduce, KyberPolynomialRingElement},
+    arithmetic::{barrett_reduce, from_montgomery_domain, KyberPolynomialRingElement},
     parameters::RANK,
 };
 
@@ -36,18 +36,6 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         349, 418, 329, -156, -75, 817, 1097, 603, 610, 1322, -1285, -1465, 384, -1215, -136, 1218,
         -1335, -874, 220, -1187, -1659, -1185, -1530, -1278, 794, -1510, -854, -870, 478, -108,
         -308, 996, 991, 958, -1460, 1522, 1628,
-    ];
-
-    const MOD_ROOTS: [i16; 128] = [
-        17, -17, -568, 568, 583, -583, -680, 680, 1637, -1637, 723, -723, -1041, 1041, 1100, -1100,
-        1409, -1409, -667, 667, -48, 48, 233, -233, 756, -756, -1173, 1173, -314, 314, -279, 279,
-        -1626, 1626, 1651, -1651, -540, 540, -1540, 1540, -1482, 1482, 952, -952, 1461, -1461,
-        -642, 642, 939, -939, -1021, 1021, -892, 892, -941, 941, 733, -733, -992, 992, 268, -268,
-        641, -641, 1584, -1584, -1031, 1031, -1292, 1292, -109, 109, 375, -375, -780, 780, -1239,
-        1239, 1645, -1645, 1063, -1063, 319, -319, -556, 556, 757, -757, -1230, 1230, 561, -561,
-        -863, 863, -735, 735, -525, 525, 1092, -1092, 403, -403, 1026, -1026, 1143, -1143, -1179,
-        1179, -554, 554, 886, -886, -1607, 1607, 1212, -1212, -1455, 1455, 1029, -1029, -1219,
-        1219, -394, 394, 885, -885, -1175, 1175,
     ];
 
     const NTT_LAYERS: [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
@@ -96,11 +84,17 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     fn ntt_multiply_binomials(
         (a0, a1): (KyberFieldElement, KyberFieldElement),
         (b0, b1): (KyberFieldElement, KyberFieldElement),
-        zeta: i16,
+        zeta: i32,
     ) -> (KyberFieldElement, KyberFieldElement) {
+        let a0 = i32::from(a0);
+        let a1 = i32::from(a1);
+
+        let b0 = i32::from(b0);
+        let b1 = i32::from(b1);
+
         (
-            fe_mul(a0, b0) + fe_mul(fe_mul(a1, b1), zeta),
-            fe_mul(a0, b1) + fe_mul(a1, b0),
+            montgomery_reduce(a0 * b0) + montgomery_reduce((montgomery_reduce(a1 * b1) as i32) * zeta),
+            montgomery_reduce(a0 * b1) + montgomery_reduce(a1 * b0),
         )
     }
 
@@ -114,7 +108,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
             let product = ntt_multiply_binomials(
                 (left[i], left[i + 1]),
                 (right[i], right[i + 1]),
-                MOD_ROOTS[i / 2],
+                ZETAS_MONTGOMERY_DOMAIN[64 + (i/4)],
             );
             out[i] = product.0;
             out[i + 1] = product.1;
@@ -122,15 +116,29 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
             let product = ntt_multiply_binomials(
                 (left[i + 2], left[i + 3]),
                 (right[i + 2], right[i + 3]),
-                MOD_ROOTS[(i + 2) / 2],
+                -ZETAS_MONTGOMERY_DOMAIN[64 + (i/4)],
             );
             out[i + 2] = product.0;
             out[i + 3] = product.1;
         }
-        out.coefficients = out.coefficients.map(barrett_reduce);
 
         out
     }
+}
+
+pub(crate) fn multiply_row_by_column(
+    row_vector: &[KyberPolynomialRingElement; RANK],
+    column_vector: &[KyberPolynomialRingElement; RANK],
+) -> KyberPolynomialRingElement {
+    let mut result = KyberPolynomialRingElement::ZERO;
+
+    for (row_element, column_element) in row_vector.iter().zip(column_vector.iter()) {
+        result = result + ntt_multiply(row_element, column_element);
+    }
+
+    result.coefficients = result.coefficients.map(|coefficient| from_montgomery_domain(coefficient as i32)).map(barrett_reduce);
+
+    result
 }
 
 pub(crate) fn multiply_matrix_by_column(
@@ -144,23 +152,8 @@ pub(crate) fn multiply_matrix_by_column(
             let product = ntt_multiply(matrix_element, &vector[j]);
             result[i] = result[i] + product;
         }
-        result[i].coefficients = result[i].coefficients.map(barrett_reduce);
+        result[i].coefficients = result[i].coefficients.map(|coefficient| from_montgomery_domain(coefficient as i32)).map(barrett_reduce);
     }
-
-    result
-}
-
-pub(crate) fn multiply_row_by_column(
-    row_vector: &[KyberPolynomialRingElement; RANK],
-    column_vector: &[KyberPolynomialRingElement; RANK],
-) -> KyberPolynomialRingElement {
-    let mut result = KyberPolynomialRingElement::ZERO;
-
-    for (row_element, column_element) in row_vector.iter().zip(column_vector.iter()) {
-        result = result + ntt_multiply(row_element, column_element);
-    }
-
-    result.coefficients = result.coefficients.map(barrett_reduce);
 
     result
 }
