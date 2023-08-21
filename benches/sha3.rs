@@ -65,6 +65,29 @@ macro_rules! impl_comp {
                         )
                     },
                 );
+
+                group.bench_with_input(
+                    BenchmarkId::new("PQClean", fmt(*payload_size)),
+                    payload_size,
+                    |b, payload_size| {
+                        use libcrux_pqclean::*;
+
+                        b.iter_batched(
+                            || randombytes(*payload_size),
+                            |payload| {
+                                let mut digest = [0; libcrux::digest::digest_size($libcrux)];
+                                unsafe {
+                                    sha3_256(
+                                        digest.as_mut_ptr(),
+                                        payload.as_ptr() as _,
+                                        payload.len(),
+                                    )
+                                };
+                            },
+                            BatchSize::SmallInput,
+                        )
+                    },
+                );
             }
         }
     };
