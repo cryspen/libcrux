@@ -1,5 +1,5 @@
 use crate::kem::kyber768::{
-    arithmetic::{fe_sub, KyberPolynomialRingElement},
+    arithmetic::KyberPolynomialRingElement,
     parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
     BadRejectionSamplingRandomnessError,
 };
@@ -11,21 +11,19 @@ pub fn sample_from_uniform_distribution(
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
     for bytes in randomness.chunks(3) {
-        let b = i16::from(bytes[0]);
-        let b1 = i16::from(bytes[1]);
-        let b2 = i16::from(bytes[2]);
+        let b1 = i16::from(bytes[0]);
+        let b2 = i16::from(bytes[1]);
+        let b3 = i16::from(bytes[2]);
 
-        let d1 = b + (256 * (b1 % 16));
-
-        // Integer division is flooring in Rust.
-        let d2 = (b1 / 16) + (16 * b2);
+        let d1 = ((b2 & 0xF) << 8) | b1;
+        let d2 = (b3 << 4) | (b2 >> 4);
 
         if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out[sampled_coefficients] = d1 as i16;
+            out[sampled_coefficients] = d1;
             sampled_coefficients += 1
         }
         if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out[sampled_coefficients] = d2 as i16;
+            out[sampled_coefficients] = d2;
             sampled_coefficients += 1;
         }
 
@@ -89,7 +87,7 @@ pub fn sample_from_binomial_distribution_2(randomness: [u8; 128]) -> KyberPolyno
             let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
 
             let offset = (outcome_set >> 2) as usize;
-            sampled[8 * chunk_number + offset] = fe_sub(outcome_1, outcome_2);
+            sampled[8 * chunk_number + offset] = outcome_1 - outcome_2;
         }
     }
 
