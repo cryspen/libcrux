@@ -32,6 +32,12 @@ use crate::kem::kyber768::{
 ///
 /// Otherwise `deserialize_little_endian` is not injective and therefore has
 /// no left inverse.
+///
+/// N.B.: All the `serialize_little_endian_{n}` functions work on the canonical
+/// unsigned representative of each coefficient in the polynomial ring.
+/// Only `serialize_little_endian_12` actually performs this conversion in the
+/// function itself; the rest don't since they are called only after `compress_q`
+/// is called, and `compress_q` also performs this conversion.
 
 pub fn serialize_little_endian_1(
     re: KyberPolynomialRingElement,
