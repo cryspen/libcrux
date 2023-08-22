@@ -1,9 +1,5 @@
 use std::{env, path::Path};
 
-macro_rules! svec {
-        ($($x:expr),*$(,)?) => (vec![$($x.to_string()),*]);
-    }
-
 fn copy_files(home_path: &Path, out_path: &Path) {
     let mut options = fs_extra::dir::CopyOptions::new();
     options.overwrite = true;
@@ -65,7 +61,7 @@ fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[
 }
 
 fn build(out_path: &Path) {
-    let files = svec!["fips202.c"];
+    let files = vec!["fips202.c".to_string()];
     let args = vec![];
     compile_files("libpqclean.a", &files, out_path, &args);
 }
