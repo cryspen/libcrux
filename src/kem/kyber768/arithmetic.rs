@@ -15,20 +15,25 @@ pub(crate) fn barrett_reduce(value: i16) -> KyberFieldElement {
     value - (quotient * FIELD_MODULUS)
 }
 
-pub(crate) fn fe_mul(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFieldElement {
-    // TODO: This will shortly be replaced by an implementation of
-    // montgomery reduction.
-    let product: i32 = i32::from(lhs) * i32::from(rhs);
+const MONTGOMERY_SHIFT: i64 = 16;
+const MONTGOMERY_R: i64 = 1i64 << MONTGOMERY_SHIFT;
+const INVERSE_OF_MODULUS_MOD_R: i64 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
-    let reduced = (product % i32::from(FIELD_MODULUS)) as i16;
+pub(crate) fn montgomery_reduce(value: i32) -> KyberFieldElement {
+    let t: i64 = i64::from(value) * INVERSE_OF_MODULUS_MOD_R;
+    let t: i32 = (t & (MONTGOMERY_R - 1)) as i32;
 
-    if reduced > FIELD_MODULUS / 2 {
-        reduced - FIELD_MODULUS
-    } else if reduced < -FIELD_MODULUS / 2 {
-        reduced + FIELD_MODULUS
-    } else {
-        reduced
-    }
+    let t = value - (t * i32::from(FIELD_MODULUS));
+
+    (t >> MONTGOMERY_SHIFT) as i16
+}
+
+// Given a |value|, return |value|*R mod q. Notice that montgomery_reduce
+// returns a value aR^{-1} mod q, and so montgomery_reduce(|value| * R^2)
+// returns |value| * R^2 & R^{-1} mod q  = |value| * R mod q.
+pub(crate) fn to_montgomery_domain(value: i32) -> KyberFieldElement {
+    // R^2 mod q = (2^16)^2 mod 3329 = 1353
+    montgomery_reduce(1353 * value)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

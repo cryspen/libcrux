@@ -180,7 +180,9 @@ pub(crate) fn generate_keypair(
     ))
 }
 
-fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> [u8; VECTOR_U_ENCODED_SIZE] {
+fn compress_then_encode_u(
+    input: [KyberPolynomialRingElement; RANK],
+) -> [u8; VECTOR_U_ENCODED_SIZE] {
     let mut out = [0u8; VECTOR_U_ENCODED_SIZE];
     for (i, re) in input.into_iter().enumerate() {
         out[i * BYTES_PER_ENCODED_ELEMENT_OF_U..(i + 1) * BYTES_PER_ENCODED_ELEMENT_OF_U]
@@ -258,7 +260,7 @@ pub(crate) fn encrypt(
         + decompress(message_as_ring_element, 1);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
-    let c1 = encode_and_compress_u(u);
+    let c1 = compress_then_encode_u(u);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR));
