@@ -8,23 +8,11 @@ use self::kyber_polynomial_ring_element_mod::ntt_multiply;
 pub(crate) mod kyber_polynomial_ring_element_mod {
     use crate::kem::kyber768::{
         arithmetic::{
-            barrett_reduce, fe_mul, montgomery_reduce, KyberFieldElement,
+            barrett_reduce, montgomery_reduce, KyberFieldElement,
             KyberPolynomialRingElement,
         },
         parameters::COEFFICIENTS_IN_RING_ELEMENT,
     };
-
-    const ZETAS: [i16; 128] = [
-        1, -1600, -749, -40, -687, 630, -1432, 848, 1062, -1410, 193, 797, -543, -69, 569, -1583,
-        296, -882, 1339, 1476, -283, 56, -1089, 1333, 1426, -1235, 535, -447, -936, -450, -1355,
-        821, 289, 331, -76, -1573, 1197, -1025, -1052, -1274, 650, -1352, -816, 632, -464, 33,
-        1320, -1414, -1010, 1435, 807, 452, 1438, -461, 1534, -927, -682, -712, 1481, 648, -855,
-        -219, 1227, 910, 17, -568, 583, -680, 1637, 723, -1041, 1100, 1409, -667, -48, 233, 756,
-        -1173, -314, -279, -1626, 1651, -540, -1540, -1482, 952, 1461, -642, 939, -1021, -892,
-        -941, 733, -992, 268, 641, 1584, -1031, -1292, -109, 375, -780, -1239, 1645, 1063, 319,
-        -556, 757, -1230, 561, -863, -735, -525, 1092, 403, 1026, 1143, -1179, -554, 886, -1607,
-        1212, -1455, 1029, -1219, -394, 885, -1175,
-    ];
 
     const ZETAS_MONTGOMERY_DOMAIN: [i32; 128] = [
         -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474,
@@ -61,8 +49,6 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     }
 
     pub fn invert_ntt(mut re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
-        let inverse_of_2: i16 = -1664;
-
         let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
         for layer in NTT_LAYERS {
@@ -70,13 +56,20 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i -= 1;
 
                 for j in offset..offset + layer {
-                    let a_minus_b = re[j + layer] - re[j];
-                    re[j] = fe_mul(re[j] + re[j + layer], inverse_of_2);
-                    re[j + layer] = fe_mul(fe_mul(a_minus_b, ZETAS[zeta_i]), inverse_of_2);
+                    let a_minus_b = (re[j + layer] - re[j]) as i32;
+
+                    // Instead of dividing by 2 here, we just divide by
+                    // 2^7 at once in the end.
+                    re[j] = barrett_reduce(re[j] + re[j + layer]);
+                    re[j + layer] = montgomery_reduce(a_minus_b * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
                 }
             }
         }
-        re.coefficients = re.coefficients.map(barrett_reduce);
+
+        // We first convert (2^7)^-1 = (128)^-1 into the montgomery domain by
+        // computing (2^7)^-1 * 2^16 mod 3329. This is equal to 512 = 2^9, and
+        // so we can just left-shift by 9 bits.
+        re.coefficients = re.coefficients.map(|coefficient| montgomery_reduce((coefficient as i32) << 9));
 
         re
     }
@@ -86,11 +79,11 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         (b0, b1): (KyberFieldElement, KyberFieldElement),
         zeta: i32,
     ) -> (KyberFieldElement, KyberFieldElement) {
-        let a0 = i32::from(a0);
-        let a1 = i32::from(a1);
+        let a0 = a0 as i32;
+        let a1 = a1 as i32;
 
-        let b0 = i32::from(b0);
-        let b1 = i32::from(b1);
+        let b0 = b0 as i32;
+        let b1 = b1 as i32;
 
         (
             montgomery_reduce(a0 * b0) + montgomery_reduce((montgomery_reduce(a1 * b1) as i32) * zeta),

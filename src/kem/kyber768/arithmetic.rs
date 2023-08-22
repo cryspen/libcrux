@@ -33,22 +33,6 @@ pub(crate) fn from_montgomery_domain(value: i32) -> KyberFieldElement {
     montgomery_reduce(MONTGOMERY_F * value)
 }
 
-pub(crate) fn fe_mul(lhs: KyberFieldElement, rhs: KyberFieldElement) -> KyberFieldElement {
-    // TODO: This will shortly be replaced by an implementation of
-    // montgomery reduction.
-    let product: i32 = i32::from(lhs) * i32::from(rhs);
-
-    let reduced = (product % i32::from(FIELD_MODULUS)) as i16;
-
-    if reduced > FIELD_MODULUS / 2 {
-        reduced - FIELD_MODULUS
-    } else if reduced < -FIELD_MODULUS / 2 {
-        reduced + FIELD_MODULUS
-    } else {
-        reduced
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct KyberPolynomialRingElement {
     pub(crate) coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT],
