@@ -117,9 +117,9 @@ pub fn encapsulate(
     pk: &[u8],
     rng: &mut (impl CryptoRng + Rng),
 ) -> Result<(Vec<u8>, Vec<u8>), Error> {
-    let (new_sk, new_pk) = key_gen(alg, rng)?;
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {
+            let (new_sk, new_pk) = key_gen(alg, rng)?;
             let gxy = ecdh::derive(alg.try_into().unwrap(), pk, &new_sk)?;
             Ok((gxy, new_pk))
         }
