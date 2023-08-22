@@ -28,9 +28,12 @@ pub(crate) fn montgomery_reduce(value: i32) -> KyberFieldElement {
     (t >> MONTGOMERY_SHIFT) as i16
 }
 
-const MONTGOMERY_F : i32 = 1353; // 2^32 mod 3329
-pub(crate) fn from_montgomery_domain(value: i32) -> KyberFieldElement {
-    montgomery_reduce(MONTGOMERY_F * value)
+// Given a |value|, return |value|*R mod q. Notice that montgomery_reduce
+// returns a value aR^{-1} mod q, and so montgomery_reduce(|value| * R^2)
+// returns |value| * R^2 & R^{-1} mod q  = |value| * R mod q.
+pub(crate) fn to_montgomery_domain(value: i32) -> KyberFieldElement {
+    // R^2 mod q = (2^16)^2 mod 3329 = 1353
+    montgomery_reduce(1353 * value)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
