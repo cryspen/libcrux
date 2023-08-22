@@ -2,4 +2,4 @@
 
 A simple sys crate to benchmark pqclean clode that is not exposed to Rust, like SHA3.
 
-The code is taken from https://github.com/PQClean/PQClean/commit/65a6a63e08d3eed8069cf1cda5664a6c98ab7c8f.
+The code is taken from https://github.com/PQClean/PQClean/commit/ef80f51badac27b78f8e0ef26f23cbd71ca0f283.
