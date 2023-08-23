@@ -1,0 +1,11 @@
+[package]
+name = "libcrux-pqclean"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[build-dependencies]
+cc = { version = "1.0", features = ["parallel"] }
+bindgen = "0.66"
+fs_extra = "1.2"
