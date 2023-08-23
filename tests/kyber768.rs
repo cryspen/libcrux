@@ -3,6 +3,8 @@ use libcrux::drbg::Drbg;
 use libcrux::drbg::RngCore;
 use libcrux::kem::{self, Algorithm};
 
+use libcrux::digest::{sha3_256, shake256};
+
 #[test]
 fn consistency() {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
@@ -50,6 +52,17 @@ fn modified_ciphertext() {
     // failing.
 }
 
+fn compute_implicit_rejection_shared_secret(ciphertext : [u8; 1088], implicit_rejection_value : [u8; 32]) -> [u8; 32]
+{
+    let mut to_hash = [0u8; 32 + 32];
+
+    to_hash[0..32].copy_from_slice(&implicit_rejection_value);
+    to_hash[32..].copy_from_slice(&sha3_256(&ciphertext));
+
+    shake256(&to_hash)
+}
+
+
 #[test]
 fn modified_secret_key() {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
@@ -72,6 +85,10 @@ fn modified_secret_key() {
                 kem::decapsulate(Algorithm::Kyber768, &ciphertext, &secret_key).unwrap();
 
             assert_ne!(shared_secret, shared_secret_decapsulated);
+
+            let implicit_rejection_shared_secret = compute_implicit_rejection_shared_secret(ciphertext.try_into().unwrap(), secret_key[2368..].try_into().unwrap());
+
+            assert_eq!(shared_secret_decapsulated, implicit_rejection_shared_secret);
         }
     }
     // If the randomness was not enough for the rejection sampling step
@@ -114,6 +131,9 @@ fn modified_ciphertext_and_implicit_rejection_value() {
                 kem::decapsulate(Algorithm::Kyber768, &ciphertext, &secret_key).unwrap();
 
             assert_ne!(shared_secret_decapsulated, shared_secret_decapsulated_1);
+
+            let implicit_rejection_shared_secret = compute_implicit_rejection_shared_secret(ciphertext.try_into().unwrap(), secret_key[2368..].try_into().unwrap());
+            assert_eq!(shared_secret_decapsulated_1, implicit_rejection_shared_secret);
         }
     }
     // If the randomness was not enough for the rejection sampling step
