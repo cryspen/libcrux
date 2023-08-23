@@ -5,9 +5,11 @@ mod ntt;
 mod parameters;
 mod sampling;
 mod serialize;
-mod utils;
+mod conversions;
+mod constant_time_ops;
 
-use utils::{ArrayConversion, UpdatingArray2};
+use conversions::ArrayConversion;
+use constant_time_ops::{compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time};
 
 use parameters::{
     hash_functions::{G, H, H_DIGEST_SIZE, KDF},
@@ -55,7 +57,8 @@ pub fn encapsulate(
 ) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), BadRejectionSamplingRandomnessError> {
     let randomness_hashed = H(&randomness);
 
-    let to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness_hashed.push(&H(&public_key));
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness_hashed.as_ref().into_padded_array();
+    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(&public_key));
 
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
@@ -63,7 +66,9 @@ pub fn encapsulate(
     let ciphertext =
         ind_cpa::encrypt(&public_key, randomness_hashed, &pseudorandomness.as_array())?;
 
-    let to_hash: [u8; 2 * H_DIGEST_SIZE] = k_not.push(&H(&ciphertext));
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = k_not.as_ref().into_padded_array();
+    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(&ciphertext));
+
     let shared_secret: Kyber768SharedSecret = KDF(&to_hash);
 
     Ok((ciphertext, shared_secret))
@@ -79,29 +84,27 @@ pub fn decapsulate(
 
     let decrypted = ind_cpa::decrypt(&ind_cpa_secret_key.as_array(), &ciphertext);
 
-    let to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] =
-        decrypted.push(ind_cpa_public_key_hash);
+    let mut to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] = decrypted.as_ref().into_padded_array();
+    to_hash[CPA_PKE_MESSAGE_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let reencrypted_ciphertext = ind_cpa::encrypt(
+    let expected_ciphertext_result = ind_cpa::encrypt(
         &ind_cpa_public_key.as_array(),
         decrypted,
         &pseudorandomness.as_array(),
     );
 
-    let to_hash = if let Ok(reencrypted) = reencrypted_ciphertext {
-        if ciphertext == reencrypted {
-            k_not
-        } else {
-            implicit_rejection_value
-        }
+    let to_hash = if let Ok(expected_ciphertext) = expected_ciphertext_result {
+        let selector = compare_ciphertexts_in_constant_time(&ciphertext, &expected_ciphertext);
+        select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector)
     } else {
-        implicit_rejection_value
+        implicit_rejection_value.as_array()
     };
-    assert!(to_hash.len() == 32);
-    let to_hash: [u8; 32 + H_DIGEST_SIZE] = to_hash.push(&H(&ciphertext));
+
+    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = to_hash.as_ref().into_padded_array();
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(&ciphertext));
 
     KDF(&to_hash)
 }
