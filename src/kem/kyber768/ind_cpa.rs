@@ -248,9 +248,9 @@ pub(crate) fn encrypt(
     let error_2 = sample_from_binomial_distribution_2(prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(invert_ntt);
+    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt);
     for i in 0..RANK {
-        u[i] = u[i] + error_1[i];
+        u[i] = invert_ntt(u[i]) + error_1[i];
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
