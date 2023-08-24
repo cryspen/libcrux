@@ -3,7 +3,7 @@ use crate::kem::kyber768::conversions::{
 };
 
 use crate::kem::kyber768::{
-    arithmetic::{barrett_reduce, KyberPolynomialRingElement},
+    arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     ntt::{
         kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
