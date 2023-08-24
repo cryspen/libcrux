@@ -1,9 +1,14 @@
-use libcrux::digest;
-use libcrux::drbg::Drbg;
-use libcrux::drbg::RngCore;
-use libcrux::kem::{self, Algorithm};
+use libcrux::{
+    drbg::{Drbg, RngCore},
+    kem::{self, Algorithm},
+    digest::{self, sha3_256, shake256}
+};
 
-use libcrux::digest::{sha3_256, shake256};
+const SHARED_SECRET_SIZE: usize = 32;
+const SECRET_KEY_SIZE: usize = 2400;
+const CIPHERTEXT_SIZE: u32 = 1088;
+
+const SECRET_KEY_REJECTION_VALUE_POSITION : usize = SECRET_KEY_SIZE - SHARED_SECRET_SIZE;
 
 #[test]
 fn consistency() {
@@ -34,7 +39,7 @@ fn modified_ciphertext() {
         random_byte += 1;
     }
 
-    let ciphertext_position: usize = (random_u32 % 1088).try_into().unwrap();
+    let ciphertext_position: usize = (random_u32 % CIPHERTEXT_SIZE).try_into().unwrap();
 
     if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
         if let Ok((shared_secret, mut ciphertext)) =
@@ -52,12 +57,12 @@ fn modified_ciphertext() {
     // failing.
 }
 
-fn compute_implicit_rejection_shared_secret(ciphertext : [u8; 1088], implicit_rejection_value : [u8; 32]) -> [u8; 32]
+fn compute_implicit_rejection_shared_secret(ciphertext : [u8; CIPHERTEXT_SIZE as usize], implicit_rejection_value : [u8; SHARED_SECRET_SIZE]) -> [u8; SHARED_SECRET_SIZE]
 {
-    let mut to_hash = [0u8; 32 + 32];
+    let mut to_hash = [0u8; SHARED_SECRET_SIZE + digest::digest_size(digest::Algorithm::Sha3_256)];
 
-    to_hash[0..32].copy_from_slice(&implicit_rejection_value);
-    to_hash[32..].copy_from_slice(&sha3_256(&ciphertext));
+    to_hash[0..SHARED_SECRET_SIZE].copy_from_slice(&implicit_rejection_value);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&sha3_256(&ciphertext));
 
     shake256(&to_hash)
 }
@@ -74,7 +79,7 @@ fn modified_secret_key() {
         random_byte += 1;
     }
 
-    let secret_key_position: usize = ((random_u32 >> 8) % (2400 - 32)).try_into().unwrap();
+    let secret_key_position: usize = ((random_u32 >> 8) % (SECRET_KEY_SIZE as u32 - 32)) as usize;
 
     if let Ok((mut secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
         if let Ok((shared_secret, ciphertext)) =
@@ -86,7 +91,7 @@ fn modified_secret_key() {
 
             assert_ne!(shared_secret, shared_secret_decapsulated);
 
-            let implicit_rejection_shared_secret = compute_implicit_rejection_shared_secret(ciphertext.try_into().unwrap(), secret_key[2368..].try_into().unwrap());
+            let implicit_rejection_shared_secret = compute_implicit_rejection_shared_secret(ciphertext.try_into().unwrap(), secret_key[(SECRET_KEY_SIZE - SHARED_SECRET_SIZE)..].try_into().unwrap());
 
             assert_eq!(shared_secret_decapsulated, implicit_rejection_shared_secret);
         }
@@ -107,7 +112,7 @@ fn modified_ciphertext_and_implicit_rejection_value() {
         random_byte_for_ciphertext += 1;
     }
 
-    let ciphertext_position: usize = ((random_u32 >> 8) % 1088).try_into().unwrap();
+    let ciphertext_position: usize = ((random_u32 >> 8) % CIPHERTEXT_SIZE).try_into().unwrap();
 
     let random_u32 = drbg.next_u32();
 
@@ -116,7 +121,7 @@ fn modified_ciphertext_and_implicit_rejection_value() {
         random_byte_for_secret_key += 1;
     }
 
-    let secret_key_position: usize = ((random_u32 >> 8) % 32).try_into().unwrap();
+    let rejection_value_position: usize = ((random_u32 >> 8) % SHARED_SECRET_SIZE as u32).try_into().unwrap();
 
     if let Ok((mut secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
         if let Ok((_, mut ciphertext)) =
@@ -126,13 +131,13 @@ fn modified_ciphertext_and_implicit_rejection_value() {
             let shared_secret_decapsulated =
                 kem::decapsulate(Algorithm::Kyber768, &ciphertext, &secret_key).unwrap();
 
-            secret_key[(2400 - 32) + secret_key_position] ^= random_byte_for_secret_key;
+            secret_key[SECRET_KEY_REJECTION_VALUE_POSITION + rejection_value_position] ^= random_byte_for_secret_key;
             let shared_secret_decapsulated_1 =
                 kem::decapsulate(Algorithm::Kyber768, &ciphertext, &secret_key).unwrap();
 
             assert_ne!(shared_secret_decapsulated, shared_secret_decapsulated_1);
 
-            let implicit_rejection_shared_secret = compute_implicit_rejection_shared_secret(ciphertext.try_into().unwrap(), secret_key[2368..].try_into().unwrap());
+            let implicit_rejection_shared_secret = compute_implicit_rejection_shared_secret(ciphertext.try_into().unwrap(), secret_key[SECRET_KEY_REJECTION_VALUE_POSITION..].try_into().unwrap());
             assert_eq!(shared_secret_decapsulated_1, implicit_rejection_shared_secret);
         }
     }
