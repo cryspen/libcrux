@@ -1,15 +1,17 @@
 mod arithmetic;
 mod compress;
+mod constant_time_ops;
+mod conversions;
 mod ind_cpa;
 mod ntt;
 mod parameters;
 mod sampling;
 mod serialize;
-mod conversions;
-mod constant_time_ops;
 
+use constant_time_ops::{
+    compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
+};
 use conversions::ArrayConversion;
-use constant_time_ops::{compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time};
 
 use parameters::{
     hash_functions::{G, H, H_DIGEST_SIZE, KDF},
@@ -84,7 +86,8 @@ pub fn decapsulate(
 
     let decrypted = ind_cpa::decrypt(&ind_cpa_secret_key.as_array(), &ciphertext);
 
-    let mut to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] = decrypted.as_ref().into_padded_array();
+    let mut to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] =
+        decrypted.as_ref().into_padded_array();
     to_hash[CPA_PKE_MESSAGE_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
     let hashed = G(&to_hash);
@@ -103,7 +106,8 @@ pub fn decapsulate(
         implicit_rejection_value.as_array()
     };
 
-    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = to_hash.as_ref().into_padded_array();
+    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] =
+        to_hash.as_ref().into_padded_array();
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(&ciphertext));
 
     KDF(&to_hash)

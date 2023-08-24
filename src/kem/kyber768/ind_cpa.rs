@@ -3,7 +3,7 @@ use crate::kem::kyber768::conversions::{
 };
 
 use crate::kem::kyber768::{
-    arithmetic::{KyberPolynomialRingElement, barrett_reduce},
+    arithmetic::{barrett_reduce, KyberPolynomialRingElement},
     compress::{compress, decompress},
     ntt::{
         kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
@@ -170,17 +170,14 @@ pub(crate) fn generate_keypair(
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE])
-            .push(&encode_12(t_as_ntt))
-            .push(seed_for_A)
-            .array();
+        .push(&encode_12(t_as_ntt))
+        .push(seed_for_A)
+        .array();
 
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = encode_12(secret_as_ntt);
 
-    Ok(KeyPair::new(
-        secret_key_serialized,
-        public_key_serialized,
-    ))
+    Ok(KeyPair::new(secret_key_serialized, public_key_serialized))
 }
 
 fn compress_then_encode_u(
