@@ -70,7 +70,8 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         // so we can just left-shift by 9 bits.
         re.coefficients = re
             .coefficients
-            .map(|coefficient| montgomery_reduce((coefficient as i32) << 9));
+            .map(|coefficient| montgomery_reduce((coefficient as i32) << 9))
+            .map(barrett_reduce);
 
         re
     }

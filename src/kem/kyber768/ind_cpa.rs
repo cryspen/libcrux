@@ -254,7 +254,6 @@ pub(crate) fn encrypt(
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt);
     for i in 0..RANK {
         u[i] = invert_ntt(u[i]) + error_1[i];
-        u[i].coefficients = u[i].coefficients.map(barrett_reduce);
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
