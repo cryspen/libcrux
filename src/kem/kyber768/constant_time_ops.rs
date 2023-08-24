@@ -1,12 +1,12 @@
 use crate::kem::kyber768::{CIPHERTEXT_SIZE, SHARED_SECRET_SIZE};
 
-// TODO: Attribute this to RustCrypto
+// TODO: Examine the output that LLVM produces for this code to ensure
+// operations are not being optimized away/constant-timedness is not being broken.
+
 #[inline]
 fn is_non_zero(value: u8) -> u8 {
-    const SHIFT_BITS: usize = core::mem::size_of::<u64>() - 1;
-    let value = value as u64;
-
-    (((value | (!value).wrapping_add(1)) >> SHIFT_BITS) & 1) as u8
+    let value_negated = -1 * (value as i8);
+    ((value | (value_negated as u8)) >> 7) & 1
 }
 
 pub(crate) fn compare_ciphertexts_in_constant_time(lhs: &[u8], rhs: &[u8]) -> u8 {
