@@ -6,7 +6,7 @@ use crate::kem::kyber768::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     ntt::{
-        kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
+        kyber_polynomial_ring_element_mod::{invert_ntt_montgomery, ntt_representation},
         *,
     },
     parameters::{
@@ -248,14 +248,14 @@ pub(crate) fn encrypt(
     let error_2 = sample_from_binomial_distribution_2(prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt);
+    let mut u = multiply_matrix_by_column_montgomery(&A_transpose, &r_as_ntt);
     for i in 0..RANK {
-        u[i] = invert_ntt(u[i]) + error_1[i];
+        u[i] = invert_ntt_montgomery(u[i]) + error_1[i];
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let message_as_ring_element = deserialize_little_endian_1(&message);
-    let v = invert_ntt(multiply_row_by_column(&t_as_ntt, &r_as_ntt))
+    let v = invert_ntt_montgomery(multiply_row_by_column_montgomery(&t_as_ntt, &r_as_ntt))
         + error_2
         + decompress(message_as_ring_element, 1);
 
@@ -300,7 +300,8 @@ pub(crate) fn decrypt(
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
-    let message = v - invert_ntt(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
+    let message =
+        v - invert_ntt_montgomery(multiply_row_by_column_montgomery(&secret_as_ntt, &u_as_ntt));
 
     serialize_little_endian_1(compress(message, 1))
 }
