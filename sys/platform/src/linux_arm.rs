@@ -1,4 +1,11 @@
-use libc::{getauxval, AT_HWCAP, HWCAP_ASIMD, HWCAP_AES, HWCAP_PMULL, HWCAP_SHA2};
+use libc::{
+    getauxval,
+    AT_HWCAP,
+    HWCAP_ASIMD,
+    HWCAP_AES,
+    HWCAP_PMULL,
+    HWCAP_SHA2
+};
 
 #[inline(always)]
 fn auxval() {
