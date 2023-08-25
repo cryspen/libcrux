@@ -126,7 +126,7 @@ pub(crate) fn generate_keypair(
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = parse_a(seed_for_A.into_padded_array(), true)?;
+    let A_transpose = parse_a(seed_for_A.to_padded_array(), true)?;
 
     // for i from 0 to k−1 do
     //     s[i] := CBD_{η1}(PRF(σ, N))
@@ -217,14 +217,14 @@ pub(crate) fn encrypt(
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A_transpose = parse_a(seed.into_padded_array(), false)?;
+    let A_transpose = parse_a(seed.to_padded_array(), false)?;
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
     //     N := N + 1
     // end for
     // rˆ := NTT(r)
-    let mut prf_input: [u8; 33] = randomness.into_padded_array();
+    let mut prf_input: [u8; 33] = randomness.to_padded_array();
     let (r_as_ntt, mut domain_separator) = cbd(prf_input);
 
     // for i from 0 to k−1 do
@@ -265,7 +265,7 @@ pub(crate) fn encrypt(
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR));
 
-    let mut ciphertext: CiphertextCpa = (&c1).into_padded_array();
+    let mut ciphertext: CiphertextCpa = (&c1).to_padded_array();
     ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
 
     Ok(ciphertext)
