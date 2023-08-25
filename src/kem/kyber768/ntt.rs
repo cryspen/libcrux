@@ -58,7 +58,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                     let a_minus_b = (re[j + layer] - re[j]) as i32;
 
                     // Instead of dividing by 2 here, we just divide by
-                    // 2^7 at once in the end.
+                    // 2^7 in one go in the end.
                     re[j] = barrett_reduce(re[j] + re[j + layer]);
                     re[j + layer] = montgomery_reduce(a_minus_b * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
                 }
