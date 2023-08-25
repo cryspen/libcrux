@@ -14,11 +14,6 @@ fn dump_features() {
     eprintln!("sha256\t\t{:?}", sha256_support());
 }
 
-// XXX[windows]: Something is running into a STATUS_ACCESS_VIOLATION here.
-#[cfg(all(
-    any(target_arch = "x86", target_arch = "x86_64"),
-    not(target_os = "windows")
-))]
 #[test]
 fn dump_raw() {
     use super::x86::{supported, Feature};
@@ -55,10 +50,6 @@ fn dump_raw() {
     eprintln!("avx512vl\t{:?}", supported(Feature::avx512vl));
 }
 
-#[cfg(all(
-    any(target_arch = "x86", target_arch = "x86_64"),
-    not(target_os = "windows")
-))]
 #[test]
 fn cpuid() {
     use super::x86::supported;
