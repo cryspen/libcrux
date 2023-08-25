@@ -1,5 +1,5 @@
-use crate::kem::kyber768::utils::{
-    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
+use crate::kem::kyber768::conversions::{
+    ArrayConversion, ArrayPadding, UpdatableArray, UpdatingArray,
 };
 
 use crate::kem::kyber768::{
@@ -49,7 +49,7 @@ impl KeyPair {
             .push(&self.pk)
             .push(&H(&self.pk))
             .push(implicit_rejection_value)
-            .into()
+            .array()
     }
 
     pub fn pk(&self) -> [u8; 1184] {
@@ -66,8 +66,8 @@ fn parse_a(
 
     for i in 0..RANK {
         for j in 0..RANK {
-            seed[32] = i.as_u8();
-            seed[33] = j.as_u8();
+            seed[32] = i as u8;
+            seed[33] = j as u8;
 
             let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
 
@@ -169,15 +169,15 @@ pub(crate) fn generate_keypair(
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized = [&encode_12(t_as_ntt), seed_for_A].concat();
+    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE])
+        .push(&encode_12(t_as_ntt))
+        .push(seed_for_A)
+        .array();
 
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = encode_12(secret_as_ntt);
 
-    Ok(KeyPair::new(
-        secret_key_serialized,
-        public_key_serialized.into_array(),
-    ))
+    Ok(KeyPair::new(secret_key_serialized, public_key_serialized))
 }
 
 fn compress_then_encode_u(
