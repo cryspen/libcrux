@@ -1,6 +1,6 @@
-/* High-level functions to optian specific CPU features 
-   at runtime that are avaiable on supported processor 
-   architectures and operation systems */
+/* High-level functions to optian specific CPU features
+at runtime that are avaiable on supported processor
+architectures and operation systems */
 
 #![no_std]
 
@@ -14,10 +14,10 @@ mod x86;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 use x86::{self as cpu_id, Feature};
 
-#[cfg(all(target_arch = "aarch64", target_os = "macos"))]
-mod macos_arm;
 #[cfg(all(target_arch = "aarch64", target_os = "linux"))]
 mod linux_arm;
+#[cfg(all(target_arch = "aarch64", target_os = "macos"))]
+mod macos_arm;
 
 #[cfg(test)]
 mod test;
@@ -44,9 +44,11 @@ pub fn simd128_support() -> bool {
         adv_simd()
     }
 
-    #[cfg(not(any(all(target_arch = "aarch64", 
-        any(target_os = "linux", target_os = "macos")),
-        target_arch = "x86", target_arch = "x86_64")))]
+    #[cfg(not(any(
+        all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")),
+        target_arch = "x86",
+        target_arch = "x86_64"
+    )))]
     {
         false
     }
@@ -95,9 +97,11 @@ pub fn pmull_support() -> bool {
         pmull()
     }
 
-    #[cfg(not(any(all(target_arch = "aarch64", 
-        any(target_os = "linux", target_os = "macos")),
-        target_arch = "x86", target_arch = "x86_64")))]
+    #[cfg(not(any(
+        all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")),
+        target_arch = "x86",
+        target_arch = "x86_64"
+    )))]
     {
         false
     }
@@ -117,8 +121,7 @@ pub fn adv_simd_support() -> bool {
         adv_simd()
     }
 
-    #[cfg(not(all(target_arch = "aarch64", 
-        any(target_os = "linux", target_os = "macos"))))]
+    #[cfg(not(all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos"))))]
     {
         false
     }
@@ -147,9 +150,11 @@ pub fn aes_ni_support() -> bool {
             && cpu_id::supported(Feature::movbe)
     }
 
-    #[cfg(not(any(all(target_arch = "aarch64", 
-        any(target_os = "linux", target_os = "macos")),
-        target_arch = "x86", target_arch = "x86_64")))]
+    #[cfg(not(any(
+        all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")),
+        target_arch = "x86",
+        target_arch = "x86_64"
+    )))]
     {
         false
     }
@@ -174,9 +179,11 @@ pub fn sha256_support() -> bool {
         cpu_id::supported(Feature::sha)
     }
 
-    #[cfg(not(any(all(target_arch = "aarch64", 
-        any(target_os = "linux", target_os = "macos")),
-        target_arch = "x86", target_arch = "x86_64")))]
+    #[cfg(not(any(
+        all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")),
+        target_arch = "x86",
+        target_arch = "x86_64"
+    )))]
     {
         false
     }

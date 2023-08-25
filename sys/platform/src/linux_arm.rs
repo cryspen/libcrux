@@ -1,13 +1,6 @@
 /* Obtain particular CPU features for AArch64 on Linux */
 
-use libc::{
-    getauxval,
-    AT_HWCAP,
-    HWCAP_ASIMD,
-    HWCAP_AES,
-    HWCAP_PMULL,
-    HWCAP_SHA2
-};
+use libc::{getauxval, AT_HWCAP, HWCAP_AES, HWCAP_ASIMD, HWCAP_PMULL, HWCAP_SHA2};
 
 #[inline(always)]
 fn auxval() {
