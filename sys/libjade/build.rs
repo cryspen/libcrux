@@ -168,8 +168,8 @@ pub fn main() -> Result<(), u8> {
         }
     } else {
         Platform {
-            simd128: std::arch::is_x86_feature_detected!("avx"),
-            simd256: std::arch::is_x86_feature_detected!("avx2"),
+            simd128: libcrux_platform::simd128_support(),
+            simd256: libcrux_platform::simd256_support(),
         }
     };
 
