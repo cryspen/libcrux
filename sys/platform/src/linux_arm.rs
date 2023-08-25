@@ -1,3 +1,5 @@
+/* Obtain particular CPU features for AArch64 on Linux */
+
 use libc::{
     getauxval,
     AT_HWCAP,

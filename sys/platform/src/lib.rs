@@ -1,3 +1,7 @@
+/* High-level functions to optian specific CPU features 
+   at runtime that are avaiable on supported processor 
+   architectures and operation systems */
+
 #![no_std]
 
 // Use std for tests

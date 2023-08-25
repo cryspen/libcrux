@@ -1,3 +1,5 @@
+/* Test functions for CPU feature detection */
+
 use super::*;
 
 #[test]

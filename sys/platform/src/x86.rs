@@ -1,3 +1,5 @@
+/* Obtain particular CPU features for x86/x86_64 */
+
 #![allow(non_upper_case_globals)]
 
 #[cfg(target_arch = "x86")]
