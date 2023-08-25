@@ -186,6 +186,11 @@ mod other {
     pub fn aes_ni_support() -> bool {
         false
     }
+
+    /// Check whether SHA256 is supported
+    pub fn sha256_support() -> bool {
+        false
+    }
 }
 #[cfg(not(any(
     target_arch = "x86",
