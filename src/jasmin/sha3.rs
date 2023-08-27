@@ -40,7 +40,7 @@ macro_rules! sha3_simd256 {
 sha3_simd256!(
     sha3_224,
     Sha3_224,
-    libjade_sys::simd256::jade_hash_sha3_224_amd64_avx2,
+    libjade_sys::jade_hash_sha3_224_amd64_avx2,
     libjade_sys::jade_hash_sha3_224_amd64_ref
 );
 
@@ -48,7 +48,7 @@ sha3_simd256!(
 sha3_simd256!(
     sha3_256,
     Sha3_256,
-    libjade_sys::simd256::jade_hash_sha3_256_amd64_avx2,
+    libjade_sys::jade_hash_sha3_256_amd64_avx2,
     libjade_sys::jade_hash_sha3_256_amd64_ref
 );
 
@@ -56,7 +56,7 @@ sha3_simd256!(
 sha3_simd256!(
     sha3_384,
     Sha3_384,
-    libjade_sys::simd256::jade_hash_sha3_384_amd64_avx2,
+    libjade_sys::jade_hash_sha3_384_amd64_avx2,
     libjade_sys::jade_hash_sha3_384_amd64_ref
 );
 
@@ -64,7 +64,7 @@ sha3_simd256!(
 sha3_simd256!(
     sha3_512,
     Sha3_512,
-    libjade_sys::simd256::jade_hash_sha3_512_amd64_avx2,
+    libjade_sys::jade_hash_sha3_512_amd64_avx2,
     libjade_sys::jade_hash_sha3_512_amd64_ref
 );
 

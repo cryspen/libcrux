@@ -193,9 +193,11 @@ pub fn main() -> Result<(), u8> {
     let mode = "static";
     println!("cargo:rustc-link-lib={}={}", mode, library_name);
     if platform.simd128 {
+        println!("cargo:rustc-cfg=simd128");
         println!("cargo:rustc-link-lib={}={}", mode, "jade_128");
     }
     if platform.simd256 {
+        println!("cargo:rustc-cfg=simd256");
         println!("cargo:rustc-link-lib={}={}", mode, "jade_256");
     }
     println!("cargo:rustc-link-search=native={}", out_path.display());
