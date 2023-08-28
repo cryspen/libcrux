@@ -99,6 +99,17 @@ pub fn decapsulate(
         &pseudorandomness.as_array(),
     );
 
+    // Since we decrypt the ciphertext and hash this decrypted value in
+    // to obtain the pseudorandomness, it is in theory possible that a modified
+    // ciphertext could result in a set of pseudorandom bytes that are insufficient
+    // to rejection-sample the ring elements we need.
+    //
+    // In that case, the 'else' branch of this if-else block will be taken; notice
+    // that it performs less operations than the 'if' branch. The resulting timing
+    // difference would let an observer know that implicit rejection has taken
+    // place. We do not think this poses a security issue since such information
+    // would be conveyed anyway at a higher level (e.g. a key-exchange protocol
+    // would no longer proceed).
     let to_hash = if let Ok(expected_ciphertext) = expected_ciphertext_result {
         let selector = compare_ciphertexts_in_constant_time(&ciphertext, &expected_ciphertext);
         select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector)
