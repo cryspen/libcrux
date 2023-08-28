@@ -1,6 +1,6 @@
 use libcrux_hacl::*;
 
-use crate::hw_detection::x25519_cpu_support;
+use libcrux_platform::x25519_support;
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 fn fast_x25519(result: &mut [u8], private: &[u8], public: &[u8]) -> bool {
@@ -19,7 +19,7 @@ fn fast_x25519(_: &mut [u8], _: &[u8], _: &[u8]) -> bool {
 
 pub fn derive(p: &[u8], s: &[u8]) -> Result<[u8; 32], &'static str> {
     let mut result = [0u8; 32];
-    let r = if x25519_cpu_support() {
+    let r = if x25519_support() {
         log::trace!("HACL x25519 mulx");
         fast_x25519(&mut result, s, p)
     } else {

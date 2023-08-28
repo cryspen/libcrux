@@ -15,7 +15,7 @@
 use hacl::hazmat;
 use hacl::hazmat::chacha20_poly1305;
 
-use crate::hw_detection::{aes_ni_support, simd128_support, simd256_support};
+use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
 /// The AEAD Errors.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

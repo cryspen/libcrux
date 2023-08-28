@@ -1,6 +1,7 @@
 use libjade::*;
 
-use crate::{digest::Algorithm, hw_detection::simd256_support};
+use crate::digest::Algorithm;
+use libcrux_platform::simd256_support;
 
 pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN], &'static str> {
     let mut digest = [0u8; LEN];
