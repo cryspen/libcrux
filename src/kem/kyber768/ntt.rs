@@ -167,8 +167,10 @@ pub(crate) fn multiply_matrix_by_column(
         // calling to_montgomery_domain() on them should return a mod q.
         result[i].coefficients = result[i]
             .coefficients
-            .map(|coefficient| to_montgomery_domain(coefficient))
-            .map(barrett_reduce);
+            .map(|coefficient| {
+                let coefficient_montgomery = to_montgomery_domain(coefficient);
+                barrett_reduce(coefficient_montgomery)
+            });
     }
 
     result
