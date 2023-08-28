@@ -36,7 +36,7 @@ fn compress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     compressed += parameters::FIELD_MODULUS as u32;
     compressed /= (parameters::FIELD_MODULUS << 1) as u32;
 
-    (compressed & (two_pow_bit_size - 1)) as i16
+    (compressed & (two_pow_bit_size - 1)) as KyberFieldElement
 }
 
 fn decompress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
@@ -46,5 +46,5 @@ fn decompress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement 
     decompressed = (decompressed << 1) + (1 << to_bit_size);
     decompressed >>= to_bit_size + 1;
 
-    decompressed as i16
+    decompressed as KyberFieldElement
 }
