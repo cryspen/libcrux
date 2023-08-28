@@ -1,4 +1,4 @@
-/* Obtain particular CPU features for AArch64 on macOS */
+//! Obtain particular CPU features for AArch64 on macOS
 
 use libc::{c_void, sysctlbyname};
 

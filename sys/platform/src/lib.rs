@@ -1,6 +1,6 @@
-/* High-level functions to optian specific CPU features
-at runtime that are avaiable on supported processor
-architectures and operation systems */
+//! High-level functions to detect available CPU features
+//! at runtime on supported processor architectures and
+//! operation systems
 
 #![no_std]
 

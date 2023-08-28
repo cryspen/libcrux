@@ -1,4 +1,4 @@
-/* Test functions for CPU feature detection */
+//! Test functions for CPU feature detection
 
 use super::*;
 
@@ -14,6 +14,7 @@ fn dump_features() {
     eprintln!("sha256\t\t{:?}", sha256_support());
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[test]
 fn dump_raw() {
     use super::x86::{supported, Feature};
@@ -50,6 +51,7 @@ fn dump_raw() {
     eprintln!("avx512vl\t{:?}", supported(Feature::avx512vl));
 }
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[test]
 fn cpuid() {
     use super::x86::supported;

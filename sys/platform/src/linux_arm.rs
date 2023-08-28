@@ -1,14 +1,18 @@
-/* Obtain particular CPU features for AArch64 on Linux */
+//! Obtain particular CPU features for AArch64 on Linux
 
-use libc::{getauxval, AT_HWCAP, HWCAP_AES, HWCAP_ASIMD, HWCAP_PMULL, HWCAP_SHA2};
+use libc::{getauxval, AT_HWCAP, HWCAP_ASIMD, HWCAP_AES, HWCAP_PMULL, HWCAP_SHA2};
 
 #[inline(always)]
 fn auxval() {
     let val = unsafe { getauxval(AT_HWCAP) };
-    unsafe { ADV_SIMD = val & HWCAP_ASIMD != 0 };
-    unsafe { AES = val & HWCAP_AES != 0 };
-    unsafe { PMULL = val & HWCAP_PMULL != 0 };
-    unsafe { SHA256 = val & HWCAP_SHA2 != 0 };
+    let val_asimd = val & HWCAP_ASIMD != 0;
+    unsafe { ADV_SIMD = val_asimd };
+    let val_aes = val & HWCAP_AES != 0;
+    unsafe { AES = val_aes };
+    let val_pmull = val & HWCAP_PMULL != 0;
+    unsafe { PMULL = val_pmull };
+    let val_sha256 = val & HWCAP_SHA2 != 0;
+    unsafe { SHA256 = val_sha256 };
 }
 
 static mut ADV_SIMD: bool = false;
