@@ -34,9 +34,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i += 1;
 
                 for j in offset..offset + layer {
-                    let t = montgomery_reduce(
-                        re[j + layer] * ZETAS_MONTGOMERY_DOMAIN[zeta_i],
-                    );
+                    let t = montgomery_reduce(re[j + layer] * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
                     re[j + layer] = re[j] - t;
                     re[j] += t;
                 }
@@ -79,8 +77,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         zeta: i32,
     ) -> (KyberFieldElement, KyberFieldElement) {
         (
-            montgomery_reduce(a0 * b0)
-                + montgomery_reduce(montgomery_reduce(a1 * b1) * zeta),
+            montgomery_reduce(a0 * b0) + montgomery_reduce(montgomery_reduce(a1 * b1) * zeta),
             montgomery_reduce(a0 * b1) + montgomery_reduce(a1 * b0),
         )
     }
@@ -165,12 +162,10 @@ pub(crate) fn multiply_matrix_by_column(
 
         // The coefficients of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
-        result[i].coefficients = result[i]
-            .coefficients
-            .map(|coefficient| {
-                let coefficient_montgomery = to_montgomery_domain(coefficient);
-                barrett_reduce(coefficient_montgomery)
-            });
+        result[i].coefficients = result[i].coefficients.map(|coefficient| {
+            let coefficient_montgomery = to_montgomery_domain(coefficient);
+            barrett_reduce(coefficient_montgomery)
+        });
     }
 
     result

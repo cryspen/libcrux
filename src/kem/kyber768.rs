@@ -117,8 +117,7 @@ pub fn decapsulate(
         implicit_rejection_value.as_array()
     };
 
-    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] =
-        to_hash.as_ref().to_padded_array();
+    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = to_hash.as_ref().to_padded_array();
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(&ciphertext));
 
     KDF(&to_hash)
