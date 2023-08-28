@@ -2,8 +2,7 @@
 //!
 //! The unified, formally verified, cryptography library.
 
-pub(crate) mod hw_detection;
-pub use hw_detection::aes_ni_support;
+pub use libcrux_platform::aes_ni_support;
 
 // Jasmin
 #[cfg(all(

@@ -22,7 +22,7 @@ use hacl::hazmat::{
     sha3,
 };
 
-use crate::hw_detection::{simd128_support, simd256_support};
+use libcrux_platform::{simd128_support, simd256_support};
 
 #[derive(Debug)]
 pub enum Error {
