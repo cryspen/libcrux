@@ -50,12 +50,12 @@ pub(crate) mod x25519 {
 
     #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
     pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
-        use crate::hw_detection::x25519_cpu_support;
+        use libcrux_platform::x25519_support;
         use hacl::hazmat::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 
-        if x25519_cpu_support() {
+        if x25519_support() {
             curve25519::vale::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
             // XXX: not verified yet
             // crate::jasmin::x25519::mulx::derive(s, p)

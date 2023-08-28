@@ -2,10 +2,8 @@ use std::ptr::null_mut;
 
 use libcrux_hacl::*;
 
-use crate::{
-    digest::{digest_size, Algorithm},
-    hw_detection::{simd128_support, simd256_support},
-};
+use crate::digest::{digest_size, Algorithm};
+use libcrux_platform::{simd128_support, simd256_support};
 
 #[cfg(not(simd128))]
 unsafe fn Hacl_Blake2s_128_blake2s(
