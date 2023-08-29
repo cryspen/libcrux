@@ -30,21 +30,20 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
     ]
 }
 
-fn append_simd128_flags(flags: &mut Vec<String>) {
-    if cfg!(all(any(target_arch = "x86", target_arch = "x86_64"), not(target_env = "msvc"))) {
+fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
+    if is_bindgen || cfg!(all(any(target_arch = "x86", target_arch = "x86_64"), not(target_env = "msvc"))) {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
         flags.push("-mavx".to_string());
     }
 }
 
-fn append_simd256_flags(flags: &mut Vec<String>) {
-    if cfg!(not(target_env = "msvc")) {
+fn append_simd256_flags(flags: &mut Vec<String>, is_bindgen: bool) {
+    if is_bindgen || cfg!(not(target_env = "msvc")) {
         flags.push("-mavx2".to_string());
     }
 }
 
-#[cfg(not(windows))]
 fn create_bindings(platform: Platform, home_dir: &Path) {
     let mut clang_args = includes(home_dir, "-I");
 
@@ -54,14 +53,14 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .header("c/config/hacl.h");
 
     if platform.simd128 {
-        append_simd128_flags(&mut clang_args);
+        append_simd128_flags(&mut clang_args, true);
         clang_args.push("-DSIMD128".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 128 headers
             .header("c/config/hacl128.h");
     }
     if platform.simd256 {
-        append_simd256_flags(&mut clang_args);
+        append_simd256_flags(&mut clang_args, true);
         clang_args.push("-DSIMD256".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
@@ -110,9 +109,6 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .write_to_file(home_bindings)
         .expect("Couldn't write bindings!");
 }
-
-#[cfg(windows)]
-fn create_bindings(_: Platform, _: &Path) {}
 
 fn compile_files(
     library_name: &str,
@@ -210,7 +206,7 @@ fn build(platform: Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC128", "1")]);
 
         let mut simd128_flags = vec![];
-        append_simd128_flags(&mut simd128_flags);
+        append_simd128_flags(&mut simd128_flags, false);
         compile_files(
             "libhacl_128.a",
             &files128,
@@ -234,7 +230,7 @@ fn build(platform: Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC256", "1")]);
 
         let mut simd256_flags = vec![];
-        append_simd256_flags(&mut simd256_flags);
+        append_simd256_flags(&mut simd256_flags, false);
         compile_files(
             "libhacl_256.a",
             &files256,
@@ -288,7 +284,7 @@ fn main() {
     // Set library name to look up
     const LIB_NAME: &str = "hacl";
 
-    // Generate new bindings. This is a no-op on Windows.
+    // Generate new bindings.
     create_bindings(platform, home_path);
 
     // Link hacl library.
