@@ -59,7 +59,7 @@ pub fn encapsulate(
 ) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), BadRejectionSamplingRandomnessError> {
     let randomness_hashed = H(&randomness);
 
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness_hashed.as_ref().into_padded_array();
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness_hashed.as_ref().to_padded_array();
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(&public_key));
 
     let hashed = G(&to_hash);
@@ -68,7 +68,7 @@ pub fn encapsulate(
     let ciphertext =
         ind_cpa::encrypt(&public_key, randomness_hashed, &pseudorandomness.as_array())?;
 
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = k_not.as_ref().into_padded_array();
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = k_not.as_ref().to_padded_array();
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(&ciphertext));
 
     let shared_secret: Kyber768SharedSecret = KDF(&to_hash);
@@ -87,7 +87,7 @@ pub fn decapsulate(
     let decrypted = ind_cpa::decrypt(&ind_cpa_secret_key.as_array(), &ciphertext);
 
     let mut to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] =
-        decrypted.as_ref().into_padded_array();
+        decrypted.as_ref().to_padded_array();
     to_hash[CPA_PKE_MESSAGE_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
     let hashed = G(&to_hash);
@@ -99,6 +99,17 @@ pub fn decapsulate(
         &pseudorandomness.as_array(),
     );
 
+    // Since we decrypt the ciphertext and hash this decrypted value in
+    // to obtain the pseudorandomness, it is in theory possible that a modified
+    // ciphertext could result in a set of pseudorandom bytes that are insufficient
+    // to rejection-sample the ring elements we need.
+    //
+    // In that case, the 'else' branch of this if-else block will be taken; notice
+    // that it performs less operations than the 'if' branch. The resulting timing
+    // difference would let an observer know that implicit rejection has taken
+    // place. We do not think this poses a security issue since such information
+    // would be conveyed anyway at a higher level (e.g. a key-exchange protocol
+    // would no longer proceed).
     let to_hash = if let Ok(expected_ciphertext) = expected_ciphertext_result {
         let selector = compare_ciphertexts_in_constant_time(&ciphertext, &expected_ciphertext);
         select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector)
@@ -106,8 +117,7 @@ pub fn decapsulate(
         implicit_rejection_value.as_array()
     };
 
-    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] =
-        to_hash.as_ref().into_padded_array();
+    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = to_hash.as_ref().to_padded_array();
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(&ciphertext));
 
     KDF(&to_hash)

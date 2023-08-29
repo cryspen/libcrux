@@ -5,7 +5,7 @@ use crate::kem::kyber768::{CIPHERTEXT_SIZE, SHARED_SECRET_SIZE};
 
 #[inline]
 fn is_non_zero(value: u8) -> u8 {
-    let value_negated = -1 * (value as i8);
+    let value_negated = -(value as i8);
     ((value | (value_negated as u8)) >> 7) & 1
 }
 

@@ -6,7 +6,7 @@ use crate::kem::kyber768::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     ntt::{
-        kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
+        kyber_polynomial_ring_element_mod::{invert_ntt_montgomery, ntt_representation},
         *,
     },
     parameters::{
@@ -126,7 +126,7 @@ pub(crate) fn generate_keypair(
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = parse_a(seed_for_A.into_padded_array(), true)?;
+    let A_transpose = parse_a(seed_for_A.to_padded_array(), true)?;
 
     // for i from 0 to k−1 do
     //     s[i] := CBD_{η1}(PRF(σ, N))
@@ -217,14 +217,14 @@ pub(crate) fn encrypt(
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A_transpose = parse_a(seed.into_padded_array(), false)?;
+    let A_transpose = parse_a(seed.to_padded_array(), false)?;
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
     //     N := N + 1
     // end for
     // rˆ := NTT(r)
-    let mut prf_input: [u8; 33] = randomness.into_padded_array();
+    let mut prf_input: [u8; 33] = randomness.to_padded_array();
     let (r_as_ntt, mut domain_separator) = cbd(prf_input);
 
     // for i from 0 to k−1 do
@@ -248,14 +248,14 @@ pub(crate) fn encrypt(
     let error_2 = sample_from_binomial_distribution_2(prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt);
+    let mut u = multiply_matrix_by_column_montgomery(&A_transpose, &r_as_ntt);
     for i in 0..RANK {
-        u[i] = invert_ntt(u[i]) + error_1[i];
+        u[i] = invert_ntt_montgomery(u[i]) + error_1[i];
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let message_as_ring_element = deserialize_little_endian_1(&message);
-    let v = invert_ntt(multiply_row_by_column(&t_as_ntt, &r_as_ntt))
+    let v = invert_ntt_montgomery(multiply_row_by_column_montgomery(&t_as_ntt, &r_as_ntt))
         + error_2
         + decompress(message_as_ring_element, 1);
 
@@ -265,7 +265,7 @@ pub(crate) fn encrypt(
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR));
 
-    let mut ciphertext: CiphertextCpa = (&c1).into_padded_array();
+    let mut ciphertext: CiphertextCpa = (&c1).to_padded_array();
     ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
 
     Ok(ciphertext)
@@ -300,7 +300,8 @@ pub(crate) fn decrypt(
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
-    let message = v - invert_ntt(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
+    let message =
+        v - invert_ntt_montgomery(multiply_row_by_column_montgomery(&secret_as_ntt, &u_as_ntt));
 
     serialize_little_endian_1(compress(message, 1))
 }

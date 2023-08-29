@@ -1,6 +1,6 @@
 pub trait ArrayConversion<const LEN: usize> {
     fn as_array(&self) -> [u8; LEN];
-    fn into_padded_array(&self) -> [u8; LEN];
+    fn to_padded_array(&self) -> [u8; LEN];
 }
 
 impl<const LEN: usize> ArrayConversion<LEN> for &[u8] {
@@ -8,7 +8,7 @@ impl<const LEN: usize> ArrayConversion<LEN> for &[u8] {
         self.to_vec().try_into().unwrap()
     }
 
-    fn into_padded_array(&self) -> [u8; LEN] {
+    fn to_padded_array(&self) -> [u8; LEN] {
         assert!(self.len() <= LEN);
         let mut out = [0u8; LEN];
         out[0..self.len()].copy_from_slice(self);
@@ -17,11 +17,11 @@ impl<const LEN: usize> ArrayConversion<LEN> for &[u8] {
 }
 
 pub trait ArrayPadding<const LEN: usize> {
-    fn into_padded_array<const OLEN: usize>(&self) -> [u8; OLEN];
+    fn to_padded_array<const OLEN: usize>(&self) -> [u8; OLEN];
 }
 
 impl<const LEN: usize> ArrayPadding<LEN> for &[u8; LEN] {
-    fn into_padded_array<const OLEN: usize>(&self) -> [u8; OLEN] {
+    fn to_padded_array<const OLEN: usize>(&self) -> [u8; OLEN] {
         assert!(self.len() <= OLEN);
         let mut out = [0u8; OLEN];
         out[0..self.len()].copy_from_slice(*self);

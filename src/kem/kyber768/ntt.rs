@@ -13,7 +13,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         parameters::COEFFICIENTS_IN_RING_ELEMENT,
     };
 
-    const ZETAS_MONTGOMERY_DOMAIN: [i32; 128] = [
+    const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
         -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474,
         1468, 573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411,
         -205, -1571, 1223, 652, -552, 1015, -1293, 1491, -282, -1544, 516, -8, -320, -666, -1618,
@@ -34,9 +34,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i += 1;
 
                 for j in offset..offset + layer {
-                    let t = montgomery_reduce(
-                        i32::from(re[j + layer]) * ZETAS_MONTGOMERY_DOMAIN[zeta_i],
-                    );
+                    let t = montgomery_reduce(re[j + layer] * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
                     re[j + layer] = re[j] - t;
                     re[j] += t;
                 }
@@ -47,7 +45,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         re
     }
 
-    pub fn invert_ntt(mut re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
+    pub fn invert_ntt_montgomery(mut re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
         let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
         for layer in NTT_LAYERS {
@@ -55,22 +53,19 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 zeta_i -= 1;
 
                 for j in offset..offset + layer {
-                    let a_minus_b = (re[j + layer] - re[j]) as i32;
+                    let a_minus_b = re[j + layer] - re[j];
 
                     // Instead of dividing by 2 here, we just divide by
-                    // 2^7 at once in the end.
-                    re[j] = barrett_reduce(re[j] + re[j + layer]);
+                    // 2^7 in one go in the end.
+                    re[j] = re[j] + re[j + layer];
                     re[j + layer] = montgomery_reduce(a_minus_b * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
                 }
             }
         }
 
-        // We first convert (2^7)^-1 = (128)^-1 into the montgomery domain by
-        // computing (2^7)^-1 * 2^16 mod 3329. This is equal to 512 = 2^9, and
-        // so we can just left-shift by 9 bits.
         re.coefficients = re
             .coefficients
-            .map(|coefficient| montgomery_reduce((coefficient as i32) << 9))
+            .map(|coefficient| montgomery_reduce(coefficient * 1441))
             .map(barrett_reduce);
 
         re
@@ -81,15 +76,8 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
         (b0, b1): (KyberFieldElement, KyberFieldElement),
         zeta: i32,
     ) -> (KyberFieldElement, KyberFieldElement) {
-        let a0 = a0 as i32;
-        let a1 = a1 as i32;
-
-        let b0 = b0 as i32;
-        let b1 = b1 as i32;
-
         (
-            montgomery_reduce(a0 * b0)
-                + montgomery_reduce((montgomery_reduce(a1 * b1) as i32) * zeta),
+            montgomery_reduce(a0 * b0) + montgomery_reduce(montgomery_reduce(a1 * b1) * zeta),
             montgomery_reduce(a0 * b1) + montgomery_reduce(a1 * b0),
         )
     }
@@ -122,7 +110,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     }
 }
 
-pub(crate) fn multiply_row_by_column(
+pub(crate) fn multiply_row_by_column_montgomery(
     row_vector: &[KyberPolynomialRingElement; RANK],
     column_vector: &[KyberPolynomialRingElement; RANK],
 ) -> KyberPolynomialRingElement {
@@ -132,16 +120,34 @@ pub(crate) fn multiply_row_by_column(
         result = result + ntt_multiply(row_element, column_element);
     }
 
-    // The coefficients of the form aR^{-1} mod q, which means
-    // calling to_montgomery_domain() on them should return a mod q.
-    result.coefficients = result
-        .coefficients
-        .map(|coefficient| to_montgomery_domain(coefficient as i32))
-        .map(barrett_reduce);
+    result.coefficients = result.coefficients.map(barrett_reduce);
 
     result
 }
 
+pub(crate) fn multiply_matrix_by_column_montgomery(
+    matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
+    vector: &[KyberPolynomialRingElement; RANK],
+) -> [KyberPolynomialRingElement; RANK] {
+    let mut result = [KyberPolynomialRingElement::ZERO; RANK];
+
+    for (i, row) in matrix.iter().enumerate() {
+        for (j, matrix_element) in row.iter().enumerate() {
+            let product = ntt_multiply(matrix_element, &vector[j]);
+            result[i] = result[i] + product;
+        }
+
+        result[i].coefficients = result[i].coefficients.map(barrett_reduce);
+    }
+
+    result
+}
+
+// NOTE: This function performs matrix multiplication, then conversion from the
+// montgomery domain, and last barrett reduction. It is only used in
+// ind_cpa::generate_keypair(). (TODO: Verify this) Doing barrett reduction in
+// this function after conversion from montgomery form lets us skip an extra
+// barrett reduction step in generate_keypair itself.
 pub(crate) fn multiply_matrix_by_column(
     matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
     vector: &[KyberPolynomialRingElement; RANK],
@@ -156,10 +162,10 @@ pub(crate) fn multiply_matrix_by_column(
 
         // The coefficients of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
-        result[i].coefficients = result[i]
-            .coefficients
-            .map(|coefficient| to_montgomery_domain(coefficient as i32))
-            .map(barrett_reduce);
+        result[i].coefficients = result[i].coefficients.map(|coefficient| {
+            let coefficient_montgomery = to_montgomery_domain(coefficient);
+            barrett_reduce(coefficient_montgomery)
+        });
     }
 
     result

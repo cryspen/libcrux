@@ -1,5 +1,5 @@
 use crate::kem::kyber768::{
-    arithmetic::KyberPolynomialRingElement,
+    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
     BadRejectionSamplingRandomnessError,
 };
@@ -11,9 +11,9 @@ pub fn sample_from_uniform_distribution(
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
     for bytes in randomness.chunks(3) {
-        let b1 = bytes[0] as i16;
-        let b2 = bytes[1] as i16;
-        let b3 = bytes[2] as i16;
+        let b1 = bytes[0] as i32;
+        let b2 = bytes[1] as i32;
+        let b3 = bytes[2] as i32;
 
         let d1 = ((b2 & 0xF) << 8) | b1;
         let d2 = (b3 << 4) | (b2 >> 4);
@@ -83,8 +83,8 @@ pub fn sample_from_binomial_distribution_2(randomness: [u8; 128]) -> KyberPolyno
         let coin_toss_outcomes = even_bits + odd_bits;
 
         for outcome_set in (0..u32::BITS).step_by(4) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i16;
-            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i16;
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as KyberFieldElement;
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as KyberFieldElement;
 
             let offset = (outcome_set >> 2) as usize;
             sampled[8 * chunk_number + offset] = outcome_1 - outcome_2;
