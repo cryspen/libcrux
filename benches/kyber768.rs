@@ -5,7 +5,7 @@ use libcrux::drbg::Drbg;
 use libcrux::kem::Algorithm;
 
 pub fn comparisons_key_generation(c: &mut Criterion) {
-    let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+    let mut drbg = rand_core::OsRng;
     let mut group = c.benchmark_group("Kyber768 Key Generation");
 
     group.bench_function("libcrux reference implementation", |b| {
@@ -28,7 +28,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
     group.bench_function("libcrux reference implementation", |b| {
         b.iter_batched(
             || {
-                let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+                let mut drbg = rand_core::OsRng;
                 let (_secret_key, public_key) =
                     libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
 
@@ -61,10 +61,10 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
 pub fn comparisons_decapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Decapsulation");
 
-    group.bench_function("libcrux specification", |b| {
+    group.bench_function("libcrux reference implementation", |b| {
         b.iter_batched(
             || {
-                let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+                let mut drbg = rand_core::OsRng;
                 let (secret_key, public_key) =
                     libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
                 let (_shared_secret, ciphertext) =

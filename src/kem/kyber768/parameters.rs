@@ -57,23 +57,38 @@ pub(crate) mod hash_functions {
     use crate::digest::{self, digest_size, Algorithm};
 
     pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
-        crate::digest::sha3_512(input)
+        // crate::digest::sha3_512(input)
+        let mut output = [0u8; digest_size(Algorithm::Sha3_512)];
+        unsafe { libcrux_pqclean::sha3_512(output.as_mut_ptr(), input.as_ptr(), input.len()) }
+        output
     }
 
     pub(crate) const H_DIGEST_SIZE: usize = digest_size(Algorithm::Sha3_256);
     pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-        crate::digest::sha3_256(input)
+        // crate::digest::sha3_256(input)
+        let mut output = [0u8; digest_size(Algorithm::Sha3_256)];
+        unsafe { libcrux_pqclean::sha3_256(output.as_mut_ptr(), input.as_ptr(), input.len()) }
+        output
     }
 
     pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        digest::shake256::<LEN>(input)
+        // digest::shake256::<LEN>(input)
+        let mut output = [0u8; LEN];
+        unsafe { libcrux_pqclean::shake256(output.as_mut_ptr(), LEN, input.as_ptr(), input.len()) }
+        output
     }
 
     pub(crate) fn XOF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        digest::shake128::<LEN>(input)
+        // digest::shake128::<LEN>(input)
+        let mut output = [0u8; LEN];
+        unsafe { libcrux_pqclean::shake128(output.as_mut_ptr(), LEN, input.as_ptr(), input.len()) }
+        output
     }
 
     pub(crate) fn KDF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        digest::shake256::<LEN>(input)
+        // digest::shake256::<LEN>(input)
+        let mut output = [0u8; LEN];
+        unsafe { libcrux_pqclean::shake256(output.as_mut_ptr(), LEN, input.as_ptr(), input.len()) }
+        output
     }
 }
