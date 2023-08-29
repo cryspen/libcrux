@@ -51,21 +51,21 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
     let mut bindings = bindgen::Builder::default();
     bindings = bindings
         // Header to wrap HACL headers
-        .header("c/include/hacl.h");
+        .header("c/config/hacl.h");
 
     if platform.simd128 {
         append_simd128_flags(&mut clang_args);
         clang_args.push("-DSIMD128".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 128 headers
-            .header("c/include/hacl128.h");
+            .header("c/config/hacl128.h");
     }
     if platform.simd256 {
         append_simd256_flags(&mut clang_args);
         clang_args.push("-DSIMD256".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
-            .header("c/include/hacl256.h");
+            .header("c/config/hacl256.h");
     }
 
     let generated_bindings = bindings
