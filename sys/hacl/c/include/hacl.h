@@ -7,18 +7,13 @@
 
 #include "Hacl_Chacha20Poly1305_32.h"
 #include "Hacl_Curve25519_51.h"
+#include "Hacl_Hash_SHA1.h"
 #include "Hacl_Hash_SHA2.h"
-#include "Hacl_Streaming_SHA2.h"
-#include "Hacl_SHA3.h"
-#include "Hacl_Streaming_SHA3.h"
+#include "Hacl_Hash_SHA3.h"
 #include "Hacl_Hash_Blake2.h"
-
-#ifdef SIMD128
-#include "Hacl_Chacha20Poly1305_128.h"
-#include "Hacl_Hash_Blake2s_128.h"
-#endif
-
-#ifdef SIMD256
-#include "Hacl_Chacha20Poly1305_256.h"
-#include "Hacl_Hash_Blake2b_256.h"
-#endif
+#include "Hacl_HMAC_DRBG.h"
+#include "Hacl_Ed25519.h"
+#include "Hacl_Streaming_Types.h"
+#include "Hacl_HKDF.h"
+#include "Hacl_HMAC.h"
+#include "Hacl_P256.h"
