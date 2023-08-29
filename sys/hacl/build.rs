@@ -1,6 +1,3 @@
-#[cfg(not(windows))]
-extern crate bindgen;
-
 use std::{env, path::Path};
 
 macro_rules! svec {
@@ -9,8 +6,12 @@ macro_rules! svec {
 
 fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
     let c_path = home_dir.join("c");
+    let mut include_path = c_path.join("include");
+    if cfg!(target_env = "msvc") {
+        include_path = include_path.join("msvc");
+    }
     vec![
-        format!("{}{}", include_str, c_path.join("include").display()),
+        format!("{}{}", include_str, include_path.display()),
         format!(
             "{}{}",
             include_str,
@@ -30,7 +31,7 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
 }
 
 fn append_simd128_flags(flags: &mut Vec<String>) {
-    if cfg!(any(target_arch = "x86", target_arch = "x86_64")) {
+    if cfg!(all(any(target_arch = "x86", target_arch = "x86_64"), not(target_env = "msvc"))) {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
         flags.push("-mavx".to_string());
@@ -38,7 +39,9 @@ fn append_simd128_flags(flags: &mut Vec<String>) {
 }
 
 fn append_simd256_flags(flags: &mut Vec<String>) {
-    flags.push("-mavx2".to_string());
+    if cfg!(not(target_env = "msvc")) {
+        flags.push("-mavx2".to_string());
+    }
 }
 
 #[cfg(not(windows))]
@@ -109,22 +112,19 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
 }
 
 #[cfg(windows)]
-fn create_bindings(_: &Path, _: &Path) {}
-
-fn copy_files(home_path: &Path, out_path: &Path) {
-    let mut options = fs_extra::dir::CopyOptions::new();
-    options.overwrite = true;
-    fs_extra::dir::copy(home_path.join("c"), out_path, &options).unwrap();
-}
+fn create_bindings(_: Platform, _: &Path) {}
 
 fn compile_files(
     library_name: &str,
     files: &[String],
-    out_path: &Path,
+    home_path: &Path,
     args: &[String],
     defines: &[(&str, &str)],
 ) {
-    let src_prefix = out_path.join("c").join("src");
+    let mut src_prefix = home_path.join("c").join("src");
+    if cfg!(target_env = "msvc") {
+        src_prefix = src_prefix.join("msvc");
+    }
 
     let mut build = cc::Build::new();
     build
@@ -135,10 +135,10 @@ fn compile_files(
         .extra_warnings(true);
     // .no_default_flags(true);
 
-    for include in includes(out_path, "") {
+    for include in includes(home_path, "") {
         build.include(include);
     }
-    build.flag("-O3").flag("-c");
+    build.opt_level(3);
     for arg in args {
         build.flag(arg);
     }
@@ -149,7 +149,7 @@ fn compile_files(
     build.compile(library_name);
 }
 
-fn build(platform: Platform, out_path: &Path) {
+fn build(platform: Platform, home_path: &Path) {
     let files = svec![
         "Hacl_NaCl.c",
         "Hacl_Salsa20.c",
@@ -214,7 +214,7 @@ fn build(platform: Platform, out_path: &Path) {
         compile_files(
             "libhacl_128.a",
             &files128,
-            out_path,
+            home_path,
             &simd128_flags,
             &defines,
         );
@@ -238,13 +238,13 @@ fn build(platform: Platform, out_path: &Path) {
         compile_files(
             "libhacl_256.a",
             &files256,
-            out_path,
+            home_path,
             &simd256_flags,
             &defines,
         );
     }
 
-    compile_files("libhacl.a", &files, out_path, &[], &defines);
+    compile_files("libhacl.a", &files, home_path, &[], &defines);
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -281,29 +281,24 @@ fn main() {
 
     // Set re-run trigger for all of c
     println!("cargo:rerun-if-changed=c");
-    println!("cargo:rerun-if-changed=h");
-
-    // Moving C library to output to make build easier.
-    copy_files(home_path, out_path);
-    eprintln!(" >>> out {:?}", out_path);
 
     // Build the C files
-    build(platform, out_path);
+    build(platform, home_path);
 
     // Set library name to look up
-    let library_name = "hacl";
+    const LIB_NAME: &str = "hacl";
 
     // Generate new bindings. This is a no-op on Windows.
     create_bindings(platform, home_path);
 
     // Link hacl library.
-    let mode = "static";
-    println!("cargo:rustc-link-lib={}={}", mode, library_name);
+    const MODE: &str = "static";
+    println!("cargo:rustc-link-lib={}={}", MODE, LIB_NAME);
     if platform.simd128 {
-        println!("cargo:rustc-link-lib={}={}", mode, "hacl_128");
+        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_128");
     }
     if platform.simd256 {
-        println!("cargo:rustc-link-lib={}={}", mode, "hacl_256");
+        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_256");
     }
     println!("cargo:rustc-link-search=native={}", out_path.display());
     println!("cargo:lib={}", out_path.display());
