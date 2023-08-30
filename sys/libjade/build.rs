@@ -174,7 +174,7 @@ pub fn main() -> Result<(), u8> {
     const LIB_NAME: &str = "jade";
 
     // Set re-run trigger for all of s
-    println!("cargo:rerun-if-changed=cs");
+    println!("cargo:rerun-if-changed=jazz");
 
     // Generate new bindings. This is a no-op on Windows.
     create_bindings(platform, home_path);
