@@ -1,5 +1,5 @@
 /*
- * Meta header to include all the main header files we care about.
+ * Meta header to include all the header files for SIMD 256 we care about.
  */
 #pragma once
 

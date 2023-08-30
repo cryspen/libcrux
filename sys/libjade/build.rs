@@ -14,7 +14,6 @@ fn append_simd256_flags(flags: &mut Vec<String>) {
     flags.push("-mavx2".to_string());
 }
 
-#[cfg(not(windows))]
 fn create_bindings(platform: Platform, home_dir: &Path) {
     let jazz_dir = home_dir.join("jazz");
     let mut clang_args = vec![format!("-I{}", jazz_dir.join("include").display())];
@@ -58,9 +57,6 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .write_to_file(home_bindings)
         .expect("Couldn't write bindings!");
 }
-
-#[cfg(windows)]
-fn create_bindings(_: Platform, _: &Path) {}
 
 fn compile_files(library_name: &str, files: &[String], home_path: &Path, args: &[String]) {
     let jazz_dir = home_path.join("jazz");
@@ -176,7 +172,7 @@ pub fn main() -> Result<(), u8> {
     // Set re-run trigger for all of s
     println!("cargo:rerun-if-changed=jazz");
 
-    // Generate new bindings. This is a no-op on Windows.
+    // Generate new bindings.
     create_bindings(platform, home_path);
 
     // Link hacl library.

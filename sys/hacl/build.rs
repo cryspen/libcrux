@@ -31,7 +31,12 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
 }
 
 fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
-    if is_bindgen || cfg!(all(any(target_arch = "x86", target_arch = "x86_64"), not(target_env = "msvc"))) {
+    if is_bindgen
+        || cfg!(all(
+            any(target_arch = "x86", target_arch = "x86_64"),
+            not(target_env = "msvc")
+        ))
+    {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
         flags.push("-mavx".to_string());
