@@ -126,10 +126,7 @@ fn compile_files(
     build
         .files(files.iter().map(|fname| src_prefix.join(fname)))
         // XXX: There are too many warnings for now
-        // .warnings_into_errors(true)
-        .warnings(true)
-        .extra_warnings(true);
-    // .no_default_flags(true);
+        .warnings(false);
 
     for include in includes(home_path, "") {
         build.include(include);
