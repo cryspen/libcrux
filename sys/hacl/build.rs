@@ -27,15 +27,32 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
                 .join("minimal")
                 .display()
         ),
+        format!(
+            "{}{}",
+            include_str,
+            c_path.join("vale").join("include").display()
+        ),
     ]
 }
 
+#[cfg(all(
+    any(target_arch = "x86", target_arch = "x86_64"),
+    any(
+        target_os = "linux",
+        target_os = "macos",
+        all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+    )
+))]
+fn append_aesgcm_flags(flags: &mut Vec<String>) {
+    if cfg!(not(target_env = "msvc")) {
+        flags.push("-maes".to_string());
+        flags.push("-mpclmul".to_string());
+    }
+}
+
 fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
-    if is_bindgen
-        || cfg!(all(
-            any(target_arch = "x86", target_arch = "x86_64"),
-            not(target_env = "msvc")
-        ))
+    if cfg!(any(target_arch = "x86", target_arch = "x86_64"))
+        && (is_bindgen || cfg!(not(target_env = "msvc")))
     {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
@@ -53,10 +70,10 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
     let mut clang_args = includes(home_dir, "-I");
 
     let mut bindings = bindgen::Builder::default();
+
     bindings = bindings
         // Header to wrap HACL headers
         .header("c/config/hacl.h");
-
     if platform.simd128 {
         append_simd128_flags(&mut clang_args, true);
         clang_args.push("-DSIMD128".to_string());
@@ -70,6 +87,19 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
             .header("c/config/hacl256.h");
+    }
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+        )
+    ))]
+    if platform.simd128 && platform.aes_ni && platform.pmull {
+        bindings = bindings
+            // Header to wrap Vale header
+            .header("c/config/vale-aes.h");
     }
 
     let generated_bindings = bindings
@@ -90,6 +120,11 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .allowlist_function("Hacl_HMAC_.*")
         .allowlist_function("Hacl_P256_.*")
         .allowlist_function("EverCrypt_AEAD_.*")
+        .allowlist_function("aes128_.*")
+        .allowlist_function("aes256_.*")
+        .allowlist_function("gcm128_.*")
+        .allowlist_function("gcm256_.*")
+        .allowlist_function("compute_iv_stdcall")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
         .allowlist_type("Hacl_HMAC_DRBG.*")
@@ -121,11 +156,15 @@ fn compile_files(
     home_path: &Path,
     args: &[String],
     defines: &[(&str, &str)],
+    is_vale: bool,
 ) {
-    let mut src_prefix = home_path.join("c").join("src");
-    if cfg!(target_env = "msvc") {
-        src_prefix = src_prefix.join("msvc");
-    }
+    let src_prefix = if is_vale {
+        home_path.join("c").join("vale").join("src")
+    } else if cfg!(target_env = "msvc") {
+        home_path.join("c").join("src").join("msvc")
+    } else {
+        home_path.join("c").join("src")
+    };
 
     let mut build = cc::Build::new();
     build
@@ -190,6 +229,38 @@ fn build(platform: Platform, home_path: &Path) {
     let mut defines = vec![];
 
     // Platform detection
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+        )
+    ))]
+    if platform.simd128 && platform.aes_ni && platform.pmull {
+        let mut files_aesgcm = vec![];
+        if cfg!(target_os = "linux") {
+            files_aesgcm.push("aesgcm-x86_64-linux.S".to_string())
+        } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
+            files_aesgcm.push("aesgcm-x86_64-msvc.asm".to_string())
+        } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
+            files_aesgcm.push("aesgcm-x86_64-mingw.S".to_string())
+        } else if cfg!(target_os = "macos") {
+            files_aesgcm.push("aesgcm-x86_64-darwin.S".to_string())
+        }
+
+        let mut aesgcm_flags = vec![];
+        append_simd128_flags(&mut aesgcm_flags, false);
+        append_aesgcm_flags(&mut aesgcm_flags);
+        compile_files(
+            "libhacl_aesgcm.a",
+            &files_aesgcm,
+            home_path,
+            &aesgcm_flags,
+            &defines,
+            true,
+        );
+    }
     if platform.simd128 {
         let files128 = svec![
             "Hacl_Hash_Blake2s_128.c",
@@ -215,6 +286,7 @@ fn build(platform: Platform, home_path: &Path) {
             home_path,
             &simd128_flags,
             &defines,
+            false,
         );
     }
     if platform.simd256 {
@@ -239,10 +311,11 @@ fn build(platform: Platform, home_path: &Path) {
             home_path,
             &simd256_flags,
             &defines,
+            false,
         );
     }
 
-    compile_files("libhacl.a", &files, home_path, &[], &defines);
+    compile_files("libhacl.a", &files, home_path, &[], &defines, false);
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -297,6 +370,17 @@ fn main() {
     }
     if platform.simd256 {
         println!("cargo:rustc-link-lib={}={}", MODE, "hacl_256");
+    }
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+        )
+    ))]
+    if platform.simd128 && platform.aes_ni && platform.pmull {
+        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_aesgcm");
     }
     println!("cargo:rustc-link-search=native={}", out_path.display());
     println!("cargo:lib={}", out_path.display());
