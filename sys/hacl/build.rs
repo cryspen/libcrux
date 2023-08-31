@@ -35,6 +35,14 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
     ]
 }
 
+#[cfg(all(
+    any(target_arch = "x86", target_arch = "x86_64"),
+    any(
+        target_os = "linux",
+        target_os = "macos",
+        all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+    )
+))]
 fn append_aesgcm_flags(flags: &mut Vec<String>) {
     if cfg!(not(target_env = "msvc")) {
         flags.push("-maes".to_string());
@@ -43,8 +51,9 @@ fn append_aesgcm_flags(flags: &mut Vec<String>) {
 }
 
 fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    if is_bindgen || cfg!(not(target_env = "msvc")) {
+    if cfg!(any(target_arch = "x86", target_arch = "x86_64"))
+        && (is_bindgen || cfg!(not(target_env = "msvc")))
+    {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
         flags.push("-mavx".to_string());
