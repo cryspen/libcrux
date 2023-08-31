@@ -27,16 +27,12 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
                 .join("minimal")
                 .display()
         ),
+        format!(
+            "{}{}",
+            include_str,
+            c_path.join("vale").join("include").display()
+        ),
     ]
-}
-
-fn append_vale_include_dir(home_dir: &Path, include_str: &str, include_dirs: &mut Vec<String>) {
-    let c_path = home_dir.join("c");
-    include_dirs.push(format!(
-        "{}{}",
-        include_str,
-        c_path.join("vale").join("include").display()
-    ));
 }
 
 fn append_aesgcm_flags(flags: &mut Vec<String>) {
@@ -66,25 +62,9 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
 
     let mut bindings = bindgen::Builder::default();
 
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-        )
-    ))]
-    if platform.simd128 && platform.aes_ni && platform.pmull {
-        append_vale_include_dir(home_dir, "-I", &mut clang_args);
-        bindings = bindings
-            // Header to wrap Vale header
-            .header("c/config/vale-aes.h");
-    }
-
     bindings = bindings
         // Header to wrap HACL headers
         .header("c/config/hacl.h");
-
     if platform.simd128 {
         append_simd128_flags(&mut clang_args, true);
         clang_args.push("-DSIMD128".to_string());
@@ -98,6 +78,19 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
             .header("c/config/hacl256.h");
+    }
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+        )
+    ))]
+    if platform.simd128 && platform.aes_ni && platform.pmull {
+        bindings = bindings
+            // Header to wrap Vale header
+            .header("c/config/vale-aes.h");
     }
 
     let generated_bindings = bindings
@@ -158,12 +151,10 @@ fn compile_files(
 ) {
     let src_prefix = if is_vale {
         home_path.join("c").join("vale").join("src")
+    } else if cfg!(target_env = "msvc") {
+        home_path.join("c").join("src").join("msvc")
     } else {
-        if cfg!(target_env = "msvc") {
-            home_path.join("c").join("src").join("msvc")
-        } else {
-            home_path.join("c").join("src")
-        }
+        home_path.join("c").join("src")
     };
 
     let mut build = cc::Build::new();
@@ -172,11 +163,7 @@ fn compile_files(
         // XXX: There are too many warnings for now
         .warnings(false);
 
-    let mut include_dirs = includes(home_path, "");
-    if is_vale {
-        append_vale_include_dir(home_path, "", &mut include_dirs);
-    }
-    for include in include_dirs {
+    for include in includes(home_path, "") {
         build.include(include);
     }
     build.opt_level(3);
