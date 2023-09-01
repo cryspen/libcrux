@@ -277,17 +277,35 @@ fn build(platform: Platform, home_path: &Path) {
             &defines,
         );
     }
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_env = "gnu",
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", target_env = "msvc")
+        )
+    ))]
     if platform.x25519 {
-        let files_curve25519 = svec!["Hacl_Curve25519_64.c",];
+        let files_curve25519_64 = svec!["Hacl_Curve25519_64.c",];
+        let mut files_curve25519 = vec![];
+        if cfg!(target_os = "linux") {
+            files_curve25519.push("curve25519-x86_64-linux.S".to_string());
+        } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
+            files_curve25519.push("curve25519-x86_64-msvc.asm".to_string());
+        } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
+            files_curve25519.push("curve25519-x86_64-mingw.S".to_string());
+        } else if cfg!(target_os = "macos") {
+            files_curve25519.push("curve25519-x86_64-darwin.S".to_string());
+        }
         if cfg!(target_env = "gnu") {
             defines.append(&mut vec![("HACL_CAN_COMPILE_INLINE_ASM", "1")]);
         }
 
         compile_files(
             "libhacl_curve25519.a",
+            &files_curve25519_64,
             &files_curve25519,
-            &[],
             home_path,
             &[],
             &defines,
@@ -394,7 +412,15 @@ fn main() {
     if platform.simd256 {
         println!("cargo:rustc-link-lib={}={}", MODE, "hacl_256");
     }
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_env = "gnu",
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", target_env = "msvc")
+        )
+    ))]
     if platform.x25519 {
         println!("cargo:rustc-link-lib={}={}", MODE, "hacl_curve25519");
     }
