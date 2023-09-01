@@ -277,6 +277,22 @@ fn build(platform: Platform, home_path: &Path) {
             &defines,
         );
     }
+    #[cfg(target_arch = "x86_64")]
+    if platform.x25519 {
+        let files_curve25519 = svec![
+            "Hacl_Curve25519_64.c",
+        ];
+        defines.append(&mut vec![("HACL_CAN_COMPILE_INLINE_ASM", "1")]);
+
+        compile_files(
+            "libhacl_curve25519.a",
+            &files_curve25519,
+            &[],
+            home_path,
+            &[],
+            &defines,
+        );
+    }
     #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         any(
@@ -377,6 +393,10 @@ fn main() {
     }
     if platform.simd256 {
         println!("cargo:rustc-link-lib={}={}", MODE, "hacl_256");
+    }
+    #[cfg(target_arch = "x86_64")]
+    if platform.x25519 {
+        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_curve25519");
     }
     #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
