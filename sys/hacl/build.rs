@@ -279,10 +279,10 @@ fn build(platform: Platform, home_path: &Path) {
     }
     #[cfg(target_arch = "x86_64")]
     if platform.x25519 {
-        let files_curve25519 = svec![
-            "Hacl_Curve25519_64.c",
-        ];
-        defines.append(&mut vec![("HACL_CAN_COMPILE_INLINE_ASM", "1")]);
+        let files_curve25519 = svec!["Hacl_Curve25519_64.c",];
+        if cfg!(target_env = "gnu") {
+            defines.append(&mut vec![("HACL_CAN_COMPILE_INLINE_ASM", "1")]);
+        }
 
         compile_files(
             "libhacl_curve25519.a",
