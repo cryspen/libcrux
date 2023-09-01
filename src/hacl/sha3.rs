@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use libcrux_hacl::{
     Hacl_SHA3_sha3_224, Hacl_SHA3_sha3_256, Hacl_SHA3_sha3_384, Hacl_SHA3_sha3_512,
     Hacl_SHA3_shake128_hacl, Hacl_SHA3_shake256_hacl,

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// HKDF Errors.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Error {
@@ -107,21 +109,6 @@ macro_rules! impl_hkdf {
                         );
                     }
                     Ok(okm)
-                }
-
-                /// HKDF using the `salt`, input key material `ikm`, `info`. The output length
-                /// is defined through the result type.
-                /// Calls `extract` and `expand` with the given input.
-                ///
-                /// Returns the key material in an array of length `okm_len`.
-                pub fn hkdf(
-                    salt: &[u8],
-                    ikm: &[u8],
-                    info: &[u8],
-                    okm_len: usize,
-                ) -> Result<Vec<u8>, Error> {
-                    let prk = super::extract(salt, ikm);
-                    expand(&prk, info, okm_len)
                 }
             }
         }

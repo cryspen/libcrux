@@ -319,8 +319,6 @@ fn decrypt_32(
 
 #[cfg(aes_ni)]
 fn aes_encrypt_128(key: &Aes128Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
     aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
             aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
@@ -336,8 +334,6 @@ fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag,
 
 #[cfg(aes_ni)]
 fn aes_encrypt_256(key: &Aes256Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
     aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
             aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
@@ -359,8 +355,6 @@ fn aes_decrypt_128(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
     aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,
@@ -380,8 +374,6 @@ fn aes_decrypt_256(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
     aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,

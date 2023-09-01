@@ -298,7 +298,7 @@ fn build(platform: Platform, home_path: &Path) {
         } else if cfg!(target_os = "macos") {
             files_curve25519.push("curve25519-x86_64-darwin.S".to_string());
         }
-        if cfg!(target_env = "gnu") {
+        if cfg!(all(target_arch = "x86_64", target_env = "gnu")) {
             defines.append(&mut vec![("HACL_CAN_COMPILE_INLINE_ASM", "1")]);
         }
 
