@@ -27,11 +27,6 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
                 .join("minimal")
                 .display()
         ),
-        format!(
-            "{}{}",
-            include_str,
-            c_path.join("vale").join("include").display()
-        ),
     ]
 }
 
@@ -88,19 +83,6 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
             // Header to wrap HACL SIMD 256 headers
             .header("c/config/hacl256.h");
     }
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-        )
-    ))]
-    if platform.simd128 && platform.aes_ni && platform.pmull {
-        bindings = bindings
-            // Header to wrap Vale header
-            .header("c/config/vale-aes.h");
-    }
 
     let generated_bindings = bindings
         // Set include paths for HACL headers
@@ -120,11 +102,7 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .allowlist_function("Hacl_HMAC_.*")
         .allowlist_function("Hacl_P256_.*")
         .allowlist_function("EverCrypt_AEAD_.*")
-        .allowlist_function("aes128_.*")
-        .allowlist_function("aes256_.*")
-        .allowlist_function("gcm128_.*")
-        .allowlist_function("gcm256_.*")
-        .allowlist_function("compute_iv_stdcall")
+        .allowlist_function("EverCrypt_AutoConfig2_.*")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
         .allowlist_type("Hacl_HMAC_DRBG.*")
@@ -225,42 +203,14 @@ fn build(platform: Platform, home_path: &Path) {
         "Hacl_Hash_MD5.c",
         "Hacl_HKDF.c",
         "Hacl_RSAPSS.c",
+        "EverCrypt_Error.c",
+        "EverCrypt_AutoConfig2.c",
+        "EverCrypt_Chacha20Poly1305.c",
+        "EverCrypt_AEAD.c",
     ];
     let mut defines = vec![];
 
     // Platform detection
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-        )
-    ))]
-    if platform.simd128 && platform.aes_ni && platform.pmull {
-        let mut files_aesgcm = vec![];
-        if cfg!(target_os = "linux") {
-            files_aesgcm.push("aesgcm-x86_64-linux.S".to_string())
-        } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
-            files_aesgcm.push("aesgcm-x86_64-msvc.asm".to_string())
-        } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
-            files_aesgcm.push("aesgcm-x86_64-mingw.S".to_string())
-        } else if cfg!(target_os = "macos") {
-            files_aesgcm.push("aesgcm-x86_64-darwin.S".to_string())
-        }
-
-        let mut aesgcm_flags = vec![];
-        append_simd128_flags(&mut aesgcm_flags, false);
-        append_aesgcm_flags(&mut aesgcm_flags);
-        compile_files(
-            "libhacl_aesgcm.a",
-            &files_aesgcm,
-            home_path,
-            &aesgcm_flags,
-            &defines,
-            true,
-        );
-    }
     if platform.simd128 {
         let files128 = svec![
             "Hacl_Hash_Blake2s_128.c",
@@ -313,6 +263,44 @@ fn build(platform: Platform, home_path: &Path) {
             &defines,
             false,
         );
+    }
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+        )
+    ))]
+    if platform.simd128 && platform.aes_ni && platform.pmull {
+        let mut files_aesgcm = vec![];
+        if cfg!(target_os = "linux") {
+            files_aesgcm.push("cpuid-x86_64-linux.S".to_string());
+            files_aesgcm.push("aesgcm-x86_64-linux.S".to_string());
+        } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
+            files_aesgcm.push("cpuid-x86_64-msvc.asm".to_string());
+            files_aesgcm.push("aesgcm-x86_64-msvc.asm".to_string());
+        } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
+            files_aesgcm.push("cpuid-x86_64-mingw.S".to_string());
+            files_aesgcm.push("aesgcm-x86_64-mingw.S".to_string());
+        } else if cfg!(target_os = "macos") {
+            files_aesgcm.push("cpuid-x86_64-darwin.S".to_string());
+            files_aesgcm.push("aesgcm-x86_64-darwin.S".to_string());
+        }
+
+        let mut aesgcm_flags = vec![];
+        append_simd128_flags(&mut aesgcm_flags, false);
+        append_aesgcm_flags(&mut aesgcm_flags);
+        compile_files(
+            "libhacl_aesgcm.a",
+            &files_aesgcm,
+            home_path,
+            &aesgcm_flags,
+            &[],
+            true,
+        );
+
+        defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
     }
 
     compile_files("libhacl.a", &files, home_path, &[], &defines, false);
