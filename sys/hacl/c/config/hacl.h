@@ -17,4 +17,3 @@
 #include "Hacl_HKDF.h"
 #include "Hacl_HMAC.h"
 #include "Hacl_P256.h"
-#include "EverCrypt_AEAD.h"
