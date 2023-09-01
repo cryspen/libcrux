@@ -5,4 +5,5 @@
 
 #include "config.h"
 
-#include "internal/Vale.h"
+#include "EverCrypt_AutoConfig2.h"
+#include "EverCrypt_AEAD.h"

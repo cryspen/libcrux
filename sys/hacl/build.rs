@@ -83,6 +83,19 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
             // Header to wrap HACL SIMD 256 headers
             .header("c/config/hacl256.h");
     }
+    #[cfg(all(
+        any(target_arch = "x86", target_arch = "x86_64"),
+        any(
+            target_os = "linux",
+            target_os = "macos",
+            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
+        )
+    ))]
+    if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
+        bindings = bindings
+            // Header to wrap EverCrypt_AutoConfig2
+            .header("c/config/vale-aes.h");
+    }
 
     let generated_bindings = bindings
         // Set include paths for HACL headers
@@ -131,22 +144,26 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
 fn compile_files(
     library_name: &str,
     files: &[String],
+    vale_files: &[String],
     home_path: &Path,
     args: &[String],
     defines: &[(&str, &str)],
-    is_vale: bool,
 ) {
-    let src_prefix = if is_vale {
-        home_path.join("c").join("vale").join("src")
-    } else if cfg!(target_env = "msvc") {
+    let src_prefix = if cfg!(target_env = "msvc") {
         home_path.join("c").join("src").join("msvc")
     } else {
         home_path.join("c").join("src")
     };
+    let vale_prefix = home_path.join("c").join("vale").join("src");
 
     let mut build = cc::Build::new();
     build
-        .files(files.iter().map(|fname| src_prefix.join(fname)))
+        .files(
+            files
+                .iter()
+                .map(|fname| src_prefix.join(fname))
+                .chain(vale_files.iter().map(|fname| vale_prefix.join(fname))),
+        )
         // XXX: There are too many warnings for now
         .warnings(false);
 
@@ -203,10 +220,6 @@ fn build(platform: Platform, home_path: &Path) {
         "Hacl_Hash_MD5.c",
         "Hacl_HKDF.c",
         "Hacl_RSAPSS.c",
-        "EverCrypt_Error.c",
-        "EverCrypt_AutoConfig2.c",
-        "EverCrypt_Chacha20Poly1305.c",
-        "EverCrypt_AEAD.c",
     ];
     let mut defines = vec![];
 
@@ -233,10 +246,10 @@ fn build(platform: Platform, home_path: &Path) {
         compile_files(
             "libhacl_128.a",
             &files128,
+            &[],
             home_path,
             &simd128_flags,
             &defines,
-            false,
         );
     }
     if platform.simd256 {
@@ -258,10 +271,10 @@ fn build(platform: Platform, home_path: &Path) {
         compile_files(
             "libhacl_256.a",
             &files256,
+            &[],
             home_path,
             &simd256_flags,
             &defines,
-            false,
         );
     }
     #[cfg(all(
@@ -272,7 +285,13 @@ fn build(platform: Platform, home_path: &Path) {
             all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
         )
     ))]
-    if platform.simd128 && platform.aes_ni && platform.pmull {
+    if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
+        let files_evercrypt = svec![
+            "EverCrypt_Error.c",
+            "EverCrypt_AutoConfig2.c",
+            "EverCrypt_Chacha20Poly1305.c",
+            "EverCrypt_AEAD.c",
+        ];
         let mut files_aesgcm = vec![];
         if cfg!(target_os = "linux") {
             files_aesgcm.push("cpuid-x86_64-linux.S".to_string());
@@ -293,17 +312,17 @@ fn build(platform: Platform, home_path: &Path) {
         append_aesgcm_flags(&mut aesgcm_flags);
         compile_files(
             "libhacl_aesgcm.a",
+            &files_evercrypt,
             &files_aesgcm,
             home_path,
             &aesgcm_flags,
             &[],
-            true,
         );
 
         defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
     }
 
-    compile_files("libhacl.a", &files, home_path, &[], &defines, false);
+    compile_files("libhacl.a", &files, &[], home_path, &[], &defines);
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -329,7 +348,7 @@ fn main() {
     // Check platform support
     let platform = Platform {
         simd128: libcrux_platform::simd128_support(),
-        simd256: libcrux_platform::simd256_support(),
+        simd256: false,
         aes_ni: libcrux_platform::aes_ni_support(),
         x25519: libcrux_platform::x25519_support(),
         bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
@@ -367,7 +386,7 @@ fn main() {
             all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
         )
     ))]
-    if platform.simd128 && platform.aes_ni && platform.pmull {
+    if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
         println!("cargo:rustc-link-lib={}={}", MODE, "hacl_aesgcm");
     }
     println!("cargo:rustc-link-search=native={}", out_path.display());
