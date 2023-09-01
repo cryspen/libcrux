@@ -306,9 +306,11 @@ fn build(platform: Platform, home_path: &Path) {
             files_aesgcm.push("cpuid-x86_64-darwin.S".to_string());
             files_aesgcm.push("aesgcm-x86_64-darwin.S".to_string());
         }
+        defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
 
         let mut aesgcm_flags = vec![];
         append_simd128_flags(&mut aesgcm_flags, false);
+        append_simd256_flags(&mut aesgcm_flags, false);
         append_aesgcm_flags(&mut aesgcm_flags);
         compile_files(
             "libhacl_aesgcm.a",
@@ -316,10 +318,8 @@ fn build(platform: Platform, home_path: &Path) {
             &files_aesgcm,
             home_path,
             &aesgcm_flags,
-            &[],
+            &defines,
         );
-
-        defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
     }
 
     compile_files("libhacl.a", &files, &[], home_path, &[], &defines);
