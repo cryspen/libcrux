@@ -348,7 +348,7 @@ fn main() {
     // Check platform support
     let platform = Platform {
         simd128: libcrux_platform::simd128_support(),
-        simd256: false,
+        simd256: libcrux_platform::simd256_support(),
         aes_ni: libcrux_platform::aes_ni_support(),
         x25519: libcrux_platform::x25519_support(),
         bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
