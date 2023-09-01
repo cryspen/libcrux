@@ -11,6 +11,9 @@ pub use libcrux_platform::aes_ni_support;
 ))]
 pub(crate) mod jasmin;
 
+// HACL
+pub(crate) mod hacl;
+
 // libcrux
 pub mod aead;
 pub mod bls12;

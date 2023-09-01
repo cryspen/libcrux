@@ -5,4 +5,4 @@
 
 #include "config.h"
 
-#include "Vale.h"
+#include "internal/Vale.h"

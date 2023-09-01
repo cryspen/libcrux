@@ -21,13 +21,13 @@ pub enum Error {
 pub fn extract(alg: Algorithm, salt: impl AsRef<[u8]>, ikm: impl AsRef<[u8]>) -> Vec<u8> {
     match alg {
         Algorithm::Sha256 => {
-            hacl::hazmat::hkdf::sha2_256::extract(salt.as_ref(), ikm.as_ref()).into()
+            crate::hacl::hkdf::sha2_256::extract(salt.as_ref(), ikm.as_ref()).into()
         }
         Algorithm::Sha384 => {
-            hacl::hazmat::hkdf::sha2_384::extract(salt.as_ref(), ikm.as_ref()).into()
+            crate::hacl::hkdf::sha2_384::extract(salt.as_ref(), ikm.as_ref()).into()
         }
         Algorithm::Sha512 => {
-            hacl::hazmat::hkdf::sha2_512::extract(salt.as_ref(), ikm.as_ref()).into()
+            crate::hacl::hkdf::sha2_512::extract(salt.as_ref(), ikm.as_ref()).into()
         }
     }
 }
@@ -43,15 +43,15 @@ pub fn expand(
 ) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::Sha256 => {
-            hacl::hazmat::hkdf::sha2_256::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
+            crate::hacl::hkdf::sha2_256::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
                 .map_err(|_| Error::OkmLengthTooLarge)
         }
         Algorithm::Sha384 => {
-            hacl::hazmat::hkdf::sha2_384::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
+            crate::hacl::hkdf::sha2_384::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
                 .map_err(|_| Error::OkmLengthTooLarge)
         }
         Algorithm::Sha512 => {
-            hacl::hazmat::hkdf::sha2_512::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
+            crate::hacl::hkdf::sha2_512::vec::expand(prk.as_ref(), info.as_ref(), okm_len)
                 .map_err(|_| Error::OkmLengthTooLarge)
         }
     }
