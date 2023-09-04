@@ -11,12 +11,12 @@
 //! ## P256
 //! For P256 the portable HACL implementation is used.
 
-use hacl::hazmat;
+use crate::hacl;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum LowLevelError {
     Jasmin(String),
-    Hacl(hacl::hazmat::Error),
+    Hacl(hacl::Error),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -29,9 +29,9 @@ pub enum Error {
     Wrap(LowLevelError),
 }
 
-impl From<hacl::hazmat::p256::Error> for Error {
-    fn from(value: hacl::hazmat::p256::Error) -> Self {
-        Error::Wrap(LowLevelError::Hacl(hazmat::Error::P256(value)))
+impl From<hacl::p256::Error> for Error {
+    fn from(value: hacl::p256::Error) -> Self {
+        Error::Wrap(LowLevelError::Hacl(hacl::Error::P256(value)))
     }
 }
 
@@ -51,7 +51,7 @@ pub(crate) mod x25519 {
     #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
     pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
         use libcrux_platform::x25519_support;
-        use hacl::hazmat::curve25519;
+        use crate::hacl::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 
@@ -73,7 +73,7 @@ pub(crate) mod x25519 {
         target_arch = "x86"
     ))]
     pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
-        use hacl::hazmat::curve25519;
+        use crate::hacl::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 
@@ -86,7 +86,7 @@ pub(crate) mod x25519 {
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
     pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
         // On any other platform we use the portable HACL implementation.
-        use hacl::hazmat::curve25519;
+        use crate::hacl::curve25519;
 
         curve25519::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
     }
@@ -100,7 +100,7 @@ pub(crate) mod x25519 {
     // #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
     pub(super) fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 32], Error> {
         // On any other platform we use the portable HACL implementation.
-        use hacl::hazmat::curve25519;
+        use crate::hacl::curve25519;
 
         Ok(curve25519::secret_to_public(s))
     }
@@ -108,7 +108,7 @@ pub(crate) mod x25519 {
 
 pub(crate) mod p256 {
     // P256 we only have in HACL
-    use hacl::hazmat::p256;
+    use crate::hacl::p256;
 
     use super::Error;
 
@@ -175,7 +175,7 @@ pub fn derive(
         .map(|r| r.into()),
         Algorithm::P256 => {
             let point = p256::prepare_public_key(point.as_ref())?;
-            let scalar = hazmat::p256::validate_scalar_slice(scalar.as_ref())
+            let scalar = hacl::p256::validate_scalar_slice(scalar.as_ref())
                 .map_err(|_| Error::InvalidScalar)?;
 
             p256::derive(&point, &scalar).map(|r| r.into())

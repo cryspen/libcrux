@@ -1,6 +1,7 @@
 /* MIT License
  *
- * Copyright (c) 2016-2020 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2016-2022 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2022-2023 HACL* Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,9 @@
 #include "internal/Hacl_K256_ECDSA.h"
 
 #include "internal/Hacl_Krmllib.h"
+#include "internal/Hacl_K256_PrecompTable.h"
+#include "internal/Hacl_Bignum_K256.h"
+#include "internal/Hacl_Bignum_Base.h"
 
 static inline uint64_t
 bn_add(uint32_t aLen, uint64_t *a, uint32_t bLen, uint64_t *b, uint64_t *res)
@@ -585,6 +589,37 @@ static inline bool is_qelem_le_q_halved_vartime(uint64_t *f)
   return a0 <= (uint64_t)0xdfe92f46681b20a0U;
 }
 
+static inline void qmul_shift_384(uint64_t *res, uint64_t *a, uint64_t *b)
+{
+  uint64_t l[8U] = { 0U };
+  mul4(a, b, l);
+  uint64_t res_b_padded[4U] = { 0U };
+  memcpy(res_b_padded, l + (uint32_t)6U, (uint32_t)2U * sizeof (uint64_t));
+  uint64_t
+  c0 = Lib_IntTypes_Intrinsics_add_carry_u64((uint64_t)0U, res_b_padded[0U], (uint64_t)1U, res);
+  uint64_t *a1 = res_b_padded + (uint32_t)1U;
+  uint64_t *res1 = res + (uint32_t)1U;
+  uint64_t c = c0;
+  KRML_MAYBE_FOR3(i,
+    (uint32_t)0U,
+    (uint32_t)3U,
+    (uint32_t)1U,
+    uint64_t t1 = a1[i];
+    uint64_t *res_i = res1 + i;
+    c = Lib_IntTypes_Intrinsics_add_carry_u64(c, t1, (uint64_t)0U, res_i););
+  uint64_t c1 = c;
+  uint64_t uu____0 = c1;
+  uint64_t flag = l[5U] >> (uint32_t)63U;
+  uint64_t mask = (uint64_t)0U - flag;
+  KRML_MAYBE_FOR4(i,
+    (uint32_t)0U,
+    (uint32_t)4U,
+    (uint32_t)1U,
+    uint64_t *os = res;
+    uint64_t x = (mask & res[i]) | (~mask & res_b_padded[i]);
+    os[i] = x;);
+}
+
 static inline void qsquare_times_in_place(uint64_t *out, uint32_t b)
 {
   for (uint32_t i = (uint32_t)0U; i < b; i++)
@@ -697,6 +732,54 @@ void Hacl_Impl_K256_Point_make_point_at_inf(uint64_t *p)
   memset(pz, 0U, (uint32_t)5U * sizeof (uint64_t));
 }
 
+static inline void to_aff_point(uint64_t *p_aff, uint64_t *p)
+{
+  uint64_t *x = p_aff;
+  uint64_t *y = p_aff + (uint32_t)5U;
+  uint64_t *x1 = p;
+  uint64_t *y1 = p + (uint32_t)5U;
+  uint64_t *z1 = p + (uint32_t)10U;
+  uint64_t zinv[5U] = { 0U };
+  Hacl_Impl_K256_Finv_finv(zinv, z1);
+  Hacl_K256_Field_fmul(x, x1, zinv);
+  Hacl_K256_Field_fmul(y, y1, zinv);
+  Hacl_K256_Field_fnormalize(x, x);
+  Hacl_K256_Field_fnormalize(y, y);
+}
+
+static inline void to_aff_point_x(uint64_t *x, uint64_t *p)
+{
+  uint64_t *x1 = p;
+  uint64_t *z1 = p + (uint32_t)10U;
+  uint64_t zinv[5U] = { 0U };
+  Hacl_Impl_K256_Finv_finv(zinv, z1);
+  Hacl_K256_Field_fmul(x, x1, zinv);
+  Hacl_K256_Field_fnormalize(x, x);
+}
+
+static inline bool is_on_curve_vartime(uint64_t *p)
+{
+  uint64_t y2_exp[5U] = { 0U };
+  uint64_t *x = p;
+  uint64_t *y = p + (uint32_t)5U;
+  uint64_t b[5U] = { 0U };
+  b[0U] = (uint64_t)0x7U;
+  b[1U] = (uint64_t)0U;
+  b[2U] = (uint64_t)0U;
+  b[3U] = (uint64_t)0U;
+  b[4U] = (uint64_t)0U;
+  Hacl_K256_Field_fsqr(y2_exp, x);
+  Hacl_K256_Field_fmul(y2_exp, y2_exp, x);
+  Hacl_K256_Field_fadd(y2_exp, y2_exp, b);
+  Hacl_K256_Field_fnormalize(y2_exp, y2_exp);
+  uint64_t y2_comp[5U] = { 0U };
+  Hacl_K256_Field_fsqr(y2_comp, y);
+  Hacl_K256_Field_fnormalize(y2_comp, y2_comp);
+  bool res = Hacl_K256_Field_is_felem_eq_vartime(y2_exp, y2_comp);
+  bool res0 = res;
+  return res0;
+}
+
 void Hacl_Impl_K256_Point_point_negate(uint64_t *out, uint64_t *p)
 {
   uint64_t *px = p;
@@ -738,44 +821,75 @@ void Hacl_Impl_K256_Point_point_negate(uint64_t *out, uint64_t *p)
   Hacl_K256_Field_fnormalize_weak(oy, oy);
 }
 
-static inline bool fmul_fmul_eq_vartime(uint64_t *a, uint64_t *bz, uint64_t *c, uint64_t *dz)
+static inline void point_negate_conditional_vartime(uint64_t *p, bool is_negate)
 {
-  uint64_t a_bz[5U] = { 0U };
-  uint64_t c_dz[5U] = { 0U };
-  Hacl_K256_Field_fmul(a_bz, a, bz);
-  Hacl_K256_Field_fmul(c_dz, c, dz);
-  Hacl_K256_Field_fnormalize(a_bz, a_bz);
-  Hacl_K256_Field_fnormalize(c_dz, c_dz);
-  bool z = Hacl_K256_Field_is_felem_eq_vartime(a_bz, c_dz);
-  return z;
+  if (is_negate)
+  {
+    Hacl_Impl_K256_Point_point_negate(p, p);
+    return;
+  }
 }
 
-bool Hacl_Impl_K256_Point_point_eq(uint64_t *p, uint64_t *q)
+static inline void aff_point_store(uint8_t *out, uint64_t *p)
 {
   uint64_t *px = p;
   uint64_t *py = p + (uint32_t)5U;
-  uint64_t *pz = p + (uint32_t)10U;
-  uint64_t *qx = q;
-  uint64_t *qy = q + (uint32_t)5U;
-  uint64_t *qz = q + (uint32_t)10U;
-  bool z0 = fmul_fmul_eq_vartime(px, qz, qx, pz);
-  if (!z0)
-  {
-    return false;
-  }
-  return fmul_fmul_eq_vartime(py, qz, qy, pz);
+  Hacl_K256_Field_store_felem(out, px);
+  Hacl_K256_Field_store_felem(out + (uint32_t)32U, py);
 }
 
-bool Hacl_Impl_K256_Point_aff_point_decompress_vartime(uint64_t *x, uint64_t *y, uint8_t *s)
+void Hacl_Impl_K256_Point_point_store(uint8_t *out, uint64_t *p)
+{
+  uint64_t p_aff[10U] = { 0U };
+  to_aff_point(p_aff, p);
+  aff_point_store(out, p_aff);
+}
+
+bool Hacl_Impl_K256_Point_aff_point_load_vartime(uint64_t *p, uint8_t *b)
+{
+  uint8_t *px = b;
+  uint8_t *py = b + (uint32_t)32U;
+  uint64_t *bn_px = p;
+  uint64_t *bn_py = p + (uint32_t)5U;
+  bool is_x_valid = Hacl_K256_Field_load_felem_lt_prime_vartime(bn_px, px);
+  bool is_y_valid = Hacl_K256_Field_load_felem_lt_prime_vartime(bn_py, py);
+  if (is_x_valid && is_y_valid)
+  {
+    return is_on_curve_vartime(p);
+  }
+  return false;
+}
+
+static inline bool load_point_vartime(uint64_t *p, uint8_t *b)
+{
+  uint64_t p_aff[10U] = { 0U };
+  bool res = Hacl_Impl_K256_Point_aff_point_load_vartime(p_aff, b);
+  if (res)
+  {
+    uint64_t *x = p_aff;
+    uint64_t *y = p_aff + (uint32_t)5U;
+    uint64_t *x1 = p;
+    uint64_t *y1 = p + (uint32_t)5U;
+    uint64_t *z1 = p + (uint32_t)10U;
+    memcpy(x1, x, (uint32_t)5U * sizeof (uint64_t));
+    memcpy(y1, y, (uint32_t)5U * sizeof (uint64_t));
+    memset(z1, 0U, (uint32_t)5U * sizeof (uint64_t));
+    z1[0U] = (uint64_t)1U;
+  }
+  return res;
+}
+
+static inline bool aff_point_decompress_vartime(uint64_t *x, uint64_t *y, uint8_t *s)
 {
   uint8_t s0 = s[0U];
-  if (!(s0 == (uint8_t)0x02U || s0 == (uint8_t)0x03U))
+  uint8_t s01 = s0;
+  if (!(s01 == (uint8_t)0x02U || s01 == (uint8_t)0x03U))
   {
     return false;
   }
   uint8_t *xb = s + (uint32_t)1U;
-  bool is_x_valid = Hacl_K256_Field_load_felem_vartime(x, xb);
-  bool is_y_odd = s0 == (uint8_t)0x03U;
+  bool is_x_valid = Hacl_K256_Field_load_felem_lt_prime_vartime(x, xb);
+  bool is_y_odd = s01 == (uint8_t)0x03U;
   if (!is_x_valid)
   {
     return false;
@@ -798,7 +912,8 @@ bool Hacl_Impl_K256_Point_aff_point_decompress_vartime(uint64_t *x, uint64_t *y,
   Hacl_K256_Field_fnormalize(y2_comp, y2_comp);
   bool res = Hacl_K256_Field_is_felem_eq_vartime(y2, y2_comp);
   bool is_y_valid = res;
-  if (!is_y_valid)
+  bool is_y_valid0 = is_y_valid;
+  if (!is_y_valid0)
   {
     return false;
   }
@@ -806,25 +921,6 @@ bool Hacl_Impl_K256_Point_aff_point_decompress_vartime(uint64_t *x, uint64_t *y,
   bool is_y_odd1 = (x0 & (uint64_t)1U) == (uint64_t)1U;
   Hacl_K256_Field_fnegate_conditional_vartime(y, is_y_odd1 != is_y_odd);
   return true;
-}
-
-void Hacl_Impl_K256_Point_aff_point_compress_vartime(uint8_t *s, uint64_t *x, uint64_t *y)
-{
-  Hacl_K256_Field_fnormalize(y, y);
-  Hacl_K256_Field_fnormalize(x, x);
-  uint64_t x0 = y[0U];
-  bool is_y_odd = (x0 & (uint64_t)1U) == (uint64_t)1U;
-  uint8_t ite;
-  if (is_y_odd)
-  {
-    ite = (uint8_t)0x03U;
-  }
-  else
-  {
-    ite = (uint8_t)0x02U;
-  }
-  s[0U] = ite;
-  Hacl_K256_Field_store_felem(s + (uint32_t)1U, x);
 }
 
 void Hacl_Impl_K256_PointDouble_point_double(uint64_t *out, uint64_t *p)
@@ -924,6 +1020,109 @@ void Hacl_Impl_K256_PointAdd_point_add(uint64_t *out, uint64_t *p, uint64_t *q)
   Hacl_K256_Field_fnormalize_weak(z3, z3);
 }
 
+static inline void scalar_split_lambda(uint64_t *r1, uint64_t *r2, uint64_t *k)
+{
+  uint64_t tmp1[4U] = { 0U };
+  uint64_t tmp2[4U] = { 0U };
+  tmp1[0U] = (uint64_t)0xe893209a45dbb031U;
+  tmp1[1U] = (uint64_t)0x3daa8a1471e8ca7fU;
+  tmp1[2U] = (uint64_t)0xe86c90e49284eb15U;
+  tmp1[3U] = (uint64_t)0x3086d221a7d46bcdU;
+  tmp2[0U] = (uint64_t)0x1571b4ae8ac47f71U;
+  tmp2[1U] = (uint64_t)0x221208ac9df506c6U;
+  tmp2[2U] = (uint64_t)0x6f547fa90abfe4c4U;
+  tmp2[3U] = (uint64_t)0xe4437ed6010e8828U;
+  qmul_shift_384(r1, k, tmp1);
+  qmul_shift_384(r2, k, tmp2);
+  tmp1[0U] = (uint64_t)0x6f547fa90abfe4c3U;
+  tmp1[1U] = (uint64_t)0xe4437ed6010e8828U;
+  tmp1[2U] = (uint64_t)0x0U;
+  tmp1[3U] = (uint64_t)0x0U;
+  tmp2[0U] = (uint64_t)0xd765cda83db1562cU;
+  tmp2[1U] = (uint64_t)0x8a280ac50774346dU;
+  tmp2[2U] = (uint64_t)0xfffffffffffffffeU;
+  tmp2[3U] = (uint64_t)0xffffffffffffffffU;
+  qmul(r1, r1, tmp1);
+  qmul(r2, r2, tmp2);
+  tmp1[0U] = (uint64_t)0xe0cfc810b51283cfU;
+  tmp1[1U] = (uint64_t)0xa880b9fc8ec739c2U;
+  tmp1[2U] = (uint64_t)0x5ad9e3fd77ed9ba4U;
+  tmp1[3U] = (uint64_t)0xac9c52b33fa3cf1fU;
+  qadd(r2, r1, r2);
+  qmul(tmp2, r2, tmp1);
+  qadd(r1, k, tmp2);
+}
+
+static inline void point_mul_lambda(uint64_t *res, uint64_t *p)
+{
+  uint64_t *rx = res;
+  uint64_t *ry = res + (uint32_t)5U;
+  uint64_t *rz = res + (uint32_t)10U;
+  uint64_t *px = p;
+  uint64_t *py = p + (uint32_t)5U;
+  uint64_t *pz = p + (uint32_t)10U;
+  uint64_t beta[5U] = { 0U };
+  beta[0U] = (uint64_t)0x96c28719501eeU;
+  beta[1U] = (uint64_t)0x7512f58995c13U;
+  beta[2U] = (uint64_t)0xc3434e99cf049U;
+  beta[3U] = (uint64_t)0x7106e64479eaU;
+  beta[4U] = (uint64_t)0x7ae96a2b657cU;
+  Hacl_K256_Field_fmul(rx, beta, px);
+  ry[0U] = py[0U];
+  ry[1U] = py[1U];
+  ry[2U] = py[2U];
+  ry[3U] = py[3U];
+  ry[4U] = py[4U];
+  rz[0U] = pz[0U];
+  rz[1U] = pz[1U];
+  rz[2U] = pz[2U];
+  rz[3U] = pz[3U];
+  rz[4U] = pz[4U];
+}
+
+static inline void point_mul_lambda_inplace(uint64_t *res)
+{
+  uint64_t *rx = res;
+  uint64_t beta[5U] = { 0U };
+  beta[0U] = (uint64_t)0x96c28719501eeU;
+  beta[1U] = (uint64_t)0x7512f58995c13U;
+  beta[2U] = (uint64_t)0xc3434e99cf049U;
+  beta[3U] = (uint64_t)0x7106e64479eaU;
+  beta[4U] = (uint64_t)0x7ae96a2b657cU;
+  Hacl_K256_Field_fmul(rx, beta, rx);
+}
+
+typedef struct __bool_bool_s
+{
+  bool fst;
+  bool snd;
+}
+__bool_bool;
+
+static inline __bool_bool
+ecmult_endo_split(
+  uint64_t *r1,
+  uint64_t *r2,
+  uint64_t *q1,
+  uint64_t *q2,
+  uint64_t *scalar,
+  uint64_t *q
+)
+{
+  scalar_split_lambda(r1, r2, scalar);
+  point_mul_lambda(q2, q);
+  memcpy(q1, q, (uint32_t)15U * sizeof (uint64_t));
+  bool b0 = is_qelem_le_q_halved_vartime(r1);
+  qnegate_conditional_vartime(r1, !b0);
+  point_negate_conditional_vartime(q1, !b0);
+  bool is_high1 = !b0;
+  bool b = is_qelem_le_q_halved_vartime(r2);
+  qnegate_conditional_vartime(r2, !b);
+  point_negate_conditional_vartime(q2, !b);
+  bool is_high2 = !b;
+  return ((__bool_bool){ .fst = is_high1, .snd = is_high2 });
+}
+
 void Hacl_Impl_K256_PointMul_point_mul(uint64_t *out, uint64_t *scalar, uint64_t *q)
 {
   uint64_t table[240U] = { 0U };
@@ -947,6 +1146,7 @@ void Hacl_Impl_K256_PointMul_point_mul(uint64_t *out, uint64_t *scalar, uint64_t
       tmp,
       (uint32_t)15U * sizeof (uint64_t)););
   Hacl_Impl_K256_Point_make_point_at_inf(out);
+  uint64_t tmp0[15U] = { 0U };
   for (uint32_t i0 = (uint32_t)0U; i0 < (uint32_t)64U; i0++)
   {
     KRML_MAYBE_FOR4(i,
@@ -954,46 +1154,50 @@ void Hacl_Impl_K256_PointMul_point_mul(uint64_t *out, uint64_t *scalar, uint64_t
       (uint32_t)4U,
       (uint32_t)1U,
       Hacl_Impl_K256_PointDouble_point_double(out, out););
-    uint32_t bk = (uint32_t)256U;
-    uint64_t mask_l = (uint64_t)15U;
-    uint32_t i1 = (bk - (uint32_t)4U * i0 - (uint32_t)4U) / (uint32_t)64U;
-    uint32_t j = (bk - (uint32_t)4U * i0 - (uint32_t)4U) % (uint32_t)64U;
-    uint64_t p1 = scalar[i1] >> j;
-    uint64_t ite;
-    if (i1 + (uint32_t)1U < (uint32_t)4U && (uint32_t)0U < j)
-    {
-      ite = p1 | scalar[i1 + (uint32_t)1U] << ((uint32_t)64U - j);
-    }
-    else
-    {
-      ite = p1;
-    }
-    uint64_t bits_l = ite & mask_l;
-    uint64_t a_bits_l[15U] = { 0U };
-    memcpy(a_bits_l, (uint64_t *)table, (uint32_t)15U * sizeof (uint64_t));
-    KRML_MAYBE_FOR15(i2,
+    uint32_t k = (uint32_t)256U - (uint32_t)4U * i0 - (uint32_t)4U;
+    uint64_t bits_l = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, scalar, k, (uint32_t)4U);
+    memcpy(tmp0, (uint64_t *)table, (uint32_t)15U * sizeof (uint64_t));
+    KRML_MAYBE_FOR15(i1,
       (uint32_t)0U,
       (uint32_t)15U,
       (uint32_t)1U,
-      uint64_t c = FStar_UInt64_eq_mask(bits_l, (uint64_t)(i2 + (uint32_t)1U));
-      const uint64_t *res_j = table + (i2 + (uint32_t)1U) * (uint32_t)15U;
+      uint64_t c = FStar_UInt64_eq_mask(bits_l, (uint64_t)(i1 + (uint32_t)1U));
+      const uint64_t *res_j = table + (i1 + (uint32_t)1U) * (uint32_t)15U;
       KRML_MAYBE_FOR15(i,
         (uint32_t)0U,
         (uint32_t)15U,
         (uint32_t)1U,
-        uint64_t *os = a_bits_l;
-        uint64_t x = (c & res_j[i]) | (~c & a_bits_l[i]);
+        uint64_t *os = tmp0;
+        uint64_t x = (c & res_j[i]) | (~c & tmp0[i]);
         os[i] = x;););
-    Hacl_Impl_K256_PointAdd_point_add(out, out, a_bits_l);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp0);
   }
+}
+
+static inline void precomp_get_consttime(const uint64_t *table, uint64_t bits_l, uint64_t *tmp)
+{
+  memcpy(tmp, (uint64_t *)table, (uint32_t)15U * sizeof (uint64_t));
+  KRML_MAYBE_FOR15(i0,
+    (uint32_t)0U,
+    (uint32_t)15U,
+    (uint32_t)1U,
+    uint64_t c = FStar_UInt64_eq_mask(bits_l, (uint64_t)(i0 + (uint32_t)1U));
+    const uint64_t *res_j = table + (i0 + (uint32_t)1U) * (uint32_t)15U;
+    KRML_MAYBE_FOR15(i,
+      (uint32_t)0U,
+      (uint32_t)15U,
+      (uint32_t)1U,
+      uint64_t *os = tmp;
+      uint64_t x = (c & res_j[i]) | (~c & tmp[i]);
+      os[i] = x;););
 }
 
 static inline void point_mul_g(uint64_t *out, uint64_t *scalar)
 {
-  uint64_t g[15U] = { 0U };
-  uint64_t *gx = g;
-  uint64_t *gy = g + (uint32_t)5U;
-  uint64_t *gz = g + (uint32_t)10U;
+  uint64_t q1[15U] = { 0U };
+  uint64_t *gx = q1;
+  uint64_t *gy = q1 + (uint32_t)5U;
+  uint64_t *gz = q1 + (uint32_t)10U;
   gx[0U] = (uint64_t)0x2815b16f81798U;
   gx[1U] = (uint64_t)0xdb2dce28d959fU;
   gx[2U] = (uint64_t)0xe870b07029bfcU;
@@ -1006,52 +1210,64 @@ static inline void point_mul_g(uint64_t *out, uint64_t *scalar)
   gy[4U] = (uint64_t)0x483ada7726a3U;
   memset(gz, 0U, (uint32_t)5U * sizeof (uint64_t));
   gz[0U] = (uint64_t)1U;
+  uint64_t
+  q2[15U] =
+    {
+      (uint64_t)4496295042185355U, (uint64_t)3125448202219451U, (uint64_t)1239608518490046U,
+      (uint64_t)2687445637493112U, (uint64_t)77979604880139U, (uint64_t)3360310474215011U,
+      (uint64_t)1216410458165163U, (uint64_t)177901593587973U, (uint64_t)3209978938104985U,
+      (uint64_t)118285133003718U, (uint64_t)434519962075150U, (uint64_t)1114612377498854U,
+      (uint64_t)3488596944003813U, (uint64_t)450716531072892U, (uint64_t)66044973203836U
+    };
+  uint64_t
+  q3[15U] =
+    {
+      (uint64_t)1277614565900951U, (uint64_t)378671684419493U, (uint64_t)3176260448102880U,
+      (uint64_t)1575691435565077U, (uint64_t)167304528382180U, (uint64_t)2600787765776588U,
+      (uint64_t)7497946149293U, (uint64_t)2184272641272202U, (uint64_t)2200235265236628U,
+      (uint64_t)265969268774814U, (uint64_t)1913228635640715U, (uint64_t)2831959046949342U,
+      (uint64_t)888030405442963U, (uint64_t)1817092932985033U, (uint64_t)101515844997121U
+    };
+  uint64_t
+  q4[15U] =
+    {
+      (uint64_t)34056422761564U, (uint64_t)3315864838337811U, (uint64_t)3797032336888745U,
+      (uint64_t)2580641850480806U, (uint64_t)208048944042500U, (uint64_t)1233795288689421U,
+      (uint64_t)1048795233382631U, (uint64_t)646545158071530U, (uint64_t)1816025742137285U,
+      (uint64_t)12245672982162U, (uint64_t)2119364213800870U, (uint64_t)2034960311715107U,
+      (uint64_t)3172697815804487U, (uint64_t)4185144850224160U, (uint64_t)2792055915674U
+    };
+  uint64_t *r1 = scalar;
+  uint64_t *r2 = scalar + (uint32_t)1U;
+  uint64_t *r3 = scalar + (uint32_t)2U;
+  uint64_t *r4 = scalar + (uint32_t)3U;
   Hacl_Impl_K256_Point_make_point_at_inf(out);
-  for (uint32_t i0 = (uint32_t)0U; i0 < (uint32_t)64U; i0++)
-  {
-    KRML_MAYBE_FOR4(i,
+  uint64_t tmp[15U] = { 0U };
+  KRML_MAYBE_FOR16(i,
+    (uint32_t)0U,
+    (uint32_t)16U,
+    (uint32_t)1U,
+    KRML_MAYBE_FOR4(i0,
       (uint32_t)0U,
       (uint32_t)4U,
       (uint32_t)1U,
       Hacl_Impl_K256_PointDouble_point_double(out, out););
-    uint32_t bk = (uint32_t)256U;
-    uint64_t mask_l = (uint64_t)15U;
-    uint32_t i1 = (bk - (uint32_t)4U * i0 - (uint32_t)4U) / (uint32_t)64U;
-    uint32_t j = (bk - (uint32_t)4U * i0 - (uint32_t)4U) % (uint32_t)64U;
-    uint64_t p1 = scalar[i1] >> j;
-    uint64_t ite;
-    if (i1 + (uint32_t)1U < (uint32_t)4U && (uint32_t)0U < j)
-    {
-      ite = p1 | scalar[i1 + (uint32_t)1U] << ((uint32_t)64U - j);
-    }
-    else
-    {
-      ite = p1;
-    }
-    uint64_t bits_l = ite & mask_l;
-    uint64_t a_bits_l[15U] = { 0U };
-    memcpy(a_bits_l,
-      (uint64_t *)Hacl_K256_PrecompTable_precomp_basepoint_table_w4,
-      (uint32_t)15U * sizeof (uint64_t));
-    KRML_MAYBE_FOR15(i2,
-      (uint32_t)0U,
-      (uint32_t)15U,
-      (uint32_t)1U,
-      uint64_t c = FStar_UInt64_eq_mask(bits_l, (uint64_t)(i2 + (uint32_t)1U));
-      const
-      uint64_t
-      *res_j =
-        Hacl_K256_PrecompTable_precomp_basepoint_table_w4
-        + (i2 + (uint32_t)1U) * (uint32_t)15U;
-      KRML_MAYBE_FOR15(i,
-        (uint32_t)0U,
-        (uint32_t)15U,
-        (uint32_t)1U,
-        uint64_t *os = a_bits_l;
-        uint64_t x = (c & res_j[i]) | (~c & a_bits_l[i]);
-        os[i] = x;););
-    Hacl_Impl_K256_PointAdd_point_add(out, out, a_bits_l);
-  }
+    uint32_t k = (uint32_t)64U - (uint32_t)4U * i - (uint32_t)4U;
+    uint64_t bits_l = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)1U, r4, k, (uint32_t)4U);
+    precomp_get_consttime(Hacl_K256_PrecompTable_precomp_g_pow2_192_table_w4, bits_l, tmp);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp);
+    uint32_t k0 = (uint32_t)64U - (uint32_t)4U * i - (uint32_t)4U;
+    uint64_t bits_l0 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)1U, r3, k0, (uint32_t)4U);
+    precomp_get_consttime(Hacl_K256_PrecompTable_precomp_g_pow2_128_table_w4, bits_l0, tmp);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp);
+    uint32_t k1 = (uint32_t)64U - (uint32_t)4U * i - (uint32_t)4U;
+    uint64_t bits_l1 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)1U, r2, k1, (uint32_t)4U);
+    precomp_get_consttime(Hacl_K256_PrecompTable_precomp_g_pow2_64_table_w4, bits_l1, tmp);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp);
+    uint32_t k2 = (uint32_t)64U - (uint32_t)4U * i - (uint32_t)4U;
+    uint64_t bits_l2 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)1U, r1, k2, (uint32_t)4U);
+    precomp_get_consttime(Hacl_K256_PrecompTable_precomp_basepoint_table_w4, bits_l2, tmp);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp););
 }
 
 static inline void
@@ -1094,122 +1310,250 @@ point_mul_g_double_vartime(uint64_t *out, uint64_t *scalar1, uint64_t *scalar2, 
       tmp,
       (uint32_t)15U * sizeof (uint64_t)););
   uint64_t tmp0[15U] = { 0U };
-  uint64_t mask_l0 = (uint64_t)31U;
-  uint32_t i0 = (uint32_t)3U;
-  uint32_t j0 = (uint32_t)63U;
-  uint64_t p10 = scalar1[i0] >> j0;
-  uint64_t ite0;
-  if (i0 + (uint32_t)1U < (uint32_t)4U && (uint32_t)0U < j0)
-  {
-    ite0 = p10 | scalar1[i0 + (uint32_t)1U] << ((uint32_t)64U - j0);
-  }
-  else
-  {
-    ite0 = p10;
-  }
-  uint64_t bits_c = ite0 & mask_l0;
-  uint32_t bits_l320 = (uint32_t)bits_c;
+  uint32_t i0 = (uint32_t)255U;
+  uint64_t bits_c = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, scalar1, i0, (uint32_t)5U);
+  uint32_t bits_l32 = (uint32_t)bits_c;
   const
   uint64_t
-  *a_bits_l0 = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l320 * (uint32_t)15U;
-  memcpy(out, (uint64_t *)a_bits_l0, (uint32_t)15U * sizeof (uint64_t));
-  uint64_t mask_l1 = (uint64_t)31U;
-  uint32_t i = (uint32_t)3U;
-  uint32_t j1 = (uint32_t)63U;
-  uint64_t p11 = scalar2[i] >> j1;
-  uint64_t ite1;
-  if (i + (uint32_t)1U < (uint32_t)4U && (uint32_t)0U < j1)
-  {
-    ite1 = p11 | scalar2[i + (uint32_t)1U] << ((uint32_t)64U - j1);
-  }
-  else
-  {
-    ite1 = p11;
-  }
-  uint64_t bits_c0 = ite1 & mask_l1;
-  uint32_t bits_l321 = (uint32_t)bits_c0;
-  const uint64_t *a_bits_l1 = table2 + bits_l321 * (uint32_t)15U;
-  memcpy(tmp0, (uint64_t *)a_bits_l1, (uint32_t)15U * sizeof (uint64_t));
+  *a_bits_l = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l32 * (uint32_t)15U;
+  memcpy(out, (uint64_t *)a_bits_l, (uint32_t)15U * sizeof (uint64_t));
+  uint32_t i1 = (uint32_t)255U;
+  uint64_t bits_c0 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, scalar2, i1, (uint32_t)5U);
+  uint32_t bits_l320 = (uint32_t)bits_c0;
+  const uint64_t *a_bits_l0 = table2 + bits_l320 * (uint32_t)15U;
+  memcpy(tmp0, (uint64_t *)a_bits_l0, (uint32_t)15U * sizeof (uint64_t));
   Hacl_Impl_K256_PointAdd_point_add(out, out, tmp0);
-  for (uint32_t i2 = (uint32_t)0U; i2 < (uint32_t)51U; i2++)
+  uint64_t tmp1[15U] = { 0U };
+  for (uint32_t i = (uint32_t)0U; i < (uint32_t)51U; i++)
   {
-    KRML_MAYBE_FOR5(i1,
+    KRML_MAYBE_FOR5(i2,
       (uint32_t)0U,
       (uint32_t)5U,
       (uint32_t)1U,
       Hacl_Impl_K256_PointDouble_point_double(out, out););
-    uint32_t bk = (uint32_t)255U;
-    uint64_t mask_l2 = (uint64_t)31U;
-    uint32_t i10 = (bk - (uint32_t)5U * i2 - (uint32_t)5U) / (uint32_t)64U;
-    uint32_t j2 = (bk - (uint32_t)5U * i2 - (uint32_t)5U) % (uint32_t)64U;
-    uint64_t p12 = scalar2[i10] >> j2;
-    uint64_t ite2;
-    if (i10 + (uint32_t)1U < (uint32_t)4U && (uint32_t)0U < j2)
-    {
-      ite2 = p12 | scalar2[i10 + (uint32_t)1U] << ((uint32_t)64U - j2);
-    }
-    else
-    {
-      ite2 = p12;
-    }
-    uint64_t bits_l = ite2 & mask_l2;
-    uint64_t a_bits_l2[15U] = { 0U };
-    uint32_t bits_l322 = (uint32_t)bits_l;
-    const uint64_t *a_bits_l10 = table2 + bits_l322 * (uint32_t)15U;
-    memcpy(a_bits_l2, (uint64_t *)a_bits_l10, (uint32_t)15U * sizeof (uint64_t));
-    Hacl_Impl_K256_PointAdd_point_add(out, out, a_bits_l2);
-    uint32_t bk0 = (uint32_t)255U;
-    uint64_t mask_l = (uint64_t)31U;
-    uint32_t i1 = (bk0 - (uint32_t)5U * i2 - (uint32_t)5U) / (uint32_t)64U;
-    uint32_t j = (bk0 - (uint32_t)5U * i2 - (uint32_t)5U) % (uint32_t)64U;
-    uint64_t p1 = scalar1[i1] >> j;
-    uint64_t ite;
-    if (i1 + (uint32_t)1U < (uint32_t)4U && (uint32_t)0U < j)
-    {
-      ite = p1 | scalar1[i1 + (uint32_t)1U] << ((uint32_t)64U - j);
-    }
-    else
-    {
-      ite = p1;
-    }
-    uint64_t bits_l0 = ite & mask_l;
-    uint64_t a_bits_l[15U] = { 0U };
-    uint32_t bits_l32 = (uint32_t)bits_l0;
+    uint32_t k = (uint32_t)255U - (uint32_t)5U * i - (uint32_t)5U;
+    uint64_t bits_l = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, scalar2, k, (uint32_t)5U);
+    uint32_t bits_l321 = (uint32_t)bits_l;
+    const uint64_t *a_bits_l1 = table2 + bits_l321 * (uint32_t)15U;
+    memcpy(tmp1, (uint64_t *)a_bits_l1, (uint32_t)15U * sizeof (uint64_t));
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp1);
+    uint32_t k0 = (uint32_t)255U - (uint32_t)5U * i - (uint32_t)5U;
+    uint64_t bits_l0 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, scalar1, k0, (uint32_t)5U);
+    uint32_t bits_l322 = (uint32_t)bits_l0;
     const
     uint64_t
-    *a_bits_l11 = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l32 * (uint32_t)15U;
-    memcpy(a_bits_l, (uint64_t *)a_bits_l11, (uint32_t)15U * sizeof (uint64_t));
-    Hacl_Impl_K256_PointAdd_point_add(out, out, a_bits_l);
+    *a_bits_l2 = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l322 * (uint32_t)15U;
+    memcpy(tmp1, (uint64_t *)a_bits_l2, (uint32_t)15U * sizeof (uint64_t));
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp1);
   }
 }
 
-static inline bool load_public_key(uint8_t *pk, uint64_t *fpk_x, uint64_t *fpk_y)
+static inline void
+point_mul_g_double_split_lambda_table(
+  uint64_t *out,
+  uint64_t *r1,
+  uint64_t *r2,
+  uint64_t *r3,
+  uint64_t *r4,
+  uint64_t *p2,
+  bool is_negate1,
+  bool is_negate2,
+  bool is_negate3,
+  bool is_negate4
+)
 {
-  uint8_t *pk_x = pk;
-  uint8_t *pk_y = pk + (uint32_t)32U;
-  bool is_x_valid = Hacl_K256_Field_load_felem_vartime(fpk_x, pk_x);
-  bool is_y_valid = Hacl_K256_Field_load_felem_vartime(fpk_y, pk_y);
-  if (is_x_valid && is_y_valid)
+  uint64_t table2[480U] = { 0U };
+  uint64_t tmp[15U] = { 0U };
+  uint64_t *t0 = table2;
+  uint64_t *t1 = table2 + (uint32_t)15U;
+  Hacl_Impl_K256_Point_make_point_at_inf(t0);
+  memcpy(t1, p2, (uint32_t)15U * sizeof (uint64_t));
+  KRML_MAYBE_FOR15(i,
+    (uint32_t)0U,
+    (uint32_t)15U,
+    (uint32_t)1U,
+    uint64_t *t11 = table2 + (i + (uint32_t)1U) * (uint32_t)15U;
+    Hacl_Impl_K256_PointDouble_point_double(tmp, t11);
+    memcpy(table2 + ((uint32_t)2U * i + (uint32_t)2U) * (uint32_t)15U,
+      tmp,
+      (uint32_t)15U * sizeof (uint64_t));
+    uint64_t *t2 = table2 + ((uint32_t)2U * i + (uint32_t)2U) * (uint32_t)15U;
+    Hacl_Impl_K256_PointAdd_point_add(tmp, p2, t2);
+    memcpy(table2 + ((uint32_t)2U * i + (uint32_t)3U) * (uint32_t)15U,
+      tmp,
+      (uint32_t)15U * sizeof (uint64_t)););
+  uint64_t tmp0[15U] = { 0U };
+  uint64_t tmp1[15U] = { 0U };
+  uint32_t i0 = (uint32_t)125U;
+  uint64_t bits_c = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r1, i0, (uint32_t)5U);
+  uint32_t bits_l32 = (uint32_t)bits_c;
+  const
+  uint64_t
+  *a_bits_l = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l32 * (uint32_t)15U;
+  memcpy(out, (uint64_t *)a_bits_l, (uint32_t)15U * sizeof (uint64_t));
+  point_negate_conditional_vartime(out, is_negate1);
+  uint32_t i1 = (uint32_t)125U;
+  uint64_t bits_c0 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r2, i1, (uint32_t)5U);
+  uint32_t bits_l320 = (uint32_t)bits_c0;
+  const
+  uint64_t
+  *a_bits_l0 = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l320 * (uint32_t)15U;
+  memcpy(tmp1, (uint64_t *)a_bits_l0, (uint32_t)15U * sizeof (uint64_t));
+  point_negate_conditional_vartime(tmp1, is_negate2);
+  point_mul_lambda_inplace(tmp1);
+  Hacl_Impl_K256_PointAdd_point_add(out, out, tmp1);
+  uint64_t tmp10[15U] = { 0U };
+  uint32_t i2 = (uint32_t)125U;
+  uint64_t bits_c1 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r3, i2, (uint32_t)5U);
+  uint32_t bits_l321 = (uint32_t)bits_c1;
+  const uint64_t *a_bits_l1 = table2 + bits_l321 * (uint32_t)15U;
+  memcpy(tmp0, (uint64_t *)a_bits_l1, (uint32_t)15U * sizeof (uint64_t));
+  point_negate_conditional_vartime(tmp0, is_negate3);
+  uint32_t i3 = (uint32_t)125U;
+  uint64_t bits_c2 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r4, i3, (uint32_t)5U);
+  uint32_t bits_l322 = (uint32_t)bits_c2;
+  const uint64_t *a_bits_l2 = table2 + bits_l322 * (uint32_t)15U;
+  memcpy(tmp10, (uint64_t *)a_bits_l2, (uint32_t)15U * sizeof (uint64_t));
+  point_negate_conditional_vartime(tmp10, is_negate4);
+  point_mul_lambda_inplace(tmp10);
+  Hacl_Impl_K256_PointAdd_point_add(tmp0, tmp0, tmp10);
+  Hacl_Impl_K256_PointAdd_point_add(out, out, tmp0);
+  uint64_t tmp2[15U] = { 0U };
+  for (uint32_t i = (uint32_t)0U; i < (uint32_t)25U; i++)
   {
-    uint64_t y2_exp[5U] = { 0U };
-    uint64_t b[5U] = { 0U };
-    b[0U] = (uint64_t)0x7U;
-    b[1U] = (uint64_t)0U;
-    b[2U] = (uint64_t)0U;
-    b[3U] = (uint64_t)0U;
-    b[4U] = (uint64_t)0U;
-    Hacl_K256_Field_fsqr(y2_exp, fpk_x);
-    Hacl_K256_Field_fmul(y2_exp, y2_exp, fpk_x);
-    Hacl_K256_Field_fadd(y2_exp, y2_exp, b);
-    Hacl_K256_Field_fnormalize(y2_exp, y2_exp);
-    uint64_t y2_comp[5U] = { 0U };
-    Hacl_K256_Field_fsqr(y2_comp, fpk_y);
-    Hacl_K256_Field_fnormalize(y2_comp, y2_comp);
-    bool res = Hacl_K256_Field_is_felem_eq_vartime(y2_exp, y2_comp);
-    bool res0 = res;
-    return res0;
+    KRML_MAYBE_FOR5(i4,
+      (uint32_t)0U,
+      (uint32_t)5U,
+      (uint32_t)1U,
+      Hacl_Impl_K256_PointDouble_point_double(out, out););
+    uint32_t k = (uint32_t)125U - (uint32_t)5U * i - (uint32_t)5U;
+    uint64_t bits_l = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r4, k, (uint32_t)5U);
+    uint32_t bits_l323 = (uint32_t)bits_l;
+    const uint64_t *a_bits_l3 = table2 + bits_l323 * (uint32_t)15U;
+    memcpy(tmp2, (uint64_t *)a_bits_l3, (uint32_t)15U * sizeof (uint64_t));
+    point_negate_conditional_vartime(tmp2, is_negate4);
+    point_mul_lambda_inplace(tmp2);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp2);
+    uint32_t k0 = (uint32_t)125U - (uint32_t)5U * i - (uint32_t)5U;
+    uint64_t bits_l0 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r3, k0, (uint32_t)5U);
+    uint32_t bits_l324 = (uint32_t)bits_l0;
+    const uint64_t *a_bits_l4 = table2 + bits_l324 * (uint32_t)15U;
+    memcpy(tmp2, (uint64_t *)a_bits_l4, (uint32_t)15U * sizeof (uint64_t));
+    point_negate_conditional_vartime(tmp2, is_negate3);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp2);
+    uint32_t k1 = (uint32_t)125U - (uint32_t)5U * i - (uint32_t)5U;
+    uint64_t bits_l1 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r2, k1, (uint32_t)5U);
+    uint32_t bits_l325 = (uint32_t)bits_l1;
+    const
+    uint64_t
+    *a_bits_l5 = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l325 * (uint32_t)15U;
+    memcpy(tmp2, (uint64_t *)a_bits_l5, (uint32_t)15U * sizeof (uint64_t));
+    point_negate_conditional_vartime(tmp2, is_negate2);
+    point_mul_lambda_inplace(tmp2);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp2);
+    uint32_t k2 = (uint32_t)125U - (uint32_t)5U * i - (uint32_t)5U;
+    uint64_t bits_l2 = Hacl_Bignum_Lib_bn_get_bits_u64((uint32_t)4U, r1, k2, (uint32_t)5U);
+    uint32_t bits_l326 = (uint32_t)bits_l2;
+    const
+    uint64_t
+    *a_bits_l6 = Hacl_K256_PrecompTable_precomp_basepoint_table_w5 + bits_l326 * (uint32_t)15U;
+    memcpy(tmp2, (uint64_t *)a_bits_l6, (uint32_t)15U * sizeof (uint64_t));
+    point_negate_conditional_vartime(tmp2, is_negate1);
+    Hacl_Impl_K256_PointAdd_point_add(out, out, tmp2);
   }
-  return false;
+}
+
+static inline bool
+check_ecmult_endo_split(uint64_t *r1, uint64_t *r2, uint64_t *r3, uint64_t *r4)
+{
+  uint64_t f20 = r1[2U];
+  uint64_t f30 = r1[3U];
+  bool b1 = f20 == (uint64_t)0U && f30 == (uint64_t)0U;
+  uint64_t f21 = r2[2U];
+  uint64_t f31 = r2[3U];
+  bool b2 = f21 == (uint64_t)0U && f31 == (uint64_t)0U;
+  uint64_t f22 = r3[2U];
+  uint64_t f32 = r3[3U];
+  bool b3 = f22 == (uint64_t)0U && f32 == (uint64_t)0U;
+  uint64_t f2 = r4[2U];
+  uint64_t f3 = r4[3U];
+  bool b4 = f2 == (uint64_t)0U && f3 == (uint64_t)0U;
+  return b1 && b2 && b3 && b4;
+}
+
+typedef struct __bool_bool_bool_bool_s
+{
+  bool fst;
+  bool snd;
+  bool thd;
+  bool f3;
+}
+__bool_bool_bool_bool;
+
+static inline void
+point_mul_g_double_split_lambda_vartime(
+  uint64_t *out,
+  uint64_t *scalar1,
+  uint64_t *scalar2,
+  uint64_t *p2
+)
+{
+  uint64_t g[15U] = { 0U };
+  uint64_t *gx = g;
+  uint64_t *gy = g + (uint32_t)5U;
+  uint64_t *gz = g + (uint32_t)10U;
+  gx[0U] = (uint64_t)0x2815b16f81798U;
+  gx[1U] = (uint64_t)0xdb2dce28d959fU;
+  gx[2U] = (uint64_t)0xe870b07029bfcU;
+  gx[3U] = (uint64_t)0xbbac55a06295cU;
+  gx[4U] = (uint64_t)0x79be667ef9dcU;
+  gy[0U] = (uint64_t)0x7d08ffb10d4b8U;
+  gy[1U] = (uint64_t)0x48a68554199c4U;
+  gy[2U] = (uint64_t)0xe1108a8fd17b4U;
+  gy[3U] = (uint64_t)0xc4655da4fbfc0U;
+  gy[4U] = (uint64_t)0x483ada7726a3U;
+  memset(gz, 0U, (uint32_t)5U * sizeof (uint64_t));
+  gz[0U] = (uint64_t)1U;
+  uint64_t r1234[16U] = { 0U };
+  uint64_t q1234[60U] = { 0U };
+  uint64_t *r1 = r1234;
+  uint64_t *r2 = r1234 + (uint32_t)4U;
+  uint64_t *r3 = r1234 + (uint32_t)8U;
+  uint64_t *r4 = r1234 + (uint32_t)12U;
+  uint64_t *q1 = q1234;
+  uint64_t *q2 = q1234 + (uint32_t)15U;
+  uint64_t *q3 = q1234 + (uint32_t)30U;
+  uint64_t *q4 = q1234 + (uint32_t)45U;
+  __bool_bool scrut0 = ecmult_endo_split(r1, r2, q1, q2, scalar1, g);
+  bool is_high10 = scrut0.fst;
+  bool is_high20 = scrut0.snd;
+  __bool_bool scrut = ecmult_endo_split(r3, r4, q3, q4, scalar2, p2);
+  bool is_high30 = scrut.fst;
+  bool is_high40 = scrut.snd;
+  __bool_bool_bool_bool
+  scrut1 = { .fst = is_high10, .snd = is_high20, .thd = is_high30, .f3 = is_high40 };
+  bool is_high1 = scrut1.fst;
+  bool is_high2 = scrut1.snd;
+  bool is_high3 = scrut1.thd;
+  bool is_high4 = scrut1.f3;
+  bool is_r1234_valid = check_ecmult_endo_split(r1, r2, r3, r4);
+  if (is_r1234_valid)
+  {
+    point_mul_g_double_split_lambda_table(out,
+      r1,
+      r2,
+      r3,
+      r4,
+      p2,
+      is_high1,
+      is_high2,
+      is_high3,
+      is_high4);
+  }
+  else
+  {
+    point_mul_g_double_vartime(out, scalar1, scalar2, p2);
+  }
 }
 
 static inline bool fmul_eq_vartime(uint64_t *r, uint64_t *z, uint64_t *x)
@@ -1244,9 +1588,9 @@ Create an ECDSA signature.
 
   The function DOESN'T perform low-S normalization, see `secp256k1_ecdsa_sign_hashed_msg` if needed.
 
-  The function also checks whether `private_key` and `nonce` are valid values:
-    • 0 < `private_key` and `private_key` < the order of the curve
-    • 0 < `nonce` and `nonce` < the order of the curve
+  The function also checks whether `private_key` and `nonce` are valid:
+    • 0 < `private_key` < the order of the curve
+    • 0 < `nonce` < the order of the curve
 */
 bool
 Hacl_K256_ECDSA_ecdsa_sign_hashed_msg(
@@ -1256,48 +1600,60 @@ Hacl_K256_ECDSA_ecdsa_sign_hashed_msg(
   uint8_t *nonce
 )
 {
-  uint64_t r_q[4U] = { 0U };
-  uint64_t s_q[4U] = { 0U };
-  uint64_t d_a[4U] = { 0U };
-  uint64_t k_q[4U] = { 0U };
-  uint64_t is_sk_valid = load_qelem_check(d_a, private_key);
-  uint64_t is_nonce_valid = load_qelem_check(k_q, nonce);
+  uint64_t oneq[4U] = { (uint64_t)0x1U, (uint64_t)0x0U, (uint64_t)0x0U, (uint64_t)0x0U };
+  uint64_t rsdk_q[16U] = { 0U };
+  uint64_t *r_q = rsdk_q;
+  uint64_t *s_q = rsdk_q + (uint32_t)4U;
+  uint64_t *d_a = rsdk_q + (uint32_t)8U;
+  uint64_t *k_q = rsdk_q + (uint32_t)12U;
+  uint64_t is_b_valid0 = load_qelem_check(d_a, private_key);
+  uint64_t oneq10[4U] = { (uint64_t)0x1U, (uint64_t)0x0U, (uint64_t)0x0U, (uint64_t)0x0U };
+  KRML_MAYBE_FOR4(i,
+    (uint32_t)0U,
+    (uint32_t)4U,
+    (uint32_t)1U,
+    uint64_t *os = d_a;
+    uint64_t uu____0 = oneq10[i];
+    uint64_t x = uu____0 ^ (is_b_valid0 & (d_a[i] ^ uu____0));
+    os[i] = x;);
+  uint64_t is_sk_valid = is_b_valid0;
+  uint64_t is_b_valid = load_qelem_check(k_q, nonce);
+  uint64_t oneq1[4U] = { (uint64_t)0x1U, (uint64_t)0x0U, (uint64_t)0x0U, (uint64_t)0x0U };
+  KRML_MAYBE_FOR4(i,
+    (uint32_t)0U,
+    (uint32_t)4U,
+    (uint32_t)1U,
+    uint64_t *os = k_q;
+    uint64_t uu____1 = oneq1[i];
+    uint64_t x = uu____1 ^ (is_b_valid & (k_q[i] ^ uu____1));
+    os[i] = x;);
+  uint64_t is_nonce_valid = is_b_valid;
   uint64_t are_sk_nonce_valid = is_sk_valid & is_nonce_valid;
-  if (are_sk_nonce_valid == (uint64_t)0U)
-  {
-    return false;
-  }
   uint64_t tmp[5U] = { 0U };
   uint8_t x_bytes[32U] = { 0U };
   uint64_t p[15U] = { 0U };
   point_mul_g(p, k_q);
-  uint64_t *x = p;
-  uint64_t *z = p + (uint32_t)10U;
-  Hacl_Impl_K256_Finv_finv(tmp, z);
-  Hacl_K256_Field_fmul(tmp, x, tmp);
-  Hacl_K256_Field_fnormalize(tmp, tmp);
+  to_aff_point_x(tmp, p);
   Hacl_K256_Field_store_felem(x_bytes, tmp);
   load_qelem_modq(r_q, x_bytes);
-  uint64_t z0[4U] = { 0U };
+  uint64_t z[4U] = { 0U };
   uint64_t kinv[4U] = { 0U };
-  load_qelem_modq(z0, msgHash);
+  load_qelem_modq(z, msgHash);
   qinv(kinv, k_q);
   qmul(s_q, r_q, d_a);
-  qadd(s_q, z0, s_q);
+  qadd(s_q, z, s_q);
   qmul(s_q, kinv, s_q);
   store_qelem(signature, r_q);
   store_qelem(signature + (uint32_t)32U, s_q);
   uint64_t is_r_zero = is_qelem_zero(r_q);
   uint64_t is_s_zero = is_qelem_zero(s_q);
-  if (is_r_zero == (uint64_t)0xFFFFFFFFFFFFFFFFU || is_s_zero == (uint64_t)0xFFFFFFFFFFFFFFFFU)
-  {
-    return false;
-  }
-  return true;
+  uint64_t m = are_sk_nonce_valid & (~is_r_zero & ~is_s_zero);
+  bool res = m == (uint64_t)0xFFFFFFFFFFFFFFFFU;
+  return res;
 }
 
 /**
-Create an ECDSA signature.
+Create an ECDSA signature using SHA2-256.
 
   The function returns `true` for successful creation of an ECDSA signature and `false` otherwise.
 
@@ -1319,7 +1675,7 @@ Hacl_K256_ECDSA_ecdsa_sign_sha256(
 )
 {
   uint8_t msgHash[32U] = { 0U };
-  Hacl_Hash_SHA2_hash_256(msg, msg_len, msgHash);
+  Hacl_Streaming_SHA2_hash_256(msg, msg_len, msgHash);
   bool b = Hacl_K256_ECDSA_ecdsa_sign_hashed_msg(signature, msgHash, private_key, nonce);
   return b;
 }
@@ -1334,53 +1690,43 @@ Verify an ECDSA signature.
 
   The function ACCEPTS non low-S normalized signatures, see `secp256k1_ecdsa_verify_hashed_msg` if needed.
 
-  The function also checks whether a public key (x || y) is valid:
-    • 0 < x and x < prime
-    • 0 < y and y < prime
-    • (x, y) is on the curve
+  The function also checks whether `public key` is valid.
 */
 bool
 Hacl_K256_ECDSA_ecdsa_verify_hashed_msg(uint8_t *m, uint8_t *public_key, uint8_t *signature)
 {
-  uint64_t pk_x[5U] = { 0U };
-  uint64_t pk_y[5U] = { 0U };
-  uint64_t r_q[4U] = { 0U };
-  uint64_t s_q[4U] = { 0U };
-  uint64_t z[4U] = { 0U };
-  bool is_xy_on_curve = load_public_key(public_key, pk_x, pk_y);
+  uint64_t tmp[35U] = { 0U };
+  uint64_t *pk = tmp;
+  uint64_t *r_q = tmp + (uint32_t)15U;
+  uint64_t *s_q = tmp + (uint32_t)19U;
+  uint64_t *u1 = tmp + (uint32_t)23U;
+  uint64_t *u2 = tmp + (uint32_t)27U;
+  uint64_t *m_q = tmp + (uint32_t)31U;
+  bool is_pk_valid = load_point_vartime(pk, public_key);
   bool is_r_valid = load_qelem_vartime(r_q, signature);
   bool is_s_valid = load_qelem_vartime(s_q, signature + (uint32_t)32U);
-  load_qelem_modq(z, m);
-  if (!(is_xy_on_curve && is_r_valid && is_s_valid))
+  bool is_rs_valid = is_r_valid && is_s_valid;
+  load_qelem_modq(m_q, m);
+  if (!(is_pk_valid && is_rs_valid))
   {
     return false;
   }
-  uint64_t p[15U] = { 0U };
+  uint64_t sinv[4U] = { 0U };
+  qinv(sinv, s_q);
+  qmul(u1, m_q, sinv);
+  qmul(u2, r_q, sinv);
   uint64_t res[15U] = { 0U };
-  uint64_t *x1 = p;
-  uint64_t *y1 = p + (uint32_t)5U;
-  uint64_t *z10 = p + (uint32_t)10U;
-  memcpy(x1, pk_x, (uint32_t)5U * sizeof (uint64_t));
-  memcpy(y1, pk_y, (uint32_t)5U * sizeof (uint64_t));
-  memset(z10, 0U, (uint32_t)5U * sizeof (uint64_t));
-  z10[0U] = (uint64_t)1U;
-  uint64_t sinv1[4U] = { 0U };
-  uint64_t u11[4U] = { 0U };
-  uint64_t u21[4U] = { 0U };
-  qinv(sinv1, s_q);
-  qmul(u11, z, sinv1);
-  qmul(u21, r_q, sinv1);
-  point_mul_g_double_vartime(res, u11, u21, p);
-  uint64_t tmp[5U] = { 0U };
+  point_mul_g_double_split_lambda_vartime(res, u1, u2, pk);
+  uint64_t tmp1[5U] = { 0U };
   uint64_t *pz = res + (uint32_t)10U;
-  Hacl_K256_Field_fnormalize(tmp, pz);
-  bool b = Hacl_K256_Field_is_felem_zero_vartime(tmp);
+  Hacl_K256_Field_fnormalize(tmp1, pz);
+  bool b = Hacl_K256_Field_is_felem_zero_vartime(tmp1);
   if (b)
   {
     return false;
   }
   uint64_t *x = res;
-  uint64_t *z1 = res + (uint32_t)10U;
+  uint64_t *z = res + (uint32_t)10U;
   uint8_t r_bytes[32U] = { 0U };
   uint64_t r_fe[5U] = { 0U };
   uint64_t tmp_q[5U] = { 0U };
@@ -1388,7 +1734,7 @@ Hacl_K256_ECDSA_ecdsa_verify_hashed_msg(uint8_t *m, uint8_t *public_key, uint8_t
   store_qelem(r_bytes, r_q);
   Hacl_K256_Field_load_felem(r_fe, r_bytes);
   Hacl_K256_Field_fnormalize(tmp_x, x);
-  bool is_rz_x = fmul_eq_vartime(r_fe, z1, tmp_x);
+  bool is_rz_x = fmul_eq_vartime(r_fe, z, tmp_x);
   if (!is_rz_x)
   {
     bool is_r_lt_p_m_q = Hacl_K256_Field_is_felem_lt_prime_minus_order_vartime(r_fe);
@@ -1400,7 +1746,7 @@ Hacl_K256_ECDSA_ecdsa_verify_hashed_msg(uint8_t *m, uint8_t *public_key, uint8_t
       tmp_q[3U] = (uint64_t)0xfffffffffffffU;
       tmp_q[4U] = (uint64_t)0xffffffffffffU;
       Hacl_K256_Field_fadd(tmp_q, r_fe, tmp_q);
-      return fmul_eq_vartime(tmp_q, z1, tmp_x);
+      return fmul_eq_vartime(tmp_q, z, tmp_x);
     }
     return false;
   }
@@ -1408,7 +1754,7 @@ Hacl_K256_ECDSA_ecdsa_verify_hashed_msg(uint8_t *m, uint8_t *public_key, uint8_t
 }
 
 /**
-Verify an ECDSA signature.
+Verify an ECDSA signature using SHA2-256.
 
   The function returns `true` if the signature is valid and `false` otherwise.
 
@@ -1428,7 +1774,7 @@ Hacl_K256_ECDSA_ecdsa_verify_sha256(
 )
 {
   uint8_t mHash[32U] = { 0U };
-  Hacl_Hash_SHA2_hash_256(msg, msg_len, mHash);
+  Hacl_Streaming_SHA2_hash_256(msg, msg_len, mHash);
   bool b = Hacl_K256_ECDSA_ecdsa_verify_hashed_msg(mHash, public_key, signature);
   return b;
 }
@@ -1481,9 +1827,9 @@ Create an ECDSA signature.
 
   The function ALWAYS performs low-S normalization, see `ecdsa_sign_hashed_msg` if needed.
 
-  The function also checks whether `private_key` and `nonce` are valid values:
-    • 0 < `private_key` and `private_key` < the order of the curve
-    • 0 < `nonce` and `nonce` < the order of the curve
+  The function also checks whether `private_key` and `nonce` are valid:
+    • 0 < `private_key` < the order of the curve
+    • 0 < `nonce` < the order of the curve
 */
 bool
 Hacl_K256_ECDSA_secp256k1_ecdsa_sign_hashed_msg(
@@ -1502,7 +1848,7 @@ Hacl_K256_ECDSA_secp256k1_ecdsa_sign_hashed_msg(
 }
 
 /**
-Create an ECDSA signature.
+Create an ECDSA signature using SHA2-256.
 
   The function returns `true` for successful creation of an ECDSA signature and `false` otherwise.
 
@@ -1524,7 +1870,7 @@ Hacl_K256_ECDSA_secp256k1_ecdsa_sign_sha256(
 )
 {
   uint8_t msgHash[32U] = { 0U };
-  Hacl_Hash_SHA2_hash_256(msg, msg_len, msgHash);
+  Hacl_Streaming_SHA2_hash_256(msg, msg_len, msgHash);
   bool
   b = Hacl_K256_ECDSA_secp256k1_ecdsa_sign_hashed_msg(signature, msgHash, private_key, nonce);
   return b;
@@ -1540,10 +1886,7 @@ Verify an ECDSA signature.
 
   The function DOESN'T accept non low-S normalized signatures, see `ecdsa_verify_hashed_msg` if needed.
 
-  The function also checks whether a public key (x || y) is valid:
-    • 0 < x and x < prime
-    • 0 < y and y < prime
-    • (x, y) is on the curve
+  The function also checks whether `public_key` is valid
 */
 bool
 Hacl_K256_ECDSA_secp256k1_ecdsa_verify_hashed_msg(
@@ -1561,7 +1904,7 @@ Hacl_K256_ECDSA_secp256k1_ecdsa_verify_hashed_msg(
 }
 
 /**
-Verify an ECDSA signature.
+Verify an ECDSA signature using SHA2-256.
 
   The function returns `true` if the signature is valid and `false` otherwise.
 
@@ -1581,7 +1924,7 @@ Hacl_K256_ECDSA_secp256k1_ecdsa_verify_sha256(
 )
 {
   uint8_t mHash[32U] = { 0U };
-  Hacl_Hash_SHA2_hash_256(msg, msg_len, mHash);
+  Hacl_Streaming_SHA2_hash_256(msg, msg_len, mHash);
   bool b = Hacl_K256_ECDSA_secp256k1_ecdsa_verify_hashed_msg(mHash, public_key, signature);
   return b;
 }
@@ -1649,7 +1992,7 @@ bool Hacl_K256_ECDSA_public_key_compressed_to_raw(uint8_t *pk_raw, uint8_t *pk)
   uint64_t xa[5U] = { 0U };
   uint64_t ya[5U] = { 0U };
   uint8_t *pk_xb = pk + (uint32_t)1U;
-  bool b = Hacl_Impl_K256_Point_aff_point_decompress_vartime(xa, ya, pk);
+  bool b = aff_point_decompress_vartime(xa, ya, pk);
   if (b)
   {
     memcpy(pk_raw, pk_xb, (uint32_t)32U * sizeof (uint8_t));
@@ -1683,5 +2026,123 @@ void Hacl_K256_ECDSA_public_key_compressed_from_raw(uint8_t *pk, uint8_t *pk_raw
   }
   pk[0U] = ite;
   memcpy(pk + (uint32_t)1U, pk_x, (uint32_t)32U * sizeof (uint8_t));
+}
+
+
+/******************/
+/* Key validation */
+/******************/
+
+/**
+Public key validation.
+
+  The function returns `true` if a public key is valid and `false` otherwise.
+
+  The argument `public_key` points to 64 bytes of valid memory, i.e., uint8_t[64].
+
+  The public key (x || y) is valid (with respect to SP 800-56A):
+    • the public key is not the “point at infinity”, represented as O.
+    • the affine x and y coordinates of the point represented by the public key are
+      in the range [0, p – 1] where p is the prime defining the finite field.
+    • y^2 = x^3 + ax + b where a and b are the coefficients of the curve equation.
+  The last extract is taken from: https://neilmadden.blog/2017/05/17/so-how-do-you-validate-nist-ecdh-public-keys/
+*/
+bool Hacl_K256_ECDSA_is_public_key_valid(uint8_t *public_key)
+{
+  uint64_t p[15U] = { 0U };
+  bool is_pk_valid = load_point_vartime(p, public_key);
+  return is_pk_valid;
+}
+
+/**
+Private key validation.
+
+  The function returns `true` if a private key is valid and `false` otherwise.
+
+  The argument `private_key` points to 32 bytes of valid memory, i.e., uint8_t[32].
+
+  The private key is valid:
+    • 0 < `private_key` < the order of the curve
+*/
+bool Hacl_K256_ECDSA_is_private_key_valid(uint8_t *private_key)
+{
+  uint64_t s_q[4U] = { 0U };
+  uint64_t res = load_qelem_check(s_q, private_key);
+  return res == (uint64_t)0xFFFFFFFFFFFFFFFFU;
+}
+
+
+/******************/
+/* ECDH agreement */
+/******************/
+
+/**
+Compute the public key from the private key.
+
+  The function returns `true` if a private key is valid and `false` otherwise.
+
+  The outparam `public_key`  points to 64 bytes of valid memory, i.e., uint8_t[64].
+  The argument `private_key` points to 32 bytes of valid memory, i.e., uint8_t[32].
+
+  The private key is valid:
+    • 0 < `private_key` < the order of the curve.
+*/
+bool Hacl_K256_ECDSA_secret_to_public(uint8_t *public_key, uint8_t *private_key)
+{
+  uint64_t tmp[19U] = { 0U };
+  uint64_t *pk = tmp;
+  uint64_t *sk = tmp + (uint32_t)15U;
+  uint64_t is_b_valid = load_qelem_check(sk, private_key);
+  uint64_t oneq[4U] = { (uint64_t)0x1U, (uint64_t)0x0U, (uint64_t)0x0U, (uint64_t)0x0U };
+  KRML_MAYBE_FOR4(i,
+    (uint32_t)0U,
+    (uint32_t)4U,
+    (uint32_t)1U,
+    uint64_t *os = sk;
+    uint64_t uu____0 = oneq[i];
+    uint64_t x = uu____0 ^ (is_b_valid & (sk[i] ^ uu____0));
+    os[i] = x;);
+  uint64_t is_sk_valid = is_b_valid;
+  point_mul_g(pk, sk);
+  Hacl_Impl_K256_Point_point_store(public_key, pk);
+  return is_sk_valid == (uint64_t)0xFFFFFFFFFFFFFFFFU;
+}
+
+/**
+Execute the diffie-hellmann key exchange.
+
+  The function returns `true` for successful creation of an ECDH shared secret and
+  `false` otherwise.
+
+  The outparam `shared_secret` points to 64 bytes of valid memory, i.e., uint8_t[64].
+  The argument `their_pubkey` points to 64 bytes of valid memory, i.e., uint8_t[64].
+  The argument `private_key` points to 32 bytes of valid memory, i.e., uint8_t[32].
+
+  The function also checks whether `private_key` and `their_pubkey` are valid.
+*/
+bool Hacl_K256_ECDSA_ecdh(uint8_t *shared_secret, uint8_t *their_pubkey, uint8_t *private_key)
+{
+  uint64_t tmp[34U] = { 0U };
+  uint64_t *pk = tmp;
+  uint64_t *ss = tmp + (uint32_t)15U;
+  uint64_t *sk = tmp + (uint32_t)30U;
+  bool is_pk_valid = load_point_vartime(pk, their_pubkey);
+  uint64_t is_b_valid = load_qelem_check(sk, private_key);
+  uint64_t oneq[4U] = { (uint64_t)0x1U, (uint64_t)0x0U, (uint64_t)0x0U, (uint64_t)0x0U };
+  KRML_MAYBE_FOR4(i,
+    (uint32_t)0U,
+    (uint32_t)4U,
+    (uint32_t)1U,
+    uint64_t *os = sk;
+    uint64_t uu____0 = oneq[i];
+    uint64_t x = uu____0 ^ (is_b_valid & (sk[i] ^ uu____0));
+    os[i] = x;);
+  uint64_t is_sk_valid = is_b_valid;
+  if (is_pk_valid)
+  {
+    Hacl_Impl_K256_PointMul_point_mul(ss, sk, pk);
+    Hacl_Impl_K256_Point_point_store(shared_secret, ss);
+  }
+  return is_sk_valid == (uint64_t)0xFFFFFFFFFFFFFFFFU && is_pk_valid;
 }
 

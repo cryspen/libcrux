@@ -3,7 +3,7 @@
 //! * EcDSA P256 with Sha256, Sha384, and Sha512
 //! * EdDSA 25519
 
-use hacl::hazmat::{self, ed25519, p256};
+use crate::hacl::{self, ed25519, p256};
 use rand::{CryptoRng, Rng, RngCore};
 
 use crate::ecdh;
@@ -143,7 +143,7 @@ fn ecdsa_p256_sign_post(signature: [u8; 64], alg: Algorithm) -> Result<Signature
     }))
 }
 
-fn into_signing_error(_e: impl Into<hazmat::Error>) -> Error {
+fn into_signing_error(_e: impl Into<hacl::Error>) -> Error {
     Error::SigningError
 }
 
@@ -194,7 +194,7 @@ pub fn sign(
     Ok(signature)
 }
 
-fn into_verify_error(_e: impl Into<hazmat::Error>) -> Error {
+fn into_verify_error(_e: impl Into<hacl::Error>) -> Error {
     Error::InvalidSignature
 }
 

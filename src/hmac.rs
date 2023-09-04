@@ -45,10 +45,10 @@ pub fn hmac(alg: Algorithm, key: &[u8], data: &[u8], tag_length: Option<usize>) 
         None => native_tag_length,
     };
     let mut dst: Vec<_> = match alg {
-        Algorithm::Sha1 => hacl::hazmat::hmac::sha1(key, data).into(),
-        Algorithm::Sha256 => hacl::hazmat::hmac::sha2_256(key, data).into(),
-        Algorithm::Sha384 => hacl::hazmat::hmac::sha2_384(key, data).into(),
-        Algorithm::Sha512 => hacl::hazmat::hmac::sha2_512(key, data).into(),
+        Algorithm::Sha1 => crate::hacl::hmac::sha1(key, data).into(),
+        Algorithm::Sha256 => crate::hacl::hmac::sha2_256(key, data).into(),
+        Algorithm::Sha384 => crate::hacl::hmac::sha2_384(key, data).into(),
+        Algorithm::Sha512 => crate::hacl::hmac::sha2_512(key, data).into(),
     };
     dst.truncate(tag_length);
     dst

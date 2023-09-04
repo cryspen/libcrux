@@ -4,12 +4,6 @@ macro_rules! svec {
         ($($x:expr),*$(,)?) => (vec![$($x.to_string()),*]);
     }
 
-fn copy_files(home_path: &Path, out_path: &Path) {
-    let mut options = fs_extra::dir::CopyOptions::new();
-    options.overwrite = true;
-    fs_extra::dir::copy(home_path.join("jazz"), out_path, &options).unwrap();
-}
-
 fn append_simd128_flags(flags: &mut Vec<String>) {
     flags.push("-DSIMD128".to_string());
     flags.push("-mavx".to_string());
@@ -20,7 +14,6 @@ fn append_simd256_flags(flags: &mut Vec<String>) {
     flags.push("-mavx2".to_string());
 }
 
-#[cfg(not(windows))]
 fn create_bindings(platform: Platform, home_dir: &Path) {
     let jazz_dir = home_dir.join("jazz");
     let mut clang_args = vec![format!("-I{}", jazz_dir.join("include").display())];
@@ -65,11 +58,8 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         .expect("Couldn't write bindings!");
 }
 
-#[cfg(windows)]
-fn create_bindings(platform: Platform, _: &Path) {}
-
-fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[String]) {
-    let jazz_dir = out_path.join("jazz");
+fn compile_files(library_name: &str, files: &[String], home_path: &Path, args: &[String]) {
+    let jazz_dir = home_path.join("jazz");
 
     let mut build = cc::Build::new();
     build
@@ -78,7 +68,7 @@ fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[
         .no_default_flags(true);
 
     build.include(jazz_dir.join("include"));
-    build.flag("-O3").flag("-c");
+    build.opt_level(3);
     for arg in args {
         build.flag(arg);
     }
@@ -86,7 +76,7 @@ fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[
     build.compile(library_name);
 }
 
-fn build(platform: Platform, out_path: &Path, cross_target: Option<String>) {
+fn build(platform: Platform, home_path: &Path, cross_target: Option<String>) {
     let args = cross_target
         .map(|s| match s.as_str() {
             // We only support cross compilation here for now.
@@ -107,7 +97,7 @@ fn build(platform: Platform, out_path: &Path, cross_target: Option<String>) {
         "poly1305_ref.s",
         "kyber_kyber768_ref.s",
     ];
-    compile_files("libjade.a", &files, out_path, &args);
+    compile_files("libjade.a", &files, home_path, &args);
 
     if platform.simd256 {
         let files256 = svec![
@@ -121,7 +111,7 @@ fn build(platform: Platform, out_path: &Path, cross_target: Option<String>) {
 
         let mut simd256_flags = args.clone();
         append_simd256_flags(&mut simd256_flags);
-        compile_files("libjade_256.a", &files256, out_path, &simd256_flags);
+        compile_files("libjade_256.a", &files256, home_path, &simd256_flags);
     }
 
     if platform.simd128 {
@@ -129,7 +119,7 @@ fn build(platform: Platform, out_path: &Path, cross_target: Option<String>) {
 
         let mut simd128_flags = args.clone();
         append_simd128_flags(&mut simd128_flags);
-        compile_files("libjade_128.a", &files128, out_path, &simd128_flags);
+        compile_files("libjade_128.a", &files128, home_path, &simd128_flags);
     }
 }
 
@@ -173,32 +163,28 @@ pub fn main() -> Result<(), u8> {
         }
     };
 
-    // Moving C/ASM code to output to make build easier.
-    copy_files(home_path, out_path);
-    eprintln!(" >>> out {:?}", out_path);
-
     // Build the C/ASM files
-    build(platform, out_path, cross_target);
+    build(platform, home_path, cross_target);
 
     // Set library name to look up
-    let library_name = "jade";
+    const LIB_NAME: &str = "jade";
 
     // Set re-run trigger for all of s
-    println!("cargo:rerun-if-changed=cs");
+    println!("cargo:rerun-if-changed=jazz");
 
-    // Generate new bindings. This is a no-op on Windows.
+    // Generate new bindings.
     create_bindings(platform, home_path);
 
     // Link hacl library.
-    let mode = "static";
-    println!("cargo:rustc-link-lib={}={}", mode, library_name);
+    const MODE: &str = "static";
+    println!("cargo:rustc-link-lib={}={}", MODE, LIB_NAME);
     if platform.simd128 {
         println!("cargo:rustc-cfg=simd128");
-        println!("cargo:rustc-link-lib={}={}", mode, "jade_128");
+        println!("cargo:rustc-link-lib={}={}", MODE, "jade_128");
     }
     if platform.simd256 {
         println!("cargo:rustc-cfg=simd256");
-        println!("cargo:rustc-link-lib={}={}", mode, "jade_256");
+        println!("cargo:rustc-link-lib={}={}", MODE, "jade_256");
     }
     println!("cargo:rustc-link-search=native={}", out_path.display());
     println!("cargo:lib={}", out_path.display());

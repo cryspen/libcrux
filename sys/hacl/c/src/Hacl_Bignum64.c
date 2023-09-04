@@ -1,6 +1,7 @@
 /* MIT License
  *
- * Copyright (c) 2016-2020 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2016-2022 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2022-2023 HACL* Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +25,7 @@
 
 #include "Hacl_Bignum64.h"
 
-#include "internal/Hacl_Krmllib.h"
+#include "internal/Hacl_Bignum_Base.h"
 #include "internal/Hacl_Bignum.h"
 
 /*******************************************************************************
@@ -477,7 +478,6 @@ Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64
   Hacl_Bignum_Montgomery_bn_precomp_r2_mod_n_u64(len, nBits, n, r21);
   uint64_t mu = Hacl_Bignum_ModInvLimb_mod_inv_uint64(n[0U]);
   Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64 res = { .len = len, .n = n11, .mu = mu, .r2 = r21 };
-  KRML_CHECK_SIZE(sizeof (Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64), (uint32_t)1U);
   Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64
   *buf =
     (Hacl_Bignum_MontArithmetic_bn_mont_ctx_u64 *)KRML_HOST_MALLOC(sizeof (

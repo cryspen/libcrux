@@ -46,3 +46,6 @@ jobs:
 
     - name: Run tests
       run: cargo test --verbose
+
+    - name: Build sys/hacl
+      run: cargo build --target-dir sys/hacl --verbose

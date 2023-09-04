@@ -1,6 +1,7 @@
 /* MIT License
  *
- * Copyright (c) 2016-2020 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2016-2022 INRIA, CMU and Microsoft Corporation
+ * Copyright (c) 2022-2023 HACL* Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@
 #include "Hacl_Bignum256_32.h"
 
 #include "internal/Hacl_Krmllib.h"
+#include "internal/Hacl_Bignum_Base.h"
 #include "internal/Hacl_Bignum.h"
 
 /*******************************************************************************
@@ -795,20 +797,8 @@ exp_vartime_precomp(
       (uint32_t)8U * sizeof (uint32_t)););
   if (bBits % (uint32_t)4U != (uint32_t)0U)
   {
-    uint32_t mask_l = (uint32_t)15U;
-    uint32_t i = bBits / (uint32_t)4U * (uint32_t)4U / (uint32_t)32U;
-    uint32_t j = bBits / (uint32_t)4U * (uint32_t)4U % (uint32_t)32U;
-    uint32_t p1 = b[i] >> j;
-    uint32_t ite;
-    if (i + (uint32_t)1U < bLen && (uint32_t)0U < j)
-    {
-      ite = p1 | b[i + (uint32_t)1U] << ((uint32_t)32U - j);
-    }
-    else
-    {
-      ite = p1;
-    }
-    uint32_t bits_c = ite & mask_l;
+    uint32_t i = bBits / (uint32_t)4U * (uint32_t)4U;
+    uint32_t bits_c = Hacl_Bignum_Lib_bn_get_bits_u32(bLen, b, i, (uint32_t)4U);
     uint32_t bits_l32 = bits_c;
     const uint32_t *a_bits_l = table + bits_l32 * (uint32_t)8U;
     memcpy(resM, (uint32_t *)a_bits_l, (uint32_t)8U * sizeof (uint32_t));
@@ -819,6 +809,7 @@ exp_vartime_precomp(
     uint32_t *ctx_r2 = ctx + (uint32_t)8U;
     from(ctx_n, mu, ctx_r2, resM);
   }
+  uint32_t tmp0[8U] = { 0U };
   for (uint32_t i = (uint32_t)0U; i < bBits / (uint32_t)4U; i++)
   {
     KRML_MAYBE_FOR4(i0,
@@ -827,31 +818,17 @@ exp_vartime_precomp(
       (uint32_t)1U,
       uint32_t *ctx_n = ctx;
       amont_sqr(ctx_n, mu, resM, resM););
-    uint32_t bk = bBits - bBits % (uint32_t)4U;
-    uint32_t mask_l = (uint32_t)15U;
-    uint32_t i1 = (bk - (uint32_t)4U * i - (uint32_t)4U) / (uint32_t)32U;
-    uint32_t j = (bk - (uint32_t)4U * i - (uint32_t)4U) % (uint32_t)32U;
-    uint32_t p1 = b[i1] >> j;
-    uint32_t ite;
-    if (i1 + (uint32_t)1U < bLen && (uint32_t)0U < j)
-    {
-      ite = p1 | b[i1 + (uint32_t)1U] << ((uint32_t)32U - j);
-    }
-    else
-    {
-      ite = p1;
-    }
-    uint32_t bits_l = ite & mask_l;
-    uint32_t a_bits_l[8U] = { 0U };
+    uint32_t k = bBits - bBits % (uint32_t)4U - (uint32_t)4U * i - (uint32_t)4U;
+    uint32_t bits_l = Hacl_Bignum_Lib_bn_get_bits_u32(bLen, b, k, (uint32_t)4U);
     uint32_t bits_l32 = bits_l;
-    const uint32_t *a_bits_l1 = table + bits_l32 * (uint32_t)8U;
-    memcpy(a_bits_l, (uint32_t *)a_bits_l1, (uint32_t)8U * sizeof (uint32_t));
+    const uint32_t *a_bits_l = table + bits_l32 * (uint32_t)8U;
+    memcpy(tmp0, (uint32_t *)a_bits_l, (uint32_t)8U * sizeof (uint32_t));
     uint32_t *ctx_n = ctx;
-    amont_mul(ctx_n, mu, resM, a_bits_l, resM);
+    amont_mul(ctx_n, mu, resM, tmp0, resM);
   }
-  uint32_t tmp0[16U] = { 0U };
-  memcpy(tmp0, resM, (uint32_t)8U * sizeof (uint32_t));
-  reduction(n, mu, tmp0, res);
+  uint32_t tmp1[16U] = { 0U };
+  memcpy(tmp1, resM, (uint32_t)8U * sizeof (uint32_t));
+  reduction(n, mu, tmp1, res);
 }
 
 static inline void
@@ -955,20 +932,8 @@ exp_consttime_precomp(
       (uint32_t)8U * sizeof (uint32_t)););
   if (bBits % (uint32_t)4U != (uint32_t)0U)
   {
-    uint32_t mask_l = (uint32_t)15U;
-    uint32_t i0 = bBits / (uint32_t)4U * (uint32_t)4U / (uint32_t)32U;
-    uint32_t j = bBits / (uint32_t)4U * (uint32_t)4U % (uint32_t)32U;
-    uint32_t p1 = b[i0] >> j;
-    uint32_t ite;
-    if (i0 + (uint32_t)1U < bLen && (uint32_t)0U < j)
-    {
-      ite = p1 | b[i0 + (uint32_t)1U] << ((uint32_t)32U - j);
-    }
-    else
-    {
-      ite = p1;
-    }
-    uint32_t bits_c = ite & mask_l;
+    uint32_t i0 = bBits / (uint32_t)4U * (uint32_t)4U;
+    uint32_t bits_c = Hacl_Bignum_Lib_bn_get_bits_u32(bLen, b, i0, (uint32_t)4U);
     memcpy(resM, (uint32_t *)table, (uint32_t)8U * sizeof (uint32_t));
     KRML_MAYBE_FOR15(i1,
       (uint32_t)0U,
@@ -990,6 +955,7 @@ exp_consttime_precomp(
     uint32_t *ctx_r2 = ctx + (uint32_t)8U;
     from(ctx_n, mu, ctx_r2, resM);
   }
+  uint32_t tmp0[8U] = { 0U };
   for (uint32_t i0 = (uint32_t)0U; i0 < bBits / (uint32_t)4U; i0++)
   {
     KRML_MAYBE_FOR4(i,
@@ -998,42 +964,28 @@ exp_consttime_precomp(
       (uint32_t)1U,
       uint32_t *ctx_n = ctx;
       amont_sqr(ctx_n, mu, resM, resM););
-    uint32_t bk = bBits - bBits % (uint32_t)4U;
-    uint32_t mask_l = (uint32_t)15U;
-    uint32_t i1 = (bk - (uint32_t)4U * i0 - (uint32_t)4U) / (uint32_t)32U;
-    uint32_t j = (bk - (uint32_t)4U * i0 - (uint32_t)4U) % (uint32_t)32U;
-    uint32_t p1 = b[i1] >> j;
-    uint32_t ite;
-    if (i1 + (uint32_t)1U < bLen && (uint32_t)0U < j)
-    {
-      ite = p1 | b[i1 + (uint32_t)1U] << ((uint32_t)32U - j);
-    }
-    else
-    {
-      ite = p1;
-    }
-    uint32_t bits_l = ite & mask_l;
-    uint32_t a_bits_l[8U] = { 0U };
-    memcpy(a_bits_l, (uint32_t *)table, (uint32_t)8U * sizeof (uint32_t));
-    KRML_MAYBE_FOR15(i2,
+    uint32_t k = bBits - bBits % (uint32_t)4U - (uint32_t)4U * i0 - (uint32_t)4U;
+    uint32_t bits_l = Hacl_Bignum_Lib_bn_get_bits_u32(bLen, b, k, (uint32_t)4U);
+    memcpy(tmp0, (uint32_t *)table, (uint32_t)8U * sizeof (uint32_t));
+    KRML_MAYBE_FOR15(i1,
       (uint32_t)0U,
       (uint32_t)15U,
       (uint32_t)1U,
-      uint32_t c = FStar_UInt32_eq_mask(bits_l, i2 + (uint32_t)1U);
-      const uint32_t *res_j = table + (i2 + (uint32_t)1U) * (uint32_t)8U;
+      uint32_t c = FStar_UInt32_eq_mask(bits_l, i1 + (uint32_t)1U);
+      const uint32_t *res_j = table + (i1 + (uint32_t)1U) * (uint32_t)8U;
       KRML_MAYBE_FOR8(i,
         (uint32_t)0U,
         (uint32_t)8U,
         (uint32_t)1U,
-        uint32_t *os = a_bits_l;
-        uint32_t x = (c & res_j[i]) | (~c & a_bits_l[i]);
+        uint32_t *os = tmp0;
+        uint32_t x = (c & res_j[i]) | (~c & tmp0[i]);
         os[i] = x;););
     uint32_t *ctx_n = ctx;
-    amont_mul(ctx_n, mu, resM, a_bits_l, resM);
+    amont_mul(ctx_n, mu, resM, tmp0, resM);
   }
-  uint32_t tmp0[16U] = { 0U };
-  memcpy(tmp0, resM, (uint32_t)8U * sizeof (uint32_t));
-  reduction(n, mu, tmp0, res);
+  uint32_t tmp1[16U] = { 0U };
+  memcpy(tmp1, resM, (uint32_t)8U * sizeof (uint32_t));
+  reduction(n, mu, tmp1, res);
 }
 
 static inline void
@@ -1276,7 +1228,6 @@ Hacl_Bignum_MontArithmetic_bn_mont_ctx_u32 *Hacl_Bignum256_32_mont_ctx_init(uint
   uint32_t mu = Hacl_Bignum_ModInvLimb_mod_inv_uint32(n[0U]);
   Hacl_Bignum_MontArithmetic_bn_mont_ctx_u32
   res = { .len = (uint32_t)8U, .n = n11, .mu = mu, .r2 = r21 };
-  KRML_CHECK_SIZE(sizeof (Hacl_Bignum_MontArithmetic_bn_mont_ctx_u32), (uint32_t)1U);
   Hacl_Bignum_MontArithmetic_bn_mont_ctx_u32
   *buf =
     (Hacl_Bignum_MontArithmetic_bn_mont_ctx_u32 *)KRML_HOST_MALLOC(sizeof (
