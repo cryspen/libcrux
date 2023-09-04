@@ -96,6 +96,9 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
             // Header to wrap EverCrypt_AutoConfig2
             .header("c/config/vale-aes.h");
     }
+    clang_args.push(
+        "--sysroot=/Users/franziskus/repos/emsdk/upstream/emscripten/cache/sysroot".to_string(),
+    );
 
     let generated_bindings = bindings
         // Set include paths for HACL headers
@@ -171,6 +174,7 @@ fn compile_files(
         build.include(include);
     }
     build.opt_level(3);
+    // build.flag("--sysroot=/Users/franziskus/repos/emsdk/upstream/emscripten/cache/sysroot");
     for arg in args {
         build.flag(arg);
     }
@@ -359,7 +363,7 @@ fn build(platform: Platform, home_path: &Path) {
     compile_files("libhacl.a", &files, &[], home_path, &[], &defines);
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 #[allow(dead_code)]
 struct Platform {
     simd128: bool,
@@ -378,6 +382,21 @@ fn main() {
     let home_path = Path::new(&home_dir);
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_path = Path::new(&out_dir);
+    let prebuilt_hacl_path = env::var("HACL_STATIC_PATH");
+    let prebuilt_hacl_name = env::var("HACL_STATIC_LIB");
+
+    // If we have a prebuilt binary, we don't do anything here.
+    // NOTE: the binary must match the bindings in this crate.
+    if let Ok(prebuilt_hacl_name) = prebuilt_hacl_name {
+        // Generate new bindings.
+        create_bindings(Platform::default(), home_path);
+
+        println!("cargo:rustc-link-lib={}={}", "static", prebuilt_hacl_name);
+        if let Ok(prebuilt_hacl_path) = prebuilt_hacl_path {
+            println!("cargo:rustc-link-search=native={}", prebuilt_hacl_path);
+        }
+        return;
+    }
 
     // Check platform support
     let platform = Platform {

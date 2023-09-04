@@ -16,6 +16,7 @@ pub(crate) mod hacl;
 
 // libcrux
 pub mod aead;
+#[cfg(not(target_arch ="wasm32"))]
 pub mod bls12;
 pub mod digest;
 pub mod drbg;
