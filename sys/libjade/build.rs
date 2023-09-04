@@ -30,8 +30,12 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         // Set include paths for headers
         .clang_args(clang_args)
         // Allow function we want to have in
-        .allowlist_function("jade_hash_.*")
-        .allowlist_var("JADE_HASH_.*")
+///// SYNC_WITH_UPSTREAM_GENERATE_ALLOWLIST_START
+        .allowlist_function("jade_hash_sha256_.*")
+        .allowlist_var("JADE_HASH_SHA256_.*")
+        .allowlist_function("jade_hash_sha3_224_.*")
+        .allowlist_var("JADE_HASH_SHA3_224_.*")
+///// SYNC_WITH_UPSTREAM_GENERATE_ALLOWLIST_END
         .allowlist_function("jade_scalarmult_curve25519_.*")
         .allowlist_var("JADE_SCALARMULT_CURVE25519_.*")
         .allowlist_function("jade_hash_sha3_.*")
@@ -86,10 +90,12 @@ fn build(platform: Platform, home_path: &Path, cross_target: Option<String>) {
         .unwrap_or_default();
 
     let files = svec![
-        "sha256.s",
+///// SYNC_WITH_UPSTREAM_GENERATE_REF_ASSEMBLY_FILENAMES_START
+        "sha256_ref.s",
+        "sha3_224_ref.s",
+///// SYNC_WITH_UPSTREAM_GENERATE_REF_ASSEMBLY_FILENAMES_END
         "x25519_ref.s",
         "x25519_mulx.s",
-        "sha3_224_ref.s",
         "sha3_256_ref.s",
         "sha3_384_ref.s",
         "sha3_512_ref.s",
@@ -101,7 +107,9 @@ fn build(platform: Platform, home_path: &Path, cross_target: Option<String>) {
 
     if platform.simd256 {
         let files256 = svec![
+///// SYNC_WITH_UPSTREAM_GENERATE_SIMD256_ASSEMBLY_FILENAMES_START
             "sha3_224_avx2.s",
+///// SYNC_WITH_UPSTREAM_GENERATE_SIMD256_ASSEMBLY_FILENAMES_END
             "sha3_256_avx2.s",
             "sha3_384_avx2.s",
             "sha3_512_avx2.s",
