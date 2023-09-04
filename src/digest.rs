@@ -13,7 +13,7 @@
 //! On x64 CPUs the libjade implementation is used and if AVX2 is available, the
 //! optimised libjade implementation is used.
 
-use hacl::hazmat::{
+use crate::hacl::{
     blake2,
     sha2::{
         self,

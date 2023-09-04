@@ -12,8 +12,8 @@
 //! In any other case the portable implementation is used.
 
 #[cfg(aes_ni)]
-use hacl::hazmat;
-use hacl::hazmat::chacha20_poly1305;
+use crate::hacl::aesgcm;
+use crate::hacl::chacha20_poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
@@ -319,11 +319,9 @@ fn decrypt_32(
 
 #[cfg(aes_ni)]
 fn aes_encrypt_128(key: &Aes128Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
-    hazmat::aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
+    aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
-            hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+            aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
             _ => Error::EncryptionError,
         })
         .map(|t| t.into())
@@ -336,11 +334,9 @@ fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag,
 
 #[cfg(aes_ni)]
 fn aes_encrypt_256(key: &Aes256Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
-    hazmat::aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
+    aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
-            hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+            aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
             _ => Error::EncryptionError,
         })
         .map(|t| t.into())
@@ -359,10 +355,8 @@ fn aes_decrypt_128(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
-    hazmat::aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
-        hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+    aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
+        aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,
     })
 }
@@ -380,10 +374,8 @@ fn aes_decrypt_256(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
-    // XXX: Note that this might still fail because we don't check all
-    //      the required features (movbe)
-    hazmat::aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
-        hazmat::aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
+    aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
+        aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
         _ => Error::EncryptionError,
     })
 }

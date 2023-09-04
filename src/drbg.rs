@@ -2,7 +2,7 @@
 //!
 //! Deterministic Random Bit Generator (DRBG) (NIST, SP 800-90A).
 
-use hacl::hazmat::drbg;
+use crate::hacl::drbg;
 // re-export here for convenience
 pub use rand::{CryptoRng, RngCore};
 

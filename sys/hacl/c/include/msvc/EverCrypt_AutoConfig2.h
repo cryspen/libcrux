@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __Hacl_Curve25519_64_H
-#define __Hacl_Curve25519_64_H
+#ifndef __EverCrypt_AutoConfig2_H
+#define __EverCrypt_AutoConfig2_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,17 +35,65 @@ extern "C" {
 #include "krml/internal/target.h"
 
 
-#include "Hacl_Krmllib.h"
+
 #include "evercrypt_targetconfig.h"
-void Hacl_Curve25519_64_scalarmult(uint8_t *out, uint8_t *priv, uint8_t *pub);
+bool EverCrypt_AutoConfig2_has_shaext();
 
-void Hacl_Curve25519_64_secret_to_public(uint8_t *pub, uint8_t *priv);
+bool EverCrypt_AutoConfig2_has_aesni();
 
-bool Hacl_Curve25519_64_ecdh(uint8_t *out, uint8_t *priv, uint8_t *pub);
+bool EverCrypt_AutoConfig2_has_pclmulqdq();
+
+bool EverCrypt_AutoConfig2_has_avx2();
+
+bool EverCrypt_AutoConfig2_has_avx();
+
+bool EverCrypt_AutoConfig2_has_bmi2();
+
+bool EverCrypt_AutoConfig2_has_adx();
+
+bool EverCrypt_AutoConfig2_has_sse();
+
+bool EverCrypt_AutoConfig2_has_movbe();
+
+bool EverCrypt_AutoConfig2_has_rdrand();
+
+bool EverCrypt_AutoConfig2_has_avx512();
+
+void EverCrypt_AutoConfig2_recall();
+
+void EverCrypt_AutoConfig2_init();
+
+typedef void (*EverCrypt_AutoConfig2_disabler)();
+
+void EverCrypt_AutoConfig2_disable_avx2();
+
+void EverCrypt_AutoConfig2_disable_avx();
+
+void EverCrypt_AutoConfig2_disable_bmi2();
+
+void EverCrypt_AutoConfig2_disable_adx();
+
+void EverCrypt_AutoConfig2_disable_shaext();
+
+void EverCrypt_AutoConfig2_disable_aesni();
+
+void EverCrypt_AutoConfig2_disable_pclmulqdq();
+
+void EverCrypt_AutoConfig2_disable_sse();
+
+void EverCrypt_AutoConfig2_disable_movbe();
+
+void EverCrypt_AutoConfig2_disable_rdrand();
+
+void EverCrypt_AutoConfig2_disable_avx512();
+
+bool EverCrypt_AutoConfig2_has_vec128();
+
+bool EverCrypt_AutoConfig2_has_vec256();
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __Hacl_Curve25519_64_H_DEFINED
+#define __EverCrypt_AutoConfig2_H_DEFINED
 #endif

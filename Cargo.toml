@@ -17,7 +17,7 @@ crate-type = ["staticlib", "cdylib", "lib"]
 libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
 
 [dependencies]
-hacl = { version = "=0.0.2", features = ["hazmat"] }
+libcrux-hacl = { version = "=0.0.1", path = "sys/hacl" }
 libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
 rand = { version = "0.8" }
 log = "0.4"

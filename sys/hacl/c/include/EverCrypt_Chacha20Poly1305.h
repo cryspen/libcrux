@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __Hacl_Curve25519_64_H
-#define __Hacl_Curve25519_64_H
+#ifndef __EverCrypt_Chacha20Poly1305_H
+#define __EverCrypt_Chacha20Poly1305_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,17 +35,38 @@ extern "C" {
 #include "krml/internal/target.h"
 
 
-#include "Hacl_Krmllib.h"
+#include "Hacl_Chacha20Poly1305_32.h"
+#include "Hacl_Chacha20Poly1305_256.h"
+#include "Hacl_Chacha20Poly1305_128.h"
+#include "EverCrypt_AutoConfig2.h"
 #include "evercrypt_targetconfig.h"
-void Hacl_Curve25519_64_scalarmult(uint8_t *out, uint8_t *priv, uint8_t *pub);
+void
+EverCrypt_Chacha20Poly1305_aead_encrypt(
+  uint8_t *k,
+  uint8_t *n,
+  uint32_t aadlen,
+  uint8_t *aad,
+  uint32_t mlen,
+  uint8_t *m,
+  uint8_t *cipher,
+  uint8_t *tag
+);
 
-void Hacl_Curve25519_64_secret_to_public(uint8_t *pub, uint8_t *priv);
-
-bool Hacl_Curve25519_64_ecdh(uint8_t *out, uint8_t *priv, uint8_t *pub);
+uint32_t
+EverCrypt_Chacha20Poly1305_aead_decrypt(
+  uint8_t *k,
+  uint8_t *n,
+  uint32_t aadlen,
+  uint8_t *aad,
+  uint32_t mlen,
+  uint8_t *m,
+  uint8_t *cipher,
+  uint8_t *tag
+);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __Hacl_Curve25519_64_H_DEFINED
+#define __EverCrypt_Chacha20Poly1305_H_DEFINED
 #endif
