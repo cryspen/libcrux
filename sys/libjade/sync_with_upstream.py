@@ -1,3 +1,6 @@
+# This approach was inspired by:
+# https://github.com/open-quantum-safe/liboqs/blob/main/scripts/copy_from_upstream/copy_from_upstream.py
+
 import subprocess
 import shutil
 import os
