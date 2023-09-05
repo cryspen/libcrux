@@ -23,8 +23,8 @@
  */
 
 
-#ifndef __EverCrypt_Error_H
-#define __EverCrypt_Error_H
+#ifndef __internal_EverCrypt_Hash_H
+#define __internal_EverCrypt_Hash_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,19 +35,21 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
 
-#define EverCrypt_Error_Success 0
-#define EverCrypt_Error_UnsupportedAlgorithm 1
-#define EverCrypt_Error_InvalidKey 2
-#define EverCrypt_Error_AuthenticationFailure 3
-#define EverCrypt_Error_InvalidIVLength 4
-#define EverCrypt_Error_DecodeError 5
-#define EverCrypt_Error_MaximumLengthExceeded 6
+#include "internal/Vale.h"
+#include "internal/Hacl_Krmllib.h"
+#include "internal/Hacl_Hash_SHA3.h"
+#include "internal/Hacl_Hash_SHA2.h"
+#include "internal/Hacl_Hash_SHA1.h"
+#include "internal/Hacl_Hash_MD5.h"
+#include "../EverCrypt_Hash.h"
 
-typedef uint8_t EverCrypt_Error_error_code;
+void EverCrypt_Hash_update_multi_256(uint32_t *s, uint8_t *blocks, uint32_t n);
+
+void EverCrypt_Hash_Incremental_hash_256(uint8_t *input, uint32_t input_len, uint8_t *dst);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __EverCrypt_Error_H_DEFINED
+#define __internal_EverCrypt_Hash_H_DEFINED
 #endif

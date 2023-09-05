@@ -23,31 +23,22 @@
  */
 
 
-#ifndef __EverCrypt_Error_H
-#define __EverCrypt_Error_H
+#include "EverCrypt_Cipher.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+#include "internal/Hacl_Chacha20.h"
 
-#include <string.h>
-#include "krml/internal/types.h"
-#include "krml/lowstar_endianness.h"
-#include "krml/internal/target.h"
-
-#define EverCrypt_Error_Success 0
-#define EverCrypt_Error_UnsupportedAlgorithm 1
-#define EverCrypt_Error_InvalidKey 2
-#define EverCrypt_Error_AuthenticationFailure 3
-#define EverCrypt_Error_InvalidIVLength 4
-#define EverCrypt_Error_DecodeError 5
-#define EverCrypt_Error_MaximumLengthExceeded 6
-
-typedef uint8_t EverCrypt_Error_error_code;
-
-#if defined(__cplusplus)
+void
+EverCrypt_Cipher_chacha20(
+  uint32_t len,
+  uint8_t *dst,
+  uint8_t *src,
+  uint8_t *key,
+  uint8_t *iv,
+  uint32_t ctr
+)
+{
+  uint32_t ctx[16U] = { 0U };
+  Hacl_Impl_Chacha20_chacha20_init(ctx, key, iv, ctr);
+  Hacl_Impl_Chacha20_chacha20_update(ctx, len, dst, src);
 }
-#endif
 
-#define __EverCrypt_Error_H_DEFINED
-#endif

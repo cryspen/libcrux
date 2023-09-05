@@ -23,8 +23,8 @@
  */
 
 
-#ifndef __EverCrypt_Error_H
-#define __EverCrypt_Error_H
+#ifndef __EverCrypt_HMAC_H
+#define __EverCrypt_HMAC_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,19 +35,30 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
 
-#define EverCrypt_Error_Success 0
-#define EverCrypt_Error_UnsupportedAlgorithm 1
-#define EverCrypt_Error_InvalidKey 2
-#define EverCrypt_Error_AuthenticationFailure 3
-#define EverCrypt_Error_InvalidIVLength 4
-#define EverCrypt_Error_DecodeError 5
-#define EverCrypt_Error_MaximumLengthExceeded 6
+#include "Hacl_Streaming_Types.h"
+#include "Hacl_Krmllib.h"
+#include "Hacl_Hash_SHA2.h"
+#include "Hacl_Hash_Blake2.h"
 
-typedef uint8_t EverCrypt_Error_error_code;
+bool EverCrypt_HMAC_is_supported_alg(Spec_Hash_Definitions_hash_alg uu___);
+
+typedef Spec_Hash_Definitions_hash_alg EverCrypt_HMAC_supported_alg;
+
+extern void (*EverCrypt_HMAC_hash_256)(uint8_t *x0, uint32_t x1, uint8_t *x2);
+
+void
+EverCrypt_HMAC_compute(
+  Spec_Hash_Definitions_hash_alg a,
+  uint8_t *mac,
+  uint8_t *key,
+  uint32_t keylen,
+  uint8_t *data,
+  uint32_t datalen
+);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __EverCrypt_Error_H_DEFINED
+#define __EverCrypt_HMAC_H_DEFINED
 #endif
