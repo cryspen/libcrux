@@ -17,3 +17,4 @@ bindgen = "0.66"
 
 [dev-dependencies]
 hex = "0.4.3"
+wasm-bindgen-test = "0.3"

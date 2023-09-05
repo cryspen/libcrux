@@ -96,9 +96,12 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
             // Header to wrap EverCrypt_AutoConfig2
             .header("c/config/vale-aes.h");
     }
-    clang_args.push(
-        "--sysroot=/Users/franziskus/repos/emsdk/upstream/emscripten/cache/sysroot".to_string(),
-    );
+    // if cfg!(target_arch = "wasm32") {
+        clang_args.push(
+            // "--sysroot=/Users/franziskus/repos/emsdk/upstream/emscripten/cache/sysroot".to_string(),
+            "-I=/Users/franziskus/repos/emsdk/upstream/emscripten/cache/sysroot/include".to_string(),
+        );
+    // }
 
     let generated_bindings = bindings
         // Set include paths for HACL headers
@@ -388,9 +391,6 @@ fn main() {
     // If we have a prebuilt binary, we don't do anything here.
     // NOTE: the binary must match the bindings in this crate.
     if let Ok(prebuilt_hacl_name) = prebuilt_hacl_name {
-        // Generate new bindings.
-        create_bindings(Platform::default(), home_path);
-
         println!("cargo:rustc-link-lib={}={}", "static", prebuilt_hacl_name);
         if let Ok(prebuilt_hacl_path) = prebuilt_hacl_path {
             println!("cargo:rustc-link-search=native={}", prebuilt_hacl_path);
