@@ -23,8 +23,8 @@
  */
 
 
-#ifndef __EverCrypt_Error_H
-#define __EverCrypt_Error_H
+#ifndef __EverCrypt_Ed25519_H
+#define __EverCrypt_Ed25519_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,19 +35,39 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
 
-#define EverCrypt_Error_Success 0
-#define EverCrypt_Error_UnsupportedAlgorithm 1
-#define EverCrypt_Error_InvalidKey 2
-#define EverCrypt_Error_AuthenticationFailure 3
-#define EverCrypt_Error_InvalidIVLength 4
-#define EverCrypt_Error_DecodeError 5
-#define EverCrypt_Error_MaximumLengthExceeded 6
+#include "Hacl_Ed25519.h"
 
-typedef uint8_t EverCrypt_Error_error_code;
+void EverCrypt_Ed25519_secret_to_public(uint8_t *public_key, uint8_t *private_key);
+
+void EverCrypt_Ed25519_expand_keys(uint8_t *expanded_keys, uint8_t *private_key);
+
+void
+EverCrypt_Ed25519_sign_expanded(
+  uint8_t *signature,
+  uint8_t *expanded_keys,
+  uint32_t msg_len,
+  uint8_t *msg
+);
+
+void
+EverCrypt_Ed25519_sign(
+  uint8_t *signature,
+  uint8_t *private_key,
+  uint32_t msg_len,
+  uint8_t *msg
+);
+
+bool
+EverCrypt_Ed25519_verify(
+  uint8_t *public_key,
+  uint32_t msg_len,
+  uint8_t *msg,
+  uint8_t *signature
+);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __EverCrypt_Error_H_DEFINED
+#define __EverCrypt_Ed25519_H_DEFINED
 #endif

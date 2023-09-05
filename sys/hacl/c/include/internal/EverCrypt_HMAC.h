@@ -23,8 +23,8 @@
  */
 
 
-#ifndef __EverCrypt_Error_H
-#define __EverCrypt_Error_H
+#ifndef __internal_EverCrypt_HMAC_H
+#define __internal_EverCrypt_HMAC_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,19 +35,70 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
 
-#define EverCrypt_Error_Success 0
-#define EverCrypt_Error_UnsupportedAlgorithm 1
-#define EverCrypt_Error_InvalidKey 2
-#define EverCrypt_Error_AuthenticationFailure 3
-#define EverCrypt_Error_InvalidIVLength 4
-#define EverCrypt_Error_DecodeError 5
-#define EverCrypt_Error_MaximumLengthExceeded 6
+#include "internal/Hacl_Krmllib.h"
+#include "internal/Hacl_Hash_SHA2.h"
+#include "internal/Hacl_Hash_SHA1.h"
+#include "internal/Hacl_Hash_Blake2.h"
+#include "internal/EverCrypt_Hash.h"
+#include "../EverCrypt_HMAC.h"
 
-typedef uint8_t EverCrypt_Error_error_code;
+void
+EverCrypt_HMAC_compute_sha1(
+  uint8_t *dst,
+  uint8_t *key,
+  uint32_t key_len,
+  uint8_t *data,
+  uint32_t data_len
+);
+
+void
+EverCrypt_HMAC_compute_sha2_256(
+  uint8_t *dst,
+  uint8_t *key,
+  uint32_t key_len,
+  uint8_t *data,
+  uint32_t data_len
+);
+
+void
+EverCrypt_HMAC_compute_sha2_384(
+  uint8_t *dst,
+  uint8_t *key,
+  uint32_t key_len,
+  uint8_t *data,
+  uint32_t data_len
+);
+
+void
+EverCrypt_HMAC_compute_sha2_512(
+  uint8_t *dst,
+  uint8_t *key,
+  uint32_t key_len,
+  uint8_t *data,
+  uint32_t data_len
+);
+
+void
+EverCrypt_HMAC_compute_blake2s(
+  uint8_t *dst,
+  uint8_t *key,
+  uint32_t key_len,
+  uint8_t *data,
+  uint32_t data_len
+);
+
+void
+EverCrypt_HMAC_compute_blake2b(
+  uint8_t *dst,
+  uint8_t *key,
+  uint32_t key_len,
+  uint8_t *data,
+  uint32_t data_len
+);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __EverCrypt_Error_H_DEFINED
+#define __internal_EverCrypt_HMAC_H_DEFINED
 #endif

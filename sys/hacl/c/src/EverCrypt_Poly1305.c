@@ -23,71 +23,58 @@
  */
 
 
-#include "EverCrypt_Chacha20Poly1305.h"
+#include "EverCrypt_Poly1305.h"
 
+#include "internal/Vale.h"
 #include "config.h"
 
-void
-EverCrypt_Chacha20Poly1305_aead_encrypt(
-  uint8_t *k,
-  uint8_t *n,
-  uint32_t aadlen,
-  uint8_t *aad,
-  uint32_t mlen,
-  uint8_t *m,
-  uint8_t *cipher,
-  uint8_t *tag
-)
+static void poly1305_vale(uint8_t *dst, uint8_t *src, uint32_t len, uint8_t *key)
 {
-  bool avx2 = EverCrypt_AutoConfig2_has_avx2();
-  bool avx = EverCrypt_AutoConfig2_has_avx();
-  bool vec256 = EverCrypt_AutoConfig2_has_vec256();
-  bool vec128 = EverCrypt_AutoConfig2_has_vec128();
-  #if HACL_CAN_COMPILE_VEC256
-  if (vec256)
+  #if HACL_CAN_COMPILE_VALE
+  uint8_t ctx[192U] = { 0U };
+  memcpy(ctx + (uint32_t)24U, key, (uint32_t)32U * sizeof (uint8_t));
+  uint32_t n_blocks = len / (uint32_t)16U;
+  uint32_t n_extra = len % (uint32_t)16U;
+  uint8_t tmp[16U] = { 0U };
+  if (n_extra == (uint32_t)0U)
   {
-    Hacl_Chacha20Poly1305_256_aead_encrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
-    return;
+    uint64_t scrut = x64_poly1305(ctx, src, (uint64_t)len, (uint64_t)1U);
   }
-  #endif
-  #if HACL_CAN_COMPILE_VEC128
-  if (vec128)
+  else
   {
-    Hacl_Chacha20Poly1305_128_aead_encrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
-    return;
+    uint32_t len16 = n_blocks * (uint32_t)16U;
+    uint8_t *src16 = src;
+    memcpy(tmp, src + len16, n_extra * sizeof (uint8_t));
+    uint64_t scrut = x64_poly1305(ctx, src16, (uint64_t)len16, (uint64_t)0U);
+    memcpy(ctx + (uint32_t)24U, key, (uint32_t)32U * sizeof (uint8_t));
+    uint64_t scrut0 = x64_poly1305(ctx, tmp, (uint64_t)n_extra, (uint64_t)1U);
   }
+  memcpy(dst, ctx, (uint32_t)16U * sizeof (uint8_t));
   #endif
-  Hacl_Chacha20Poly1305_32_aead_encrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
 }
 
-uint32_t
-EverCrypt_Chacha20Poly1305_aead_decrypt(
-  uint8_t *k,
-  uint8_t *n,
-  uint32_t aadlen,
-  uint8_t *aad,
-  uint32_t mlen,
-  uint8_t *m,
-  uint8_t *cipher,
-  uint8_t *tag
-)
+void EverCrypt_Poly1305_poly1305(uint8_t *dst, uint8_t *src, uint32_t len, uint8_t *key)
 {
-  bool avx2 = EverCrypt_AutoConfig2_has_avx2();
-  bool avx = EverCrypt_AutoConfig2_has_avx();
   bool vec256 = EverCrypt_AutoConfig2_has_vec256();
   bool vec128 = EverCrypt_AutoConfig2_has_vec128();
   #if HACL_CAN_COMPILE_VEC256
   if (vec256)
   {
-    return Hacl_Chacha20Poly1305_256_aead_decrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+    Hacl_Poly1305_256_poly1305_mac(dst, len, src, key);
+    return;
   }
   #endif
   #if HACL_CAN_COMPILE_VEC128
   if (vec128)
   {
-    return Hacl_Chacha20Poly1305_128_aead_decrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+    Hacl_Poly1305_128_poly1305_mac(dst, len, src, key);
+    return;
   }
   #endif
-  return Hacl_Chacha20Poly1305_32_aead_decrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+  #if HACL_CAN_COMPILE_VALE
+  poly1305_vale(dst, src, len, key);
+  #else
+  Hacl_Poly1305_32_poly1305_mac(dst, len, src, key);
+  #endif
 }
 
