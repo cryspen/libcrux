@@ -1,0 +1,10 @@
+{% for algorithm_type, algorithms in instructions.items() -%}
+    {%- for algorithm in algorithms -%}
+        {%- for platform, implementations in algorithm['platforms'].items() -%}
+            {%- for implementation in implementations if implementation == 'ref' %}
+#include "{{ algorithm['name'] | replace('-', '_') }}_{{ implementation }}.h"
+            {%- endfor -%}
+        {%- endfor %}
+    {%- endfor %}
+{%- endfor %}
+

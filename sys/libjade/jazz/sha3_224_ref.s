@@ -9,11 +9,11 @@ jade_hash_sha3_224_amd64_ref:
 	leaq	-48(%rsp), %rsp
 	andq	$-8, %rsp
 	movq	%rax, 40(%rsp)
-	movq	%rbx, (%rsp)
-	movq	%rbp, 8(%rsp)
+	movq	%r14, (%rsp)
+	movq	%r13, 8(%rsp)
 	movq	%r12, 16(%rsp)
-	movq	%r13, 24(%rsp)
-	movq	%r14, 32(%rsp)
+	movq	%rbp, 24(%rsp)
+	movq	%rbx, 32(%rsp)
 	movq	$28, %rcx
 	movb	$6, %r8b
 	movq	$144, %rax
@@ -22,11 +22,11 @@ jade_hash_sha3_224_amd64_ref:
 Ljade_hash_sha3_224_amd64_ref$1:
 	leaq	448(%rsp), %rsp
 	xorq	%rax, %rax
-	movq	(%rsp), %rbx
-	movq	8(%rsp), %rbp
+	movq	(%rsp), %r14
+	movq	8(%rsp), %r13
 	movq	16(%rsp), %r12
-	movq	24(%rsp), %r13
-	movq	32(%rsp), %r14
+	movq	24(%rsp), %rbp
+	movq	32(%rsp), %rbx
 	movq	40(%rsp), %rsp
 	ret 
 L_keccak1600_ref$1:
@@ -59,19 +59,19 @@ L_keccak1600_ref$1:
 	movq	%rcx, 224(%rsp)
 	movq	%rcx, 232(%rsp)
 	movq	%rcx, 240(%rsp)
-	jmp 	L_keccak1600_ref$16
-L_keccak1600_ref$17:
+	jmp 	L_keccak1600_ref$18
+L_keccak1600_ref$19:
 	movq	%rax, %rcx
 	shrq	$3, %rcx
 	movq	$0, %rdi
-	jmp 	L_keccak1600_ref$19
-L_keccak1600_ref$20:
+	jmp 	L_keccak1600_ref$22
+L_keccak1600_ref$23:
 	movq	(%rsi,%rdi,8), %r8
 	xorq	%r8, 48(%rsp,%rdi,8)
 	incq	%rdi
-L_keccak1600_ref$19:
+L_keccak1600_ref$22:
 	cmpq	%rcx, %rdi
-	jb  	L_keccak1600_ref$20
+	jb  	L_keccak1600_ref$23
 	addq	%rax, %rsi
 	subq	%rax, %rdx
 	movq	%rsi, 24(%rsp)
@@ -79,7 +79,8 @@ L_keccak1600_ref$19:
 	movq	%rax, 40(%rsp)
 	leaq	glob_data + 0(%rip), %rax
 	movq	$0, %rcx
-L_keccak1600_ref$18:
+	jmp 	L_keccak1600_ref$20
+L_keccak1600_ref$21:
 	movq	(%rax,%rcx,8), %r10
 	movq	48(%rsp), %r9
 	movq	56(%rsp), %r8
@@ -551,47 +552,49 @@ L_keccak1600_ref$18:
 	xorq	%rdx, %r10
 	movq	%r10, 240(%rsp)
 	addq	$2, %rcx
+L_keccak1600_ref$20:
 	cmpq	$23, %rcx
-	jb  	L_keccak1600_ref$18
+	jb  	L_keccak1600_ref$21
 	movq	24(%rsp), %rsi
 	movq	32(%rsp), %rdx
 	movq	40(%rsp), %rax
-L_keccak1600_ref$16:
+L_keccak1600_ref$18:
 	cmpq	%rax, %rdx
-	jnb 	L_keccak1600_ref$17
+	jnb 	L_keccak1600_ref$19
 	movb	448(%rsp), %cl
 	movq	%rdx, %rdi
 	shrq	$3, %rdi
 	movq	$0, %r8
-	jmp 	L_keccak1600_ref$14
-L_keccak1600_ref$15:
+	jmp 	L_keccak1600_ref$16
+L_keccak1600_ref$17:
 	movq	(%rsi,%r8,8), %r9
 	xorq	%r9, 48(%rsp,%r8,8)
 	incq	%r8
-L_keccak1600_ref$14:
+L_keccak1600_ref$16:
 	cmpq	%rdi, %r8
-	jb  	L_keccak1600_ref$15
+	jb  	L_keccak1600_ref$17
 	shlq	$3, %r8
-	jmp 	L_keccak1600_ref$12
-L_keccak1600_ref$13:
+	jmp 	L_keccak1600_ref$14
+L_keccak1600_ref$15:
 	movb	(%rsi,%r8), %dil
 	xorb	%dil, 48(%rsp,%r8)
 	incq	%r8
-L_keccak1600_ref$12:
+L_keccak1600_ref$14:
 	cmpq	%rdx, %r8
-	jb  	L_keccak1600_ref$13
+	jb  	L_keccak1600_ref$15
 	xorb	%cl, 48(%rsp,%r8)
 	movq	%rax, %rcx
 	addq	$-1, %rcx
 	xorb	$-128, 48(%rsp,%rcx)
 	movq	16(%rsp), %rdx
-	jmp 	L_keccak1600_ref$7
-L_keccak1600_ref$8:
+	jmp 	L_keccak1600_ref$8
+L_keccak1600_ref$9:
 	movq	%rdx, 16(%rsp)
 	movq	%rax, 40(%rsp)
 	leaq	glob_data + 0(%rip), %rax
 	movq	$0, %rcx
-L_keccak1600_ref$11:
+	jmp 	L_keccak1600_ref$12
+L_keccak1600_ref$13:
 	movq	(%rax,%rcx,8), %r10
 	movq	48(%rsp), %r9
 	movq	56(%rsp), %r8
@@ -1063,32 +1066,34 @@ L_keccak1600_ref$11:
 	xorq	%rdx, %r10
 	movq	%r10, 240(%rsp)
 	addq	$2, %rcx
+L_keccak1600_ref$12:
 	cmpq	$23, %rcx
-	jb  	L_keccak1600_ref$11
+	jb  	L_keccak1600_ref$13
 	movq	8(%rsp), %rcx
 	movq	16(%rsp), %rdx
 	movq	40(%rsp), %rax
 	movq	%rax, %rsi
 	shrq	$3, %rsi
 	movq	$0, %rdi
-	jmp 	L_keccak1600_ref$9
-L_keccak1600_ref$10:
+	jmp 	L_keccak1600_ref$10
+L_keccak1600_ref$11:
 	movq	48(%rsp,%rdi,8), %r8
 	movq	%r8, (%rcx,%rdi,8)
 	incq	%rdi
-L_keccak1600_ref$9:
+L_keccak1600_ref$10:
 	cmpq	%rsi, %rdi
-	jb  	L_keccak1600_ref$10
+	jb  	L_keccak1600_ref$11
 	addq	%rax, %rcx
 	subq	%rax, %rdx
 	movq	%rcx, 8(%rsp)
-L_keccak1600_ref$7:
+L_keccak1600_ref$8:
 	cmpq	%rax, %rdx
-	jnbe	L_keccak1600_ref$8
+	jnbe	L_keccak1600_ref$9
 	movq	%rdx, 40(%rsp)
 	leaq	glob_data + 0(%rip), %rax
 	movq	$0, %rcx
-L_keccak1600_ref$6:
+	jmp 	L_keccak1600_ref$6
+L_keccak1600_ref$7:
 	movq	(%rax,%rcx,8), %r10
 	movq	48(%rsp), %r9
 	movq	56(%rsp), %r8
@@ -1560,8 +1565,9 @@ L_keccak1600_ref$6:
 	xorq	%rdx, %r10
 	movq	%r10, 240(%rsp)
 	addq	$2, %rcx
+L_keccak1600_ref$6:
 	cmpq	$23, %rcx
-	jb  	L_keccak1600_ref$6
+	jb  	L_keccak1600_ref$7
 	movq	8(%rsp), %rax
 	movq	40(%rsp), %rcx
 	movq	%rcx, %rdx

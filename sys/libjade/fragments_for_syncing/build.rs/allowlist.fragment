@@ -1,0 +1,8 @@
+{% for algorithm_type, algorithms in instructions.items() -%}
+    {%- for algorithm in algorithms -%}
+        {%- set allowlist_string = "jade_{0}_{1}_.*".format(algorithm_type, algorithm['name'].replace('-', '_')) %}
+        .allowlist_function("{{ allowlist_string }}")
+        .allowlist_var("{{ allowlist_string | upper }}")
+    {%- endfor %}
+{%- endfor %}
+
