@@ -36,7 +36,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
                 for j in offset..offset + layer {
                     let t = montgomery_reduce(re[j + layer] * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
                     re[j + layer] = re[j] - t;
-                    re[j] += t;
+                    re[j] = re[j] + t;
                 }
             }
         }
