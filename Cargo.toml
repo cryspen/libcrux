@@ -20,8 +20,10 @@ libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
 libcrux-hacl = { version = "=0.0.1", path = "sys/hacl" }
 libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
 rand = { version = "0.8" }
-getrandom = { version = "0.2", features = ["js"]}
+getrandom = { version = "0.2", features = ["js"] }
 log = "0.4"
+# WASM API
+wasm-bindgen = { version = "0.2.87", optional = true }
 
 [target.'cfg(all(not(target_os = "windows"), any(target_arch = "x86_64", target_arch = "x86")))'.dependencies]
 libjade-sys = { version = "0.0.1", path = "sys/libjade" }
@@ -77,8 +79,9 @@ name = "drbg"
 harness = false
 
 [features]
-hacspec = []                # TODO: #7 Use specs instead of efficient implementations
+hacspec = []            # TODO: #7 Use specs instead of efficient implementations
 rand = []
+wasm = ["wasm-bindgen"]
 
 # [patch.crates-io]
 # hacl = { git = "https://github.com/cryspen/hacl-packages" }

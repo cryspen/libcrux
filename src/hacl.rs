@@ -13,6 +13,7 @@ pub(crate) mod aesgcm;
 pub(crate) mod blake2;
 pub(crate) mod chacha20_poly1305;
 pub(crate) mod curve25519;
+#[cfg(not(target_arch ="wasm32"))]
 pub(crate) mod drbg;
 pub(crate) mod ed25519;
 pub(crate) mod hkdf;
