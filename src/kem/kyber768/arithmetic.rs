@@ -40,8 +40,19 @@ pub struct KyberPolynomialRingElement {
 
 impl KyberPolynomialRingElement {
     pub const ZERO: Self = Self {
-        coefficients: [0i32; COEFFICIENTS_IN_RING_ELEMENT],
+        coefficients: [0i32; 256], // FIXME: hax issue, this is COEFFICIENTS_IN_RING_ELEMENT
     };
+}
+
+// Adding this to a module to ignore it for extraction.
+mod mutable_operations {
+    use super::*;
+
+    impl IndexMut<usize> for KyberPolynomialRingElement {
+        fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+            &mut self.coefficients[index]
+        }
+    }
 }
 
 impl Index<usize> for KyberPolynomialRingElement {
@@ -49,11 +60,6 @@ impl Index<usize> for KyberPolynomialRingElement {
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.coefficients[index]
-    }
-}
-impl IndexMut<usize> for KyberPolynomialRingElement {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.coefficients[index]
     }
 }
 

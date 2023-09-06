@@ -1,6 +1,4 @@
-use crate::kem::kyber768::conversions::{
-    ArrayConversion, ArrayPadding, UpdatableArray, UpdatingArray,
-};
+use crate::kem::kyber768::conversions::{UpdatableArray, UpdatingArray};
 
 use crate::kem::kyber768::{
     arithmetic::KyberPolynomialRingElement,
@@ -12,10 +10,10 @@ use crate::kem::kyber768::{
     parameters::{
         hash_functions::{G, H, PRF, XOF},
         BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
-        CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
-        CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
-        REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
-        VECTOR_U_ENCODED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+        CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
+        CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE,
+        T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_ENCODED_SIZE,
+        VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{
@@ -25,6 +23,8 @@ use crate::kem::kyber768::{
     },
     BadRejectionSamplingRandomnessError,
 };
+
+use super::conversions::into_padded_array;
 
 pub type CiphertextCpa = [u8; CPA_PKE_CIPHERTEXT_SIZE];
 
@@ -42,7 +42,7 @@ impl KeyPair {
 
     pub fn serialize_secret_key(
         &self,
-        implicit_rejection_value: &[u8; CPA_PKE_MESSAGE_SIZE],
+        implicit_rejection_value: &[u8],
     ) -> [u8; CPA_SERIALIZED_KEY_LEN] {
         UpdatableArray::new([0u8; CPA_SERIALIZED_KEY_LEN])
             .push(&self.sk)
@@ -112,7 +112,7 @@ fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> [u8; RANK * BYTES_PER
 
 #[allow(non_snake_case)]
 pub(crate) fn generate_keypair(
-    key_generation_seed: &[u8; CPA_PKE_KEY_GENERATION_SEED_SIZE],
+    key_generation_seed: &[u8],
 ) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
     let mut prf_input: [u8; 33] = [0; 33];
 
@@ -126,7 +126,7 @@ pub(crate) fn generate_keypair(
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = parse_a(seed_for_A.to_padded_array(), true)?;
+    let A_transpose = parse_a(into_padded_array(seed_for_A), true)?;
 
     // for i from 0 to k−1 do
     //     s[i] := CBD_{η1}(PRF(σ, N))
@@ -197,9 +197,9 @@ fn compress_then_encode_u(
 
 #[allow(non_snake_case)]
 pub(crate) fn encrypt(
-    public_key: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
+    public_key: &[u8],
     message: [u8; CPA_PKE_MESSAGE_SIZE],
-    randomness: &[u8; 32],
+    randomness: &[u8],
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
@@ -217,14 +217,14 @@ pub(crate) fn encrypt(
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A_transpose = parse_a(seed.to_padded_array(), false)?;
+    let A_transpose = parse_a(into_padded_array(seed), false)?;
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
     //     N := N + 1
     // end for
     // rˆ := NTT(r)
-    let mut prf_input: [u8; 33] = randomness.to_padded_array();
+    let mut prf_input: [u8; 33] = into_padded_array(randomness);
     let (r_as_ntt, mut domain_separator) = cbd(prf_input);
 
     // for i from 0 to k−1 do
@@ -265,7 +265,7 @@ pub(crate) fn encrypt(
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
     let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR));
 
-    let mut ciphertext: CiphertextCpa = (&c1).to_padded_array();
+    let mut ciphertext: CiphertextCpa = into_padded_array(&c1);
     ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
 
     Ok(ciphertext)
@@ -273,7 +273,7 @@ pub(crate) fn encrypt(
 
 #[allow(non_snake_case)]
 pub(crate) fn decrypt(
-    secret_key: &[u8; CPA_PKE_SECRET_KEY_SIZE],
+    secret_key: &[u8],
     ciphertext: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
 ) -> [u8; CPA_PKE_MESSAGE_SIZE] {
     let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
