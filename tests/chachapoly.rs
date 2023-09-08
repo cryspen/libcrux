@@ -1,16 +1,21 @@
 mod test_util;
 use test_util::*;
 
+#[cfg(not(target_arch = "wasm32"))]
+use libcrux::drbg;
+#[cfg(target_arch = "wasm32")]
+use rand_core::OsRng;
+
 use libcrux::{
     aead::{
         self, decrypt, encrypt,
         Algorithm::{self, Chacha20Poly1305},
         Chacha20Key, Error, Iv, Key, Tag,
     },
-    aes_ni_support, digest,
-    drbg::Drbg,
+    aes_ni_support,
 };
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn chachapoly_self_test() {
     let _ = pretty_env_logger::try_init();
@@ -32,6 +37,7 @@ fn chachapoly_self_test() {
     assert_eq!(orig_msg, &msg);
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn chachapoly_self_test_rand() {
     let _ = pretty_env_logger::try_init();
@@ -40,9 +46,13 @@ fn chachapoly_self_test_rand() {
     let mut msg = orig_msg.clone();
     let aad = b"associated data" as &[u8];
 
-    let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
-    let key = Key::generate(Chacha20Poly1305, &mut drbg);
-    let iv = Iv::generate(&mut drbg);
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let mut rng = OsRng;
+
+    let key = Key::generate(Chacha20Poly1305, &mut rng);
+    let iv = Iv::generate(&mut rng);
     let iv2 = Iv(iv.0);
 
     let tag = encrypt(&key, &mut msg, iv, aad).unwrap();
