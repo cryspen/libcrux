@@ -2,46 +2,94 @@ name: Build & Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main", "dev"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main", "dev"]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
+        bits: [32, 64]
         os:
           - macos-latest
           - ubuntu-latest
           - windows-latest
+        exclude:
+          - bits: 32
+            os: "macos-latest"
 
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
+      - uses: actions/checkout@v4
 
-    - name: Setup Ubuntu
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get install ninja-build
-    - name: Setup MacOS
-      if: matrix.os == 'macos-latest'
-      run: brew install ninja
-    - name: Setup Windows
-      if: matrix.os == 'windows-latest'
-      run: |
-        echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-        vcpkg install openssl:x64-windows-static-md
+      - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
+        if: ${{ matrix.bits == 64 }}
 
-    - uses: actions/checkout@v3
+      # Set up 32 bit systems
 
-    - name: Build
-      run: cargo build --verbose
+      - name: Config Windows x86
+        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
 
-    - name: Run tests
-      run: cargo test --verbose
+      - name: Config Linux x86
+        run: |
+          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
+        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
 
-    - name: Build sys/hacl
-      run: cargo build --target-dir sys/hacl --verbose
+      # Set up windows
+
+      - name: Setup Windows x86
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: |
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+          vcpkg install openssl:x86-windows-static-md
+
+      - name: Setup Windows x64
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: |
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+          vcpkg install openssl:x64-windows-static-md
+
+      # Build ...
+
+      - name: Build
+        run: cargo build --verbose $RUST_TARGET_FLAG
+
+      - name: Build Release
+        run: cargo build --verbose --release $RUST_TARGET_FLAG
+
+      # Test ...
+
+      - name: Test
+        run: cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: Test Release
+        run: cargo test --verbose --release $RUST_TARGET_FLAG
+
+      - name: Build sys/hacl
+        working-directory: sys/hacl
+        run: cargo build --verbose $RUST_TARGET_FLAG
+
+  wasm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v11
+      - run: CC=emcc AR=emar wasm-pack test --node --features wasm
