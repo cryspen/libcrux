@@ -91,7 +91,7 @@ fn build(platform: Platform, home_path: &Path) {
         "poly1305_ref.s",
         "kyber_kyber768_ref.s",
     ];
-    compile_files("libjade.a", &files, home_path, &args);
+    compile_files("jade", &files, home_path, &args);
 
     if platform.simd256 {
         let files256 = svec![
@@ -105,7 +105,7 @@ fn build(platform: Platform, home_path: &Path) {
 
         let mut simd256_flags = args.clone();
         append_simd256_flags(&mut simd256_flags);
-        compile_files("libjade_256.a", &files256, home_path, &simd256_flags);
+        compile_files("jade_256", &files256, home_path, &simd256_flags);
     }
 
     if platform.simd128 {
@@ -113,7 +113,7 @@ fn build(platform: Platform, home_path: &Path) {
 
         let mut simd128_flags = args.clone();
         append_simd128_flags(&mut simd128_flags);
-        compile_files("libjade_128.a", &files128, home_path, &simd128_flags);
+        compile_files("jade_128", &files128, home_path, &simd128_flags);
     }
 }
 
@@ -123,29 +123,17 @@ struct Platform {
     simd256: bool,
 }
 
-pub fn main() -> Result<(), u8> {
+pub fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let home_path = Path::new(&home_dir);
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_path = Path::new(&out_dir);
     let target = env::var("TARGET").unwrap();
-    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
     let host = env::var("HOST").unwrap();
 
-    if target_arch != "x86_64" && target_arch != "x86" {
-        eprintln!(" ! Only x86 and x64 CPUs are supported !");
-        return Err(1);
-    }
-
-    let cross_target = if target != host {
-        Some(target.clone())
-    } else {
-        None
-    };
-
     // If cross compiling, we assume to have it all.
-    let platform = if cross_target.is_some() {
+    let platform = if target != host {
         Platform {
             simd128: true,
             simd256: true,
@@ -168,20 +156,4 @@ pub fn main() -> Result<(), u8> {
 
     // Generate new bindings.
     create_bindings(platform, home_path);
-
-    // Link hacl library.
-    const MODE: &str = "static";
-    println!("cargo:rustc-link-lib={}={}", MODE, LIB_NAME);
-    if platform.simd128 {
-        println!("cargo:rustc-cfg=simd128");
-        println!("cargo:rustc-link-lib={}={}", MODE, "jade_128");
-    }
-    if platform.simd256 {
-        println!("cargo:rustc-cfg=simd256");
-        println!("cargo:rustc-link-lib={}={}", MODE, "jade_256");
-    }
-    println!("cargo:rustc-link-search=native={}", out_path.display());
-    println!("cargo:lib={}", out_path.display());
-
-    Ok(())
 }

@@ -1,6 +1,5 @@
 use std::{env, path::Path};
 
-const MODE: &str = "static";
 const LIB_NAME: &str = "hacl";
 const LIB_128_NAME: &str = "hacl_128";
 const LIB_256_NAME: &str = "hacl_256";
@@ -37,6 +36,7 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
     ]
 }
 
+// FIXME: drop all the host specific checks and move them to target.
 #[cfg(all(
     any(target_arch = "x86", target_arch = "x86_64"),
     any(
@@ -185,6 +185,7 @@ fn compile_files(
         build.include(include);
     }
     build.opt_level(3);
+    build.static_crt(true);
     if let Some(target) = platform.target {
         build.flag(&format!("--target={target}"));
     }
@@ -377,7 +378,7 @@ fn build(platform: &Platform, home_path: &Path) {
         );
     }
 
-    compile_files(platform, "libhacl.a", &files, &[], home_path, &[], &defines);
+    compile_files(platform, LIB_NAME, &files, &[], home_path, &[], &defines);
 }
 
 #[derive(Clone, Debug, Default)]
@@ -401,24 +402,9 @@ fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let home_path = Path::new(&home_dir);
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let out_path = Path::new(&out_dir);
-    let prebuilt_hacl_path = env::var("HACL_STATIC_PATH");
-    let prebuilt_hacl_name = env::var("HACL_STATIC_LIB");
-    let _host_arch = env::var("TARGET").unwrap();
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
-
-    // If we have a prebuilt binary, we don't do anything here.
-    // NOTE: the binary must match the bindings in this crate.
-    if let Ok(prebuilt_hacl_name) = prebuilt_hacl_name {
-        println!("cargo:rustc-link-lib={}={}", "static", prebuilt_hacl_name);
-        if let Ok(prebuilt_hacl_path) = prebuilt_hacl_path {
-            println!("cargo:rustc-link-search=native={}", prebuilt_hacl_path);
-        }
-        return;
-    }
 
     // Check platform support
     let platform = if target_arch != "wasm32" {
@@ -456,37 +442,4 @@ fn main() {
     if target_arch != "wasm32" {
         create_bindings(&platform, home_path);
     }
-
-    // Link hacl library.
-    println!("cargo:rustc-link-lib={}={}", MODE, LIB_NAME);
-    if platform.simd128 {
-        println!("cargo:rustc-link-lib={}={}", MODE, LIB_128_NAME);
-    }
-    if platform.simd256 {
-        println!("cargo:rustc-link-lib={}={}", MODE, LIB_256_NAME);
-    }
-    if platform.x25519
-        && (target_arch == "x86"
-            || target_arch == "x86_64"
-                && (target_env == "gnu"
-                    || target_os == "linux"
-                    || target_os == "macos"
-                    || (target_os == "windows" && target_env == "msvc")))
-    {
-        println!("cargo:rustc-link-lib={}={}", MODE, LIB_25519_NAME);
-    }
-    if platform.simd128
-        && platform.simd256
-        && platform.aes_ni
-        && platform.pmull
-        && (target_arch == "x86"
-            || target_arch == "x86_64"
-                && (target_os == "linux"
-                    || target_os == "macos"
-                    || (target_os == "windows" && (target_env == "msvc" || target_env == "gnu"))))
-    {
-        println!("cargo:rustc-link-lib={}={}", MODE, LIB_VALE_AESGCM_NAME);
-    }
-    println!("cargo:rustc-link-search=native={}", out_path.display());
-    println!("cargo:lib={}", out_path.display());
 }
