@@ -39,6 +39,10 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
+      - name: Setup Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: rustup target add i686-unknown-linux-gnu
+
       # Set up 32 bit systems
 
       - name: Config Windows x86
@@ -92,4 +96,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: mymindstorm/setup-emsdk@v11
+
+      - name: Setup
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-pack
+
       - run: CC=emcc AR=emar wasm-pack test --node --features wasm
