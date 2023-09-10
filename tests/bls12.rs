@@ -1,4 +1,4 @@
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(all(not(target_arch = "wasm32"), not(target_arch = "x86")))]
 mod bls12_test {
     use libcrux::bls12::{
         bls12_add, bls12_from_montgomery, bls12_mul, bls12_opp, bls12_square, bls12_sub,

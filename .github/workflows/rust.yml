@@ -39,9 +39,12 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - name: Setup Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        run: rustup target add i686-unknown-linux-gnu
+      - name: Setup Ubuntu x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          apt update
+          apt install -y gcc-multilib g++-multilib
 
       # Set up 32 bit systems
 

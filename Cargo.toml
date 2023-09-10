@@ -25,7 +25,7 @@ log = "0.4"
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 
-[target.'cfg(all(not(target_os = "windows"), any(target_arch = "x86_64", target_arch = "x86")))'.dependencies]
+[target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dependencies]
 libjade-sys = { version = "0.0.1", path = "sys/libjade" }
 
 [dev-dependencies]
@@ -56,7 +56,8 @@ criterion = "0.5"
 
 # Benchmarking "OpenSSL"
 # XXX: We don't do this for Windows or wasm right now.
-[target.'cfg(all(not(windows), not(target_arch = "wasm32")))'.dev-dependencies]
+#      x86 is usally a cross compilation where this won't work either.
+[target.'cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))'.dev-dependencies]
 openssl = "0.10"
 
 [[bench]]

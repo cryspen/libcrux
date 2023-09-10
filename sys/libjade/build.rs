@@ -76,14 +76,8 @@ fn compile_files(library_name: &str, files: &[String], home_path: &Path, args: &
     build.compile(library_name);
 }
 
-fn build(platform: Platform, home_path: &Path, cross_target: Option<String>) {
-    let args = cross_target
-        .map(|s| match s.as_str() {
-            // We only support cross compilation here for now.
-            "x86_64-apple-darwin" => svec!["-target", "x86_64-apple-darwin"],
-            _ => panic!("Unsupported cross compilation target {s}"),
-        })
-        .unwrap_or_default();
+fn build(platform: Platform, home_path: &Path) {
+    let args = Vec::new();
 
     let files = svec![
         "sha256.s",
@@ -164,7 +158,7 @@ pub fn main() -> Result<(), u8> {
     };
 
     // Build the C/ASM files
-    build(platform, home_path, cross_target);
+    build(platform, home_path);
 
     // Set library name to look up
     const LIB_NAME: &str = "jade";

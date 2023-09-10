@@ -54,61 +54,57 @@ extern "C" {
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_scalarmult_curve25519_amd64_ref5(
         r: *mut u8,
         k: *mut u8,
         u: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
-    pub fn jade_scalarmult_curve25519_amd64_ref5_base(
-        r: *mut u8,
-        k: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    pub fn jade_scalarmult_curve25519_amd64_ref5_base(r: *mut u8, k: *mut u8)
+        -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_scalarmult_curve25519_amd64_mulx(
         r: *mut u8,
         k: *mut u8,
         u: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
-    pub fn jade_scalarmult_curve25519_amd64_mulx_base(
-        r: *mut u8,
-        k: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    pub fn jade_scalarmult_curve25519_amd64_mulx_base(r: *mut u8, k: *mut u8)
+        -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_224_amd64_ref(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_256_amd64_ref(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_384_amd64_ref(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_512_amd64_ref(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_onetimeauth_poly1305_amd64_ref(
@@ -116,7 +112,7 @@ extern "C" {
         in_: *mut u8,
         inlen: u64,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_onetimeauth_poly1305_amd64_ref_verify(
@@ -124,7 +120,7 @@ extern "C" {
         in_: *mut u8,
         inlen: u64,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_stream_chacha_chacha20_ietf_amd64_ref_xor(
@@ -133,7 +129,7 @@ extern "C" {
         length: u64,
         nonce: *mut u8,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_stream_chacha_chacha20_ietf_amd64_ref(
@@ -141,14 +137,14 @@ extern "C" {
         length: u64,
         nonce: *mut u8,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_kem_kyber_kyber768_amd64_ref_keypair_derand(
         public_key: *mut u8,
         secret_key: *mut u8,
         coins: *const u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_kem_kyber_kyber768_amd64_ref_enc_derand(
@@ -156,42 +152,42 @@ extern "C" {
         shared_secret: *mut u8,
         public_key: *const u8,
         coins: *const u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_kem_kyber_kyber768_amd64_ref_dec(
         shared_secret: *mut u8,
         ciphertext: *const u8,
         secret_key: *const u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_224_amd64_avx2(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_256_amd64_avx2(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_384_amd64_avx2(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_hash_sha3_512_amd64_avx2(
         out: *mut u8,
         in_: *mut u8,
         length: u64,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_onetimeauth_poly1305_amd64_avx2(
@@ -199,7 +195,7 @@ extern "C" {
         in_: *mut u8,
         inlen: u64,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_onetimeauth_poly1305_amd64_avx2_verify(
@@ -207,7 +203,7 @@ extern "C" {
         in_: *mut u8,
         inlen: u64,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor(
@@ -216,7 +212,7 @@ extern "C" {
         length: u64,
         nonce: *mut u8,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_stream_chacha_chacha20_ietf_amd64_avx2(
@@ -224,7 +220,7 @@ extern "C" {
         length: u64,
         nonce: *mut u8,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_onetimeauth_poly1305_amd64_avx(
@@ -232,7 +228,7 @@ extern "C" {
         in_: *mut u8,
         inlen: u64,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_onetimeauth_poly1305_amd64_avx_verify(
@@ -240,7 +236,7 @@ extern "C" {
         in_: *mut u8,
         inlen: u64,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_stream_chacha_chacha20_ietf_amd64_avx_xor(
@@ -249,7 +245,7 @@ extern "C" {
         length: u64,
         nonce: *mut u8,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
 extern "C" {
     pub fn jade_stream_chacha_chacha20_ietf_amd64_avx(
@@ -257,5 +253,5 @@ extern "C" {
         length: u64,
         nonce: *mut u8,
         key: *mut u8,
-    ) -> ::std::os::raw::c_int;
+    ) -> ::core::ffi::c_int;
 }
