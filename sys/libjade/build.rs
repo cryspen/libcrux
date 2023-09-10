@@ -127,8 +127,6 @@ pub fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let home_path = Path::new(&home_dir);
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let out_path = Path::new(&out_dir);
     let target = env::var("TARGET").unwrap();
     let host = env::var("HOST").unwrap();
 
@@ -147,9 +145,6 @@ pub fn main() {
 
     // Build the C/ASM files
     build(platform, home_path);
-
-    // Set library name to look up
-    const LIB_NAME: &str = "jade";
 
     // Set re-run trigger for all of s
     println!("cargo:rerun-if-changed=jazz");
