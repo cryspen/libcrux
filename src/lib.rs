@@ -16,7 +16,8 @@ pub(crate) mod hacl;
 
 // libcrux
 pub mod aead;
-#[cfg(not(target_arch ="wasm32"))]
+// The BLS code requires a 64 bit system.
+#[cfg(all(not(target_arch = "wasm32"), not(target_arch = "x86")))]
 pub mod bls12;
 pub mod digest;
 // XXX: Looks like the bindings are broken for drbg for some reason.

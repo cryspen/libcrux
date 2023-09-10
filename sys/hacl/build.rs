@@ -185,7 +185,6 @@ fn compile_files(
         build.include(include);
     }
     build.opt_level(3);
-    // build.flag("--sysroot=/opt/homebrew/opt/llvm@12/Toolchains/LLVM12.0.1.xctoolchain/usr/");
     if let Some(target) = platform.target {
         build.flag(&format!("--target={target}"));
     }
@@ -323,6 +322,7 @@ fn build(platform: &Platform, home_path: &Path) {
         }
 
         compile_files(
+            platform,
             LIB_25519_NAME,
             &files_curve25519_64,
             &files_curve25519,
@@ -367,6 +367,7 @@ fn build(platform: &Platform, home_path: &Path) {
         append_simd256_flags(&mut aesgcm_flags, false);
         append_aesgcm_flags(&mut aesgcm_flags);
         compile_files(
+            platform,
             LIB_VALE_AESGCM_NAME,
             &files_evercrypt,
             &files_aesgcm,
@@ -421,11 +422,12 @@ fn main() {
 
     // Check platform support
     let platform = if target_arch != "wasm32" {
+        let x86 = target_arch == "x86";
         Platform {
-            simd128: libcrux_platform::simd128_support(),
-            simd256: libcrux_platform::simd256_support(),
+            simd128: !x86 && libcrux_platform::simd128_support(),
+            simd256: !x86 && libcrux_platform::simd256_support(),
             aes_ni: libcrux_platform::aes_ni_support(),
-            x25519: libcrux_platform::x25519_support(),
+            x25519: !x86 && libcrux_platform::x25519_support(),
             bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
             pmull: libcrux_platform::pmull_support(),
             adv_simd: libcrux_platform::adv_simd_support(),

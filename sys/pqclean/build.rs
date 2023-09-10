@@ -52,7 +52,7 @@ fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[
         .no_default_flags(true);
 
     build.include(c_dir.join("include"));
-    build.flag("-O3").flag("-c");
+    build.opt_level(3);
     for arg in args {
         build.flag(arg);
     }

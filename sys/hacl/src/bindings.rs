@@ -18,7 +18,13 @@ pub const Hacl_Streaming_Types_Success: u32 = 0;
 pub const Hacl_Streaming_Types_InvalidAlgorithm: u32 = 1;
 pub const Hacl_Streaming_Types_InvalidLength: u32 = 2;
 pub const Hacl_Streaming_Types_MaximumLengthExceeded: u32 = 3;
-pub type FStar_UInt128_uint128 = u128;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct FStar_UInt128_uint128_s {
+    pub low: u64,
+    pub high: u64,
+}
+pub type FStar_UInt128_uint128 = FStar_UInt128_uint128_s;
 extern "C" {
     #[doc = "Encrypt a message `m` with key `k`.\n\nThe arguments `k`, `n`, `aadlen`, and `aad` are same in encryption/decryption.\nNote: Encryption and decryption can be executed in-place, i.e., `m` and `cipher` can point to the same memory.\n\n@param k Pointer to 32 bytes of memory where the AEAD key is read from.\n@param n Pointer to 12 bytes of memory where the AEAD nonce is read from.\n@param aadlen Length of the associated data.\n@param aad Pointer to `aadlen` bytes of memory where the associated data is read from.\n\n@param mlen Length of the message.\n@param m Pointer to `mlen` bytes of memory where the message is read from.\n@param cipher Pointer to `mlen` bytes of memory where the ciphertext is written to.\n@param mac Pointer to 16 bytes of memory where the mac is written to."]
     pub fn Hacl_Chacha20Poly1305_32_aead_encrypt(
@@ -736,101 +742,4 @@ extern "C" {
         their_pubkey: *mut u8,
         private_key: *mut u8,
     ) -> bool;
-}
-pub type uint32x4_t = [u32; 4usize];
-pub type Lib_IntVector_Intrinsics_vec128 = uint32x4_t;
-extern "C" {
-    #[doc = "Encrypt a message `m` with key `k`.\n\nThe arguments `k`, `n`, `aadlen`, and `aad` are same in encryption/decryption.\nNote: Encryption and decryption can be executed in-place, i.e., `m` and `cipher` can point to the same memory.\n\n@param k Pointer to 32 bytes of memory where the AEAD key is read from.\n@param n Pointer to 12 bytes of memory where the AEAD nonce is read from.\n@param aadlen Length of the associated data.\n@param aad Pointer to `aadlen` bytes of memory where the associated data is read from.\n\n@param mlen Length of the message.\n@param m Pointer to `mlen` bytes of memory where the message is read from.\n@param cipher Pointer to `mlen` bytes of memory where the ciphertext is written to.\n@param mac Pointer to 16 bytes of memory where the mac is written to."]
-    pub fn Hacl_Chacha20Poly1305_128_aead_encrypt(
-        k: *mut u8,
-        n: *mut u8,
-        aadlen: u32,
-        aad: *mut u8,
-        mlen: u32,
-        m: *mut u8,
-        cipher: *mut u8,
-        mac: *mut u8,
-    );
-}
-extern "C" {
-    #[doc = "Decrypt a ciphertext `cipher` with key `k`.\n\nThe arguments `k`, `n`, `aadlen`, and `aad` are same in encryption/decryption.\nNote: Encryption and decryption can be executed in-place, i.e., `m` and `cipher` can point to the same memory.\n\nIf decryption succeeds, the resulting plaintext is stored in `m` and the function returns the success code 0.\nIf decryption fails, the array `m` remains unchanged and the function returns the error code 1.\n\n@param k Pointer to 32 bytes of memory where the AEAD key is read from.\n@param n Pointer to 12 bytes of memory where the AEAD nonce is read from.\n@param aadlen Length of the associated data.\n@param aad Pointer to `aadlen` bytes of memory where the associated data is read from.\n\n@param mlen Length of the ciphertext.\n@param m Pointer to `mlen` bytes of memory where the message is written to.\n@param cipher Pointer to `mlen` bytes of memory where the ciphertext is read from.\n@param mac Pointer to 16 bytes of memory where the mac is read from.\n\n@returns 0 on succeess; 1 on failure."]
-    pub fn Hacl_Chacha20Poly1305_128_aead_decrypt(
-        k: *mut u8,
-        n: *mut u8,
-        aadlen: u32,
-        aad: *mut u8,
-        mlen: u32,
-        m: *mut u8,
-        cipher: *mut u8,
-        mac: *mut u8,
-    ) -> u32;
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_blake2s_init(
-        hash: *mut Lib_IntVector_Intrinsics_vec128,
-        kk: u32,
-        nn: u32,
-    );
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_blake2s_update_key(
-        wv: *mut Lib_IntVector_Intrinsics_vec128,
-        hash: *mut Lib_IntVector_Intrinsics_vec128,
-        kk: u32,
-        k: *mut u8,
-        ll: u32,
-    );
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_blake2s_update_multi(
-        len: u32,
-        wv: *mut Lib_IntVector_Intrinsics_vec128,
-        hash: *mut Lib_IntVector_Intrinsics_vec128,
-        prev: u64,
-        blocks: *mut u8,
-        nb: u32,
-    );
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_blake2s_update_last(
-        len: u32,
-        wv: *mut Lib_IntVector_Intrinsics_vec128,
-        hash: *mut Lib_IntVector_Intrinsics_vec128,
-        prev: u64,
-        rem: u32,
-        d: *mut u8,
-    );
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_blake2s_finish(
-        nn: u32,
-        output: *mut u8,
-        hash: *mut Lib_IntVector_Intrinsics_vec128,
-    );
-}
-extern "C" {
-    #[doc = "Write the BLAKE2s digest of message `d` using key `k` into `output`.\n\n@param nn Length of to-be-generated digest with 1 <= `nn` <= 32.\n@param output Pointer to `nn` bytes of memory where the digest is written to.\n@param ll Length of the input message.\n@param d Pointer to `ll` bytes of memory where the input message is read from.\n@param kk Length of the key. Can be 0.\n@param k Pointer to `kk` bytes of memory where the key is read from."]
-    pub fn Hacl_Blake2s_128_blake2s(
-        nn: u32,
-        output: *mut u8,
-        ll: u32,
-        d: *mut u8,
-        kk: u32,
-        k: *mut u8,
-    );
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_store_state128s_to_state32(
-        st32: *mut u32,
-        st: *mut Lib_IntVector_Intrinsics_vec128,
-    );
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_load_state128s_from_state32(
-        st: *mut Lib_IntVector_Intrinsics_vec128,
-        st32: *mut u32,
-    );
-}
-extern "C" {
-    pub fn Hacl_Blake2s_128_blake2s_malloc() -> *mut Lib_IntVector_Intrinsics_vec128;
 }
