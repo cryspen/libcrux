@@ -193,7 +193,7 @@ fn kat(tests: Vec<HpkeTestVector>) {
             );
             return;
         }
-        if !aes_ni_support() || cfg!(target_arch = "x86") {
+        if !aes_ni_support() || cfg!(not(target_arch = "x86_64")) {
             // libcrux AES only works on x64 (and there only with the necessary extensions)
             eprintln!("skipping AES because we're missing features.");
             return;

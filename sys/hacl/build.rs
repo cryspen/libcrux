@@ -3,7 +3,9 @@ use std::{env, path::Path};
 const LIB_NAME: &str = "hacl";
 const LIB_128_NAME: &str = "hacl_128";
 const LIB_256_NAME: &str = "hacl_256";
+#[allow(dead_code)] // FIXME: remove wrong cfg guards
 const LIB_25519_NAME: &str = "hacl_curve25519";
+#[allow(dead_code)] // FIXME: remove wrong cfg guards
 const LIB_VALE_AESGCM_NAME: &str = "vale_aesgcm";
 
 macro_rules! svec {
