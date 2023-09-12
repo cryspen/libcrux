@@ -8,6 +8,8 @@ project(BENCHMARKS CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_BUILD_TYPE Release)
+
 FetchContent_Declare(
   boringssl
   GIT_REPOSITORY https://boringssl.googlesource.com/boringssl
