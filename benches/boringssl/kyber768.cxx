@@ -29,8 +29,6 @@
 
 static const uint64_t SECONDS_TO_MEASURE_FOR = 1;
 
-static const double MICROSECONDS_IN_A_MILLISECOND = 1000.0;
-
 // TimeResults represents the results of benchmarking a function.
 struct TimeResults {
   // num_calls is the number of function calls done in the time period.
@@ -39,9 +37,8 @@ struct TimeResults {
   uint64_t us;
 
   void Print(const std::string &description) const {
-    printf("Each %s operation took %f milliseconds.\n", description.c_str(),
-           (static_cast<double>(us) / MICROSECONDS_IN_A_MILLISECOND) /
-               static_cast<double>(num_calls));
+    printf("Each %s operation took %f microseconds.\n", description.c_str(),
+           static_cast<double>(us) / static_cast<double>(num_calls));
   }
 };
 
