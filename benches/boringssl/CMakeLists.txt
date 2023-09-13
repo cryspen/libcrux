@@ -27,3 +27,8 @@ FetchContent_MakeAvailable(boringssl)
 add_executable(kyber768 kyber768.cxx)
 target_compile_options(kyber768 PRIVATE -Wall -Wextra)
 target_link_libraries(kyber768 crypto benchmark::benchmark)
+
+add_executable(shake shake.cxx)
+target_include_directories(shake PRIVATE ${boringssl_SOURCE_DIR})
+target_compile_options(shake PRIVATE -Wall -Wextra)
+target_link_libraries(shake crypto benchmark::benchmark)
