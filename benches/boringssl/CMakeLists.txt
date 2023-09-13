@@ -8,6 +8,15 @@ project(BENCHMARKS CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+FetchContent_Declare(
+  benchmark
+  GIT_REPOSITORY https://github.com/google/benchmark.git
+  GIT_TAG        344117638c8ff7e239044fd0fa7085839fc03021
+  GIT_SHALLOW    ON
+)
+FetchContent_MakeAvailable(benchmark)
+
 FetchContent_Declare(
   boringssl
   GIT_REPOSITORY https://boringssl.googlesource.com/boringssl
@@ -17,4 +26,4 @@ FetchContent_MakeAvailable(boringssl)
 
 add_executable(kyber768 kyber768.cxx)
 target_compile_options(kyber768 PRIVATE -Wall -Wextra)
-target_link_libraries(kyber768 crypto)
+target_link_libraries(kyber768 crypto benchmark::benchmark)
