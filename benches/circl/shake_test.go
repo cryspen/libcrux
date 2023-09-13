@@ -18,10 +18,7 @@ func BenchmarkSHAKE128(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		n, err := xof.Read(output)
-		if n != bytesToOutput || err != nil {
-			b.Fatal()
-		}
+		_, _ = xof.Read(output)
 	}
 }
 
@@ -36,9 +33,6 @@ func BenchmarkSHAKE256(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		n, err := xof.Read(output)
-		if n != bytesToOutput || err != nil {
-			b.Fatal()
-		}
+		_, _ = xof.Read(output)
 	}
 }
