@@ -12,10 +12,10 @@ macro_rules! svec {
     ($($x:expr),*$(,)?) => (vec![$($x.to_string()),*]);
 }
 
-fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
+fn includes(platform: &Platform, home_dir: &Path, include_str: &str) -> Vec<String> {
     let c_path = home_dir.join("c");
     let mut include_path = c_path.join("include");
-    if cfg!(target_env = "msvc") {
+    if platform.target_env == "msvc" {
         include_path = include_path.join("msvc");
     }
     vec![
@@ -38,25 +38,18 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
     ]
 }
 
-// FIXME: drop all the host specific checks and move them to target.
-#[cfg(all(
-    any(target_arch = "x86", target_arch = "x86_64"),
-    any(
-        target_os = "linux",
-        target_os = "macos",
-        all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-    )
-))]
-fn append_aesgcm_flags(flags: &mut Vec<String>) {
-    if cfg!(not(target_env = "msvc")) {
+#[allow(dead_code)]
+fn append_aesgcm_flags(platform: &Platform, flags: &mut Vec<String>) {
+    if platform.target_env != "msvc" {
         flags.push("-maes".to_string());
         flags.push("-mpclmul".to_string());
     }
 }
 
-fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
-    if cfg!(any(target_arch = "x86", target_arch = "x86_64"))
-        && (is_bindgen || cfg!(not(target_env = "msvc")))
+#[allow(dead_code)]
+fn append_simd128_flags(platform: &Platform, flags: &mut Vec<String>, is_bindgen: bool) {
+    if platform.target_arch == "x86"
+        || platform.target_arch == "x86_64" && (is_bindgen || platform.target_env != "msvc")
     {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
@@ -64,14 +57,15 @@ fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
     }
 }
 
-fn append_simd256_flags(flags: &mut Vec<String>, is_bindgen: bool) {
-    if is_bindgen || cfg!(not(target_env = "msvc")) {
+#[allow(dead_code)]
+fn append_simd256_flags(platform: &Platform, flags: &mut Vec<String>, is_bindgen: bool) {
+    if is_bindgen || platform.target_env != "msvc" {
         flags.push("-mavx2".to_string());
     }
 }
 
 fn create_bindings(platform: &Platform, home_dir: &Path) {
-    let mut clang_args = includes(home_dir, "-I");
+    let mut clang_args = includes(platform, home_dir, "-I");
 
     let mut bindings = bindgen::Builder::default();
 
@@ -79,14 +73,14 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         // Header to wrap HACL headers
         .header("c/config/hacl.h");
     if platform.simd128 {
-        append_simd128_flags(&mut clang_args, true);
+        append_simd128_flags(platform, &mut clang_args, true);
         clang_args.push("-DSIMD128".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 128 headers
             .header("c/config/hacl128.h");
     }
     if platform.simd256 {
-        append_simd256_flags(&mut clang_args, true);
+        append_simd256_flags(platform, &mut clang_args, true);
         clang_args.push("-DSIMD256".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
@@ -104,12 +98,6 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         bindings = bindings
             // Header to wrap EverCrypt_AutoConfig2
             .header("c/config/vale-aes.h");
-    }
-    if cfg!(target_arch = "wasm32") {
-        clang_args.push(
-            "--sysroot=/Users/franziskus/repos/emsdk/upstream/emscripten/cache/sysroot".to_string(),
-            //     "-I=/Users/franziskus/repos/emsdk/upstream/emscripten/cache/sysroot/include".to_string(),
-        );
     }
 
     let generated_bindings = bindings
@@ -183,14 +171,11 @@ fn compile_files(
         // XXX: There are too many warnings for now
         .warnings(false);
 
-    for include in includes(home_path, "") {
+    for include in includes(platform, home_path, "") {
         build.include(include);
     }
     build.opt_level(3);
     build.static_crt(true);
-    if let Some(target) = platform.target {
-        build.flag(&format!("--target={target}"));
-    }
     for arg in args {
         build.flag(arg);
     }
@@ -262,7 +247,7 @@ fn build(platform: &Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC128", "1")]);
 
         let mut simd128_flags = vec![];
-        append_simd128_flags(&mut simd128_flags, false);
+        append_simd128_flags(platform, &mut simd128_flags, false);
         compile_files(
             platform,
             LIB_128_NAME,
@@ -288,7 +273,7 @@ fn build(platform: &Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC256", "1")]);
 
         let mut simd256_flags = vec![];
-        append_simd256_flags(&mut simd256_flags, false);
+        append_simd256_flags(platform, &mut simd256_flags, false);
         compile_files(
             platform,
             LIB_256_NAME,
@@ -299,6 +284,8 @@ fn build(platform: &Platform, home_path: &Path) {
             &defines,
         );
     }
+
+    // FIXME: this doesn't work on cross compilation.
     #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         any(
@@ -334,6 +321,8 @@ fn build(platform: &Platform, home_path: &Path) {
             &defines,
         );
     }
+
+    // FIXME: this doesn't work on cross compilation.
     #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         any(
@@ -366,9 +355,9 @@ fn build(platform: &Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
 
         let mut aesgcm_flags = vec![];
-        append_simd128_flags(&mut aesgcm_flags, false);
-        append_simd256_flags(&mut aesgcm_flags, false);
-        append_aesgcm_flags(&mut aesgcm_flags);
+        append_simd128_flags(platform, &mut aesgcm_flags, false);
+        append_simd256_flags(platform, &mut aesgcm_flags, false);
+        append_aesgcm_flags(platform, &mut aesgcm_flags);
         compile_files(
             platform,
             LIB_VALE_AESGCM_NAME,
