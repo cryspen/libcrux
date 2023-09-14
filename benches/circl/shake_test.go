@@ -5,10 +5,13 @@ import (
 	"testing"
 )
 
-const bytesToOutput = 10000
-
 func BenchmarkSHAKE128(b *testing.B) {
 	input := make([]byte, 0, 34)
+	for i := 0; i < len(input); i++ {
+		input[i] = byte(i)
+	}
+
+	bytesToOutput := 840
 	output := make([]byte, bytesToOutput)
 
 	xof := xof.SHAKE128.New()
@@ -23,7 +26,12 @@ func BenchmarkSHAKE128(b *testing.B) {
 }
 
 func BenchmarkSHAKE256(b *testing.B) {
-	input := make([]byte, 0, 34)
+	input := make([]byte, 0, 33)
+	for i := 0; i < len(input); i++ {
+		input[i] = byte(i)
+	}
+
+	bytesToOutput := 128
 	output := make([]byte, bytesToOutput)
 
 	xof := xof.SHAKE256.New()
