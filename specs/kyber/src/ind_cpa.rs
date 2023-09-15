@@ -16,7 +16,7 @@ use crate::{
         REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
-    sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
+    sampling::{sample_ntt, sample_poly_cbd},
     serialize::{deserialize_little_endian, serialize_little_endian},
     BadRejectionSamplingRandomnessError,
 };
@@ -126,7 +126,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let secret = sample_from_binomial_distribution(2, &prf_output[..]);
+        let secret = sample_poly_cbd(2, &prf_output[..]);
         secret_as_ntt[i] = ntt_representation(secret);
     }
 
@@ -142,7 +142,7 @@ pub(crate) fn generate_keypair(
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let error = sample_from_binomial_distribution(2, &prf_output[..]);
+        let error = sample_poly_cbd(2, &prf_output[..]);
         error_as_ntt[i] = ntt_representation(error);
     }
 
@@ -187,9 +187,9 @@ fn parse_a(
 
             // A[i][j] = A_transpose[j][i]
             if transpose {
-                a_transpose[j][i] = sample_from_uniform_distribution(xof_bytes)?;
+                a_transpose[j][i] = sample_ntt(xof_bytes)?;
             } else {
-                a_transpose[i][j] = sample_from_uniform_distribution(xof_bytes)?;
+                a_transpose[i][j] = sample_ntt(xof_bytes)?;
             }
         }
     }
@@ -207,7 +207,7 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        let r = sample_from_binomial_distribution(2, &prf_output);
+        let r = sample_poly_cbd(2, &prf_output);
         r_as_ntt[i] = ntt_representation(r);
     }
     (r_as_ntt, domain_separator)
@@ -307,14 +307,14 @@ pub(crate) fn encrypt(
 
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
-        error_1[i] = sample_from_binomial_distribution(2, &prf_output);
+        error_1[i] = sample_poly_cbd(2, &prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
     // 2 sampling coins * 64
     let prf_output: [u8; 128] = PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution(2, &prf_output);
+    let error_2 = sample_poly_cbd(2, &prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| invert_ntt(r));

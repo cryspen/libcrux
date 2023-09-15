@@ -5,67 +5,59 @@ use crate::{
     BadRejectionSamplingRandomnessError,
 };
 
-/// Given a series of uniformly random bytes in `|randomness|`, sample uniformly
-/// at random a ring element rˆ, which is treated as being the NTT representation
-/// of a corresponding polynomial r.
+/// If `|bytes|` contains a set of uniformly random bytes, this function
+/// uniformly samples a ring element â that is treated as being the NTT representation
+/// of the corresponding polynomial a.
 ///
-/// This implementation uses rejection sampling; it is therefore possible the
-/// supplied randomness is not enough to sample the element, in which case
-/// an Err is returned and the caller must try again with fresh randomness.
+/// Since rejection sampling is used, it is possible the supplied bytes are
+/// not enough to sample the element, in which case an Err is returned and the
+/// caller must try again with a fresh set of bytes.
 ///
-/// This function implements Algorithm 1 of the Kyber Round 3 specification,
-/// which is reproduced below:
+/// This function partially implements Algorithm 6 of the NIST FIPS 203 standard,
+/// which can be found at: <https://csrc.nist.gov/pubs/fips/203/ipd>. Where
+/// appropriate, the pseudocode in Algorithm 6 is reproduced next to the
+/// corresponding code in the function, so as to make comparison easier.
 ///
-/// ```plaintext
-/// Input: Byte stream B = b_0, b_1, b_2 ... ∈ B^{*}
-/// Output: NTT-representation aˆ ∈ R_q of a ∈ R_q
-/// i := 0
-/// j := 0
-/// while j < n do
-///     d_1 := b_i + 256·(b_{i+1} mod^{+}16)
-///     d_2 := ⌊b_{i+1}/16⌋ + 16·b_{i+2}
-///     if d_1 < q then
-///         aˆ_{j} := d_1
-///         j := j + 1
-///     end if
-///     if d_2 < q and j < n then
-///         aˆ_{j} := d_2
-///         j := j + 1
-///     end if
-///     i := i + 3
-/// end while
-/// return aˆ0 + aˆ1X + · · · + aˆ{n−1}X^{n−1}
-/// ```
-///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
-pub fn sample_from_uniform_distribution(
-    randomness: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
+/// We say "partially" because this implementation only accepts a finite set of
+/// bytes as input and returns an error if the set is not enough; Algorithm 6 of
+/// the FIPS 203 standard on the other hand samples from an infinite stream of bytes
+/// until the ring element is filled.
+pub fn sample_ntt(
+    bytes: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
 ) -> Result<KyberPolynomialRingElement, BadRejectionSamplingRandomnessError> {
     let mut sampled_coefficients: usize = 0;
-    let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+    let mut a_hat: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
-    for bytes in randomness.chunks(3) {
-        let b = u16::from(bytes[0]);
-        let b1 = u16::from(bytes[1]);
-        let b2 = u16::from(bytes[2]);
+    for byte_chunk in bytes.chunks(3) {
+        let b = u16::from(byte_chunk[0]);
+        let b1 = u16::from(byte_chunk[1]);
+        let b2 = u16::from(byte_chunk[2]);
 
+        // d_1 ← B[i] + 256·(B[i+1] mod 16)
+        // d_2 ← ⌊B[i+1]/16⌋ + 16·B[i+2]
         let d1 = b + (256 * (b1 % 16));
-
-        // Integer division is flooring in Rust.
         let d2 = (b1 / 16) + (16 * b2);
 
-        if d1 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = d1.into();
+        // if d_1 < q then
+        //     â[j] ← d_1
+        //     j ← j+1
+        // end if
+        if d1 < parameters::FIELD_MODULUS && sampled_coefficients < a_hat.len() {
+            a_hat[sampled_coefficients] = d1.into();
             sampled_coefficients += 1
         }
-        if d2 < parameters::FIELD_MODULUS && sampled_coefficients < out.len() {
-            out[sampled_coefficients] = d2.into();
+
+        // if d_2 < q and j < 256 then
+        //     â[j] ← d_2
+        //     j ← j+1
+        // end if
+        if d2 < parameters::FIELD_MODULUS && sampled_coefficients < a_hat.len() {
+            a_hat[sampled_coefficients] = d2.into();
             sampled_coefficients += 1;
         }
 
-        if sampled_coefficients == out.len() {
-            return Ok(out);
+        if sampled_coefficients == a_hat.len() {
+            return Ok(a_hat);
         }
     }
 
@@ -74,8 +66,8 @@ pub fn sample_from_uniform_distribution(
 
 /// Given a series of uniformly random bytes in `|randomness|`, sample
 /// a ring element from a binomial distribution centered at 0 that uses two sets
-/// of `|sampling_coins|` coin flips. If, for example,
-/// `|sampling_coins| = ETA`, each ring coefficient is a value `v` such
+/// of `|eta|` coin flips. If, for example,
+/// `|eta| = ETA`, each ring coefficient is a value `v` such
 /// such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
 ///
 /// - If v < 0, Pr\[v\] = Pr[-v]
@@ -100,60 +92,48 @@ pub fn sample_from_uniform_distribution(
 ///        = ETA / 2
 /// ```
 ///
-/// This function implements Algorithm 2 of the Kyber Round 3 specification,
-/// which is reproduced below:
-///
-/// ```plaintext
-/// Input: Byte array B = (b_0, b_1, . . . , b_{64η−1}) ∈ B^{64η}
-/// Output: Polynomial f ∈ R_q
-/// (β_0, . . . , β_{512η−1}) := BytesToBits(B)
-/// for i from 0 to 255 do
-///     a := sum(j = 0 to η−1)(β_{2iη+j})
-///     b := sum(j = 0 to η−1)(β_{2iη+η+j})
-///     fi := a − b
-/// end for
-/// return f_0 +f_1X +f_2X^2 +···+f_255X^255
-/// ```
-///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
-///
-/// TODO: This requires a different parameter ETA = 3 only when Kyber-512 is
-/// used; generalize it.
-pub fn sample_from_binomial_distribution(
-    sampling_coins: usize,
-    randomness: &[u8],
-) -> KyberPolynomialRingElement {
-    assert_eq!(randomness.len(), sampling_coins * 64);
+/// This function implements Algorithm 7 of the NIST FIPS 203 standard,
+/// which can be found at: <https://csrc.nist.gov/pubs/fips/203/ipd>. Where
+/// appropriate, the pseudocode in Algorithm 7 is reproduced next to the
+/// corresponding code in the function, so as to make comparison easier.
+pub fn sample_poly_cbd(eta: usize, bytes: &[u8]) -> KyberPolynomialRingElement {
+    assert_eq!(bytes.len(), eta * 64);
 
-    let random_bits: BitVector = randomness.into();
-    let mut random_bits = random_bits.chunks(sampling_coins);
+    // b ← BytesToBits(B)
+    let bits: BitVector = bytes.into();
 
-    let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+    let mut bits = bits.chunks(eta);
 
-    for i in 0..sampled.len() {
+    let mut f: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+
+    for i in 0..f.len() {
         let mut coin_tosses: u8 = 0;
-        for bit in random_bits
+
+        // x ← ∑(j = 0 to η-1) b[2iη + j]
+        for bit in bits
             .next()
             .expect("the assertion ensures there are enough sampling coins")
         {
             coin_tosses += bit;
         }
-        let coin_tosses_a: KyberFieldElement = coin_tosses.into();
+        let x: KyberFieldElement = coin_tosses.into();
 
         coin_tosses = 0;
-        for bit in random_bits
+
+        // y ← ∑(j = 0 to η-1) b[2iη + η + j]
+        for bit in bits
             .next()
             .expect("the assertion ensures there are enough sampling coins")
         {
             coin_tosses += bit;
         }
-        let coin_tosses_b: KyberFieldElement = coin_tosses.into();
+        let y: KyberFieldElement = coin_tosses.into();
 
-        sampled[i] = coin_tosses_a - coin_tosses_b;
+        // f[i] ← x − y mod q
+        f[i] = x - y;
     }
 
-    sampled
+    f
 }
 
 #[cfg(test)]
@@ -203,8 +183,7 @@ mod tests {
 
     #[test]
     fn uniform_sample_from_all_zeros() {
-        let r = sample_from_uniform_distribution([0; parameters::REJECTION_SAMPLING_SEED_SIZE])
-            .unwrap();
+        let r = sample_ntt([0; parameters::REJECTION_SAMPLING_SEED_SIZE]).unwrap();
 
         for coefficient in r.into_iter() {
             assert_eq!(coefficient.value, 0);
@@ -214,9 +193,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn uniform_sample_from_all_u8_max() {
-        let _ =
-            sample_from_uniform_distribution([u8::MAX; parameters::REJECTION_SAMPLING_SEED_SIZE])
-                .unwrap();
+        let _ = sample_ntt([u8::MAX; parameters::REJECTION_SAMPLING_SEED_SIZE]).unwrap();
     }
 
     proptest! {
@@ -226,7 +203,7 @@ mod tests {
 
             let mut sampling_attempts = (0..REJECTION_SAMPLING_ATTEMPTS).peekable();
             while let Some(attempt) = sampling_attempts.next() {
-                let sampled = sample_from_uniform_distribution(randomness[attempt*parameters::REJECTION_SAMPLING_SEED_SIZE..(attempt+1)*parameters::REJECTION_SAMPLING_SEED_SIZE].try_into().unwrap());
+                let sampled = sample_ntt(randomness[attempt*parameters::REJECTION_SAMPLING_SEED_SIZE..(attempt+1)*parameters::REJECTION_SAMPLING_SEED_SIZE].try_into().unwrap());
 
                 if sampled.is_ok() {
                     sampled_ring_element = sampled.unwrap();
@@ -277,8 +254,8 @@ mod tests {
             let mut mean : f64 = 0.0;
             let mut variance : f64 = 0.0;
 
-            let ring_element_1 = sample_from_binomial_distribution(sampling_coins, &randomness[0..sampling_coins * 64]);
-            let ring_element_2 = sample_from_binomial_distribution(sampling_coins, &randomness[sampling_coins * 64..]);
+            let ring_element_1 = sample_poly_cbd(sampling_coins, &randomness[0..sampling_coins * 64]);
+            let ring_element_2 = sample_poly_cbd(sampling_coins, &randomness[sampling_coins * 64..]);
 
             let all_coefficients = ring_element_1
                                    .into_iter()
