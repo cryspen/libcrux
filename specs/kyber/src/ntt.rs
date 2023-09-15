@@ -6,7 +6,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     use crate::parameters::{
         KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
     };
-    use hacspec_lib::field::FieldElement;
+    use hacspec_lib::{field::FieldElement, PanickingIntegerCasts};
 
     /// The bit reversal of |value| regarded as a 7-bit number.
     fn reverse_as_7_bit_number(value: u8) -> u8 {
@@ -200,7 +200,7 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
             let binomial_product = base_case_multiply(
                 (f_hat[2 * i], f_hat[2 * i + 1]),
                 (g_hat[2 * i], g_hat[2 * i + 1]),
-                ZETA.pow(2 * reverse_as_7_bit_number(i.try_into().unwrap()) + 1),
+                ZETA.pow(2 * reverse_as_7_bit_number(i.as_u8()) + 1),
             );
 
             h_hat[2 * i] = binomial_product.0;
