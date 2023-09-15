@@ -14,14 +14,33 @@ use crate::{
 /// caller must try again with a fresh set of bytes.
 ///
 /// This function partially implements Algorithm 6 of the NIST FIPS 203 standard,
-/// which can be found at: <https://csrc.nist.gov/pubs/fips/203/ipd>. Where
-/// appropriate, the pseudocode in Algorithm 6 is reproduced next to the
-/// corresponding code in the function, so as to make comparison easier.
-///
 /// We say "partially" because this implementation only accepts a finite set of
 /// bytes as input and returns an error if the set is not enough; Algorithm 6 of
 /// the FIPS 203 standard on the other hand samples from an infinite stream of bytes
-/// until the ring element is filled.
+/// until the ring element is filled. Algorithm 6 is reproduced below:
+///
+/// Input: byte stream B ∈ B*
+/// Output: array â ∈ ℤ₂₅₆
+///
+/// i ← 0
+/// j ← 0
+/// while j < 256 do
+///     d₁ ← B[i] + 256·(B[i+1] mod 16) d2 ← ⌊B[i+1]/16⌋+16·B[i+2] ifd1 <qthen
+///     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
+///     if d₁ < q then
+///         â[j] ← d₁
+///         j ← j + 1
+///     end if
+///     if d₂ < q and j < 256 then
+///         â[j] ← d₂
+///         j ← j+1
+///     end if
+///     i ← i+3
+/// end while
+/// return â
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub fn sample_ntt(
     bytes: [u8; parameters::REJECTION_SAMPLING_SEED_SIZE],
 ) -> Result<KyberPolynomialRingElement, BadRejectionSamplingRandomnessError> {
@@ -92,10 +111,22 @@ pub fn sample_ntt(
 ///        = ETA / 2
 /// ```
 ///
-/// This function implements Algorithm 7 of the NIST FIPS 203 standard,
-/// which can be found at: <https://csrc.nist.gov/pubs/fips/203/ipd>. Where
-/// appropriate, the pseudocode in Algorithm 7 is reproduced next to the
-/// corresponding code in the function, so as to make comparison easier.
+/// This function implements Algorithm 7 of the NIST FIPS 203 standard, which is
+/// reproduced below:
+///
+/// Input: byte array B ∈ B^{64η}.
+/// Output: array f ∈ ℤ₂₅₆
+///
+/// b ← BytesToBits(B)
+/// for (i ← 0; i < 256; i++)
+///     x ← ∑(j=0 to η - 1) b[2iη + j]
+///     y ← ∑(j=0 to η - 1) b[2iη + η + j]
+///     f[i] ← x−y mod q
+/// end for
+/// return f
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub fn sample_poly_cbd(eta: usize, bytes: &[u8]) -> KyberPolynomialRingElement {
     assert_eq!(bytes.len(), eta * 64);
 

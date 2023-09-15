@@ -5,7 +5,7 @@ use hacspec_lib::{
 use crate::{
     compress::{compress, decompress},
     ntt::{
-        kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
+        kyber_polynomial_ring_element_mod::{ntt, ntt_inverse},
         *,
     },
     parameters::{
@@ -127,7 +127,7 @@ pub(crate) fn generate_keypair(
         let prf_output: [u8; 128] = PRF(&prf_input);
 
         let secret = sample_poly_cbd(2, &prf_output[..]);
-        secret_as_ntt[i] = ntt_representation(secret);
+        secret_as_ntt[i] = ntt(secret);
     }
 
     // for i from 0 to k−1 do
@@ -143,7 +143,7 @@ pub(crate) fn generate_keypair(
         let prf_output: [u8; 128] = PRF(&prf_input);
 
         let error = sample_poly_cbd(2, &prf_output[..]);
-        error_as_ntt[i] = ntt_representation(error);
+        error_as_ntt[i] = ntt(error);
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ
@@ -208,7 +208,7 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
         let prf_output: [u8; 128] = PRF(&prf_input);
 
         let r = sample_poly_cbd(2, &prf_output);
-        r_as_ntt[i] = ntt_representation(r);
+        r_as_ntt[i] = ntt(r);
     }
     (r_as_ntt, domain_separator)
 }
@@ -317,14 +317,14 @@ pub(crate) fn encrypt(
     let error_2 = sample_poly_cbd(2, &prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| invert_ntt(r));
+    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| ntt_inverse(r));
     for i in 0..u.len() {
         u[i] = u[i] + error_1[i];
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let message_as_ring_element = deserialize_little_endian(1, &message);
-    let v = invert_ntt(multiply_row_by_column(&t_as_ntt, &r_as_ntt))
+    let v = ntt_inverse(multiply_row_by_column(&t_as_ntt, &r_as_ntt))
         + error_2
         + decompress(message_as_ring_element, 1);
 
@@ -376,7 +376,7 @@ pub(crate) fn decrypt(
         (0..u_as_ntt.len()).zip(ciphertext.chunks((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8))
     {
         let u = deserialize_little_endian(10, u_bytes);
-        u_as_ntt[i] = ntt_representation(decompress(u, 10));
+        u_as_ntt[i] = ntt(decompress(u, 10));
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
@@ -395,7 +395,7 @@ pub(crate) fn decrypt(
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
-    let message = v - invert_ntt(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
+    let message = v - ntt_inverse(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
 
     // FIXME: remove conversion
     serialize_little_endian(compress(message, 1), 1).as_array()
