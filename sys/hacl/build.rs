@@ -396,6 +396,7 @@ fn main() {
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let generate_bindings = env::var("LIBCRUX_GENERATE_BINDINGS");
 
     // Check platform support
     let platform = if target_arch != "wasm32" {
@@ -430,7 +431,8 @@ fn main() {
     build(&platform, home_path);
 
     // Generate new bindings.
-    if target_arch != "wasm32" {
+    // This is only done if the corresponding environment variable is set.
+    if generate_bindings.is_ok() && target_arch != "wasm32" {
         create_bindings(&platform, home_path);
     }
 }
