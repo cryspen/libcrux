@@ -20,8 +20,8 @@ use crate::{
 /// until the ring element is filled. Algorithm 6 is reproduced below:
 ///
 /// ```plaintext
-/// Input: byte stream B ∈ B*
-/// Output: array â ∈ ℤ₂₅₆
+/// Input: byte stream B ∈ 𝔹*.
+/// Output: array â ∈ ℤ₂₅₆.
 ///
 /// i ← 0
 /// j ← 0
@@ -132,8 +132,8 @@ fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
 /// reproduced below:
 ///
 /// ```plaintext
-/// Input: byte array B ∈ B^{64η}.
-/// Output: array f ∈ ℤ₂₅₆
+/// Input: byte array B ∈ 𝔹^{64η}.
+/// Output: array f ∈ ℤ₂₅₆.
 ///
 /// b ← BytesToBits(B)
 /// for (i ← 0; i < 256; i++)

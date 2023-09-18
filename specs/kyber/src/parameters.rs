@@ -9,8 +9,11 @@ pub(crate) const BITS_PER_COEFFICIENT: usize = 12;
 /// Coefficients per ring element
 pub(crate) const COEFFICIENTS_IN_RING_ELEMENT: usize = 256;
 
-/// Bits required per ring element
+/// Bits required per (uncompressed) ring element
 pub(crate) const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 12;
+
+/// Bytes required per (uncompressed) ring element
+pub(crate) const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
 
 /// Seed size for rejection sampling.
 ///
@@ -32,18 +35,18 @@ pub(crate) const VECTOR_U_COMPRESSION_FACTOR: usize = 10;
 pub(crate) const VECTOR_V_COMPRESSION_FACTOR: usize = 4;
 
 /// `U` encoding size in bytes
-pub(crate) const VECTOR_U_SIZE: usize =
+pub(crate) const VECTOR_U_ENCODED_SIZE: usize =
     (RANK * COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8;
 
 /// `V` encoding size in bytes
-pub(crate) const VECTOR_V_SIZE: usize =
+pub(crate) const VECTOR_V_ENCODED_SIZE: usize =
     (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR) / 8;
 
 pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
 pub(crate) const CPA_PKE_SECRET_KEY_SIZE: usize =
     (RANK * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
 pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE: usize = T_AS_NTT_ENCODED_SIZE + 32;
-pub(crate) const CPA_PKE_CIPHERTEXT_SIZE: usize = VECTOR_U_SIZE + VECTOR_V_SIZE;
+pub(crate) const CPA_PKE_CIPHERTEXT_SIZE: usize = VECTOR_U_ENCODED_SIZE + VECTOR_V_ENCODED_SIZE;
 pub(crate) const CPA_PKE_MESSAGE_SIZE: usize = 32;
 pub(crate) const CPA_SERIALIZED_KEY_LEN: usize = CPA_PKE_SECRET_KEY_SIZE
     + CPA_PKE_PUBLIC_KEY_SIZE

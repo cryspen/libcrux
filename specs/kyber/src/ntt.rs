@@ -1,5 +1,5 @@
 use crate::parameters::{
-    KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT, RANK,
+    KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
 };
 
 use hacspec_lib::{field::FieldElement, PanickingIntegerCasts};
@@ -41,8 +41,8 @@ fn bit_rev_7(value: u8) -> u8 {
 /// is reproduced below:
 ///
 /// ```plaintext
-/// Input: array f ∈ ℤ₂₅₆
-/// Output: array fˆ ∈ ℤ₂₅₆
+/// Input: array f ∈ ℤ₂₅₆.
+/// Output: array fˆ ∈ ℤ₂₅₆.
 ///
 /// fˆ ← f
 /// k ← 1
@@ -93,8 +93,8 @@ pub(crate) fn ntt(f: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
 /// is reproduced below:
 ///
 /// ```plaintext
-/// Input: array fˆ ∈ ℤ₂₅₆
-/// Output: array f ∈ ℤ₂₅₆
+/// Input: array fˆ ∈ ℤ₂₅₆.
+/// Output: array f ∈ ℤ₂₅₆.
 ///
 /// f ← fˆ
 /// k ← 127
@@ -103,9 +103,9 @@ pub(crate) fn ntt(f: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
 ///         zeta ← ζ^(BitRev₇(k)) mod q
 ///         k ← k − 1
 ///         for (j ← start; j < start + len; j++)
-///             t ← f\[j\]
-///             f\[j\] ← t + f\[j + len\]
-///             f\[j + len\] ← zeta·(f\[j+len\] − t)
+///             t ← f[j]
+///             f[j] ← t + f[j + len]
+///             f[j + len] ← zeta·(f[j+len] − t)
 ///         end for
 ///     end for
 /// end for
@@ -157,8 +157,8 @@ pub(crate) fn ntt_inverse(f_hat: KyberPolynomialRingElement) -> KyberPolynomialR
 /// is reproduced below:
 ///
 /// ```plaintext
-/// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆
-/// Output: An array ĥ ∈ ℤq
+/// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
+/// Output: An array ĥ ∈ ℤq.
 ///
 /// for(i ← 0; i < 128; i++)
 ///     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1], ζ^(2·BitRev₇(i) + 1))
@@ -168,7 +168,7 @@ pub(crate) fn ntt_inverse(f_hat: KyberPolynomialRingElement) -> KyberPolynomialR
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-fn multiply_ntts(
+pub(crate) fn multiply_ntts(
     f_hat: &KyberPolynomialRingElement,
     g_hat: &KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
@@ -201,9 +201,9 @@ type KyberBinomial = (KyberFieldElement, KyberFieldElement);
 /// is reproduced below:
 ///
 /// ```plaintext
-/// Input:  a₀, a₁, b₀, b₁ ∈ ℤq
-/// Input: γ ∈ ℤq
-/// Output: c₀, c₁ ∈ ℤq
+/// Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+/// Input: γ ∈ ℤq.
+/// Output: c₀, c₁ ∈ ℤq.
 ///
 /// c₀ ← a₀·b₀ + a₁·b₁·γ
 /// c₁ ← a₀·b₁ + a₁·b₀
@@ -223,34 +223,6 @@ fn base_case_multiply(
     c.1 = (a.0 * b.1) + (a.1 * b.0);
 
     c
-}
-
-pub(crate) fn multiply_matrix_by_column(
-    matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
-    vector: &[KyberPolynomialRingElement; RANK],
-) -> [KyberPolynomialRingElement; RANK] {
-    let mut result = [KyberPolynomialRingElement::ZERO; RANK];
-
-    for (i, row) in matrix.iter().enumerate() {
-        for (j, matrix_element) in row.iter().enumerate() {
-            let product = multiply_ntts(matrix_element, &vector[j]);
-            result[i] = result[i] + product;
-        }
-    }
-    result
-}
-
-pub(crate) fn multiply_row_by_column(
-    row_vector: &[KyberPolynomialRingElement; RANK],
-    column_vector: &[KyberPolynomialRingElement; RANK],
-) -> KyberPolynomialRingElement {
-    let mut result = KyberPolynomialRingElement::ZERO;
-
-    for (row_element, column_element) in row_vector.iter().zip(column_vector.iter()) {
-        result = result + multiply_ntts(row_element, column_element);
-    }
-
-    result
 }
 
 #[cfg(test)]
