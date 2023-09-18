@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+    <style>
+      .row {
+        display: flex;
+      }
+
+      .column {
+        flex: 50%;
+        padding: 20px;
+      }
+    </style>
+    <!-- Note the usage of `type=module` here as this is an ES6 module -->
+    <script type="module">
+      import init from "../pkg/libcrux.js";
+      // Initialise wasm context.
+      await init();
+    </script>
+  </head>
+  <body>
+    <script type="module">
+      function hex_to_bytes(hex) {
+        var typedArray = new Uint8Array(
+          hex.match(/[\da-f]{2}/gi).map(function (h) {
+            return parseInt(h, 16);
+          })
+        );
+        return typedArray;
+      }
+
+      function bytes_to_hex(bytes) {
+        return Array.from(bytes, function (byte) {
+          return ("0" + (byte & 0xff).toString(16)).slice(-2);
+        }).join("");
+      }
+
+      import init, { sha256 } from "../pkg/libcrux.js";
+
+      function hash() {
+        let input = new TextEncoder().encode(document.sender_form.info.value);
+        let digest = sha256(input);
+
+        document.getElementById("digest").value = bytes_to_hex(digest);
+      }
+      document.getElementById("hash").onclick = hash;
+    </script>
+
+    <div class="row">
+      <div class="column">
+        <h3>Hash Input</h3>
+        <form name="sender_form" onsubmit="hash()">
+          <input name="info" id="info" />
+        </form>
+        <button type="button" id="hash">Hash</button>
+      </div>
+      <div class="column">
+        <h3>Sha256 Digest</h3>
+        <textarea
+          name="digest"
+          id="digest"
+          placeholder="The sha256 digest..."
+          readonly
+        ></textarea>
+      </div>
+    </div>
+  </body>
+</html>

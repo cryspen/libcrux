@@ -121,19 +121,13 @@ pub type Sha3_512Digest = [u8; digest_size(Algorithm::Sha3_512)];
 
 macro_rules! sha3_impl {
     ($fun_name:ident, $output:ty, $jasmin_fun:expr, $hacl_fun:expr) => {
-        #[cfg(all(
-            any(target_arch = "x86", target_arch = "x86_64"),
-            any(target_os = "linux", target_os = "macos")
-        ))]
+        #[cfg(all(target_arch = "x86_64", any(target_os = "linux", target_os = "macos")))]
         pub fn $fun_name(payload: &[u8]) -> $output {
             // On x64 we use Jasmin for AVX2 and fallback.
             $jasmin_fun(payload)
         }
 
-        #[cfg(not(all(
-            any(target_arch = "x86", target_arch = "x86_64"),
-            any(target_os = "linux", target_os = "macos")
-        )))]
+        #[cfg(not(all(target_arch = "x86_64", any(target_os = "linux", target_os = "macos"))))]
         pub fn $fun_name(payload: &[u8]) -> $output {
             // On all other platforms we use HACL
             $hacl_fun(payload)

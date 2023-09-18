@@ -66,6 +66,7 @@ macro_rules! impl_comp {
                     },
                 );
 
+                #[cfg(not(target_arch = "wasm32"))]
                 if stringify!($fun) != "Sha3_224" {
                     group.bench_with_input(
                         BenchmarkId::new("PQClean", fmt(*payload_size)),
