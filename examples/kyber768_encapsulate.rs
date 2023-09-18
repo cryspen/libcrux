@@ -1,13 +1,20 @@
-use libcrux::digest;
-use libcrux::drbg::Drbg;
 use libcrux::kem;
 
+#[cfg(not(target_arch = "wasm32"))]
+use libcrux::drbg;
+#[cfg(target_arch = "wasm32")]
+use rand_core::OsRng;
+
 fn main() {
-    let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
-    let (_secret_key, public_key) = kem::key_gen(kem::Algorithm::Kyber768, &mut drbg).unwrap();
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let mut rng = OsRng;
+
+    let (_secret_key, public_key) = kem::key_gen(kem::Algorithm::Kyber768, &mut rng).unwrap();
 
     for _i in 0..100000 {
         let (_shared_secret, _ciphertext) =
-            kem::encapsulate(kem::Algorithm::Kyber768, &public_key, &mut drbg).unwrap();
+            kem::encapsulate(kem::Algorithm::Kyber768, &public_key, &mut rng).unwrap();
     }
 }

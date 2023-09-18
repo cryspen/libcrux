@@ -1,8 +1,12 @@
 use libcrux::{
     digest::{self, sha3_256, shake256},
-    drbg::{Drbg, RngCore},
     kem::{self, Algorithm},
 };
+
+#[cfg(not(target_arch = "wasm32"))]
+use libcrux::drbg::{self, RngCore};
+#[cfg(target_arch = "wasm32")]
+use rand_core::{OsRng, RngCore};
 
 const SHARED_SECRET_SIZE: usize = 32;
 const SECRET_KEY_SIZE: usize = 2400;
@@ -10,13 +14,17 @@ const CIPHERTEXT_SIZE: u32 = 1088;
 
 const SECRET_KEY_REJECTION_VALUE_POSITION: usize = SECRET_KEY_SIZE - SHARED_SECRET_SIZE;
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn consistency() {
-    let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let mut rng = OsRng;
 
-    if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
+    if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut rng) {
         if let Ok((shared_secret, ciphertext)) =
-            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut drbg)
+            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut rng)
         {
             let shared_secret_decapsulated =
                 kem::decapsulate(Algorithm::Kyber768, &ciphertext, &secret_key).unwrap();
@@ -29,11 +37,15 @@ fn consistency() {
     // failing.
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn modified_ciphertext() {
-    let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let mut rng = OsRng;
 
-    let random_u32 = drbg.next_u32();
+    let random_u32 = rng.next_u32();
     let mut random_byte: u8 = (random_u32 & 0xFF).try_into().unwrap();
     if random_byte == 0 {
         random_byte += 1;
@@ -41,9 +53,9 @@ fn modified_ciphertext() {
 
     let ciphertext_position: usize = (random_u32 % CIPHERTEXT_SIZE).try_into().unwrap();
 
-    if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
+    if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut rng) {
         if let Ok((shared_secret, mut ciphertext)) =
-            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut drbg)
+            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut rng)
         {
             ciphertext[ciphertext_position] ^= random_byte;
             let shared_secret_decapsulated =
@@ -69,11 +81,15 @@ fn compute_implicit_rejection_shared_secret(
     shake256(&to_hash)
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn modified_secret_key() {
-    let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let mut rng = OsRng;
 
-    let random_u32 = drbg.next_u32();
+    let random_u32 = rng.next_u32();
 
     let mut random_byte: u8 = (random_u32 & 0xFF).try_into().unwrap();
     if random_byte == 0 {
@@ -82,9 +98,9 @@ fn modified_secret_key() {
 
     let secret_key_position: usize = ((random_u32 >> 8) % (SECRET_KEY_SIZE as u32 - 32)) as usize;
 
-    if let Ok((mut secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
+    if let Ok((mut secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut rng) {
         if let Ok((shared_secret, ciphertext)) =
-            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut drbg)
+            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut rng)
         {
             secret_key[secret_key_position] ^= random_byte;
             let shared_secret_decapsulated =
@@ -107,11 +123,15 @@ fn modified_secret_key() {
     // failing.
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn modified_ciphertext_and_implicit_rejection_value() {
-    let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+    #[cfg(not(target_arch = "wasm32"))]
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let mut rng = OsRng;
 
-    let random_u32 = drbg.next_u32();
+    let random_u32 = rng.next_u32();
 
     let mut random_byte_for_ciphertext: u8 = (random_u32 & 0xFF).try_into().unwrap();
     if random_byte_for_ciphertext == 0 {
@@ -120,7 +140,7 @@ fn modified_ciphertext_and_implicit_rejection_value() {
 
     let ciphertext_position: usize = ((random_u32 >> 8) % CIPHERTEXT_SIZE).try_into().unwrap();
 
-    let random_u32 = drbg.next_u32();
+    let random_u32 = rng.next_u32();
 
     let mut random_byte_for_secret_key: u8 = (random_u32 & 0xFF).try_into().unwrap();
     if random_byte_for_secret_key == 0 {
@@ -131,9 +151,9 @@ fn modified_ciphertext_and_implicit_rejection_value() {
         .try_into()
         .unwrap();
 
-    if let Ok((mut secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut drbg) {
+    if let Ok((mut secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut rng) {
         if let Ok((_, mut ciphertext)) =
-            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut drbg)
+            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut rng)
         {
             ciphertext[ciphertext_position] ^= random_byte_for_ciphertext;
             let shared_secret_decapsulated =
