@@ -48,8 +48,8 @@ fn append_aesgcm_flags(platform: &Platform, flags: &mut Vec<String>) {
 
 #[allow(dead_code)]
 fn append_simd128_flags(platform: &Platform, flags: &mut Vec<String>, is_bindgen: bool) {
-    if platform.target_arch == "x86"
-        || platform.target_arch == "x86_64" && (is_bindgen || platform.target_env != "msvc")
+    if (platform.target_arch == "x86" || platform.target_arch == "x86_64")
+        && (is_bindgen || platform.target_env != "msvc")
     {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
