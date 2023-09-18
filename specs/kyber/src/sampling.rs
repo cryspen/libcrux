@@ -5,20 +5,21 @@ use crate::{
     BadRejectionSamplingRandomnessError,
 };
 
-/// If `|bytes|` contains a set of uniformly random bytes, this function
-/// uniformly samples a ring element â that is treated as being the NTT representation
-/// of the corresponding polynomial a.
+/// If `bytes` contains a set of uniformly random bytes, this function
+/// uniformly samples a ring element `â` that is treated as being the NTT representation
+/// of the corresponding polynomial `a`.
 ///
 /// Since rejection sampling is used, it is possible the supplied bytes are
-/// not enough to sample the element, in which case an Err is returned and the
+/// not enough to sample the element, in which case an `Err` is returned and the
 /// caller must try again with a fresh set of bytes.
 ///
-/// This function partially implements Algorithm 6 of the NIST FIPS 203 standard,
+/// This function <strong>partially</strong> implements <strong>Algorithm 6</strong> of the NIST FIPS 203 standard,
 /// We say "partially" because this implementation only accepts a finite set of
 /// bytes as input and returns an error if the set is not enough; Algorithm 6 of
 /// the FIPS 203 standard on the other hand samples from an infinite stream of bytes
 /// until the ring element is filled. Algorithm 6 is reproduced below:
 ///
+/// ```plaintext
 /// Input: byte stream B ∈ B*
 /// Output: array â ∈ ℤ₂₅₆
 ///
@@ -38,6 +39,7 @@ use crate::{
 ///     i ← i + 3
 /// end while
 /// return â
+/// ```
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -83,11 +85,11 @@ pub fn sample_ntt(
     }
 }
 
-// Given an iterator that returns a bit vector at a time, advance the iterator
-// and return the sum of the bits so returned as a |KyberFieldElement|.
+// Given an iterator `coins` that returns a vector of bits at a time, advance
+// the iterator and return the sum of the bits so returned as a `KyberFieldElement`.
 //
-// This function calls unwrap(), meaning the caller assumes the responsibility
-// for ensuring next() called on the iterator does not come up empty-handed.
+// This function calls `unwrap()`, meaning the caller assumes the responsibility
+// for ensuring `next()`, when called on the iterator, does not come up empty-handed.
 fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
     let mut sum: u8 = 0;
     for coin in coins.next().unwrap() {
@@ -97,17 +99,18 @@ fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
     sum.into()
 }
 
-/// Given a series of uniformly random bytes in `|randomness|`, sample
+/// Given a series of uniformly random bytes in `randomness`, sample
 /// a ring element from a binomial distribution centered at 0 that uses two sets
-/// of `|eta|` coin flips. If, for example,
-/// `|eta| = ETA`, each ring coefficient is a value `v` such
+/// of `eta` coin flips. If, for example,
+/// `eta = ETA`, each ring coefficient is a value `v` such
 /// such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
 ///
-/// - If v < 0, Pr\[v\] = Pr[-v]
-/// - If v >= 0, Pr\[v\] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
+/// ```plaintext
+/// - If v < 0, Pr[v] = Pr[-v]
+/// - If v >= 0, Pr[v] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
+/// ```
 ///
-/// The values v < 0 are mapped to the appropriate
-/// `|parameters::KyberFieldElement|`.
+/// The values `v < 0` are mapped to the appropriate `KyberFieldElement`.
 ///
 /// The expected value is:
 ///
@@ -125,9 +128,10 @@ fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
 ///        = ETA / 2
 /// ```
 ///
-/// This function implements Algorithm 7 of the NIST FIPS 203 standard, which is
+/// This function implements <strong>Algorithm 7</strong> of the NIST FIPS 203 standard, which is
 /// reproduced below:
 ///
+/// ```plaintext
 /// Input: byte array B ∈ B^{64η}.
 /// Output: array f ∈ ℤ₂₅₆
 ///
@@ -138,6 +142,7 @@ fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
 ///     f[i] ← x−y mod q
 /// end for
 /// return f
+/// ```
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.

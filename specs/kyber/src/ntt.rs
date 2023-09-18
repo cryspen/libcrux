@@ -10,8 +10,14 @@ const INVERSE_OF_128: KyberFieldElement = KyberFieldElement { value: 3303 };
 
 const NTT_LAYERS: [usize; 7] = [2, 4, 8, 16, 32, 64, 128];
 
-/// Given a |value|, take the least significant 7 bits and return the number
+/// Given a `value`, take its least significant 7 bits and return the number
 /// obtained by reversing these bits.
+///
+/// Corresponds to the `BitRev₇` function that is referenced in the NIST FIPS
+/// 203 standard.
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 fn bit_rev_7(value: u8) -> u8 {
     let mut reversed: u8 = 0;
     for bit in 0..u8::BITS - 1 {
@@ -25,19 +31,22 @@ fn bit_rev_7(value: u8) -> u8 {
 /// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
 /// of a `KyberPolynomialRingElement`.
 ///
-/// Given a `KyberPolynomialRingElement` f, the NTT representation f^ is:
+/// Given a `KyberPolynomialRingElement` `f`, the NTT representation `f^` is:
 ///
+/// ```plaintext
 /// f^ := (f mod(X² - ζ^(2*BitRev₇(0) + 1), ..., f mod (X² − ζ^(2·BitRev₇(127) + 1))
+/// ```
 ///
-/// This function implements Algorithm 8 of the NIST FIPS 203 standard, which
+/// This function implements <strong>Algorithm 8</strong> of the NIST FIPS 203 standard, which
 /// is reproduced below:
 ///
+/// ```plaintext
 /// Input: array f ∈ ℤ₂₅₆
 /// Output: array fˆ ∈ ℤ₂₅₆
 ///
 /// fˆ ← f
 /// k ← 1
-/// for (len ← 128; len≥2; len ← len/2)
+/// for (len ← 128; len ≥ 2; len ← len/2)
 ///     for (start ← 0; start < 256; start ← start + 2·len)
 ///         zeta ← ζ^(BitRev₇(k)) mod q
 ///         k ← k + 1
@@ -49,6 +58,7 @@ fn bit_rev_7(value: u8) -> u8 {
 ///     end for
 /// end for
 /// return fˆ
+/// ```
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -79,9 +89,10 @@ pub(crate) fn ntt(f: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
 /// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
 /// of a `KyberPolynomialRingElement`.
 ///
-/// This function implements Algorithm 9 of the NIST FIPS 203 standard, which
+/// This function implements <strong>Algorithm 9</strong> of the NIST FIPS 203 standard, which
 /// is reproduced below:
 ///
+/// ```plaintext
 /// Input: array fˆ ∈ ℤ₂₅₆
 /// Output: array f ∈ ℤ₂₅₆
 ///
@@ -92,15 +103,16 @@ pub(crate) fn ntt(f: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
 ///         zeta ← ζ^(BitRev₇(k)) mod q
 ///         k ← k − 1
 ///         for (j ← start; j < start + len; j++)
-///             t ← f[j]
-///             f[j] ← t + f [j + len]
-///             f[j + len] ← zeta·(f[j+len] − t)
+///             t ← f\[j\]
+///             f\[j\] ← t + f\[j + len\]
+///             f\[j + len\] ← zeta·(f\[j+len\] − t)
 ///         end for
 ///     end for
 /// end for
 ///
 /// f ← f·3303 mod q
 /// return f
+/// ```
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -133,15 +145,18 @@ pub(crate) fn ntt_inverse(f_hat: KyberPolynomialRingElement) -> KyberPolynomialR
     f
 }
 
-/// Given two `|KyberPolynomialRingElement|`s in their NTT representations,
-/// compute their product. Given two polynomials in the NTT domain f^ and ĵ,
-/// the iᵗʰ coefficient of the product k̂ is determined by the calculation:
+/// Given two `KyberPolynomialRingElement`s in their NTT representations,
+/// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
+/// the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
 ///
+/// ```plaintext
 /// ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X² - ζ^(2·BitRev₇(i) + 1))
+/// ```
 ///
-/// This function implements Algorithm 10 of the NIST FIPS 203 standard, which
+/// This function implements <strong>Algorithm 10</strong> of the NIST FIPS 203 standard, which
 /// is reproduced below:
 ///
+/// ```plaintext
 /// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆
 /// Output: An array ĥ ∈ ℤq
 ///
@@ -149,6 +164,7 @@ pub(crate) fn ntt_inverse(f_hat: KyberPolynomialRingElement) -> KyberPolynomialR
 ///     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1], ζ^(2·BitRev₇(i) + 1))
 /// end for
 /// return ĥ
+/// ```
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -172,18 +188,19 @@ fn multiply_ntts(
     h_hat
 }
 
-/// Represents a binomial (a₀ + a₁X) whose coefficients are
-/// `|KyberFieldElement|`s:
-/// - the first element of the tuple is a₀
-/// - the second element of the tuple is a₁
+/// Represents a binomial `(a₀ + a₁X)` whose coefficients are
+/// `KyberFieldElement`s:
+/// - the first element of the tuple is `a₀`
+/// - the second element of the tuple is `a₁`
 type KyberBinomial = (KyberFieldElement, KyberFieldElement);
 
-/// Compute the product of two `|KyberBinomial|`s with respect to the
-/// modulus X² - |zeta|.
+/// Compute the product of two `KyberBinomial`s with respect to the
+/// modulus `X² - zeta`.
 ///
-/// This function implements Algorithm 11 of the NIST FIPS 203 standard, which
+/// This function implements <strong>Algorithm 11</strong> of the NIST FIPS 203 standard, which
 /// is reproduced below:
 ///
+/// ```plaintext
 /// Input:  a₀, a₁, b₀, b₁ ∈ ℤq
 /// Input: γ ∈ ℤq
 /// Output: c₀, c₁ ∈ ℤq
@@ -191,6 +208,7 @@ type KyberBinomial = (KyberFieldElement, KyberFieldElement);
 /// c₀ ← a₀·b₀ + a₁·b₁·γ
 /// c₁ ← a₀·b₁ + a₁·b₀
 /// return c₀, c₁
+/// ```
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
