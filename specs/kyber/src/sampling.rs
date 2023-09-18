@@ -1,4 +1,4 @@
-use hacspec_lib::bit_vector::BitVector;
+use hacspec_lib::bit_vector::{BitVector, BitVectorChunks};
 
 use crate::{
     parameters::{self, KyberFieldElement, KyberPolynomialRingElement},
@@ -25,7 +25,7 @@ use crate::{
 /// i ← 0
 /// j ← 0
 /// while j < 256 do
-///     d₁ ← B[i] + 256·(B[i+1] mod 16) d2 ← ⌊B[i+1]/16⌋+16·B[i+2] ifd1 <qthen
+///     d₁ ← B[i] + 256·(B[i+1] mod 16)
 ///     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
 ///     if d₁ < q then
 ///         â[j] ← d₁
@@ -33,9 +33,9 @@ use crate::{
 ///     end if
 ///     if d₂ < q and j < 256 then
 ///         â[j] ← d₂
-///         j ← j+1
+///         j ← j + 1
 ///     end if
-///     i ← i+3
+///     i ← i + 3
 /// end while
 /// return â
 ///
@@ -74,13 +74,27 @@ pub fn sample_ntt(
             a_hat[sampled_coefficients] = d2.into();
             sampled_coefficients += 1;
         }
-
-        if sampled_coefficients == a_hat.len() {
-            return Ok(a_hat);
-        }
     }
 
-    Err(BadRejectionSamplingRandomnessError)
+    if sampled_coefficients == a_hat.len() {
+        Ok(a_hat)
+    } else {
+        Err(BadRejectionSamplingRandomnessError)
+    }
+}
+
+// Given an iterator that returns a bit vector at a time, advance the iterator
+// and return the sum of the bits so returned as a |KyberFieldElement|.
+//
+// This function calls unwrap(), meaning the caller assumes the responsibility
+// for ensuring next() called on the iterator does not come up empty-handed.
+fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
+    let mut sum: u8 = 0;
+    for coin in coins.next().unwrap() {
+        sum += coin;
+    }
+
+    sum.into()
 }
 
 /// Given a series of uniformly random bytes in `|randomness|`, sample
@@ -138,27 +152,11 @@ pub fn sample_poly_cbd(eta: usize, bytes: &[u8]) -> KyberPolynomialRingElement {
     let mut f: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
     for i in 0..f.len() {
-        let mut coin_tosses: u8 = 0;
-
         // x ← ∑(j = 0 to η-1) b[2iη + j]
-        for bit in bits
-            .next()
-            .expect("the assertion ensures there are enough sampling coins")
-        {
-            coin_tosses += bit;
-        }
-        let x: KyberFieldElement = coin_tosses.into();
-
-        coin_tosses = 0;
+        let x: KyberFieldElement = sum_coins(&mut bits);
 
         // y ← ∑(j = 0 to η-1) b[2iη + η + j]
-        for bit in bits
-            .next()
-            .expect("the assertion ensures there are enough sampling coins")
-        {
-            coin_tosses += bit;
-        }
-        let y: KyberFieldElement = coin_tosses.into();
+        let y: KyberFieldElement = sum_coins(&mut bits);
 
         // f[i] ← x − y mod q
         f[i] = x - y;

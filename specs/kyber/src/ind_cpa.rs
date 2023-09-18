@@ -4,10 +4,7 @@ use hacspec_lib::{
 
 use crate::{
     compress::{compress, decompress},
-    ntt::{
-        kyber_polynomial_ring_element_mod::{ntt, ntt_inverse},
-        *,
-    },
+    ntt::{multiply_matrix_by_column, multiply_row_by_column, ntt, ntt_inverse},
     parameters::{
         hash_functions::{G, H, PRF, XOF},
         KyberPolynomialRingElement, BITS_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
@@ -337,11 +334,7 @@ pub(crate) fn encrypt(
         VECTOR_V_COMPRESSION_FACTOR,
     );
 
-    let ciphertext = c1
-        .into_iter()
-        .chain(c2.into_iter())
-        .collect::<Vec<u8>>()
-        .as_array();
+    let ciphertext = c1.into_iter().chain(c2).collect::<Vec<u8>>().as_array();
 
     Ok(ciphertext)
 }
