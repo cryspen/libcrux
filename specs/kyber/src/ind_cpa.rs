@@ -337,7 +337,7 @@ pub(crate) fn encrypt(
     // μ ← Decompress₁(ByteDecode₁(m)))
     let message_as_ring_element = decompress(deserialize_little_endian(1, &message), 1);
 
-    // v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
+    // v ← NTT-¹(t̂ᵀ ◦ r̂) + e₂ + μ
     let v = ntt_inverse(multiply_column_by_row(&t_as_ntt, &r_as_ntt))
         + error_2
         + message_as_ring_element;
