@@ -52,7 +52,7 @@ fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[
         .no_default_flags(true);
 
     build.include(c_dir.join("include"));
-    build.flag("-O3").flag("-c");
+    build.opt_level(3);
     for arg in args {
         build.flag(arg);
     }
@@ -63,10 +63,10 @@ fn compile_files(library_name: &str, files: &[String], out_path: &Path, args: &[
 fn build(out_path: &Path) {
     let files = vec!["fips202.c".to_string()];
     let args = vec![];
-    compile_files("libpqclean.a", &files, out_path, &args);
+    compile_files("pqclean", &files, out_path, &args);
 }
 
-pub fn main() -> Result<(), u8> {
+pub fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let home_path = Path::new(&home_dir);
@@ -79,20 +79,9 @@ pub fn main() -> Result<(), u8> {
     // Build the C/ASM files
     build(out_path);
 
-    // Set library name to look up
-    let library_name = "pqclean";
-
     // Set re-run trigger for all of s
-    println!("cargo:rerun-if-changed=cs");
+    println!("cargo:rerun-if-changed=c");
 
     // Generate new bindings. This is a no-op on Windows.
     create_bindings(home_path);
-
-    // Link hacl library.
-    let mode = "static";
-    println!("cargo:rustc-link-lib={}={}", mode, library_name);
-    println!("cargo:rustc-link-search=native={}", out_path.display());
-    println!("cargo:lib={}", out_path.display());
-
-    Ok(())
 }
