@@ -1,12 +1,10 @@
 use crate::{
     ntt::multiply_ntts,
-    parameters::{KyberPolynomialRingElement, RANK},
+    parameters::{KyberMatrix, KyberPolynomialRingElement, KyberVector},
 };
 
-pub(crate) fn transpose(
-    matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
-) -> [[KyberPolynomialRingElement; RANK]; RANK] {
-    let mut transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
+pub(crate) fn transpose(matrix: &KyberMatrix) -> KyberMatrix {
+    let mut transpose = [KyberVector::new(), KyberVector::new(), KyberVector::new()];
     for (i, row) in matrix.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {
             transpose[j][i] = *matrix_element;
@@ -17,10 +15,10 @@ pub(crate) fn transpose(
 }
 
 pub(crate) fn multiply_matrix_transpose_by_column(
-    matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
-    vector: &[KyberPolynomialRingElement; RANK],
-) -> [KyberPolynomialRingElement; RANK] {
-    let mut result = [KyberPolynomialRingElement::ZERO; RANK];
+    matrix: &KyberMatrix,
+    vector: &KyberVector,
+) -> KyberVector {
+    let mut result = KyberVector::new();
 
     let transposed = transpose(&matrix);
     for (i, row) in transposed.iter().enumerate() {
@@ -33,8 +31,8 @@ pub(crate) fn multiply_matrix_transpose_by_column(
 }
 
 pub(crate) fn multiply_column_by_row(
-    column_vector: &[KyberPolynomialRingElement; RANK],
-    row_vector: &[KyberPolynomialRingElement; RANK],
+    column_vector: &KyberVector,
+    row_vector: &KyberVector,
 ) -> KyberPolynomialRingElement {
     let mut result = KyberPolynomialRingElement::ZERO;
 

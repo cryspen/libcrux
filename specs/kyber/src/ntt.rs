@@ -1,5 +1,5 @@
 use crate::parameters::{
-    KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
+    KyberFieldElement, KyberPolynomialRingElement, KyberVector, COEFFICIENTS_IN_RING_ELEMENT,
 };
 
 use hacspec_lib::{field::FieldElement, PanickingIntegerCasts};
@@ -86,6 +86,13 @@ pub(crate) fn ntt(f: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
     f_hat
 }
 
+pub(crate) fn ntt_vector(mut vector: KyberVector) -> KyberVector {
+    for i in 0..vector.len() {
+        vector[i] = ntt(vector[i]);
+    }
+    vector
+}
+
 /// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
 /// of a `KyberPolynomialRingElement`.
 ///
@@ -143,6 +150,13 @@ pub(crate) fn ntt_inverse(f_hat: KyberPolynomialRingElement) -> KyberPolynomialR
     }
 
     f
+}
+
+pub(crate) fn ntt_inverse_vector(mut vector: KyberVector) -> KyberVector {
+    for i in 0..vector.len() {
+        vector[i] = ntt_inverse(vector[i]);
+    }
+    vector
 }
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,

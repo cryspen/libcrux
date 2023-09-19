@@ -94,9 +94,6 @@ hacspec = []            # TODO: #7 Use specs instead of efficient implementation
 rand = []
 wasm = ["wasm-bindgen"]
 
-# [patch.crates-io]
-# hacl = { git = "https://github.com/cryspen/hacl-packages" }
-# hacl = { path = "../hacl-packages/rust" }
-
-# [patch.'https://github.com/hacspec/hacspec']
-# hacspec-lib = { path = "../../hacspec/lib" }
+[workspace]
+members = ["specs/kyber"]
+resolver = "2"
