@@ -16,7 +16,12 @@ pub(crate) fn transpose(
     transpose
 }
 
-pub(crate) fn multiply_matrix_transpose_by_column(
+/// N.B.: According to the NIST FIPS 203 standard (Page 9, Line 519), a matrix is
+/// a set of column vectors.
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+pub(crate) fn multiply_matrix_by_column(
     matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
     vector: &[KyberPolynomialRingElement; RANK],
 ) -> [KyberPolynomialRingElement; RANK] {

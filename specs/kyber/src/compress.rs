@@ -1,8 +1,8 @@
 use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
 
-/// According to the NIST FIPS 203 standard, compressing a polynomial
-/// ring element is accomplished by `compress()`ing its constituent field
-/// coefficients.
+/// According to the NIST FIPS 203 standard (Page 10, Lines 536 - 539),
+/// compressing a polynomial ring element is accomplished by `compress()`ing its
+/// constituent field coefficients.
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -16,9 +16,9 @@ pub fn compress(
     )
 }
 
-/// According to the NIST FIPS 203 standard, compressing a polynomial
-/// ring element is accomplished by `decompress()`ing its constituent field
-/// coefficients.
+/// According to the NIST FIPS 203 standard (Page 10, Lines 536 - 539),
+/// compressing a polynomial ring element is accomplished by `decompress()`ing
+/// its constituent field coefficients.
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
@@ -32,8 +32,8 @@ pub fn decompress(
     )
 }
 
-/// This function implements the `Compress` function defined on Page 18 of the
-/// NIST FIPS 203 standard, which is defined as:
+/// This function implements the `Compress` function specified in the NIST FIPS
+/// 203 standard (Page 18, Expression 4.5), which is defined as:
 ///
 /// ```plaintext
 /// Compress_d: ℤq -> ℤ_{2ᵈ}
@@ -69,8 +69,8 @@ fn compress_d(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     (compressed % two_pow_bit_size).into()
 }
 
-/// This function implements the `Decompress` function defined on Page 18 of the
-/// NIST FIPS 203 standard, which is defined as:
+/// This function implements the `Deompress` function specified in the NIST FIPS
+/// 203 standard (Page 18, Expression 4.6), which is defined as:
 ///
 /// ```plaintext
 /// Decompress_d: ℤ_{2ᵈ} -> ℤq

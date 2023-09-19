@@ -4,7 +4,7 @@ use hacspec_lib::{
 
 use crate::{
     compress::{compress, decompress},
-    matrix::{multiply_matrix_transpose_by_column, multiply_column_by_row, transpose},
+    matrix::{multiply_matrix_by_column, multiply_column_by_row, transpose},
     ntt::{ntt, ntt_inverse},
     parameters::{
         hash_functions::{G, H, PRF, XOF},
@@ -174,7 +174,7 @@ pub(crate) fn generate_keypair(
     }
 
     // t̂ ← Â◦ŝ + ê
-    let mut t_as_ntt = multiply_matrix_transpose_by_column(&A_as_ntt, &secret_as_ntt);
+    let mut t_as_ntt = multiply_matrix_by_column(&A_as_ntt, &secret_as_ntt);
     for i in 0..t_as_ntt.len() {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
@@ -328,7 +328,7 @@ pub(crate) fn encrypt(
 
     // u ← NTT-¹(Âᵀ ◦ r̂) + e₁
     let A_as_ntt_transpose = transpose(&A_as_ntt);
-    let mut u = multiply_matrix_transpose_by_column(&A_as_ntt_transpose, &r_as_ntt)
+    let mut u = multiply_matrix_by_column(&A_as_ntt_transpose, &r_as_ntt)
         .map(|re| ntt_inverse(re));
     for i in 0..u.len() {
         u[i] = u[i] + error_1[i];

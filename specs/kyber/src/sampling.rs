@@ -54,13 +54,13 @@ pub fn sample_ntt(
         let b1 = u16::from(byte_chunk[1]);
         let b2 = u16::from(byte_chunk[2]);
 
-        // d_1 ← B[i] + 256·(B[i+1] mod 16)
-        // d_2 ← ⌊B[i+1]/16⌋ + 16·B[i+2]
+        // d₁ ← B[i] + 256·(B[i+1] mod 16)
+        // d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
         let d1 = b + (256 * (b1 % 16));
         let d2 = (b1 / 16) + (16 * b2);
 
-        // if d_1 < q then
-        //     â[j] ← d_1
+        // if d₁ < q then
+        //     â[j] ← d₁
         //     j ← j+1
         // end if
         if d1 < parameters::FIELD_MODULUS && sampled_coefficients < a_hat.len() {
@@ -68,8 +68,8 @@ pub fn sample_ntt(
             sampled_coefficients += 1
         }
 
-        // if d_2 < q and j < 256 then
-        //     â[j] ← d_2
+        // if d₂ < q and j < 256 then
+        //     â[j] ← d₂
         //     j ← j+1
         // end if
         if d2 < parameters::FIELD_MODULUS && sampled_coefficients < a_hat.len() {
