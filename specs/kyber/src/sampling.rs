@@ -1,7 +1,8 @@
-use hacspec_lib::bit_vector::{BitVector, BitVectorChunks};
+use hacspec_lib::bit_vector::BitVectorChunks;
 
 use crate::{
     parameters::{self, KyberFieldElement, KyberPolynomialRingElement},
+    serialize::bytes_to_bits,
     BadRejectionSamplingRandomnessError,
 };
 
@@ -149,8 +150,7 @@ fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
 pub fn sample_poly_cbd(eta: usize, bytes: &[u8]) -> KyberPolynomialRingElement {
     assert_eq!(bytes.len(), eta * 64);
 
-    // b ← BytesToBits(B)
-    let bits: BitVector = bytes.into();
+    let bits = bytes_to_bits(bytes);
 
     let mut bits = bits.chunks(eta);
 
