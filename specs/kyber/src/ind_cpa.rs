@@ -4,19 +4,17 @@ use hacspec_lib::{
 
 use crate::{
     compress::{compress, decompress},
-    ntt::{
-        kyber_polynomial_ring_element_mod::{invert_ntt, ntt_representation},
-        *,
-    },
+    matrix::{multiply_matrix_transpose_by_column, multiply_column_by_row, transpose},
+    ntt::{ntt, ntt_inverse},
     parameters::{
         hash_functions::{G, H, PRF, XOF},
-        KyberPolynomialRingElement, BITS_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
+        KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
         CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE,
         CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK,
         REJECTION_SAMPLING_SEED_SIZE, T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR,
-        VECTOR_U_SIZE, VECTOR_V_COMPRESSION_FACTOR,
+        VECTOR_U_ENCODED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
-    sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
+    sampling::{sample_ntt, sample_poly_cbd},
     serialize::{deserialize_little_endian, serialize_little_endian},
     BadRejectionSamplingRandomnessError,
 };
@@ -61,156 +59,136 @@ fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
     out
 }
 
-/// This function implements Algorithm 4 of the Kyber Round 3 specification;
-/// This is the Kyber Round 3 CPA-PKE key generation algorithm, and is
-/// reproduced below:
+/// This function implements most of <strong>Algorithm 12</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
+///
+/// We say "most of" since Algorithm 12 samples the required randomness within
+/// the function itself, whereas this implementation expects it to be provided
+/// through the `key_generation_seed` parameter.
+///
+/// Algorithm 12 is reproduced below:
 ///
 /// ```plaintext
-/// Output: Secret key sk ∈ B^{12·k·n/8}
-/// Output: Public key pk ∈ B^{12·k·n/8+32}
-/// d←B^{32}
-/// (ρ,σ) := G(d)
-/// N := 0
-/// for i from 0 to k−1 do
-///     for j from 0 to k − 1 do
-///         Aˆ [i][j] := Parse(XOF(ρ, j, i))
+/// Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+/// Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+///
+/// d $← B
+/// (ρ,σ) ← G(d)
+/// N ← 0
+/// for (i ← 0; i < k; i++)
+///     for(j ← 0; j < k; j++)
+///         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
 ///     end for
 /// end for
-/// for i from 0 to k−1 do
-///     s[i] := CBD_{η1}(PRF(σ, N))
-///     N := N + 1
+/// for(i ← 0; i < k; i++)
+///     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+///     N ← N + 1
 /// end for
-/// for i from 0 to k−1 do
-///     e[i] := CBD_{η1}(PRF(σ, N))
-///     N := N + 1
+/// for(i ← 0; i < k; i++)
+///     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+///     N ← N + 1
 /// end for
-/// sˆ := NTT(s)
-/// eˆ := NTT(e)
-/// tˆ := Aˆ ◦ sˆ + eˆ
-/// pk := Encode_12(tˆ mod^{+}q) || ρ
-/// sk := Encode_12(sˆ mod^{+}q)
-/// return (pk,sk)
+/// ŝ ← NTT(s)
+/// ê ← NTT(e)
+/// t̂ ← Â◦ŝ + ê
+/// ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+/// dkₚₖₑ ← ByteEncode₁₂(ŝ)
 /// ```
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 pub(crate) fn generate_keypair(
     key_generation_seed: &[u8; CPA_PKE_KEY_GENERATION_SEED_SIZE],
 ) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
-    let mut prf_input: [u8; 33] = [0; 33];
-
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    // (ρ,σ) ← G(d)
+    let hashed = G(key_generation_seed);
+    let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     // N := 0
     let mut domain_separator: u8 = 0;
 
-    // (ρ,σ) := G(d)
-    let hashed = G(key_generation_seed);
-    let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
-
-    let A_transpose = parse_a(seed_for_A.into_padded_array(), true)?;
-
-    // for i from 0 to k−1 do
-    //     s[i] := CBD_{η1}(PRF(σ, N))
-    //     N := N + 1
+    // for (i ← 0; i < k; i++)
+    //     for(j ← 0; j < k; j++)
+    //         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+    //     end for
     // end for
-    // sˆ := NTT(s)
-    prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
+    let mut A_as_ntt = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
 
+    let mut xof_input: [u8; 34] = seed_for_A.into_padded_array();
+
+    for i in 0..RANK {
+        for j in 0..RANK {
+            xof_input[32] = i.as_u8();
+            xof_input[33] = j.as_u8();
+            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
+
+            A_as_ntt[i][j] = sample_ntt(xof_bytes)?;
+        }
+    }
+
+    // for(i ← 0; i < k; i++)
+    //     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+    //     N ← N + 1
+    // end for
+    let mut secret = [KyberPolynomialRingElement::ZERO; RANK];
+
+    let mut prf_input: [u8; 33] = seed_for_secret_and_error.into_padded_array();
+
+    for i in 0..secret.len() {
+        prf_input[32] = domain_separator;
+        domain_separator += 1;
+
+        // η₁ * 64 = 2 * 64 sampling coins
+        let prf_output: [u8; 128] = PRF(&prf_input);
+
+        secret[i] = sample_poly_cbd(2, &prf_output[..]);
+    }
+
+    // for(i ← 0; i < k; i++)
+    //     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+    //     N ← N + 1
+    // end for
+    let mut error = [KyberPolynomialRingElement::ZERO; RANK];
+
+    for i in 0..error.len() {
+        prf_input[32] = domain_separator;
+        domain_separator += 1;
+
+        // η₂ * 64 = 2 * 64 sampling coins
+        let prf_output: [u8; 128] = PRF(&prf_input);
+
+        error[i] = sample_poly_cbd(2, &prf_output[..]);
+    }
+
+    // ŝ ← NTT(s)
+    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
     for i in 0..secret_as_ntt.len() {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
-
-        let secret = sample_from_binomial_distribution(2, &prf_output[..]);
-        secret_as_ntt[i] = ntt_representation(secret);
+        secret_as_ntt[i] = ntt(secret[i]);
     }
 
-    // for i from 0 to k−1 do
-    //     e[i] := CBD_{η1}(PRF(σ, N))
-    //     N := N + 1
-    // end for
-    // eˆ := NTT(e)
+    // ê ← NTT(e)
+    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
     for i in 0..error_as_ntt.len() {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
-
-        let error = sample_from_binomial_distribution(2, &prf_output[..]);
-        error_as_ntt[i] = ntt_representation(error);
+        error_as_ntt[i] = ntt(error[i]);
     }
 
-    // tˆ := Aˆ ◦ sˆ + eˆ
-    let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
+    // t̂ ← Â◦ŝ + ê
+    let mut t_as_ntt = multiply_matrix_transpose_by_column(&A_as_ntt, &secret_as_ntt);
     for i in 0..t_as_ntt.len() {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
 
-    // pk := (Encode_12(tˆ mod^{+}q) || ρ)
+    // ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
     let public_key_serialized = encode_12(t_as_ntt).concat(seed_for_A);
 
-    // sk := Encode_12(sˆ mod^{+}q)
+    // dkₚₖₑ ← ByteEncode₁₂(ŝ)
     let secret_key_serialized = encode_12(secret_as_ntt);
 
     Ok(KeyPair::new(
         secret_key_serialized.into_array(),
         public_key_serialized.into_array(),
     ))
-}
-
-/// ```text
-/// for i from 0 to k−1 do
-///     for j from 0 to k − 1 do
-///         Aˆ [i][j] := Parse(XOF(ρ, j, i))
-///     end for
-/// end for
-/// ```
-#[inline(always)]
-fn parse_a(
-    mut seed: [u8; 34],
-    transpose: bool,
-) -> Result<[[KyberPolynomialRingElement; RANK]; RANK], BadRejectionSamplingRandomnessError> {
-    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
-
-    for i in 0..RANK {
-        for j in 0..RANK {
-            seed[32] = i.as_u8();
-            seed[33] = j.as_u8();
-
-            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
-
-            // A[i][j] = A_transpose[j][i]
-            if transpose {
-                a_transpose[j][i] = sample_from_uniform_distribution(xof_bytes)?;
-            } else {
-                a_transpose[i][j] = sample_from_uniform_distribution(xof_bytes)?;
-            }
-        }
-    }
-    Ok(a_transpose)
-}
-
-#[inline(always)]
-fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
-    let mut domain_separator = 0;
-    let mut r_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..r_as_ntt.len() {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
-
-        let r = sample_from_binomial_distribution(2, &prf_output);
-        r_as_ntt[i] = ntt_representation(r);
-    }
-    (r_as_ntt, domain_separator)
 }
 
 fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
@@ -225,178 +203,224 @@ fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
     out
 }
 
-/// This function implements Algorithm 5 of the Kyber Round 3 specification;
-/// This is the Kyber Round 3 CPA-PKE encryption algorithm, and is reproduced
-/// below:
+/// This function implements <strong>Algorithm 13</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
+///
+/// Algorithm 13 is reproduced below:
 ///
 /// ```plaintext
-/// Input: Public key pk ∈ B^{12·k·n / 8 + 32}
-/// Input: Message m ∈ B^{32}
-/// Input: Random coins r ∈ B32
-/// Output: Ciphertext c ∈ B^{d_u·k·n/8 + d_v·n/8}
-/// N := 0
-/// tˆ := Decode_12(pk)
-/// ρ := pk + 12·k·n / 8
-/// for i from 0 to k−1 do
-///     for j from 0 to k − 1 do
-///         AˆT[i][j] := Parse(XOF(ρ, i, j))
+/// Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+/// Input: message m ∈ 𝔹^{32}.
+/// Input: encryption randomness r ∈ 𝔹^{32}.
+/// Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+///
+/// N ← 0
+/// t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
+/// ρ ← ekₚₖₑ[384k: 384k + 32]
+/// for (i ← 0; i < k; i++)
+///     for(j ← 0; j < k; j++)
+///         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
 ///     end for
 /// end for
-/// for i from 0 to k−1 do
-///     r[i] := CBD{η1}(PRF(r, N))
-///     N := N + 1
+/// for(i ← 0; i < k; i++)
+///     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
+///     N ← N + 1
 /// end for
-/// for i from 0 to k−1 do
-///     e_1[i] := CBD_{η2}(PRF(r,N))
-///     N := N + 1
+/// for(i ← 0; i < k; i++)
+///     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+///     N ← N + 1
 /// end for
-/// e_2 := CBD{η2}(PRF(r, N))
-/// rˆ := NTT(r)
-/// u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-/// v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-/// c_1 := Encode_{du}(Compress_q(u,d_u))
-/// c_2 := Encode_{dv}(Compress_q(v,d_v))
-/// return c = c1 || c2
+/// e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+/// r̂ ← NTT(r)
+/// u ← NTT-¹(Âᵀ ◦ r̂) + e₁
+/// μ ← Decompress₁(ByteDecode₁(m)))
+/// v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
+/// c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
+/// c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
+/// return c ← (c₁ ‖ c₂)
 /// ```
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 pub(crate) fn encrypt(
     public_key: &[u8; CPA_PKE_PUBLIC_KEY_SIZE],
     message: [u8; CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8; 32],
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
-    // tˆ := Decode_12(pk)
-    let mut t_as_ntt_ring_element_bytes = public_key.chunks(BITS_PER_RING_ELEMENT / 8);
+    // N ← 0
+    let mut domain_separator: u8 = 0;
+
+    // t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..t_as_ntt.len() {
-        t_as_ntt[i] = deserialize_little_endian(
-            12,
-            t_as_ntt_ring_element_bytes.next().expect(
-                "t_as_ntt_ring_element_bytes should have enough bytes to deserialize to t_as_ntt",
-            ),
-        );
+    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
+        .chunks(BYTES_PER_RING_ELEMENT)
+        .enumerate()
+    {
+        t_as_ntt[i] = deserialize_little_endian(12, t_as_ntt_bytes);
     }
 
-    // ρ := pk + 12·k·n / 8
-    // for i from 0 to k−1 do
-    //     for j from 0 to k − 1 do
-    //         AˆT[i][j] := Parse(XOF(ρ, i, j))
+    // ρ ← ekₚₖₑ[384k: 384k + 32]
+    let seed_for_A = &public_key[T_AS_NTT_ENCODED_SIZE..];
+
+    // for (i ← 0; i < k; i++)
+    //     for(j ← 0; j < k; j++)
+    //         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
     //     end for
     // end for
-    let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A_transpose = parse_a(seed.into_padded_array(), false)?;
+    let mut A_as_ntt = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
 
-    // for i from 0 to k−1 do
-    //     r[i] := CBD{η1}(PRF(r, N))
-    //     N := N + 1
+    let mut xof_input: [u8; 34] = seed_for_A.into_padded_array();
+
+    for i in 0..RANK {
+        for j in 0..RANK {
+            xof_input[32] = i.as_u8();
+            xof_input[33] = j.as_u8();
+            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&xof_input);
+
+            A_as_ntt[i][j] = sample_ntt(xof_bytes)?;
+        }
+    }
+
+    // for(i ← 0; i < k; i++)
+    //     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
+    //     N ← N + 1
     // end for
-    // rˆ := NTT(r)
-    let mut prf_input: [u8; 33] = randomness.into_padded_array();
-    let (r_as_ntt, mut domain_separator) = cbd(prf_input);
+    let mut r = [KyberPolynomialRingElement::ZERO; RANK];
 
-    // for i from 0 to k−1 do
-    //     e1[i] := CBD_{η2}(PRF(r,N))
-    //     N := N + 1
+    let mut prf_input: [u8; 33] = randomness.into_padded_array();
+
+    for i in 0..r.len() {
+        prf_input[32] = domain_separator;
+        domain_separator += 1;
+
+        // η₁ * 64 = 2 * 64 sampling coins
+        let prf_output: [u8; 128] = PRF(&prf_input);
+
+        r[i] = sample_poly_cbd(2, &prf_output);
+    }
+
+    // for(i ← 0; i < k; i++)
+    //     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+    //     N ← N + 1
     // end for
     let mut error_1 = [KyberPolynomialRingElement::ZERO; RANK];
     for i in 0..error_1.len() {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // 2 sampling coins * 64
+        // η₂ * 64 = 2 * 64 sampling coins
         let prf_output: [u8; 128] = PRF(&prf_input);
-        error_1[i] = sample_from_binomial_distribution(2, &prf_output);
+        error_1[i] = sample_poly_cbd(2, &prf_output);
     }
 
-    // e_2 := CBD{η2}(PRF(r, N))
+    // e_2 := CBD{η₂}(PRF(r, N))
     prf_input[32] = domain_separator;
-    // 2 sampling coins * 64
+    // η₂ * 64 = 2 * 64 sampling coins
     let prf_output: [u8; 128] = PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution(2, &prf_output);
+    let error_2 = sample_poly_cbd(2, &prf_output);
 
-    // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_column(&A_transpose, &r_as_ntt).map(|r| invert_ntt(r));
+    // r̂ ← NTT(r)
+    let mut r_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    for i in 0..r.len() {
+        r_as_ntt[i] = ntt(r[i]);
+    }
+
+    // u ← NTT-¹(Âᵀ ◦ r̂) + e₁
+    let A_as_ntt_transpose = transpose(&A_as_ntt);
+    let mut u = multiply_matrix_transpose_by_column(&A_as_ntt_transpose, &r_as_ntt)
+        .map(|re| ntt_inverse(re));
     for i in 0..u.len() {
         u[i] = u[i] + error_1[i];
     }
 
-    // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element = deserialize_little_endian(1, &message);
-    let v = invert_ntt(multiply_row_by_column(&t_as_ntt, &r_as_ntt))
-        + error_2
-        + decompress(message_as_ring_element, 1);
+    // μ ← Decompress₁(ByteDecode₁(m)))
+    let message_as_ring_element = decompress(deserialize_little_endian(1, &message), 1);
 
-    // c_1 := Encode_{du}(Compress_q(u,d_u))
+    // v ← NTT-¹(t̂ᵀ ◦ r̂) + e₂ + μ
+    let v = ntt_inverse(multiply_column_by_row(&t_as_ntt, &r_as_ntt))
+        + error_2
+        + message_as_ring_element;
+
+    // c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
     let c1 = encode_and_compress_u(u);
 
-    // c_2 := Encode_{dv}(Compress_q(v,d_v))
+    // c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
     let c2 = serialize_little_endian(
         compress(v, VECTOR_V_COMPRESSION_FACTOR),
         VECTOR_V_COMPRESSION_FACTOR,
     );
 
-    let ciphertext = c1
-        .into_iter()
-        .chain(c2.into_iter())
-        .collect::<Vec<u8>>()
-        .as_array();
+    // return c ← (c₁ ‖ c₂)
+    let mut ciphertext: CiphertextCpa = (&c1).into_padded_array();
+    ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
 
     Ok(ciphertext)
 }
 
-/// This function implements Algorithm 6 of the Kyber Round 3 specification;
-/// This is the Kyber Round 3 CPA-PKE decryption algorithm, and is reproduced
-/// below:
+/// This function implements <strong>Algorithm 14</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+///
+/// Algorithm 14 is reproduced below:
 ///
 /// ```plaintext
-/// Input: Secret key sk ∈ B^{12·k·n} / 8
-/// Input: Ciphertext c ∈ B^{d_u·k·n / 8} + d_v·n / 8
-/// Output: Message m ∈ B^{32}
-/// u := Decompress_q(Decode_{d_u}(c), d_u)
-/// v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-/// sˆ := Decode_12(sk)
-/// m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
+/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+/// Output: message m ∈ 𝔹^{32}.
+///
+/// c₁ ← c[0 : 32dᵤk]
+/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
+/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+/// m ← ByteEncode₁(Compress₁(w))
 /// return m
 /// ```
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 pub(crate) fn decrypt(
     secret_key: &[u8; CPA_PKE_SECRET_KEY_SIZE],
     ciphertext: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
 ) -> [u8; CPA_PKE_MESSAGE_SIZE] {
-    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-
-    // u := Decompress_q(Decode_{d_u}(c), d_u)
-    for (i, u_bytes) in
-        (0..u_as_ntt.len()).zip(ciphertext.chunks((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8))
+    // u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+    let mut u = [KyberPolynomialRingElement::ZERO; RANK];
+    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
+        .chunks((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
+        .enumerate()
     {
-        let u = deserialize_little_endian(10, u_bytes);
-        u_as_ntt[i] = ntt_representation(decompress(u, 10));
-    }
-
-    // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = decompress(
-        deserialize_little_endian(VECTOR_V_COMPRESSION_FACTOR, &ciphertext[VECTOR_U_SIZE..]),
-        VECTOR_V_COMPRESSION_FACTOR,
-    );
-
-    // sˆ := Decode_12(sk)
-    let mut secret_as_ntt_ring_element_bytes = secret_key.chunks(BITS_PER_RING_ELEMENT / 8);
-    for i in 0..secret_as_ntt.len() {
-        secret_as_ntt[i] = deserialize_little_endian(
-            12,
-            secret_as_ntt_ring_element_bytes.next().expect("secret_as_ntt_ring_element_bytes should have enough bytes to deserialize to secret_as_ntt"),
+        u[i] = decompress(
+            deserialize_little_endian(VECTOR_U_COMPRESSION_FACTOR, u_bytes),
+            VECTOR_U_COMPRESSION_FACTOR,
         );
     }
 
-    // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
-    let message = v - invert_ntt(multiply_row_by_column(&secret_as_ntt, &u_as_ntt));
+    // v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+    let v = decompress(
+        deserialize_little_endian(
+            VECTOR_V_COMPRESSION_FACTOR,
+            &ciphertext[VECTOR_U_ENCODED_SIZE..],
+        ),
+        VECTOR_V_COMPRESSION_FACTOR,
+    );
 
+    // ŝ ← ByteDecode₁₂(dkₚₖₑ)
+    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
+        secret_as_ntt[i] = deserialize_little_endian(12, secret_bytes);
+    }
+
+    // w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    for i in 0..u_as_ntt.len() {
+        u_as_ntt[i] = ntt(u[i]);
+    }
+    let message = v - ntt_inverse(multiply_column_by_row(&secret_as_ntt, &u_as_ntt));
+
+    // m ← ByteEncode₁(Compress₁(w))
+    // return m
     // FIXME: remove conversion
     serialize_little_endian(compress(message, 1), 1).as_array()
 }
