@@ -69,7 +69,7 @@ fn compress_d(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     (compressed % two_pow_bit_size).into()
 }
 
-/// This function implements the `Deompress` function defined on Page 18 of the
+/// This function implements the `Decompress` function defined on Page 18 of the
 /// NIST FIPS 203 standard, which is defined as:
 ///
 /// ```plaintext
