@@ -1,13 +1,21 @@
 use std::{env, path::Path};
 
+const LIB_NAME: &str = "hacl";
+const LIB_128_NAME: &str = "hacl_128";
+const LIB_256_NAME: &str = "hacl_256";
+#[allow(dead_code)] // FIXME: remove wrong cfg guards
+const LIB_25519_NAME: &str = "hacl_curve25519";
+#[allow(dead_code)] // FIXME: remove wrong cfg guards
+const LIB_VALE_AESGCM_NAME: &str = "vale_aesgcm";
+
 macro_rules! svec {
     ($($x:expr),*$(,)?) => (vec![$($x.to_string()),*]);
 }
 
-fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
+fn includes(platform: &Platform, home_dir: &Path, include_str: &str) -> Vec<String> {
     let c_path = home_dir.join("c");
     let mut include_path = c_path.join("include");
-    if cfg!(target_env = "msvc") {
+    if platform.target_env == "msvc" {
         include_path = include_path.join("msvc");
     }
     vec![
@@ -30,24 +38,18 @@ fn includes(home_dir: &Path, include_str: &str) -> Vec<String> {
     ]
 }
 
-#[cfg(all(
-    any(target_arch = "x86", target_arch = "x86_64"),
-    any(
-        target_os = "linux",
-        target_os = "macos",
-        all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-    )
-))]
-fn append_aesgcm_flags(flags: &mut Vec<String>) {
-    if cfg!(not(target_env = "msvc")) {
+#[allow(dead_code)]
+fn append_aesgcm_flags(platform: &Platform, flags: &mut Vec<String>) {
+    if platform.target_env != "msvc" {
         flags.push("-maes".to_string());
         flags.push("-mpclmul".to_string());
     }
 }
 
-fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
-    if cfg!(any(target_arch = "x86", target_arch = "x86_64"))
-        && (is_bindgen || cfg!(not(target_env = "msvc")))
+#[allow(dead_code)]
+fn append_simd128_flags(platform: &Platform, flags: &mut Vec<String>, is_bindgen: bool) {
+    if (platform.target_arch == "x86" || platform.target_arch == "x86_64")
+        && (is_bindgen || platform.target_env != "msvc")
     {
         flags.push("-msse4.1".to_string());
         flags.push("-msse4.2".to_string());
@@ -55,14 +57,15 @@ fn append_simd128_flags(flags: &mut Vec<String>, is_bindgen: bool) {
     }
 }
 
-fn append_simd256_flags(flags: &mut Vec<String>, is_bindgen: bool) {
-    if is_bindgen || cfg!(not(target_env = "msvc")) {
+#[allow(dead_code)]
+fn append_simd256_flags(platform: &Platform, flags: &mut Vec<String>, is_bindgen: bool) {
+    if is_bindgen || platform.target_env != "msvc" {
         flags.push("-mavx2".to_string());
     }
 }
 
-fn create_bindings(platform: Platform, home_dir: &Path) {
-    let mut clang_args = includes(home_dir, "-I");
+fn create_bindings(platform: &Platform, home_dir: &Path) {
+    let mut clang_args = includes(platform, home_dir, "-I");
 
     let mut bindings = bindgen::Builder::default();
 
@@ -70,14 +73,14 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
         // Header to wrap HACL headers
         .header("c/config/hacl.h");
     if platform.simd128 {
-        append_simd128_flags(&mut clang_args, true);
+        append_simd128_flags(platform, &mut clang_args, true);
         clang_args.push("-DSIMD128".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 128 headers
             .header("c/config/hacl128.h");
     }
     if platform.simd256 {
-        append_simd256_flags(&mut clang_args, true);
+        append_simd256_flags(platform, &mut clang_args, true);
         clang_args.push("-DSIMD256".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
@@ -142,6 +145,7 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
 }
 
 fn compile_files(
+    platform: &Platform,
     library_name: &str,
     files: &[String],
     vale_files: &[String],
@@ -149,7 +153,7 @@ fn compile_files(
     args: &[String],
     defines: &[(&str, &str)],
 ) {
-    let src_prefix = if cfg!(target_env = "msvc") {
+    let src_prefix = if platform.target_env == "msvc" {
         home_path.join("c").join("src").join("msvc")
     } else {
         home_path.join("c").join("src")
@@ -167,10 +171,11 @@ fn compile_files(
         // XXX: There are too many warnings for now
         .warnings(false);
 
-    for include in includes(home_path, "") {
+    for include in includes(platform, home_path, "") {
         build.include(include);
     }
     build.opt_level(3);
+    build.static_crt(true);
     for arg in args {
         build.flag(arg);
     }
@@ -181,7 +186,7 @@ fn compile_files(
     build.compile(library_name);
 }
 
-fn build(platform: Platform, home_path: &Path) {
+fn build(platform: &Platform, home_path: &Path) {
     let files = svec![
         "Hacl_NaCl.c",
         "Hacl_Salsa20.c",
@@ -242,9 +247,10 @@ fn build(platform: Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC128", "1")]);
 
         let mut simd128_flags = vec![];
-        append_simd128_flags(&mut simd128_flags, false);
+        append_simd128_flags(platform, &mut simd128_flags, false);
         compile_files(
-            "libhacl_128.a",
+            platform,
+            LIB_128_NAME,
             &files128,
             &[],
             home_path,
@@ -267,9 +273,10 @@ fn build(platform: Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VEC256", "1")]);
 
         let mut simd256_flags = vec![];
-        append_simd256_flags(&mut simd256_flags, false);
+        append_simd256_flags(platform, &mut simd256_flags, false);
         compile_files(
-            "libhacl_256.a",
+            platform,
+            LIB_256_NAME,
             &files256,
             &[],
             home_path,
@@ -277,6 +284,8 @@ fn build(platform: Platform, home_path: &Path) {
             &defines,
         );
     }
+
+    // FIXME: this doesn't work on cross compilation.
     #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         any(
@@ -303,7 +312,8 @@ fn build(platform: Platform, home_path: &Path) {
         }
 
         compile_files(
-            "libhacl_curve25519.a",
+            platform,
+            LIB_25519_NAME,
             &files_curve25519_64,
             &files_curve25519,
             home_path,
@@ -311,6 +321,8 @@ fn build(platform: Platform, home_path: &Path) {
             &defines,
         );
     }
+
+    // FIXME: this doesn't work on cross compilation.
     #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         any(
@@ -343,11 +355,12 @@ fn build(platform: Platform, home_path: &Path) {
         defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
 
         let mut aesgcm_flags = vec![];
-        append_simd128_flags(&mut aesgcm_flags, false);
-        append_simd256_flags(&mut aesgcm_flags, false);
-        append_aesgcm_flags(&mut aesgcm_flags);
+        append_simd128_flags(platform, &mut aesgcm_flags, false);
+        append_simd256_flags(platform, &mut aesgcm_flags, false);
+        append_aesgcm_flags(platform, &mut aesgcm_flags);
         compile_files(
-            "libhacl_aesgcm.a",
+            platform,
+            LIB_VALE_AESGCM_NAME,
             &files_evercrypt,
             &files_aesgcm,
             home_path,
@@ -356,10 +369,10 @@ fn build(platform: Platform, home_path: &Path) {
         );
     }
 
-    compile_files("libhacl.a", &files, &[], home_path, &[], &defines);
+    compile_files(platform, LIB_NAME, &files, &[], home_path, &[], &defines);
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug, Default)]
 #[allow(dead_code)]
 struct Platform {
     simd128: bool,
@@ -370,71 +383,56 @@ struct Platform {
     pmull: bool,
     adv_simd: bool,
     sha256: bool,
+    target: Option<&'static str>,
+    target_arch: String,
+    target_env: String,
+    target_os: String,
 }
 
 fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let home_path = Path::new(&home_dir);
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let out_path = Path::new(&out_dir);
+    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+    let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let generate_bindings = env::var("LIBCRUX_GENERATE_BINDINGS");
 
     // Check platform support
-    let platform = Platform {
-        simd128: libcrux_platform::simd128_support(),
-        simd256: libcrux_platform::simd256_support(),
-        aes_ni: libcrux_platform::aes_ni_support(),
-        x25519: libcrux_platform::x25519_support(),
-        bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
-        pmull: libcrux_platform::pmull_support(),
-        adv_simd: libcrux_platform::adv_simd_support(),
-        sha256: libcrux_platform::sha256_support(),
+    let platform = if target_arch != "wasm32" {
+        let x86 = target_arch == "x86";
+        Platform {
+            simd128: !x86 && libcrux_platform::simd128_support(),
+            simd256: !x86 && libcrux_platform::simd256_support(),
+            aes_ni: libcrux_platform::aes_ni_support(),
+            x25519: !x86 && libcrux_platform::x25519_support(),
+            bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
+            pmull: libcrux_platform::pmull_support(),
+            adv_simd: libcrux_platform::adv_simd_support(),
+            sha256: libcrux_platform::sha256_support(),
+            target: None,
+            target_arch: target_arch.clone(),
+            target_env: target_env.clone(),
+            target_os: target_os.clone(),
+        }
+    } else {
+        Platform {
+            target_arch: target_arch.clone(),
+            target_env: target_env.clone(),
+            target_os: target_os.clone(),
+            ..Default::default()
+        }
     };
 
     // Set re-run trigger for all of c
     println!("cargo:rerun-if-changed=c");
 
     // Build the C files
-    build(platform, home_path);
-
-    // Set library name to look up
-    const LIB_NAME: &str = "hacl";
+    build(&platform, home_path);
 
     // Generate new bindings.
-    create_bindings(platform, home_path);
-
-    // Link hacl library.
-    const MODE: &str = "static";
-    println!("cargo:rustc-link-lib={}={}", MODE, LIB_NAME);
-    if platform.simd128 {
-        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_128");
+    // This is only done if the corresponding environment variable is set.
+    if generate_bindings.is_ok() && target_arch != "wasm32" {
+        create_bindings(&platform, home_path);
     }
-    if platform.simd256 {
-        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_256");
-    }
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_env = "gnu",
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", target_env = "msvc")
-        )
-    ))]
-    if platform.x25519 {
-        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_curve25519");
-    }
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-        )
-    ))]
-    if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
-        println!("cargo:rustc-link-lib={}={}", MODE, "hacl_aesgcm");
-    }
-    println!("cargo:rustc-link-search=native={}", out_path.display());
-    println!("cargo:lib={}", out_path.display());
 }

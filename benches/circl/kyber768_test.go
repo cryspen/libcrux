@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func BenchmarkKeyGeneration(b *testing.B) {
+func BenchmarkKyber768KeyGeneration(b *testing.B) {
 	scheme := schemes.ByName("Kyber768")
 
 	for i := 0; i < b.N; i++ {
@@ -15,7 +15,7 @@ func BenchmarkKeyGeneration(b *testing.B) {
 	}
 }
 
-func BenchmarkEncapsulation(b *testing.B) {
+func BenchmarkKyber768Encapsulation(b *testing.B) {
 	scheme := schemes.ByName("Kyber768")
 
 	pk, _, _ := scheme.GenerateKeyPair()
@@ -27,7 +27,7 @@ func BenchmarkEncapsulation(b *testing.B) {
 	}
 }
 
-func BenchmarkDecapsulation(b *testing.B) {
+func BenchmarkKyber768Decapsulation(b *testing.B) {
 	scheme := schemes.ByName("Kyber768")
 
 	pk, sk, _ := scheme.GenerateKeyPair()

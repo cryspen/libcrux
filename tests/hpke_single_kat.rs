@@ -6,6 +6,7 @@ use libcrux::hpke::kdf::KDF::*;
 use libcrux::hpke::kem::KEM::*;
 use libcrux::hpke::{Mode::*, *};
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn single_kat_base() {
     let _ = pretty_env_logger::try_init();
@@ -50,6 +51,7 @@ fn single_kat_base() {
     assert_eq!(ptxt, decrypted_ptxt);
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn single_kat_psk() {
     // A.2.2
@@ -104,6 +106,7 @@ fn single_kat_psk() {
     assert_eq!(ptxt, decrypted_ptxt);
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn single_kat_auth() {
     // A.2.3
@@ -158,6 +161,7 @@ fn single_kat_auth() {
     assert_eq!(ptxt, decrypted_ptxt);
 }
 
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn single_kat_auth_psk() {
     // A.2.4
