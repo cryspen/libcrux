@@ -53,32 +53,40 @@ impl KeyPair {
     }
 }
 
-/// This function implements Algorithm 7 of the Kyber Round 3 specification;
-/// This is the Kyber Round 3 CCA-KEM key generation algorithm, and is
-/// reproduced below:
+/// This function implements most of <strong>Algorithm 15</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CCA-KEM key generation algorithm.
+///
+/// We say "most of" since Algorithm 15 samples the required randomness within
+/// the function itself, whereas this implementation expects it to be provided
+/// through the `randomness` parameter.
 ///
 /// ```plaintext
-/// Output: Public key pk ∈ B^{12·k·n/8+32}
-/// Output: Secret key sk ∈ B^{24·k·n/8+96}
-/// z←B^{32}
-/// (pk , sk′) := Kyber.CPAPKE.KeyGen()
-/// sk := (sk′ || pk || H(pk) || z)
-/// return (pk,sk)
+/// Output: encapsulation key ekₚₖₑ ∈ 𝔹^{384k+32}.
+/// Output: decapsulation key dkₚₖₑ ∈ 𝔹^{768k+96}.
+///
+/// z ←$ 𝔹³²
+/// (ekₚₖₑ, dkₚₖₑ) ← K-PKE.KeyGen()
+/// ek ← ekₚₖₑ
+/// dk ← (dkₚₖₑ ‖ ek ‖ H(ek) ‖ z)
+/// return (ek, dk)
 /// ```
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub fn generate_keypair(
     randomness: [u8; KYBER768_KEY_GENERATION_SEED_SIZE],
 ) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
     let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
+    // (ekₚₖₑ, dkₚₖₑ) ← K-PKE.KeyGen()
     let ind_cpa_key_pair = ind_cpa::generate_keypair(&ind_cpa_keypair_randomness.as_array())?;
 
+    // dk ← (dkₚₖₑ ‖ ek ‖ H(ek) ‖ z)
     let secret_key_serialized =
         ind_cpa_key_pair.serialize_secret_key(&implicit_rejection_value.as_array());
 
+    // return (ek, dk)
     let key_pair = KeyPair::new(ind_cpa_key_pair.pk(), secret_key_serialized);
     Ok(key_pair)
 }

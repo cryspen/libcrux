@@ -72,7 +72,7 @@ fn byte_encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
 /// Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
 /// Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
 ///
-/// d $← B
+/// d ←$ B
 /// (ρ,σ) ← G(d)
 /// N ← 0
 /// for (i ← 0; i < k; i++)
