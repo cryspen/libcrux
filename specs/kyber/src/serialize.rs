@@ -1,15 +1,37 @@
 use crate::parameters::{KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT};
 use hacspec_lib::{bit_vector::BitVector, PanickingIntegerCasts};
 
+/// Converts a bit string `bits` into an array of bytes. This function asserts
+/// that `bits.len()` is a multiple of 8.
+///
+/// This function implements <strong>Algorithm 2</strong> of the NIST FIPS 203
+/// standard, which is reproduced below:
+///
+/// ```plaintext
+/// Input: bit array b ∈ {0,1}⁸ˡ.
+/// Output: byte array B ∈ 𝔹ˡ.
+///
+/// B ← (0,...,0)
+/// for (i ← 0; i < 8l; i++)
+///     B[⌊i/8⌋] ← B[⌊i/8⌋] + b[i]·2^{i} mod 8
+/// end for
+/// return B
+/// ```
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub(crate) fn bits_to_bytes(bits: BitVector) -> Vec<u8> {
     assert!(bits.len() % 8 == 0);
 
+    // B ← (0,...,0)
     let mut bytes = Vec::<u8>::with_capacity(bits.len() / 8);
 
+    // for (i ← 0; i < 8l; i++)
     for bit_chunk in bits.chunks(8) {
         let mut byte_value = 0u8;
         for (i, bit) in bit_chunk.into_iter().enumerate() {
-            byte_value |= bit << i;
+            // B[⌊i/8⌋] ← B[⌊i/8⌋] + b[i]·2^{i} mod 8
+            byte_value += bit * 2u8.pow(i as u32);
         }
 
         bytes.push(byte_value);
@@ -18,13 +40,38 @@ pub(crate) fn bits_to_bytes(bits: BitVector) -> Vec<u8> {
     bytes
 }
 
+/// Converts a set of bytes in `bytes` into a set of bits.
+///
+/// This function implements <strong>Algorithm 3</strong> of the NIST FIPS 203
+/// standard, which is reproduced below:
+///
+/// ```plaintext
+/// Input: byte array B ∈ 𝔹ˡ.
+/// Output: bit array b ∈ {0,1}⁸ˡ.
+/// for (i ← 0; i < l; i++)
+///     for(j ← 0; j < 8; j++)
+///         b[8i + j] ← B[i] mod 2
+///         B[i] ← ⌊B[i]/2⌋
+///     end for
+/// end for
+/// return b
+/// ```
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub(crate) fn bytes_to_bits(bytes: &[u8]) -> BitVector {
     let mut bits = BitVector::new();
 
+    // for (i ← 0; i < l; i++)
     for byte in bytes.iter() {
         let mut byte_value = *byte;
+
+        // for(j ← 0; j < 8; j++)
         for _ in 0..u8::BITS {
+            // b[8i + j] ← B[i] mod 2
             bits.push(byte_value % 2);
+
+            // B[i] ← ⌊B[i]/2⌋
             byte_value /= 2;
         }
     }
