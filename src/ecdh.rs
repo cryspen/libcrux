@@ -46,22 +46,83 @@ pub enum Algorithm {
 }
 
 pub(crate) mod x25519 {
+    use rand::{CryptoRng, Rng};
+
     use super::Error;
 
+    pub struct PrivateKey(pub [u8; 32]);
+    pub struct PublicKey(pub [u8; 32]);
+
+    impl From<&[u8; 32]> for PublicKey {
+        fn from(value: &[u8; 32]) -> Self {
+            Self(value.clone())
+        }
+    }
+
+    impl TryFrom<&[u8]> for PublicKey {
+        type Error = Error;
+
+        fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+            Ok(Self(value.try_into().map_err(|_| Error::InvalidPoint)?))
+        }
+    }
+
+    impl From<&[u8; 32]> for PrivateKey {
+        fn from(value: &[u8; 32]) -> Self {
+            Self(value.clone())
+        }
+    }
+
+    impl TryFrom<&[u8]> for PrivateKey {
+        type Error = Error;
+
+        fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+            Ok(Self(value.try_into().map_err(|_| Error::InvalidScalar)?))
+        }
+    }
+
+    impl AsRef<[u8]> for PrivateKey {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8]> for PublicKey {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8; 32]> for PrivateKey {
+        fn as_ref(&self) -> &[u8; 32] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8; 32]> for PublicKey {
+        fn as_ref(&self) -> &[u8; 32] {
+            &self.0
+        }
+    }
+
     #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
-    pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
+    pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         use crate::hacl::curve25519;
         use libcrux_platform::x25519_support;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 
         if x25519_support() {
-            curve25519::vale::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+            curve25519::vale::ecdh(s, p)
+                .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+                .map(|p| PublicKey(p))
             // XXX: not verified yet
             // crate::jasmin::x25519::mulx::derive(s, p)
             //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
         } else {
-            curve25519::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+            curve25519::ecdh(s, p)
+                .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+                .map(|p| PublicKey(p))
             // XXX: not verified yet
             // crate::jasmin::x25519::derive(s, p)
             //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
@@ -72,66 +133,165 @@ pub(crate) mod x25519 {
         all(target_arch = "x86_64", any(not(bmi2), not(adx))),
         target_arch = "x86"
     ))]
-    pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
+    pub(super) fn derive(p: &PublicKey, p: &PrivateKey) -> Result<PublicKey, Error> {
         use crate::hacl::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 
-        curve25519::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+        curve25519::vale::ecdh(s, p)
+            .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+            .map(|p| PublicKey(p))
         // XXX: not verified yet
         // crate::jasmin::x25519::derive(s, p)
         //     .map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
     }
 
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-    pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
+    pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
-        curve25519::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+        curve25519::ecdh(s, p)
+            .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+            .map(|p| PublicKey(p))
     }
 
     // XXX: libjade's secret to public is broken on Windows (overflows the stack).
     // #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    // pub(super) fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 32], Error> {
+    // pub(super) fn secret_to_public(p: &PrivateKey) -> Result<[u8; 32], Error> {
     //     crate::jasmin::x25519::secret_to_public(s).map_err(|e| Error::Custom(format!("Libjade Error {:?}", e)))
     // }
 
     // #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-    pub(super) fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 32], Error> {
+    pub(super) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
-        Ok(curve25519::secret_to_public(s))
+        Ok(PublicKey(curve25519::secret_to_public(s)))
+    }
+
+    /// Generate a new x25519 secret.
+    pub fn generate_secret(rng: &mut (impl CryptoRng + Rng)) -> Result<PrivateKey, Error> {
+        const LIMIT: usize = 100;
+        for _ in 0..LIMIT {
+            let mut out = [0u8; 32];
+            rng.try_fill_bytes(&mut out)
+                .map_err(|_| Error::KeyGenError)?;
+
+            // We don't want a 0 key.
+            if out.iter().all(|&b| b == 0) {
+                continue;
+            }
+
+            // We clamp the key already to make sure it can't be misused.
+            out[0] = out[0] & 248u8;
+            out[31] = out[31] & 127u8;
+            out[31] = out[31] | 64u8;
+
+            return Ok(PrivateKey(out));
+        }
+
+        Err(Error::KeyGenError)
+    }
+
+    /// Generate a new P256 key pair
+    pub fn key_gen(rng: &mut (impl CryptoRng + Rng)) -> Result<(PrivateKey, PublicKey), Error> {
+        let sk = generate_secret(rng)?;
+        let pk = secret_to_public(&sk)?;
+        Ok((sk, pk))
     }
 }
 
+pub use x25519::generate_secret as x25519_generate_secret;
+pub use x25519::key_gen as x25519_key_gen;
+
 pub(crate) mod p256 {
+    use rand::{CryptoRng, Rng};
+
     // P256 we only have in HACL
     use crate::hacl::p256;
 
     use super::Error;
 
-    pub(super) fn derive(p: &[u8; 64], s: &[u8; 32]) -> Result<[u8; 64], Error> {
+    pub struct PrivateKey(pub [u8; 32]);
+    pub struct PublicKey(pub [u8; 64]);
+
+    impl From<&[u8; 64]> for PublicKey {
+        fn from(value: &[u8; 64]) -> Self {
+            Self(value.clone())
+        }
+    }
+
+    impl TryFrom<&[u8]> for PublicKey {
+        type Error = Error;
+
+        fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+            Ok(Self(value.try_into().map_err(|_| Error::InvalidPoint)?))
+        }
+    }
+
+    impl From<&[u8; 32]> for PrivateKey {
+        fn from(value: &[u8; 32]) -> Self {
+            Self(value.clone())
+        }
+    }
+
+    impl TryFrom<&[u8]> for PrivateKey {
+        type Error = Error;
+
+        fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+            Ok(Self(value.try_into().map_err(|_| Error::InvalidScalar)?))
+        }
+    }
+
+    impl AsRef<[u8]> for PrivateKey {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8]> for PublicKey {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8; 32]> for PrivateKey {
+        fn as_ref(&self) -> &[u8; 32] {
+            &self.0
+        }
+    }
+
+    impl AsRef<[u8; 64]> for PublicKey {
+        fn as_ref(&self) -> &[u8; 64] {
+            &self.0
+        }
+    }
+
+    pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         // We assume that the private key has been validated.
-        p256::ecdh(s, p).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+        p256::ecdh(s, p)
+            .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+            .map(|p| PublicKey(p))
     }
 
-    pub(super) fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 64], Error> {
+    pub(super) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
         p256::validate_scalar(s).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))?;
-        p256::secret_to_public(s).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+        p256::secret_to_public(s)
+            .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
+            .map(|p| PublicKey(p))
     }
 
-    pub fn validate_scalar(s: &[u8; 32]) -> Result<(), Error> {
+    pub fn validate_scalar(s: &PrivateKey) -> Result<(), Error> {
         p256::validate_scalar(s).map_err(|e| e.into())
     }
 
     #[allow(unused)]
-    pub fn validate_point(p: &[u8; 64]) -> Result<(), Error> {
+    pub fn validate_point(p: &PublicKey) -> Result<(), Error> {
         p256::validate_point(p).map_err(|e| e.into())
     }
 
-    pub(super) fn prepare_public_key(public_key: &[u8]) -> Result<[u8; 64], Error> {
+    pub(super) fn prepare_public_key(public_key: &[u8]) -> Result<PublicKey, Error> {
         if public_key.is_empty() {
             return Err(Error::InvalidPoint);
         }
@@ -148,13 +308,39 @@ pub(crate) mod p256 {
                 public_key.try_into().map_err(|_| Error::InvalidPoint)?
             }
         };
+        let pk = PublicKey(pk);
 
         p256::validate_point(&pk)
             .map(|()| pk)
             .map_err(|_| Error::InvalidPoint)
     }
+
+    /// Generate a new p256 secret (scalar)
+    pub fn generate_secret(rng: &mut (impl CryptoRng + Rng)) -> Result<PrivateKey, Error> {
+        const LIMIT: usize = 100;
+        for _ in 0..LIMIT {
+            let mut out = [0u8; 32];
+            rng.try_fill_bytes(&mut out)
+                .map_err(|_| Error::KeyGenError)?;
+
+            let out = PrivateKey(out);
+            if validate_scalar(&out).is_ok() {
+                return Ok(out);
+            }
+        }
+        Err(Error::KeyGenError)
+    }
+
+    /// Generate a new P256 key pair
+    pub fn key_gen(rng: &mut (impl CryptoRng + Rng)) -> Result<(PrivateKey, PublicKey), Error> {
+        let sk = generate_secret(rng)?;
+        let pk = secret_to_public(&sk)?;
+        Ok((sk, pk))
+    }
 }
 
+pub use p256::generate_secret as p256_generate_secret;
+pub use p256::key_gen as p256_key_gen;
 pub use p256::validate_scalar as p256_validate_scalar;
 
 /// Derive the ECDH shared secret.
@@ -165,36 +351,28 @@ pub fn derive(
     scalar: impl AsRef<[u8]>,
 ) -> Result<Vec<u8>, Error> {
     match alg {
-        Algorithm::X25519 => x25519::derive(
-            point.as_ref().try_into().map_err(|_| Error::InvalidPoint)?,
-            scalar
-                .as_ref()
-                .try_into()
-                .map_err(|_| Error::InvalidScalar)?,
-        )
-        .map(|r| r.into()),
+        Algorithm::X25519 => {
+            x25519::derive(&point.as_ref().try_into()?, &scalar.as_ref().try_into()?)
+                .map(|r| r.0.into())
+        }
         Algorithm::P256 => {
             let point = p256::prepare_public_key(point.as_ref())?;
             let scalar = hacl::p256::validate_scalar_slice(scalar.as_ref())
                 .map_err(|_| Error::InvalidScalar)?;
 
-            p256::derive(&point, &scalar).map(|r| r.into())
+            p256::derive(&point, &scalar).map(|r| r.0.into())
         }
         _ => Err(Error::UnknownAlgorithm),
     }
 }
 
 /// Derive the public key for the provided secret key `scalar`.
-pub fn secret_to_public(alg: Algorithm, scalar: &[u8]) -> Result<Vec<u8>, Error> {
+pub fn secret_to_public(alg: Algorithm, scalar: impl AsRef<[u8]>) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::X25519 => {
-            x25519::secret_to_public(scalar.try_into().map_err(|_| Error::InvalidScalar)?)
-                .map(|r| r.into())
+            x25519::secret_to_public(&scalar.as_ref().try_into()?).map(|r| r.0.into())
         }
-        Algorithm::P256 => {
-            p256::secret_to_public(scalar.try_into().map_err(|_| Error::InvalidScalar)?)
-                .map(|r| r.into())
-        }
+        Algorithm::P256 => p256::secret_to_public(&scalar.as_ref().try_into()?).map(|r| r.0.into()),
         _ => Err(Error::UnknownAlgorithm),
     }
 }
@@ -209,9 +387,7 @@ pub fn validate_scalar(alg: Algorithm, s: impl AsRef<[u8]>) -> Result<(), Error>
                 Ok(())
             }
         }
-        Algorithm::P256 => {
-            p256::validate_scalar(s.as_ref().try_into().map_err(|_| Error::InvalidScalar)?)
-        }
+        Algorithm::P256 => p256::validate_scalar(&s.as_ref().try_into()?),
         _ => Err(Error::UnknownAlgorithm),
     }
 }
@@ -223,42 +399,9 @@ use rand::{CryptoRng, Rng};
 /// The function returns the new scalar or an [`Error::KeyGenError`] if it was unable to
 /// generate a new key. If this happens, the provided `rng` is probably faulty.
 pub fn generate_secret(alg: Algorithm, rng: &mut (impl CryptoRng + Rng)) -> Result<Vec<u8>, Error> {
-    // We don't want to have an endless loop. 100 are more than enough
-    // iterations. If this doesn't work, the rng is broken.
-    const LIMIT: usize = 100;
     match alg {
-        Algorithm::X25519 => {
-            for _ in 0..LIMIT {
-                let mut out = [0u8; 32];
-                rng.try_fill_bytes(&mut out)
-                    .map_err(|_| Error::KeyGenError)?;
-
-                // We don't want a 0 key.
-                if out.iter().all(|&b| b == 0) {
-                    continue;
-                }
-
-                // We clamp the key already to make sure it can't be misused.
-                out[0] = out[0] & 248u8;
-                out[31] = out[31] & 127u8;
-                out[31] = out[31] | 64u8;
-
-                return Ok(out.into());
-            }
-            return Err(Error::KeyGenError);
-        }
-        Algorithm::P256 => {
-            for _ in 0..LIMIT {
-                let mut out = [0u8; 32];
-                rng.try_fill_bytes(&mut out)
-                    .map_err(|_| Error::KeyGenError)?;
-
-                if p256_validate_scalar(&out).is_ok() {
-                    return Ok(out.into());
-                }
-            }
-            return Err(Error::KeyGenError);
-        }
+        Algorithm::X25519 => x25519::generate_secret(rng).map(|k| k.0.to_vec()),
+        Algorithm::P256 => p256::generate_secret(rng).map(|k| k.0.to_vec()),
         _ => Err(Error::UnknownAlgorithm),
     }
 }

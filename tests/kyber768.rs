@@ -24,7 +24,7 @@ fn consistency() {
 
     if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut rng) {
         if let Ok((shared_secret, ciphertext)) =
-            kem::encapsulate(Algorithm::Kyber768, &public_key, &mut rng)
+            kem::encapsulate(Algorithm::Kyber768, public_key, &mut rng)
         {
             let shared_secret_decapsulated =
                 kem::decapsulate(Algorithm::Kyber768, &ciphertext, &secret_key).unwrap();
