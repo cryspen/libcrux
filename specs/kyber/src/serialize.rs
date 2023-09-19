@@ -19,7 +19,7 @@ pub(crate) fn bits_to_bytes(bits: BitVector) -> Vec<u8> {
 }
 
 pub(crate) fn bytes_to_bits(bytes: &[u8]) -> BitVector {
-    let mut bits = Vec::<u8>::with_capacity(bytes.len() * 8);
+    let mut bits = BitVector::new();
 
     for byte in bytes.iter() {
         let mut byte_value = *byte;
@@ -29,7 +29,7 @@ pub(crate) fn bytes_to_bits(bytes: &[u8]) -> BitVector {
         }
     }
 
-    BitVector::new(bits)
+    bits
 }
 
 /// Convert the associated ring element into a vector of
@@ -72,7 +72,7 @@ pub(crate) fn bytes_to_bits(bytes: &[u8]) -> BitVector {
 pub fn byte_encode(bits_per_coefficient: usize, re: KyberPolynomialRingElement) -> Vec<u8> {
     assert!(bits_per_coefficient <= BITS_PER_COEFFICIENT);
 
-    let mut re_bits = BitVector::new_bv();
+    let mut re_bits = BitVector::new();
 
     // for(i ← 0; i < 256; i++)
     for coefficient in re.coefficients() {
