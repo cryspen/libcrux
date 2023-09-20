@@ -2,7 +2,7 @@ name: hax
 
 on:
   push:
-    branches: ["dev", "franziskus/hax-ci"]
+    branches: ["dev"]
   pull_request:
     branches: ["dev"]
   workflow_dispatch:
@@ -35,13 +35,11 @@ jobs:
       - name: 🔨 Setup hax
         working-directory: hax
         run: |
-            sudo apt-get update
-            sudo apt-get install --yes nodejs
-            ./setup.sh
+          sudo apt-get update
+          sudo apt-get install --yes nodejs
+          ./setup.sh
 
       - name: 🏃🏻‍♀️ Run hax
         run: |
-          echo $PATH
           eval $(opam env)
-          echo $PATH
           cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
