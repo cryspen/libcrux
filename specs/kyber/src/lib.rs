@@ -93,6 +93,13 @@ pub fn generate_keypair(
     Ok(key_pair)
 }
 
+fn public_key_modulus_check(public_key: &PublicKey) -> bool {
+    let encoded_ring_elements = &public_key[0..KYBER768_PUBLIC_KEY_SIZE - 32];
+    let decoded_ring_elements = matrix::decode_vector_12(encoded_ring_elements.try_into().unwrap());
+
+    encoded_ring_elements == matrix::encode_vector_12(decoded_ring_elements)
+}
+
 /// This function implements most of <strong>Algorithm 16</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CCA-KEM encapsulation algorithm.
 ///
@@ -105,7 +112,7 @@ pub fn generate_keypair(
 /// ```plaintext
 /// Validated input: encapsulation key ekₚₖₑ ∈ 𝔹^{384k+32}.
 /// Output: shared key K ∈ 𝔹³².
-/// Output: ciphertext c ∈ 𝔹^{dᵤk + dᵥ}.
+/// Output: ciphertext c ∈ 𝔹^{32(dᵤk+dᵥ)}.
 ///
 /// Input validation step 1. (Type check.) If ek is not an array of bytes of length
 /// 384k + 32 for the value of k specifed by the relevant parameter set, the input
@@ -129,7 +136,7 @@ pub fn encapsulate(
     randomness: [u8; KYBER768_SHARED_SECRET_SIZE],
 ) -> Result<(Ciphertext, SharedSecret), BadRejectionSamplingRandomnessError> {
     // Input validation step 2
-    //assert_eq!(&public_key, serialize::byte_encode(12, serialize::byte_decode(12, &public_key)).as_slice());
+    assert!(public_key_modulus_check(&public_key));
 
     // (K,r) ← G(m ‖ H(ek))
     let to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness.push(&H(&public_key));
@@ -138,35 +145,89 @@ pub fn encapsulate(
     let (shared_secret, pseudorandomness) = hashed.split_at(32);
 
     // c ← K-PKE.Encrypt(ek, m, r)
-    let ciphertext =
-        ind_cpa::encrypt(&public_key, randomness, &pseudorandomness.as_array())?;
+    let ciphertext = ind_cpa::encrypt(&public_key, randomness, &pseudorandomness.as_array())?;
 
     // return(K,c)
     Ok((ciphertext, shared_secret.as_array()))
 }
 
-pub fn decapsulate(secret_key: PrivateKey, ciphertext: Ciphertext) -> SharedSecret {
+/// This function implements <strong>Algorithm 17</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CCA-KEM encapsulation algorithm.
+///
+/// Algorithm 17 is reproduced below:
+///
+/// ```plaintext
+/// Validated input: ciphertext c ∈ 𝔹^{32(dᵤk+dᵥ)}.
+/// Validated input: decapsulation key dkₚₖₑ ∈ 𝔹^{768k+96}.
+/// Output: shared key K ∈ 𝔹^{384k+32}.
+///
+/// Input validation step 1. (Ciphertext type check.) If c is not a byte array
+/// of length 32(dᵤk+dᵥ) for the values of dᵤ, dᵥ, and k specifed by the relevant
+/// parameter set, the input is invalid.
+///
+/// Input validation step 2. (Decapsulation key type check.) If dk is not a byte
+/// array of length 768k + 96 for the value of k specifed by the relevant
+/// parameter set, the input is invalid.
+///
+/// dkₚₖₑ ← dk[0 : 384k]
+/// ekₚₖₑ ← dk[384k : 768k + 32]
+/// h ← dk[768k + 32 : 768k + 64]
+/// z ← dk[768k + 64 : 768k + 96]
+/// m′ ← K-PKE.Decrypt(dkₚₖₑ,c)
+/// (K′,r′) ← G(m′ ‖ h)
+/// K̃ ← J(z‖c, 32)
+/// c′ ← K-PKE.Encrypt(ekₚₖₑ, m′, r′)
+/// if c ≠ c′ then
+///     K′ ← K̃
+/// end if
+/// return K′
+/// ```
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+pub fn decapsulate(
+    // Input validation step 1 is performed by specifying the type of
+    // |ciphertext| to be |Ciphertext|
+    ciphertext: Ciphertext,
+    // Input validation step 2 is performed by specifying the type of
+    // |secret_key| to be |PrivateKey|
+    secret_key: PrivateKey,
+) -> SharedSecret {
+    // dkₚₖₑ ← dk[0 : 384k]
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE);
+
+    // ekₚₖₑ ← dk[384k : 768k + 32]
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE);
+
+    // h ← dk[768k + 32 : 768k + 64]
+    // z ← dk[768k + 64 : 768k + 96]
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 
+    // m′ ← K-PKE.Decrypt(dkₚₖₑ,c)
     let decrypted = ind_cpa::decrypt(&ind_cpa_secret_key.as_array(), &ciphertext);
 
+    // (K′,r′) ← G(m′ ‖ h)
     let to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] =
         decrypted.push(ind_cpa_public_key_hash);
     let hashed = G(&to_hash);
     let (success_shared_secret, pseudorandomness) = hashed.split_at(32);
 
+    // K̃ ← J(z‖c, 32)
     let to_hash: [u8; KYBER768_SHARED_SECRET_SIZE + KYBER768_CIPHERTEXT_SIZE] =
         implicit_rejection_value.push(&ciphertext);
-    let failed_shared_secret : [u8; KYBER768_SHARED_SECRET_SIZE] = J(&to_hash);
+    let failed_shared_secret: [u8; KYBER768_SHARED_SECRET_SIZE] = J(&to_hash);
 
+    // c′ ← K-PKE.Encrypt(ekₚₖₑ, m′, r′)
     let reencrypted_ciphertext = ind_cpa::encrypt(
         &ind_cpa_public_key.as_array(),
         decrypted,
         &pseudorandomness.as_array(),
     );
 
+    // if c ≠ c′ then
+    //     K′ ← K̃
+    // end if
+    // return K′
     if let Ok(reencrypted) = reencrypted_ciphertext {
         if ciphertext == reencrypted {
             success_shared_secret.as_array()
@@ -204,7 +265,7 @@ mod tests {
         fn consistency(key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE), encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE)) {
             if let Ok(key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
                 if let Ok((ciphertext, shared_secret)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
-                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
+                    let shared_secret_decapsulated = decapsulate(ciphertext, key_pair.sk);
 
                     assert_eq!(shared_secret, shared_secret_decapsulated);
                 }
@@ -225,7 +286,7 @@ mod tests {
             if let Ok(key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
                 if let Ok((mut ciphertext, shared_secret)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
                     ciphertext[ciphertext_position] ^= random_byte;
-                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
+                    let shared_secret_decapsulated = decapsulate(ciphertext, key_pair.sk);
 
                     assert_ne!(shared_secret, shared_secret_decapsulated);
 
@@ -250,7 +311,7 @@ mod tests {
             if let Ok(mut key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
                 if let Ok((ciphertext, shared_secret)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
                     key_pair.sk[secret_key_position] ^= random_byte;
-                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
+                    let shared_secret_decapsulated = decapsulate(ciphertext, key_pair.sk);
 
                     assert_ne!(shared_secret, shared_secret_decapsulated);
                 }
@@ -274,10 +335,10 @@ mod tests {
             if let Ok(mut key_pair) = generate_keypair(key_generation_randomness.try_into().unwrap()) {
                 if let Ok((mut ciphertext, _)) = encapsulate(key_pair.pk, encapsulation_randomness.try_into().unwrap()) {
                     ciphertext[ciphertext_position] ^= random_byte_for_ciphertext;
-                    let shared_secret_decapsulated = decapsulate(key_pair.sk, ciphertext);
+                    let shared_secret_decapsulated = decapsulate(ciphertext, key_pair.sk);
 
                     key_pair.sk[secret_key_position] ^= random_byte_for_secret_key;
-                    let shared_secret_decapsulated_2 = decapsulate(key_pair.sk, ciphertext);
+                    let shared_secret_decapsulated_2 = decapsulate(ciphertext, key_pair.sk);
 
                     assert_ne!(shared_secret_decapsulated, shared_secret_decapsulated_2);
                 }

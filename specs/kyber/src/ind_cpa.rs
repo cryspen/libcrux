@@ -1,10 +1,10 @@
 use hacspec_lib::{
-    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray, VecUpdate,
+    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
 };
 
 use crate::{
     compress::{compress, decompress},
-    matrix::{multiply_column_by_row, multiply_matrix_by_column, transpose},
+    matrix::{encode_vector_12, multiply_column_by_row, multiply_matrix_by_column, transpose},
     ntt::{ntt, ntt_inverse},
     parameters::{
         hash_functions::{G, H, PRF, XOF},
@@ -48,15 +48,6 @@ impl KeyPair {
     pub fn pk(&self) -> [u8; 1184] {
         self.pk
     }
-}
-
-fn byte_encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
-    let mut out = Vec::new();
-    for re in input.into_iter() {
-        out.extend_from_slice(&byte_encode(12, re));
-    }
-
-    out
 }
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
@@ -180,10 +171,13 @@ pub(crate) fn generate_keypair(
     }
 
     // ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
-    let public_key_serialized = byte_encode_12(t_as_ntt).concat(seed_for_A);
+    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE])
+        .push(&encode_vector_12(t_as_ntt))
+        .push(seed_for_A)
+        .array();
 
     // dkₚₖₑ ← ByteEncode₁₂(ŝ)
-    let secret_key_serialized = byte_encode_12(secret_as_ntt);
+    let secret_key_serialized = encode_vector_12(secret_as_ntt);
 
     Ok(KeyPair::new(
         secret_key_serialized.into_array(),
