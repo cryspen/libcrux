@@ -1,4 +1,4 @@
-use hacspec_lib::bit_vector::BitVectorChunks;
+use hacspec_lib::bit_vector::BitVector;
 
 use crate::{
     parameters::{self, KyberFieldElement, KyberPolynomialRingElement},
@@ -91,9 +91,9 @@ pub fn sample_ntt(
 //
 // This function calls `unwrap()`, meaning the caller assumes the responsibility
 // for ensuring `next()`, when called on the iterator, does not come up empty-handed.
-fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
+fn sum_coins(coins: BitVector) -> KyberFieldElement {
     let mut sum: u8 = 0;
-    for coin in coins.next().unwrap() {
+    for coin in coins.into_iter() {
         sum += coin;
     }
 
@@ -158,10 +158,10 @@ pub fn sample_poly_cbd(eta: usize, bytes: &[u8]) -> KyberPolynomialRingElement {
 
     for i in 0..f.len() {
         // x ← ∑(j = 0 to η-1) b[2iη + j]
-        let x: KyberFieldElement = sum_coins(&mut bits);
+        let x: KyberFieldElement = sum_coins(bits.next().unwrap());
 
         // y ← ∑(j = 0 to η-1) b[2iη + η + j]
-        let y: KyberFieldElement = sum_coins(&mut bits);
+        let y: KyberFieldElement = sum_coins(bits.next().unwrap());
 
         // f[i] ← x − y mod q
         f[i] = x - y;

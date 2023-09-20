@@ -24,7 +24,7 @@ pub(crate) fn bits_to_bytes(bits: BitVector) -> Vec<u8> {
     assert!(bits.len() % 8 == 0);
 
     // B ← (0,...,0)
-    let mut bytes = Vec::<u8>::with_capacity(bits.len() / 8);
+    let mut bytes = Vec::new();
 
     // for (i ← 0; i < 8l; i++)
     for bit_chunk in bits.chunks(8) {
@@ -148,7 +148,7 @@ fn field_element_from_bits(bits: BitVector) -> KyberFieldElement {
     let mut value: u16 = 0;
 
     for (i, bit) in bits.into_iter().enumerate() {
-        value += ((bit as u16) * 2u16.pow(i.as_u32())) % modulus;
+        value += ((bit as u16) * (1 << i)) % modulus;
     }
 
     value.into()
