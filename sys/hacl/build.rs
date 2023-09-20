@@ -64,6 +64,7 @@ fn append_simd256_flags(platform: &Platform, flags: &mut Vec<String>, is_bindgen
     }
 }
 
+#[cfg(feature = "bindings")]
 fn create_bindings(platform: &Platform, home_dir: &Path) {
     let mut clang_args = includes(platform, home_dir, "-I");
 
@@ -396,7 +397,6 @@ fn main() {
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
-    let generate_bindings = env::var("LIBCRUX_GENERATE_BINDINGS");
 
     // Check platform support
     let platform = if target_arch != "wasm32" {
@@ -432,7 +432,8 @@ fn main() {
 
     // Generate new bindings.
     // This is only done if the corresponding environment variable is set.
-    if generate_bindings.is_ok() && target_arch != "wasm32" {
+    #[cfg(feature = "bindings")]
+    if target_arch != "wasm32" {
         create_bindings(&platform, home_path);
     }
 }

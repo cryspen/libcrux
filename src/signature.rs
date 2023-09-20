@@ -182,9 +182,6 @@ pub fn sign(
             )?
         }
         Algorithm::Ed25519 => {
-            log::debug!("Signing with ed25519");
-            log::trace!("  payload: {payload:x?}");
-            log::trace!("  private_key: {private_key:x?}");
             let signature = ed25519::sign(
                 payload,
                 private_key.try_into().map_err(|_| Error::SigningError)?,
@@ -265,7 +262,6 @@ pub fn key_gen(
             ecdh::key_gen(ecdh::Algorithm::P256, rng).map_err(|_| Error::KeyGenError)
         }
         Algorithm::Ed25519 => {
-            log::debug!("Generating ed25519 key");
             const LIMIT: usize = 100;
             let mut sk = [0u8; 32];
             for _ in 0..LIMIT {
