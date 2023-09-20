@@ -142,7 +142,7 @@ pub fn encapsulate(
     let to_hash: [u8; 2 * H_DIGEST_SIZE] = randomness.push(&H(&public_key));
 
     let hashed = G(&to_hash);
-    let (shared_secret, pseudorandomness) = hashed.split_at(32);
+    let (shared_secret, pseudorandomness) = hashed.split_at(KYBER768_SHARED_SECRET_SIZE);
 
     // c ← K-PKE.Encrypt(ek, m, r)
     let ciphertext = ind_cpa::encrypt(&public_key, randomness, &pseudorandomness.as_array())?;
@@ -210,12 +210,12 @@ pub fn decapsulate(
     let to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] =
         decrypted.push(ind_cpa_public_key_hash);
     let hashed = G(&to_hash);
-    let (success_shared_secret, pseudorandomness) = hashed.split_at(32);
+    let (success_shared_secret, pseudorandomness) = hashed.split_at(KYBER768_SHARED_SECRET_SIZE);
 
     // K̃ ← J(z‖c, 32)
     let to_hash: [u8; KYBER768_SHARED_SECRET_SIZE + KYBER768_CIPHERTEXT_SIZE] =
         implicit_rejection_value.push(&ciphertext);
-    let failed_shared_secret: [u8; KYBER768_SHARED_SECRET_SIZE] = J(&to_hash);
+    let rejection_shared_secret: [u8; KYBER768_SHARED_SECRET_SIZE] = J(&to_hash);
 
     // c′ ← K-PKE.Encrypt(ekₚₖₑ, m′, r′)
     let reencrypted_ciphertext = ind_cpa::encrypt(
@@ -232,10 +232,10 @@ pub fn decapsulate(
         if ciphertext == reencrypted {
             success_shared_secret.as_array()
         } else {
-            failed_shared_secret
+            rejection_shared_secret
         }
     } else {
-        failed_shared_secret
+        rejection_shared_secret
     }
 }
 
@@ -246,18 +246,22 @@ mod tests {
 
     use super::*;
 
-    const IMPLICIT_REJECTION_VALUE_POSITION: usize = parameters::CPA_PKE_SECRET_KEY_SIZE
-        + parameters::CPA_PKE_PUBLIC_KEY_SIZE
-        + parameters::hash_functions::H_DIGEST_SIZE;
+    use parameters::{
+        hash_functions::{H_DIGEST_SIZE, J},
+        CPA_PKE_PUBLIC_KEY_SIZE, CPA_PKE_SECRET_KEY_SIZE,
+    };
 
-    pub fn decapsulate_with_implicit_rejection_value(
+    const IMPLICIT_REJECTION_VALUE_POSITION: usize =
+        CPA_PKE_SECRET_KEY_SIZE + CPA_PKE_PUBLIC_KEY_SIZE + H_DIGEST_SIZE;
+
+    pub fn calculate_rejection_secret(
         secret_key: PrivateKey,
-        ciphertext: [u8; KYBER768_CIPHERTEXT_SIZE],
+        ciphertext: Ciphertext,
     ) -> SharedSecret {
         let mut to_hash = secret_key[IMPLICIT_REJECTION_VALUE_POSITION..].to_vec();
-        to_hash.extend_from_slice(&parameters::hash_functions::H(&ciphertext));
+        to_hash.extend_from_slice(&ciphertext);
 
-        parameters::hash_functions::J(&to_hash)
+        J(&to_hash)
     }
 
     proptest! {
@@ -275,7 +279,7 @@ mod tests {
             // failing.
         }
 
-        //#[test]
+        #[test]
         fn modified_ciphertext(
             key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE),
             encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE),
@@ -290,8 +294,8 @@ mod tests {
 
                     assert_ne!(shared_secret, shared_secret_decapsulated);
 
-                    let implicit_rejection_shared_secret = decapsulate_with_implicit_rejection_value(key_pair.sk, ciphertext);
-                    assert_eq!(shared_secret_decapsulated, implicit_rejection_shared_secret);
+                    let implicit_rejection_secret = calculate_rejection_secret(key_pair.sk, ciphertext);
+                    assert_eq!(shared_secret_decapsulated, implicit_rejection_secret);
 
                 }
             }
@@ -300,7 +304,7 @@ mod tests {
             // failing.
         }
 
-        //#[test]
+        #[test]
         fn modified_secret_key(
             key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE),
             encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE),
@@ -321,7 +325,7 @@ mod tests {
             // failing.
         }
 
-        //#[test]
+        #[test]
         fn modified_ciphertext_and_implicit_rejection_value(
             key_generation_randomness in vec(any::<u8>(), KYBER768_KEY_GENERATION_SEED_SIZE),
             encapsulation_randomness in vec(any::<u8>(), KYBER768_SHARED_SECRET_SIZE),
