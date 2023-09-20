@@ -1,7 +1,8 @@
 use crate::parameters::{KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT};
 use hacspec_lib::{
     bit_vector::{BitSlice, BitVector},
-    PanickingIntegerCasts};
+    PanickingIntegerCasts,
+};
 
 /// Converts a bit string `bits` into an array of bytes. This function asserts
 /// that `bits.len()` is a multiple of 8.
