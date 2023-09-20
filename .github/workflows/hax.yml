@@ -34,7 +34,10 @@ jobs:
 
       - name: 🔨 Setup hax
         working-directory: hax
-        run: ./setup.sh
+        run: |
+            sudo apt-get update
+            sudo apt-get install --yes nodejs
+            ./setup.sh
 
       - name: 🏃🏻‍♀️ Run hax
         run: cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
