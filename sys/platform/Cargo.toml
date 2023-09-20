@@ -1,7 +1,9 @@
 [package]
 name = "libcrux_platform"
-version = "0.0.1"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
 libc = "0.2.147"

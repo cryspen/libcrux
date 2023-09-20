@@ -11,10 +11,10 @@ readme = "Readme.md"
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
-libcrux_platform = { version = "=0.0.1", path = "../platform" }
+libcrux_platform = { version = "=0.0.2", path = "../platform" }
 
 [target.'cfg(not(windows))'.build-dependencies]
-bindgen = { version = "0.66", optional = true }
+bindgen = { version = "0.68", optional = true }
 
 [dev-dependencies]
 pretty_env_logger = "0.5"
