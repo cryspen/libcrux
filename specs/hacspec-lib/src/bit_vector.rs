@@ -1,4 +1,4 @@
-pub struct BitVector {
+/*pub struct BitVector {
     bits: Vec<u8>,
 }
 impl BitVector {
@@ -50,4 +50,6 @@ impl<'a> Iterator for BitVectorChunks<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.chunk_iterator.next()
     }
-}
+}*/
+pub type BitVector = Vec<u8>;
+pub type BitSlice<'a> = &'a [u8];

@@ -1,5 +1,7 @@
 use crate::parameters::{KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT};
-use hacspec_lib::{bit_vector::BitVector, PanickingIntegerCasts};
+use hacspec_lib::{
+    bit_vector::{BitSlice, BitVector},
+    PanickingIntegerCasts};
 
 /// Converts a bit string `bits` into an array of bytes. This function asserts
 /// that `bits.len()` is a multiple of 8.
@@ -141,14 +143,14 @@ pub fn byte_encode(bits_per_coefficient: usize, re: KyberPolynomialRingElement) 
     bits_to_bytes(re_bits)
 }
 
-fn field_element_from_bits(bits: BitVector) -> KyberFieldElement {
+fn field_element_from_bits(bits: BitSlice) -> KyberFieldElement {
     assert!(bits.len() <= BITS_PER_COEFFICIENT);
 
     let modulus = 2u16.pow(bits.len().as_u32());
     let mut value: u16 = 0;
 
     for (i, bit) in bits.into_iter().enumerate() {
-        value += ((bit as u16) * (1 << i)) % modulus;
+        value += ((*bit as u16) * (1 << i)) % modulus;
     }
 
     value.into()

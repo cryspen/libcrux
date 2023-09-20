@@ -1,10 +1,10 @@
-use hacspec_lib::bit_vector::BitVector;
-
 use crate::{
     parameters::{self, KyberFieldElement, KyberPolynomialRingElement},
     serialize::bytes_to_bits,
     BadRejectionSamplingRandomnessError,
 };
+
+use hacspec_lib::bit_vector::BitSlice;
 
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation
@@ -91,9 +91,9 @@ pub fn sample_ntt(
 //
 // This function calls `unwrap()`, meaning the caller assumes the responsibility
 // for ensuring `next()`, when called on the iterator, does not come up empty-handed.
-fn sum_coins(coins: BitVector) -> KyberFieldElement {
+fn sum_coins(coins: BitSlice) -> KyberFieldElement {
     let mut sum: u8 = 0;
-    for coin in coins.into_iter() {
+    for coin in coins.iter() {
         sum += coin;
     }
 
