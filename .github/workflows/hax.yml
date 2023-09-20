@@ -40,4 +40,8 @@ jobs:
             ./setup.sh
 
       - name: 🏃🏻‍♀️ Run hax
-        run: cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
+        run: |
+          echo $PATH
+          eval $(opam env)
+          echo $PATH
+          cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
