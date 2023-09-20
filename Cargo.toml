@@ -35,7 +35,7 @@ log = { version = "0.4", optional = true }
 wasm-bindgen = { version = "0.2.87", optional = true }
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dependencies]
-libjade-sys = { version = "=0.0.1", path = "sys/libjade" }
+libjade_sys = { version = "=0.0.2", path = "sys/libjade" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand"] }
