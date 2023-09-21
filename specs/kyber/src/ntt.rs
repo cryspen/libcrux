@@ -1,5 +1,5 @@
 use crate::parameters::{
-    KyberFieldElement, KyberPolynomialRingElement, COEFFICIENTS_IN_RING_ELEMENT,
+    KyberFieldElement, KyberPolynomialRingElement, KyberVector, COEFFICIENTS_IN_RING_ELEMENT,
 };
 
 use hacspec_lib::{field::FieldElement, PanickingIntegerCasts};
@@ -62,7 +62,7 @@ fn bit_rev_7(value: u8) -> u8 {
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-pub(crate) fn ntt(f: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
+fn ntt(f: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
     let mut f_hat = f;
     let mut k: u8 = 1;
 
@@ -225,6 +225,24 @@ fn base_case_multiply(
     c
 }
 
+pub(crate) fn vector_ntt(vector: KyberVector) -> KyberVector {
+    let mut vector_as_ntt = KyberVector::zero();
+    for (i, re) in vector.into_iter().enumerate() {
+        vector_as_ntt[i] = ntt(re)
+    }
+
+    vector_as_ntt
+}
+
+pub(crate) fn vector_inverse_ntt(vector_as_ntt: KyberVector) -> KyberVector {
+    let mut vector = KyberVector::zero();
+    for (i, re_ntt) in vector_as_ntt.into_iter().enumerate() {
+        vector[i] = ntt_inverse(re_ntt)
+    }
+
+    vector
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -242,7 +260,7 @@ mod tests {
 
     #[test]
     fn zeta() {
-        assert_eq!(FIELD_MODULUS - 1, ZETA.pow(128).into());
+        assert_eq!(FIELD_MODULUS - 1, ZETA.pow(128).value);
     }
 
     proptest! {

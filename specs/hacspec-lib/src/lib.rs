@@ -1,6 +1,7 @@
 pub mod bit_vector;
 pub mod field;
 pub mod ring;
+pub mod vector;
 
 pub trait PanickingIntegerCasts {
     fn as_u8(self) -> u8;

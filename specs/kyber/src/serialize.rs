@@ -1,4 +1,7 @@
-use crate::parameters::{KyberFieldElement, KyberPolynomialRingElement, BITS_PER_COEFFICIENT};
+use crate::parameters::{
+    KyberFieldElement, KyberPolynomialRingElement, KyberVector, BITS_PER_COEFFICIENT,
+    BYTES_PER_RING_ELEMENT, RANK,
+};
 use hacspec_lib::{
     bit_vector::{BitSlice, BitVector},
     PanickingIntegerCasts,
@@ -201,6 +204,27 @@ pub fn byte_decode(bits_per_coefficient: usize, re_bytes: &[u8]) -> KyberPolynom
     }
 
     re
+}
+
+pub(crate) fn vector_encode_12(vector: KyberVector) -> [u8; RANK * BYTES_PER_RING_ELEMENT] {
+    let mut out = [0u8; RANK * BYTES_PER_RING_ELEMENT];
+
+    for (i, re) in vector.into_iter().enumerate() {
+        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
+            .copy_from_slice(&byte_encode(12, re));
+    }
+
+    out
+}
+
+pub(crate) fn vector_decode_12(encoded: &[u8; RANK * BYTES_PER_RING_ELEMENT]) -> KyberVector {
+    let mut out = KyberVector::zero();
+
+    for (i, bytes) in encoded.chunks(BYTES_PER_RING_ELEMENT).enumerate() {
+        out[i] = byte_decode(12, bytes);
+    }
+
+    out
 }
 
 #[cfg(test)]
