@@ -73,12 +73,48 @@ impl From<ecdh::Error> for Error {
     }
 }
 
+pub struct Kyber768X25519PrivateKey {
+    pub kyber: Kyber768PrivateKey,
+    pub x25519: x25519::PrivateKey,
+}
+
+impl Kyber768X25519PrivateKey {
+    pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+        Ok(Self {
+            kyber: bytes[32..]
+                .try_into()
+                .map_err(|_| Error::InvalidPrivateKey)?,
+            x25519: bytes[..32]
+                .try_into()
+                .map_err(|_| Error::InvalidPrivateKey)?,
+        })
+    }
+}
+
 /// A KEM private key.
 pub enum PrivateKey {
     X25519(x25519::PrivateKey),
     P256(p256::PrivateKey),
     Kyber768(Kyber768PrivateKey),
-    Kyber768X25519(Kyber768PrivateKey, x25519::PrivateKey),
+    Kyber768X25519(Kyber768X25519PrivateKey),
+}
+
+pub struct Kyber768X25519PublicKey {
+    pub kyber: Kyber768PublicKey,
+    pub x25519: x25519::PublicKey,
+}
+
+impl Kyber768X25519PublicKey {
+    pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+        Ok(Self {
+            kyber: bytes[32..]
+                .try_into()
+                .map_err(|_| Error::InvalidPublicKey)?,
+            x25519: bytes[0..32]
+                .try_into()
+                .map_err(|_| Error::InvalidPublicKey)?,
+        })
+    }
 }
 
 /// A KEM public key.
@@ -86,7 +122,7 @@ pub enum PublicKey {
     X25519(x25519::PublicKey),
     P256(p256::PublicKey),
     Kyber768(Kyber768PublicKey),
-    Kyber768X25519(Kyber768PublicKey, x25519::PublicKey),
+    Kyber768X25519(Kyber768X25519PublicKey),
 }
 
 /// A KEM ciphertext
@@ -112,9 +148,9 @@ impl PrivateKey {
             PrivateKey::X25519(k) => k.0.to_vec(),
             PrivateKey::P256(k) => k.0.to_vec(),
             PrivateKey::Kyber768(k) => k.to_vec(),
-            PrivateKey::Kyber768X25519(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk);
+            PrivateKey::Kyber768X25519(Kyber768X25519PrivateKey { kyber, x25519 }) => {
+                let mut out = x25519.0.to_vec();
+                out.extend_from_slice(kyber);
                 out
             }
         }
@@ -139,10 +175,10 @@ impl PrivateKey {
                 let key: [u8; kyber768::SECRET_KEY_SIZE + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
                 let (ksk, xsk) = key.split_at(kyber768::SECRET_KEY_SIZE);
-                Ok(Self::Kyber768X25519(
-                    ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
-                    xsk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
-                ))
+                Ok(Self::Kyber768X25519(Kyber768X25519PrivateKey {
+                    kyber: ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
+                    x25519: xsk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
+                }))
             }
             _ => Err(Error::UnsupportedAlgorithm),
         }
@@ -156,11 +192,33 @@ impl PublicKey {
             PublicKey::X25519(k) => k.0.to_vec(),
             PublicKey::P256(k) => k.0.to_vec(),
             PublicKey::Kyber768(k) => k.to_vec(),
-            PublicKey::Kyber768X25519(kk, xk) => {
-                let mut out = xk.0.to_vec();
-                out.extend_from_slice(kk);
+            PublicKey::Kyber768X25519(Kyber768X25519PublicKey { kyber, x25519 }) => {
+                let mut out = x25519.0.to_vec();
+                out.extend_from_slice(kyber);
                 out
             }
+        }
+    }
+
+    /// Decode a public key.
+    pub fn decode(alg: Algorithm, bytes: &[u8]) -> Result<Self, Error> {
+        match alg {
+            Algorithm::X25519 => bytes
+                .try_into()
+                .map_err(|_| Error::InvalidPublicKey)
+                .map(|k| Self::X25519(k)),
+            Algorithm::Secp256r1 => bytes
+                .try_into()
+                .map_err(|_| Error::InvalidPublicKey)
+                .map(|k| Self::P256(k)),
+            Algorithm::Kyber768 => bytes
+                .try_into()
+                .map_err(|_| Error::InvalidPublicKey)
+                .map(|k| Self::Kyber768(k)),
+            Algorithm::Kyber768X25519 => {
+                Kyber768X25519PublicKey::decode(bytes).map(|k| Self::Kyber768X25519(k))
+            }
+            _ => Err(Error::UnsupportedAlgorithm),
         }
     }
 }
@@ -271,8 +329,14 @@ pub fn key_gen(
             let (kyber_private, kyber_public) = gen_kyber768(rng)?;
             let (x25519_private, x25519_public) = ecdh::x25519_key_gen(rng)?;
             Ok((
-                PrivateKey::Kyber768X25519(kyber_private, x25519_private),
-                PublicKey::Kyber768X25519(kyber_public, x25519_public),
+                PrivateKey::Kyber768X25519(Kyber768X25519PrivateKey {
+                    kyber: kyber_private,
+                    x25519: x25519_private,
+                }),
+                PublicKey::Kyber768X25519(Kyber768X25519PublicKey {
+                    kyber: kyber_public,
+                    x25519: x25519_public,
+                }),
             ))
         }
         _ => Err(Error::UnsupportedAlgorithm),
@@ -297,7 +361,10 @@ pub fn encapsulate(pk: &PublicKey, rng: &mut (impl CryptoRng + Rng)) -> Result<(
             kyber768_encaps(rng, pk).map(|(ss, ct)| (Ss::Kyber768(ss), Ct::Kyber768(ct)))
         }
 
-        PublicKey::Kyber768X25519(kpk, xpk) => {
+        PublicKey::Kyber768X25519(Kyber768X25519PublicKey {
+            kyber: kpk,
+            x25519: xpk,
+        }) => {
             let (kyber_ss, kyber_ct) = kyber768_encaps(rng, kpk)?;
             let (x_sk, x_pk) = ecdh::x25519_key_gen(rng)?;
             let x_ss = x25519::derive(xpk, &x_sk)?;
@@ -358,7 +425,11 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             Ok(Ss::Kyber768(ss))
         }
         Ct::Kyber768X25519(kct, xct) => {
-            let (ksk, xsk) = if let PrivateKey::Kyber768X25519(kk, xk) = sk {
+            let (ksk, xsk) = if let PrivateKey::Kyber768X25519(Kyber768X25519PrivateKey {
+                kyber: kk,
+                x25519: xk,
+            }) = sk
+            {
                 (kk, xk)
             } else {
                 return Err(Error::InvalidPrivateKey);

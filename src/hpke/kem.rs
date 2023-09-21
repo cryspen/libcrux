@@ -9,14 +9,15 @@ use super::kdf::*;
 
 /// ## Key Encapsulation Mechanisms (KEMs)
 ///
-/// | Value  | KEM                        | Nsecret  | Nenc | Npk | Nsk | Auth | Reference               |
-/// |:-------|:---------------------------|:---------|:-----|:----|:----|:-----|:------------------------|
-/// | 0x0000 | (reserved)                 | N/A      | N/A  | N/A | N/A | yes  | N/A                     |
-/// | 0x0010 | DHKEM(P-256, HKDF-SHA256)  | 32       | 65   | 65  | 32  | yes  | [NISTCurves], [RFC5869] |
-/// | 0x0011 | DHKEM(P-384, HKDF-SHA384)  | 48       | 97   | 97  | 48  | yes  | [NISTCurves], [RFC5869] |
-/// | 0x0012 | DHKEM(P-521, HKDF-SHA512)  | 64       | 133  | 133 | 66  | yes  | [NISTCurves], [RFC5869] |
-/// | 0x0020 | DHKEM(X25519, HKDF-SHA256) | 32       | 32   | 32  | 32  | yes  | [RFC7748], [RFC5869]    |
-/// | 0x0021 | DHKEM(X448, HKDF-SHA512)   | 64       | 56   | 56  | 56  | yes  | [RFC7748], [RFC5869]    |
+/// | Value  | KEM                        | Nsecret  | Nenc | Npk  | Nsk  | Auth | Reference               |
+/// |:-------|:---------------------------|:---------|:-----|:-----|:-----|:-----|:------------------------|
+/// | 0x0000 | (reserved)                 | N/A      | N/A  | N/A  | N/A  | yes  | N/A                     |
+/// | 0x0010 | DHKEM(P-256, HKDF-SHA256)  | 32       | 65   | 65   | 32   | yes  | [NISTCurves], [RFC5869] |
+/// | 0x0011 | DHKEM(P-384, HKDF-SHA384)  | 48       | 97   | 97   | 48   | yes  | [NISTCurves], [RFC5869] |
+/// | 0x0012 | DHKEM(P-521, HKDF-SHA512)  | 64       | 133  | 133  | 66   | yes  | [NISTCurves], [RFC5869] |
+/// | 0x0020 | DHKEM(X25519, HKDF-SHA256) | 32       | 32   | 32   | 32   | yes  | [RFC7748], [RFC5869]    |
+/// | 0x0021 | DHKEM(X448, HKDF-SHA512)   | 64       | 56   | 56   | 56   | yes  | [RFC7748], [RFC5869]    |
+/// | 0x0021 | DHKEM(X448, HKDF-SHA512)   | 64       | 1120 | 1216 | 2432 | no   | [xkyber]                |
 ///
 /// The `Auth` column indicates if the KEM algorithm provides the [`AuthEncap()`]/[`AuthDecap()`]
 /// interface and is therefore suitable for the Auth and AuthPSK modes. The meaning of all
@@ -43,6 +44,7 @@ use super::kdf::*;
 /// [NISTCurves]: https://doi.org/10.6028/nist.fips.186-4
 /// [RFC7748]: https://www.rfc-editor.org/info/rfc7748
 /// [RFC5869]: https://www.rfc-editor.org/info/rfc5869
+/// [xkyer]: https://datatracker.ietf.org/doc/html/draft-westerbaan-cfrg-hpke-xyber768d00-02
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum KEM {
     /// 0x0010
@@ -55,6 +57,8 @@ pub enum KEM {
     DHKEM_X25519_HKDF_SHA256,
     /// 0x0021
     DHKEM_X448_HKDF_SHA512,
+    /// 0x0030
+    X25519Kyber768Draft00,
 }
 
 /// [`u16`] value of the `kem_id`.
@@ -62,11 +66,12 @@ pub enum KEM {
 /// See [`KEM`] for details.
 pub fn kem_value(kem_id: KEM) -> u16 {
     match kem_id {
-        KEM::DHKEM_P256_HKDF_SHA256 => 0x0010u16,
-        KEM::DHKEM_P384_HKDF_SHA384 => 0x0011u16,
-        KEM::DHKEM_P521_HKDF_SHA512 => 0x0012u16,
-        KEM::DHKEM_X25519_HKDF_SHA256 => 0x00020u16,
-        KEM::DHKEM_X448_HKDF_SHA512 => 0x0021u16,
+        KEM::DHKEM_P256_HKDF_SHA256 => 0x0010,
+        KEM::DHKEM_P384_HKDF_SHA384 => 0x0011,
+        KEM::DHKEM_P521_HKDF_SHA512 => 0x0012,
+        KEM::DHKEM_X25519_HKDF_SHA256 => 0x00020,
+        KEM::DHKEM_X448_HKDF_SHA512 => 0x0021,
+        KEM::X25519Kyber768Draft00 => 0x0030,
     }
 }
 
@@ -80,6 +85,7 @@ fn kdf_for_kem(kem_id: KEM) -> KDF {
         KEM::DHKEM_P521_HKDF_SHA512 => KDF::HKDF_SHA512,
         KEM::DHKEM_X25519_HKDF_SHA256 => KDF::HKDF_SHA256,
         KEM::DHKEM_X448_HKDF_SHA512 => KDF::HKDF_SHA512,
+        KEM::X25519Kyber768Draft00 => KDF::HKDF_SHA256,
     }
 }
 
@@ -91,6 +97,7 @@ fn kem_to_named_group(alg: KEM) -> Algorithm {
         KEM::DHKEM_P521_HKDF_SHA512 => Algorithm::Secp521r1,
         KEM::DHKEM_X25519_HKDF_SHA256 => Algorithm::X25519,
         KEM::DHKEM_X448_HKDF_SHA512 => Algorithm::X448,
+        KEM::X25519Kyber768Draft00 => Algorithm::X25519, // This is only used for DH operations
     }
 }
 
@@ -104,6 +111,7 @@ pub fn Nsecret(kem_id: KEM) -> usize {
         KEM::DHKEM_P521_HKDF_SHA512 => 64,
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 64,
+        KEM::X25519Kyber768Draft00 => 64,
     }
 }
 
@@ -117,6 +125,7 @@ pub fn Nenc(kem_id: KEM) -> usize {
         KEM::DHKEM_P521_HKDF_SHA512 => 133,
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
+        KEM::X25519Kyber768Draft00 => 1120,
     }
 }
 
@@ -130,6 +139,7 @@ pub fn Nsk(kem_id: KEM) -> usize {
         KEM::DHKEM_P521_HKDF_SHA512 => 66,
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
+        KEM::X25519Kyber768Draft00 => 2432,
     }
 }
 
@@ -143,18 +153,20 @@ pub fn Npk(kem_id: KEM) -> usize {
         KEM::DHKEM_P521_HKDF_SHA512 => 133,
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
+        KEM::X25519Kyber768Draft00 => 1216,
     }
 }
 
 /// The length in bytes of a Diffie-Hellman shared secret produced by [`DH()`].
 ///
-/// |        | [`Ndh`] |
-/// | ------ | ------- |
-/// | P-256  | 32      |
-/// | P-384  | 48      |
-/// | P-521  | 66      |
-/// | X25519 | 32      |
-/// | X448   | 56      |
+/// |                | [`Ndh`] |
+/// | -------------- | ------- |
+/// | P-256          | 32      |
+/// | P-384          | 48      |
+/// | P-521          | 66      |
+/// | X25519         | 32      |
+/// | X448           | 56      |
+/// | X448Kyber768   | 32      |
 pub fn Ndh(kem_id: KEM) -> usize {
     match kem_id {
         KEM::DHKEM_P256_HKDF_SHA256 => 32,
@@ -162,6 +174,7 @@ pub fn Ndh(kem_id: KEM) -> usize {
         KEM::DHKEM_P521_HKDF_SHA512 => 66,
         KEM::DHKEM_X25519_HKDF_SHA256 => 32,
         KEM::DHKEM_X448_HKDF_SHA512 => 56,
+        KEM::X25519Kyber768Draft00 => 32,
     }
 }
 
@@ -227,13 +240,17 @@ fn suite_id(alg: KEM) -> Vec<u8> {
 /// Diffie-Hellman shared secret is equal to 32, 48, and 66, respectively,
 /// corresponding to the x-coordinate of the resulting elliptic curve point.
 /// For X25519 and X448, the size [`Ndh`] of is equal to 32 and 56, respectively.
-fn shared_secret_from_dh(alg: KEM, mut secret: Vec<u8>) -> Vec<u8> {
+fn shared_secret_from_dh(alg: KEM, mut secret: Vec<u8>) -> Result<SharedSecret, HpkeError> {
     match alg {
-        KEM::DHKEM_P256_HKDF_SHA256 => secret.drain(0..Ndh(alg)).collect(),
-        KEM::DHKEM_P384_HKDF_SHA384 => secret.drain(0..Ndh(alg)).collect(),
-        KEM::DHKEM_P521_HKDF_SHA512 => secret.drain(0..Ndh(alg)).collect(),
-        KEM::DHKEM_X25519_HKDF_SHA256 => secret,
-        KEM::DHKEM_X448_HKDF_SHA512 => secret,
+        KEM::DHKEM_P256_HKDF_SHA256 => Ok(secret.drain(0..Ndh(alg)).collect()),
+        KEM::DHKEM_P384_HKDF_SHA384 => Ok(secret.drain(0..Ndh(alg)).collect()),
+        KEM::DHKEM_P521_HKDF_SHA512 => Ok(secret.drain(0..Ndh(alg)).collect()),
+        KEM::DHKEM_X25519_HKDF_SHA256 => Ok(secret),
+        KEM::DHKEM_X448_HKDF_SHA512 => Ok(secret),
+        KEM::X25519Kyber768Draft00 => {
+            // This is only the x25519 part.
+            Ok(secret)
+        }
     }
 }
 
@@ -244,15 +261,15 @@ fn shared_secret_from_dh(alg: KEM, mut secret: Vec<u8>) -> Vec<u8> {
 /// [validation](#validation-of-inputs-and-outputs).
 pub fn DH(alg: KEM, sk: &PrivateKeyIn, pk: &PublicKeyIn) -> Result<SharedSecret, HpkeError> {
     match crate::ecdh::derive(kem_to_named_group(alg).try_into().unwrap(), pk, sk) {
-        Ok(secret) => HpkeBytesResult::Ok(shared_secret_from_dh(alg, secret)),
-        Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
+        Ok(secret) => shared_secret_from_dh(alg, secret),
+        Err(_) => Err(HpkeError::ValidationError),
     }
 }
 
 fn pk(alg: KEM, sk: &PrivateKeyIn) -> Result<PublicKey, HpkeError> {
     match crate::kem::secret_to_public(kem_to_named_group(alg), sk) {
-        Ok(pk) => HpkeBytesResult::Ok(pk),
-        Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
+        Ok(pk) => Ok(pk),
+        Err(_) => Err(HpkeError::ValidationError),
     }
 }
 
@@ -284,6 +301,7 @@ pub fn SerializePublicKey(alg: KEM, pk: PublicKey) -> PublicKey {
         KEM::DHKEM_P521_HKDF_SHA512 => nist_curve_to_uncompressed(pk),
         KEM::DHKEM_X25519_HKDF_SHA256 => pk,
         KEM::DHKEM_X448_HKDF_SHA512 => pk,
+        KEM::X25519Kyber768Draft00 => pk, // This must have been encoded before
     }
 }
 
@@ -300,12 +318,13 @@ fn nist_curve_from_uncompressed(pk: &PublicKeyIn) -> Vec<u8> {
 /// public key. This function can raise a `DeserializeError` error upon `pkXm`
 /// deserialization failure.
 pub fn DeserializePublicKey(alg: KEM, enc: &[u8]) -> HpkeBytesResult {
-    HpkeBytesResult::Ok(match alg {
+    Ok(match alg {
         KEM::DHKEM_P256_HKDF_SHA256 => nist_curve_from_uncompressed(enc),
         KEM::DHKEM_P384_HKDF_SHA384 => nist_curve_from_uncompressed(enc),
         KEM::DHKEM_P521_HKDF_SHA512 => nist_curve_from_uncompressed(enc),
         KEM::DHKEM_X25519_HKDF_SHA256 => enc.to_vec(),
         KEM::DHKEM_X448_HKDF_SHA512 => enc.to_vec(),
+        KEM::X25519Kyber768Draft00 => enc.to_vec(), // Deserialization must be done later
     })
 }
 
@@ -461,7 +480,13 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
 
 /// Randomized algorithm to generate a key pair `(skX, pkX)`.
 pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, HpkeError> {
-    if randomness.len() != Nsk(alg) {
+    if randomness.len() != Nsecret(alg) {
+        debug_assert!(
+            false,
+            "Invalid randomness. Got {}, expected {}",
+            randomness.len(),
+            Nsk(alg)
+        );
         Err(HpkeError::InvalidParameters)
     } else {
         DeriveKeyPair(alg, &randomness)
@@ -490,6 +515,25 @@ pub fn Encap(alg: KEM, pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult
 
     let shared_secret = ExtractAndExpand(alg, suite_id(alg), dh, &kem_context)?;
     EncapResult::Ok((shared_secret, enc))
+}
+
+/// Kyber Encap
+///
+/// FIXME: vec conversions and unwraps
+pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult {
+    crate::kem::kyber768_encapsulate_derand(pkR.try_into().unwrap(), randomness.try_into().unwrap())
+        .map(|(ct, ss)| (ss.to_vec(), ct.to_vec()))
+        .map_err(|_| HpkeError::EncapError)
+}
+
+/// Kyber Decap
+///
+/// FIXME: vec conversions and unwraps
+pub fn Kyber768Draft00_Decap(skR: &PrivateKeyIn, enc: &[u8]) -> Result<SharedSecret, HpkeError> {
+    Ok(
+        crate::kem::kyber768_decapsulate_derand(skR.try_into().unwrap(), enc.try_into().unwrap())
+            .to_vec(),
+    )
 }
 
 /// ```text
