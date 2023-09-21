@@ -1,7 +1,4 @@
-use crate::{
-    field::FieldElement,
-    ring::PolynomialRingElement
-};
+use crate::{field::FieldElement, ring::PolynomialRingElement};
 use std::ops::{self, Index, IndexMut};
 
 #[derive(Debug, Clone, Copy)]
@@ -9,14 +6,12 @@ pub struct Vector<F: FieldElement, const COEFFICIENTS: usize, const SIZE: usize>
     values: [PolynomialRingElement<F, COEFFICIENTS>; SIZE],
 }
 impl<const LEN: usize, F: FieldElement, const COEFFICIENTS: usize> Vector<F, COEFFICIENTS, LEN> {
+    pub const ZERO: Self = Self {
+        values: [PolynomialRingElement::<F, COEFFICIENTS>::ZERO; LEN],
+    };
+
     pub fn len(&self) -> usize {
         LEN
-    }
-
-    pub fn zero() -> Self {
-        Self {
-            values: [PolynomialRingElement::<F, COEFFICIENTS>::ZERO; LEN],
-        }
     }
 
     pub fn iter(&self) -> std::slice::Iter<PolynomialRingElement<F, COEFFICIENTS>> {

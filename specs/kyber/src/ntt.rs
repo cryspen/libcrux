@@ -226,7 +226,7 @@ fn base_case_multiply(
 }
 
 pub(crate) fn vector_ntt(vector: KyberVector) -> KyberVector {
-    let mut vector_as_ntt = KyberVector::zero();
+    let mut vector_as_ntt = KyberVector::ZERO;
     for (i, re) in vector.into_iter().enumerate() {
         vector_as_ntt[i] = ntt(re)
     }
@@ -235,7 +235,7 @@ pub(crate) fn vector_ntt(vector: KyberVector) -> KyberVector {
 }
 
 pub(crate) fn vector_inverse_ntt(vector_as_ntt: KyberVector) -> KyberVector {
-    let mut vector = KyberVector::zero();
+    let mut vector = KyberVector::ZERO;
     for (i, re_ntt) in vector_as_ntt.into_iter().enumerate() {
         vector[i] = ntt_inverse(re_ntt)
     }

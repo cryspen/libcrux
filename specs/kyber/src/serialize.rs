@@ -218,7 +218,7 @@ pub(crate) fn vector_encode_12(vector: KyberVector) -> [u8; RANK * BYTES_PER_RIN
 }
 
 pub(crate) fn vector_decode_12(encoded: &[u8; RANK * BYTES_PER_RING_ELEMENT]) -> KyberVector {
-    let mut out = KyberVector::zero();
+    let mut out = KyberVector::ZERO;
 
     for (i, bytes) in encoded.chunks(BYTES_PER_RING_ELEMENT).enumerate() {
         out[i] = byte_decode(12, bytes);

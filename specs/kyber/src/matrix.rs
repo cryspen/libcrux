@@ -4,7 +4,7 @@ use crate::{
 };
 
 pub(crate) fn transpose(matrix: &[KyberVector; RANK]) -> [KyberVector; RANK] {
-    let mut transpose = [KyberVector::zero(); RANK];
+    let mut transpose = [KyberVector::ZERO; RANK];
     for (i, row) in matrix.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {
             transpose[j][i] = *matrix_element;
@@ -23,7 +23,7 @@ pub(crate) fn multiply_matrix_by_column(
     matrix: &[KyberVector; RANK],
     vector: &KyberVector,
 ) -> KyberVector {
-    let mut result = KyberVector::zero();
+    let mut result = KyberVector::ZERO;
 
     let transposed = transpose(&matrix);
     for (i, row) in transposed.iter().enumerate() {

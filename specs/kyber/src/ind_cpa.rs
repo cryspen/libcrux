@@ -104,7 +104,7 @@ pub(crate) fn generate_keypair(
     //         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
     //     end for
     // end for
-    let mut A_as_ntt = [KyberVector::zero(); RANK];
+    let mut A_as_ntt = [KyberVector::ZERO; RANK];
 
     let mut xof_input: [u8; 34] = seed_for_A.into_padded_array();
 
@@ -122,7 +122,7 @@ pub(crate) fn generate_keypair(
     //     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
     //     N ← N + 1
     // end for
-    let mut secret = KyberVector::zero();
+    let mut secret = KyberVector::ZERO;
 
     let mut prf_input: [u8; 33] = seed_for_secret_and_error.into_padded_array();
 
@@ -140,7 +140,7 @@ pub(crate) fn generate_keypair(
     //     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
     //     N ← N + 1
     // end for
-    let mut error = KyberVector::zero();
+    let mut error = KyberVector::ZERO;
 
     for i in 0..error.len() {
         prf_input[32] = domain_separator;
@@ -237,7 +237,7 @@ pub(crate) fn encrypt(
     let mut domain_separator: u8 = 0;
 
     // t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
-    let mut t_as_ntt = KyberVector::zero();
+    let mut t_as_ntt = KyberVector::ZERO;
     for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
         .chunks(BYTES_PER_RING_ELEMENT)
         .enumerate()
@@ -253,7 +253,7 @@ pub(crate) fn encrypt(
     //         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
     //     end for
     // end for
-    let mut A_as_ntt = [KyberVector::zero(); RANK];
+    let mut A_as_ntt = [KyberVector::ZERO; RANK];
 
     let mut xof_input: [u8; 34] = seed_for_A.into_padded_array();
 
@@ -271,7 +271,7 @@ pub(crate) fn encrypt(
     //     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
     //     N ← N + 1
     // end for
-    let mut r = KyberVector::zero();
+    let mut r = KyberVector::ZERO;
 
     let mut prf_input: [u8; 33] = randomness.into_padded_array();
 
@@ -289,7 +289,7 @@ pub(crate) fn encrypt(
     //     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
     //     N ← N + 1
     // end for
-    let mut error_1 = KyberVector::zero();
+    let mut error_1 = KyberVector::ZERO;
     for i in 0..error_1.len() {
         prf_input[32] = domain_separator;
         domain_separator += 1;
@@ -364,7 +364,7 @@ pub(crate) fn decrypt(
     ciphertext: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
 ) -> [u8; CPA_PKE_MESSAGE_SIZE] {
     // u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
-    let mut u = KyberVector::zero();
+    let mut u = KyberVector::ZERO;
     for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
         .chunks((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
         .enumerate()
@@ -385,7 +385,7 @@ pub(crate) fn decrypt(
     );
 
     // ŝ ← ByteDecode₁₂(dkₚₖₑ)
-    let mut secret_as_ntt = KyberVector::zero();
+    let mut secret_as_ntt = KyberVector::ZERO;
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
         secret_as_ntt[i] = byte_decode(12, secret_bytes);
     }
