@@ -89,6 +89,12 @@ impl Kyber768X25519PrivateKey {
                 .map_err(|_| Error::InvalidPrivateKey)?,
         })
     }
+
+    pub fn encode(&self) -> Vec<u8> {
+        let mut out = self.x25519.0.to_vec();
+        out.extend_from_slice(&self.kyber);
+        out
+    }
 }
 
 /// A KEM private key.
@@ -114,6 +120,12 @@ impl Kyber768X25519PublicKey {
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)?,
         })
+    }
+
+    pub fn encode(&self) -> Vec<u8> {
+        let mut out = self.x25519.0.to_vec();
+        out.extend_from_slice(&self.kyber);
+        out
     }
 }
 
@@ -148,11 +160,7 @@ impl PrivateKey {
             PrivateKey::X25519(k) => k.0.to_vec(),
             PrivateKey::P256(k) => k.0.to_vec(),
             PrivateKey::Kyber768(k) => k.to_vec(),
-            PrivateKey::Kyber768X25519(Kyber768X25519PrivateKey { kyber, x25519 }) => {
-                let mut out = x25519.0.to_vec();
-                out.extend_from_slice(kyber);
-                out
-            }
+            PrivateKey::Kyber768X25519(k) => k.encode(),
         }
     }
 
@@ -192,11 +200,7 @@ impl PublicKey {
             PublicKey::X25519(k) => k.0.to_vec(),
             PublicKey::P256(k) => k.0.to_vec(),
             PublicKey::Kyber768(k) => k.to_vec(),
-            PublicKey::Kyber768X25519(Kyber768X25519PublicKey { kyber, x25519 }) => {
-                let mut out = x25519.0.to_vec();
-                out.extend_from_slice(kyber);
-                out
-            }
+            PublicKey::Kyber768X25519(k) => k.encode(),
         }
     }
 

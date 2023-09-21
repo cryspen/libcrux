@@ -2,6 +2,7 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
+use crate::kem;
 use crate::kem::*;
 
 use super::errors::*;
@@ -485,11 +486,47 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
             false,
             "Invalid randomness. Got {}, expected {}",
             randomness.len(),
-            Nsk(alg)
+            Nsecret(alg)
         );
         Err(HpkeError::InvalidParameters)
     } else {
-        DeriveKeyPair(alg, &randomness)
+        match alg {
+            KEM::DHKEM_P256_HKDF_SHA256
+            | KEM::DHKEM_P384_HKDF_SHA384
+            | KEM::DHKEM_P521_HKDF_SHA512
+            | KEM::DHKEM_X25519_HKDF_SHA256
+            | KEM::DHKEM_X448_HKDF_SHA512 => DeriveKeyPair(alg, &randomness),
+            KEM::X25519Kyber768Draft00 => {
+                let dkp_prk = LabeledExtract(
+                    kdf_for_kem(alg),
+                    suite_id(alg),
+                    &empty(),
+                    dkp_prk_label(),
+                    &randomness,
+                )?;
+                let seed = LabeledExpand(
+                    kdf_for_kem(alg),
+                    suite_id(alg),
+                    &dkp_prk,
+                    sk_label(),
+                    &empty(),
+                    32 + 64,
+                )?;
+                let (xsk, xpk) = DeriveKeyPair(alg, &seed[..32])?;
+                let (kpk, ksk) =
+                    kem::kyber768_generate_keypair_derand(seed[32..].try_into().unwrap()).unwrap();
+
+                let private = Kyber768X25519PrivateKey {
+                    kyber: ksk,
+                    x25519: crate::ecdh::x25519::PrivateKey(xsk.try_into().unwrap()),
+                };
+                let public = Kyber768X25519PublicKey {
+                    kyber: kpk,
+                    x25519: crate::ecdh::x25519::PublicKey(xpk.try_into().unwrap()),
+                };
+                Ok((private.encode(), public.encode()))
+            }
+        }
     }
 }
 
