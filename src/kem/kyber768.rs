@@ -1,3 +1,10 @@
+// This module is declared here since otherwise, hax reports the following error:
+//
+// The THIR body of item
+// DefId(0:986 ~ libcrux[92b3]::kem::kyber768::parameters::COEFFICIENTS_IN_RING_ELEMENT)
+// was stolen.
+//
+// This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 mod parameters;
 
 mod arithmetic;
