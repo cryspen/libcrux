@@ -1,11 +1,10 @@
-mod parameters;
-
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
 mod conversions;
 mod ind_cpa;
 mod ntt;
+mod parameters;
 mod sampling;
 mod serialize;
 
