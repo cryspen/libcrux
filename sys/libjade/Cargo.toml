@@ -1,5 +1,5 @@
 [package]
-name = "libjade_sys"
+name = "libjade-sys"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -11,7 +11,7 @@ readme = "Readme.md"
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
-libcrux_platform = { version = "=0.0.2", path = "../platform" }
+libcrux-platform = { version = "=0.0.2", path = "../platform" }
 
 [target.'cfg(not(windows))'.build-dependencies]
 bindgen = { version = "0.68", optional = true }

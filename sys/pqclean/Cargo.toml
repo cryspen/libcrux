@@ -1,5 +1,5 @@
 [package]
-name = "libcrux_pqclean"
+name = "libcrux-pqclean"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

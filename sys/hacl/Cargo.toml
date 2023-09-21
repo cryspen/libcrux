@@ -1,5 +1,5 @@
 [package]
-name = "libcrux_hacl"
+name = "libcrux-hacl"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -12,7 +12,7 @@ crate-type = ["cdylib", "rlib"]
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
-libcrux_platform = { version = "=0.0.2", path = "../platform" }
+libcrux-platform = { version = "=0.0.2", path = "../platform" }
 bindgen = { version = "0.68", optional = true }
 
 [features]

@@ -1,5 +1,5 @@
 [package]
-name = "libcrux_platform"
+name = "libcrux-platform"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

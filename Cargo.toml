@@ -24,11 +24,11 @@ exclude = ["/tests"]
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [build-dependencies]
-libcrux_platform = { version = "=0.0.2", path = "sys/platform" }
+libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 
 [dependencies]
-libcrux_hacl = { version = "=0.0.2", path = "sys/hacl" }
-libcrux_platform = { version = "=0.0.2", path = "sys/platform" }
+libcrux-hacl = { version = "=0.0.2", path = "sys/hacl" }
+libcrux-platform = { version = "=0.0.2", path = "sys/platform" }
 rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
@@ -39,7 +39,7 @@ wasm-bindgen = { version = "0.2.87", optional = true }
 getrandom = { version = "0.2", features = ["js"] }
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dependencies]
-libjade_sys = { version = "=0.0.2", path = "sys/libjade" }
+libjade-sys = { version = "=0.0.2", path = "sys/libjade" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand"] }
@@ -65,7 +65,7 @@ wasm-bindgen-test = "0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = "0.5"
-libcrux_pqclean = { version = "*", path = "sys/pqclean" }
+libcrux-pqclean = { version = "*", path = "sys/pqclean" }
 
 # Benchmarking "OpenSSL"
 # XXX: We don't do this for Windows or wasm right now.
