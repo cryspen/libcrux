@@ -5,8 +5,10 @@ members = ["sys/hacl", "sys/libjade", "sys/platform", "sys/pqclean"]
 version = "0.0.2"
 authors = ["Cryspen"]
 license = "Apache-2.0"
-homepage = "https://github.com/cryspen/libcrux/"
+homepage = "https://github.com/cryspen/libcrux"
 edition = "2021"
+repository = "https://github.com/cryspen/libcrux"
+readme = "Readme.md"
 
 [package]
 name = "libcrux"
@@ -14,10 +16,11 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
 documentation = "https://docs.rs/libcrux/"
 description = "The Formally Verified Cryptography Library"
-readme = "Readme.md"
-repository = "https://github.com/cryspen/libcrux"
 exclude = ["/tests"]
 
 [lib]
