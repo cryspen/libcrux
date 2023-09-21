@@ -34,6 +34,10 @@ log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 
+# WASM needs the js feature on getrandom
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2", features = ["js"] }
+
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dependencies]
 libjade_sys = { version = "=0.0.2", path = "sys/libjade" }
 
