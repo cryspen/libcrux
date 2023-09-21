@@ -90,7 +90,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
                 (key_pair.sk().clone(), ciphertext)
             },
             |(secret_key, ciphertext)| {
-                let _shared_secret = hacspec_kyber::decapsulate(secret_key, ciphertext);
+                let _shared_secret = hacspec_kyber::decapsulate(ciphertext, secret_key);
             },
             BatchSize::SmallInput,
         )

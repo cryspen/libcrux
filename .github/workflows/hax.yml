@@ -3,8 +3,16 @@ name: hax
 on:
   push:
     branches: ["dev"]
+    paths:
+      - 'specs/kyber/src/**'
+      - 'src/kem/kyber768/**'
+      - 'src/kem/kyber768.rs'
   pull_request:
     branches: ["dev"]
+    paths:
+      - 'specs/kyber/src/**'
+      - 'src/kem/kyber768/**'
+      - 'src/kem/kyber768.rs'
   workflow_dispatch:
 
 env:
@@ -39,7 +47,13 @@ jobs:
           sudo apt-get install --yes nodejs
           ./setup.sh
 
-      - name: 🏃🏻‍♀️ Run hax
+      - name: 🏃🏻‍♀️ Run hax on Kyber reference implementation
         run: |
           eval $(opam env)
           cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
+
+      - name: 🏃🏻‍♀️ Run hax on Kyber specification
+        working-directory: specs/kyber
+        run: |
+          eval $(opam env)
+          cargo hax into fstar
