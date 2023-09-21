@@ -3,8 +3,16 @@ name: hax
 on:
   push:
     branches: ["dev"]
+    paths:
+      'specs/kyber/src/**'
+      'src/kem/kyber768/**'
+      'src/kem/kyber768.rs'
   pull_request:
     branches: ["dev"]
+    paths:
+      'specs/kyber/src/**'
+      'src/kem/kyber768/**'
+      'src/kem/kyber768.rs'
   workflow_dispatch:
 
 env:
