@@ -38,6 +38,17 @@ impl<const MODULUS: u16> FieldElement for PrimeFieldElement<MODULUS> {
 }
 
 impl<const MODULUS: u16> PrimeFieldElement<MODULUS> {
+    pub fn pow(&self, exponent: u8) -> Self {
+        let mut result = Self::new(1);
+        for _ in 0..exponent {
+            result = result * (*self);
+        }
+
+        result
+    }
+}
+
+impl<const MODULUS: u16> PrimeFieldElement<MODULUS> {
     pub const MODULUS: u16 = MODULUS;
 }
 

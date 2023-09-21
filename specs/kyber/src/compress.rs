@@ -1,57 +1,58 @@
 use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
 
-/// According to the Kyber Round 3 specification, compressing a polynomial
+/// According to the NIST FIPS 203 standard, compressing a polynomial
 /// ring element is accomplished by `compress()`ing its constituent field
 /// coefficients.
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub fn compress(
     re: KyberPolynomialRingElement,
     bits_per_compressed_coefficient: usize,
 ) -> KyberPolynomialRingElement {
     KyberPolynomialRingElement::new(
         re.coefficients()
-            .map(|coefficient| compress_q(coefficient, bits_per_compressed_coefficient)),
+            .map(|coefficient| compress_d(coefficient, bits_per_compressed_coefficient)),
     )
 }
 
-/// According to the Kyber Round 3 specification, decompressing a polynomial
+/// According to the NIST FIPS 203 standard, compressing a polynomial
 /// ring element is accomplished by `decompress()`ing its constituent field
 /// coefficients.
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 pub fn decompress(
     re: KyberPolynomialRingElement,
     bits_per_compressed_coefficient: usize,
 ) -> KyberPolynomialRingElement {
     KyberPolynomialRingElement::new(
         re.coefficients()
-            .map(|coefficient| decompress_q(coefficient, bits_per_compressed_coefficient)),
+            .map(|coefficient| decompress_d(coefficient, bits_per_compressed_coefficient)),
     )
 }
 
-/// This function implements the `Compress` function defined on Page 5 of the
-/// Kyber Round 3 specification, which is defined as:
+/// This function implements the `Compress` function defined on Page 18 of the
+/// NIST FIPS 203 standard, which is defined as:
 ///
 /// ```plaintext
-/// Compress_q(x, d) = round((2^{d} / q) * x) mod^{+}2^{d}
+/// Compress_d: ℤq -> ℤ_{2ᵈ}
+/// Compress_d(x) = ⌈(2ᵈ/q)·x⌋
 /// ```
 ///
-/// Since `round(x) = floor(x + 0.5)` we have:
+/// Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
 ///
 /// ```plaintext
-/// Compress_q(x,d) = floor(x*2^d/q + 1/2) mod^{+}2^d
-///                 = floor((2^{d+1} * x + q) / 2q) mod^{+}2^d
+/// Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
+///               = ⌊(2^{d+1}·x + q) / 2q⌋
 /// ```
 ///
 /// this latter expression is what the code computes, since it enables us to
-/// avoid the use of floating point arithmetic.
+/// avoid the use of floating point computations as required by the standard.
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
-fn compress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+fn compress_d(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
 
     let two_pow_bit_size = 2u32.pow(to_bit_size.try_into().unwrap_or_else(|_| {
@@ -68,26 +69,27 @@ fn compress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     (compressed % two_pow_bit_size).into()
 }
 
-/// This function implements the `Decompress` function defined on Page 5 of
-/// the Kyber Round 3 secification, which is defined as:
+/// This function implements the `Decompress` function defined on Page 18 of the
+/// NIST FIPS 203 standard, which is defined as:
 ///
 /// ```plaintext
-/// Decompress_q(x, d) = round((q / 2^{d}) * x)
+/// Decompress_d: ℤ_{2ᵈ} -> ℤq
+/// Decompress_d(y) = ⌈(q/2ᵈ)·y⌋
 /// ```
 ///
-/// Since `round(x) = floor(x + 0.5)` we have:
+/// Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
 ///
 /// ```plaintext
-/// Decompress_q(x,d) = floor((x * q) / 2^d + 1/2)
-///                   = floor((2 * x * q + 2^d) / 2^{d+1})
+/// Decompress_d(y) = ⌊(q/2ᵈ)·y + 1/2⌋
+///                 = ⌊(2·y·q + 2ᵈ) / 2^{d+1})⌋
 /// ```
 ///
 /// this latter expression is what the code computes, since it enables us to
-/// avoid the use of floating point arithmetic.
+/// avoid the use of floating point computations as required by the standard.
 ///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
-fn decompress_q(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+fn decompress_d(fe: KyberFieldElement, to_bit_size: usize) -> KyberFieldElement {
     assert!(to_bit_size <= parameters::BITS_PER_COEFFICIENT);
 
     let decompressed = (2 * u32::from(fe.value) * u32::from(KyberFieldElement::MODULUS)
@@ -122,7 +124,7 @@ pub(crate) mod tests {
     }
 
     // TODO: Check that for a randomly chosen x in Z_q, the expression:
-    // Decompress_q(Compress_q(x, d), d) - x mod q
+    // decompress_d(compress_d(x, d), d) - x mod q
     // is almost uniform over the integers of magnitude at most B_q, where
     // B_q = round(q / 2^{d + 1})
     proptest! {
