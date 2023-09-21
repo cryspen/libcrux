@@ -36,7 +36,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             },
             |(mut rng, public_key)| {
                 let (_shared_secret, _ciphertext) =
-                    libcrux::kem::encapsulate(Algorithm::Kyber768, &public_key, &mut rng).unwrap();
+                    libcrux::kem::encapsulate(&public_key, &mut rng).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -68,12 +68,11 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
                 let (secret_key, public_key) =
                     libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
                 let (_shared_secret, ciphertext) =
-                    libcrux::kem::encapsulate(Algorithm::Kyber768, &public_key, &mut drbg).unwrap();
+                    libcrux::kem::encapsulate(&public_key, &mut drbg).unwrap();
                 (secret_key, ciphertext)
             },
             |(secret_key, ciphertext)| {
-                let _shared_secret =
-                    libcrux::kem::decapsulate(Algorithm::Kyber768, &ciphertext, &secret_key);
+                let _shared_secret = libcrux::kem::decapsulate(&ciphertext, &secret_key);
             },
             BatchSize::SmallInput,
         )
