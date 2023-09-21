@@ -7,6 +7,7 @@ use parameters::{
 
 mod compress;
 mod ind_cpa;
+mod matrix;
 mod ntt;
 mod parameters;
 mod sampling;
