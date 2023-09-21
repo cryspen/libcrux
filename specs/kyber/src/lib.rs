@@ -1,3 +1,10 @@
+// This module is declared here since otherwise, hax reports the following error:
+//
+// The THIR body of item
+// DefId(0:313 ~ hacspec_kyber[4591]::parameters::KyberFieldElement::{constant#0})
+// was stolen.
+//
+// This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 mod parameters;
 
 use hacspec_lib::{ArrayConversion, UpdatingArray2};
