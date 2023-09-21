@@ -1,0 +1,45 @@
+name: hax
+
+on:
+  push:
+    branches: ["dev"]
+  pull_request:
+    branches: ["dev"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hax:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔨 OCaml Setup
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.14.1
+
+      - name: ⤵ Clone hax repository
+        uses: actions/checkout@v4
+        with:
+          repository: hacspec/hacspec-v2
+          path: hax
+
+      - name: 🔨 Setup hax
+        working-directory: hax
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes nodejs
+          ./setup.sh
+
+      - name: 🏃🏻‍♀️ Run hax
+        run: |
+          eval $(opam env)
+          cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
