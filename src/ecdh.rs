@@ -157,12 +157,12 @@ pub(crate) mod x25519 {
         all(target_arch = "x86_64", any(not(bmi2), not(adx))),
         target_arch = "x86"
     ))]
-    pub(crate) fn derive(p: &PublicKey, p: &PrivateKey) -> Result<PublicKey, Error> {
+    pub(crate) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         use crate::hacl::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 
-        curve25519::vale::ecdh(s, p)
+        curve25519::ecdh(s, p)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
             .map(|p| PublicKey(p))
         // XXX: not verified yet
