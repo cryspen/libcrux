@@ -1,3 +1,5 @@
+mod parameters;
+
 use hacspec_lib::{ArrayConversion, UpdatingArray2};
 use parameters::{
     hash_functions::{G, H, H_DIGEST_SIZE, J},
@@ -9,7 +11,6 @@ mod compress;
 mod ind_cpa;
 mod matrix;
 mod ntt;
-mod parameters;
 mod sampling;
 mod serialize;
 
