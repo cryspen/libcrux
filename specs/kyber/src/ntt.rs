@@ -231,13 +231,18 @@ mod tests {
 
     use proptest::prelude::*;
 
-    use crate::compress::tests::arb_ring_element;
+    use crate::{compress::tests::arb_ring_element, parameters::FIELD_MODULUS};
 
     #[test]
     fn seven_bit_reverse() {
         assert_eq!(64, bit_rev_7(1));
         assert_eq!(127, bit_rev_7(255));
         assert_eq!(78, bit_rev_7(185));
+    }
+
+    #[test]
+    fn zeta() {
+        assert_eq!(FIELD_MODULUS - 1, ZETA.pow(128).into());
     }
 
     proptest! {

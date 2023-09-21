@@ -1,6 +1,7 @@
 use crate::{
     ntt::multiply_ntts,
-    parameters::{KyberPolynomialRingElement, RANK},
+    parameters::{KyberPolynomialRingElement, BYTES_PER_RING_ELEMENT, RANK},
+    serialize::{byte_decode, byte_encode},
 };
 
 pub(crate) fn transpose(
@@ -16,7 +17,12 @@ pub(crate) fn transpose(
     transpose
 }
 
-pub(crate) fn multiply_matrix_transpose_by_column(
+/// N.B.: According to the NIST FIPS 203 standard (Page 9, Line 519), a matrix is
+/// a set of column vectors.
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+pub(crate) fn multiply_matrix_by_column(
     matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
     vector: &[KyberPolynomialRingElement; RANK],
 ) -> [KyberPolynomialRingElement; RANK] {
@@ -43,4 +49,29 @@ pub(crate) fn multiply_column_by_row(
     }
 
     result
+}
+
+pub(crate) fn encode_vector_12(
+    re_vector: [KyberPolynomialRingElement; RANK],
+) -> [u8; RANK * BYTES_PER_RING_ELEMENT] {
+    let mut out = [0u8; RANK * BYTES_PER_RING_ELEMENT];
+
+    for (i, re) in re_vector.into_iter().enumerate() {
+        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
+            .copy_from_slice(&byte_encode(12, re));
+    }
+
+    out
+}
+
+pub(crate) fn decode_vector_12(
+    encoded: &[u8; RANK * BYTES_PER_RING_ELEMENT],
+) -> [KyberPolynomialRingElement; RANK] {
+    let mut out = [KyberPolynomialRingElement::ZERO; RANK];
+
+    for (i, bytes) in encoded.chunks(BYTES_PER_RING_ELEMENT).enumerate() {
+        out[i] = byte_decode(12, bytes);
+    }
+
+    out
 }

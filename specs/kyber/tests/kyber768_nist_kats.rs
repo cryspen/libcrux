@@ -62,7 +62,7 @@ fn kyber768_known_answer_tests() {
             assert_eq!(shared_secret[i], kat.shared_secret[i]);
         }
 
-        let shared_secret_from_decapsulate = hacspec_kyber::decapsulate(*key_pair.sk(), ciphertext);
+        let shared_secret_from_decapsulate = hacspec_kyber::decapsulate(ciphertext, *key_pair.sk());
         for i in 0..shared_secret.len() {
             assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
         }

@@ -74,7 +74,7 @@ pub(crate) mod hash_functions {
         digest::shake128::<LEN>(input)
     }
 
-    pub(crate) fn KDF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
+    pub(crate) fn J<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         digest::shake256::<LEN>(input)
     }
 }

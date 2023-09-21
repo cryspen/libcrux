@@ -1,10 +1,10 @@
 use hacspec_lib::{
-    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray, VecUpdate,
+    ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
 };
 
 use crate::{
     compress::{compress, decompress},
-    matrix::{multiply_matrix_transpose_by_column, multiply_column_by_row, transpose},
+    matrix::{encode_vector_12, multiply_column_by_row, multiply_matrix_by_column, transpose},
     ntt::{ntt, ntt_inverse},
     parameters::{
         hash_functions::{G, H, PRF, XOF},
@@ -15,7 +15,7 @@ use crate::{
         VECTOR_U_ENCODED_SIZE, VECTOR_V_COMPRESSION_FACTOR,
     },
     sampling::{sample_ntt, sample_poly_cbd},
-    serialize::{deserialize_little_endian, serialize_little_endian},
+    serialize::{byte_decode, byte_encode},
     BadRejectionSamplingRandomnessError,
 };
 
@@ -50,15 +50,6 @@ impl KeyPair {
     }
 }
 
-fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
-    let mut out = Vec::new();
-    for re in input.into_iter() {
-        out.extend_from_slice(&serialize_little_endian(re, 12));
-    }
-
-    out
-}
-
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
 ///
@@ -72,7 +63,7 @@ fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
 /// Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
 /// Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
 ///
-/// d $← B
+/// d ←$ B
 /// (ρ,σ) ← G(d)
 /// N ← 0
 /// for (i ← 0; i < k; i++)
@@ -174,16 +165,19 @@ pub(crate) fn generate_keypair(
     }
 
     // t̂ ← Â◦ŝ + ê
-    let mut t_as_ntt = multiply_matrix_transpose_by_column(&A_as_ntt, &secret_as_ntt);
+    let mut t_as_ntt = multiply_matrix_by_column(&A_as_ntt, &secret_as_ntt);
     for i in 0..t_as_ntt.len() {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
 
     // ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
-    let public_key_serialized = encode_12(t_as_ntt).concat(seed_for_A);
+    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE])
+        .push(&encode_vector_12(t_as_ntt))
+        .push(seed_for_A)
+        .array();
 
     // dkₚₖₑ ← ByteEncode₁₂(ŝ)
-    let secret_key_serialized = encode_12(secret_as_ntt);
+    let secret_key_serialized = encode_vector_12(secret_as_ntt);
 
     Ok(KeyPair::new(
         secret_key_serialized.into_array(),
@@ -194,9 +188,9 @@ pub(crate) fn generate_keypair(
 fn encode_and_compress_u(input: [KyberPolynomialRingElement; RANK]) -> Vec<u8> {
     let mut out = Vec::new();
     for re in input.into_iter() {
-        out.extend_from_slice(&serialize_little_endian(
-            compress(re, VECTOR_U_COMPRESSION_FACTOR),
+        out.extend_from_slice(&byte_encode(
             VECTOR_U_COMPRESSION_FACTOR,
+            compress(re, VECTOR_U_COMPRESSION_FACTOR),
         ));
     }
 
@@ -257,7 +251,7 @@ pub(crate) fn encrypt(
         .chunks(BYTES_PER_RING_ELEMENT)
         .enumerate()
     {
-        t_as_ntt[i] = deserialize_little_endian(12, t_as_ntt_bytes);
+        t_as_ntt[i] = byte_decode(12, t_as_ntt_bytes);
     }
 
     // ρ ← ekₚₖₑ[384k: 384k + 32]
@@ -328,14 +322,13 @@ pub(crate) fn encrypt(
 
     // u ← NTT-¹(Âᵀ ◦ r̂) + e₁
     let A_as_ntt_transpose = transpose(&A_as_ntt);
-    let mut u = multiply_matrix_transpose_by_column(&A_as_ntt_transpose, &r_as_ntt)
-        .map(|re| ntt_inverse(re));
+    let mut u = multiply_matrix_by_column(&A_as_ntt_transpose, &r_as_ntt).map(|re| ntt_inverse(re));
     for i in 0..u.len() {
         u[i] = u[i] + error_1[i];
     }
 
     // μ ← Decompress₁(ByteDecode₁(m)))
-    let message_as_ring_element = decompress(deserialize_little_endian(1, &message), 1);
+    let message_as_ring_element = decompress(byte_decode(1, &message), 1);
 
     // v ← NTT-¹(t̂ᵀ ◦ r̂) + e₂ + μ
     let v = ntt_inverse(multiply_column_by_row(&t_as_ntt, &r_as_ntt))
@@ -346,9 +339,9 @@ pub(crate) fn encrypt(
     let c1 = encode_and_compress_u(u);
 
     // c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
-    let c2 = serialize_little_endian(
-        compress(v, VECTOR_V_COMPRESSION_FACTOR),
+    let c2 = byte_encode(
         VECTOR_V_COMPRESSION_FACTOR,
+        compress(v, VECTOR_V_COMPRESSION_FACTOR),
     );
 
     // return c ← (c₁ ‖ c₂)
@@ -392,14 +385,14 @@ pub(crate) fn decrypt(
         .enumerate()
     {
         u[i] = decompress(
-            deserialize_little_endian(VECTOR_U_COMPRESSION_FACTOR, u_bytes),
+            byte_decode(VECTOR_U_COMPRESSION_FACTOR, u_bytes),
             VECTOR_U_COMPRESSION_FACTOR,
         );
     }
 
     // v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
     let v = decompress(
-        deserialize_little_endian(
+        byte_decode(
             VECTOR_V_COMPRESSION_FACTOR,
             &ciphertext[VECTOR_U_ENCODED_SIZE..],
         ),
@@ -409,7 +402,7 @@ pub(crate) fn decrypt(
     // ŝ ← ByteDecode₁₂(dkₚₖₑ)
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
-        secret_as_ntt[i] = deserialize_little_endian(12, secret_bytes);
+        secret_as_ntt[i] = byte_decode(12, secret_bytes);
     }
 
     // w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
@@ -422,5 +415,5 @@ pub(crate) fn decrypt(
     // m ← ByteEncode₁(Compress₁(w))
     // return m
     // FIXME: remove conversion
-    serialize_little_endian(compress(message, 1), 1).as_array()
+    byte_encode(1, compress(message, 1)).as_array()
 }
