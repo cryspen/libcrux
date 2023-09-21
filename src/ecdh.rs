@@ -67,6 +67,18 @@ pub(crate) mod x25519 {
         }
     }
 
+    impl TryFrom<crate::kem::PublicKey> for PublicKey {
+        type Error = Error;
+
+        fn try_from(value: crate::kem::PublicKey) -> Result<Self, Self::Error> {
+            if let crate::kem::PublicKey::X25519(k) = value {
+                Ok(k)
+            } else {
+                Err(Error::InvalidPoint)
+            }
+        }
+    }
+
     impl From<&[u8; 32]> for PrivateKey {
         fn from(value: &[u8; 32]) -> Self {
             Self(value.clone())
@@ -78,6 +90,18 @@ pub(crate) mod x25519 {
 
         fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
             Ok(Self(value.try_into().map_err(|_| Error::InvalidScalar)?))
+        }
+    }
+
+    impl TryFrom<crate::kem::PrivateKey> for PrivateKey {
+        type Error = Error;
+
+        fn try_from(value: crate::kem::PrivateKey) -> Result<Self, Self::Error> {
+            if let crate::kem::PrivateKey::X25519(k) = value {
+                Ok(k)
+            } else {
+                Err(Error::InvalidScalar)
+            }
         }
     }
 
@@ -106,7 +130,7 @@ pub(crate) mod x25519 {
     }
 
     #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
-    pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub(crate) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         use crate::hacl::curve25519;
         use libcrux_platform::x25519_support;
         // On x64 we use vale if available or hacl as fallback.
@@ -133,7 +157,7 @@ pub(crate) mod x25519 {
         all(target_arch = "x86_64", any(not(bmi2), not(adx))),
         target_arch = "x86"
     ))]
-    pub(super) fn derive(p: &PublicKey, p: &PrivateKey) -> Result<PublicKey, Error> {
+    pub(crate) fn derive(p: &PublicKey, p: &PrivateKey) -> Result<PublicKey, Error> {
         use crate::hacl::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
@@ -147,7 +171,7 @@ pub(crate) mod x25519 {
     }
 
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-    pub(super) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub(crate) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
@@ -163,7 +187,7 @@ pub(crate) mod x25519 {
     // }
 
     // #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-    pub(super) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub(crate) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
@@ -291,7 +315,7 @@ pub(crate) mod p256 {
         p256::validate_point(p).map_err(|e| e.into())
     }
 
-    pub(super) fn prepare_public_key(public_key: &[u8]) -> Result<PublicKey, Error> {
+    pub(crate) fn prepare_public_key(public_key: &[u8]) -> Result<PublicKey, Error> {
         if public_key.is_empty() {
             return Err(Error::InvalidPoint);
         }
@@ -364,6 +388,16 @@ pub fn derive(
         }
         _ => Err(Error::UnknownAlgorithm),
     }
+}
+
+pub(crate) fn p256_derive(
+    point: &p256::PublicKey,
+    scalar: &p256::PrivateKey,
+) -> Result<p256::PublicKey, Error> {
+    p256::validate_point(point)?;
+    p256::validate_scalar(scalar)?;
+
+    p256::derive(&point, &scalar)
 }
 
 /// Derive the public key for the provided secret key `scalar`.

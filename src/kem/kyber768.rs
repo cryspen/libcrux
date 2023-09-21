@@ -52,18 +52,18 @@ pub fn generate_keypair(
 }
 
 pub fn encapsulate(
-    public_key: Kyber768PublicKey,
+    public_key: &Kyber768PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), BadRejectionSamplingRandomnessError> {
     let randomness_hashed = H(&randomness);
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness_hashed);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(&public_key));
+    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key));
 
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let ciphertext = ind_cpa::encrypt(&public_key, randomness_hashed, pseudorandomness)?;
+    let ciphertext = ind_cpa::encrypt(public_key, randomness_hashed, pseudorandomness)?;
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(&ciphertext));
@@ -74,8 +74,8 @@ pub fn encapsulate(
 }
 
 pub fn decapsulate(
-    secret_key: Kyber768PrivateKey,
-    ciphertext: Kyber768Ciphertext,
+    secret_key: &Kyber768PrivateKey,
+    ciphertext: &Kyber768Ciphertext,
 ) -> Kyber768SharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE);
@@ -104,7 +104,7 @@ pub fn decapsulate(
     // would be conveyed anyway at a higher level (e.g. a key-exchange protocol
     // would no longer proceed).
     let to_hash = if let Ok(expected_ciphertext) = expected_ciphertext_result {
-        let selector = compare_ciphertexts_in_constant_time(&ciphertext, &expected_ciphertext);
+        let selector = compare_ciphertexts_in_constant_time(ciphertext, &expected_ciphertext);
         select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector)
     } else {
         let mut out = [0u8; 32];
@@ -113,7 +113,7 @@ pub fn decapsulate(
     };
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&to_hash);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(&ciphertext));
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(ciphertext));
 
     KDF(&to_hash)
 }
