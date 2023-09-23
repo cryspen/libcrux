@@ -14,6 +14,11 @@ mod wasm32_bindings;
 #[cfg(target_arch = "wasm32")]
 pub use wasm32_bindings::*;
 
+/// Free a raw C pointer.
+pub unsafe fn cfree_u64(p: *mut u64) {
+    libc::free(p as *mut libc::c_void);
+}
+
 #[cfg(test)]
 mod test {
     use crate::*;

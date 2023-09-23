@@ -120,6 +120,7 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .allowlist_function("Hacl_P256_.*")
         .allowlist_function("EverCrypt_AEAD_.*")
         .allowlist_function("EverCrypt_AutoConfig2_.*")
+        .allowlist_function("Hacl_RSAPSS.*")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
         .allowlist_type("Hacl_HMAC_DRBG.*")
@@ -384,7 +385,6 @@ struct Platform {
     pmull: bool,
     adv_simd: bool,
     sha256: bool,
-    target: Option<&'static str>,
     target_arch: String,
     target_env: String,
     target_os: String,
@@ -394,26 +394,43 @@ fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let home_path = Path::new(&home_dir);
+    let host_target_arch = env::var("TARGET").unwrap();
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
 
     // Check platform support
     let platform = if target_arch != "wasm32" {
-        let x86 = target_arch == "x86";
-        Platform {
-            simd128: !x86 && libcrux_platform::simd128_support(),
-            simd256: !x86 && libcrux_platform::simd256_support(),
-            aes_ni: libcrux_platform::aes_ni_support(),
-            x25519: !x86 && libcrux_platform::x25519_support(),
-            bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
-            pmull: libcrux_platform::pmull_support(),
-            adv_simd: libcrux_platform::adv_simd_support(),
-            sha256: libcrux_platform::sha256_support(),
-            target: None,
-            target_arch: target_arch.clone(),
-            target_env: target_env.clone(),
-            target_os: target_os.clone(),
+        if target_arch != host_target_arch {
+            // Cross compilation - disable everything.
+            Platform {
+                simd128: false,
+                simd256: false,
+                aes_ni: false,
+                x25519: false,
+                bmi2_adx_support: false,
+                pmull: false,
+                adv_simd: false,
+                sha256: false,
+                target_arch: target_arch.clone(),
+                target_env: target_env.clone(),
+                target_os: target_os.clone(),
+            }
+        } else {
+            let x86 = target_arch == "x86";
+            Platform {
+                simd128: !x86 && libcrux_platform::simd128_support(),
+                simd256: !x86 && libcrux_platform::simd256_support(),
+                aes_ni: libcrux_platform::aes_ni_support(),
+                x25519: !x86 && libcrux_platform::x25519_support(),
+                bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
+                pmull: libcrux_platform::pmull_support(),
+                adv_simd: libcrux_platform::adv_simd_support(),
+                sha256: libcrux_platform::sha256_support(),
+                target_arch: target_arch.clone(),
+                target_env: target_env.clone(),
+                target_os: target_os.clone(),
+            }
         }
     } else {
         Platform {
@@ -434,6 +451,19 @@ fn main() {
     // This is only done if the corresponding environment variable is set.
     #[cfg(feature = "bindings")]
     if target_arch != "wasm32" {
+        let platform = Platform {
+            simd128: true,
+            simd256: true,
+            aes_ni: true,
+            x25519: true,
+            bmi2_adx_support: true,
+            pmull: true,
+            adv_simd: true,
+            sha256: true,
+            target_arch: target_arch.clone(),
+            target_env: target_env.clone(),
+            target_os: target_os.clone(),
+        };
         create_bindings(&platform, home_path);
     }
 }
