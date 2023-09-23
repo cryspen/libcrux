@@ -394,43 +394,25 @@ fn main() {
     // Get ENV variables
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let home_path = Path::new(&home_dir);
-    let host_target_arch = env::var("TARGET").unwrap();
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
 
     // Check platform support
     let platform = if target_arch != "wasm32" {
-        if target_arch != host_target_arch {
-            // Cross compilation - disable everything.
-            Platform {
-                simd128: false,
-                simd256: false,
-                aes_ni: false,
-                x25519: false,
-                bmi2_adx_support: false,
-                pmull: false,
-                adv_simd: false,
-                sha256: false,
-                target_arch: target_arch.clone(),
-                target_env: target_env.clone(),
-                target_os: target_os.clone(),
-            }
-        } else {
-            let x86 = target_arch == "x86";
-            Platform {
-                simd128: !x86 && libcrux_platform::simd128_support(),
-                simd256: !x86 && libcrux_platform::simd256_support(),
-                aes_ni: libcrux_platform::aes_ni_support(),
-                x25519: !x86 && libcrux_platform::x25519_support(),
-                bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
-                pmull: libcrux_platform::pmull_support(),
-                adv_simd: libcrux_platform::adv_simd_support(),
-                sha256: libcrux_platform::sha256_support(),
-                target_arch: target_arch.clone(),
-                target_env: target_env.clone(),
-                target_os: target_os.clone(),
-            }
+        let x86 = target_arch == "x86";
+        Platform {
+            simd128: !x86 && libcrux_platform::simd128_support(),
+            simd256: !x86 && libcrux_platform::simd256_support(),
+            aes_ni: libcrux_platform::aes_ni_support(),
+            x25519: !x86 && libcrux_platform::x25519_support(),
+            bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
+            pmull: libcrux_platform::pmull_support(),
+            adv_simd: libcrux_platform::adv_simd_support(),
+            sha256: libcrux_platform::sha256_support(),
+            target_arch: target_arch.clone(),
+            target_env: target_env.clone(),
+            target_os: target_os.clone(),
         }
     } else {
         Platform {
