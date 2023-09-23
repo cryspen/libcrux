@@ -148,11 +148,11 @@ pub(crate) fn multiply_matrix_by_column_montgomery(
 // ind_cpa::generate_keypair(). (TODO: Verify this) Doing barrett reduction in
 // this function after conversion from montgomery form lets us skip an extra
 // barrett reduction step in generate_keypair itself.
-pub(crate) fn multiply_matrix_by_column(
-    matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
-    vector: &[KyberPolynomialRingElement; RANK],
-) -> [KyberPolynomialRingElement; RANK] {
-    let mut result = [KyberPolynomialRingElement::ZERO; RANK];
+pub(crate) fn multiply_matrix_by_column<const K: usize>(
+    matrix: &[[KyberPolynomialRingElement; K]; K],
+    vector: &[KyberPolynomialRingElement; K],
+) -> [KyberPolynomialRingElement; K] {
+    let mut result = [KyberPolynomialRingElement::ZERO; K];
 
     for (i, row) in matrix.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {

@@ -58,14 +58,14 @@ impl KeyPair {
 }
 
 #[inline(always)]
-fn parse_a(
+fn parse_a<const K: usize>(
     mut seed: [u8; 34],
     transpose: bool,
-) -> Result<[[KyberPolynomialRingElement; RANK]; RANK], BadRejectionSamplingRandomnessError> {
-    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
+) -> Result<[[KyberPolynomialRingElement; K]; K], BadRejectionSamplingRandomnessError> {
+    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; K]; K];
 
-    for i in 0..RANK {
-        for j in 0..RANK {
+    for i in 0..K {
+        for j in 0..K {
             seed[32] = i as u8;
             seed[33] = j as u8;
 
@@ -99,8 +99,10 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
     (re_as_ntt, domain_separator)
 }
 
-fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> [u8; RANK * BYTES_PER_RING_ELEMENT] {
-    let mut out = [0u8; RANK * BYTES_PER_RING_ELEMENT];
+fn encode_12<const K: usize>(
+    input: [KyberPolynomialRingElement; K],
+) -> [u8; K * BYTES_PER_RING_ELEMENT] {
+    let mut out = [0u8; K * BYTES_PER_RING_ELEMENT];
 
     for (i, re) in input.into_iter().enumerate() {
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
@@ -111,13 +113,13 @@ fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> [u8; RANK * BYTES_PER
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn generate_keypair(
+pub(crate) fn generate_keypair<const K: usize>(
     key_generation_seed: &[u8],
 ) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
     let mut prf_input: [u8; 33] = [0; 33];
 
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; K];
 
     // N := 0
     let mut domain_separator: u8 = 0;
@@ -135,7 +137,7 @@ pub(crate) fn generate_keypair(
     // sˆ := NTT(s)
     prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
 
-    for i in 0..RANK {
+    for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -151,7 +153,7 @@ pub(crate) fn generate_keypair(
     //     N := N + 1
     // end for
     // eˆ := NTT(e)
-    for i in 0..RANK {
+    for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -164,7 +166,7 @@ pub(crate) fn generate_keypair(
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
-    for i in 0..RANK {
+    for i in 0..K {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
     }
 
@@ -180,16 +182,14 @@ pub(crate) fn generate_keypair(
     Ok(KeyPair::new(secret_key_serialized, public_key_serialized))
 }
 
-fn compress_then_encode_u(
-    input: [KyberPolynomialRingElement; RANK],
-) -> [u8; VECTOR_U_ENCODED_SIZE] {
-    let mut out = [0u8; VECTOR_U_ENCODED_SIZE];
+fn compress_then_encode_u<const K: usize, const DU: usize>(
+    input: [KyberPolynomialRingElement; K],
+) -> [u8; ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8) * K] {
+    let mut out = [0u8; ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8) * K];
     for (i, re) in input.into_iter().enumerate() {
-        out[i * BYTES_PER_ENCODED_ELEMENT_OF_U..(i + 1) * BYTES_PER_ENCODED_ELEMENT_OF_U]
-            .copy_from_slice(&serialize_little_endian_10(compress(
-                re,
-                VECTOR_U_COMPRESSION_FACTOR,
-            )));
+        out[i * ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8)
+            ..(i + 1) * ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8)]
+            .copy_from_slice(&serialize_little_endian_10(compress(re, DU)));
     }
 
     out
