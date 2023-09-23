@@ -14,6 +14,7 @@ fn append_simd256_flags(flags: &mut Vec<String>) {
     flags.push("-mavx2".to_string());
 }
 
+#[cfg(feature = "bindings")]
 fn create_bindings(platform: Platform, home_dir: &Path) {
     let jazz_dir = home_dir.join("jazz");
     let mut clang_args = vec![format!("-I{}", jazz_dir.join("include").display())];
@@ -150,5 +151,6 @@ pub fn main() {
     println!("cargo:rerun-if-changed=jazz");
 
     // Generate new bindings.
+    #[cfg(feature = "bindings")]
     create_bindings(platform, home_path);
 }

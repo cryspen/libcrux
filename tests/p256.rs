@@ -1,8 +1,8 @@
 #[cfg(not(target_arch = "wasm32"))]
 use libcrux::drbg;
+use libcrux::ecdh::{self, key_gen};
 #[cfg(target_arch = "wasm32")]
 use rand_core::OsRng;
-use libcrux::ecdh::{self, key_gen};
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]

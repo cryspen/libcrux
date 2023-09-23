@@ -50,8 +50,8 @@ pub(crate) mod x25519 {
 
     #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
     pub(super) fn derive(p: &[u8; 32], s: &[u8; 32]) -> Result<[u8; 32], Error> {
-        use libcrux_platform::x25519_support;
         use crate::hacl::curve25519;
+        use libcrux_platform::x25519_support;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
 

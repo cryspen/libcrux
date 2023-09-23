@@ -14,7 +14,6 @@ mod wasm32_bindings;
 #[cfg(target_arch = "wasm32")]
 pub use wasm32_bindings::*;
 
-
 #[cfg(test)]
 mod test {
     use crate::*;
