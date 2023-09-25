@@ -151,13 +151,13 @@ pub fn generate_keypair(
 }
 
 pub fn encapsulate(
-    public_key: Kyber768PublicKey,
+    public_key: &Kyber768PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> Result<(Kyber768Ciphertext, Kyber768SharedSecret), BadRejectionSamplingRandomnessError> {
     let randomness_hashed = H(&randomness);
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness_hashed);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(&public_key));
+    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key));
 
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
@@ -179,8 +179,8 @@ pub fn encapsulate(
 }
 
 pub fn decapsulate(
-    secret_key: Kyber768PrivateKey,
-    ciphertext: Kyber768Ciphertext,
+    secret_key: &Kyber768PrivateKey,
+    ciphertext: &Kyber768Ciphertext,
 ) -> Kyber768SharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE_768);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE_768);

@@ -10,17 +10,17 @@ use std::num::ParseIntError;
 // use hacl::aead::Nonce;
 
 pub(crate) trait ReadFromFile {
-    fn from_file<T: DeserializeOwned>(file: &'static str) -> T {
-        let file = match File::open(file) {
+    fn from_file<T: DeserializeOwned>(file_str: &'static str) -> T {
+        let file = match File::open(file_str) {
             Ok(f) => f,
-            Err(_) => panic!("Couldn't open file {}.", file),
+            Err(_) => panic!("Couldn't open file {file_str}."),
         };
         let reader = BufReader::new(file);
         match serde_json::from_reader(reader) {
             Ok(r) => r,
             Err(e) => {
                 println!("{:?}", e);
-                panic!("Error reading file.")
+                panic!("Error reading file {file_str}.")
             }
         }
     }

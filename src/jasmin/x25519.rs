@@ -11,7 +11,6 @@ type Scalar = [u8; 32];
 
 pub(crate) fn derive(scalar: &Scalar, point: &Point) -> Result<Point, &'static str> {
     let mut result = Point::default();
-    log::trace!("Jasmin x25519 ref");
     if unsafe {
         jade_scalarmult_curve25519_amd64_ref5(
             result.as_mut_ptr(),
@@ -27,7 +26,6 @@ pub(crate) fn derive(scalar: &Scalar, point: &Point) -> Result<Point, &'static s
 }
 
 pub(crate) fn secret_to_public(scalar: &Scalar) -> Result<Point, &'static str> {
-    log::trace!("Jasmin x25519 ref");
     let mut result = Point::default();
     if unsafe {
         jade_scalarmult_curve25519_amd64_ref5_base(result.as_mut_ptr(), scalar.as_ptr() as _)
@@ -49,7 +47,6 @@ pub(crate) mod mulx {
     use super::{Point, Scalar};
 
     pub fn derive(scalar: &Scalar, point: &Point) -> Result<Point, &'static str> {
-        log::trace!("Jasmin x25519 mulx");
         let mut result = Point::default();
         if unsafe {
             jade_scalarmult_curve25519_amd64_mulx(
@@ -66,7 +63,6 @@ pub(crate) mod mulx {
     }
 
     pub fn secret_to_public(scalar: &Scalar) -> Result<Point, &'static str> {
-        log::trace!("Jasmin x25519 mulx");
         let mut result = Point::default();
         if unsafe {
             jade_scalarmult_curve25519_amd64_mulx_base(result.as_mut_ptr(), scalar.as_ptr() as _)

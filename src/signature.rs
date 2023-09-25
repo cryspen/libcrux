@@ -2,11 +2,20 @@
 //!
 //! * EcDSA P256 with Sha256, Sha384, and Sha512
 //! * EdDSA 25519
+//! * RSA PSS
 
-use crate::hacl::{self, ed25519, p256};
+use crate::{
+    ecdh::p256::{PrivateKey, PublicKey},
+    hacl::{self, ed25519, p256},
+};
 use rand::{CryptoRng, Rng, RngCore};
 
-use crate::ecdh;
+use crate::{
+    ecdh,
+    hacl::{self, ed25519, p256},
+};
+
+use self::rsa_pss::RsaPssSignature;
 
 /// Signature Errors
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -14,6 +23,8 @@ pub enum Error {
     SigningError,
     InvalidSignature,
     KeyGenError,
+    InvalidKey,
+    InputTooLarge,
 }
 
 /// The digest algorithm used for the signature scheme (when required).
@@ -29,6 +40,7 @@ pub enum DigestAlgorithm {
 pub enum Algorithm {
     EcDsaP256(DigestAlgorithm),
     Ed25519,
+    RsaPss(DigestAlgorithm),
 }
 
 /// The signature
@@ -36,12 +48,14 @@ pub enum Algorithm {
 pub enum Signature {
     EcDsaP256(EcDsaP256Signature),
     Ed25519(Ed25519Signature),
+    RsaPss(RsaPssSignature),
 }
 
 impl Signature {
     /// Convert the signature into a raw byte vector.
     ///
-    /// NIST P Curve signatures are returned as `r || s`.
+    /// * NIST P Curve signatures are returned as `r || s`.
+    /// * RSA PSS signatures are returned as the raw bytes.
     pub fn into_vec(self) -> Vec<u8> {
         match self {
             Signature::EcDsaP256(s) => {
@@ -50,6 +64,7 @@ impl Signature {
                 out
             }
             Signature::Ed25519(s) => s.signature.to_vec(),
+            Signature::RsaPss(s) => s.value,
         }
     }
 }
@@ -66,6 +81,201 @@ pub struct EcDsaP256Signature {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ed25519Signature {
     signature: [u8; 64],
+}
+
+pub mod rsa_pss {
+    use libcrux_hacl::{
+        hacl_free, Hacl_RSAPSS_new_rsapss_load_pkey, Hacl_RSAPSS_new_rsapss_load_skey,
+        Hacl_RSAPSS_rsapss_sign, Hacl_RSAPSS_rsapss_verify,
+    };
+
+    use super::{DigestAlgorithm, Error};
+
+    /// A [`Algorithm::RsaPss`] Signature
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct RsaPssSignature {
+        pub(super) value: Vec<u8>,
+    }
+
+    impl From<&[u8]> for RsaPssSignature {
+        fn from(value: &[u8]) -> Self {
+            Self {
+                value: value.to_vec(),
+            }
+        }
+    }
+
+    impl<const L: usize> From<[u8; L]> for RsaPssSignature {
+        fn from(value: [u8; L]) -> Self {
+            Self {
+                value: value.to_vec(),
+            }
+        }
+    }
+
+    impl From<Vec<u8>> for RsaPssSignature {
+        fn from(value: Vec<u8>) -> Self {
+            Self { value }
+        }
+    }
+
+    /// A [`Algorithm::RsaPss`] public key.
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct RsaPssPublicKey {
+        n: Vec<u8>,
+    }
+
+    fn rsa_pss_digest(hash_algorithm: DigestAlgorithm) -> u8 {
+        match hash_algorithm {
+            DigestAlgorithm::Sha256 => libcrux_hacl::Spec_Hash_Definitions_SHA2_256 as u8,
+            DigestAlgorithm::Sha384 => libcrux_hacl::Spec_Hash_Definitions_SHA2_384 as u8,
+            DigestAlgorithm::Sha512 => libcrux_hacl::Spec_Hash_Definitions_SHA2_512 as u8,
+        }
+    }
+
+    /// The key size is the bit/byte-size of the modulus N.
+    /// Note that the values are bytes but the names are in bits.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[repr(usize)]
+    pub enum RsaPssKeySize {
+        /// N = 2048 bits | 256 bytes
+        N2048 = 256,
+
+        /// N = 3072 bits | 384 bytes
+        N3072 = 384,
+
+        /// N = 4096 bits | 512 bytes
+        N4096 = 512,
+
+        /// N = 6144 bits | 768 bytes
+        N6144 = 768,
+
+        /// N = 8192 bits | 1024 bytes
+        N8192 = 1024,
+    }
+
+    // Size of e.
+    const E_BITS: u32 = 24;
+
+    // We only support this e.
+    const E: [u8; 3] = [0x01, 0x00, 0x01];
+
+    impl RsaPssPublicKey {
+        pub fn new(key_size: RsaPssKeySize, n: &[u8]) -> Result<Self, Error> {
+            if n.len() != key_size as usize {
+                return Err(Error::InvalidKey);
+            }
+            Ok(Self { n: n.into() })
+        }
+
+        /// Verify the `signature` on the `msg` with the `public_key` using the
+        /// `hash_algorithm` and `salt_len`.
+        ///
+        /// Returns an error if any of the inputs are invalid or the signature is
+        /// invalid.
+        #[must_use = "The result of the signature verification must be used."]
+        pub fn verify(
+            &self,
+            hash_algorithm: DigestAlgorithm,
+            signature: &RsaPssSignature,
+            msg: &[u8],
+            salt_len: usize,
+        ) -> Result<(), Error> {
+            let key_size_bits = (self.n.len() as u32) * 8;
+            unsafe {
+                let pkey = Hacl_RSAPSS_new_rsapss_load_pkey(
+                    key_size_bits,
+                    E_BITS,
+                    self.n.as_ptr() as _,
+                    E.as_ptr() as _,
+                );
+                if Hacl_RSAPSS_rsapss_verify(
+                    rsa_pss_digest(hash_algorithm),
+                    key_size_bits,
+                    E_BITS,
+                    pkey,
+                    salt_len as u32,
+                    signature.value.len() as u32,
+                    signature.value.as_ptr() as _,
+                    msg.len() as u32,
+                    msg.as_ptr() as _,
+                ) {
+                    return Ok(());
+                }
+            }
+            Err(Error::InvalidSignature)
+        }
+    }
+
+    /// An RSA-PSS private key.
+    /// The private key holds a [`RsaPssPublicKey`] with the public modulus.
+    /// A [`Algorithm::RsaPss`] private key.
+    pub struct RsaPssPrivateKey<'a> {
+        pk: &'a RsaPssPublicKey,
+        d: Vec<u8>,
+    }
+
+    impl<'a> RsaPssPrivateKey<'a> {
+        ///Create a new [`RsaPssPrivateKey`] from a byte slice and a public key.
+        ///
+        /// Returns an error if the length of the byte slice is not equal to the
+        /// key/modulus size.
+        pub fn new(pk: &'a RsaPssPublicKey, d: &[u8]) -> Result<Self, Error> {
+            if pk.n.len() != d.len() {
+                return Err(Error::InvalidKey);
+            }
+            Ok(Self { pk, d: d.into() })
+        }
+
+        /// Sign the provided `msg` with the `private_key` using the `hash_algorithm`
+        /// and `salt`.
+        ///
+        /// Returns an error if any of the inputs are invalid and the signature as byte
+        /// array.
+        pub fn sign(
+            &self,
+            hash_algorithm: DigestAlgorithm,
+            salt: &[u8],
+            msg: &[u8],
+        ) -> Result<RsaPssSignature, Error> {
+            if salt.len() > (u32::MAX as usize) || msg.len() > (u32::MAX as usize) {
+                return Err(Error::InputTooLarge);
+            }
+
+            let key_len = self.d.len();
+            let mut signature = vec![0; key_len];
+            let key_size_bits = (key_len as u32) * 8;
+
+            unsafe {
+                let s_key = Hacl_RSAPSS_new_rsapss_load_skey(
+                    key_size_bits,
+                    E_BITS,
+                    key_size_bits,
+                    self.pk.n.as_ptr() as _,
+                    E.as_ptr() as _,
+                    self.d.as_ptr() as _,
+                );
+
+                if !Hacl_RSAPSS_rsapss_sign(
+                    rsa_pss_digest(hash_algorithm),
+                    key_size_bits,
+                    E_BITS,
+                    key_size_bits,
+                    s_key,
+                    salt.len() as u32,
+                    salt.as_ptr() as _,
+                    msg.len() as u32,
+                    msg.as_ptr() as _,
+                    signature.as_mut_ptr(),
+                ) {
+                    hacl_free(s_key as _);
+                    return Err(Error::SigningError);
+                }
+                hacl_free(s_key as _);
+            }
+            Ok(RsaPssSignature { value: signature })
+        }
+    }
 }
 
 impl Ed25519Signature {
@@ -114,7 +324,7 @@ impl EcDsaP256Signature {
 fn ecdsa_p256_sign_prep(
     private_key: &[u8],
     rng: &mut (impl CryptoRng + RngCore),
-) -> Result<([u8; 32], [u8; 32]), Error> {
+) -> Result<(PrivateKey, [u8; 32]), Error> {
     let private_key = p256::validate_scalar_slice(private_key).map_err(|_| Error::SigningError)?;
 
     let mut nonce = [0u8; 32];
@@ -122,7 +332,7 @@ fn ecdsa_p256_sign_prep(
         rng.try_fill_bytes(&mut nonce)
             .map_err(|_| Error::SigningError)?;
         // Make sure it's a valid nonce.
-        if p256::validate_scalar(&nonce).is_ok() {
+        if p256::validate_scalar_slice(&nonce).is_ok() {
             break;
         }
     }
@@ -160,7 +370,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha256) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha256(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha256(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -168,7 +378,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha384) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha384(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha384(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -176,21 +386,21 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha512) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha512(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha512(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
         }
         Algorithm::Ed25519 => {
-            log::debug!("Signing with ed25519");
-            log::trace!("  payload: {payload:x?}");
-            log::trace!("  private_key: {private_key:x?}");
             let signature = ed25519::sign(
                 payload,
                 private_key.try_into().map_err(|_| Error::SigningError)?,
             )
             .map_err(into_signing_error)?;
             Signature::Ed25519(Ed25519Signature { signature })
+        }
+        Algorithm::RsaPss(_) => {
+            todo!()
         }
     };
 
@@ -220,7 +430,7 @@ fn ecdsa_p256_verify_prep(public_key: &[u8]) -> Result<[u8; 64], Error> {
         }
     };
 
-    p256::validate_point(&pk)
+    p256::validate_point(PublicKey(pk))
         .map(|()| pk)
         .map_err(into_verify_error)
 }
@@ -250,6 +460,7 @@ pub fn verify(payload: &[u8], signature: &Signature, public_key: &[u8]) -> Resul
             let public_key = public_key.try_into().map_err(|_| Error::InvalidSignature)?;
             ed25519::verify(payload, public_key, &signature.signature).map_err(into_verify_error)
         }
+        Signature::RsaPss(_) => todo!(),
     }
 }
 
@@ -265,7 +476,6 @@ pub fn key_gen(
             ecdh::key_gen(ecdh::Algorithm::P256, rng).map_err(|_| Error::KeyGenError)
         }
         Algorithm::Ed25519 => {
-            log::debug!("Generating ed25519 key");
             const LIMIT: usize = 100;
             let mut sk = [0u8; 32];
             for _ in 0..LIMIT {
@@ -289,5 +499,6 @@ pub fn key_gen(
 
             Ok((sk.to_vec(), pk.to_vec()))
         }
+        Algorithm::RsaPss(_) => todo!(),
     }
 }

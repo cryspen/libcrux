@@ -103,9 +103,10 @@ pub fn generate_keypair(
 
 fn public_key_modulus_check(public_key: &PublicKey) -> bool {
     let encoded_ring_elements = &public_key[0..KYBER768_PUBLIC_KEY_SIZE - 32];
-    let decoded_ring_elements = matrix::decode_vector_12(encoded_ring_elements.try_into().unwrap());
+    let decoded_ring_elements =
+        serialize::vector_decode_12(encoded_ring_elements.try_into().unwrap());
 
-    encoded_ring_elements == matrix::encode_vector_12(decoded_ring_elements)
+    encoded_ring_elements == serialize::vector_encode_12(decoded_ring_elements)
 }
 
 /// This function implements most of <strong>Algorithm 16</strong> of the

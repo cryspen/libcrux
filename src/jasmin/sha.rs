@@ -9,7 +9,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
         Algorithm::Sha1 => todo!(),
         Algorithm::Sha224 => todo!(),
         Algorithm::Sha256 => unsafe {
-            log::trace!("Jasmin SHA2 ref");
             jade_hash_sha256_amd64_ref(
                 digest.as_mut_ptr(),
                 payload.as_ptr() as _,
@@ -22,7 +21,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
         Algorithm::Blake2b => todo!(),
         Algorithm::Sha3_224 => {
             if simd256_support() {
-                log::trace!("Jasmin SHA3 avx2");
                 unsafe {
                     libjade::jade_hash_sha3_224_amd64_avx2(
                         digest.as_mut_ptr(),
@@ -31,7 +29,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
                     )
                 }
             } else {
-                log::trace!("Jasmin SHA3 ref");
                 unsafe {
                     jade_hash_sha3_224_amd64_ref(
                         digest.as_mut_ptr(),
@@ -43,7 +40,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
         }
         Algorithm::Sha3_256 => {
             if simd256_support() {
-                log::trace!("Jasmin SHA3 avx2");
                 unsafe {
                     libjade::jade_hash_sha3_256_amd64_avx2(
                         digest.as_mut_ptr(),
@@ -52,7 +48,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
                     )
                 }
             } else {
-                log::trace!("Jasmin SHA3 ref");
                 unsafe {
                     jade_hash_sha3_256_amd64_ref(
                         digest.as_mut_ptr(),
@@ -64,7 +59,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
         }
         Algorithm::Sha3_384 => {
             if simd256_support() {
-                log::trace!("Jasmin SHA3 avx2");
                 unsafe {
                     libjade::jade_hash_sha3_384_amd64_avx2(
                         digest.as_mut_ptr(),
@@ -73,7 +67,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
                     )
                 }
             } else {
-                log::trace!("Jasmin SHA3 ref");
                 unsafe {
                     jade_hash_sha3_384_amd64_ref(
                         digest.as_mut_ptr(),
@@ -85,7 +78,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
         }
         Algorithm::Sha3_512 => {
             if simd256_support() {
-                log::trace!("Jasmin SHA3 avx2");
                 unsafe {
                     libjade::jade_hash_sha3_512_amd64_avx2(
                         digest.as_mut_ptr(),
@@ -94,7 +86,6 @@ pub fn hash<const LEN: usize>(alg: Algorithm, payload: &[u8]) -> Result<[u8; LEN
                     )
                 }
             } else {
-                log::trace!("Jasmin SHA3 ref");
                 unsafe {
                     jade_hash_sha3_512_amd64_ref(
                         digest.as_mut_ptr(),

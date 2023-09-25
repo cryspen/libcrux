@@ -1,32 +1,48 @@
+[workspace]
+members = ["sys/hacl", "sys/libjade", "sys/platform", "sys/pqclean"]
+
+[workspace.package]
+version = "0.0.2-pre.1"
+authors = ["Cryspen"]
+license = "Apache-2.0"
+homepage = "https://github.com/cryspen/libcrux"
+edition = "2021"
+repository = "https://github.com/cryspen/libcrux"
+readme = "Readme.md"
+
 [package]
 name = "libcrux"
-version = "0.0.1"
-edition = "2021"
-authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
-license = "Apache-2.0"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
 documentation = "https://docs.rs/libcrux/"
-description = "Formally Verified Cryptography"
-readme = "Readme.md"
-repository = "https://github.com/cryspen/libcrux"
+description = "The Formally Verified Cryptography Library"
 exclude = ["/tests", "/specs"]
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [build-dependencies]
-libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
+libcrux-platform = { version = "=0.0.2-pre.1", path = "sys/platform" }
 
 [dependencies]
-libcrux-hacl = { version = "=0.0.1", path = "sys/hacl" }
-libcrux_platform = { version = "=0.0.1", path = "sys/platform" }
+libcrux-hacl = { version = "=0.0.2-pre.1", path = "sys/hacl" }
+libcrux-platform = { version = "=0.0.2-pre.1", path = "sys/platform" }
 rand = { version = "0.8" }
-getrandom = { version = "0.2", features = ["js"] }
-log = "0.4"
+log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 
+# WASM needs the js feature on getrandom
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2", features = ["js"] }
+
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dependencies]
-libjade-sys = { version = "0.0.1", path = "sys/libjade" }
+libjade-sys = { version = "=0.0.2-pre.1", path = "sys/libjade" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand"] }
@@ -52,7 +68,7 @@ wasm-bindgen-test = "0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = "0.5"
-libcrux-pqclean = { version = "*", path = "sys/pqclean" }
+# libcrux-pqclean = { version = "0.0.2-pre.1", path = "sys/pqclean" }
 pqcrypto-kyber = { version = "0.7.6", default-features = false }
 
 # Benchmarking "OpenSSL"
@@ -93,10 +109,4 @@ harness = false
 hacspec = []            # TODO: #7 Use specs instead of efficient implementations
 rand = []
 wasm = ["wasm-bindgen"]
-
-# [patch.crates-io]
-# hacl = { git = "https://github.com/cryspen/hacl-packages" }
-# hacl = { path = "../hacl-packages/rust" }
-
-# [patch.'https://github.com/hacspec/hacspec']
-# hacspec-lib = { path = "../../hacspec/lib" }
+log = ["dep:log"]

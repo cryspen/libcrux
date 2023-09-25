@@ -9,7 +9,6 @@ macro_rules! sha3_simd256 {
         pub fn $name(input: &[u8]) -> [u8; digest_size($alg)] {
             let mut digest = [0u8; digest_size($alg)];
             let r = if libcrux_platform::simd256_support() {
-                log::trace!("Jasmin SHA3 avx2");
                 unsafe {
                     $avx2_fun(
                         digest.as_mut_ptr(),
@@ -18,7 +17,6 @@ macro_rules! sha3_simd256 {
                     )
                 }
             } else {
-                log::trace!("Jasmin SHA3 ref");
                 unsafe {
                     $ref_fun(
                         digest.as_mut_ptr(),
@@ -72,7 +70,6 @@ sha3_simd256!(
 macro_rules! sha3_ref {
     ($name:ident, $alg:expr, $ref_fun:expr) => {
         pub fn $name(input: &[u8]) -> [u8; digest_size($alg)] {
-            log::trace!("Jasmin SHA3 ref");
             let mut digest = [0u8; digest_size($alg)];
             let r = unsafe {
                 $ref_fun(

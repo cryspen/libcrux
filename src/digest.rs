@@ -186,13 +186,11 @@ pub fn hash(alg: Algorithm, payload: &[u8]) -> Vec<u8> {
 
 #[cfg(simd128)]
 fn blake2s_128<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
-    log::trace!("HACL Blake2s SIMD 128");
     blake2::simd128::blake2s(payload, key)
 }
 
 #[cfg(not(simd128))]
 fn blake2s_128<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
-    log::trace!("Using fallback HACL Blake2s portable because SIMD 128 wasn't compiled");
     blake2::blake2s::<LEN>(payload, key)
 }
 
@@ -209,13 +207,11 @@ fn blake2s(payload: &[u8], key: &[u8]) -> Vec<u8> {
 
 #[cfg(simd256)]
 fn blake2b_256<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
-    log::trace!("HACL Blake2b SIMD 256");
     blake2::simd256::blake2b(payload, key)
 }
 
 #[cfg(not(simd256))]
 fn blake2b_256<const LEN: usize>(payload: &[u8], key: &[u8]) -> [u8; LEN] {
-    log::trace!("Using fallback HACL Blake2b portable because SIMD 256 wasn't compiled");
     blake2::blake2b::<LEN>(payload, key)
 }
 

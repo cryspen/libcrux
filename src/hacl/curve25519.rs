@@ -11,13 +11,16 @@ pub enum Error {
 
 #[must_use]
 #[inline(always)]
-pub fn ecdh(private_key: &[u8; 32], public_key: &[u8; 32]) -> Result<[u8; 32], Error> {
+pub fn ecdh(
+    private_key: impl AsRef<[u8; 32]>,
+    public_key: impl AsRef<[u8; 32]>,
+) -> Result<[u8; 32], Error> {
     let mut shared = [0u8; 32];
     let ok = unsafe {
         Hacl_Curve25519_51_ecdh(
             shared.as_mut_ptr(),
-            private_key.as_ptr() as _,
-            public_key.as_ptr() as _,
+            private_key.as_ref().as_ptr() as _,
+            public_key.as_ref().as_ptr() as _,
         )
     };
     if !ok {
@@ -34,9 +37,11 @@ pub fn ecdh(private_key: &[u8; 32], public_key: &[u8; 32]) -> Result<[u8; 32], E
 
 #[must_use]
 #[inline(always)]
-pub fn secret_to_public(private_key: &[u8; 32]) -> [u8; 32] {
+pub fn secret_to_public(private_key: impl AsRef<[u8; 32]>) -> [u8; 32] {
     let mut public = [0u8; 32];
-    unsafe { Hacl_Curve25519_51_secret_to_public(public.as_mut_ptr(), private_key.as_ptr() as _) };
+    unsafe {
+        Hacl_Curve25519_51_secret_to_public(public.as_mut_ptr(), private_key.as_ref().as_ptr() as _)
+    };
     public
 }
 
@@ -51,13 +56,16 @@ pub mod vale {
 
     #[must_use]
     #[inline(always)]
-    pub fn ecdh(private_key: &[u8; 32], public_key: &[u8; 32]) -> Result<[u8; 32], Error> {
+    pub fn ecdh(
+        private_key: impl AsRef<[u8; 32]>,
+        public_key: impl AsRef<[u8; 32]>,
+    ) -> Result<[u8; 32], Error> {
         let mut shared = [0u8; 32];
         let ok = unsafe {
             Hacl_Curve25519_64_ecdh(
                 shared.as_mut_ptr(),
-                private_key.as_ptr() as _,
-                public_key.as_ptr() as _,
+                private_key.as_ref().as_ptr() as _,
+                public_key.as_ref().as_ptr() as _,
             )
         };
         if !ok {
