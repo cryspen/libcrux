@@ -1,4 +1,4 @@
-use hacspec_lib::{field::PrimeFieldElement, ring::PolynomialRingElement};
+use hacspec_lib::{field::PrimeFieldElement, ring::PolynomialRingElement, vector::Vector};
 
 /// Field modulus: 3329
 pub(crate) const FIELD_MODULUS: u16 = 3329;
@@ -74,7 +74,7 @@ pub(crate) mod hash_functions {
         digest::shake128::<LEN>(input)
     }
 
-    pub(crate) fn KDF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
+    pub(crate) fn J<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
         digest::shake256::<LEN>(input)
     }
 }
@@ -85,3 +85,6 @@ pub(crate) type KyberFieldElement = PrimeFieldElement<FIELD_MODULUS>;
 /// A Kyber ring element
 pub(crate) type KyberPolynomialRingElement =
     PolynomialRingElement<KyberFieldElement, COEFFICIENTS_IN_RING_ELEMENT>;
+
+/// A Kyber vector
+pub(crate) type KyberVector = Vector<KyberFieldElement, COEFFICIENTS_IN_RING_ELEMENT, RANK>;

@@ -1,9 +1,10 @@
-use hacspec_lib::bit_vector::{BitVector, BitVectorChunks};
-
 use crate::{
     parameters::{self, KyberFieldElement, KyberPolynomialRingElement},
+    serialize::bytes_to_bits,
     BadRejectionSamplingRandomnessError,
 };
+
+use hacspec_lib::bit_vector::BitSlice;
 
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation
@@ -54,13 +55,13 @@ pub fn sample_ntt(
         let b1 = u16::from(byte_chunk[1]);
         let b2 = u16::from(byte_chunk[2]);
 
-        // d_1 ← B[i] + 256·(B[i+1] mod 16)
-        // d_2 ← ⌊B[i+1]/16⌋ + 16·B[i+2]
+        // d₁ ← B[i] + 256·(B[i+1] mod 16)
+        // d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
         let d1 = b + (256 * (b1 % 16));
         let d2 = (b1 / 16) + (16 * b2);
 
-        // if d_1 < q then
-        //     â[j] ← d_1
+        // if d₁ < q then
+        //     â[j] ← d₁
         //     j ← j+1
         // end if
         if d1 < parameters::FIELD_MODULUS && sampled_coefficients < a_hat.len() {
@@ -68,8 +69,8 @@ pub fn sample_ntt(
             sampled_coefficients += 1
         }
 
-        // if d_2 < q and j < 256 then
-        //     â[j] ← d_2
+        // if d₂ < q and j < 256 then
+        //     â[j] ← d₂
         //     j ← j+1
         // end if
         if d2 < parameters::FIELD_MODULUS && sampled_coefficients < a_hat.len() {
@@ -90,9 +91,9 @@ pub fn sample_ntt(
 //
 // This function calls `unwrap()`, meaning the caller assumes the responsibility
 // for ensuring `next()`, when called on the iterator, does not come up empty-handed.
-fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
+fn sum_coins(coins: BitSlice) -> KyberFieldElement {
     let mut sum: u8 = 0;
-    for coin in coins.next().unwrap() {
+    for coin in coins.iter() {
         sum += coin;
     }
 
@@ -149,8 +150,7 @@ fn sum_coins(coins: &mut BitVectorChunks<'_>) -> KyberFieldElement {
 pub fn sample_poly_cbd(eta: usize, bytes: &[u8]) -> KyberPolynomialRingElement {
     assert_eq!(bytes.len(), eta * 64);
 
-    // b ← BytesToBits(B)
-    let bits: BitVector = bytes.into();
+    let bits = bytes_to_bits(bytes);
 
     let mut bits = bits.chunks(eta);
 
@@ -158,10 +158,10 @@ pub fn sample_poly_cbd(eta: usize, bytes: &[u8]) -> KyberPolynomialRingElement {
 
     for i in 0..f.len() {
         // x ← ∑(j = 0 to η-1) b[2iη + j]
-        let x: KyberFieldElement = sum_coins(&mut bits);
+        let x: KyberFieldElement = sum_coins(bits.next().unwrap());
 
         // y ← ∑(j = 0 to η-1) b[2iη + η + j]
-        let y: KyberFieldElement = sum_coins(&mut bits);
+        let y: KyberFieldElement = sum_coins(bits.next().unwrap());
 
         // f[i] ← x − y mod q
         f[i] = x - y;
