@@ -120,6 +120,8 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .allowlist_function("Hacl_P256_.*")
         .allowlist_function("EverCrypt_AEAD_.*")
         .allowlist_function("EverCrypt_AutoConfig2_.*")
+        .allowlist_function("Hacl_RSAPSS.*")
+        .allowlist_function("hacl_free")
         .allowlist_type("Spec_.*")
         .allowlist_type("Hacl_Streaming_SHA2.*")
         .allowlist_type("Hacl_HMAC_DRBG.*")
@@ -154,10 +156,11 @@ fn compile_files(
     args: &[String],
     defines: &[(&str, &str)],
 ) {
+    let src_prefix = home_path.join("c").join("src");
     let src_prefix = if platform.target_env == "msvc" {
-        home_path.join("c").join("src").join("msvc")
+        src_prefix.join("msvc")
     } else {
-        home_path.join("c").join("src")
+        src_prefix
     };
     let vale_prefix = home_path.join("c").join("vale").join("src");
 
@@ -169,6 +172,7 @@ fn compile_files(
                 .map(|fname| src_prefix.join(fname))
                 .chain(vale_files.iter().map(|fname| vale_prefix.join(fname))),
         )
+        .file(home_path.join("c").join("config").join("hacl.c"))
         // XXX: There are too many warnings for now
         .warnings(false);
 
@@ -228,6 +232,7 @@ fn build(platform: &Platform, home_path: &Path) {
         "Hacl_RSAPSS.c",
     ];
     let mut defines = vec![];
+    defines.push(("RELOCATABLE", "1"));
 
     // Platform detection
     if platform.simd128 {
@@ -384,7 +389,6 @@ struct Platform {
     pmull: bool,
     adv_simd: bool,
     sha256: bool,
-    target: Option<&'static str>,
     target_arch: String,
     target_env: String,
     target_os: String,
@@ -410,7 +414,6 @@ fn main() {
             pmull: libcrux_platform::pmull_support(),
             adv_simd: libcrux_platform::adv_simd_support(),
             sha256: libcrux_platform::sha256_support(),
-            target: None,
             target_arch: target_arch.clone(),
             target_env: target_env.clone(),
             target_os: target_os.clone(),
