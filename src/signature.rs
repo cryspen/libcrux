@@ -81,7 +81,7 @@ pub struct Ed25519Signature {
 
 pub mod rsa_pss {
     use libcrux_hacl::{
-        Hacl_RSAPSS_new_rsapss_load_pkey, Hacl_RSAPSS_new_rsapss_load_skey,
+        hacl_free, Hacl_RSAPSS_new_rsapss_load_pkey, Hacl_RSAPSS_new_rsapss_load_skey,
         Hacl_RSAPSS_rsapss_sign, Hacl_RSAPSS_rsapss_verify,
     };
 
@@ -264,10 +264,10 @@ pub mod rsa_pss {
                     msg.as_ptr() as _,
                     signature.as_mut_ptr(),
                 ) {
-                    libcrux_hacl::cfree_u64(s_key);
+                    hacl_free(s_key as _);
                     return Err(Error::SigningError);
                 }
-                libcrux_hacl::cfree_u64(s_key);
+                hacl_free(s_key as _);
             }
             Ok(RsaPssSignature { value: signature })
         }

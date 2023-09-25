@@ -12,7 +12,6 @@ readme.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-libc = "0.2.148"
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }

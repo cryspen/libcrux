@@ -44,7 +44,7 @@ const PRIVATE_EXPONENT: [u8; 256] = [
 ];
 
 #[test]
-fn self_test() {
+fn self_test_rsa_pss() {
     let pk = RsaPssPublicKey::new(RsaPssKeySize::N2048, &MODULUS).unwrap();
     let sk = RsaPssPrivateKey::new(&pk, &PRIVATE_EXPONENT).expect("Error building private key");
     let salt = [1, 2, 3, 4, 5];

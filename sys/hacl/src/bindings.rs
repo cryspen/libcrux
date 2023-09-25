@@ -852,6 +852,10 @@ extern "C" {
         res: *mut u8,
     );
 }
+extern "C" {
+    #[doc = " @brief Free a raw c pointer.\n\n @param ptr the pointer to free"]
+    pub fn hacl_free(ptr: *mut ::core::ffi::c_void);
+}
 pub type __m128i = [::core::ffi::c_longlong; 2usize];
 pub type Lib_IntVector_Intrinsics_vec128 = __m128i;
 pub type __m256i = [::core::ffi::c_longlong; 4usize];
