@@ -224,7 +224,6 @@ pub struct Iv(pub [u8; 12]);
 
 #[cfg(simd256)]
 fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
-    log::trace!("HACL Chacha20Poly1305 Encrypt SIMD 256");
     chacha20_poly1305::simd256::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
 }
 
@@ -237,7 +236,6 @@ fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 
 #[cfg(simd128)]
 fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
-    log::trace!("HACL Chacha20Poly1305 Encrypt SIMD 128");
     chacha20_poly1305::simd128::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
 }
 
@@ -249,7 +247,6 @@ fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 }
 
 fn encrypt_32(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
-    log::trace!("HACL Chacha20Poly1305 Encrypt Portable");
     chacha20_poly1305::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
 }
 
@@ -261,7 +258,6 @@ fn decrypt_256(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
-    log::trace!("HACL Chacha20Poly1305 Decrypt SIMD 256");
     chacha20_poly1305::simd256::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
         .map_err(|_| Error::DecryptionFailed)
 }
@@ -287,7 +283,6 @@ fn decrypt_128(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
-    log::trace!("HACL Chacha20Poly1305 Decrypt SIMD 128");
     chacha20_poly1305::simd128::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
         .map_err(|_| Error::DecryptionFailed)
 }
@@ -312,7 +307,6 @@ fn decrypt_32(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), Error> {
-    log::trace!("HACL Chacha20Poly1305 Decrypt Portable");
     chacha20_poly1305::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
         .map_err(|_| Error::DecryptionFailed)
 }

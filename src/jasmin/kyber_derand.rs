@@ -23,7 +23,6 @@ fn kyber768_keypair_derand_ref(
     let mut public_key: Kyber768PublicKey = [0; 1184];
     let mut secret_key: Kyber768SecretKey = [0; 2400];
 
-    log::trace!("Jasmin kyber768 keypair_derand ref");
     let r = unsafe {
         jade_kem_kyber_kyber768_amd64_ref_keypair_derand(
             public_key.as_mut_ptr(),
@@ -46,7 +45,6 @@ fn kyber768_enc_derand_ref(
     let mut ciphertext: Kyber768Ciphertext = [0; 1088];
     let mut shared_secret = Kyber768SharedSecret::default();
 
-    log::trace!("Jasmin kyber768 enc_derand ref");
     let r = unsafe {
         jade_kem_kyber_kyber768_amd64_ref_enc_derand(
             ciphertext.as_mut_ptr(),
@@ -69,7 +67,6 @@ fn kyber768_dec_ref(
 ) -> Result<Kyber768SharedSecret, &'static str> {
     let mut shared_secret = Kyber768SharedSecret::default();
 
-    log::trace!("Jasmin kyber768 dec ref");
     let r = unsafe {
         jade_kem_kyber_kyber768_amd64_ref_dec(
             shared_secret.as_mut_ptr(),
