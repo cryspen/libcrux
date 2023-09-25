@@ -9,11 +9,7 @@ use crate::kem::kyber768::{
     },
     parameters::{
         hash_functions::{G, H, PRF, XOF},
-        BYTES_PER_ENCODED_ELEMENT_OF_U, BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
-        CPA_PKE_CIPHERTEXT_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
-        CPA_PKE_SECRET_KEY_SIZE, CPA_SERIALIZED_KEY_LEN, RANK, REJECTION_SAMPLING_SEED_SIZE,
-        T_AS_NTT_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR, VECTOR_U_ENCODED_SIZE,
-        VECTOR_V_COMPRESSION_FACTOR,
+        *,
     },
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{
@@ -26,7 +22,21 @@ use crate::kem::kyber768::{
 
 use super::conversions::into_padded_array;
 
-pub type CiphertextCpa = [u8; CPA_PKE_CIPHERTEXT_SIZE];
+pub enum CiphertextCpa {
+    Kyber512([u8; CPA_PKE_CIPHERTEXT_SIZE_512]),
+    Kyber768([u8; CPA_PKE_CIPHERTEXT_SIZE_768]),
+    Kyber1024([u8; CPA_PKE_CIPHERTEXT_SIZE_1024]),
+}
+
+impl AsRef<[u8]> for CiphertextCpa {
+    fn as_ref(&self) -> &[u8] {
+        match self {
+            CiphertextCpa::Kyber512(b) => b,
+            CiphertextCpa::Kyber768(b) => b,
+            CiphertextCpa::Kyber1024(b) => b,
+        }
+    }
+}
 
 /// A Kyber key pair
 pub struct KeyPair {
@@ -83,10 +93,10 @@ fn parse_a<const K: usize>(
 }
 
 #[inline(always)]
-fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
+fn cbd<const K: usize>(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; K], u8) {
     let mut domain_separator = 0;
-    let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..RANK {
+    let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    for i in 0..RANK_768 {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -99,10 +109,10 @@ fn cbd(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; RANK], u8) {
     (re_as_ntt, domain_separator)
 }
 
-fn encode_12<const K: usize>(
+fn encode_12<const K: usize, const OUT_LEN: usize>(
     input: [KyberPolynomialRingElement; K],
-) -> [u8; K * BYTES_PER_RING_ELEMENT] {
-    let mut out = [0u8; K * BYTES_PER_RING_ELEMENT];
+) -> [u8; OUT_LEN] {
+    let mut out = [0u8; OUT_LEN];
 
     for (i, re) in input.into_iter().enumerate() {
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
@@ -171,10 +181,20 @@ pub(crate) fn generate_keypair<const K: usize>(
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE])
-        .push(&encode_12(t_as_ntt))
-        .push(seed_for_A)
-        .array();
+    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE]);
+    let public_key_serialized = match K {
+        RANK_512 => {
+            public_key_serialized.push(&encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT_512>(t_as_ntt))
+        }
+        RANK_768 => {
+            public_key_serialized.push(&encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT_768>(t_as_ntt))
+        }
+        RANK_1024 => public_key_serialized.push(
+            &encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT_1024>(t_as_ntt),
+        ),
+        _ => return Err(BadRejectionSamplingRandomnessError),
+    };
+    let public_key_serialized = public_key_serialized.push(seed_for_A).array();
 
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = encode_12(secret_as_ntt);
@@ -182,27 +202,28 @@ pub(crate) fn generate_keypair<const K: usize>(
     Ok(KeyPair::new(secret_key_serialized, public_key_serialized))
 }
 
-fn compress_then_encode_u<const K: usize, const DU: usize>(
+fn compress_then_encode_u<const K: usize, const OUT_LEN: usize, const COMPRESSION_FACTOR: usize>(
     input: [KyberPolynomialRingElement; K],
-) -> [u8; ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8) * K] {
-    let mut out = [0u8; ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8) * K];
+) -> [u8; OUT_LEN] {
+    let mut out = [0u8; OUT_LEN];
     for (i, re) in input.into_iter().enumerate() {
-        out[i * ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8)
-            ..(i + 1) * ((COEFFICIENTS_IN_RING_ELEMENT * DU) / 8)]
-            .copy_from_slice(&serialize_little_endian_10(compress(re, DU)));
+        out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
+            // FIXME: use 11 for 1024
+            &serialize_little_endian_10(compress(re, COMPRESSION_FACTOR)),
+        );
     }
 
     out
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn encrypt(
+pub(crate) fn encrypt<const K: usize>(
     public_key: &[u8],
     message: [u8; CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8],
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
-    let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; K];
     for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
         .chunks_exact(BYTES_PER_RING_ELEMENT)
         .enumerate()
@@ -231,8 +252,8 @@ pub(crate) fn encrypt(
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let mut error_1 = [KyberPolynomialRingElement::ZERO; RANK];
-    for i in 0..RANK {
+    let mut error_1 = [KyberPolynomialRingElement::ZERO; K];
+    for i in 0..RANK_768 {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -249,7 +270,7 @@ pub(crate) fn encrypt(
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column_montgomery(&A_transpose, &r_as_ntt);
-    for i in 0..RANK {
+    for i in 0..RANK_768 {
         u[i] = invert_ntt_montgomery(u[i]) + error_1[i];
     }
 
@@ -259,14 +280,52 @@ pub(crate) fn encrypt(
         + error_2
         + decompress(message_as_ring_element, 1);
 
-    // c_1 := Encode_{du}(Compress_q(u,d_u))
-    let c1 = compress_then_encode_u(u);
+    let ciphertext = match K {
+        RANK_512 => {
+            // c_1 := Encode_{du}(Compress_q(u,d_u))
+            let c1 = compress_then_encode_u::<
+                K,
+                VECTOR_U_ENCODED_SIZE_512,
+                VECTOR_U_COMPRESSION_FACTOR_512,
+            >(u);
 
-    // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR));
+            // c_2 := Encode_{dv}(Compress_q(v,d_v))
+            let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR_512));
 
-    let mut ciphertext: CiphertextCpa = into_padded_array(&c1);
-    ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
+            let mut ciphertext: [u8; CPA_PKE_CIPHERTEXT_SIZE_512] = into_padded_array(&c1);
+            ciphertext[VECTOR_U_ENCODED_SIZE_512..].copy_from_slice(c2.as_slice());
+            CiphertextCpa::Kyber512(ciphertext)
+        }
+        RANK_768 => {
+            let c1 = compress_then_encode_u::<
+                K,
+                VECTOR_U_ENCODED_SIZE_768,
+                VECTOR_U_COMPRESSION_FACTOR_768,
+            >(u);
+
+            // c_2 := Encode_{dv}(Compress_q(v,d_v))
+            let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR_768));
+
+            let mut ciphertext: [u8; CPA_PKE_CIPHERTEXT_SIZE_768] = into_padded_array(&c1);
+            ciphertext[VECTOR_U_ENCODED_SIZE_768..].copy_from_slice(c2.as_slice());
+            CiphertextCpa::Kyber768(ciphertext)
+        }
+        RANK_1024 => {
+            let c1 = compress_then_encode_u::<
+                K,
+                VECTOR_U_ENCODED_SIZE_1024,
+                VECTOR_U_COMPRESSION_FACTOR_1024,
+            >(u);
+
+            // c_2 := Encode_{dv}(Compress_q(v,d_v))
+            let c2 = serialize_little_endian_4(compress(v, VECTOR_V_COMPRESSION_FACTOR_1024));
+
+            let mut ciphertext: [u8; CPA_PKE_CIPHERTEXT_SIZE_1024] = into_padded_array(&c1);
+            ciphertext[VECTOR_U_ENCODED_SIZE_1024..].copy_from_slice(c2.as_slice());
+            CiphertextCpa::Kyber1024(ciphertext)
+        }
+        _ => return Err(BadRejectionSamplingRandomnessError),
+    };
 
     Ok(ciphertext)
 }
@@ -274,13 +333,13 @@ pub(crate) fn encrypt(
 #[allow(non_snake_case)]
 pub(crate) fn decrypt(
     secret_key: &[u8],
-    ciphertext: &[u8; CPA_PKE_CIPHERTEXT_SIZE],
+    ciphertext: &[u8; CPA_PKE_CIPHERTEXT_SIZE_768],
 ) -> [u8; CPA_PKE_MESSAGE_SIZE] {
-    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
+    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK_768];
+    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK_768];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
+    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE_768]
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8)
         .enumerate()
     {
@@ -290,8 +349,8 @@ pub(crate) fn decrypt(
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = decompress(
-        deserialize_little_endian_4(&ciphertext[VECTOR_U_ENCODED_SIZE..]),
-        VECTOR_V_COMPRESSION_FACTOR,
+        deserialize_little_endian_4(&ciphertext[VECTOR_U_ENCODED_SIZE_768..]),
+        VECTOR_V_COMPRESSION_FACTOR_768,
     );
 
     // sˆ := Decode_12(sk)

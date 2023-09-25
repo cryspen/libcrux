@@ -19,7 +19,7 @@ let v_SECRET_KEY_SIZE: usize =
     usize) +.
   v_SHARED_SECRET_SIZE
 
-let v_CIPHERTEXT_SIZE: usize = Libcrux.Kem.Kyber768.Parameters.v_CPA_PKE_CIPHERTEXT_SIZE
+let v_CIPHERTEXT_SIZE: usize = Libcrux.Kem.Kyber768.Parameters.v_CPA_PKE_CIPHERTEXT_SIZE_768_
 
 let t_Kyber768PublicKey = array u8 1184sz
 
@@ -58,24 +58,24 @@ let generate_keypair (randomness: array u8 64sz)
                 t_BadRejectionSamplingRandomnessError)
         with
         | Core.Ops.Control_flow.ControlFlow_Break residual ->
-          let* hoist12:Rust_primitives.Hax.t_Never =
+          let* hoist14:Rust_primitives.Hax.t_Never =
             Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.FromResidual.from_residual
                   residual
                 <:
                 Core.Result.t_Result (array u8 1184sz & array u8 2400sz)
                   t_BadRejectionSamplingRandomnessError)
           in
-          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist12)
+          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist14)
         | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
           Core.Ops.Control_flow.ControlFlow_Continue v_val
       in
       Core.Ops.Control_flow.ControlFlow_Continue
       (let secret_key_serialized:array u8 2400sz =
-          Libcrux.Kem.Kyber768.Ind_cpa.serialize_secret_key_under_impl ind_cpa_key_pair
+          Libcrux.Kem.Kyber768.Ind_cpa.serialize_secret_key_under_impl_1 ind_cpa_key_pair
             implicit_rejection_value
         in
         Core.Result.Result_Ok
-        (Libcrux.Kem.Kyber768.Ind_cpa.pk_under_impl ind_cpa_key_pair, secret_key_serialized)))
+        (Libcrux.Kem.Kyber768.Ind_cpa.pk_under_impl_1 ind_cpa_key_pair, secret_key_serialized)))
 
 let encapsulate (public_key: array u8 1184sz) (randomness: array u8 32sz)
     : Core.Result.t_Result (array u8 1088sz & array u8 32sz) t_BadRejectionSamplingRandomnessError =
@@ -123,7 +123,7 @@ let encapsulate (public_key: array u8 1184sz) (randomness: array u8 32sz)
       let k_not, pseudorandomness:(slice u8 & slice u8) =
         Core.Slice.split_at_under_impl (Rust_primitives.unsize hashed <: slice u8) 32sz
       in
-      let* ciphertext:array u8 1088sz =
+      let* ciphertext:Libcrux.Kem.Kyber768.Ind_cpa.t_CiphertextCpa =
         match
           Core.Ops.Try_trait.Try.branch (Libcrux.Kem.Kyber768.Ind_cpa.encrypt (Rust_primitives.unsize
                     public_key
@@ -132,17 +132,18 @@ let encapsulate (public_key: array u8 1184sz) (randomness: array u8 32sz)
                 randomness_hashed
                 pseudorandomness
               <:
-              Core.Result.t_Result (array u8 1088sz) t_BadRejectionSamplingRandomnessError)
+              Core.Result.t_Result Libcrux.Kem.Kyber768.Ind_cpa.t_CiphertextCpa
+                t_BadRejectionSamplingRandomnessError)
         with
         | Core.Ops.Control_flow.ControlFlow_Break residual ->
-          let* hoist13:Rust_primitives.Hax.t_Never =
+          let* hoist15:Rust_primitives.Hax.t_Never =
             Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.FromResidual.from_residual
                   residual
                 <:
                 Core.Result.t_Result (array u8 1088sz & array u8 32sz)
                   t_BadRejectionSamplingRandomnessError)
           in
-          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist13)
+          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist15)
         | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
           Core.Ops.Control_flow.ControlFlow_Continue v_val
       in
@@ -165,7 +166,7 @@ let encapsulate (public_key: array u8 1184sz) (randomness: array u8 32sz)
                       })
                   <:
                   slice u8)
-                (Rust_primitives.unsize (Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_H (Rust_primitives.unsize
+                (Rust_primitives.unsize (Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_H (Core.Convert.AsRef.as_ref
                             ciphertext
                           <:
                           slice u8)
@@ -180,6 +181,14 @@ let encapsulate (public_key: array u8 1184sz) (randomness: array u8 32sz)
           Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_KDF (Rust_primitives.unsize to_hash
               <:
               slice u8)
+        in
+        let ciphertext:array u8 1088sz =
+          match ciphertext with
+          | Libcrux.Kem.Kyber768.Ind_cpa.CiphertextCpa_Kyber768 b -> b
+          | _ ->
+            Rust_primitives.Hax.never_to_any (Core.Panicking.panic "not implemented"
+                <:
+                Rust_primitives.Hax.t_Never)
         in
         Core.Result.Result_Ok (ciphertext, shared_secret)))
 
@@ -225,7 +234,7 @@ let decapsulate (secret_key: array u8 2400sz) (ciphertext: array u8 1088sz) : ar
   let k_not, pseudorandomness:(slice u8 & slice u8) =
     Core.Slice.split_at_under_impl (Rust_primitives.unsize hashed <: slice u8) 32sz
   in
-  let expected_ciphertext_result:Core.Result.t_Result (array u8 1088sz)
+  let expected_ciphertext_result:Core.Result.t_Result Libcrux.Kem.Kyber768.Ind_cpa.t_CiphertextCpa
     t_BadRejectionSamplingRandomnessError =
     Libcrux.Kem.Kyber768.Ind_cpa.encrypt ind_cpa_public_key decrypted pseudorandomness
   in
@@ -237,7 +246,7 @@ let decapsulate (secret_key: array u8 2400sz) (ciphertext: array u8 1088sz) : ar
               ciphertext
             <:
             slice u8)
-          (Rust_primitives.unsize expected_ciphertext <: slice u8)
+          (Core.Convert.AsRef.as_ref expected_ciphertext <: slice u8)
       in
       Libcrux.Kem.Kyber768.Constant_time_ops.select_shared_secret_in_constant_time k_not
         implicit_rejection_value

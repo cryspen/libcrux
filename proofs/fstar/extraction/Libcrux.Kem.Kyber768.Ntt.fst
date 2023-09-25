@@ -3,8 +3,9 @@ module Libcrux.Kem.Kyber768.Ntt
 open Core
 
 let multiply_row_by_column_montgomery
+      (#k: usize)
       (row_vector column_vector:
-          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz)
+          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
     : Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
   let result:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
     Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl
@@ -50,29 +51,30 @@ let multiply_row_by_column_montgomery
   result
 
 let multiply_matrix_by_column_montgomery
-      (matrix: array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz) 3sz)
-      (vector: array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz)
-    : array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
-  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl 3sz
+      (#k: usize)
+      (matrix: array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
+      (vector: array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+    : array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
   in
-  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
+  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter (Core.Iter.Traits.Iterator.Iterator.enumerate
               (Core.Slice.iter_under_impl (Rust_primitives.unsize matrix
                     <:
-                    slice (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz))
+                    slice (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K))
                 <:
                 Core.Slice.Iter.t_Iter
-                (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz))
+                (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K))
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_Iter
-              (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz)))
+              (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)))
         <:
         _)
       result
       (fun result (i, row) ->
-          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
+          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
             Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter
                   (Core.Iter.Traits.Iterator.Iterator.enumerate (Core.Slice.iter_under_impl (Rust_primitives.unsize
                               row
@@ -93,7 +95,7 @@ let multiply_matrix_by_column_montgomery
                     Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.ntt_multiply matrix_element
                       (vector.[ j ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
                   in
-                  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz
+                  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K
                   =
                     Rust_primitives.Hax.update_at result
                       i
@@ -105,7 +107,7 @@ let multiply_matrix_by_column_montgomery
                   in
                   result)
           in
-          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
+          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at result
               i
               ({
@@ -126,29 +128,30 @@ let multiply_matrix_by_column_montgomery
   result
 
 let multiply_matrix_by_column
-      (matrix: array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz) 3sz)
-      (vector: array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz)
-    : array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
-  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl 3sz
+      (#k: usize)
+      (matrix: array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
+      (vector: array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+    : array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
   in
-  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
+  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter (Core.Iter.Traits.Iterator.Iterator.enumerate
               (Core.Slice.iter_under_impl (Rust_primitives.unsize matrix
                     <:
-                    slice (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz))
+                    slice (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K))
                 <:
                 Core.Slice.Iter.t_Iter
-                (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz))
+                (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K))
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_Iter
-              (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz)))
+              (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)))
         <:
         _)
       result
       (fun result (i, row) ->
-          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
+          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
             Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter
                   (Core.Iter.Traits.Iterator.Iterator.enumerate (Core.Slice.iter_under_impl (Rust_primitives.unsize
                               row
@@ -169,7 +172,7 @@ let multiply_matrix_by_column
                     Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.ntt_multiply matrix_element
                       (vector.[ j ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
                   in
-                  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz
+                  let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K
                   =
                     Rust_primitives.Hax.update_at result
                       i
@@ -181,7 +184,7 @@ let multiply_matrix_by_column
                   in
                   result)
           in
-          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement 3sz =
+          let result:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at result
               i
               ({

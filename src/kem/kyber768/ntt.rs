@@ -1,6 +1,5 @@
-use crate::kem::kyber768::{
-    arithmetic::{barrett_reduce, to_montgomery_domain, KyberPolynomialRingElement},
-    parameters::RANK,
+use crate::kem::kyber768::arithmetic::{
+    barrett_reduce, to_montgomery_domain, KyberPolynomialRingElement,
 };
 
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
@@ -110,9 +109,9 @@ pub(crate) mod kyber_polynomial_ring_element_mod {
     }
 }
 
-pub(crate) fn multiply_row_by_column_montgomery(
-    row_vector: &[KyberPolynomialRingElement; RANK],
-    column_vector: &[KyberPolynomialRingElement; RANK],
+pub(crate) fn multiply_row_by_column_montgomery<const K: usize>(
+    row_vector: &[KyberPolynomialRingElement; K],
+    column_vector: &[KyberPolynomialRingElement; K],
 ) -> KyberPolynomialRingElement {
     let mut result = KyberPolynomialRingElement::ZERO;
 
@@ -125,11 +124,11 @@ pub(crate) fn multiply_row_by_column_montgomery(
     result
 }
 
-pub(crate) fn multiply_matrix_by_column_montgomery(
-    matrix: &[[KyberPolynomialRingElement; RANK]; RANK],
-    vector: &[KyberPolynomialRingElement; RANK],
-) -> [KyberPolynomialRingElement; RANK] {
-    let mut result = [KyberPolynomialRingElement::ZERO; RANK];
+pub(crate) fn multiply_matrix_by_column_montgomery<const K: usize>(
+    matrix: &[[KyberPolynomialRingElement; K]; K],
+    vector: &[KyberPolynomialRingElement; K],
+) -> [KyberPolynomialRingElement; K] {
+    let mut result = [KyberPolynomialRingElement::ZERO; K];
 
     for (i, row) in matrix.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {
