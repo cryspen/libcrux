@@ -68,7 +68,7 @@ wasm-bindgen-test = "0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = "0.5"
-libcrux-pqclean = { version = "0.0.2-pre.1", path = "sys/pqclean" }
+# libcrux-pqclean = { version = "0.0.2-pre.1", path = "sys/pqclean" }
 
 # Benchmarking "OpenSSL"
 # XXX: We don't do this for Windows or wasm right now.
