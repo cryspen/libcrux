@@ -50,7 +50,7 @@ fn kyber768_known_answer_tests() {
         }
 
         let (ciphertext, shared_secret) =
-            kem::kyber768_encapsulate_derand(public_key, kat.encapsulation_seed).unwrap();
+            kem::kyber768_encapsulate_derand(&public_key, kat.encapsulation_seed).unwrap();
 
         let ciphertext_hash = digest::sha3_256(&ciphertext);
         for i in 0..ciphertext_hash.len() {
@@ -62,7 +62,7 @@ fn kyber768_known_answer_tests() {
         }
 
         let shared_secret_from_decapsulate =
-            kem::kyber768_decapsulate_derand(secret_key, ciphertext);
+            kem::kyber768_decapsulate_derand(&secret_key, &ciphertext);
         for i in 0..shared_secret.len() {
             assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
         }

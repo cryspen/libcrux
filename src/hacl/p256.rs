@@ -3,6 +3,8 @@ use libcrux_hacl::{
     Hacl_P256_uncompressed_to_raw, Hacl_P256_validate_private_key, Hacl_P256_validate_public_key,
 };
 
+use crate::ecdh::p256::PrivateKey;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Error {
     InvalidInput,
@@ -56,8 +58,8 @@ pub fn compressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
 ///
 /// Returns [`Error::InvalidPoint`] if the `point` is not valid.
 #[must_use]
-pub fn validate_point(point: &[u8; 64]) -> Result<(), Error> {
-    if unsafe { Hacl_P256_validate_public_key(point.as_ptr() as _) } {
+pub fn validate_point(point: impl AsRef<[u8; 64]>) -> Result<(), Error> {
+    if unsafe { Hacl_P256_validate_public_key(point.as_ref().as_ptr() as _) } {
         Ok(())
     } else {
         Err(Error::InvalidPoint)
@@ -67,13 +69,20 @@ pub fn validate_point(point: &[u8; 64]) -> Result<(), Error> {
 /// Validate a P256 secret key (scalar).
 ///
 /// Returns [`Error::InvalidScalar`] if the `scalar` is not valid.
-pub fn validate_scalar(scalar: &[u8; 32]) -> Result<(), Error> {
-    if scalar.iter().all(|b| *b == 0) {
+pub fn validate_scalar(scalar: &impl AsRef<[u8; 32]>) -> Result<(), Error> {
+    validate_scalar_(scalar.as_ref())
+}
+
+/// Validate a P256 secret key (scalar).
+///
+/// Returns [`Error::InvalidScalar`] if the `scalar` is not valid.
+pub fn validate_scalar_(scalar: &[u8; 32]) -> Result<(), Error> {
+    if scalar.as_ref().iter().all(|b| *b == 0) {
         return Err(Error::InvalidScalar);
     }
 
     // Ensure that the key is in range  [1, p-1]
-    if unsafe { Hacl_P256_validate_private_key(scalar.as_ptr() as _) } {
+    if unsafe { Hacl_P256_validate_private_key(scalar.as_ref().as_ptr() as _) } {
         Ok(())
     } else {
         Err(Error::InvalidScalar)
@@ -81,7 +90,7 @@ pub fn validate_scalar(scalar: &[u8; 32]) -> Result<(), Error> {
 }
 
 /// Validate a P256 secret key (scalar).
-pub fn validate_scalar_slice(scalar: &[u8]) -> Result<[u8; 32], Error> {
+pub fn validate_scalar_slice(scalar: &[u8]) -> Result<PrivateKey, Error> {
     if scalar.is_empty() {
         return Err(Error::InvalidScalar);
     }
@@ -93,20 +102,23 @@ pub fn validate_scalar_slice(scalar: &[u8]) -> Result<[u8; 32], Error> {
         private[31 - i] = scalar[scalar.len() - 1 - i];
     }
 
-    validate_scalar(&private).map(|_| private)
+    validate_scalar_(&private).map(|_| PrivateKey(private))
 }
 
 /// Compute the ECDH with the `private_key` and `public_key`.
 ///
 /// Returns the 64 bytes shared key.
 #[must_use]
-pub fn ecdh(private_key: &[u8; 32], public_key: &[u8; 64]) -> Result<[u8; 64], Error> {
+pub fn ecdh(
+    private_key: impl AsRef<[u8; 32]>,
+    public_key: impl AsRef<[u8; 64]>,
+) -> Result<[u8; 64], Error> {
     let mut shared = [0u8; 64];
     let ok = unsafe {
         Hacl_P256_dh_responder(
             shared.as_mut_ptr(),
-            public_key.as_ptr() as _,
-            private_key.as_ptr() as _,
+            public_key.as_ref().as_ptr() as _,
+            private_key.as_ref().as_ptr() as _,
         )
     };
     if !ok {
@@ -120,11 +132,11 @@ pub fn ecdh(private_key: &[u8; 32], public_key: &[u8; 64]) -> Result<[u8; 64], E
 ///
 /// Returns the 64 bytes public key.
 #[must_use]
-pub fn secret_to_public(s: &[u8; 32]) -> Result<[u8; 64], Error> {
-    validate_scalar(s)?;
+pub fn secret_to_public(s: impl AsRef<[u8; 32]>) -> Result<[u8; 64], Error> {
+    validate_scalar(&s)?;
 
     let mut out = [0u8; 64];
-    if unsafe { Hacl_P256_dh_initiator(out.as_mut_ptr(), s.as_ptr() as _) } {
+    if unsafe { Hacl_P256_dh_initiator(out.as_mut_ptr(), s.as_ref().as_ptr() as _) } {
         Ok(out)
     } else {
         Err(Error::InvalidScalar)

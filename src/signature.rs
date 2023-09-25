@@ -3,7 +3,10 @@
 //! * EcDSA P256 with Sha256, Sha384, and Sha512
 //! * EdDSA 25519
 
-use crate::hacl::{self, ed25519, p256};
+use crate::{
+    ecdh::p256::{PrivateKey, PublicKey},
+    hacl::{self, ed25519, p256},
+};
 use rand::{CryptoRng, Rng, RngCore};
 
 use crate::ecdh;
@@ -114,7 +117,7 @@ impl EcDsaP256Signature {
 fn ecdsa_p256_sign_prep(
     private_key: &[u8],
     rng: &mut (impl CryptoRng + RngCore),
-) -> Result<([u8; 32], [u8; 32]), Error> {
+) -> Result<(PrivateKey, [u8; 32]), Error> {
     let private_key = p256::validate_scalar_slice(private_key).map_err(|_| Error::SigningError)?;
 
     let mut nonce = [0u8; 32];
@@ -122,7 +125,7 @@ fn ecdsa_p256_sign_prep(
         rng.try_fill_bytes(&mut nonce)
             .map_err(|_| Error::SigningError)?;
         // Make sure it's a valid nonce.
-        if p256::validate_scalar(&nonce).is_ok() {
+        if p256::validate_scalar_slice(&nonce).is_ok() {
             break;
         }
     }
@@ -160,7 +163,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha256) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha256(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha256(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -168,7 +171,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha384) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha384(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha384(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -176,15 +179,12 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha512) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha512(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha512(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
         }
         Algorithm::Ed25519 => {
-            log::debug!("Signing with ed25519");
-            log::trace!("  payload: {payload:x?}");
-            log::trace!("  private_key: {private_key:x?}");
             let signature = ed25519::sign(
                 payload,
                 private_key.try_into().map_err(|_| Error::SigningError)?,
@@ -220,7 +220,7 @@ fn ecdsa_p256_verify_prep(public_key: &[u8]) -> Result<[u8; 64], Error> {
         }
     };
 
-    p256::validate_point(&pk)
+    p256::validate_point(PublicKey(pk))
         .map(|()| pk)
         .map_err(into_verify_error)
 }

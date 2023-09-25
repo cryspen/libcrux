@@ -122,6 +122,7 @@ pub fn LabeledExpand(
     L: usize,
 ) -> HpkeBytesResult {
     if L > (255 * Nh(alg)) {
+        debug_assert!(false, "LabeledExpand asked for too much output");
         // This check is mentioned explicitly in the spec because because it
         // must be adhered to when exporting secrets.
         // The check comes from HKDF and will be performed there again.
