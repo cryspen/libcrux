@@ -22,18 +22,18 @@ use constant_time_ops::{
 use conversions::into_padded_array;
 use parameters::{
     hash_functions::{G, H, H_DIGEST_SIZE, KDF},
-    CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE,
-    CPA_PKE_SECRET_KEY_SIZE,
+    CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE_768,
+    CPA_PKE_SECRET_KEY_SIZE_768,
 };
 
 pub const SHARED_SECRET_SIZE: usize = CPA_PKE_MESSAGE_SIZE;
 
 pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
 
-pub const PUBLIC_KEY_SIZE: usize = CPA_PKE_PUBLIC_KEY_SIZE;
+pub const PUBLIC_KEY_SIZE: usize = CPA_PKE_PUBLIC_KEY_SIZE_768;
 
 pub const SECRET_KEY_SIZE: usize =
-    CPA_PKE_SECRET_KEY_SIZE + CPA_PKE_PUBLIC_KEY_SIZE + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
+    CPA_PKE_SECRET_KEY_SIZE_768 + CPA_PKE_PUBLIC_KEY_SIZE_768 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
 
 pub const CIPHERTEXT_SIZE: usize = parameters::CPA_PKE_CIPHERTEXT_SIZE_768;
 
@@ -95,11 +95,12 @@ pub fn decapsulate(
     secret_key: Kyber768PrivateKey,
     ciphertext: Kyber768Ciphertext,
 ) -> Kyber768SharedSecret {
-    let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE);
-    let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE);
+    let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE_768);
+    let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE_768);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 
-    let decrypted = ind_cpa::decrypt(ind_cpa_secret_key, &ciphertext);
+    let ciphertext = CiphertextCpa::Kyber768(ciphertext);
+    let decrypted = ind_cpa::decrypt::<RANK_768>(ind_cpa_secret_key, &ciphertext);
 
     let mut to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
     to_hash[CPA_PKE_MESSAGE_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
@@ -123,7 +124,7 @@ pub fn decapsulate(
     // would no longer proceed).
     let to_hash = if let Ok(expected_ciphertext) = expected_ciphertext_result {
         let selector =
-            compare_ciphertexts_in_constant_time(&ciphertext, expected_ciphertext.as_ref());
+            compare_ciphertexts_in_constant_time(ciphertext.as_ref(), expected_ciphertext.as_ref());
         select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector)
     } else {
         let mut out = [0u8; 32];
@@ -132,7 +133,7 @@ pub fn decapsulate(
     };
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&to_hash);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(&ciphertext));
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
 
     KDF(&to_hash)
 }

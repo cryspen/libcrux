@@ -1,3 +1,5 @@
+use std::ops::{Index, Range, RangeFrom, RangeTo};
+
 use crate::kem::kyber768::conversions::{UpdatableArray, UpdatingArray};
 
 use crate::kem::kyber768::{
@@ -38,23 +40,74 @@ impl AsRef<[u8]> for CiphertextCpa {
     }
 }
 
+impl Index<usize> for CiphertextCpa {
+    type Output = u8;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match self {
+            CiphertextCpa::Kyber512(ct) => &ct[index],
+            CiphertextCpa::Kyber768(ct) => &ct[index],
+            CiphertextCpa::Kyber1024(ct) => &ct[index],
+        }
+    }
+}
+
+impl Index<Range<usize>> for CiphertextCpa {
+    type Output = [u8];
+
+    fn index(&self, range: Range<usize>) -> &Self::Output {
+        match self {
+            CiphertextCpa::Kyber512(ct) => &ct[range],
+            CiphertextCpa::Kyber768(ct) => &ct[range],
+            CiphertextCpa::Kyber1024(ct) => &ct[range],
+        }
+    }
+}
+
+impl Index<RangeTo<usize>> for CiphertextCpa {
+    type Output = [u8];
+
+    fn index(&self, range: RangeTo<usize>) -> &Self::Output {
+        match self {
+            CiphertextCpa::Kyber512(ct) => &ct[range],
+            CiphertextCpa::Kyber768(ct) => &ct[range],
+            CiphertextCpa::Kyber1024(ct) => &ct[range],
+        }
+    }
+}
+
+impl Index<RangeFrom<usize>> for CiphertextCpa {
+    type Output = [u8];
+
+    fn index(&self, range: RangeFrom<usize>) -> &Self::Output {
+        match self {
+            CiphertextCpa::Kyber512(ct) => &ct[range],
+            CiphertextCpa::Kyber768(ct) => &ct[range],
+            CiphertextCpa::Kyber1024(ct) => &ct[range],
+        }
+    }
+}
+
 /// A Kyber key pair
 pub struct KeyPair {
-    sk: [u8; CPA_PKE_SECRET_KEY_SIZE],
-    pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE],
+    sk: [u8; CPA_PKE_SECRET_KEY_SIZE_768],
+    pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE_768],
 }
 
 impl KeyPair {
     /// Creates a new [`KeyPair`].
-    pub fn new(sk: [u8; CPA_PKE_SECRET_KEY_SIZE], pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE]) -> Self {
+    pub fn new(
+        sk: [u8; CPA_PKE_SECRET_KEY_SIZE_768],
+        pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE_768],
+    ) -> Self {
         Self { sk, pk }
     }
 
     pub fn serialize_secret_key(
         &self,
         implicit_rejection_value: &[u8],
-    ) -> [u8; CPA_SERIALIZED_KEY_LEN] {
-        UpdatableArray::new([0u8; CPA_SERIALIZED_KEY_LEN])
+    ) -> [u8; CPA_SERIALIZED_KEY_LEN_768] {
+        UpdatableArray::new([0u8; CPA_SERIALIZED_KEY_LEN_768])
             .push(&self.sk)
             .push(&self.pk)
             .push(&H(&self.pk))
@@ -96,7 +149,7 @@ fn parse_a<const K: usize>(
 fn cbd<const K: usize>(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; K], u8) {
     let mut domain_separator = 0;
     let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; K];
-    for i in 0..RANK_768 {
+    for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -181,7 +234,7 @@ pub(crate) fn generate_keypair<const K: usize>(
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE]);
+    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE_768]);
     let public_key_serialized = match K {
         RANK_512 => {
             public_key_serialized.push(&encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT_512>(t_as_ntt))
@@ -224,7 +277,7 @@ pub(crate) fn encrypt<const K: usize>(
 ) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
     // tˆ := Decode_12(pk)
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; K];
-    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
+    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE_768]
         .chunks_exact(BYTES_PER_RING_ELEMENT)
         .enumerate()
     {
@@ -237,7 +290,7 @@ pub(crate) fn encrypt<const K: usize>(
     //         AˆT[i][j] := Parse(XOF(ρ, i, j))
     //     end for
     // end for
-    let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
+    let seed = &public_key[T_AS_NTT_ENCODED_SIZE_768..];
     let A_transpose = parse_a(into_padded_array(seed), false)?;
 
     // for i from 0 to k−1 do
@@ -253,7 +306,7 @@ pub(crate) fn encrypt<const K: usize>(
     //     N := N + 1
     // end for
     let mut error_1 = [KyberPolynomialRingElement::ZERO; K];
-    for i in 0..RANK_768 {
+    for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
@@ -270,7 +323,7 @@ pub(crate) fn encrypt<const K: usize>(
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column_montgomery(&A_transpose, &r_as_ntt);
-    for i in 0..RANK_768 {
+    for i in 0..K {
         u[i] = invert_ntt_montgomery(u[i]) + error_1[i];
     }
 
@@ -331,16 +384,34 @@ pub(crate) fn encrypt<const K: usize>(
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn decrypt(
+pub(crate) fn decrypt<const K: usize>(
     secret_key: &[u8],
-    ciphertext: &[u8; CPA_PKE_CIPHERTEXT_SIZE_768],
+    ciphertext: &CiphertextCpa,
 ) -> [u8; CPA_PKE_MESSAGE_SIZE] {
-    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; RANK_768];
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK_768];
+    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+
+    let (vec_u_encoded_size, u_compression_factor, v_compression_factor) = match ciphertext {
+        CiphertextCpa::Kyber512(_) => (
+            VECTOR_U_ENCODED_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+        ),
+        CiphertextCpa::Kyber768(_) => (
+            VECTOR_U_ENCODED_SIZE_768,
+            VECTOR_U_COMPRESSION_FACTOR_768,
+            VECTOR_V_COMPRESSION_FACTOR_768,
+        ),
+        CiphertextCpa::Kyber1024(_) => (
+            VECTOR_U_ENCODED_SIZE_1024,
+            VECTOR_U_COMPRESSION_FACTOR_1024,
+            VECTOR_V_COMPRESSION_FACTOR_1024,
+        ),
+    };
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE_768]
-        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * 10) / 8)
+    for (i, u_bytes) in ciphertext[..vec_u_encoded_size]
+        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * u_compression_factor) / 8)
         .enumerate()
     {
         let u = deserialize_little_endian_10(u_bytes);
@@ -349,8 +420,8 @@ pub(crate) fn decrypt(
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = decompress(
-        deserialize_little_endian_4(&ciphertext[VECTOR_U_ENCODED_SIZE_768..]),
-        VECTOR_V_COMPRESSION_FACTOR_768,
+        deserialize_little_endian_4(&ciphertext[vec_u_encoded_size..]),
+        v_compression_factor,
     );
 
     // sˆ := Decode_12(sk)
