@@ -15,6 +15,8 @@ mod ind_cpa;
 mod ntt;
 mod sampling;
 mod serialize;
+#[macro_use]
+mod types;
 
 use constant_time_ops::{
     compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
@@ -32,16 +34,22 @@ pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + S
 
 pub const PUBLIC_KEY_SIZE: usize = CPA_PKE_PUBLIC_KEY_SIZE_768;
 
-pub const SECRET_KEY_SIZE: usize =
+pub const SECRET_KEY_SIZE_512: usize =
+    CPA_PKE_SECRET_KEY_SIZE_512 + CPA_PKE_PUBLIC_KEY_SIZE_512 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
+pub const SECRET_KEY_SIZE_768: usize =
     CPA_PKE_SECRET_KEY_SIZE_768 + CPA_PKE_PUBLIC_KEY_SIZE_768 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
+pub const SECRET_KEY_SIZE_1024: usize = CPA_PKE_SECRET_KEY_SIZE_1024
+    + CPA_PKE_PUBLIC_KEY_SIZE_1024
+    + H_DIGEST_SIZE
+    + SHARED_SECRET_SIZE;
 
 pub const CIPHERTEXT_SIZE: usize = parameters::CPA_PKE_CIPHERTEXT_SIZE_768;
 
-pub type Kyber768PublicKey = [u8; PUBLIC_KEY_SIZE];
-pub type Kyber768PrivateKey = [u8; SECRET_KEY_SIZE];
+// pub type Kyber768PublicKey = [u8; PUBLIC_KEY_SIZE];
+// pub type Kyber768PrivateKey = [u8; SECRET_KEY_SIZE];
 
-pub type Kyber768Ciphertext = [u8; CIPHERTEXT_SIZE];
-pub type Kyber768SharedSecret = [u8; SHARED_SECRET_SIZE];
+// pub type Kyber768Ciphertext = [u8; CIPHERTEXT_SIZE];
+// pub type Kyber768SharedSecret = [u8; SHARED_SECRET_SIZE];
 
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
@@ -50,7 +58,86 @@ use parameters::*;
 
 use self::ind_cpa::CiphertextCpa;
 
+pub enum Ciphersuite {
+    Kyber512,
+    Kyber768,
+    Kyber1024,
+}
+
+impl_types!(Kyber512Ciphertext, CPA_PKE_CIPHERTEXT_SIZE_512);
+impl_types!(Kyber512PublicKey, CPA_PKE_PUBLIC_KEY_SIZE_512);
+impl_types!(Kyber512PrivateKey, SECRET_KEY_SIZE_512);
+impl_types!(Kyber512SharedSecret, SHARED_SECRET_SIZE);
+
+impl_types!(Kyber768Ciphertext, CPA_PKE_CIPHERTEXT_SIZE_768);
+impl_types!(Kyber768PublicKey, CPA_PKE_PUBLIC_KEY_SIZE_768);
+impl_types!(Kyber768PrivateKey, SECRET_KEY_SIZE_768);
+impl_types!(Kyber768SharedSecret, SHARED_SECRET_SIZE);
+
+impl_types!(Kyber1024Ciphertext, CPA_PKE_CIPHERTEXT_SIZE_1024);
+impl_types!(Kyber1024PublicKey, CPA_PKE_PUBLIC_KEY_SIZE_1024);
+impl_types!(Kyber1024PrivateKey, SECRET_KEY_SIZE_1024);
+impl_types!(Kyber1024SharedSecret, SHARED_SECRET_SIZE);
+
+pub enum KyberPublicKey {
+    Kyber512(Kyber512PublicKey, Ciphersuite),
+    Kyber768(Kyber768PublicKey, Ciphersuite),
+    Kyber1024(Kyber1024PublicKey, Ciphersuite),
+}
+
+pub enum KyberPrivateKey {
+    Kyber512(Kyber512PrivateKey, Ciphersuite),
+    Kyber768(Kyber768PrivateKey, Ciphersuite),
+    Kyber1024(Kyber1024PrivateKey, Ciphersuite),
+}
+
+impl AsRef<[u8]> for KyberPublicKey {
+    fn as_ref(&self) -> &[u8] {
+        match self {
+            KyberPublicKey::Kyber512(pk, _) => pk.as_ref(),
+            KyberPublicKey::Kyber768(pk, _) => pk.as_ref(),
+            KyberPublicKey::Kyber1024(pk, _) => pk.as_ref(),
+        }
+    }
+}
+
+impl KyberPublicKey {
+    pub(crate) fn ciphersuite(&self) -> &Ciphersuite {
+        match self {
+            KyberPublicKey::Kyber512(_, c) => c,
+            KyberPublicKey::Kyber768(_, c) => c,
+            KyberPublicKey::Kyber1024(_, c) => c,
+        }
+    }
+}
+
+/// A Kyber512 Key pair
+pub struct Kyber512KeyPair {
+    private: Kyber512PrivateKey,
+    public: Kyber512PublicKey,
+}
+
+/// A Kyber768 Key pair
+pub struct Kyber768KeyPair {
+    private: Kyber768PrivateKey,
+    public: Kyber768PublicKey,
+}
+
+/// A Kyber1024 Key pair
+pub struct Kyber1024KeyPair {
+    private: Kyber1024PrivateKey,
+    public: Kyber1024PublicKey,
+}
+
+/// A Kyber key pair
+pub enum KeyPair {
+    Kyber512(Kyber512KeyPair),
+    Kyber768(Kyber768KeyPair),
+    Kyber1024(Kyber1024KeyPair),
+}
+
 pub fn generate_keypair(
+    ciphersuite: Ciphersuite,
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<(Kyber768PublicKey, Kyber768PrivateKey), BadRejectionSamplingRandomnessError> {
     let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
