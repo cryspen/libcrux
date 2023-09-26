@@ -10,10 +10,7 @@ use crate::{
 };
 use rand::{CryptoRng, Rng, RngCore};
 
-use crate::{
-    ecdh,
-    hacl::{self, ed25519, p256},
-};
+use crate::ecdh;
 
 use self::rsa_pss::RsaPssSignature;
 

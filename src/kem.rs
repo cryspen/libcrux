@@ -159,7 +159,7 @@ impl PrivateKey {
         match self {
             PrivateKey::X25519(k) => k.0.to_vec(),
             PrivateKey::P256(k) => k.0.to_vec(),
-            PrivateKey::Kyber768(k) => k.to_vec(),
+            PrivateKey::Kyber768(k) => k.as_slice().to_vec(),
             PrivateKey::Kyber768X25519(k) => k.encode(),
         }
     }

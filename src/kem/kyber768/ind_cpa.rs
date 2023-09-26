@@ -88,35 +88,64 @@ impl Index<RangeFrom<usize>> for CiphertextCpa {
     }
 }
 
-/// A Kyber key pair
-pub struct KeyPair {
-    sk: [u8; CPA_PKE_SECRET_KEY_SIZE_768],
-    pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE_768],
+impl_generic_struct!(PublicKey);
+impl_generic_struct!(PrivateKey);
+
+/// A Kyber CPA key pair
+pub struct KeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
+    pub(super) sk: PrivateKey<PRIVATE_KEY_SIZE>,
+    pub(super) pk: PublicKey<PUBLIC_KEY_SIZE>,
 }
 
-impl KeyPair {
+impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
+    KeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
+{
     /// Creates a new [`KeyPair`].
-    pub fn new(
-        sk: [u8; CPA_PKE_SECRET_KEY_SIZE_768],
-        pk: [u8; CPA_PKE_PUBLIC_KEY_SIZE_768],
-    ) -> Self {
-        Self { sk, pk }
+    pub fn new(sk: [u8; PRIVATE_KEY_SIZE], pk: [u8; PUBLIC_KEY_SIZE]) -> Self {
+        Self {
+            sk: sk.into(),
+            pk: pk.into(),
+        }
     }
 
-    pub fn serialize_secret_key(
-        &self,
-        implicit_rejection_value: &[u8],
-    ) -> [u8; CPA_SERIALIZED_KEY_LEN_768] {
-        UpdatableArray::new([0u8; CPA_SERIALIZED_KEY_LEN_768])
-            .push(&self.sk)
-            .push(&self.pk)
-            .push(&H(&self.pk))
-            .push(implicit_rejection_value)
-            .array()
+    pub fn pk(&self) -> &[u8; PUBLIC_KEY_SIZE] {
+        self.pk.as_slice()
     }
 
-    pub fn pk(&self) -> [u8; 1184] {
+    pub fn into_pk(self) -> PublicKey<PUBLIC_KEY_SIZE> {
         self.pk
+    }
+
+    pub fn into_raw_pk(self) -> [u8; PUBLIC_KEY_SIZE] {
+        self.pk.key
+    }
+
+    pub fn sk(&self) -> &[u8; PRIVATE_KEY_SIZE] {
+        self.sk.as_slice()
+    }
+}
+
+pub enum CpaKeyPair {
+    Kyber512(KeyPair<CPA_PKE_SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>),
+    Kyber768(KeyPair<CPA_PKE_SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>),
+    Kyber1024(KeyPair<CPA_PKE_SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>),
+}
+
+impl CpaKeyPair {
+    pub fn pk_slice(&self) -> &[u8] {
+        match self {
+            CpaKeyPair::Kyber512(kp) => kp.pk.as_ref(),
+            CpaKeyPair::Kyber768(kp) => kp.pk.as_ref(),
+            CpaKeyPair::Kyber1024(kp) => kp.pk.as_ref(),
+        }
+    }
+
+    pub fn sk_slice(&self) -> &[u8] {
+        match self {
+            CpaKeyPair::Kyber512(kp) => kp.sk.as_ref(),
+            CpaKeyPair::Kyber768(kp) => kp.sk.as_ref(),
+            CpaKeyPair::Kyber1024(kp) => kp.sk.as_ref(),
+        }
     }
 }
 
@@ -176,9 +205,16 @@ fn encode_12<const K: usize, const OUT_LEN: usize>(
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn generate_keypair<const K: usize>(
+pub(crate) fn generate_keypair<
+    const K: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+>(
     key_generation_seed: &[u8],
-) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
+) -> Result<
+    (PrivateKey<PRIVATE_KEY_SIZE>, PublicKey<PUBLIC_KEY_SIZE>),
+    BadRejectionSamplingRandomnessError,
+> {
     let mut prf_input: [u8; 33] = [0; 33];
 
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
@@ -234,8 +270,10 @@ pub(crate) fn generate_keypair<const K: usize>(
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized = UpdatableArray::new([0u8; CPA_PKE_PUBLIC_KEY_SIZE_768]);
+    // sk := Encode_12(sˆ mod^{+}q)
+    let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);
     let public_key_serialized = match K {
+        // TODO: put into macro
         RANK_512 => {
             public_key_serialized.push(&encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT_512>(t_as_ntt))
         }
@@ -245,14 +283,24 @@ pub(crate) fn generate_keypair<const K: usize>(
         RANK_1024 => public_key_serialized.push(
             &encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT_1024>(t_as_ntt),
         ),
-        _ => return Err(BadRejectionSamplingRandomnessError),
+        _ => unreachable!(),
     };
     let public_key_serialized = public_key_serialized.push(seed_for_A).array();
-
-    // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = encode_12(secret_as_ntt);
+    Ok((secret_key_serialized.into(), public_key_serialized.into()))
+}
 
-    Ok(KeyPair::new(secret_key_serialized, public_key_serialized))
+pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
+    private_key: &[u8],
+    public_key: &[u8],
+    implicit_rejection_value: &[u8],
+) -> [u8; SERIALIZED_KEY_LEN] {
+    UpdatableArray::new([0u8; SERIALIZED_KEY_LEN])
+        .push(private_key)
+        .push(public_key)
+        .push(&H(public_key))
+        .push(implicit_rejection_value)
+        .array()
 }
 
 fn compress_then_encode_u<const K: usize, const OUT_LEN: usize, const COMPRESSION_FACTOR: usize>(
