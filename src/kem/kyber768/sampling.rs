@@ -6,7 +6,10 @@ use crate::kem::kyber768::{
 
 pub fn sample_from_uniform_distribution(
     randomness: [u8; REJECTION_SAMPLING_SEED_SIZE],
-) -> Result<KyberPolynomialRingElement, BadRejectionSamplingRandomnessError> {
+) -> (
+    KyberPolynomialRingElement,
+    Option<BadRejectionSamplingRandomnessError>,
+) {
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
@@ -26,13 +29,12 @@ pub fn sample_from_uniform_distribution(
             out[sampled_coefficients] = d2;
             sampled_coefficients += 1;
         }
-
         if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
-            return Ok(out);
+            return (out, None);
         }
     }
 
-    Err(BadRejectionSamplingRandomnessError)
+    (out, Some(BadRejectionSamplingRandomnessError))
 }
 
 /// Given a series of uniformly random bytes in `|randomness|`, sample
