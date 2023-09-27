@@ -57,8 +57,8 @@ pub fn generate_keypair(
 
     let secret_key_serialized = ind_cpa_key_pair.serialize_secret_key(implicit_rejection_value);
 
-    if sampling_a_error.is_some() {
-        Err(sampling_a_error.unwrap())
+    if let Some(error) = sampling_a_error {
+        Err(error)
     } else {
         Ok((ind_cpa_key_pair.pk(), secret_key_serialized))
     }
