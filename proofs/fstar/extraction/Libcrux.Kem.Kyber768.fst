@@ -57,9 +57,9 @@ let generate_keypair (randomness: array u8 64sz)
     Libcrux.Kem.Kyber768.Ind_cpa.serialize_secret_key_under_impl ind_cpa_key_pair
       implicit_rejection_value
   in
-  if Core.Option.is_some_under_impl sampling_a_error
-  then Core.Result.Result_Err (Core.Option.unwrap_under_impl sampling_a_error)
-  else
+  match sampling_a_error with
+  | Core.Option.Option_Some error -> Core.Result.Result_Err error
+  | _ ->
     Core.Result.Result_Ok
     (Libcrux.Kem.Kyber768.Ind_cpa.pk_under_impl ind_cpa_key_pair, secret_key_serialized)
 
