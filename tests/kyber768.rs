@@ -127,7 +127,7 @@ fn modified_secret_key() {
 
 fn raw_ct(ciphertext: Ct) -> [u8; 1088] {
     if let Ct::Kyber768(ct) = ciphertext {
-        ct
+        ct.into()
     } else {
         unreachable!()
     }
@@ -136,12 +136,12 @@ fn raw_ct(ciphertext: Ct) -> [u8; 1088] {
 fn modify_sk(secret_key: PrivateKey, secret_key_position: usize, random_byte: u8) -> PrivateKey {
     let mut secret_key = raw_sk(secret_key);
     secret_key[secret_key_position] ^= random_byte;
-    PrivateKey::Kyber768(secret_key)
+    PrivateKey::Kyber768(secret_key.into())
 }
 
 fn raw_sk(secret_key: PrivateKey) -> [u8; 2400] {
     if let PrivateKey::Kyber768(ksk) = secret_key {
-        ksk
+        ksk.into()
     } else {
         unreachable!();
     }

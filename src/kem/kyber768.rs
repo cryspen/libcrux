@@ -5,7 +5,7 @@
 // was stolen.
 //
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
-mod parameters;
+pub(crate) mod parameters;
 
 #[macro_use]
 mod types;
@@ -56,11 +56,12 @@ pub struct BadRejectionSamplingRandomnessError;
 
 use parameters::*;
 
-use self::ind_cpa::{serialize_secret_key, CiphertextCpa, CpaKeyPair};
+use self::ind_cpa::serialize_secret_key;
 
 impl_generic_struct!(KyberCiphertext);
 impl_generic_struct!(KyberSharedSecret);
 impl_generic_struct!(KyberPrivateKey);
+pub(crate) use ind_cpa::PublicKey as KyberPublicKey;
 
 // // impl_types!(Kyber512Ciphertext, CPA_PKE_CIPHERTEXT_SIZE_512);
 // // pub type Kyber512PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
@@ -79,8 +80,8 @@ impl_generic_struct!(KyberPrivateKey);
 
 /// A Kyber CPA key pair
 pub struct CcaKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
-    pub(super) sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
-    pub(super) pk: ind_cpa::PublicKey<PUBLIC_KEY_SIZE>,
+    pub(crate) sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
+    pub(crate) pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
 }
 
 impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
@@ -96,9 +97,17 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
 
     pub fn from(
         sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
-        pk: ind_cpa::PublicKey<PUBLIC_KEY_SIZE>,
+        pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
     ) -> Self {
         Self { sk, pk }
+    }
+
+    pub fn public_key(&self) -> &KyberPublicKey<PUBLIC_KEY_SIZE> {
+        &self.pk
+    }
+
+    pub fn private_key(&self) -> &KyberPrivateKey<PRIVATE_KEY_SIZE> {
+        &self.sk
     }
 
     pub fn pk(&self) -> &[u8; PUBLIC_KEY_SIZE] {
@@ -172,14 +181,35 @@ impl KyberKeyPair {
 //     })
 // }
 
-pub fn generate_keypair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>(
+pub fn generate_key_pair_768(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> Result<
+    CcaKeyPair<{ SECRET_KEY_SIZE_768 }, { parameters::CPA_PKE_PUBLIC_KEY_SIZE_768 }>,
+    BadRejectionSamplingRandomnessError,
+> {
+    generate_keypair::<
+        { parameters::RANK_768 },
+        { parameters::CPA_PKE_SECRET_KEY_SIZE_768 },
+        { SECRET_KEY_SIZE_768 },
+        { parameters::CPA_PKE_PUBLIC_KEY_SIZE_768 },
+        { parameters::RANKED_BYTES_PER_RING_ELEMENT_768 },
+    >(randomness)
+}
+
+pub fn generate_keypair<
+    const K: usize,
+    const CPA_PRIVATE_KEY_SIZE: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const BYTES_PER_RING_ELEMENT: usize,
+>(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<CcaKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError> {
     let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
     let (ind_cpa_private_key, public_key) =
-        ind_cpa::generate_keypair::<RANK_768, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>(
+        ind_cpa::generate_keypair::<K, CPA_PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, BYTES_PER_RING_ELEMENT>(
             ind_cpa_keypair_randomness,
         )?;
 
@@ -192,6 +222,23 @@ pub fn generate_keypair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: us
         KyberPrivateKey::from(secret_key_serialized);
 
     Ok(CcaKeyPair::from(private_key, public_key))
+}
+
+pub fn encapsulate_768(
+    public_key: &ind_cpa::PublicKey<PUBLIC_KEY_SIZE>,
+    randomness: [u8; SHARED_SECRET_SIZE],
+) -> Result<
+    (
+        KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
+        KyberSharedSecret<SHARED_SECRET_SIZE>,
+    ),
+    BadRejectionSamplingRandomnessError,
+> {
+    encapsulate::<
+        { SHARED_SECRET_SIZE },
+        { parameters::CPA_PKE_CIPHERTEXT_SIZE_768 },
+        { parameters::CPA_PKE_PUBLIC_KEY_SIZE_768 },
+    >(public_key, randomness)
 }
 
 pub fn encapsulate<
@@ -216,32 +263,40 @@ pub fn encapsulate<
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let ciphertext =
-        ind_cpa::encrypt::<RANK_768>(public_key.as_slice(), randomness_hashed, pseudorandomness)?;
+    let ciphertext = ind_cpa::encrypt::<RANK_768, CIPHERTEXT_SIZE>(
+        public_key.as_slice(),
+        randomness_hashed,
+        pseudorandomness,
+    )?;
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
 
     let shared_secret = KDF(&to_hash).into();
 
-    // let ciphertext = if let CiphertextCpa::Kyber768(b) = ciphertext {
-    //     b
-    // } else {
-    //     unimplemented!()
-    // };
     Ok((ciphertext, shared_secret))
 }
 
-pub fn decapsulate(
-    secret_key: &Kyber768PrivateKey,
-    ciphertext: &Kyber768Ciphertext,
-) -> Kyber768SharedSecret {
+pub fn decapsulate_768(
+    secret_key: &KyberPrivateKey<SECRET_KEY_SIZE_768>,
+    ciphertext: &KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
+) -> [u8; SHARED_SECRET_SIZE] {
+    decapsulate::<
+        { parameters::RANK_768 },
+        { SECRET_KEY_SIZE_768 },
+        { parameters::CPA_PKE_CIPHERTEXT_SIZE_768 },
+    >(secret_key, ciphertext)
+}
+
+pub fn decapsulate<const K: usize, const SECRET_KEY_SIZE: usize, const CIPHERTEXT_SIZE: usize>(
+    secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
+    ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
+) -> [u8; SHARED_SECRET_SIZE] {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_PKE_SECRET_KEY_SIZE_768);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE_768);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 
-    let ciphertext = CiphertextCpa::Kyber768(ciphertext);
-    let decrypted = ind_cpa::decrypt::<RANK_768>(ind_cpa_secret_key, &ciphertext);
+    let decrypted = ind_cpa::decrypt::<K, CIPHERTEXT_SIZE>(ind_cpa_secret_key, ciphertext);
 
     let mut to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
     to_hash[CPA_PKE_MESSAGE_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
@@ -250,7 +305,7 @@ pub fn decapsulate(
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
     let expected_ciphertext_result =
-        ind_cpa::encrypt::<RANK_768>(ind_cpa_public_key, decrypted, pseudorandomness);
+        ind_cpa::encrypt::<K, CIPHERTEXT_SIZE>(ind_cpa_public_key, decrypted, pseudorandomness);
 
     // Since we decrypt the ciphertext and hash this decrypted value in
     // to obtain the pseudorandomness, it is in theory possible that a modified

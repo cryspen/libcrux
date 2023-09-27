@@ -413,13 +413,13 @@ pub fn SetupBaseS(
                 &x25519.0,
                 randomness[0..32].to_vec(),
             )?;
-            let (ss2, enc2) = Kyber768Draft00_Encap(&kyber, randomness[32..64].to_vec())?;
+            let (ss2, enc2) = Kyber768Draft00_Encap(kyber.as_ref(), randomness[32..64].to_vec())?;
             let ct = crate::kem::Ct::Kyber768X25519(
-                enc2.try_into().unwrap(),
+                enc2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(enc1.try_into().unwrap()),
             );
             let ss = crate::kem::Ss::Kyber768X25519(
-                ss2.try_into().unwrap(),
+                ss2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
             );
             (ss.encode(), ct.encode())
@@ -464,9 +464,9 @@ pub fn SetupBaseR(
             let Kyber768X25519PrivateKey { kyber, x25519 } =
                 Kyber768X25519PrivateKey::decode(skR).unwrap();
             let ss1 = Decap(KEM::DHKEM_X25519_HKDF_SHA256, &enc[0..32], &x25519.0)?;
-            let ss2 = Kyber768Draft00_Decap(&kyber, &enc[32..])?;
+            let ss2 = Kyber768Draft00_Decap(kyber.as_ref(), &enc[32..])?;
             let ss = crate::kem::Ss::Kyber768X25519(
-                ss2.try_into().unwrap(),
+                ss2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
             );
             ss.encode()
