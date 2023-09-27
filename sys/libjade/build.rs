@@ -5,12 +5,10 @@ macro_rules! svec {
     }
 
 fn append_simd128_flags(flags: &mut Vec<String>) {
-    flags.push("-DSIMD128".to_string());
     flags.push("-mavx".to_string());
 }
 
 fn append_simd256_flags(flags: &mut Vec<String>) {
-    flags.push("-DSIMD256".to_string());
     flags.push("-mavx2".to_string());
 }
 
@@ -20,9 +18,11 @@ fn create_bindings(platform: Platform, home_dir: &Path) {
     let mut clang_args = vec![format!("-I{}", jazz_dir.join("include").display())];
     if platform.simd128 {
         append_simd128_flags(&mut clang_args);
+        clang_args.push("-DSIMD128".to_string());
     }
     if platform.simd256 {
         append_simd256_flags(&mut clang_args);
+        clang_args.push("-DSIMD256".to_string());
     }
 
     let bindings = bindgen::Builder::default()
