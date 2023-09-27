@@ -55,7 +55,7 @@ let sample_from_uniform_distribution (randomness: array u8 840sz)
           in
           if sampled_coefficients =. Libcrux.Kem.Kyber768.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT
           then
-            let* hoist13:Rust_primitives.Hax.t_Never =
+            let* hoist17:Rust_primitives.Hax.t_Never =
               Core.Ops.Control_flow.ControlFlow.v_Break (Core.Result.Result_Ok out)
             in
             Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients)

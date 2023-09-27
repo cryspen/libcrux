@@ -29,8 +29,16 @@ let v_RANK_768_: usize = 3sz
 
 let v_RANK_1024_: usize = 4sz
 
-let v_T_AS_NTT_ENCODED_SIZE: usize =
+let v_T_AS_NTT_ENCODED_SIZE_512_: usize =
+  ((v_RANK_512_ *. v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *. v_BITS_PER_COEFFICIENT <: usize) /.
+  8sz
+
+let v_T_AS_NTT_ENCODED_SIZE_768_: usize =
   ((v_RANK_768_ *. v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *. v_BITS_PER_COEFFICIENT <: usize) /.
+  8sz
+
+let v_T_AS_NTT_ENCODED_SIZE_1024_: usize =
+  ((v_RANK_1024_ *. v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *. v_BITS_PER_COEFFICIENT <: usize) /.
   8sz
 
 let v_VECTOR_U_COMPRESSION_FACTOR_512_: usize = 10sz
@@ -65,11 +73,23 @@ let v_VECTOR_V_ENCODED_SIZE_1024_: usize =
 
 let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32sz
 
-let v_CPA_PKE_SECRET_KEY_SIZE: usize =
+let v_CPA_PKE_SECRET_KEY_SIZE_512_: usize =
+  ((v_RANK_512_ *. v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *. v_BITS_PER_COEFFICIENT <: usize) /.
+  8sz
+
+let v_CPA_PKE_SECRET_KEY_SIZE_768_: usize =
   ((v_RANK_768_ *. v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *. v_BITS_PER_COEFFICIENT <: usize) /.
   8sz
 
-let v_CPA_PKE_PUBLIC_KEY_SIZE: usize = v_T_AS_NTT_ENCODED_SIZE +. 32sz
+let v_CPA_PKE_SECRET_KEY_SIZE_1024_: usize =
+  ((v_RANK_1024_ *. v_COEFFICIENTS_IN_RING_ELEMENT <: usize) *. v_BITS_PER_COEFFICIENT <: usize) /.
+  8sz
+
+let v_CPA_PKE_PUBLIC_KEY_SIZE_512_: usize = v_T_AS_NTT_ENCODED_SIZE_512_ +. 32sz
+
+let v_CPA_PKE_PUBLIC_KEY_SIZE_768_: usize = v_T_AS_NTT_ENCODED_SIZE_768_ +. 32sz
+
+let v_CPA_PKE_PUBLIC_KEY_SIZE_1024_: usize = v_T_AS_NTT_ENCODED_SIZE_1024_ +. 32sz
 
 let v_CPA_PKE_CIPHERTEXT_SIZE_512_: usize =
   v_VECTOR_U_ENCODED_SIZE_512_ +. v_VECTOR_V_ENCODED_SIZE_512_
@@ -82,8 +102,22 @@ let v_CPA_PKE_CIPHERTEXT_SIZE_1024_: usize =
 
 let v_CPA_PKE_MESSAGE_SIZE: usize = 32sz
 
-let v_CPA_SERIALIZED_KEY_LEN: usize =
-  ((v_CPA_PKE_SECRET_KEY_SIZE +. v_CPA_PKE_PUBLIC_KEY_SIZE <: usize) +.
+let v_CPA_SERIALIZED_KEY_LEN_512_: usize =
+  ((v_CPA_PKE_SECRET_KEY_SIZE_768_ +. v_CPA_PKE_PUBLIC_KEY_SIZE_768_ <: usize) +.
+    Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_H_DIGEST_SIZE
+    <:
+    usize) +.
+  v_CPA_PKE_MESSAGE_SIZE
+
+let v_CPA_SERIALIZED_KEY_LEN_768_: usize =
+  ((v_CPA_PKE_SECRET_KEY_SIZE_768_ +. v_CPA_PKE_PUBLIC_KEY_SIZE_768_ <: usize) +.
+    Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_H_DIGEST_SIZE
+    <:
+    usize) +.
+  v_CPA_PKE_MESSAGE_SIZE
+
+let v_CPA_SERIALIZED_KEY_LEN_1024_: usize =
+  ((v_CPA_PKE_SECRET_KEY_SIZE_768_ +. v_CPA_PKE_PUBLIC_KEY_SIZE_1024_ <: usize) +.
     Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_H_DIGEST_SIZE
     <:
     usize) +.
