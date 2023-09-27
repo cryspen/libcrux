@@ -5,12 +5,13 @@
 //! * RSA PSS
 
 use crate::{
-    ecdh::p256::{PrivateKey, PublicKey},
+    ecdh::{
+        self,
+        p256::{PrivateKey, PublicKey},
+    },
     hacl::{self, ed25519, p256},
 };
 use rand::{CryptoRng, Rng, RngCore};
-
-use crate::ecdh;
 
 use self::rsa_pss::RsaPssSignature;
 
