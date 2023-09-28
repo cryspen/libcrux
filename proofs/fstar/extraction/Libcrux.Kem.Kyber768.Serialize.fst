@@ -353,34 +353,28 @@ let serialize_little_endian_12_ (re: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPoly
         _)
       serialized
       (fun serialized (i, chunks) ->
-          let coefficient1:i32 = chunks.[ 0sz ] in
-          let coefficient1:Prims.unit =
-            coefficient1 +.
-            ((coefficient1 <<. 15l <: i32) &. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS <: i32
-            )
+          let coefficient1:u16 =
+            Libcrux.Kem.Kyber768.Conversions.to_unsigned_representative (chunks.[ 0sz ] <: i32)
           in
-          let coefficient2:i32 = chunks.[ 1sz ] in
-          let coefficient2:Prims.unit =
-            coefficient2 +.
-            ((coefficient2 <<. 15l <: i32) &. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS <: i32
-            )
+          let coefficient2:u16 =
+            Libcrux.Kem.Kyber768.Conversions.to_unsigned_representative (chunks.[ 1sz ] <: i32)
           in
           let serialized:array u8 384sz =
             Rust_primitives.Hax.update_at serialized
               (3sz *. i <: usize)
-              (cast (coefficient1 &. 255l <: i32))
+              (cast (coefficient1 &. 255us <: u16))
           in
           let serialized:array u8 384sz =
             Rust_primitives.Hax.update_at serialized
               ((3sz *. i <: usize) +. 1sz <: usize)
-              (cast ((coefficient1 <<. 8l <: i32) |. ((coefficient2 &. 15l <: i32) >>. 4l <: i32)
+              (cast ((coefficient1 <<. 8l <: u16) |. ((coefficient2 &. 15us <: u16) >>. 4l <: u16)
                     <:
-                    i32))
+                    u16))
           in
           let serialized:array u8 384sz =
             Rust_primitives.Hax.update_at serialized
               ((3sz *. i <: usize) +. 2sz <: usize)
-              (cast ((coefficient2 <<. 4l <: i32) &. 255l <: i32))
+              (cast ((coefficient2 <<. 4l <: u16) &. 255us <: u16))
           in
           serialized)
   in
