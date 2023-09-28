@@ -25,7 +25,7 @@
 
 #include "internal/Hacl_Hash_SHA3.h"
 
-static uint32_t block_len(Spec_Hash_Definitions_hash_alg a)
+static inline uint32_t block_len(Spec_Hash_Definitions_hash_alg a)
 {
   switch (a)
   {
@@ -61,7 +61,7 @@ static uint32_t block_len(Spec_Hash_Definitions_hash_alg a)
   }
 }
 
-static uint32_t hash_len(Spec_Hash_Definitions_hash_alg a)
+static inline uint32_t hash_len(Spec_Hash_Definitions_hash_alg a)
 {
   switch (a)
   {
@@ -100,7 +100,8 @@ Hacl_Hash_SHA3_update_multi_sha3(
   for (uint32_t i = (uint32_t)0U; i < n_blocks; i++)
   {
     uint8_t *block = blocks + i * block_len(a);
-    Hacl_Impl_SHA3_absorb_inner(block_len(a), block, s);
+    Hacl_Impl_SHA3_loadState(block_len(a), block, s);
+    Hacl_Impl_SHA3_state_permute(s);
   }
 }
 
@@ -124,7 +125,8 @@ Hacl_Hash_SHA3_update_last_sha3(
   uint32_t len = block_len(a);
   if (input_len == len)
   {
-    Hacl_Impl_SHA3_absorb_inner(len, input, s);
+    Hacl_Impl_SHA3_loadState(len, input, s);
+    Hacl_Impl_SHA3_state_permute(s);
     uint8_t *uu____0 = input + input_len;
     uint8_t lastBlock_[200U] = { 0U };
     uint8_t *lastBlock = lastBlock_;
@@ -228,6 +230,8 @@ void Hacl_Streaming_Keccak_reset(Hacl_Streaming_Keccak_state *s)
   Hacl_Streaming_Keccak_state scrut = *s;
   uint8_t *buf = scrut.buf;
   Hacl_Streaming_Keccak_hash_buf block_state = scrut.block_state;
+  Spec_Hash_Definitions_hash_alg i = block_state.fst;
+  KRML_HOST_IGNORE(i);
   uint64_t *s1 = block_state.snd;
   memset(s1, 0U, (uint32_t)25U * sizeof (uint64_t));
   Hacl_Streaming_Keccak_state
@@ -420,7 +424,7 @@ Hacl_Streaming_Keccak_update(Hacl_Streaming_Keccak_state *p, uint8_t *data, uint
   return Hacl_Streaming_Types_Success;
 }
 
-static void
+static inline void
 finish_(
   Spec_Hash_Definitions_hash_alg a,
   Hacl_Streaming_Keccak_state *p,
@@ -501,24 +505,6 @@ Hacl_Streaming_Keccak_squeeze(Hacl_Streaming_Keccak_state *s, uint8_t *dst, uint
   }
   finish_(a1, s, dst, l);
   return Hacl_Streaming_Types_Success;
-}
-
-uint32_t Hacl_Streaming_Keccak_block_len(Hacl_Streaming_Keccak_state *s)
-{
-  Spec_Hash_Definitions_hash_alg a1 = Hacl_Streaming_Keccak_get_alg(s);
-  return block_len(a1);
-}
-
-uint32_t Hacl_Streaming_Keccak_hash_len(Hacl_Streaming_Keccak_state *s)
-{
-  Spec_Hash_Definitions_hash_alg a1 = Hacl_Streaming_Keccak_get_alg(s);
-  return hash_len(a1);
-}
-
-bool Hacl_Streaming_Keccak_is_shake(Hacl_Streaming_Keccak_state *s)
-{
-  Spec_Hash_Definitions_hash_alg uu____0 = Hacl_Streaming_Keccak_get_alg(s);
-  return uu____0 == Spec_Hash_Definitions_Shake128 || uu____0 == Spec_Hash_Definitions_Shake256;
 }
 
 void
@@ -633,7 +619,7 @@ keccak_rndc[24U] =
     (uint64_t)0x8000000000008080U, (uint64_t)0x0000000080000001U, (uint64_t)0x8000000080008008U
   };
 
-void Hacl_Impl_SHA3_state_permute(uint64_t *s)
+inline void Hacl_Impl_SHA3_state_permute(uint64_t *s)
 {
   for (uint32_t i0 = (uint32_t)0U; i0 < (uint32_t)24U; i0++)
   {
@@ -714,7 +700,7 @@ void Hacl_Impl_SHA3_state_permute(uint64_t *s)
   }
 }
 
-void Hacl_Impl_SHA3_loadState(uint32_t rateInBytes, uint8_t *input, uint64_t *s)
+inline void Hacl_Impl_SHA3_loadState(uint32_t rateInBytes, uint8_t *input, uint64_t *s)
 {
   uint8_t block[200U] = { 0U };
   memcpy(block, input, rateInBytes * sizeof (uint8_t));
@@ -726,7 +712,7 @@ void Hacl_Impl_SHA3_loadState(uint32_t rateInBytes, uint8_t *input, uint64_t *s)
   }
 }
 
-static void storeState(uint32_t rateInBytes, uint64_t *s, uint8_t *res)
+static inline void storeState(uint32_t rateInBytes, uint64_t *s, uint8_t *res)
 {
   uint8_t block[200U] = { 0U };
   for (uint32_t i = (uint32_t)0U; i < (uint32_t)25U; i++)
@@ -737,13 +723,7 @@ static void storeState(uint32_t rateInBytes, uint64_t *s, uint8_t *res)
   memcpy(res, block, rateInBytes * sizeof (uint8_t));
 }
 
-void Hacl_Impl_SHA3_absorb_inner(uint32_t rateInBytes, uint8_t *block, uint64_t *s)
-{
-  Hacl_Impl_SHA3_loadState(rateInBytes, block, s);
-  Hacl_Impl_SHA3_state_permute(s);
-}
-
-static void
+static inline void
 absorb(
   uint64_t *s,
   uint32_t rateInBytes,
@@ -757,7 +737,8 @@ absorb(
   for (uint32_t i = (uint32_t)0U; i < n_blocks; i++)
   {
     uint8_t *block = input + i * rateInBytes;
-    Hacl_Impl_SHA3_absorb_inner(rateInBytes, block, s);
+    Hacl_Impl_SHA3_loadState(rateInBytes, block, s);
+    Hacl_Impl_SHA3_state_permute(s);
   }
   uint8_t *last = input + n_blocks * rateInBytes;
   uint8_t lastBlock_[200U] = { 0U };
@@ -791,12 +772,12 @@ Hacl_Impl_SHA3_squeeze(
   for (uint32_t i = (uint32_t)0U; i < outBlocks; i++)
   {
     storeState(rateInBytes, s, blocks + i * rateInBytes);
-    Hacl_Impl_SHA3_state_permute(s);
+    if (i < outBlocks - 1 || remOut > 0) Hacl_Impl_SHA3_state_permute(s);
   }
   storeState(remOut, s, last);
 }
 
-void
+inline void
 Hacl_Impl_SHA3_keccak(
   uint32_t rate,
   uint32_t capacity,

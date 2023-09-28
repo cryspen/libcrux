@@ -71,12 +71,6 @@ Hacl_Streaming_Keccak_finish(Hacl_Streaming_Keccak_state *s, uint8_t *dst);
 Hacl_Streaming_Types_error_code
 Hacl_Streaming_Keccak_squeeze(Hacl_Streaming_Keccak_state *s, uint8_t *dst, uint32_t l);
 
-uint32_t Hacl_Streaming_Keccak_block_len(Hacl_Streaming_Keccak_state *s);
-
-uint32_t Hacl_Streaming_Keccak_hash_len(Hacl_Streaming_Keccak_state *s);
-
-bool Hacl_Streaming_Keccak_is_shake(Hacl_Streaming_Keccak_state *s);
-
 void
 Hacl_SHA3_shake128_hacl(
   uint32_t inputByteLen,
@@ -100,8 +94,6 @@ void Hacl_SHA3_sha3_256(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
 void Hacl_SHA3_sha3_384(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
 
 void Hacl_SHA3_sha3_512(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
-
-void Hacl_Impl_SHA3_absorb_inner(uint32_t rateInBytes, uint8_t *block, uint64_t *s);
 
 void
 Hacl_Impl_SHA3_squeeze(
