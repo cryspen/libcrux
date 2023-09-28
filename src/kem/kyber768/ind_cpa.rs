@@ -58,11 +58,16 @@ impl KeyPair {
 }
 
 #[inline(always)]
-fn parse_a(
+#[allow(non_snake_case)]
+fn sample_matrix_A(
     mut seed: [u8; 34],
     transpose: bool,
-) -> Result<[[KyberPolynomialRingElement; RANK]; RANK], BadRejectionSamplingRandomnessError> {
-    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
+) -> (
+    [[KyberPolynomialRingElement; RANK]; RANK],
+    Option<BadRejectionSamplingRandomnessError>,
+) {
+    let mut A_transpose = [[KyberPolynomialRingElement::ZERO; RANK]; RANK];
+    let mut sampling_A_error = None;
 
     for i in 0..RANK {
         for j in 0..RANK {
@@ -71,15 +76,21 @@ fn parse_a(
 
             let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
 
+            let (sampled, error) = sample_from_uniform_distribution(xof_bytes);
+            if error.is_some() {
+                sampling_A_error = error;
+            }
+
             // A[i][j] = A_transpose[j][i]
             if transpose {
-                a_transpose[j][i] = sample_from_uniform_distribution(xof_bytes)?;
+                A_transpose[j][i] = sampled;
             } else {
-                a_transpose[i][j] = sample_from_uniform_distribution(xof_bytes)?;
+                A_transpose[i][j] = sampled;
             }
         }
     }
-    Ok(a_transpose)
+
+    (A_transpose, sampling_A_error)
 }
 
 #[inline(always)]
@@ -113,7 +124,7 @@ fn encode_12(input: [KyberPolynomialRingElement; RANK]) -> [u8; RANK * BYTES_PER
 #[allow(non_snake_case)]
 pub(crate) fn generate_keypair(
     key_generation_seed: &[u8],
-) -> Result<KeyPair, BadRejectionSamplingRandomnessError> {
+) -> (KeyPair, Option<BadRejectionSamplingRandomnessError>) {
     let mut prf_input: [u8; 33] = [0; 33];
 
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
@@ -126,7 +137,7 @@ pub(crate) fn generate_keypair(
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = parse_a(into_padded_array(seed_for_A), true)?;
+    let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed_for_A), true);
 
     // for i from 0 to k−1 do
     //     s[i] := CBD_{η1}(PRF(σ, N))
@@ -177,7 +188,10 @@ pub(crate) fn generate_keypair(
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = encode_12(secret_as_ntt);
 
-    Ok(KeyPair::new(secret_key_serialized, public_key_serialized))
+    (
+        KeyPair::new(secret_key_serialized, public_key_serialized),
+        sampling_A_error,
+    )
 }
 
 fn compress_then_encode_u(
@@ -200,7 +214,7 @@ pub(crate) fn encrypt(
     public_key: &[u8],
     message: [u8; CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8],
-) -> Result<CiphertextCpa, BadRejectionSamplingRandomnessError> {
+) -> (CiphertextCpa, Option<BadRejectionSamplingRandomnessError>) {
     // tˆ := Decode_12(pk)
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; RANK];
     for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
@@ -217,7 +231,7 @@ pub(crate) fn encrypt(
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A_transpose = parse_a(into_padded_array(seed), false)?;
+    let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed), false);
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
@@ -268,7 +282,7 @@ pub(crate) fn encrypt(
     let mut ciphertext: CiphertextCpa = into_padded_array(&c1);
     ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
 
-    Ok(ciphertext)
+    (ciphertext, sampling_A_error)
 }
 
 #[allow(non_snake_case)]
