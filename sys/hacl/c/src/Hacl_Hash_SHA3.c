@@ -89,7 +89,7 @@ static inline uint32_t hash_len(Spec_Hash_Definitions_hash_alg a)
   }
 }
 
-void
+inline void
 Hacl_Hash_SHA3_update_multi_sha3(
   Spec_Hash_Definitions_hash_alg a,
   uint64_t *s,
@@ -105,7 +105,7 @@ Hacl_Hash_SHA3_update_multi_sha3(
   }
 }
 
-void
+inline void
 Hacl_Hash_SHA3_update_last_sha3(
   Spec_Hash_Definitions_hash_alg a,
   uint64_t *s,
