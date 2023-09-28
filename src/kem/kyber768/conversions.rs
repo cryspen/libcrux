@@ -1,3 +1,5 @@
+use crate::kem::kyber768::{arithmetic::KyberFieldElement, parameters::FIELD_MODULUS};
+
 #[inline(always)]
 pub(super) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
     debug_assert!(slice.len() <= LEN);
@@ -34,4 +36,9 @@ impl<const LEN: usize> UpdatingArray for UpdatableArray<LEN> {
         self.pointer += other.len();
         self
     }
+}
+
+#[inline(always)]
+pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
+    (fe + ((fe >> 15) & FIELD_MODULUS)) as u16
 }
