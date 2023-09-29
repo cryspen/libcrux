@@ -1,5 +1,6 @@
 use crate::kem::kyber768::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
+    conversions::to_unsigned_representative,
     parameters::{BITS_PER_COEFFICIENT, FIELD_MODULUS},
 };
 
@@ -8,7 +9,7 @@ pub fn compress<const COEFFICIENT_BITS: usize>(
 ) -> KyberPolynomialRingElement {
     re.coefficients = re
         .coefficients
-        .map(|coefficient| compress_q::<COEFFICIENT_BITS>(coefficient));
+        .map(|coefficient| compress_q::<COEFFICIENT_BITS>(to_unsigned_representative(coefficient)));
     re
 }
 
@@ -22,16 +23,12 @@ pub fn decompress(
     re
 }
 
-fn compress_q<const COEFFICIENT_BITS: usize>(fe: KyberFieldElement) -> KyberFieldElement {
+fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
     debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);
 
     let two_pow_bit_size = 1u32 << COEFFICIENT_BITS;
 
-    // Convert from canonical signed representative to canonical unsigned
-    // representative.
-    let fe_unsigned = fe + ((fe >> 15) & FIELD_MODULUS);
-
-    let mut compressed = (fe_unsigned as u32) * (two_pow_bit_size << 1);
+    let mut compressed = (fe as u32) * (two_pow_bit_size << 1);
     compressed += FIELD_MODULUS as u32;
     compressed /= (FIELD_MODULUS << 1) as u32;
 

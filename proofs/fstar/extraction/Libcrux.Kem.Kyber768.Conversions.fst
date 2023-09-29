@@ -108,3 +108,6 @@ let impl (#len: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
       in
       self
   }
+
+let to_unsigned_representative (fe: i32) : u16 =
+  cast (fe +. ((fe <<. 15l <: i32) &. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS <: i32))
