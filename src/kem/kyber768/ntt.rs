@@ -1,8 +1,5 @@
-use crate::kem::kyber768::arithmetic::{
-    barrett_reduce, to_montgomery_domain, KyberPolynomialRingElement,
-};
-
 use self::kyber_polynomial_ring_element_mod::ntt_multiply;
+use super::arithmetic::{barrett_reduce, to_montgomery_domain, KyberPolynomialRingElement};
 
 pub(crate) mod kyber_polynomial_ring_element_mod {
     use crate::kem::kyber768::{

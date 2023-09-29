@@ -392,7 +392,7 @@ fn kyber768_encaps(
     let mut seed = [0; kyber768::SHARED_SECRET_SIZE];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
 
-    if let Ok((ct, ss)) = kyber768::encapsulate(pk, seed) {
+    if let Ok((ct, ss)) = kyber768::encapsulate_768(pk, seed) {
         Ok((ss, ct))
     } else {
         Err(Error::Encapsulate)
@@ -428,11 +428,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             } else {
                 return Err(Error::InvalidPrivateKey);
             };
-            let ss = kyber768::decapsulate::<
-                { kyber768::parameters::RANK_768 },
-                { kyber768::SECRET_KEY_SIZE_768 },
-                { kyber768::parameters::CPA_PKE_CIPHERTEXT_SIZE_768 },
-            >(sk, ct);
+            let ss = kyber768::decapsulate_768(sk, ct);
 
             Ok(Ss::Kyber768(ss.into()))
         }
@@ -446,11 +442,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             } else {
                 return Err(Error::InvalidPrivateKey);
             };
-            let kss = kyber768::decapsulate::<
-                { kyber768::parameters::RANK_768 },
-                { kyber768::SECRET_KEY_SIZE_768 },
-                { kyber768::parameters::CPA_PKE_CIPHERTEXT_SIZE_768 },
-            >(ksk, kct);
+            let kss = kyber768::decapsulate_768(ksk, kct);
             let xss = x25519::derive(xct, xsk)?;
 
             Ok(Ss::Kyber768X25519(kss.into(), xss))

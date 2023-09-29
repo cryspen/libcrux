@@ -24,10 +24,7 @@ use constant_time_ops::{
 };
 use conversions::into_padded_array;
 use hash_functions::{G, H, H_DIGEST_SIZE, KDF};
-use parameters::{
-    CPA_PKE_KEY_GENERATION_SEED_SIZE, CPA_PKE_MESSAGE_SIZE, CPA_PKE_PUBLIC_KEY_SIZE_768,
-    CPA_PKE_SECRET_KEY_SIZE_768,
-};
+use parameters::*;
 
 pub const SHARED_SECRET_SIZE: usize = CPA_PKE_MESSAGE_SIZE;
 
@@ -48,8 +45,6 @@ pub const CIPHERTEXT_SIZE: usize = parameters::CPA_PKE_CIPHERTEXT_SIZE_768;
 
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
-
-use parameters::*;
 
 use self::ind_cpa::serialize_secret_key;
 
@@ -159,16 +154,26 @@ pub fn encapsulate_768(
     BadRejectionSamplingRandomnessError,
 > {
     encapsulate::<
-        { SHARED_SECRET_SIZE },
-        { parameters::CPA_PKE_CIPHERTEXT_SIZE_768 },
-        { parameters::CPA_PKE_PUBLIC_KEY_SIZE_768 },
+        RANK_768,
+        SHARED_SECRET_SIZE,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        VECTOR_U_ENCODED_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
     >(public_key, randomness)
 }
 
 pub fn encapsulate<
+    const K: usize,
     const SHARED_SECRET_SIZE: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const VECTOR_U_ENCODED_SIZE: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -187,11 +192,15 @@ pub fn encapsulate<
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let (ciphertext, sampling_a_error) = ind_cpa::encrypt::<RANK_768, CIPHERTEXT_SIZE>(
-        public_key.as_slice(),
-        randomness_hashed,
-        pseudorandomness,
-    );
+    let (ciphertext, sampling_a_error) =
+        ind_cpa::encrypt::<
+            K,
+            CIPHERTEXT_SIZE,
+            T_AS_NTT_ENCODED_SIZE,
+            VECTOR_U_ENCODED_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+        >(public_key.as_slice(), randomness_hashed, pseudorandomness);
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
@@ -210,13 +219,25 @@ pub fn decapsulate_768(
     ciphertext: &KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
 ) -> [u8; SHARED_SECRET_SIZE] {
     decapsulate::<
-        { parameters::RANK_768 },
-        { SECRET_KEY_SIZE_768 },
-        { parameters::CPA_PKE_CIPHERTEXT_SIZE_768 },
+        RANK_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        VECTOR_U_ENCODED_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
     >(secret_key, ciphertext)
 }
 
-pub fn decapsulate<const K: usize, const SECRET_KEY_SIZE: usize, const CIPHERTEXT_SIZE: usize>(
+pub fn decapsulate<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const VECTOR_U_ENCODED_SIZE: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
+>(
     secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
 ) -> [u8; SHARED_SECRET_SIZE] {
@@ -224,7 +245,13 @@ pub fn decapsulate<const K: usize, const SECRET_KEY_SIZE: usize, const CIPHERTEX
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(CPA_PKE_PUBLIC_KEY_SIZE_768);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 
-    let decrypted = ind_cpa::decrypt::<K, CIPHERTEXT_SIZE>(ind_cpa_secret_key, ciphertext);
+    let decrypted = ind_cpa::decrypt::<
+        K,
+        CIPHERTEXT_SIZE,
+        VECTOR_U_ENCODED_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+    >(ind_cpa_secret_key, ciphertext);
 
     let mut to_hash: [u8; CPA_PKE_MESSAGE_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
     to_hash[CPA_PKE_MESSAGE_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
@@ -247,8 +274,14 @@ pub fn decapsulate<const K: usize, const SECRET_KEY_SIZE: usize, const CIPHERTEX
     // also resulting in implicit rejection.
     //
     // Thus, we ignore the second return value of |ind_cpa::encrypt|.
-    let (expected_ciphertext, _) =
-        ind_cpa::encrypt::<K, CIPHERTEXT_SIZE>(ind_cpa_public_key, decrypted, pseudorandomness);
+    let (expected_ciphertext, _) = ind_cpa::encrypt::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        VECTOR_U_ENCODED_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+    >(ind_cpa_public_key, decrypted, pseudorandomness);
 
     let selector =
         compare_ciphertexts_in_constant_time(ciphertext.as_ref(), expected_ciphertext.as_ref());

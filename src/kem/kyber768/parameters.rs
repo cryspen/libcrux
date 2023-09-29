@@ -12,9 +12,6 @@ pub(crate) const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 1
 
 /// Bytes required per (uncompressed) ring element
 pub(crate) const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
-pub(crate) const RANKED_BYTES_PER_RING_ELEMENT_512: usize = RANK_512 * BITS_PER_RING_ELEMENT / 8;
-pub(crate) const RANKED_BYTES_PER_RING_ELEMENT_768: usize = RANK_768 * BITS_PER_RING_ELEMENT / 8;
-pub(crate) const RANKED_BYTES_PER_RING_ELEMENT_1024: usize = RANK_1024 * BITS_PER_RING_ELEMENT / 8;
 
 /// Seed size for rejection sampling.
 ///
@@ -22,10 +19,16 @@ pub(crate) const RANKED_BYTES_PER_RING_ELEMENT_1024: usize = RANK_1024 * BITS_PE
 /// this choice.
 pub(crate) const REJECTION_SAMPLING_SEED_SIZE: usize = 168 * 5;
 
+pub(crate) const CPA_PKE_MESSAGE_SIZE: usize = 32;
+
 /// Rank
 pub(crate) const RANK_512: usize = 2;
 pub(crate) const RANK_768: usize = 3;
 pub(crate) const RANK_1024: usize = 4;
+
+pub(crate) const RANKED_BYTES_PER_RING_ELEMENT_512: usize = RANK_512 * BITS_PER_RING_ELEMENT / 8;
+pub(crate) const RANKED_BYTES_PER_RING_ELEMENT_768: usize = RANK_768 * BITS_PER_RING_ELEMENT / 8;
+pub(crate) const RANKED_BYTES_PER_RING_ELEMENT_1024: usize = RANK_1024 * BITS_PER_RING_ELEMENT / 8;
 
 /// `T` NTT encoding size in bytes
 pub(crate) const T_AS_NTT_ENCODED_SIZE_512: usize =
@@ -80,7 +83,6 @@ pub(crate) const CPA_PKE_CIPHERTEXT_SIZE_768: usize =
 pub(crate) const CPA_PKE_CIPHERTEXT_SIZE_1024: usize =
     VECTOR_U_ENCODED_SIZE_1024 + VECTOR_V_ENCODED_SIZE_1024;
 
-pub(crate) const CPA_PKE_MESSAGE_SIZE: usize = 32;
 
 pub(crate) const CPA_SERIALIZED_KEY_LEN_512: usize = CPA_PKE_SECRET_KEY_SIZE_768
     + CPA_PKE_PUBLIC_KEY_SIZE_768
