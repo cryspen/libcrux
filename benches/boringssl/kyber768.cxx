@@ -1,5 +1,4 @@
-#include <string>
-
+#include <cstring>
 #include <stdlib.h>
 
 #include <openssl/bytestring.h>
