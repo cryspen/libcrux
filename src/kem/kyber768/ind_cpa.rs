@@ -1,18 +1,14 @@
-use std::ops::{Index, Range, RangeFrom, RangeTo};
-
 use crate::kem::kyber768::conversions::{UpdatableArray, UpdatingArray};
 
 use crate::kem::kyber768::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
+    hash_functions::{G, H, PRF, XOF},
     ntt::{
         kyber_polynomial_ring_element_mod::{invert_ntt_montgomery, ntt_representation},
         *,
     },
-    parameters::{
-        hash_functions::{G, H, PRF, XOF},
-        *,
-    },
+    parameters::*,
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{
         deserialize_little_endian_1, deserialize_little_endian_10, deserialize_little_endian_12,
@@ -23,107 +19,10 @@ use crate::kem::kyber768::{
 };
 
 use super::conversions::into_padded_array;
+use super::KyberPublicKey;
 
-pub enum CiphertextCpa {
-    Kyber512([u8; CPA_PKE_CIPHERTEXT_SIZE_512]),
-    Kyber768([u8; CPA_PKE_CIPHERTEXT_SIZE_768]),
-    Kyber1024([u8; CPA_PKE_CIPHERTEXT_SIZE_1024]),
-}
-
-impl AsRef<[u8]> for CiphertextCpa {
-    fn as_ref(&self) -> &[u8] {
-        match self {
-            CiphertextCpa::Kyber512(b) => b,
-            CiphertextCpa::Kyber768(b) => b,
-            CiphertextCpa::Kyber1024(b) => b,
-        }
-    }
-}
-
-impl Index<usize> for CiphertextCpa {
-    type Output = u8;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        match self {
-            CiphertextCpa::Kyber512(ct) => &ct[index],
-            CiphertextCpa::Kyber768(ct) => &ct[index],
-            CiphertextCpa::Kyber1024(ct) => &ct[index],
-        }
-    }
-}
-
-impl Index<Range<usize>> for CiphertextCpa {
-    type Output = [u8];
-
-    fn index(&self, range: Range<usize>) -> &Self::Output {
-        match self {
-            CiphertextCpa::Kyber512(ct) => &ct[range],
-            CiphertextCpa::Kyber768(ct) => &ct[range],
-            CiphertextCpa::Kyber1024(ct) => &ct[range],
-        }
-    }
-}
-
-impl Index<RangeTo<usize>> for CiphertextCpa {
-    type Output = [u8];
-
-    fn index(&self, range: RangeTo<usize>) -> &Self::Output {
-        match self {
-            CiphertextCpa::Kyber512(ct) => &ct[range],
-            CiphertextCpa::Kyber768(ct) => &ct[range],
-            CiphertextCpa::Kyber1024(ct) => &ct[range],
-        }
-    }
-}
-
-impl Index<RangeFrom<usize>> for CiphertextCpa {
-    type Output = [u8];
-
-    fn index(&self, range: RangeFrom<usize>) -> &Self::Output {
-        match self {
-            CiphertextCpa::Kyber512(ct) => &ct[range],
-            CiphertextCpa::Kyber768(ct) => &ct[range],
-            CiphertextCpa::Kyber1024(ct) => &ct[range],
-        }
-    }
-}
-
-impl_generic_struct!(PublicKey);
+// The PKE Private Key
 impl_generic_struct!(PrivateKey);
-
-/// A Kyber CPA key pair
-pub struct KeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
-    pub(super) sk: PrivateKey<PRIVATE_KEY_SIZE>,
-    pub(super) pk: PublicKey<PUBLIC_KEY_SIZE>,
-}
-
-impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
-    KeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
-{
-    /// Creates a new [`KeyPair`].
-    pub fn new(sk: [u8; PRIVATE_KEY_SIZE], pk: [u8; PUBLIC_KEY_SIZE]) -> Self {
-        Self {
-            sk: sk.into(),
-            pk: pk.into(),
-        }
-    }
-
-    pub fn pk(&self) -> &[u8; PUBLIC_KEY_SIZE] {
-        self.pk.as_slice()
-    }
-
-    pub fn into_pk(self) -> PublicKey<PUBLIC_KEY_SIZE> {
-        self.pk
-    }
-
-    pub fn into_raw_pk(self) -> [u8; PUBLIC_KEY_SIZE] {
-        self.pk.value
-    }
-
-    pub fn sk(&self) -> &[u8; PRIVATE_KEY_SIZE] {
-        self.sk.as_slice()
-    }
-}
 
 #[inline(always)]
 #[allow(non_snake_case)]
@@ -200,7 +99,10 @@ pub(crate) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> (
-    (PrivateKey<PRIVATE_KEY_SIZE>, PublicKey<PUBLIC_KEY_SIZE>),
+    (
+        PrivateKey<PRIVATE_KEY_SIZE>,
+        KyberPublicKey<PUBLIC_KEY_SIZE>,
+    ),
     Option<BadRejectionSamplingRandomnessError>,
 ) {
     let mut prf_input: [u8; 33] = [0; 33];

@@ -84,39 +84,13 @@ pub(crate) const CPA_PKE_MESSAGE_SIZE: usize = 32;
 
 pub(crate) const CPA_SERIALIZED_KEY_LEN_512: usize = CPA_PKE_SECRET_KEY_SIZE_768
     + CPA_PKE_PUBLIC_KEY_SIZE_768
-    + hash_functions::H_DIGEST_SIZE
+    + super::hash_functions::H_DIGEST_SIZE
     + CPA_PKE_MESSAGE_SIZE;
 pub(crate) const CPA_SERIALIZED_KEY_LEN_768: usize = CPA_PKE_SECRET_KEY_SIZE_768
     + CPA_PKE_PUBLIC_KEY_SIZE_768
-    + hash_functions::H_DIGEST_SIZE
+    + super::hash_functions::H_DIGEST_SIZE
     + CPA_PKE_MESSAGE_SIZE;
 pub(crate) const CPA_SERIALIZED_KEY_LEN_1024: usize = CPA_PKE_SECRET_KEY_SIZE_768
     + CPA_PKE_PUBLIC_KEY_SIZE_1024
-    + hash_functions::H_DIGEST_SIZE
+    + super::hash_functions::H_DIGEST_SIZE
     + CPA_PKE_MESSAGE_SIZE;
-
-#[allow(non_snake_case)]
-pub(crate) mod hash_functions {
-    use crate::digest::{self, digest_size, Algorithm};
-
-    pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
-        crate::digest::sha3_512(input)
-    }
-
-    pub(crate) const H_DIGEST_SIZE: usize = digest_size(Algorithm::Sha3_256);
-    pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-        crate::digest::sha3_256(input)
-    }
-
-    pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        digest::shake256::<LEN>(input)
-    }
-
-    pub(crate) fn XOF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        digest::shake128::<LEN>(input)
-    }
-
-    pub(crate) fn KDF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-        digest::shake256::<LEN>(input)
-    }
-}
