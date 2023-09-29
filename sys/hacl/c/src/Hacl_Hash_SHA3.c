@@ -750,11 +750,10 @@ absorb(
   {
     Hacl_Impl_SHA3_state_permute(s);
   }
-  //  uint8_t nextBlock_[200U] = { 0U };
-  //uint8_t *nextBlock = nextBlock_;
-  //nextBlock[rateInBytes - (uint32_t)1U] = (uint8_t)0x80U;
-  //Hacl_Impl_SHA3_loadState(rateInBytes, nextBlock, s);
-  s[24] ^= 0x8000000000000000;
+  uint8_t nextBlock_[200U] = { 0U };
+  uint8_t *nextBlock = nextBlock_;
+  nextBlock[rateInBytes - (uint32_t)1U] = (uint8_t)0x80U;
+  Hacl_Impl_SHA3_loadState(rateInBytes, nextBlock, s);
   Hacl_Impl_SHA3_state_permute(s);
 }
 
