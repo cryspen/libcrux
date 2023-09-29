@@ -126,11 +126,16 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
 }
 
 #[inline(always)]
-fn parse_a<const K: usize>(
+#[allow(non_snake_case)]
+fn sample_matrix_A<const K: usize>(
     mut seed: [u8; 34],
     transpose: bool,
-) -> Result<[[KyberPolynomialRingElement; K]; K], BadRejectionSamplingRandomnessError> {
-    let mut a_transpose = [[KyberPolynomialRingElement::ZERO; K]; K];
+) -> (
+    [[KyberPolynomialRingElement; K]; K],
+    Option<BadRejectionSamplingRandomnessError>,
+) {
+    let mut A_transpose = [[KyberPolynomialRingElement::ZERO; K]; K];
+    let mut sampling_A_error = None;
 
     for i in 0..K {
         for j in 0..K {
@@ -139,15 +144,21 @@ fn parse_a<const K: usize>(
 
             let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
 
+            let (sampled, error) = sample_from_uniform_distribution(xof_bytes);
+            if error.is_some() {
+                sampling_A_error = error;
+            }
+
             // A[i][j] = A_transpose[j][i]
             if transpose {
-                a_transpose[j][i] = sample_from_uniform_distribution(xof_bytes)?;
+                A_transpose[j][i] = sampled;
             } else {
-                a_transpose[i][j] = sample_from_uniform_distribution(xof_bytes)?;
+                A_transpose[i][j] = sampled;
             }
         }
     }
-    Ok(a_transpose)
+
+    (A_transpose, sampling_A_error)
 }
 
 #[inline(always)]
@@ -188,10 +199,10 @@ pub(crate) fn generate_keypair<
     const BYTES_PER_RING_ELEMENT: usize,
 >(
     key_generation_seed: &[u8],
-) -> Result<
+) -> (
     (PrivateKey<PRIVATE_KEY_SIZE>, PublicKey<PUBLIC_KEY_SIZE>),
-    BadRejectionSamplingRandomnessError,
-> {
+    Option<BadRejectionSamplingRandomnessError>,
+) {
     let mut prf_input: [u8; 33] = [0; 33];
 
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
@@ -204,7 +215,7 @@ pub(crate) fn generate_keypair<
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = parse_a(into_padded_array(seed_for_A), true)?;
+    let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed_for_A), true);
 
     // for i from 0 to k−1 do
     //     s[i] := CBD_{η1}(PRF(σ, N))
@@ -253,7 +264,10 @@ pub(crate) fn generate_keypair<
         public_key_serialized.push(&encode_12::<K, BYTES_PER_RING_ELEMENT>(t_as_ntt));
     let public_key_serialized = public_key_serialized.push(seed_for_A).array();
     let secret_key_serialized = encode_12(secret_as_ntt);
-    Ok((secret_key_serialized.into(), public_key_serialized.into()))
+    (
+        (secret_key_serialized.into(), public_key_serialized.into()),
+        sampling_A_error,
+    )
 }
 
 pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
@@ -293,7 +307,10 @@ pub(crate) fn encrypt<const K: usize, const CIPHERTEXT_SIZE: usize>(
     public_key: &[u8],
     message: [u8; CPA_PKE_MESSAGE_SIZE],
     randomness: &[u8],
-) -> Result<super::KyberCiphertext<CIPHERTEXT_SIZE>, BadRejectionSamplingRandomnessError> {
+) -> (
+    super::KyberCiphertext<CIPHERTEXT_SIZE>,
+    Option<BadRejectionSamplingRandomnessError>,
+) {
     // tˆ := Decode_12(pk)
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; K];
     for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE_768]
@@ -310,7 +327,7 @@ pub(crate) fn encrypt<const K: usize, const CIPHERTEXT_SIZE: usize>(
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE_768..];
-    let A_transpose = parse_a(into_padded_array(seed), false)?;
+    let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed), false);
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
@@ -366,7 +383,7 @@ pub(crate) fn encrypt<const K: usize, const CIPHERTEXT_SIZE: usize>(
 
             let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
             ciphertext[VECTOR_U_ENCODED_SIZE_512..].copy_from_slice(c2.as_slice());
-            Ok(ciphertext.into())
+            (ciphertext.into(), sampling_A_error)
         }
         RANK_768 => {
             let c1 = compress_then_encode_u::<
@@ -380,7 +397,7 @@ pub(crate) fn encrypt<const K: usize, const CIPHERTEXT_SIZE: usize>(
 
             let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
             ciphertext[VECTOR_U_ENCODED_SIZE_768..].copy_from_slice(c2.as_slice());
-            Ok(ciphertext.into())
+            (ciphertext.into(), sampling_A_error)
         }
         RANK_1024 => {
             let c1 = compress_then_encode_u::<
@@ -394,9 +411,12 @@ pub(crate) fn encrypt<const K: usize, const CIPHERTEXT_SIZE: usize>(
 
             let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
             ciphertext[VECTOR_U_ENCODED_SIZE_1024..].copy_from_slice(c2.as_slice());
-            Ok(ciphertext.into())
+            (ciphertext.into(), sampling_A_error)
         }
-        _ => Err(BadRejectionSamplingRandomnessError),
+        _ => (
+            [0u8; CIPHERTEXT_SIZE].into(),
+            Some(BadRejectionSamplingRandomnessError),
+        ),
     }
 }
 

@@ -208,20 +208,26 @@ pub fn generate_keypair<
     let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let (ind_cpa_private_key, public_key) =
-        ind_cpa::generate_keypair::<K, CPA_PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE, BYTES_PER_RING_ELEMENT>(
-            ind_cpa_keypair_randomness,
-        )?;
+    let ((ind_cpa_private_key, public_key), sampling_a_error) = ind_cpa::generate_keypair::<
+        K,
+        CPA_PRIVATE_KEY_SIZE,
+        PUBLIC_KEY_SIZE,
+        BYTES_PER_RING_ELEMENT,
+    >(ind_cpa_keypair_randomness);
 
     let secret_key_serialized = serialize_secret_key(
         ind_cpa_private_key.as_slice(),
         public_key.as_slice(),
         implicit_rejection_value,
     );
-    let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
-        KyberPrivateKey::from(secret_key_serialized);
+    if let Some(error) = sampling_a_error {
+        Err(error)
+    } else {
+        let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
+            KyberPrivateKey::from(secret_key_serialized);
 
-    Ok(CcaKeyPair::from(private_key, public_key))
+        Ok(CcaKeyPair::from(private_key, public_key))
+    }
 }
 
 pub fn encapsulate_768(
@@ -263,18 +269,22 @@ pub fn encapsulate<
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let ciphertext = ind_cpa::encrypt::<RANK_768, CIPHERTEXT_SIZE>(
+    let (ciphertext, sampling_a_error) = ind_cpa::encrypt::<RANK_768, CIPHERTEXT_SIZE>(
         public_key.as_slice(),
         randomness_hashed,
         pseudorandomness,
-    )?;
+    );
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
 
     let shared_secret = KDF(&to_hash).into();
 
-    Ok((ciphertext, shared_secret))
+    if sampling_a_error.is_some() {
+        Err(sampling_a_error.unwrap())
+    } else {
+        Ok((ciphertext, shared_secret))
+    }
 }
 
 pub fn decapsulate_768(
@@ -304,29 +314,27 @@ pub fn decapsulate<const K: usize, const SECRET_KEY_SIZE: usize, const CIPHERTEX
     let hashed = G(&to_hash);
     let (k_not, pseudorandomness) = hashed.split_at(32);
 
-    let expected_ciphertext_result =
+    // If a ciphertext C is well-formed, setting aside the fact that a
+    // decryption failure could (with negligible probability) occur, it must hold that:
+    //
+    // Encrypt(pk, Decrypt(sk, C)) = C
+    //
+    // Therefore, if |ind_cpa::encrypt| returns an error,
+    // |expected_ciphertext| cannot equal |ciphertext|, thereby resulting in
+    // implicit rejection.
+    //
+    // If C is ill-formed, due to the use of hashing to obtain |pseudorandomness|
+    // as well as the fact that the Kyber CPA-PKE is sparse pseudo-random, it is
+    // highly likely that |expected_ciphertext| will not equal |ciphertext|, thereby
+    // also resulting in implicit rejection.
+    //
+    // Thus, we ignore the second return value of |ind_cpa::encrypt|.
+    let (expected_ciphertext, _) =
         ind_cpa::encrypt::<K, CIPHERTEXT_SIZE>(ind_cpa_public_key, decrypted, pseudorandomness);
 
-    // Since we decrypt the ciphertext and hash this decrypted value in
-    // to obtain the pseudorandomness, it is in theory possible that a modified
-    // ciphertext could result in a set of pseudorandom bytes that are insufficient
-    // to rejection-sample the ring elements we need.
-    //
-    // In that case, the 'else' branch of this if-else block will be taken; notice
-    // that it performs less operations than the 'if' branch. The resulting timing
-    // difference would let an observer know that implicit rejection has taken
-    // place. We do not think this poses a security issue since such information
-    // would be conveyed anyway at a higher level (e.g. a key-exchange protocol
-    // would no longer proceed).
-    let to_hash = if let Ok(expected_ciphertext) = expected_ciphertext_result {
-        let selector =
-            compare_ciphertexts_in_constant_time(ciphertext.as_ref(), expected_ciphertext.as_ref());
-        select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector)
-    } else {
-        let mut out = [0u8; 32];
-        out[..].copy_from_slice(implicit_rejection_value);
-        out
-    };
+    let selector =
+        compare_ciphertexts_in_constant_time(ciphertext.as_ref(), expected_ciphertext.as_ref());
+    let to_hash = select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&to_hash);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));

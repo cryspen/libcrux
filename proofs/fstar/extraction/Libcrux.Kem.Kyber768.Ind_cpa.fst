@@ -319,20 +319,24 @@ let sk_under_impl_5
     : array u8 v_PRIVATE_KEY_SIZE =
   as_slice_under_impl_23 self.Libcrux.Kem.Kyber768.Ind_cpa.KeyPair.f_sk
 
-let parse_a (#k: usize) (seed: array u8 34sz) (transpose: bool)
-    : Core.Result.t_Result
-      (array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
-      Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError =
-  let a_transpose:array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K
-  =
+let sample_matrix_A (#k: usize) (seed: array u8 34sz) (transpose: bool)
+    : (array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
+      Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError) =
+  let v_A_transpose:array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+    v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl
           v_K
         <:
         array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
       v_K
   in
-  let a_transpose, seed:(array
+  let sampling_A_error:Core.Option.t_Option
+  Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError =
+    Core.Option.Option_None
+  in
+  let v_A_transpose, sampling_A_error, seed:(array
       (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
+    Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError &
     array u8 34sz) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
               Core.Ops.Range.Range.f_start = 0sz;
@@ -340,16 +344,16 @@ let parse_a (#k: usize) (seed: array u8 34sz) (transpose: bool)
             })
         <:
         _)
-      (a_transpose, seed)
-      (fun (a_transpose, seed) i ->
+      (v_A_transpose, sampling_A_error, seed)
+      (fun (v_A_transpose, sampling_A_error, seed) i ->
           Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
                     Core.Ops.Range.Range.f_start = 0sz;
                     Core.Ops.Range.Range.f_end = v_K
                   })
               <:
               _)
-            (a_transpose, seed)
-            (fun (a_transpose, seed) j ->
+            (v_A_transpose, sampling_A_error, seed)
+            (fun (v_A_transpose, sampling_A_error, seed) j ->
                 let seed:array u8 34sz = Rust_primitives.Hax.update_at seed 32sz (cast i) in
                 let seed:array u8 34sz = Rust_primitives.Hax.update_at seed 33sz (cast j) in
                 let (xof_bytes: array u8 840sz):array u8 840sz =
@@ -357,105 +361,56 @@ let parse_a (#k: usize) (seed: array u8 34sz) (transpose: bool)
                       <:
                       slice u8)
                 in
+                let sampled, error:(Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement &
+                  Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError) =
+                  Libcrux.Kem.Kyber768.Sampling.sample_from_uniform_distribution xof_bytes
+                in
+                let sampling_A_error:Core.Option.t_Option
+                Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError =
+                  if Core.Option.is_some_under_impl error
+                  then
+                    let sampling_A_error:Core.Option.t_Option
+                    Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError =
+                      error
+                    in
+                    sampling_A_error
+                  else sampling_A_error
+                in
                 if transpose
                 then
-                  let* hoist8:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
-                    match
-                      Core.Ops.Try_trait.Try.branch (Libcrux.Kem.Kyber768.Sampling.sample_from_uniform_distribution
-                            xof_bytes
-                          <:
-                          Core.Result.t_Result
-                            Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
-                            Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
-                    with
-                    | Core.Ops.Control_flow.ControlFlow_Break residual ->
-                      let* hoist7:Rust_primitives.Hax.t_Never =
-                        Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.FromResidual.from_residual
-                              residual
+                  let v_A_transpose:array
+                    (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K =
+                    Rust_primitives.Hax.update_at v_A_transpose
+                      j
+                      (Rust_primitives.Hax.update_at (v_A_transpose.[ j ]
                             <:
-                            Core.Result.t_Result
-                              (array
-                                  (array
-                                      Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
-                                      v_K) v_K)
-                              Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
-                      in
-                      Core.Ops.Control_flow.ControlFlow_Continue
-                      (Rust_primitives.Hax.never_to_any hoist7)
-                    | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
-                      Core.Ops.Control_flow.ControlFlow_Continue v_val
+                            array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+                          i
+                          sampled
+                        <:
+                        array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
                   in
-                  Core.Ops.Control_flow.ControlFlow_Continue
-                  (let hoist9:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K
-                    =
-                      Rust_primitives.Hax.update_at (a_transpose.[ j ]
-                          <:
-                          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
-                        i
-                        hoist8
-                    in
-                    let hoist10:array
-                      (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K =
-                      Rust_primitives.Hax.update_at a_transpose j hoist9
-                    in
-                    let a_transpose:array
-                      (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K =
-                      hoist10
-                    in
-                    a_transpose, seed)
+                  v_A_transpose, sampling_A_error, seed
                 else
-                  Core.Ops.Control_flow.ControlFlow_Continue
-                  (let* hoist12:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
-                      match
-                        Core.Ops.Try_trait.Try.branch (Libcrux.Kem.Kyber768.Sampling.sample_from_uniform_distribution
-                              xof_bytes
-                            <:
-                            Core.Result.t_Result
-                              Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
-                              Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
-                      with
-                      | Core.Ops.Control_flow.ControlFlow_Break residual ->
-                        let* hoist11:Rust_primitives.Hax.t_Never =
-                          Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.FromResidual.from_residual
-                                residual
-                              <:
-                              Core.Result.t_Result
-                                (array
-                                    (array
-                                        Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
-                                        v_K) v_K)
-                                Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
-                        in
-                        Core.Ops.Control_flow.ControlFlow_Continue
-                        (Rust_primitives.Hax.never_to_any hoist11)
-                      | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
-                        Core.Ops.Control_flow.ControlFlow_Continue v_val
-                    in
-                    Core.Ops.Control_flow.ControlFlow_Continue
-                    (let hoist13:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
-                        v_K =
-                        Rust_primitives.Hax.update_at (a_transpose.[ i ]
+                  let v_A_transpose:array
+                    (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K =
+                    Rust_primitives.Hax.update_at v_A_transpose
+                      i
+                      (Rust_primitives.Hax.update_at (v_A_transpose.[ i ]
                             <:
                             array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
                           j
-                          hoist12
-                      in
-                      let hoist14:array
-                        (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K
-                      =
-                        Rust_primitives.Hax.update_at a_transpose i hoist13
-                      in
-                      let a_transpose:array
-                        (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K
-                      =
-                        hoist14
-                      in
-                      a_transpose, seed)))
+                          sampled
+                        <:
+                        array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+                  in
+                  v_A_transpose, sampling_A_error, seed)
           <:
           (array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
+            Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError &
             array u8 34sz))
   in
-  Core.Result.Result_Ok a_transpose
+  v_A_transpose, sampling_A_error
 
 let cbd (#k: usize) (prf_input: array u8 33sz)
     : (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K & u8) =
@@ -553,190 +508,154 @@ let encode_12_
 let generate_keypair
       (#k #private_key_size #public_key_size #bytes_per_ring_element: usize)
       (key_generation_seed: slice u8)
-    : Core.Result.t_Result (t_PrivateKey v_PRIVATE_KEY_SIZE & t_PublicKey v_PUBLIC_KEY_SIZE)
-      Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError =
-  Rust_primitives.Hax.Control_flow_monad.Mexception.run (let (prf_input: array u8 33sz):array u8
-        33sz =
-        Rust_primitives.Hax.repeat 0uy 33sz
-      in
-      let secret_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-        Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
-      in
-      let error_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-        Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
-      in
-      let (domain_separator: u8):u8 = 0uy in
-      let hashed:array u8 64sz =
-        Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_G key_generation_seed
-      in
-      let seed_for_A, seed_for_secret_and_error:(slice u8 & slice u8) =
-        Core.Slice.split_at_under_impl (Rust_primitives.unsize hashed <: slice u8) 32sz
-      in
-      let* v_A_transpose:array
-        (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K =
-        match
-          Core.Ops.Try_trait.Try.branch (parse_a (Libcrux.Kem.Kyber768.Conversions.into_padded_array
-                    seed_for_A
-                  <:
-                  array u8 34sz)
-                true
-              <:
-              Core.Result.t_Result
-                (array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
-                Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
-        with
-        | Core.Ops.Control_flow.ControlFlow_Break residual ->
-          let* hoist15:Rust_primitives.Hax.t_Never =
-            Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.FromResidual.from_residual
-                  residual
-                <:
-                Core.Result.t_Result
-                  (t_PrivateKey v_PRIVATE_KEY_SIZE & t_PublicKey v_PUBLIC_KEY_SIZE)
-                  Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
+    : ((t_PrivateKey v_PRIVATE_KEY_SIZE & t_PublicKey v_PUBLIC_KEY_SIZE) &
+      Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError) =
+  let (prf_input: array u8 33sz):array u8 33sz = Rust_primitives.Hax.repeat 0uy 33sz in
+  let secret_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
+  in
+  let error_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
+  in
+  let (domain_separator: u8):u8 = 0uy in
+  let hashed:array u8 64sz =
+    Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_G key_generation_seed
+  in
+  let seed_for_A, seed_for_secret_and_error:(slice u8 & slice u8) =
+    Core.Slice.split_at_under_impl (Rust_primitives.unsize hashed <: slice u8) 32sz
+  in
+  let v_A_transpose, sampling_A_error:(array
+      (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
+    Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError) =
+    sample_matrix_A (Libcrux.Kem.Kyber768.Conversions.into_padded_array seed_for_A <: array u8 34sz)
+      true
+  in
+  let prf_input:array u8 33sz =
+    Rust_primitives.Hax.update_at prf_input
+      ({
+          Core.Ops.Range.Range.f_start = 0sz;
+          Core.Ops.Range.Range.f_end = Core.Slice.len_under_impl seed_for_secret_and_error <: usize
+        })
+      (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut prf_input
+              ({
+                  Core.Ops.Range.Range.f_start = 0sz;
+                  Core.Ops.Range.Range.f_end
+                  =
+                  Core.Slice.len_under_impl seed_for_secret_and_error <: usize
+                })
+            <:
+            slice u8)
+          seed_for_secret_and_error
+        <:
+        slice u8)
+  in
+  let domain_separator, prf_input, secret_as_ntt:(Prims.unit & array u8 33sz &
+    array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) =
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
+              Core.Ops.Range.Range.f_start = 0sz;
+              Core.Ops.Range.Range.f_end = v_K
+            })
+        <:
+        _)
+      (domain_separator, prf_input, secret_as_ntt)
+      (fun (domain_separator, prf_input, secret_as_ntt) i ->
+          let prf_input:array u8 33sz =
+            Rust_primitives.Hax.update_at prf_input 32sz domain_separator
           in
-          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist15)
-        | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
-          Core.Ops.Control_flow.ControlFlow_Continue v_val
-      in
-      Core.Ops.Control_flow.ControlFlow_Continue
-      (let prf_input:array u8 33sz =
-          Rust_primitives.Hax.update_at prf_input
-            ({
-                Core.Ops.Range.Range.f_start = 0sz;
-                Core.Ops.Range.Range.f_end
-                =
-                Core.Slice.len_under_impl seed_for_secret_and_error <: usize
-              })
-            (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut prf_input
-                    ({
-                        Core.Ops.Range.Range.f_start = 0sz;
-                        Core.Ops.Range.Range.f_end
-                        =
-                        Core.Slice.len_under_impl seed_for_secret_and_error <: usize
-                      })
-                  <:
-                  slice u8)
-                seed_for_secret_and_error
-              <:
-              slice u8)
-        in
-        let domain_separator, prf_input, secret_as_ntt:(Prims.unit & array u8 33sz &
-          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) =
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
-                    Core.Ops.Range.Range.f_start = 0sz;
-                    Core.Ops.Range.Range.f_end = v_K
-                  })
-              <:
-              _)
-            (domain_separator, prf_input, secret_as_ntt)
-            (fun (domain_separator, prf_input, secret_as_ntt) i ->
-                let prf_input:array u8 33sz =
-                  Rust_primitives.Hax.update_at prf_input 32sz domain_separator
-                in
-                let domain_separator:Prims.unit = domain_separator +. 1uy in
-                let (prf_output: array u8 128sz):array u8 128sz =
-                  Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
-
-                      <:
-                      slice u8)
-                in
-                let secret:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
-                  Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
-                in
-                let secret_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
-                  v_K =
-                  Rust_primitives.Hax.update_at secret_as_ntt
-                    i
-                    (Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.ntt_representation secret
-
-                      <:
-                      Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-                in
-                domain_separator, prf_input, secret_as_ntt)
-        in
-        let domain_separator, error_as_ntt, prf_input:(Prims.unit &
-          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K &
-          array u8 33sz) =
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
-                    Core.Ops.Range.Range.f_start = 0sz;
-                    Core.Ops.Range.Range.f_end = v_K
-                  })
-              <:
-              _)
-            (domain_separator, error_as_ntt, prf_input)
-            (fun (domain_separator, error_as_ntt, prf_input) i ->
-                let prf_input:array u8 33sz =
-                  Rust_primitives.Hax.update_at prf_input 32sz domain_separator
-                in
-                let domain_separator:Prims.unit = domain_separator +. 1uy in
-                let (prf_output: array u8 128sz):array u8 128sz =
-                  Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
-
-                      <:
-                      slice u8)
-                in
-                let error:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
-                  Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
-                in
-                let error_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
-                  v_K =
-                  Rust_primitives.Hax.update_at error_as_ntt
-                    i
-                    (Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.ntt_representation error
-
-                      <:
-                      Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-                in
-                domain_separator, error_as_ntt, prf_input)
-        in
-        let t__as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-          Libcrux.Kem.Kyber768.Ntt.multiply_matrix_by_column v_A_transpose secret_as_ntt
-        in
-        let t__as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
-                    Core.Ops.Range.Range.f_start = 0sz;
-                    Core.Ops.Range.Range.f_end = v_K
-                  })
-              <:
-              _)
-            t__as_ntt
-            (fun t__as_ntt i ->
-                Rust_primitives.Hax.update_at t__as_ntt
-                  i
-                  ((t__as_ntt.[ i ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement) +.
-                    (error_as_ntt.[ i ]
-                      <:
-                      Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-                    <:
-                    _)
+          let domain_separator:Prims.unit = domain_separator +. 1uy in
+          let (prf_output: array u8 128sz):array u8 128sz =
+            Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
                 <:
-                array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
-        in
-        let public_key_serialized:Libcrux.Kem.Kyber768.Conversions.t_UpdatableArray
-        v_PUBLIC_KEY_SIZE =
-          Libcrux.Kem.Kyber768.Conversions.new_under_impl (Rust_primitives.Hax.repeat 0uy
-                v_PUBLIC_KEY_SIZE
+                slice u8)
+          in
+          let secret:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+            Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
+          in
+          let secret_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+            Rust_primitives.Hax.update_at secret_as_ntt
+              i
+              (Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.ntt_representation secret
+                <:
+                Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+          in
+          domain_separator, prf_input, secret_as_ntt)
+  in
+  let domain_separator, error_as_ntt, prf_input:(Prims.unit &
+    array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K &
+    array u8 33sz) =
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
+              Core.Ops.Range.Range.f_start = 0sz;
+              Core.Ops.Range.Range.f_end = v_K
+            })
+        <:
+        _)
+      (domain_separator, error_as_ntt, prf_input)
+      (fun (domain_separator, error_as_ntt, prf_input) i ->
+          let prf_input:array u8 33sz =
+            Rust_primitives.Hax.update_at prf_input 32sz domain_separator
+          in
+          let domain_separator:Prims.unit = domain_separator +. 1uy in
+          let (prf_output: array u8 128sz):array u8 128sz =
+            Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
+                <:
+                slice u8)
+          in
+          let error:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+            Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
+          in
+          let error_as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+            Rust_primitives.Hax.update_at error_as_ntt
+              i
+              (Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.ntt_representation error
+                <:
+                Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+          in
+          domain_separator, error_as_ntt, prf_input)
+  in
+  let t__as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Libcrux.Kem.Kyber768.Ntt.multiply_matrix_by_column v_A_transpose secret_as_ntt
+  in
+  let t__as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
+              Core.Ops.Range.Range.f_start = 0sz;
+              Core.Ops.Range.Range.f_end = v_K
+            })
+        <:
+        _)
+      t__as_ntt
+      (fun t__as_ntt i ->
+          Rust_primitives.Hax.update_at t__as_ntt
+            i
+            ((t__as_ntt.[ i ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement) +.
+              (error_as_ntt.[ i ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
               <:
-              array u8 v_PUBLIC_KEY_SIZE)
-        in
-        let public_key_serialized:Libcrux.Kem.Kyber768.Conversions.t_UpdatableArray
-        v_PUBLIC_KEY_SIZE =
-          Libcrux.Kem.Kyber768.Conversions.UpdatingArray.push public_key_serialized
-            (Rust_primitives.unsize (encode_12_ t__as_ntt <: array u8 v_BYTES_PER_RING_ELEMENT)
-              <:
-              slice u8)
-        in
-        let public_key_serialized:array u8 v_PUBLIC_KEY_SIZE =
-          Libcrux.Kem.Kyber768.Conversions.array_under_impl (Libcrux.Kem.Kyber768.Conversions.UpdatingArray.push
-                public_key_serialized
-                seed_for_A
-              <:
-              Libcrux.Kem.Kyber768.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE)
-        in
-        let secret_key_serialized:array u8 v_PRIVATE_KEY_SIZE = encode_12_ secret_as_ntt in
-        Core.Result.Result_Ok
-        (Core.Convert.Into.into secret_key_serialized, Core.Convert.Into.into public_key_serialized)
-      ))
+              _)
+          <:
+          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+  in
+  let public_key_serialized:Libcrux.Kem.Kyber768.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
+    Libcrux.Kem.Kyber768.Conversions.new_under_impl (Rust_primitives.Hax.repeat 0uy
+          v_PUBLIC_KEY_SIZE
+        <:
+        array u8 v_PUBLIC_KEY_SIZE)
+  in
+  let public_key_serialized:Libcrux.Kem.Kyber768.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
+    Libcrux.Kem.Kyber768.Conversions.UpdatingArray.push public_key_serialized
+      (Rust_primitives.unsize (encode_12_ t__as_ntt <: array u8 v_BYTES_PER_RING_ELEMENT)
+        <:
+        slice u8)
+  in
+  let public_key_serialized:array u8 v_PUBLIC_KEY_SIZE =
+    Libcrux.Kem.Kyber768.Conversions.array_under_impl (Libcrux.Kem.Kyber768.Conversions.UpdatingArray.push
+          public_key_serialized
+          seed_for_A
+        <:
+        Libcrux.Kem.Kyber768.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE)
+  in
+  let secret_key_serialized:array u8 v_PRIVATE_KEY_SIZE = encode_12_ secret_as_ntt in
+  FStar.Pervasives.Native.Mktuple2 (Core.Convert.Into.into secret_key_serialized)
+    (Core.Convert.Into.into public_key_serialized),
+  sampling_A_error
 
 let serialize_secret_key
       (#serialized_key_len: usize)
@@ -819,273 +738,246 @@ let encrypt
       (public_key: slice u8)
       (message: array u8 32sz)
       (randomness: slice u8)
-    : Core.Result.t_Result (Libcrux.Kem.Kyber768.t_KyberCiphertext v_CIPHERTEXT_SIZE)
-      Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError =
-  Rust_primitives.Hax.Control_flow_monad.Mexception.run (let t__as_ntt:array
-        Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-        Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
-      in
-      let t__as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-        Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter (Core.Iter.Traits.Iterator.Iterator.enumerate
-                  (Core.Slice.chunks_exact_under_impl (public_key.[ {
-                            Core.Ops.Range.RangeTo.f_end
-                            =
-                            Libcrux.Kem.Kyber768.Parameters.v_T_AS_NTT_ENCODED_SIZE_768_
-                          } ]
-                        <:
-                        slice u8)
-                      Libcrux.Kem.Kyber768.Parameters.v_BYTES_PER_RING_ELEMENT
+    : (Libcrux.Kem.Kyber768.t_KyberCiphertext v_CIPHERTEXT_SIZE &
+      Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError) =
+  let t__as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
+  in
+  let t__as_ntt:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter (Core.Iter.Traits.Iterator.Iterator.enumerate
+              (Core.Slice.chunks_exact_under_impl (public_key.[ {
+                        Core.Ops.Range.RangeTo.f_end
+                        =
+                        Libcrux.Kem.Kyber768.Parameters.v_T_AS_NTT_ENCODED_SIZE_768_
+                      } ]
                     <:
-                    Core.Slice.Iter.t_ChunksExact u8)
+                    slice u8)
+                  Libcrux.Kem.Kyber768.Parameters.v_BYTES_PER_RING_ELEMENT
                 <:
-                Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
-            _)
-          t__as_ntt
-          (fun t__as_ntt (i, t__as_ntt_bytes) ->
-              Rust_primitives.Hax.update_at t__as_ntt
-                i
-                (Libcrux.Kem.Kyber768.Serialize.deserialize_little_endian_12_ t__as_ntt_bytes
-                  <:
-                  Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+        <:
+        _)
+      t__as_ntt
+      (fun t__as_ntt (i, t__as_ntt_bytes) ->
+          Rust_primitives.Hax.update_at t__as_ntt
+            i
+            (Libcrux.Kem.Kyber768.Serialize.deserialize_little_endian_12_ t__as_ntt_bytes
               <:
-              array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
-      in
-      let seed:slice u8 =
-        public_key.[ {
-            Core.Ops.Range.RangeFrom.f_start
-            =
-            Libcrux.Kem.Kyber768.Parameters.v_T_AS_NTT_ENCODED_SIZE_768_
-          } ]
-      in
-      let* v_A_transpose:array
-        (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K =
-        match
-          Core.Ops.Try_trait.Try.branch (parse_a (Libcrux.Kem.Kyber768.Conversions.into_padded_array
-                    seed
-                  <:
-                  array u8 34sz)
-                false
-              <:
-              Core.Result.t_Result
-                (array (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
-                Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
-        with
-        | Core.Ops.Control_flow.ControlFlow_Break residual ->
-          let* hoist16:Rust_primitives.Hax.t_Never =
-            Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.FromResidual.from_residual
-                  residual
-                <:
-                Core.Result.t_Result (Libcrux.Kem.Kyber768.t_KyberCiphertext v_CIPHERTEXT_SIZE)
-                  Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError)
+              Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+          <:
+          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+  in
+  let seed:slice u8 =
+    public_key.[ {
+        Core.Ops.Range.RangeFrom.f_start
+        =
+        Libcrux.Kem.Kyber768.Parameters.v_T_AS_NTT_ENCODED_SIZE_768_
+      } ]
+  in
+  let v_A_transpose, sampling_A_error:(array
+      (array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
+    Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError) =
+    sample_matrix_A (Libcrux.Kem.Kyber768.Conversions.into_padded_array seed <: array u8 34sz) false
+  in
+  let (prf_input: array u8 33sz):array u8 33sz =
+    Libcrux.Kem.Kyber768.Conversions.into_padded_array randomness
+  in
+  let r_as_ntt, domain_separator:(array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
+      v_K &
+    u8) =
+    cbd prf_input
+  in
+  let error_1_:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
+  in
+  let domain_separator, error_1_, prf_input:(Prims.unit &
+    array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K &
+    array u8 33sz) =
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
+              Core.Ops.Range.Range.f_start = 0sz;
+              Core.Ops.Range.Range.f_end = v_K
+            })
+        <:
+        _)
+      (domain_separator, error_1_, prf_input)
+      (fun (domain_separator, error_1_, prf_input) i ->
+          let prf_input:array u8 33sz =
+            Rust_primitives.Hax.update_at prf_input 32sz domain_separator
           in
-          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist16)
-        | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
-          Core.Ops.Control_flow.ControlFlow_Continue v_val
-      in
-      Core.Ops.Control_flow.ControlFlow_Continue
-      (let (prf_input: array u8 33sz):array u8 33sz =
-          Libcrux.Kem.Kyber768.Conversions.into_padded_array randomness
-        in
-        let r_as_ntt, domain_separator:(array
-            Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K &
-          u8) =
-          cbd prf_input
-        in
-        let error_1_:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-          Rust_primitives.Hax.repeat Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl v_K
-        in
-        let domain_separator, error_1_, prf_input:(Prims.unit &
-          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K &
-          array u8 33sz) =
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
-                    Core.Ops.Range.Range.f_start = 0sz;
-                    Core.Ops.Range.Range.f_end = v_K
-                  })
-              <:
-              _)
-            (domain_separator, error_1_, prf_input)
-            (fun (domain_separator, error_1_, prf_input) i ->
-                let prf_input:array u8 33sz =
-                  Rust_primitives.Hax.update_at prf_input 32sz domain_separator
-                in
-                let domain_separator:Prims.unit = domain_separator +. 1uy in
-                let (prf_output: array u8 128sz):array u8 128sz =
-                  Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
-
-                      <:
-                      slice u8)
-                in
-                let error_1_:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K
-                =
-                  Rust_primitives.Hax.update_at error_1_
-                    i
-                    (Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
-                      <:
-                      Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-                in
-                domain_separator, error_1_, prf_input)
-        in
-        let prf_input:array u8 33sz =
-          Rust_primitives.Hax.update_at prf_input 32sz domain_separator
-        in
-        let (prf_output: array u8 128sz):array u8 128sz =
-          Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
-              <:
-              slice u8)
-        in
-        let error_2_:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
-          Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
-        in
-        let u:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-          Libcrux.Kem.Kyber768.Ntt.multiply_matrix_by_column_montgomery v_A_transpose r_as_ntt
-        in
-        let u:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
-                    Core.Ops.Range.Range.f_start = 0sz;
-                    Core.Ops.Range.Range.f_end = v_K
-                  })
-              <:
-              _)
-            u
-            (fun u i ->
-                Rust_primitives.Hax.update_at u
-                  i
-                  ((Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.invert_ntt_montgomery
-                        (u.[ i ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-                      <:
-                      Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement) +.
-                    (error_1_.[ i ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-                    <:
-                    _)
+          let domain_separator:Prims.unit = domain_separator +. 1uy in
+          let (prf_output: array u8 128sz):array u8 128sz =
+            Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
                 <:
-                array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
-        in
-        let message_as_ring_element:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
-          Libcrux.Kem.Kyber768.Serialize.deserialize_little_endian_1_ (Rust_primitives.unsize message
-
+                slice u8)
+          in
+          let error_1_:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+            Rust_primitives.Hax.update_at error_1_
+              i
+              (Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
+                <:
+                Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+          in
+          domain_separator, error_1_, prf_input)
+  in
+  let prf_input:array u8 33sz = Rust_primitives.Hax.update_at prf_input 32sz domain_separator in
+  let (prf_output: array u8 128sz):array u8 128sz =
+    Libcrux.Kem.Kyber768.Parameters.Hash_functions.v_PRF (Rust_primitives.unsize prf_input
+        <:
+        slice u8)
+  in
+  let error_2_:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+    Libcrux.Kem.Kyber768.Sampling.sample_from_binomial_distribution_2_ prf_output
+  in
+  let u:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Libcrux.Kem.Kyber768.Ntt.multiply_matrix_by_column_montgomery v_A_transpose r_as_ntt
+  in
+  let u:array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
+              Core.Ops.Range.Range.f_start = 0sz;
+              Core.Ops.Range.Range.f_end = v_K
+            })
+        <:
+        _)
+      u
+      (fun u i ->
+          Rust_primitives.Hax.update_at u
+            i
+            ((Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.invert_ntt_montgomery (u.[ i
+                    ]
+                    <:
+                    Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+                <:
+                Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement) +.
+              (error_1_.[ i ] <: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
               <:
-              slice u8)
-        in
-        let v =
-          ((Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.invert_ntt_montgomery (Libcrux.Kem.Kyber768.Ntt.multiply_row_by_column_montgomery
-                    t__as_ntt
-                    r_as_ntt
-                  <:
-                  Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-              <:
-              Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement) +.
-            error_2_
-            <:
-            _) +.
-          (Libcrux.Kem.Kyber768.Compress.decompress message_as_ring_element 1sz
+              _)
+          <:
+          array Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement v_K)
+  in
+  let message_as_ring_element:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+    Libcrux.Kem.Kyber768.Serialize.deserialize_little_endian_1_ (Rust_primitives.unsize message
+        <:
+        slice u8)
+  in
+  let v =
+    ((Libcrux.Kem.Kyber768.Ntt.Kyber_polynomial_ring_element_mod.invert_ntt_montgomery (Libcrux.Kem.Kyber768.Ntt.multiply_row_by_column_montgomery
+              t__as_ntt
+              r_as_ntt
             <:
             Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-        in
-        match v_K with
-        | 2sz ->
-          let c1:array u8 640sz = compress_then_encode_u u in
-          let c2:array u8 128sz =
-            Libcrux.Kem.Kyber768.Serialize.serialize_little_endian_4_ (Libcrux.Kem.Kyber768.Compress.compress
-                  v
-                  Libcrux.Kem.Kyber768.Parameters.v_VECTOR_V_COMPRESSION_FACTOR_512_
-                <:
-                Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-          in
-          let (ciphertext: array u8 v_CIPHERTEXT_SIZE):array u8 v_CIPHERTEXT_SIZE =
-            Libcrux.Kem.Kyber768.Conversions.into_padded_array (Rust_primitives.unsize c1
-                <:
-                slice u8)
-          in
-          let ciphertext:array u8 v_CIPHERTEXT_SIZE =
-            Rust_primitives.Hax.update_at ciphertext
-              ({
-                  Core.Ops.Range.RangeFrom.f_start
-                  =
-                  Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_512_
-                })
-              (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut ciphertext
-                      ({
-                          Core.Ops.Range.RangeFrom.f_start
-                          =
-                          Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_512_
-                        })
-                    <:
-                    slice u8)
-                  (Core.Array.as_slice_under_impl_23 c2 <: slice u8)
-                <:
-                slice u8)
-          in
-          Core.Result.Result_Ok (Core.Convert.Into.into ciphertext)
-        | 3sz ->
-          let c1:array u8 960sz = compress_then_encode_u u in
-          let c2:array u8 128sz =
-            Libcrux.Kem.Kyber768.Serialize.serialize_little_endian_4_ (Libcrux.Kem.Kyber768.Compress.compress
-                  v
-                  Libcrux.Kem.Kyber768.Parameters.v_VECTOR_V_COMPRESSION_FACTOR_768_
-                <:
-                Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-          in
-          let (ciphertext: array u8 v_CIPHERTEXT_SIZE):array u8 v_CIPHERTEXT_SIZE =
-            Libcrux.Kem.Kyber768.Conversions.into_padded_array (Rust_primitives.unsize c1
-                <:
-                slice u8)
-          in
-          let ciphertext:array u8 v_CIPHERTEXT_SIZE =
-            Rust_primitives.Hax.update_at ciphertext
-              ({
-                  Core.Ops.Range.RangeFrom.f_start
-                  =
-                  Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_768_
-                })
-              (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut ciphertext
-                      ({
-                          Core.Ops.Range.RangeFrom.f_start
-                          =
-                          Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_768_
-                        })
-                    <:
-                    slice u8)
-                  (Core.Array.as_slice_under_impl_23 c2 <: slice u8)
-                <:
-                slice u8)
-          in
-          Core.Result.Result_Ok (Core.Convert.Into.into ciphertext)
-        | 4sz ->
-          let c1:array u8 1280sz = compress_then_encode_u u in
-          let c2:array u8 128sz =
-            Libcrux.Kem.Kyber768.Serialize.serialize_little_endian_4_ (Libcrux.Kem.Kyber768.Compress.compress
-                  v
-                  Libcrux.Kem.Kyber768.Parameters.v_VECTOR_V_COMPRESSION_FACTOR_1024_
-                <:
-                Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
-          in
-          let (ciphertext: array u8 v_CIPHERTEXT_SIZE):array u8 v_CIPHERTEXT_SIZE =
-            Libcrux.Kem.Kyber768.Conversions.into_padded_array (Rust_primitives.unsize c1
-                <:
-                slice u8)
-          in
-          let ciphertext:array u8 v_CIPHERTEXT_SIZE =
-            Rust_primitives.Hax.update_at ciphertext
-              ({
-                  Core.Ops.Range.RangeFrom.f_start
-                  =
-                  Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_1024_
-                })
-              (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut ciphertext
-                      ({
-                          Core.Ops.Range.RangeFrom.f_start
-                          =
-                          Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_1024_
-                        })
-                    <:
-                    slice u8)
-                  (Core.Array.as_slice_under_impl_23 c2 <: slice u8)
-                <:
-                slice u8)
-          in
-          Core.Result.Result_Ok (Core.Convert.Into.into ciphertext)
-        | _ -> Core.Result.Result_Err Libcrux.Kem.Kyber768.BadRejectionSamplingRandomnessError))
+        <:
+        Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement) +.
+      error_2_
+      <:
+      _) +.
+    (Libcrux.Kem.Kyber768.Compress.decompress message_as_ring_element 1sz
+      <:
+      Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+  in
+  match v_K with
+  | 2sz ->
+    let c1:array u8 640sz = compress_then_encode_u u in
+    let c2:array u8 128sz =
+      Libcrux.Kem.Kyber768.Serialize.serialize_little_endian_4_ (Libcrux.Kem.Kyber768.Compress.compress
+            v
+            Libcrux.Kem.Kyber768.Parameters.v_VECTOR_V_COMPRESSION_FACTOR_512_
+          <:
+          Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+    in
+    let (ciphertext: array u8 v_CIPHERTEXT_SIZE):array u8 v_CIPHERTEXT_SIZE =
+      Libcrux.Kem.Kyber768.Conversions.into_padded_array (Rust_primitives.unsize c1 <: slice u8)
+    in
+    let ciphertext:array u8 v_CIPHERTEXT_SIZE =
+      Rust_primitives.Hax.update_at ciphertext
+        ({
+            Core.Ops.Range.RangeFrom.f_start
+            =
+            Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_512_
+          })
+        (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut ciphertext
+                ({
+                    Core.Ops.Range.RangeFrom.f_start
+                    =
+                    Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_512_
+                  })
+              <:
+              slice u8)
+            (Core.Array.as_slice_under_impl_23 c2 <: slice u8)
+          <:
+          slice u8)
+    in
+    Core.Convert.Into.into ciphertext, sampling_A_error
+  | 3sz ->
+    let c1:array u8 960sz = compress_then_encode_u u in
+    let c2:array u8 128sz =
+      Libcrux.Kem.Kyber768.Serialize.serialize_little_endian_4_ (Libcrux.Kem.Kyber768.Compress.compress
+            v
+            Libcrux.Kem.Kyber768.Parameters.v_VECTOR_V_COMPRESSION_FACTOR_768_
+          <:
+          Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+    in
+    let (ciphertext: array u8 v_CIPHERTEXT_SIZE):array u8 v_CIPHERTEXT_SIZE =
+      Libcrux.Kem.Kyber768.Conversions.into_padded_array (Rust_primitives.unsize c1 <: slice u8)
+    in
+    let ciphertext:array u8 v_CIPHERTEXT_SIZE =
+      Rust_primitives.Hax.update_at ciphertext
+        ({
+            Core.Ops.Range.RangeFrom.f_start
+            =
+            Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_768_
+          })
+        (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut ciphertext
+                ({
+                    Core.Ops.Range.RangeFrom.f_start
+                    =
+                    Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_768_
+                  })
+              <:
+              slice u8)
+            (Core.Array.as_slice_under_impl_23 c2 <: slice u8)
+          <:
+          slice u8)
+    in
+    Core.Convert.Into.into ciphertext, sampling_A_error
+  | 4sz ->
+    let c1:array u8 1280sz = compress_then_encode_u u in
+    let c2:array u8 128sz =
+      Libcrux.Kem.Kyber768.Serialize.serialize_little_endian_4_ (Libcrux.Kem.Kyber768.Compress.compress
+            v
+            Libcrux.Kem.Kyber768.Parameters.v_VECTOR_V_COMPRESSION_FACTOR_1024_
+          <:
+          Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement)
+    in
+    let (ciphertext: array u8 v_CIPHERTEXT_SIZE):array u8 v_CIPHERTEXT_SIZE =
+      Libcrux.Kem.Kyber768.Conversions.into_padded_array (Rust_primitives.unsize c1 <: slice u8)
+    in
+    let ciphertext:array u8 v_CIPHERTEXT_SIZE =
+      Rust_primitives.Hax.update_at ciphertext
+        ({
+            Core.Ops.Range.RangeFrom.f_start
+            =
+            Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_1024_
+          })
+        (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut ciphertext
+                ({
+                    Core.Ops.Range.RangeFrom.f_start
+                    =
+                    Libcrux.Kem.Kyber768.Parameters.v_VECTOR_U_ENCODED_SIZE_1024_
+                  })
+              <:
+              slice u8)
+            (Core.Array.as_slice_under_impl_23 c2 <: slice u8)
+          <:
+          slice u8)
+    in
+    Core.Convert.Into.into ciphertext, sampling_A_error
+  | _ ->
+    Core.Convert.Into.into (Rust_primitives.Hax.repeat 0uy v_CIPHERTEXT_SIZE
+        <:
+        array u8 v_CIPHERTEXT_SIZE),
+    Core.Option.Option_Some Libcrux.Kem.Kyber768.BadRejectionSamplingRandomnessError
 
 let decrypt
       (#k #ciphertext_size: usize)
