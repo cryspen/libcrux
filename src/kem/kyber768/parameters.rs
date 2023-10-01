@@ -21,6 +21,8 @@ pub(crate) const REJECTION_SAMPLING_SEED_SIZE: usize = 168 * 5;
 
 pub(crate) const CPA_PKE_MESSAGE_SIZE: usize = 32;
 
+pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
+
 /// Rank
 pub(crate) const RANK_512: usize = 2;
 pub(crate) const RANK_768: usize = 3;
@@ -87,8 +89,6 @@ pub(crate) const VECTOR_V_ENCODED_SIZE_768: usize =
     (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR_768) / 8;
 pub(crate) const VECTOR_V_ENCODED_SIZE_1024: usize =
     (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR_1024) / 8;
-
-pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
 
 pub(crate) const CPA_PKE_SECRET_KEY_SIZE_512: usize =
     (RANK_512 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;

@@ -3,8 +3,7 @@
 #![allow(non_camel_case_types, non_snake_case)]
 
 use crate::kem;
-use crate::kem::kyber768;
-use crate::kem::kyber768::CcaKeyPair;
+use crate::kem::kyber768::KeyPair as KyberKeyPair;
 use crate::kem::*;
 
 use super::errors::*;
@@ -515,7 +514,7 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
                     32 + 64,
                 )?;
                 let (xsk, xpk) = DeriveKeyPair(alg, &seed[..32])?;
-                let CcaKeyPair { sk, pk } =
+                let KyberKeyPair { sk, pk } =
                     kem::kyber768_generate_keypair_derand(seed[32..].try_into().unwrap()).unwrap();
 
                 let private = Kyber768X25519PrivateKey {

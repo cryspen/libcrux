@@ -20,7 +20,7 @@ pub use kyber768::decapsulate_768 as kyber768_decapsulate_derand;
 pub use kyber768::encapsulate_768 as kyber768_encapsulate_derand;
 pub use kyber768::generate_key_pair_768 as kyber768_generate_keypair_derand;
 
-use self::kyber768::CcaKeyPair;
+use self::kyber768::KeyPair as KyberKeyPair;
 
 pub type Kyber768Ciphertext =
     self::kyber768::KyberCiphertext<{ kyber768::parameters::CPA_PKE_CIPHERTEXT_SIZE_768 }>;
@@ -308,7 +308,7 @@ fn gen_kyber768(
     let mut seed = [0; kyber768::KEY_GENERATION_SEED_SIZE];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
 
-    if let Ok(CcaKeyPair { sk, pk }) = kyber768_generate_keypair_derand(seed) {
+    if let Ok(KyberKeyPair { sk, pk }) = kyber768_generate_keypair_derand(seed) {
         Ok((sk, pk))
     } else {
         Err(Error::KeyGen)
