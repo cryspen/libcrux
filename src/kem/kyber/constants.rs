@@ -26,14 +26,16 @@ pub(crate) const SHARED_SECRET_SIZE: usize = 32;
 
 pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
 
-/// Compute serialized length for output size of ByteEncode
-pub(in crate::kem::kyber) const fn serialized_len<const K: usize, const OUT_LEN: usize>() -> usize {
-    OUT_LEN * K
-}
+// [hax]: hacspec/hacspec-v2#27 stealing error
+//        Using these functions causes stealing errors in hax.
+// /// Compute serialized length for output size of ByteEncode
+// pub(in crate::kem::kyber) const fn serialized_len<const K: usize, const OUT_LEN: usize>() -> usize {
+//     OUT_LEN * K
+// }
 
-/// Compute block length for output block size of ByteEncode u (c1)
-pub(in crate::kem::kyber) const fn block_len<const FACTOR: usize>() -> usize {
-    (COEFFICIENTS_IN_RING_ELEMENT * FACTOR) / 8
-}
+// /// Compute block length for output block size of ByteEncode u (c1)
+// pub(in crate::kem::kyber) const fn block_len<const FACTOR: usize>() -> usize {
+//     (COEFFICIENTS_IN_RING_ELEMENT * FACTOR) / 8
+// }
 
 pub(crate) const H_DIGEST_SIZE: usize = digest_size(Algorithm::Sha3_256);
