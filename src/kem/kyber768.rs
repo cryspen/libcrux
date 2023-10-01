@@ -54,15 +54,15 @@ impl_generic_struct!(KyberPrivateKey);
 impl_generic_struct!(KyberPublicKey);
 
 /// A Kyber key pair
-pub struct KeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
+pub struct KyberKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
     pub(crate) sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
     pub(crate) pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
 }
 
 impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
-    KeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
+    KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
 {
-    /// Creates a new [`KeyPair`].
+    /// Creates a new [`KyberKeyPair`].
     pub fn new(sk: [u8; PRIVATE_KEY_SIZE], pk: [u8; PUBLIC_KEY_SIZE]) -> Self {
         Self {
             sk: sk.into(),
@@ -94,11 +94,17 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     }
 }
 
+// Kyber 512 types
+pub type Kyber512Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>;
+pub type Kyber512PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_512>;
+pub type Kyber512PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
+pub type Kyber512SharedSecret = KyberSharedSecret<SHARED_SECRET_SIZE>;
+
 /// Generate Kyber 512 Key Pair
 pub fn generate_key_pair_512(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<
-    KeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>,
+    KyberKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>,
     BadRejectionSamplingRandomnessError,
 > {
     generate_keypair::<
@@ -153,11 +159,17 @@ pub fn decapsulate_512(
     >(secret_key, ciphertext)
 }
 
+// Kyber 768 types
+pub type Kyber768Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
+pub type Kyber768PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_768>;
+pub type Kyber768PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
+pub type Kyber768SharedSecret = KyberSharedSecret<SHARED_SECRET_SIZE>;
+
 /// Generate Kyber 768 Key Pair
 pub fn generate_key_pair_768(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<
-    KeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>,
+    KyberKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>,
     BadRejectionSamplingRandomnessError,
 > {
     generate_keypair::<
@@ -212,11 +224,17 @@ pub fn decapsulate_768(
     >(secret_key, ciphertext)
 }
 
+// Kyber 1024 types
+pub type Kyber1024Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
+pub type Kyber1024PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_1024>;
+pub type Kyber1024PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
+pub type Kyber1024SharedSecret = KyberSharedSecret<SHARED_SECRET_SIZE>;
+
 /// Generate Kyber 1024 Key Pair
 pub fn generate_key_pair_1024(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<
-    KeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>,
+    KyberKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>,
     BadRejectionSamplingRandomnessError,
 > {
     generate_keypair::<
@@ -290,7 +308,7 @@ mod kyber {
         const BYTES_PER_RING_ELEMENT: usize,
     >(
         randomness: [u8; KEY_GENERATION_SEED_SIZE],
-    ) -> Result<KeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError>
+    ) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError>
     {
         let ind_cpa_keypair_randomness =
             &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
@@ -315,7 +333,7 @@ mod kyber {
             let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
                 KyberPrivateKey::from(secret_key_serialized);
 
-            Ok(KeyPair::from(private_key, public_key))
+            Ok(KyberKeyPair::from(private_key, public_key))
         }
     }
 

@@ -16,18 +16,19 @@ pub(crate) mod kyber768;
 // (and change the visibility of the exported functions to pub(crate)) the
 // moment we have an implementation of one. This is tracked by:
 // https://github.com/cryspen/libcrux/issues/36
+pub use kyber768::decapsulate_1024 as kyber1024_decapsulate_derand;
+pub use kyber768::decapsulate_512 as kyber512_decapsulate_derand;
 pub use kyber768::decapsulate_768 as kyber768_decapsulate_derand;
+pub use kyber768::encapsulate_1024 as kyber1024_encapsulate_derand;
+pub use kyber768::encapsulate_512 as kyber512_encapsulate_derand;
 pub use kyber768::encapsulate_768 as kyber768_encapsulate_derand;
+pub use kyber768::generate_key_pair_1024 as kyber1024_generate_keypair_derand;
+pub use kyber768::generate_key_pair_512 as kyber512_generate_keypair_derand;
 pub use kyber768::generate_key_pair_768 as kyber768_generate_keypair_derand;
 
-use self::kyber768::KeyPair as KyberKeyPair;
-
-pub type Kyber768Ciphertext =
-    self::kyber768::KyberCiphertext<{ kyber768::parameters::CPA_PKE_CIPHERTEXT_SIZE_768 }>;
-pub type Kyber768PrivateKey = self::kyber768::KyberPrivateKey<{ kyber768::SECRET_KEY_SIZE_768 }>;
-pub type Kyber768PublicKey =
-    self::kyber768::KyberPublicKey<{ kyber768::parameters::CPA_PKE_PUBLIC_KEY_SIZE_768 }>;
-pub type Kyber768SharedSecret = self::kyber768::KyberSharedSecret<{ kyber768::SHARED_SECRET_SIZE }>;
+use self::kyber768::{
+    Kyber768Ciphertext, Kyber768PrivateKey, Kyber768PublicKey, Kyber768SharedSecret, KyberKeyPair,
+};
 
 /// KEM Algorithms
 ///
