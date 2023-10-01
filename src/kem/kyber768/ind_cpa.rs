@@ -13,11 +13,7 @@ use super::{
         REJECTION_SAMPLING_SEED_SIZE,
     },
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
-    serialize::{
-        deserialize_little_endian_1, deserialize_little_endian_10, deserialize_little_endian_12,
-        deserialize_little_endian_4, serialize_little_endian, serialize_little_endian_1,
-        serialize_little_endian_12,
-    },
+    serialize::{deserialize_little_endian, serialize_little_endian},
     BadRejectionSamplingRandomnessError, KyberPublicKey,
 };
 
@@ -84,7 +80,7 @@ fn encode_12<const K: usize, const OUT_LEN: usize>(
 
     for (i, re) in input.into_iter().enumerate() {
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
-            .copy_from_slice(&serialize_little_endian_12::<BYTES_PER_RING_ELEMENT>(re));
+            .copy_from_slice(&serialize_little_endian::<12, BYTES_PER_RING_ELEMENT>(re));
     }
 
     out
@@ -229,7 +225,7 @@ pub(crate) fn encrypt<
         .chunks_exact(BYTES_PER_RING_ELEMENT)
         .enumerate()
     {
-        t_as_ntt[i] = deserialize_little_endian_12(t_as_ntt_bytes);
+        t_as_ntt[i] = deserialize_little_endian::<12>(t_as_ntt_bytes);
     }
 
     // ρ := pk + 12·k·n / 8
@@ -276,7 +272,7 @@ pub(crate) fn encrypt<
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element = deserialize_little_endian_1(&message);
+    let message_as_ring_element = deserialize_little_endian::<1>(&message);
     let v = invert_ntt_montgomery(multiply_row_by_column_montgomery(&t_as_ntt, &r_as_ntt))
         + error_2
         + decompress(message_as_ring_element, 1);
@@ -313,24 +309,26 @@ pub(crate) fn decrypt<
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
-        let u = deserialize_little_endian_10(u_bytes);
+        let u = deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes);
         u_as_ntt[i] = ntt_representation(decompress(u, 10));
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = decompress(
-        deserialize_little_endian_4(&ciphertext[VECTOR_U_ENCODED_SIZE..]),
+        deserialize_little_endian::<VECTOR_V_COMPRESSION_FACTOR>(
+            &ciphertext[VECTOR_U_ENCODED_SIZE..],
+        ),
         VECTOR_V_COMPRESSION_FACTOR,
     );
 
     // sˆ := Decode_12(sk)
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
-        secret_as_ntt[i] = deserialize_little_endian_12(secret_bytes);
+        secret_as_ntt[i] = deserialize_little_endian::<12>(secret_bytes);
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
     let message =
         v - invert_ntt_montgomery(multiply_row_by_column_montgomery(&secret_as_ntt, &u_as_ntt));
 
-    serialize_little_endian_1(compress::<1>(message))
+    serialize_little_endian::<1, CPA_PKE_MESSAGE_SIZE>(compress::<1>(message))
 }

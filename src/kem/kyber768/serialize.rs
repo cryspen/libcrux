@@ -1,12 +1,7 @@
 use crate::kem::kyber768::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     conversions::to_unsigned_representative,
-    parameters::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, VECTOR_U_COMPRESSION_FACTOR_1024,
-        VECTOR_U_COMPRESSION_FACTOR_512, VECTOR_U_COMPRESSION_FACTOR_768,
-        VECTOR_V_COMPRESSION_FACTOR_1024, VECTOR_V_COMPRESSION_FACTOR_512,
-        VECTOR_V_COMPRESSION_FACTOR_768,
-    },
+    parameters::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
 };
 
 /// This file contains instantiations of the functions
@@ -45,6 +40,7 @@ use crate::kem::kyber768::{
 /// function itself; the rest don't since they are called only after `compress_q`
 /// is called, and `compress_q` also performs this conversion.
 
+#[inline(always)]
 pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
@@ -65,11 +61,37 @@ pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT
         10 => serialize_little_endian_10(re),
         // VECTOR_U_COMPRESSION_FACTOR_1024
         11 => serialize_little_endian_11(re),
+        12 => serialize_little_endian_12(re),
         _ => unreachable!("factor {COMPRESSION_FACTOR}"),
     }
 }
 
-pub(super) fn serialize_little_endian_1<const OUT_LEN: usize>(
+#[inline(always)]
+pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
+    serialized: &[u8],
+) -> KyberPolynomialRingElement {
+    debug_assert_eq!(
+        serialized.len(),
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+    );
+
+    match COMPRESSION_FACTOR {
+        1 => deserialize_little_endian_1(serialized),
+        // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
+        4 => deserialize_little_endian_4(serialized),
+        // VECTOR_V_COMPRESSION_FACTOR_1024
+        5 => deserialize_little_endian_5(serialized),
+        // VECTOR_U_COMPRESSION_FACTOR_768 & VECTOR_U_COMPRESSION_FACTOR_512
+        10 => deserialize_little_endian_10(serialized),
+        // VECTOR_U_COMPRESSION_FACTOR_1024
+        11 => deserialize_little_endian_11(serialized),
+        12 => deserialize_little_endian_12(serialized),
+        _ => unreachable!("factor {COMPRESSION_FACTOR}"),
+    }
+}
+
+#[inline(always)]
+fn serialize_little_endian_1<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
@@ -83,7 +105,8 @@ pub(super) fn serialize_little_endian_1<const OUT_LEN: usize>(
     serialized
 }
 
-pub(super) fn deserialize_little_endian_1(serialized: &[u8]) -> KyberPolynomialRingElement {
+#[inline(always)]
+fn deserialize_little_endian_1(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), COEFFICIENTS_IN_RING_ELEMENT / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -97,7 +120,8 @@ pub(super) fn deserialize_little_endian_1(serialized: &[u8]) -> KyberPolynomialR
     re
 }
 
-pub(super) fn serialize_little_endian_4<const OUT_LEN: usize>(
+#[inline(always)]
+fn serialize_little_endian_4<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
@@ -112,7 +136,8 @@ pub(super) fn serialize_little_endian_4<const OUT_LEN: usize>(
     serialized
 }
 
-pub(super) fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement {
+#[inline(always)]
+fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -126,7 +151,8 @@ pub(super) fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialR
 }
 
 // FIXME
-pub(super) fn serialize_little_endian_5<const OUT_LEN: usize>(
+#[inline(always)]
+fn serialize_little_endian_5<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
@@ -141,7 +167,23 @@ pub(super) fn serialize_little_endian_5<const OUT_LEN: usize>(
     serialized
 }
 
-pub(super) fn serialize_little_endian_10<const OUT_LEN: usize>(
+// FIXME
+#[inline(always)]
+fn deserialize_little_endian_5(serialized: &[u8]) -> KyberPolynomialRingElement {
+    debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
+
+    let mut re = KyberPolynomialRingElement::ZERO;
+
+    for (i, byte) in serialized.iter().enumerate() {
+        re.coefficients[2 * i] = (byte & 0x0F) as KyberFieldElement;
+        re.coefficients[2 * i + 1] = ((byte >> 4) & 0x0F) as KyberFieldElement;
+    }
+
+    re
+}
+
+#[inline(always)]
+fn serialize_little_endian_10<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
@@ -165,7 +207,8 @@ pub(super) fn serialize_little_endian_10<const OUT_LEN: usize>(
     serialized
 }
 
-pub(super) fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement {
+#[inline(always)]
+fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -187,7 +230,8 @@ pub(super) fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomial
 }
 
 // FIXME
-pub(super) fn serialize_little_endian_11<const OUT_LEN: usize>(
+#[inline(always)]
+fn serialize_little_endian_11<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
@@ -211,7 +255,31 @@ pub(super) fn serialize_little_endian_11<const OUT_LEN: usize>(
     serialized
 }
 
-pub(super) fn serialize_little_endian_12<const OUT_LEN: usize>(
+// FIXME
+#[inline(always)]
+fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement {
+    debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
+
+    let mut re = KyberPolynomialRingElement::ZERO;
+
+    for (i, bytes) in serialized.chunks(5).enumerate() {
+        let byte1 = bytes[0] as KyberFieldElement;
+        let byte2 = bytes[1] as KyberFieldElement;
+        let byte3 = bytes[2] as KyberFieldElement;
+        let byte4 = bytes[3] as KyberFieldElement;
+        let byte5 = bytes[4] as KyberFieldElement;
+
+        re.coefficients[4 * i] = (byte2 & 0x03) << 8 | (byte1 & 0xFF);
+        re.coefficients[4 * i + 1] = (byte3 & 0x0F) << 6 | (byte2 >> 2);
+        re.coefficients[4 * i + 2] = (byte4 & 0x3F) << 4 | (byte3 >> 4);
+        re.coefficients[4 * i + 3] = byte5 << 2 | (byte4 >> 6);
+    }
+
+    re
+}
+
+#[inline(always)]
+fn serialize_little_endian_12<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
@@ -228,7 +296,8 @@ pub(super) fn serialize_little_endian_12<const OUT_LEN: usize>(
     serialized
 }
 
-pub(super) fn deserialize_little_endian_12(serialized: &[u8]) -> KyberPolynomialRingElement {
+#[inline(always)]
+fn deserialize_little_endian_12(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), BYTES_PER_RING_ELEMENT);
 
     let mut re = KyberPolynomialRingElement::ZERO;
