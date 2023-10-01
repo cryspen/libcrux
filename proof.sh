@@ -7,7 +7,7 @@ show_help() {
 }
 
 extract_all() {
-    cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
+    cargo hax into -i '-** +kem::kyber::** -kem::kyber::arithmetic::mutable_operations::**' fstar
     cd specs/kyber
     cargo hax into fstar
 }
