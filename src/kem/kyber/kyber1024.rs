@@ -1,4 +1,4 @@
-use super::{parameters::*, *};
+use super::{constants::*, *};
 
 // Kyber 1024 parameters
 const RANK_1024: usize = 4;

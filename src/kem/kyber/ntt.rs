@@ -3,7 +3,7 @@ use super::{
         barrett_reduce, montgomery_reduce, to_montgomery_domain, KyberFieldElement,
         KyberPolynomialRingElement,
     },
-    parameters::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
 
 const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [

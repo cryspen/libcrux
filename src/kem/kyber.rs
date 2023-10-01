@@ -5,7 +5,7 @@
 // was stolen.
 //
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
-pub(crate) mod parameters;
+pub(crate) mod constants;
 
 #[macro_use]
 mod types;
@@ -42,10 +42,10 @@ use self::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
     },
+    constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     conversions::into_padded_array,
     hash_functions::{G, H, KDF},
     ind_cpa::serialize_secret_key,
-    parameters::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
 };
 
 /// Seed size for key generation
@@ -61,8 +61,8 @@ pub(super) fn generate_keypair<
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError> {
-    let ind_cpa_keypair_randomness = &randomness[0..parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE];
-    let implicit_rejection_value = &randomness[parameters::CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
+    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
     let ((ind_cpa_private_key, public_key), sampling_a_error) = ind_cpa::generate_keypair::<
         K,

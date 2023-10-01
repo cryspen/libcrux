@@ -419,8 +419,8 @@ pub fn encapsulate(pk: &PublicKey, rng: &mut (impl CryptoRng + Rng)) -> Result<(
 
 fn kyber_rand(
     rng: &mut (impl CryptoRng + Rng),
-) -> Result<[u8; kyber::parameters::SHARED_SECRET_SIZE], Error> {
-    let mut seed = [0; kyber::parameters::SHARED_SECRET_SIZE];
+) -> Result<[u8; kyber::constants::SHARED_SECRET_SIZE], Error> {
+    let mut seed = [0; kyber::constants::SHARED_SECRET_SIZE];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
     Ok(seed)
 }

@@ -2,7 +2,7 @@
 
 use crate::digest::{self, digest_size, Algorithm};
 
-use super::parameters::H_DIGEST_SIZE;
+use super::constants::H_DIGEST_SIZE;
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
     crate::digest::sha3_512(input)

@@ -1,4 +1,4 @@
-use super::parameters::SHARED_SECRET_SIZE;
+use super::constants::SHARED_SECRET_SIZE;
 
 // TODO: Examine the output that LLVM produces for this code to ensure
 // operations are not being optimized away/constant-timedness is not being broken.

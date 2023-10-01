@@ -1,7 +1,7 @@
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     conversions::to_unsigned_representative,
-    parameters::{BITS_PER_COEFFICIENT, FIELD_MODULUS},
+    constants::{BITS_PER_COEFFICIENT, FIELD_MODULUS},
 };
 
 pub fn compress<const COEFFICIENT_BITS: usize>(

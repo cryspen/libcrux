@@ -1,7 +1,7 @@
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     conversions::to_unsigned_representative,
-    parameters::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
+    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
 };
 
 /// This file contains instantiations of the functions

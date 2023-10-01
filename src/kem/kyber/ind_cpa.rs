@@ -5,7 +5,7 @@ use super::{
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{G, H, PRF, XOF},
     ntt::*,
-    parameters::{
+    constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
         SHARED_SECRET_SIZE,
     },
