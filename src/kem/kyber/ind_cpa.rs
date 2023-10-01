@@ -1,14 +1,14 @@
 use super::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
-    conversions::into_padded_array,
-    conversions::{UpdatableArray, UpdatingArray},
-    hash_functions::{G, H, PRF, XOF},
-    ntt::*,
     constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
         SHARED_SECRET_SIZE,
     },
+    conversions::into_padded_array,
+    conversions::{UpdatableArray, UpdatingArray},
+    hash_functions::{G, H, PRF, XOF},
+    ntt::*,
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{deserialize_little_endian, serialize_little_endian},
     BadRejectionSamplingRandomnessError, KyberPublicKey,
