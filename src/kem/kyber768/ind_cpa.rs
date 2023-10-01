@@ -15,8 +15,8 @@ use super::{
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{
         deserialize_little_endian_1, deserialize_little_endian_10, deserialize_little_endian_12,
-        deserialize_little_endian_4, serialize_little_endian_1, serialize_little_endian_10,
-        serialize_little_endian_12, serialize_little_endian_4,
+        deserialize_little_endian_4, serialize_little_endian, serialize_little_endian_1,
+        serialize_little_endian_12,
     },
     BadRejectionSamplingRandomnessError, KyberPublicKey,
 };
@@ -84,7 +84,7 @@ fn encode_12<const K: usize, const OUT_LEN: usize>(
 
     for (i, re) in input.into_iter().enumerate() {
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
-            .copy_from_slice(&serialize_little_endian_12(re));
+            .copy_from_slice(&serialize_little_endian_12::<BYTES_PER_RING_ELEMENT>(re));
     }
 
     out
@@ -185,33 +185,36 @@ pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
         .array()
 }
 
-fn compress_then_encode_u<const K: usize, const OUT_LEN: usize, const COMPRESSION_FACTOR: usize>(
+fn compress_then_encode_u<
+    const K: usize,
+    const OUT_LEN: usize,
+    const COMPRESSION_FACTOR: usize,
+    const BLOCK_LEN: usize,
+>(
     input: [KyberPolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
     for (i, re) in input.into_iter().enumerate() {
         out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
-            // FIXME: use 11 for 1024
-            &serialize_little_endian_10(compress::<COMPRESSION_FACTOR>(re)),
+            &serialize_little_endian::<COMPRESSION_FACTOR, BLOCK_LEN>(
+                compress::<COMPRESSION_FACTOR>(re),
+            ),
         );
     }
 
     out
 }
 
-macro_rules! impl_encrypt {
-    ($k:expr, $ctext_len:expr) => {};
-}
-impl_encrypt!(RANK_512, CIPHERTEXT_SIZE);
-
 #[allow(non_snake_case)]
 pub(crate) fn encrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
-    const VECTOR_U_ENCODED_SIZE: usize,
+    const C1_LEN: usize,
+    const C2_LEN: usize,
     const VECTOR_U_COMPRESSION_FACTOR: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const BLOCK_LEN: usize,
 >(
     public_key: &[u8],
     message: [u8; CPA_PKE_MESSAGE_SIZE],
@@ -279,13 +282,15 @@ pub(crate) fn encrypt<
         + decompress(message_as_ring_element, 1);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
-    let c1 = compress_then_encode_u::<K, VECTOR_U_ENCODED_SIZE, VECTOR_U_COMPRESSION_FACTOR>(u);
+    let c1 = compress_then_encode_u::<K, C1_LEN, VECTOR_U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = serialize_little_endian_4(compress::<VECTOR_V_COMPRESSION_FACTOR>(v));
+    let c2 = serialize_little_endian::<VECTOR_V_COMPRESSION_FACTOR, C2_LEN>(compress::<
+        VECTOR_V_COMPRESSION_FACTOR,
+    >(v));
 
     let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
-    ciphertext[VECTOR_U_ENCODED_SIZE..].copy_from_slice(c2.as_slice());
+    ciphertext[C1_LEN..].copy_from_slice(c2.as_slice());
     (ciphertext.into(), sampling_A_error)
 }
 

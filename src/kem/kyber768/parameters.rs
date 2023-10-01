@@ -38,15 +38,40 @@ pub(crate) const T_AS_NTT_ENCODED_SIZE_768: usize =
 pub(crate) const T_AS_NTT_ENCODED_SIZE_1024: usize =
     (RANK_1024 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
 
-/// Compression factor for `U`
+// Compression factor for `U`
 pub(crate) const VECTOR_U_COMPRESSION_FACTOR_512: usize = 10;
 pub(crate) const VECTOR_U_COMPRESSION_FACTOR_768: usize = 10;
 pub(crate) const VECTOR_U_COMPRESSION_FACTOR_1024: usize = 11;
 
-/// Compression factor for `V`
+/// Compute serialized length for output size of ByteEncode
+const fn serialized_len<const K: usize, const OUT_LEN: usize>() -> usize {
+    OUT_LEN * K
+}
+
+/// Compute block length for output block size of ByteEncode u (c1)
+const fn block_len<const FACTOR: usize>() -> usize {
+    (COEFFICIENTS_IN_RING_ELEMENT * FACTOR) / 8
+}
+
+// Resulting c1 block lengths
+pub(crate) const C1_BLOCK_SIZE_512: usize = block_len::<VECTOR_U_COMPRESSION_FACTOR_512>();
+pub(crate) const C1_BLOCK_SIZE_768: usize = block_len::<VECTOR_U_COMPRESSION_FACTOR_768>();
+pub(crate) const C1_BLOCK_SIZE_1024: usize = block_len::<VECTOR_U_COMPRESSION_FACTOR_1024>();
+
+// Resulting c1 lengths
+pub(crate) const C1_SIZE_512: usize = serialized_len::<RANK_512, C1_BLOCK_SIZE_512>();
+pub(crate) const C1_SIZE_768: usize = serialized_len::<RANK_768, C1_BLOCK_SIZE_768>();
+pub(crate) const C1_SIZE_1024: usize = serialized_len::<RANK_1024, C1_BLOCK_SIZE_1024>();
+
+// Compression factor for `V`
 pub(crate) const VECTOR_V_COMPRESSION_FACTOR_512: usize = 4;
 pub(crate) const VECTOR_V_COMPRESSION_FACTOR_768: usize = 4;
 pub(crate) const VECTOR_V_COMPRESSION_FACTOR_1024: usize = 5;
+
+// Resulting c2 lengths
+pub(crate) const C2_SIZE_512: usize = block_len::<VECTOR_V_COMPRESSION_FACTOR_512>();
+pub(crate) const C2_SIZE_768: usize = block_len::<VECTOR_V_COMPRESSION_FACTOR_768>();
+pub(crate) const C2_SIZE_1024: usize = block_len::<VECTOR_V_COMPRESSION_FACTOR_1024>();
 
 /// `U` encoding size in bytes
 pub(crate) const BYTES_PER_ENCODED_ELEMENT_OF_U: usize =
@@ -82,7 +107,6 @@ pub(crate) const CPA_PKE_CIPHERTEXT_SIZE_768: usize =
     VECTOR_U_ENCODED_SIZE_768 + VECTOR_V_ENCODED_SIZE_768;
 pub(crate) const CPA_PKE_CIPHERTEXT_SIZE_1024: usize =
     VECTOR_U_ENCODED_SIZE_1024 + VECTOR_V_ENCODED_SIZE_1024;
-
 
 pub(crate) const CPA_SERIALIZED_KEY_LEN_512: usize = CPA_PKE_SECRET_KEY_SIZE_768
     + CPA_PKE_PUBLIC_KEY_SIZE_768

@@ -159,9 +159,11 @@ pub fn encapsulate_768(
         CPA_PKE_CIPHERTEXT_SIZE_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
         T_AS_NTT_ENCODED_SIZE_768,
-        VECTOR_U_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
         VECTOR_U_COMPRESSION_FACTOR_768,
         VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
     >(public_key, randomness)
 }
 
@@ -171,9 +173,11 @@ pub fn encapsulate<
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
-    const VECTOR_U_ENCODED_SIZE: usize,
+    const C1_SIZE: usize,
+    const C2_SIZE: usize,
     const VECTOR_U_COMPRESSION_FACTOR: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const VECTOR_U_BLOCK_LEN: usize,
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -197,9 +201,11 @@ pub fn encapsulate<
             K,
             CIPHERTEXT_SIZE,
             T_AS_NTT_ENCODED_SIZE,
-            VECTOR_U_ENCODED_SIZE,
+            C1_SIZE,
+            C2_SIZE,
             VECTOR_U_COMPRESSION_FACTOR,
             VECTOR_V_COMPRESSION_FACTOR,
+            VECTOR_U_BLOCK_LEN,
         >(public_key.as_slice(), randomness_hashed, pseudorandomness);
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
@@ -223,9 +229,11 @@ pub fn decapsulate_768(
         SECRET_KEY_SIZE_768,
         CPA_PKE_CIPHERTEXT_SIZE_768,
         T_AS_NTT_ENCODED_SIZE_768,
-        VECTOR_U_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
         VECTOR_U_COMPRESSION_FACTOR_768,
         VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
     >(secret_key, ciphertext)
 }
 
@@ -234,9 +242,11 @@ pub fn decapsulate<
     const SECRET_KEY_SIZE: usize,
     const CIPHERTEXT_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
-    const VECTOR_U_ENCODED_SIZE: usize,
+    const C1_SIZE: usize,
+    const C2_SIZE: usize,
     const VECTOR_U_COMPRESSION_FACTOR: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const C1_BLOCK_SIZE: usize,
 >(
     secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
@@ -248,7 +258,7 @@ pub fn decapsulate<
     let decrypted = ind_cpa::decrypt::<
         K,
         CIPHERTEXT_SIZE,
-        VECTOR_U_ENCODED_SIZE,
+        C1_SIZE,
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
     >(ind_cpa_secret_key, ciphertext);
@@ -278,9 +288,11 @@ pub fn decapsulate<
         K,
         CIPHERTEXT_SIZE,
         T_AS_NTT_ENCODED_SIZE,
-        VECTOR_U_ENCODED_SIZE,
+        C1_SIZE,
+        C2_SIZE,
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
+        C1_BLOCK_SIZE,
     >(ind_cpa_public_key, decrypted, pseudorandomness);
 
     let selector =
