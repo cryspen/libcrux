@@ -1,4 +1,4 @@
-use crate::kem::kyber768::{
+use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     conversions::to_unsigned_representative,
     parameters::{BITS_PER_COEFFICIENT, FIELD_MODULUS},

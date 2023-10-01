@@ -1,3 +1,5 @@
+use super::{KyberKeyPair, KyberPrivateKey, KyberPublicKey};
+
 macro_rules! impl_generic_struct {
     ($name:ident) => {
         pub struct $name<const SIZE: usize> {
@@ -78,4 +80,39 @@ macro_rules! impl_generic_struct {
             }
         }
     };
+}
+
+impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
+    KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
+{
+    /// Creates a new [`KyberKeyPair`].
+    pub fn new(sk: [u8; PRIVATE_KEY_SIZE], pk: [u8; PUBLIC_KEY_SIZE]) -> Self {
+        Self {
+            sk: sk.into(),
+            pk: pk.into(),
+        }
+    }
+
+    pub fn from(
+        sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
+        pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
+    ) -> Self {
+        Self { sk, pk }
+    }
+
+    pub fn public_key(&self) -> &KyberPublicKey<PUBLIC_KEY_SIZE> {
+        &self.pk
+    }
+
+    pub fn private_key(&self) -> &KyberPrivateKey<PRIVATE_KEY_SIZE> {
+        &self.sk
+    }
+
+    pub fn pk(&self) -> &[u8; PUBLIC_KEY_SIZE] {
+        self.pk.as_slice()
+    }
+
+    pub fn sk(&self) -> &[u8; PRIVATE_KEY_SIZE] {
+        self.sk.as_slice()
+    }
 }

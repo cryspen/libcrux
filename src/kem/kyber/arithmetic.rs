@@ -1,6 +1,6 @@
 use std::ops::{self, Index, IndexMut};
 
-use crate::kem::kyber768::parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
+use super::parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) type KyberFieldElement = i32;
 

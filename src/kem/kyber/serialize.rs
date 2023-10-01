@@ -1,4 +1,4 @@
-use crate::kem::kyber768::{
+use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     conversions::to_unsigned_representative,
     parameters::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
@@ -150,7 +150,7 @@ fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement 
     re
 }
 
-// FIXME
+// FIXME make this correct for 5
 #[inline(always)]
 fn serialize_little_endian_5<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
@@ -167,7 +167,7 @@ fn serialize_little_endian_5<const OUT_LEN: usize>(
     serialized
 }
 
-// FIXME
+// FIXME make this correct for 5
 #[inline(always)]
 fn deserialize_little_endian_5(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
@@ -229,7 +229,7 @@ fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement
     re
 }
 
-// FIXME
+// FIXME make this correct for 11
 #[inline(always)]
 fn serialize_little_endian_11<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
@@ -255,7 +255,7 @@ fn serialize_little_endian_11<const OUT_LEN: usize>(
     serialized
 }
 
-// FIXME
+// FIXME make this correct for 11
 #[inline(always)]
 fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);

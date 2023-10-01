@@ -2,7 +2,7 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use crate::kem::{kyber768::KyberKeyPair, kyber768_generate_keypair_derand, *};
+use crate::kem::{kyber::KyberKeyPair, kyber768_generate_keypair_derand, *};
 
 use super::errors::*;
 use super::kdf::*;

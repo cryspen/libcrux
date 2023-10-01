@@ -4,13 +4,10 @@ use super::{
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{G, H, PRF, XOF},
-    ntt::{
-        kyber_polynomial_ring_element_mod::{invert_ntt_montgomery, ntt_representation},
-        *,
-    },
+    ntt::*,
     parameters::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, CPA_PKE_MESSAGE_SIZE,
-        REJECTION_SAMPLING_SEED_SIZE,
+        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
+        SHARED_SECRET_SIZE,
     },
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{deserialize_little_endian, serialize_little_endian},
@@ -67,6 +64,7 @@ fn cbd<const K: usize>(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement;
         // 2 sampling coins * 64
         let prf_output: [u8; 128] = PRF(&prf_input);
 
+        // FIXME: call _3 for 512
         let r = sample_from_binomial_distribution_2(prf_output);
         re_as_ntt[i] = ntt_representation(r);
     }
@@ -213,7 +211,7 @@ pub(crate) fn encrypt<
     const BLOCK_LEN: usize,
 >(
     public_key: &[u8],
-    message: [u8; CPA_PKE_MESSAGE_SIZE],
+    message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> (
     super::KyberCiphertext<CIPHERTEXT_SIZE>,
@@ -300,7 +298,7 @@ pub(crate) fn decrypt<
 >(
     secret_key: &[u8],
     ciphertext: &super::KyberCiphertext<CIPHERTEXT_SIZE>,
-) -> [u8; CPA_PKE_MESSAGE_SIZE] {
+) -> [u8; SHARED_SECRET_SIZE] {
     let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; K];
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
 
@@ -330,5 +328,5 @@ pub(crate) fn decrypt<
     let message =
         v - invert_ntt_montgomery(multiply_row_by_column_montgomery(&secret_as_ntt, &u_as_ntt));
 
-    serialize_little_endian::<1, CPA_PKE_MESSAGE_SIZE>(compress::<1>(message))
+    serialize_little_endian::<1, SHARED_SECRET_SIZE>(compress::<1>(message))
 }
