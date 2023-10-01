@@ -197,9 +197,9 @@ impl PrivateKey {
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(|k| Self::Kyber768(k)),
             Algorithm::Kyber768X25519 => {
-                let key: [u8; kyber::parameters::SECRET_KEY_SIZE_768 + 32] =
+                let key: [u8; kyber::kyber768::SECRET_KEY_SIZE_768 + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
-                let (ksk, xsk) = key.split_at(kyber::parameters::SECRET_KEY_SIZE_768);
+                let (ksk, xsk) = key.split_at(kyber::kyber768::SECRET_KEY_SIZE_768);
                 Ok(Self::Kyber768X25519(Kyber768X25519PrivateKey {
                     kyber: ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
                     x25519: xsk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
@@ -294,9 +294,9 @@ impl Ct {
                 .map_err(|_| Error::InvalidCiphertext)
                 .map(|ct| Self::Kyber768(ct)),
             Algorithm::Kyber768X25519 => {
-                let key: [u8; kyber::parameters::CPA_PKE_CIPHERTEXT_SIZE_768 + 32] =
+                let key: [u8; kyber::kyber768::CPA_PKE_CIPHERTEXT_SIZE_768 + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (kct, xct) = key.split_at(kyber::parameters::CPA_PKE_CIPHERTEXT_SIZE_768);
+                let (kct, xct) = key.split_at(kyber::kyber768::CPA_PKE_CIPHERTEXT_SIZE_768);
                 Ok(Self::Kyber768X25519(
                     kct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     xct.try_into().map_err(|_| Error::InvalidCiphertext)?,

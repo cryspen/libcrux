@@ -1,5 +1,29 @@
 use super::{parameters::*, *};
 
+// Kyber 768 parameters
+const RANK_768: usize = 3;
+const RANKED_BYTES_PER_RING_ELEMENT_768: usize = RANK_768 * BITS_PER_RING_ELEMENT / 8;
+const T_AS_NTT_ENCODED_SIZE_768: usize =
+    (RANK_768 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
+const VECTOR_U_COMPRESSION_FACTOR_768: usize = 10;
+const C1_BLOCK_SIZE_768: usize = block_len::<VECTOR_U_COMPRESSION_FACTOR_768>();
+const C1_SIZE_768: usize = serialized_len::<RANK_768, C1_BLOCK_SIZE_768>();
+const VECTOR_V_COMPRESSION_FACTOR_768: usize = 4;
+const C2_SIZE_768: usize = block_len::<VECTOR_V_COMPRESSION_FACTOR_768>();
+const BYTES_PER_ENCODED_ELEMENT_OF_U: usize =
+    (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR_768) / 8;
+const VECTOR_U_ENCODED_SIZE_768: usize = RANK_768 * BYTES_PER_ENCODED_ELEMENT_OF_U;
+const VECTOR_V_ENCODED_SIZE_768: usize =
+    (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR_768) / 8;
+const CPA_PKE_SECRET_KEY_SIZE_768: usize =
+    (RANK_768 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
+const CPA_PKE_PUBLIC_KEY_SIZE_768: usize = T_AS_NTT_ENCODED_SIZE_768 + 32;
+// These two are used in the hybrid kem. This could probably be improved.
+pub(in crate::kem) const CPA_PKE_CIPHERTEXT_SIZE_768: usize =
+    VECTOR_U_ENCODED_SIZE_768 + VECTOR_V_ENCODED_SIZE_768;
+pub(in crate::kem) const SECRET_KEY_SIZE_768: usize =
+    CPA_PKE_SECRET_KEY_SIZE_768 + CPA_PKE_PUBLIC_KEY_SIZE_768 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
+
 // Kyber 768 types
 pub type Kyber768Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
 pub type Kyber768PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_768>;
