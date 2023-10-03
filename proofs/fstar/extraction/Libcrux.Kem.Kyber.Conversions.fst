@@ -1,4 +1,4 @@
-module Libcrux.Kem.Kyber768.Conversions
+module Libcrux.Kem.Kyber.Conversions
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
@@ -45,12 +45,12 @@ type t_UpdatableArray = {
 
 let new_under_impl (#len: usize) (value: array u8 v_LEN) : t_UpdatableArray v_LEN =
   {
-    Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_value = value;
-    Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_pointer = 0sz
+    Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_value = value;
+    Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_pointer = 0sz
   }
 
 let array_under_impl (#len: usize) (self: t_UpdatableArray v_LEN) : array u8 v_LEN =
-  self.Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_value
+  self.Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_value
 
 let impl (#len: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
   {
@@ -60,32 +60,31 @@ let impl (#len: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
       let self:t_UpdatableArray v_LEN =
         {
           self with
-          Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_value
+          Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_value
           =
-          Rust_primitives.Hax.update_at (Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_value self
-
+          Rust_primitives.Hax.update_at (Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_value self
               <:
               t_UpdatableArray v_LEN)
             ({
                 Core.Ops.Range.Range.f_start
                 =
-                self.Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_pointer;
+                self.Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_pointer;
                 Core.Ops.Range.Range.f_end
                 =
-                self.Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_pointer +.
+                self.Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_pointer +.
                 (Core.Slice.len_under_impl other <: usize)
                 <:
                 usize
               })
             (Core.Slice.copy_from_slice_under_impl (Core.Ops.Index.IndexMut.index_mut self
-                      .Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_value
+                      .Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_value
                     ({
                         Core.Ops.Range.Range.f_start
                         =
-                        self.Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_pointer;
+                        self.Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_pointer;
                         Core.Ops.Range.Range.f_end
                         =
-                        self.Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_pointer +.
+                        self.Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_pointer +.
                         (Core.Slice.len_under_impl other <: usize)
                         <:
                         usize
@@ -100,9 +99,9 @@ let impl (#len: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
       let self:t_UpdatableArray v_LEN =
         {
           self with
-          Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_pointer
+          Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_pointer
           =
-          self.Libcrux.Kem.Kyber768.Conversions.UpdatableArray.f_pointer +.
+          self.Libcrux.Kem.Kyber.Conversions.UpdatableArray.f_pointer +.
           (Core.Slice.len_under_impl other <: usize)
         }
       in
@@ -110,4 +109,4 @@ let impl (#len: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
   }
 
 let to_unsigned_representative (fe: i32) : u16 =
-  cast (fe +. ((fe <<. 15l <: i32) &. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS <: i32))
+  cast (fe +. ((fe <<. 15l <: i32) &. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32))

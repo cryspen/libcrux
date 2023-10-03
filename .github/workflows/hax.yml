@@ -47,13 +47,7 @@ jobs:
           sudo apt-get install --yes nodejs
           ./setup.sh
 
-      - name: 🏃🏻‍♀️ Run hax on Kyber reference implementation
+      - name: 🏃🏻‍♀️ Run hax extraction
         run: |
           eval $(opam env)
-          cargo hax into -i '-** +kem::kyber768::** -kem::kyber768::arithmetic::mutable_operations::**' fstar
-
-      - name: 🏃🏻‍♀️ Run hax on Kyber specification
-        working-directory: specs/kyber
-        run: |
-          eval $(opam env)
-          cargo hax into fstar
+          ./proof.sh extract

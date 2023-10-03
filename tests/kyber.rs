@@ -14,25 +14,33 @@ const CIPHERTEXT_SIZE: u32 = 1088;
 
 const SECRET_KEY_REJECTION_VALUE_POSITION: usize = SECRET_KEY_SIZE - SHARED_SECRET_SIZE;
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
-#[test]
-fn consistency() {
-    #[cfg(not(target_arch = "wasm32"))]
-    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
-    #[cfg(target_arch = "wasm32")]
-    let mut rng = OsRng;
+macro_rules! impl_consistency {
+    ($name:ident, $alg:expr) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            #[cfg(not(target_arch = "wasm32"))]
+            let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+            #[cfg(target_arch = "wasm32")]
+            let mut rng = OsRng;
 
-    if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber768, &mut rng) {
-        if let Ok((shared_secret, ciphertext)) = kem::encapsulate(&public_key, &mut rng) {
-            let shared_secret_decapsulated = kem::decapsulate(&ciphertext, &secret_key).unwrap();
-            assert_eq!(shared_secret.encode(), shared_secret_decapsulated.encode());
+            if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
+                if let Ok((shared_secret, ciphertext)) = kem::encapsulate(&public_key, &mut rng) {
+                    let shared_secret_decapsulated =
+                        kem::decapsulate(&ciphertext, &secret_key).unwrap();
+                    assert_eq!(shared_secret.encode(), shared_secret_decapsulated.encode());
+                }
+            }
+
+            // If the randomness was not enough for the rejection sampling step
+            // in key-generation and encapsulation, simply return without
+            // failing.
         }
-    }
-
-    // If the randomness was not enough for the rejection sampling step
-    // in key-generation and encapsulation, simply return without
-    // failing.
+    };
 }
+
+impl_consistency!(consistency_512, Algorithm::Kyber512);
+impl_consistency!(consistency_768, Algorithm::Kyber768);
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
@@ -127,7 +135,7 @@ fn modified_secret_key() {
 
 fn raw_ct(ciphertext: Ct) -> [u8; 1088] {
     if let Ct::Kyber768(ct) = ciphertext {
-        ct
+        ct.into()
     } else {
         unreachable!()
     }
@@ -136,12 +144,12 @@ fn raw_ct(ciphertext: Ct) -> [u8; 1088] {
 fn modify_sk(secret_key: PrivateKey, secret_key_position: usize, random_byte: u8) -> PrivateKey {
     let mut secret_key = raw_sk(secret_key);
     secret_key[secret_key_position] ^= random_byte;
-    PrivateKey::Kyber768(secret_key)
+    PrivateKey::Kyber768(secret_key.into())
 }
 
 fn raw_sk(secret_key: PrivateKey) -> [u8; 2400] {
     if let PrivateKey::Kyber768(ksk) = secret_key {
-        ksk
+        ksk.into()
     } else {
         unreachable!();
     }

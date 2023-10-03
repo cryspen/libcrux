@@ -1,16 +1,16 @@
-module Libcrux.Kem.Kyber768.Sampling
+module Libcrux.Kem.Kyber.Sampling
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
 let sample_from_uniform_distribution (randomness: array u8 840sz)
-    : (Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber768.t_BadRejectionSamplingRandomnessError) =
+    : (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+      Core.Option.t_Option Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError) =
   let (sampled_coefficients: usize):usize = 0sz in
-  let (out: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
+  let (out: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
   =
-    Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl
+    Libcrux.Kem.Kyber.Arithmetic.v_ZERO_under_impl
   in
-  let out, sampled_coefficients:(Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement &
+  let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
     Prims.unit) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter (Core.Slice.chunks_under_impl
               (Rust_primitives.unsize randomness <: slice u8)
@@ -26,50 +26,48 @@ let sample_from_uniform_distribution (randomness: array u8 840sz)
           let b3:i32 = cast bytes.[ 2sz ] in
           let d1:i32 = ((b2 &. 15l <: i32) >>. 8l <: i32) |. b1 in
           let d2:i32 = (b3 >>. 4l <: i32) |. (b2 <<. 4l <: i32) in
-          let out, sampled_coefficients:(Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement &
+          let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
             Prims.unit) =
             if
-              Prims.op_AmpAmp (d1 <. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS)
-                (sampled_coefficients <.
-                  Libcrux.Kem.Kyber768.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT)
+              Prims.op_AmpAmp (d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+                (sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT)
             then
-              let out:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+              let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                 Rust_primitives.Hax.update_at out sampled_coefficients d1
               in
               out, sampled_coefficients +. 1sz
             else out, sampled_coefficients
           in
-          let out, sampled_coefficients:(Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement &
+          let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
             Prims.unit) =
             if
-              Prims.op_AmpAmp (d2 <. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS)
-                (sampled_coefficients <.
-                  Libcrux.Kem.Kyber768.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT)
+              Prims.op_AmpAmp (d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+                (sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT)
             then
-              let out:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+              let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                 Rust_primitives.Hax.update_at out sampled_coefficients d2
               in
               let sampled_coefficients:Prims.unit = sampled_coefficients +. 1sz in
               out, sampled_coefficients
             else out, sampled_coefficients
           in
-          if sampled_coefficients =. Libcrux.Kem.Kyber768.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT
+          if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
           then
-            let* hoist1:Rust_primitives.Hax.t_Never =
+            let* hoist4:Rust_primitives.Hax.t_Never =
               Core.Ops.Control_flow.ControlFlow.v_Break (out, Core.Option.Option_None)
             in
             Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients)
           else Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients))
   in
-  out, Core.Option.Option_Some Libcrux.Kem.Kyber768.BadRejectionSamplingRandomnessError
+  out, Core.Option.Option_Some Libcrux.Kem.Kyber.BadRejectionSamplingRandomnessError
 
 let sample_from_binomial_distribution_2_ (randomness: array u8 128sz)
-    : Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
-  let (sampled: Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement
+    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+  let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
   =
-    Libcrux.Kem.Kyber768.Arithmetic.v_ZERO_under_impl
+    Libcrux.Kem.Kyber.Arithmetic.v_ZERO_under_impl
   in
-  let sampled:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+  let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter (Core.Iter.Traits.Iterator.Iterator.enumerate
               (Core.Slice.chunks_exact_under_impl (Rust_primitives.unsize randomness <: slice u8)
                   4sz
@@ -110,7 +108,7 @@ let sample_from_binomial_distribution_2_ (randomness: array u8 128sz)
                   cast ((coin_toss_outcomes <<. (outcome_set +. 2ul <: u32) <: u32) &. 3ul)
                 in
                 let offset:usize = cast (outcome_set <<. 2l) in
-                let sampled:Libcrux.Kem.Kyber768.Arithmetic.t_KyberPolynomialRingElement =
+                let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                   Rust_primitives.Hax.update_at sampled
                     ((8sz *. chunk_number <: usize) +. offset <: usize)
                     (outcome_1_ -. outcome_2_ <: i32)

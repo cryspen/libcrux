@@ -2,8 +2,7 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use crate::kem;
-use crate::kem::*;
+use crate::kem::{kyber::KyberKeyPair, kyber768_generate_keypair_derand, *};
 
 use super::errors::*;
 use super::kdf::*;
@@ -513,15 +512,15 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
                     32 + 64,
                 )?;
                 let (xsk, xpk) = DeriveKeyPair(alg, &seed[..32])?;
-                let (kpk, ksk) =
-                    kem::kyber768_generate_keypair_derand(seed[32..].try_into().unwrap()).unwrap();
+                let KyberKeyPair { sk, pk } =
+                    kyber768_generate_keypair_derand(seed[32..].try_into().unwrap()).unwrap();
 
                 let private = Kyber768X25519PrivateKey {
-                    kyber: ksk,
+                    kyber: sk,
                     x25519: crate::ecdh::x25519::PrivateKey(xsk.try_into().unwrap()),
                 };
                 let public = Kyber768X25519PublicKey {
-                    kyber: kpk,
+                    kyber: pk,
                     x25519: crate::ecdh::x25519::PublicKey(xpk.try_into().unwrap()),
                 };
                 Ok((private.encode(), public.encode()))
@@ -558,9 +557,12 @@ pub fn Encap(alg: KEM, pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult
 ///
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult {
-    crate::kem::kyber768_encapsulate_derand(pkR.try_into().unwrap(), randomness.try_into().unwrap())
-        .map(|(ct, ss)| (ss.to_vec(), ct.to_vec()))
-        .map_err(|_| HpkeError::EncapError)
+    crate::kem::kyber768_encapsulate_derand(
+        &pkR.try_into().unwrap(),
+        randomness.try_into().unwrap(),
+    )
+    .map(|(ct, ss)| (ss.as_ref().to_vec(), ct.as_ref().to_vec()))
+    .map_err(|_| HpkeError::EncapError)
 }
 
 /// Kyber Decap
@@ -568,7 +570,7 @@ pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> Encap
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Decap(skR: &PrivateKeyIn, enc: &[u8]) -> Result<SharedSecret, HpkeError> {
     Ok(
-        crate::kem::kyber768_decapsulate_derand(skR.try_into().unwrap(), enc.try_into().unwrap())
+        crate::kem::kyber768_decapsulate_derand(&skR.try_into().unwrap(), &enc.try_into().unwrap())
             .to_vec(),
     )
 }

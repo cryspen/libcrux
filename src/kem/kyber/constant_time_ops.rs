@@ -1,4 +1,4 @@
-use crate::kem::kyber768::{CIPHERTEXT_SIZE, SHARED_SECRET_SIZE};
+use super::constants::SHARED_SECRET_SIZE;
 
 // TODO: Examine the output that LLVM produces for this code to ensure
 // operations are not being optimized away/constant-timedness is not being broken.
@@ -9,7 +9,10 @@ fn is_non_zero(value: u8) -> u8 {
     ((value | (value_negated as u8)) >> 7) & 1
 }
 
-pub(crate) fn compare_ciphertexts_in_constant_time(lhs: &[u8], rhs: &[u8]) -> u8 {
+pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>(
+    lhs: &[u8],
+    rhs: &[u8],
+) -> u8 {
     debug_assert_eq!(lhs.len(), rhs.len());
     debug_assert_eq!(lhs.len(), CIPHERTEXT_SIZE);
 

@@ -1,4 +1,4 @@
-module Libcrux.Kem.Kyber768.Arithmetic
+module Libcrux.Kem.Kyber.Arithmetic
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
@@ -15,7 +15,7 @@ let barrett_reduce (value: i32) : i32 =
     ((value *. v_BARRETT_MULTIPLIER <: i32) +. (v_BARRETT_R <<. 1l <: i32) <: i32) <<.
     v_BARRETT_SHIFT
   in
-  value -. (quotient *. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS <: i32)
+  value -. (quotient *. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
 
 let v_MONTGOMERY_SHIFT: i64 = 16L
 
@@ -26,8 +26,7 @@ let v_INVERSE_OF_MODULUS_MOD_R: i64 = 3327L
 let montgomery_reduce (value: i32) : i32 =
   let (t: i64):i64 = (Core.Convert.From.from value <: i64) *. v_INVERSE_OF_MODULUS_MOD_R in
   let (t: i32):i32 = cast (t &. (v_MONTGOMERY_R -. 1L <: i64)) in
-  (value -. (t *. Libcrux.Kem.Kyber768.Parameters.v_FIELD_MODULUS <: i32) <: i32) <<.
-  v_MONTGOMERY_SHIFT
+  (value -. (t *. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: i32) <<. v_MONTGOMERY_SHIFT
 
 let to_montgomery_domain (value: i32) : i32 = montgomery_reduce (1353l *. value <: i32)
 
@@ -35,7 +34,7 @@ type t_KyberPolynomialRingElement = { f_coefficients:array i32 256sz }
 
 let v_ZERO_under_impl: t_KyberPolynomialRingElement =
   {
-    Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients
+    Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients
     =
     Rust_primitives.Hax.repeat 0l 256sz
   }
@@ -46,7 +45,7 @@ let impl: Core.Ops.Index.t_Index t_KyberPolynomialRingElement usize =
     index
     =
     fun (self: t_KyberPolynomialRingElement) (index: usize) ->
-      self.Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients.[ index ]
+      self.Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients.[ index ]
   }
 
 let impl: Core.Iter.Traits.Collect.t_IntoIterator t_KyberPolynomialRingElement =
@@ -57,7 +56,7 @@ let impl: Core.Iter.Traits.Collect.t_IntoIterator t_KyberPolynomialRingElement =
     =
     fun (self: t_KyberPolynomialRingElement) ->
       Core.Iter.Traits.Collect.IntoIterator.into_iter self
-          .Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients
+          .Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients
   }
 
 let impl: Core.Ops.Arith.t_Add t_KyberPolynomialRingElement t_KyberPolynomialRingElement =
@@ -72,7 +71,7 @@ let impl: Core.Ops.Arith.t_Add t_KyberPolynomialRingElement t_KyberPolynomialRin
                   Core.Ops.Range.Range.f_start = 0sz;
                   Core.Ops.Range.Range.f_end
                   =
-                  Libcrux.Kem.Kyber768.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                 })
             <:
             _)
@@ -80,17 +79,17 @@ let impl: Core.Ops.Arith.t_Add t_KyberPolynomialRingElement t_KyberPolynomialRin
           (fun result i ->
               {
                 result with
-                Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients
+                Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients
                 =
                 Rust_primitives.Hax.update_at result
-                    .Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients
+                    .Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients
                   i
-                  ((self.Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients.[
-                        i ]
+                  ((self.Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients.[ i
+                      ]
                       <:
                       i32) +.
-                    (other.Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients.[
-                        i ]
+                    (other.Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients.[ i
+                      ]
                       <:
                       i32)
                     <:
@@ -114,7 +113,7 @@ let impl: Core.Ops.Arith.t_Sub t_KyberPolynomialRingElement t_KyberPolynomialRin
                   Core.Ops.Range.Range.f_start = 0sz;
                   Core.Ops.Range.Range.f_end
                   =
-                  Libcrux.Kem.Kyber768.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                 })
             <:
             _)
@@ -122,17 +121,17 @@ let impl: Core.Ops.Arith.t_Sub t_KyberPolynomialRingElement t_KyberPolynomialRin
           (fun result i ->
               {
                 result with
-                Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients
+                Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients
                 =
                 Rust_primitives.Hax.update_at result
-                    .Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients
+                    .Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients
                   i
-                  ((self.Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients.[
-                        i ]
+                  ((self.Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients.[ i
+                      ]
                       <:
                       i32) -.
-                    (other.Libcrux.Kem.Kyber768.Arithmetic.KyberPolynomialRingElement.f_coefficients.[
-                        i ]
+                    (other.Libcrux.Kem.Kyber.Arithmetic.KyberPolynomialRingElement.f_coefficients.[ i
+                      ]
                       <:
                       i32)
                     <:

@@ -1,4 +1,4 @@
-use crate::kem::kyber768::{arithmetic::KyberFieldElement, parameters::FIELD_MODULUS};
+use super::{arithmetic::KyberFieldElement, constants::FIELD_MODULUS};
 
 #[inline(always)]
 pub(super) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {

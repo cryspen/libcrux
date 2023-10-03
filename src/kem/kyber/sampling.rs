@@ -1,6 +1,6 @@
-use crate::kem::kyber768::{
+use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
-    parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
     BadRejectionSamplingRandomnessError,
 };
 

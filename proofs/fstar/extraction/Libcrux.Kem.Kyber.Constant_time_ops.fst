@@ -1,4 +1,4 @@
-module Libcrux.Kem.Kyber768.Constant_time_ops
+module Libcrux.Kem.Kyber.Constant_time_ops
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
@@ -6,7 +6,7 @@ let is_non_zero (value: u8) : u8 =
   let value_negated:i8 = Core.Ops.Arith.Neg.neg (cast value) in
   ((value |. cast value_negated <: u8) <<. 7l <: u8) &. 1uy
 
-let compare_ciphertexts_in_constant_time (lhs rhs: slice u8) : u8 =
+let compare_ciphertexts_in_constant_time (#ciphertext_size: usize) (lhs rhs: slice u8) : u8 =
   let _:Prims.unit =
     if true
     then
@@ -29,7 +29,7 @@ let compare_ciphertexts_in_constant_time (lhs rhs: slice u8) : u8 =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.len_under_impl lhs, Libcrux.Kem.Kyber768.v_CIPHERTEXT_SIZE with
+        match Core.Slice.len_under_impl lhs, v_CIPHERTEXT_SIZE with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
@@ -47,7 +47,7 @@ let compare_ciphertexts_in_constant_time (lhs rhs: slice u8) : u8 =
   let r:Prims.unit =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
               Core.Ops.Range.Range.f_start = 0sz;
-              Core.Ops.Range.Range.f_end = Libcrux.Kem.Kyber768.v_CIPHERTEXT_SIZE
+              Core.Ops.Range.Range.f_end = v_CIPHERTEXT_SIZE
             })
         <:
         _)
@@ -79,7 +79,7 @@ let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : a
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.len_under_impl lhs, Libcrux.Kem.Kyber768.v_SHARED_SECRET_SIZE with
+        match Core.Slice.len_under_impl lhs, Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
@@ -98,7 +98,7 @@ let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : a
   let out:array u8 32sz =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
               Core.Ops.Range.Range.f_start = 0sz;
-              Core.Ops.Range.Range.f_end = Libcrux.Kem.Kyber768.v_SHARED_SECRET_SIZE
+              Core.Ops.Range.Range.f_end = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
             })
         <:
         _)
