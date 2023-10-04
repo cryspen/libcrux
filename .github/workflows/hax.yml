@@ -50,4 +50,5 @@ jobs:
       - name: 🏃🏻‍♀️ Run hax extraction
         run: |
           eval $(opam env)
-          ./proof.sh extract
+          python3 extract_to_fstar.py --kyber-reference
+          python3 extract_to_fstar.py --crate specs/kyber
