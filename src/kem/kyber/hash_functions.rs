@@ -16,8 +16,12 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     digest::shake256::<LEN>(input)
 }
 
-pub(crate) fn XOF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-    digest::shake128::<LEN>(input)
+pub(crate) fn XOFx4<const LEN: usize, const K: usize>(input: [[u8; 34]; K]) -> [[u8; LEN]; K] {
+    let mut out = [[0u8; LEN]; K];
+    for i in 0..K {
+        out[i] = digest::shake128::<LEN>(&input[i]);
+    }
+    out
 }
 
 pub(crate) fn KDF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {

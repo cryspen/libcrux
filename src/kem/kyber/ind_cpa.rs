@@ -7,7 +7,7 @@ use super::{
     },
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
-    hash_functions::{G, H, PRF, XOF},
+    hash_functions::{XOFx4, G, H, PRF},
     ntt::*,
     sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
     serialize::{deserialize_little_endian, serialize_little_endian},
@@ -20,7 +20,7 @@ impl_generic_struct!(PrivateKey);
 #[inline(always)]
 #[allow(non_snake_case)]
 fn sample_matrix_A<const K: usize>(
-    mut seed: [u8; 34],
+    seed: [u8; 34],
     transpose: bool,
 ) -> (
     [[KyberPolynomialRingElement; K]; K],
@@ -30,13 +30,15 @@ fn sample_matrix_A<const K: usize>(
     let mut sampling_A_error = None;
 
     for i in 0..K {
+        let mut seeds = [seed; K];
         for j in 0..K {
-            seed[32] = i as u8;
-            seed[33] = j as u8;
+            seeds[j][32] = i as u8;
+            seeds[j][33] = j as u8;
+        }
+        let xof_bytes = XOFx4::<REJECTION_SAMPLING_SEED_SIZE, K>(seeds);
 
-            let xof_bytes: [u8; REJECTION_SAMPLING_SEED_SIZE] = XOF(&seed);
-
-            let (sampled, error) = sample_from_uniform_distribution(xof_bytes);
+        for j in 0..K {
+            let (sampled, error) = sample_from_uniform_distribution(xof_bytes[j]);
             if error.is_some() {
                 sampling_A_error = error;
             }
