@@ -1,6 +1,5 @@
 use crate::parameters::{self, KyberFieldElement, KyberPolynomialRingElement};
 
-
 /// According to the NIST FIPS 203 standard (Page 10, Lines 536 - 539),
 /// compressing a polynomial ring element is accomplished by `compress()`ing its
 /// constituent field coefficients.
