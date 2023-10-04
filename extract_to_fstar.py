@@ -11,7 +11,8 @@ def shell(command, expect=0, cwd=None, format_function_string=False):
     if format_function_string:
         command_formatted[4] = "'{}'".format(command_formatted[4])
 
-    print(" ".join(command_formatted))
+    print("Command: {}".format(" ".join(command_formatted)))
+    print("Directory: {}".format(cwd))
 
     ret = subprocess.run(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd
