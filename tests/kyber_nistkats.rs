@@ -7,7 +7,7 @@ use libcrux::digest;
 use std::{fs::File, io::BufReader};
 
 #[derive(Deserialize)]
-struct Kyber768NISTKAT {
+struct KyberNISTKAT {
     #[serde(with = "hex::serde")]
     key_generation_seed: [u8; 64],
 
@@ -27,12 +27,11 @@ struct Kyber768NISTKAT {
     shared_secret: [u8; 32],
 }
 
-#[test]
-fn kyber768_known_answer_tests() {
-    let katfile = File::open("tests/kyber768_nist_kats.json").expect("Could not open KAT file.");
+fn nist_known_answer_tests(path_to_kat_file: &str) {
+    let katfile = File::open(path_to_kat_file).expect("Could not open KAT file.");
     let reader = BufReader::new(katfile);
 
-    let nist_kats: Vec<Kyber768NISTKAT> =
+    let nist_kats: Vec<KyberNISTKAT> =
         serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
     for kat in nist_kats {
@@ -67,4 +66,9 @@ fn kyber768_known_answer_tests() {
             assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
         }
     }
+}
+
+#[test]
+fn kyber768_nist_known_answer_tests() {
+    nist_known_answer_tests("tests/kyber_kats/nistkats_768.json");
 }
