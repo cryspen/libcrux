@@ -71,6 +71,8 @@ uint32_t Hacl_HMAC_DRBG_min_length(Spec_Hash_Definitions_hash_alg a)
 bool
 Hacl_HMAC_DRBG_uu___is_State(Spec_Hash_Definitions_hash_alg a, Hacl_HMAC_DRBG_state projectee)
 {
+  KRML_HOST_IGNORE(a);
+  KRML_HOST_IGNORE(projectee);
   return true;
 }
 
@@ -469,10 +471,9 @@ Hacl_HMAC_DRBG_reseed(
         memcpy(seed_material + entropy_input_len,
           additional_input_input,
           additional_input_input_len * sizeof (uint8_t));
-        Hacl_HMAC_DRBG_state uu____0 = st;
-        uint8_t *k = uu____0.k;
-        uint8_t *v = uu____0.v;
-        uint32_t *ctr = uu____0.reseed_counter;
+        uint8_t *k = st.k;
+        uint8_t *v = st.v;
+        uint32_t *ctr = st.reseed_counter;
         uint32_t input_len = (uint32_t)21U + entropy_input_len + additional_input_input_len;
         KRML_CHECK_SIZE(sizeof (uint8_t), input_len);
         uint8_t *input0 = (uint8_t *)alloca(input_len * sizeof (uint8_t));
@@ -524,10 +525,9 @@ Hacl_HMAC_DRBG_reseed(
         memcpy(seed_material + entropy_input_len,
           additional_input_input,
           additional_input_input_len * sizeof (uint8_t));
-        Hacl_HMAC_DRBG_state uu____1 = st;
-        uint8_t *k = uu____1.k;
-        uint8_t *v = uu____1.v;
-        uint32_t *ctr = uu____1.reseed_counter;
+        uint8_t *k = st.k;
+        uint8_t *v = st.v;
+        uint32_t *ctr = st.reseed_counter;
         uint32_t input_len = (uint32_t)33U + entropy_input_len + additional_input_input_len;
         KRML_CHECK_SIZE(sizeof (uint8_t), input_len);
         uint8_t *input0 = (uint8_t *)alloca(input_len * sizeof (uint8_t));
@@ -579,10 +579,9 @@ Hacl_HMAC_DRBG_reseed(
         memcpy(seed_material + entropy_input_len,
           additional_input_input,
           additional_input_input_len * sizeof (uint8_t));
-        Hacl_HMAC_DRBG_state uu____2 = st;
-        uint8_t *k = uu____2.k;
-        uint8_t *v = uu____2.v;
-        uint32_t *ctr = uu____2.reseed_counter;
+        uint8_t *k = st.k;
+        uint8_t *v = st.v;
+        uint32_t *ctr = st.reseed_counter;
         uint32_t input_len = (uint32_t)49U + entropy_input_len + additional_input_input_len;
         KRML_CHECK_SIZE(sizeof (uint8_t), input_len);
         uint8_t *input0 = (uint8_t *)alloca(input_len * sizeof (uint8_t));
@@ -634,10 +633,9 @@ Hacl_HMAC_DRBG_reseed(
         memcpy(seed_material + entropy_input_len,
           additional_input_input,
           additional_input_input_len * sizeof (uint8_t));
-        Hacl_HMAC_DRBG_state uu____3 = st;
-        uint8_t *k = uu____3.k;
-        uint8_t *v = uu____3.v;
-        uint32_t *ctr = uu____3.reseed_counter;
+        uint8_t *k = st.k;
+        uint8_t *v = st.v;
+        uint32_t *ctr = st.reseed_counter;
         uint32_t input_len = (uint32_t)65U + entropy_input_len + additional_input_input_len;
         KRML_CHECK_SIZE(sizeof (uint8_t), input_len);
         uint8_t *input0 = (uint8_t *)alloca(input_len * sizeof (uint8_t));
@@ -1108,6 +1106,7 @@ Hacl_HMAC_DRBG_generate(
 
 void Hacl_HMAC_DRBG_free(Spec_Hash_Definitions_hash_alg uu___, Hacl_HMAC_DRBG_state s)
 {
+  KRML_HOST_IGNORE(uu___);
   uint8_t *k = s.k;
   uint8_t *v = s.v;
   uint32_t *ctr = s.reseed_counter;
