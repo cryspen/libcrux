@@ -2,6 +2,7 @@ use hacspec_lib::{
     ArrayConversion, ArrayPadding, PanickingIntegerCasts, UpdatableArray, UpdatingArray,
 };
 
+
 use crate::{
     compress::{compress, decompress},
     matrix::{multiply_column_by_row, multiply_matrix_by_column, transpose},
