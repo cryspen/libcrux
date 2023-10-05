@@ -9,7 +9,7 @@ use super::{
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{XOFx4, G, H, PRF},
     ntt::*,
-    sampling::{sample_from_binomial_distribution_2, sample_from_uniform_distribution},
+    sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{deserialize_little_endian, serialize_little_endian},
     BadRejectionSamplingRandomnessError, KyberPublicKey,
 };
@@ -56,18 +56,18 @@ fn sample_matrix_A<const K: usize>(
 }
 
 #[inline(always)]
-fn cbd<const K: usize>(mut prf_input: [u8; 33]) -> ([KyberPolynomialRingElement; K], u8) {
+fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
+    mut prf_input: [u8; 33],
+) -> ([KyberPolynomialRingElement; K], u8) {
     let mut domain_separator = 0;
     let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; K];
     for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
+        let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
 
-        // FIXME: call _3 for 512
-        let r = sample_from_binomial_distribution_2(prf_output);
+        let r = sample_from_binomial_distribution::<ETA>(&prf_output);
         re_as_ntt[i] = ntt_representation(r);
     }
     (re_as_ntt, domain_separator)
@@ -92,6 +92,8 @@ pub(crate) fn generate_keypair<
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
 >(
     key_generation_seed: &[u8],
 ) -> (
@@ -126,10 +128,9 @@ pub(crate) fn generate_keypair<
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
+        let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
-        let secret = sample_from_binomial_distribution_2(prf_output);
+        let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
         secret_as_ntt[i] = ntt_representation(secret);
     }
 
@@ -142,10 +143,9 @@ pub(crate) fn generate_keypair<
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
+        let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
-        let error = sample_from_binomial_distribution_2(prf_output);
+        let error = sample_from_binomial_distribution::<ETA1>(&prf_output);
         error_as_ntt[i] = ntt_representation(error);
     }
 
@@ -211,6 +211,10 @@ pub(crate) fn encrypt<
     const VECTOR_U_COMPRESSION_FACTOR: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
     const BLOCK_LEN: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &[u8],
     message: [u8; SHARED_SECRET_SIZE],
@@ -243,7 +247,7 @@ pub(crate) fn encrypt<
     // end for
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
-    let (r_as_ntt, mut domain_separator) = cbd(prf_input);
+    let (r_as_ntt, mut domain_separator) = cbd::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input);
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
@@ -255,15 +259,15 @@ pub(crate) fn encrypt<
         domain_separator += 1;
 
         // 2 sampling coins * 64
-        let prf_output: [u8; 128] = PRF(&prf_input);
-        error_1[i] = sample_from_binomial_distribution_2(prf_output);
+        let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
+        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
     // 2 sampling coins * 64
-    let prf_output: [u8; 128] = PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution_2(prf_output);
+    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
+    let error_2 = sample_from_binomial_distribution::<ETA2>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let mut u = multiply_matrix_by_column_montgomery(&A_transpose, &r_as_ntt);

@@ -58,6 +58,8 @@ pub(super) fn generate_keypair<
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError> {
@@ -69,6 +71,8 @@ pub(super) fn generate_keypair<
         CPA_PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
         BYTES_PER_RING_ELEMENT,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
     >(ind_cpa_keypair_randomness);
 
     let secret_key_serialized = serialize_secret_key(
@@ -97,6 +101,10 @@ pub(super) fn encapsulate<
     const VECTOR_U_COMPRESSION_FACTOR: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
     const VECTOR_U_BLOCK_LEN: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -125,6 +133,10 @@ pub(super) fn encapsulate<
             VECTOR_U_COMPRESSION_FACTOR,
             VECTOR_V_COMPRESSION_FACTOR,
             VECTOR_U_BLOCK_LEN,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
         >(public_key.as_slice(), randomness_hashed, pseudorandomness);
 
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
@@ -151,6 +163,10 @@ pub(super) fn decapsulate<
     const VECTOR_U_COMPRESSION_FACTOR: usize,
     const VECTOR_V_COMPRESSION_FACTOR: usize,
     const C1_BLOCK_SIZE: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
 >(
     secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
@@ -197,6 +213,10 @@ pub(super) fn decapsulate<
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
         C1_BLOCK_SIZE,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
     >(ind_cpa_public_key, decrypted, pseudorandomness);
 
     let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(

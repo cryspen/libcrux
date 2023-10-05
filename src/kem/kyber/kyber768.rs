@@ -25,6 +25,11 @@ pub(in crate::kem) const CPA_PKE_CIPHERTEXT_SIZE_768: usize = C1_SIZE_768 + C2_S
 pub(in crate::kem) const SECRET_KEY_SIZE_768: usize =
     CPA_PKE_SECRET_KEY_SIZE_768 + CPA_PKE_PUBLIC_KEY_SIZE_768 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
 
+const ETA1: usize = 2;
+const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
+const ETA2: usize = 2;
+const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
+
 // Kyber 768 types
 pub type Kyber768Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
 pub type Kyber768PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_768>;
@@ -44,6 +49,8 @@ pub fn generate_key_pair_768(
         SECRET_KEY_SIZE_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
     >(randomness)
 }
 
@@ -69,6 +76,10 @@ pub fn encapsulate_768(
         VECTOR_U_COMPRESSION_FACTOR_768,
         VECTOR_V_COMPRESSION_FACTOR_768,
         C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
     >(public_key, randomness)
 }
 
@@ -89,5 +100,9 @@ pub fn decapsulate_768(
         VECTOR_U_COMPRESSION_FACTOR_768,
         VECTOR_V_COMPRESSION_FACTOR_768,
         C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
     >(secret_key, ciphertext)
 }

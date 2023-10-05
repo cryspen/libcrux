@@ -26,6 +26,11 @@ const SECRET_KEY_SIZE_1024: usize = CPA_PKE_SECRET_KEY_SIZE_1024
     + H_DIGEST_SIZE
     + SHARED_SECRET_SIZE;
 
+const ETA1: usize = 2;
+const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
+const ETA2: usize = 2;
+const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
+
 // Kyber 1024 types
 pub type Kyber1024Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
 pub type Kyber1024PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_1024>;
@@ -45,6 +50,8 @@ pub fn generate_key_pair_1024(
         SECRET_KEY_SIZE_1024,
         CPA_PKE_PUBLIC_KEY_SIZE_1024,
         RANKED_BYTES_PER_RING_ELEMENT_1024,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
     >(randomness)
 }
 
@@ -70,6 +77,10 @@ pub fn encapsulate_1024(
         VECTOR_U_COMPRESSION_FACTOR_1024,
         VECTOR_V_COMPRESSION_FACTOR_1024,
         C1_BLOCK_SIZE_1024,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
     >(public_key, randomness)
 }
 
@@ -90,5 +101,9 @@ pub fn decapsulate_1024(
         VECTOR_U_COMPRESSION_FACTOR_1024,
         VECTOR_V_COMPRESSION_FACTOR_1024,
         C1_BLOCK_SIZE_1024,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
     >(secret_key, ciphertext)
 }
