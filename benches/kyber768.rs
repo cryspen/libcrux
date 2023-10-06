@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use libcrux::digest;
@@ -9,6 +11,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
     let mut rng = OsRng;
     let mut group = c.benchmark_group("Kyber768 Key Generation");
+    group.measurement_time(Duration::from_secs(10));
 
     group.bench_function("libcrux portable", |b| {
         b.iter(|| {
@@ -33,6 +36,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
 
 pub fn comparisons_encapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Encapsulation");
+    group.measurement_time(Duration::from_secs(10));
 
     group.bench_function("libcrux portable", |b| {
         b.iter_batched(
@@ -86,6 +90,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
 
 pub fn comparisons_decapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Decapsulation");
+    group.measurement_time(Duration::from_secs(10));
 
     group.bench_function("libcrux portable", |b| {
         b.iter_batched(
