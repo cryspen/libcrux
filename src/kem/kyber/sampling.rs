@@ -1,11 +1,11 @@
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     BadRejectionSamplingRandomnessError,
 };
 
-pub fn sample_from_uniform_distribution(
-    randomness: [u8; REJECTION_SAMPLING_SEED_SIZE],
+pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
+    randomness: [u8; SEED_SIZE],
 ) -> (
     KyberPolynomialRingElement,
     Option<BadRejectionSamplingRandomnessError>,

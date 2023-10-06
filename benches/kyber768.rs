@@ -1,17 +1,29 @@
+use std::time::Duration;
+
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 use libcrux::digest;
 use libcrux::drbg::Drbg;
 use libcrux::kem::Algorithm;
+use rand_core::OsRng;
 
 pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+    let mut rng = OsRng;
     let mut group = c.benchmark_group("Kyber768 Key Generation");
+    group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux reference implementation", |b| {
+    group.bench_function("libcrux portable", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
                 libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+        })
+    });
+
+    group.bench_function("libcrux portable OsRng", |b| {
+        b.iter(|| {
+            let (_secret_key, _public_key) =
+                libcrux::kem::key_gen(Algorithm::Kyber768, &mut rng).unwrap();
         })
     });
 
@@ -24,11 +36,29 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
 
 pub fn comparisons_encapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Encapsulation");
+    group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux reference implementation", |b| {
+    group.bench_function("libcrux portable", |b| {
         b.iter_batched(
             || {
                 let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
+                let (_secret_key, public_key) =
+                    libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+
+                (drbg, public_key)
+            },
+            |(mut rng, public_key)| {
+                let (_shared_secret, _ciphertext) =
+                    libcrux::kem::encapsulate(&public_key, &mut rng).unwrap();
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("libcrux portable OsRng", |b| {
+        b.iter_batched(
+            || {
+                let mut drbg = OsRng;
                 let (_secret_key, public_key) =
                     libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
 
@@ -60,8 +90,9 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
 
 pub fn comparisons_decapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Decapsulation");
+    group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux specification", |b| {
+    group.bench_function("libcrux portable", |b| {
         b.iter_batched(
             || {
                 let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
