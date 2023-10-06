@@ -50,4 +50,9 @@ jobs:
       - name: 🏃🏻‍♀️ Run hax extraction
         run: |
           eval $(opam env)
-          ./proof.sh extract
+          ./extract_to_fstar.py --kyber-reference
+          # Extract the functions in the compress module individually to test
+          # the function-extraction code.
+          # Extract functions from the remaining modules to test the
+          # module-extraction code.
+          ./extract_to_fstar.py --crate-path specs/kyber --functions compress::compress compress::decompress compress::compress_d compress::decompress_d --modules ind_cpa root matrix ntt parameters sampling serialize
