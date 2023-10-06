@@ -258,14 +258,12 @@ pub(crate) fn encrypt<
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
-        // 2 sampling coins * 64
         let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
         error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
-    // 2 sampling coins * 64
     let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
     let error_2 = sample_from_binomial_distribution::<ETA2>(&prf_output);
 
@@ -313,8 +311,8 @@ pub(crate) fn decrypt<
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
-        let u = deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes);
-        u_as_ntt[i] = ntt_representation(decompress(u, 10));
+        let u = decompress(deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes), VECTOR_U_COMPRESSION_FACTOR);
+        u_as_ntt[i] = ntt_representation(u);
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
