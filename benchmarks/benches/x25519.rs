@@ -17,7 +17,7 @@ fn derive(c: &mut Criterion) {
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = ecdh::derive(ecdh::Algorithm::X25519, &sk2, &pk1).unwrap();
+                let _zz = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -38,10 +38,9 @@ fn derive(c: &mut Criterion) {
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = agreement::agree_ephemeral(
+                let _zz: Result<Vec<u8>, ring::error::Unspecified> = agreement::agree_ephemeral(
                     sk2,
                     &agreement::UnparsedPublicKey::new(&agreement::X25519, pk1),
-                    ring::error::Unspecified,
                     |k| Ok(k.to_vec()),
                 )
                 .unwrap();
