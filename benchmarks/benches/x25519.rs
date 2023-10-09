@@ -142,7 +142,7 @@ fn secret_to_public(c: &mut Criterion) {
         )
     });
 
-    #[cfg(not(windows))]
+    #[cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))]
     group.bench_function("OpenSSL", |b| {
         use openssl::pkey::PKey;
 
