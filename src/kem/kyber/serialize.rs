@@ -1,3 +1,7 @@
+//! (De)serialization
+//!
+//! [hax] due to limitations of `usize`, the compression factor is a `u32` for now.
+//!       https://github.com/hacspec/hacspec-v2/pull/274
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
@@ -41,13 +45,13 @@ use super::{
 /// is called, and `compress_q` also performs this conversion.
 
 #[inline(always)]
-pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
+pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: u32, const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     debug_assert!(
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN,
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR as usize) / 8 == OUT_LEN,
         "{} != {}",
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR as usize) / 8,
         OUT_LEN
     );
 
@@ -67,12 +71,12 @@ pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT
 }
 
 #[inline(always)]
-pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
+pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: u32>(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
     debug_assert_eq!(
         serialized.len(),
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR as usize) / 8
     );
 
     match COMPRESSION_FACTOR {

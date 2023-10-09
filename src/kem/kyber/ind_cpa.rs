@@ -184,7 +184,7 @@ pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
 fn compress_then_encode_u<
     const K: usize,
     const OUT_LEN: usize,
-    const COMPRESSION_FACTOR: usize,
+    const COMPRESSION_FACTOR: u32,
     const BLOCK_LEN: usize,
 >(
     input: [KyberPolynomialRingElement; K],
@@ -208,8 +208,8 @@ pub(crate) fn encrypt<
     const T_AS_NTT_ENCODED_SIZE: usize,
     const C1_LEN: usize,
     const C2_LEN: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: usize,
-    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: u32,
+    const VECTOR_V_COMPRESSION_FACTOR: u32,
     const BLOCK_LEN: usize,
 >(
     public_key: &[u8],
@@ -295,8 +295,8 @@ pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const VECTOR_U_ENCODED_SIZE: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: usize,
-    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: u32,
+    const VECTOR_V_COMPRESSION_FACTOR: u32,
 >(
     secret_key: &[u8],
     ciphertext: &super::KyberCiphertext<CIPHERTEXT_SIZE>,
@@ -306,7 +306,7 @@ pub(crate) fn decrypt<
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
-        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
+        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR as usize) / 8)
         .enumerate()
     {
         let u = deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes);
@@ -318,7 +318,7 @@ pub(crate) fn decrypt<
         deserialize_little_endian::<VECTOR_V_COMPRESSION_FACTOR>(
             &ciphertext[VECTOR_U_ENCODED_SIZE..],
         ),
-        VECTOR_V_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR as usize,
     );
 
     // sˆ := Decode_12(sk)
