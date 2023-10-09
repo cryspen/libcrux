@@ -61,7 +61,7 @@ sha2 = "0.10"
 x25519-dalek-ng = "1.1"
 sha3 = "0.10"
 # Benchmarking "Ring"
-ring = "0.16"
+ring = "0.17"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
