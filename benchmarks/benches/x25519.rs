@@ -67,7 +67,7 @@ fn derive(c: &mut Criterion) {
         )
     });
 
-    #[cfg(not(windows))]
+    #[cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))]
     group.bench_function("OpenSSL", |b| {
         use openssl::derive::Deriver;
         use openssl::pkey::{Id, PKey};
