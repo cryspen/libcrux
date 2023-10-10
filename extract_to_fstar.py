@@ -18,9 +18,7 @@ def shell(command, expect=0, cwd=None, format_selection_string=False):
 
     print("\nDirectory: {}".format(cwd))
 
-    ret = subprocess.run(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd
-    )
+    ret = subprocess.run(command, cwd=cwd)
     if ret.returncode != expect:
         raise Exception("Error {}. Expected {}.".format(ret, expect))
 
@@ -72,7 +70,8 @@ if options.modules or options.functions:
         options.modules = " {}".format(options.modules)
 
     if options.functions:
-        options.functions = " ".join(["+" + function for function in options.functions])
+        options.functions = " ".join(
+            ["+" + function for function in options.functions])
         options.functions = " {}".format(options.functions)
 
     shell(
