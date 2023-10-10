@@ -2,39 +2,43 @@ module Libcrux.Kem.Kyber.Types
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-let impl__new
-      (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
+let new_under_impl
+      (#private_key_size #public_key_size: usize)
       (sk: array u8 v_PRIVATE_KEY_SIZE)
       (pk: array u8 v_PUBLIC_KEY_SIZE)
     : Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
   {
-    Libcrux.Kem.Kyber.f_sk = Core.Convert.f_into sk;
-    Libcrux.Kem.Kyber.f_pk = Core.Convert.f_into pk
+    Libcrux.Kem.Kyber.KyberKeyPair.f_sk = Core.Convert.Into.into sk;
+    Libcrux.Kem.Kyber.KyberKeyPair.f_pk = Core.Convert.Into.into pk
   }
 
-let impl__from
-      (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
+let from_under_impl
+      (#private_key_size #public_key_size: usize)
       (sk: Libcrux.Kem.Kyber.t_KyberPrivateKey v_PRIVATE_KEY_SIZE)
       (pk: Libcrux.Kem.Kyber.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
     : Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
-  { Libcrux.Kem.Kyber.f_sk = sk; Libcrux.Kem.Kyber.f_pk = pk }
+  { Libcrux.Kem.Kyber.KyberKeyPair.f_sk = sk; Libcrux.Kem.Kyber.KyberKeyPair.f_pk = pk }
 
-let impl__public_key
-      (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
+let public_key_under_impl
+      (#private_key_size #public_key_size: usize)
       (self: Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : Libcrux.Kem.Kyber.t_KyberPublicKey v_PUBLIC_KEY_SIZE = self.Libcrux.Kem.Kyber.f_pk
+    : Libcrux.Kem.Kyber.t_KyberPublicKey v_PUBLIC_KEY_SIZE =
+  self.Libcrux.Kem.Kyber.KyberKeyPair.f_pk
 
-let impl__private_key
-      (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
+let private_key_under_impl
+      (#private_key_size #public_key_size: usize)
       (self: Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : Libcrux.Kem.Kyber.t_KyberPrivateKey v_PRIVATE_KEY_SIZE = self.Libcrux.Kem.Kyber.f_sk
+    : Libcrux.Kem.Kyber.t_KyberPrivateKey v_PRIVATE_KEY_SIZE =
+  self.Libcrux.Kem.Kyber.KyberKeyPair.f_sk
 
-let impl__pk
-      (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
+let pk_under_impl
+      (#private_key_size #public_key_size: usize)
       (self: Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : array u8 v_PUBLIC_KEY_SIZE = Libcrux.Kem.Kyber.impl_35__as_slice self.Libcrux.Kem.Kyber.f_pk
+    : array u8 v_PUBLIC_KEY_SIZE =
+  Libcrux.Kem.Kyber.as_slice_under_impl_35 self.Libcrux.Kem.Kyber.KyberKeyPair.f_pk
 
-let impl__sk
-      (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
+let sk_under_impl
+      (#private_key_size #public_key_size: usize)
       (self: Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : array u8 v_PRIVATE_KEY_SIZE = Libcrux.Kem.Kyber.impl_26__as_slice self.Libcrux.Kem.Kyber.f_sk
+    : array u8 v_PRIVATE_KEY_SIZE =
+  Libcrux.Kem.Kyber.as_slice_under_impl_26 self.Libcrux.Kem.Kyber.KyberKeyPair.f_sk

@@ -3,15 +3,15 @@ module Libcrux.Kem.Kyber.Constant_time_ops
 open Core
 
 let is_non_zero (value: u8) : u8 =
-  let value_negated:i8 = Core.Ops.Arith.Neg.neg (cast value <: i8) in
-  ((value |. (cast value_negated <: u8) <: u8) >>! 7l <: u8) &. 1uy
+  let value_negated:i8 = Core.Ops.Arith.Neg.neg (cast value) in
+  ((value |. cast value_negated <: u8) <<. 7l <: u8) &. 1uy
 
-let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: slice u8) : u8 =
+let compare_ciphertexts_in_constant_time (#ciphertext_size: usize) (lhs rhs: slice u8) : u8 =
   let _:Prims.unit =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len lhs, Core.Slice.impl__len rhs with
+        match Core.Slice.len_under_impl lhs, Core.Slice.len_under_impl rhs with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
@@ -29,7 +29,7 @@ let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: s
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len lhs, v_CIPHERTEXT_SIZE with
+        match Core.Slice.len_under_impl lhs, v_CIPHERTEXT_SIZE with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
@@ -45,23 +45,23 @@ let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: s
   in
   let (r: u8):u8 = 0uy in
   let r:Prims.unit =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_CIPHERTEXT_SIZE
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
+              Core.Ops.Range.Range.f_start = 0sz;
+              Core.Ops.Range.Range.f_end = v_CIPHERTEXT_SIZE
             })
         <:
-        _.f_IntoIter)
+        _)
       r
       (fun r i -> r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: Prims.unit)
   in
   is_non_zero r
 
-let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : array u8 (sz 32) =
+let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : array u8 32sz =
   let _:Prims.unit =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len lhs, Core.Slice.impl__len rhs with
+        match Core.Slice.len_under_impl lhs, Core.Slice.len_under_impl rhs with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
@@ -79,7 +79,7 @@ let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : a
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len lhs, Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE with
+        match Core.Slice.len_under_impl lhs, Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
@@ -93,15 +93,15 @@ let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : a
       in
       ()
   in
-  let mask:u8 = Core.Num.impl_6__wrapping_sub (is_non_zero selector <: u8) 1uy in
-  let out:array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-  let out:array u8 (sz 32) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
+  let mask:u8 = Core.Num.wrapping_sub_under_impl_6 (is_non_zero selector <: u8) 1uy in
+  let out:array u8 32sz = Rust_primitives.Hax.repeat 0uy 32sz in
+  let out:array u8 32sz =
+    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.IntoIterator.into_iter ({
+              Core.Ops.Range.Range.f_start = 0sz;
+              Core.Ops.Range.Range.f_end = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
             })
         <:
-        _.f_IntoIter)
+        _)
       out
       (fun out i ->
           Rust_primitives.Hax.update_at out
@@ -113,6 +113,6 @@ let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : a
               <:
               Prims.unit)
           <:
-          array u8 (sz 32))
+          array u8 32sz)
   in
   out
