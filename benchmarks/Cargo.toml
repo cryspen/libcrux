@@ -1,0 +1,62 @@
+[package]
+name = "benchmarks"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+libcrux = { path = "../", features = ["rand"] }
+rand = { version = "0.8" }
+rand_core = { version = "0.6" }
+# Benchmarking "RustCrypto"
+chacha20poly1305 = "0.10"
+sha2 = "0.10"
+x25519-dalek-ng = "1.1"
+sha3 = "0.10"
+p256 = { version = "0.13", features = ["ecdh"] }
+# Benchmarking "Ring"
+ring = "0.17"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+criterion = "0.5"
+# libcrux-pqclean = { version = "0.0.2-pre.1", path = "sys/pqclean" }
+
+# Benchmarking "OpenSSL"
+# XXX: We don't do this for Windows or wasm right now.
+#      x86 is usally a cross compilation where this won't work either.
+[target.'cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))'.dev-dependencies]
+openssl = "0.10"
+
+[[bench]]
+name = "sha2"
+harness = false
+
+[[bench]]
+name = "sha3"
+harness = false
+
+[[bench]]
+name = "x25519"
+harness = false
+
+[[bench]]
+name = "p256"
+harness = false
+
+[[bench]]
+name = "aead"
+harness = false
+
+[[bench]]
+name = "hpke"
+harness = false
+
+[[bench]]
+name = "drbg"
+harness = false
