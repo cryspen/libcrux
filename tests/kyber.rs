@@ -38,7 +38,7 @@ macro_rules! impl_consistency {
 }
 
 fn modify_ciphertext(alg: Algorithm, rng: &mut (impl CryptoRng + Rng), ciphertext: Ct) -> Ct {
-    let mut encoded_ct = ciphertext.encode();
+    let mut raw_ciphertext = ciphertext.encode();
 
     let mut random_u32: usize = rng.next_u32().try_into().unwrap();
 
@@ -48,10 +48,10 @@ fn modify_ciphertext(alg: Algorithm, rng: &mut (impl CryptoRng + Rng), ciphertex
     }
     random_u32 >>= 8;
 
-    let position = random_u32 % encoded_ct.len();
-    encoded_ct[position] ^= random_byte;
+    let position = random_u32 % raw_ciphertext.len();
+    raw_ciphertext[position] ^= random_byte;
 
-    Ct::decode(alg, &encoded_ct).unwrap()
+    Ct::decode(alg, &raw_ciphertext).unwrap()
 }
 macro_rules! impl_modified_ciphertext {
     ($name:ident, $alg:expr) => {

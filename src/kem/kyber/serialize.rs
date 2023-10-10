@@ -268,7 +268,7 @@ fn serialize_little_endian_11<const OUT_LEN: usize>(
         let coefficient7 = coefficients[6];
         let coefficient8 = coefficients[7];
 
-        serialized[11 * i + 0] = coefficient1 as u8;
+        serialized[11 * i] = coefficient1 as u8;
         serialized[11 * i + 1] = ((coefficient2 & 0x1F) as u8) << 3 | ((coefficient1 >> 8) as u8);
         serialized[11 * i + 2] = ((coefficient3 & 0x3) as u8) << 6 | ((coefficient2 >> 5) as u8);
         serialized[11 * i + 3] = ((coefficient3 >> 2) & 0xFF) as u8;
