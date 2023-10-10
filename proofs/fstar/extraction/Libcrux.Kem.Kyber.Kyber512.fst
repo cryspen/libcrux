@@ -14,22 +14,20 @@ let v_T_AS_NTT_ENCODED_SIZE_512_: usize =
     usize) /!
   sz 8
 
-let v_VECTOR_U_COMPRESSION_FACTOR_512_: u32 = 10ul
+let v_VECTOR_U_COMPRESSION_FACTOR_512_: usize = sz 10
 
 let v_C1_BLOCK_SIZE_512_: usize =
-  (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-    (cast v_VECTOR_U_COMPRESSION_FACTOR_512_ <: usize)
+  (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_VECTOR_U_COMPRESSION_FACTOR_512_
     <:
     usize) /!
   sz 8
 
 let v_C1_SIZE_512_: usize = v_C1_BLOCK_SIZE_512_ *! v_RANK_512_
 
-let v_VECTOR_V_COMPRESSION_FACTOR_512_: u32 = 4ul
+let v_VECTOR_V_COMPRESSION_FACTOR_512_: usize = sz 4
 
 let v_C2_SIZE_512_: usize =
-  (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-    (cast v_VECTOR_V_COMPRESSION_FACTOR_512_ <: usize)
+  (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_VECTOR_V_COMPRESSION_FACTOR_512_
     <:
     usize) /!
   sz 8

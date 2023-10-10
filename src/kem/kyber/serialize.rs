@@ -1,7 +1,3 @@
-//! (De)serialization
-//!
-//! [hax] due to limitations of `usize`, the compression factor is a `u32` for now.
-//!       https://github.com/hacspec/hacspec-v2/pull/274
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
@@ -45,17 +41,17 @@ use super::{
 /// is called, and `compress_q` also performs this conversion.
 
 #[inline(always)]
-pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: u32, const OUT_LEN: usize>(
+pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     debug_assert!(
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR as usize) / 8 == OUT_LEN,
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN,
         "{} != {}",
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR as usize) / 8,
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
         OUT_LEN
     );
 
-    match COMPRESSION_FACTOR {
+    match COMPRESSION_FACTOR as u32 {
         1 => serialize_little_endian_1(re),
         // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
         4 => serialize_little_endian_4(re),
@@ -71,15 +67,15 @@ pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: u32, const OUT_L
 }
 
 #[inline(always)]
-pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: u32>(
+pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
     debug_assert_eq!(
         serialized.len(),
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR as usize) / 8
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
     );
 
-    match COMPRESSION_FACTOR {
+    match COMPRESSION_FACTOR as u32 {
         1 => deserialize_little_endian_1(serialized),
         // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
         4 => deserialize_little_endian_4(serialized),

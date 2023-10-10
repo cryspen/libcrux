@@ -3,7 +3,7 @@ module Libcrux.Kem.Kyber.Compress
 open Core
 
 let compress
-      (#v_COEFFICIENT_BITS: u32)
+      (#v_COEFFICIENT_BITS: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -35,18 +35,14 @@ let decompress
   in
   re
 
-let compress_q (#v_COEFFICIENT_BITS: u32) (fe: u16) : i32 =
+let compress_q (#v_COEFFICIENT_BITS: usize) (fe: u16) : i32 =
   let _:Prims.unit =
     if true
     then
       let _:Prims.unit =
-        if
-          ~.((cast v_COEFFICIENT_BITS <: usize) <=.
-            Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT
-            <:
-            bool)
+        if ~.(v_COEFFICIENT_BITS <=. Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT <: bool)
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS as usize <= BITS_PER_COEFFICIENT"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS <= BITS_PER_COEFFICIENT"
 
               <:
               Rust_primitives.Hax.t_Never)

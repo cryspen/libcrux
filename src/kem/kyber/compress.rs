@@ -4,7 +4,7 @@ use super::{
     conversions::to_unsigned_representative,
 };
 
-pub fn compress<const COEFFICIENT_BITS: u32>(
+pub fn compress<const COEFFICIENT_BITS: usize>(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
     re.coefficients = re
@@ -23,8 +23,8 @@ pub fn decompress(
     re
 }
 
-fn compress_q<const COEFFICIENT_BITS: u32>(fe: u16) -> KyberFieldElement {
-    debug_assert!(COEFFICIENT_BITS as usize <= BITS_PER_COEFFICIENT);
+fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
+    debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);
 
     let two_pow_bit_size = 1u32 << COEFFICIENT_BITS;
 

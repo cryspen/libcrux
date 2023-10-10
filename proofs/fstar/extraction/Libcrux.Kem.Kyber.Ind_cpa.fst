@@ -469,9 +469,7 @@ let serialize_secret_key
       Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
 
 let compress_then_encode_u
-      (#v_K #v_OUT_LEN: usize)
-      (#v_COMPRESSION_FACTOR: u32)
-      (#v_BLOCK_LEN: usize)
+      (#v_K #v_OUT_LEN #v_COMPRESSION_FACTOR #v_BLOCK_LEN: usize)
       (input: array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
     : array u8 v_OUT_LEN =
   let out:array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
@@ -516,9 +514,8 @@ let compress_then_encode_u
   out
 
 let encrypt
-      (#v_K #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_LEN #v_C2_LEN: usize)
-      (#v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR: u32)
-      (#v_BLOCK_LEN: usize)
+      (#v_K #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_LEN #v_C2_LEN #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_BLOCK_LEN:
+          usize)
       (public_key: slice u8)
       (message: array u8 (sz 32))
       (randomness: slice u8)
@@ -672,8 +669,8 @@ let encrypt
   Core.Convert.f_into ciphertext, sampling_A_error
 
 let decrypt
-      (#v_K #v_CIPHERTEXT_SIZE #v_VECTOR_U_ENCODED_SIZE: usize)
-      (#v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR: u32)
+      (#v_K #v_CIPHERTEXT_SIZE #v_VECTOR_U_ENCODED_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR:
+          usize)
       (secret_key: slice u8)
       (ciphertext: Libcrux.Kem.Kyber.t_KyberCiphertext v_CIPHERTEXT_SIZE)
     : array u8 (sz 32) =
@@ -691,7 +688,7 @@ let decrypt
                     <:
                     slice u8)
                   ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                      (cast v_VECTOR_U_COMPRESSION_FACTOR <: usize)
+                      v_VECTOR_U_COMPRESSION_FACTOR
                       <:
                       usize) /!
                     sz 8
@@ -727,7 +724,7 @@ let decrypt
             slice u8)
         <:
         Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-      (cast v_VECTOR_V_COMPRESSION_FACTOR <: usize)
+      v_VECTOR_V_COMPRESSION_FACTOR
   in
   let secret_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate

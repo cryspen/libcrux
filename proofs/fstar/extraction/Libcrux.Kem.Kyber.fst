@@ -447,10 +447,8 @@ let generate_keypair
     Core.Result.Result_Ok (Libcrux.Kem.Kyber.Types.impl__from private_key public_key)
 
 let encapsulate
-      (#v_K #v_SHARED_SECRET_SIZE #v_CIPHERTEXT_SIZE #v_PUBLIC_KEY_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE:
+      (#v_K #v_SHARED_SECRET_SIZE #v_CIPHERTEXT_SIZE #v_PUBLIC_KEY_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_VECTOR_U_BLOCK_LEN:
           usize)
-      (#v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR: u32)
-      (#v_VECTOR_U_BLOCK_LEN: usize)
       (public_key: t_KyberPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: array u8 v_SHARED_SECRET_SIZE)
     : Core.Result.t_Result
@@ -533,10 +531,8 @@ let encapsulate
   else Core.Result.Result_Ok (ciphertext, shared_secret)
 
 let decapsulate
-      (#v_K #v_SECRET_KEY_SIZE #v_CPA_SECRET_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE:
+      (#v_K #v_SECRET_KEY_SIZE #v_CPA_SECRET_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_C1_BLOCK_SIZE:
           usize)
-      (#v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR: u32)
-      (#v_C1_BLOCK_SIZE: usize)
       (secret_key: t_KyberPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: t_KyberCiphertext v_CIPHERTEXT_SIZE)
     : array u8 (sz 32) =

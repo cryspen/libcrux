@@ -94,8 +94,8 @@ pub(super) fn encapsulate<
     const T_AS_NTT_ENCODED_SIZE: usize,
     const C1_SIZE: usize,
     const C2_SIZE: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: u32,
-    const VECTOR_V_COMPRESSION_FACTOR: u32,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
     const VECTOR_U_BLOCK_LEN: usize,
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
@@ -148,8 +148,8 @@ pub(super) fn decapsulate<
     const T_AS_NTT_ENCODED_SIZE: usize,
     const C1_SIZE: usize,
     const C2_SIZE: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: u32,
-    const VECTOR_V_COMPRESSION_FACTOR: u32,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
     const C1_BLOCK_SIZE: usize,
 >(
     secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,

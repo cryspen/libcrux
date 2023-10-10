@@ -3,8 +3,7 @@ module Libcrux.Kem.Kyber.Serialize
 open Core
 
 let serialize_little_endian
-      (#v_COMPRESSION_FACTOR: u32)
-      (#v_OUT_LEN: usize)
+      (#v_COMPRESSION_FACTOR #v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
     : array u8 v_OUT_LEN =
   let _:Prims.unit =
@@ -12,8 +11,7 @@ let serialize_little_endian
     then
       let _:Prims.unit =
         if
-          ~.(((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                (cast v_COMPRESSION_FACTOR <: usize)
+          ~.(((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR
                 <:
                 usize) /!
               sz 8
@@ -32,7 +30,7 @@ let serialize_little_endian
                     (Rust_primitives.unsize (let list =
                             [
                               Core.Fmt.Rt.impl_1__new_display ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                                    (cast v_COMPRESSION_FACTOR <: usize)
+                                    v_COMPRESSION_FACTOR
                                     <:
                                     usize) /!
                                   sz 8
@@ -54,7 +52,7 @@ let serialize_little_endian
       in
       ()
   in
-  match v_COMPRESSION_FACTOR with
+  match cast v_COMPRESSION_FACTOR <: u32 with
   | 1ul -> serialize_little_endian_1_ re
   | 4ul -> serialize_little_endian_4_ re
   | 5ul -> serialize_little_endian_5_ re
@@ -84,7 +82,7 @@ let serialize_little_endian
         <:
         Rust_primitives.Hax.t_Never)
 
-let deserialize_little_endian (#v_COMPRESSION_FACTOR: u32) (serialized: slice u8)
+let deserialize_little_endian (#v_COMPRESSION_FACTOR: usize) (serialized: slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -92,8 +90,7 @@ let deserialize_little_endian (#v_COMPRESSION_FACTOR: u32) (serialized: slice u8
       let _:Prims.unit =
         match
           Core.Slice.impl__len serialized,
-          (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-            (cast v_COMPRESSION_FACTOR <: usize)
+          (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR
             <:
             usize) /!
           sz 8
@@ -111,7 +108,7 @@ let deserialize_little_endian (#v_COMPRESSION_FACTOR: u32) (serialized: slice u8
       in
       ()
   in
-  match v_COMPRESSION_FACTOR with
+  match cast v_COMPRESSION_FACTOR <: u32 with
   | 1ul -> deserialize_little_endian_1_ serialized
   | 4ul -> deserialize_little_endian_4_ serialized
   | 5ul -> deserialize_little_endian_5_ serialized
