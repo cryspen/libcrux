@@ -141,8 +141,8 @@ macro_rules! impl_modified_secret_key {
                         kem::decapsulate(&ciphertext, &secret_key).unwrap();
 
                     assert_eq!(
-                        &shared_secret_decapsulated.encode(),
-                        &compute_implicit_rejection_shared_secret(ciphertext, secret_key)
+                        shared_secret_decapsulated.encode(),
+                        compute_implicit_rejection_shared_secret(ciphertext, secret_key)
                     );
                 }
             }
@@ -180,8 +180,8 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
                     );
 
                     assert_eq!(
-                        &shared_secret_decapsulated_1.encode(),
-                        &compute_implicit_rejection_shared_secret(ciphertext, secret_key)
+                        shared_secret_decapsulated_1.encode(),
+                        compute_implicit_rejection_shared_secret(ciphertext, secret_key)
                     );
                 }
             }
