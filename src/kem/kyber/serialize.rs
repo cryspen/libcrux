@@ -290,7 +290,7 @@ fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
-    for (i, bytes) in serialized.chunks(11).enumerate() {
+    for (i, bytes) in serialized.chunks_exact(11).enumerate() {
         let byte1 = bytes[0] as KyberFieldElement;
         let byte2 = bytes[1] as KyberFieldElement;
         let byte3 = bytes[2] as KyberFieldElement;
