@@ -167,9 +167,11 @@ fn serialize_little_endian_5<const OUT_LEN: usize>(
         let coefficient8 = coefficients[7] as u8;
 
         serialized[5 * i] = (coefficient2 & 0x7) << 5 | coefficient1;
-        serialized[5 * i + 1] = ((coefficient4 & 1) << 7) | (coefficient3 << 2) | (coefficient2 >> 3);
+        serialized[5 * i + 1] =
+            ((coefficient4 & 1) << 7) | (coefficient3 << 2) | (coefficient2 >> 3);
         serialized[5 * i + 2] = ((coefficient5 & 0xF) << 4) | (coefficient4 >> 1);
-        serialized[5 * i + 3] = ((coefficient7 & 0x3) << 6) | (coefficient6 << 1) | (coefficient5 >> 4);
+        serialized[5 * i + 3] =
+            ((coefficient7 & 0x3) << 6) | (coefficient6 << 1) | (coefficient5 >> 4);
         serialized[5 * i + 4] = (coefficient8 << 3) | (coefficient7 >> 2);
     }
 
@@ -309,7 +311,6 @@ fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement
         re.coefficients[8 * i + 5] = (byte9 & 0x3) << 9 | (byte8 << 1) | (byte7 >> 7);
         re.coefficients[8 * i + 6] = (byte10 & 0x1F) << 6 | (byte9 >> 2);
         re.coefficients[8 * i + 7] = (byte11 << 3) | (byte10 >> 5);
-
     }
 
     re

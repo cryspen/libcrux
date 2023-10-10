@@ -311,7 +311,10 @@ pub(crate) fn decrypt<
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
-        let u = decompress(deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes), VECTOR_U_COMPRESSION_FACTOR);
+        let u = decompress(
+            deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes),
+            VECTOR_U_COMPRESSION_FACTOR,
+        );
         u_as_ntt[i] = ntt_representation(u);
     }
 

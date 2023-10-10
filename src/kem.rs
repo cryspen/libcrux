@@ -27,9 +27,11 @@ pub use kyber::kyber768::encapsulate_768 as kyber768_encapsulate_derand;
 pub use kyber::kyber768::generate_key_pair_768 as kyber768_generate_keypair_derand;
 
 use self::kyber::{
+    kyber1024::{
+        Kyber1024Ciphertext, Kyber1024PrivateKey, Kyber1024PublicKey, Kyber1024SharedSecret,
+    },
     kyber512::{Kyber512Ciphertext, Kyber512PrivateKey, Kyber512PublicKey, Kyber512SharedSecret},
     kyber768::{Kyber768Ciphertext, Kyber768PrivateKey, Kyber768PublicKey, Kyber768SharedSecret},
-    kyber1024::{Kyber1024Ciphertext, Kyber1024PrivateKey, Kyber1024PublicKey, Kyber1024SharedSecret},
     KyberKeyPair,
 };
 
