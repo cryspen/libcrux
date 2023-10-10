@@ -98,7 +98,7 @@ fn modify_secret_key(
     let position = if modify_implicit_rejection_value {
         (raw_secret_key.len() - SHARED_SECRET_SIZE) + (random_u32 % SHARED_SECRET_SIZE)
     } else {
-        random_u32 % raw_secret_key.len()
+        random_u32 % (raw_secret_key.len() - SHARED_SECRET_SIZE)
     };
 
     raw_secret_key[position] ^= random_byte;
