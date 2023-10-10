@@ -137,7 +137,7 @@ jobs:
 
   benchmarks:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         bits: [32, 64]
         os:
@@ -145,6 +145,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
         exclude:
+        # There's no such thing as 32-bit macOS
           - bits: 32
             os: "macos-latest"
           # FIXME: Linking isn't working here yet for hacl #42
