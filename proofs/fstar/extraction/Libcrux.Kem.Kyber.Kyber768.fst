@@ -50,6 +50,14 @@ let v_SECRET_KEY_SIZE_768_: usize =
     usize) +!
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
 
+let v_ETA1: usize = sz 2
+
+let v_ETA1_RANDOMNESS_SIZE: usize = v_ETA1 *! sz 64
+
+let v_ETA2: usize = sz 2
+
+let v_ETA2_RANDOMNESS_SIZE: usize = v_ETA2 *! sz 64
+
 let t_Kyber768Ciphertext = Libcrux.Kem.Kyber.t_KyberCiphertext (sz 1088)
 
 let t_Kyber768PrivateKey = Libcrux.Kem.Kyber.t_KyberPrivateKey (sz 2400)

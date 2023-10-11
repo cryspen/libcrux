@@ -3,3 +3,4 @@
 .vscode
 .DS_Store
 benches/boringssl/build
+__pycache__

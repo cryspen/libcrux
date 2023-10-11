@@ -150,33 +150,55 @@ fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement 
     re
 }
 
-// FIXME make this correct for 5
 #[inline(always)]
 fn serialize_little_endian_5<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
-    for (i, chunk) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient1 = chunk[0] as u8;
-        let coefficient2 = chunk[1] as u8;
+    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        let coefficient1 = coefficients[0] as u8;
+        let coefficient2 = coefficients[1] as u8;
+        let coefficient3 = coefficients[2] as u8;
+        let coefficient4 = coefficients[3] as u8;
+        let coefficient5 = coefficients[4] as u8;
+        let coefficient6 = coefficients[5] as u8;
+        let coefficient7 = coefficients[6] as u8;
+        let coefficient8 = coefficients[7] as u8;
 
-        serialized[i] = (coefficient2 << 4) | coefficient1;
+        serialized[5 * i] = (coefficient2 & 0x7) << 5 | coefficient1;
+        serialized[5 * i + 1] =
+            ((coefficient4 & 1) << 7) | (coefficient3 << 2) | (coefficient2 >> 3);
+        serialized[5 * i + 2] = ((coefficient5 & 0xF) << 4) | (coefficient4 >> 1);
+        serialized[5 * i + 3] =
+            ((coefficient7 & 0x3) << 6) | (coefficient6 << 1) | (coefficient5 >> 4);
+        serialized[5 * i + 4] = (coefficient8 << 3) | (coefficient7 >> 2);
     }
 
     serialized
 }
 
-// FIXME make this correct for 5
 #[inline(always)]
 fn deserialize_little_endian_5(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
-    for (i, byte) in serialized.iter().enumerate() {
-        re.coefficients[2 * i] = (byte & 0x0F) as KyberFieldElement;
-        re.coefficients[2 * i + 1] = ((byte >> 4) & 0x0F) as KyberFieldElement;
+    for (i, bytes) in serialized.chunks_exact(5).enumerate() {
+        let byte1 = bytes[0] as KyberFieldElement;
+        let byte2 = bytes[1] as KyberFieldElement;
+        let byte3 = bytes[2] as KyberFieldElement;
+        let byte4 = bytes[3] as KyberFieldElement;
+        let byte5 = bytes[4] as KyberFieldElement;
+
+        re.coefficients[8 * i] = byte1 & 0x1F;
+        re.coefficients[8 * i + 1] = (byte2 & 0x3) << 3 | (byte1 >> 5);
+        re.coefficients[8 * i + 2] = (byte2 >> 2) & 0x1F;
+        re.coefficients[8 * i + 3] = ((byte3 & 0xF) << 1) | (byte2 >> 7);
+        re.coefficients[8 * i + 4] = ((byte4 & 1) << 4) | (byte3 >> 4);
+        re.coefficients[8 * i + 5] = (byte4 >> 1) & 0x1F;
+        re.coefficients[8 * i + 6] = ((byte5 & 0x7) << 2) | (byte4 >> 6);
+        re.coefficients[8 * i + 7] = byte5 >> 3;
     }
 
     re
@@ -229,50 +251,65 @@ fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement
     re
 }
 
-// FIXME make this correct for 11
 #[inline(always)]
 fn serialize_little_endian_11<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
-    for (i, chunk) in re.coefficients.chunks_exact(4).enumerate() {
-        let coefficient1 = chunk[0];
-        let coefficient2 = chunk[1];
-        let coefficient3 = chunk[2];
-        let coefficient4 = chunk[3];
+    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        let coefficient1 = coefficients[0];
+        let coefficient2 = coefficients[1];
+        let coefficient3 = coefficients[2];
+        let coefficient4 = coefficients[3];
+        let coefficient5 = coefficients[4];
+        let coefficient6 = coefficients[5];
+        let coefficient7 = coefficients[6];
+        let coefficient8 = coefficients[7];
 
-        serialized[5 * i] = (coefficient1 & 0xFF) as u8;
-        serialized[5 * i + 1] =
-            ((coefficient2 & 0x3F) as u8) << 2 | ((coefficient1 >> 8) & 0x03) as u8;
-        serialized[5 * i + 2] =
-            ((coefficient3 & 0x0F) as u8) << 4 | ((coefficient2 >> 6) & 0x0F) as u8;
-        serialized[5 * i + 3] =
-            ((coefficient4 & 0x03) as u8) << 6 | ((coefficient3 >> 4) & 0x3F) as u8;
-        serialized[5 * i + 4] = ((coefficient4 >> 2) & 0xFF) as u8;
+        serialized[11 * i] = coefficient1 as u8;
+        serialized[11 * i + 1] = ((coefficient2 & 0x1F) as u8) << 3 | ((coefficient1 >> 8) as u8);
+        serialized[11 * i + 2] = ((coefficient3 & 0x3) as u8) << 6 | ((coefficient2 >> 5) as u8);
+        serialized[11 * i + 3] = ((coefficient3 >> 2) & 0xFF) as u8;
+        serialized[11 * i + 4] = ((coefficient4 & 0x7F) as u8) << 1 | (coefficient3 >> 10) as u8;
+        serialized[11 * i + 5] = ((coefficient5 & 0xF) as u8) << 4 | (coefficient4 >> 7) as u8;
+        serialized[11 * i + 6] = ((coefficient6 & 0x1) as u8) << 7 | (coefficient5 >> 4) as u8;
+        serialized[11 * i + 7] = ((coefficient6 >> 1) & 0xFF) as u8;
+        serialized[11 * i + 8] = ((coefficient7 & 0x3F) as u8) << 2 | (coefficient6 >> 9) as u8;
+        serialized[11 * i + 9] = ((coefficient8 & 0x7) as u8) << 5 | (coefficient7 >> 6) as u8;
+        serialized[11 * i + 10] = (coefficient8 >> 3) as u8;
     }
 
     serialized
 }
 
-// FIXME make this correct for 11
 #[inline(always)]
 fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
-    for (i, bytes) in serialized.chunks(5).enumerate() {
+    for (i, bytes) in serialized.chunks_exact(11).enumerate() {
         let byte1 = bytes[0] as KyberFieldElement;
         let byte2 = bytes[1] as KyberFieldElement;
         let byte3 = bytes[2] as KyberFieldElement;
         let byte4 = bytes[3] as KyberFieldElement;
         let byte5 = bytes[4] as KyberFieldElement;
+        let byte6 = bytes[5] as KyberFieldElement;
+        let byte7 = bytes[6] as KyberFieldElement;
+        let byte8 = bytes[7] as KyberFieldElement;
+        let byte9 = bytes[8] as KyberFieldElement;
+        let byte10 = bytes[9] as KyberFieldElement;
+        let byte11 = bytes[10] as KyberFieldElement;
 
-        re.coefficients[4 * i] = (byte2 & 0x03) << 8 | (byte1 & 0xFF);
-        re.coefficients[4 * i + 1] = (byte3 & 0x0F) << 6 | (byte2 >> 2);
-        re.coefficients[4 * i + 2] = (byte4 & 0x3F) << 4 | (byte3 >> 4);
-        re.coefficients[4 * i + 3] = byte5 << 2 | (byte4 >> 6);
+        re.coefficients[8 * i] = (byte2 & 0x7) << 8 | byte1;
+        re.coefficients[8 * i + 1] = (byte3 & 0x3F) << 5 | (byte2 >> 3);
+        re.coefficients[8 * i + 2] = (byte5 & 0x1) << 10 | (byte4 << 2) | (byte3 >> 6);
+        re.coefficients[8 * i + 3] = (byte6 & 0xF) << 7 | (byte5 >> 1);
+        re.coefficients[8 * i + 4] = (byte7 & 0x7F) << 4 | (byte6 >> 4);
+        re.coefficients[8 * i + 5] = (byte9 & 0x3) << 9 | (byte8 << 1) | (byte7 >> 7);
+        re.coefficients[8 * i + 6] = (byte10 & 0x1F) << 6 | (byte9 >> 2);
+        re.coefficients[8 * i + 7] = (byte11 << 3) | (byte10 >> 5);
     }
 
     re

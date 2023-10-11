@@ -27,10 +27,10 @@ let impl_3 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberCiphertext v_SIZE) 
             match
               Core.Ops.Try_trait.f_branch (Core.Convert.f_try_into value
                   <:
-                  Core.Result.t_Result (array u8 v_SIZE) _.f_Error)
+                  Core.Result.t_Result (array u8 v_SIZE)
+                    (Core.Convert.impl_6 (slice u8) (array u8 v_SIZE)).f_Error)
             with
-            | Core.Ops.Control_flow.ControlFlow_Break
-              { Core.Ops.Control_flow.ControlFlow._0 = residual } ->
+            | Core.Ops.Control_flow.ControlFlow_Break residual ->
               let* hoist5:Rust_primitives.Hax.t_Never =
                 Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.f_from_residual residual
 
@@ -38,8 +38,7 @@ let impl_3 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberCiphertext v_SIZE) 
                     Core.Result.t_Result (t_KyberCiphertext v_SIZE) Core.Array.t_TryFromSliceError)
               in
               Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist5)
-            | Core.Ops.Control_flow.ControlFlow_Continue
-              { Core.Ops.Control_flow.ControlFlow._0 = v_val } ->
+            | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
               Core.Ops.Control_flow.ControlFlow_Continue v_val
           in
           Core.Ops.Control_flow.ControlFlow_Continue
@@ -123,10 +122,10 @@ let impl_12 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberSharedSecret v_SIZ
             match
               Core.Ops.Try_trait.f_branch (Core.Convert.f_try_into value
                   <:
-                  Core.Result.t_Result (array u8 v_SIZE) _.f_Error)
+                  Core.Result.t_Result (array u8 v_SIZE)
+                    (Core.Convert.impl_6 (slice u8) (array u8 v_SIZE)).f_Error)
             with
-            | Core.Ops.Control_flow.ControlFlow_Break
-              { Core.Ops.Control_flow.ControlFlow._0 = residual } ->
+            | Core.Ops.Control_flow.ControlFlow_Break residual ->
               let* hoist8:Rust_primitives.Hax.t_Never =
                 Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.f_from_residual residual
 
@@ -135,8 +134,7 @@ let impl_12 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberSharedSecret v_SIZ
                   )
               in
               Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist8)
-            | Core.Ops.Control_flow.ControlFlow_Continue
-              { Core.Ops.Control_flow.ControlFlow._0 = v_val } ->
+            | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
               Core.Ops.Control_flow.ControlFlow_Continue v_val
           in
           Core.Ops.Control_flow.ControlFlow_Continue
@@ -224,10 +222,10 @@ let impl_21 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPrivateKey v_SIZE)
             match
               Core.Ops.Try_trait.f_branch (Core.Convert.f_try_into value
                   <:
-                  Core.Result.t_Result (array u8 v_SIZE) _.f_Error)
+                  Core.Result.t_Result (array u8 v_SIZE)
+                    (Core.Convert.impl_6 (slice u8) (array u8 v_SIZE)).f_Error)
             with
-            | Core.Ops.Control_flow.ControlFlow_Break
-              { Core.Ops.Control_flow.ControlFlow._0 = residual } ->
+            | Core.Ops.Control_flow.ControlFlow_Break residual ->
               let* hoist11:Rust_primitives.Hax.t_Never =
                 Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.f_from_residual residual
 
@@ -235,8 +233,7 @@ let impl_21 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPrivateKey v_SIZE)
                     Core.Result.t_Result (t_KyberPrivateKey v_SIZE) Core.Array.t_TryFromSliceError)
               in
               Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist11)
-            | Core.Ops.Control_flow.ControlFlow_Continue
-              { Core.Ops.Control_flow.ControlFlow._0 = v_val } ->
+            | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
               Core.Ops.Control_flow.ControlFlow_Continue v_val
           in
           Core.Ops.Control_flow.ControlFlow_Continue
@@ -320,10 +317,10 @@ let impl_30 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPublicKey v_SIZE) 
             match
               Core.Ops.Try_trait.f_branch (Core.Convert.f_try_into value
                   <:
-                  Core.Result.t_Result (array u8 v_SIZE) _.f_Error)
+                  Core.Result.t_Result (array u8 v_SIZE)
+                    (Core.Convert.impl_6 (slice u8) (array u8 v_SIZE)).f_Error)
             with
-            | Core.Ops.Control_flow.ControlFlow_Break
-              { Core.Ops.Control_flow.ControlFlow._0 = residual } ->
+            | Core.Ops.Control_flow.ControlFlow_Break residual ->
               let* hoist14:Rust_primitives.Hax.t_Never =
                 Core.Ops.Control_flow.ControlFlow.v_Break (Core.Ops.Try_trait.f_from_residual residual
 
@@ -331,8 +328,7 @@ let impl_30 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPublicKey v_SIZE) 
                     Core.Result.t_Result (t_KyberPublicKey v_SIZE) Core.Array.t_TryFromSliceError)
               in
               Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist14)
-            | Core.Ops.Control_flow.ControlFlow_Continue
-              { Core.Ops.Control_flow.ControlFlow._0 = v_val } ->
+            | Core.Ops.Control_flow.ControlFlow_Continue v_val ->
               Core.Ops.Control_flow.ControlFlow_Continue v_val
           in
           Core.Ops.Control_flow.ControlFlow_Continue
@@ -404,7 +400,7 @@ let v_KEY_GENERATION_SEED_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
 
 let generate_keypair
-      (#v_K #v_CPA_PRIVATE_KEY_SIZE #v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_BYTES_PER_RING_ELEMENT:
+      (#v_K #v_CPA_PRIVATE_KEY_SIZE #v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_BYTES_PER_RING_ELEMENT #v_ETA1 #v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: array u8 (sz 64))
     : Core.Result.t_Result (t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
@@ -439,7 +435,7 @@ let generate_keypair
       implicit_rejection_value
   in
   match sampling_a_error with
-  | Core.Option.Option_Some { Core.Option.Option._0 = error } -> Core.Result.Result_Err error
+  | Core.Option.Option_Some error -> Core.Result.Result_Err error
   | _ ->
     let (private_key: t_KyberPrivateKey v_PRIVATE_KEY_SIZE):t_KyberPrivateKey v_PRIVATE_KEY_SIZE =
       Core.Convert.f_from secret_key_serialized
@@ -447,7 +443,7 @@ let generate_keypair
     Core.Result.Result_Ok (Libcrux.Kem.Kyber.Types.impl__from private_key public_key)
 
 let encapsulate
-      (#v_K #v_SHARED_SECRET_SIZE #v_CIPHERTEXT_SIZE #v_PUBLIC_KEY_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_VECTOR_U_BLOCK_LEN:
+      (#v_K #v_SHARED_SECRET_SIZE #v_CIPHERTEXT_SIZE #v_PUBLIC_KEY_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_VECTOR_U_BLOCK_LEN #v_ETA1 #v_ETA1_RANDOMNESS_SIZE #v_ETA2 #v_ETA2_RANDOMNESS_SIZE:
           usize)
       (public_key: t_KyberPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: array u8 v_SHARED_SECRET_SIZE)
@@ -531,7 +527,7 @@ let encapsulate
   else Core.Result.Result_Ok (ciphertext, shared_secret)
 
 let decapsulate
-      (#v_K #v_SECRET_KEY_SIZE #v_CPA_SECRET_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_C1_BLOCK_SIZE:
+      (#v_K #v_SECRET_KEY_SIZE #v_CPA_SECRET_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_SIZE #v_C2_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_C1_BLOCK_SIZE #v_ETA1 #v_ETA1_RANDOMNESS_SIZE #v_ETA2 #v_ETA2_RANDOMNESS_SIZE:
           usize)
       (secret_key: t_KyberPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: t_KyberCiphertext v_CIPHERTEXT_SIZE)

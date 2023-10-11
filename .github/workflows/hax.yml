@@ -55,4 +55,15 @@ jobs:
           # the function-extraction code.
           # Extract functions from the remaining modules to test the
           # module-extraction code.
-          ./extract_to_fstar.py --crate-path specs/kyber --functions compress::compress compress::decompress compress::compress_d compress::decompress_d --modules ind_cpa root matrix ntt parameters sampling serialize
+          ./extract_to_fstar.py --crate-path specs/kyber \
+            --functions hacspec_kyber::compress::compress \
+                        hacspec_kyber::compress::decompress \
+                        hacspec_kyber::compress::compress_d \
+                        hacspec::kyber::compress::decompress_d \
+            --modules ind_cpa \
+                      hacspec_kyber \
+                      matrix ntt \
+                      parameters \
+                      sampling \
+                      serialize \
+            --exclude-modules libcrux::hacl::sha3 libcrux::digest

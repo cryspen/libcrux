@@ -44,15 +44,15 @@ let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: s
       ()
   in
   let (r: u8):u8 = 0uy in
-  let r:Prims.unit =
+  let r:u8 =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = v_CIPHERTEXT_SIZE
             })
         <:
-        _.f_IntoIter)
+        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
       r
-      (fun r i -> r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: Prims.unit)
+      (fun r i -> r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8)
   in
   is_non_zero r
 
@@ -101,7 +101,7 @@ let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : a
               Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
             })
         <:
-        _.f_IntoIter)
+        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
       out
       (fun out i ->
           Rust_primitives.Hax.update_at out
@@ -111,7 +111,7 @@ let select_shared_secret_in_constant_time (lhs rhs: slice u8) (selector: u8) : a
                 <:
                 u8)
               <:
-              Prims.unit)
+              u8)
           <:
           array u8 (sz 32))
   in

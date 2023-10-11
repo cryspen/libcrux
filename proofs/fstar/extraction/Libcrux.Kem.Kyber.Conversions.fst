@@ -35,7 +35,7 @@ let into_padded_array (#v_LEN: usize) (slice: slice u8) : array u8 v_LEN =
   out
 
 class t_UpdatingArray (#v_Self: Type) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_447510783:t_UpdatingArray v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_509883233:t_UpdatingArray v_Self;
   f_push:v_Self -> slice u8 -> v_Self
 }
 

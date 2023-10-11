@@ -24,6 +24,11 @@ const CPA_PKE_CIPHERTEXT_SIZE_512: usize = C1_SIZE_512 + C2_SIZE_512;
 const SECRET_KEY_SIZE_512: usize =
     CPA_PKE_SECRET_KEY_SIZE_512 + CPA_PKE_PUBLIC_KEY_SIZE_512 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
 
+const ETA1: usize = 3;
+const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
+const ETA2: usize = 2;
+const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
+
 // Kyber 512 types
 pub type Kyber512Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>;
 pub type Kyber512PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_512>;
@@ -43,6 +48,8 @@ pub fn generate_key_pair_512(
         SECRET_KEY_SIZE_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
         RANKED_BYTES_PER_RING_ELEMENT_512,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
     >(randomness)
 }
 
@@ -68,6 +75,10 @@ pub fn encapsulate_512(
         VECTOR_U_COMPRESSION_FACTOR_512,
         VECTOR_V_COMPRESSION_FACTOR_512,
         C1_BLOCK_SIZE_512,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
     >(public_key, randomness)
 }
 
@@ -88,5 +99,9 @@ pub fn decapsulate_512(
         VECTOR_U_COMPRESSION_FACTOR_512,
         VECTOR_V_COMPRESSION_FACTOR_512,
         C1_BLOCK_SIZE_512,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
     >(secret_key, ciphertext)
 }

@@ -18,7 +18,7 @@ let v_XOFx4 (#v_LEN #v_K: usize) (input: array (array u8 (sz 34)) v_K) : array (
               Core.Ops.Range.f_end = v_K
             })
         <:
-        _.f_IntoIter)
+        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
       out
       (fun out i ->
           Rust_primitives.Hax.update_at out
