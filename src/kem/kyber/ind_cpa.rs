@@ -277,7 +277,7 @@ pub(crate) fn encrypt<
     let message_as_ring_element = deserialize_little_endian::<1>(&message);
     let v = invert_ntt_montgomery(multiply_row_by_column_montgomery(&t_as_ntt, &r_as_ntt))
         + error_2
-        + decompress(message_as_ring_element, 1);
+        + decompress::<1>(message_as_ring_element);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
     let c1 = compress_then_encode_u::<K, C1_LEN, VECTOR_U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
@@ -311,19 +311,17 @@ pub(crate) fn decrypt<
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
-        let u = decompress(
+        let u = decompress::<VECTOR_U_COMPRESSION_FACTOR>(
             deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes),
-            VECTOR_U_COMPRESSION_FACTOR,
         );
         u_as_ntt[i] = ntt_representation(u);
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = decompress(
+    let v = decompress::<VECTOR_V_COMPRESSION_FACTOR>(
         deserialize_little_endian::<VECTOR_V_COMPRESSION_FACTOR>(
             &ciphertext[VECTOR_U_ENCODED_SIZE..],
-        ),
-        VECTOR_V_COMPRESSION_FACTOR,
+        )
     );
 
     // sˆ := Decode_12(sk)
