@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 
-def shell(command, expect=0, cwd=None, format_selection_string=False):
+def shell(command, expect=0, cwd=None, format_filter_string=False):
     subprocess_stdout = subprocess.DEVNULL
 
     print("Command: ", end="")
@@ -45,7 +45,7 @@ parser.add_argument(
     nargs="*",
     dest="functions",
     default="",
-    help="Space-separated list of functions to extract. The functions must be fully qualified from the crate root.",
+    help="Space-separated list of functions to extract. The function names must be fully qualified.",
 )
 
 parser.add_argument(
@@ -54,37 +54,47 @@ parser.add_argument(
     dest="modules",
     nargs="*",
     default="",
-    help='Space-separated list of modules to extract. The modules must be fully qualified from the crate root. The special argument"root" can be used to extract the lib.rs file.',
+    help="Space-separated list of modules to extract. The module names must be fully qualified.",
+)
+parser.add_argument(
+    "--exclude-modules",
+    type=str,
+    dest="exclude_modules",
+    nargs="*",
+    default="",
+    help="Space-separated list of modules to exclude from extraction. The module names must be fully qualified.",
 )
 
 options = parser.parse_args()
 
-if options.modules or options.functions:
-    if options.modules:
-        options.modules = " ".join(
-            [
-                "+::*" if module == "root" else "+" + module + "::*"
-                for module in options.modules
-            ]
-        )
-        options.modules = " {}".format(options.modules)
+filter_string = ""
 
-    if options.functions:
-        options.functions = " ".join(
-            ["+" + function for function in options.functions])
-        options.functions = " {}".format(options.functions)
+if options.modules:
+    options.modules = " ".join(["+" + module + "::*" for module in options.modules])
+    filter_string += "{}".format(options.modules)
+if options.functions:
+    options.functions = " ".join(["+" + function for function in options.functions])
+    filter_string += " {}".format(options.functions)
 
+if options.exclude_modules:
+    options.exclude_modules = " ".join(
+        ["-" + module + "::*" for module in options.exclude_modules]
+    )
+    filter_string += " {}".format(options.exclude_modules)
+
+
+if filter_string:
     shell(
         [
             "cargo",
             "hax",
             "into",
             "-i",
-            "-**{}{}".format(options.functions, options.modules),
+            "-**{}{}".format(filter_string),
             "fstar",
         ],
         cwd=options.crate_path,
-        format_selection_string=True,
+        format_filter_string=True,
     )
 elif options.kyber_reference:
     shell(
@@ -93,11 +103,11 @@ elif options.kyber_reference:
             "hax",
             "into",
             "-i",
-            "-** +kem::kyber::** -kem::kyber::arithmetic::mutable_operations::**",
+            "-** +libcrux::kem::kyber::** -libcrux::kem::kyber::arithmetic::mutable_operations::** -libcrux::hacl::sha3::** -libcrux::digest::**",
             "fstar",
         ],
         cwd=".",
-        format_selection_string=True,
+        format_filter_string=True,
     )
 else:
     shell(["cargo", "hax", "into", "fstar"], cwd=options.crate_path)
