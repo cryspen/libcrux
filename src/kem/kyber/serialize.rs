@@ -41,56 +41,6 @@ use super::{
 /// is called, and `compress_q` also performs this conversion.
 
 #[inline(always)]
-pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
-    debug_assert!(
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN,
-        "{} != {}",
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
-        OUT_LEN
-    );
-
-    match COMPRESSION_FACTOR as u32 {
-        1 => serialize_little_endian_1(re),
-        // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
-        4 => serialize_little_endian_4(re),
-        // VECTOR_V_COMPRESSION_FACTOR_1024
-        5 => serialize_little_endian_5(re),
-        // VECTOR_U_COMPRESSION_FACTOR_768 & VECTOR_U_COMPRESSION_FACTOR_512
-        10 => serialize_little_endian_10(re),
-        // VECTOR_U_COMPRESSION_FACTOR_1024
-        11 => serialize_little_endian_11(re),
-        12 => serialize_little_endian_12(re),
-        _ => unreachable!("factor {COMPRESSION_FACTOR}"),
-    }
-}
-
-#[inline(always)]
-pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
-    serialized: &[u8],
-) -> KyberPolynomialRingElement {
-    debug_assert_eq!(
-        serialized.len(),
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
-    );
-
-    match COMPRESSION_FACTOR as u32 {
-        1 => deserialize_little_endian_1(serialized),
-        // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
-        4 => deserialize_little_endian_4(serialized),
-        // VECTOR_V_COMPRESSION_FACTOR_1024
-        5 => deserialize_little_endian_5(serialized),
-        // VECTOR_U_COMPRESSION_FACTOR_768 & VECTOR_U_COMPRESSION_FACTOR_512
-        10 => deserialize_little_endian_10(serialized),
-        // VECTOR_U_COMPRESSION_FACTOR_1024
-        11 => deserialize_little_endian_11(serialized),
-        12 => deserialize_little_endian_12(serialized),
-        _ => unreachable!("factor {COMPRESSION_FACTOR}"),
-    }
-}
-
-#[inline(always)]
 fn serialize_little_endian_1<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
@@ -349,4 +299,54 @@ fn deserialize_little_endian_12(serialized: &[u8]) -> KyberPolynomialRingElement
     }
 
     re
+}
+
+#[inline(always)]
+pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
+    re: KyberPolynomialRingElement,
+) -> [u8; OUT_LEN] {
+    debug_assert!(
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN,
+        "{} != {}",
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
+        OUT_LEN
+    );
+
+    match COMPRESSION_FACTOR as u32 {
+        1 => serialize_little_endian_1(re),
+        // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
+        4 => serialize_little_endian_4(re),
+        // VECTOR_V_COMPRESSION_FACTOR_1024
+        5 => serialize_little_endian_5(re),
+        // VECTOR_U_COMPRESSION_FACTOR_768 & VECTOR_U_COMPRESSION_FACTOR_512
+        10 => serialize_little_endian_10(re),
+        // VECTOR_U_COMPRESSION_FACTOR_1024
+        11 => serialize_little_endian_11(re),
+        12 => serialize_little_endian_12(re),
+        _ => unreachable!("factor {COMPRESSION_FACTOR}"),
+    }
+}
+
+#[inline(always)]
+pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
+    serialized: &[u8],
+) -> KyberPolynomialRingElement {
+    debug_assert_eq!(
+        serialized.len(),
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+    );
+
+    match COMPRESSION_FACTOR as u32 {
+        1 => deserialize_little_endian_1(serialized),
+        // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
+        4 => deserialize_little_endian_4(serialized),
+        // VECTOR_V_COMPRESSION_FACTOR_1024
+        5 => deserialize_little_endian_5(serialized),
+        // VECTOR_U_COMPRESSION_FACTOR_768 & VECTOR_U_COMPRESSION_FACTOR_512
+        10 => deserialize_little_endian_10(serialized),
+        // VECTOR_U_COMPRESSION_FACTOR_1024
+        11 => deserialize_little_endian_11(serialized),
+        12 => deserialize_little_endian_12(serialized),
+        _ => unreachable!("factor {COMPRESSION_FACTOR}"),
+    }
 }

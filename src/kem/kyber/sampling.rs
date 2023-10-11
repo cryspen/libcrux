@@ -37,19 +37,6 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     (out, Some(BadRejectionSamplingRandomnessError))
 }
 
-#[inline(always)]
-pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
-    randomness: &[u8],
-) -> KyberPolynomialRingElement {
-    debug_assert_eq!(randomness.len(), ETA * 64);
-
-    match ETA as u32 {
-        2 => sample_from_binomial_distribution_2(randomness),
-        3 => sample_from_binomial_distribution_3(randomness),
-        _ => unreachable!("factor {ETA}"),
-    }
-}
-
 /// Given a series of uniformly random bytes in `|randomness|`, sample
 /// a ring element from a binomial distribution centered at 0 that uses two sets
 /// of `|sampling_coins|` coin flips. If, for example,
@@ -132,4 +119,17 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
     }
 
     sampled
+}
+
+#[inline(always)]
+pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
+    randomness: &[u8],
+) -> KyberPolynomialRingElement {
+    debug_assert_eq!(randomness.len(), ETA * 64);
+
+    match ETA as u32 {
+        2 => sample_from_binomial_distribution_2(randomness),
+        3 => sample_from_binomial_distribution_3(randomness),
+        _ => unreachable!("factor {ETA}"),
+    }
 }

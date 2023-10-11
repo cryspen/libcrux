@@ -16,6 +16,19 @@ use super::{
 
 // The PKE Private Key
 impl_generic_struct!(PrivateKey);
+pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
+    private_key: &[u8],
+    public_key: &[u8],
+    implicit_rejection_value: &[u8],
+) -> [u8; SERIALIZED_KEY_LEN] {
+    UpdatableArray::new([0u8; SERIALIZED_KEY_LEN])
+        .push(private_key)
+        .push(public_key)
+        .push(&H(public_key))
+        .push(implicit_rejection_value)
+        .array()
+}
+
 
 #[inline(always)]
 #[allow(non_snake_case)]
@@ -166,19 +179,6 @@ pub(crate) fn generate_keypair<
         (secret_key_serialized.into(), public_key_serialized.into()),
         sampling_A_error,
     )
-}
-
-pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
-    private_key: &[u8],
-    public_key: &[u8],
-    implicit_rejection_value: &[u8],
-) -> [u8; SERIALIZED_KEY_LEN] {
-    UpdatableArray::new([0u8; SERIALIZED_KEY_LEN])
-        .push(private_key)
-        .push(public_key)
-        .push(&H(public_key))
-        .push(implicit_rejection_value)
-        .array()
 }
 
 fn compress_then_encode_u<

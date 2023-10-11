@@ -4,24 +4,6 @@ use super::{
     conversions::to_unsigned_representative,
 };
 
-pub fn compress<const COEFFICIENT_BITS: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    re.coefficients = re
-        .coefficients
-        .map(|coefficient| compress_q::<COEFFICIENT_BITS>(to_unsigned_representative(coefficient)));
-    re
-}
-
-pub fn decompress<const COEFFICIENT_BITS: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    re.coefficients = re
-        .coefficients
-        .map(|coefficient| decompress_q::<COEFFICIENT_BITS>(coefficient));
-    re
-}
-
 fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
     debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);
 
@@ -33,6 +15,14 @@ fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
 
     (compressed & (two_pow_bit_size - 1)) as KyberFieldElement
 }
+pub fn compress<const COEFFICIENT_BITS: usize>(
+    mut re: KyberPolynomialRingElement,
+) -> KyberPolynomialRingElement {
+    re.coefficients = re
+        .coefficients
+        .map(|coefficient| compress_q::<COEFFICIENT_BITS>(to_unsigned_representative(coefficient)));
+    re
+}
 
 fn decompress_q<const COEFFICIENT_BITS: usize>(fe: KyberFieldElement) -> KyberFieldElement {
     debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);
@@ -43,3 +33,12 @@ fn decompress_q<const COEFFICIENT_BITS: usize>(fe: KyberFieldElement) -> KyberFi
 
     decompressed as KyberFieldElement
 }
+pub fn decompress<const COEFFICIENT_BITS: usize>(
+    mut re: KyberPolynomialRingElement,
+) -> KyberPolynomialRingElement {
+    re.coefficients = re
+        .coefficients
+        .map(|coefficient| decompress_q::<COEFFICIENT_BITS>(coefficient));
+    re
+}
+
