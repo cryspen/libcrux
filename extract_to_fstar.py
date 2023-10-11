@@ -90,7 +90,7 @@ if filter_string:
             "hax",
             "into",
             "-i",
-            "-**{}{}".format(filter_string),
+            "-** {}".format(filter_string),
             "fstar",
         ],
         cwd=options.crate_path,
