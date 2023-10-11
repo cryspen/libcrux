@@ -72,15 +72,22 @@ filter_string = ""
 if options.modules:
     options.modules = " ".join(["+" + module + "::*" for module in options.modules])
     filter_string += "{}".format(options.modules)
+
 if options.functions:
     options.functions = " ".join(["+" + function for function in options.functions])
-    filter_string += " {}".format(options.functions)
+    if not filter_string:
+        filter_string += "{}".format(options.functions)
+    else:
+        filter_string += " {}".format(options.functions)
 
 if options.exclude_modules:
     options.exclude_modules = " ".join(
         ["-" + module + "::*" for module in options.exclude_modules]
     )
-    filter_string += " {}".format(options.exclude_modules)
+    if not filter_string:
+        filter_string += "{}".format(options.exclude_modules)
+    else:
+        filter_string += " {}".format(options.exclude_modules)
 
 
 if filter_string:
