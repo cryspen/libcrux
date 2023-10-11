@@ -251,7 +251,6 @@ fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement
     re
 }
 
-// FIXME make this correct for 11
 #[inline(always)]
 fn serialize_little_endian_11<const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,

@@ -8,7 +8,7 @@ use rand::{CryptoRng, Rng};
 #[cfg(not(target_arch = "wasm32"))]
 use libcrux::drbg;
 #[cfg(target_arch = "wasm32")]
-use rand_core::{OsRng, RngCore};
+use rand_core::OsRng;
 
 const SHARED_SECRET_SIZE: usize = 32;
 

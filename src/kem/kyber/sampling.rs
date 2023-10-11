@@ -43,7 +43,7 @@ pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
 ) -> KyberPolynomialRingElement {
     debug_assert_eq!(randomness.len(), ETA * 64);
 
-    match ETA {
+    match ETA as u32 {
         2 => sample_from_binomial_distribution_2(randomness),
         3 => sample_from_binomial_distribution_3(randomness),
         _ => unreachable!("factor {ETA}"),
