@@ -29,7 +29,6 @@ pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
         .array()
 }
 
-
 #[inline(always)]
 #[allow(non_snake_case)]
 fn sample_matrix_A<const K: usize>(

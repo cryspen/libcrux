@@ -7,13 +7,11 @@ use super::{
 fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
     debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);
 
-    let two_pow_bit_size = 1u32 << COEFFICIENT_BITS;
-
-    let mut compressed = (fe as u32) * (two_pow_bit_size << 1);
+    let mut compressed = (fe as u32) << (COEFFICIENT_BITS + 1);
     compressed += FIELD_MODULUS as u32;
     compressed /= (FIELD_MODULUS << 1) as u32;
 
-    (compressed & (two_pow_bit_size - 1)) as KyberFieldElement
+    (compressed & ((1u32 << COEFFICIENT_BITS) - 1)) as KyberFieldElement
 }
 pub fn compress<const COEFFICIENT_BITS: usize>(
     mut re: KyberPolynomialRingElement,
@@ -41,4 +39,3 @@ pub fn decompress<const COEFFICIENT_BITS: usize>(
         .map(|coefficient| decompress_q::<COEFFICIENT_BITS>(coefficient));
     re
 }
-
