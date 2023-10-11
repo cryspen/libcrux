@@ -232,6 +232,7 @@ mod tests {
 
     proptest! {
         #[test]
+        #[ignore = "see https://github.com/cryspen/libcrux/issues/112"]
         fn uniform_sampler_mean_and_variance(randomness in vec(any::<u8>(), REJECTION_SAMPLING_ATTEMPTS * parameters::REJECTION_SAMPLING_SEED_SIZE)) {
             let mut sampled_ring_element = KyberPolynomialRingElement::ZERO;
 
@@ -277,6 +278,7 @@ mod tests {
         }
 
         #[test]
+        #[ignore = "see https://github.com/cryspen/libcrux/issues/112"]
         fn binomial_sampler_mean_and_variance(
             randomness in vec(any::<u8>(), 2 * 2 * 64)
             )
