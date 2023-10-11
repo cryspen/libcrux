@@ -311,18 +311,16 @@ pub(crate) fn decrypt<
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
-        let u = decompress::<VECTOR_U_COMPRESSION_FACTOR>(
-            deserialize_little_endian::<VECTOR_U_COMPRESSION_FACTOR>(u_bytes),
-        );
+        let u = decompress::<VECTOR_U_COMPRESSION_FACTOR>(deserialize_little_endian::<
+            VECTOR_U_COMPRESSION_FACTOR,
+        >(u_bytes));
         u_as_ntt[i] = ntt_representation(u);
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = decompress::<VECTOR_V_COMPRESSION_FACTOR>(
-        deserialize_little_endian::<VECTOR_V_COMPRESSION_FACTOR>(
-            &ciphertext[VECTOR_U_ENCODED_SIZE..],
-        )
-    );
+    let v = decompress::<VECTOR_V_COMPRESSION_FACTOR>(deserialize_little_endian::<
+        VECTOR_V_COMPRESSION_FACTOR,
+    >(&ciphertext[VECTOR_U_ENCODED_SIZE..]));
 
     // sˆ := Decode_12(sk)
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {

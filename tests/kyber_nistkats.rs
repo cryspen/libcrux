@@ -2,6 +2,8 @@ use libcrux::kem;
 use serde::Deserialize;
 use serde_json;
 
+use std::path::Path;
+
 use libcrux::digest;
 
 use std::{fs::File, io::BufReader};
@@ -27,131 +29,61 @@ struct KyberNISTKAT {
     shared_secret: [u8; 32],
 }
 
-#[test]
-fn kyber768_nist_known_answer_tests() {
-    let katfile =
-        File::open("tests/kyber_kats/nistkats_768.json").expect("Could not open KAT file.");
-    let reader = BufReader::new(katfile);
+macro_rules! impl_nist_known_answer_tests {
+    ($name:ident, $parameter_set: literal, $key_gen_derand:expr, $encapsulate_derand:expr, $decapsulate_derand: expr) => {
+        #[test]
+        fn $name() {
+            let katfile_path = Path::new("tests")
+                .join("kyber_kats")
+                .join(format!("nistkats_{}.json", $parameter_set));
+            let katfile = File::open(katfile_path).expect("Could not open KAT file.");
+            let reader = BufReader::new(katfile);
 
-    let nist_kats: Vec<KyberNISTKAT> =
-        serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
+            let nist_kats: Vec<KyberNISTKAT> =
+                serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
-    for kat in nist_kats {
-        let key_pair = kem::kyber768_generate_keypair_derand(kat.key_generation_seed).unwrap();
+            for kat in nist_kats {
+                let key_pair = $key_gen_derand(kat.key_generation_seed).unwrap();
 
-        let public_key_hash = digest::sha3_256(key_pair.pk());
-        for i in 0..public_key_hash.len() {
-            assert_eq!(public_key_hash[i], kat.sha3_256_hash_of_public_key[i]);
+                let public_key_hash = digest::sha3_256(key_pair.pk());
+                let secret_key_hash = digest::sha3_256(key_pair.sk());
+
+                assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key);
+                assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key);
+
+                let (ciphertext, shared_secret) =
+                    $encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed).unwrap();
+                let ciphertext_hash = digest::sha3_256(ciphertext.as_ref());
+
+                assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext);
+                assert_eq!(shared_secret.as_ref(), kat.shared_secret);
+
+                let shared_secret_from_decapsulate =
+                    $decapsulate_derand(key_pair.private_key(), &ciphertext);
+                assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref());
+            }
         }
-
-        let secret_key_hash = digest::sha3_256(key_pair.sk());
-        for i in 0..secret_key_hash.len() {
-            assert_eq!(secret_key_hash[i], kat.sha3_256_hash_of_secret_key[i]);
-        }
-
-        let (ciphertext, shared_secret) =
-            kem::kyber768_encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed)
-                .unwrap();
-
-        let ciphertext_hash = digest::sha3_256(ciphertext.as_ref());
-        for i in 0..ciphertext_hash.len() {
-            assert_eq!(ciphertext_hash[i], kat.sha3_256_hash_of_ciphertext[i]);
-        }
-
-        for i in 0..shared_secret.len() {
-            assert_eq!(shared_secret[i], kat.shared_secret[i]);
-        }
-
-        let shared_secret_from_decapsulate =
-            kem::kyber768_decapsulate_derand(key_pair.private_key(), &ciphertext);
-        for i in 0..shared_secret.len() {
-            assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
-        }
-    }
+    };
 }
 
-#[test]
-fn kyber512_nist_known_answer_tests() {
-    let katfile =
-        File::open("tests/kyber_kats/nistkats_512.json").expect("Could not open KAT file.");
-    let reader = BufReader::new(katfile);
-
-    let nist_kats: Vec<KyberNISTKAT> =
-        serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
-
-    for kat in nist_kats {
-        let key_pair = kem::kyber512_generate_keypair_derand(kat.key_generation_seed).unwrap();
-
-        let public_key_hash = digest::sha3_256(key_pair.pk());
-        for i in 0..public_key_hash.len() {
-            assert_eq!(public_key_hash[i], kat.sha3_256_hash_of_public_key[i]);
-        }
-
-        let secret_key_hash = digest::sha3_256(key_pair.sk());
-        for i in 0..secret_key_hash.len() {
-            assert_eq!(secret_key_hash[i], kat.sha3_256_hash_of_secret_key[i]);
-        }
-
-        let (ciphertext, shared_secret) =
-            kem::kyber512_encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed)
-                .unwrap();
-
-        let ciphertext_hash = digest::sha3_256(ciphertext.as_ref());
-        for i in 0..ciphertext_hash.len() {
-            assert_eq!(ciphertext_hash[i], kat.sha3_256_hash_of_ciphertext[i]);
-        }
-
-        for i in 0..shared_secret.len() {
-            assert_eq!(shared_secret[i], kat.shared_secret[i]);
-        }
-
-        let shared_secret_from_decapsulate =
-            kem::kyber512_decapsulate_derand(key_pair.private_key(), &ciphertext);
-        for i in 0..shared_secret.len() {
-            assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
-        }
-    }
-}
-
-#[test]
-fn kyber1024_nist_known_answer_tests() {
-    let katfile =
-        File::open("tests/kyber_kats/nistkats_1024.json").expect("Could not open KAT file.");
-    let reader = BufReader::new(katfile);
-
-    let nist_kats: Vec<KyberNISTKAT> =
-        serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
-
-    for kat in nist_kats {
-        let key_pair = kem::kyber1024_generate_keypair_derand(kat.key_generation_seed).unwrap();
-
-        let public_key_hash = digest::sha3_256(key_pair.pk());
-        for i in 0..public_key_hash.len() {
-            assert_eq!(public_key_hash[i], kat.sha3_256_hash_of_public_key[i]);
-        }
-
-        let secret_key_hash = digest::sha3_256(key_pair.sk());
-        for i in 0..secret_key_hash.len() {
-            assert_eq!(secret_key_hash[i], kat.sha3_256_hash_of_secret_key[i]);
-        }
-
-        let (ciphertext, shared_secret) =
-            kem::kyber1024_encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed)
-                .unwrap();
-
-        let ciphertext_hash = digest::sha3_256(ciphertext.as_ref());
-        for i in 0..ciphertext_hash.len() {
-            assert_eq!(ciphertext_hash[i], kat.sha3_256_hash_of_ciphertext[i]);
-        }
-
-        for i in 0..shared_secret.len() {
-            assert_eq!(shared_secret[i], kat.shared_secret[i]);
-        }
-
-        let shared_secret_from_decapsulate =
-            kem::kyber1024_decapsulate_derand(key_pair.private_key(), &ciphertext);
-        for i in 0..shared_secret.len() {
-            assert_eq!(shared_secret_from_decapsulate[i], shared_secret[i]);
-        }
-    }
-}
+impl_nist_known_answer_tests!(
+    kyber512_nist_known_answer_tests,
+    512,
+    kem::kyber512_generate_keypair_derand,
+    kem::kyber512_encapsulate_derand,
+    kem::kyber512_decapsulate_derand
+);
+impl_nist_known_answer_tests!(
+    kyber768_nist_known_answer_tests,
+    768,
+    kem::kyber768_generate_keypair_derand,
+    kem::kyber768_encapsulate_derand,
+    kem::kyber768_decapsulate_derand
+);
+impl_nist_known_answer_tests!(
+    kyber1024_nist_known_answer_tests,
+    1024,
+    kem::kyber1024_generate_keypair_derand,
+    kem::kyber1024_encapsulate_derand,
+    kem::kyber1024_decapsulate_derand
+);
