@@ -169,12 +169,16 @@ fn compile_files(
         .files(
             files
                 .iter()
-                .map(|fname| src_prefix.join(fname))
+                .map(|fname| {
+                    if fname == "hacl.c" {
+                        home_path.join("c").join("config").join(fname)
+                    } else {
+                        src_prefix.join(fname)
+                    }
+                })
                 .chain(vale_files.iter().map(|fname| vale_prefix.join(fname))),
         )
-        .file(home_path.join("c").join("config").join("hacl.c"))
-        // XXX: There are too many warnings for now
-        .warnings(false);
+        .warnings_into_errors(true);
 
     for include in includes(platform, home_path, "") {
         build.include(include);
@@ -193,6 +197,7 @@ fn compile_files(
 
 fn build(platform: &Platform, home_path: &Path) {
     let files = svec![
+        "hacl.c",
         "Hacl_NaCl.c",
         "Hacl_Salsa20.c",
         "Hacl_Poly1305_32.c",
