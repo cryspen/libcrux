@@ -165,20 +165,21 @@ fn compile_files(
     let vale_prefix = home_path.join("c").join("vale").join("src");
 
     let mut build = cc::Build::new();
-    build
-        .files(
-            files
-                .iter()
-                .map(|fname| {
-                    if fname == "hacl.c" {
-                        home_path.join("c").join("config").join(fname)
-                    } else {
-                        src_prefix.join(fname)
-                    }
-                })
-                .chain(vale_files.iter().map(|fname| vale_prefix.join(fname))),
-        )
-        .warnings_into_errors(true);
+    build.files(
+        files
+            .iter()
+            .map(|fname| {
+                if fname == "hacl.c" {
+                    home_path.join("c").join("config").join(fname)
+                } else {
+                    src_prefix.join(fname)
+                }
+            })
+            .chain(vale_files.iter().map(|fname| vale_prefix.join(fname))),
+    );
+    // TODO: enable this when all warnings are gone
+    // Windows: fstar_uint128_msvc.h(220): warning C4554: '>>': check operator precedence for possible error; use parentheses to clarify precedence
+    // .warnings_into_errors(true);
 
     for include in includes(platform, home_path, "") {
         build.include(include);
