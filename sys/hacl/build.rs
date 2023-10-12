@@ -344,7 +344,6 @@ fn build(platform: &Platform, home_path: &Path) {
     ))]
     if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
         let files_evercrypt = svec![
-            "EverCrypt_Error.c",
             "EverCrypt_AutoConfig2.c",
             "EverCrypt_Chacha20Poly1305.c",
             "EverCrypt_AEAD.c",
