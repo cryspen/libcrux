@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 
-def shell(command, expect=0, cwd=None, format_filter_string=False):
+def shell(command, expect=0, cwd=None):
     subprocess_stdout = subprocess.DEVNULL
 
     print("Command: ", end="")
@@ -101,7 +101,6 @@ if filter_string:
             "fstar",
         ],
         cwd=options.crate_path,
-        format_filter_string=True,
     )
 elif options.kyber_reference:
     shell(
@@ -114,7 +113,6 @@ elif options.kyber_reference:
             "fstar",
         ],
         cwd=".",
-        format_filter_string=True,
     )
 else:
     shell(["cargo", "hax", "into", "fstar"], cwd=options.crate_path)
