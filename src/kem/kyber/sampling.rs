@@ -93,7 +93,10 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRing
         }
     }
 
-    debug_assert!(sampled.coefficients.into_iter().all(|coefficient| coefficient >= -2 && coefficient <= 2));
+    debug_assert!(sampled
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= -2 && coefficient <= 2));
     sampled
 }
 
@@ -119,7 +122,10 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
         }
     }
 
-    debug_assert!(sampled.coefficients.into_iter().all(|coefficient| coefficient >= -3 && coefficient <= 3));
+    debug_assert!(sampled
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= -3 && coefficient <= 3));
     sampled
 }
 

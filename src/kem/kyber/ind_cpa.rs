@@ -10,7 +10,9 @@ use super::{
     hash_functions::{XOFx4, G, H, PRF},
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
-    serialize::{deserialize_little_endian, serialize_little_endian, compress_then_serialize_message},
+    serialize::{
+        compress_then_serialize_message, deserialize_little_endian, serialize_little_endian,
+    },
     BadRejectionSamplingRandomnessError, KyberPublicKey,
 };
 

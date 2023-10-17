@@ -1,8 +1,8 @@
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
+    compress::compress_q,
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     conversions::to_unsigned_representative,
-    compress::compress_q
 };
 
 /// This file contains instantiations of the functions
