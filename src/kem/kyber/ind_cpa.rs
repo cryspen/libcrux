@@ -11,7 +11,9 @@ use super::{
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{
-        compress_then_serialize_message, deserialize_little_endian, serialize_little_endian,
+        compress_then_serialize_message, deserialize_little_endian,
+        deserialize_then_decompress_message, deserialize_to_uncompressed_ring_element,
+        serialize_little_endian, serialize_uncompressed_ring_element,
     },
     BadRejectionSamplingRandomnessError, KyberPublicKey,
 };
@@ -94,7 +96,7 @@ fn encode_12<const K: usize, const OUT_LEN: usize>(
 
     for (i, re) in input.into_iter().enumerate() {
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
-            .copy_from_slice(&serialize_little_endian::<12, BYTES_PER_RING_ELEMENT>(re));
+            .copy_from_slice(&serialize_uncompressed_ring_element(re));
     }
 
     out
@@ -244,7 +246,7 @@ pub(crate) fn encrypt<
         .chunks_exact(BYTES_PER_RING_ELEMENT)
         .enumerate()
     {
-        t_as_ntt[i] = deserialize_little_endian::<12>(t_as_ntt_bytes);
+        t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
     }
 
     // ρ := pk + 12·k·n / 8
@@ -289,10 +291,10 @@ pub(crate) fn encrypt<
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element = deserialize_little_endian::<1>(&message);
+    let message_as_ring_element = deserialize_then_decompress_message(message);
     let v = invert_ntt_montgomery(multiply_row_by_column_montgomery(&t_as_ntt, &r_as_ntt))
         + error_2
-        + decompress::<1>(message_as_ring_element);
+        + message_as_ring_element;
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
     let c1 = compress_then_encode_u::<K, C1_LEN, VECTOR_U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
@@ -339,7 +341,7 @@ pub(crate) fn decrypt<
 
     // sˆ := Decode_12(sk)
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
-        secret_as_ntt[i] = deserialize_little_endian::<12>(secret_bytes);
+        secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))

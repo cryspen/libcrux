@@ -22,7 +22,9 @@ pub fn compress<const COEFFICIENT_BITS: usize>(
     re
 }
 
-fn decompress_q<const COEFFICIENT_BITS: usize>(fe: KyberFieldElement) -> KyberFieldElement {
+pub(crate) fn decompress_q<const COEFFICIENT_BITS: usize>(
+    fe: KyberFieldElement,
+) -> KyberFieldElement {
     debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);
 
     let mut decompressed = (fe as u32) * (FIELD_MODULUS as u32);
