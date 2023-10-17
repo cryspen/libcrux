@@ -2,6 +2,27 @@ module Libcrux.Kem.Kyber.Compress
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
+let compress_q (#v_COEFFICIENT_BITS: usize) (fe: u16) : i32 =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if ~.(v_COEFFICIENT_BITS <=. Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT <: bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS <= BITS_PER_COEFFICIENT"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let compressed:u32 = (cast fe <: u32) <<! (v_COEFFICIENT_BITS +! sz 1 <: usize) in
+  let compressed:u32 = compressed +! (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: u32) in
+  let compressed:u32 =
+    compressed /! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <<! 1l <: i32) <: u32)
+  in
+  cast (compressed &. ((1ul <<! v_COEFFICIENT_BITS <: u32) -! 1ul <: u32)) <: i32
+
 let compress
       (#v_COEFFICIENT_BITS: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
@@ -19,43 +40,6 @@ let compress
     }
   in
   re
-
-let decompress
-      (#v_COEFFICIENT_BITS: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    {
-      re with
-      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-      =
-      Core.Array.impl_23__map re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        (fun coefficient -> decompress_q coefficient <: i32)
-    }
-  in
-  re
-
-let compress_q (#v_COEFFICIENT_BITS: usize) (fe: u16) : i32 =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if ~.(v_COEFFICIENT_BITS <=. Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT <: bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS <= BITS_PER_COEFFICIENT"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  let two_pow_bit_size:u32 = 1ul <<! v_COEFFICIENT_BITS in
-  let compressed:u32 = (cast fe <: u32) *! (two_pow_bit_size <<! 1l <: u32) in
-  let compressed:u32 = compressed +! (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: u32) in
-  let compressed:u32 =
-    compressed /! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <<! 1l <: i32) <: u32)
-  in
-  cast (compressed &. (two_pow_bit_size -! 1ul <: u32)) <: i32
 
 let decompress_q (#v_COEFFICIENT_BITS: usize) (fe: i32) : i32 =
   let _:Prims.unit =
@@ -77,3 +61,18 @@ let decompress_q (#v_COEFFICIENT_BITS: usize) (fe: i32) : i32 =
   let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! v_COEFFICIENT_BITS <: u32) in
   let decompressed:u32 = decompressed >>! (v_COEFFICIENT_BITS +! sz 1 <: usize) in
   cast decompressed <: i32
+
+let decompress
+      (#v_COEFFICIENT_BITS: usize)
+      (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+  let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+    {
+      re with
+      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+      =
+      Core.Array.impl_23__map re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+        (fun coefficient -> decompress_q coefficient <: i32)
+    }
+  in
+  re

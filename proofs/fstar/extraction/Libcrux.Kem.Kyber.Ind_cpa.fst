@@ -92,6 +92,34 @@ let impl_8__split_at (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) (mid: usize)
 
 let impl_8__len (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) : usize = v_SIZE
 
+let serialize_secret_key
+      (#v_SERIALIZED_KEY_LEN: usize)
+      (private_key public_key implicit_rejection_value: slice u8)
+    : array u8 v_SERIALIZED_KEY_LEN =
+  Libcrux.Kem.Kyber.Conversions.impl__array (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push
+            (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.impl__new
+                        (Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN
+                          <:
+                          array u8 v_SERIALIZED_KEY_LEN)
+                      <:
+                      Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
+                    private_key
+                  <:
+                  Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
+                public_key
+              <:
+              Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
+            (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key
+                  <:
+                  array u8 (sz 32))
+              <:
+              slice u8)
+          <:
+          Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
+        implicit_rejection_value
+      <:
+      Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
+
 let sample_matrix_A (#v_K: usize) (seed: array u8 (sz 34)) (transpose: bool)
     : (array (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
       Core.Option.t_Option Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError) =
@@ -295,7 +323,8 @@ let encode_12_
                       })
                   <:
                   slice u8)
-                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_little_endian re
+                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element
+                        re
                       <:
                       array u8 (sz 384))
                   <:
@@ -308,7 +337,7 @@ let encode_12_
   out
 
 let generate_keypair
-      (#v_K #v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_BYTES_PER_RING_ELEMENT #v_ETA1 #v_ETA1_RANDOMNESS_SIZE:
+      (#v_K #v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE #v_RANKED_BYTES_PER_RING_ELEMENT #v_ETA1 #v_ETA1_RANDOMNESS_SIZE:
           usize)
       (key_generation_seed: slice u8)
     : ((t_PrivateKey v_PRIVATE_KEY_SIZE & Libcrux.Kem.Kyber.t_KyberPublicKey v_PUBLIC_KEY_SIZE) &
@@ -378,6 +407,34 @@ let generate_keypair
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
+          let _:Prims.unit =
+            if true
+            then
+              let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+                Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter (secret_as_ntt.[
+                          i ]
+                        <:
+                        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    <:
+                    (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+                  (fun coefficient ->
+                      (coefficient >=.
+                        (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
+                        <:
+                        bool) &&
+                      (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
+              in
+              let _:Prims.unit =
+                if ~.out
+                then
+                  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: secret_as_ntt[i].coefficients.into_iter().all(|coefficient|\\n        coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS)"
+
+                      <:
+                      Rust_primitives.Hax.t_Never)
+              in
+              ()
+          in
           domain_separator, prf_input, secret_as_ntt)
   in
   let domain_separator, error_as_ntt, prf_input:(u8 &
@@ -425,14 +482,43 @@ let generate_keypair
         (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
       tt_as_ntt
       (fun tt_as_ntt i ->
-          Rust_primitives.Hax.update_at tt_as_ntt
-            i
-            ((tt_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
-              (error_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              <:
-              (Libcrux.Kem.Kyber.Arithmetic.impl_3).f_Output)
-          <:
-          array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
+          let tt_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+            Rust_primitives.Hax.update_at tt_as_ntt
+              i
+              ((tt_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
+                (error_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.impl_3).f_Output)
+          in
+          let _:Prims.unit =
+            if true
+            then
+              let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+                Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter (tt_as_ntt.[ i
+                        ]
+                        <:
+                        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    <:
+                    (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+                  (fun coefficient ->
+                      (coefficient >=.
+                        (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
+                        <:
+                        bool) &&
+                      (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
+              in
+              let _:Prims.unit =
+                if ~.out
+                then
+                  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: t_as_ntt[i].coefficients.into_iter().all(|coefficient|\\n        coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS)"
+
+                      <:
+                      Rust_primitives.Hax.t_Never)
+              in
+              ()
+          in
+          tt_as_ntt)
   in
   let public_key_serialized:Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
     Libcrux.Kem.Kyber.Conversions.impl__new (Rust_primitives.Hax.repeat 0uy v_PUBLIC_KEY_SIZE
@@ -441,7 +527,7 @@ let generate_keypair
   in
   let public_key_serialized:Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
     Libcrux.Kem.Kyber.Conversions.f_push public_key_serialized
-      (Rust_primitives.unsize (encode_12_ tt_as_ntt <: array u8 v_BYTES_PER_RING_ELEMENT)
+      (Rust_primitives.unsize (encode_12_ tt_as_ntt <: array u8 v_RANKED_BYTES_PER_RING_ELEMENT)
         <:
         slice u8)
   in
@@ -455,34 +541,6 @@ let generate_keypair
   FStar.Pervasives.Native.Mktuple2 (Core.Convert.f_into secret_key_serialized)
     (Core.Convert.f_into public_key_serialized),
   sampling_A_error
-
-let serialize_secret_key
-      (#v_SERIALIZED_KEY_LEN: usize)
-      (private_key public_key implicit_rejection_value: slice u8)
-    : array u8 v_SERIALIZED_KEY_LEN =
-  Libcrux.Kem.Kyber.Conversions.impl__array (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push
-            (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.impl__new
-                        (Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN
-                          <:
-                          array u8 v_SERIALIZED_KEY_LEN)
-                      <:
-                      Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-                    private_key
-                  <:
-                  Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-                public_key
-              <:
-              Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-            (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key
-                  <:
-                  array u8 (sz 32))
-              <:
-              slice u8)
-          <:
-          Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-        implicit_rejection_value
-      <:
-      Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
 
 let compress_then_encode_u
       (#v_K #v_OUT_LEN #v_COMPRESSION_FACTOR #v_BLOCK_LEN: usize)
@@ -567,7 +625,7 @@ let encrypt
       (fun tt_as_ntt (i, tt_as_ntt_bytes) ->
           Rust_primitives.Hax.update_at tt_as_ntt
             i
-            (Libcrux.Kem.Kyber.Serialize.deserialize_little_endian tt_as_ntt_bytes
+            (Libcrux.Kem.Kyber.Serialize.deserialize_to_uncompressed_ring_element tt_as_ntt_bytes
               <:
               Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           <:
@@ -657,9 +715,7 @@ let encrypt
           array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
   in
   let message_as_ring_element:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Serialize.deserialize_little_endian (Rust_primitives.unsize message
-        <:
-        slice u8)
+    Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message message
   in
   let v =
     ((Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery (Libcrux.Kem.Kyber.Ntt.multiply_row_by_column_montgomery
@@ -672,9 +728,7 @@ let encrypt
       error_2_
       <:
       (Libcrux.Kem.Kyber.Arithmetic.impl_3).f_Output) +!
-    (Libcrux.Kem.Kyber.Compress.decompress message_as_ring_element
-      <:
-      Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+    message_as_ring_element
   in
   let c1:array u8 v_C1_LEN = compress_then_encode_u u in
   let c2:array u8 v_C2_LEN =
@@ -773,7 +827,7 @@ let decrypt
       (fun secret_as_ntt (i, secret_bytes) ->
           Rust_primitives.Hax.update_at secret_as_ntt
             i
-            (Libcrux.Kem.Kyber.Serialize.deserialize_little_endian secret_bytes
+            (Libcrux.Kem.Kyber.Serialize.deserialize_to_uncompressed_ring_element secret_bytes
               <:
               Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           <:
@@ -789,6 +843,4 @@ let decrypt
       <:
       Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
   in
-  Libcrux.Kem.Kyber.Serialize.serialize_little_endian (Libcrux.Kem.Kyber.Compress.compress message
-      <:
-      Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+  Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message message
