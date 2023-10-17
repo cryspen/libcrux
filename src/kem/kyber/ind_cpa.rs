@@ -107,7 +107,7 @@ pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
@@ -186,7 +186,7 @@ pub(crate) fn generate_keypair<
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);
     let public_key_serialized =
-        public_key_serialized.push(&encode_12::<K, BYTES_PER_RING_ELEMENT>(t_as_ntt));
+        public_key_serialized.push(&encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT>(t_as_ntt));
     let public_key_serialized = public_key_serialized.push(seed_for_A).array();
 
     // sk := Encode_12(sˆ mod^{+}q)
