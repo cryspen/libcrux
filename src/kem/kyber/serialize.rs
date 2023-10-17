@@ -46,8 +46,13 @@ fn serialize_little_endian_1<const OUT_LEN: usize>(
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
-    for (i, chunk) in re.coefficients.chunks_exact(8).enumerate() {
-        for (j, coefficient) in chunk.iter().enumerate() {
+    debug_assert!(re
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient == 0 || coefficient == 1));
+
+    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        for (j, coefficient) in coefficients.iter().enumerate() {
             serialized[i] |= (*coefficient as u8) << j
         }
     }

@@ -2,15 +2,15 @@ use super::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     constants::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
-        SHARED_SECRET_SIZE,
+        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS,
+        REJECTION_SAMPLING_SEED_SIZE, SHARED_SECRET_SIZE,
     },
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{XOFx4, G, H, PRF},
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
-    serialize::{deserialize_little_endian, serialize_little_endian},
+    serialize::{deserialize_little_endian, serialize_little_endian, compress_then_serialize_message},
     BadRejectionSamplingRandomnessError, KyberPublicKey,
 };
 
@@ -144,6 +144,12 @@ pub(crate) fn generate_keypair<
 
         let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
         secret_as_ntt[i] = ntt_representation(secret);
+
+        // For encode_12 to work correctly.
+        debug_assert!(secret_as_ntt[i]
+            .coefficients
+            .into_iter()
+            .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
     }
 
     // for i from 0 to k−1 do
@@ -165,15 +171,23 @@ pub(crate) fn generate_keypair<
     let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
     for i in 0..K {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
+
+        // For encode_12 to work correctly.
+        debug_assert!(t_as_ntt[i]
+            .coefficients
+            .into_iter()
+            .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    // sk := Encode_12(sˆ mod^{+}q)
     let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);
     let public_key_serialized =
         public_key_serialized.push(&encode_12::<K, BYTES_PER_RING_ELEMENT>(t_as_ntt));
     let public_key_serialized = public_key_serialized.push(seed_for_A).array();
+
+    // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = encode_12(secret_as_ntt);
+
     (
         (secret_key_serialized.into(), public_key_serialized.into()),
         sampling_A_error,
@@ -330,5 +344,5 @@ pub(crate) fn decrypt<
     let message =
         v - invert_ntt_montgomery(multiply_row_by_column_montgomery(&secret_as_ntt, &u_as_ntt));
 
-    serialize_little_endian::<1, SHARED_SECRET_SIZE>(compress::<1>(message))
+    compress_then_serialize_message(message)
 }

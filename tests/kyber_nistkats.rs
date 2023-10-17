@@ -48,19 +48,19 @@ macro_rules! impl_nist_known_answer_tests {
                 let public_key_hash = digest::sha3_256(key_pair.pk());
                 let secret_key_hash = digest::sha3_256(key_pair.sk());
 
-                assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key);
-                assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key);
+                assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key, "public keys don't match");
+                assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key, "secret keys don't match");
 
                 let (ciphertext, shared_secret) =
                     $encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed).unwrap();
                 let ciphertext_hash = digest::sha3_256(ciphertext.as_ref());
 
-                assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext);
-                assert_eq!(shared_secret.as_ref(), kat.shared_secret);
+                assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "ciphertexts don't match");
+                assert_eq!(shared_secret.as_ref(), kat.shared_secret, "shared secret produced by encapsulate does not match");
 
                 let shared_secret_from_decapsulate =
                     $decapsulate_derand(key_pair.private_key(), &ciphertext);
-                assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref());
+                assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref(), "shared secret produced by decapsulate doesn't match the one produced by encapsulate");
             }
         }
     };
