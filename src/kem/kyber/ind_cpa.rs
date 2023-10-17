@@ -89,12 +89,12 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
     (re_as_ntt, domain_separator)
 }
 
-fn encode_12<const K: usize, const OUT_LEN: usize>(
-    input: [KyberPolynomialRingElement; K],
+fn serialize_key<const K: usize, const OUT_LEN: usize>(
+    key: [KyberPolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
 
-    for (i, re) in input.into_iter().enumerate() {
+    for (i, re) in key.into_iter().enumerate() {
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
             .copy_from_slice(&serialize_uncompressed_ring_element(re));
     }
@@ -149,7 +149,7 @@ pub(crate) fn generate_keypair<
         let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
         secret_as_ntt[i] = ntt_representation(secret);
 
-        // For encode_12 to work correctly.
+        // For serialize_key to work correctly.
         debug_assert!(secret_as_ntt[i]
             .coefficients
             .into_iter()
@@ -176,7 +176,7 @@ pub(crate) fn generate_keypair<
     for i in 0..K {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
 
-        // For encode_12 to work correctly.
+        // For serialize_key to work correctly.
         debug_assert!(t_as_ntt[i]
             .coefficients
             .into_iter()
@@ -186,11 +186,11 @@ pub(crate) fn generate_keypair<
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);
     let public_key_serialized =
-        public_key_serialized.push(&encode_12::<K, RANKED_BYTES_PER_RING_ELEMENT>(t_as_ntt));
+        public_key_serialized.push(&serialize_key::<K, RANKED_BYTES_PER_RING_ELEMENT>(t_as_ntt));
     let public_key_serialized = public_key_serialized.push(seed_for_A).array();
 
     // sk := Encode_12(sˆ mod^{+}q)
-    let secret_key_serialized = encode_12(secret_as_ntt);
+    let secret_key_serialized = serialize_key(secret_as_ntt);
 
     (
         (secret_key_serialized.into(), public_key_serialized.into()),
