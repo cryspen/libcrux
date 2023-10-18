@@ -276,14 +276,14 @@ let cbd (#v_K #v_ETA #v_ETA_RANDOMNESS_SIZE: usize) (prf_input: array u8 (sz 33)
   in
   re_as_ntt, domain_separator
 
-let encode_12_
+let serialize_key
       (#v_K #v_OUT_LEN: usize)
-      (input: array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
+      (key: array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
     : array u8 v_OUT_LEN =
   let out:array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let out:array u8 v_OUT_LEN =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Iter.Traits.Collect.f_into_iter input
+              (Core.Iter.Traits.Collect.f_into_iter key
                 <:
                 (Core.Array.Iter.impl Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
                   .f_IntoIter)
@@ -527,7 +527,7 @@ let generate_keypair
   in
   let public_key_serialized:Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
     Libcrux.Kem.Kyber.Conversions.f_push public_key_serialized
-      (Rust_primitives.unsize (encode_12_ tt_as_ntt <: array u8 v_RANKED_BYTES_PER_RING_ELEMENT)
+      (Rust_primitives.unsize (serialize_key tt_as_ntt <: array u8 v_RANKED_BYTES_PER_RING_ELEMENT)
         <:
         slice u8)
   in
@@ -537,7 +537,7 @@ let generate_keypair
         <:
         Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE)
   in
-  let secret_key_serialized:array u8 v_PRIVATE_KEY_SIZE = encode_12_ secret_as_ntt in
+  let secret_key_serialized:array u8 v_PRIVATE_KEY_SIZE = serialize_key secret_as_ntt in
   FStar.Pervasives.Native.Mktuple2 (Core.Convert.f_into secret_key_serialized)
     (Core.Convert.f_into public_key_serialized),
   sampling_A_error

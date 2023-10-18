@@ -22,9 +22,88 @@ let v_MONTGOMERY_R: i64 = 1L <<! v_MONTGOMERY_SHIFT
 let v_INVERSE_OF_MODULUS_MOD_R: i64 = (-3327L)
 
 let montgomery_reduce (value: i32) : i32 =
-  let (t: i64):i64 = (Core.Convert.f_from value <: i64) *! v_INVERSE_OF_MODULUS_MOD_R in
-  let (t: i32):i32 = cast (t &. (v_MONTGOMERY_R -! 1L <: i64)) <: i32 in
-  (value -! (t *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: i32) >>! v_MONTGOMERY_SHIFT
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if
+          ~.(value >.
+            ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *!
+              (cast v_MONTGOMERY_R <: i32)
+              <:
+              i32)
+            <:
+            bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: value > -FIELD_MODULUS * (MONTGOMERY_R as i32)"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if
+          ~.(value <.
+            (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! (cast v_MONTGOMERY_R <: i32) <: i32)
+            <:
+            bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: value < FIELD_MODULUS * (MONTGOMERY_R as i32)"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let t:i64 = (Core.Convert.f_from value <: i64) *! v_INVERSE_OF_MODULUS_MOD_R in
+  let t:i16 = cast (t &. (v_MONTGOMERY_R -! 1L <: i64)) <: i16 in
+  let reduced:i32 =
+    (value >>! v_MONTGOMERY_SHIFT <: i32) -!
+    (((Core.Convert.f_from t <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) >>!
+      v_MONTGOMERY_SHIFT
+      <:
+      i32)
+  in
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if
+          ~.((2l *! reduced <: i32) >.
+            ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *! 3l
+              <:
+              i32)
+            <:
+            bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: 2 * reduced > -FIELD_MODULUS * 3"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if
+          ~.((2l *! reduced <: i32) <. (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! 3l <: i32)
+            <:
+            bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: 2 * reduced < FIELD_MODULUS * 3"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  reduced
 
 let to_montgomery_domain (value: i32) : i32 = montgomery_reduce (1353l *! value <: i32)
 
