@@ -25,7 +25,8 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
     let t = i64::from(value) * INVERSE_OF_MODULUS_MOD_R;
     let t = (t & (MONTGOMERY_R - 1)) as i16;
 
-    let reduced = (value >> MONTGOMERY_SHIFT) - ((i32::from(t) * FIELD_MODULUS) >> MONTGOMERY_SHIFT);
+    let reduced =
+        (value >> MONTGOMERY_SHIFT) - ((i32::from(t) * FIELD_MODULUS) >> MONTGOMERY_SHIFT);
 
     // If -qR < value < qR, we must have:
     // -3q/2 < reduced < 3q/2 ==> -3q < 2 * reduced < 3q
