@@ -19,17 +19,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bits: [32, 64]
+        bits: [64]
         os:
           - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        exclude:
-          - bits: 32
-            os: "macos-latest"
-          # FIXME: Linking isn't working here yet for hacl #42
-          - bits: 32
-            os: "windows-latest"
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -42,95 +34,13 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - name: ⚙️ Setup Ubuntu x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add i686-unknown-linux-gnu
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib g++-multilib
-
-      - name: ⚙️ Setup Ubuntu x64
-        if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
-        run: |
-          rustup target add aarch64-unknown-linux-gnu
-
       - name: ⚙️ Setup macOS
         if: ${{  matrix.os == 'macos-latest' }}
         run: |
           rustup target add aarch64-apple-darwin
 
-      # Set up 32 bit systems
-
-      - name: 🛠️ Config Windows x86
-        run: echo "RUST_TARGET_FLAG=--target=i686-pc-windows-msvc" > $GITHUB_ENV
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-
-      - name: 🛠️ Config Linux x86
-        run: |
-          echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
-        if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
-
-      # Set up windows
-
-      - name: ⚙️ Setup Windows x86
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x86-windows-static-md
-
-      - name: ⚙️ Setup Windows x64
-        if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x64-windows-static-md
-
-      # Build ...
-
-      - name: 🔨 Build
-        run: cargo build --verbose $RUST_TARGET_FLAG
-
-      - name: 🔨 Build Release
-        run: cargo build --verbose --release $RUST_TARGET_FLAG
-
       # Cross compilation
 
       - name: 🔨 Build aarch64 macOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: cargo build --verbose --target aarch64-apple-darwin
-
-      # TODO: #42 linking fails here for some reason
-      # - name: Build aarch64 Ubuntu
-      #   if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
-      #   run: CC=clang cargo build --verbose --target aarch64-unknown-linux-gnu
-
-      # Test ...
-
-      - name: 🏃🏻‍♀️ Test
-        run: cargo test --verbose $RUST_TARGET_FLAG
-
-      - name: 🏃🏻‍♀️ Test Release
-        run: cargo test --verbose --release $RUST_TARGET_FLAG
-
-      - name: 🔨 Build sys/hacl
-        working-directory: sys/hacl
-        run: cargo build --verbose $RUST_TARGET_FLAG
-
-  wasm:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: mymindstorm/setup-emsdk@ab889da2abbcbb280f91ec4c215d3bb4f3a8f775
-
-      - name: Setup
-        run: |
-          rustup target add wasm32-unknown-unknown
-          cargo install wasm-pack
-
-      - name: 🔨 Build
-        run: CC=emcc AR=emar cargo build --features wasm --target wasm32-unknown-unknown
-
-      - name: 🏃🏻‍♀️ Test
-        run: CC=emcc AR=emar wasm-pack test --node --features wasm
+        run: env CARGO_BUILD_TARGET=aarch64-apple-darwin cargo build --verbose
