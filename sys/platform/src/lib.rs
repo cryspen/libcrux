@@ -56,8 +56,7 @@ pub fn simd128_support() -> bool {
 
 pub fn simd256_support() -> bool {
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    panic!("x86_64");
-    //return cpu_id::supported(Feature::avx2);
+    return cpu_id::supported(Feature::avx2);
 
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
     false
