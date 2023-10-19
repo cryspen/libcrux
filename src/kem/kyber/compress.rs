@@ -4,7 +4,7 @@ use super::{
     conversions::to_unsigned_representative,
 };
 
-pub(crate) fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
+pub(super) fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
     debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);
 
     let mut compressed = (fe as u32) << (COEFFICIENT_BITS + 1);
@@ -22,7 +22,7 @@ pub fn compress<const COEFFICIENT_BITS: usize>(
     re
 }
 
-pub(crate) fn decompress_q<const COEFFICIENT_BITS: usize>(
+pub(super) fn decompress_q<const COEFFICIENT_BITS: usize>(
     fe: KyberFieldElement,
 ) -> KyberFieldElement {
     debug_assert!(COEFFICIENT_BITS <= BITS_PER_COEFFICIENT);

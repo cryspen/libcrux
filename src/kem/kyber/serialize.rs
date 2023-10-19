@@ -42,7 +42,7 @@ use super::{
 /// is called, and `compress_q` also performs this conversion.
 
 #[inline(always)]
-pub(crate) fn compress_then_serialize_message(
+pub(super) fn compress_then_serialize_message(
     re: KyberPolynomialRingElement,
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
@@ -74,7 +74,7 @@ pub(crate) fn compress_then_serialize_message(
     serialized
 }
 #[inline(always)]
-pub(crate) fn deserialize_then_decompress_message(
+pub(super) fn deserialize_then_decompress_message(
     serialized: [u8; SHARED_SECRET_SIZE],
 ) -> KyberPolynomialRingElement {
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -285,7 +285,7 @@ fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement
 }
 
 #[inline(always)]
-pub(crate) fn serialize_uncompressed_ring_element(
+pub(super) fn serialize_uncompressed_ring_element(
     re: KyberPolynomialRingElement,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
@@ -302,7 +302,7 @@ pub(crate) fn serialize_uncompressed_ring_element(
     serialized
 }
 #[inline(always)]
-pub(crate) fn deserialize_to_uncompressed_ring_element(
+pub(super) fn deserialize_to_uncompressed_ring_element(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), BYTES_PER_RING_ELEMENT);
