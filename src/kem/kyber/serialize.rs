@@ -1,6 +1,7 @@
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
-    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT},
+    compress::{compress_q, decompress_q},
+    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     conversions::to_unsigned_representative,
 };
 
@@ -41,29 +42,47 @@ use super::{
 /// is called, and `compress_q` also performs this conversion.
 
 #[inline(always)]
-fn serialize_little_endian_1<const OUT_LEN: usize>(
+pub(super) fn compress_then_serialize_message(
     re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
-    let mut serialized = [0u8; OUT_LEN];
+) -> [u8; SHARED_SECRET_SIZE] {
+    let mut serialized = [0u8; SHARED_SECRET_SIZE];
 
-    for (i, chunk) in re.coefficients.chunks_exact(8).enumerate() {
-        for (j, coefficient) in chunk.iter().enumerate() {
-            serialized[i] |= (*coefficient as u8) << j
+    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        for (j, coefficient) in coefficients.iter().enumerate() {
+            let coefficient = to_unsigned_representative(*coefficient);
+
+            let coefficient_compressed = compress_q::<1>(coefficient);
+            debug_assert!(coefficient_compressed == 0 || coefficient_compressed == 1);
+
+            // At this point, the following should hold for |coefficient_compressed|:
+            //
+            // if coefficient_compressed == 0 {
+            //     coefficient < 832 ||
+            //     (coefficient >= 2496 && coefficient < 4161)
+            // } else { // coefficient_compressed = 1
+            //     (coefficient >= 832 && coefficient < 2496) ||
+            //     (coefficient >= 4161 && coefficient < 5825)
+            // }
+            //
+            // TODO(xvzcf): When this is turned into an assertion, intermittent
+            // failures arise in the |modified_ciphertext| test. Figure out why.
+
+            serialized[i] |= (coefficient_compressed as u8) << j
         }
     }
 
     serialized
 }
-
 #[inline(always)]
-fn deserialize_little_endian_1(serialized: &[u8]) -> KyberPolynomialRingElement {
-    debug_assert_eq!(serialized.len(), COEFFICIENTS_IN_RING_ELEMENT / 8);
-
+pub(super) fn deserialize_then_decompress_message(
+    serialized: [u8; SHARED_SECRET_SIZE],
+) -> KyberPolynomialRingElement {
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
         for j in 0..8 {
-            re.coefficients[8 * i + j] = ((byte >> j) & 0x1) as KyberFieldElement;
+            let coefficient_compressed = ((byte >> j) & 0x1) as KyberFieldElement;
+            re.coefficients[8 * i + j] = decompress_q::<1>(coefficient_compressed);
         }
     }
 
@@ -266,10 +285,10 @@ fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement
 }
 
 #[inline(always)]
-fn serialize_little_endian_12<const OUT_LEN: usize>(
+pub(super) fn serialize_uncompressed_ring_element(
     re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
-    let mut serialized = [0u8; OUT_LEN];
+) -> [u8; BYTES_PER_RING_ELEMENT] {
+    let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
     for (i, chunks) in re.coefficients.chunks_exact(2).enumerate() {
         let coefficient1 = to_unsigned_representative(chunks[0]);
@@ -282,9 +301,10 @@ fn serialize_little_endian_12<const OUT_LEN: usize>(
 
     serialized
 }
-
 #[inline(always)]
-fn deserialize_little_endian_12(serialized: &[u8]) -> KyberPolynomialRingElement {
+pub(super) fn deserialize_to_uncompressed_ring_element(
+    serialized: &[u8],
+) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), BYTES_PER_RING_ELEMENT);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -313,8 +333,6 @@ pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT
     );
 
     match COMPRESSION_FACTOR as u32 {
-        1 => serialize_little_endian_1(re),
-        // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
         4 => serialize_little_endian_4(re),
         // VECTOR_V_COMPRESSION_FACTOR_1024
         5 => serialize_little_endian_5(re),
@@ -322,7 +340,6 @@ pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT
         10 => serialize_little_endian_10(re),
         // VECTOR_U_COMPRESSION_FACTOR_1024
         11 => serialize_little_endian_11(re),
-        12 => serialize_little_endian_12(re),
         _ => unreachable!("factor {COMPRESSION_FACTOR}"),
     }
 }
@@ -337,7 +354,6 @@ pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
     );
 
     match COMPRESSION_FACTOR as u32 {
-        1 => deserialize_little_endian_1(serialized),
         // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
         4 => deserialize_little_endian_4(serialized),
         // VECTOR_V_COMPRESSION_FACTOR_1024
@@ -346,7 +362,6 @@ pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
         10 => deserialize_little_endian_10(serialized),
         // VECTOR_U_COMPRESSION_FACTOR_1024
         11 => deserialize_little_endian_11(serialized),
-        12 => deserialize_little_endian_12(serialized),
         _ => unreachable!("factor {COMPRESSION_FACTOR}"),
     }
 }

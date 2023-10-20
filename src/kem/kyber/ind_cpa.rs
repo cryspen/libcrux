@@ -2,15 +2,19 @@ use super::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     constants::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
-        SHARED_SECRET_SIZE,
+        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS,
+        REJECTION_SAMPLING_SEED_SIZE, SHARED_SECRET_SIZE,
     },
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{XOFx4, G, H, PRF},
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
-    serialize::{deserialize_little_endian, serialize_little_endian},
+    serialize::{
+        compress_then_serialize_message, deserialize_little_endian,
+        deserialize_then_decompress_message, deserialize_to_uncompressed_ring_element,
+        serialize_little_endian, serialize_uncompressed_ring_element,
+    },
     BadRejectionSamplingRandomnessError, KyberPublicKey,
 };
 
@@ -85,14 +89,14 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
     (re_as_ntt, domain_separator)
 }
 
-fn encode_12<const K: usize, const OUT_LEN: usize>(
-    input: [KyberPolynomialRingElement; K],
+fn serialize_key<const K: usize, const OUT_LEN: usize>(
+    key: [KyberPolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
 
-    for (i, re) in input.into_iter().enumerate() {
+    for (i, re) in key.into_iter().enumerate() {
         out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
-            .copy_from_slice(&serialize_little_endian::<12, BYTES_PER_RING_ELEMENT>(re));
+            .copy_from_slice(&serialize_uncompressed_ring_element(re));
     }
 
     out
@@ -103,7 +107,7 @@ pub(crate) fn generate_keypair<
     const K: usize,
     const PRIVATE_KEY_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
-    const BYTES_PER_RING_ELEMENT: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
@@ -144,6 +148,12 @@ pub(crate) fn generate_keypair<
 
         let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
         secret_as_ntt[i] = ntt_representation(secret);
+
+        // For serialize_key to work correctly.
+        debug_assert!(secret_as_ntt[i]
+            .coefficients
+            .into_iter()
+            .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
     }
 
     // for i from 0 to k−1 do
@@ -165,15 +175,23 @@ pub(crate) fn generate_keypair<
     let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
     for i in 0..K {
         t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
+
+        // For serialize_key to work correctly.
+        debug_assert!(t_as_ntt[i]
+            .coefficients
+            .into_iter()
+            .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
     }
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    // sk := Encode_12(sˆ mod^{+}q)
     let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);
     let public_key_serialized =
-        public_key_serialized.push(&encode_12::<K, BYTES_PER_RING_ELEMENT>(t_as_ntt));
+        public_key_serialized.push(&serialize_key::<K, RANKED_BYTES_PER_RING_ELEMENT>(t_as_ntt));
     let public_key_serialized = public_key_serialized.push(seed_for_A).array();
-    let secret_key_serialized = encode_12(secret_as_ntt);
+
+    // sk := Encode_12(sˆ mod^{+}q)
+    let secret_key_serialized = serialize_key(secret_as_ntt);
+
     (
         (secret_key_serialized.into(), public_key_serialized.into()),
         sampling_A_error,
@@ -228,7 +246,7 @@ pub(crate) fn encrypt<
         .chunks_exact(BYTES_PER_RING_ELEMENT)
         .enumerate()
     {
-        t_as_ntt[i] = deserialize_little_endian::<12>(t_as_ntt_bytes);
+        t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
     }
 
     // ρ := pk + 12·k·n / 8
@@ -273,10 +291,10 @@ pub(crate) fn encrypt<
     }
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-    let message_as_ring_element = deserialize_little_endian::<1>(&message);
+    let message_as_ring_element = deserialize_then_decompress_message(message);
     let v = invert_ntt_montgomery(multiply_row_by_column_montgomery(&t_as_ntt, &r_as_ntt))
         + error_2
-        + decompress::<1>(message_as_ring_element);
+        + message_as_ring_element;
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
     let c1 = compress_then_encode_u::<K, C1_LEN, VECTOR_U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
@@ -323,12 +341,12 @@ pub(crate) fn decrypt<
 
     // sˆ := Decode_12(sk)
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
-        secret_as_ntt[i] = deserialize_little_endian::<12>(secret_bytes);
+        secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
     let message =
         v - invert_ntt_montgomery(multiply_row_by_column_montgomery(&secret_as_ntt, &u_as_ntt));
 
-    serialize_little_endian::<1, SHARED_SECRET_SIZE>(compress::<1>(message))
+    compress_then_serialize_message(message)
 }

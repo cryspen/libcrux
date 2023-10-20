@@ -61,48 +61,6 @@ let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: array u8
   in
   out, Core.Option.Option_Some Libcrux.Kem.Kyber.BadRejectionSamplingRandomnessError
 
-let sample_from_binomial_distribution (#v_ETA: usize) (randomness: slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        match Core.Slice.impl__len randomness, v_ETA *! sz 64 with
-        | left_val, right_val ->
-          if ~.(left_val =. right_val <: bool)
-          then
-            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
-                  left_val
-                  right_val
-                  Core.Option.Option_None
-                <:
-                Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  match cast v_ETA <: u32 with
-  | 2ul -> sample_from_binomial_distribution_2_ randomness
-  | 3ul -> sample_from_binomial_distribution_3_ randomness
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
-                  (let list = ["internal error: entered unreachable code: factor "] in
-                    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                    Rust_primitives.Hax.array_of_list list)
-                <:
-                slice string)
-              (Rust_primitives.unsize (let list =
-                      [Core.Fmt.Rt.impl_1__new_display v_ETA <: Core.Fmt.Rt.t_Argument]
-                    in
-                    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                    Rust_primitives.Hax.array_of_list list)
-                <:
-                slice Core.Fmt.Rt.t_Argument)
-            <:
-            Core.Fmt.t_Arguments)
-        <:
-        Rust_primitives.Hax.t_Never)
-
 let sample_from_binomial_distribution_2_ (randomness: slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
@@ -157,6 +115,26 @@ let sample_from_binomial_distribution_2_ (randomness: slice u8)
                     (outcome_1_ -! outcome_2_ <: i32)
                 in
                 sampled))
+  in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter sampled
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient -> (coefficient >=. (-2l) <: bool) && (coefficient <=. 2l <: bool))
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: sampled.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -2 && coefficient <= 2)"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
   sampled
 
@@ -213,4 +191,66 @@ let sample_from_binomial_distribution_3_ (randomness: slice u8)
                 in
                 sampled))
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter sampled
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient -> (coefficient >=. (-3l) <: bool) && (coefficient <=. 3l <: bool))
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: sampled.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -3 && coefficient <= 3)"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
   sampled
+
+let sample_from_binomial_distribution (#v_ETA: usize) (randomness: slice u8)
+    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        match Core.Slice.impl__len randomness, v_ETA *! sz 64 with
+        | left_val, right_val ->
+          if ~.(left_val =. right_val <: bool)
+          then
+            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+                  left_val
+                  right_val
+                  Core.Option.Option_None
+                <:
+                Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  match cast v_ETA <: u32 with
+  | 2ul -> sample_from_binomial_distribution_2_ randomness
+  | 3ul -> sample_from_binomial_distribution_3_ randomness
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
+                  (let list = ["internal error: entered unreachable code: factor "] in
+                    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+                    Rust_primitives.Hax.array_of_list list)
+                <:
+                slice string)
+              (Rust_primitives.unsize (let list =
+                      [Core.Fmt.Rt.impl_1__new_display v_ETA <: Core.Fmt.Rt.t_Argument]
+                    in
+                    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+                    Rust_primitives.Hax.array_of_list list)
+                <:
+                slice Core.Fmt.Rt.t_Argument)
+            <:
+            Core.Fmt.t_Arguments)
+        <:
+        Rust_primitives.Hax.t_Never)
