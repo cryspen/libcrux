@@ -14,15 +14,15 @@ pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
     value - (quotient * FIELD_MODULUS)
 }
 
-const MONTGOMERY_SHIFT: i64 = 16;
-const MONTGOMERY_R: i64 = 1i64 << MONTGOMERY_SHIFT;
-const INVERSE_OF_MODULUS_MOD_R: i64 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+const MONTGOMERY_SHIFT: i32 = 16;
+const MONTGOMERY_R: i32 = 1i32 << MONTGOMERY_SHIFT;
+const INVERSE_OF_MODULUS_MOD_R: i32 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
-    debug_assert!(value > -FIELD_MODULUS * (MONTGOMERY_R as i32));
-    debug_assert!(value < FIELD_MODULUS * (MONTGOMERY_R as i32));
+    debug_assert!(value > -FIELD_MODULUS * MONTGOMERY_R);
+    debug_assert!(value < FIELD_MODULUS * MONTGOMERY_R);
 
-    let t = i64::from(value) * INVERSE_OF_MODULUS_MOD_R;
+    let t = (value & (MONTGOMERY_R - 1)) * INVERSE_OF_MODULUS_MOD_R;
     let t = (t & (MONTGOMERY_R - 1)) as i16;
 
     let reduced =
