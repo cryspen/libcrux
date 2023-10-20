@@ -34,6 +34,8 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
         }
     }
 
+    debug_assert!(out.coefficients.into_iter().all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
+
     (out, Some(BadRejectionSamplingRandomnessError))
 }
 

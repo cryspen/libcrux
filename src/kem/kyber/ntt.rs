@@ -3,7 +3,7 @@ use super::{
         barrett_reduce, montgomery_reduce, to_montgomery_domain, KyberFieldElement,
         KyberPolynomialRingElement,
     },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
 
 const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
@@ -16,6 +16,49 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
     603, 610, 1322, -1285, -1465, 384, -1215, -136, 1218, -1335, -874, 220, -1187, -1659, -1185,
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
+
+
+// In time, all invocations of ntt_representation() will be replaced by this
+// function, upon which this function will be renamed to ntt_representation().
+#[inline(always)]
+pub(in crate::kem::kyber) fn ntt_new(
+    mut re: KyberPolynomialRingElement,
+    coefficient_bound: usize,
+) -> KyberPolynomialRingElement {
+    debug_assert!(re.coefficients.into_iter().all(|coefficient| usize::try_from(coefficient.abs()).unwrap() <= coefficient_bound));
+
+    let mut zeta_i = 0;
+    let mut layer_number = 0;
+
+    macro_rules! ntt_at_layer {
+        ($layer:literal) => {
+            for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - $layer)).step_by(2 * $layer) {
+                zeta_i += 1;
+
+                for j in offset..offset + $layer {
+                    let t = montgomery_reduce(re[j + $layer] * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
+                    re[j + $layer] = re[j] - t;
+                    re[j] = re[j] + t;
+                }
+            }
+
+            layer_number += 1;
+            re.coefficients.into_iter().all(|coefficient| usize::try_from(coefficient.abs()).unwrap() < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS as usize) / 2));
+        };
+    }
+
+    ntt_at_layer!(128);
+    ntt_at_layer!(64);
+    ntt_at_layer!(32);
+    ntt_at_layer!(16);
+    ntt_at_layer!(8);
+    ntt_at_layer!(4);
+    ntt_at_layer!(2);
+
+    re.coefficients = re.coefficients.map(barrett_reduce);
+
+    re
+}
 
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_representation(
