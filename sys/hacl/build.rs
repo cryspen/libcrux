@@ -407,7 +407,7 @@ fn main() {
         let x86 = target_arch == "x86";
         let aarch64 = target_arch == "aarch64";
         Platform {
-            simd128: !x86 && !aarch64 && libcrux_platform::simd128_support(),
+            simd128: !x86 && libcrux_platform::simd128_support(),
             simd256: !x86 && !aarch64 && libcrux_platform::simd256_support(),
             aes_ni: !aarch64 && libcrux_platform::aes_ni_support(),
             x25519: !x86 && !aarch64 && libcrux_platform::x25519_support(),
