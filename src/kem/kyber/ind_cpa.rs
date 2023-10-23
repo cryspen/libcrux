@@ -84,7 +84,7 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
         let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let r = sample_from_binomial_distribution::<ETA>(&prf_output);
-        re_as_ntt[i] = ntt_representation(r);
+        re_as_ntt[i] = ntt_with_debug_asserts(r, ETA);
     }
     (re_as_ntt, domain_separator)
 }

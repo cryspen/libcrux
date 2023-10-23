@@ -165,8 +165,8 @@ fn ntt_multiply_binomials(
     zeta: i32,
 ) -> (KyberFieldElement, KyberFieldElement) {
     (
-        montgomery_reduce(a0 * b0) + montgomery_reduce(montgomery_reduce(a1 * b1) * zeta),
-        montgomery_reduce(a0 * b1) + montgomery_reduce(a1 * b0),
+        montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
+        montgomery_reduce(a0 * b1 + a1 * b0),
     )
 }
 
@@ -175,6 +175,13 @@ fn ntt_multiply(
     left: &KyberPolynomialRingElement,
     right: &KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
+    debug_assert!(left
+        .into_iter()
+        .all(|coefficient| coefficient >= 0 && coefficient < 4096));
+    debug_assert!(right
+        .into_iter()
+        .all(|coefficient| coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS));
+
     let mut out = KyberPolynomialRingElement::ZERO;
 
     for i in (0..COEFFICIENTS_IN_RING_ELEMENT).step_by(4) {
@@ -194,6 +201,10 @@ fn ntt_multiply(
         out[i + 2] = product.0;
         out[i + 3] = product.1;
     }
+
+    debug_assert!(out
+        .into_iter()
+        .all(|coefficient| coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS));
 
     out
 }
@@ -251,7 +262,9 @@ pub(in crate::kem::kyber) fn multiply_matrix_by_column<const K: usize>(
             result[i] = result[i] + product;
         }
 
-        // The coefficients of the form aR^{-1} mod q, which means
+        debug_assert!(result[i].into_iter().all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
+
+        // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
         result[i].coefficients = result[i].coefficients.map(|coefficient| {
             let coefficient_montgomery = to_montgomery_domain(coefficient);

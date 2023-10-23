@@ -27,8 +27,8 @@ const MONTGOMERY_R: i32 = 1i32 << MONTGOMERY_SHIFT;
 const INVERSE_OF_MODULUS_MOD_R: i32 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
-    debug_assert!(value > -FIELD_MODULUS * MONTGOMERY_R);
-    debug_assert!(value < FIELD_MODULUS * MONTGOMERY_R);
+    debug_assert!(value > -FIELD_MODULUS * (MONTGOMERY_R / 2));
+    debug_assert!(value < FIELD_MODULUS * (MONTGOMERY_R / 2));
 
     let t = (value & (MONTGOMERY_R - 1)) * INVERSE_OF_MODULUS_MOD_R;
     let t = (t & (MONTGOMERY_R - 1)) as i16;
@@ -36,10 +36,8 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
     let reduced =
         (value >> MONTGOMERY_SHIFT) - ((i32::from(t) * FIELD_MODULUS) >> MONTGOMERY_SHIFT);
 
-    // If -qR < value < qR, we must have:
-    // -3q/2 < reduced < 3q/2 ==> -3q < 2 * reduced < 3q
-    debug_assert!(2 * reduced > -FIELD_MODULUS * 3);
-    debug_assert!(2 * reduced < FIELD_MODULUS * 3);
+    debug_assert!(reduced > -FIELD_MODULUS);
+    debug_assert!(reduced < FIELD_MODULUS);
 
     reduced
 }
