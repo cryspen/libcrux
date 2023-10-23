@@ -2,8 +2,8 @@ use super::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     constants::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT,
-        REJECTION_SAMPLING_SEED_SIZE, SHARED_SECRET_SIZE,
+        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
+        SHARED_SECRET_SIZE,
     },
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
@@ -147,7 +147,8 @@ pub(crate) fn generate_keypair<
         let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        secret_as_ntt[i] = ntt_new(secret, ETA1);
+
+        secret_as_ntt[i] = ntt_with_debug_asserts(secret, ETA1);
     }
 
     // for i from 0 to k−1 do
@@ -162,7 +163,7 @@ pub(crate) fn generate_keypair<
         let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let error = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        error_as_ntt[i] = ntt_new(error, ETA1);
+        error_as_ntt[i] = ntt_with_debug_asserts(error, ETA1);
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ

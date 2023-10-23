@@ -17,18 +17,41 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
-
-// In time, all invocations of ntt_representation() will be replaced by this
-// function, upon which this function will be renamed to ntt_representation().
+// Over time, all invocations of ntt_representation() will be replaced by
+// invocations to this function, upon which this function will be renamed back to
+// ntt_representation().
 #[inline(always)]
-pub(in crate::kem::kyber) fn ntt_new(
+pub(in crate::kem::kyber) fn ntt_with_debug_asserts(
     mut re: KyberPolynomialRingElement,
     coefficient_bound: usize,
 ) -> KyberPolynomialRingElement {
-    debug_assert!(re.coefficients.into_iter().all(|coefficient| usize::try_from(coefficient.abs()).unwrap() <= coefficient_bound));
+    debug_assert!(re
+        .coefficients
+        .into_iter()
+        .all(|coefficient| usize::try_from(coefficient.abs()).unwrap() <= coefficient_bound));
 
     let mut zeta_i = 0;
     let mut layer_number = 0;
+
+    // This function is only being used in key-generation for the moment, and we
+    // can skip the first round of montgomery reductions for the ring elements
+    // being passed in during key-generation.
+    for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - 128)).step_by(2 * 128) {
+        zeta_i += 1;
+
+        for j in offset..offset + 128 {
+            // Multiply by the appropriate zeta in the normal domain.
+            let t = re[j + 128] * -1600;
+
+            re[j + 128] = re[j] - t;
+            re[j] = re[j] + t;
+        }
+    }
+    layer_number += 1;
+    re.coefficients.into_iter().all(|coefficient| {
+        usize::try_from(coefficient.abs()).unwrap()
+            < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS as usize) / 2)
+    });
 
     macro_rules! ntt_at_layer {
         ($layer:literal) => {
@@ -43,11 +66,13 @@ pub(in crate::kem::kyber) fn ntt_new(
             }
 
             layer_number += 1;
-            re.coefficients.into_iter().all(|coefficient| usize::try_from(coefficient.abs()).unwrap() < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS as usize) / 2));
+            re.coefficients.into_iter().all(|coefficient| {
+                usize::try_from(coefficient.abs()).unwrap()
+                    < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS as usize) / 2)
+            });
         };
     }
 
-    ntt_at_layer!(128);
     ntt_at_layer!(64);
     ntt_at_layer!(32);
     ntt_at_layer!(16);

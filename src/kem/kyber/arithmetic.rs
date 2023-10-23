@@ -9,9 +9,17 @@ const BARRETT_R: i32 = 1i32 << BARRETT_SHIFT;
 const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
 
 pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
+    debug_assert!(value > -BARRETT_R / 2);
+    debug_assert!(value < BARRETT_R / 2);
+
     let quotient = ((value * BARRETT_MULTIPLIER) + (BARRETT_R >> 1)) >> BARRETT_SHIFT;
 
-    value - (quotient * FIELD_MODULUS)
+    let reduced = value - (quotient * FIELD_MODULUS);
+
+    debug_assert!(reduced > -FIELD_MODULUS);
+    debug_assert!(reduced < FIELD_MODULUS);
+
+    reduced
 }
 
 const MONTGOMERY_SHIFT: i32 = 16;
