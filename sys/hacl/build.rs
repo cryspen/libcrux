@@ -410,12 +410,13 @@ fn main() {
     // Check platform support
     let platform = if target_arch != "wasm32" {
         let x86 = target_arch == "x86";
+        let aarch64 = target_arch == "aarch64";
         Platform {
             simd128: !x86 && libcrux_platform::simd128_support(),
-            simd256: !x86 && libcrux_platform::simd256_support(),
-            aes_ni: libcrux_platform::aes_ni_support(),
-            x25519: !x86 && libcrux_platform::x25519_support(),
-            bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
+            simd256: !x86 && !aarch64 && libcrux_platform::simd256_support(),
+            aes_ni: !aarch64 && libcrux_platform::aes_ni_support(),
+            x25519: !x86 && !aarch64 && libcrux_platform::x25519_support(),
+            bmi2_adx_support: !aarch64 && libcrux_platform::bmi2_adx_support(),
             pmull: libcrux_platform::pmull_support(),
             adv_simd: libcrux_platform::adv_simd_support(),
             sha256: libcrux_platform::sha256_support(),
