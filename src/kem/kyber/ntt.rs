@@ -250,26 +250,32 @@ pub(in crate::kem::kyber) fn multiply_matrix_by_column_montgomery<const K: usize
 // this function after conversion from montgomery form lets us skip an extra
 // barrett reduction step in generate_keypair itself.
 #[inline(always)]
-pub(in crate::kem::kyber) fn multiply_matrix_by_column<const K: usize>(
-    matrix: &[[KyberPolynomialRingElement; K]; K],
-    vector: &[KyberPolynomialRingElement; K],
+#[allow(non_snake_case)]
+pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
+    matrix_A: &[[KyberPolynomialRingElement; K]; K],
+    s_as_ntt: &[KyberPolynomialRingElement; K],
+    error_as_ntt: &[KyberPolynomialRingElement; K],
 ) -> [KyberPolynomialRingElement; K] {
     let mut result = [KyberPolynomialRingElement::ZERO; K];
 
-    for (i, row) in matrix.iter().enumerate() {
+    for (i, row) in matrix_A.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {
-            let product = ntt_multiply(matrix_element, &vector[j]);
+            let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
             result[i] = result[i] + product;
         }
 
-        debug_assert!(result[i].into_iter().all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
+        debug_assert!(result[i]
+            .into_iter()
+            .all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
 
-        // The coefficients are of the form aR^{-1} mod q, which means
-        // calling to_montgomery_domain() on them should return a mod q.
-        result[i].coefficients = result[i].coefficients.map(|coefficient| {
-            let coefficient_montgomery = to_montgomery_domain(coefficient);
-            barrett_reduce(coefficient_montgomery)
-        });
+        for j in 0..result[i].coefficients.len() {
+            // The coefficients are of the form aR^{-1} mod q, which means
+            // calling to_montgomery_domain() on them should return a mod q.
+            let coefficient_normal_form = to_montgomery_domain(result[i].coefficients[j]);
+
+            result[i].coefficients[j] =
+                barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])
+        }
     }
 
     result

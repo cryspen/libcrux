@@ -167,10 +167,7 @@ pub(crate) fn generate_keypair<
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
-    for i in 0..K {
-        t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
-    }
+    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);
