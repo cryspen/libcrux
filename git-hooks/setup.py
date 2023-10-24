@@ -4,7 +4,7 @@ import os
 
 # This path is expressed relative to the .git/hooks directory.
 # See https://stackoverflow.com/questions/4592838/symbolic-link-to-a-hook-in-git#comment32655407_4594681
-source_directory = os.path.join("..", "..", "git_hooks")
+source_directory = os.path.join("..", "..", "git-hooks")
 
 target_directory = os.path.join(".git", "hooks")
 
