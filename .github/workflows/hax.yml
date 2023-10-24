@@ -7,12 +7,17 @@ on:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber768/**'
       - 'src/kem/kyber768.rs'
+
   pull_request:
     branches: ["dev"]
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber768/**'
       - 'src/kem/kyber768.rs'
+
+  schedule:
+    - cron: '0 0 * * *'
+
   workflow_dispatch:
 
 env:
