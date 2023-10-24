@@ -792,6 +792,31 @@ let deserialize_little_endian_11_ (serialized: slice u8)
 let serialize_uncompressed_ring_element
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
     : array u8 (sz 384) =
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (coefficient >=.
+                (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
+                <:
+                bool) &&
+              (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS)"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
   let serialized:array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
   let serialized:array u8 (sz 384) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
