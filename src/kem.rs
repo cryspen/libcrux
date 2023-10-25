@@ -27,11 +27,11 @@ pub use kyber::kyber768::encapsulate_768 as kyber768_encapsulate_derand;
 pub use kyber::kyber768::generate_key_pair_768 as kyber768_generate_keypair_derand;
 
 use self::kyber::{
+    KyberSharedSecret,
     kyber1024::{
-        Kyber1024Ciphertext, Kyber1024PrivateKey, Kyber1024PublicKey, Kyber1024SharedSecret,
-    },
-    kyber512::{Kyber512Ciphertext, Kyber512PrivateKey, Kyber512PublicKey, Kyber512SharedSecret},
-    kyber768::{Kyber768Ciphertext, Kyber768PrivateKey, Kyber768PublicKey, Kyber768SharedSecret},
+        Kyber1024Ciphertext, Kyber1024PrivateKey, Kyber1024PublicKey},
+    kyber512::{Kyber512Ciphertext, Kyber512PrivateKey, Kyber512PublicKey},
+    kyber768::{Kyber768Ciphertext, Kyber768PrivateKey, Kyber768PublicKey},
 };
 pub use kyber::{KyberCiphertext, KyberKeyPair};
 
@@ -167,10 +167,10 @@ pub enum Ct {
 pub enum Ss {
     X25519(x25519::PublicKey),
     P256(p256::PublicKey),
-    Kyber512(Kyber512SharedSecret),
-    Kyber768(Kyber768SharedSecret),
-    Kyber768X25519(Kyber768SharedSecret, x25519::PublicKey),
-    Kyber1024(Kyber1024SharedSecret),
+    Kyber512(KyberSharedSecret),
+    Kyber768(KyberSharedSecret),
+    Kyber768X25519(KyberSharedSecret, x25519::PublicKey),
+    Kyber1024(KyberSharedSecret),
 }
 
 impl PrivateKey {

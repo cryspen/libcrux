@@ -25,9 +25,10 @@ pub mod kyber512;
 pub mod kyber768;
 
 impl_generic_struct!(KyberCiphertext);
-impl_generic_struct!(KyberSharedSecret);
 impl_generic_struct!(KyberPrivateKey);
 impl_generic_struct!(KyberPublicKey);
+
+pub type KyberSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
 /// A Kyber key pair
 pub struct KyberKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
@@ -92,7 +93,6 @@ pub(super) fn generate_keypair<
 
 pub(super) fn encapsulate<
     const K: usize,
-    const SHARED_SECRET_SIZE: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -107,17 +107,15 @@ pub(super) fn encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; SHARED_SECRET_SIZE],
+    randomness: [u8; constants::SHARED_SECRET_SIZE],
 ) -> Result<
     (
         KyberCiphertext<CIPHERTEXT_SIZE>,
-        KyberSharedSecret<SHARED_SECRET_SIZE>,
+        KyberSharedSecret,
     ),
     BadRejectionSamplingRandomnessError,
 > {
-    let randomness_hashed = H(&randomness);
-
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness_hashed);
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
 
     let hashed = G(&to_hash);
@@ -137,7 +135,7 @@ pub(super) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-        >(public_key.as_slice(), randomness_hashed, pseudorandomness);
+        >(public_key.as_slice(), randomness, pseudorandomness);
 
     if sampling_a_error.is_some() {
         Err(sampling_a_error.unwrap())

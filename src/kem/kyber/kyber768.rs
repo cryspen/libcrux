@@ -34,7 +34,6 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 pub type Kyber768Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
 pub type Kyber768PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_768>;
 pub type Kyber768PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
-pub type Kyber768SharedSecret = KyberSharedSecret<SHARED_SECRET_SIZE>;
 
 /// Generate Kyber 768 Key Pair
 pub fn generate_key_pair_768(
@@ -61,13 +60,12 @@ pub fn encapsulate_768(
 ) -> Result<
     (
         KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
-        KyberSharedSecret<SHARED_SECRET_SIZE>,
+        KyberSharedSecret,
     ),
     BadRejectionSamplingRandomnessError,
 > {
     encapsulate::<
         RANK_768,
-        SHARED_SECRET_SIZE,
         CPA_PKE_CIPHERTEXT_SIZE_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
         T_AS_NTT_ENCODED_SIZE_768,
