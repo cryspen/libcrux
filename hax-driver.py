@@ -32,6 +32,13 @@ parser.add_argument(
     help="Extract the Kyber reference implementation.",
 )
 parser.add_argument(
+    "--kyber-specification",
+    dest="kyber_specification",
+    default=False,
+    action="store_true",
+    help="Extract the Kyber specification.",
+)
+parser.add_argument(
     "--crate-path",
     type=str,
     dest="crate_path",
@@ -89,20 +96,7 @@ if options.exclude_modules:
     else:
         filter_string += " {}".format(options.exclude_modules)
 
-
-if filter_string:
-    shell(
-        [
-            "cargo",
-            "hax",
-            "into",
-            "-i",
-            "-** {}".format(filter_string),
-            "fstar",
-        ],
-        cwd=options.crate_path,
-    )
-elif options.kyber_reference:
+if options.kyber_reference:
     shell(
         [
             "cargo",
@@ -114,5 +108,31 @@ elif options.kyber_reference:
         ],
         cwd=".",
     )
+elif options.kyber_specification:
+    shell(
+        [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            "-** +compress::* +ind_cpa::* +hacspec_kyber::* +matrix::* +ntt::* +parameters::* +sampling::* +serialize::* -libcrux::hacl::sha3::* -libcrux::digest::*",
+            "fstar",
+        ],
+        cwd=os.path.join("specs", "kyber"),
+    )
+
 else:
-    shell(["cargo", "hax", "into", "fstar"], cwd=options.crate_path)
+    if filter_string:
+        shell(
+            [
+                "cargo",
+                "hax",
+                "into",
+                "-i",
+                "-** {}".format(filter_string),
+                "fstar",
+            ],
+            cwd=options.crate_path,
+        )
+    else:
+        shell(["cargo", "hax", "into", "fstar"], cwd=options.crate_path)
