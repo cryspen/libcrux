@@ -109,10 +109,7 @@ pub(super) fn encapsulate<
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; constants::SHARED_SECRET_SIZE],
 ) -> Result<
-    (
-        KyberCiphertext<CIPHERTEXT_SIZE>,
-        KyberSharedSecret,
-    ),
+    (KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret),
     BadRejectionSamplingRandomnessError,
 > {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
@@ -121,21 +118,20 @@ pub(super) fn encapsulate<
     let hashed = G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-    let (ciphertext, sampling_a_error) =
-        ind_cpa::encrypt::<
-            K,
-            CIPHERTEXT_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            VECTOR_U_BLOCK_LEN,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-        >(public_key.as_slice(), randomness, pseudorandomness);
+    let (ciphertext, sampling_a_error) = ind_cpa::encrypt::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_SIZE,
+        C2_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+        VECTOR_U_BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+    >(public_key.as_slice(), randomness, pseudorandomness);
 
     if sampling_a_error.is_some() {
         Err(sampling_a_error.unwrap())
@@ -163,7 +159,7 @@ pub(super) fn decapsulate<
 >(
     secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
-) -> [u8; SHARED_SECRET_SIZE] {
+) -> KyberSharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
