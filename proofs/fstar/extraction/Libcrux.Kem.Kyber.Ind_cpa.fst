@@ -268,7 +268,7 @@ let cbd (#v_K #v_ETA #v_ETA_RANDOMNESS_SIZE: usize) (prf_input: array u8 (sz 33)
           let re_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at re_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts r v_ETA
+              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts r (cast v_ETA <: i32)
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
@@ -403,7 +403,7 @@ let generate_keypair
           let secret_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at secret_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts secret v_ETA1
+              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts secret (cast v_ETA1 <: i32)
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
@@ -436,7 +436,7 @@ let generate_keypair
           let error_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at error_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts error v_ETA1
+              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts error (cast v_ETA1 <: i32)
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in

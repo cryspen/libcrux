@@ -23,12 +23,12 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_with_debug_asserts(
     mut re: KyberPolynomialRingElement,
-    coefficient_bound: usize,
+    coefficient_bound: i32,
 ) -> KyberPolynomialRingElement {
     debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| usize::try_from(coefficient.abs()).unwrap() <= coefficient_bound));
+        .all(|coefficient| coefficient.abs() <= coefficient_bound));
 
     let mut zeta_i = 0;
     let mut layer_number = 0;
@@ -48,10 +48,9 @@ pub(in crate::kem::kyber) fn ntt_with_debug_asserts(
         }
     }
     layer_number += 1;
-    re.coefficients.into_iter().all(|coefficient| {
-        usize::try_from(coefficient.abs()).unwrap()
-            < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS as usize) / 2)
-    });
+    debug_assert!(re.coefficients.into_iter().all(|coefficient| {
+        coefficient.abs() < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))
+    }));
 
     macro_rules! ntt_at_layer {
         ($layer:literal) => {
@@ -66,10 +65,9 @@ pub(in crate::kem::kyber) fn ntt_with_debug_asserts(
             }
 
             layer_number += 1;
-            re.coefficients.into_iter().all(|coefficient| {
-                usize::try_from(coefficient.abs()).unwrap()
-                    < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS as usize) / 2)
-            });
+            debug_assert!(re.coefficients.into_iter().all(|coefficient| {
+                coefficient.abs() < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))
+            }));
         };
     }
 

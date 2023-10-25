@@ -23,7 +23,7 @@ let v_ZETAS_MONTGOMERY_DOMAIN: array i32 (sz 128) =
 
 let ntt_with_debug_asserts
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-      (coefficient_bound: usize)
+      (coefficient_bound: i32)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -34,22 +34,12 @@ let ntt_with_debug_asserts
             <:
             (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
           (fun coefficient ->
-              (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                        <:
-                        i32)
-                    <:
-                    Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error
-                  )
-                <:
-                usize) <=.
-              coefficient_bound
-              <:
-              bool)
+              (Core.Num.impl_2__abs coefficient <: i32) <=. coefficient_bound <: bool)
       in
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        usize::try_from(coefficient.abs()).unwrap() <= coefficient_bound)"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        coefficient.abs() <= coefficient_bound)"
 
               <:
               Rust_primitives.Hax.t_Never)
@@ -57,7 +47,7 @@ let ntt_with_debug_asserts
       ()
   in
   let zeta_i:usize = sz 0 in
-  let layer_number:usize = sz 0 in
+  let layer_number:i32 = 0l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -98,34 +88,37 @@ let ntt_with_debug_asserts
           in
           re, zeta_i)
   in
-  let layer_number:usize = layer_number +! sz 1 in
-  let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-    Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        <:
-        (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-      (fun coefficient ->
-          (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                    <:
-                    i32)
-                <:
-                Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error)
+  let layer_number:i32 = layer_number +! 1l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            usize) <.
-          (coefficient_bound +!
-            (((layer_number *! sz 3 <: usize) *!
-                (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: usize)
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (coefficient_bound +!
+                ((layer_number *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
                 <:
-                usize) /!
-              sz 2
+                i32)
               <:
-              usize)
-            <:
-            usize)
-          <:
-          bool)
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
-  let _:bool = out in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -173,34 +166,37 @@ let ntt_with_debug_asserts
           in
           re, zeta_i)
   in
-  let layer_number:usize = layer_number +! sz 1 in
-  let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-    Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        <:
-        (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-      (fun coefficient ->
-          (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                    <:
-                    i32)
-                <:
-                Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error)
+  let layer_number:i32 = layer_number +! 1l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            usize) <.
-          (coefficient_bound +!
-            (((layer_number *! sz 3 <: usize) *!
-                (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: usize)
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (coefficient_bound +!
+                ((layer_number *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
                 <:
-                usize) /!
-              sz 2
+                i32)
               <:
-              usize)
-            <:
-            usize)
-          <:
-          bool)
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
-  let _:bool = out in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -248,34 +244,37 @@ let ntt_with_debug_asserts
           in
           re, zeta_i)
   in
-  let layer_number:usize = layer_number +! sz 1 in
-  let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-    Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        <:
-        (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-      (fun coefficient ->
-          (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                    <:
-                    i32)
-                <:
-                Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error)
+  let layer_number:i32 = layer_number +! 1l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            usize) <.
-          (coefficient_bound +!
-            (((layer_number *! sz 3 <: usize) *!
-                (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: usize)
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (coefficient_bound +!
+                ((layer_number *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
                 <:
-                usize) /!
-              sz 2
+                i32)
               <:
-              usize)
-            <:
-            usize)
-          <:
-          bool)
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
-  let _:bool = out in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -323,34 +322,37 @@ let ntt_with_debug_asserts
           in
           re, zeta_i)
   in
-  let layer_number:usize = layer_number +! sz 1 in
-  let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-    Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        <:
-        (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-      (fun coefficient ->
-          (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                    <:
-                    i32)
-                <:
-                Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error)
+  let layer_number:i32 = layer_number +! 1l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            usize) <.
-          (coefficient_bound +!
-            (((layer_number *! sz 3 <: usize) *!
-                (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: usize)
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (coefficient_bound +!
+                ((layer_number *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
                 <:
-                usize) /!
-              sz 2
+                i32)
               <:
-              usize)
-            <:
-            usize)
-          <:
-          bool)
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
-  let _:bool = out in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -398,34 +400,37 @@ let ntt_with_debug_asserts
           in
           re, zeta_i)
   in
-  let layer_number:usize = layer_number +! sz 1 in
-  let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-    Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        <:
-        (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-      (fun coefficient ->
-          (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                    <:
-                    i32)
-                <:
-                Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error)
+  let layer_number:i32 = layer_number +! 1l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            usize) <.
-          (coefficient_bound +!
-            (((layer_number *! sz 3 <: usize) *!
-                (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: usize)
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (coefficient_bound +!
+                ((layer_number *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
                 <:
-                usize) /!
-              sz 2
+                i32)
               <:
-              usize)
-            <:
-            usize)
-          <:
-          bool)
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
-  let _:bool = out in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -473,34 +478,37 @@ let ntt_with_debug_asserts
           in
           re, zeta_i)
   in
-  let layer_number:usize = layer_number +! sz 1 in
-  let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-    Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        <:
-        (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-      (fun coefficient ->
-          (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                    <:
-                    i32)
-                <:
-                Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error)
+  let layer_number:i32 = layer_number +! 1l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            usize) <.
-          (coefficient_bound +!
-            (((layer_number *! sz 3 <: usize) *!
-                (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: usize)
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (coefficient_bound +!
+                ((layer_number *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
                 <:
-                usize) /!
-              sz 2
+                i32)
               <:
-              usize)
-            <:
-            usize)
-          <:
-          bool)
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
-  let _:bool = out in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -548,34 +556,37 @@ let ntt_with_debug_asserts
           in
           re, zeta_i)
   in
-  let layer_number:usize = layer_number +! sz 1 in
-  let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-    Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        <:
-        (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-      (fun coefficient ->
-          (Core.Result.impl__unwrap (Core.Convert.f_try_from (Core.Num.impl_2__abs coefficient
-                    <:
-                    i32)
-                <:
-                Core.Result.t_Result usize (Core.Convert.Num.Ptr_try_from_impls.impl_25).f_Error)
+  let layer_number:i32 = layer_number +! 1l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            usize) <.
-          (coefficient_bound +!
-            (((layer_number *! sz 3 <: usize) *!
-                (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: usize)
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (coefficient_bound +!
+                ((layer_number *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
                 <:
-                usize) /!
-              sz 2
+                i32)
               <:
-              usize)
-            <:
-            usize)
-          <:
-          bool)
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
-  let _:bool = out in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
     {
       re with

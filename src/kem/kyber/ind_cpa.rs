@@ -84,7 +84,7 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
         let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let r = sample_from_binomial_distribution::<ETA>(&prf_output);
-        re_as_ntt[i] = ntt_with_debug_asserts(r, ETA);
+        re_as_ntt[i] = ntt_with_debug_asserts(r, ETA as i32);
     }
     (re_as_ntt, domain_separator)
 }
@@ -148,7 +148,7 @@ pub(crate) fn generate_keypair<
 
         let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
 
-        secret_as_ntt[i] = ntt_with_debug_asserts(secret, ETA1);
+        secret_as_ntt[i] = ntt_with_debug_asserts(secret, ETA1 as i32);
     }
 
     // for i from 0 to k−1 do
@@ -163,7 +163,7 @@ pub(crate) fn generate_keypair<
         let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let error = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        error_as_ntt[i] = ntt_with_debug_asserts(error, ETA1);
+        error_as_ntt[i] = ntt_with_debug_asserts(error, ETA1 as i32);
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ
