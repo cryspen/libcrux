@@ -44,7 +44,7 @@ use self::{
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     conversions::into_padded_array,
-    hash_functions::{G, H, KDF},
+    hash_functions::{G, H},
     ind_cpa::serialize_secret_key,
 };
 
@@ -121,7 +121,7 @@ pub(super) fn encapsulate<
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
 
     let hashed = G(&to_hash);
-    let (k_not, pseudorandomness) = hashed.split_at(32);
+    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
     let (ciphertext, sampling_a_error) =
         ind_cpa::encrypt::<
@@ -139,15 +139,10 @@ pub(super) fn encapsulate<
             ETA2_RANDOMNESS_SIZE,
         >(public_key.as_slice(), randomness_hashed, pseudorandomness);
 
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
-
-    let shared_secret = KDF(&to_hash).into();
-
     if sampling_a_error.is_some() {
         Err(sampling_a_error.unwrap())
     } else {
-        Ok((ciphertext, shared_secret))
+        Ok((ciphertext, shared_secret.try_into().unwrap()))
     }
 }
 
@@ -187,7 +182,7 @@ pub(super) fn decapsulate<
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
     let hashed = G(&to_hash);
-    let (k_not, pseudorandomness) = hashed.split_at(32);
+    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
     // If a ciphertext C is well-formed, setting aside the fact that a
     // decryption failure could (with negligible probability) occur, it must hold that:
@@ -223,10 +218,6 @@ pub(super) fn decapsulate<
         ciphertext.as_ref(),
         expected_ciphertext.as_ref(),
     );
-    let to_hash = select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector);
 
-    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&to_hash);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
-
-    KDF(&to_hash)
+    select_shared_secret_in_constant_time(shared_secret, implicit_rejection_value, selector)
 }

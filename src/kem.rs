@@ -32,8 +32,8 @@ use self::kyber::{
     },
     kyber512::{Kyber512Ciphertext, Kyber512PrivateKey, Kyber512PublicKey, Kyber512SharedSecret},
     kyber768::{Kyber768Ciphertext, Kyber768PrivateKey, Kyber768PublicKey, Kyber768SharedSecret},
-    KyberKeyPair,
 };
+pub use kyber::{KyberCiphertext, KyberKeyPair};
 
 /// KEM Algorithms
 ///
