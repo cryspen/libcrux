@@ -30,6 +30,8 @@ const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
 const ETA2: usize = 2;
 const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 
+const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_768;
+
 // Kyber 768 types
 pub type Kyber768Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
 pub type Kyber768PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_768>;
@@ -102,5 +104,6 @@ pub fn decapsulate_768(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(secret_key, ciphertext)
 }

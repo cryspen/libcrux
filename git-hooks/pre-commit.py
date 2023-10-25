@@ -3,6 +3,7 @@
 import git
 from pathlib import Path
 import subprocess
+import os
 
 repo = git.Repo(".")
 
@@ -41,3 +42,7 @@ if update_spec_kyber_fstar_extraction == True:
 
 for item in repo.index.diff("HEAD"):
     repo.git.add(item.a_path)
+    if update_libcrux_kyber_fstar_extraction == True:
+        repo.git.add(os.path.join("proofs", "fstar", "extraction"))
+    if update_spec_kyber_fstar_extraction == True:
+        repo.git.add(os.path.join("specs", "kyber", "proofs", "fstar", "extraction"))

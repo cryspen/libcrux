@@ -58,28 +58,28 @@ let v_ETA2: usize = sz 2
 
 let v_ETA2_RANDOMNESS_SIZE: usize = v_ETA2 *! sz 64
 
+let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
+  Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_768_
+
 let t_Kyber768Ciphertext = Libcrux.Kem.Kyber.t_KyberCiphertext (sz 1088)
 
 let t_Kyber768PrivateKey = Libcrux.Kem.Kyber.t_KyberPrivateKey (sz 2400)
 
 let t_Kyber768PublicKey = Libcrux.Kem.Kyber.t_KyberPublicKey (sz 1184)
 
-let t_Kyber768SharedSecret = Libcrux.Kem.Kyber.t_KyberSharedSecret (sz 32)
-
-let generate_key_pair_768_ (randomness: array u8 (sz 64))
+let generate_key_pair_768_ (randomness: t_Array u8 (sz 64))
     : Core.Result.t_Result (Libcrux.Kem.Kyber.t_KyberKeyPair (sz 2400) (sz 1184))
       Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError =
   Libcrux.Kem.Kyber.generate_keypair randomness
 
 let encapsulate_768_
       (public_key: Libcrux.Kem.Kyber.t_KyberPublicKey (sz 1184))
-      (randomness: array u8 (sz 32))
-    : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.t_KyberCiphertext (sz 1088) & Libcrux.Kem.Kyber.t_KyberSharedSecret (sz 32)
-      ) Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError =
+      (randomness: t_Array u8 (sz 32))
+    : Core.Result.t_Result (Libcrux.Kem.Kyber.t_KyberCiphertext (sz 1088) & t_Array u8 (sz 32))
+      Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError =
   Libcrux.Kem.Kyber.encapsulate public_key randomness
 
 let decapsulate_768_
       (secret_key: Libcrux.Kem.Kyber.t_KyberPrivateKey (sz 2400))
       (ciphertext: Libcrux.Kem.Kyber.t_KyberCiphertext (sz 1088))
-    : array u8 (sz 32) = Libcrux.Kem.Kyber.decapsulate secret_key ciphertext
+    : t_Array u8 (sz 32) = Libcrux.Kem.Kyber.decapsulate secret_key ciphertext

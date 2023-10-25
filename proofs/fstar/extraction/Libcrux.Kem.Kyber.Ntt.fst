@@ -2,7 +2,7 @@ module Libcrux.Kem.Kyber.Ntt
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-let v_ZETAS_MONTGOMERY_DOMAIN: array i32 (sz 128) =
+let v_ZETAS_MONTGOMERY_DOMAIN: t_Array i32 (sz 128) =
   let list =
     [
       (-1044l); (-758l); (-359l); (-1517l); 1493l; 1422l; 287l; 202l; (-171l); 622l; 1577l; 182l;
@@ -32,9 +32,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <=. coefficient_bound <: bool)
+              (Core.Num.impl__i32__abs coefficient <: i32) <=. coefficient_bound <: bool)
       in
       let _:Prims.unit =
         if ~.out
@@ -49,7 +49,7 @@ let ntt_with_debug_asserts
   let zeta_i:usize = sz 0 in
   let layer_number:i32 = 0l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -60,19 +60,17 @@ let ntt_with_debug_asserts
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 128 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 = (re.[ j +! sz 128 <: usize ] <: i32) *! (-1600l) in
@@ -96,9 +94,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
               (coefficient_bound +!
                 ((layer_number *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
@@ -120,7 +118,7 @@ let ntt_with_debug_asserts
       ()
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -131,19 +129,17 @@ let ntt_with_debug_asserts
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 64 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -174,9 +170,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
               (coefficient_bound +!
                 ((layer_number *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
@@ -198,7 +194,7 @@ let ntt_with_debug_asserts
       ()
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -209,19 +205,17 @@ let ntt_with_debug_asserts
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 32 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -252,9 +246,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
               (coefficient_bound +!
                 ((layer_number *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
@@ -276,7 +270,7 @@ let ntt_with_debug_asserts
       ()
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -287,19 +281,17 @@ let ntt_with_debug_asserts
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 16 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -330,9 +322,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
               (coefficient_bound +!
                 ((layer_number *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
@@ -354,7 +346,7 @@ let ntt_with_debug_asserts
       ()
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -365,19 +357,17 @@ let ntt_with_debug_asserts
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 8 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -408,9 +398,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
               (coefficient_bound +!
                 ((layer_number *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
@@ -432,7 +422,7 @@ let ntt_with_debug_asserts
       ()
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -443,19 +433,17 @@ let ntt_with_debug_asserts
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 4 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -486,9 +474,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
               (coefficient_bound +!
                 ((layer_number *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
@@ -510,7 +498,7 @@ let ntt_with_debug_asserts
       ()
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -521,19 +509,17 @@ let ntt_with_debug_asserts
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 2 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -564,9 +550,9 @@ let ntt_with_debug_asserts
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl_2__abs coefficient <: i32) <.
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
               (coefficient_bound +!
                 ((layer_number *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
@@ -602,7 +588,7 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let zeta_i:usize = sz 0 in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -613,19 +599,17 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 128 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -649,7 +633,7 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -660,19 +644,17 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 64 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -696,7 +678,7 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -707,19 +689,17 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 32 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -743,7 +723,7 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -754,19 +734,17 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 16 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -790,7 +768,7 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -801,19 +779,17 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 8 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -837,7 +813,7 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -848,19 +824,17 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 4 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -884,7 +858,7 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -895,19 +869,17 @@ let ntt_representation (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingEl
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i +! sz 1 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = offset +! sz 2 <: usize
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
@@ -945,7 +917,7 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let zeta_i:usize = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2 in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -956,21 +928,19 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i -! sz 1 in
           let zeta_i_value:i32 = v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] in
           let v_end:usize = offset +! sz 2 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = v_end
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let a_minus_b:i32 = (re.[ j +! sz 2 <: usize ] <: i32) -! (re.[ j ] <: i32) in
@@ -993,7 +963,7 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -1004,21 +974,19 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i -! sz 1 in
           let zeta_i_value:i32 = v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] in
           let v_end:usize = offset +! sz 4 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = v_end
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let a_minus_b:i32 = (re.[ j +! sz 4 <: usize ] <: i32) -! (re.[ j ] <: i32) in
@@ -1041,7 +1009,7 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -1052,21 +1020,19 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i -! sz 1 in
           let zeta_i_value:i32 = v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] in
           let v_end:usize = offset +! sz 8 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = v_end
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let a_minus_b:i32 = (re.[ j +! sz 8 <: usize ] <: i32) -! (re.[ j ] <: i32) in
@@ -1089,7 +1055,7 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -1100,21 +1066,19 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i -! sz 1 in
           let zeta_i_value:i32 = v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] in
           let v_end:usize = offset +! sz 16 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = v_end
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let a_minus_b:i32 = (re.[ j +! sz 16 <: usize ] <: i32) -! (re.[ j ] <: i32) in
@@ -1137,7 +1101,7 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -1148,21 +1112,19 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i -! sz 1 in
           let zeta_i_value:i32 = v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] in
           let v_end:usize = offset +! sz 32 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = v_end
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let a_minus_b:i32 = (re.[ j +! sz 32 <: usize ] <: i32) -! (re.[ j ] <: i32) in
@@ -1185,7 +1147,7 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -1196,21 +1158,19 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i -! sz 1 in
           let zeta_i_value:i32 = v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] in
           let v_end:usize = offset +! sz 64 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = v_end
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let a_minus_b:i32 = (re.[ j +! sz 64 <: usize ] <: i32) -! (re.[ j ] <: i32) in
@@ -1233,7 +1193,7 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
           re, zeta_i)
   in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
@@ -1244,21 +1204,19 @@ let invert_ntt_montgomery (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRin
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       (re, zeta_i)
       (fun (re, zeta_i) offset ->
           let zeta_i:usize = zeta_i -! sz 1 in
           let zeta_i_value:i32 = v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] in
           let v_end:usize = offset +! sz 128 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
                       Core.Ops.Range.f_end = v_end
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let a_minus_b:i32 = (re.[ j +! sz 128 <: usize ] <: i32) -! (re.[ j ] <: i32) in
@@ -1312,7 +1270,7 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
       let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter left
             <:
-            (Libcrux.Kem.Kyber.Arithmetic.impl_2).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient -> (coefficient >=. 0l <: bool) && (coefficient <. 4096l <: bool))
       in
       let _:Prims.unit =
@@ -1331,7 +1289,7 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
       let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter right
             <:
-            (Libcrux.Kem.Kyber.Arithmetic.impl_2).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (coefficient >.
                 (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
@@ -1350,10 +1308,10 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
       ()
   in
   let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
@@ -1362,9 +1320,7 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
       out
       (fun out i ->
           let product:(i32 & i32) =
@@ -1404,7 +1360,7 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
       let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter out
             <:
-            (Libcrux.Kem.Kyber.Arithmetic.impl_2).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (coefficient >.
                 (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
@@ -1427,35 +1383,31 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
 let multiply_row_by_column_montgomery
       (#v_K: usize)
       (row_vector column_vector:
-          array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
+          t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
-  let result =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
+  let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
               (Core.Slice.impl__iter (Rust_primitives.unsize row_vector
                     <:
-                    slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                    t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                 <:
                 Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
               (Core.Slice.impl__iter (Rust_primitives.unsize column_vector
                     <:
-                    slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                    t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                 <:
                 Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
             <:
             Core.Iter.Adapters.Zip.t_Zip
               (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (Core.Iter.Traits.Collect.impl
-                (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
-                .f_IntoIter)
+              (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Zip.t_Zip
-              (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Zip.t_Zip
+          (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+          (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
       result
       (fun result (row_element, column_element) ->
           result +!
@@ -1463,7 +1415,7 @@ let multiply_row_by_column_montgomery
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           <:
-          (Libcrux.Kem.Kyber.Arithmetic.impl_3).f_Output)
+          Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
   in
   let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
     {
@@ -1478,37 +1430,36 @@ let multiply_row_by_column_montgomery
 
 let multiply_matrix_by_column_montgomery
       (#v_K: usize)
-      (matrix: array (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
-      (vector: array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
-    : array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-  let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__ZERO v_K
+      (matrix: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
+      (vector: t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
+    : t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
+      v_K
   in
-  let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__iter (Rust_primitives.unsize matrix
                     <:
-                    slice (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
+                    t_Slice (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
                 <:
                 Core.Slice.Iter.t_Iter
-                (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
+                (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_Iter
-              (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)))
+              (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate
+        (Core.Slice.Iter.t_Iter
+          (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)))
       result
       (fun result (i, row) ->
-          let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+          let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
                       (Core.Slice.impl__iter (Rust_primitives.unsize row
                             <:
-                            slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                            t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                         <:
                         Core.Slice.Iter.t_Iter
                         Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
@@ -1517,28 +1468,25 @@ let multiply_matrix_by_column_montgomery
                     (Core.Slice.Iter.t_Iter
                       Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
                 <:
-                (Core.Iter.Traits.Collect.impl
-                  (Core.Iter.Adapters.Enumerate.t_Enumerate
-                    (Core.Slice.Iter.t_Iter
-                      Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)))
-                  .f_IntoIter)
+                Core.Iter.Adapters.Enumerate.t_Enumerate
+                (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
               result
               (fun result (j, matrix_element) ->
                   let product:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     ntt_multiply matrix_element
                       (vector.[ j ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                   in
-                  let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+                  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
                     Rust_primitives.Hax.update_at result
                       i
                       ((result.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
                         product
                         <:
-                        (Libcrux.Kem.Kyber.Arithmetic.impl_3).f_Output)
+                        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                   in
                   result)
           in
-          let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+          let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at result
               i
               ({
@@ -1551,7 +1499,7 @@ let multiply_matrix_by_column_montgomery
                       .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     Libcrux.Kem.Kyber.Arithmetic.barrett_reduce
                   <:
-                  array i32 (sz 256)
+                  t_Array i32 (sz 256)
                 })
           in
           result)
@@ -1560,37 +1508,37 @@ let multiply_matrix_by_column_montgomery
 
 let compute_As_plus_e
       (#v_K: usize)
-      (matrix_A: array (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
-      (s_as_ntt error_as_ntt: array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
-    : array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-  let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__ZERO v_K
+      (matrix_A:
+          t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
+      (s_as_ntt error_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
+    : t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
+      v_K
   in
-  let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__iter (Rust_primitives.unsize matrix_A
                     <:
-                    slice (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
+                    t_Slice (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
                 <:
                 Core.Slice.Iter.t_Iter
-                (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
+                (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_Iter
-              (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)))
+              (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate
+        (Core.Slice.Iter.t_Iter
+          (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)))
       result
       (fun result (i, row) ->
-          let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+          let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
                       (Core.Slice.impl__iter (Rust_primitives.unsize row
                             <:
-                            slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                            t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                         <:
                         Core.Slice.Iter.t_Iter
                         Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
@@ -1599,24 +1547,21 @@ let compute_As_plus_e
                     (Core.Slice.Iter.t_Iter
                       Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
                 <:
-                (Core.Iter.Traits.Collect.impl
-                  (Core.Iter.Adapters.Enumerate.t_Enumerate
-                    (Core.Slice.Iter.t_Iter
-                      Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)))
-                  .f_IntoIter)
+                Core.Iter.Adapters.Enumerate.t_Enumerate
+                (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
               result
               (fun result (j, matrix_element) ->
                   let product:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     ntt_multiply matrix_element
                       (s_as_ntt.[ j ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                   in
-                  let result:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
+                  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
                     Rust_primitives.Hax.update_at result
                       i
                       ((result.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
                         product
                         <:
-                        (Libcrux.Kem.Kyber.Arithmetic.impl_3).f_Output)
+                        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                   in
                   result)
           in
@@ -1628,9 +1573,9 @@ let compute_As_plus_e
                         <:
                         Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                     <:
-                    (Libcrux.Kem.Kyber.Arithmetic.impl_2).f_IntoIter)
+                    Core.Array.Iter.t_IntoIter i32 (sz 256))
                   (fun coefficient ->
-                      (Core.Num.impl_2__abs coefficient <: i32) <.
+                      (Core.Num.impl__i32__abs coefficient <: i32) <.
                       ((cast v_K <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
                       <:
                       bool)
@@ -1645,7 +1590,7 @@ let compute_As_plus_e
               in
               ()
           in
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                     Core.Ops.Range.f_start = sz 0;
                     Core.Ops.Range.f_end
                     =
@@ -1654,12 +1599,12 @@ let compute_As_plus_e
                             Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                             .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         <:
-                        slice i32)
+                        t_Slice i32)
                     <:
                     usize
                   })
               <:
-              (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+              Core.Ops.Range.t_Range usize)
             result
             (fun result j ->
                 let coefficient_normal_form:i32 =

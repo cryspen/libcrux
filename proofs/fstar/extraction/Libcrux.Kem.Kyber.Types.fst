@@ -4,8 +4,8 @@ open Core
 
 let impl__new
       (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
-      (sk: array u8 v_PRIVATE_KEY_SIZE)
-      (pk: array u8 v_PUBLIC_KEY_SIZE)
+      (sk: t_Array u8 v_PRIVATE_KEY_SIZE)
+      (pk: t_Array u8 v_PUBLIC_KEY_SIZE)
     : Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
   {
     Libcrux.Kem.Kyber.f_sk = Core.Convert.f_into sk;
@@ -32,9 +32,10 @@ let impl__private_key
 let impl__pk
       (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
       (self: Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : array u8 v_PUBLIC_KEY_SIZE = Libcrux.Kem.Kyber.impl_35__as_slice self.Libcrux.Kem.Kyber.f_pk
+    : t_Array u8 v_PUBLIC_KEY_SIZE = Libcrux.Kem.Kyber.impl_29__as_slice self.Libcrux.Kem.Kyber.f_pk
 
 let impl__sk
       (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
       (self: Libcrux.Kem.Kyber.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : array u8 v_PRIVATE_KEY_SIZE = Libcrux.Kem.Kyber.impl_26__as_slice self.Libcrux.Kem.Kyber.f_sk
+    : t_Array u8 v_PRIVATE_KEY_SIZE =
+  Libcrux.Kem.Kyber.impl_19__as_slice self.Libcrux.Kem.Kyber.f_sk

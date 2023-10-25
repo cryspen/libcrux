@@ -45,7 +45,7 @@ use self::{
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     conversions::into_padded_array,
-    hash_functions::{G, H},
+    hash_functions::{G, H, PRF},
     ind_cpa::serialize_secret_key,
 };
 
@@ -156,6 +156,7 @@ pub(super) fn decapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
@@ -177,6 +178,11 @@ pub(super) fn decapsulate<
 
     let hashed = G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
+
+    let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
+        into_padded_array(&implicit_rejection_value);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
+    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = PRF(&to_hash);
 
     // If a ciphertext C is well-formed, setting aside the fact that a
     // decryption failure could (with negligible probability) occur, it must hold that:
@@ -213,5 +219,9 @@ pub(super) fn decapsulate<
         expected_ciphertext.as_ref(),
     );
 
-    select_shared_secret_in_constant_time(shared_secret, implicit_rejection_value, selector)
+    select_shared_secret_in_constant_time(
+        shared_secret,
+        &implicit_rejection_shared_secret,
+        selector,
+    )
 }
