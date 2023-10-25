@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
+  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -118,6 +119,7 @@ jobs:
         run: cargo build --verbose $RUST_TARGET_FLAG
 
   wasm:
+    if: ${{ github.event_name == 'workflow_dispatch'  || github.event_name == 'merge_group'  }}
     runs-on: ubuntu-latest
 
     steps:
