@@ -31,6 +31,6 @@ if format_python_files == True:
 if format_rust_files == True:
     shell(["cargo", "fmt"])
 if update_kyber_fstar_extraction == True:
-    shell(["./extract-to-fstar.py", "--kyber-reference"])
+    shell(["./hax-driver.py", "--kyber-reference"])
 
 repo.git.add(update=True)
