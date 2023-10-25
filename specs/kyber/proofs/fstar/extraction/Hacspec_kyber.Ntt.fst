@@ -7,7 +7,7 @@ let v_ZETA: Hacspec_lib.Field.t_PrimeFieldElement 3329us = { Hacspec_lib.Field.f
 let v_INVERSE_OF_128_: Hacspec_lib.Field.t_PrimeFieldElement 3329us =
   { Hacspec_lib.Field.f_value = 3303us }
 
-let v_NTT_LAYERS: array usize (sz 7) =
+let v_NTT_LAYERS: t_Array usize (sz 7) =
   let list = [sz 2; sz 4; sz 8; sz 16; sz 32; sz 64; sz 128] in
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 7);
   Rust_primitives.Hax.array_of_list list
@@ -15,12 +15,12 @@ let v_NTT_LAYERS: array usize (sz 7) =
 let bit_rev_7_ (value: u8) : u8 =
   let (reversed: u8):u8 = 0uy in
   let reversed:u8 =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = 0ul;
-              Core.Ops.Range.f_end = Core.Num.impl_6__BITS -! 1ul <: u32
+              Core.Ops.Range.f_end = Core.Num.impl__u8__BITS -! 1ul <: u32
             })
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range u32)).f_IntoIter)
+        Core.Ops.Range.t_Range u32)
       reversed
       (fun reversed bit ->
           let reversed:u8 = reversed <<! 1l in
@@ -43,34 +43,28 @@ let ntt
   let ff_hat, k:(Hacspec_lib.Ring.t_PolynomialRingElement
       (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) &
     u8) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_rev
-              (Core.Slice.impl__iter (Rust_primitives.unsize v_NTT_LAYERS <: slice usize)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_rev
+              (Core.Slice.impl__iter (Rust_primitives.unsize v_NTT_LAYERS <: t_Slice usize)
                 <:
                 Core.Slice.Iter.t_Iter usize)
             <:
             Core.Iter.Adapters.Rev.t_Rev (Core.Slice.Iter.t_Iter usize))
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Iter.Adapters.Rev.t_Rev (Core.Slice.Iter.t_Iter usize))
-        )
-          .f_IntoIter)
+        Core.Iter.Adapters.Rev.t_Rev (Core.Slice.Iter.t_Iter usize))
       (ff_hat, k)
       (fun (ff_hat, k) len ->
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
                     ({
                         Core.Ops.Range.f_start = sz 0;
                         Core.Ops.Range.f_end
                         =
-                        Hacspec_kyber.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT -! len
-                        <:
-                        (Core.Ops.Arith.impl_71).f_Output
+                        Hacspec_kyber.Parameters.v_COEFFICIENTS_IN_RING_ELEMENT -! len <: usize
                       })
-                    (sz 2 *! len <: (Core.Ops.Arith.impl_127).f_Output)
+                    (sz 2 *! len <: usize)
                   <:
                   Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
               <:
-              (Core.Iter.Traits.Collect.impl
-                (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-                .f_IntoIter)
+              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
             (ff_hat, k)
             (fun (ff_hat, k) start ->
                 let zeta:Hacspec_lib.Field.t_PrimeFieldElement 3329us =
@@ -79,27 +73,27 @@ let ntt
                 let k:u8 = k +! 1uy in
                 let ff_hat:Hacspec_lib.Ring.t_PolynomialRingElement
                   (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
-                  Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+                  Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                             Core.Ops.Range.f_start = start;
-                            Core.Ops.Range.f_end = start +! len <: (Core.Ops.Arith.impl_15).f_Output
+                            Core.Ops.Range.f_end = start +! len <: usize
                           })
                       <:
-                      (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                      Core.Ops.Range.t_Range usize)
                     ff_hat
                     (fun ff_hat j ->
-                        let t =
+                        let t:Hacspec_lib.Field.t_PrimeFieldElement 3329us =
                           zeta *!
-                          (ff_hat.[ j +! len <: (Core.Ops.Arith.impl_15).f_Output ]
+                          (ff_hat.[ j +! len <: usize ]
                             <:
                             Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                         in
                         let ff_hat:Hacspec_lib.Ring.t_PolynomialRingElement
                           (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
                           Rust_primitives.Hax.update_at ff_hat
-                            (j +! len <: (Core.Ops.Arith.impl_15).f_Output)
+                            (j +! len <: usize)
                             ((ff_hat.[ j ] <: Hacspec_lib.Field.t_PrimeFieldElement 3329us) -! t
                               <:
-                              (Hacspec_lib.Field.impl_8 3329us).f_Output)
+                              Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                         in
                         let ff_hat:Hacspec_lib.Ring.t_PolynomialRingElement
                           (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
@@ -107,7 +101,7 @@ let ntt
                             j
                             ((ff_hat.[ j ] <: Hacspec_lib.Field.t_PrimeFieldElement 3329us) +! t
                               <:
-                              (Hacspec_lib.Field.impl_7 3329us).f_Output)
+                              Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                         in
                         ff_hat)
                 in
@@ -133,12 +127,12 @@ let ntt_inverse
   let f, k:(Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
       (sz 256) &
     u8) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter v_NTT_LAYERS
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter v_NTT_LAYERS
         <:
-        (Core.Array.Iter.impl usize (sz 7)).f_IntoIter)
+        Core.Array.Iter.t_IntoIter usize (sz 7))
       (f, k)
       (fun (f, k) len ->
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
                     ({
                         Core.Ops.Range.f_start = sz 0;
                         Core.Ops.Range.f_end
@@ -149,9 +143,7 @@ let ntt_inverse
                   <:
                   Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
               <:
-              (Core.Iter.Traits.Collect.impl
-                (Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize)))
-                .f_IntoIter)
+              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
             (f, k)
             (fun (f, k) start ->
                 let zeta:Hacspec_lib.Field.t_PrimeFieldElement 3329us =
@@ -160,12 +152,12 @@ let ntt_inverse
                 let k:u8 = k -! 1uy in
                 let f:Hacspec_lib.Ring.t_PolynomialRingElement
                   (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
-                  Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+                  Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                             Core.Ops.Range.f_start = start;
                             Core.Ops.Range.f_end = start +! len <: usize
                           })
                       <:
-                      (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                      Core.Ops.Range.t_Range usize)
                     f
                     (fun f j ->
                         let t:Hacspec_lib.Field.t_PrimeFieldElement 3329us = f.[ j ] in
@@ -178,7 +170,7 @@ let ntt_inverse
                                 <:
                                 Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                               <:
-                              (Hacspec_lib.Field.impl_7 3329us).f_Output)
+                              Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                         in
                         let f:Hacspec_lib.Ring.t_PolynomialRingElement
                           (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
@@ -190,9 +182,9 @@ let ntt_inverse
                                   Hacspec_lib.Field.t_PrimeFieldElement 3329us) -!
                                 t
                                 <:
-                                (Hacspec_lib.Field.impl_8 3329us).f_Output)
+                                Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                               <:
-                              (Hacspec_lib.Field.impl_9 3329us).f_Output)
+                              Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                         in
                         f)
                 in
@@ -204,27 +196,27 @@ let ntt_inverse
   in
   let f:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     (sz 256) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end
               =
               Core.Slice.impl__len (Rust_primitives.unsize (Hacspec_lib.Ring.impl_2__coefficients f
                       <:
-                      array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
+                      t_Array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
                   <:
-                  slice (Hacspec_lib.Field.t_PrimeFieldElement 3329us))
+                  t_Slice (Hacspec_lib.Field.t_PrimeFieldElement 3329us))
               <:
               usize
             })
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+        Core.Ops.Range.t_Range usize)
       f
       (fun f i ->
           Rust_primitives.Hax.update_at f
             i
             ((f.[ i ] <: Hacspec_lib.Field.t_PrimeFieldElement 3329us) *! v_INVERSE_OF_128_
               <:
-              (Hacspec_lib.Field.impl_9 3329us).f_Output)
+              Hacspec_lib.Field.t_PrimeFieldElement 3329us)
           <:
           Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
             (sz 256))
@@ -243,12 +235,12 @@ let multiply_ntts
   in
   let h_hat:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     (sz 256) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = sz 128
             })
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+        Core.Ops.Range.t_Range usize)
       h_hat
       (fun h_hat i ->
           let binomial_product:(Hacspec_lib.Field.t_PrimeFieldElement 3329us &
@@ -298,10 +290,10 @@ let base_case_multiply
       c with
       _1
       =
-      (a._1 *! b._1 <: (Hacspec_lib.Field.impl_9 3329us).f_Output) +!
-      ((a._2 *! b._2 <: (Hacspec_lib.Field.impl_9 3329us).f_Output) *! zeta
+      (a._1 *! b._1 <: Hacspec_lib.Field.t_PrimeFieldElement 3329us) +!
+      ((a._2 *! b._2 <: Hacspec_lib.Field.t_PrimeFieldElement 3329us) *! zeta
         <:
-        (Hacspec_lib.Field.impl_9 3329us).f_Output)
+        Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     }
   in
   let c:(Hacspec_lib.Field.t_PrimeFieldElement 3329us & Hacspec_lib.Field.t_PrimeFieldElement 3329us
@@ -310,8 +302,8 @@ let base_case_multiply
       c with
       _2
       =
-      (a._1 *! b._2 <: (Hacspec_lib.Field.impl_9 3329us).f_Output) +!
-      (a._2 *! b._1 <: (Hacspec_lib.Field.impl_9 3329us).f_Output)
+      (a._1 *! b._2 <: Hacspec_lib.Field.t_PrimeFieldElement 3329us) +!
+      (a._2 *! b._1 <: Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     }
   in
   c
@@ -329,7 +321,7 @@ let vector_ntt
   let vector_as_ntt:Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     (sz 256)
     (sz 3) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Hacspec_lib.Vector.impl__into_iter vector
                 <:
                 Core.Array.Iter.t_IntoIter
@@ -341,12 +333,10 @@ let vector_ntt
                 (Hacspec_lib.Ring.t_PolynomialRingElement
                     (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) (sz 3)))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Array.Iter.t_IntoIter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) (sz 3))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate
+        (Core.Array.Iter.t_IntoIter
+            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256)) (sz 3)))
       vector_as_ntt
       (fun vector_as_ntt (i, re) ->
           Rust_primitives.Hax.update_at vector_as_ntt
@@ -374,7 +364,7 @@ let vector_inverse_ntt
   let vector:Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     (sz 256)
     (sz 3) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Hacspec_lib.Vector.impl__into_iter vector_as_ntt
                 <:
                 Core.Array.Iter.t_IntoIter
@@ -386,12 +376,10 @@ let vector_inverse_ntt
                 (Hacspec_lib.Ring.t_PolynomialRingElement
                     (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) (sz 3)))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Array.Iter.t_IntoIter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) (sz 3))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate
+        (Core.Array.Iter.t_IntoIter
+            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256)) (sz 3)))
       vector
       (fun vector (i, re_ntt) ->
           Rust_primitives.Hax.update_at vector

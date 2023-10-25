@@ -4,25 +4,25 @@ open Core
 
 let transpose
       (matrix:
-          array
+          t_Array
             (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                 (sz 256)
                 (sz 3)) (sz 3))
-    : array
+    : t_Array
       (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3))
       (sz 3) =
-  let transpose:array
+  let transpose:t_Array
     (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3))
     (sz 3) =
     Rust_primitives.Hax.repeat Hacspec_lib.Vector.impl__ZERO (sz 3)
   in
-  let transpose:array
+  let transpose:t_Array
     (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3))
     (sz 3) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__iter (Rust_primitives.unsize matrix
                     <:
-                    slice
+                    t_Slice
                     (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                         (sz 256)
                         (sz 3)))
@@ -38,16 +38,14 @@ let transpose
                   (sz 256)
                   (sz 3))))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-                  (sz 256)
-                  (sz 3)))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate
+        (Core.Slice.Iter.t_Iter
+          (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+              (sz 256)
+              (sz 3))))
       transpose
       (fun transpose (i, row) ->
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
                     (Hacspec_lib.Vector.impl__iter row
                       <:
                       Core.Slice.Iter.t_Iter
@@ -59,12 +57,10 @@ let transpose
                     (Hacspec_lib.Ring.t_PolynomialRingElement
                         (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
               <:
-              (Core.Iter.Traits.Collect.impl
-                (Core.Iter.Adapters.Enumerate.t_Enumerate
-                  (Core.Slice.Iter.t_Iter
-                    (Hacspec_lib.Ring.t_PolynomialRingElement
-                        (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))))
-                .f_IntoIter)
+              Core.Iter.Adapters.Enumerate.t_Enumerate
+              (Core.Slice.Iter.t_Iter
+                (Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
             transpose
             (fun transpose (j, matrix_element) ->
                 Rust_primitives.Hax.update_at transpose
@@ -81,12 +77,12 @@ let transpose
                       (sz 256)
                       (sz 3))
                 <:
-                array
+                t_Array
                   (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                       (sz 256)
                       (sz 3)) (sz 3))
           <:
-          array
+          t_Array
             (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                 (sz 256)
                 (sz 3)) (sz 3))
@@ -95,7 +91,7 @@ let transpose
 
 let multiply_matrix_by_column
       (matrix:
-          array
+          t_Array
             (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                 (sz 256)
                 (sz 3)) (sz 3))
@@ -108,7 +104,7 @@ let multiply_matrix_by_column
     (sz 3) =
     Hacspec_lib.Vector.impl__ZERO
   in
-  let transposed:array
+  let transposed:t_Array
     (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3))
     (sz 3) =
     transpose matrix
@@ -116,10 +112,10 @@ let multiply_matrix_by_column
   let result:Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     (sz 256)
     (sz 3) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__iter (Rust_primitives.unsize transposed
                     <:
-                    slice
+                    t_Slice
                     (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                         (sz 256)
                         (sz 3)))
@@ -135,16 +131,14 @@ let multiply_matrix_by_column
                   (sz 256)
                   (sz 3))))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Slice.Iter.t_Iter
-              (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-                  (sz 256)
-                  (sz 3)))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate
+        (Core.Slice.Iter.t_Iter
+          (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+              (sz 256)
+              (sz 3))))
       result
       (fun result (i, row) ->
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
                     (Hacspec_lib.Vector.impl__iter row
                       <:
                       Core.Slice.Iter.t_Iter
@@ -156,12 +150,10 @@ let multiply_matrix_by_column
                     (Hacspec_lib.Ring.t_PolynomialRingElement
                         (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
               <:
-              (Core.Iter.Traits.Collect.impl
-                (Core.Iter.Adapters.Enumerate.t_Enumerate
-                  (Core.Slice.Iter.t_Iter
-                    (Hacspec_lib.Ring.t_PolynomialRingElement
-                        (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))))
-                .f_IntoIter)
+              Core.Iter.Adapters.Enumerate.t_Enumerate
+              (Core.Slice.Iter.t_Iter
+                (Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
             result
             (fun result (j, matrix_element) ->
                 let product:Hacspec_lib.Ring.t_PolynomialRingElement
@@ -182,9 +174,8 @@ let multiply_matrix_by_column
                           (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) +!
                       product
                       <:
-                      (Hacspec_lib.Ring.impl_6 (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-                          (sz 256))
-                        .f_Output)
+                      Hacspec_lib.Ring.t_PolynomialRingElement
+                        (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
                 in
                 result)
           <:
@@ -203,8 +194,9 @@ let multiply_column_by_row
     (sz 256) =
     Hacspec_lib.Ring.impl_2__ZERO
   in
-  let result =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
+  let result:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+    (sz 256) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
               (Hacspec_lib.Vector.impl__iter column_vector
                 <:
                 Core.Slice.Iter.t_Iter
@@ -220,21 +212,17 @@ let multiply_column_by_row
               (Core.Slice.Iter.t_Iter
                 (Hacspec_lib.Ring.t_PolynomialRingElement
                     (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
-              (Core.Iter.Traits.Collect.impl
-                (Core.Slice.Iter.t_Iter
-                  (Hacspec_lib.Ring.t_PolynomialRingElement
-                      (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
-                .f_IntoIter)
+              (Core.Slice.Iter.t_Iter
+                (Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Zip.t_Zip
-              (Core.Slice.Iter.t_Iter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
-              (Core.Slice.Iter.t_Iter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Zip.t_Zip
+          (Core.Slice.Iter.t_Iter
+            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256)))
+          (Core.Slice.Iter.t_Iter
+            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256))))
       result
       (fun result (column_element, row_element) ->
           result +!
@@ -243,7 +231,7 @@ let multiply_column_by_row
             Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
               (sz 256))
           <:
-          (Hacspec_lib.Ring.impl_6 (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)).f_Output
-      )
+          Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+            (sz 256))
   in
   result
