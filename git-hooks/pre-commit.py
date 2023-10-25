@@ -27,7 +27,7 @@ for item in repo.index.diff("HEAD"):
         if "kyber" in path.parts:
             if "src" in path.parts:
                 update_libcrux_kyber_fstar_extraction = True
-            if "specs" in path.parts:
+            if "specs" in path.parts and "src" in path.parts:
                 update_spec_kyber_fstar_extraction = True
 
 if format_python_files == True:
@@ -39,4 +39,5 @@ if update_libcrux_kyber_fstar_extraction == True:
 if update_spec_kyber_fstar_extraction == True:
     shell(["./hax-driver.py", "--kyber-specification"])
 
-repo.git.add(update=True)
+for item in repo.index.diff("HEAD"):
+    repo.git.add(item.a_path)
