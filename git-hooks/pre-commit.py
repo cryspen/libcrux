@@ -37,12 +37,10 @@ if format_rust_files == True:
     shell(["cargo", "fmt"])
 if update_libcrux_kyber_fstar_extraction == True:
     shell(["./hax-driver.py", "--kyber-reference"])
+    repo.git.add(os.path.join("proofs", "fstar", "extraction"))
 if update_spec_kyber_fstar_extraction == True:
     shell(["./hax-driver.py", "--kyber-specification"])
+    repo.git.add(os.path.join("specs", "kyber", "proofs", "fstar", "extraction"))
 
 for item in repo.index.diff("HEAD"):
     repo.git.add(item.a_path)
-    if update_libcrux_kyber_fstar_extraction == True:
-        repo.git.add(os.path.join("proofs", "fstar", "extraction"))
-    if update_spec_kyber_fstar_extraction == True:
-        repo.git.add(os.path.join("specs", "kyber", "proofs", "fstar", "extraction"))
