@@ -1,7 +1,9 @@
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     compress::{compress_q, decompress_q},
-    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
+    constants::{
+        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, SHARED_SECRET_SIZE,
+    },
     conversions::to_unsigned_representative,
 };
 
@@ -288,6 +290,11 @@ fn deserialize_little_endian_11(serialized: &[u8]) -> KyberPolynomialRingElement
 pub(super) fn serialize_uncompressed_ring_element(
     re: KyberPolynomialRingElement,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
+    debug_assert!(re
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
+
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
     for (i, chunks) in re.coefficients.chunks_exact(2).enumerate() {

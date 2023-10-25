@@ -2,8 +2,8 @@ use super::{
     arithmetic::KyberPolynomialRingElement,
     compress::{compress, decompress},
     constants::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS,
-        REJECTION_SAMPLING_SEED_SIZE, SHARED_SECRET_SIZE,
+        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
+        SHARED_SECRET_SIZE,
     },
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
@@ -84,7 +84,7 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
         let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let r = sample_from_binomial_distribution::<ETA>(&prf_output);
-        re_as_ntt[i] = ntt_representation(r);
+        re_as_ntt[i] = ntt_with_debug_asserts(r, ETA as i32);
     }
     (re_as_ntt, domain_separator)
 }
@@ -147,13 +147,8 @@ pub(crate) fn generate_keypair<
         let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        secret_as_ntt[i] = ntt_representation(secret);
 
-        // For serialize_key to work correctly.
-        debug_assert!(secret_as_ntt[i]
-            .coefficients
-            .into_iter()
-            .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
+        secret_as_ntt[i] = ntt_with_debug_asserts(secret, ETA1 as i32);
     }
 
     // for i from 0 to k−1 do
@@ -168,20 +163,11 @@ pub(crate) fn generate_keypair<
         let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let error = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        error_as_ntt[i] = ntt_representation(error);
+        error_as_ntt[i] = ntt_with_debug_asserts(error, ETA1 as i32);
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    let mut t_as_ntt = multiply_matrix_by_column(&A_transpose, &secret_as_ntt);
-    for i in 0..K {
-        t_as_ntt[i] = t_as_ntt[i] + error_as_ntt[i];
-
-        // For serialize_key to work correctly.
-        debug_assert!(t_as_ntt[i]
-            .coefficients
-            .into_iter()
-            .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
-    }
+    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);

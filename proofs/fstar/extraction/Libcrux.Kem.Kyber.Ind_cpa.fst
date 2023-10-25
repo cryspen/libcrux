@@ -268,7 +268,7 @@ let cbd (#v_K #v_ETA #v_ETA_RANDOMNESS_SIZE: usize) (prf_input: array u8 (sz 33)
           let re_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at re_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_representation r
+              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts r (cast v_ETA <: i32)
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
@@ -403,37 +403,9 @@ let generate_keypair
           let secret_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at secret_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_representation secret
+              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts secret (cast v_ETA1 <: i32)
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-          in
-          let _:Prims.unit =
-            if true
-            then
-              let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-                Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter (secret_as_ntt.[
-                          i ]
-                        <:
-                        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    <:
-                    (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-                  (fun coefficient ->
-                      (coefficient >=.
-                        (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
-                        <:
-                        bool) &&
-                      (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
-              in
-              let _:Prims.unit =
-                if ~.out
-                then
-                  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: secret_as_ntt[i].coefficients.into_iter().all(|coefficient|\\n        coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS)"
-
-                      <:
-                      Rust_primitives.Hax.t_Never)
-              in
-              ()
           in
           domain_separator, prf_input, secret_as_ntt)
   in
@@ -464,61 +436,14 @@ let generate_keypair
           let error_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at error_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_representation error
+              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts error (cast v_ETA1 <: i32)
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
           domain_separator, error_as_ntt, prf_input)
   in
   let tt_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Libcrux.Kem.Kyber.Ntt.multiply_matrix_by_column v_A_transpose secret_as_ntt
-  in
-  let tt_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            })
-        <:
-        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
-      tt_as_ntt
-      (fun tt_as_ntt i ->
-          let tt_as_ntt:array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-            Rust_primitives.Hax.update_at tt_as_ntt
-              i
-              ((tt_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
-                (error_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                <:
-                (Libcrux.Kem.Kyber.Arithmetic.impl_3).f_Output)
-          in
-          let _:Prims.unit =
-            if true
-            then
-              let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-                Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter (tt_as_ntt.[ i
-                        ]
-                        <:
-                        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    <:
-                    (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
-                  (fun coefficient ->
-                      (coefficient >=.
-                        (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
-                        <:
-                        bool) &&
-                      (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
-              in
-              let _:Prims.unit =
-                if ~.out
-                then
-                  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: t_as_ntt[i].coefficients.into_iter().all(|coefficient|\\n        coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS)"
-
-                      <:
-                      Rust_primitives.Hax.t_Never)
-              in
-              ()
-          in
-          tt_as_ntt)
+    Libcrux.Kem.Kyber.Ntt.compute_As_plus_e v_A_transpose secret_as_ntt error_as_ntt
   in
   let public_key_serialized:Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
     Libcrux.Kem.Kyber.Conversions.impl__new (Rust_primitives.Hax.repeat 0uy v_PUBLIC_KEY_SIZE

@@ -59,6 +59,28 @@ let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: array u8
             Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients)
           else Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients))
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter out
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+          (fun coefficient ->
+              (coefficient >=. 0l <: bool) &&
+              (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: out.coefficients.into_iter().all(|coefficient|\\n        coefficient >= 0 && coefficient < FIELD_MODULUS)"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
   out, Core.Option.Option_Some Libcrux.Kem.Kyber.BadRejectionSamplingRandomnessError
 
 let sample_from_binomial_distribution_2_ (randomness: slice u8)
