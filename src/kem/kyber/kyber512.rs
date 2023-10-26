@@ -39,10 +39,7 @@ pub type Kyber512PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
 /// Generate Kyber 512 Key Pair
 pub fn generate_key_pair_512(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> Result<
-    KyberKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>,
-    BadRejectionSamplingRandomnessError,
-> {
+) -> Result<KyberKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>, Error> {
     generate_keypair::<
         RANK_512,
         CPA_PKE_SECRET_KEY_SIZE_512,
@@ -63,7 +60,7 @@ pub fn encapsulate_512(
         KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>,
         KyberSharedSecret,
     ),
-    BadRejectionSamplingRandomnessError,
+    Error,
 > {
     encapsulate::<
         RANK_512,

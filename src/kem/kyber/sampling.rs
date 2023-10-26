@@ -1,15 +1,12 @@
 use super::{
     arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    BadRejectionSamplingRandomnessError,
+    Error,
 };
 
 pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     randomness: [u8; SEED_SIZE],
-) -> (
-    KyberPolynomialRingElement,
-    Option<BadRejectionSamplingRandomnessError>,
-) {
+) -> (KyberPolynomialRingElement, Option<Error>) {
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
@@ -39,7 +36,7 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
         .into_iter()
         .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
 
-    (out, Some(BadRejectionSamplingRandomnessError))
+    (out, Some(Error::RejectionSampling))
 }
 
 /// Given a series of uniformly random bytes in `|randomness|`, sample
