@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 
-def shell(command, expect=0, cwd=None):
+def shell(command, expect=0, cwd=None, env={}):
     subprocess_stdout = subprocess.DEVNULL
 
     print("Command: ", end="")
@@ -18,7 +18,10 @@ def shell(command, expect=0, cwd=None):
 
     print("\nDirectory: {}".format(cwd))
 
-    ret = subprocess.run(command, cwd=cwd)
+    os_env = os.environ
+    os_env.update(env)
+
+    ret = subprocess.run(command, cwd=cwd, env=os_env)
     if ret.returncode != expect:
         raise Exception("Error {}. Expected {}.".format(ret, expect))
 
@@ -78,7 +81,6 @@ typecheck_parser.add_argument(
 )
 
 options = parser.parse_args()
-print("subparser: ", options)
 
 filter_string = ""
 
@@ -103,7 +105,10 @@ if options.exclude_modules:
         filter_string += " {}".format(options.exclude_modules)
 
 if options.typecheck:
-    shell(["make", "-C", "proofs/fstar/extraction/"])
+    custom_env = {}
+    if options.lax:
+        custom_env.update({"OTHERFLAGS": "--lax"})
+    shell(["make", "-C", "proofs/fstar/extraction/"], custom_env)
     exit(0)
 
 if filter_string:
