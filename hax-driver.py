@@ -64,8 +64,21 @@ parser.add_argument(
     default="",
     help="Space-separated list of modules to exclude from extraction. The module names must be fully qualified.",
 )
+typecheck_parser = parser.add_subparsers(
+    description="Typecheck libcrux",
+    dest="typecheck",
+    help="Run F* etc. to typecheck the extracted libcrux code.",
+)
+typecheck_parser = typecheck_parser.add_parser("typecheck")
+typecheck_parser.add_argument(
+    "--lax",
+    action="store_true",
+    dest="lax",
+    help="Lax typecheck the code only",
+)
 
 options = parser.parse_args()
+print("subparser: ", options)
 
 filter_string = ""
 
@@ -89,6 +102,9 @@ if options.exclude_modules:
     else:
         filter_string += " {}".format(options.exclude_modules)
 
+if options.typecheck:
+    shell(["make", "-C", "proofs/fstar/extraction/"])
+    exit(0)
 
 if filter_string:
     shell(
