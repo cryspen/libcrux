@@ -26,7 +26,7 @@ for item in repo.index.diff("HEAD"):
     elif path.suffix == ".rs":
         format_rust_files = True
         if "kyber" in path.parts:
-            if "specs" in path.parts and "kyber" in path.parts:
+            if "specs" in path.parts and "kyber" in path.parts and "src" in path.parts:
                 update_spec_kyber_fstar_extraction = True
             if "src" in path.parts and "kem" in path.parts:
                 update_libcrux_kyber_fstar_extraction = True

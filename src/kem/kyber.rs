@@ -64,8 +64,8 @@ pub(super) fn generate_keypair<
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError> {
-    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
-    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+    let (ind_cpa_keypair_randomness, implicit_rejection_value) =
+        randomness.split_at(CPA_PKE_KEY_GENERATION_SEED_SIZE);
 
     let ((ind_cpa_private_key, public_key), sampling_a_error) = ind_cpa::generate_keypair::<
         K,
@@ -107,7 +107,7 @@ pub(super) fn encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
-    randomness: [u8; constants::SHARED_SECRET_SIZE],
+    randomness: [u8; SHARED_SECRET_SIZE],
 ) -> Result<
     (KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret),
     BadRejectionSamplingRandomnessError,
@@ -133,10 +133,9 @@ pub(super) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    if sampling_a_error.is_some() {
-        Err(sampling_a_error.unwrap())
-    } else {
-        Ok((ciphertext, shared_secret.try_into().unwrap()))
+    match sampling_a_error {
+        Some(e) => Err(e),
+        None => Ok((ciphertext, shared_secret.try_into().unwrap())),
     }
 }
 
