@@ -1,0 +1,19 @@
+{
+    "fstar_exe": "fstar.exe",
+    "options": [
+        "--cmi",
+        "--warn_error",
+        "-331",
+        "--cache_checked_modules",
+        "--cache_dir",
+        "/Users/franziskus/repos/hax/proof-libs/fstar/.cache",
+        "--already_cached",
+        "+Prims+FStar+LowStar+C+Spec.Loops+TestLib"
+    ],
+    "include_dirs": [
+        "/Users/franziskus/repos/hacl-star/lib",
+        "/Users/franziskus/repos/hax/proof-libs/fstar/rust_primitives",
+        "/Users/franziskus/repos/hax/proof-libs/fstar/core",
+        "/Users/franziskus/repos/hax/proof-libs/fstar/hax_lib"
+    ]
+}
