@@ -28,6 +28,9 @@ impl_generic_struct!(KyberCiphertext);
 impl_generic_struct!(KyberPrivateKey);
 impl_generic_struct!(KyberPublicKey);
 
+// TODO: We should make this an actual type as opposed to alias so we can enforce
+// some checks at the type level. This is being tracked in:
+// https://github.com/cryspen/libcrux/issues/123
 pub type KyberSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
 /// A Kyber key pair
