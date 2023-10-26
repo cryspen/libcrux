@@ -58,28 +58,27 @@ let v_ETA2: usize = sz 2
 
 let v_ETA2_RANDOMNESS_SIZE: usize = v_ETA2 *! sz 64
 
-let t_Kyber512Ciphertext = Libcrux.Kem.Kyber.t_KyberCiphertext (sz 768)
+let t_Kyber512Ciphertext = Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 768)
 
-let t_Kyber512PrivateKey = Libcrux.Kem.Kyber.t_KyberPrivateKey (sz 1632)
+let t_Kyber512PrivateKey = Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 1632)
 
-let t_Kyber512PublicKey = Libcrux.Kem.Kyber.t_KyberPublicKey (sz 800)
+let t_Kyber512PublicKey = Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 800)
 
-let t_Kyber512SharedSecret = Libcrux.Kem.Kyber.t_KyberSharedSecret (sz 32)
+let t_Kyber512SharedSecret = Libcrux.Kem.Kyber.Types.t_KyberSharedSecret (sz 32)
 
-let generate_key_pair_512_ (randomness: array u8 (sz 64))
-    : Core.Result.t_Result (Libcrux.Kem.Kyber.t_KyberKeyPair (sz 1632) (sz 800))
-      Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError =
-  Libcrux.Kem.Kyber.generate_keypair randomness
+let generate_key_pair_512_ (randomness: t_Array u8 (sz 64))
+    : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 1632) (sz 800))
+      Libcrux.Kem.Kyber.t_Error = Libcrux.Kem.Kyber.generate_keypair randomness
 
 let encapsulate_512_
-      (public_key: Libcrux.Kem.Kyber.t_KyberPublicKey (sz 800))
-      (randomness: array u8 (sz 32))
+      (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 800))
+      (randomness: t_Array u8 (sz 32))
     : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.t_KyberCiphertext (sz 768) & Libcrux.Kem.Kyber.t_KyberSharedSecret (sz 32))
-      Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError =
+      (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 768) &
+        Libcrux.Kem.Kyber.Types.t_KyberSharedSecret (sz 32)) Libcrux.Kem.Kyber.t_Error =
   Libcrux.Kem.Kyber.encapsulate public_key randomness
 
 let decapsulate_512_
-      (secret_key: Libcrux.Kem.Kyber.t_KyberPrivateKey (sz 1632))
-      (ciphertext: Libcrux.Kem.Kyber.t_KyberCiphertext (sz 768))
-    : array u8 (sz 32) = Libcrux.Kem.Kyber.decapsulate secret_key ciphertext
+      (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 1632))
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 768))
+    : t_Array u8 (sz 32) = Libcrux.Kem.Kyber.decapsulate secret_key ciphertext

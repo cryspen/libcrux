@@ -7,8 +7,6 @@
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 pub(crate) mod constants;
 
-#[macro_use]
-mod types;
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
@@ -18,25 +16,21 @@ mod ind_cpa;
 mod ntt;
 mod sampling;
 mod serialize;
+mod types;
 
 // Variants
 pub mod kyber1024;
 pub mod kyber512;
 pub mod kyber768;
 
-impl_generic_struct!(KyberCiphertext);
-impl_generic_struct!(KyberSharedSecret);
-impl_generic_struct!(KyberPrivateKey);
-impl_generic_struct!(KyberPublicKey);
+pub use types::{
+    KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey, KyberSharedSecret,
+};
 
-/// A Kyber key pair
-pub struct KyberKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
-    pub(crate) sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
-    pub(crate) pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
+#[derive(Debug, Clone, Copy)]
+pub enum Error {
+    RejectionSampling,
 }
-
-#[derive(Debug)]
-pub struct BadRejectionSamplingRandomnessError;
 
 use self::{
     constant_time_ops::{
@@ -62,7 +56,7 @@ pub(super) fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError> {
+) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, Error> {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
@@ -113,7 +107,7 @@ pub(super) fn encapsulate<
         KyberCiphertext<CIPHERTEXT_SIZE>,
         KyberSharedSecret<SHARED_SECRET_SIZE>,
     ),
-    BadRejectionSamplingRandomnessError,
+    Error,
 > {
     let randomness_hashed = H(&randomness);
 

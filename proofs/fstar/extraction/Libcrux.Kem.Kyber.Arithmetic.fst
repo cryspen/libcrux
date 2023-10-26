@@ -157,24 +157,24 @@ let montgomery_reduce (value: i32) : i32 =
 
 let to_montgomery_domain (value: i32) : i32 = montgomery_reduce (1353l *! value <: i32)
 
-type t_KyberPolynomialRingElement = { f_coefficients:array i32 (sz 256) }
+type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
-let impl__ZERO: t_KyberPolynomialRingElement =
+let impl__KyberPolynomialRingElement__ZERO: t_KyberPolynomialRingElement =
   { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) }
 
 let impl_1: Core.Ops.Index.t_Index t_KyberPolynomialRingElement usize =
   {
-    f_impl_1__Output = i32;
-    f_impl_1__index
+    f_Output = i32;
+    f_index
     =
     fun (self: t_KyberPolynomialRingElement) (index: usize) -> self.f_coefficients.[ index ]
   }
 
 let impl_2: Core.Iter.Traits.Collect.t_IntoIterator t_KyberPolynomialRingElement =
   {
-    f_impl_2__Item = i32;
-    f_impl_2__IntoIter = Core.Array.Iter.t_IntoIter i32 (sz 256);
-    f_impl_2__into_iter
+    f_Item = i32;
+    f_IntoIter = Core.Array.Iter.t_IntoIter i32 (sz 256);
+    f_into_iter
     =
     fun (self: t_KyberPolynomialRingElement) ->
       Core.Iter.Traits.Collect.f_into_iter self.f_coefficients
@@ -182,18 +182,18 @@ let impl_2: Core.Iter.Traits.Collect.t_IntoIterator t_KyberPolynomialRingElement
 
 let impl_3: Core.Ops.Arith.t_Add t_KyberPolynomialRingElement t_KyberPolynomialRingElement =
   {
-    f_impl_3__Output = t_KyberPolynomialRingElement;
-    f_impl_3__add
+    f_Output = t_KyberPolynomialRingElement;
+    f_add
     =
     fun (self: t_KyberPolynomialRingElement) (other: t_KyberPolynomialRingElement) ->
-      let result:t_KyberPolynomialRingElement = impl__ZERO in
+      let result:t_KyberPolynomialRingElement = impl__KyberPolynomialRingElement__ZERO in
       let result:t_KyberPolynomialRingElement =
-        Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+        Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                 })
             <:
-            (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+            Core.Ops.Range.t_Range usize)
           result
           (fun result i ->
               {
@@ -212,18 +212,18 @@ let impl_3: Core.Ops.Arith.t_Add t_KyberPolynomialRingElement t_KyberPolynomialR
 
 let impl_4: Core.Ops.Arith.t_Sub t_KyberPolynomialRingElement t_KyberPolynomialRingElement =
   {
-    f_impl_4__Output = t_KyberPolynomialRingElement;
-    f_impl_4__sub
+    f_Output = t_KyberPolynomialRingElement;
+    f_sub
     =
     fun (self: t_KyberPolynomialRingElement) (other: t_KyberPolynomialRingElement) ->
-      let result:t_KyberPolynomialRingElement = impl__ZERO in
+      let result:t_KyberPolynomialRingElement = impl__KyberPolynomialRingElement__ZERO in
       let result:t_KyberPolynomialRingElement =
-        Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+        Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                 })
             <:
-            (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+            Core.Ops.Range.t_Range usize)
           result
           (fun result i ->
               {

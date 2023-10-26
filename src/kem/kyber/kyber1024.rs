@@ -40,10 +40,7 @@ pub type Kyber1024SharedSecret = KyberSharedSecret<SHARED_SECRET_SIZE>;
 /// Generate Kyber 1024 Key Pair
 pub fn generate_key_pair_1024(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> Result<
-    KyberKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>,
-    BadRejectionSamplingRandomnessError,
-> {
+) -> Result<KyberKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>, Error> {
     generate_keypair::<
         RANK_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,
@@ -64,7 +61,7 @@ pub fn encapsulate_1024(
         KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
         KyberSharedSecret<SHARED_SECRET_SIZE>,
     ),
-    BadRejectionSamplingRandomnessError,
+    Error,
 > {
     encapsulate::<
         RANK_1024,
