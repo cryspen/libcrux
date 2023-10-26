@@ -2,8 +2,6 @@ module Libcrux.Kem.Kyber
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-type t_Error = | Error_RejectionSampling : t_Error
-
 let v_KEY_GENERATION_SEED_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
@@ -13,7 +11,8 @@ let generate_keypair
           usize)
       (randomness: t_Array u8 (sz 64))
     : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE) t_Error =
+      (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+      Libcrux.Kem.Kyber.Types.t_Error =
   let ind_cpa_keypair_randomness, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at (Rust_primitives.unsize randomness <: t_Slice u8)
       Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
@@ -21,7 +20,7 @@ let generate_keypair
   let (ind_cpa_private_key, public_key), sampling_a_error:((Libcrux.Kem.Kyber.Types.t_PrivateKey
       v_CPA_PRIVATE_KEY_SIZE &
       Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE) &
-    Core.Option.t_Option t_Error) =
+    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     Libcrux.Kem.Kyber.Ind_cpa.generate_keypair ind_cpa_keypair_randomness
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
@@ -53,7 +52,8 @@ let encapsulate
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
     : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) t_Error =
+      (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+      Libcrux.Kem.Kyber.Types.t_Error =
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (Rust_primitives.unsize randomness <: t_Slice u8
       )
@@ -86,7 +86,7 @@ let encapsulate
       Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
   in
   let ciphertext, sampling_a_error:(Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
-    Core.Option.t_Option t_Error) =
+    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     Libcrux.Kem.Kyber.Ind_cpa.encrypt (Rust_primitives.unsize (Libcrux.Kem.Kyber.Types.impl_30__as_slice
               public_key
             <:
@@ -163,7 +163,7 @@ let decapsulate
     Libcrux.Kem.Kyber.Hash_functions.v_PRF (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
   let expected_ciphertext, _:(Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
-    Core.Option.t_Option t_Error) =
+    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     Libcrux.Kem.Kyber.Ind_cpa.encrypt ind_cpa_public_key decrypted pseudorandomness
   in
   let selector:u8 =

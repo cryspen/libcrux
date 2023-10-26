@@ -24,13 +24,8 @@ pub mod kyber512;
 pub mod kyber768;
 
 pub use types::{
-    KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey, KyberSharedSecret,
+    KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey, KyberSharedSecret,Error
 };
-
-#[derive(Debug, Clone, Copy)]
-pub enum Error {
-    RejectionSampling,
-}
 
 use self::{
     constant_time_ops::{

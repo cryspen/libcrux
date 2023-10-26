@@ -32,7 +32,7 @@ let serialize_secret_key
 
 let sample_matrix_A (#v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
     : (t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
-      Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
   let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
     v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
@@ -41,10 +41,12 @@ let sample_matrix_A (#v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
         t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
       v_K
   in
-  let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.t_Error = Core.Option.Option_None in
+  let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error =
+    Core.Option.Option_None
+  in
   let v_A_transpose, sampling_A_error:(t_Array
       (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
-    Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = v_K
@@ -95,15 +97,17 @@ let sample_matrix_A (#v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
             (v_A_transpose, sampling_A_error)
             (fun (v_A_transpose, sampling_A_error) j ->
                 let sampled, error:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
-                  Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+                  Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
                   Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (xof_bytes.[ j ]
                       <:
                       t_Array u8 (sz 840))
                 in
-                let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.t_Error =
+                let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error =
                   if Core.Option.impl__is_some error
                   then
-                    let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.t_Error = error in
+                    let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error =
+                      error
+                    in
                     sampling_A_error
                   else sampling_A_error
                 in
@@ -243,7 +247,7 @@ let generate_keypair
       (key_generation_seed: t_Slice u8)
     : ((Libcrux.Kem.Kyber.Types.t_PrivateKey v_PRIVATE_KEY_SIZE &
         Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE) &
-      Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) = Rust_primitives.Hax.repeat 0uy (sz 33) in
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
@@ -260,7 +264,7 @@ let generate_keypair
   in
   let v_A_transpose, sampling_A_error:(t_Array
       (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
-    Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     sample_matrix_A (Libcrux.Kem.Kyber.Conversions.into_padded_array seed_for_A
         <:
         t_Array u8 (sz 34))
@@ -430,7 +434,7 @@ let encrypt
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
     : (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
-      Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
       v_K
@@ -462,7 +466,7 @@ let encrypt
   let seed:t_Slice u8 = public_key.[ { Core.Ops.Range.f_start = v_T_AS_NTT_ENCODED_SIZE } ] in
   let v_A_transpose, sampling_A_error:(t_Array
       (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K &
-    Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     sample_matrix_A (Libcrux.Kem.Kyber.Conversions.into_padded_array seed <: t_Array u8 (sz 34))
       false
   in
