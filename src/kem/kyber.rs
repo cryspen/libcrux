@@ -108,7 +108,7 @@ pub(super) fn encapsulate<
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; constants::SHARED_SECRET_SIZE],
-    randomness: [u8; SHARED_SECRET_SIZE],
+) -> Result<
     (KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret),
     BadRejectionSamplingRandomnessError,
 > {
