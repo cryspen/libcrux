@@ -1,7 +1,6 @@
 use super::{
     arithmetic::{
-        barrett_reduce, montgomery_reduce, to_montgomery_domain, KyberFieldElement,
-        KyberPolynomialRingElement,
+        barrett_reduce, montgomery_reduce, KyberFieldElement, KyberPolynomialRingElement,
     },
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
@@ -21,10 +20,10 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
 // invocations to this function, upon which this function will be renamed back to
 // ntt_representation().
 #[inline(always)]
-pub(in crate::kem::kyber) fn ntt_with_debug_asserts(
+pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: KyberPolynomialRingElement,
-    coefficient_bound: i32,
 ) -> KyberPolynomialRingElement {
+    let coefficient_bound = 3;
     debug_assert!(re
         .coefficients
         .into_iter()
@@ -84,12 +83,12 @@ pub(in crate::kem::kyber) fn ntt_with_debug_asserts(
 }
 
 #[inline(always)]
-pub(in crate::kem::kyber) fn ntt_representation(
+pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
     let mut zeta_i = 0;
 
-    macro_rules! layers {
+    macro_rules! ntt_at_layer {
         ($layer:literal) => {
             for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - $layer)).step_by(2 * $layer) {
                 zeta_i += 1;
@@ -103,13 +102,13 @@ pub(in crate::kem::kyber) fn ntt_representation(
         };
     }
 
-    layers!(128);
-    layers!(64);
-    layers!(32);
-    layers!(16);
-    layers!(8);
-    layers!(4);
-    layers!(2);
+    ntt_at_layer!(128);
+    ntt_at_layer!(64);
+    ntt_at_layer!(32);
+    ntt_at_layer!(16);
+    ntt_at_layer!(8);
+    ntt_at_layer!(4);
+    ntt_at_layer!(2);
 
     re.coefficients = re.coefficients.map(barrett_reduce);
 
@@ -117,9 +116,7 @@ pub(in crate::kem::kyber) fn ntt_representation(
 }
 
 #[inline(always)]
-pub(in crate::kem::kyber) fn invert_ntt_montgomery(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+fn invert_ntt_montgomery(mut re: KyberPolynomialRingElement) -> KyberPolynomialRingElement {
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
     macro_rules! layers {
@@ -148,10 +145,6 @@ pub(in crate::kem::kyber) fn invert_ntt_montgomery(
     layers!(32);
     layers!(64);
     layers!(128);
-
-    re.coefficients = re
-        .coefficients
-        .map(|coefficient| barrett_reduce(montgomery_reduce(coefficient * 1441)));
 
     re
 }
@@ -207,36 +200,79 @@ fn ntt_multiply(
     out
 }
 
+// v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
 #[inline(always)]
-pub(in crate::kem::kyber) fn multiply_row_by_column_montgomery<const K: usize>(
-    row_vector: &[KyberPolynomialRingElement; K],
-    column_vector: &[KyberPolynomialRingElement; K],
+pub(in crate::kem::kyber) fn compute_message<const K: usize>(
+    v: &KyberPolynomialRingElement,
+    secret_as_ntt: &[KyberPolynomialRingElement; K],
+    u_as_ntt: &[KyberPolynomialRingElement; K],
 ) -> KyberPolynomialRingElement {
     let mut result = KyberPolynomialRingElement::ZERO;
 
-    for (row_element, column_element) in row_vector.iter().zip(column_vector.iter()) {
-        result = result + ntt_multiply(row_element, column_element);
+    for (secret_element, u_element) in secret_as_ntt.iter().zip(u_as_ntt.iter()) {
+        result = result + ntt_multiply(secret_element, u_element);
     }
-
+    // TODO: Without this, there's a failure in Kyber-1024. We need to see if
+    // this round of barrett reductions can be removed.
     result.coefficients = result.coefficients.map(barrett_reduce);
+
+    result = invert_ntt_montgomery(result);
+
+    for i in 0..result.coefficients.len() {
+        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
+        result.coefficients[i] = barrett_reduce(v.coefficients[i] - coefficient_normal_form);
+    }
 
     result
 }
 
+// v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
 #[inline(always)]
-pub(in crate::kem::kyber) fn multiply_matrix_by_column_montgomery<const K: usize>(
-    matrix: &[[KyberPolynomialRingElement; K]; K],
-    vector: &[KyberPolynomialRingElement; K],
+pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
+    t_as_ntt: &[KyberPolynomialRingElement; K],
+    r_as_ntt: &[KyberPolynomialRingElement; K],
+    error_2: &KyberPolynomialRingElement,
+    message: &KyberPolynomialRingElement,
+) -> KyberPolynomialRingElement {
+    let mut result = KyberPolynomialRingElement::ZERO;
+
+    for (t_element, r_element) in t_as_ntt.iter().zip(r_as_ntt.iter()) {
+        result = result + ntt_multiply(t_element, r_element);
+    }
+    result = invert_ntt_montgomery(result);
+
+    for i in 0..result.coefficients.len() {
+        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
+        result.coefficients[i] = barrett_reduce(
+            coefficient_normal_form + error_2.coefficients[i] + message.coefficients[i],
+        );
+    }
+
+    result
+}
+
+// u := NTT^{-1}(AˆT ◦ rˆ) + e_1
+#[inline(always)]
+pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
+    a_as_ntt: &[[KyberPolynomialRingElement; K]; K],
+    r_as_ntt: &[KyberPolynomialRingElement; K],
+    error_1: &[KyberPolynomialRingElement; K],
 ) -> [KyberPolynomialRingElement; K] {
     let mut result = [KyberPolynomialRingElement::ZERO; K];
 
-    for (i, row) in matrix.iter().enumerate() {
-        for (j, matrix_element) in row.iter().enumerate() {
-            let product = ntt_multiply(matrix_element, &vector[j]);
+    for (i, row) in a_as_ntt.iter().enumerate() {
+        for (j, a_element) in row.iter().enumerate() {
+            let product = ntt_multiply(a_element, &r_as_ntt[j]);
             result[i] = result[i] + product;
         }
+        result[i] = invert_ntt_montgomery(result[i]);
 
-        result[i].coefficients = result[i].coefficients.map(barrett_reduce);
+        for j in 0..result[i].coefficients.len() {
+            let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1441);
+
+            result[i].coefficients[j] =
+                barrett_reduce(coefficient_normal_form + error_1[i].coefficients[j]);
+        }
     }
 
     result
@@ -269,7 +305,7 @@ pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
         for j in 0..result[i].coefficients.len() {
             // The coefficients are of the form aR^{-1} mod q, which means
             // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = to_montgomery_domain(result[i].coefficients[j]);
+            let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1353);
 
             result[i].coefficients[j] =
                 barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])

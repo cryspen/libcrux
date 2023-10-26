@@ -7,10 +7,22 @@ let compress_q (#v_COEFFICIENT_BITS: usize) (fe: u16) : i32 =
     if true
     then
       let _:Prims.unit =
-        if ~.(v_COEFFICIENT_BITS <=. Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT <: bool)
+        if ~.(v_COEFFICIENT_BITS <=. sz 11 <: bool)
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS <= BITS_PER_COEFFICIENT"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS <= 11"
 
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if ~.(fe <. 3329us <: bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: fe < 3329"
               <:
               Rust_primitives.Hax.t_Never)
       in
@@ -46,9 +58,22 @@ let decompress_q (#v_COEFFICIENT_BITS: usize) (fe: i32) : i32 =
     if true
     then
       let _:Prims.unit =
-        if ~.(v_COEFFICIENT_BITS <=. Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT <: bool)
+        if ~.(v_COEFFICIENT_BITS <=. sz 11 <: bool)
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS <= BITS_PER_COEFFICIENT"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: COEFFICIENT_BITS <= 11"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if ~.((0l <=. fe <: bool) && (fe <. (1l <<! 11l <: i32) <: bool))
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: 0 <= fe && fe < (1 << 11)"
 
               <:
               Rust_primitives.Hax.t_Never)

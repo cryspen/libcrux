@@ -275,7 +275,7 @@ let cbd (#v_K #v_ETA #v_ETA_RANDOMNESS_SIZE: usize) (prf_input: t_Array u8 (sz 3
           let re_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at re_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts r (cast v_ETA <: i32)
+              (Libcrux.Kem.Kyber.Ntt.ntt_binomially_sampled_ring_element r
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
@@ -411,7 +411,7 @@ let generate_keypair
           let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at secret_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts secret (cast v_ETA1 <: i32)
+              (Libcrux.Kem.Kyber.Ntt.ntt_binomially_sampled_ring_element secret
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
@@ -444,7 +444,7 @@ let generate_keypair
           let error_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at error_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_with_debug_asserts error (cast v_ETA1 <: i32)
+              (Libcrux.Kem.Kyber.Ntt.ntt_binomially_sampled_ring_element error
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
@@ -622,45 +622,13 @@ let encrypt
         t_Slice u8)
   in
   let u:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Libcrux.Kem.Kyber.Ntt.multiply_matrix_by_column_montgomery v_A_transpose r_as_ntt
-  in
-  let u:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            })
-        <:
-        Core.Ops.Range.t_Range usize)
-      u
-      (fun u i ->
-          Rust_primitives.Hax.update_at u
-            i
-            ((Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery (u.[ i ]
-                    <:
-                    Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                <:
-                Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
-              (error_1_.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              <:
-              Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-          <:
-          t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
+    Libcrux.Kem.Kyber.Ntt.compute_vector_u v_A_transpose r_as_ntt error_1_
   in
   let message_as_ring_element:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
     Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message message
   in
   let v:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    ((Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery (Libcrux.Kem.Kyber.Ntt.multiply_row_by_column_montgomery
-              tt_as_ntt
-              r_as_ntt
-            <:
-            Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-        <:
-        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
-      error_2_
-      <:
-      Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement) +!
-    message_as_ring_element
+    Libcrux.Kem.Kyber.Ntt.compute_ring_element_v tt_as_ntt r_as_ntt error_2_ message_as_ring_element
   in
   let c1:t_Array u8 v_C1_LEN = compress_then_encode_u u in
   let c2:t_Array u8 v_C2_LEN =
@@ -729,7 +697,7 @@ let decrypt
           let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at u_as_ntt
               i
-              (Libcrux.Kem.Kyber.Ntt.ntt_representation u
+              (Libcrux.Kem.Kyber.Ntt.ntt_vector_u u
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
@@ -764,13 +732,6 @@ let decrypt
           t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
   in
   let message:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    v -!
-    (Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery (Libcrux.Kem.Kyber.Ntt.multiply_row_by_column_montgomery
-            secret_as_ntt
-            u_as_ntt
-          <:
-          Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-      <:
-      Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+    Libcrux.Kem.Kyber.Ntt.compute_message v secret_as_ntt u_as_ntt
   in
   Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message message

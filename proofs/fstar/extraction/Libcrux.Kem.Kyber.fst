@@ -323,16 +323,9 @@ let generate_keypair
       (randomness: t_Array u8 (sz 64))
     : Core.Result.t_Result (t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
       t_BadRejectionSamplingRandomnessError =
-  let ind_cpa_keypair_randomness:t_Slice u8 =
-    randomness.[ {
-        Core.Ops.Range.f_start = sz 0;
-        Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
-      } ]
-  in
-  let implicit_rejection_value:t_Slice u8 =
-    randomness.[ {
-        Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
-      } ]
+  let ind_cpa_keypair_randomness, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
+    Core.Slice.impl__split_at (Rust_primitives.unsize randomness <: t_Slice u8)
+      Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
   in
   let (ind_cpa_private_key, public_key), sampling_a_error:((Libcrux.Kem.Kyber.Ind_cpa.t_PrivateKey
       v_CPA_PRIVATE_KEY_SIZE &
@@ -408,9 +401,9 @@ let encapsulate
       randomness
       pseudorandomness
   in
-  if Core.Option.impl__is_some sampling_a_error
-  then Core.Result.Result_Err (Core.Option.impl__unwrap sampling_a_error)
-  else
+  match sampling_a_error with
+  | Core.Option.Option_Some e -> Core.Result.Result_Err e
+  | Core.Option.Option_None  ->
     Core.Result.Result_Ok
     (ciphertext,
       Core.Result.impl__unwrap (Core.Convert.f_try_into shared_secret

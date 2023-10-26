@@ -42,14 +42,6 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
     reduced
 }
 
-// Given a |value|, return |value|*R mod q. Notice that montgomery_reduce
-// returns a value aR^{-1} mod q, and so montgomery_reduce(|value| * R^2)
-// returns |value| * R^2 & R^{-1} mod q  = |value| * R mod q.
-pub(crate) fn to_montgomery_domain(value: KyberFieldElement) -> KyberFieldElement {
-    // R^2 mod q = (2^16)^2 mod 3329 = 1353
-    montgomery_reduce(1353 * value)
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct KyberPolynomialRingElement {
     pub(crate) coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT],

@@ -155,8 +155,6 @@ let montgomery_reduce (value: i32) : i32 =
   in
   reduced
 
-let to_montgomery_domain (value: i32) : i32 = montgomery_reduce (1353l *! value <: i32)
-
 type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
 let impl__KyberPolynomialRingElement__ZERO: t_KyberPolynomialRingElement =
