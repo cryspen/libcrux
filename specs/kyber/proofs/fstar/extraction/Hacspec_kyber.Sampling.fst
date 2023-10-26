@@ -2,7 +2,7 @@ module Hacspec_kyber.Sampling
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-let sample_ntt (bytes: array u8 (sz 840))
+let sample_ntt (bytes: t_Array u8 (sz 840))
     : Core.Result.t_Result
       (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
           (sz 256)) Hacspec_kyber.t_BadRejectionSamplingRandomnessError =
@@ -17,13 +17,13 @@ let sample_ntt (bytes: array u8 (sz 840))
   let a_hat, sampled_coefficients:(Hacspec_lib.Ring.t_PolynomialRingElement
       (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) &
     usize) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks
-              (Rust_primitives.unsize bytes <: slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks (
+                Rust_primitives.unsize bytes <: t_Slice u8)
               (sz 3)
             <:
             Core.Slice.Iter.t_Chunks u8)
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Slice.Iter.t_Chunks u8)).f_IntoIter)
+        Core.Slice.Iter.t_Chunks u8)
       (a_hat, sampled_coefficients)
       (fun (a_hat, sampled_coefficients) byte_chunk ->
           let b:u16 = Core.Convert.f_from (byte_chunk.[ sz 0 ] <: u8) in
@@ -65,21 +65,21 @@ let sample_ntt (bytes: array u8 (sz 840))
   then Core.Result.Result_Ok a_hat
   else Core.Result.Result_Err Hacspec_kyber.BadRejectionSamplingRandomnessError
 
-let sum_coins (coins: slice u8) : Hacspec_lib.Field.t_PrimeFieldElement 3329us =
+let sum_coins (coins: t_Slice u8) : Hacspec_lib.Field.t_PrimeFieldElement 3329us =
   let (sum: u8):u8 = 0uy in
   let sum:u8 =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__iter
-              coins
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__iter coins
+
             <:
             Core.Slice.Iter.t_Iter u8)
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Slice.Iter.t_Iter u8)).f_IntoIter)
+        Core.Slice.Iter.t_Iter u8)
       sum
       (fun sum coin -> Core.Ops.Arith.f_add_assign sum coin <: u8)
   in
   Core.Convert.f_into sum
 
-let sample_poly_cbd (eta: usize) (bytes: slice u8)
+let sample_poly_cbd (eta: usize) (bytes: t_Slice u8)
     : Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
       (sz 256) =
   let _:Prims.unit =
@@ -97,7 +97,7 @@ let sample_poly_cbd (eta: usize) (bytes: slice u8)
   in
   let bits:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global = Hacspec_kyber.Serialize.bytes_to_bits bytes in
   let bits:Core.Slice.Iter.t_Chunks u8 =
-    Core.Slice.impl__chunks (Core.Ops.Deref.f_deref bits <: slice u8) eta
+    Core.Slice.impl__chunks (Core.Ops.Deref.f_deref bits <: t_Slice u8) eta
   in
   let
   (f:
@@ -109,39 +109,39 @@ let sample_poly_cbd (eta: usize) (bytes: slice u8)
   let bits, f:(Core.Slice.Iter.t_Chunks u8 &
     Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)
   ) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Hacspec_lib.Ring.impl_2__len f <: usize
             })
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+        Core.Ops.Range.t_Range usize)
       (bits, f)
       (fun (bits, f) i ->
-          let tmp0, out:(Core.Slice.Iter.t_Chunks u8 &
-            Core.Option.t_Option (Core.Slice.Iter.impl_70 u8).f_Item) =
+          let tmp0, out:(Core.Slice.Iter.t_Chunks u8 & Core.Option.t_Option (t_Slice u8)) =
             Core.Iter.Traits.Iterator.f_next bits
           in
           let bits:Core.Slice.Iter.t_Chunks u8 = tmp0 in
-          let hoist9:Core.Option.t_Option (Core.Slice.Iter.impl_70 u8).f_Item = out in
-          let hoist10:slice u8 = Core.Option.impl__unwrap hoist9 in
+          let hoist9:Core.Option.t_Option (t_Slice u8) = out in
+          let hoist10:t_Slice u8 = Core.Option.impl__unwrap hoist9 in
           let (x: Hacspec_lib.Field.t_PrimeFieldElement 3329us):Hacspec_lib.Field.t_PrimeFieldElement
           3329us =
             sum_coins hoist10
           in
-          let tmp0, out:(Core.Slice.Iter.t_Chunks u8 &
-            Core.Option.t_Option (Core.Slice.Iter.impl_70 u8).f_Item) =
+          let tmp0, out:(Core.Slice.Iter.t_Chunks u8 & Core.Option.t_Option (t_Slice u8)) =
             Core.Iter.Traits.Iterator.f_next bits
           in
           let bits:Core.Slice.Iter.t_Chunks u8 = tmp0 in
-          let hoist11:Core.Option.t_Option (Core.Slice.Iter.impl_70 u8).f_Item = out in
-          let hoist12:slice u8 = Core.Option.impl__unwrap hoist11 in
+          let hoist11:Core.Option.t_Option (t_Slice u8) = out in
+          let hoist12:t_Slice u8 = Core.Option.impl__unwrap hoist11 in
           let (y: Hacspec_lib.Field.t_PrimeFieldElement 3329us):Hacspec_lib.Field.t_PrimeFieldElement
           3329us =
             sum_coins hoist12
           in
           let f:Hacspec_lib.Ring.t_PolynomialRingElement
             (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
-            Rust_primitives.Hax.update_at f i (x -! y <: (Hacspec_lib.Field.impl_8 3329us).f_Output)
+            Rust_primitives.Hax.update_at f
+              i
+              (x -! y <: Hacspec_lib.Field.t_PrimeFieldElement 3329us)
           in
           bits, f)
   in

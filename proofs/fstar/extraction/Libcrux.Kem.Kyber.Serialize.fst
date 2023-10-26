@@ -3,33 +3,29 @@ module Libcrux.Kem.Kyber.Serialize
 open Core
 
 let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : array u8 (sz 32) =
-  let serialized:array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-  let serialized:array u8 (sz 32) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    : t_Array u8 (sz 32) =
+  let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
+  let serialized:t_Array u8 (sz 32) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
-                    slice i32)
+                    t_Slice i32)
                   (sz 8)
                 <:
                 Core.Slice.Iter.t_ChunksExact i32)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
       serialized
       (fun serialized (i, coefficients) ->
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
                     (Core.Slice.impl__iter coefficients <: Core.Slice.Iter.t_Iter i32)
                   <:
                   Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter i32))
               <:
-              (Core.Iter.Traits.Collect.impl
-                (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter i32)))
-                .f_IntoIter)
+              Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter i32))
             serialized
             (fun serialized (j, coefficient) ->
                 let coefficient:u16 =
@@ -59,39 +55,35 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPol
                     <:
                     u8))
           <:
-          array u8 (sz 32))
+          t_Array u8 (sz 32))
   in
   serialized
 
-let deserialize_then_decompress_message (serialized: array u8 (sz 32))
+let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__iter (Rust_primitives.unsize serialized <: slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+              (Core.Slice.impl__iter (Rust_primitives.unsize serialized <: t_Slice u8)
                 <:
                 Core.Slice.Iter.t_Iter u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
       re
       (fun re (i, byte) ->
-          Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                     Core.Ops.Range.f_start = sz 0;
                     Core.Ops.Range.f_end = sz 8
                   })
               <:
-              (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+              Core.Ops.Range.t_Range usize)
             re
             (fun re j ->
-                let coefficient_compressed:i32 =
-                  cast ((byte >>! j <: (Core.Ops.Bit.impl_780).f_Output) &. 1uy) <: i32
-                in
+                let coefficient_compressed:i32 = cast ((byte >>! j <: u8) &. 1uy) <: i32 in
                 let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                   {
                     re with
@@ -111,28 +103,26 @@ let deserialize_then_decompress_message (serialized: array u8 (sz 32))
 let serialize_little_endian_4_
       (#v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : array u8 v_OUT_LEN =
-  let serialized:array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
-  let serialized:array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    : t_Array u8 v_OUT_LEN =
+  let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
+  let serialized:t_Array u8 v_OUT_LEN =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
-                    slice i32)
+                    t_Slice i32)
                   (sz 2)
                 <:
                 Core.Slice.Iter.t_ChunksExact i32)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
       serialized
       (fun serialized (i, chunk) ->
           let coefficient1:u8 = cast chunk.[ sz 0 ] <: u8 in
           let coefficient2:u8 = cast chunk.[ sz 1 ] <: u8 in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               i
               ((coefficient2 <<! 4l <: u8) |. coefficient1 <: u8)
@@ -141,7 +131,7 @@ let serialize_little_endian_4_
   in
   serialized
 
-let deserialize_little_endian_4_ (serialized: slice u8)
+let deserialize_little_endian_4_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -165,17 +155,15 @@ let deserialize_little_endian_4_ (serialized: slice u8)
       ()
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__iter serialized <: Core.Slice.Iter.t_Iter u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
       re
       (fun re (i, byte) ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -185,7 +173,7 @@ let deserialize_little_endian_4_ (serialized: slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 2 *! i <: usize)
-                (cast (byte &. 15uy <: (Core.Ops.Bit.impl_46).f_Output) <: i32)
+                (cast (byte &. 15uy <: u8) <: i32)
             }
           in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -195,7 +183,7 @@ let deserialize_little_endian_4_ (serialized: slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 2 *! i <: usize) +! sz 1 <: usize)
-                (cast ((byte >>! 4l <: (Core.Ops.Bit.impl_792).f_Output) &. 15uy <: u8) <: i32)
+                (cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32)
             }
           in
           re)
@@ -205,23 +193,21 @@ let deserialize_little_endian_4_ (serialized: slice u8)
 let serialize_little_endian_5_
       (#v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : array u8 v_OUT_LEN =
-  let serialized:array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
-  let serialized:array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    : t_Array u8 v_OUT_LEN =
+  let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
+  let serialized:t_Array u8 v_OUT_LEN =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
-                    slice i32)
+                    t_Slice i32)
                   (sz 8)
                 <:
                 Core.Slice.Iter.t_ChunksExact i32)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
       serialized
       (fun serialized (i, coefficients) ->
           let coefficient1:u8 = cast coefficients.[ sz 0 ] <: u8 in
@@ -232,12 +218,12 @@ let serialize_little_endian_5_
           let coefficient6:u8 = cast coefficients.[ sz 5 ] <: u8 in
           let coefficient7:u8 = cast coefficients.[ sz 6 ] <: u8 in
           let coefficient8:u8 = cast coefficients.[ sz 7 ] <: u8 in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               (sz 5 *! i <: usize)
               (((coefficient2 &. 7uy <: u8) <<! 5l <: u8) |. coefficient1 <: u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 1 <: usize)
               ((((coefficient4 &. 1uy <: u8) <<! 7l <: u8) |. (coefficient3 <<! 2l <: u8) <: u8) |.
@@ -245,12 +231,12 @@ let serialize_little_endian_5_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 2 <: usize)
               (((coefficient5 &. 15uy <: u8) <<! 4l <: u8) |. (coefficient4 >>! 1l <: u8) <: u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 3 <: usize)
               ((((coefficient7 &. 3uy <: u8) <<! 6l <: u8) |. (coefficient6 <<! 1l <: u8) <: u8) |.
@@ -258,7 +244,7 @@ let serialize_little_endian_5_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 4 <: usize)
               ((coefficient8 <<! 3l <: u8) |. (coefficient7 >>! 2l <: u8) <: u8)
@@ -267,7 +253,7 @@ let serialize_little_endian_5_
   in
   serialized
 
-let deserialize_little_endian_5_ (serialized: slice u8)
+let deserialize_little_endian_5_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -291,17 +277,15 @@ let deserialize_little_endian_5_ (serialized: slice u8)
       ()
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact serialized (sz 5) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
       re
       (fun re (i, bytes) ->
           let byte1:i32 = cast bytes.[ sz 0 ] <: i32 in
@@ -396,35 +380,33 @@ let deserialize_little_endian_5_ (serialized: slice u8)
 let serialize_little_endian_10_
       (#v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : array u8 v_OUT_LEN =
-  let serialized:array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
-  let serialized:array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    : t_Array u8 v_OUT_LEN =
+  let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
+  let serialized:t_Array u8 v_OUT_LEN =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
-                    slice i32)
+                    t_Slice i32)
                   (sz 4)
                 <:
                 Core.Slice.Iter.t_ChunksExact i32)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
       serialized
       (fun serialized (i, chunk) ->
           let coefficient1:i32 = chunk.[ sz 0 ] in
           let coefficient2:i32 = chunk.[ sz 1 ] in
           let coefficient3:i32 = chunk.[ sz 2 ] in
           let coefficient4:i32 = chunk.[ sz 3 ] in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               (sz 5 *! i <: usize)
               (cast (coefficient1 &. 255l <: i32) <: u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 1 <: usize)
               (((cast (coefficient2 &. 63l <: i32) <: u8) <<! 2l <: u8) |.
@@ -432,7 +414,7 @@ let serialize_little_endian_10_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 2 <: usize)
               (((cast (coefficient3 &. 15l <: i32) <: u8) <<! 4l <: u8) |.
@@ -440,7 +422,7 @@ let serialize_little_endian_10_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 3 <: usize)
               (((cast (coefficient4 &. 3l <: i32) <: u8) <<! 6l <: u8) |.
@@ -448,7 +430,7 @@ let serialize_little_endian_10_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 5 *! i <: usize) +! sz 4 <: usize)
               (cast ((coefficient4 >>! 2l <: i32) &. 255l <: i32) <: u8)
@@ -457,7 +439,7 @@ let serialize_little_endian_10_
   in
   serialized
 
-let deserialize_little_endian_10_ (serialized: slice u8)
+let deserialize_little_endian_10_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -481,17 +463,15 @@ let deserialize_little_endian_10_ (serialized: slice u8)
       ()
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact serialized (sz 5) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
       re
       (fun re (i, bytes) ->
           let byte1:i32 = cast bytes.[ sz 0 ] <: i32 in
@@ -546,23 +526,21 @@ let deserialize_little_endian_10_ (serialized: slice u8)
 let serialize_little_endian_11_
       (#v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : array u8 v_OUT_LEN =
-  let serialized:array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
-  let serialized:array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    : t_Array u8 v_OUT_LEN =
+  let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
+  let serialized:t_Array u8 v_OUT_LEN =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
-                    slice i32)
+                    t_Slice i32)
                   (sz 8)
                 <:
                 Core.Slice.Iter.t_ChunksExact i32)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
       serialized
       (fun serialized (i, coefficients) ->
           let coefficient1:i32 = coefficients.[ sz 0 ] in
@@ -573,10 +551,10 @@ let serialize_little_endian_11_
           let coefficient6:i32 = coefficients.[ sz 5 ] in
           let coefficient7:i32 = coefficients.[ sz 6 ] in
           let coefficient8:i32 = coefficients.[ sz 7 ] in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized (sz 11 *! i <: usize) (cast coefficient1 <: u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 1 <: usize)
               (((cast (coefficient2 &. 31l <: i32) <: u8) <<! 3l <: u8) |.
@@ -584,7 +562,7 @@ let serialize_little_endian_11_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 2 <: usize)
               (((cast (coefficient3 &. 3l <: i32) <: u8) <<! 6l <: u8) |.
@@ -592,12 +570,12 @@ let serialize_little_endian_11_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 3 <: usize)
               (cast ((coefficient3 >>! 2l <: i32) &. 255l <: i32) <: u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 4 <: usize)
               (((cast (coefficient4 &. 127l <: i32) <: u8) <<! 1l <: u8) |.
@@ -605,7 +583,7 @@ let serialize_little_endian_11_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 5 <: usize)
               (((cast (coefficient5 &. 15l <: i32) <: u8) <<! 4l <: u8) |.
@@ -613,7 +591,7 @@ let serialize_little_endian_11_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 6 <: usize)
               (((cast (coefficient6 &. 1l <: i32) <: u8) <<! 7l <: u8) |.
@@ -621,12 +599,12 @@ let serialize_little_endian_11_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 7 <: usize)
               (cast ((coefficient6 >>! 1l <: i32) &. 255l <: i32) <: u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 8 <: usize)
               (((cast (coefficient7 &. 63l <: i32) <: u8) <<! 2l <: u8) |.
@@ -634,7 +612,7 @@ let serialize_little_endian_11_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 9 <: usize)
               (((cast (coefficient8 &. 7l <: i32) <: u8) <<! 5l <: u8) |.
@@ -642,7 +620,7 @@ let serialize_little_endian_11_
                 <:
                 u8)
           in
-          let serialized:array u8 v_OUT_LEN =
+          let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.update_at serialized
               ((sz 11 *! i <: usize) +! sz 10 <: usize)
               (cast (coefficient8 >>! 3l <: i32) <: u8)
@@ -651,7 +629,7 @@ let serialize_little_endian_11_
   in
   serialized
 
-let deserialize_little_endian_11_ (serialized: slice u8)
+let deserialize_little_endian_11_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -675,17 +653,15 @@ let deserialize_little_endian_11_ (serialized: slice u8)
       ()
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact serialized (sz 11) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
       re
       (fun re (i, bytes) ->
           let byte1:i32 = cast bytes.[ sz 0 ] <: i32 in
@@ -791,7 +767,7 @@ let deserialize_little_endian_11_ (serialized: slice u8)
 
 let serialize_uncompressed_ring_element
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : array u8 (sz 384) =
+    : t_Array u8 (sz 384) =
   let _:Prims.unit =
     if true
     then
@@ -799,7 +775,7 @@ let serialize_uncompressed_ring_element
         Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             <:
-            (Core.Array.Iter.impl i32 (sz 256)).f_IntoIter)
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (coefficient >=.
                 (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
@@ -817,22 +793,20 @@ let serialize_uncompressed_ring_element
       in
       ()
   in
-  let serialized:array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
-  let serialized:array u8 (sz 384) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+  let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
+  let serialized:t_Array u8 (sz 384) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
-                    slice i32)
+                    t_Slice i32)
                   (sz 2)
                 <:
                 Core.Slice.Iter.t_ChunksExact i32)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
       serialized
       (fun serialized (i, chunks) ->
           let coefficient1:u16 =
@@ -841,12 +815,12 @@ let serialize_uncompressed_ring_element
           let coefficient2:u16 =
             Libcrux.Kem.Kyber.Conversions.to_unsigned_representative (chunks.[ sz 1 ] <: i32)
           in
-          let serialized:array u8 (sz 384) =
+          let serialized:t_Array u8 (sz 384) =
             Rust_primitives.Hax.update_at serialized
               (sz 3 *! i <: usize)
               (cast (coefficient1 &. 255us <: u16) <: u8)
           in
-          let serialized:array u8 (sz 384) =
+          let serialized:t_Array u8 (sz 384) =
             Rust_primitives.Hax.update_at serialized
               ((sz 3 *! i <: usize) +! sz 1 <: usize)
               (cast ((coefficient1 >>! 8l <: u16) |. ((coefficient2 &. 15us <: u16) <<! 4l <: u16)
@@ -855,7 +829,7 @@ let serialize_uncompressed_ring_element
                 <:
                 u8)
           in
-          let serialized:array u8 (sz 384) =
+          let serialized:t_Array u8 (sz 384) =
             Rust_primitives.Hax.update_at serialized
               ((sz 3 *! i <: usize) +! sz 2 <: usize)
               (cast ((coefficient2 >>! 4l <: u16) &. 255us <: u16) <: u8)
@@ -864,7 +838,7 @@ let serialize_uncompressed_ring_element
   in
   serialized
 
-let deserialize_to_uncompressed_ring_element (serialized: slice u8)
+let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -887,17 +861,15 @@ let deserialize_to_uncompressed_ring_element (serialized: slice u8)
       ()
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact serialized (sz 3) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
       re
       (fun re (i, bytes) ->
           let byte1:i32 = cast bytes.[ sz 0 ] <: i32 in
@@ -930,7 +902,7 @@ let deserialize_to_uncompressed_ring_element (serialized: slice u8)
 let serialize_little_endian
       (#v_COMPRESSION_FACTOR #v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : array u8 v_OUT_LEN =
+    : t_Array u8 v_OUT_LEN =
   let _:Prims.unit =
     if true
     then
@@ -951,7 +923,7 @@ let serialize_little_endian
                           FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
                           Rust_primitives.Hax.array_of_list list)
                       <:
-                      slice string)
+                      t_Slice string)
                     (Rust_primitives.unsize (let list =
                             [
                               Core.Fmt.Rt.impl_1__new_display ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
@@ -969,7 +941,7 @@ let serialize_little_endian
                           FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
                           Rust_primitives.Hax.array_of_list list)
                       <:
-                      slice Core.Fmt.Rt.t_Argument)
+                      t_Slice Core.Fmt.Rt.t_Argument)
                   <:
                   Core.Fmt.t_Arguments)
               <:
@@ -988,7 +960,7 @@ let serialize_little_endian
                     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
                     Rust_primitives.Hax.array_of_list list)
                 <:
-                slice string)
+                t_Slice string)
               (Rust_primitives.unsize (let list =
                       [
                         Core.Fmt.Rt.impl_1__new_display v_COMPRESSION_FACTOR
@@ -999,13 +971,13 @@ let serialize_little_endian
                     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
                     Rust_primitives.Hax.array_of_list list)
                 <:
-                slice Core.Fmt.Rt.t_Argument)
+                t_Slice Core.Fmt.Rt.t_Argument)
             <:
             Core.Fmt.t_Arguments)
         <:
         Rust_primitives.Hax.t_Never)
 
-let deserialize_little_endian (#v_COMPRESSION_FACTOR: usize) (serialized: slice u8)
+let deserialize_little_endian (#v_COMPRESSION_FACTOR: usize) (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -1042,7 +1014,7 @@ let deserialize_little_endian (#v_COMPRESSION_FACTOR: usize) (serialized: slice 
                     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
                     Rust_primitives.Hax.array_of_list list)
                 <:
-                slice string)
+                t_Slice string)
               (Rust_primitives.unsize (let list =
                       [
                         Core.Fmt.Rt.impl_1__new_display v_COMPRESSION_FACTOR
@@ -1053,7 +1025,7 @@ let deserialize_little_endian (#v_COMPRESSION_FACTOR: usize) (serialized: slice 
                     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
                     Rust_primitives.Hax.array_of_list list)
                 <:
-                slice Core.Fmt.Rt.t_Argument)
+                t_Slice Core.Fmt.Rt.t_Argument)
             <:
             Core.Fmt.t_Arguments)
         <:
