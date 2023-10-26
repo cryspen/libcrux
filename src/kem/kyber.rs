@@ -24,7 +24,7 @@ pub mod kyber512;
 pub mod kyber768;
 
 pub use types::{
-    KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey, KyberSharedSecret,Error
+    Error, KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey, KyberSharedSecret,
 };
 
 use self::{
