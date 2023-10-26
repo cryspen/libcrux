@@ -510,3 +510,5 @@ let impl__sk
       (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
       (self: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : t_Array u8 v_PRIVATE_KEY_SIZE = impl_27__as_slice self.f_sk
+
+type t_Error = | Error_RejectionSampling : t_Error

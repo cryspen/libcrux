@@ -4,7 +4,7 @@ open Core
 
 let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
     : (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.t_Error) =
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
   =
@@ -81,7 +81,7 @@ let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array 
       in
       ()
   in
-  out, Core.Option.Option_Some Libcrux.Kem.Kyber.Error_RejectionSampling
+  out, Core.Option.Option_Some Libcrux.Kem.Kyber.Types.Error_RejectionSampling
 
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =

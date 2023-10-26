@@ -68,14 +68,14 @@ let t_Kyber512SharedSecret = Libcrux.Kem.Kyber.Types.t_KyberSharedSecret (sz 32)
 
 let generate_key_pair_512_ (randomness: t_Array u8 (sz 64))
     : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 1632) (sz 800))
-      Libcrux.Kem.Kyber.t_Error = Libcrux.Kem.Kyber.generate_keypair randomness
+      Libcrux.Kem.Kyber.Types.t_Error = Libcrux.Kem.Kyber.generate_keypair randomness
 
 let encapsulate_512_
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 800))
       (randomness: t_Array u8 (sz 32))
     : Core.Result.t_Result
       (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 768) &
-        Libcrux.Kem.Kyber.Types.t_KyberSharedSecret (sz 32)) Libcrux.Kem.Kyber.t_Error =
+        Libcrux.Kem.Kyber.Types.t_KyberSharedSecret (sz 32)) Libcrux.Kem.Kyber.Types.t_Error =
   Libcrux.Kem.Kyber.encapsulate public_key randomness
 
 let decapsulate_512_

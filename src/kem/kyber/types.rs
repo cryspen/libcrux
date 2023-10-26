@@ -128,3 +128,9 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
         self.sk.as_slice()
     }
 }
+
+#[derive(Debug, Clone, Copy)]
+pub enum Error {
+    RejectionSampling,
+}
+
