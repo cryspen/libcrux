@@ -87,6 +87,28 @@ let decompress_q (#v_COEFFICIENT_BITS: usize) (fe: i32) : i32 =
   in
   let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! v_COEFFICIENT_BITS <: u32) in
   let decompressed:u32 = decompressed >>! (v_COEFFICIENT_BITS +! sz 1 <: usize) in
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if
+          ~.(decompressed <.
+            (Core.Result.impl__unwrap (Core.Convert.f_try_from Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+
+                  <:
+                  Core.Result.t_Result u32 Core.Num.Error.t_TryFromIntError)
+              <:
+              u32)
+            <:
+            bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: decompressed < u32::try_from(FIELD_MODULUS).unwrap()"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
   cast decompressed <: i32
 
 let decompress

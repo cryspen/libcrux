@@ -88,9 +88,7 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
-    // TODO: This could be tighter, but we have to analyze other functions
-    // first before we can say for sure here.
-    let initial_coefficient_bound = 3329;
+    let initial_coefficient_bound = 3328;
     debug_assert!(re
         .coefficients
         .into_iter()

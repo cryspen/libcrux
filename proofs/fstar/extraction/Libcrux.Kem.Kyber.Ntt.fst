@@ -682,7 +682,7 @@ let ntt_vector_u
       (#v_VECTOR_U_COMPRESSION_FACTOR: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let initial_coefficient_bound:i32 = 3329l in
+  let initial_coefficient_bound:i32 = 3328l in
   let _:Prims.unit =
     if true
     then

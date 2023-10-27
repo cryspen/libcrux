@@ -34,6 +34,8 @@ pub(super) fn decompress_q<const COEFFICIENT_BITS: usize>(
     decompressed = (decompressed << 1) + (1 << COEFFICIENT_BITS);
     decompressed >>= COEFFICIENT_BITS + 1;
 
+    debug_assert!(decompressed < u32::try_from(FIELD_MODULUS).unwrap());
+
     decompressed as KyberFieldElement
 }
 pub fn decompress<const COEFFICIENT_BITS: usize>(
