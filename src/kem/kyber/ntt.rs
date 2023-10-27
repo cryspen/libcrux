@@ -39,9 +39,6 @@ macro_rules! ntt_at_layer {
     };
 }
 
-// Over time, all invocations of ntt_representation() will be replaced by
-// invocations to this function, upon which this function will be renamed back to
-// ntt_representation().
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: KyberPolynomialRingElement,
@@ -54,9 +51,8 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 
     let mut zeta_i = 0;
 
-    // This function is only being used in key-generation for the moment, and we
-    // can skip the first round of montgomery reductions for the ring elements
-    // being passed in during key-generation.
+    // We can skip the first round of montgomery reductions for the small
+    // ring elements being passed in to this function.
     for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - 128)).step_by(2 * 128) {
         zeta_i += 1;
 
