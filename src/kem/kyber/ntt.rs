@@ -16,6 +16,26 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
+macro_rules! ntt_at_layer {
+    ($layer:literal, $zeta_i:ident, $re:ident, $initial_coefficient_bound:ident) => {
+        let layer_jump = 1 << $layer;
+        for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - layer_jump)).step_by(2 * layer_jump) {
+            $zeta_i += 1;
+
+            for j in offset..offset + layer_jump {
+                let t = montgomery_reduce($re[j + layer_jump] * ZETAS_MONTGOMERY_DOMAIN[$zeta_i]);
+                $re[j + layer_jump] = $re[j] - t;
+                $re[j] = $re[j] + t;
+            }
+        }
+
+        debug_assert!($re.coefficients.into_iter().all(|coefficient| {
+            coefficient.abs()
+                < $initial_coefficient_bound + ((8 - $layer) * 3 * (FIELD_MODULUS / 2))
+        }));
+    };
+}
+
 // Over time, all invocations of ntt_representation() will be replaced by
 // invocations to this function, upon which this function will be renamed back to
 // ntt_representation().
@@ -23,14 +43,13 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
-    let coefficient_bound = 3;
+    let initial_coefficient_bound = 3;
     debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() <= coefficient_bound));
+        .all(|coefficient| coefficient.abs() <= initial_coefficient_bound));
 
     let mut zeta_i = 0;
-    let mut layer_number = 0;
 
     // This function is only being used in key-generation for the moment, and we
     // can skip the first round of montgomery reductions for the ring elements
@@ -46,36 +65,16 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
             re[j] = re[j] + t;
         }
     }
-    layer_number += 1;
     debug_assert!(re.coefficients.into_iter().all(|coefficient| {
-        coefficient.abs() < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))
+        coefficient.abs() < initial_coefficient_bound + (3 * (FIELD_MODULUS / 2))
     }));
 
-    macro_rules! ntt_at_layer {
-        ($layer:literal) => {
-            for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - $layer)).step_by(2 * $layer) {
-                zeta_i += 1;
-
-                for j in offset..offset + $layer {
-                    let t = montgomery_reduce(re[j + $layer] * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
-                    re[j + $layer] = re[j] - t;
-                    re[j] = re[j] + t;
-                }
-            }
-
-            layer_number += 1;
-            debug_assert!(re.coefficients.into_iter().all(|coefficient| {
-                coefficient.abs() < coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))
-            }));
-        };
-    }
-
-    ntt_at_layer!(64);
-    ntt_at_layer!(32);
-    ntt_at_layer!(16);
-    ntt_at_layer!(8);
-    ntt_at_layer!(4);
-    ntt_at_layer!(2);
+    ntt_at_layer!(6, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(5, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(4, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(3, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(2, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(1, zeta_i, re, initial_coefficient_bound);
 
     re.coefficients = re.coefficients.map(barrett_reduce);
 
@@ -86,29 +85,23 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
+    // TODO: This could be tighter, but we have to analyze other functions
+    // first before we can say for sure here.
+    let initial_coefficient_bound = 3329;
+    debug_assert!(re
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient.abs() <= initial_coefficient_bound));
+
     let mut zeta_i = 0;
 
-    macro_rules! ntt_at_layer {
-        ($layer:literal) => {
-            for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - $layer)).step_by(2 * $layer) {
-                zeta_i += 1;
-
-                for j in offset..offset + $layer {
-                    let t = montgomery_reduce(re[j + $layer] * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
-                    re[j + $layer] = re[j] - t;
-                    re[j] = re[j] + t;
-                }
-            }
-        };
-    }
-
-    ntt_at_layer!(128);
-    ntt_at_layer!(64);
-    ntt_at_layer!(32);
-    ntt_at_layer!(16);
-    ntt_at_layer!(8);
-    ntt_at_layer!(4);
-    ntt_at_layer!(2);
+    ntt_at_layer!(7, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(6, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(5, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(4, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(3, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(2, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(1, zeta_i, re, initial_coefficient_bound);
 
     re.coefficients = re.coefficients.map(barrett_reduce);
 

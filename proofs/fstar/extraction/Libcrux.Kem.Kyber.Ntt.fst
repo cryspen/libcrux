@@ -24,7 +24,7 @@ let v_ZETAS_MONTGOMERY_DOMAIN: t_Array i32 (sz 128) =
 let ntt_binomially_sampled_ring_element
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let coefficient_bound:i32 = 3l in
+  let initial_coefficient_bound:i32 = 3l in
   let _:Prims.unit =
     if true
     then
@@ -34,12 +34,12 @@ let ntt_binomially_sampled_ring_element
             <:
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
-              (Core.Num.impl__i32__abs coefficient <: i32) <=. coefficient_bound <: bool)
+              (Core.Num.impl__i32__abs coefficient <: i32) <=. initial_coefficient_bound <: bool)
       in
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        coefficient.abs() <= coefficient_bound)"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        coefficient.abs() <= initial_coefficient_bound)"
 
               <:
               Rust_primitives.Hax.t_Never)
@@ -47,7 +47,6 @@ let ntt_binomially_sampled_ring_element
       ()
   in
   let zeta_i:usize = sz 0 in
-  let layer_number:i32 = 0l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
@@ -86,7 +85,6 @@ let ntt_binomially_sampled_ring_element
           in
           re, zeta_i)
   in
-  let layer_number:i32 = layer_number +! 1l in
   let _:Prims.unit =
     if true
     then
@@ -97,11 +95,8 @@ let ntt_binomially_sampled_ring_element
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (Core.Num.impl__i32__abs coefficient <: i32) <.
-              (coefficient_bound +!
-                ((layer_number *! 3l <: i32) *!
-                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
-                  <:
-                  i32)
+              (initial_coefficient_bound +!
+                (3l *! (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32) <: i32)
                 <:
                 i32)
               <:
@@ -110,22 +105,23 @@ let ntt_binomially_sampled_ring_element
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound + (3 * (FIELD_MODULUS / 2))\\n        })"
 
               <:
               Rust_primitives.Hax.t_Never)
       in
       ()
   in
+  let layer_jump:usize = sz 1 <<! 6l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 64 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 64 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -136,14 +132,14 @@ let ntt_binomially_sampled_ring_element
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 64 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 64 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -152,7 +148,7 @@ let ntt_binomially_sampled_ring_element
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 64 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -162,7 +158,6 @@ let ntt_binomially_sampled_ring_element
           in
           re, zeta_i)
   in
-  let layer_number:i32 = layer_number +! 1l in
   let _:Prims.unit =
     if true
     then
@@ -173,8 +168,8 @@ let ntt_binomially_sampled_ring_element
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (Core.Num.impl__i32__abs coefficient <: i32) <.
-              (coefficient_bound +!
-                ((layer_number *! 3l <: i32) *!
+              (initial_coefficient_bound +!
+                (((8l -! 6l <: i32) *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
                   <:
                   i32)
@@ -186,22 +181,23 @@ let ntt_binomially_sampled_ring_element
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 6) * 3 * (FIELD_MODULUS / 2))\\n        })"
 
               <:
               Rust_primitives.Hax.t_Never)
       in
       ()
   in
+  let layer_jump:usize = sz 1 <<! 5l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 32 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 32 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -212,14 +208,14 @@ let ntt_binomially_sampled_ring_element
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 32 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 32 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -228,7 +224,7 @@ let ntt_binomially_sampled_ring_element
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 32 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -238,7 +234,6 @@ let ntt_binomially_sampled_ring_element
           in
           re, zeta_i)
   in
-  let layer_number:i32 = layer_number +! 1l in
   let _:Prims.unit =
     if true
     then
@@ -249,8 +244,8 @@ let ntt_binomially_sampled_ring_element
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (Core.Num.impl__i32__abs coefficient <: i32) <.
-              (coefficient_bound +!
-                ((layer_number *! 3l <: i32) *!
+              (initial_coefficient_bound +!
+                (((8l -! 5l <: i32) *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
                   <:
                   i32)
@@ -262,22 +257,23 @@ let ntt_binomially_sampled_ring_element
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 5) * 3 * (FIELD_MODULUS / 2))\\n        })"
 
               <:
               Rust_primitives.Hax.t_Never)
       in
       ()
   in
+  let layer_jump:usize = sz 1 <<! 4l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 16 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 16 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -288,14 +284,14 @@ let ntt_binomially_sampled_ring_element
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 16 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 16 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -304,7 +300,7 @@ let ntt_binomially_sampled_ring_element
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 16 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -314,7 +310,6 @@ let ntt_binomially_sampled_ring_element
           in
           re, zeta_i)
   in
-  let layer_number:i32 = layer_number +! 1l in
   let _:Prims.unit =
     if true
     then
@@ -325,8 +320,8 @@ let ntt_binomially_sampled_ring_element
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (Core.Num.impl__i32__abs coefficient <: i32) <.
-              (coefficient_bound +!
-                ((layer_number *! 3l <: i32) *!
+              (initial_coefficient_bound +!
+                (((8l -! 4l <: i32) *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
                   <:
                   i32)
@@ -338,22 +333,23 @@ let ntt_binomially_sampled_ring_element
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 4) * 3 * (FIELD_MODULUS / 2))\\n        })"
 
               <:
               Rust_primitives.Hax.t_Never)
       in
       ()
   in
+  let layer_jump:usize = sz 1 <<! 3l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 8 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 8 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -364,14 +360,14 @@ let ntt_binomially_sampled_ring_element
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 8 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 8 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -380,7 +376,7 @@ let ntt_binomially_sampled_ring_element
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 8 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -390,7 +386,6 @@ let ntt_binomially_sampled_ring_element
           in
           re, zeta_i)
   in
-  let layer_number:i32 = layer_number +! 1l in
   let _:Prims.unit =
     if true
     then
@@ -401,8 +396,8 @@ let ntt_binomially_sampled_ring_element
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (Core.Num.impl__i32__abs coefficient <: i32) <.
-              (coefficient_bound +!
-                ((layer_number *! 3l <: i32) *!
+              (initial_coefficient_bound +!
+                (((8l -! 3l <: i32) *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
                   <:
                   i32)
@@ -414,22 +409,23 @@ let ntt_binomially_sampled_ring_element
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 3) * 3 * (FIELD_MODULUS / 2))\\n        })"
 
               <:
               Rust_primitives.Hax.t_Never)
       in
       ()
   in
+  let layer_jump:usize = sz 1 <<! 2l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 4 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 4 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -440,14 +436,14 @@ let ntt_binomially_sampled_ring_element
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 4 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 4 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -456,7 +452,7 @@ let ntt_binomially_sampled_ring_element
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 4 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -466,7 +462,6 @@ let ntt_binomially_sampled_ring_element
           in
           re, zeta_i)
   in
-  let layer_number:i32 = layer_number +! 1l in
   let _:Prims.unit =
     if true
     then
@@ -477,8 +472,8 @@ let ntt_binomially_sampled_ring_element
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (Core.Num.impl__i32__abs coefficient <: i32) <.
-              (coefficient_bound +!
-                ((layer_number *! 3l <: i32) *!
+              (initial_coefficient_bound +!
+                (((8l -! 2l <: i32) *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
                   <:
                   i32)
@@ -490,22 +485,23 @@ let ntt_binomially_sampled_ring_element
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 2) * 3 * (FIELD_MODULUS / 2))\\n        })"
 
               <:
               Rust_primitives.Hax.t_Never)
       in
       ()
   in
+  let layer_jump:usize = sz 1 <<! 1l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 2 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 2 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -516,14 +512,14 @@ let ntt_binomially_sampled_ring_element
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 2 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 2 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -532,7 +528,7 @@ let ntt_binomially_sampled_ring_element
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 2 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -542,7 +538,6 @@ let ntt_binomially_sampled_ring_element
           in
           re, zeta_i)
   in
-  let layer_number:i32 = layer_number +! 1l in
   let _:Prims.unit =
     if true
     then
@@ -553,8 +548,8 @@ let ntt_binomially_sampled_ring_element
             Core.Array.Iter.t_IntoIter i32 (sz 256))
           (fun coefficient ->
               (Core.Num.impl__i32__abs coefficient <: i32) <.
-              (coefficient_bound +!
-                ((layer_number *! 3l <: i32) *!
+              (initial_coefficient_bound +!
+                (((8l -! 1l <: i32) *! 3l <: i32) *!
                   (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
                   <:
                   i32)
@@ -566,7 +561,7 @@ let ntt_binomially_sampled_ring_element
       let _:Prims.unit =
         if ~.out
         then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                coefficient_bound + (layer_number * 3 * (FIELD_MODULUS / 2))\\n        })"
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 1) * 3 * (FIELD_MODULUS / 2))\\n        })"
 
               <:
               Rust_primitives.Hax.t_Never)
@@ -588,16 +583,39 @@ let ntt_vector_u
       (#v_VECTOR_U_COMPRESSION_FACTOR: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+  let initial_coefficient_bound:i32 = 3329l in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <=. initial_coefficient_bound <: bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        coefficient.abs() <= initial_coefficient_bound)"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
   let zeta_i:usize = sz 0 in
+  let layer_jump:usize = sz 1 <<! 7l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 128 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 128 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -608,14 +626,14 @@ let ntt_vector_u
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 128 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 128 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -624,7 +642,7 @@ let ntt_vector_u
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 128 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -634,15 +652,46 @@ let ntt_vector_u
           in
           re, zeta_i)
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
+              (initial_coefficient_bound +!
+                (((8l -! 7l <: i32) *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
+                <:
+                i32)
+              <:
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 7) * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let layer_jump:usize = sz 1 <<! 6l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 64 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 64 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -653,14 +702,14 @@ let ntt_vector_u
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 64 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 64 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -669,7 +718,7 @@ let ntt_vector_u
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 64 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -679,15 +728,46 @@ let ntt_vector_u
           in
           re, zeta_i)
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
+              (initial_coefficient_bound +!
+                (((8l -! 6l <: i32) *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
+                <:
+                i32)
+              <:
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 6) * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let layer_jump:usize = sz 1 <<! 5l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 32 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 32 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -698,14 +778,14 @@ let ntt_vector_u
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 32 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 32 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -714,7 +794,7 @@ let ntt_vector_u
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 32 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -724,15 +804,46 @@ let ntt_vector_u
           in
           re, zeta_i)
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
+              (initial_coefficient_bound +!
+                (((8l -! 5l <: i32) *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
+                <:
+                i32)
+              <:
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 5) * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let layer_jump:usize = sz 1 <<! 4l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 16 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 16 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -743,14 +854,14 @@ let ntt_vector_u
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 16 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 16 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -759,7 +870,7 @@ let ntt_vector_u
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 16 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -769,15 +880,46 @@ let ntt_vector_u
           in
           re, zeta_i)
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
+              (initial_coefficient_bound +!
+                (((8l -! 4l <: i32) *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
+                <:
+                i32)
+              <:
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 4) * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let layer_jump:usize = sz 1 <<! 3l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 8 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 8 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -788,14 +930,14 @@ let ntt_vector_u
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 8 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 8 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -804,7 +946,7 @@ let ntt_vector_u
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 8 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -814,15 +956,46 @@ let ntt_vector_u
           in
           re, zeta_i)
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
+              (initial_coefficient_bound +!
+                (((8l -! 3l <: i32) *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
+                <:
+                i32)
+              <:
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 3) * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let layer_jump:usize = sz 1 <<! 2l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 4 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 4 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -833,14 +1006,14 @@ let ntt_vector_u
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 4 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 4 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -849,7 +1022,7 @@ let ntt_vector_u
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 4 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -859,15 +1032,46 @@ let ntt_vector_u
           in
           re, zeta_i)
   in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
+              (initial_coefficient_bound +!
+                (((8l -! 2l <: i32) *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
+                <:
+                i32)
+              <:
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 2) * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let layer_jump:usize = sz 1 <<! 1l in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
               ({
                   Core.Ops.Range.f_start = sz 0;
                   Core.Ops.Range.f_end
                   =
-                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! sz 2 <: usize
+                  Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT -! layer_jump <: usize
                 })
-              (sz 2 *! sz 2 <: usize)
+              (sz 2 *! layer_jump <: usize)
             <:
             Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range usize))
         <:
@@ -878,14 +1082,14 @@ let ntt_vector_u
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! sz 2 <: usize
+                      Core.Ops.Range.f_end = offset +! layer_jump <: usize
                     })
                 <:
                 Core.Ops.Range.t_Range usize)
               re
               (fun re j ->
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! sz 2 <: usize ]
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re.[ j +! layer_jump <: usize ]
                           <:
                           i32) *!
                         (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
@@ -894,7 +1098,7 @@ let ntt_vector_u
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                     Rust_primitives.Hax.update_at re
-                      (j +! sz 2 <: usize)
+                      (j +! layer_jump <: usize)
                       ((re.[ j ] <: i32) -! t <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -903,6 +1107,36 @@ let ntt_vector_u
                   re)
           in
           re, zeta_i)
+  in
+  let _:Prims.unit =
+    if true
+    then
+      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
+        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            <:
+            Core.Array.Iter.t_IntoIter i32 (sz 256))
+          (fun coefficient ->
+              (Core.Num.impl__i32__abs coefficient <: i32) <.
+              (initial_coefficient_bound +!
+                (((8l -! 1l <: i32) *! 3l <: i32) *!
+                  (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /! 2l <: i32)
+                  <:
+                  i32)
+                <:
+                i32)
+              <:
+              bool)
+      in
+      let _:Prims.unit =
+        if ~.out
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        {\\n            coefficient.abs() <\\n                initial_coefficient_bound +\\n                    ((8 - 1) * 3 * (FIELD_MODULUS / 2))\\n        })"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
     {
