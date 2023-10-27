@@ -160,80 +160,29 @@ type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 let impl__KyberPolynomialRingElement__ZERO: t_KyberPolynomialRingElement =
   { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) }
 
-let impl_1: Core.Ops.Index.t_Index t_KyberPolynomialRingElement usize =
-  {
-    f_Output = i32;
-    f_index
-    =
-    fun (self: t_KyberPolynomialRingElement) (index: usize) -> self.f_coefficients.[ index ]
-  }
-
-let impl_2: Core.Iter.Traits.Collect.t_IntoIterator t_KyberPolynomialRingElement =
-  {
-    f_Item = i32;
-    f_IntoIter = Core.Array.Iter.t_IntoIter i32 (sz 256);
-    f_into_iter
-    =
-    fun (self: t_KyberPolynomialRingElement) ->
-      Core.Iter.Traits.Collect.f_into_iter self.f_coefficients
-  }
-
-let impl_3: Core.Ops.Arith.t_Add t_KyberPolynomialRingElement t_KyberPolynomialRingElement =
-  {
-    f_Output = t_KyberPolynomialRingElement;
-    f_add
-    =
-    fun (self: t_KyberPolynomialRingElement) (other: t_KyberPolynomialRingElement) ->
-      let result:t_KyberPolynomialRingElement = impl__KyberPolynomialRingElement__ZERO in
-      let result:t_KyberPolynomialRingElement =
-        Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                  Core.Ops.Range.f_start = sz 0;
-                  Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-                })
+let add_to_ring_element (lhs rhs: t_KyberPolynomialRingElement) : t_KyberPolynomialRingElement =
+  let lhs:t_KyberPolynomialRingElement =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end
+              =
+              Core.Slice.impl__len (Rust_primitives.unsize lhs.f_coefficients <: t_Slice i32)
+              <:
+              usize
+            })
+        <:
+        Core.Ops.Range.t_Range usize)
+      lhs
+      (fun lhs i ->
+          {
+            lhs with
+            f_coefficients
+            =
+            Rust_primitives.Hax.update_at lhs.f_coefficients
+              i
+              ((lhs.f_coefficients.[ i ] <: i32) +! (rhs.f_coefficients.[ i ] <: i32) <: i32)
             <:
-            Core.Ops.Range.t_Range usize)
-          result
-          (fun result i ->
-              {
-                result with
-                f_coefficients
-                =
-                Rust_primitives.Hax.update_at result.f_coefficients
-                  i
-                  ((self.f_coefficients.[ i ] <: i32) +! (other.f_coefficients.[ i ] <: i32) <: i32)
-                <:
-                t_KyberPolynomialRingElement
-              })
-      in
-      result
-  }
-
-let impl_4: Core.Ops.Arith.t_Sub t_KyberPolynomialRingElement t_KyberPolynomialRingElement =
-  {
-    f_Output = t_KyberPolynomialRingElement;
-    f_sub
-    =
-    fun (self: t_KyberPolynomialRingElement) (other: t_KyberPolynomialRingElement) ->
-      let result:t_KyberPolynomialRingElement = impl__KyberPolynomialRingElement__ZERO in
-      let result:t_KyberPolynomialRingElement =
-        Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                  Core.Ops.Range.f_start = sz 0;
-                  Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-                })
-            <:
-            Core.Ops.Range.t_Range usize)
-          result
-          (fun result i ->
-              {
-                result with
-                f_coefficients
-                =
-                Rust_primitives.Hax.update_at result.f_coefficients
-                  i
-                  ((self.f_coefficients.[ i ] <: i32) -! (other.f_coefficients.[ i ] <: i32) <: i32)
-                <:
-                t_KyberPolynomialRingElement
-              })
-      in
-      result
-  }
+            t_KyberPolynomialRingElement
+          })
+  in
+  lhs

@@ -1,5 +1,3 @@
-use std::ops::{self, Index, IndexMut};
-
 use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) type KyberFieldElement = i32;
@@ -53,55 +51,13 @@ impl KyberPolynomialRingElement {
     };
 }
 
-// Adding this to a module to ignore it for extraction.
-mod mutable_operations {
-    use super::*;
-
-    impl IndexMut<usize> for KyberPolynomialRingElement {
-        fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-            &mut self.coefficients[index]
-        }
+pub(crate) fn add_to_ring_element(
+    mut lhs: KyberPolynomialRingElement,
+    rhs: &KyberPolynomialRingElement,
+) -> KyberPolynomialRingElement {
+    for i in 0..lhs.coefficients.len() {
+        lhs.coefficients[i] += rhs.coefficients[i];
     }
-}
 
-impl Index<usize> for KyberPolynomialRingElement {
-    type Output = KyberFieldElement;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.coefficients[index]
-    }
-}
-
-impl IntoIterator for KyberPolynomialRingElement {
-    type Item = KyberFieldElement;
-
-    type IntoIter = std::array::IntoIter<KyberFieldElement, COEFFICIENTS_IN_RING_ELEMENT>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.coefficients.into_iter()
-    }
-}
-
-impl ops::Add for KyberPolynomialRingElement {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        let mut result = KyberPolynomialRingElement::ZERO;
-        for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            result.coefficients[i] = self.coefficients[i] + other.coefficients[i];
-        }
-        result
-    }
-}
-
-impl ops::Sub for KyberPolynomialRingElement {
-    type Output = Self;
-
-    fn sub(self, other: Self) -> Self {
-        let mut result = KyberPolynomialRingElement::ZERO;
-        for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            result.coefficients[i] = self.coefficients[i] - other.coefficients[i];
-        }
-        result
-    }
+    lhs
 }
