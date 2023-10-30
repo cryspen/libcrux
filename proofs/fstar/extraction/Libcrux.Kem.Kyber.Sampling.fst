@@ -4,7 +4,7 @@ open Core
 
 let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
     : (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.t_BadRejectionSamplingRandomnessError) =
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
   =
@@ -67,7 +67,7 @@ let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array 
           in
           if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
           then
-            let* hoist4:Rust_primitives.Hax.t_Never =
+            let* hoist1:Rust_primitives.Hax.t_Never =
               Core.Ops.Control_flow.ControlFlow.v_Break (out, Core.Option.Option_None)
             in
             Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients)
@@ -95,7 +95,7 @@ let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array 
       in
       ()
   in
-  out, Core.Option.Option_Some Libcrux.Kem.Kyber.BadRejectionSamplingRandomnessError
+  out, Core.Option.Option_Some Libcrux.Kem.Kyber.Types.Error_RejectionSampling
 
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =

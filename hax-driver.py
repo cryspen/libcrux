@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 
-def shell(command, expect=0, cwd=None):
+def shell(command, expect=0, cwd=None, env={}):
     subprocess_stdout = subprocess.DEVNULL
 
     print("Command: ", end="")
@@ -18,7 +18,10 @@ def shell(command, expect=0, cwd=None):
 
     print("\nDirectory: {}".format(cwd))
 
-    ret = subprocess.run(command, cwd=cwd)
+    os_env = os.environ
+    os_env.update(env)
+
+    ret = subprocess.run(command, cwd=cwd, env=os_env)
     if ret.returncode != expect:
         raise Exception("Error {}. Expected {}.".format(ret, expect))
 
@@ -71,6 +74,18 @@ parser.add_argument(
     default="",
     help="Space-separated list of modules to exclude from extraction. The module names must be fully qualified.",
 )
+typecheck_parser = parser.add_subparsers(
+    description="Typecheck libcrux",
+    dest="typecheck",
+    help="Run F* etc. to typecheck the extracted libcrux code.",
+)
+typecheck_parser = typecheck_parser.add_parser("typecheck")
+typecheck_parser.add_argument(
+    "--lax",
+    action="store_true",
+    dest="lax",
+    help="Lax typecheck the code only",
+)
 
 options = parser.parse_args()
 
@@ -95,6 +110,13 @@ if options.exclude_modules:
         filter_string += "{}".format(options.exclude_modules)
     else:
         filter_string += " {}".format(options.exclude_modules)
+
+if options.typecheck:
+    custom_env = {}
+    if options.lax:
+        custom_env.update({"OTHERFLAGS": "--lax"})
+    shell(["make", "-C", "proofs/fstar/extraction/"], custom_env)
+    exit(0)
 
 if options.kyber_reference:
     shell(

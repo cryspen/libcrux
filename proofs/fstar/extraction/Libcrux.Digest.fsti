@@ -1,5 +1,6 @@
 module Libcrux.Digest
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+open Rust_primitives
 open Core
 
 type t_Algorithm =
@@ -29,10 +30,10 @@ let digest_size (mode: t_Algorithm) : usize =
   | Algorithm_Sha3_384_  -> sz 48
   | Algorithm_Sha3_512_  -> sz 64
 
-let sha3_256_ (payload: slice u8) : array u8 (sz 32) = Libcrux.Hacl.Sha3.sha256 payload
+val sha3_256_ (payload: t_Slice u8) : t_Array u8 (sz 32)
 
-let sha3_512_ (payload: slice u8) : array u8 (sz 64) = Libcrux.Hacl.Sha3.sha512 payload
+val sha3_512_ (payload: t_Slice u8) : t_Array u8 (sz 64)
 
-let shake128 (#v_LEN: usize) (data: slice u8) : array u8 v_LEN = Libcrux.Hacl.Sha3.shake128 data
+val shake128 (#v_LEN: usize) (data: t_Slice u8) : t_Array u8 v_LEN
 
-let shake256 (#v_LEN: usize) (data: slice u8) : array u8 v_LEN = Libcrux.Hacl.Sha3.shake256 data
+val shake256 (#v_LEN: usize) (data: t_Slice u8) : t_Array u8 v_LEN

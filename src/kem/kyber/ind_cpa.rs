@@ -15,11 +15,10 @@ use super::{
         deserialize_then_decompress_message, deserialize_to_uncompressed_ring_element,
         serialize_little_endian, serialize_uncompressed_ring_element,
     },
-    BadRejectionSamplingRandomnessError, KyberPublicKey,
+    types::PrivateKey,
+    Error, KyberPublicKey,
 };
 
-// The PKE Private Key
-impl_generic_struct!(PrivateKey);
 pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
     private_key: &[u8],
     public_key: &[u8],
@@ -38,10 +37,7 @@ pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
 fn sample_matrix_A<const K: usize>(
     seed: [u8; 34],
     transpose: bool,
-) -> (
-    [[KyberPolynomialRingElement; K]; K],
-    Option<BadRejectionSamplingRandomnessError>,
-) {
+) -> ([[KyberPolynomialRingElement; K]; K], Option<Error>) {
     let mut A_transpose = [[KyberPolynomialRingElement::ZERO; K]; K];
     let mut sampling_A_error = None;
 
@@ -117,7 +113,7 @@ pub(crate) fn generate_keypair<
         PrivateKey<PRIVATE_KEY_SIZE>,
         KyberPublicKey<PUBLIC_KEY_SIZE>,
     ),
-    Option<BadRejectionSamplingRandomnessError>,
+    Option<Error>,
 ) {
     let mut prf_input: [u8; 33] = [0; 33];
 
@@ -222,10 +218,7 @@ pub(crate) fn encrypt<
     public_key: &[u8],
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
-) -> (
-    super::KyberCiphertext<CIPHERTEXT_SIZE>,
-    Option<BadRejectionSamplingRandomnessError>,
-) {
+) -> (super::KyberCiphertext<CIPHERTEXT_SIZE>, Option<Error>) {
     // tˆ := Decode_12(pk)
     let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; K];
     for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]

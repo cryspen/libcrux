@@ -29,7 +29,7 @@
 # (setq fstar-subp-prover-args #'my-fstar-compute-prover-args-using-make)
 #
 
-HAX_LIBS_HOME ?= $(shell git rev-parse --show-toplevel)/proof-libs/fstar
+HAX_LIBS_HOME ?= $(shell git rev-parse --show-toplevel)/../hax/proof-libs/fstar
 FSTAR_HOME    ?= $(HAX_LIBS_HOME)/../../../FStar
 HACL_HOME     ?= $(HAX_LIBS_HOME)/../../../hacl-star
 FSTAR_BIN     ?= $(shell command -v fstar.exe 1>&2 2> /dev/null && echo "fstar.exe" || echo "$(FSTAR_HOME)/bin/fstar.exe")
@@ -49,8 +49,7 @@ ROOTS = $(wildcard *.fst)
 
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_LIBS_HOME)/rust_primitives $(HAX_LIBS_HOME)/core $(HAX_LIBS_HOME)/hax_lib
 
-FSTAR_FLAGS = --lax \
-  --cmi \
+FSTAR_FLAGS = --cmi \
   --warn_error -331 \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
@@ -70,9 +69,6 @@ $(HINT_DIR):
 
 $(CACHE_DIR):
 	mkdir -p $@
-
-$(CACHE_DIR)/Chacha20.Hacspec_helper.fst.checked: | .depend $(HINT_DIR) $(CACHE_DIR)
-	$(FSTAR) --lax $(OTHERFLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints
 
 $(CACHE_DIR)/%.checked: | .depend $(HINT_DIR) $(CACHE_DIR)
 	$(FSTAR) $(OTHERFLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints

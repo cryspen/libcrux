@@ -7,8 +7,6 @@
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 pub(crate) mod constants;
 
-#[macro_use]
-mod types;
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
@@ -18,29 +16,19 @@ mod ind_cpa;
 mod ntt;
 mod sampling;
 mod serialize;
+mod types;
 
 // Variants
 pub mod kyber1024;
 pub mod kyber512;
 pub mod kyber768;
 
-impl_generic_struct!(KyberCiphertext);
-impl_generic_struct!(KyberPrivateKey);
-impl_generic_struct!(KyberPublicKey);
+pub use types::{Error, KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey};
 
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
 // https://github.com/cryspen/libcrux/issues/123
 pub type KyberSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
-
-/// A Kyber key pair
-pub struct KyberKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
-    pub(crate) sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
-    pub(crate) pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
-}
-
-#[derive(Debug)]
-pub struct BadRejectionSamplingRandomnessError;
 
 use self::{
     constant_time_ops::{
@@ -66,9 +54,9 @@ pub(super) fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, BadRejectionSamplingRandomnessError> {
-    let (ind_cpa_keypair_randomness, implicit_rejection_value) =
-        randomness.split_at(CPA_PKE_KEY_GENERATION_SEED_SIZE);
+) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, Error> {
+    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
+    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
     let ((ind_cpa_private_key, public_key), sampling_a_error) = ind_cpa::generate_keypair::<
         K,
@@ -111,10 +99,7 @@ pub(super) fn encapsulate<
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> Result<
-    (KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret),
-    BadRejectionSamplingRandomnessError,
-> {
+) -> Result<(KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret), Error> {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
 

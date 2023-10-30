@@ -1,5 +1,3 @@
-use super::{KyberKeyPair, KyberPrivateKey, KyberPublicKey};
-
 macro_rules! impl_generic_struct {
     ($name:ident) => {
         pub struct $name<const SIZE: usize> {
@@ -90,6 +88,20 @@ macro_rules! impl_generic_struct {
     };
 }
 
+impl_generic_struct!(KyberCiphertext);
+impl_generic_struct!(KyberSharedSecret);
+impl_generic_struct!(KyberPrivateKey);
+impl_generic_struct!(KyberPublicKey);
+
+// The PKE Private Key
+impl_generic_struct!(PrivateKey);
+
+/// A Kyber key pair
+pub struct KyberKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
+    pub(crate) sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
+    pub(crate) pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
+}
+
 impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
 {
@@ -123,4 +135,9 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     pub fn sk(&self) -> &[u8; PRIVATE_KEY_SIZE] {
         self.sk.as_slice()
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Error {
+    RejectionSampling,
 }
