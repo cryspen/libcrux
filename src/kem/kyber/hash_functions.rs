@@ -26,7 +26,3 @@ pub(crate) fn XOFx4<const LEN: usize, const K: usize>(input: [[u8; 34]; K]) -> [
     }
     out
 }
-
-pub(crate) fn KDF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-    digest::shake256::<LEN>(input)
-}

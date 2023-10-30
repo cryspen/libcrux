@@ -42,6 +42,7 @@ pub type SharedSecret = [u8; KYBER768_SHARED_SECRET_SIZE];
 #[derive(Debug)]
 pub struct BadRejectionSamplingRandomnessError;
 
+#[derive(Debug)]
 pub struct KeyPair {
     pk: PublicKey,
     sk: PrivateKey,

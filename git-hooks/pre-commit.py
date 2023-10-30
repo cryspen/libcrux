@@ -3,6 +3,7 @@
 import git
 from pathlib import Path
 import subprocess
+import os
 
 repo = git.Repo(".")
 
@@ -15,7 +16,8 @@ def shell(command, expect=0, cwd=None):
 
 format_python_files = False
 format_rust_files = False
-update_kyber_fstar_extraction = False
+update_libcrux_kyber_fstar_extraction = False
+update_spec_kyber_fstar_extraction = False
 
 for item in repo.index.diff("HEAD"):
     path = Path(item.a_path)
@@ -24,13 +26,21 @@ for item in repo.index.diff("HEAD"):
     elif path.suffix == ".rs":
         format_rust_files = True
         if "kyber" in path.parts:
-            update_kyber_fstar_extraction = True
+            if "specs" in path.parts and "kyber" in path.parts and "src" in path.parts:
+                update_spec_kyber_fstar_extraction = True
+            if "src" in path.parts and "kem" in path.parts:
+                update_libcrux_kyber_fstar_extraction = True
 
 if format_python_files == True:
     shell(["black", "."])
 if format_rust_files == True:
     shell(["cargo", "fmt"])
-if update_kyber_fstar_extraction == True:
+if update_libcrux_kyber_fstar_extraction == True:
     shell(["./hax-driver.py", "--kyber-reference"])
+    repo.git.add(os.path.join("proofs", "fstar", "extraction"))
+if update_spec_kyber_fstar_extraction == True:
+    shell(["./hax-driver.py", "--kyber-specification"])
+    repo.git.add(os.path.join("specs", "kyber", "proofs", "fstar", "extraction"))
 
-repo.git.add(update=True)
+for item in repo.index.diff("HEAD"):
+    repo.git.add(item.a_path)

@@ -19,11 +19,11 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
         let d2 = (b3 << 4) | (b2 >> 4);
 
         if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out[sampled_coefficients] = d1;
+            out.coefficients[sampled_coefficients] = d1;
             sampled_coefficients += 1
         }
         if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out[sampled_coefficients] = d2;
+            out.coefficients[sampled_coefficients] = d2;
             sampled_coefficients += 1;
         }
         if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
@@ -91,7 +91,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRing
             let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as KyberFieldElement;
 
             let offset = (outcome_set >> 2) as usize;
-            sampled[8 * chunk_number + offset] = outcome_1 - outcome_2;
+            sampled.coefficients[8 * chunk_number + offset] = outcome_1 - outcome_2;
         }
     }
 
@@ -120,7 +120,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
             let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as KyberFieldElement;
 
             let offset = (outcome_set / 6) as usize;
-            sampled[4 * chunk_number + offset] = outcome_1 - outcome_2;
+            sampled.coefficients[4 * chunk_number + offset] = outcome_1 - outcome_2;
         }
     }
 

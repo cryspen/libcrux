@@ -13,33 +13,26 @@ let bits_to_bytes (bits: Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global)
   in
   let bytes:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global = Alloc.Vec.impl__new in
   let bytes:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks
-              (Core.Ops.Deref.f_deref bits <: slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks (
+                Core.Ops.Deref.f_deref bits <: t_Slice u8)
               (sz 8)
             <:
             Core.Slice.Iter.t_Chunks u8)
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Slice.Iter.t_Chunks u8)).f_IntoIter)
+        Core.Slice.Iter.t_Chunks u8)
       bytes
       (fun bytes bit_chunk ->
           let byte_value:u8 = 0uy in
           let byte_value:u8 =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-                      (Core.Iter.Traits.Collect.f_into_iter bit_chunk
-                        <:
-                        (Core.Slice.Iter.impl u8).f_IntoIter)
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+                      (Core.Iter.Traits.Collect.f_into_iter bit_chunk <: Core.Slice.Iter.t_Iter u8)
                     <:
                     Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
                 <:
-                (Core.Iter.Traits.Collect.impl
-                  (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8)))
-                  .f_IntoIter)
+                Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
               byte_value
               (fun byte_value (i, bit) ->
-                  byte_value +!
-                  (bit *! (Core.Num.impl_6__pow 2uy (cast i <: u32) <: u8)
-                    <:
-                    (Core.Ops.Arith.impl_129).f_Output)
+                  byte_value +! (bit *! (Core.Num.impl__u8__pow 2uy (cast i <: u32) <: u8) <: u8)
                   <:
                   u8)
           in
@@ -50,25 +43,25 @@ let bits_to_bytes (bits: Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global)
   in
   bytes
 
-let bytes_to_bits (bytes: slice u8) : Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global =
+let bytes_to_bits (bytes: t_Slice u8) : Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global =
   let bits:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global = Alloc.Vec.impl__new in
   let bits:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__iter
-              bytes
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__iter bytes
+
             <:
             Core.Slice.Iter.t_Iter u8)
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Slice.Iter.t_Iter u8)).f_IntoIter)
+        Core.Slice.Iter.t_Iter u8)
       bits
       (fun bits byte ->
           let byte_value:u8 = byte in
           let bits, byte_value:(Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global & u8) =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = 0ul;
-                      Core.Ops.Range.f_end = Core.Num.impl_6__BITS
+                      Core.Ops.Range.f_end = Core.Num.impl__u8__BITS
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range u32)).f_IntoIter)
+                Core.Ops.Range.t_Range u32)
               (bits, byte_value)
               (fun (bits, byte_value) _ ->
                   let bits:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global =
@@ -97,22 +90,22 @@ let byte_encode
   in
   let re_bits:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global = Alloc.Vec.impl__new in
   let re_bits:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Hacspec_lib.Ring.impl_2__coefficients
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Hacspec_lib.Ring.impl_2__coefficients
               re
             <:
-            array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
+            t_Array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
         <:
-        (Core.Array.impl_13 (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)).f_IntoIter)
+        Core.Slice.Iter.t_Iter (Hacspec_lib.Field.t_PrimeFieldElement 3329us))
       re_bits
       (fun re_bits coefficient ->
           let coefficient_value:u16 = coefficient.Hacspec_lib.Field.f_value in
           let coefficient_value, re_bits:(u16 & Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global) =
-            Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = sz 0;
                       Core.Ops.Range.f_end = bits_per_coefficient
                     })
                 <:
-                (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+                Core.Ops.Range.t_Range usize)
               (coefficient_value, re_bits)
               (fun (coefficient_value, re_bits) _ ->
                   let bit:u16 = coefficient_value %! 2us in
@@ -126,7 +119,7 @@ let byte_encode
   in
   bits_to_bytes re_bits
 
-let field_element_from_bits (bits: slice u8) : Hacspec_lib.Field.t_PrimeFieldElement 3329us =
+let field_element_from_bits (bits: t_Slice u8) : Hacspec_lib.Field.t_PrimeFieldElement 3329us =
   let _:Prims.unit =
     if
       ~.((Core.Slice.impl__len bits <: usize) <=. Hacspec_kyber.Parameters.v_BITS_PER_COEFFICIENT
@@ -139,25 +132,23 @@ let field_element_from_bits (bits: slice u8) : Hacspec_lib.Field.t_PrimeFieldEle
           Rust_primitives.Hax.t_Never)
   in
   let modulus:u16 =
-    Core.Num.impl_7__pow 2us (Hacspec_lib.f_as_u32 (Core.Slice.impl__len bits <: usize) <: u32)
+    Core.Num.impl__u16__pow 2us (Hacspec_lib.f_as_u32 (Core.Slice.impl__len bits <: usize) <: u32)
   in
   let (value: u16):u16 = 0us in
   let value:u16 =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Iter.Traits.Collect.f_into_iter bits <: (Core.Slice.Iter.impl u8).f_IntoIter)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+              (Core.Iter.Traits.Collect.f_into_iter bits <: Core.Slice.Iter.t_Iter u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
       value
       (fun value (i, bit) ->
           value +! (((cast bit <: u16) *! (1us <<! i <: u16) <: u16) %! modulus <: u16) <: u16)
   in
   Core.Convert.f_into value
 
-let byte_decode (bits_per_coefficient: usize) (re_bytes: slice u8)
+let byte_decode (bits_per_coefficient: usize) (re_bytes: t_Slice u8)
     : Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
       (sz 256) =
   let _:Prims.unit =
@@ -183,7 +174,7 @@ let byte_decode (bits_per_coefficient: usize) (re_bytes: slice u8)
   in
   let re_bits:Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global = bytes_to_bits re_bytes in
   let re_bit_chunks:Core.Slice.Iter.t_Chunks u8 =
-    Core.Slice.impl__chunks (Core.Ops.Deref.f_deref re_bits <: slice u8) bits_per_coefficient
+    Core.Slice.impl__chunks (Core.Ops.Deref.f_deref re_bits <: t_Slice u8) bits_per_coefficient
   in
   let re:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
     (sz 256) =
@@ -192,21 +183,20 @@ let byte_decode (bits_per_coefficient: usize) (re_bytes: slice u8)
   let re, re_bit_chunks:(Hacspec_lib.Ring.t_PolynomialRingElement
       (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) &
     Core.Slice.Iter.t_Chunks u8) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Hacspec_lib.Ring.impl_2__len re <: usize
             })
         <:
-        (Core.Iter.Traits.Collect.impl (Core.Ops.Range.t_Range usize)).f_IntoIter)
+        Core.Ops.Range.t_Range usize)
       (re, re_bit_chunks)
       (fun (re, re_bit_chunks) i ->
-          let tmp0, out:(Core.Slice.Iter.t_Chunks u8 &
-            Core.Option.t_Option (Core.Slice.Iter.impl_70 u8).f_Item) =
+          let tmp0, out:(Core.Slice.Iter.t_Chunks u8 & Core.Option.t_Option (t_Slice u8)) =
             Core.Iter.Traits.Iterator.f_next re_bit_chunks
           in
           let re_bit_chunks:Core.Slice.Iter.t_Chunks u8 = tmp0 in
-          let hoist13:Core.Option.t_Option (Core.Slice.Iter.impl_70 u8).f_Item = out in
-          let hoist14:slice u8 = Core.Option.impl__unwrap hoist13 in
+          let hoist13:Core.Option.t_Option (t_Slice u8) = out in
+          let hoist14:t_Slice u8 = Core.Option.impl__unwrap hoist13 in
           let hoist15:Hacspec_lib.Field.t_PrimeFieldElement 3329us =
             field_element_from_bits hoist14
           in
@@ -222,10 +212,10 @@ let vector_encode_12_
       (vector:
           Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3)
         )
-    : array u8 (sz 1152) =
-  let out:array u8 (sz 1152) = Rust_primitives.Hax.repeat 0uy (sz 1152) in
-  let out:array u8 (sz 1152) =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+    : t_Array u8 (sz 1152) =
+  let out:t_Array u8 (sz 1152) = Rust_primitives.Hax.repeat 0uy (sz 1152) in
+  let out:t_Array u8 (sz 1152) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Hacspec_lib.Vector.impl__into_iter vector
                 <:
                 Core.Array.Iter.t_IntoIter
@@ -237,12 +227,10 @@ let vector_encode_12_
                 (Hacspec_lib.Ring.t_PolynomialRingElement
                     (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) (sz 3)))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate
-            (Core.Array.Iter.t_IntoIter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) (sz 3))))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate
+        (Core.Array.Iter.t_IntoIter
+            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256)) (sz 3)))
       out
       (fun out (i, re) ->
           Rust_primitives.Hax.update_at out
@@ -266,20 +254,20 @@ let vector_encode_12_
                         usize
                       })
                   <:
-                  slice u8)
+                  t_Slice u8)
                 (Core.Ops.Deref.f_deref (byte_encode (sz 12) re
                       <:
                       Alloc.Vec.t_Vec u8 Alloc.Alloc.t_Global)
                   <:
-                  slice u8)
+                  t_Slice u8)
               <:
-              slice u8)
+              t_Slice u8)
           <:
-          array u8 (sz 1152))
+          t_Array u8 (sz 1152))
   in
   out
 
-let vector_decode_12_ (encoded: array u8 (sz 1152))
+let vector_decode_12_ (encoded: t_Array u8 (sz 1152))
     : Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3) =
   let out:Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3)
   =
@@ -287,17 +275,15 @@ let vector_decode_12_ (encoded: array u8 (sz 1152))
   in
   let out:Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3)
   =
-    Core.Iter.Traits.Iterator.Iterator.fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks (Rust_primitives.unsize encoded <: slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+              (Core.Slice.impl__chunks (Rust_primitives.unsize encoded <: t_Slice u8)
                   Hacspec_kyber.Parameters.v_BYTES_PER_RING_ELEMENT
                 <:
                 Core.Slice.Iter.t_Chunks u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Chunks u8))
         <:
-        (Core.Iter.Traits.Collect.impl
-          (Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Chunks u8)))
-          .f_IntoIter)
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Chunks u8))
       out
       (fun out (i, bytes) ->
           Rust_primitives.Hax.update_at out

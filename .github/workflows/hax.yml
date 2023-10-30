@@ -67,7 +67,8 @@ jobs:
                         hacspec::kyber::compress::decompress_d \
             --modules ind_cpa \
                       hacspec_kyber \
-                      matrix ntt \
+                      matrix \
+                      ntt \
                       parameters \
                       sampling \
                       serialize \

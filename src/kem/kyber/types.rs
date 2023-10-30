@@ -16,6 +16,14 @@ macro_rules! impl_generic_struct {
             }
         }
 
+        impl<const SIZE: usize> From<&[u8; SIZE]> for $name<SIZE> {
+            fn from(value: &[u8; SIZE]) -> Self {
+                Self {
+                    value: value.clone(),
+                }
+            }
+        }
+
         impl<const SIZE: usize> From<$name<SIZE>> for [u8; SIZE] {
             fn from(value: $name<SIZE>) -> Self {
                 value.value

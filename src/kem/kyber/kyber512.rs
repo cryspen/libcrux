@@ -29,11 +29,12 @@ const ETA1_RANDOMNESS_SIZE: usize = ETA1 * 64;
 const ETA2: usize = 2;
 const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 
+const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_512;
+
 // Kyber 512 types
 pub type Kyber512Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>;
 pub type Kyber512PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_512>;
 pub type Kyber512PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
-pub type Kyber512SharedSecret = KyberSharedSecret<SHARED_SECRET_SIZE>;
 
 /// Generate Kyber 512 Key Pair
 pub fn generate_key_pair_512(
@@ -57,13 +58,12 @@ pub fn encapsulate_512(
 ) -> Result<
     (
         KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>,
-        KyberSharedSecret<SHARED_SECRET_SIZE>,
+        KyberSharedSecret,
     ),
     Error,
 > {
     encapsulate::<
         RANK_512,
-        SHARED_SECRET_SIZE,
         CPA_PKE_CIPHERTEXT_SIZE_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
         T_AS_NTT_ENCODED_SIZE_512,
@@ -100,5 +100,6 @@ pub fn decapsulate_512(
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(secret_key, ciphertext)
 }

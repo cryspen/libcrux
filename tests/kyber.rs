@@ -1,5 +1,5 @@
 use libcrux::{
-    digest::{self, sha3_256, shake256},
+    digest::shake256,
     kem::{self, Algorithm, Ct, PrivateKey},
 };
 
@@ -111,11 +111,8 @@ fn compute_implicit_rejection_shared_secret(
 ) -> [u8; SHARED_SECRET_SIZE] {
     let raw_secret_key = secret_key.encode();
 
-    let mut to_hash = [0u8; SHARED_SECRET_SIZE + digest::digest_size(digest::Algorithm::Sha3_256)];
-
-    to_hash[0..SHARED_SECRET_SIZE]
-        .copy_from_slice(&raw_secret_key[raw_secret_key.len() - SHARED_SECRET_SIZE..]);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&sha3_256(&ciphertext.encode()));
+    let mut to_hash = raw_secret_key[raw_secret_key.len() - SHARED_SECRET_SIZE..].to_vec();
+    to_hash.extend_from_slice(&ciphertext.encode());
 
     shake256(&to_hash)
 }

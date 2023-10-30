@@ -14,10 +14,17 @@ let impl_1 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberCiphertext v_SIZE) (t
 let impl_2 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberCiphertext v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = value } }
 
-let impl_3 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberCiphertext v_SIZE) =
+let impl_3 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberCiphertext v_SIZE) (t_Array u8 v_SIZE) =
+  {
+    f_from
+    =
+    fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = Core.Clone.f_clone value }
+  }
+
+let impl_4 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberCiphertext v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_KyberCiphertext v_SIZE) -> value.f_value }
 
-let impl_4 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberCiphertext v_SIZE) (t_Slice u8) =
+let impl_5 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberCiphertext v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
     f_try_from
@@ -45,7 +52,7 @@ let impl_4 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberCiphertext v_SIZE) 
             Core.Result.Result_Ok hoist4))
   }
 
-let impl_5 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberCiphertext v_SIZE) usize =
+let impl_6 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberCiphertext v_SIZE) usize =
   {
     f_Output = u8;
     f_index
@@ -53,7 +60,7 @@ let impl_5 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberCiphertext v_SIZE) 
     fun (#v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) (index: usize) -> self.f_value.[ index ]
   }
 
-let impl_6 (#v_SIZE: usize)
+let impl_7 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberCiphertext v_SIZE) (Core.Ops.Range.t_Range usize) =
   {
     f_Output = t_Slice u8;
@@ -63,7 +70,7 @@ let impl_6 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_7 (#v_SIZE: usize)
+let impl_8 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberCiphertext v_SIZE) (Core.Ops.Range.t_RangeTo usize) =
   {
     f_Output = t_Slice u8;
@@ -73,7 +80,7 @@ let impl_7 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_8 (#v_SIZE: usize)
+let impl_9 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberCiphertext v_SIZE) (Core.Ops.Range.t_RangeFrom usize) =
   {
     f_Output = t_Slice u8;
@@ -87,31 +94,38 @@ let impl_8 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_9__as_slice (#v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) : t_Array u8 v_SIZE =
+let impl_10__as_slice (#v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) : t_Array u8 v_SIZE =
   self.f_value
 
-let impl_9__split_at (#v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) (mid: usize)
+let impl_10__split_at (#v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) (mid: usize)
     : (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
-let impl_9__len (#v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) : usize = v_SIZE
+let impl_10__len (#v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) : usize = v_SIZE
 
 type t_KyberSharedSecret (#v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
-let impl_10 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberSharedSecret v_SIZE) (t_Slice u8) =
+let impl_11 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberSharedSecret v_SIZE) (t_Slice u8) =
   {
     f_as_ref
     =
     fun (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) -> Rust_primitives.unsize self.f_value
   }
 
-let impl_11 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberSharedSecret v_SIZE) (t_Array u8 v_SIZE) =
+let impl_12 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberSharedSecret v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = value } }
 
-let impl_12 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberSharedSecret v_SIZE) =
+let impl_13 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberSharedSecret v_SIZE) (t_Array u8 v_SIZE) =
+  {
+    f_from
+    =
+    fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = Core.Clone.f_clone value }
+  }
+
+let impl_14 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberSharedSecret v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_KyberSharedSecret v_SIZE) -> value.f_value }
 
-let impl_13 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberSharedSecret v_SIZE) (t_Slice u8) =
+let impl_15 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberSharedSecret v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
     f_try_from
@@ -140,7 +154,7 @@ let impl_13 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberSharedSecret v_SIZ
             Core.Result.Result_Ok hoist7))
   }
 
-let impl_14 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberSharedSecret v_SIZE) usize =
+let impl_16 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberSharedSecret v_SIZE) usize =
   {
     f_Output = u8;
     f_index
@@ -148,7 +162,7 @@ let impl_14 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberSharedSecret v_SIZ
     fun (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) (index: usize) -> self.f_value.[ index ]
   }
 
-let impl_15 (#v_SIZE: usize)
+let impl_17 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberSharedSecret v_SIZE) (Core.Ops.Range.t_Range usize) =
   {
     f_Output = t_Slice u8;
@@ -158,7 +172,7 @@ let impl_15 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_16 (#v_SIZE: usize)
+let impl_18 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberSharedSecret v_SIZE) (Core.Ops.Range.t_RangeTo usize) =
   {
     f_Output = t_Slice u8;
@@ -172,7 +186,7 @@ let impl_16 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_17 (#v_SIZE: usize)
+let impl_19 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberSharedSecret v_SIZE) (Core.Ops.Range.t_RangeFrom usize) =
   {
     f_Output = t_Slice u8;
@@ -186,31 +200,38 @@ let impl_17 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_18__as_slice (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) : t_Array u8 v_SIZE =
+let impl_20__as_slice (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) : t_Array u8 v_SIZE =
   self.f_value
 
-let impl_18__split_at (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) (mid: usize)
+let impl_20__split_at (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) (mid: usize)
     : (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
-let impl_18__len (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) : usize = v_SIZE
+let impl_20__len (#v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) : usize = v_SIZE
 
 type t_KyberPrivateKey (#v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
-let impl_19 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberPrivateKey v_SIZE) (t_Slice u8) =
+let impl_21 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberPrivateKey v_SIZE) (t_Slice u8) =
   {
     f_as_ref
     =
     fun (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) -> Rust_primitives.unsize self.f_value
   }
 
-let impl_20 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberPrivateKey v_SIZE) (t_Array u8 v_SIZE) =
+let impl_22 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberPrivateKey v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = value } }
 
-let impl_21 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberPrivateKey v_SIZE) =
+let impl_23 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberPrivateKey v_SIZE) (t_Array u8 v_SIZE) =
+  {
+    f_from
+    =
+    fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = Core.Clone.f_clone value }
+  }
+
+let impl_24 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberPrivateKey v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_KyberPrivateKey v_SIZE) -> value.f_value }
 
-let impl_22 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPrivateKey v_SIZE) (t_Slice u8) =
+let impl_25 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPrivateKey v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
     f_try_from
@@ -238,7 +259,7 @@ let impl_22 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPrivateKey v_SIZE)
             Core.Result.Result_Ok hoist10))
   }
 
-let impl_23 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberPrivateKey v_SIZE) usize =
+let impl_26 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberPrivateKey v_SIZE) usize =
   {
     f_Output = u8;
     f_index
@@ -246,7 +267,7 @@ let impl_23 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberPrivateKey v_SIZE)
     fun (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) (index: usize) -> self.f_value.[ index ]
   }
 
-let impl_24 (#v_SIZE: usize)
+let impl_27 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberPrivateKey v_SIZE) (Core.Ops.Range.t_Range usize) =
   {
     f_Output = t_Slice u8;
@@ -256,7 +277,7 @@ let impl_24 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_25 (#v_SIZE: usize)
+let impl_28 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberPrivateKey v_SIZE) (Core.Ops.Range.t_RangeTo usize) =
   {
     f_Output = t_Slice u8;
@@ -266,7 +287,7 @@ let impl_25 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_26 (#v_SIZE: usize)
+let impl_29 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberPrivateKey v_SIZE) (Core.Ops.Range.t_RangeFrom usize) =
   {
     f_Output = t_Slice u8;
@@ -280,31 +301,38 @@ let impl_26 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_27__as_slice (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) : t_Array u8 v_SIZE =
+let impl_30__as_slice (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) : t_Array u8 v_SIZE =
   self.f_value
 
-let impl_27__split_at (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) (mid: usize)
+let impl_30__split_at (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) (mid: usize)
     : (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
-let impl_27__len (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) : usize = v_SIZE
+let impl_30__len (#v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) : usize = v_SIZE
 
 type t_KyberPublicKey (#v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
-let impl_28 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberPublicKey v_SIZE) (t_Slice u8) =
+let impl_31 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberPublicKey v_SIZE) (t_Slice u8) =
   {
     f_as_ref
     =
     fun (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) -> Rust_primitives.unsize self.f_value
   }
 
-let impl_29 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberPublicKey v_SIZE) (t_Array u8 v_SIZE) =
+let impl_32 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberPublicKey v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = value } }
 
-let impl_30 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberPublicKey v_SIZE) =
+let impl_33 (#v_SIZE: usize) : Core.Convert.t_From (t_KyberPublicKey v_SIZE) (t_Array u8 v_SIZE) =
+  {
+    f_from
+    =
+    fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = Core.Clone.f_clone value }
+  }
+
+let impl_34 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberPublicKey v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_KyberPublicKey v_SIZE) -> value.f_value }
 
-let impl_31 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPublicKey v_SIZE) (t_Slice u8) =
+let impl_35 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPublicKey v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
     f_try_from
@@ -332,7 +360,7 @@ let impl_31 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPublicKey v_SIZE) 
             Core.Result.Result_Ok hoist13))
   }
 
-let impl_32 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberPublicKey v_SIZE) usize =
+let impl_36 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberPublicKey v_SIZE) usize =
   {
     f_Output = u8;
     f_index
@@ -340,7 +368,7 @@ let impl_32 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_KyberPublicKey v_SIZE) 
     fun (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) (index: usize) -> self.f_value.[ index ]
   }
 
-let impl_33 (#v_SIZE: usize)
+let impl_37 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberPublicKey v_SIZE) (Core.Ops.Range.t_Range usize) =
   {
     f_Output = t_Slice u8;
@@ -350,7 +378,7 @@ let impl_33 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_34 (#v_SIZE: usize)
+let impl_38 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberPublicKey v_SIZE) (Core.Ops.Range.t_RangeTo usize) =
   {
     f_Output = t_Slice u8;
@@ -360,7 +388,7 @@ let impl_34 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_35 (#v_SIZE: usize)
+let impl_39 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_KyberPublicKey v_SIZE) (Core.Ops.Range.t_RangeFrom usize) =
   {
     f_Output = t_Slice u8;
@@ -374,31 +402,38 @@ let impl_35 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_36__as_slice (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) : t_Array u8 v_SIZE =
+let impl_40__as_slice (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) : t_Array u8 v_SIZE =
   self.f_value
 
-let impl_36__split_at (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) (mid: usize)
+let impl_40__split_at (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) (mid: usize)
     : (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
-let impl_36__len (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) : usize = v_SIZE
+let impl_40__len (#v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) : usize = v_SIZE
 
 type t_PrivateKey (#v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
-let impl_37 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_PrivateKey v_SIZE) (t_Slice u8) =
+let impl_41 (#v_SIZE: usize) : Core.Convert.t_AsRef (t_PrivateKey v_SIZE) (t_Slice u8) =
   {
     f_as_ref
     =
     fun (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) -> Rust_primitives.unsize self.f_value
   }
 
-let impl_38 (#v_SIZE: usize) : Core.Convert.t_From (t_PrivateKey v_SIZE) (t_Array u8 v_SIZE) =
+let impl_42 (#v_SIZE: usize) : Core.Convert.t_From (t_PrivateKey v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = value } }
 
-let impl_39 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_PrivateKey v_SIZE) =
+let impl_43 (#v_SIZE: usize) : Core.Convert.t_From (t_PrivateKey v_SIZE) (t_Array u8 v_SIZE) =
+  {
+    f_from
+    =
+    fun (#v_SIZE: usize) (value: t_Array u8 v_SIZE) -> { f_value = Core.Clone.f_clone value }
+  }
+
+let impl_44 (#v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_PrivateKey v_SIZE) =
   { f_from = fun (#v_SIZE: usize) (value: t_PrivateKey v_SIZE) -> value.f_value }
 
-let impl_40 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_PrivateKey v_SIZE) (t_Slice u8) =
+let impl_45 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_PrivateKey v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
     f_try_from
@@ -426,7 +461,7 @@ let impl_40 (#v_SIZE: usize) : Core.Convert.t_TryFrom (t_PrivateKey v_SIZE) (t_S
             Core.Result.Result_Ok hoist16))
   }
 
-let impl_41 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_PrivateKey v_SIZE) usize =
+let impl_46 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_PrivateKey v_SIZE) usize =
   {
     f_Output = u8;
     f_index
@@ -434,7 +469,7 @@ let impl_41 (#v_SIZE: usize) : Core.Ops.Index.t_Index (t_PrivateKey v_SIZE) usiz
     fun (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) (index: usize) -> self.f_value.[ index ]
   }
 
-let impl_42 (#v_SIZE: usize)
+let impl_47 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_PrivateKey v_SIZE) (Core.Ops.Range.t_Range usize) =
   {
     f_Output = t_Slice u8;
@@ -444,7 +479,7 @@ let impl_42 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_43 (#v_SIZE: usize)
+let impl_48 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_PrivateKey v_SIZE) (Core.Ops.Range.t_RangeTo usize) =
   {
     f_Output = t_Slice u8;
@@ -454,7 +489,7 @@ let impl_43 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_44 (#v_SIZE: usize)
+let impl_49 (#v_SIZE: usize)
     : Core.Ops.Index.t_Index (t_PrivateKey v_SIZE) (Core.Ops.Range.t_RangeFrom usize) =
   {
     f_Output = t_Slice u8;
@@ -464,14 +499,14 @@ let impl_44 (#v_SIZE: usize)
       self.f_value.[ range ]
   }
 
-let impl_45__as_slice (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) : t_Array u8 v_SIZE =
+let impl_50__as_slice (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) : t_Array u8 v_SIZE =
   self.f_value
 
-let impl_45__split_at (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) (mid: usize)
+let impl_50__split_at (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) (mid: usize)
     : (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
-let impl_45__len (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) : usize = v_SIZE
+let impl_50__len (#v_SIZE: usize) (self: t_PrivateKey v_SIZE) : usize = v_SIZE
 
 type t_KyberKeyPair (#v_PRIVATE_KEY_SIZE: usize) (#v_PUBLIC_KEY_SIZE: usize) = {
   f_sk:t_KyberPrivateKey v_PRIVATE_KEY_SIZE;
@@ -504,11 +539,11 @@ let impl__private_key
 let impl__pk
       (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
       (self: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : t_Array u8 v_PUBLIC_KEY_SIZE = impl_36__as_slice self.f_pk
+    : t_Array u8 v_PUBLIC_KEY_SIZE = impl_40__as_slice self.f_pk
 
 let impl__sk
       (#v_PRIVATE_KEY_SIZE #v_PUBLIC_KEY_SIZE: usize)
       (self: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-    : t_Array u8 v_PRIVATE_KEY_SIZE = impl_27__as_slice self.f_sk
+    : t_Array u8 v_PRIVATE_KEY_SIZE = impl_30__as_slice self.f_sk
 
 type t_Error = | Error_RejectionSampling : t_Error

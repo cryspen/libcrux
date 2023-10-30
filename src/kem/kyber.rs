@@ -23,9 +23,12 @@ pub mod kyber1024;
 pub mod kyber512;
 pub mod kyber768;
 
-pub use types::{
-    Error, KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey, KyberSharedSecret,
-};
+pub use types::{Error, KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey};
+
+// TODO: We should make this an actual type as opposed to alias so we can enforce
+// some checks at the type level. This is being tracked in:
+// https://github.com/cryspen/libcrux/issues/123
+pub type KyberSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
 use self::{
     constant_time_ops::{
@@ -33,7 +36,7 @@ use self::{
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     conversions::into_padded_array,
-    hash_functions::{G, H, KDF},
+    hash_functions::{G, H, PRF},
     ind_cpa::serialize_secret_key,
 };
 
@@ -81,7 +84,6 @@ pub(super) fn generate_keypair<
 
 pub(super) fn encapsulate<
     const K: usize,
-    const SHARED_SECRET_SIZE: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -97,46 +99,31 @@ pub(super) fn encapsulate<
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> Result<
-    (
-        KyberCiphertext<CIPHERTEXT_SIZE>,
-        KyberSharedSecret<SHARED_SECRET_SIZE>,
-    ),
-    Error,
-> {
-    let randomness_hashed = H(&randomness);
-
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness_hashed);
+) -> Result<(KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret), Error> {
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
 
     let hashed = G(&to_hash);
-    let (k_not, pseudorandomness) = hashed.split_at(32);
+    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-    let (ciphertext, sampling_a_error) =
-        ind_cpa::encrypt::<
-            K,
-            CIPHERTEXT_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            VECTOR_U_BLOCK_LEN,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-        >(public_key.as_slice(), randomness_hashed, pseudorandomness);
+    let (ciphertext, sampling_a_error) = ind_cpa::encrypt::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_SIZE,
+        C2_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+        VECTOR_U_BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+    >(public_key.as_slice(), randomness, pseudorandomness);
 
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&k_not);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
-
-    let shared_secret = KDF(&to_hash).into();
-
-    if sampling_a_error.is_some() {
-        Err(sampling_a_error.unwrap())
-    } else {
-        Ok((ciphertext, shared_secret))
+    match sampling_a_error {
+        Some(e) => Err(e),
+        None => Ok((ciphertext, shared_secret.try_into().unwrap())),
     }
 }
 
@@ -156,10 +143,11 @@ pub(super) fn decapsulate<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
     secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
-) -> [u8; SHARED_SECRET_SIZE] {
+) -> KyberSharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
@@ -176,7 +164,12 @@ pub(super) fn decapsulate<
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
 
     let hashed = G(&to_hash);
-    let (k_not, pseudorandomness) = hashed.split_at(32);
+    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
+
+    let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
+        into_padded_array(&implicit_rejection_value);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
+    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = PRF(&to_hash);
 
     // If a ciphertext C is well-formed, setting aside the fact that a
     // decryption failure could (with negligible probability) occur, it must hold that:
@@ -212,10 +205,10 @@ pub(super) fn decapsulate<
         ciphertext.as_ref(),
         expected_ciphertext.as_ref(),
     );
-    let to_hash = select_shared_secret_in_constant_time(k_not, implicit_rejection_value, selector);
 
-    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&to_hash);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&H(ciphertext.as_ref()));
-
-    KDF(&to_hash)
+    select_shared_secret_in_constant_time(
+        shared_secret,
+        &implicit_rejection_shared_secret,
+        selector,
+    )
 }

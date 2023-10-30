@@ -11,13 +11,13 @@ let compress
       (sz 256) =
   Hacspec_lib.Ring.impl_2__new (Core.Array.impl_23__map (Hacspec_lib.Ring.impl_2__coefficients re
           <:
-          array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
+          t_Array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
         (fun coefficient ->
             compress_d coefficient bits_per_compressed_coefficient
             <:
             Hacspec_lib.Field.t_PrimeFieldElement 3329us)
       <:
-      array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
+      t_Array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
 
 let decompress
       (re:
@@ -28,13 +28,13 @@ let decompress
       (sz 256) =
   Hacspec_lib.Ring.impl_2__new (Core.Array.impl_23__map (Hacspec_lib.Ring.impl_2__coefficients re
           <:
-          array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
+          t_Array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
         (fun coefficient ->
             decompress_d coefficient bits_per_compressed_coefficient
             <:
             Hacspec_lib.Field.t_PrimeFieldElement 3329us)
       <:
-      array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
+      t_Array (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))
 
 let compress_d (fe: Hacspec_lib.Field.t_PrimeFieldElement 3329us) (to_bit_size: usize)
     : Hacspec_lib.Field.t_PrimeFieldElement 3329us =
@@ -47,10 +47,10 @@ let compress_d (fe: Hacspec_lib.Field.t_PrimeFieldElement 3329us) (to_bit_size: 
           Rust_primitives.Hax.t_Never)
   in
   let two_pow_bit_size:u32 =
-    Core.Num.impl_8__pow 2ul
+    Core.Num.impl__u32__pow 2ul
       (Core.Result.impl__unwrap_or_else (Core.Convert.f_try_into to_bit_size
             <:
-            Core.Result.t_Result u32 (Core.Convert.impl_6 usize u32).f_Error)
+            Core.Result.t_Result u32 Core.Num.Error.t_TryFromIntError)
           (fun _ ->
               Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
                             (let list =
@@ -62,7 +62,7 @@ let compress_d (fe: Hacspec_lib.Field.t_PrimeFieldElement 3329us) (to_bit_size: 
                               FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
                               Rust_primitives.Hax.array_of_list list)
                           <:
-                          slice string)
+                          t_Slice string)
                         (Rust_primitives.unsize (let list =
                                 [
                                   Core.Fmt.Rt.impl_1__new_display Hacspec_kyber.Parameters.v_BITS_PER_COEFFICIENT
@@ -74,7 +74,7 @@ let compress_d (fe: Hacspec_lib.Field.t_PrimeFieldElement 3329us) (to_bit_size: 
                               FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
                               Rust_primitives.Hax.array_of_list list)
                           <:
-                          slice Core.Fmt.Rt.t_Argument)
+                          t_Slice Core.Fmt.Rt.t_Argument)
                       <:
                       Core.Fmt.t_Arguments)
                   <:

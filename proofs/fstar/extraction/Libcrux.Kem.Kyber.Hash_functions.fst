@@ -33,5 +33,3 @@ let v_XOFx4 (#v_LEN #v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
           t_Array (t_Array u8 v_LEN) v_K)
   in
   out
-
-let v_KDF (#v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN = Libcrux.Digest.shake256 input

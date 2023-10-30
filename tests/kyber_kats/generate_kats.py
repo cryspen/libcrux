@@ -49,6 +49,8 @@ for params in [params512, params768, params1024]:
     seed = bytes(range(48))
     g = NistDRBG(seed)
 
+    print("Generating KATs for {} parameter set.".format(params))
+
     for i in range(100):
         seed = g.read(48)
         g2 = NistDRBG(seed)

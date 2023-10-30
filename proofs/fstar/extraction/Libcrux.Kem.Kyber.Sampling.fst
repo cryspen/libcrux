@@ -33,7 +33,14 @@ let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array 
               sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
             then
               let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-                Rust_primitives.Hax.update_at out sampled_coefficients d1
+                {
+                  out with
+                  Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                  =
+                  Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    sampled_coefficients
+                    d1
+                }
               in
               out, sampled_coefficients +! sz 1
             else out, sampled_coefficients
@@ -45,7 +52,14 @@ let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array 
               sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
             then
               let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-                Rust_primitives.Hax.update_at out sampled_coefficients d2
+                {
+                  out with
+                  Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                  =
+                  Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    sampled_coefficients
+                    d2
+                }
               in
               let sampled_coefficients:usize = sampled_coefficients +! sz 1 in
               out, sampled_coefficients
@@ -131,9 +145,15 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                 in
                 let offset:usize = cast (outcome_set >>! 2l) <: usize in
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-                  Rust_primitives.Hax.update_at sampled
-                    ((sz 8 *! chunk_number <: usize) +! offset <: usize)
-                    (outcome_1_ -! outcome_2_ <: i32)
+                  {
+                    sampled with
+                    Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    =
+                    Rust_primitives.Hax.update_at sampled
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      ((sz 8 *! chunk_number <: usize) +! offset <: usize)
+                      (outcome_1_ -! outcome_2_ <: i32)
+                  }
                 in
                 sampled))
   in
@@ -202,9 +222,15 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                 in
                 let offset:usize = cast (outcome_set /! 6l) <: usize in
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-                  Rust_primitives.Hax.update_at sampled
-                    ((sz 4 *! chunk_number <: usize) +! offset <: usize)
-                    (outcome_1_ -! outcome_2_ <: i32)
+                  {
+                    sampled with
+                    Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    =
+                    Rust_primitives.Hax.update_at sampled
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      ((sz 4 *! chunk_number <: usize) +! offset <: usize)
+                      (outcome_1_ -! outcome_2_ <: i32)
+                  }
                 in
                 sampled))
   in
