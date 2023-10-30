@@ -5,8 +5,12 @@ use super::constants::SHARED_SECRET_SIZE;
 
 #[inline]
 fn is_non_zero(value: u8) -> u8 {
-    let value_negated = -(value as i8);
-    ((value | (value_negated as u8)) >> 7) & 1
+    let value = value as u16;
+
+    // (!value) + 1 ≡ -value (mod 2^16)
+    let result = ((value | (!value).wrapping_add(1)) >> 8) & 1;
+
+    result as u8
 }
 
 pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>(

@@ -3,8 +3,12 @@ module Libcrux.Kem.Kyber.Constant_time_ops
 open Core
 
 let is_non_zero (value: u8) : u8 =
-  let value_negated:i8 = Core.Ops.Arith.Neg.neg (cast value <: i8) in
-  ((value |. (cast value_negated <: u8) <: u8) >>! 7l <: u8) &. 1uy
+  let value:u16 = cast value <: u16 in
+  let result:u16 =
+    ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
+    1us
+  in
+  cast result <: u8
 
 let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8) : u8 =
   let _:Prims.unit =
