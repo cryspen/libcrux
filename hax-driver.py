@@ -103,7 +103,7 @@ if options.kyber_reference:
             "hax",
             "into",
             "-i",
-            "-** +libcrux::kem::kyber::** -libcrux::kem::kyber::arithmetic::mutable_operations::** -libcrux::hacl::sha3::** -libcrux::digest::**",
+            "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::**",
             "fstar",
         ],
         cwd=".",

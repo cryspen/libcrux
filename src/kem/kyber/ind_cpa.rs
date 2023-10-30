@@ -84,7 +84,7 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
         let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let r = sample_from_binomial_distribution::<ETA>(&prf_output);
-        re_as_ntt[i] = ntt_with_debug_asserts(r, ETA as i32);
+        re_as_ntt[i] = ntt_binomially_sampled_ring_element(r);
     }
     (re_as_ntt, domain_separator)
 }
@@ -148,7 +148,7 @@ pub(crate) fn generate_keypair<
 
         let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
 
-        secret_as_ntt[i] = ntt_with_debug_asserts(secret, ETA1 as i32);
+        secret_as_ntt[i] = ntt_binomially_sampled_ring_element(secret);
     }
 
     // for i from 0 to k−1 do
@@ -163,7 +163,7 @@ pub(crate) fn generate_keypair<
         let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
 
         let error = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        error_as_ntt[i] = ntt_with_debug_asserts(error, ETA1 as i32);
+        error_as_ntt[i] = ntt_binomially_sampled_ring_element(error);
     }
 
     // tˆ := Aˆ ◦ sˆ + eˆ
@@ -271,16 +271,11 @@ pub(crate) fn encrypt<
     let error_2 = sample_from_binomial_distribution::<ETA2>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let mut u = multiply_matrix_by_column_montgomery(&A_transpose, &r_as_ntt);
-    for i in 0..K {
-        u[i] = invert_ntt_montgomery(u[i]) + error_1[i];
-    }
+    let u = compute_vector_u(&A_transpose, &r_as_ntt, &error_1);
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let message_as_ring_element = deserialize_then_decompress_message(message);
-    let v = invert_ntt_montgomery(multiply_row_by_column_montgomery(&t_as_ntt, &r_as_ntt))
-        + error_2
-        + message_as_ring_element;
+    let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
     let c1 = compress_then_encode_u::<K, C1_LEN, VECTOR_U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
@@ -317,7 +312,7 @@ pub(crate) fn decrypt<
         let u = decompress::<VECTOR_U_COMPRESSION_FACTOR>(deserialize_little_endian::<
             VECTOR_U_COMPRESSION_FACTOR,
         >(u_bytes));
-        u_as_ntt[i] = ntt_representation(u);
+        u_as_ntt[i] = ntt_vector_u::<VECTOR_U_COMPRESSION_FACTOR>(u);
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
@@ -331,8 +326,6 @@ pub(crate) fn decrypt<
     }
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
-    let message =
-        v - invert_ntt_montgomery(multiply_row_by_column_montgomery(&secret_as_ntt, &u_as_ntt));
-
+    let message = compute_message(&v, &secret_as_ntt, &u_as_ntt);
     compress_then_serialize_message(message)
 }
