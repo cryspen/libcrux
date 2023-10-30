@@ -95,13 +95,6 @@ pub mod rsa_pss {
         pub(super) value: Vec<u8>,
     }
 
-    impl RsaPssSignature {
-        /// Get the signature as the raw byte slice.
-        pub fn as_bytes(&self) -> &[u8] {
-            &self.value
-        }
-    }
-
     impl From<&[u8]> for RsaPssSignature {
         fn from(value: &[u8]) -> Self {
             Self {
