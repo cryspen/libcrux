@@ -327,7 +327,7 @@ impl EcDsaP256Signature {
 fn ecdsa_p256_sign_prep(
     private_key: &[u8],
     rng: &mut (impl CryptoRng + RngCore),
-) -> Result<([u8; 32], [u8; 32]), Error> {
+) -> Result<(ecdh::p256::PrivateKey, [u8; 32]), Error> {
     let private_key = p256::validate_scalar_slice(private_key).map_err(|_| Error::SigningError)?;
 
     let mut nonce = [0u8; 32];
@@ -335,7 +335,7 @@ fn ecdsa_p256_sign_prep(
         rng.try_fill_bytes(&mut nonce)
             .map_err(|_| Error::SigningError)?;
         // Make sure it's a valid nonce.
-        if p256::validate_scalar(&nonce).is_ok() {
+        if p256::validate_scalar_slice(&nonce).is_ok() {
             break;
         }
     }
@@ -373,7 +373,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha256) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha256(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha256(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -381,7 +381,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha384) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha384(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha384(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -389,7 +389,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha512) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                p256::ecdsa::sign_sha512(payload, &private_key, &nonce)
+                p256::ecdsa::sign_sha512(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -433,7 +433,7 @@ fn ecdsa_p256_verify_prep(public_key: &[u8]) -> Result<[u8; 64], Error> {
         }
     };
 
-    p256::validate_point(&pk)
+    p256::validate_point(ecdh::p256::PublicKey(pk))
         .map(|()| pk)
         .map_err(into_verify_error)
 }
