@@ -1,0 +1,27 @@
+[package]
+name = "libcrux-fuzz"
+version = "0.0.0"
+authors = ["Cryspen"]
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+rand = { version = "0.8" }
+
+[dependencies.libcrux]
+path = "../"
+
+[[bin]]
+name = "implicit_rejection"
+path = "fuzz_targets/implicit_rejection.rs"
+test = false
+doc = false
+harness = false
+bench = false
+
+[profile.release]
+debug = true
