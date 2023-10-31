@@ -9,6 +9,7 @@ import sys
 def shell(command, expect=0, cwd=None, env={}):
     subprocess_stdout = subprocess.DEVNULL
 
+    print("Env: ", env)
     print("Command: ", end="")
     for i, word in enumerate(command):
         if i == 4:
@@ -118,43 +119,43 @@ if options.typecheck:
     shell(["make", "-C", "proofs/fstar/extraction/"], custom_env)
     exit(0)
 
+cargo_hax_into = ["cargo", "hax", "into"]
+hax_env = {"RUSTFLAGS": "--cfg hax"}
+
 if options.kyber_reference:
     shell(
-        [
-            "cargo",
-            "hax",
-            "into",
+        cargo_hax_into
+        + [
             "-i",
             "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::**",
             "fstar",
         ],
         cwd=".",
+        env=hax_env,
     )
 elif options.kyber_specification:
     shell(
-        [
-            "cargo",
-            "hax",
-            "into",
+        cargo_hax_into
+        + [
             "-i",
             "-** +compress::* +ind_cpa::* +hacspec_kyber::* +matrix::* +ntt::* +parameters::* +sampling::* +serialize::* -libcrux::hacl::sha3::* -libcrux::digest::*",
             "fstar",
         ],
         cwd=os.path.join("specs", "kyber"),
+        env=hax_env,
     )
 
 else:
     if filter_string:
         shell(
-            [
-                "cargo",
-                "hax",
-                "into",
+            cargo_hax_into
+            + [
                 "-i",
                 "-** {}".format(filter_string),
                 "fstar",
             ],
             cwd=options.crate_path,
+            env=hax_env,
         )
     else:
-        shell(["cargo", "hax", "into", "fstar"], cwd=options.crate_path)
+        shell(cargo_hax_into + ["fstar"], cwd=options.crate_path, env=hax_env)

@@ -37,6 +37,11 @@ log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 
+# When using the hax toolchain, we have more dependencies.
+# This is only required when doing proofs.
+[target.'cfg(hax)'.dependencies]
+hax-lib-macros = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax" }
+
 # WASM needs the js feature on getrandom
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
