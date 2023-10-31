@@ -30,6 +30,3 @@ test = false
 doc = false
 harness = false
 bench = false
-
-[profile.release]
-debug = true
