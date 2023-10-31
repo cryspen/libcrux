@@ -122,7 +122,7 @@ fn invert_ntt_montgomery<const K: usize>(
 
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
-    macro_rules! layers {
+    macro_rules! invert_ntt_at_layer {
         ($layer:literal) => {
             for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - $layer)).step_by(2 * $layer) {
                 zeta_i -= 1;
@@ -140,61 +140,36 @@ fn invert_ntt_montgomery<const K: usize>(
         };
     }
 
-    layers!(2);
-    layers!(4);
-    layers!(8);
-    layers!(16);
-    layers!(32);
-    layers!(64);
-    layers!(128);
+    invert_ntt_at_layer!(2);
+    invert_ntt_at_layer!(4);
+    invert_ntt_at_layer!(8);
+    invert_ntt_at_layer!(16);
+    invert_ntt_at_layer!(32);
+    invert_ntt_at_layer!(64);
+    invert_ntt_at_layer!(128);
+
+    macro_rules! bound_coefficient_set {
+        ($parameter:literal) => {
+            debug_assert!(re
+                .coefficients
+                .into_iter()
+                .skip($parameter)
+                .take($parameter)
+                .all(|coefficient| coefficient.abs() < (128 / $parameter) * FIELD_MODULUS));
+        };
+    }
 
     debug_assert!(
         re.coefficients[0].abs() < 128 * coefficient_bound
             && re.coefficients[1].abs() < 128 * coefficient_bound
     );
-
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .skip(2)
-        .take(2)
-        .all(|coefficient| coefficient.abs() < 64 * FIELD_MODULUS));
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .skip(4)
-        .take(4)
-        .all(|coefficient| coefficient.abs() < 32 * FIELD_MODULUS));
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .skip(8)
-        .take(8)
-        .all(|coefficient| coefficient.abs() < 16 * FIELD_MODULUS));
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .skip(16)
-        .take(16)
-        .all(|coefficient| coefficient.abs() < 8 * FIELD_MODULUS));
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .skip(32)
-        .take(32)
-        .all(|coefficient| coefficient.abs() < 4 * FIELD_MODULUS));
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .skip(64)
-        .take(64)
-        .all(|coefficient| coefficient.abs() < 2 * FIELD_MODULUS));
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .skip(128)
-        .take(128)
-        .all(|coefficient| coefficient.abs() < 1 * FIELD_MODULUS));
+    bound_coefficient_set!(2);
+    bound_coefficient_set!(4);
+    bound_coefficient_set!(8);
+    bound_coefficient_set!(16);
+    bound_coefficient_set!(32);
+    bound_coefficient_set!(64);
+    bound_coefficient_set!(128);
 
     for i in 0..8 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
@@ -269,9 +244,6 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
         let product = ntt_multiply(secret_element, u_element);
         result = add_to_ring_element(result, &product);
     }
-    // TODO: Without this, there's a failure in Kyber-1024. We need to see if
-    // this round of barrett reductions can be removed.
-    result.coefficients = result.coefficients.map(barrett_reduce);
 
     result = invert_ntt_montgomery::<K>(result);
 
