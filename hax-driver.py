@@ -9,7 +9,7 @@ import sys
 def shell(command, expect=0, cwd=None, env={}):
     subprocess_stdout = subprocess.DEVNULL
 
-    print("Env: ", env)
+    print("Env:", env)
     print("Command: ", end="")
     for i, word in enumerate(command):
         if i == 4:
@@ -120,7 +120,7 @@ if options.typecheck:
     exit(0)
 
 cargo_hax_into = ["cargo", "hax", "into"]
-hax_env = {"RUSTFLAGS": "--cfg hax"}
+hax_env = {}
 
 if options.kyber_reference:
     shell(
