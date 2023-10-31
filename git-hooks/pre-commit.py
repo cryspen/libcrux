@@ -41,6 +41,8 @@ if update_libcrux_kyber_fstar_extraction == True:
 if update_spec_kyber_fstar_extraction == True:
     shell(["./hax-driver.py", "--kyber-specification"])
     repo.git.add(os.path.join("specs", "kyber", "proofs", "fstar", "extraction"))
+else:
+    exit(0)
 
 for item in repo.index.diff("HEAD"):
     repo.git.add(item.a_path)
