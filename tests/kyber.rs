@@ -53,6 +53,7 @@ fn modify_ciphertext(alg: Algorithm, rng: &mut (impl CryptoRng + Rng), ciphertex
 
     Ct::decode(alg, &raw_ciphertext).unwrap()
 }
+
 macro_rules! impl_modified_ciphertext {
     ($name:ident, $alg:expr) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
@@ -105,6 +106,7 @@ fn modify_secret_key(
 
     PrivateKey::decode(alg, &raw_secret_key).unwrap()
 }
+
 fn compute_implicit_rejection_shared_secret(
     ciphertext: Ct,
     secret_key: PrivateKey,
@@ -116,6 +118,7 @@ fn compute_implicit_rejection_shared_secret(
 
     shake256(&to_hash)
 }
+
 macro_rules! impl_modified_secret_key {
     ($name:ident, $alg:expr) => {
         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
