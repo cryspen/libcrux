@@ -3,4 +3,8 @@
 .vscode
 .DS_Store
 benches/boringssl/build
+proofs/fstar/extraction/.depend
+proofs/fstar/extraction/#*#
+fuzz/corpus
+fuzz/artifacts
 __pycache__

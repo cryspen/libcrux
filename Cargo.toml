@@ -1,5 +1,5 @@
 [workspace]
-members = ["sys/hacl", "sys/libjade", "sys/platform", "sys/pqclean"]
+members = ["sys/hacl", "sys/libjade", "sys/platform", "sys/pqclean", "fuzz"]
 
 [workspace.package]
 version = "0.0.2-pre.1"

@@ -2,11 +2,26 @@ module Libcrux.Kem.Kyber.Constant_time_ops
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-let is_non_zero (value: u8) : u8 =
-  let value_negated:i8 = Core.Ops.Arith.Neg.neg (cast value <: i8) in
-  ((value |. (cast value_negated <: u8) <: u8) >>! 7l <: u8) &. 1uy
+let is_non_zero (value: u8)
+    : Prims.Pure u8
+      Prims.l_True
+      (ensures
+        fun result ->
+          (~.(value =. 0uy <: bool) || result =. 0uy) &&
+          (~.(value <>. 0uy <: bool) || result =. 1uy)) =
+  let value:u16 = cast value <: u16 in
+  let result:u16 =
+    ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
+    1us
+  in
+  cast result <: u8
 
-let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8) : u8 =
+let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
+    : Prims.Pure u8
+      Prims.l_True
+      (ensures
+        fun result ->
+          (~.(lhs =. rhs <: bool) || result =. 0uy) && (~.(lhs <>. rhs <: bool) || result =. 1uy)) =
   let _:Prims.unit =
     if true
     then
@@ -56,7 +71,13 @@ let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: t
   in
   is_non_zero r
 
-let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) : t_Array u8 (sz 32) =
+let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
+    : Prims.Pure (t_Array u8 (sz 32))
+      Prims.l_True
+      (ensures
+        fun result ->
+          (~.(selector =. 0uy <: bool) || result =. lhs) &&
+          (~.(selector <>. 0uy <: bool) || result =. rhs)) =
   let _:Prims.unit =
     if true
     then

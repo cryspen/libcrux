@@ -7,38 +7,24 @@ const BARRETT_R: i32 = 1i32 << BARRETT_SHIFT;
 const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
 
 #[cfg_attr(hax, hax_lib_macros::requires(value > -BARRETT_R / 2 && value < BARRETT_R / 2))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
-    debug_assert!(value > -BARRETT_R / 2);
-    debug_assert!(value < BARRETT_R / 2);
-
     let quotient = ((value * BARRETT_MULTIPLIER) + (BARRETT_R >> 1)) >> BARRETT_SHIFT;
 
-    let reduced = value - (quotient * FIELD_MODULUS);
-
-    debug_assert!(reduced > -FIELD_MODULUS);
-    debug_assert!(reduced < FIELD_MODULUS);
-
-    reduced
+    value - (quotient * FIELD_MODULUS)
 }
 
 const MONTGOMERY_SHIFT: i32 = 16;
 const MONTGOMERY_R: i32 = 1i32 << MONTGOMERY_SHIFT;
 const INVERSE_OF_MODULUS_MOD_R: i32 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
+#[cfg_attr(hax, hax_lib_macros::requires(value > -FIELD_MODULUS * MONTGOMERY_R / 2 && value < FIELD_MODULUS * MONTGOMERY_R / 2))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
-    debug_assert!(value > -FIELD_MODULUS * (MONTGOMERY_R / 2));
-    debug_assert!(value < FIELD_MODULUS * (MONTGOMERY_R / 2));
-
     let t = (value & (MONTGOMERY_R - 1)) * INVERSE_OF_MODULUS_MOD_R;
     let t = (t & (MONTGOMERY_R - 1)) as i16;
 
-    let reduced =
-        (value >> MONTGOMERY_SHIFT) - ((i32::from(t) * FIELD_MODULUS) >> MONTGOMERY_SHIFT);
-
-    debug_assert!(reduced > -FIELD_MODULUS);
-    debug_assert!(reduced < FIELD_MODULUS);
-
-    reduced
+    (value >> MONTGOMERY_SHIFT) - ((i32::from(t) * FIELD_MODULUS) >> MONTGOMERY_SHIFT)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

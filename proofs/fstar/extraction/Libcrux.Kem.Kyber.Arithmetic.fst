@@ -13,68 +13,15 @@ let barrett_reduce (value: i32)
       (requires
         value >. ((Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) /! 2l <: i32) &&
         value <. (v_BARRETT_R /! 2l <: i32))
-      (fun _ -> Prims.l_True) =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if ~.(value >. ((Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) /! 2l <: i32) <: bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: value > -BARRETT_R / 2"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if ~.(value <. (v_BARRETT_R /! 2l <: i32) <: bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: value < BARRETT_R / 2"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+      (ensures
+        fun result ->
+          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
   let quotient:i32 =
     ((value *! v_BARRETT_MULTIPLIER <: i32) +! (v_BARRETT_R >>! 1l <: i32) <: i32) >>!
     v_BARRETT_SHIFT
   in
-  let reduced:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if
-          ~.(reduced >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
-            <:
-            bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: reduced > -FIELD_MODULUS"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if ~.(reduced <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: reduced < FIELD_MODULUS"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  reduced
+  value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
 
 let v_MONTGOMERY_SHIFT: i32 = 16l
 
@@ -82,83 +29,30 @@ let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let v_INVERSE_OF_MODULUS_MOD_R: i32 = (-3327l)
 
-let montgomery_reduce (value: i32) : i32 =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if
-          ~.(value >.
-            ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *!
-              (v_MONTGOMERY_R /! 2l <: i32)
-              <:
-              i32)
+let montgomery_reduce (value: i32)
+    : Prims.Pure i32
+      (requires
+        value >.
+        (((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *!
+            v_MONTGOMERY_R
             <:
-            bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: value > -FIELD_MODULUS * (MONTGOMERY_R / 2)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if
-          ~.(value <.
-            (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! (v_MONTGOMERY_R /! 2l <: i32) <: i32)
-            <:
-            bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: value < FIELD_MODULUS * (MONTGOMERY_R / 2)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+            i32) /!
+          2l
+          <:
+          i32) &&
+        value <.
+        ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! v_MONTGOMERY_R <: i32) /! 2l <: i32))
+      (ensures
+        fun result ->
+          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
   let t:i32 = (value &. (v_MONTGOMERY_R -! 1l <: i32) <: i32) *! v_INVERSE_OF_MODULUS_MOD_R in
   let t:i16 = cast (t &. (v_MONTGOMERY_R -! 1l <: i32)) <: i16 in
-  let reduced:i32 =
-    (value >>! v_MONTGOMERY_SHIFT <: i32) -!
-    (((Core.Convert.f_from t <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) >>!
-      v_MONTGOMERY_SHIFT
-      <:
-      i32)
-  in
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if
-          ~.(reduced >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
-            <:
-            bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: reduced > -FIELD_MODULUS"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        if ~.(reduced <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: reduced < FIELD_MODULUS"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  reduced
+  (value >>! v_MONTGOMERY_SHIFT <: i32) -!
+  (((Core.Convert.f_from t <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) >>!
+    v_MONTGOMERY_SHIFT
+    <:
+    i32)
 
 type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
