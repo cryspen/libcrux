@@ -6,6 +6,7 @@ const BARRETT_SHIFT: i32 = 26;
 const BARRETT_R: i32 = 1i32 << BARRETT_SHIFT;
 const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
 
+#[cfg_attr(hax, hax_lib_macros::requires(value > -BARRETT_R / 2 && value < BARRETT_R / 2))]
 pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
     debug_assert!(value > -BARRETT_R / 2);
     debug_assert!(value < BARRETT_R / 2);

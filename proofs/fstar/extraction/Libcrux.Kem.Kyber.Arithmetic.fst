@@ -8,7 +8,12 @@ let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
 
 let v_BARRETT_MULTIPLIER: i32 = 20159l
 
-let barrett_reduce (value: i32) : i32 =
+let barrett_reduce (value: i32)
+    : Prims.Pure i32
+      (requires
+        value >. ((Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) /! 2l <: i32) &&
+        value <. (v_BARRETT_R /! 2l <: i32))
+      (fun _ -> Prims.l_True) =
   let _:Prims.unit =
     if true
     then

@@ -39,7 +39,7 @@ class t_UpdatingArray (#v_Self: Type) = {
   f_push:v_Self -> t_Slice u8 -> v_Self
 }
 
-type t_UpdatableArray (#v_LEN: usize) = {
+type t_UpdatableArray (v_LEN: usize) = {
   f_value:t_Array u8 v_LEN;
   f_pointer:usize
 }
@@ -53,7 +53,7 @@ let impl_1 (#v_LEN: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
   {
     f_push
     =
-    fun (#v_LEN: usize) (self: t_UpdatableArray v_LEN) (other: t_Slice u8) ->
+    fun (self: t_UpdatableArray v_LEN) (other: t_Slice u8) ->
       let self:t_UpdatableArray v_LEN =
         {
           self with
