@@ -18,7 +18,7 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
 ];
 
 macro_rules! ntt_at_layer {
-    ($layer:literal, $zeta_i:ident, $re:ident, $initial_coefficient_bound:ident) => {
+    ($layer:literal, $zeta_i:ident, $re:ident, $initial_coefficient_bound:literal) => {
         let layer_jump = 1 << $layer;
         for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - layer_jump)).step_by(2 * layer_jump) {
             $zeta_i += 1;
@@ -46,11 +46,10 @@ macro_rules! ntt_at_layer {
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
-    let initial_coefficient_bound = 3;
     debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() <= initial_coefficient_bound));
+        .all(|coefficient| coefficient.abs() <= 3));
 
     let mut zeta_i = 0;
 
@@ -68,16 +67,17 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
             re.coefficients[j] = re.coefficients[j] + t;
         }
     }
-    debug_assert!(re.coefficients.into_iter().all(|coefficient| {
-        coefficient.abs() < initial_coefficient_bound + (3 * (FIELD_MODULUS / 2))
-    }));
+    debug_assert!(re
+        .coefficients
+        .into_iter()
+        .all(|coefficient| { coefficient.abs() < 3 + (3 * (FIELD_MODULUS / 2)) }));
 
-    ntt_at_layer!(6, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(5, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(4, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(3, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(2, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(1, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(6, zeta_i, re, 3);
+    ntt_at_layer!(5, zeta_i, re, 3);
+    ntt_at_layer!(4, zeta_i, re, 3);
+    ntt_at_layer!(3, zeta_i, re, 3);
+    ntt_at_layer!(2, zeta_i, re, 3);
+    ntt_at_layer!(1, zeta_i, re, 3);
 
     re.coefficients = re.coefficients.map(barrett_reduce);
 
@@ -88,21 +88,20 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
-    let initial_coefficient_bound = 3328;
     debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() <= initial_coefficient_bound));
+        .all(|coefficient| coefficient.abs() <= 3328));
 
     let mut zeta_i = 0;
 
-    ntt_at_layer!(7, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(6, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(5, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(4, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(3, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(2, zeta_i, re, initial_coefficient_bound);
-    ntt_at_layer!(1, zeta_i, re, initial_coefficient_bound);
+    ntt_at_layer!(7, zeta_i, re, 3328);
+    ntt_at_layer!(6, zeta_i, re, 3328);
+    ntt_at_layer!(5, zeta_i, re, 3328);
+    ntt_at_layer!(4, zeta_i, re, 3328);
+    ntt_at_layer!(3, zeta_i, re, 3328);
+    ntt_at_layer!(2, zeta_i, re, 3328);
+    ntt_at_layer!(1, zeta_i, re, 3328);
 
     re.coefficients = re.coefficients.map(barrett_reduce);
 
@@ -114,11 +113,10 @@ fn invert_ntt_montgomery<const K: usize>(
     mut re: KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
     // We only ever call this function after matrix/vector multiplication
-    let coefficient_bound = (K as i32) * FIELD_MODULUS;
     debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() < coefficient_bound));
+        .all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
 
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
@@ -148,7 +146,7 @@ fn invert_ntt_montgomery<const K: usize>(
     invert_ntt_at_layer!(64);
     invert_ntt_at_layer!(128);
 
-    macro_rules! bound_coefficient_set {
+    macro_rules! bound_for_set_coefficients {
         ($parameter:literal) => {
             debug_assert!(re
                 .coefficients
@@ -160,16 +158,16 @@ fn invert_ntt_montgomery<const K: usize>(
     }
 
     debug_assert!(
-        re.coefficients[0].abs() < 128 * coefficient_bound
-            && re.coefficients[1].abs() < 128 * coefficient_bound
+        re.coefficients[0].abs() < 128 * (K as i32) * FIELD_MODULUS
+            && re.coefficients[1].abs() < 128 * (K as i32) * FIELD_MODULUS
     );
-    bound_coefficient_set!(2);
-    bound_coefficient_set!(4);
-    bound_coefficient_set!(8);
-    bound_coefficient_set!(16);
-    bound_coefficient_set!(32);
-    bound_coefficient_set!(64);
-    bound_coefficient_set!(128);
+    bound_for_set_coefficients!(2);
+    bound_for_set_coefficients!(4);
+    bound_for_set_coefficients!(8);
+    bound_for_set_coefficients!(16);
+    bound_for_set_coefficients!(32);
+    bound_for_set_coefficients!(64);
+    bound_for_set_coefficients!(128);
 
     for i in 0..8 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
