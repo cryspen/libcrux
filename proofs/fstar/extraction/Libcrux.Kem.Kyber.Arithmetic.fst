@@ -8,7 +8,15 @@ let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
 
 let v_BARRETT_MULTIPLIER: i32 = 20159l
 
-let barrett_reduce (value: i32) : i32 =
+let barrett_reduce (value: i32)
+    : Prims.Pure i32
+      (requires
+        value >. ((Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) /! 2l <: i32) &&
+        value <. (v_BARRETT_R /! 2l <: i32))
+      (ensures
+        fun result ->
+          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
   let quotient:i32 =
     ((value *! v_BARRETT_MULTIPLIER <: i32) +! (v_BARRETT_R >>! 1l <: i32) <: i32) >>!
     v_BARRETT_SHIFT
@@ -21,7 +29,23 @@ let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let v_INVERSE_OF_MODULUS_MOD_R: i32 = (-3327l)
 
-let montgomery_reduce (value: i32) : i32 =
+let montgomery_reduce (value: i32)
+    : Prims.Pure i32
+      (requires
+        value >.
+        (((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *!
+            v_MONTGOMERY_R
+            <:
+            i32) /!
+          2l
+          <:
+          i32) &&
+        value <.
+        ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! v_MONTGOMERY_R <: i32) /! 2l <: i32))
+      (ensures
+        fun result ->
+          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
   let t:i32 = (value &. (v_MONTGOMERY_R -! 1l <: i32) <: i32) *! v_INVERSE_OF_MODULUS_MOD_R in
   let t:i16 = cast (t &. (v_MONTGOMERY_R -! 1l <: i32)) <: i16 in
   (value >>! v_MONTGOMERY_SHIFT <: i32) -!

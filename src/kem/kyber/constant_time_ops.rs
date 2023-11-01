@@ -3,6 +3,10 @@ use super::constants::SHARED_SECRET_SIZE;
 // TODO: Examine the output that LLVM produces for this code to ensure
 // operations are not being optimized away/constant-timedness is not being broken.
 
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+        (!(value == 0) || result == 0) &&
+        (!(value != 0) || result == 1)
+))]
 #[inline]
 fn is_non_zero(value: u8) -> u8 {
     let value = value as u16;
@@ -13,6 +17,10 @@ fn is_non_zero(value: u8) -> u8 {
     result as u8
 }
 
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+        (!(lhs == rhs) || result == 0) &&
+        (!(lhs != rhs) || result == 1)
+))]
 pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>(
     lhs: &[u8],
     rhs: &[u8],
@@ -28,7 +36,10 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
     is_non_zero(r)
 }
 
-// Select |lhs| if |selector| == 0, |rhs| otherwise.
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+        (!(selector == 0) || result == lhs) &&
+        (!(selector != 0) || result == rhs)
+))]
 pub(crate) fn select_shared_secret_in_constant_time(
     lhs: &[u8],
     rhs: &[u8],
