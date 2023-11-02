@@ -91,22 +91,6 @@ pub(super) fn deserialize_then_decompress_message(
 }
 
 #[inline(always)]
-fn serialize_little_endian_4<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
-    let mut serialized = [0u8; OUT_LEN];
-
-    for (i, chunk) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient1 = chunk[0] as u8;
-        let coefficient2 = chunk[1] as u8;
-
-        serialized[i] = (coefficient2 << 4) | coefficient1;
-    }
-
-    serialized
-}
-
-#[inline(always)]
 fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
@@ -118,34 +102,6 @@ fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement 
     }
 
     re
-}
-
-#[inline(always)]
-fn serialize_little_endian_5<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
-    let mut serialized = [0u8; OUT_LEN];
-
-    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
-        let coefficient1 = coefficients[0] as u8;
-        let coefficient2 = coefficients[1] as u8;
-        let coefficient3 = coefficients[2] as u8;
-        let coefficient4 = coefficients[3] as u8;
-        let coefficient5 = coefficients[4] as u8;
-        let coefficient6 = coefficients[5] as u8;
-        let coefficient7 = coefficients[6] as u8;
-        let coefficient8 = coefficients[7] as u8;
-
-        serialized[5 * i] = (coefficient2 & 0x7) << 5 | coefficient1;
-        serialized[5 * i + 1] =
-            ((coefficient4 & 1) << 7) | (coefficient3 << 2) | (coefficient2 >> 3);
-        serialized[5 * i + 2] = ((coefficient5 & 0xF) << 4) | (coefficient4 >> 1);
-        serialized[5 * i + 3] =
-            ((coefficient7 & 0x3) << 6) | (coefficient6 << 1) | (coefficient5 >> 4);
-        serialized[5 * i + 4] = (coefficient8 << 3) | (coefficient7 >> 2);
-    }
-
-    serialized
 }
 
 #[inline(always)]
@@ -175,31 +131,6 @@ fn deserialize_little_endian_5(serialized: &[u8]) -> KyberPolynomialRingElement 
 }
 
 #[inline(always)]
-fn serialize_little_endian_10<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
-    let mut serialized = [0u8; OUT_LEN];
-
-    for (i, chunk) in re.coefficients.chunks_exact(4).enumerate() {
-        let coefficient1 = chunk[0];
-        let coefficient2 = chunk[1];
-        let coefficient3 = chunk[2];
-        let coefficient4 = chunk[3];
-
-        serialized[5 * i] = (coefficient1 & 0xFF) as u8;
-        serialized[5 * i + 1] =
-            ((coefficient2 & 0x3F) as u8) << 2 | ((coefficient1 >> 8) & 0x03) as u8;
-        serialized[5 * i + 2] =
-            ((coefficient3 & 0x0F) as u8) << 4 | ((coefficient2 >> 6) & 0x0F) as u8;
-        serialized[5 * i + 3] =
-            ((coefficient4 & 0x03) as u8) << 6 | ((coefficient3 >> 4) & 0x3F) as u8;
-        serialized[5 * i + 4] = ((coefficient4 >> 2) & 0xFF) as u8;
-    }
-
-    serialized
-}
-
-#[inline(always)]
 fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
@@ -219,38 +150,6 @@ fn deserialize_little_endian_10(serialized: &[u8]) -> KyberPolynomialRingElement
     }
 
     re
-}
-
-#[inline(always)]
-fn serialize_little_endian_11<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
-    let mut serialized = [0u8; OUT_LEN];
-
-    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
-        let coefficient1 = coefficients[0];
-        let coefficient2 = coefficients[1];
-        let coefficient3 = coefficients[2];
-        let coefficient4 = coefficients[3];
-        let coefficient5 = coefficients[4];
-        let coefficient6 = coefficients[5];
-        let coefficient7 = coefficients[6];
-        let coefficient8 = coefficients[7];
-
-        serialized[11 * i] = coefficient1 as u8;
-        serialized[11 * i + 1] = ((coefficient2 & 0x1F) as u8) << 3 | ((coefficient1 >> 8) as u8);
-        serialized[11 * i + 2] = ((coefficient3 & 0x3) as u8) << 6 | ((coefficient2 >> 5) as u8);
-        serialized[11 * i + 3] = ((coefficient3 >> 2) & 0xFF) as u8;
-        serialized[11 * i + 4] = ((coefficient4 & 0x7F) as u8) << 1 | (coefficient3 >> 10) as u8;
-        serialized[11 * i + 5] = ((coefficient5 & 0xF) as u8) << 4 | (coefficient4 >> 7) as u8;
-        serialized[11 * i + 6] = ((coefficient6 & 0x1) as u8) << 7 | (coefficient5 >> 4) as u8;
-        serialized[11 * i + 7] = ((coefficient6 >> 1) & 0xFF) as u8;
-        serialized[11 * i + 8] = ((coefficient7 & 0x3F) as u8) << 2 | (coefficient6 >> 9) as u8;
-        serialized[11 * i + 9] = ((coefficient8 & 0x7) as u8) << 5 | (coefficient7 >> 6) as u8;
-        serialized[11 * i + 10] = (coefficient8 >> 3) as u8;
-    }
-
-    serialized
 }
 
 #[inline(always)]
@@ -296,9 +195,9 @@ pub(super) fn serialize_uncompressed_ring_element(
 
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
-    for (i, chunks) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient1 = to_unsigned_representative(chunks[0]);
-        let coefficient2 = to_unsigned_representative(chunks[1]);
+    for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
+        let coefficient1 = to_unsigned_representative(coefficients[0]);
+        let coefficient2 = to_unsigned_representative(coefficients[1]);
 
         serialized[3 * i] = (coefficient1 & 0xFF) as u8;
         serialized[3 * i + 1] = ((coefficient1 >> 8) | ((coefficient2 & 0xF) << 4)) as u8;
@@ -328,7 +227,65 @@ pub(super) fn deserialize_to_uncompressed_ring_element(
 }
 
 #[inline(always)]
-pub(super) fn serialize_ring_element_u<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
+fn compress_then_serialize_10<const OUT_LEN: usize>(
+    re: KyberPolynomialRingElement,
+) -> [u8; OUT_LEN] {
+    let mut serialized = [0u8; OUT_LEN];
+
+    for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
+        let coefficient1 = compress_q::<10>(to_unsigned_representative(coefficients[0]));
+        let coefficient2 = compress_q::<10>(to_unsigned_representative(coefficients[1]));
+        let coefficient3 = compress_q::<10>(to_unsigned_representative(coefficients[2]));
+        let coefficient4 = compress_q::<10>(to_unsigned_representative(coefficients[3]));
+
+        serialized[5 * i] = (coefficient1 & 0xFF) as u8;
+        serialized[5 * i + 1] =
+            ((coefficient2 & 0x3F) as u8) << 2 | ((coefficient1 >> 8) & 0x03) as u8;
+        serialized[5 * i + 2] =
+            ((coefficient3 & 0x0F) as u8) << 4 | ((coefficient2 >> 6) & 0x0F) as u8;
+        serialized[5 * i + 3] =
+            ((coefficient4 & 0x03) as u8) << 6 | ((coefficient3 >> 4) & 0x3F) as u8;
+        serialized[5 * i + 4] = ((coefficient4 >> 2) & 0xFF) as u8;
+    }
+
+    serialized
+}
+#[inline(always)]
+fn compress_then_serialize_11<const OUT_LEN: usize>(
+    re: KyberPolynomialRingElement,
+) -> [u8; OUT_LEN] {
+    let mut serialized = [0u8; OUT_LEN];
+
+    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        let coefficient1 = compress_q::<11>(to_unsigned_representative(coefficients[0]));
+        let coefficient2 = compress_q::<11>(to_unsigned_representative(coefficients[1]));
+        let coefficient3 = compress_q::<11>(to_unsigned_representative(coefficients[2]));
+        let coefficient4 = compress_q::<11>(to_unsigned_representative(coefficients[3]));
+        let coefficient5 = compress_q::<11>(to_unsigned_representative(coefficients[4]));
+        let coefficient6 = compress_q::<11>(to_unsigned_representative(coefficients[5]));
+        let coefficient7 = compress_q::<11>(to_unsigned_representative(coefficients[6]));
+        let coefficient8 = compress_q::<11>(to_unsigned_representative(coefficients[7]));
+
+        serialized[11 * i] = coefficient1 as u8;
+        serialized[11 * i + 1] = ((coefficient2 & 0x1F) as u8) << 3 | ((coefficient1 >> 8) as u8);
+        serialized[11 * i + 2] = ((coefficient3 & 0x3) as u8) << 6 | ((coefficient2 >> 5) as u8);
+        serialized[11 * i + 3] = ((coefficient3 >> 2) & 0xFF) as u8;
+        serialized[11 * i + 4] = ((coefficient4 & 0x7F) as u8) << 1 | (coefficient3 >> 10) as u8;
+        serialized[11 * i + 5] = ((coefficient5 & 0xF) as u8) << 4 | (coefficient4 >> 7) as u8;
+        serialized[11 * i + 6] = ((coefficient6 & 0x1) as u8) << 7 | (coefficient5 >> 4) as u8;
+        serialized[11 * i + 7] = ((coefficient6 >> 1) & 0xFF) as u8;
+        serialized[11 * i + 8] = ((coefficient7 & 0x3F) as u8) << 2 | (coefficient6 >> 9) as u8;
+        serialized[11 * i + 9] = ((coefficient8 & 0x7) as u8) << 5 | (coefficient7 >> 6) as u8;
+        serialized[11 * i + 10] = (coefficient8 >> 3) as u8;
+    }
+
+    serialized
+}
+#[inline(always)]
+pub(super) fn compress_then_serialize_ring_element_u<
+    const COMPRESSION_FACTOR: usize,
+    const OUT_LEN: usize,
+>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     debug_assert!(
@@ -339,11 +296,12 @@ pub(super) fn serialize_ring_element_u<const COMPRESSION_FACTOR: usize, const OU
     );
 
     match COMPRESSION_FACTOR as u32 {
-        10 => serialize_little_endian_10(re),
-        11 => serialize_little_endian_11(re),
+        10 => compress_then_serialize_10(re),
+        11 => compress_then_serialize_11(re),
         _ => unreachable!(),
     }
 }
+
 #[inline(always)]
 pub(super) fn deserialize_ring_element_u<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
@@ -361,7 +319,53 @@ pub(super) fn deserialize_ring_element_u<const COMPRESSION_FACTOR: usize>(
 }
 
 #[inline(always)]
-pub(super) fn serialize_ring_element_v<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
+fn compress_then_serialize_4<const OUT_LEN: usize>(
+    re: KyberPolynomialRingElement,
+) -> [u8; OUT_LEN] {
+    let mut serialized = [0u8; OUT_LEN];
+
+    for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
+        let coefficient1 = compress_q::<4>(to_unsigned_representative(coefficients[0])) as u8;
+        let coefficient2 = compress_q::<4>(to_unsigned_representative(coefficients[1])) as u8;
+
+        serialized[i] = (coefficient2 << 4) | coefficient1;
+    }
+
+    serialized
+}
+
+#[inline(always)]
+fn compress_then_serialize_5<const OUT_LEN: usize>(
+    re: KyberPolynomialRingElement,
+) -> [u8; OUT_LEN] {
+    let mut serialized = [0u8; OUT_LEN];
+
+    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        let coefficient1 = compress_q::<5>(to_unsigned_representative(coefficients[0])) as u8;
+        let coefficient2 = compress_q::<5>(to_unsigned_representative(coefficients[1])) as u8;
+        let coefficient3 = compress_q::<5>(to_unsigned_representative(coefficients[2])) as u8;
+        let coefficient4 = compress_q::<5>(to_unsigned_representative(coefficients[3])) as u8;
+        let coefficient5 = compress_q::<5>(to_unsigned_representative(coefficients[4])) as u8;
+        let coefficient6 = compress_q::<5>(to_unsigned_representative(coefficients[5])) as u8;
+        let coefficient7 = compress_q::<5>(to_unsigned_representative(coefficients[6])) as u8;
+        let coefficient8 = compress_q::<5>(to_unsigned_representative(coefficients[7])) as u8;
+
+        serialized[5 * i] = (coefficient2 & 0x7) << 5 | coefficient1;
+        serialized[5 * i + 1] =
+            ((coefficient4 & 1) << 7) | (coefficient3 << 2) | (coefficient2 >> 3);
+        serialized[5 * i + 2] = ((coefficient5 & 0xF) << 4) | (coefficient4 >> 1);
+        serialized[5 * i + 3] =
+            ((coefficient7 & 0x3) << 6) | (coefficient6 << 1) | (coefficient5 >> 4);
+        serialized[5 * i + 4] = (coefficient8 << 3) | (coefficient7 >> 2);
+    }
+
+    serialized
+}
+#[inline(always)]
+pub(super) fn compress_then_serialize_ring_element_v<
+    const COMPRESSION_FACTOR: usize,
+    const OUT_LEN: usize,
+>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     debug_assert!(
@@ -372,11 +376,12 @@ pub(super) fn serialize_ring_element_v<const COMPRESSION_FACTOR: usize, const OU
     );
 
     match COMPRESSION_FACTOR as u32 {
-        4 => serialize_little_endian_4(re),
-        5 => serialize_little_endian_5(re),
+        4 => compress_then_serialize_4(re),
+        5 => compress_then_serialize_5(re),
         _ => unreachable!(),
     }
 }
+
 #[inline(always)]
 pub(super) fn deserialize_ring_element_v<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],

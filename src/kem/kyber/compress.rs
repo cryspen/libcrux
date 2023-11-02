@@ -1,5 +1,5 @@
 use super::{
-    arithmetic::{to_unsigned_representative, KyberFieldElement, KyberPolynomialRingElement},
+    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
     constants::FIELD_MODULUS,
 };
 
@@ -11,15 +11,6 @@ pub(super) fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldEl
     compressed /= (FIELD_MODULUS << 1) as u32;
 
     (compressed & ((1u32 << COEFFICIENT_BITS) - 1)) as KyberFieldElement
-}
-
-pub fn compress<const COEFFICIENT_BITS: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    re.coefficients = re
-        .coefficients
-        .map(|coefficient| compress_q::<COEFFICIENT_BITS>(to_unsigned_representative(coefficient)));
-    re
 }
 
 #[cfg_attr(hax, hax_lib_macros::requires(COEFFICIENT_BITS <= 11 && (fe >= 0) && (fe < (1 << COEFFICIENT_BITS))))]

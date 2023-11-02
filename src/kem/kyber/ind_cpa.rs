@@ -1,6 +1,6 @@
 use super::{
     arithmetic::KyberPolynomialRingElement,
-    compress::{compress, decompress},
+    compress::decompress,
     constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
         SHARED_SECRET_SIZE,
@@ -11,9 +11,10 @@ use super::{
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{
-        compress_then_serialize_message, deserialize_ring_element_u, deserialize_ring_element_v,
-        deserialize_then_decompress_message, deserialize_to_uncompressed_ring_element,
-        serialize_ring_element_u, serialize_ring_element_v, serialize_uncompressed_ring_element,
+        compress_then_serialize_message, compress_then_serialize_ring_element_u,
+        compress_then_serialize_ring_element_v, deserialize_ring_element_u,
+        deserialize_ring_element_v, deserialize_then_decompress_message,
+        deserialize_to_uncompressed_ring_element, serialize_uncompressed_ring_element,
     },
     types::PrivateKey,
     Error, KyberPublicKey,
@@ -191,9 +192,7 @@ fn compress_then_encode_u<
     let mut out = [0u8; OUT_LEN];
     for (i, re) in input.into_iter().enumerate() {
         out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
-            &serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN>(compress::<
-                COMPRESSION_FACTOR,
-            >(re)),
+            &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN>(re),
         );
     }
 
@@ -274,9 +273,7 @@ pub(crate) fn encrypt<
     let c1 = compress_then_encode_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN>(compress::<
-        V_COMPRESSION_FACTOR,
-    >(v));
+    let c2 = compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN>(v);
 
     let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
     ciphertext[C1_LEN..].copy_from_slice(c2.as_slice());

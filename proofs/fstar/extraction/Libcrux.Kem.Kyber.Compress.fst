@@ -16,24 +16,6 @@ let compress_q (#v_COEFFICIENT_BITS: usize) (fe: u16)
   in
   cast (compressed &. ((1ul <<! v_COEFFICIENT_BITS <: u32) -! 1ul <: u32)) <: i32
 
-let compress
-      (#v_COEFFICIENT_BITS: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    {
-      re with
-      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-      =
-      Core.Array.impl_23__map re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        (fun coefficient ->
-            compress_q (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative coefficient <: u16)
-            <:
-            i32)
-    }
-  in
-  re
-
 let decompress_q (#v_COEFFICIENT_BITS: usize) (fe: i32)
     : Prims.Pure i32
       (requires

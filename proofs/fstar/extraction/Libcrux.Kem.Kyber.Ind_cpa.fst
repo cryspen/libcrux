@@ -409,10 +409,8 @@ let compress_then_encode_u
                     } ]
                   <:
                   t_Slice u8)
-                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_ring_element_u (Libcrux.Kem.Kyber.Compress.compress
-                            re
-                          <:
-                          Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_u
+                        re
                       <:
                       t_Array u8 v_BLOCK_LEN)
                   <:
@@ -531,9 +529,7 @@ let encrypt
   in
   let c1:t_Array u8 v_C1_LEN = compress_then_encode_u u in
   let c2:t_Array u8 v_C2_LEN =
-    Libcrux.Kem.Kyber.Serialize.serialize_ring_element_v (Libcrux.Kem.Kyber.Compress.compress v
-        <:
-        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+    Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_v v
   in
   let (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE):t_Array u8 v_CIPHERTEXT_SIZE =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (Rust_primitives.unsize c1 <: t_Slice u8)
