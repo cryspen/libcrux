@@ -10,9 +10,7 @@ let v_BARRETT_MULTIPLIER: i32 = 20159l
 
 let barrett_reduce (value: i32)
     : Prims.Pure i32
-      (requires
-        value >. ((Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) /! 2l <: i32) &&
-        value <. (v_BARRETT_R /! 2l <: i32))
+      (requires value >=. (-106527l) && value <=. 104862l)
       (ensures
         fun result ->
           result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
@@ -46,13 +44,14 @@ let montgomery_reduce (value: i32)
         fun result ->
           result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
           result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
-  let t:i32 = (value &. (v_MONTGOMERY_R -! 1l <: i32) <: i32) *! v_INVERSE_OF_MODULUS_MOD_R in
-  let t:i16 = cast (t &. (v_MONTGOMERY_R -! 1l <: i32)) <: i16 in
-  (value >>! v_MONTGOMERY_SHIFT <: i32) -!
-  (((Core.Convert.f_from t <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) >>!
+  let k:i32 = (value &. (v_MONTGOMERY_R -! 1l <: i32) <: i32) *! v_INVERSE_OF_MODULUS_MOD_R in
+  let k:i16 = cast (k &. (v_MONTGOMERY_R -! 1l <: i32)) <: i16 in
+  let c:i32 =
+    ((Core.Convert.f_from k <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) >>!
     v_MONTGOMERY_SHIFT
-    <:
-    i32)
+  in
+  let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
+  value_high -! c
 
 type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 

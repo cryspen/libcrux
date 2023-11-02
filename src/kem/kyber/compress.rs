@@ -4,10 +4,9 @@ use super::{
     conversions::to_unsigned_representative,
 };
 
+#[cfg_attr(hax, hax_lib_macros::requires(COEFFICIENT_BITS <= 11 && i32::from(fe) <= FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result <= (1 << COEFFICIENT_BITS) - 1))]
 pub(super) fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
-    debug_assert!(COEFFICIENT_BITS <= 11);
-    debug_assert!(i32::from(fe) < FIELD_MODULUS);
-
     let mut compressed = (fe as u32) << (COEFFICIENT_BITS + 1);
     compressed += FIELD_MODULUS as u32;
     compressed /= (FIELD_MODULUS << 1) as u32;
@@ -24,17 +23,14 @@ pub fn compress<const COEFFICIENT_BITS: usize>(
     re
 }
 
+#[cfg_attr(hax, hax_lib_macros::requires(COEFFICIENT_BITS <= 11 && (fe >= 0) && (fe < (1 << COEFFICIENT_BITS))))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < FIELD_MODULUS))]
 pub(super) fn decompress_q<const COEFFICIENT_BITS: usize>(
     fe: KyberFieldElement,
 ) -> KyberFieldElement {
-    debug_assert!(COEFFICIENT_BITS <= 11);
-    debug_assert!(0 <= fe && fe < (1 << COEFFICIENT_BITS));
-
     let mut decompressed = (fe as u32) * (FIELD_MODULUS as u32);
     decompressed = (decompressed << 1) + (1 << COEFFICIENT_BITS);
     decompressed >>= COEFFICIENT_BITS + 1;
-
-    debug_assert!(decompressed < u32::try_from(FIELD_MODULUS).unwrap());
 
     decompressed as KyberFieldElement
 }
