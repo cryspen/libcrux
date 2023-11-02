@@ -409,7 +409,7 @@ let compress_then_encode_u
                     } ]
                   <:
                   t_Slice u8)
-                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_little_endian (Libcrux.Kem.Kyber.Compress.compress
+                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_ring_element_u (Libcrux.Kem.Kyber.Compress.compress
                             re
                           <:
                           Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
@@ -425,7 +425,7 @@ let compress_then_encode_u
   out
 
 let encrypt
-      (#v_K #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_LEN #v_C2_LEN #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_BLOCK_LEN #v_ETA1 #v_ETA1_RANDOMNESS_SIZE #v_ETA2 #v_ETA2_RANDOMNESS_SIZE:
+      (#v_K #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_LEN #v_C2_LEN #v_U_COMPRESSION_FACTOR #v_V_COMPRESSION_FACTOR #v_BLOCK_LEN #v_ETA1 #v_ETA1_RANDOMNESS_SIZE #v_ETA2 #v_ETA2_RANDOMNESS_SIZE:
           usize)
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
@@ -531,7 +531,7 @@ let encrypt
   in
   let c1:t_Array u8 v_C1_LEN = compress_then_encode_u u in
   let c2:t_Array u8 v_C2_LEN =
-    Libcrux.Kem.Kyber.Serialize.serialize_little_endian (Libcrux.Kem.Kyber.Compress.compress v
+    Libcrux.Kem.Kyber.Serialize.serialize_ring_element_v (Libcrux.Kem.Kyber.Compress.compress v
         <:
         Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
   in
@@ -551,7 +551,7 @@ let encrypt
   Core.Convert.f_into ciphertext, sampling_A_error
 
 let decrypt
-      (#v_K #v_CIPHERTEXT_SIZE #v_VECTOR_U_ENCODED_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR:
+      (#v_K #v_CIPHERTEXT_SIZE #v_VECTOR_U_ENCODED_SIZE #v_U_COMPRESSION_FACTOR #v_V_COMPRESSION_FACTOR:
           usize)
       (secret_key: t_Slice u8)
       (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
@@ -572,7 +572,7 @@ let decrypt
                     <:
                     t_Slice u8)
                   ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                      v_VECTOR_U_COMPRESSION_FACTOR
+                      v_U_COMPRESSION_FACTOR
                       <:
                       usize) /!
                     sz 8
@@ -587,7 +587,7 @@ let decrypt
       u_as_ntt
       (fun u_as_ntt (i, u_bytes) ->
           let u:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_little_endian
+            Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_ring_element_u
                   u_bytes
                 <:
                 Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
@@ -602,7 +602,7 @@ let decrypt
           u_as_ntt)
   in
   let v:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_little_endian (ciphertext.[
+    Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_ring_element_v (ciphertext.[
               { Core.Ops.Range.f_start = v_VECTOR_U_ENCODED_SIZE } ]
             <:
             t_Slice u8)

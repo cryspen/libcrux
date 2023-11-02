@@ -328,7 +328,40 @@ pub(super) fn deserialize_to_uncompressed_ring_element(
 }
 
 #[inline(always)]
-pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
+pub(super) fn serialize_ring_element_u<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
+    re: KyberPolynomialRingElement,
+) -> [u8; OUT_LEN] {
+    debug_assert!(
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN,
+        "{} != {}",
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
+        OUT_LEN
+    );
+
+    match COMPRESSION_FACTOR as u32 {
+        10 => serialize_little_endian_10(re),
+        11 => serialize_little_endian_11(re),
+        _ => unreachable!(),
+    }
+}
+#[inline(always)]
+pub(super) fn deserialize_ring_element_u<const COMPRESSION_FACTOR: usize>(
+    serialized: &[u8],
+) -> KyberPolynomialRingElement {
+    debug_assert_eq!(
+        serialized.len(),
+        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+    );
+
+    match COMPRESSION_FACTOR as u32 {
+        10 => deserialize_little_endian_10(serialized),
+        11 => deserialize_little_endian_11(serialized),
+        _ => unreachable!(),
+    }
+}
+
+#[inline(always)]
+pub(super) fn serialize_ring_element_v<const COMPRESSION_FACTOR: usize, const OUT_LEN: usize>(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     debug_assert!(
@@ -340,18 +373,12 @@ pub(super) fn serialize_little_endian<const COMPRESSION_FACTOR: usize, const OUT
 
     match COMPRESSION_FACTOR as u32 {
         4 => serialize_little_endian_4(re),
-        // VECTOR_V_COMPRESSION_FACTOR_1024
         5 => serialize_little_endian_5(re),
-        // VECTOR_U_COMPRESSION_FACTOR_768 & VECTOR_U_COMPRESSION_FACTOR_512
-        10 => serialize_little_endian_10(re),
-        // VECTOR_U_COMPRESSION_FACTOR_1024
-        11 => serialize_little_endian_11(re),
-        _ => unreachable!("factor {COMPRESSION_FACTOR}"),
+        _ => unreachable!(),
     }
 }
-
 #[inline(always)]
-pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
+pub(super) fn deserialize_ring_element_v<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
     debug_assert_eq!(
@@ -360,14 +387,8 @@ pub(super) fn deserialize_little_endian<const COMPRESSION_FACTOR: usize>(
     );
 
     match COMPRESSION_FACTOR as u32 {
-        // VECTOR_V_COMPRESSION_FACTOR_768 & VECTOR_V_COMPRESSION_FACTOR_512
         4 => deserialize_little_endian_4(serialized),
-        // VECTOR_V_COMPRESSION_FACTOR_1024
         5 => deserialize_little_endian_5(serialized),
-        // VECTOR_U_COMPRESSION_FACTOR_768 & VECTOR_U_COMPRESSION_FACTOR_512
-        10 => deserialize_little_endian_10(serialized),
-        // VECTOR_U_COMPRESSION_FACTOR_1024
-        11 => deserialize_little_endian_11(serialized),
-        _ => unreachable!("factor {COMPRESSION_FACTOR}"),
+        _ => unreachable!(),
     }
 }
