@@ -31,17 +31,24 @@ for item in repo.index.diff("HEAD"):
             if "src" in path.parts and "kem" in path.parts:
                 update_libcrux_kyber_fstar_extraction = True
 
+do_nothing = True
+
 if format_python_files == True:
     shell(["black", "."])
+    do_nothing = False
 if format_rust_files == True:
     shell(["cargo", "fmt"])
+    do_nothing = False
 if update_libcrux_kyber_fstar_extraction == True:
     shell(["./hax-driver.py", "--kyber-reference"])
     repo.git.add(os.path.join("proofs", "fstar", "extraction"))
+    do_nothing = False
 if update_spec_kyber_fstar_extraction == True:
     shell(["./hax-driver.py", "--kyber-specification"])
     repo.git.add(os.path.join("specs", "kyber", "proofs", "fstar", "extraction"))
-else:
+    do_nothing = False
+
+if do_nothing:
     exit(0)
 
 for item in repo.index.diff("HEAD"):

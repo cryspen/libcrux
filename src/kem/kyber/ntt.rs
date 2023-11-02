@@ -150,28 +150,16 @@ fn invert_ntt_montgomery<const K: usize>(
     invert_ntt_at_layer!(6);
     invert_ntt_at_layer!(7);
 
-    macro_rules! bound_for_set_coefficients {
-        ($parameter:literal) => {
-            debug_assert!(re
-                .coefficients
-                .into_iter()
-                .skip($parameter)
-                .take($parameter)
-                .all(|coefficient| coefficient.abs() < (128 / $parameter) * FIELD_MODULUS));
-        };
-    }
-
     debug_assert!(
         re.coefficients[0].abs() < 128 * (K as i32) * FIELD_MODULUS
             && re.coefficients[1].abs() < 128 * (K as i32) * FIELD_MODULUS
     );
-    bound_for_set_coefficients!(2);
-    bound_for_set_coefficients!(4);
-    bound_for_set_coefficients!(8);
-    bound_for_set_coefficients!(16);
-    bound_for_set_coefficients!(32);
-    bound_for_set_coefficients!(64);
-    bound_for_set_coefficients!(128);
+    debug_assert!(re
+        .coefficients
+        .into_iter()
+        .enumerate()
+        .skip(2)
+        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
     for i in 0..8 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
