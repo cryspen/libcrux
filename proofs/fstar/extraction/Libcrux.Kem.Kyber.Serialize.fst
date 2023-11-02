@@ -29,7 +29,7 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPol
             serialized
             (fun serialized (j, coefficient) ->
                 let coefficient:u16 =
-                  Libcrux.Kem.Kyber.Conversions.to_unsigned_representative coefficient
+                  Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative coefficient
                 in
                 let coefficient_compressed:i32 =
                   Libcrux.Kem.Kyber.Compress.compress_q coefficient
@@ -810,10 +810,10 @@ let serialize_uncompressed_ring_element
       serialized
       (fun serialized (i, chunks) ->
           let coefficient1:u16 =
-            Libcrux.Kem.Kyber.Conversions.to_unsigned_representative (chunks.[ sz 0 ] <: i32)
+            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (chunks.[ sz 0 ] <: i32)
           in
           let coefficient2:u16 =
-            Libcrux.Kem.Kyber.Conversions.to_unsigned_representative (chunks.[ sz 1 ] <: i32)
+            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (chunks.[ sz 1 ] <: i32)
           in
           let serialized:t_Array u8 (sz 384) =
             Rust_primitives.Hax.update_at serialized

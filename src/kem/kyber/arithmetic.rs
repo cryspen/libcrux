@@ -2,6 +2,11 @@ use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) type KyberFieldElement = i32;
 
+#[inline(always)]
+pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
+    (fe + ((fe >> 15) & FIELD_MODULUS)) as u16
+}
+
 const BARRETT_SHIFT: i32 = 26;
 const BARRETT_R: i32 = 1i32 << BARRETT_SHIFT;
 const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)

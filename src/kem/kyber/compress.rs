@@ -1,7 +1,6 @@
 use super::{
-    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
+    arithmetic::{to_unsigned_representative, KyberFieldElement, KyberPolynomialRingElement},
     constants::FIELD_MODULUS,
-    conversions::to_unsigned_representative,
 };
 
 #[cfg_attr(hax, hax_lib_macros::requires(COEFFICIENT_BITS <= 11 && i32::from(fe) <= FIELD_MODULUS))]

@@ -1,10 +1,9 @@
 use super::{
-    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
+    arithmetic::{to_unsigned_representative, KyberFieldElement, KyberPolynomialRingElement},
     compress::{compress_q, decompress_q},
     constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, SHARED_SECRET_SIZE,
     },
-    conversions::to_unsigned_representative,
 };
 
 /// This file contains instantiations of the functions

@@ -27,7 +27,7 @@ let compress
       =
       Core.Array.impl_23__map re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
         (fun coefficient ->
-            compress_q (Libcrux.Kem.Kyber.Conversions.to_unsigned_representative coefficient <: u16)
+            compress_q (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative coefficient <: u16)
             <:
             i32)
     }

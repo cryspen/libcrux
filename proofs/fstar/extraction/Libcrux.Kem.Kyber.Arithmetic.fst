@@ -2,6 +2,9 @@ module Libcrux.Kem.Kyber.Arithmetic
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
+let to_unsigned_representative (fe: i32) : u16 =
+  cast (fe +! ((fe >>! 15l <: i32) &. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)) <: u16
+
 let v_BARRETT_SHIFT: i32 = 26l
 
 let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
