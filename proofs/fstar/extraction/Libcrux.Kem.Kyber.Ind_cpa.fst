@@ -583,10 +583,7 @@ let decrypt
       u_as_ntt
       (fun u_as_ntt (i, u_bytes) ->
           let u:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_ring_element_u
-                  u_bytes
-                <:
-                Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+            Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_u u_bytes
           in
           let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at u_as_ntt

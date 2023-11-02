@@ -12,8 +12,8 @@ use super::{
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{
         compress_then_serialize_message, compress_then_serialize_ring_element_u,
-        compress_then_serialize_ring_element_v, deserialize_ring_element_u,
-        deserialize_ring_element_v, deserialize_then_decompress_message,
+        compress_then_serialize_ring_element_v, deserialize_ring_element_v,
+        deserialize_then_decompress_message, deserialize_then_decompress_ring_element_u,
         deserialize_to_uncompressed_ring_element, serialize_uncompressed_ring_element,
     },
     types::PrivateKey,
@@ -299,9 +299,7 @@ pub(crate) fn decrypt<
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
-        let u = decompress::<U_COMPRESSION_FACTOR>(deserialize_ring_element_u::<
-            U_COMPRESSION_FACTOR,
-        >(u_bytes));
+        let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
         u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
     }
 
