@@ -1,9 +1,7 @@
 use super::{
     arithmetic::{to_unsigned_representative, KyberFieldElement, KyberPolynomialRingElement},
     compress::{compress_q, decompress_q},
-    constants::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, SHARED_SECRET_SIZE,
-    },
+    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
 
 /// This file contains instantiations of the functions
@@ -53,7 +51,6 @@ pub(super) fn compress_then_serialize_message(
             let coefficient = to_unsigned_representative(*coefficient);
 
             let coefficient_compressed = compress_q::<1>(coefficient);
-            debug_assert!(coefficient_compressed == 0 || coefficient_compressed == 1);
 
             // At this point, the following should hold for |coefficient_compressed|:
             //
@@ -94,11 +91,6 @@ pub(super) fn deserialize_then_decompress_message(
 pub(super) fn serialize_uncompressed_ring_element(
     re: KyberPolynomialRingElement,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
-    debug_assert!(re
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS));
-
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
     for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {

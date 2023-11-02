@@ -2,7 +2,15 @@ module Libcrux.Kem.Kyber.Arithmetic
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-let to_unsigned_representative (fe: i32) : u16 =
+let to_unsigned_representative (fe: i32)
+    : Prims.Pure u16
+      (requires
+        fe >=. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+        fe <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+      (ensures
+        fun result ->
+          result >=. 0us &&
+          (Core.Convert.f_from result <: i32) <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
   cast (fe +! ((fe >>! 15l <: i32) &. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)) <: u16
 
 let v_BARRETT_SHIFT: i32 = 26l

@@ -2,6 +2,8 @@ use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) type KyberFieldElement = i32;
 
+#[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && i32::from(result) < FIELD_MODULUS))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
     (fe + ((fe >> 15) & FIELD_MODULUS)) as u16

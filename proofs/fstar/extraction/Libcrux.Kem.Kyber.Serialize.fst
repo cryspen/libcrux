@@ -34,21 +34,6 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPol
                 let coefficient_compressed:i32 =
                   Libcrux.Kem.Kyber.Compress.compress_q coefficient
                 in
-                let _:Prims.unit =
-                  if true
-                  then
-                    let _:Prims.unit =
-                      if
-                        ~.((coefficient_compressed =. 0l <: bool) ||
-                          (coefficient_compressed =. 1l <: bool))
-                      then
-                        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: coefficient_compressed == 0 || coefficient_compressed == 1"
-
-                            <:
-                            Rust_primitives.Hax.t_Never)
-                    in
-                    ()
-                in
                 Rust_primitives.Hax.update_at serialized
                   i
                   ((serialized.[ i ] <: u8) |. ((cast coefficient_compressed <: u8) <<! j <: u8)
@@ -103,31 +88,6 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
 let serialize_uncompressed_ring_element
       (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
     : t_Array u8 (sz 384) =
-  let _:Prims.unit =
-    if true
-    then
-      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter re
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            Core.Array.Iter.t_IntoIter i32 (sz 256))
-          (fun coefficient ->
-              (coefficient >=.
-                (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
-                <:
-                bool) &&
-              (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
-      in
-      let _:Prims.unit =
-        if ~.out
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: re.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -FIELD_MODULUS && coefficient < FIELD_MODULUS)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
   let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
   let serialized:t_Array u8 (sz 384) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
