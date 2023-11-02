@@ -215,17 +215,16 @@ let serialize_key
                 <:
                 usize
               })
-            (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut out
-                    ({
-                        Core.Ops.Range.f_start
-                        =
-                        i *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
-                        Core.Ops.Range.f_end
-                        =
-                        (i +! sz 1 <: usize) *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
-                        <:
-                        usize
-                      })
+            (Core.Slice.impl__copy_from_slice (out.[ {
+                      Core.Ops.Range.f_start
+                      =
+                      i *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+                      Core.Ops.Range.f_end
+                      =
+                      (i +! sz 1 <: usize) *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
+                      <:
+                      usize
+                    } ]
                   <:
                   t_Slice u8)
                 (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element
@@ -276,11 +275,10 @@ let generate_keypair
           Core.Ops.Range.f_start = sz 0;
           Core.Ops.Range.f_end = Core.Slice.impl__len seed_for_secret_and_error <: usize
         })
-      (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut prf_input
-              ({
-                  Core.Ops.Range.f_start = sz 0;
-                  Core.Ops.Range.f_end = Core.Slice.impl__len seed_for_secret_and_error <: usize
-                })
+      (Core.Slice.impl__copy_from_slice (prf_input.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = Core.Slice.impl__len seed_for_secret_and_error <: usize
+              } ]
             <:
             t_Slice u8)
           seed_for_secret_and_error
@@ -403,13 +401,12 @@ let compress_then_encode_u
                 Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
                 Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! (v_OUT_LEN /! v_K <: usize) <: usize
               })
-            (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut out
-                    ({
-                        Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
-                        Core.Ops.Range.f_end
-                        =
-                        (i +! sz 1 <: usize) *! (v_OUT_LEN /! v_K <: usize) <: usize
-                      })
+            (Core.Slice.impl__copy_from_slice (out.[ {
+                      Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
+                      Core.Ops.Range.f_end
+                      =
+                      (i +! sz 1 <: usize) *! (v_OUT_LEN /! v_K <: usize) <: usize
+                    } ]
                   <:
                   t_Slice u8)
                 (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_little_endian (Libcrux.Kem.Kyber.Compress.compress
@@ -544,8 +541,7 @@ let encrypt
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.update_at ciphertext
       ({ Core.Ops.Range.f_start = v_C1_LEN })
-      (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut ciphertext
-              ({ Core.Ops.Range.f_start = v_C1_LEN })
+      (Core.Slice.impl__copy_from_slice (ciphertext.[ { Core.Ops.Range.f_start = v_C1_LEN } ]
             <:
             t_Slice u8)
           (Core.Array.impl_23__as_slice c2 <: t_Slice u8)

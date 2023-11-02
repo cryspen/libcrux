@@ -68,8 +68,9 @@ let encapsulate
   let to_hash:t_Array u8 (sz 64) =
     Rust_primitives.Hax.update_at to_hash
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE })
-      (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut to_hash
-              ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE })
+      (Core.Slice.impl__copy_from_slice (to_hash.[ {
+                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
+              } ]
             <:
             t_Slice u8)
           (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H (Rust_primitives.unsize (Libcrux.Kem.Kyber.Types.impl_40__as_slice
@@ -136,8 +137,9 @@ let decapsulate
   let to_hash:t_Array u8 (sz 64) =
     Rust_primitives.Hax.update_at to_hash
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE })
-      (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut to_hash
-              ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE })
+      (Core.Slice.impl__copy_from_slice (to_hash.[ {
+                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
+              } ]
             <:
             t_Slice u8)
           ind_cpa_public_key_hash
@@ -158,8 +160,9 @@ let decapsulate
   let to_hash:t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Rust_primitives.Hax.update_at to_hash
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE })
-      (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut to_hash
-              ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE })
+      (Core.Slice.impl__copy_from_slice (to_hash.[ {
+                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
+              } ]
             <:
             t_Slice u8)
           (Core.Convert.f_as_ref ciphertext <: t_Slice u8)

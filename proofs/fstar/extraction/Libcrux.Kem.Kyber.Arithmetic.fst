@@ -81,7 +81,7 @@ let add_to_ring_element (lhs rhs: t_KyberPolynomialRingElement) : t_KyberPolynom
               i
               ((lhs.f_coefficients.[ i ] <: i32) +! (rhs.f_coefficients.[ i ] <: i32) <: i32)
             <:
-            t_KyberPolynomialRingElement
+            t_Array i32 (sz 256)
           })
   in
   lhs

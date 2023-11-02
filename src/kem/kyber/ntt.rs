@@ -19,15 +19,18 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
 
 macro_rules! ntt_at_layer {
     ($layer:literal, $zeta_i:ident, $re:ident, $initial_coefficient_bound:literal) => {
-        let layer_jump = 1 << $layer;
-        for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - layer_jump)).step_by(2 * layer_jump) {
+        let step = 1 << $layer;
+
+        for round in 0..(128 / step) {
             $zeta_i += 1;
 
-            for j in offset..offset + layer_jump {
+            let offset = round * step * 2;
+
+            for j in offset..offset + step {
                 let t = montgomery_reduce(
-                    $re.coefficients[j + layer_jump] * ZETAS_MONTGOMERY_DOMAIN[$zeta_i],
+                    $re.coefficients[j + step] * ZETAS_MONTGOMERY_DOMAIN[$zeta_i],
                 );
-                $re.coefficients[j + layer_jump] = $re.coefficients[j] - t;
+                $re.coefficients[j + step] = $re.coefficients[j] - t;
                 $re.coefficients[j] = $re.coefficients[j] + t;
             }
         }
@@ -53,19 +56,16 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 
     let mut zeta_i = 0;
 
-    // This function is only being used in key-generation for the moment, and we
-    // can skip the first round of montgomery reductions for the ring elements
-    // being passed in during key-generation.
-    for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - 128)).step_by(2 * 128) {
-        zeta_i += 1;
+    // Due to the small coefficient bound, we can skip the first round of
+    // montgomery reductions.
+    zeta_i += 1;
 
-        for j in offset..offset + 128 {
-            // Multiply by the appropriate zeta in the normal domain.
-            let t = re.coefficients[j + 128] * -1600;
+    for j in 0..128 {
+        // Multiply by the appropriate zeta in the normal domain.
+        let t = re.coefficients[j + 128] * -1600;
 
-            re.coefficients[j + 128] = re.coefficients[j] - t;
-            re.coefficients[j] = re.coefficients[j] + t;
-        }
+        re.coefficients[j + 128] = re.coefficients[j] - t;
+        re.coefficients[j] = re.coefficients[j] + t;
     }
     debug_assert!(re
         .coefficients
@@ -122,29 +122,33 @@ fn invert_ntt_montgomery<const K: usize>(
 
     macro_rules! invert_ntt_at_layer {
         ($layer:literal) => {
-            for offset in (0..(COEFFICIENTS_IN_RING_ELEMENT - $layer)).step_by(2 * $layer) {
+            let step = 1 << $layer;
+
+            for round in 0..(128 / step) {
                 zeta_i -= 1;
 
-                for j in offset..offset + $layer {
-                    let a_minus_b = re.coefficients[j + $layer] - re.coefficients[j];
+                let offset = round * step * 2;
+
+                for j in offset..offset + step {
+                    let a_minus_b = re.coefficients[j + step] - re.coefficients[j];
 
                     // Instead of dividing by 2 here, we just divide by
                     // 2^7 in one go in the end.
-                    re.coefficients[j] = re.coefficients[j] + re.coefficients[j + $layer];
-                    re.coefficients[j + $layer] =
+                    re.coefficients[j] = re.coefficients[j] + re.coefficients[j + step];
+                    re.coefficients[j + step] =
                         montgomery_reduce(a_minus_b * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
                 }
             }
         };
     }
 
+    invert_ntt_at_layer!(1);
     invert_ntt_at_layer!(2);
+    invert_ntt_at_layer!(3);
     invert_ntt_at_layer!(4);
-    invert_ntt_at_layer!(8);
-    invert_ntt_at_layer!(16);
-    invert_ntt_at_layer!(32);
-    invert_ntt_at_layer!(64);
-    invert_ntt_at_layer!(128);
+    invert_ntt_at_layer!(5);
+    invert_ntt_at_layer!(6);
+    invert_ntt_at_layer!(7);
 
     macro_rules! bound_for_set_coefficients {
         ($parameter:literal) => {
@@ -203,22 +207,22 @@ fn ntt_multiply(
 
     let mut out = KyberPolynomialRingElement::ZERO;
 
-    for i in (0..COEFFICIENTS_IN_RING_ELEMENT).step_by(4) {
+    for i in 0..(COEFFICIENTS_IN_RING_ELEMENT / 4) {
         let product = ntt_multiply_binomials(
-            (left.coefficients[i], left.coefficients[i + 1]),
-            (right.coefficients[i], right.coefficients[i + 1]),
-            ZETAS_MONTGOMERY_DOMAIN[64 + (i / 4)],
+            (left.coefficients[4 * i], left.coefficients[4 * i + 1]),
+            (right.coefficients[4 * i], right.coefficients[4 * i + 1]),
+            ZETAS_MONTGOMERY_DOMAIN[64 + i],
         );
-        out.coefficients[i] = product.0;
-        out.coefficients[i + 1] = product.1;
+        out.coefficients[4 * i] = product.0;
+        out.coefficients[4 * i + 1] = product.1;
 
         let product = ntt_multiply_binomials(
-            (left.coefficients[i + 2], left.coefficients[i + 3]),
-            (right.coefficients[i + 2], right.coefficients[i + 3]),
-            -ZETAS_MONTGOMERY_DOMAIN[64 + (i / 4)],
+            (left.coefficients[4 * i + 2], left.coefficients[4 * i + 3]),
+            (right.coefficients[4 * i + 2], right.coefficients[4 * i + 3]),
+            -ZETAS_MONTGOMERY_DOMAIN[64 + i],
         );
-        out.coefficients[i + 2] = product.0;
-        out.coefficients[i + 3] = product.1;
+        out.coefficients[4 * i + 2] = product.0;
+        out.coefficients[4 * i + 3] = product.1;
     }
 
     debug_assert!(out
