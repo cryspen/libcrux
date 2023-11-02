@@ -2,13 +2,6 @@ use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) type KyberFieldElement = i32;
 
-#[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && i32::from(result) < FIELD_MODULUS))]
-#[inline(always)]
-pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
-    (fe + ((fe >> 15) & FIELD_MODULUS)) as u16
-}
-
 const BARRETT_SHIFT: i32 = 26;
 const BARRETT_R: i32 = 1i32 << BARRETT_SHIFT;
 const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
@@ -35,6 +28,13 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
     let value_high = value >> MONTGOMERY_SHIFT;
 
     value_high - c
+}
+
+#[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && i32::from(result) < FIELD_MODULUS))]
+#[inline(always)]
+pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
+    (fe + ((fe >> 15) & FIELD_MODULUS)) as u16
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

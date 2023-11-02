@@ -2,17 +2,6 @@ module Libcrux.Kem.Kyber.Arithmetic
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-let to_unsigned_representative (fe: i32)
-    : Prims.Pure u16
-      (requires
-        fe >=. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
-        fe <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
-      (ensures
-        fun result ->
-          result >=. 0us &&
-          (Core.Convert.f_from result <: i32) <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
-  cast (fe +! ((fe >>! 15l <: i32) &. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)) <: u16
-
 let v_BARRETT_SHIFT: i32 = 26l
 
 let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
@@ -63,6 +52,17 @@ let montgomery_reduce (value: i32)
   in
   let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
   value_high -! c
+
+let to_unsigned_representative (fe: i32)
+    : Prims.Pure u16
+      (requires
+        fe >=. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+        fe <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+      (ensures
+        fun result ->
+          result >=. 0us &&
+          (Core.Convert.f_from result <: i32) <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
+  cast (fe +! ((fe >>! 15l <: i32) &. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)) <: u16
 
 type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
