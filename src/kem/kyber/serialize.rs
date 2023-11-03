@@ -50,7 +50,7 @@ pub(super) fn compress_then_serialize_message(
         for (j, coefficient) in coefficients.iter().enumerate() {
             let coefficient = to_unsigned_representative(*coefficient);
 
-            let coefficient_compressed = compress_q::<1>(coefficient);
+            let coefficient_compressed = compress_q(1, coefficient);
 
             // At this point, the following should hold for |coefficient_compressed|:
             //
@@ -80,7 +80,7 @@ pub(super) fn deserialize_then_decompress_message(
     for (i, byte) in serialized.iter().enumerate() {
         for j in 0..8 {
             let coefficient_compressed = ((byte >> j) & 0x1) as KyberFieldElement;
-            re.coefficients[8 * i + j] = decompress_q::<1>(coefficient_compressed);
+            re.coefficients[8 * i + j] = decompress_q(1, coefficient_compressed);
         }
     }
 
@@ -131,10 +131,10 @@ fn compress_then_serialize_10<const OUT_LEN: usize>(
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
-        let coefficient1 = compress_q::<10>(to_unsigned_representative(coefficients[0]));
-        let coefficient2 = compress_q::<10>(to_unsigned_representative(coefficients[1]));
-        let coefficient3 = compress_q::<10>(to_unsigned_representative(coefficients[2]));
-        let coefficient4 = compress_q::<10>(to_unsigned_representative(coefficients[3]));
+        let coefficient1 = compress_q(10, to_unsigned_representative(coefficients[0]));
+        let coefficient2 = compress_q(10, to_unsigned_representative(coefficients[1]));
+        let coefficient3 = compress_q(10, to_unsigned_representative(coefficients[2]));
+        let coefficient4 = compress_q(10, to_unsigned_representative(coefficients[3]));
 
         serialized[5 * i] = (coefficient1 & 0xFF) as u8;
         serialized[5 * i + 1] =
@@ -155,14 +155,14 @@ fn compress_then_serialize_11<const OUT_LEN: usize>(
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
-        let coefficient1 = compress_q::<11>(to_unsigned_representative(coefficients[0]));
-        let coefficient2 = compress_q::<11>(to_unsigned_representative(coefficients[1]));
-        let coefficient3 = compress_q::<11>(to_unsigned_representative(coefficients[2]));
-        let coefficient4 = compress_q::<11>(to_unsigned_representative(coefficients[3]));
-        let coefficient5 = compress_q::<11>(to_unsigned_representative(coefficients[4]));
-        let coefficient6 = compress_q::<11>(to_unsigned_representative(coefficients[5]));
-        let coefficient7 = compress_q::<11>(to_unsigned_representative(coefficients[6]));
-        let coefficient8 = compress_q::<11>(to_unsigned_representative(coefficients[7]));
+        let coefficient1 = compress_q(11, to_unsigned_representative(coefficients[0]));
+        let coefficient2 = compress_q(11, to_unsigned_representative(coefficients[1]));
+        let coefficient3 = compress_q(11, to_unsigned_representative(coefficients[2]));
+        let coefficient4 = compress_q(11, to_unsigned_representative(coefficients[3]));
+        let coefficient5 = compress_q(11, to_unsigned_representative(coefficients[4]));
+        let coefficient6 = compress_q(11, to_unsigned_representative(coefficients[5]));
+        let coefficient7 = compress_q(11, to_unsigned_representative(coefficients[6]));
+        let coefficient8 = compress_q(11, to_unsigned_representative(coefficients[7]));
 
         serialized[11 * i] = coefficient1 as u8;
         serialized[11 * i + 1] = ((coefficient2 & 0x1F) as u8) << 3 | ((coefficient1 >> 8) as u8);
@@ -205,8 +205,8 @@ fn compress_then_serialize_4<const OUT_LEN: usize>(
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient1 = compress_q::<4>(to_unsigned_representative(coefficients[0])) as u8;
-        let coefficient2 = compress_q::<4>(to_unsigned_representative(coefficients[1])) as u8;
+        let coefficient1 = compress_q(4, to_unsigned_representative(coefficients[0])) as u8;
+        let coefficient2 = compress_q(4, to_unsigned_representative(coefficients[1])) as u8;
 
         serialized[i] = (coefficient2 << 4) | coefficient1;
     }
@@ -221,14 +221,14 @@ fn compress_then_serialize_5<const OUT_LEN: usize>(
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
-        let coefficient1 = compress_q::<5>(to_unsigned_representative(coefficients[0])) as u8;
-        let coefficient2 = compress_q::<5>(to_unsigned_representative(coefficients[1])) as u8;
-        let coefficient3 = compress_q::<5>(to_unsigned_representative(coefficients[2])) as u8;
-        let coefficient4 = compress_q::<5>(to_unsigned_representative(coefficients[3])) as u8;
-        let coefficient5 = compress_q::<5>(to_unsigned_representative(coefficients[4])) as u8;
-        let coefficient6 = compress_q::<5>(to_unsigned_representative(coefficients[5])) as u8;
-        let coefficient7 = compress_q::<5>(to_unsigned_representative(coefficients[6])) as u8;
-        let coefficient8 = compress_q::<5>(to_unsigned_representative(coefficients[7])) as u8;
+        let coefficient1 = compress_q(5, to_unsigned_representative(coefficients[0])) as u8;
+        let coefficient2 = compress_q(5, to_unsigned_representative(coefficients[1])) as u8;
+        let coefficient3 = compress_q(5, to_unsigned_representative(coefficients[2])) as u8;
+        let coefficient4 = compress_q(5, to_unsigned_representative(coefficients[3])) as u8;
+        let coefficient5 = compress_q(5, to_unsigned_representative(coefficients[4])) as u8;
+        let coefficient6 = compress_q(5, to_unsigned_representative(coefficients[5])) as u8;
+        let coefficient7 = compress_q(5, to_unsigned_representative(coefficients[6])) as u8;
+        let coefficient8 = compress_q(5, to_unsigned_representative(coefficients[7])) as u8;
 
         serialized[5 * i] = (coefficient2 & 0x7) << 5 | coefficient1;
         serialized[5 * i + 1] =
@@ -274,16 +274,16 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> KyberPolynomialRingEleme
         let byte5 = bytes[4] as KyberFieldElement;
 
         let coefficient1 = (byte2 & 0x03) << 8 | (byte1 & 0xFF);
-        re.coefficients[4 * i] = decompress_q::<10>(coefficient1);
+        re.coefficients[4 * i] = decompress_q(10, coefficient1);
 
         let coefficient2 = (byte3 & 0x0F) << 6 | (byte2 >> 2);
-        re.coefficients[4 * i + 1] = decompress_q::<10>(coefficient2);
+        re.coefficients[4 * i + 1] = decompress_q(10, coefficient2);
 
         let coefficient3 = (byte4 & 0x3F) << 4 | (byte3 >> 4);
-        re.coefficients[4 * i + 2] = decompress_q::<10>(coefficient3);
+        re.coefficients[4 * i + 2] = decompress_q(10, coefficient3);
 
         let coefficient4 = (byte5 << 2) | (byte4 >> 6);
-        re.coefficients[4 * i + 3] = decompress_q::<10>(coefficient4);
+        re.coefficients[4 * i + 3] = decompress_q(10, coefficient4);
     }
 
     re
@@ -308,28 +308,28 @@ fn deserialize_then_decompress_11(serialized: &[u8]) -> KyberPolynomialRingEleme
         let byte11 = bytes[10] as KyberFieldElement;
 
         let coefficient1 = (byte2 & 0x7) << 8 | byte1;
-        re.coefficients[8 * i] = decompress_q::<11>(coefficient1);
+        re.coefficients[8 * i] = decompress_q(11, coefficient1);
 
         let coefficient2 = (byte3 & 0x3F) << 5 | (byte2 >> 3);
-        re.coefficients[8 * i + 1] = decompress_q::<11>(coefficient2);
+        re.coefficients[8 * i + 1] = decompress_q(11, coefficient2);
 
         let coefficient3 = (byte5 & 0x1) << 10 | (byte4 << 2) | (byte3 >> 6);
-        re.coefficients[8 * i + 2] = decompress_q::<11>(coefficient3);
+        re.coefficients[8 * i + 2] = decompress_q(11, coefficient3);
 
         let coefficient4 = (byte6 & 0xF) << 7 | (byte5 >> 1);
-        re.coefficients[8 * i + 3] = decompress_q::<11>(coefficient4);
+        re.coefficients[8 * i + 3] = decompress_q(11, coefficient4);
 
         let coefficient5 = (byte7 & 0x7F) << 4 | (byte6 >> 4);
-        re.coefficients[8 * i + 4] = decompress_q::<11>(coefficient5);
+        re.coefficients[8 * i + 4] = decompress_q(11, coefficient5);
 
         let coefficient6 = (byte9 & 0x3) << 9 | (byte8 << 1) | (byte7 >> 7);
-        re.coefficients[8 * i + 5] = decompress_q::<11>(coefficient6);
+        re.coefficients[8 * i + 5] = decompress_q(11, coefficient6);
 
         let coefficient7 = (byte10 & 0x1F) << 6 | (byte9 >> 2);
-        re.coefficients[8 * i + 6] = decompress_q::<11>(coefficient7);
+        re.coefficients[8 * i + 6] = decompress_q(11, coefficient7);
 
         let coefficient8 = (byte11 << 3) | (byte10 >> 5);
-        re.coefficients[8 * i + 7] = decompress_q::<11>(coefficient8);
+        re.coefficients[8 * i + 7] = decompress_q(11, coefficient8);
     }
 
     re
@@ -358,10 +358,10 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> KyberPolynomialRingElemen
 
     for (i, byte) in serialized.iter().enumerate() {
         let coefficient1 = (byte & 0x0F) as KyberFieldElement;
-        re.coefficients[2 * i] = decompress_q::<4>(coefficient1);
+        re.coefficients[2 * i] = decompress_q(4, coefficient1);
 
         let coefficient2 = ((byte >> 4) & 0x0F) as KyberFieldElement;
-        re.coefficients[2 * i + 1] = decompress_q::<4>(coefficient2);
+        re.coefficients[2 * i + 1] = decompress_q(4, coefficient2);
     }
 
     re
@@ -380,28 +380,28 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> KyberPolynomialRingElemen
         let byte5 = bytes[4] as KyberFieldElement;
 
         let coefficient1 = byte1 & 0x1F;
-        re.coefficients[8 * i] = decompress_q::<5>(coefficient1);
+        re.coefficients[8 * i] = decompress_q(5, coefficient1);
 
         let coefficient2 = (byte2 & 0x3) << 3 | (byte1 >> 5);
-        re.coefficients[8 * i + 1] = decompress_q::<5>(coefficient2);
+        re.coefficients[8 * i + 1] = decompress_q(5, coefficient2);
 
         let coefficient3 = (byte2 >> 2) & 0x1F;
-        re.coefficients[8 * i + 2] = decompress_q::<5>(coefficient3);
+        re.coefficients[8 * i + 2] = decompress_q(5, coefficient3);
 
         let coefficient4 = ((byte3 & 0xF) << 1) | (byte2 >> 7);
-        re.coefficients[8 * i + 3] = decompress_q::<5>(coefficient4);
+        re.coefficients[8 * i + 3] = decompress_q(5, coefficient4);
 
         let coefficient5 = ((byte4 & 1) << 4) | (byte3 >> 4);
-        re.coefficients[8 * i + 4] = decompress_q::<5>(coefficient5);
+        re.coefficients[8 * i + 4] = decompress_q(5, coefficient5);
 
         let coefficient6 = (byte4 >> 1) & 0x1F;
-        re.coefficients[8 * i + 5] = decompress_q::<5>(coefficient6);
+        re.coefficients[8 * i + 5] = decompress_q(5, coefficient6);
 
         let coefficient7 = ((byte5 & 0x7) << 2) | (byte4 >> 6);
-        re.coefficients[8 * i + 6] = decompress_q::<5>(coefficient7);
+        re.coefficients[8 * i + 6] = decompress_q(5, coefficient7);
 
         let coefficient8 = byte5 >> 3;
-        re.coefficients[8 * i + 7] = decompress_q::<5>(coefficient8);
+        re.coefficients[8 * i + 7] = decompress_q(5, coefficient8);
     }
 
     re
