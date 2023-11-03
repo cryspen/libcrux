@@ -929,7 +929,7 @@ let deserialize_then_decompress_ring_element_u
         <:
         Rust_primitives.Hax.t_Never)
 
-let deserialize_little_endian_4_ (serialized: t_Slice u8)
+let deserialize_then_decompress_4_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -964,6 +964,7 @@ let deserialize_little_endian_4_ (serialized: t_Slice u8)
         Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
       re
       (fun re (i, byte) ->
+          let coefficient1:i32 = cast (byte &. 15uy) <: i32 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -971,9 +972,10 @@ let deserialize_little_endian_4_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 2 *! i <: usize)
-                (cast (byte &. 15uy <: u8) <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient1 <: i32)
             }
           in
+          let coefficient2:i32 = cast ((byte >>! 4l <: u8) &. 15uy) <: i32 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -981,14 +983,14 @@ let deserialize_little_endian_4_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 2 *! i <: usize) +! sz 1 <: usize)
-                (cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient2 <: i32)
             }
           in
           re)
   in
   re
 
-let deserialize_little_endian_5_ (serialized: t_Slice u8)
+let deserialize_then_decompress_5_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -1028,6 +1030,7 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
           let byte3:i32 = cast bytes.[ sz 2 ] <: i32 in
           let byte4:i32 = cast bytes.[ sz 3 ] <: i32 in
           let byte5:i32 = cast bytes.[ sz 4 ] <: i32 in
+          let coefficient1:i32 = byte1 &. 31l in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1035,9 +1038,10 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 8 *! i <: usize)
-                (byte1 &. 31l <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient1 <: i32)
             }
           in
+          let coefficient2:i32 = ((byte2 &. 3l <: i32) <<! 3l <: i32) |. (byte1 >>! 5l <: i32) in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1045,9 +1049,10 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 1 <: usize)
-                (((byte2 &. 3l <: i32) <<! 3l <: i32) |. (byte1 >>! 5l <: i32) <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient2 <: i32)
             }
           in
+          let coefficient3:i32 = (byte2 >>! 2l <: i32) &. 31l in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1055,9 +1060,10 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 2 <: usize)
-                ((byte2 >>! 2l <: i32) &. 31l <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient3 <: i32)
             }
           in
+          let coefficient4:i32 = ((byte3 &. 15l <: i32) <<! 1l <: i32) |. (byte2 >>! 7l <: i32) in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1065,9 +1071,10 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 3 <: usize)
-                (((byte3 &. 15l <: i32) <<! 1l <: i32) |. (byte2 >>! 7l <: i32) <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient4 <: i32)
             }
           in
+          let coefficient5:i32 = ((byte4 &. 1l <: i32) <<! 4l <: i32) |. (byte3 >>! 4l <: i32) in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1075,9 +1082,10 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 4 <: usize)
-                (((byte4 &. 1l <: i32) <<! 4l <: i32) |. (byte3 >>! 4l <: i32) <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient5 <: i32)
             }
           in
+          let coefficient6:i32 = (byte4 >>! 1l <: i32) &. 31l in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1085,9 +1093,10 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 5 <: usize)
-                ((byte4 >>! 1l <: i32) &. 31l <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient6 <: i32)
             }
           in
+          let coefficient7:i32 = ((byte5 &. 7l <: i32) <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1095,9 +1104,10 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 6 <: usize)
-                (((byte5 &. 7l <: i32) <<! 2l <: i32) |. (byte4 >>! 6l <: i32) <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient7 <: i32)
             }
           in
+          let coefficient8:i32 = byte5 >>! 3l in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             {
               re with
@@ -1105,14 +1115,16 @@ let deserialize_little_endian_5_ (serialized: t_Slice u8)
               =
               Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 7 <: usize)
-                (byte5 >>! 3l <: i32)
+                (Libcrux.Kem.Kyber.Compress.decompress_q coefficient8 <: i32)
             }
           in
           re)
   in
   re
 
-let deserialize_ring_element_v (#v_COMPRESSION_FACTOR: usize) (serialized: t_Slice u8)
+let deserialize_then_decompress_ring_element_v
+      (#v_COMPRESSION_FACTOR: usize)
+      (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
   let _:Prims.unit =
     if true
@@ -1139,8 +1151,8 @@ let deserialize_ring_element_v (#v_COMPRESSION_FACTOR: usize) (serialized: t_Sli
       ()
   in
   match cast v_COMPRESSION_FACTOR <: u32 with
-  | 4ul -> deserialize_little_endian_4_ serialized
-  | 5ul -> deserialize_little_endian_5_ serialized
+  | 4ul -> deserialize_then_decompress_4_ serialized
+  | 5ul -> deserialize_then_decompress_5_ serialized
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 

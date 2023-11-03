@@ -1,6 +1,5 @@
 use super::{
     arithmetic::KyberPolynomialRingElement,
-    compress::decompress,
     constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
         SHARED_SECRET_SIZE,
@@ -12,8 +11,8 @@ use super::{
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{
         compress_then_serialize_message, compress_then_serialize_ring_element_u,
-        compress_then_serialize_ring_element_v, deserialize_ring_element_v,
-        deserialize_then_decompress_message, deserialize_then_decompress_ring_element_u,
+        compress_then_serialize_ring_element_v, deserialize_then_decompress_message,
+        deserialize_then_decompress_ring_element_u, deserialize_then_decompress_ring_element_v,
         deserialize_to_uncompressed_ring_element, serialize_uncompressed_ring_element,
     },
     types::PrivateKey,
@@ -304,9 +303,9 @@ pub(crate) fn decrypt<
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = decompress::<V_COMPRESSION_FACTOR>(deserialize_ring_element_v::<V_COMPRESSION_FACTOR>(
+    let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR>(
         &ciphertext[VECTOR_U_ENCODED_SIZE..],
-    ));
+    );
 
     // sˆ := Decode_12(sk)
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {

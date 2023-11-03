@@ -595,12 +595,11 @@ let decrypt
           u_as_ntt)
   in
   let v:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_ring_element_v (ciphertext.[
-              { Core.Ops.Range.f_start = v_VECTOR_U_ENCODED_SIZE } ]
-            <:
-            t_Slice u8)
+    Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_v (ciphertext.[ {
+            Core.Ops.Range.f_start = v_VECTOR_U_ENCODED_SIZE
+          } ]
         <:
-        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+        t_Slice u8)
   in
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate

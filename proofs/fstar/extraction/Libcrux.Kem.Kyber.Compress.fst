@@ -27,18 +27,3 @@ let decompress_q (#v_COEFFICIENT_BITS: usize) (fe: i32)
   let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! v_COEFFICIENT_BITS <: u32) in
   let decompressed:u32 = decompressed >>! (v_COEFFICIENT_BITS +! sz 1 <: usize) in
   cast decompressed <: i32
-
-let decompress
-      (#v_COEFFICIENT_BITS: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    {
-      re with
-      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-      =
-      Core.Array.impl_23__map re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        (fun coefficient -> decompress_q coefficient <: i32)
-    }
-  in
-  re

@@ -351,20 +351,23 @@ pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTO
 }
 
 #[inline(always)]
-fn deserialize_little_endian_4(serialized: &[u8]) -> KyberPolynomialRingElement {
+fn deserialize_then_decompress_4(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
-        re.coefficients[2 * i] = (byte & 0x0F) as KyberFieldElement;
-        re.coefficients[2 * i + 1] = ((byte >> 4) & 0x0F) as KyberFieldElement;
+        let coefficient1 = (byte & 0x0F) as KyberFieldElement;
+        re.coefficients[2 * i] = decompress_q::<4>(coefficient1);
+
+        let coefficient2 = ((byte >> 4) & 0x0F) as KyberFieldElement;
+        re.coefficients[2 * i + 1] = decompress_q::<4>(coefficient2);
     }
 
     re
 }
 #[inline(always)]
-fn deserialize_little_endian_5(serialized: &[u8]) -> KyberPolynomialRingElement {
+fn deserialize_then_decompress_5(serialized: &[u8]) -> KyberPolynomialRingElement {
     debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
@@ -376,20 +379,35 @@ fn deserialize_little_endian_5(serialized: &[u8]) -> KyberPolynomialRingElement 
         let byte4 = bytes[3] as KyberFieldElement;
         let byte5 = bytes[4] as KyberFieldElement;
 
-        re.coefficients[8 * i] = byte1 & 0x1F;
-        re.coefficients[8 * i + 1] = (byte2 & 0x3) << 3 | (byte1 >> 5);
-        re.coefficients[8 * i + 2] = (byte2 >> 2) & 0x1F;
-        re.coefficients[8 * i + 3] = ((byte3 & 0xF) << 1) | (byte2 >> 7);
-        re.coefficients[8 * i + 4] = ((byte4 & 1) << 4) | (byte3 >> 4);
-        re.coefficients[8 * i + 5] = (byte4 >> 1) & 0x1F;
-        re.coefficients[8 * i + 6] = ((byte5 & 0x7) << 2) | (byte4 >> 6);
-        re.coefficients[8 * i + 7] = byte5 >> 3;
+        let coefficient1 = byte1 & 0x1F;
+        re.coefficients[8 * i] = decompress_q::<5>(coefficient1);
+
+        let coefficient2 = (byte2 & 0x3) << 3 | (byte1 >> 5);
+        re.coefficients[8 * i + 1] = decompress_q::<5>(coefficient2);
+
+        let coefficient3 = (byte2 >> 2) & 0x1F;
+        re.coefficients[8 * i + 2] = decompress_q::<5>(coefficient3);
+
+        let coefficient4 = ((byte3 & 0xF) << 1) | (byte2 >> 7);
+        re.coefficients[8 * i + 3] = decompress_q::<5>(coefficient4);
+
+        let coefficient5 = ((byte4 & 1) << 4) | (byte3 >> 4);
+        re.coefficients[8 * i + 4] = decompress_q::<5>(coefficient5);
+
+        let coefficient6 = (byte4 >> 1) & 0x1F;
+        re.coefficients[8 * i + 5] = decompress_q::<5>(coefficient6);
+
+        let coefficient7 = ((byte5 & 0x7) << 2) | (byte4 >> 6);
+        re.coefficients[8 * i + 6] = decompress_q::<5>(coefficient7);
+
+        let coefficient8 = byte5 >> 3;
+        re.coefficients[8 * i + 7] = decompress_q::<5>(coefficient8);
     }
 
     re
 }
 #[inline(always)]
-pub(super) fn deserialize_ring_element_v<const COMPRESSION_FACTOR: usize>(
+pub(super) fn deserialize_then_decompress_ring_element_v<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
     debug_assert_eq!(
@@ -398,8 +416,8 @@ pub(super) fn deserialize_ring_element_v<const COMPRESSION_FACTOR: usize>(
     );
 
     match COMPRESSION_FACTOR as u32 {
-        4 => deserialize_little_endian_4(serialized),
-        5 => deserialize_little_endian_5(serialized),
+        4 => deserialize_then_decompress_4(serialized),
+        5 => deserialize_then_decompress_5(serialized),
         _ => unreachable!(),
     }
 }

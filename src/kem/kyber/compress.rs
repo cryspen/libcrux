@@ -1,7 +1,4 @@
-use super::{
-    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
-    constants::FIELD_MODULUS,
-};
+use super::{arithmetic::KyberFieldElement, constants::FIELD_MODULUS};
 
 #[cfg_attr(hax, hax_lib_macros::requires(COEFFICIENT_BITS <= 11 && i32::from(fe) <= FIELD_MODULUS))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result <= (1 << COEFFICIENT_BITS) - 1))]
@@ -23,12 +20,4 @@ pub(super) fn decompress_q<const COEFFICIENT_BITS: usize>(
     decompressed >>= COEFFICIENT_BITS + 1;
 
     decompressed as KyberFieldElement
-}
-pub fn decompress<const COEFFICIENT_BITS: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    re.coefficients = re
-        .coefficients
-        .map(|coefficient| decompress_q::<COEFFICIENT_BITS>(coefficient));
-    re
 }
