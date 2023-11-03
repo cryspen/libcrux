@@ -1978,29 +1978,19 @@ let compute_message
     Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
-              (Core.Slice.impl__iter (Rust_primitives.unsize secret_as_ntt
-                    <:
-                    t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                <:
-                Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (Core.Slice.impl__iter (Rust_primitives.unsize u_as_ntt
-                    <:
-                    t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                <:
-                Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-            <:
-            Core.Iter.Adapters.Zip.t_Zip
-              (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = v_K
+            })
         <:
-        Core.Iter.Adapters.Zip.t_Zip
-          (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-          (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
+        Core.Ops.Range.t_Range usize)
       result
-      (fun result (secret_element, u_element) ->
+      (fun result i ->
           let product:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            ntt_multiply secret_element u_element
+            ntt_multiply (secret_as_ntt.[ i ]
+                <:
+                Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+              (u_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
           let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element result product
@@ -2066,29 +2056,19 @@ let compute_ring_element_v
     Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
   in
   let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
-              (Core.Slice.impl__iter (Rust_primitives.unsize tt_as_ntt
-                    <:
-                    t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                <:
-                Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (Core.Slice.impl__iter (Rust_primitives.unsize r_as_ntt
-                    <:
-                    t_Slice Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-                <:
-                Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-            <:
-            Core.Iter.Adapters.Zip.t_Zip
-              (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = v_K
+            })
         <:
-        Core.Iter.Adapters.Zip.t_Zip
-          (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-          (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement))
+        Core.Ops.Range.t_Range usize)
       result
-      (fun result (tt_element, r_element) ->
+      (fun result i ->
           let product:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            ntt_multiply tt_element r_element
+            ntt_multiply (tt_as_ntt.[ i ]
+                <:
+                Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+              (r_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
           let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
             Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element result product

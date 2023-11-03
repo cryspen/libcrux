@@ -230,8 +230,8 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
 ) -> KyberPolynomialRingElement {
     let mut result = KyberPolynomialRingElement::ZERO;
 
-    for (secret_element, u_element) in secret_as_ntt.iter().zip(u_as_ntt.iter()) {
-        let product = ntt_multiply(secret_element, u_element);
+    for i in 0..K {
+        let product = ntt_multiply(&secret_as_ntt[i], &u_as_ntt[i]);
         result = add_to_ring_element(result, &product);
     }
 
@@ -255,8 +255,8 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
 ) -> KyberPolynomialRingElement {
     let mut result = KyberPolynomialRingElement::ZERO;
 
-    for (t_element, r_element) in t_as_ntt.iter().zip(r_as_ntt.iter()) {
-        let product = ntt_multiply(t_element, r_element);
+    for i in 0..K {
+        let product = ntt_multiply(&t_as_ntt[i], &r_as_ntt[i]);
         result = add_to_ring_element(result, &product);
     }
 
