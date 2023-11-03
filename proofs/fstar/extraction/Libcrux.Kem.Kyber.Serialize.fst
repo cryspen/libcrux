@@ -430,45 +430,23 @@ let compress_then_serialize_ring_element_u
     if true
     then
       let _:Prims.unit =
-        if
-          ~.(((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR
-                <:
-                usize) /!
-              sz 8
-              <:
-              usize) =.
-            v_OUT_LEN
+        match
+          (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR
             <:
-            bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
-                        (let list = [""; " != "] in
-                          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-                          Rust_primitives.Hax.array_of_list list)
-                      <:
-                      t_Slice string)
-                    (Rust_primitives.unsize (let list =
-                            [
-                              Core.Fmt.Rt.impl_1__new_display ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                                    v_COMPRESSION_FACTOR
-                                    <:
-                                    usize) /!
-                                  sz 8
-                                  <:
-                                  usize)
-                              <:
-                              Core.Fmt.Rt.t_Argument;
-                              Core.Fmt.Rt.impl_1__new_display v_OUT_LEN <: Core.Fmt.Rt.t_Argument
-                            ]
-                          in
-                          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-                          Rust_primitives.Hax.array_of_list list)
-                      <:
-                      t_Slice Core.Fmt.Rt.t_Argument)
-                  <:
-                  Core.Fmt.t_Arguments)
-              <:
-              Rust_primitives.Hax.t_Never)
+            usize) /!
+          sz 8,
+          v_OUT_LEN
+        with
+        | left_val, right_val ->
+          if ~.(left_val =. right_val <: bool)
+          then
+            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+                  left_val
+                  right_val
+                  Core.Option.Option_None
+                <:
+                Rust_primitives.Hax.t_Never)
       in
       ()
   in
@@ -653,45 +631,23 @@ let compress_then_serialize_ring_element_v
     if true
     then
       let _:Prims.unit =
-        if
-          ~.(((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR
-                <:
-                usize) /!
-              sz 8
-              <:
-              usize) =.
-            v_OUT_LEN
+        match
+          (Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *! v_COMPRESSION_FACTOR
             <:
-            bool)
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
-                        (let list = [""; " != "] in
-                          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-                          Rust_primitives.Hax.array_of_list list)
-                      <:
-                      t_Slice string)
-                    (Rust_primitives.unsize (let list =
-                            [
-                              Core.Fmt.Rt.impl_1__new_display ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                                    v_COMPRESSION_FACTOR
-                                    <:
-                                    usize) /!
-                                  sz 8
-                                  <:
-                                  usize)
-                              <:
-                              Core.Fmt.Rt.t_Argument;
-                              Core.Fmt.Rt.impl_1__new_display v_OUT_LEN <: Core.Fmt.Rt.t_Argument
-                            ]
-                          in
-                          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-                          Rust_primitives.Hax.array_of_list list)
-                      <:
-                      t_Slice Core.Fmt.Rt.t_Argument)
-                  <:
-                  Core.Fmt.t_Arguments)
-              <:
-              Rust_primitives.Hax.t_Never)
+            usize) /!
+          sz 8,
+          v_OUT_LEN
+        with
+        | left_val, right_val ->
+          if ~.(left_val =. right_val <: bool)
+          then
+            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+                  left_val
+                  right_val
+                  Core.Option.Option_None
+                <:
+                Rust_primitives.Hax.t_Never)
       in
       ()
   in

@@ -186,9 +186,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 >(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    debug_assert!(
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN,
-        "{} != {}",
+    debug_assert_eq!(
         (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
         OUT_LEN
     );
@@ -250,9 +248,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 >(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    debug_assert!(
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN,
-        "{} != {}",
+    debug_assert_eq!(
         (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
         OUT_LEN
     );

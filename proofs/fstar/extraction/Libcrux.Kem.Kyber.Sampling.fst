@@ -280,20 +280,7 @@ let sample_from_binomial_distribution (#v_ETA: usize) (randomness: t_Slice u8)
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
   | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
-                  (let list = ["internal error: entered unreachable code: factor "] in
-                    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                    Rust_primitives.Hax.array_of_list list)
-                <:
-                t_Slice string)
-              (Rust_primitives.unsize (let list =
-                      [Core.Fmt.Rt.impl_1__new_display v_ETA <: Core.Fmt.Rt.t_Argument]
-                    in
-                    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                    Rust_primitives.Hax.array_of_list list)
-                <:
-                t_Slice Core.Fmt.Rt.t_Argument)
-            <:
-            Core.Fmt.t_Arguments)
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
         <:
         Rust_primitives.Hax.t_Never)
