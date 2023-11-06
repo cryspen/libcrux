@@ -39,39 +39,6 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     (out, Some(Error::RejectionSampling))
 }
 
-/// Given a series of uniformly random bytes in `|randomness|`, sample
-/// a ring element from a binomial distribution centered at 0 that uses two sets
-/// of `|sampling_coins|` coin flips. If, for example,
-/// `|sampling_coins| = ETA`, each ring coefficient is a value `v` such
-/// such that `v ∈ {-ETA, -ETA + 1, ..., 0, ..., ETA + 1, ETA}` and:
-///
-/// - If v < 0, Pr\[v\] = Pr[-v]
-/// - If v >= 0, Pr\[v\] = BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2 ^ (2 * ETA)
-///
-/// The values v < 0 are mapped to the appropriate
-/// `|parameters::KyberFieldElement|`.
-///
-/// The expected value is:
-///
-/// ```plaintext
-/// E[X] = (-ETA)Pr[-ETA] + (-(ETA - 1))Pr[-(ETA - 1)] + ... + (ETA - 1)Pr[ETA - 1] + (ETA)Pr[ETA]
-///      = 0 since Pr[-v] = Pr[v] when v < 0.
-/// ```
-///
-/// And the variance is:
-///
-/// ```plaintext
-/// Var(X) = E[(X - E[X])^2]
-///        = E[X^2]
-///        = sum_(v=-ETA to ETA)v^2 * (BINOMIAL_COEFFICIENT(2 * ETA; ETA - v) / 2^(2 * ETA))
-///        = ETA / 2
-/// ```
-///
-/// This function implements Algorithm 2 of the Kyber Round 3 specification with
-/// ETA set to 2.
-///
-/// The Kyber Round 3 specification can be found at:
-/// <https://pq-crystals.org/kyber/data/kyber-specification-round3-20210131.pdf>
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRingElement {
     let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 

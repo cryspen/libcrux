@@ -4,42 +4,6 @@ use super::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
 
-/// This file contains instantiations of the functions
-/// `serialize_little_endian_n` and `deserialize_little_endian_n` for
-/// `|n| = 1, |n| = 4, |n| = 10, and |n| = 12`.
-///
-/// `serialize_little_endian_n` converts a ring element |re| into a vector of
-/// `|COEFFICIENTS_IN_RING_ELEMENT| * |n|` bits, and outputs this vector as a
-/// byte array such that the first 8 bits of the vector represent the first byte
-/// of the output, the next 8 bits the next byte of the output, and so on ...
-///
-/// `deserialize_little_endian_n` on the other hand, given a series of bytes
-/// representing a ring element in `|serialized|`, first converts them into
-/// a vector of bits in little-endian order; i.e. the least significant `|n|` of
-/// `|serialized[0]|` are the first set of bits in the bitstream. This vector is
-/// then deserialized into a KyberPolynomialRingElement structure. The first
-/// `|n|` bits are used to re-construct the first coefficient of the ring element,
-/// the second `|n|` the second coefficient, and so on.
-///
-/// N.B.: `serialize_little_endian_n` is the inverse of `deserialize_little_endian_n`
-/// only when:
-///
-/// - each ring coefficient can fit into |n| bits (otherwise
-///   lossy compression takes place)
-/// - `|n| < |parameters::BITS_PER_COEFFICIENT|`, since
-///   otherwise when `deserialize_little_endian` operates on 12 bits at a time,
-///   it is not injective: the values 3329 + 1 and 1 for example both fit into
-///   12 bits and map to the same `KyberFieldElement`
-///
-/// Otherwise `deserialize_little_endian` is not injective and therefore has
-/// no left inverse.
-///
-/// N.B.: All the `serialize_little_endian_{n}` functions work on the canonical
-/// unsigned representative of each coefficient in the polynomial ring.
-/// Only `serialize_little_endian_12` actually performs this conversion in the
-/// function itself; the rest don't since they are called only after `compress_q`
-/// is called, and `compress_q` also performs this conversion.
-
 #[inline(always)]
 pub(super) fn compress_then_serialize_message(
     re: KyberPolynomialRingElement,
@@ -98,7 +62,7 @@ pub(super) fn serialize_uncompressed_ring_element(
         let coefficient2 = to_unsigned_representative(coefficients[1]);
 
         serialized[3 * i] = (coefficient1 & 0xFF) as u8;
-        serialized[3 * i + 1] = ((coefficient1 >> 8) | ((coefficient2 & 0xF) << 4)) as u8;
+        serialized[3 * i + 1] = ((coefficient1 >> 8) | ((coefficient2 & 0x0F) << 4)) as u8;
         serialized[3 * i + 2] = ((coefficient2 >> 4) & 0xFF) as u8;
     }
 
