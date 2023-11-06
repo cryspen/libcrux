@@ -65,7 +65,7 @@ macro_rules! impl_comp {
                     },
                 );
 
-                #[cfg(not(windows))]
+                #[cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))]
                 group.bench_with_input(
                     BenchmarkId::new("OpenSSL", fmt(*payload_size)),
                     payload_size,
