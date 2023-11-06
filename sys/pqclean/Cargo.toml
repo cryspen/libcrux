@@ -13,5 +13,5 @@ description = "pqclean wrapper for libcrux tests and benchmarks."
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
-bindgen = "0.68"
+bindgen = "0.69"
 fs_extra = "1.2"
