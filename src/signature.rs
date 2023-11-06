@@ -5,10 +5,7 @@
 //! * RSA PSS
 
 use crate::{
-    ecdh::{
-        self,
-        p256::{PrivateKey, PublicKey},
-    },
+    ecdh,
     hacl::{self, ed25519, p256},
 };
 use rand::{CryptoRng, Rng, RngCore};
@@ -93,6 +90,13 @@ pub mod rsa_pss {
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct RsaPssSignature {
         pub(super) value: Vec<u8>,
+    }
+
+    impl RsaPssSignature {
+        /// Get the signature as the raw byte slice.
+        pub fn as_bytes(&self) -> &[u8] {
+            &self.value
+        }
     }
 
     impl From<&[u8]> for RsaPssSignature {
@@ -322,7 +326,7 @@ impl EcDsaP256Signature {
 fn ecdsa_p256_sign_prep(
     private_key: &[u8],
     rng: &mut (impl CryptoRng + RngCore),
-) -> Result<(PrivateKey, [u8; 32]), Error> {
+) -> Result<(ecdh::p256::PrivateKey, [u8; 32]), Error> {
     let private_key = p256::validate_scalar_slice(private_key).map_err(|_| Error::SigningError)?;
 
     let mut nonce = [0u8; 32];
@@ -428,7 +432,7 @@ fn ecdsa_p256_verify_prep(public_key: &[u8]) -> Result<[u8; 64], Error> {
         }
     };
 
-    p256::validate_point(PublicKey(pk))
+    p256::validate_point(ecdh::p256::PublicKey(pk))
         .map(|()| pk)
         .map_err(into_verify_error)
 }

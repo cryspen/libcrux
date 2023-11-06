@@ -84,7 +84,7 @@ fn comparisons_encrypt(c: &mut Criterion) {
             },
         );
 
-        #[cfg(not(windows))]
+        #[cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))]
         group.bench_with_input(
             BenchmarkId::new("OpenSSL", fmt(*payload_size)),
             payload_size,
@@ -203,7 +203,7 @@ fn comparisons_decrypt(c: &mut Criterion) {
             },
         );
 
-        #[cfg(not(windows))]
+        #[cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))]
         group.bench_with_input(
             BenchmarkId::new("OpenSSL", fmt(*payload_size)),
             payload_size,

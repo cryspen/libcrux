@@ -437,15 +437,7 @@ pub fn encapsulate(pk: &PublicKey, rng: &mut (impl CryptoRng + Rng)) -> Result<(
                 Ct::Kyber768X25519(kyber_ct, x_pk),
             ))
         }
-
-        PublicKey::Kyber1024(pk) => {
-            let seed = kyber_rand(rng)?;
-            if let Ok((ct, ss)) = kyber::kyber1024::encapsulate_1024(pk, seed) {
-                Ok((Ss::Kyber1024(ss), Ct::Kyber1024(ct)))
-            } else {
-                Err(Error::Encapsulate)
-            }
-        }
+        _ => Err(Error::UnsupportedAlgorithm),
     }
 }
 

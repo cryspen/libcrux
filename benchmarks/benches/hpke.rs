@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use libcrux::hpke::aead::*;
 use libcrux::hpke::kdf::KDF;
 use libcrux::hpke::kem::{GenerateKeyPair, KEM};
-use libcrux::hpke::*;
+use libcrux::{aes_ni_support, hpke::*};
 use rand::{rngs::OsRng, RngCore};
 
 pub(crate) fn hex_str_to_bytes(val: &str) -> Vec<u8> {
@@ -41,9 +41,10 @@ const ITERATIONS: usize = 1_000;
 fn benchmark() {
     for hpke_mode in MODES {
         for aead_mode in AEAD_IDS {
-            #[cfg(not(target_arch = "x86_64"))]
-            if aead_mode == AEAD::AES_128_GCM {
-                // Evercrypt AES only works on x64 (and there only with the necessary extensions)
+            if aead_mode == AEAD::AES_128_GCM
+                && (cfg!(not(target_arch = "x86_64")) || !aes_ni_support())
+            {
+                // AES is not supported on all platforms yet.
                 continue;
             }
             for kdf_mode in KDF_IDS {
