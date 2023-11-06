@@ -1,48 +1,21 @@
-use super::{
-    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
-    constants::FIELD_MODULUS,
-    conversions::to_unsigned_representative,
-};
+use super::{arithmetic::KyberFieldElement, constants::FIELD_MODULUS};
 
-pub(super) fn compress_q<const COEFFICIENT_BITS: usize>(fe: u16) -> KyberFieldElement {
-    debug_assert!(COEFFICIENT_BITS <= 11);
-    debug_assert!(i32::from(fe) < FIELD_MODULUS);
-
-    let mut compressed = (fe as u32) << (COEFFICIENT_BITS + 1);
+#[cfg_attr(hax, hax_lib_macros::requires(coefficient_bits <= 11 && i32::from(fe) <= FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result <= (1 << coefficient_bits) - 1))]
+pub(super) fn compress_q(coefficient_bits: usize, fe: u16) -> KyberFieldElement {
+    let mut compressed = (fe as u32) << (coefficient_bits + 1);
     compressed += FIELD_MODULUS as u32;
     compressed /= (FIELD_MODULUS << 1) as u32;
 
-    (compressed & ((1u32 << COEFFICIENT_BITS) - 1)) as KyberFieldElement
+    (compressed & ((1u32 << coefficient_bits) - 1)) as KyberFieldElement
 }
 
-pub fn compress<const COEFFICIENT_BITS: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    re.coefficients = re
-        .coefficients
-        .map(|coefficient| compress_q::<COEFFICIENT_BITS>(to_unsigned_representative(coefficient)));
-    re
-}
-
-pub(super) fn decompress_q<const COEFFICIENT_BITS: usize>(
-    fe: KyberFieldElement,
-) -> KyberFieldElement {
-    debug_assert!(COEFFICIENT_BITS <= 11);
-    debug_assert!(0 <= fe && fe < (1 << COEFFICIENT_BITS));
-
+#[cfg_attr(hax, hax_lib_macros::requires(coefficient_bits <= 11 && (fe >= 0) && (fe < (1 << coefficient_bits))))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < FIELD_MODULUS))]
+pub(super) fn decompress_q(coefficient_bits: usize, fe: KyberFieldElement) -> KyberFieldElement {
     let mut decompressed = (fe as u32) * (FIELD_MODULUS as u32);
-    decompressed = (decompressed << 1) + (1 << COEFFICIENT_BITS);
-    decompressed >>= COEFFICIENT_BITS + 1;
-
-    debug_assert!(decompressed < u32::try_from(FIELD_MODULUS).unwrap());
+    decompressed = (decompressed << 1) + (1 << coefficient_bits);
+    decompressed >>= coefficient_bits + 1;
 
     decompressed as KyberFieldElement
-}
-pub fn decompress<const COEFFICIENT_BITS: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    re.coefficients = re
-        .coefficients
-        .map(|coefficient| decompress_q::<COEFFICIENT_BITS>(coefficient));
-    re
 }

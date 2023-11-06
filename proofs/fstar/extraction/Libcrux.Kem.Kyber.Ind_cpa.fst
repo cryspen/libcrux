@@ -215,17 +215,16 @@ let serialize_key
                 <:
                 usize
               })
-            (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut out
-                    ({
-                        Core.Ops.Range.f_start
-                        =
-                        i *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
-                        Core.Ops.Range.f_end
-                        =
-                        (i +! sz 1 <: usize) *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
-                        <:
-                        usize
-                      })
+            (Core.Slice.impl__copy_from_slice (out.[ {
+                      Core.Ops.Range.f_start
+                      =
+                      i *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+                      Core.Ops.Range.f_end
+                      =
+                      (i +! sz 1 <: usize) *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
+                      <:
+                      usize
+                    } ]
                   <:
                   t_Slice u8)
                 (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element
@@ -276,11 +275,10 @@ let generate_keypair
           Core.Ops.Range.f_start = sz 0;
           Core.Ops.Range.f_end = Core.Slice.impl__len seed_for_secret_and_error <: usize
         })
-      (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut prf_input
-              ({
-                  Core.Ops.Range.f_start = sz 0;
-                  Core.Ops.Range.f_end = Core.Slice.impl__len seed_for_secret_and_error <: usize
-                })
+      (Core.Slice.impl__copy_from_slice (prf_input.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = Core.Slice.impl__len seed_for_secret_and_error <: usize
+              } ]
             <:
             t_Slice u8)
           seed_for_secret_and_error
@@ -403,19 +401,16 @@ let compress_then_encode_u
                 Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
                 Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! (v_OUT_LEN /! v_K <: usize) <: usize
               })
-            (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut out
-                    ({
-                        Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
-                        Core.Ops.Range.f_end
-                        =
-                        (i +! sz 1 <: usize) *! (v_OUT_LEN /! v_K <: usize) <: usize
-                      })
+            (Core.Slice.impl__copy_from_slice (out.[ {
+                      Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
+                      Core.Ops.Range.f_end
+                      =
+                      (i +! sz 1 <: usize) *! (v_OUT_LEN /! v_K <: usize) <: usize
+                    } ]
                   <:
                   t_Slice u8)
-                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.serialize_little_endian (Libcrux.Kem.Kyber.Compress.compress
-                            re
-                          <:
-                          Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                (Rust_primitives.unsize (Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_u
+                        re
                       <:
                       t_Array u8 v_BLOCK_LEN)
                   <:
@@ -428,7 +423,7 @@ let compress_then_encode_u
   out
 
 let encrypt
-      (#v_K #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_LEN #v_C2_LEN #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR #v_BLOCK_LEN #v_ETA1 #v_ETA1_RANDOMNESS_SIZE #v_ETA2 #v_ETA2_RANDOMNESS_SIZE:
+      (#v_K #v_CIPHERTEXT_SIZE #v_T_AS_NTT_ENCODED_SIZE #v_C1_LEN #v_C2_LEN #v_U_COMPRESSION_FACTOR #v_V_COMPRESSION_FACTOR #v_BLOCK_LEN #v_ETA1 #v_ETA1_RANDOMNESS_SIZE #v_ETA2 #v_ETA2_RANDOMNESS_SIZE:
           usize)
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
@@ -534,9 +529,7 @@ let encrypt
   in
   let c1:t_Array u8 v_C1_LEN = compress_then_encode_u u in
   let c2:t_Array u8 v_C2_LEN =
-    Libcrux.Kem.Kyber.Serialize.serialize_little_endian (Libcrux.Kem.Kyber.Compress.compress v
-        <:
-        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+    Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_v v
   in
   let (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE):t_Array u8 v_CIPHERTEXT_SIZE =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (Rust_primitives.unsize c1 <: t_Slice u8)
@@ -544,8 +537,7 @@ let encrypt
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.update_at ciphertext
       ({ Core.Ops.Range.f_start = v_C1_LEN })
-      (Core.Slice.impl__copy_from_slice (Core.Ops.Index.IndexMut.index_mut ciphertext
-              ({ Core.Ops.Range.f_start = v_C1_LEN })
+      (Core.Slice.impl__copy_from_slice (ciphertext.[ { Core.Ops.Range.f_start = v_C1_LEN } ]
             <:
             t_Slice u8)
           (Core.Array.impl_23__as_slice c2 <: t_Slice u8)
@@ -555,7 +547,7 @@ let encrypt
   Core.Convert.f_into ciphertext, sampling_A_error
 
 let decrypt
-      (#v_K #v_CIPHERTEXT_SIZE #v_VECTOR_U_ENCODED_SIZE #v_VECTOR_U_COMPRESSION_FACTOR #v_VECTOR_V_COMPRESSION_FACTOR:
+      (#v_K #v_CIPHERTEXT_SIZE #v_VECTOR_U_ENCODED_SIZE #v_U_COMPRESSION_FACTOR #v_V_COMPRESSION_FACTOR:
           usize)
       (secret_key: t_Slice u8)
       (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
@@ -576,7 +568,7 @@ let decrypt
                     <:
                     t_Slice u8)
                   ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
-                      v_VECTOR_U_COMPRESSION_FACTOR
+                      v_U_COMPRESSION_FACTOR
                       <:
                       usize) /!
                     sz 8
@@ -591,10 +583,7 @@ let decrypt
       u_as_ntt
       (fun u_as_ntt (i, u_bytes) ->
           let u:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_little_endian
-                  u_bytes
-                <:
-                Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+            Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_u u_bytes
           in
           let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
             Rust_primitives.Hax.update_at u_as_ntt
@@ -606,12 +595,11 @@ let decrypt
           u_as_ntt)
   in
   let v:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Compress.decompress (Libcrux.Kem.Kyber.Serialize.deserialize_little_endian (ciphertext.[
-              { Core.Ops.Range.f_start = v_VECTOR_U_ENCODED_SIZE } ]
-            <:
-            t_Slice u8)
+    Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_v (ciphertext.[ {
+            Core.Ops.Range.f_start = v_VECTOR_U_ENCODED_SIZE
+          } ]
         <:
-        Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+        t_Slice u8)
   in
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate

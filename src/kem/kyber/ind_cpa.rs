@@ -1,6 +1,5 @@
 use super::{
     arithmetic::KyberPolynomialRingElement,
-    compress::{compress, decompress},
     constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
         SHARED_SECRET_SIZE,
@@ -11,9 +10,10 @@ use super::{
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{
-        compress_then_serialize_message, deserialize_little_endian,
-        deserialize_then_decompress_message, deserialize_to_uncompressed_ring_element,
-        serialize_little_endian, serialize_uncompressed_ring_element,
+        compress_then_serialize_message, compress_then_serialize_ring_element_u,
+        compress_then_serialize_ring_element_v, deserialize_then_decompress_message,
+        deserialize_then_decompress_ring_element_u, deserialize_then_decompress_ring_element_v,
+        deserialize_to_uncompressed_ring_element, serialize_uncompressed_ring_element,
     },
     types::PrivateKey,
     Error, KyberPublicKey,
@@ -191,9 +191,7 @@ fn compress_then_encode_u<
     let mut out = [0u8; OUT_LEN];
     for (i, re) in input.into_iter().enumerate() {
         out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
-            &serialize_little_endian::<COMPRESSION_FACTOR, BLOCK_LEN>(
-                compress::<COMPRESSION_FACTOR>(re),
-            ),
+            &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN>(re),
         );
     }
 
@@ -207,8 +205,8 @@ pub(crate) fn encrypt<
     const T_AS_NTT_ENCODED_SIZE: usize,
     const C1_LEN: usize,
     const C2_LEN: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: usize,
-    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const U_COMPRESSION_FACTOR: usize,
+    const V_COMPRESSION_FACTOR: usize,
     const BLOCK_LEN: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
@@ -271,12 +269,10 @@ pub(crate) fn encrypt<
     let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
-    let c1 = compress_then_encode_u::<K, C1_LEN, VECTOR_U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
+    let c1 = compress_then_encode_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = serialize_little_endian::<VECTOR_V_COMPRESSION_FACTOR, C2_LEN>(compress::<
-        VECTOR_V_COMPRESSION_FACTOR,
-    >(v));
+    let c2 = compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN>(v);
 
     let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
     ciphertext[C1_LEN..].copy_from_slice(c2.as_slice());
@@ -288,8 +284,8 @@ pub(crate) fn decrypt<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const VECTOR_U_ENCODED_SIZE: usize,
-    const VECTOR_U_COMPRESSION_FACTOR: usize,
-    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const U_COMPRESSION_FACTOR: usize,
+    const V_COMPRESSION_FACTOR: usize,
 >(
     secret_key: &[u8],
     ciphertext: &super::KyberCiphertext<CIPHERTEXT_SIZE>,
@@ -299,19 +295,17 @@ pub(crate) fn decrypt<
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
-        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * VECTOR_U_COMPRESSION_FACTOR) / 8)
+        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
-        let u = decompress::<VECTOR_U_COMPRESSION_FACTOR>(deserialize_little_endian::<
-            VECTOR_U_COMPRESSION_FACTOR,
-        >(u_bytes));
-        u_as_ntt[i] = ntt_vector_u::<VECTOR_U_COMPRESSION_FACTOR>(u);
+        let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
+        u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
     }
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = decompress::<VECTOR_V_COMPRESSION_FACTOR>(deserialize_little_endian::<
-        VECTOR_V_COMPRESSION_FACTOR,
-    >(&ciphertext[VECTOR_U_ENCODED_SIZE..]));
+    let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR>(
+        &ciphertext[VECTOR_U_ENCODED_SIZE..],
+    );
 
     // sˆ := Decode_12(sk)
     for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
