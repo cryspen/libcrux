@@ -1,19 +1,22 @@
 module Libcrux.Kem.Kyber.Compress
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 open Core
 
 let compress_q (coefficient_bits: u32) (fe: u16)
     : Prims.Pure i32
       (requires
+        coefficient_bits >. 0ul &&
         coefficient_bits <=. 11ul &&
         fe <=. (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: u16))
-      (fun _ -> Prims.l_True) =
+      (fun r -> r >=. 0l && v r < pow2 (v coefficient_bits)) =
   let compressed:u32 = (cast fe <: u32) <<! (coefficient_bits +! 1ul <: u32) in
   let compressed:u32 = compressed +! (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: u32) in
   let compressed:u32 =
     compressed /! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <<! 1l <: i32) <: u32)
   in
-  cast (compressed &. ((1ul <<! coefficient_bits <: u32) -! 1ul <: u32)) <: i32
+  let result = compressed &. ((1ul <<! coefficient_bits <: u32) -! 1ul <: u32) in
+  logand_mask_lemma compressed (v coefficient_bits);
+  cast result <: i32
 
 let decompress_q (coefficient_bits: u32) (fe: i32)
     : Prims.Pure i32
