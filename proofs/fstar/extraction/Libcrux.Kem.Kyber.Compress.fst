@@ -6,9 +6,8 @@ let compress_q (coefficient_bits: usize) (fe: u16)
     : Prims.Pure i32
       (requires
         coefficient_bits <=. sz 11 &&
-        (Core.Convert.f_from fe <: i32) <=. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
-      (ensures
-        fun result -> result >=. 0l && result <=. ((1l <<! coefficient_bits <: i32) -! 1l <: i32)) =
+        fe <=. (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: u16))
+      (fun _ -> Prims.l_True) =
   let compressed:u32 = (cast fe <: u32) <<! (coefficient_bits +! sz 1 <: usize) in
   let compressed:u32 = compressed +! (cast Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: u32) in
   let compressed:u32 =

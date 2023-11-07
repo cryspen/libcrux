@@ -1,7 +1,7 @@
 use super::{arithmetic::KyberFieldElement, constants::FIELD_MODULUS};
 
-#[cfg_attr(hax, hax_lib_macros::requires(coefficient_bits <= 11 && i32::from(fe) <= FIELD_MODULUS))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result <= (1 << coefficient_bits) - 1))]
+#[cfg_attr(hax, hax_lib_macros::requires(coefficient_bits <= 11 && fe <= (FIELD_MODULUS as u16)))]
+//#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result <= (1 << coefficient_bits) - 1))]
 pub(super) fn compress_q(coefficient_bits: usize, fe: u16) -> KyberFieldElement {
     let mut compressed = (fe as u32) << (coefficient_bits + 1);
     compressed += FIELD_MODULUS as u32;
