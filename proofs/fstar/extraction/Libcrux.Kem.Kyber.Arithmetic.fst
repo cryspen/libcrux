@@ -15,7 +15,7 @@ let get_montgomery_r_least_significant_bits (value: i32)
           result <. (Core.Num.impl__u16__pow 2us (cast (v_MONTGOMERY_SHIFT <: u8) <: u32) <: u16)) =
   cast (value &. ((1l <<! v_MONTGOMERY_SHIFT <: i32) -! 1l <: i32) <: i32) <: u16
 
-let v_BARRETT_SHIFT: i32 = 26l
+let v_BARRETT_SHIFT: i64 = 26L
 
 type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
@@ -23,15 +23,20 @@ let montgomery_reduce (value: i32)
     : Prims.Pure i32
       (requires
         value >=.
-        ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *! 32768l
+        ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *! 65536l
           <:
           i32) &&
-        value <=. (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! 32768l <: i32))
+        value <=. (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! 65536l <: i32))
       (ensures
         fun result ->
           let result:i32 = result in
-          result >=. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
-          result <=. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
+          result >=.
+          ((Core.Ops.Arith.Neg.neg (3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: i32
+            ) /!
+            2l
+            <:
+            i32) &&
+          result <=. ((3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l <: i32)) =
   let _:Prims.unit = () in
   let k:i32 =
     (cast (get_montgomery_r_least_significant_bits value <: u16) <: i32) *!
@@ -45,9 +50,9 @@ let montgomery_reduce (value: i32)
   let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
   value_high -! c
 
-let v_BARRETT_MULTIPLIER: i32 = 20159l
+let v_BARRETT_MULTIPLIER: i64 = 20159L
 
-let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
+let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 
 let impl__KyberPolynomialRingElement__ZERO: t_KyberPolynomialRingElement =
   { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) }
@@ -69,20 +74,24 @@ let to_unsigned_representative (fe: i32)
 
 let barrett_reduce (value: i32)
     : Prims.Pure i32
-      (requires value >=. (-106527l) && value <=. 104862l)
+      (requires
+        (Core.Convert.f_from value <: i64) >.
+        (Core.Ops.Arith.Neg.neg (v_BARRETT_R /! 2L <: i64) <: i64) &&
+        (Core.Convert.f_from value <: i64) <. (v_BARRETT_R /! 2L <: i64))
       (ensures
         fun result ->
           let result:i32 = result in
           result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
           result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
-  let _:Prims.unit = () in
-  let quotient:i32 =
-    ((value *! v_BARRETT_MULTIPLIER <: i32) +! (v_BARRETT_R >>! 1l <: i32) <: i32) >>!
-    v_BARRETT_SHIFT
+  let t:i64 =
+    ((Core.Convert.f_from value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
+    (v_BARRETT_R >>! 1l <: i64)
   in
+  let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
   value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
 
-let add_to_ring_element (lhs rhs: t_KyberPolynomialRingElement) : t_KyberPolynomialRingElement =
+let add_to_ring_element (v_K: usize) (lhs rhs: t_KyberPolynomialRingElement)
+    : t_KyberPolynomialRingElement =
   let _:Prims.unit = () in
   let _:Prims.unit = () in
   let lhs:t_KyberPolynomialRingElement =
@@ -111,6 +120,7 @@ let add_to_ring_element (lhs rhs: t_KyberPolynomialRingElement) : t_KyberPolynom
             t_Array i32 (sz 256)
           })
   in
+  let _:Prims.unit = () in
   lhs
 
 let t_KyberFieldElement = i32

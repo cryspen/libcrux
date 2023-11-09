@@ -1120,16 +1120,15 @@ let compute_As_plus_e
                   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
                     Rust_primitives.Hax.update_at result
                       i
-                      (Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element (result.[ i ]
-                            <:
-                            Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                      (Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element v_K
+                          (result.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
+                          )
                           product
                         <:
                         Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
                   in
                   result)
           in
-          let _:Prims.unit = () in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                     Core.Ops.Range.f_start = sz 0;
                     Core.Ops.Range.f_end
@@ -1216,7 +1215,7 @@ let compute_ring_element_v
               (r_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
           let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element result product
+            Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element v_K result product
           in
           result)
   in
@@ -1338,9 +1337,9 @@ let compute_vector_u
                   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
                     Rust_primitives.Hax.update_at result
                       i
-                      (Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element (result.[ i ]
-                            <:
-                            Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
+                      (Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element v_K
+                          (result.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
+                          )
                           product
                         <:
                         Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
@@ -1445,7 +1444,7 @@ let compute_message
               (u_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
           in
           let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element result product
+            Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element v_K result product
           in
           result)
   in

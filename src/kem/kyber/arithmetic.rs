@@ -10,26 +10,28 @@ fn get_montgomery_r_least_significant_bits(value: i32) -> u16 {
     (value & ((1 << MONTGOMERY_SHIFT) - 1)) as u16
 }
 
-const BARRETT_SHIFT: i32 = 26;
-const BARRETT_R: i32 = 1i32 << BARRETT_SHIFT;
-const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
+const BARRETT_SHIFT: i64 = 26;
+const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
+const BARRETT_MULTIPLIER: i64 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
 
-#[cfg_attr(hax, hax_lib_macros::requires(value >= -106527 && value <= 104862))]
+#[cfg_attr(hax, hax_lib_macros::requires((i64::from(value) > -(BARRETT_R / 2) && i64::from(value) < BARRETT_R / 2)))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
-    hax_lib::debug_assert!(value >= -106527 && value <= 104862);
-
-    let quotient = ((value * BARRETT_MULTIPLIER) + (BARRETT_R >> 1)) >> BARRETT_SHIFT;
+    let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    let quotient = (t >> BARRETT_SHIFT) as i32;
 
     value - (quotient * FIELD_MODULUS)
 }
 
 const INVERSE_OF_MODULUS_MOD_R: i32 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
-#[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * 32768 && value <= FIELD_MODULUS * 32768))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -FIELD_MODULUS && result <= FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * 65536 && value <= FIELD_MODULUS * 65536))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
-    hax_lib::debug_assert!(value >= -FIELD_MODULUS * 32768 && value <= FIELD_MODULUS * 32768);
+    hax_lib::debug_assert!(
+        value >= -FIELD_MODULUS * 65536 && value <= FIELD_MODULUS * 65536,
+        "value is {value}"
+    );
 
     let k = (get_montgomery_r_least_significant_bits(value) as i32) * INVERSE_OF_MODULUS_MOD_R;
     let k = get_montgomery_r_least_significant_bits(k) as i16;
@@ -59,14 +61,13 @@ impl KyberPolynomialRingElement {
     };
 }
 
-pub(crate) fn add_to_ring_element(
+pub(crate) fn add_to_ring_element<const K: usize>(
     mut lhs: KyberPolynomialRingElement,
     rhs: &KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
-    hax_lib::debug_assert!(lhs
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= 4 * -FIELD_MODULUS && coefficient <= 4 * FIELD_MODULUS));
+    hax_lib::debug_assert!(lhs.coefficients.into_iter().all(|coefficient| coefficient
+        >= ((K as i32) - 1) * -FIELD_MODULUS
+        && coefficient <= ((K as i32) - 1) * FIELD_MODULUS));
     hax_lib::debug_assert!(rhs
         .coefficients
         .into_iter()
@@ -76,5 +77,10 @@ pub(crate) fn add_to_ring_element(
         lhs.coefficients[i] += rhs.coefficients[i];
     }
 
+    hax_lib::debug_assert!(lhs
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= (K as i32) * -FIELD_MODULUS
+            && coefficient <= (K as i32) * FIELD_MODULUS));
     lhs
 }

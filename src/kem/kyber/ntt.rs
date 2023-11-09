@@ -69,7 +69,7 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| { coefficient.abs() < 3 + (3 * (3329 / 2)) }));
+        .all(|coefficient| { coefficient.abs() < 3 + ((3 * 3329) / 2) }));
 
     ntt_at_layer!(6, zeta_i, re, 3);
     ntt_at_layer!(5, zeta_i, re, 3);
@@ -220,7 +220,6 @@ fn ntt_multiply(
     out
 }
 
-// v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     v: &KyberPolynomialRingElement,
@@ -231,7 +230,7 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
 
     for i in 0..K {
         let product = ntt_multiply(&secret_as_ntt[i], &u_as_ntt[i]);
-        result = add_to_ring_element(result, &product);
+        result = add_to_ring_element::<K>(result, &product);
     }
 
     result = invert_ntt_montgomery::<K>(result);
@@ -256,7 +255,7 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
 
     for i in 0..K {
         let product = ntt_multiply(&t_as_ntt[i], &r_as_ntt[i]);
-        result = add_to_ring_element(result, &product);
+        result = add_to_ring_element::<K>(result, &product);
     }
 
     result = invert_ntt_montgomery::<K>(result);
@@ -283,7 +282,7 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     for (i, row) in a_as_ntt.iter().enumerate() {
         for (j, a_element) in row.iter().enumerate() {
             let product = ntt_multiply(a_element, &r_as_ntt[j]);
-            result[i] = add_to_ring_element(result[i], &product);
+            result[i] = add_to_ring_element::<K>(result[i], &product);
         }
 
         result[i] = invert_ntt_montgomery::<K>(result[i]);
@@ -299,11 +298,6 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     result
 }
 
-// NOTE: This function performs matrix multiplication, then conversion from the
-// montgomery domain, and last barrett reduction. It is only used in
-// ind_cpa::generate_keypair(). (TODO: Verify this) Doing barrett reduction in
-// this function after conversion from montgomery form lets us skip an extra
-// barrett reduction step in generate_keypair itself.
 #[inline(always)]
 #[allow(non_snake_case)]
 pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
@@ -316,13 +310,8 @@ pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
     for (i, row) in matrix_A.iter().enumerate() {
         for (j, matrix_element) in row.iter().enumerate() {
             let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
-            result[i] = add_to_ring_element(result[i], &product);
+            result[i] = add_to_ring_element::<K>(result[i], &product);
         }
-
-        hax_lib::debug_assert!(result[i]
-            .coefficients
-            .into_iter()
-            .all(|coefficient| coefficient.abs() < (K as i32) * 3329));
 
         for j in 0..result[i].coefficients.len() {
             // The coefficients are of the form aR^{-1} mod q, which means
