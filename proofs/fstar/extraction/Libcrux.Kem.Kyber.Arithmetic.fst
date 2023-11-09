@@ -23,10 +23,11 @@ let montgomery_reduce (value: i32)
     : Prims.Pure i32
       (requires
         value >=.
-        ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *! 65536l
+        ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *!
+          v_MONTGOMERY_R
           <:
           i32) &&
-        value <=. (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! 65536l <: i32))
+        value <=. (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! v_MONTGOMERY_R <: i32))
       (ensures
         fun result ->
           let result:i32 = result in
@@ -122,5 +123,7 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_KyberPolynomialRingElement)
   in
   let _:Prims.unit = () in
   lhs
+
+let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let t_KyberFieldElement = i32
