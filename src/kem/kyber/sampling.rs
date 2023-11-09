@@ -10,7 +10,9 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
+    let mut done = false;
     for bytes in randomness.chunks(3) {
+      if !done {
         let b1 = bytes[0] as i32;
         let b2 = bytes[1] as i32;
         let b3 = bytes[2] as i32;
@@ -31,11 +33,15 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
                 .coefficients
                 .into_iter()
                 .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
-            return (out, None);
+            done = true;
         }
+      }
     }
-
-    (out, Some(Error::RejectionSampling))
+    if done {
+       (out,None)}
+    else {
+       (out, Some(Error::RejectionSampling))
+    }
 }
 
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRingElement {
