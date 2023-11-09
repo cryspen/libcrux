@@ -9,38 +9,38 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
 ) -> (KyberPolynomialRingElement, Option<Error>) {
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
-
     let mut done = false;
+
     for bytes in randomness.chunks(3) {
-      if !done {
-        let b1 = bytes[0] as i32;
-        let b2 = bytes[1] as i32;
-        let b3 = bytes[2] as i32;
+        if !done {
+            let b1 = bytes[0] as i32;
+            let b2 = bytes[1] as i32;
+            let b3 = bytes[2] as i32;
 
-        let d1 = ((b2 & 0xF) << 8) | b1;
-        let d2 = (b3 << 4) | (b2 >> 4);
+            let d1 = ((b2 & 0xF) << 8) | b1;
+            let d2 = (b3 << 4) | (b2 >> 4);
 
-        if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out.coefficients[sampled_coefficients] = d1;
-            sampled_coefficients += 1
+            if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+                out.coefficients[sampled_coefficients] = d1;
+                sampled_coefficients += 1
+            }
+            if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+                out.coefficients[sampled_coefficients] = d2;
+                sampled_coefficients += 1;
+            }
+            if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
+                done = true;
+            }
         }
-        if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out.coefficients[sampled_coefficients] = d2;
-            sampled_coefficients += 1;
-        }
-        if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
-            hax_lib::debug_assert!(out
-                .coefficients
-                .into_iter()
-                .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
-            done = true;
-        }
-      }
     }
     if done {
-       (out,None)}
-    else {
-       (out, Some(Error::RejectionSampling))
+        hax_lib::debug_assert!(out
+            .coefficients
+            .into_iter()
+            .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
+        (out, None)
+    } else {
+        (out, Some(Error::RejectionSampling))
     }
 }
 
