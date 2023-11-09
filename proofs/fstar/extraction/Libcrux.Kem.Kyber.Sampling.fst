@@ -68,28 +68,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                 in
                 sampled))
   in
-  let _:Prims.unit =
-    if true
-    then
-      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter sampled
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            Core.Array.Iter.t_IntoIter i32 (sz 256))
-          (fun coefficient ->
-              let coefficient:i32 = coefficient in
-              (coefficient >=. (-2l) <: bool) && (coefficient <=. 2l <: bool))
-      in
-      let _:Prims.unit =
-        if ~.out
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: sampled.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -2 && coefficient <= 2)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+  let _:Prims.unit = () in
   sampled
 
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
@@ -153,28 +132,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                 in
                 sampled))
   in
-  let _:Prims.unit =
-    if true
-    then
-      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter sampled
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            Core.Array.Iter.t_IntoIter i32 (sz 256))
-          (fun coefficient ->
-              let coefficient:i32 = coefficient in
-              (coefficient >=. (-3l) <: bool) && (coefficient <=. 3l <: bool))
-      in
-      let _:Prims.unit =
-        if ~.out
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: sampled.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -3 && coefficient <= 3)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+  let _:Prims.unit = () in
   sampled
 
 let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
@@ -247,29 +205,7 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
           in
           if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
           then
-            let _:Prims.unit =
-              if true
-              then
-                let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-                  Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter out
-                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                      <:
-                      Core.Array.Iter.t_IntoIter i32 (sz 256))
-                    (fun coefficient ->
-                        let coefficient:i32 = coefficient in
-                        (coefficient >=. 0l <: bool) &&
-                        (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
-                in
-                let _:Prims.unit =
-                  if ~.out
-                  then
-                    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: out.coefficients.into_iter().all(|coefficient|\\n        coefficient >= 0 && coefficient < FIELD_MODULUS)"
-
-                        <:
-                        Rust_primitives.Hax.t_Never)
-                in
-                ()
-            in
+            let _:Prims.unit = () in
             let* hoist1:Rust_primitives.Hax.t_Never =
               Core.Ops.Control_flow.ControlFlow.v_Break (out, Core.Option.Option_None)
             in
@@ -280,24 +216,7 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
 
 let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        match Core.Slice.impl__len randomness, v_ETA *! sz 64 with
-        | left_val, right_val ->
-          if ~.(left_val =. right_val <: bool)
-          then
-            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
-                  left_val
-                  right_val
-                  Core.Option.Option_None
-                <:
-                Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+  let _:Prims.unit = () in
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness

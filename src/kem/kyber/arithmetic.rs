@@ -17,6 +17,8 @@ const BARRETT_MULTIPLIER: i32 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.
 #[cfg_attr(hax, hax_lib_macros::requires(value >= -106527 && value <= 104862))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
+    hax_lib::debug_assert!(value >= -106527 && value <= 104862);
+
     let quotient = ((value * BARRETT_MULTIPLIER) + (BARRETT_R >> 1)) >> BARRETT_SHIFT;
 
     value - (quotient * FIELD_MODULUS)
@@ -27,6 +29,8 @@ const INVERSE_OF_MODULUS_MOD_R: i32 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMER
 #[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * 32768 && value <= FIELD_MODULUS * 32768))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -FIELD_MODULUS && result <= FIELD_MODULUS))]
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
+    hax_lib::debug_assert!(value >= -FIELD_MODULUS * 32768 && value <= FIELD_MODULUS * 32768);
+
     let k = (get_montgomery_r_least_significant_bits(value) as i32) * INVERSE_OF_MODULUS_MOD_R;
     let k = get_montgomery_r_least_significant_bits(k) as i16;
 
@@ -40,6 +44,7 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
+    hax_lib::debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
@@ -58,6 +63,15 @@ pub(crate) fn add_to_ring_element(
     mut lhs: KyberPolynomialRingElement,
     rhs: &KyberPolynomialRingElement,
 ) -> KyberPolynomialRingElement {
+    hax_lib::debug_assert!(lhs
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= 4 * -FIELD_MODULUS && coefficient <= 4 * FIELD_MODULUS));
+    hax_lib::debug_assert!(rhs
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
+
     for i in 0..lhs.coefficients.len() {
         lhs.coefficients[i] += rhs.coefficients[i];
     }

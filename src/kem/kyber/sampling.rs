@@ -27,7 +27,7 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
             sampled_coefficients += 1;
         }
         if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
-            debug_assert!(out
+            hax_lib::debug_assert!(out
                 .coefficients
                 .into_iter()
                 .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
@@ -61,7 +61,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRing
         }
     }
 
-    debug_assert!(sampled
+    hax_lib::debug_assert!(sampled
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= -2 && coefficient <= 2));
@@ -90,7 +90,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
         }
     }
 
-    debug_assert!(sampled
+    hax_lib::debug_assert!(sampled
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= -3 && coefficient <= 3));
@@ -101,7 +101,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
 pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
     randomness: &[u8],
 ) -> KyberPolynomialRingElement {
-    debug_assert_eq!(randomness.len(), ETA * 64);
+    hax_lib::debug_assert!(randomness.len() == ETA * 64);
 
     match ETA as u32 {
         2 => sample_from_binomial_distribution_2(randomness),

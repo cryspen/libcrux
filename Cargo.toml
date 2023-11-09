@@ -43,6 +43,7 @@ rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
+hax-lib = { git = "https://github.com/hacspec/hax/", branch = "karthik/core-for-kyber" }
 
 # When using the hax toolchain, we have more dependencies.
 # This is only required when doing proofs.

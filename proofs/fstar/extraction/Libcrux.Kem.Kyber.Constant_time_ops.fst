@@ -24,6 +24,8 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
         fun result ->
           let result:u8 = result in
           (~.(lhs =. rhs <: bool) || result =. 0uy) && (~.(lhs <>. rhs <: bool) || result =. 1uy)) =
+  let _:Prims.unit = () in
+  let _:Prims.unit = () in
   let (r: u8):u8 = 0uy in
   let r:u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -48,42 +50,8 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
           let result:t_Array u8 (sz 32) = result in
           (~.(selector =. 0uy <: bool) || result =. lhs) &&
           (~.(selector <>. 0uy <: bool) || result =. rhs)) =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        match Core.Slice.impl__len lhs, Core.Slice.impl__len rhs with
-        | left_val, right_val ->
-          if ~.(left_val =. right_val <: bool)
-          then
-            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
-                  left_val
-                  right_val
-                  Core.Option.Option_None
-                <:
-                Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        match Core.Slice.impl__len lhs, Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE with
-        | left_val, right_val ->
-          if ~.(left_val =. right_val <: bool)
-          then
-            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
-                  left_val
-                  right_val
-                  Core.Option.Option_None
-                <:
-                Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+  let _:Prims.unit = () in
+  let _:Prims.unit = () in
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
