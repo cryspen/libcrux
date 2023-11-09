@@ -2,7 +2,17 @@ module Libcrux.Kem.Kyber.Conversions
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 
-let into_padded_array (#v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
+type t_UpdatableArray (v_LEN: usize) = {
+  f_value:t_Array u8 v_LEN;
+  f_pointer:usize
+}
+
+let impl__array (v_LEN: usize) (self: t_UpdatableArray v_LEN) : t_Array u8 v_LEN = self.f_value
+
+let impl__new (v_LEN: usize) (value: t_Array u8 v_LEN) : t_UpdatableArray v_LEN =
+  { f_value = value; f_pointer = sz 0 }
+
+let into_padded_array (v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
   let _:Prims.unit =
     if true
     then
@@ -35,17 +45,7 @@ let into_padded_array (#v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
 
 class t_UpdatingArray (v_Self: Type) = { f_push:v_Self -> t_Slice u8 -> v_Self }
 
-type t_UpdatableArray (v_LEN: usize) = {
-  f_value:t_Array u8 v_LEN;
-  f_pointer:usize
-}
-
-let impl__new (#v_LEN: usize) (value: t_Array u8 v_LEN) : t_UpdatableArray v_LEN =
-  { f_value = value; f_pointer = sz 0 }
-
-let impl__array (#v_LEN: usize) (self: t_UpdatableArray v_LEN) : t_Array u8 v_LEN = self.f_value
-
-let impl_1 (#v_LEN: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
+let impl_1 (v_LEN: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
   {
     f_push
     =

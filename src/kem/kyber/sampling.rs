@@ -27,14 +27,13 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
             sampled_coefficients += 1;
         }
         if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
+            debug_assert!(out
+                .coefficients
+                .into_iter()
+                .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
             return (out, None);
         }
     }
-
-    debug_assert!(out
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
 
     (out, Some(Error::RejectionSampling))
 }

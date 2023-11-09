@@ -2,18 +2,11 @@ use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) type KyberFieldElement = i32;
 
-#[cfg_attr(hax, hax_lib_macros::requires(n > 0 && n < 12))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u32.pow(n.into())))]
-#[inline(always)]
-pub(crate) fn get_n_least_significant_bits_of_u32(n: u8, value: u32) -> u32 {
-    value & ((1 << n) - 1)
-}
-
 const MONTGOMERY_SHIFT: u8 = 16;
 
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u16.pow(MONTGOMERY_SHIFT as u32)))]
 #[inline(always)]
-pub(crate) fn get_montgomery_r_least_significant_bits(value: i32) -> u16 {
+fn get_montgomery_r_least_significant_bits(value: i32) -> u16 {
     (value & ((1 << MONTGOMERY_SHIFT) - 1)) as u16
 }
 
@@ -47,7 +40,7 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
-    (fe + ((fe >> 15) & FIELD_MODULUS)) as u16
+    (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
