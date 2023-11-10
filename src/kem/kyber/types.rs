@@ -34,9 +34,10 @@ macro_rules! impl_generic_struct {
             type Error = core::array::TryFromSliceError;
 
             fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                Ok(Self {
-                    value: value.try_into()?,
-                })
+                match value.try_into() {
+                    Ok(value) => Ok(Self { value }),
+                    Err(e) => Err(e),
+                }
             }
         }
 
