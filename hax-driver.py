@@ -127,7 +127,7 @@ if options.kyber_reference:
         cargo_hax_into
         + [
             "-i",
-            "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::**",
+            "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::** -libcrux::**::types::index_impls::**",
             "fstar",
         ],
         cwd=".",
