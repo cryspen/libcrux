@@ -36,7 +36,9 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                     ({
                         Core.Ops.Range.f_start = 0ul;
                         Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
-                      })
+                      }
+                      <:
+                      Core.Ops.Range.t_Range u32)
                     (sz 4)
                   <:
                   Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
@@ -65,10 +67,12 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                       ((sz 8 *! chunk_number <: usize) +! offset <: usize)
                       (outcome_1_ -! outcome_2_ <: i32)
                   }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
                 in
                 sampled))
   in
-  let _:Prims.unit = () in
+  let _:Prims.unit = () <: Prims.unit in
   sampled
 
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
@@ -100,7 +104,9 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
-                    ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l })
+                    ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
+                      <:
+                      Core.Ops.Range.t_Range i32)
                     (sz 6)
                   <:
                   Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
@@ -129,11 +135,25 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                       ((sz 4 *! chunk_number <: usize) +! offset <: usize)
                       (outcome_1_ -! outcome_2_ <: i32)
                   }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
                 in
                 sampled))
   in
-  let _:Prims.unit = () in
+  let _:Prims.unit = () <: Prims.unit in
   sampled
+
+let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
+    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+  let _:Prims.unit = () <: Prims.unit in
+  match cast (v_ETA <: usize) <: u32 with
+  | 2ul -> sample_from_binomial_distribution_2_ randomness
+  | 3ul -> sample_from_binomial_distribution_3_ randomness
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+        <:
+        Rust_primitives.Hax.t_Never)
 
 let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
     : (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
@@ -154,7 +174,9 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
             Core.Slice.Iter.t_Chunks u8)
         <:
         Core.Slice.Iter.t_Chunks u8)
-      (done, out, sampled_coefficients)
+      (done, out, sampled_coefficients
+        <:
+        (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize))
       (fun temp_0_ bytes ->
           let done, out, sampled_coefficients:(bool &
             Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
@@ -184,9 +206,16 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
                       sampled_coefficients
                       d1
                   }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
                 in
                 out, sampled_coefficients +! sz 1
-              else out, sampled_coefficients
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+              else
+                out, sampled_coefficients
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
             in
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
               usize) =
@@ -203,32 +232,46 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
                       sampled_coefficients
                       d2
                   }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
                 in
                 let sampled_coefficients:usize = sampled_coefficients +! sz 1 in
                 out, sampled_coefficients
-              else out, sampled_coefficients
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+              else
+                out, sampled_coefficients
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
             in
             if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
             then
               let done:bool = true in
               done, out, sampled_coefficients
-            else done, out, sampled_coefficients
-          else done, out, sampled_coefficients)
+              <:
+              (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+            else
+              done, out, sampled_coefficients
+              <:
+              (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+          else
+            done, out, sampled_coefficients
+            <:
+            (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize))
   in
   if done
   then
-    let _:Prims.unit = () in
-    out, Core.Option.Option_None
-  else out, Core.Option.Option_Some Libcrux.Kem.Kyber.Types.Error_RejectionSampling
-
-let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let _:Prims.unit = () in
-  match cast (v_ETA <: usize) <: u32 with
-  | 2ul -> sample_from_binomial_distribution_2_ randomness
-  | 3ul -> sample_from_binomial_distribution_3_ randomness
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
+    let _:Prims.unit = () <: Prims.unit in
+    out, (Core.Option.Option_None <: Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    <:
+    (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+  else
+    out,
+    (Core.Option.Option_Some
+      (Libcrux.Kem.Kyber.Types.Error_RejectionSampling <: Libcrux.Kem.Kyber.Types.t_Error)
+      <:
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    <:
+    (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)

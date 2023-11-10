@@ -24,14 +24,16 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
         fun result ->
           let result:u8 = result in
           (~.(lhs =. rhs <: bool) || result =. 0uy) && (~.(lhs <>. rhs <: bool) || result =. 1uy)) =
-  let _:Prims.unit = () in
-  let _:Prims.unit = () in
+  let _:Prims.unit = () <: Prims.unit in
+  let _:Prims.unit = () <: Prims.unit in
   let (r: u8):u8 = 0uy in
   let r:u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = v_CIPHERTEXT_SIZE
-            })
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
         <:
         Core.Ops.Range.t_Range usize)
       r
@@ -50,15 +52,17 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
           let result:t_Array u8 (sz 32) = result in
           (~.(selector =. 0uy <: bool) || result =. lhs) &&
           (~.(selector <>. 0uy <: bool) || result =. rhs)) =
-  let _:Prims.unit = () in
-  let _:Prims.unit = () in
+  let _:Prims.unit = () <: Prims.unit in
+  let _:Prims.unit = () <: Prims.unit in
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
-            })
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
         <:
         Core.Ops.Range.t_Range usize)
       out
