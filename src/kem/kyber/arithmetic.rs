@@ -5,10 +5,10 @@ pub(crate) type KyberFieldElement = i32;
 const MONTGOMERY_SHIFT: u8 = 16;
 const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u16.pow(MONTGOMERY_SHIFT as u32)))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u32.pow(MONTGOMERY_SHIFT as u32)))]
 #[inline(always)]
-fn get_montgomery_r_least_significant_bits(value: i32) -> u16 {
-    (value & ((1 << MONTGOMERY_SHIFT) - 1)) as u16
+fn get_montgomery_r_least_significant_bits(value: u32) -> u32 {
+    value & ((1 << MONTGOMERY_SHIFT) - 1)
 }
 
 const BARRETT_SHIFT: i64 = 26;
@@ -29,13 +29,19 @@ const INVERSE_OF_MODULUS_MOD_R: i32 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMER
 #[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
+    // This forces hax to extract code for MONTGOMERY_R before it extracts code
+    // for this function. It is needed due to:
+    // https://github.com/hacspec/hax/issues/332
+    let _ = MONTGOMERY_R;
+
     hax_lib::debug_assert!(
         value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R,
         "value is {value}"
     );
 
-    let k = (get_montgomery_r_least_significant_bits(value) as i32) * INVERSE_OF_MODULUS_MOD_R;
-    let k = get_montgomery_r_least_significant_bits(k) as i16;
+    let k =
+        (get_montgomery_r_least_significant_bits(value as u32) as i32) * INVERSE_OF_MODULUS_MOD_R;
+    let k = get_montgomery_r_least_significant_bits(k as u32) as i16;
 
     let c = ((k as i32) * FIELD_MODULUS) >> MONTGOMERY_SHIFT;
     let value_high = value >> MONTGOMERY_SHIFT;
