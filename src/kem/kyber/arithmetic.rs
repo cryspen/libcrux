@@ -24,7 +24,7 @@ pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
     value - (quotient * FIELD_MODULUS)
 }
 
-const INVERSE_OF_MODULUS_MOD_R: i32 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+const INVERSE_OF_MODULUS_MOD_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 #[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
@@ -39,11 +39,12 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
         "value is {value}"
     );
 
-    let k =
-        (get_montgomery_r_least_significant_bits(value as u32) as i32) * INVERSE_OF_MODULUS_MOD_R;
-    let k = get_montgomery_r_least_significant_bits(k as u32) as i16;
+    let t = get_montgomery_r_least_significant_bits(value as u32) * INVERSE_OF_MODULUS_MOD_R;
+    let k = get_montgomery_r_least_significant_bits(t) as i16;
 
-    let c = ((k as i32) * FIELD_MODULUS) >> MONTGOMERY_SHIFT;
+    let k_times_modulus = (k as i32) * FIELD_MODULUS;
+
+    let c = k_times_modulus >> MONTGOMERY_SHIFT;
     let value_high = value >> MONTGOMERY_SHIFT;
 
     value_high - c

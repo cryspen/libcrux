@@ -4,7 +4,7 @@ open Core
 
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
-let v_INVERSE_OF_MODULUS_MOD_R: i32 = (-3327l)
+let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
 
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
@@ -42,17 +42,15 @@ let montgomery_reduce (value: i32)
           result <=. ((3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l <: i32)) =
   let _:i32 = v_MONTGOMERY_R in
   let _:Prims.unit = () in
-  let k:i32 =
-    (cast (get_montgomery_r_least_significant_bits (cast (value <: i32) <: u32) <: u32) <: i32) *!
+  let t:u32 =
+    (get_montgomery_r_least_significant_bits (cast (value <: i32) <: u32) <: u32) *!
     v_INVERSE_OF_MODULUS_MOD_R
   in
-  let k:i16 =
-    cast (get_montgomery_r_least_significant_bits (cast (k <: i32) <: u32) <: u32) <: i16
+  let k:i16 = cast (get_montgomery_r_least_significant_bits t <: u32) <: i16 in
+  let k_times_modulus:i32 =
+    (cast (k <: i16) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
   in
-  let c:i32 =
-    ((cast (k <: i16) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) >>!
-    v_MONTGOMERY_SHIFT
-  in
+  let c:i32 = k_times_modulus >>! v_MONTGOMERY_SHIFT in
   let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
   value_high -! c
 
