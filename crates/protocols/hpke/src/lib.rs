@@ -84,6 +84,14 @@ pub enum HpkeError {
     LockPoisoned,
 }
 
+impl std::error::Error for HpkeError {}
+
+impl std::fmt::Display for HpkeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "HPKE Error: {:?}", self)
+    }
+}
+
 #[deprecated(
     since = "0.0.7",
     note = "Please use HpkePublicKey instead. This alias will be removed with the first stable  0.1 release."
