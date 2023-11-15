@@ -29,6 +29,3 @@ jobs:
     - name: HPKE Rust Crypto Benchmarks
       working-directory: rust_crypto_provider
       run: cargo bench
-    - name: HPKE Evercrypt Benchmarks
-      working-directory: evercrypt_provider
-      run: cargo bench
