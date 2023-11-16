@@ -30,8 +30,8 @@ const INVERSE_OF_MODULUS_MOD_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMER
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
-    // for this function. It is needed due to:
-    // https://github.com/hacspec/hax/issues/332
+    // for this function. The removal of this line is being tracked in:
+    // https://github.com/cryspen/libcrux/issues/134
     let _ = MONTGOMERY_R;
 
     hax_lib::debug_assert!(

@@ -1,7 +1,7 @@
 macro_rules! impl_generic_struct {
     ($name:ident) => {
         pub struct $name<const SIZE: usize> {
-            pub(crate) value: [u8; SIZE],
+            pub(super) value: [u8; SIZE],
         }
 
         impl<const SIZE: usize> AsRef<[u8]> for $name<SIZE> {

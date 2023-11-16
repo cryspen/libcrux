@@ -9,8 +9,12 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
 ) -> (KyberPolynomialRingElement, Option<Error>) {
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
-    let mut done = false;
 
+    // This loop is written the way it is since reasoning about early returns,
+    // breaks, and continues is not well supported in Fstar at the moment. Rewriting
+    // this code to use an early return is being tracked in:
+    // https://github.com/cryspen/libcrux/issues/134
+    let mut done = false;
     for bytes in randomness.chunks(3) {
         if !done {
             let b1 = bytes[0] as i32;
