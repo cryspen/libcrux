@@ -128,7 +128,7 @@ if options.kyber_reference:
         + [
             "-i",
             "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::** -libcrux::**::types::index_impls::**",
-            "fstar",
+            "coq",
         ],
         cwd=".",
         env=hax_env,
