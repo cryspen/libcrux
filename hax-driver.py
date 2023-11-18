@@ -116,7 +116,7 @@ if options.typecheck:
     custom_env = {}
     if options.lax:
         custom_env.update({"OTHERFLAGS": "--lax"})
-    shell(["make", "-C", "proofs/fstar/extraction/"], custom_env)
+    shell(["make", "-C", "proofs/fstar/extraction/"], env=custom_env)
     exit(0)
 
 cargo_hax_into = ["cargo", "hax", "into"]
