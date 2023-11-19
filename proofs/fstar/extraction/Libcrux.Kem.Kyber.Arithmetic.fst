@@ -30,20 +30,22 @@ let get_montgomery_r_least_significant_bits (value: u32)
 let barrett_reduce (value: i32)
     : Prims.Pure i32
       (requires
-        (Core.Convert.f_from value <: i64) >.
-        (Core.Ops.Arith.Neg.neg (v_BARRETT_R /! 2L <: i64) <: i64) &&
-        (Core.Convert.f_from value <: i64) <. (v_BARRETT_R /! 2L <: i64))
+        (Core.Convert.f_from value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
+        (Core.Convert.f_from value <: i64) <. v_BARRETT_R)
       (ensures
         fun result ->
           let result:i32 = result in
           result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
           result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
+  let _:Prims.unit = () <: Prims.unit in
   let t:i64 =
     ((Core.Convert.f_from value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
     (v_BARRETT_R >>! 1l <: i64)
   in
   let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
-  value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
+  let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
+  let _:Prims.unit = () <: Prims.unit in
+  result
 
 let montgomery_reduce (value: i32)
     : Prims.Pure i32

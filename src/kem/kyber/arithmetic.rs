@@ -15,13 +15,25 @@ const BARRETT_SHIFT: i64 = 26;
 const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
 const BARRETT_MULTIPLIER: i64 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.5)
 
-#[cfg_attr(hax, hax_lib_macros::requires((i64::from(value) > -(BARRETT_R / 2) && i64::from(value) < BARRETT_R / 2)))]
+#[cfg_attr(hax, hax_lib_macros::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
+    hax_lib::debug_assert!(
+        i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R,
+        "value is {value}"
+    );
+
     let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     let quotient = (t >> BARRETT_SHIFT) as i32;
 
-    value - (quotient * FIELD_MODULUS)
+    let result = value - (quotient * FIELD_MODULUS);
+
+    hax_lib::debug_assert!(
+        result > -FIELD_MODULUS && result < FIELD_MODULUS,
+        "value is {value}"
+    );
+
+    result
 }
 
 const INVERSE_OF_MODULUS_MOD_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
