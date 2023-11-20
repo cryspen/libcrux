@@ -7,6 +7,7 @@ use super::{
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{XOFx4, G, H, PRF},
+    matrix::*,
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{

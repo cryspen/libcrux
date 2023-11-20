@@ -442,7 +442,7 @@ let decrypt
           t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
   in
   let message:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Ntt.compute_message v_K v secret_as_ntt u_as_ntt
+    Libcrux.Kem.Kyber.Matrix.compute_message v_K v secret_as_ntt u_as_ntt
   in
   Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message message
 
@@ -567,13 +567,13 @@ let encrypt
       (Rust_primitives.unsize prf_output <: t_Slice u8)
   in
   let u:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Libcrux.Kem.Kyber.Ntt.compute_vector_u v_K v_A_transpose r_as_ntt error_1_
+    Libcrux.Kem.Kyber.Matrix.compute_vector_u v_K v_A_transpose r_as_ntt error_1_
   in
   let message_as_ring_element:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
     Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message message
   in
   let v:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Ntt.compute_ring_element_v v_K
+    Libcrux.Kem.Kyber.Matrix.compute_ring_element_v v_K
       tt_as_ntt
       r_as_ntt
       error_2_
@@ -747,7 +747,7 @@ let generate_keypair
             t_Array u8 (sz 33)))
   in
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Libcrux.Kem.Kyber.Ntt.compute_As_plus_e v_K v_A_transpose secret_as_ntt error_as_ntt
+    Libcrux.Kem.Kyber.Matrix.compute_As_plus_e v_K v_A_transpose secret_as_ntt error_as_ntt
   in
   let public_key_serialized:Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
     Libcrux.Kem.Kyber.Conversions.impl__new v_PUBLIC_KEY_SIZE
