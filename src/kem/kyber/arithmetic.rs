@@ -1,6 +1,6 @@
 use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
-pub(crate) type KyberFieldElement = i32;
+pub(crate) type FieldElement = i32;
 
 const MONTGOMERY_SHIFT: u8 = 16;
 const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
@@ -17,7 +17,7 @@ const BARRETT_MULTIPLIER: i64 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.
 
 #[cfg_attr(hax, hax_lib_macros::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
-pub(crate) fn barrett_reduce(value: KyberFieldElement) -> KyberFieldElement {
+pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
     hax_lib::debug_assert!(
         i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R,
         "value is {value}"
@@ -40,7 +40,7 @@ const INVERSE_OF_MODULUS_MOD_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMER
 
 #[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
-pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
+pub(crate) fn montgomery_reduce(value: FieldElement) -> FieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
     // for this function. The removal of this line is being tracked in:
     // https://github.com/cryspen/libcrux/issues/134
@@ -65,14 +65,14 @@ pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
 #[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
-pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
+pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
     hax_lib::debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PolynomialRingElement {
-    pub(crate) coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT],
+    pub(crate) coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT],
 }
 
 impl PolynomialRingElement {

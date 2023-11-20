@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 unfold
-let t_KyberFieldElement = i32
+let t_FieldElement = i32
 
 let v_BARRETT_MULTIPLIER: i64 = 20159L
 
