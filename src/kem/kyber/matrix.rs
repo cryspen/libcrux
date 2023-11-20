@@ -1,5 +1,8 @@
 use super::{
-    arithmetic::{add_to_ring_element, barrett_reduce, montgomery_reduce, PolynomialRingElement},
+    arithmetic::{
+        add_to_ring_element, barrett_reduce, montgomery_reduce, to_standard_domain,
+        PolynomialRingElement,
+    },
     ntt::{invert_ntt_montgomery, ntt_multiply},
 };
 
@@ -99,7 +102,7 @@ pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
         for j in 0..result[i].coefficients.len() {
             // The coefficients are of the form aR^{-1} mod q, which means
             // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1353);
+            let coefficient_normal_form = to_standard_domain(result[i].coefficients[j]);
 
             result[i].coefficients[j] =
                 barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])

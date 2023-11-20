@@ -1,9 +1,12 @@
 use super::{
-    arithmetic::{barrett_reduce, montgomery_reduce, FieldElement, PolynomialRingElement},
+    arithmetic::{
+        barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElement,
+        FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
+    },
     constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
 
-const ZETAS_MONTGOMERY_DOMAIN: [FieldElement; 128] = [
+const ZETAS_MONTGOMERY_DOMAIN: [FieldElementTimesMontgomeryR; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
     573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411, -205, -1571,
     1223, 652, -552, 1015, -1293, 1491, -282, -1544, 516, -8, -320, -666, -1618, -1162, 126, 1469,
@@ -24,8 +27,9 @@ macro_rules! ntt_at_layer {
             let offset = round * step * 2;
 
             for j in offset..offset + step {
-                let t = montgomery_reduce(
-                    $re.coefficients[j + step] * ZETAS_MONTGOMERY_DOMAIN[$zeta_i],
+                let t = montgomery_multiply_fe_by_fer(
+                    $re.coefficients[j + step],
+                    ZETAS_MONTGOMERY_DOMAIN[$zeta_i],
                 );
                 $re.coefficients[j + step] = $re.coefficients[j] - t;
                 $re.coefficients[j] = $re.coefficients[j] + t;
@@ -168,7 +172,7 @@ fn ntt_multiply_binomials(
     (a0, a1): (FieldElement, FieldElement),
     (b0, b1): (FieldElement, FieldElement),
     zeta: i32,
-) -> (FieldElement, FieldElement) {
+) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
     (
         montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
         montgomery_reduce(a0 * b1 + a1 * b0),

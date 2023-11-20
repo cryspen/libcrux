@@ -93,13 +93,10 @@ let compute_As_plus_e
                 in
                 let j:usize = j in
                 let coefficient_normal_form:i32 =
-                  Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (((result.[ i ]
-                          <:
-                          Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ]
+                  Libcrux.Kem.Kyber.Arithmetic.to_standard_domain ((result.[ i ]
                         <:
-                        i32) *!
-                      1353l
+                        Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ]
                       <:
                       i32)
                 in

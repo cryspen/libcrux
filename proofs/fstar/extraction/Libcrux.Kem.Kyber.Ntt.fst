@@ -646,13 +646,11 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -713,13 +711,11 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -780,13 +776,11 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -847,13 +841,11 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -914,13 +906,11 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -981,13 +971,11 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -1198,13 +1186,11 @@ let ntt_vector_u
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -1265,13 +1251,11 @@ let ntt_vector_u
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -1332,13 +1316,11 @@ let ntt_vector_u
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -1399,13 +1381,11 @@ let ntt_vector_u
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -1466,13 +1446,11 @@ let ntt_vector_u
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -1533,13 +1511,11 @@ let ntt_vector_u
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {
@@ -1600,13 +1576,11 @@ let ntt_vector_u
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                   let j:usize = j in
                   let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                          <:
-                          i32) *!
-                        (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_fe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
                         <:
                         i32)
+                      (v_ZETAS_MONTGOMERY_DOMAIN.[ zeta_i ] <: i32)
                   in
                   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                     {

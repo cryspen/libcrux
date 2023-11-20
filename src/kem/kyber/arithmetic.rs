@@ -1,6 +1,16 @@
 use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
+// if this is 'x'
+// let 'fe' be the shorthand for this type
 pub(crate) type FieldElement = i32;
+
+// this is congruent to xR^{-1} mod FIELD_MODULUS
+// let 'mfe' be the shorthand for this type
+pub(crate) type MontgomeryFieldElement = i32;
+
+// this is congruent to xR mod FIELD_MODULUS
+// let 'fer' be the shorthand for this type
+pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 const MONTGOMERY_SHIFT: u8 = 16;
 const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
@@ -60,6 +70,17 @@ pub(crate) fn montgomery_reduce(value: FieldElement) -> FieldElement {
     let value_high = value >> MONTGOMERY_SHIFT;
 
     value_high - c
+}
+
+pub(crate) fn montgomery_multiply_fe_by_fer(
+    fe: FieldElement,
+    fer: FieldElementTimesMontgomeryR,
+) -> FieldElement {
+    montgomery_reduce(fe * fer)
+}
+
+pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
+    montgomery_reduce(mfe * 1353)
 }
 
 #[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
