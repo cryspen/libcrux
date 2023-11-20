@@ -1,7 +1,5 @@
 use super::{
-    arithmetic::{
-        barrett_reduce, montgomery_reduce, KyberFieldElement, KyberPolynomialRingElement,
-    },
+    arithmetic::{barrett_reduce, montgomery_reduce, KyberFieldElement, PolynomialRingElement},
     constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
 
@@ -45,8 +43,8 @@ macro_rules! ntt_at_layer {
 // ntt_representation().
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+    mut re: PolynomialRingElement,
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
@@ -84,8 +82,8 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+    mut re: PolynomialRingElement,
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
@@ -108,8 +106,8 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
 
 #[inline(always)]
 pub(crate) fn invert_ntt_montgomery<const K: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+    mut re: PolynomialRingElement,
+) -> PolynomialRingElement {
     // We only ever call this function after matrix/vector multiplication
     hax_lib::debug_assert!(re
         .coefficients
@@ -179,9 +177,9 @@ fn ntt_multiply_binomials(
 
 #[inline(always)]
 pub(crate) fn ntt_multiply(
-    left: &KyberPolynomialRingElement,
-    right: &KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+    left: &PolynomialRingElement,
+    right: &PolynomialRingElement,
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(left
         .coefficients
         .into_iter()
@@ -191,7 +189,7 @@ pub(crate) fn ntt_multiply(
         .into_iter()
         .all(|coefficient| coefficient >= -3329 && coefficient <= 3329));
 
-    let mut out = KyberPolynomialRingElement::ZERO;
+    let mut out = PolynomialRingElement::ZERO;
 
     for i in 0..(COEFFICIENTS_IN_RING_ELEMENT / 4) {
         let product = ntt_multiply_binomials(

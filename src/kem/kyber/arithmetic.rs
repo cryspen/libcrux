@@ -71,20 +71,20 @@ pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct KyberPolynomialRingElement {
+pub struct PolynomialRingElement {
     pub(crate) coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT],
 }
 
-impl KyberPolynomialRingElement {
+impl PolynomialRingElement {
     pub const ZERO: Self = Self {
         coefficients: [0i32; 256], // FIXME: hax issue, this is COEFFICIENTS_IN_RING_ELEMENT
     };
 }
 
 pub(crate) fn add_to_ring_element<const K: usize>(
-    mut lhs: KyberPolynomialRingElement,
-    rhs: &KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+    mut lhs: PolynomialRingElement,
+    rhs: &PolynomialRingElement,
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(lhs.coefficients.into_iter().all(|coefficient| coefficient
         >= ((K as i32) - 1) * -FIELD_MODULUS
         && coefficient <= ((K as i32) - 1) * FIELD_MODULUS));

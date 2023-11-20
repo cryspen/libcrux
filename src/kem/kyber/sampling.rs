@@ -1,14 +1,14 @@
 use super::{
-    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
+    arithmetic::{KyberFieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     Error,
 };
 
 pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     randomness: [u8; SEED_SIZE],
-) -> (KyberPolynomialRingElement, Option<Error>) {
+) -> (PolynomialRingElement, Option<Error>) {
     let mut sampled_coefficients: usize = 0;
-    let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+    let mut out: PolynomialRingElement = PolynomialRingElement::ZERO;
 
     // This loop is written the way it is since reasoning about early returns,
     // breaks, and continues is not well supported in Fstar at the moment. Rewriting
@@ -48,8 +48,8 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     }
 }
 
-fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRingElement {
-    let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
+    let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
         let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
@@ -78,8 +78,8 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRing
     sampled
 }
 
-fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRingElement {
-    let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
+    let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
         let random_bits_as_u24: u32 =
@@ -110,7 +110,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
 #[inline(always)]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
     randomness: &[u8],
-) -> KyberPolynomialRingElement {
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(randomness.len() == ETA * 64);
 
     match ETA as u32 {

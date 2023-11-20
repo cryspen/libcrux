@@ -1,12 +1,12 @@
 use super::{
-    arithmetic::{to_unsigned_representative, KyberFieldElement, KyberPolynomialRingElement},
+    arithmetic::{to_unsigned_representative, KyberFieldElement, PolynomialRingElement},
     compress::{compress_q, decompress_q},
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
 
 #[inline(always)]
 pub(super) fn compress_then_serialize_message(
-    re: KyberPolynomialRingElement,
+    re: PolynomialRingElement,
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
 
@@ -38,8 +38,8 @@ pub(super) fn compress_then_serialize_message(
 #[inline(always)]
 pub(super) fn deserialize_then_decompress_message(
     serialized: [u8; SHARED_SECRET_SIZE],
-) -> KyberPolynomialRingElement {
-    let mut re = KyberPolynomialRingElement::ZERO;
+) -> PolynomialRingElement {
+    let mut re = PolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
         for j in 0..8 {
@@ -53,7 +53,7 @@ pub(super) fn deserialize_then_decompress_message(
 
 #[inline(always)]
 pub(super) fn serialize_uncompressed_ring_element(
-    re: KyberPolynomialRingElement,
+    re: PolynomialRingElement,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
@@ -69,12 +69,10 @@ pub(super) fn serialize_uncompressed_ring_element(
     serialized
 }
 #[inline(always)]
-pub(super) fn deserialize_to_uncompressed_ring_element(
-    serialized: &[u8],
-) -> KyberPolynomialRingElement {
+pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> PolynomialRingElement {
     hax_lib::debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
-    let mut re = KyberPolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(3).enumerate() {
         let byte1 = bytes[0] as KyberFieldElement;
@@ -89,9 +87,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element(
 }
 
 #[inline(always)]
-fn compress_then_serialize_10<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
+fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
@@ -113,9 +109,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize>(
     serialized
 }
 #[inline(always)]
-fn compress_then_serialize_11<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
+fn compress_then_serialize_11<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
@@ -148,7 +142,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
 >(
-    re: KyberPolynomialRingElement,
+    re: PolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     hax_lib::debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
@@ -160,9 +154,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 }
 
 #[inline(always)]
-fn compress_then_serialize_4<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
+fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
@@ -176,9 +168,7 @@ fn compress_then_serialize_4<const OUT_LEN: usize>(
 }
 
 #[inline(always)]
-fn compress_then_serialize_5<const OUT_LEN: usize>(
-    re: KyberPolynomialRingElement,
-) -> [u8; OUT_LEN] {
+fn compress_then_serialize_5<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
     for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
@@ -207,7 +197,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
 >(
-    re: KyberPolynomialRingElement,
+    re: PolynomialRingElement,
 ) -> [u8; OUT_LEN] {
     hax_lib::debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
@@ -219,10 +209,10 @@ pub(super) fn compress_then_serialize_ring_element_v<
 }
 
 #[inline(always)]
-fn deserialize_then_decompress_10(serialized: &[u8]) -> KyberPolynomialRingElement {
+fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
     hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
-    let mut re = KyberPolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(5).enumerate() {
         let byte1 = bytes[0] as KyberFieldElement;
@@ -247,10 +237,10 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> KyberPolynomialRingEleme
     re
 }
 #[inline(always)]
-fn deserialize_then_decompress_11(serialized: &[u8]) -> KyberPolynomialRingElement {
+fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
     hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
 
-    let mut re = KyberPolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(11).enumerate() {
         let byte1 = bytes[0] as KyberFieldElement;
@@ -295,7 +285,7 @@ fn deserialize_then_decompress_11(serialized: &[u8]) -> KyberPolynomialRingEleme
 #[inline(always)]
 pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
-) -> KyberPolynomialRingElement {
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(
         serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
     );
@@ -308,10 +298,10 @@ pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTO
 }
 
 #[inline(always)]
-fn deserialize_then_decompress_4(serialized: &[u8]) -> KyberPolynomialRingElement {
+fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
     hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
-    let mut re = KyberPolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
         let coefficient1 = (byte & 0x0F) as KyberFieldElement;
@@ -324,10 +314,10 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> KyberPolynomialRingElemen
     re
 }
 #[inline(always)]
-fn deserialize_then_decompress_5(serialized: &[u8]) -> KyberPolynomialRingElement {
+fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
     hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
-    let mut re = KyberPolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(5).enumerate() {
         let byte1 = bytes[0] as KyberFieldElement;
@@ -366,7 +356,7 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> KyberPolynomialRingElemen
 #[inline(always)]
 pub(super) fn deserialize_then_decompress_ring_element_v<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
-) -> KyberPolynomialRingElement {
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(
         serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
     );

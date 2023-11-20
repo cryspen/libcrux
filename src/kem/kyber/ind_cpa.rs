@@ -1,5 +1,5 @@
 use super::{
-    arithmetic::KyberPolynomialRingElement,
+    arithmetic::PolynomialRingElement,
     constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
         SHARED_SECRET_SIZE,
@@ -38,8 +38,8 @@ pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
 fn sample_matrix_A<const K: usize>(
     seed: [u8; 34],
     transpose: bool,
-) -> ([[KyberPolynomialRingElement; K]; K], Option<Error>) {
-    let mut A_transpose = [[KyberPolynomialRingElement::ZERO; K]; K];
+) -> ([[PolynomialRingElement; K]; K], Option<Error>) {
+    let mut A_transpose = [[PolynomialRingElement::ZERO; K]; K];
     let mut sampling_A_error = None;
 
     for i in 0..K {
@@ -71,9 +71,9 @@ fn sample_matrix_A<const K: usize>(
 #[inline(always)]
 fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
     mut prf_input: [u8; 33],
-) -> ([KyberPolynomialRingElement; K], u8) {
+) -> ([PolynomialRingElement; K], u8) {
     let mut domain_separator = 0;
-    let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut re_as_ntt = [PolynomialRingElement::ZERO; K];
     for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
@@ -87,7 +87,7 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
 }
 
 fn serialize_key<const K: usize, const OUT_LEN: usize>(
-    key: [KyberPolynomialRingElement; K],
+    key: [PolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
 
@@ -118,8 +118,8 @@ pub(crate) fn generate_keypair<
 ) {
     let mut prf_input: [u8; 33] = [0; 33];
 
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
-    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
+    let mut error_as_ntt = [PolynomialRingElement::ZERO; K];
 
     // N := 0
     let mut domain_separator: u8 = 0;
@@ -187,7 +187,7 @@ fn compress_then_encode_u<
     const COMPRESSION_FACTOR: usize,
     const BLOCK_LEN: usize,
 >(
-    input: [KyberPolynomialRingElement; K],
+    input: [PolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
     for (i, re) in input.into_iter().enumerate() {
@@ -219,7 +219,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> (super::KyberCiphertext<CIPHERTEXT_SIZE>, Option<Error>) {
     // tˆ := Decode_12(pk)
-    let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
     for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
         .chunks_exact(BYTES_PER_RING_ELEMENT)
         .enumerate()
@@ -248,7 +248,7 @@ pub(crate) fn encrypt<
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let mut error_1 = [KyberPolynomialRingElement::ZERO; K];
+    let mut error_1 = [PolynomialRingElement::ZERO; K];
     for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
@@ -291,8 +291,8 @@ pub(crate) fn decrypt<
     secret_key: &[u8],
     ciphertext: &super::KyberCiphertext<CIPHERTEXT_SIZE>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; K];
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut u_as_ntt = [PolynomialRingElement::ZERO; K];
+    let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     for (i, u_bytes) in ciphertext.value[..VECTOR_U_ENCODED_SIZE]
