@@ -72,7 +72,7 @@ pub(super) fn serialize_uncompressed_ring_element(
 pub(super) fn deserialize_to_uncompressed_ring_element(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
-    debug_assert_eq!(serialized.len(), BYTES_PER_RING_ELEMENT);
+    hax_lib::debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
@@ -150,10 +150,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 >(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    debug_assert_eq!(
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
-        OUT_LEN
-    );
+    hax_lib::debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
@@ -212,10 +209,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 >(
     re: KyberPolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    debug_assert_eq!(
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8,
-        OUT_LEN
-    );
+    hax_lib::debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re),
@@ -226,7 +220,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 
 #[inline(always)]
 fn deserialize_then_decompress_10(serialized: &[u8]) -> KyberPolynomialRingElement {
-    debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
+    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
@@ -254,7 +248,7 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> KyberPolynomialRingEleme
 }
 #[inline(always)]
 fn deserialize_then_decompress_11(serialized: &[u8]) -> KyberPolynomialRingElement {
-    debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
+    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
@@ -302,9 +296,8 @@ fn deserialize_then_decompress_11(serialized: &[u8]) -> KyberPolynomialRingEleme
 pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
-    debug_assert_eq!(
-        serialized.len(),
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+    hax_lib::debug_assert!(
+        serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
     );
 
     match COMPRESSION_FACTOR as u32 {
@@ -316,7 +309,7 @@ pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTO
 
 #[inline(always)]
 fn deserialize_then_decompress_4(serialized: &[u8]) -> KyberPolynomialRingElement {
-    debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
+    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
@@ -332,7 +325,7 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> KyberPolynomialRingElemen
 }
 #[inline(always)]
 fn deserialize_then_decompress_5(serialized: &[u8]) -> KyberPolynomialRingElement {
-    debug_assert_eq!(serialized.len(), (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
+    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
     let mut re = KyberPolynomialRingElement::ZERO;
 
@@ -374,9 +367,8 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> KyberPolynomialRingElemen
 pub(super) fn deserialize_then_decompress_ring_element_v<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> KyberPolynomialRingElement {
-    debug_assert_eq!(
-        serialized.len(),
-        (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
+    hax_lib::debug_assert!(
+        serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
     );
 
     match COMPRESSION_FACTOR as u32 {

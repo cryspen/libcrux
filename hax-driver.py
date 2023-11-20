@@ -87,6 +87,12 @@ typecheck_parser.add_argument(
     dest="lax",
     help="Lax typecheck the code only",
 )
+typecheck_parser.add_argument(
+    "--admit",
+    action="store_true",
+    dest="admit",
+    help="Set admit_smt_queries to true for typechecking",
+)
 
 options = parser.parse_args()
 
@@ -116,7 +122,9 @@ if options.typecheck:
     custom_env = {}
     if options.lax:
         custom_env.update({"OTHERFLAGS": "--lax"})
-    shell(["make", "-C", "proofs/fstar/extraction/"], custom_env)
+    if options.admit:
+        custom_env.update({"OTHERFLAGS": "--admit_smt_queries true"})
+    shell(["make", "-C", "proofs/fstar/extraction/"], env=custom_env)
     exit(0)
 
 cargo_hax_into = ["cargo", "hax", "into"]
@@ -127,7 +135,7 @@ if options.kyber_reference:
         cargo_hax_into
         + [
             "-i",
-            "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::**",
+            "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::** -libcrux::**::types::index_impls::**",
             "fstar",
         ],
         cwd=".",

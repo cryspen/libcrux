@@ -1,7 +1,7 @@
 macro_rules! impl_generic_struct {
     ($name:ident) => {
         pub struct $name<const SIZE: usize> {
-            value: [u8; SIZE],
+            pub(super) value: [u8; SIZE],
         }
 
         impl<const SIZE: usize> AsRef<[u8]> for $name<SIZE> {
@@ -34,12 +34,30 @@ macro_rules! impl_generic_struct {
             type Error = core::array::TryFromSliceError;
 
             fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                Ok(Self {
-                    value: value.try_into()?,
-                })
+                match value.try_into() {
+                    Ok(value) => Ok(Self { value }),
+                    Err(e) => Err(e),
+                }
             }
         }
 
+        impl<const SIZE: usize> $name<SIZE> {
+            pub fn as_slice(&self) -> &[u8; SIZE] {
+                &self.value
+            }
+
+            pub fn split_at(&self, mid: usize) -> (&[u8], &[u8]) {
+                self.value.split_at(mid)
+            }
+
+            pub const fn len(&self) -> usize {
+                SIZE
+            }
+        }
+    };
+}
+macro_rules! impl_index_impls_for_generic_struct {
+    ($name:ident) => {
         impl<const SIZE: usize> core::ops::Index<usize> for $name<SIZE> {
             type Output = u8;
 
@@ -71,20 +89,6 @@ macro_rules! impl_generic_struct {
                 &self.value[range]
             }
         }
-
-        impl<const SIZE: usize> $name<SIZE> {
-            pub fn as_slice(&self) -> &[u8; SIZE] {
-                &self.value
-            }
-
-            pub fn split_at(&self, mid: usize) -> (&[u8], &[u8]) {
-                self.value.split_at(mid)
-            }
-
-            pub const fn len(&self) -> usize {
-                SIZE
-            }
-        }
     };
 }
 
@@ -95,6 +99,16 @@ impl_generic_struct!(KyberPublicKey);
 
 // The PKE Private Key
 impl_generic_struct!(PrivateKey);
+
+// These traits are used only in `ind_cpa` for kyber cipher text.
+mod index_impls {
+    use super::*;
+    impl_index_impls_for_generic_struct!(KyberCiphertext);
+    impl_index_impls_for_generic_struct!(KyberSharedSecret);
+    impl_index_impls_for_generic_struct!(KyberPrivateKey);
+    impl_index_impls_for_generic_struct!(KyberPublicKey);
+    impl_index_impls_for_generic_struct!(PrivateKey);
+}
 
 /// A Kyber key pair
 pub struct KyberKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {

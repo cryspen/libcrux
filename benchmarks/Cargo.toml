@@ -61,3 +61,7 @@ harness = false
 [[bench]]
 name = "drbg"
 harness = false
+
+[[bench]]
+name = "kyber768"
+harness = false

@@ -1,101 +1,7 @@
 module Libcrux.Kem.Kyber.Sampling
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
-
-let sample_from_uniform_distribution (#v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
-    : (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
-  let (sampled_coefficients: usize):usize = sz 0 in
-  let (out: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
-  =
-    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
-  in
-  let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
-  =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks (
-                Rust_primitives.unsize randomness <: t_Slice u8)
-              (sz 3)
-            <:
-            Core.Slice.Iter.t_Chunks u8)
-        <:
-        Core.Slice.Iter.t_Chunks u8)
-      (out, sampled_coefficients)
-      (fun (out, sampled_coefficients) bytes ->
-          let b1:i32 = cast bytes.[ sz 0 ] <: i32 in
-          let b2:i32 = cast bytes.[ sz 1 ] <: i32 in
-          let b3:i32 = cast bytes.[ sz 2 ] <: i32 in
-          let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
-          let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
-          let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
-            usize) =
-            if
-              d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-              sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-            then
-              let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-                {
-                  out with
-                  Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                  =
-                  Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    sampled_coefficients
-                    d1
-                }
-              in
-              out, sampled_coefficients +! sz 1
-            else out, sampled_coefficients
-          in
-          let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
-            usize) =
-            if
-              d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-              sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-            then
-              let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-                {
-                  out with
-                  Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                  =
-                  Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    sampled_coefficients
-                    d2
-                }
-              in
-              let sampled_coefficients:usize = sampled_coefficients +! sz 1 in
-              out, sampled_coefficients
-            else out, sampled_coefficients
-          in
-          if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-          then
-            let* hoist1:Rust_primitives.Hax.t_Never =
-              Core.Ops.Control_flow.ControlFlow.v_Break (out, Core.Option.Option_None)
-            in
-            Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients)
-          else Core.Ops.Control_flow.ControlFlow_Continue (out, sampled_coefficients))
-  in
-  let _:Prims.unit =
-    if true
-    then
-      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter out
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            Core.Array.Iter.t_IntoIter i32 (sz 256))
-          (fun coefficient ->
-              (coefficient >=. 0l <: bool) &&
-              (coefficient <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
-      in
-      let _:Prims.unit =
-        if ~.out
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: out.coefficients.into_iter().all(|coefficient|\\n        coefficient >= 0 && coefficient < FIELD_MODULUS)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  out, Core.Option.Option_Some Libcrux.Kem.Kyber.Types.Error_RejectionSampling
+open FStar.Mul
 
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -111,7 +17,9 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
         <:
         Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
       sampled
-      (fun sampled (chunk_number, byte_chunk) ->
+      (fun sampled temp_1_ ->
+          let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement = sampled in
+          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
           let (random_bits_as_u32: u32):u32 =
             (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                 ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -129,7 +37,9 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                     ({
                         Core.Ops.Range.f_start = 0ul;
                         Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
-                      })
+                      }
+                      <:
+                      Core.Ops.Range.t_Range u32)
                     (sz 4)
                   <:
                   Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
@@ -137,13 +47,17 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
               Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
             sampled
             (fun sampled outcome_set ->
+                let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement = sampled in
+                let outcome_set:u32 = outcome_set in
                 let outcome_1_:i32 =
-                  cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 3ul) <: i32
+                  cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 3ul <: u32) <: i32
                 in
                 let outcome_2_:i32 =
-                  cast ((coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) &. 3ul) <: i32
+                  cast ((coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) &. 3ul <: u32)
+                  <:
+                  i32
                 in
-                let offset:usize = cast (outcome_set >>! 2l) <: usize in
+                let offset:usize = cast (outcome_set >>! 2l <: u32) <: usize in
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                   {
                     sampled with
@@ -154,29 +68,12 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                       ((sz 8 *! chunk_number <: usize) +! offset <: usize)
                       (outcome_1_ -! outcome_2_ <: i32)
                   }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
                 in
                 sampled))
   in
-  let _:Prims.unit =
-    if true
-    then
-      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter sampled
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            Core.Array.Iter.t_IntoIter i32 (sz 256))
-          (fun coefficient -> (coefficient >=. (-2l) <: bool) && (coefficient <=. 2l <: bool))
-      in
-      let _:Prims.unit =
-        if ~.out
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: sampled.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -2 && coefficient <= 2)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+  let _:Prims.unit = () <: Prims.unit in
   sampled
 
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
@@ -193,7 +90,9 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
         <:
         Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
       sampled
-      (fun sampled (chunk_number, byte_chunk) ->
+      (fun sampled temp_1_ ->
+          let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement = sampled in
+          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
           let (random_bits_as_u24: u32):u32 =
             ((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
               ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -206,7 +105,9 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
-                    ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l })
+                    ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
+                      <:
+                      Core.Ops.Range.t_Range i32)
                     (sz 6)
                   <:
                   Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
@@ -214,13 +115,17 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
               Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
             sampled
             (fun sampled outcome_set ->
+                let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement = sampled in
+                let outcome_set:i32 = outcome_set in
                 let outcome_1_:i32 =
-                  cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul) <: i32
+                  cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32) <: i32
                 in
                 let outcome_2_:i32 =
-                  cast ((coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) &. 7ul) <: i32
+                  cast ((coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) &. 7ul <: u32)
+                  <:
+                  i32
                 in
-                let offset:usize = cast (outcome_set /! 6l) <: usize in
+                let offset:usize = cast (outcome_set /! 6l <: i32) <: usize in
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
                   {
                     sampled with
@@ -231,52 +136,18 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                       ((sz 4 *! chunk_number <: usize) +! offset <: usize)
                       (outcome_1_ -! outcome_2_ <: i32)
                   }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
                 in
                 sampled))
   in
-  let _:Prims.unit =
-    if true
-    then
-      let _, out:(Core.Array.Iter.t_IntoIter i32 (sz 256) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter sampled
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            Core.Array.Iter.t_IntoIter i32 (sz 256))
-          (fun coefficient -> (coefficient >=. (-3l) <: bool) && (coefficient <=. 3l <: bool))
-      in
-      let _:Prims.unit =
-        if ~.out
-        then
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: sampled.coefficients.into_iter().all(|coefficient|\\n        coefficient >= -3 && coefficient <= 3)"
-
-              <:
-              Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
+  let _:Prims.unit = () <: Prims.unit in
   sampled
 
-let sample_from_binomial_distribution (#v_ETA: usize) (randomness: t_Slice u8)
+let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let _:Prims.unit =
-    if true
-    then
-      let _:Prims.unit =
-        match Core.Slice.impl__len randomness, v_ETA *! sz 64 with
-        | left_val, right_val ->
-          if ~.(left_val =. right_val <: bool)
-          then
-            let kind:Core.Panicking.t_AssertKind = Core.Panicking.AssertKind_Eq in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
-                  left_val
-                  right_val
-                  Core.Option.Option_None
-                <:
-                Rust_primitives.Hax.t_Never)
-      in
-      ()
-  in
-  match cast v_ETA <: u32 with
+  let _:Prims.unit = () <: Prims.unit in
+  match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
   | _ ->
@@ -284,3 +155,124 @@ let sample_from_binomial_distribution (#v_ETA: usize) (randomness: t_Slice u8)
 
         <:
         Rust_primitives.Hax.t_Never)
+
+let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
+    : (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+  let (sampled_coefficients: usize):usize = sz 0 in
+  let (out: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
+  =
+    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
+  in
+  let done:bool = false in
+  let done, out, sampled_coefficients:(bool &
+    Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+    usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks (
+                Rust_primitives.unsize randomness <: t_Slice u8)
+              (sz 3)
+            <:
+            Core.Slice.Iter.t_Chunks u8)
+        <:
+        Core.Slice.Iter.t_Chunks u8)
+      (done, out, sampled_coefficients
+        <:
+        (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize))
+      (fun temp_0_ bytes ->
+          let done, out, sampled_coefficients:(bool &
+            Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+            usize) =
+            temp_0_
+          in
+          let bytes:t_Slice u8 = bytes in
+          if ~.done <: bool
+          then
+            let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
+            let b2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
+            let b3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
+            let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
+            let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
+            let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+              usize) =
+              if
+                d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+                sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+              then
+                let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+                  {
+                    out with
+                    Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    =
+                    Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      sampled_coefficients
+                      d1
+                  }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
+                in
+                out, sampled_coefficients +! sz 1
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+              else
+                out, sampled_coefficients
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+            in
+            let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+              usize) =
+              if
+                d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+                sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+              then
+                let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+                  {
+                    out with
+                    Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    =
+                    Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      sampled_coefficients
+                      d2
+                  }
+                  <:
+                  Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
+                in
+                let sampled_coefficients:usize = sampled_coefficients +! sz 1 in
+                out, sampled_coefficients
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+              else
+                out, sampled_coefficients
+                <:
+                (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+            in
+            if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+            then
+              let done:bool = true in
+              done, out, sampled_coefficients
+              <:
+              (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+            else
+              done, out, sampled_coefficients
+              <:
+              (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize)
+          else
+            done, out, sampled_coefficients
+            <:
+            (bool & Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement & usize))
+  in
+  if done
+  then
+    let _:Prims.unit = () <: Prims.unit in
+    out, (Core.Option.Option_None <: Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    <:
+    (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+  else
+    out,
+    (Core.Option.Option_Some
+      (Libcrux.Kem.Kyber.Types.Error_RejectionSampling <: Libcrux.Kem.Kyber.Types.t_Error)
+      <:
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    <:
+    (Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement &
+      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)

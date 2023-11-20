@@ -294,7 +294,7 @@ pub(crate) fn decrypt<
     let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
+    for (i, u_bytes) in ciphertext.value[..VECTOR_U_ENCODED_SIZE]
         .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
         .enumerate()
     {
@@ -304,7 +304,7 @@ pub(crate) fn decrypt<
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR>(
-        &ciphertext[VECTOR_U_ENCODED_SIZE..],
+        &ciphertext.value[VECTOR_U_ENCODED_SIZE..],
     );
 
     // sˆ := Decode_12(sk)

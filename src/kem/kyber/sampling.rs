@@ -10,33 +10,42 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     let mut sampled_coefficients: usize = 0;
     let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
 
+    // This loop is written the way it is since reasoning about early returns,
+    // breaks, and continues is not well supported in Fstar at the moment. Rewriting
+    // this code to use an early return is being tracked in:
+    // https://github.com/cryspen/libcrux/issues/134
+    let mut done = false;
     for bytes in randomness.chunks(3) {
-        let b1 = bytes[0] as i32;
-        let b2 = bytes[1] as i32;
-        let b3 = bytes[2] as i32;
+        if !done {
+            let b1 = bytes[0] as i32;
+            let b2 = bytes[1] as i32;
+            let b3 = bytes[2] as i32;
 
-        let d1 = ((b2 & 0xF) << 8) | b1;
-        let d2 = (b3 << 4) | (b2 >> 4);
+            let d1 = ((b2 & 0xF) << 8) | b1;
+            let d2 = (b3 << 4) | (b2 >> 4);
 
-        if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out.coefficients[sampled_coefficients] = d1;
-            sampled_coefficients += 1
-        }
-        if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
-            out.coefficients[sampled_coefficients] = d2;
-            sampled_coefficients += 1;
-        }
-        if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
-            return (out, None);
+            if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+                out.coefficients[sampled_coefficients] = d1;
+                sampled_coefficients += 1
+            }
+            if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+                out.coefficients[sampled_coefficients] = d2;
+                sampled_coefficients += 1;
+            }
+            if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
+                done = true;
+            }
         }
     }
-
-    debug_assert!(out
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
-
-    (out, Some(Error::RejectionSampling))
+    if done {
+        hax_lib::debug_assert!(out
+            .coefficients
+            .into_iter()
+            .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
+        (out, None)
+    } else {
+        (out, Some(Error::RejectionSampling))
+    }
 }
 
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRingElement {
@@ -62,7 +71,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRing
         }
     }
 
-    debug_assert!(sampled
+    hax_lib::debug_assert!(sampled
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= -2 && coefficient <= 2));
@@ -91,7 +100,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
         }
     }
 
-    debug_assert!(sampled
+    hax_lib::debug_assert!(sampled
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= -3 && coefficient <= 3));
@@ -102,7 +111,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
 pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
     randomness: &[u8],
 ) -> KyberPolynomialRingElement {
-    debug_assert_eq!(randomness.len(), ETA * 64);
+    hax_lib::debug_assert!(randomness.len() == ETA * 64);
 
     match ETA as u32 {
         2 => sample_from_binomial_distribution_2(randomness),
