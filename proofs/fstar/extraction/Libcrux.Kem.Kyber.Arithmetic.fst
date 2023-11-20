@@ -4,13 +4,13 @@ open Core
 open FStar.Mul
 
 unfold
-let t_FieldElement = i32
-
-unfold
 let t_FieldElementTimesMontgomeryR = i32
 
 unfold
 let t_MontgomeryFieldElement = i32
+
+unfold
+let t_StandardFieldElement = i32
 
 let v_BARRETT_MULTIPLIER: i64 = 20159L
 

@@ -1,7 +1,8 @@
 use super::{
     arithmetic::{
-        barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElement,
+        barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
+        StandardFieldElement,
     },
     constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
@@ -169,8 +170,8 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
 
 #[inline(always)]
 fn ntt_multiply_binomials(
-    (a0, a1): (FieldElement, FieldElement),
-    (b0, b1): (FieldElement, FieldElement),
+    (a0, a1): (StandardFieldElement, StandardFieldElement),
+    (b0, b1): (StandardFieldElement, StandardFieldElement),
     zeta: i32,
 ) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
     (

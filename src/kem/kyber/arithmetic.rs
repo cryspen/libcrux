@@ -2,7 +2,7 @@ use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 // if this is 'x'
 // let 'fe' be the shorthand for this type
-pub(crate) type FieldElement = i32;
+pub(crate) type StandardFieldElement = i32;
 
 // this is congruent to xR^{-1} mod FIELD_MODULUS
 // let 'mfe' be the shorthand for this type
@@ -27,7 +27,7 @@ const BARRETT_MULTIPLIER: i64 = 20159; // floor((BARRETT_R / FIELD_MODULUS) + 0.
 
 #[cfg_attr(hax, hax_lib_macros::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
-pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
+pub(crate) fn barrett_reduce(value: StandardFieldElement) -> StandardFieldElement {
     hax_lib::debug_assert!(
         i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R,
         "value is {value}"
@@ -50,7 +50,7 @@ const INVERSE_OF_MODULUS_MOD_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMER
 
 #[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
-pub(crate) fn montgomery_reduce(value: FieldElement) -> FieldElement {
+pub(crate) fn montgomery_reduce(value: StandardFieldElement) -> StandardFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
     // for this function. The removal of this line is being tracked in:
     // https://github.com/cryspen/libcrux/issues/134
@@ -73,27 +73,27 @@ pub(crate) fn montgomery_reduce(value: FieldElement) -> FieldElement {
 }
 
 pub(crate) fn montgomery_multiply_fe_by_fer(
-    fe: FieldElement,
+    fe: StandardFieldElement,
     fer: FieldElementTimesMontgomeryR,
-) -> FieldElement {
+) -> StandardFieldElement {
     montgomery_reduce(fe * fer)
 }
 
-pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
+pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> StandardFieldElement {
     montgomery_reduce(mfe * 1353)
 }
 
 #[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
-pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
+pub(crate) fn to_unsigned_representative(fe: StandardFieldElement) -> u16 {
     hax_lib::debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PolynomialRingElement {
-    pub(crate) coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT],
+    pub(crate) coefficients: [StandardFieldElement; COEFFICIENTS_IN_RING_ELEMENT],
 }
 
 impl PolynomialRingElement {
