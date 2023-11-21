@@ -69,10 +69,14 @@ fn sample_matrix_A<const K: usize>(
 }
 
 #[inline(always)]
-fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
+fn sample_vector_cbd_then_ntt<
+    const K: usize,
+    const ETA: usize,
+    const ETA_RANDOMNESS_SIZE: usize,
+>(
     mut prf_input: [u8; 33],
+    mut domain_separator: u8,
 ) -> ([PolynomialRingElement; K], u8) {
-    let mut domain_separator = 0;
     let mut re_as_ntt = [PolynomialRingElement::ZERO; K];
     for i in 0..K {
         prf_input[32] = domain_separator;
@@ -130,38 +134,11 @@ pub(crate) fn generate_keypair<
 
     let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed_for_A), true);
 
-    // for i from 0 to k−1 do
-    //     s[i] := CBD_{η1}(PRF(σ, N))
-    //     N := N + 1
-    // end for
-    // sˆ := NTT(s)
-    prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
-
-    for i in 0..K {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
-
-        let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
-
-        secret_as_ntt[i] = ntt_binomially_sampled_ring_element(secret);
-    }
-
-    // for i from 0 to k−1 do
-    //     e[i] := CBD_{η1}(PRF(σ, N))
-    //     N := N + 1
-    // end for
-    // eˆ := NTT(e)
-    for i in 0..K {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
-
-        let error = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        error_as_ntt[i] = ntt_binomially_sampled_ring_element(error);
-    }
+    let mut prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
+    let (secret_as_ntt, mut domain_separator) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
+    let (error_as_ntt, _) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, domain_separator);
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
@@ -242,7 +219,8 @@ pub(crate) fn encrypt<
     // end for
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
-    let (r_as_ntt, mut domain_separator) = cbd::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input);
+    let (r_as_ntt, mut domain_separator) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
