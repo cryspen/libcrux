@@ -86,7 +86,7 @@ let montgomery_reduce (value: i32)
   let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
   value_high -! c
 
-let montgomery_multiply_fe_by_fer (fe fer: i32) : i32 = montgomery_reduce (fe *! fer <: i32)
+let montgomery_multiply_sfe_by_fer (fe fer: i32) : i32 = montgomery_reduce (fe *! fer <: i32)
 
 let to_standard_domain (mfe: i32) : i32 = montgomery_reduce (mfe *! 1353l <: i32)
 

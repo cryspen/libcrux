@@ -72,7 +72,7 @@ pub(crate) fn montgomery_reduce(value: StandardFieldElement) -> StandardFieldEle
     value_high - c
 }
 
-pub(crate) fn montgomery_multiply_fe_by_fer(
+pub(crate) fn montgomery_multiply_sfe_by_fer(
     fe: StandardFieldElement,
     fer: FieldElementTimesMontgomeryR,
 ) -> StandardFieldElement {
