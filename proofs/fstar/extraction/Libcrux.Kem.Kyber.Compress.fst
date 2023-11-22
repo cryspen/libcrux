@@ -14,7 +14,7 @@ let compress_message_coefficient (fe: u16)
 
 let get_n_least_significant_bits (n: u8) (value: u32)
     : Prims.Pure u32
-      (requires n >. 0uy && n <=. 11uy)
+      (requires n =. 4uy || n =. 5uy || n =. 10uy || n =. 11uy)
       (ensures
         fun result ->
           let result:u32 = result in
@@ -25,7 +25,8 @@ let get_n_least_significant_bits (n: u8) (value: u32)
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
     : Prims.Pure i32
       (requires
-        coefficient_bits >. 0uy && coefficient_bits <=. 11uy &&
+        (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
+        coefficient_bits =. 11uy) &&
         fe <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
       (ensures
         fun result ->
@@ -46,7 +47,9 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
 let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
     : Prims.Pure i32
       (requires
-        coefficient_bits >. 0uy && coefficient_bits <=. 11uy && fe >=. 0l &&
+        (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
+        coefficient_bits =. 11uy) &&
+        fe >=. 0l &&
         fe <. (Core.Num.impl__i32__pow 2l (cast (coefficient_bits <: u8) <: u32) <: i32))
       (ensures
         fun result ->
