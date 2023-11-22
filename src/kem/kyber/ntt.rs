@@ -4,7 +4,7 @@ use super::{
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
         StandardFieldElement,
     },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -18,34 +18,69 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
-macro_rules! ntt_at_layer {
-    ($layer:literal, $zeta_i:ident, $re:ident, $initial_coefficient_bound:literal) => {
-        let step = 1 << $layer;
+#[inline(always)]
+fn ntt_at_layer(
+    layer: u8,
+    mut zetas_index: usize,
+    mut re: PolynomialRingElement,
+    initial_coefficient_bound: i32,
+) -> (PolynomialRingElement, usize) {
+    let step = 1 << layer;
 
-        for round in 0..(128 / step) {
-            $zeta_i += 1;
+    for round in 0..(128 / step) {
+        zetas_index += 1;
 
-            let offset = round * step * 2;
+        let offset = round * step * 2;
 
-            for j in offset..offset + step {
-                let t = montgomery_multiply_sfe_by_fer(
-                    $re.coefficients[j + step],
-                    ZETAS_TIMES_MONTGOMERY_R[$zeta_i],
-                );
-                $re.coefficients[j + step] = $re.coefficients[j] - t;
-                $re.coefficients[j] = $re.coefficients[j] + t;
-            }
+        for j in offset..offset + step {
+            let t = montgomery_multiply_sfe_by_fer(
+                re.coefficients[j + step],
+                ZETAS_TIMES_MONTGOMERY_R[zetas_index],
+            );
+            re.coefficients[j + step] = re.coefficients[j] - t;
+            re.coefficients[j] = re.coefficients[j] + t;
         }
+    }
 
-        hax_lib::debug_assert!($re.coefficients.into_iter().all(|coefficient| {
-            coefficient.abs() < $initial_coefficient_bound + ((8 - $layer) * 3 * (3329 / 2))
-        }));
-    };
+    hax_lib::debug_assert!(re.coefficients.into_iter().all(|coefficient| {
+        coefficient.abs()
+            < initial_coefficient_bound + ((8 - (layer as i32)) * 3 * (FIELD_MODULUS / 2))
+    }));
+
+    (re, zetas_index)
 }
 
-// Over time, all invocations of ntt_representation() will be replaced by
-// invocations to this function, upon which this function will be renamed back to
-// ntt_representation().
+#[inline(always)]
+fn invert_ntt_at_layer(
+    layer: u8,
+    mut zetas_index: usize,
+    mut re: PolynomialRingElement,
+    initial_coefficient_bound: i32,
+) -> (PolynomialRingElement, usize) {
+    let step = 1 << layer;
+
+    for round in 0..(128 / step) {
+        zetas_index -= 1;
+
+        let offset = round * step * 2;
+
+        for j in offset..offset + step {
+            let a_minus_b = re.coefficients[j + step] - re.coefficients[j];
+
+            // Instead of dividing by 2 here, we just divide by
+            // 2^7 in one go in the end.
+            re.coefficients[j] = re.coefficients[j] + re.coefficients[j + step];
+            re.coefficients[j + step] =
+                montgomery_reduce(a_minus_b * ZETAS_TIMES_MONTGOMERY_R[zetas_index]);
+        }
+    }
+
+    hax_lib::debug_assert!(re.coefficients[0].abs() < initial_coefficient_bound * (step as i32));
+    hax_lib::debug_assert!(re.coefficients[1].abs() < initial_coefficient_bound * (step as i32));
+
+    (re, zetas_index)
+}
+
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: PolynomialRingElement,
@@ -55,11 +90,11 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3));
 
-    let mut zeta_i = 0;
+    let mut zetas_index = 0;
 
     // Due to the small coefficient bound, we can skip the first round of
     // montgomery reductions.
-    zeta_i += 1;
+    zetas_index += 1;
 
     for j in 0..128 {
         // Multiply by the appropriate zeta in the normal domain.
@@ -71,14 +106,14 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| { coefficient.abs() < 3 + ((3 * 3329) / 2) }));
+        .all(|coefficient| { coefficient.abs() < 3 + (3 * (FIELD_MODULUS / 2)) }));
 
-    ntt_at_layer!(6, zeta_i, re, 3);
-    ntt_at_layer!(5, zeta_i, re, 3);
-    ntt_at_layer!(4, zeta_i, re, 3);
-    ntt_at_layer!(3, zeta_i, re, 3);
-    ntt_at_layer!(2, zeta_i, re, 3);
-    ntt_at_layer!(1, zeta_i, re, 3);
+    (re, zetas_index) = ntt_at_layer(6, zetas_index, re, 3);
+    (re, zetas_index) = ntt_at_layer(5, zetas_index, re, 3);
+    (re, zetas_index) = ntt_at_layer(4, zetas_index, re, 3);
+    (re, zetas_index) = ntt_at_layer(3, zetas_index, re, 3);
+    (re, zetas_index) = ntt_at_layer(2, zetas_index, re, 3);
+    (re, _) = ntt_at_layer(1, zetas_index, re, 3);
 
     re.coefficients = re.coefficients.map(barrett_reduce);
 
@@ -89,20 +124,21 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
+    let initial_coefficient_bound = FIELD_MODULUS - 1;
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() <= 3328));
+        .all(|coefficient| coefficient.abs() <= initial_coefficient_bound));
 
-    let mut zeta_i = 0;
+    let mut zetas_index = 0;
 
-    ntt_at_layer!(7, zeta_i, re, 3328);
-    ntt_at_layer!(6, zeta_i, re, 3328);
-    ntt_at_layer!(5, zeta_i, re, 3328);
-    ntt_at_layer!(4, zeta_i, re, 3328);
-    ntt_at_layer!(3, zeta_i, re, 3328);
-    ntt_at_layer!(2, zeta_i, re, 3328);
-    ntt_at_layer!(1, zeta_i, re, 3328);
+    (re, zetas_index) = ntt_at_layer(7, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = ntt_at_layer(6, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = ntt_at_layer(5, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = ntt_at_layer(4, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = ntt_at_layer(3, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = ntt_at_layer(2, zetas_index, re, initial_coefficient_bound);
+    (re, _) = ntt_at_layer(1, zetas_index, re, initial_coefficient_bound);
 
     re.coefficients = re.coefficients.map(barrett_reduce);
 
@@ -114,53 +150,28 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
     // We only ever call this function after matrix/vector multiplication
+    let initial_coefficient_bound = (K as i32) * FIELD_MODULUS;
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() < (K as i32) * 3329));
+        .all(|coefficient| coefficient.abs() < initial_coefficient_bound));
 
-    let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
+    let mut zetas_index = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
-    macro_rules! invert_ntt_at_layer {
-        ($layer:literal) => {
-            let step = 1 << $layer;
+    (re, zetas_index) = invert_ntt_at_layer(1, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = invert_ntt_at_layer(2, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = invert_ntt_at_layer(3, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = invert_ntt_at_layer(4, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = invert_ntt_at_layer(5, zetas_index, re, initial_coefficient_bound);
+    (re, zetas_index) = invert_ntt_at_layer(6, zetas_index, re, initial_coefficient_bound);
+    (re, _) = invert_ntt_at_layer(7, zetas_index, re, initial_coefficient_bound);
 
-            for round in 0..(128 / step) {
-                zeta_i -= 1;
-
-                let offset = round * step * 2;
-
-                for j in offset..offset + step {
-                    let a_minus_b = re.coefficients[j + step] - re.coefficients[j];
-
-                    // Instead of dividing by 2 here, we just divide by
-                    // 2^7 in one go in the end.
-                    re.coefficients[j] = re.coefficients[j] + re.coefficients[j + step];
-                    re.coefficients[j + step] =
-                        montgomery_reduce(a_minus_b * ZETAS_TIMES_MONTGOMERY_R[zeta_i]);
-                }
-            }
-        };
-    }
-
-    invert_ntt_at_layer!(1);
-    invert_ntt_at_layer!(2);
-    invert_ntt_at_layer!(3);
-    invert_ntt_at_layer!(4);
-    invert_ntt_at_layer!(5);
-    invert_ntt_at_layer!(6);
-    invert_ntt_at_layer!(7);
-
-    hax_lib::debug_assert!(
-        re.coefficients[0].abs() < 128 * (K as i32) * 3329
-            && re.coefficients[1].abs() < 128 * (K as i32) * 3329
-    );
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
         .enumerate()
         .skip(2)
-        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * 3329));
+        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
     for i in 0..8 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
