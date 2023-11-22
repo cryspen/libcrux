@@ -120,22 +120,14 @@ pub(crate) fn generate_keypair<
     ),
     Option<Error>,
 ) {
-    let mut prf_input: [u8; 33] = [0; 33];
-
-    let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
-    let mut error_as_ntt = [PolynomialRingElement::ZERO; K];
-
-    // N := 0
-    let mut domain_separator: u8 = 0;
-
     // (ρ,σ) := G(d)
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed_for_A), true);
 
-    let mut prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
-    let (secret_as_ntt, mut domain_separator) =
+    let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
+    let (secret_as_ntt, domain_separator) =
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
     let (error_as_ntt, _) =
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, domain_separator);
