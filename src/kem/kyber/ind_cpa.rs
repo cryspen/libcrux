@@ -68,6 +68,8 @@ fn sample_matrix_A<const K: usize>(
     (A_transpose, sampling_A_error)
 }
 
+/// Sample a vector of ring elements from a centered binomial distribution and
+/// convert them into their NTT representations.
 #[inline(always)]
 fn sample_vector_cbd_then_ntt<
     const K: usize,

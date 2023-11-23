@@ -73,14 +73,7 @@ let compute_As_plus_e
                     Core.Ops.Range.f_start = sz 0;
                     Core.Ops.Range.f_end
                     =
-                    Core.Slice.impl__len (Rust_primitives.unsize (result.[ i ]
-                            <:
-                            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                        <:
-                        t_Slice i32)
-                    <:
-                    usize
+                    Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                   }
                   <:
                   Core.Ops.Range.t_Range usize)
@@ -168,14 +161,7 @@ let compute_message
   let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end
-              =
-              Core.Slice.impl__len (Rust_primitives.unsize result
-                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                  <:
-                  t_Slice i32)
-              <:
-              usize
+              Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -256,14 +242,7 @@ let compute_ring_element_v
   let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end
-              =
-              Core.Slice.impl__len (Rust_primitives.unsize result
-                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                  <:
-                  t_Slice i32)
-              <:
-              usize
+              Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -383,14 +362,7 @@ let compute_vector_u
                     Core.Ops.Range.f_start = sz 0;
                     Core.Ops.Range.f_end
                     =
-                    Core.Slice.impl__len (Rust_primitives.unsize (result.[ i ]
-                            <:
-                            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                        <:
-                        t_Slice i32)
-                    <:
-                    usize
+                    Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                   }
                   <:
                   Core.Ops.Range.t_Range usize)

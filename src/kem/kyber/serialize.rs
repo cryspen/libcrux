@@ -1,11 +1,14 @@
 use super::{
-    arithmetic::{to_unsigned_representative, PolynomialRingElement, StandardFieldElement},
+    arithmetic::{to_unsigned_representative, FieldElement, PolynomialRingElement},
     compress::{
         compress_ciphertext_coefficient, compress_message_coefficient,
         decompress_ciphertext_coefficient, decompress_message_coefficient,
     },
-    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
+    constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
+
+#[cfg(not(hax))]
+use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
 
 #[inline(always)]
 pub(super) fn compress_then_serialize_message(
@@ -33,7 +36,7 @@ pub(super) fn deserialize_then_decompress_message(
 
     for (i, byte) in serialized.iter().enumerate() {
         for j in 0..8 {
-            let coefficient_compressed = ((byte >> j) & 0x1) as StandardFieldElement;
+            let coefficient_compressed = ((byte >> j) & 0x1) as FieldElement;
             re.coefficients[8 * i + j] = decompress_message_coefficient(coefficient_compressed);
         }
     }
@@ -65,9 +68,9 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
     let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(3).enumerate() {
-        let byte1 = bytes[0] as StandardFieldElement;
-        let byte2 = bytes[1] as StandardFieldElement;
-        let byte3 = bytes[2] as StandardFieldElement;
+        let byte1 = bytes[0] as FieldElement;
+        let byte2 = bytes[1] as FieldElement;
+        let byte3 = bytes[2] as FieldElement;
 
         re.coefficients[2 * i] = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
         re.coefficients[2 * i + 1] = (byte3 << 4) | ((byte2 >> 4) & 0x0F);
@@ -227,11 +230,11 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
     let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(5).enumerate() {
-        let byte1 = bytes[0] as StandardFieldElement;
-        let byte2 = bytes[1] as StandardFieldElement;
-        let byte3 = bytes[2] as StandardFieldElement;
-        let byte4 = bytes[3] as StandardFieldElement;
-        let byte5 = bytes[4] as StandardFieldElement;
+        let byte1 = bytes[0] as FieldElement;
+        let byte2 = bytes[1] as FieldElement;
+        let byte3 = bytes[2] as FieldElement;
+        let byte4 = bytes[3] as FieldElement;
+        let byte5 = bytes[4] as FieldElement;
 
         let coefficient1 = (byte2 & 0x03) << 8 | (byte1 & 0xFF);
         re.coefficients[4 * i] = decompress_ciphertext_coefficient(10, coefficient1);
@@ -255,17 +258,17 @@ fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
     let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(11).enumerate() {
-        let byte1 = bytes[0] as StandardFieldElement;
-        let byte2 = bytes[1] as StandardFieldElement;
-        let byte3 = bytes[2] as StandardFieldElement;
-        let byte4 = bytes[3] as StandardFieldElement;
-        let byte5 = bytes[4] as StandardFieldElement;
-        let byte6 = bytes[5] as StandardFieldElement;
-        let byte7 = bytes[6] as StandardFieldElement;
-        let byte8 = bytes[7] as StandardFieldElement;
-        let byte9 = bytes[8] as StandardFieldElement;
-        let byte10 = bytes[9] as StandardFieldElement;
-        let byte11 = bytes[10] as StandardFieldElement;
+        let byte1 = bytes[0] as FieldElement;
+        let byte2 = bytes[1] as FieldElement;
+        let byte3 = bytes[2] as FieldElement;
+        let byte4 = bytes[3] as FieldElement;
+        let byte5 = bytes[4] as FieldElement;
+        let byte6 = bytes[5] as FieldElement;
+        let byte7 = bytes[6] as FieldElement;
+        let byte8 = bytes[7] as FieldElement;
+        let byte9 = bytes[8] as FieldElement;
+        let byte10 = bytes[9] as FieldElement;
+        let byte11 = bytes[10] as FieldElement;
 
         let coefficient1 = (byte2 & 0x7) << 8 | byte1;
         re.coefficients[8 * i] = decompress_ciphertext_coefficient(11, coefficient1);
@@ -316,10 +319,10 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
     let mut re = PolynomialRingElement::ZERO;
 
     for (i, byte) in serialized.iter().enumerate() {
-        let coefficient1 = (byte & 0x0F) as StandardFieldElement;
+        let coefficient1 = (byte & 0x0F) as FieldElement;
         re.coefficients[2 * i] = decompress_ciphertext_coefficient(4, coefficient1);
 
-        let coefficient2 = ((byte >> 4) & 0x0F) as StandardFieldElement;
+        let coefficient2 = ((byte >> 4) & 0x0F) as FieldElement;
         re.coefficients[2 * i + 1] = decompress_ciphertext_coefficient(4, coefficient2);
     }
 
@@ -332,11 +335,11 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
     let mut re = PolynomialRingElement::ZERO;
 
     for (i, bytes) in serialized.chunks_exact(5).enumerate() {
-        let byte1 = bytes[0] as StandardFieldElement;
-        let byte2 = bytes[1] as StandardFieldElement;
-        let byte3 = bytes[2] as StandardFieldElement;
-        let byte4 = bytes[3] as StandardFieldElement;
-        let byte5 = bytes[4] as StandardFieldElement;
+        let byte1 = bytes[0] as FieldElement;
+        let byte2 = bytes[1] as FieldElement;
+        let byte3 = bytes[2] as FieldElement;
+        let byte4 = bytes[3] as FieldElement;
+        let byte5 = bytes[4] as FieldElement;
 
         let coefficient1 = byte1 & 0x1F;
         re.coefficients[8 * i] = decompress_ciphertext_coefficient(5, coefficient1);

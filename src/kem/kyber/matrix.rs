@@ -3,9 +3,16 @@ use super::{
         add_to_ring_element, barrett_reduce, montgomery_reduce, to_standard_domain,
         PolynomialRingElement,
     },
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
     ntt::{invert_ntt_montgomery, ntt_multiply},
 };
 
+/// This file contains functions that compute various expressions involving
+/// vectors and matrices. The computation of these expressions has been
+/// abstracted away into these functions in order to save on loop iterations
+/// and make the code run faster.
+
+/// Compute v − NTT^{−1}(sˆT ◦ NTT(u))
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     v: &PolynomialRingElement,
@@ -21,7 +28,7 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
 
     result = invert_ntt_montgomery::<K>(result);
 
-    for i in 0..result.coefficients.len() {
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
         let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
         result.coefficients[i] = barrett_reduce(v.coefficients[i] - coefficient_normal_form);
     }
@@ -29,7 +36,7 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     result
 }
 
-// v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
+/// Compute NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     t_as_ntt: &[PolynomialRingElement; K],
@@ -46,7 +53,7 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
 
     result = invert_ntt_montgomery::<K>(result);
 
-    for i in 0..result.coefficients.len() {
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
         let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
         result.coefficients[i] = barrett_reduce(
             coefficient_normal_form + error_2.coefficients[i] + message.coefficients[i],
@@ -56,7 +63,7 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     result
 }
 
-// u := NTT^{-1}(AˆT ◦ rˆ) + e_1
+/// Compute u := NTT^{-1}(AˆT ◦ rˆ) + e_1
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     a_as_ntt: &[[PolynomialRingElement; K]; K],
@@ -73,7 +80,7 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
 
         result[i] = invert_ntt_montgomery::<K>(result[i]);
 
-        for j in 0..result[i].coefficients.len() {
+        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
             let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1441);
 
             result[i].coefficients[j] =
@@ -84,6 +91,7 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     result
 }
 
+/// compute Aˆ ◦ sˆ + eˆ
 #[inline(always)]
 #[allow(non_snake_case)]
 pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
@@ -99,7 +107,7 @@ pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
             result[i] = add_to_ring_element::<K>(result[i], &product);
         }
 
-        for j in 0..result[i].coefficients.len() {
+        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
             // The coefficients are of the form aR^{-1} mod q, which means
             // calling to_montgomery_domain() on them should return a mod q.
             let coefficient_normal_form = to_standard_domain(result[i].coefficients[j]);

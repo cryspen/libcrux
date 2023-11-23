@@ -11,7 +11,6 @@ use super::constants::SHARED_SECRET_SIZE;
 fn is_non_zero(value: u8) -> u8 {
     let value = value as u16;
 
-    // (!value) + 1 ≡ -value (mod 2^16)
     let result = ((value | (!value).wrapping_add(1)) >> 8) & 1;
 
     result as u8

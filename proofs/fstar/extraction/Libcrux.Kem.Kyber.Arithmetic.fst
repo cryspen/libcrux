@@ -4,13 +4,13 @@ open Core
 open FStar.Mul
 
 unfold
+let t_FieldElement = i32
+
+unfold
 let t_FieldElementTimesMontgomeryR = i32
 
 unfold
 let t_MontgomeryFieldElement = i32
-
-unfold
-let t_StandardFieldElement = i32
 
 let v_BARRETT_MULTIPLIER: i64 = 20159L
 
@@ -19,6 +19,8 @@ let v_BARRETT_SHIFT: i64 = 26L
 let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 
 let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
+
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
@@ -88,7 +90,8 @@ let montgomery_reduce (value: i32)
 
 let montgomery_multiply_sfe_by_fer (fe fer: i32) : i32 = montgomery_reduce (fe *! fer <: i32)
 
-let to_standard_domain (mfe: i32) : i32 = montgomery_reduce (mfe *! 1353l <: i32)
+let to_standard_domain (mfe: i32) : i32 =
+  montgomery_reduce (mfe *! v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS <: i32)
 
 let to_unsigned_representative (fe: i32)
     : Prims.Pure u16

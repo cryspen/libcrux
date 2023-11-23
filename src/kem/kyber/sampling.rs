@@ -1,5 +1,5 @@
 use super::{
-    arithmetic::{PolynomialRingElement, StandardFieldElement},
+    arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     Error,
 };
@@ -63,9 +63,8 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
         let coin_toss_outcomes = even_bits + odd_bits;
 
         for outcome_set in (0..u32::BITS).step_by(4) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as StandardFieldElement;
-            let outcome_2 =
-                ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as StandardFieldElement;
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as FieldElement;
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as FieldElement;
 
             let offset = (outcome_set >> 2) as usize;
             sampled.coefficients[8 * chunk_number + offset] = outcome_1 - outcome_2;
@@ -93,9 +92,8 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
         let coin_toss_outcomes = first_bits + second_bits + third_bits;
 
         for outcome_set in (0..24).step_by(6) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as StandardFieldElement;
-            let outcome_2 =
-                ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as StandardFieldElement;
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as FieldElement;
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as FieldElement;
 
             let offset = (outcome_set / 6) as usize;
             sampled.coefficients[4 * chunk_number + offset] = outcome_1 - outcome_2;
