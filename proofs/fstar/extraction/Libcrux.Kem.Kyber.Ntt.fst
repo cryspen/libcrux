@@ -31,14 +31,12 @@ let ntt_multiply_binomials (a0, a1: (i32 & i32)) (b0, b1: (i32 & i32)) (zeta: i3
   <:
   (i32 & i32)
 
-let invert_ntt_at_layer
-      (layer: u8)
-      (zetas_index: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (initial_coefficient_bound: i32)
-    : (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-  let step:usize = sz 1 <<! layer in
-  let re, zetas_index:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+  let _:Prims.unit = () <: Prims.unit in
+  let zeta_i:usize = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2 in
+  let step:usize = sz 1 <<! 1l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = sz 128 /! step <: usize
@@ -47,13 +45,11 @@ let invert_ntt_at_layer
             Core.Ops.Range.t_Range usize)
         <:
         Core.Ops.Range.t_Range usize)
-      (re, zetas_index <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
       (fun temp_0_ round ->
-          let re, zetas_index:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-            temp_0_
-          in
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
           let round:usize = round in
-          let zetas_index:usize = zetas_index -! sz 1 in
+          let zeta_i:usize = zeta_i -! sz 1 in
           let offset:usize = (round *! step <: usize) *! sz 2 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -97,7 +93,7 @@ let invert_ntt_at_layer
                       Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
-                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zetas_index ] <: i32)
+                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                               <:
                               i32)
                           <:
@@ -108,60 +104,435 @@ let invert_ntt_at_layer
                   in
                   re)
           in
-          re, zetas_index <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+  in
+  let step:usize = sz 1 <<! 2l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i -! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let a_minus_b:i32 =
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                          (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                            <:
+                            i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                              <:
+                              i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+  in
+  let step:usize = sz 1 <<! 3l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i -! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let a_minus_b:i32 =
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                          (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                            <:
+                            i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                              <:
+                              i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+  in
+  let step:usize = sz 1 <<! 4l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i -! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let a_minus_b:i32 =
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                          (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                            <:
+                            i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                              <:
+                              i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+  in
+  let step:usize = sz 1 <<! 5l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i -! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let a_minus_b:i32 =
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                          (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                            <:
+                            i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                              <:
+                              i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+  in
+  let step:usize = sz 1 <<! 6l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i -! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let a_minus_b:i32 =
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                          (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                            <:
+                            i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                              <:
+                              i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+  in
+  let step:usize = sz 1 <<! 7l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i -! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let a_minus_b:i32 =
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                    (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                          (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                            <:
+                            i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                              <:
+                              i32)
+                          <:
+                          i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
   let _:Prims.unit = () <: Prims.unit in
-  let _:Prims.unit = () <: Prims.unit in
-  re, zetas_index <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
-
-let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-  let initial_coefficient_bound:i32 =
-    (cast (v_K <: usize) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-  in
-  let _:Prims.unit = () <: Prims.unit in
-  let zetas_index:usize = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2 in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    invert_ntt_at_layer 1uy zetas_index re initial_coefficient_bound
-  in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    invert_ntt_at_layer 2uy zetas_index re initial_coefficient_bound
-  in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    invert_ntt_at_layer 3uy zetas_index re initial_coefficient_bound
-  in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    invert_ntt_at_layer 4uy zetas_index re initial_coefficient_bound
-  in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    invert_ntt_at_layer 5uy zetas_index re initial_coefficient_bound
-  in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    invert_ntt_at_layer 6uy zetas_index re initial_coefficient_bound
-  in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, _:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    invert_ntt_at_layer 7uy zetas_index re initial_coefficient_bound
-  in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let _:Prims.unit = () in
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -196,86 +567,11 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
   in
   re
 
-let ntt_at_layer
-      (layer: u8)
-      (zetas_index: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (initial_coefficient_bound: i32)
-    : (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-  let step:usize = sz 1 <<! layer in
-  let re, zetas_index:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 128 /! step <: usize
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
-      (re, zetas_index <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
-      (fun temp_0_ round ->
-          let re, zetas_index:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-            temp_0_
-          in
-          let round:usize = round in
-          let zetas_index:usize = zetas_index +! sz 1 in
-          let offset:usize = (round *! step <: usize) *! sz 2 in
-          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                      Core.Ops.Range.f_start = offset;
-                      Core.Ops.Range.f_end = offset +! step <: usize
-                    }
-                    <:
-                    Core.Ops.Range.t_Range usize)
-                <:
-                Core.Ops.Range.t_Range usize)
-              re
-              (fun re j ->
-                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
-                  let j:usize = j in
-                  let t:i32 =
-                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
-                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
-                        <:
-                        i32)
-                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zetas_index ] <: i32)
-                  in
-                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-                    {
-                      re with
-                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                      =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                        (j +! step <: usize)
-                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
-                    }
-                    <:
-                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-                  in
-                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-                    {
-                      re with
-                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                      =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                        j
-                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
-                    }
-                    <:
-                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-                  in
-                  re)
-          in
-          re, zetas_index <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
-  in
-  let _:Prims.unit = () <: Prims.unit in
-  re, zetas_index <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
-
 let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
-  let zetas_index:usize = sz 0 in
-  let zetas_index:usize = zetas_index +! sz 1 in
+  let zeta_i:usize = sz 0 in
+  let zeta_i:usize = zeta_i +! sz 1 in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
@@ -320,41 +616,396 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
           re)
   in
   let _:Prims.unit = () <: Prims.unit in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 6uy zetas_index re 3l
+  let step:usize = sz 1 <<! 6l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 5uy zetas_index re 3l
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 5l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 4uy zetas_index re 3l
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 4l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 3uy zetas_index re 3l
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 3l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 2uy zetas_index re 3l
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 2l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, _:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 1uy zetas_index re 3l
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 1l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let _:Prims.unit = () in
+  let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     {
       re with
@@ -503,50 +1154,463 @@ let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-  let initial_coefficient_bound:i32 = Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS -! 1l in
   let _:Prims.unit = () <: Prims.unit in
-  let zetas_index:usize = sz 0 in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 7uy zetas_index re initial_coefficient_bound
+  let zeta_i:usize = sz 0 in
+  let step:usize = sz 1 <<! 7l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 6uy zetas_index re initial_coefficient_bound
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 6l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 5uy zetas_index re initial_coefficient_bound
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 5l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 4uy zetas_index re initial_coefficient_bound
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 4l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 3uy zetas_index re initial_coefficient_bound
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 3l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, lhs:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 2uy zetas_index re initial_coefficient_bound
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 2l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let zetas_index:usize = lhs in
-  let _:Prims.unit = () in
-  let lhs, _:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
-    ntt_at_layer 1uy zetas_index re initial_coefficient_bound
+  let _:Prims.unit = () <: Prims.unit in
+  let step:usize = sz 1 <<! 1l in
+  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = sz 128 /! step <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+      (fun temp_0_ round ->
+          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
+          let round:usize = round in
+          let zeta_i:usize = zeta_i +! sz 1 in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                      Core.Ops.Range.f_start = offset;
+                      Core.Ops.Range.f_end = offset +! step <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize)
+                <:
+                Core.Ops.Range.t_Range usize)
+              re
+              (fun re j ->
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+                  let j:usize = j in
+                  let t:i32 =
+                    Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                        <:
+                        i32)
+                      (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        (j +! step <: usize)
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                    {
+                      re with
+                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      =
+                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        j
+                        ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                    }
+                    <:
+                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+                  in
+                  re)
+          in
+          re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = lhs in
-  let _:Prims.unit = () in
+  let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     {
       re with
