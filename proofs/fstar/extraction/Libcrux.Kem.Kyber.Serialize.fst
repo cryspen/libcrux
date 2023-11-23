@@ -54,12 +54,12 @@ let compress_then_serialize_10_
                 u16)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 5 *! i <: usize)
               (cast (coefficient1 &. 255l <: i32) <: u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 1 <: usize)
               (((cast (coefficient2 &. 63l <: i32) <: u8) <<! 2l <: u8) |.
                 (cast ((coefficient1 >>! 8l <: i32) &. 3l <: i32) <: u8)
@@ -67,7 +67,7 @@ let compress_then_serialize_10_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 2 <: usize)
               (((cast (coefficient3 &. 15l <: i32) <: u8) <<! 4l <: u8) |.
                 (cast ((coefficient2 >>! 6l <: i32) &. 15l <: i32) <: u8)
@@ -75,7 +75,7 @@ let compress_then_serialize_10_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 3 <: usize)
               (((cast (coefficient4 &. 3l <: i32) <: u8) <<! 6l <: u8) |.
                 (cast ((coefficient3 >>! 4l <: i32) &. 63l <: i32) <: u8)
@@ -83,7 +83,7 @@ let compress_then_serialize_10_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 4 <: usize)
               (cast ((coefficient4 >>! 2l <: i32) &. 255l <: i32) <: u8)
           in
@@ -170,12 +170,12 @@ let compress_then_serialize_11_
                 u16)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 11 *! i <: usize)
               (cast (coefficient1 <: i32) <: u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 1 <: usize)
               (((cast (coefficient2 &. 31l <: i32) <: u8) <<! 3l <: u8) |.
                 (cast (coefficient1 >>! 8l <: i32) <: u8)
@@ -183,7 +183,7 @@ let compress_then_serialize_11_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 2 <: usize)
               (((cast (coefficient3 &. 3l <: i32) <: u8) <<! 6l <: u8) |.
                 (cast (coefficient2 >>! 5l <: i32) <: u8)
@@ -191,12 +191,12 @@ let compress_then_serialize_11_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 3 <: usize)
               (cast ((coefficient3 >>! 2l <: i32) &. 255l <: i32) <: u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 4 <: usize)
               (((cast (coefficient4 &. 127l <: i32) <: u8) <<! 1l <: u8) |.
                 (cast (coefficient3 >>! 10l <: i32) <: u8)
@@ -204,7 +204,7 @@ let compress_then_serialize_11_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 5 <: usize)
               (((cast (coefficient5 &. 15l <: i32) <: u8) <<! 4l <: u8) |.
                 (cast (coefficient4 >>! 7l <: i32) <: u8)
@@ -212,7 +212,7 @@ let compress_then_serialize_11_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 6 <: usize)
               (((cast (coefficient6 &. 1l <: i32) <: u8) <<! 7l <: u8) |.
                 (cast (coefficient5 >>! 4l <: i32) <: u8)
@@ -220,12 +220,12 @@ let compress_then_serialize_11_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 7 <: usize)
               (cast ((coefficient6 >>! 1l <: i32) &. 255l <: i32) <: u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 8 <: usize)
               (((cast (coefficient7 &. 63l <: i32) <: u8) <<! 2l <: u8) |.
                 (cast (coefficient6 >>! 9l <: i32) <: u8)
@@ -233,7 +233,7 @@ let compress_then_serialize_11_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 9 <: usize)
               (((cast (coefficient8 &. 7l <: i32) <: u8) <<! 5l <: u8) |.
                 (cast (coefficient7 >>! 6l <: i32) <: u8)
@@ -241,7 +241,7 @@ let compress_then_serialize_11_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 10 <: usize)
               (cast (coefficient8 >>! 3l <: i32) <: u8)
           in
@@ -296,7 +296,7 @@ let compress_then_serialize_4_
             u8
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               i
               ((coefficient2 <<! 4l <: u8) |. coefficient1 <: u8)
           in
@@ -423,12 +423,12 @@ let compress_then_serialize_5_
             u8
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 5 *! i <: usize)
               (((coefficient2 &. 7uy <: u8) <<! 5l <: u8) |. coefficient1 <: u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 1 <: usize)
               ((((coefficient4 &. 1uy <: u8) <<! 7l <: u8) |. (coefficient3 <<! 2l <: u8) <: u8) |.
                 (coefficient2 >>! 3l <: u8)
@@ -436,12 +436,12 @@ let compress_then_serialize_5_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 2 <: usize)
               (((coefficient5 &. 15uy <: u8) <<! 4l <: u8) |. (coefficient4 >>! 1l <: u8) <: u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 3 <: usize)
               ((((coefficient7 &. 3uy <: u8) <<! 6l <: u8) |. (coefficient6 <<! 1l <: u8) <: u8) |.
                 (coefficient5 >>! 4l <: u8)
@@ -449,7 +449,7 @@ let compress_then_serialize_5_
                 u8)
           in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 5 *! i <: usize) +! sz 4 <: usize)
               ((coefficient8 <<! 3l <: u8) |. (coefficient7 >>! 2l <: u8) <: u8)
           in
@@ -493,7 +493,7 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_Polynomi
                 let coefficient_compressed:u8 =
                   Libcrux.Kem.Kyber.Compress.compress_message_coefficient coefficient
                 in
-                Rust_primitives.Hax.update_at serialized
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
                   i
                   ((serialized.[ i ] <: u8) |. (coefficient_compressed <<! j <: u8) <: u8))
           <:
@@ -557,7 +557,8 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 4 *! i <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient1
                   <:
@@ -572,7 +573,8 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 1 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient2
                   <:
@@ -587,7 +589,8 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 2 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient3
                   <:
@@ -602,7 +605,8 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 3 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient4
                   <:
@@ -649,7 +653,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 8 *! i <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient1
                   <:
@@ -664,7 +669,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 1 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient2
                   <:
@@ -682,7 +688,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 2 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient3
                   <:
@@ -697,7 +704,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 3 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient4
                   <:
@@ -712,7 +720,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 4 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient5
                   <:
@@ -730,7 +739,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 5 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient6
                   <:
@@ -745,7 +755,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 6 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient7
                   <:
@@ -760,7 +771,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 7 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient8
                   <:
@@ -796,7 +808,8 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 2 *! i <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 4uy coefficient1
                   <:
@@ -811,7 +824,8 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 2 *! i <: usize) +! sz 1 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 4uy coefficient2
                   <:
@@ -852,7 +866,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 8 *! i <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient1
                   <:
@@ -867,7 +882,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 1 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient2
                   <:
@@ -882,7 +898,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 2 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient3
                   <:
@@ -897,7 +914,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 3 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient4
                   <:
@@ -912,7 +930,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 4 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient5
                   <:
@@ -927,7 +946,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 5 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient6
                   <:
@@ -942,7 +962,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 6 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient7
                   <:
@@ -957,7 +978,8 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 7 <: usize)
                 (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient8
                   <:
@@ -1006,7 +1028,8 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
                     re with
                     Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     =
-                    Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       ((sz 8 *! i <: usize) +! j <: usize)
                       (Libcrux.Kem.Kyber.Compress.decompress_message_coefficient coefficient_compressed
 
@@ -1075,7 +1098,8 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 2 *! i <: usize)
                 (((byte2 &. 15l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) <: i32)
             }
@@ -1087,7 +1111,8 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 2 *! i <: usize) +! sz 1 <: usize)
                 ((byte3 <<! 4l <: i32) |. ((byte2 >>! 4l <: i32) &. 15l <: i32) <: i32)
             }
@@ -1125,12 +1150,12 @@ let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
             Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ] <: i32)
           in
           let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 3 *! i <: usize)
               (cast (coefficient1 &. 255us <: u16) <: u8)
           in
           let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 3 *! i <: usize) +! sz 1 <: usize)
               (cast ((coefficient1 >>! 8l <: u16) |. ((coefficient2 &. 15us <: u16) <<! 4l <: u16)
                     <:
@@ -1139,7 +1164,7 @@ let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                 u8)
           in
           let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.update_at serialized
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 3 *! i <: usize) +! sz 2 <: usize)
               (cast ((coefficient2 >>! 4l <: u16) &. 255us <: u16) <: u8)
           in

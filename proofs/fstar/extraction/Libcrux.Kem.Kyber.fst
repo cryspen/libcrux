@@ -39,7 +39,7 @@ let decapsulate
       (Rust_primitives.unsize decrypted <: t_Slice u8)
   in
   let to_hash:t_Array u8 (sz 64) =
-    Rust_primitives.Hax.update_at to_hash
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)
@@ -67,7 +67,7 @@ let decapsulate
       implicit_rejection_value
   in
   let to_hash:t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
-    Rust_primitives.Hax.update_at to_hash
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)
@@ -114,7 +114,7 @@ let encapsulate
       (Rust_primitives.unsize randomness <: t_Slice u8)
   in
   let to_hash:t_Array u8 (sz 64) =
-    Rust_primitives.Hax.update_at to_hash
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)

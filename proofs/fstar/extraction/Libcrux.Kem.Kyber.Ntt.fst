@@ -73,7 +73,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
                           (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
@@ -90,7 +91,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
                               (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
@@ -144,7 +146,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
                           (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
@@ -161,7 +164,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
                               (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
@@ -215,7 +219,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
                           (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
@@ -232,7 +237,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
                               (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
@@ -286,7 +292,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
                           (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
@@ -303,7 +310,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
                               (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
@@ -357,7 +365,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
                           (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
@@ -374,7 +383,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
                               (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
@@ -428,7 +438,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
                           (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
@@ -445,7 +456,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
                               (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
@@ -499,7 +511,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
                           (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
@@ -516,7 +529,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
                               (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
@@ -551,7 +565,8 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
             re with
             Libcrux.Kem.Kyber.Arithmetic.f_coefficients
             =
-            Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               i
               (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce (re
                       .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
@@ -594,7 +609,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (j +! sz 128 <: usize)
                 ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
             }
@@ -606,7 +622,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 j
                 ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
             }
@@ -657,7 +674,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -669,7 +687,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -722,7 +741,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -734,7 +754,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -787,7 +808,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -799,7 +821,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -852,7 +875,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -864,7 +888,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -917,7 +942,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -929,7 +955,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -982,7 +1009,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -994,7 +1022,8 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -1070,7 +1099,8 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
               out with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 4 *! i <: usize)
                 product._1
             }
@@ -1082,7 +1112,8 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
               out with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 1 <: usize)
                 product._2
             }
@@ -1126,7 +1157,8 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
               out with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 2 <: usize)
                 product._1
             }
@@ -1138,7 +1170,8 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
               out with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               =
-              Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 3 <: usize)
                 product._2
             }
@@ -1197,7 +1230,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -1209,7 +1243,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -1262,7 +1297,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -1274,7 +1310,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -1327,7 +1364,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -1339,7 +1377,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -1392,7 +1431,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -1404,7 +1444,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -1457,7 +1498,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -1469,7 +1511,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -1522,7 +1565,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -1534,7 +1578,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
@@ -1587,7 +1632,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         (j +! step <: usize)
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
                     }
@@ -1599,7 +1645,8 @@ let ntt_vector_u
                       re with
                       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       =
-                      Rust_primitives.Hax.update_at re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         j
                         ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
                     }
