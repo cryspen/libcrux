@@ -2,7 +2,7 @@
 //!
 //! Errors thrown by crypto functions implementing the [`crate::HpkeCrypto`] traits.
 
-use std::fmt::Display;
+use core::fmt::Display;
 
 /// Errors thrown by [`crate::HpkeCrypto`] trait implementations.
 #[derive(Debug)]
@@ -44,7 +44,7 @@ pub enum Error {
 impl std::error::Error for Error {}
 
 impl Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "HPKE Crypto Error: {:?}", self)
     }
 }
