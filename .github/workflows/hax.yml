@@ -41,8 +41,11 @@ jobs:
         run: |
           curl -L https://github.com/FStarLang/FStar/releases/download/v2023.09.03/fstar_2023.09.03_Linux_x86_64.tar.gz \
             --output Fstar.tar.gz
-          tar --extract --verbose --file Fstar.tar.gz
+          tar --extract --file Fstar.tar.gz
           mv fstar Fstar
+          ls /home/runner/work
+          ls /home/runner/work/libcrux/libcrux/../hax/proof-libs/fstar/../../../
+          false
 
       - name: ⤵ Clone hax repository
         uses: actions/checkout@v4
