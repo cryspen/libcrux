@@ -3,8 +3,11 @@ use super::{
         barrett_reduce, montgomery_multiply_sfe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
+
+#[cfg(not(hax))]
+use super::constants::FIELD_MODULUS;
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
