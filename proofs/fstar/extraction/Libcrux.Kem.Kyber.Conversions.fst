@@ -21,7 +21,7 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
   in
   let out:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
   let out:t_Array u8 v_LEN =
-    Rust_primitives.Hax.update_at out
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = Core.Slice.impl__len slice <: usize }
         <:
         Core.Ops.Range.t_Range usize)
@@ -60,7 +60,7 @@ let impl_1 (v_LEN: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
           self with
           f_value
           =
-          Rust_primitives.Hax.update_at self.f_value
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_range self.f_value
             ({
                 Core.Ops.Range.f_start = self.f_pointer;
                 Core.Ops.Range.f_end

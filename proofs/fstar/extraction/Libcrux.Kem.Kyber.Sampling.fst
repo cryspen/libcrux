@@ -63,7 +63,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                     sampled with
                     Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     =
-                    Rust_primitives.Hax.update_at sampled
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize sampled
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       ((sz 8 *! chunk_number <: usize) +! offset <: usize)
                       (outcome_1_ -! outcome_2_ <: i32)
@@ -131,7 +131,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                     sampled with
                     Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     =
-                    Rust_primitives.Hax.update_at sampled
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize sampled
                         .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       ((sz 4 *! chunk_number <: usize) +! offset <: usize)
                       (outcome_1_ -! outcome_2_ <: i32)
@@ -203,7 +203,8 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
                     out with
                     Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     =
-                    Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       sampled_coefficients
                       d1
                   }
@@ -229,7 +230,8 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
                     out with
                     Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     =
-                    Rust_primitives.Hax.update_at out.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                       sampled_coefficients
                       d2
                   }

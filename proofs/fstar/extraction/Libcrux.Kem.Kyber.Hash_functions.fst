@@ -28,7 +28,7 @@ let v_XOFx4 (v_LEN v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
       (fun out i ->
           let out:t_Array (t_Array u8 v_LEN) v_K = out in
           let i:usize = i in
-          Rust_primitives.Hax.update_at out
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
             i
             (Libcrux.Digest.shake128 v_LEN
                 (Rust_primitives.unsize (input.[ i ] <: t_Array u8 (sz 34)) <: t_Slice u8)

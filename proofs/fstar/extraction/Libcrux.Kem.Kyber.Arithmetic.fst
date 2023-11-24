@@ -125,7 +125,7 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_KyberPolynomialRingElement)
             lhs with
             f_coefficients
             =
-            Rust_primitives.Hax.update_at lhs.f_coefficients
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs.f_coefficients
               i
               ((lhs.f_coefficients.[ i ] <: i32) +! (rhs.f_coefficients.[ i ] <: i32) <: i32)
             <:
