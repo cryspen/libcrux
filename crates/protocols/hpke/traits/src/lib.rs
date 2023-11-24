@@ -1,4 +1,12 @@
 #![doc = include_str!("../Readme.md")]
+#![no_std]
+
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
+
+use alloc::string::String;
+use alloc::vec::Vec;
 
 use error::Error;
 use types::{AeadAlgorithm, KemAlgorithm};

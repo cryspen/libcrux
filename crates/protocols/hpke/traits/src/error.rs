@@ -2,6 +2,7 @@
 //!
 //! Errors thrown by crypto functions implementing the [`crate::HpkeCrypto`] traits.
 
+use alloc::string::String;
 use core::fmt::Display;
 
 /// Errors thrown by [`crate::HpkeCrypto`] trait implementations.
