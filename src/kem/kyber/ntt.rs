@@ -3,7 +3,7 @@ use super::{
         barrett_reduce, montgomery_multiply_sfe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -39,7 +39,8 @@ macro_rules! ntt_at_layer {
         }
 
         hax_lib::debug_assert!($re.coefficients.into_iter().all(|coefficient| {
-            coefficient.abs() < $initial_coefficient_bound + ((8 - $layer) * 3 * (3329 / 2))
+            coefficient.abs()
+                < $initial_coefficient_bound + ((8 - $layer) * ((3 * FIELD_MODULUS) / 2))
         }));
     };
 }
@@ -73,7 +74,7 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| { coefficient.abs() < 3 + ((3 * 3329) / 2) }));
+        .all(|coefficient| { coefficient.abs() < 3 + ((3 * FIELD_MODULUS) / 2) }));
 
     ntt_at_layer!(6, zeta_i, re, 3);
     ntt_at_layer!(5, zeta_i, re, 3);
@@ -124,7 +125,7 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() < (K as i32) * 3329));
+        .all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
 
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
@@ -159,15 +160,15 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     invert_ntt_at_layer!(7);
 
     hax_lib::debug_assert!(
-        re.coefficients[0].abs() < 128 * (K as i32) * 3329
-            && re.coefficients[1].abs() < 128 * (K as i32) * 3329
+        re.coefficients[0].abs() < 128 * (K as i32) * FIELD_MODULUS
+            && re.coefficients[1].abs() < 128 * (K as i32) * FIELD_MODULUS
     );
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
         .enumerate()
         .skip(2)
-        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * 3329));
+        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
     for i in 0..8 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
@@ -201,7 +202,7 @@ pub(crate) fn ntt_multiply(
     hax_lib::debug_assert!(right
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient >= -3329 && coefficient <= 3329));
+        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
 
     let mut out = PolynomialRingElement::ZERO;
 
@@ -226,7 +227,7 @@ pub(crate) fn ntt_multiply(
     hax_lib::debug_assert!(out
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient >= -3329 && coefficient <= 3329));
+        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
 
     out
 }

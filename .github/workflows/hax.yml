@@ -5,15 +5,13 @@ on:
     branches: ["dev"]
     paths:
       - 'specs/kyber/src/**'
-      - 'src/kem/kyber768/**'
-      - 'src/kem/kyber768.rs'
+      - 'src/kem/kyber/**'
 
   pull_request:
     branches: ["dev"]
     paths:
       - 'specs/kyber/src/**'
-      - 'src/kem/kyber768/**'
-      - 'src/kem/kyber768.rs'
+      - 'src/kem/kyber/**'
 
   schedule:
     - cron: '0 0 * * *'
