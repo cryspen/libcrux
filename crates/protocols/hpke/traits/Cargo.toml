@@ -13,4 +13,3 @@ repository = "https://github.com/franziskuskiefer/hpke-rs"
 serde = { version = "1.0", features = ["derive"] }
 rand_core = { version = "0.6.4" }
 getrandom = { version = "0.2", features = ["js"] }
-tls_codec = { version = "0.4.0", features = ["derive"] }
