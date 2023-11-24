@@ -16,3 +16,4 @@ getrandom = { version = "0.2", features = ["js"] }
 
 [features]
 serde = ["dep:serde"]
+std = []
