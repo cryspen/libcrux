@@ -56,6 +56,7 @@ jobs:
         run: |
           eval $(opam env)
           ./hax-driver.py --kyber-reference
+          ./hax-driver.py typecheck --admit
           # Extract the functions in the compress module individually to test
           # the function-extraction code.
           # Extract functions from the remaining modules to test the
