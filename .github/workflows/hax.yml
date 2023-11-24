@@ -74,6 +74,7 @@ jobs:
 
       - name: 🏃 Extract the Kyber specification
         run: |
+          eval $(opam env)
           # Extract the functions in the compress module individually to test
             # the function-extraction code.
           # Extract functions from the remaining modules to test the
