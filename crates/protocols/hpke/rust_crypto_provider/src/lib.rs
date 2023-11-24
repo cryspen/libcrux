@@ -1,6 +1,6 @@
 #![doc = include_str!("../Readme.md")]
 
-use std::fmt::Display;
+use core::fmt::Display;
 
 use hpke_rs_crypto::{
     error::Error,
@@ -243,7 +243,7 @@ impl HpkeTestRng for HpkeRustCryptoPrng {
 }
 
 impl Display for HpkeRustCrypto {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", Self::name())
     }
 }
