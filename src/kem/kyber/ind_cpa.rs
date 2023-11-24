@@ -38,7 +38,7 @@ fn sample_matrix_A<const K: usize>(
     seed: [u8; 34],
     transpose: bool,
 ) -> ([[KyberPolynomialRingElement; K]; K], Option<Error>) {
-    let mut A_transpose = [[KyberPolynomialRingElement::ZERO; K]; K];
+    let mut A_transpose: [[KyberPolynomialRingElement; K]; K] = panic!(); //[[KyberPolynomialRingElement::ZERO; K]; K];
     let mut sampling_A_error = None;
 
     for i in 0..K {

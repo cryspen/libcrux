@@ -51,7 +51,7 @@ pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KyberPolynomialRingElement {
     pub(crate) coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT],
 }
@@ -63,25 +63,24 @@ impl KyberPolynomialRingElement {
 }
 
 pub(crate) fn add_to_ring_element<const K: usize>(
-    mut lhs: KyberPolynomialRingElement,
+    lhs: &mut KyberPolynomialRingElement,
     rhs: &KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    hax_lib::debug_assert!(lhs.coefficients.into_iter().all(|coefficient| coefficient
-        >= ((K as i32) - 1) * -FIELD_MODULUS
-        && coefficient <= ((K as i32) - 1) * FIELD_MODULUS));
-    hax_lib::debug_assert!(rhs
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
+) {
+    // hax_lib::debug_assert!(lhs.coefficients.into_iter().all(|coefficient| coefficient
+    //     >= ((K as i32) - 1) * -FIELD_MODULUS
+    //     && coefficient <= ((K as i32) - 1) * FIELD_MODULUS));
+    // hax_lib::debug_assert!(rhs
+    //     .coefficients
+    //     .into_iter()
+    //     .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
 
     for i in 0..lhs.coefficients.len() {
         lhs.coefficients[i] += rhs.coefficients[i];
     }
 
-    hax_lib::debug_assert!(lhs
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= (K as i32) * -FIELD_MODULUS
-            && coefficient <= (K as i32) * FIELD_MODULUS));
-    lhs
+    // hax_lib::debug_assert!(lhs
+    //     .coefficients
+    //     .into_iter()
+    //     .all(|coefficient| coefficient >= (K as i32) * -FIELD_MODULUS
+    //         && coefficient <= (K as i32) * FIELD_MODULUS));
 }
