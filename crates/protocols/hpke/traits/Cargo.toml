@@ -10,7 +10,6 @@ readme = "Readme.md"
 repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
-serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 rand_core = { version = "0.6.4" }
 getrandom = { version = "0.2", features = ["js"] }
