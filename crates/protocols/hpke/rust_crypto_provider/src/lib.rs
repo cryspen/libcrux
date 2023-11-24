@@ -1,6 +1,6 @@
 #![doc = include_str!("../Readme.md")]
 
-use std::{fmt::Display, sync::RwLock};
+use std::fmt::Display;
 
 use hpke_rs_crypto::{
     error::Error,
@@ -25,7 +25,7 @@ pub struct HpkeRustCrypto {}
 
 /// The PRNG for the Rust Crypto Provider.
 pub struct HpkeRustCryptoPrng {
-    rng: RwLock<rand_chacha::ChaCha20Rng>,
+    rng: rand_chacha::ChaCha20Rng,
     #[cfg(feature = "deterministic-prng")]
     fake_rng: Vec<u8>,
 }
@@ -107,7 +107,7 @@ impl HpkeCrypto for HpkeRustCrypto {
     }
 
     fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
-        let mut rng = prng.rng.write().unwrap();
+        let rng = &mut prng.rng;
         match alg {
             KemAlgorithm::DhKem25519 => Ok(X25519StaticSecret::new(&mut *rng).to_bytes().to_vec()),
             KemAlgorithm::DhKemP256 => {
@@ -165,12 +165,12 @@ impl HpkeCrypto for HpkeRustCrypto {
             rand_chacha::ChaCha20Rng::from_entropy().fill_bytes(&mut fake_rng);
             HpkeRustCryptoPrng {
                 fake_rng,
-                rng: RwLock::new(rand_chacha::ChaCha20Rng::from_entropy()),
+                rng: rand_chacha::ChaCha20Rng::from_entropy(),
             }
         }
         #[cfg(not(feature = "deterministic-prng"))]
         HpkeRustCryptoPrng {
-            rng: RwLock::new(rand_chacha::ChaCha20Rng::from_entropy()),
+            rng: rand_chacha::ChaCha20Rng::from_entropy(),
         }
     }
 
@@ -200,23 +200,19 @@ impl HpkeCrypto for HpkeRustCrypto {
 
 impl RngCore for HpkeRustCryptoPrng {
     fn next_u32(&mut self) -> u32 {
-        let mut rng = self.rng.write().unwrap();
-        rng.next_u32()
+        self.rng.next_u32()
     }
 
     fn next_u64(&mut self) -> u64 {
-        let mut rng = self.rng.write().unwrap();
-        rng.next_u64()
+        self.rng.next_u64()
     }
 
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        let mut rng = self.rng.write().unwrap();
-        rng.fill_bytes(dest)
+        self.rng.fill_bytes(dest);
     }
 
     fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-        let mut rng = self.rng.write().unwrap();
-        rng.try_fill_bytes(dest)
+        self.rng.try_fill_bytes(dest)
     }
 }
 
@@ -239,7 +235,7 @@ impl HpkeTestRng for HpkeRustCryptoPrng {
     }
     #[cfg(not(feature = "deterministic-prng"))]
     fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
-        self.rng.write().unwrap().try_fill_bytes(dest)
+        self.rng.try_fill_bytes(dest)
     }
 
     #[cfg(not(feature = "deterministic-prng"))]
