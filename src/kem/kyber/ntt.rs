@@ -17,6 +17,8 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
+/// Represents an intermediate polynomial splitting step. All resulting coefficients
+/// are in the normal domain since the zetas have been multiplied by MONTGOMERY_R.
 macro_rules! ntt_at_layer {
     ($layer:literal, $zeta_i:ident, $re:ident, $initial_coefficient_bound:literal) => {
         let step = 1 << $layer;
@@ -42,9 +44,10 @@ macro_rules! ntt_at_layer {
     };
 }
 
-// Over time, all invocations of ntt_representation() will be replaced by
-// invocations to this function, upon which this function will be renamed back to
-// ntt_representation().
+/// This is the first of two functions that computes the NTT representation of
+/// ring elements. This one operates only on those which were produced by binomial
+/// sampling, and thus those which have small coefficients. The small
+/// coefficients let us skip the first round of Montgomery reductions.
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: PolynomialRingElement,
@@ -57,7 +60,7 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     let mut zeta_i = 0;
 
     // Due to the small coefficient bound, we can skip the first round of
-    // montgomery reductions.
+    // Montgomery reductions.
     zeta_i += 1;
 
     for j in 0..128 {
@@ -84,6 +87,9 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     re
 }
 
+/// This is the second of two functions that computes the NTT representation of
+/// ring elements. This one operates on the ring element that partly constitutes
+/// the ciphertext.
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: PolynomialRingElement,
@@ -108,6 +114,8 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
     re
 }
 
+/// Compute the inverse NTT. The coefficients of the output ring element are in
+/// the Montgomery domain.
 #[inline(always)]
 pub(crate) fn invert_ntt_montgomery<const K: usize>(
     mut re: PolynomialRingElement,
@@ -179,6 +187,8 @@ fn ntt_multiply_binomials(
     )
 }
 
+/// Multiply two polynomial ring elements in the NTT domain. The output coefficients
+/// are in the Montgomery domain.
 #[inline(always)]
 pub(crate) fn ntt_multiply(
     left: &PolynomialRingElement,

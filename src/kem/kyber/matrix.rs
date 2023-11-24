@@ -9,8 +9,7 @@ use super::{
 
 /// This file contains functions that compute various expressions involving
 /// vectors and matrices. The computation of these expressions has been
-/// abstracted away into these functions in order to save on loop iterations
-/// and make the code run faster.
+/// abstracted away into these functions in order to save on loop iterations.
 
 /// Compute v − NTT^{−1}(sˆT ◦ NTT(u))
 #[inline(always)]
