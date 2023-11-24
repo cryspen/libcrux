@@ -11,7 +11,7 @@ use p256::{
     elliptic_curve::{ecdh::diffie_hellman, sec1::ToEncodedPoint},
     PublicKey, SecretKey,
 };
-use rand::SeedableRng;
+use rand_core::SeedableRng;
 use x25519_dalek_ng::{PublicKey as X25519PublicKey, StaticSecret as X25519StaticSecret};
 
 mod aead;
@@ -211,7 +211,7 @@ impl RngCore for HpkeRustCryptoPrng {
         self.rng.fill_bytes(dest);
     }
 
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
         self.rng.try_fill_bytes(dest)
     }
 }
@@ -220,10 +220,10 @@ impl CryptoRng for HpkeRustCryptoPrng {}
 
 impl HpkeTestRng for HpkeRustCryptoPrng {
     #[cfg(feature = "deterministic-prng")]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
         // Here we fake our randomness for testing.
         if dest.len() > self.fake_rng.len() {
-            return Err(rand::Error::new(Error::InsufficientRandomness));
+            return Err(rand_core::Error::new(Error::InsufficientRandomness));
         }
         dest.clone_from_slice(&self.fake_rng.split_off(self.fake_rng.len() - dest.len()));
         Ok(())
@@ -234,7 +234,7 @@ impl HpkeTestRng for HpkeRustCryptoPrng {
         self.fake_rng = seed.to_vec();
     }
     #[cfg(not(feature = "deterministic-prng"))]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
         self.rng.try_fill_bytes(dest)
     }
 
