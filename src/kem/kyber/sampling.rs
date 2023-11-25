@@ -1,14 +1,14 @@
 use super::{
-    arithmetic::{KyberFieldElement, KyberPolynomialRingElement},
+    arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     Error,
 };
 
 pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     randomness: [u8; SEED_SIZE],
-) -> (KyberPolynomialRingElement, Option<Error>) {
+) -> (PolynomialRingElement, Option<Error>) {
     let mut sampled_coefficients: usize = 0;
-    let mut out: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+    let mut out: PolynomialRingElement = PolynomialRingElement::ZERO;
 
     // This loop is written the way it is since reasoning about early returns,
     // breaks, and continues is not well supported in Fstar at the moment. Rewriting
@@ -48,8 +48,8 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     }
 }
 
-fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRingElement {
-    let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
+    let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
         let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
@@ -63,8 +63,8 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRing
         let coin_toss_outcomes = even_bits + odd_bits;
 
         for outcome_set in (0..u32::BITS).step_by(4) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as KyberFieldElement;
-            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as KyberFieldElement;
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as FieldElement;
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as FieldElement;
 
             let offset = (outcome_set >> 2) as usize;
             sampled.coefficients[8 * chunk_number + offset] = outcome_1 - outcome_2;
@@ -78,8 +78,8 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> KyberPolynomialRing
     sampled
 }
 
-fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRingElement {
-    let mut sampled: KyberPolynomialRingElement = KyberPolynomialRingElement::ZERO;
+fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
+    let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
         let random_bits_as_u24: u32 =
@@ -92,8 +92,8 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
         let coin_toss_outcomes = first_bits + second_bits + third_bits;
 
         for outcome_set in (0..24).step_by(6) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as KyberFieldElement;
-            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as KyberFieldElement;
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as FieldElement;
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as FieldElement;
 
             let offset = (outcome_set / 6) as usize;
             sampled.coefficients[4 * chunk_number + offset] = outcome_1 - outcome_2;
@@ -110,7 +110,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> KyberPolynomialRing
 #[inline(always)]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
     randomness: &[u8],
-) -> KyberPolynomialRingElement {
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(randomness.len() == ETA * 64);
 
     match ETA as u32 {

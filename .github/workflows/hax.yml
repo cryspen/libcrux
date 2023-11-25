@@ -5,15 +5,13 @@ on:
     branches: ["dev"]
     paths:
       - 'specs/kyber/src/**'
-      - 'src/kem/kyber768/**'
-      - 'src/kem/kyber768.rs'
+      - 'src/kem/kyber/**'
 
   pull_request:
     branches: ["dev"]
     paths:
       - 'specs/kyber/src/**'
-      - 'src/kem/kyber768/**'
-      - 'src/kem/kyber768.rs'
+      - 'src/kem/kyber/**'
 
   schedule:
     - cron: '0 0 * * *'
@@ -39,6 +37,18 @@ jobs:
         with:
           ocaml-compiler: 4.14.1
 
+      - name: ⤵ Get Fstar binaries
+        run: |
+          curl -L https://github.com/FStarLang/FStar/releases/download/v2023.09.03/fstar_2023.09.03_Linux_x86_64.tar.gz \
+            --output Fstar.tar.gz
+          tar --extract --file Fstar.tar.gz
+
+      - name: ⤵ Clone HACL-star repository
+        uses: actions/checkout@v4
+        with:
+          repository: hacl-star/hacl-star
+          path: hacl-star
+
       - name: ⤵ Clone hax repository
         uses: actions/checkout@v4
         with:
@@ -52,12 +62,21 @@ jobs:
           sudo apt-get install --yes nodejs
           ./setup.sh
 
-      - name: 🏃🏻‍♀️ Run hax extraction
+      - name: 🏃 Extract and lax-typecheck the Kyber reference code
         run: |
           eval $(opam env)
           ./hax-driver.py --kyber-reference
+          env FSTAR_HOME=${{ github.workspace }}/fstar \
+              HACL_HOME=${{ github.workspace }}/hacl-star \
+              HAX_LIBS_HOME=${{ github.workspace }}/hax/proof-libs/fstar \
+              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+              ./hax-driver.py typecheck --admit
+
+      - name: 🏃 Extract the Kyber specification
+        run: |
+          eval $(opam env)
           # Extract the functions in the compress module individually to test
-          # the function-extraction code.
+            # the function-extraction code.
           # Extract functions from the remaining modules to test the
           # module-extraction code.
           ./hax-driver.py --crate-path specs/kyber \

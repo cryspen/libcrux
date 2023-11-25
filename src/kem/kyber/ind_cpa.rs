@@ -1,5 +1,5 @@
 use super::{
-    arithmetic::KyberPolynomialRingElement,
+    arithmetic::PolynomialRingElement,
     constants::{
         BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
         SHARED_SECRET_SIZE,
@@ -7,6 +7,7 @@ use super::{
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{XOFx4, G, H, PRF},
+    matrix::*,
     ntt::*,
     sampling::{sample_from_binomial_distribution, sample_from_uniform_distribution},
     serialize::{
@@ -37,8 +38,8 @@ pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
 fn sample_matrix_A<const K: usize>(
     seed: [u8; 34],
     transpose: bool,
-) -> ([[KyberPolynomialRingElement; K]; K], Option<Error>) {
-    let mut A_transpose = [[KyberPolynomialRingElement::ZERO; K]; K];
+) -> ([[PolynomialRingElement; K]; K], Option<Error>) {
+    let mut A_transpose = [[PolynomialRingElement::ZERO; K]; K];
     let mut sampling_A_error = None;
 
     for i in 0..K {
@@ -67,12 +68,18 @@ fn sample_matrix_A<const K: usize>(
     (A_transpose, sampling_A_error)
 }
 
+/// Sample a vector of ring elements from a centered binomial distribution and
+/// convert them into their NTT representations.
 #[inline(always)]
-fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
+fn sample_vector_cbd_then_ntt<
+    const K: usize,
+    const ETA: usize,
+    const ETA_RANDOMNESS_SIZE: usize,
+>(
     mut prf_input: [u8; 33],
-) -> ([KyberPolynomialRingElement; K], u8) {
-    let mut domain_separator = 0;
-    let mut re_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    mut domain_separator: u8,
+) -> ([PolynomialRingElement; K], u8) {
+    let mut re_as_ntt = [PolynomialRingElement::ZERO; K];
     for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
@@ -86,7 +93,7 @@ fn cbd<const K: usize, const ETA: usize, const ETA_RANDOMNESS_SIZE: usize>(
 }
 
 fn serialize_key<const K: usize, const OUT_LEN: usize>(
-    key: [KyberPolynomialRingElement; K],
+    key: [PolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
 
@@ -115,52 +122,17 @@ pub(crate) fn generate_keypair<
     ),
     Option<Error>,
 ) {
-    let mut prf_input: [u8; 33] = [0; 33];
-
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
-    let mut error_as_ntt = [KyberPolynomialRingElement::ZERO; K];
-
-    // N := 0
-    let mut domain_separator: u8 = 0;
-
     // (ρ,σ) := G(d)
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed_for_A), true);
 
-    // for i from 0 to k−1 do
-    //     s[i] := CBD_{η1}(PRF(σ, N))
-    //     N := N + 1
-    // end for
-    // sˆ := NTT(s)
-    prf_input[0..seed_for_secret_and_error.len()].copy_from_slice(seed_for_secret_and_error);
-
-    for i in 0..K {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
-
-        let secret = sample_from_binomial_distribution::<ETA1>(&prf_output);
-
-        secret_as_ntt[i] = ntt_binomially_sampled_ring_element(secret);
-    }
-
-    // for i from 0 to k−1 do
-    //     e[i] := CBD_{η1}(PRF(σ, N))
-    //     N := N + 1
-    // end for
-    // eˆ := NTT(e)
-    for i in 0..K {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        let prf_output: [u8; ETA1_RANDOMNESS_SIZE] = PRF(&prf_input);
-
-        let error = sample_from_binomial_distribution::<ETA1>(&prf_output);
-        error_as_ntt[i] = ntt_binomially_sampled_ring_element(error);
-    }
+    let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
+    let (secret_as_ntt, domain_separator) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
+    let (error_as_ntt, _) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, domain_separator);
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
@@ -186,7 +158,7 @@ fn compress_then_encode_u<
     const COMPRESSION_FACTOR: usize,
     const BLOCK_LEN: usize,
 >(
-    input: [KyberPolynomialRingElement; K],
+    input: [PolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
     for (i, re) in input.into_iter().enumerate() {
@@ -218,7 +190,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> (super::KyberCiphertext<CIPHERTEXT_SIZE>, Option<Error>) {
     // tˆ := Decode_12(pk)
-    let mut t_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
     for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
         .chunks_exact(BYTES_PER_RING_ELEMENT)
         .enumerate()
@@ -241,13 +213,14 @@ pub(crate) fn encrypt<
     // end for
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
-    let (r_as_ntt, mut domain_separator) = cbd::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input);
+    let (r_as_ntt, mut domain_separator) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let mut error_1 = [KyberPolynomialRingElement::ZERO; K];
+    let mut error_1 = [PolynomialRingElement::ZERO; K];
     for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
@@ -290,8 +263,8 @@ pub(crate) fn decrypt<
     secret_key: &[u8],
     ciphertext: &super::KyberCiphertext<CIPHERTEXT_SIZE>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    let mut u_as_ntt = [KyberPolynomialRingElement::ZERO; K];
-    let mut secret_as_ntt = [KyberPolynomialRingElement::ZERO; K];
+    let mut u_as_ntt = [PolynomialRingElement::ZERO; K];
+    let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
 
     // u := Decompress_q(Decode_{d_u}(c), d_u)
     for (i, u_bytes) in ciphertext.value[..VECTOR_U_ENCODED_SIZE]

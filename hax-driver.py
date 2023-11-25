@@ -130,12 +130,16 @@ if options.typecheck:
 cargo_hax_into = ["cargo", "hax", "into"]
 hax_env = {}
 
+exclude_sha3_implementations = "-libcrux::hacl::sha3::** -libcrux::jasmin::sha3::**"
+
 if options.kyber_reference:
     shell(
         cargo_hax_into
         + [
             "-i",
-            "-** +libcrux::kem::kyber::** -libcrux::hacl::sha3::** -libcrux::digest::** -libcrux::**::types::index_impls::**",
+            "-** +libcrux::kem::kyber::** {} -libcrux::digest::** -libcrux::**::types::index_impls::**".format(
+                exclude_sha3_implementations
+            ),
             "fstar",
         ],
         cwd=".",
@@ -146,7 +150,9 @@ elif options.kyber_specification:
         cargo_hax_into
         + [
             "-i",
-            "-** +compress::* +ind_cpa::* +hacspec_kyber::* +matrix::* +ntt::* +parameters::* +sampling::* +serialize::* -libcrux::hacl::sha3::* -libcrux::digest::*",
+            "-** +compress::* +ind_cpa::* +hacspec_kyber::* +matrix::* +ntt::* +parameters::* +sampling::* +serialize::* {} -libcrux::digest::*".format(
+                exclude_sha3_implementations
+            ),
             "fstar",
         ],
         cwd=os.path.join("specs", "kyber"),

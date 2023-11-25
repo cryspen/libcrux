@@ -70,7 +70,7 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
       (fun out i ->
           let out:t_Array u8 (sz 32) = out in
           let i:usize = i in
-          Rust_primitives.Hax.update_at out
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
             i
             ((out.[ i ] <: u8) |.
               (((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)

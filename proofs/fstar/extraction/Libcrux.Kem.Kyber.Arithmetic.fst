@@ -4,7 +4,13 @@ open Core
 open FStar.Mul
 
 unfold
-let t_KyberFieldElement = i32
+let t_FieldElement = i32
+
+unfold
+let t_FieldElementTimesMontgomeryR = i32
+
+unfold
+let t_MontgomeryFieldElement = i32
 
 let v_BARRETT_MULTIPLIER: i64 = 20159L
 
@@ -13,6 +19,8 @@ let v_BARRETT_SHIFT: i64 = 26L
 let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 
 let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
+
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
@@ -80,6 +88,11 @@ let montgomery_reduce (value: i32)
   let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
   value_high -! c
 
+let montgomery_multiply_sfe_by_fer (fe fer: i32) : i32 = montgomery_reduce (fe *! fer <: i32)
+
+let to_standard_domain (mfe: i32) : i32 =
+  montgomery_reduce (mfe *! v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS <: i32)
+
 let to_unsigned_representative (fe: i32)
     : Prims.Pure u16
       (requires
@@ -95,16 +108,15 @@ let to_unsigned_representative (fe: i32)
   <:
   u16
 
-type t_KyberPolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
+type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
-let impl__KyberPolynomialRingElement__ZERO: t_KyberPolynomialRingElement =
-  { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) } <: t_KyberPolynomialRingElement
+let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement =
+  { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) } <: t_PolynomialRingElement
 
-let add_to_ring_element (v_K: usize) (lhs rhs: t_KyberPolynomialRingElement)
-    : t_KyberPolynomialRingElement =
+let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) : t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let lhs:t_KyberPolynomialRingElement =
+  let lhs:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end
@@ -119,20 +131,20 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_KyberPolynomialRingElement)
         Core.Ops.Range.t_Range usize)
       lhs
       (fun lhs i ->
-          let lhs:t_KyberPolynomialRingElement = lhs in
+          let lhs:t_PolynomialRingElement = lhs in
           let i:usize = i in
           {
             lhs with
             f_coefficients
             =
-            Rust_primitives.Hax.update_at lhs.f_coefficients
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs.f_coefficients
               i
               ((lhs.f_coefficients.[ i ] <: i32) +! (rhs.f_coefficients.[ i ] <: i32) <: i32)
             <:
             t_Array i32 (sz 256)
           }
           <:
-          t_KyberPolynomialRingElement)
+          t_PolynomialRingElement)
   in
   let _:Prims.unit = () <: Prims.unit in
   lhs
