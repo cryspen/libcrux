@@ -7,13 +7,13 @@ pub mod error;
 pub mod types;
 
 // re-export trait
-pub use rand::{CryptoRng, RngCore};
+pub use rand_core::{CryptoRng, RngCore};
 
 /// The [`HpkeCrypto`] trait defines the necessary cryptographic functions used
 /// in the HPKE implementation.
 pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     /// The PRNG implementation returned in [`HpkeCrypto::prng()`].
-    type HpkePrng: rand::RngCore + rand::CryptoRng + HpkeTestRng;
+    type HpkePrng: RngCore + CryptoRng + HpkeTestRng;
 
     /// The name of the implementation.
     fn name() -> String;
@@ -122,7 +122,7 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
 /// PRNG extension for testing that is supposed to return pre-configured bytes.
 pub trait HpkeTestRng {
     /// Like [`RngCore::try_fill_bytes`] but the result is expected to be known.
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error>;
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error>;
 
     /// Set the randomness state of this test PRNG.
     fn seed(&mut self, seed: &[u8]);
