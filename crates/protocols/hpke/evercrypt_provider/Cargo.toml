@@ -15,7 +15,6 @@ hpke-rs-crypto = { version = "0.1.2-pre.1", path = "../traits" }
 evercrypt = { version = "0.0.11", features = ["serialization"] }
 # Randomness
 rand = { version = "0.8" }
-getrandom = { version = "0.2", features = ["js"] }
 rand_chacha = { version = "0.3" }
 
 [dev-dependencies]

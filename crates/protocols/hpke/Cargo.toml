@@ -35,7 +35,6 @@ hpke-rs-rust-crypto = { version = "0.1.3", path = "./rust_crypto_provider", feat
 ] }
 # hpke-rs-evercrypt = { version = "0.1.3-pre.1", path = "./evercrypt_provider", features = ["deterministic-prng"] }
 rand = { version = "0.8" }
-getrandom = { version = "0.2", features = ["js"] }
 pretty_env_logger = "0.5"
 criterion = { version = "0.5", features = ["html_reports"] }
 
