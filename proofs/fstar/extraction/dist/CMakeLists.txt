@@ -12,5 +12,6 @@ add_compile_options(
 
 add_library(crux SHARED ${sources})
 
+#add "#include "krmllib.h"" to the headers
 #cmake -DCMAKE_BUILD_TYPE=Debug -G"Ninja" -B build
 #ninja -f build.ninja -C build 
