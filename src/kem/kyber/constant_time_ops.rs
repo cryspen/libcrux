@@ -4,8 +4,8 @@ use super::constants::SHARED_SECRET_SIZE;
 // operations are not being optimized away/constant-timedness is not being broken.
 
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
-        (!(value == 0) || result == 0) &&
-        (!(value != 0) || result == 1)
+    hax_lib::implies(value == 0, || result == 0) &&
+    hax_lib::implies(value != 0, || result == 1)
 ))]
 #[inline]
 fn is_non_zero(value: u8) -> u8 {
@@ -17,8 +17,8 @@ fn is_non_zero(value: u8) -> u8 {
 }
 
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
-        (!(lhs == rhs) || result == 0) &&
-        (!(lhs != rhs) || result == 1)
+    hax_lib::implies(lhs == rhs, || result == 0) &&
+    hax_lib::implies(lhs != rhs, || result == 1)
 ))]
 pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>(
     lhs: &[u8],
@@ -36,8 +36,8 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
 }
 
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
-        (!(selector == 0) || result == lhs) &&
-        (!(selector != 0) || result == rhs)
+    hax_lib::implies(selector == 0, || result == lhs) &&
+    hax_lib::implies(selector != 0, || result == rhs)
 ))]
 pub(crate) fn select_shared_secret_in_constant_time(
     lhs: &[u8],

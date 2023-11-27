@@ -113,7 +113,48 @@ type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement =
   { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) } <: t_PolynomialRingElement
 
-let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) : t_PolynomialRingElement =
+let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
+    : Prims.Pure t_PolynomialRingElement
+      (requires
+        Hax_lib.v_forall (fun i ->
+              let i:usize = i in
+              Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+                  <:
+                  bool)
+                (((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i ] <: i32) <: i32) <=.
+                    (((cast (v_K <: usize) <: i32) -! 1l <: i32) *!
+                      Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                      <:
+                      i32)
+                    <:
+                    bool) &&
+                  ((Core.Num.impl__i32__abs (rhs.f_coefficients.[ i ] <: i32) <: i32) <=.
+                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                    <:
+                    bool))
+              <:
+              bool))
+      (ensures
+        fun result ->
+          let result:t_PolynomialRingElement = result in
+          Hax_lib.v_forall (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <.
+                    (Core.Slice.impl__len (Rust_primitives.unsize result.f_coefficients
+                          <:
+                          t_Slice i32)
+                      <:
+                      usize)
+                    <:
+                    bool)
+                  ((Core.Num.impl__i32__abs (result.f_coefficients.[ i ] <: i32) <: i32) <=.
+                    ((cast (v_K <: usize) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                      <:
+                      i32)
+                    <:
+                    bool)
+                <:
+                bool)) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let lhs:t_PolynomialRingElement =

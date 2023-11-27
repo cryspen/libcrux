@@ -583,7 +583,54 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
   re
 
 let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      (requires
+        Hax_lib.v_forall (fun i ->
+              let i:usize = i in
+              Hax_lib.implies (i <.
+                  (Core.Slice.impl__len (Rust_primitives.unsize re
+                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        <:
+                        t_Slice i32)
+                    <:
+                    usize)
+                  <:
+                  bool)
+                ((Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                        <:
+                        i32)
+                    <:
+                    i32) <=.
+                  3l
+                  <:
+                  bool)
+              <:
+              bool))
+      (ensures
+        fun result ->
+          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
+          Hax_lib.v_forall (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <.
+                    (Core.Slice.impl__len (Rust_primitives.unsize result
+                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                          <:
+                          t_Slice i32)
+                      <:
+                      usize)
+                    <:
+                    bool)
+                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                          ]
+                          <:
+                          i32)
+                      <:
+                      i32) <.
+                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                    <:
+                    bool)
+                <:
+                bool)) =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:usize = sz 0 in
   let zeta_i:usize = zeta_i +! sz 1 in
@@ -1049,8 +1096,51 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
   in
   re
 
-let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      (requires
+        Hax_lib.v_forall (fun i ->
+              let i:usize = i in
+              Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+                  <:
+                  bool)
+                (((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) >=. 0l <: bool) &&
+                  ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) <. 4096l <: bool) &&
+                  ((Core.Num.impl__i32__abs (rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                          <:
+                          i32)
+                      <:
+                      i32) <=.
+                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                    <:
+                    bool))
+              <:
+              bool))
+      (ensures
+        fun result ->
+          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
+          Hax_lib.v_forall (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <.
+                    (Core.Slice.impl__len (Rust_primitives.unsize result
+                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                          <:
+                          t_Slice i32)
+                      <:
+                      usize)
+                    <:
+                    bool)
+                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                          ]
+                          <:
+                          i32)
+                      <:
+                      i32) <=.
+                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                    <:
+                    bool)
+                <:
+                bool)) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
@@ -1072,20 +1162,20 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
           let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = out in
           let i:usize = i in
           let product:(i32 & i32) =
-            ntt_multiply_binomials ((left.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ sz 4 *! i
+            ntt_multiply_binomials ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ sz 4 *! i
                     <:
                     usize ]
                   <:
                   i32),
-                (left.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 1
+                (lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 1
                     <:
                     usize ]
                   <:
                   i32)
                 <:
                 (i32 & i32))
-              ((right.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ sz 4 *! i <: usize ] <: i32),
-                (right.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 1
+              ((rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ sz 4 *! i <: usize ] <: i32),
+                (rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 1
                     <:
                     usize ]
                   <:
@@ -1121,7 +1211,7 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let product:(i32 & i32) =
-            ntt_multiply_binomials ((left.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i
+            ntt_multiply_binomials ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i
                       <:
                       usize) +!
                     sz 2
@@ -1129,19 +1219,19 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
                     usize ]
                   <:
                   i32),
-                (left.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 3
+                (lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 3
                     <:
                     usize ]
                   <:
                   i32)
                 <:
                 (i32 & i32))
-              ((right.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 2
+              ((rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 2
                     <:
                     usize ]
                   <:
                   i32),
-                (right.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 3
+                (rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 4 *! i <: usize) +! sz 3
                     <:
                     usize ]
                   <:
@@ -1186,7 +1276,54 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingEleme
 let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      (requires
+        Hax_lib.v_forall (fun i ->
+              let i:usize = i in
+              Hax_lib.implies (i <.
+                  (Core.Slice.impl__len (Rust_primitives.unsize re
+                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                        <:
+                        t_Slice i32)
+                    <:
+                    usize)
+                  <:
+                  bool)
+                ((Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                        <:
+                        i32)
+                    <:
+                    i32) <=.
+                  3328l
+                  <:
+                  bool)
+              <:
+              bool))
+      (ensures
+        fun result ->
+          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
+          Hax_lib.v_forall (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <.
+                    (Core.Slice.impl__len (Rust_primitives.unsize result
+                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                          <:
+                          t_Slice i32)
+                      <:
+                      usize)
+                    <:
+                    bool)
+                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                          ]
+                          <:
+                          i32)
+                      <:
+                      i32) <.
+                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                    <:
+                    bool)
+                <:
+                bool)) =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:usize = sz 0 in
   let step:usize = sz 1 <<! 7l in

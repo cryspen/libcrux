@@ -106,17 +106,30 @@ impl PolynomialRingElement {
     };
 }
 
+#[cfg_attr(hax, hax_lib_macros::requires(
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
+            (lhs.coefficients[i].abs() <= ((K as i32) - 1) * FIELD_MODULUS) &&
+            (rhs.coefficients[i].abs() <= FIELD_MODULUS)
+
+))))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < result.coefficients.len(), ||
+                result.coefficients[i].abs() <= (K as i32) * FIELD_MODULUS
+))))]
 pub(crate) fn add_to_ring_element<const K: usize>(
     mut lhs: PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(lhs.coefficients.into_iter().all(|coefficient| coefficient
-        >= ((K as i32) - 1) * -FIELD_MODULUS
-        && coefficient <= ((K as i32) - 1) * FIELD_MODULUS));
+    hax_lib::debug_assert!(lhs
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient.abs() <= ((K as i32) - 1) * FIELD_MODULUS));
     hax_lib::debug_assert!(rhs
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
+        .all(|coefficient| coefficient.abs() < FIELD_MODULUS));
 
     for i in 0..lhs.coefficients.len() {
         lhs.coefficients[i] += rhs.coefficients[i];
@@ -125,7 +138,7 @@ pub(crate) fn add_to_ring_element<const K: usize>(
     hax_lib::debug_assert!(lhs
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient >= (K as i32) * -FIELD_MODULUS
-            && coefficient <= (K as i32) * FIELD_MODULUS));
+        .all(|coefficient| coefficient.abs() <= (K as i32) * FIELD_MODULUS));
+
     lhs
 }

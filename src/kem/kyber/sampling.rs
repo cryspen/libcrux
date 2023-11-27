@@ -48,6 +48,11 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     }
 }
 
+#[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 2 * 64))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
+))))]
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
     let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 
@@ -78,6 +83,11 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
     sampled
 }
 
+#[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 3 * 64))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
+))))]
 fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
     let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 

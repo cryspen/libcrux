@@ -9,10 +9,13 @@ fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     value & ((1 << n) - 1)
 }
 
-// Return 1 if 833 <= fe <= 2496 and 0 otherwise.
 // The approach used in this function been taken from:
 // https://github.com/cloudflare/circl/blob/main/pke/kyber/internal/common/poly.go#L150
 #[cfg_attr(hax, hax_lib_macros::requires(fe < (FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+        hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
+        hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
+))]
 pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
     // If 833 <= fe <= 2496,
     // then -832 <= shifted <= 831

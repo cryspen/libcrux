@@ -6,7 +6,13 @@ open FStar.Mul
 let compress_message_coefficient (fe: u16)
     : Prims.Pure u8
       (requires fe <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
-      (fun _ -> Prims.l_True) =
+      (ensures
+        fun result ->
+          let result:u8 = result in
+          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
+            (result =. 1uy <: bool) &&
+          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
+            (result =. 0uy <: bool)) =
   let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
   let shifted_to_positive:i16 = (shifted >>! 15l <: i16) ^. shifted in
   let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
