@@ -1,3 +1,5 @@
+use alloc::{format, vec::Vec};
+
 use aes_gcm::{Aes128Gcm as RC_Aes128Gcm, Aes256Gcm as RC_Aes256Gcm};
 use chacha20poly1305::{
     aead::{Aead, KeyInit, Payload},

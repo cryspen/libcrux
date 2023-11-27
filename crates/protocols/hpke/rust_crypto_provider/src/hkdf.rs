@@ -1,3 +1,5 @@
+use alloc::{vec, vec::Vec};
+
 use hkdf::Hkdf;
 use hpke_rs_crypto::error::Error;
 use sha2::{Sha256, Sha384, Sha512};
