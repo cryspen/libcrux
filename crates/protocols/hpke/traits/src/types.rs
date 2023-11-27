@@ -2,12 +2,14 @@
 //!
 //! Algorithm definitions for the [`crate::HpkeCrypto`] trait.
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::error;
 
 /// KEM Modes
-#[derive(PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Copy, Clone, Debug)]
 #[repr(u16)]
 pub enum KemAlgorithm {
     /// DH KEM on P256
@@ -70,7 +72,8 @@ impl KemAlgorithm {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u16)]
 /// AEAD types
 pub enum AeadAlgorithm {
@@ -150,7 +153,8 @@ impl AeadAlgorithm {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u16)]
 /// KDF types
 /// Value are taken from the HPKE RFC (not published yet)

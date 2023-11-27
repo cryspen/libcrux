@@ -10,5 +10,8 @@ readme = "Readme.md"
 repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"], optional = true }
 rand_core = { version = "0.6.4" }
+
+[features]
+serde = ["dep:serde"]
