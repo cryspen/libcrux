@@ -81,8 +81,8 @@ pub enum HpkeError {
 
 impl std::error::Error for HpkeError {}
 
-impl std::fmt::Display for HpkeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for HpkeError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "HPKE Error: {:?}", self)
     }
 }
@@ -154,8 +154,8 @@ pub enum Mode {
     AuthPsk = 0x03,
 }
 
-impl std::fmt::Display for Mode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for Mode {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
@@ -197,8 +197,8 @@ pub struct Context<Crypto: 'static + HpkeCrypto> {
 }
 
 #[cfg(feature = "hazmat")]
-impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<Crypto: HpkeCrypto> core::fmt::Debug for Context<Crypto> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
             "Context {{\n  key: {:?}\n  nonce: {:?}\n exporter_secret: {:?}\n seq no: {:?}\n}}",
@@ -208,8 +208,8 @@ impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
 }
 
 #[cfg(not(feature = "hazmat"))]
-impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<Crypto: HpkeCrypto> core::fmt::Debug for Context<Crypto> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
             "Context {{\n  key: {:?}\n  nonce: {:?}\n exporter_secret: {:?}\n seq no: {:?}\n}}",
@@ -341,8 +341,8 @@ impl<Crypto: 'static + HpkeCrypto> Clone for Hpke<Crypto> {
     }
 }
 
-impl<Crypto: HpkeCrypto> std::fmt::Display for Hpke<Crypto> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl<Crypto: HpkeCrypto> core::fmt::Display for Hpke<Crypto> {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(
             f,
             "{}_{}_{}_{}",
@@ -788,8 +788,8 @@ impl PartialEq for HpkePrivateKey {
 }
 
 #[cfg(not(feature = "hazmat"))]
-impl std::fmt::Debug for HpkePrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl core::fmt::Debug for HpkePrivateKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         f.debug_struct("HpkePrivateKey")
             .field("value", &"***")
             .finish()
@@ -797,8 +797,8 @@ impl std::fmt::Debug for HpkePrivateKey {
 }
 
 #[cfg(feature = "hazmat")]
-impl std::fmt::Debug for HpkePrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl core::fmt::Debug for HpkePrivateKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         f.debug_struct("HpkePrivateKey")
             .field("value", &self.value)
             .finish()
