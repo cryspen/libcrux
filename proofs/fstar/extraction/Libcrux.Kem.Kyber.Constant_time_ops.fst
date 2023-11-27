@@ -18,7 +18,7 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
   let _:Prims.unit = () <: Prims.unit in
   let (r: u8):u8 = 0uy in
   let r:u8 =
-    Rust_primitives.Hax.failure "(FunctionalizeLoops) something is not implemented yet.\nOnly for loop are being functionalized for now\n"
+    Rust_primitives.Hax.failure ""
       "{\n        (for i in (0)..(CIPHERTEXT_SIZE) {\n            |r| {\n                core::ops::bit::BitOr::bitor(\n                    r,\n                    core::ops::bit::BitXor::bitxor(\n                        core::ops::index::Index::index(lhs, i),\n                        core::ops::index::Index::index(rhs, i),\n                    ),\n                )\n            }\n        })(r)\n    }"
 
   in

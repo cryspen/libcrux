@@ -563,11 +563,6 @@ let compress_then_serialize_ring_element_u
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN re
   | 11ul -> compress_then_serialize_11_ v_OUT_LEN re
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -577,11 +572,6 @@ let compress_then_serialize_ring_element_v
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
   | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let deserialize_then_decompress_10_ (serialized: t_Slice u8)
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -901,11 +891,6 @@ let deserialize_then_decompress_ring_element_u
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> deserialize_then_decompress_10_ serialized
   | 11ul -> deserialize_then_decompress_11_ serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let deserialize_then_decompress_ring_element_v
       (v_COMPRESSION_FACTOR: usize)
@@ -915,11 +900,6 @@ let deserialize_then_decompress_ring_element_v
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> deserialize_then_decompress_4_ serialized
   | 5ul -> deserialize_then_decompress_5_ serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
@@ -1011,3 +991,5 @@ let serialize_uncompressed_ring_element
           ())
   in
   serialized
+
+
