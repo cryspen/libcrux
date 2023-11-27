@@ -69,7 +69,9 @@ FSTAR_NO_FLAGS = $(FSTAR_HOME)/bin/fstar.exe $(FSTAR_HINTS) \
 # Important to wildcard both fst and fsti since there are fstis without fsts,
 # etc. Note that I'm using wildcard rather than assume $(SHELL) is bash and has
 # fancy globbing rules -- particularly true on Windows.
-FSTAR_ROOTS = Libcrux.Kem.MLKEM.fst	
+FSTAR_ROOTS = Libcrux.Kem.Kyber.Arithmetic.fst	
+
+#Libcrux.Kem.MLKEM.fst	
 
 #$(wildcard $(addsuffix /*.fsti,$(SOURCE_DIRS))) \
 #  $(wildcard $(addsuffix /*.fst,$(SOURCE_DIRS))) \
@@ -208,7 +210,7 @@ dist/Makefile.basic: $(filter-out %prims.krml,$(ALL_KRML_FILES)) $(HAND_WRITTEN_
 	  -warn-error @4@5@18 \
 	  -fparentheses \
 	  -bundle 'LowStar.*,Prims' \
-	  -bundle Libcrux.Kem.Kyber.Serialize=Rust_primitives.*,Rust_primitives,Core.*,Core,Hax_lib.*,Hax_lib,Libcrux.*,Libcrux.Kem.Kyber.* \
+	  -bundle Libcrux.Kem.Kyber.Arithmetic=Rust_primitives.*,Rust_primitives,Core.*,Core,Hax_lib.*,Hax_lib,Libcrux.Digest,Libcrux.Kem.Kyber.Constants \
 	  -minimal \
 	  -bundle 'FStar.*' \
 	  -add-include '<stdint.h>' \
@@ -228,6 +230,7 @@ dist/Makefile.basic: $(filter-out %prims.krml,$(ALL_KRML_FILES)) $(HAND_WRITTEN_
 	  -add-early-include '"krml/lowstar_endianness.h"' \
 	  -dmonomorphization
 
+#	  -bundle Libcrux.Kem.Kyber.Serialize=Rust_primitives.*,Rust_primitives,Core.*,Core,Hax_lib.*,Hax_lib,Libcrux.*,Libcrux.Kem.Kyber.* \
 
 # Compiling the generated C code
 # ------------------------------
