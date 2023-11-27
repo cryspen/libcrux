@@ -39,25 +39,27 @@ EverCrypt_Chacha20Poly1305_aead_encrypt(
   uint8_t *tag
 )
 {
-  bool avx2 = EverCrypt_AutoConfig2_has_avx2();
-  bool avx = EverCrypt_AutoConfig2_has_avx();
   bool vec256 = EverCrypt_AutoConfig2_has_vec256();
   bool vec128 = EverCrypt_AutoConfig2_has_vec128();
   #if HACL_CAN_COMPILE_VEC256
   if (vec256)
   {
-    Hacl_Chacha20Poly1305_256_aead_encrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+    KRML_MAYBE_UNUSED_VAR(vec128);
+    Hacl_AEAD_Chacha20Poly1305_Simd256_encrypt(cipher, tag, m, mlen, aad, aadlen, k, n);
     return;
   }
   #endif
   #if HACL_CAN_COMPILE_VEC128
   if (vec128)
   {
-    Hacl_Chacha20Poly1305_128_aead_encrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+    KRML_MAYBE_UNUSED_VAR(vec256);
+    Hacl_AEAD_Chacha20Poly1305_Simd128_encrypt(cipher, tag, m, mlen, aad, aadlen, k, n);
     return;
   }
   #endif
-  Hacl_Chacha20Poly1305_32_aead_encrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+  KRML_MAYBE_UNUSED_VAR(vec128);
+  KRML_MAYBE_UNUSED_VAR(vec256);
+  Hacl_AEAD_Chacha20Poly1305_encrypt(cipher, tag, m, mlen, aad, aadlen, k, n);
 }
 
 uint32_t
@@ -72,22 +74,24 @@ EverCrypt_Chacha20Poly1305_aead_decrypt(
   uint8_t *tag
 )
 {
-  bool avx2 = EverCrypt_AutoConfig2_has_avx2();
-  bool avx = EverCrypt_AutoConfig2_has_avx();
   bool vec256 = EverCrypt_AutoConfig2_has_vec256();
   bool vec128 = EverCrypt_AutoConfig2_has_vec128();
   #if HACL_CAN_COMPILE_VEC256
   if (vec256)
   {
-    return Hacl_Chacha20Poly1305_256_aead_decrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+    KRML_MAYBE_UNUSED_VAR(vec128);
+    return Hacl_AEAD_Chacha20Poly1305_Simd256_decrypt(m, cipher, mlen, aad, aadlen, k, n, tag);
   }
   #endif
   #if HACL_CAN_COMPILE_VEC128
   if (vec128)
   {
-    return Hacl_Chacha20Poly1305_128_aead_decrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+    KRML_MAYBE_UNUSED_VAR(vec256);
+    return Hacl_AEAD_Chacha20Poly1305_Simd128_decrypt(m, cipher, mlen, aad, aadlen, k, n, tag);
   }
   #endif
-  return Hacl_Chacha20Poly1305_32_aead_decrypt(k, n, aadlen, aad, mlen, m, cipher, tag);
+  KRML_MAYBE_UNUSED_VAR(vec128);
+  KRML_MAYBE_UNUSED_VAR(vec256);
+  return Hacl_AEAD_Chacha20Poly1305_decrypt(m, cipher, mlen, aad, aadlen, k, n, tag);
 }
 
