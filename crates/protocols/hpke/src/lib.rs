@@ -11,6 +11,8 @@
 #![cfg_attr(not(test), no_std)]
 
 extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
 
 use alloc::{
     format,
@@ -89,6 +91,7 @@ pub enum HpkeError {
     InsufficientRandomness,
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for HpkeError {}
 
 impl core::fmt::Display for HpkeError {

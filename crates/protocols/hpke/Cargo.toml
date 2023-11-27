@@ -19,9 +19,10 @@ hpke-rs-crypto = { version = "0.1.3", path = "./traits" }
 
 [features]
 default = []
-serialization = ["serde", "serde_json", "tls_codec", "tls_codec/serde"]
+std = []
+serialization = ["serde", "serde_json", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
-hpke-test = []
+hpke-test = ["std"]
 hpke-test-prng = []                                                     # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
