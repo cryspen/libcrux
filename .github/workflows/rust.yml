@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: ["main", "dev"]
   workflow_dispatch:
+  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -118,6 +119,7 @@ jobs:
         run: cargo build --verbose $RUST_TARGET_FLAG
 
   wasm:
+    if: ${{ github.event_name == 'workflow_dispatch'  || github.event_name == 'merge_group'  }}
     runs-on: ubuntu-latest
 
     steps:
@@ -145,7 +147,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
         exclude:
-        # There's no such thing as 32-bit macOS
+          # There's no such thing as 32-bit macOS
           - bits: 32
             os: "macos-latest"
           # FIXME: Linking isn't working here yet for hacl #42
@@ -211,3 +213,17 @@ jobs:
 
       - name: 🏃🏻‍♀️ Benchmarks
         run: cargo bench --verbose $RUST_TARGET_FLAG -p benchmarks
+
+  mq_status:
+    if: |
+      always() &&
+      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
+    needs: [benchmarks, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1

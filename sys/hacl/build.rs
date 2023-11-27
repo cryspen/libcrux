@@ -105,14 +105,11 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         // Set include paths for HACL headers
         .clang_args(clang_args)
         // Allow function we want to have in
-        .allowlist_function("Hacl_Chacha20Poly1305.*")
+        .allowlist_function("Hacl_AEAD_Chacha20Poly1305_.*")
         .allowlist_function("Hacl_Curve25519.*")
         .allowlist_function("Hacl_Hash_SHA2.*")
-        .allowlist_function("Hacl_Streaming_SHA2.*")
-        .allowlist_function("Hacl_SHA3.*")
-        .allowlist_function("Hacl_Hash_SHA3.*")
+        .allowlist_function("Hacl_Hash_.*")
         .allowlist_function("Hacl_Blake2.*")
-        .allowlist_function("Hacl_Streaming_Keccak.*")
         .allowlist_function("Hacl_HMAC_DRBG.*")
         .allowlist_function("Hacl_Ed25519.*")
         .allowlist_function("Hacl_HKDF_.*")
@@ -123,20 +120,21 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .allowlist_function("Hacl_RSAPSS.*")
         .allowlist_function("hacl_free")
         .allowlist_type("Spec_.*")
-        .allowlist_type("Hacl_Streaming_SHA2.*")
         .allowlist_type("Hacl_HMAC_DRBG.*")
         .allowlist_type("Hacl_Streaming.*")
+        .allowlist_type("Hacl_Hash_.*")
         .allowlist_var("Spec_.*")
         .allowlist_var("Hacl_Streaming.*")
         // XXX: These functions use uint128 in the API, which is not FFI safe
-        .blocklist_function("Hacl_Blake2b_32_blake2b_update_multi")
-        .blocklist_function("Hacl_Blake2b_32_blake2b_update_last")
-        .blocklist_function("Hacl_Blake2b_256_blake2b_update_multi")
-        .blocklist_function("Hacl_Blake2b_256_blake2b_update_last")
+        .blocklist_type("FStar_UInt128_uint128")
+        .blocklist_function("Hacl_Hash_Blake2b_update_multi")
+        .blocklist_function("Hacl_Hash_Blake2b_update_last")
+        .blocklist_function("Hacl_Hash_Blake2b_Simd256_update_multi")
+        .blocklist_function("Hacl_Hash_Blake2b_Simd256_update_last")
         // Disable tests to avoid warnings and keep it portable
         .layout_tests(false)
         // Generate bindings
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .use_core()
         .generate()
         .expect("Unable to generate bindings");
@@ -165,16 +163,21 @@ fn compile_files(
     let vale_prefix = home_path.join("c").join("vale").join("src");
 
     let mut build = cc::Build::new();
-    build
-        .files(
-            files
-                .iter()
-                .map(|fname| src_prefix.join(fname))
-                .chain(vale_files.iter().map(|fname| vale_prefix.join(fname))),
-        )
-        .file(home_path.join("c").join("config").join("hacl.c"))
-        // XXX: There are too many warnings for now
-        .warnings(false);
+    build.files(
+        files
+            .iter()
+            .map(|fname| {
+                if fname == "hacl.c" {
+                    home_path.join("c").join("config").join(fname)
+                } else {
+                    src_prefix.join(fname)
+                }
+            })
+            .chain(vale_files.iter().map(|fname| vale_prefix.join(fname))),
+    );
+    // TODO: enable this when all warnings are gone
+    // Windows: fstar_uint128_msvc.h(220): warning C4554: '>>': check operator precedence for possible error; use parentheses to clarify precedence
+    // .warnings_into_errors(true);
 
     for include in includes(platform, home_path, "") {
         build.include(include);
@@ -193,9 +196,10 @@ fn compile_files(
 
 fn build(platform: &Platform, home_path: &Path) {
     let files = svec![
+        "hacl.c",
         "Hacl_NaCl.c",
         "Hacl_Salsa20.c",
-        "Hacl_Poly1305_32.c",
+        "Hacl_MAC_Poly1305.c",
         "Hacl_Curve25519_51.c",
         // "Hacl_Gf128_CT64.c",
         // "Hacl_AES_128_CTR32_BitSlice.c",
@@ -205,21 +209,20 @@ fn build(platform: &Platform, home_path: &Path) {
         "Hacl_HMAC_DRBG.c",
         "Hacl_HMAC.c",
         "Hacl_Hash_SHA2.c",
-        "Hacl_Hash_Blake2.c",
+        "Hacl_Hash_Blake2b.c",
+        "Hacl_Hash_Blake2s.c",
         "Lib_Memzero0.c",
         "Hacl_Ed25519.c",
         "Hacl_EC_Ed25519.c",
         "Hacl_Hash_Base.c",
-        "Hacl_Streaming_Blake2.c",
         "Hacl_Bignum256_32.c",
         "Hacl_Bignum.c",
         "Hacl_Bignum256.c",
         "Hacl_Bignum32.c",
         "Hacl_Bignum4096_32.c",
         "Hacl_GenericField32.c",
-        "Hacl_Chacha20Poly1305_32.c",
+        "Hacl_AEAD_Chacha20Poly1305.c",
         "Hacl_Chacha20.c",
-        "Hacl_Streaming_Poly1305_32.c",
         "Hacl_Chacha20_Vec32.c",
         "Hacl_P256.c",
         "Hacl_K256_ECDSA.c",
@@ -237,15 +240,13 @@ fn build(platform: &Platform, home_path: &Path) {
     // Platform detection
     if platform.simd128 {
         let files128 = svec![
-            "Hacl_Hash_Blake2s_128.c",
-            "Hacl_Streaming_Blake2s_128.c",
+            "Hacl_Hash_Blake2s_Simd128.c",
             "Hacl_Bignum4096.c",
             "Hacl_Bignum64.c",
             "Hacl_GenericField64.c",
-            "Hacl_Chacha20Poly1305_128.c",
-            "Hacl_Poly1305_128.c",
+            "Hacl_AEAD_Chacha20Poly1305_Simd128.c",
+            "Hacl_MAC_Poly1305_Simd128.c",
             "Hacl_Chacha20_Vec128.c",
-            "Hacl_Streaming_Poly1305_128.c",
             "Hacl_SHA2_Vec128.c",
             "Hacl_HKDF_Blake2s_128.c",
             "Hacl_HMAC_Blake2s_128.c",
@@ -266,12 +267,10 @@ fn build(platform: &Platform, home_path: &Path) {
     }
     if platform.simd256 {
         let files256 = svec![
-            "Hacl_Hash_Blake2b_256.c",
-            "Hacl_Streaming_Blake2b_256.c",
-            "Hacl_Chacha20Poly1305_256.c",
-            "Hacl_Poly1305_256.c",
+            "Hacl_Hash_Blake2b_Simd256.c",
+            "Hacl_AEAD_Chacha20Poly1305_Simd256.c",
+            "Hacl_MAC_Poly1305_Simd256.c",
             "Hacl_Chacha20_Vec256.c",
-            "Hacl_Streaming_Poly1305_256.c",
             "Hacl_SHA2_Vec256.c",
             "Hacl_HKDF_Blake2b_256.c",
             "Hacl_HMAC_Blake2b_256.c",
@@ -339,7 +338,6 @@ fn build(platform: &Platform, home_path: &Path) {
     ))]
     if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
         let files_evercrypt = svec![
-            "EverCrypt_Error.c",
             "EverCrypt_AutoConfig2.c",
             "EverCrypt_Chacha20Poly1305.c",
             "EverCrypt_AEAD.c",
