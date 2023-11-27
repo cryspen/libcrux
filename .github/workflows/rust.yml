@@ -218,7 +218,7 @@ jobs:
     if: |
       always() &&
       github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
-    needs: wasm
+    needs: [benchmarks, build]
     runs-on: ubuntu-latest
     steps:
       - name: Successful
