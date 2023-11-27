@@ -8,6 +8,16 @@
     unused_extern_crates,
     unused_qualifications
 )]
+#![cfg_attr(not(test), no_std)]
+
+extern crate alloc;
+
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 
 #[cfg(feature = "hpke-test-prng")]
 use hpke_rs_crypto::HpkeTestRng;
@@ -885,6 +895,8 @@ impl tls_codec::Deserialize for &HpkePublicKey {
 /// Test util module. Should be moved really.
 #[cfg(feature = "hpke-test")]
 pub mod test_util {
+    use alloc::{format, string::String, vec, vec::Vec};
+
     use crate::HpkeError;
     use hpke_rs_crypto::{HpkeCrypto, HpkeTestRng};
 

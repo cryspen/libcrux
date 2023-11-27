@@ -1,5 +1,7 @@
 //! DH KEM as described in §4.1. DH-Based KEM.
 
+use alloc::{string::ToString, vec::Vec};
+
 use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto};
 
 use crate::util::*;

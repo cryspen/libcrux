@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto};
 
 use crate::dh_kem;
