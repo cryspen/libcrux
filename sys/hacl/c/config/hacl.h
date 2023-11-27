@@ -19,3 +19,5 @@
 #include "Hacl_HMAC.h"
 #include "Hacl_P256.h"
 #include "Hacl_RSAPSS.h"
+
+void hacl_free(void *ptr);

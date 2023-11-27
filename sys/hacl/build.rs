@@ -126,6 +126,7 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .allowlist_var("Spec_.*")
         .allowlist_var("Hacl_Streaming.*")
         // XXX: These functions use uint128 in the API, which is not FFI safe
+        .blocklist_type("FStar_UInt128_uint128")
         .blocklist_function("Hacl_Hash_Blake2b_update_multi")
         .blocklist_function("Hacl_Hash_Blake2b_update_last")
         .blocklist_function("Hacl_Hash_Blake2b_Simd256_update_multi")
@@ -267,7 +268,6 @@ fn build(platform: &Platform, home_path: &Path) {
     if platform.simd256 {
         let files256 = svec![
             "Hacl_Hash_Blake2b_Simd256.c",
-            "Hacl_Streaming_Blake2b_256.c",
             "Hacl_AEAD_Chacha20Poly1305_Simd256.c",
             "Hacl_MAC_Poly1305_Simd256.c",
             "Hacl_Chacha20_Vec256.c",

@@ -19,6 +19,18 @@ pub const Hacl_Streaming_Types_InvalidAlgorithm: u32 = 1;
 pub const Hacl_Streaming_Types_InvalidLength: u32 = 2;
 pub const Hacl_Streaming_Types_MaximumLengthExceeded: u32 = 3;
 extern "C" {
+    #[doc = "Compute the scalar multiple of a point.\n\n@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to.\n@param priv Pointer to 32 bytes of memory where the secret/private key is read from.\n@param pub Pointer to 32 bytes of memory where the public point is read from."]
+    pub fn Hacl_Curve25519_64_scalarmult(out: *mut u8, priv_: *mut u8, pub_: *mut u8);
+}
+extern "C" {
+    #[doc = "Calculate a public point from a secret/private key.\n\nThis computes a scalar multiplication of the secret/private key with the curve's basepoint.\n\n@param pub Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to.\n@param priv Pointer to 32 bytes of memory where the secret/private key is read from."]
+    pub fn Hacl_Curve25519_64_secret_to_public(pub_: *mut u8, priv_: *mut u8);
+}
+extern "C" {
+    #[doc = "Execute the diffie-hellmann key exchange.\n\n@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to.\n@param priv Pointer to 32 bytes of memory where **our** secret/private key is read from.\n@param pub Pointer to 32 bytes of memory where **their** public point is read from."]
+    pub fn Hacl_Curve25519_64_ecdh(out: *mut u8, priv_: *mut u8, pub_: *mut u8) -> bool;
+}
+extern "C" {
     #[doc = "Encrypt a message `input` with key `key`.\n\nThe arguments `key`, `nonce`, `data`, and `data_len` are same in encryption/decryption.\nNote: Encryption and decryption can be executed in-place, i.e., `input` and `output` can point to the same memory.\n\n@param output Pointer to `input_len` bytes of memory where the ciphertext is written to.\n@param tag Pointer to 16 bytes of memory where the mac is written to.\n@param input Pointer to `input_len` bytes of memory where the message is read from.\n@param input_len Length of the message.\n@param data Pointer to `data_len` bytes of memory where the associated data is read from.\n@param data_len Length of the associated data.\n@param key Pointer to 32 bytes of memory where the AEAD key is read from.\n@param nonce Pointer to 12 bytes of memory where the AEAD nonce is read from."]
     pub fn Hacl_AEAD_Chacha20Poly1305_encrypt(
         output: *mut u8,
@@ -895,6 +907,9 @@ extern "C" {
     );
 }
 extern "C" {
+    pub fn hacl_free(ptr: *mut ::core::ffi::c_void);
+}
+extern "C" {
     #[doc = "Encrypt a message `input` with key `key`.\n\nThe arguments `key`, `nonce`, `data`, and `data_len` are same in encryption/decryption.\nNote: Encryption and decryption can be executed in-place, i.e., `input` and `output` can point to the same memory.\n\n@param output Pointer to `input_len` bytes of memory where the ciphertext is written to.\n@param tag Pointer to 16 bytes of memory where the mac is written to.\n@param input Pointer to `input_len` bytes of memory where the message is read from.\n@param input_len Length of the message.\n@param data Pointer to `data_len` bytes of memory where the associated data is read from.\n@param data_len Length of the associated data.\n@param key Pointer to 32 bytes of memory where the AEAD key is read from.\n@param nonce Pointer to 12 bytes of memory where the AEAD nonce is read from."]
     pub fn Hacl_AEAD_Chacha20Poly1305_Simd128_encrypt(
         output: *mut u8,
@@ -920,8 +935,8 @@ extern "C" {
         tag: *mut u8,
     ) -> u32;
 }
-pub type uint32x4_t = [u32; 4usize];
-pub type Lib_IntVector_Intrinsics_vec128 = uint32x4_t;
+pub type __m128i = [::core::ffi::c_longlong; 2usize];
+pub type Lib_IntVector_Intrinsics_vec128 = __m128i;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Hacl_Hash_Blake2s_Simd128_block_state_t_s {
