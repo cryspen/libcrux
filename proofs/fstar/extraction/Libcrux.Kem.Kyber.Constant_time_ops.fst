@@ -16,13 +16,23 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
     : FStar.HyperStack.ST.StackInline u8 (fun _ -> True) (fun _ _ _ -> True) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let (r: u8):u8 = 0uy in
-  let r:u8 =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for i in (0)..(CIPHERTEXT_SIZE) {\n            |r| {\n                core::ops::bit::BitOr::bitor(\n                    r,\n                    core::ops::bit::BitXor::bitxor(\n                        core::ops::index::Index::index(lhs, i),\n                        core::ops::index::Index::index(rhs, i),\n                    ),\n                )\n            }\n        })(r)\n    }"
-
+  let (r: t_Array u8 (sz 1)):t_Array u8 (sz 1) =
+    let list = [0uy] in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+    Rust_primitives.Hax.array_of_list list
   in
-  is_non_zero r
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      v_CIPHERTEXT_SIZE
+      (fun i ->
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize r
+            (sz 0)
+            ((r.[ sz 0 ] <: u8) |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8)
+          <:
+          Prims.unit)
+  in
+  is_non_zero (r.[ sz 0 ] <: u8)
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
     : FStar.HyperStack.ST.St (t_Array u8 (sz 32)) =

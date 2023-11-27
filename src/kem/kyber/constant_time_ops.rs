@@ -28,12 +28,12 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
     hax_lib::debug_assert!(lhs.len() == rhs.len());
     hax_lib::debug_assert!(lhs.len() == CIPHERTEXT_SIZE);
 
-    let mut r: u8 = 0;
+    let mut r: [u8;1] = [0];
     for i in 0..CIPHERTEXT_SIZE {
-        r |= lhs[i] ^ rhs[i];
+        r[0] = r[0] | (lhs[i] ^ rhs[i]);
     }
 
-    is_non_zero(r)
+    is_non_zero(r[0])
 }
 
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|

@@ -10,13 +10,13 @@ let v_BARRETT_MULTIPLIER: i64 = 20159L
 
 let v_BARRETT_SHIFT: i64 = 26L
 
-let v_BARRETT_R: i64 = normalize_term(1L <<! v_BARRETT_SHIFT)
+let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 
 let v_INVERSE_OF_MODULUS_MOD_R: i32 = (-3327l)
 
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
-let v_MONTGOMERY_R: i32 = normalize_term(1l <<! v_MONTGOMERY_SHIFT)
+let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let get_montgomery_r_least_significant_bits (value: i32) : u16 =
   cast (value &. ((1l <<! v_MONTGOMERY_SHIFT <: i32) -! 1l <: i32) <: i32) <: u16
@@ -65,4 +65,3 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_KyberPolynomialRingElement)
           ((lhs.f_coefficients.[ i ] <: i32) +! (rhs.f_coefficients.[ i ] <: i32) <: i32)
         <:
         Prims.unit)
-

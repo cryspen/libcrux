@@ -4,6 +4,7 @@ open Core
 open FStar.Mul
 
 let v_ZETAS_MONTGOMERY_DOMAIN: t_Array i32 (sz 128) =
+  [@inline_let]
   let list =
     [
       (-1044l); (-758l); (-359l); (-1517l); 1493l; 1422l; 287l; 202l; (-171l); 622l; 1577l; 182l;

@@ -3,7 +3,7 @@ module Libcrux.Kem.Kyber.Conversions
 open Core
 open FStar.Mul
 
-class t_UpdatingArray (v_Self: Type) = { f_push:v_Self -> t_Slice u8 -> v_Self }
+class t_UpdatingArray (v_Self: Type) = { f_push:v_Self -> t_Slice u8 -> FStar.HyperStack.ST.St v_Self }
 
 let into_padded_array (v_LEN: usize) (slice: t_Slice u8) : FStar.HyperStack.ST.St (t_Array u8 v_LEN) =
   let _:Prims.unit =
