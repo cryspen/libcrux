@@ -1,6 +1,6 @@
 use libcrux_hacl::{
-    Hacl_HMAC_compute_sha2_256, Hacl_HMAC_compute_sha2_384, Hacl_HMAC_compute_sha2_512,
-    Hacl_HMAC_compute_sha1,
+    Hacl_HMAC_compute_sha1, Hacl_HMAC_compute_sha2_256, Hacl_HMAC_compute_sha2_384,
+    Hacl_HMAC_compute_sha2_512,
 };
 
 macro_rules! impl_hmac {

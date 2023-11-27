@@ -147,7 +147,7 @@ pub mod simd256 {
     pub fn encrypt(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
         let mut tag = Tag::default();
         unsafe {
-            Hacl_Chacha20Poly1305_256_aead_encrypt(
+            Hacl_AEAD_Chacha20Poly1305_Simd256_encrypt(
                 msg_ctxt.as_mut_ptr(),
                 tag.as_mut_ptr(),
                 msg_ctxt.as_ptr() as _,
@@ -175,7 +175,7 @@ pub mod simd256 {
         tag: &Tag,
     ) -> Result<(), Error> {
         if unsafe {
-            Hacl_Chacha20Poly1305_256_aead_decrypt(
+            Hacl_AEAD_Chacha20Poly1305_Simd256_decrypt(
                 ctxt_msg.as_mut_ptr(),
                 ctxt_msg.as_ptr() as _,
                 ctxt_msg.len() as u32,
