@@ -28,13 +28,13 @@ pub enum KemAlgorithm {
     DhKem448 = 0x0021,
 }
 
-impl std::fmt::Display for KemAlgorithm {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for KemAlgorithm {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl std::convert::TryFrom<u16> for KemAlgorithm {
+impl core::convert::TryFrom<u16> for KemAlgorithm {
     type Error = error::Error;
     fn try_from(x: u16) -> Result<KemAlgorithm, Self::Error> {
         match x {
@@ -90,13 +90,13 @@ pub enum AeadAlgorithm {
     HpkeExport = 0xFFFF,
 }
 
-impl std::fmt::Display for AeadAlgorithm {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for AeadAlgorithm {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl std::convert::TryFrom<u16> for AeadAlgorithm {
+impl core::convert::TryFrom<u16> for AeadAlgorithm {
     type Error = error::Error;
     fn try_from(x: u16) -> Result<AeadAlgorithm, Self::Error> {
         match x {
@@ -171,13 +171,13 @@ pub enum KdfAlgorithm {
     HkdfSha512 = 0x0003,
 }
 
-impl std::fmt::Display for KdfAlgorithm {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for KdfAlgorithm {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl std::convert::TryFrom<u16> for KdfAlgorithm {
+impl core::convert::TryFrom<u16> for KdfAlgorithm {
     type Error = error::Error;
     fn try_from(x: u16) -> Result<KdfAlgorithm, Self::Error> {
         match x {
