@@ -181,7 +181,7 @@ fn kat<Crypto: HpkeCrypto + 'static>(tests: Vec<HpkeTestVector>) {
         #[cfg(feature = "hpke-test-prng")]
         {
             log::trace!("Testing with known ikmE ...");
-            let hpke_sender = Hpke::<Crypto>::new(mode, kem_id, kdf_id, aead_id);
+            let mut hpke_sender = Hpke::<Crypto>::new(mode, kem_id, kdf_id, aead_id);
             // This only works when seeding the PRNG with ikmE.
             hpke_sender.seed(&ikm_e).expect("Error injecting ikm_e");
             let (enc, _sender_context_kat) = hpke_sender
@@ -298,7 +298,7 @@ fn test_serialization() {
                 for &kem_mode in &[0x10u16, 0x20] {
                     let kem_mode = KemAlgorithm::try_from(kem_mode).unwrap();
 
-                    let hpke =
+                    let mut hpke =
                         Hpke::<HpkeRustCrypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
 
                     // JSON: Public, Private, KeyPair

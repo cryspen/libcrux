@@ -56,7 +56,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
                     if Crypto::supports_kem(kem_mode).is_err() {
                         continue;
                     }
-                    let hpke = Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
+                    let mut hpke = Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                     let label = format!(
                         "{} {} {} {} {}",
                         Crypto::name(),
@@ -98,7 +98,8 @@ fn benchmark<Crypto: HpkeCrypto + 'static>() {
 
                     let start = Instant::now();
                     for _ in 0..ITERATIONS {
-                        let hpke = Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
+                        let mut hpke =
+                            Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                         let _sender = hpke
                             .setup_sender(
                                 &pk_rm,

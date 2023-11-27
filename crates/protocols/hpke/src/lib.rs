@@ -9,8 +9,6 @@
     unused_qualifications
 )]
 
-use std::sync::RwLock;
-
 #[cfg(feature = "hpke-test-prng")]
 use hpke_rs_crypto::HpkeTestRng;
 #[cfg(not(feature = "hpke-test-prng"))]
@@ -79,9 +77,6 @@ pub enum HpkeError {
 
     /// Unable to collect enough randomness.
     InsufficientRandomness,
-
-    /// A concurrency issue with an [`RwLock`].
-    LockPoisoned,
 }
 
 impl std::error::Error for HpkeError {}
@@ -331,7 +326,7 @@ pub struct Hpke<Crypto: 'static + HpkeCrypto> {
     kem_id: KemAlgorithm,
     kdf_id: KdfAlgorithm,
     aead_id: AeadAlgorithm,
-    prng: RwLock<Crypto::HpkePrng>,
+    prng: Crypto::HpkePrng,
 }
 
 impl<Crypto: 'static + HpkeCrypto> Clone for Hpke<Crypto> {
@@ -341,7 +336,7 @@ impl<Crypto: 'static + HpkeCrypto> Clone for Hpke<Crypto> {
             kem_id: self.kem_id,
             kdf_id: self.kdf_id,
             aead_id: self.aead_id,
-            prng: RwLock::new(Crypto::prng()),
+            prng: Crypto::prng(),
         }
     }
 }
@@ -372,7 +367,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
             kem_id,
             kdf_id,
             aead_id,
-            prng: RwLock::new(Crypto::prng()),
+            prng: Crypto::prng(),
         }
     }
 
@@ -391,7 +386,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// The encapsulated secret is returned together with the context.
     /// If the secret key is missing in an authenticated mode, an error is returned.
     pub fn setup_sender(
-        &self,
+        &mut self,
         pk_r: &HpkePublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
@@ -478,7 +473,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// Returns the encapsulated secret and the ciphertext, or an error.
     #[allow(clippy::too_many_arguments)]
     pub fn seal(
-        &self,
+        &mut self,
         pk_r: &HpkePublicKey,
         info: &[u8],
         aad: &[u8],
@@ -534,7 +529,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// exporter context and length.
     #[allow(clippy::too_many_arguments)]
     pub fn send_export(
-        &self,
+        &mut self,
         pk_r: &HpkePublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
@@ -674,9 +669,8 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// This is equivalent to `derive_key_pair(random_vector(sk.len()))`
     ///
     /// Returns an `HpkeKeyPair`.
-    pub fn generate_key_pair(&self) -> Result<HpkeKeyPair, HpkeError> {
-        let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
-        let (sk, pk) = kem::key_gen::<Crypto>(self.kem_id, &mut prng)?;
+    pub fn generate_key_pair(&mut self) -> Result<HpkeKeyPair, HpkeError> {
+        let (sk, pk) = kem::key_gen::<Crypto>(self.kem_id, &mut self.prng)?;
         Ok(HpkeKeyPair::new(sk, pk))
     }
 
@@ -690,8 +684,8 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     #[inline]
-    pub(crate) fn random(&self, len: usize) -> Result<Vec<u8>, HpkeError> {
-        let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
+    pub(crate) fn random(&mut self, len: usize) -> Result<Vec<u8>, HpkeError> {
+        let prng = &mut self.prng;
         let mut out = vec![0u8; len];
 
         #[cfg(feature = "hpke-test-prng")]
@@ -896,9 +890,8 @@ pub mod test_util {
 
     impl<Crypto: HpkeCrypto> super::Hpke<Crypto> {
         /// Set PRNG state for testing.
-        pub fn seed(&self, seed: &[u8]) -> Result<(), HpkeError> {
-            let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
-            prng.seed(seed);
+        pub fn seed(&mut self, seed: &[u8]) -> Result<(), HpkeError> {
+            self.prng.seed(seed);
             Ok(())
         }
     }

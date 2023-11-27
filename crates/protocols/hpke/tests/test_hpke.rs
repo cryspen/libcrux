@@ -43,7 +43,7 @@ macro_rules! generate_test_case {
     ($name:ident, $hpke_mode:expr, $kem_mode:expr, $kdf_mode:expr, $aead_mode:expr, $provider:ident) => {
         #[test]
         fn $name() {
-            let hpke = Hpke::<$provider>::new($hpke_mode, $kem_mode, $kdf_mode, $aead_mode);
+            let mut hpke = Hpke::<$provider>::new($hpke_mode, $kem_mode, $kdf_mode, $aead_mode);
             println!("Self test {}", hpke);
 
             // Self test seal and open with random keys.
