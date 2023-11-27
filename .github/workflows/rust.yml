@@ -122,7 +122,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: mymindstorm/setup-emsdk@ab889da2abbcbb280f91ec4c215d3bb4f3a8f775
+      - uses: mymindstorm/setup-emsdk@d233ac12b0102f74ca199f5dad7a4e2c13a8a745
 
       - name: Setup
         run: |
