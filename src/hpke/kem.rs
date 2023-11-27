@@ -243,7 +243,7 @@ fn shared_secret_from_dh(alg: KEM, mut secret: Vec<u8>) -> Vec<u8> {
 /// [`ValidationError`](`HpkeError::ValidationError`) as described in
 /// [validation](#validation-of-inputs-and-outputs).
 pub fn DH(alg: KEM, sk: &PrivateKeyIn, pk: &PublicKeyIn) -> Result<SharedSecret, HpkeError> {
-    match crate::ecdh::derive(kem_to_named_group(alg).into(), pk, sk) {
+    match crate::ecdh::derive(kem_to_named_group(alg).try_into().unwrap(), pk, sk) {
         Ok(secret) => HpkeBytesResult::Ok(shared_secret_from_dh(alg, secret)),
         Err(_) => HpkeBytesResult::Err(HpkeError::ValidationError),
     }
@@ -444,7 +444,7 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
                 )?;
                 bytes[0] = bytes[0] & bitmask;
                 // This check ensure sk != 0 or sk < order
-                if crate::ecdh::validate_scalar(named_group.into(), &bytes).is_ok() {
+                if crate::ecdh::validate_scalar(named_group.try_into().unwrap(), &bytes).is_ok() {
                     sk = bytes;
                 }
             }
