@@ -261,14 +261,16 @@ let decrypt
         usize)
       (fun i ->
           let i:usize = i in
-          let u_bytes:t_Slice u8 =
-            (ciphertext.Libcrux.Kem.Kyber.Types.f_value.[ {
+          let outer = (ciphertext.Libcrux.Kem.Kyber.Types.f_value.[ {
                   Core.Ops.Range.f_end = v_VECTOR_U_ENCODED_SIZE
                 }
                 <:
                 Core.Ops.Range.t_RangeTo usize ]
               <:
-              t_Slice u8).[ {
+              t_Slice u8) in
+          let u_bytes:t_Slice u8 =
+              outer
+              .[ {
                 Core.Ops.Range.f_start
                 =
                 i *!
@@ -383,12 +385,13 @@ let encrypt
       (v_T_AS_NTT_ENCODED_SIZE /! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize)
       (fun i ->
           let i:usize = i in
-          let tt_as_ntt_bytes:t_Slice u8 =
-            (public_key.[ { Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE }
+          let pk_slice = (public_key.[ { Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE }
                 <:
                 Core.Ops.Range.t_RangeTo usize ]
               <:
-              t_Slice u8).[ {
+              t_Slice u8) in
+          let tt_as_ntt_bytes:t_Slice u8 =
+            pk_slice.[ {
                 Core.Ops.Range.f_start
                 =
                 i *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
@@ -495,13 +498,6 @@ let encrypt
   let (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE):t_Array u8 v_CIPHERTEXT_SIZE =
     Libcrux.Kem.Kyber.Conversions.into_padded_array v_CIPHERTEXT_SIZE
       (Rust_primitives.unsize c1 <: t_Slice u8)
-  in
-  let _:Prims.unit =
-    Core.Slice.impl__copy_from_slice (Core.Ops.Index.f_index_mut ciphertext
-          ({ Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize)
-        <:
-        t_Slice u8)
-      (Core.Array.impl_23__as_slice v_C2_LEN c2 <: t_Slice u8)
   in
   Core.Convert.f_into ciphertext, sampling_A_error
   <:

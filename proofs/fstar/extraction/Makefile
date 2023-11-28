@@ -208,7 +208,7 @@ dist/Makefile.basic: $(filter-out %prims.krml,$(ALL_KRML_FILES)) $(HAND_WRITTEN_
 	  -warn-error @4@5@18 \
 	  -fparentheses \
 	  -bundle 'LowStar.*,Prims' \
-	  -bundle Libcrux.Kem.Kyber.Constant_time_ops=Rust_primitives.*,Rust_primitives,Core.*,Core,Hax_lib.*,Hax_lib,Libcrux.Digest,Libcrux.Kem.Kyber.Constant_time_ops \
+	  -bundle Libcrux.Kem.Kyber.Kyber768=Rust_primitives.*,Rust_primitives,Core.*,Core,Hax_lib.*,Hax_lib,Libcrux.Digest,Libcrux.Kem.Kyber.*,Libcrux.Kem.Kyber \
 	  -minimal \
 	  -bundle 'FStar.*' \
 	  -add-include '<stdint.h>' \

@@ -22,8 +22,12 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list list
 
-let ntt_multiply_binomials (a0, a1: (i32 & i32)) (b0, b1: (i32 & i32)) (zeta: i32)
+val ntt_multiply_binomials: (i32 & i32) -> (i32 & i32) -> (zeta: i32) -> FStar.HyperStack.ST.St (i32 & i32)
+    
+let ntt_multiply_binomials x y  (zeta: i32)
     : FStar.HyperStack.ST.St (i32 & i32) =
+  let (a0,a1) = x in
+  let (b0,b1) = y in
   Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((a0 *! b0 <: i32) +!
       ((Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a1 *! b1 <: i32) <: i32) *! zeta <: i32)
       <:

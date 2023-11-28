@@ -169,9 +169,10 @@ let sample_from_uniform_distribution
             let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
             let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
             let _:Prims.unit =
+              let sample = (sampled_coefficients.[ sz 0 ] <: usize) in
               if
                 d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-                (sampled_coefficients.[ sz 0 ] <: usize) <.
+                sample <.
                 Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let _:Prims.unit =
@@ -186,8 +187,9 @@ let sample_from_uniform_distribution
             in
             let _:Prims.unit =
               if
+                let sample = (sampled_coefficients.[ sz 0 ] <: usize) in
                 d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-                (sampled_coefficients.[ sz 0 ] <: usize) <.
+                sample <.
                 Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let _:Prims.unit =

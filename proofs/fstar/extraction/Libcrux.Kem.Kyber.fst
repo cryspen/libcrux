@@ -38,15 +38,6 @@ let decapsulate
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 64)
       (Rust_primitives.unsize decrypted <: t_Slice u8)
   in
-  let _:Prims.unit =
-    Core.Slice.impl__copy_from_slice (Core.Ops.Index.f_index_mut to_hash
-          ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
-            <:
-            Core.Ops.Range.t_RangeFrom usize)
-        <:
-        t_Slice u8)
-      ind_cpa_public_key_hash
-  in
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
@@ -58,15 +49,6 @@ let decapsulate
     v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Libcrux.Kem.Kyber.Conversions.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
       implicit_rejection_value
-  in
-  let _:Prims.unit =
-    Core.Slice.impl__copy_from_slice (Core.Ops.Index.f_index_mut to_hash
-          ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
-            <:
-            Core.Ops.Range.t_RangeFrom usize)
-        <:
-        t_Slice u8)
-      (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
   in
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Hash_functions.v_PRF (sz 32) (Rust_primitives.unsize to_hash <: t_Slice u8)
@@ -99,25 +81,6 @@ let encapsulate
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 64)
       (Rust_primitives.unsize randomness <: t_Slice u8)
-  in
-  let _:Prims.unit =
-    Core.Slice.impl__copy_from_slice (Core.Ops.Index.f_index_mut to_hash
-          ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE }
-            <:
-            Core.Ops.Range.t_RangeFrom usize)
-        <:
-        t_Slice u8)
-      (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H (Rust_primitives.unsize (Libcrux.Kem.Kyber.Types.impl_24__as_slice
-                      v_PUBLIC_KEY_SIZE
-                      public_key
-                    <:
-                    t_Array u8 v_PUBLIC_KEY_SIZE)
-                <:
-                t_Slice u8)
-            <:
-            t_Array u8 (sz 32))
-        <:
-        t_Slice u8)
   in
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
