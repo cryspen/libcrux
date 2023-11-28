@@ -6,9 +6,9 @@ open FStar.Mul
 unfold
 let t_KyberSharedSecret = t_Array u8 (sz 32)
 
-let v_KEY_GENERATION_SEED_SIZE: usize =
+let v_KEY_GENERATION_SEED_SIZE: usize = normalize_term (
   Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
-  Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
+  Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE)
 
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
@@ -38,6 +38,23 @@ let decapsulate
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 64)
       (Rust_primitives.unsize decrypted <: t_Slice u8)
   in
+  let _:Prims.unit =
+    Core.Slice.impl__copy_from_slice (Core.Ops.Index.f_index_mut to_hash
+          ({
+              Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE;
+              Core.Ops.Range.f_end
+              =
+              Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE +!
+              Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
+              <:
+              usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        t_Slice u8)
+      ind_cpa_public_key_hash
+  in
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
@@ -49,6 +66,18 @@ let decapsulate
     v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Libcrux.Kem.Kyber.Conversions.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
       implicit_rejection_value
+  in
+  let _:Prims.unit =
+    Core.Slice.impl__copy_from_slice (Core.Ops.Index.f_index_mut to_hash
+          ({
+              Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE;
+              Core.Ops.Range.f_end = v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        t_Slice u8)
+      (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
   in
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Hash_functions.v_PRF (sz 32) (Rust_primitives.unsize to_hash <: t_Slice u8)
@@ -81,6 +110,28 @@ let encapsulate
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 64)
       (Rust_primitives.unsize randomness <: t_Slice u8)
+  in
+  let _:Prims.unit =
+    Core.Slice.impl__copy_from_slice (Core.Ops.Index.f_index_mut to_hash
+          ({
+              Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE;
+              Core.Ops.Range.f_end = sz 2 *! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        t_Slice u8)
+      (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H (Rust_primitives.unsize (Libcrux.Kem.Kyber.Types.impl_24__as_slice
+                      v_PUBLIC_KEY_SIZE
+                      public_key
+                    <:
+                    t_Array u8 v_PUBLIC_KEY_SIZE)
+                <:
+                t_Slice u8)
+            <:
+            t_Array u8 (sz 32))
+        <:
+        t_Slice u8)
   in
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
@@ -130,20 +181,12 @@ let generate_keypair
         (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
         Libcrux.Kem.Kyber.Types.t_Error) =
   let ind_cpa_keypair_randomness:t_Slice u8 =
-    randomness.[ {
-        Core.Ops.Range.f_start = sz 0;
-        Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
-      }
-      <:
-      Core.Ops.Range.t_Range usize ]
-  in
+    {buffer = randomness; len = Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE} in
+
+  let l =  (v_KEY_GENERATION_SEED_SIZE -. Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE) in
+  let b = LowStar.Buffer.sub randomness (Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE) l in
   let implicit_rejection_value:t_Slice u8 =
-    randomness.[ {
-        Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE
-      }
-      <:
-      Core.Ops.Range.t_RangeFrom usize ]
-  in
+    {buffer = b; len = l} in
   let (ind_cpa_private_key, public_key), sampling_a_error:((Libcrux.Kem.Kyber.Types.t_PrivateKey
       v_CPA_PRIVATE_KEY_SIZE &
       Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE) &
@@ -182,7 +225,7 @@ let generate_keypair
   | _ ->
     let (private_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey v_PRIVATE_KEY_SIZE):Libcrux.Kem.Kyber.Types.t_KyberPrivateKey
     v_PRIVATE_KEY_SIZE =
-      Core.Convert.f_from secret_key_serialized
+      Libcrux.Kem.Kyber.Ind_cpa.mk_kyberprivatekey secret_key_serialized
     in
     Core.Result.Result_Ok
     (Libcrux.Kem.Kyber.Types.impl__from v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE private_key public_key)

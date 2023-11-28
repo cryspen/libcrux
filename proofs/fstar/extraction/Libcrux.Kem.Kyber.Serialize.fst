@@ -2,13 +2,6 @@ module Libcrux.Kem.Kyber.Serialize
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
-open Rust_primitives
-
-let slice #t f a b : FStar.HyperStack.ST.St (t_Slice t) =
-  let l = b -. a in
-  let b = LowStar.Buffer.sub f a l in
-  {buffer = b;
-   len = l}
 
 let compress_then_serialize_10_
       (v_OUT_LEN: usize)
@@ -27,33 +20,47 @@ let compress_then_serialize_10_
         usize)
       (fun i ->
           let i:usize = i in
-          let coefficients:t_Slice i32 = slice  re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients (i *! sz 4 <: usize) ((i *! sz 4 <: usize) +! sz 4)
-          in
           let coefficient1:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 4 <: usize) +! sz 0
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient2:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 4 <: usize) +! sz 1
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient3:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 2 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 4 <: usize) +! sz 2
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient4:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 3 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 4 <: usize) +! sz 3
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
@@ -112,67 +119,91 @@ let compress_then_serialize_11_
         usize)
       (fun i ->
           let i:usize = i in
-          let coefficients:t_Slice i32 =
-            re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ {
-                Core.Ops.Range.f_start = i *! sz 8 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 8 <: usize) +! sz 8 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
           let coefficient1:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 0
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient2:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 1
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient3:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 2 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 2
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient4:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 3 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 3
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient5:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 4 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 4
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient6:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 5 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 5
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient7:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 6 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 6
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
           let coefficient8:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
-              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 7 ] <: i32
-                  )
+              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! sz 7
+                      <:
+                      usize ]
+                    <:
+                    i32)
                 <:
                 u16)
           in
@@ -273,17 +304,13 @@ let compress_then_serialize_4_
         usize)
       (fun i ->
           let i:usize = i in
-          let coefficients:t_Slice i32 =
-            re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ {
-                Core.Ops.Range.f_start = i *! sz 2 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 2 <: usize) +! sz 2 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
           let coefficient1:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 4uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 2 <: usize) +!
+                          sz 0
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -295,7 +322,11 @@ let compress_then_serialize_4_
           in
           let coefficient2:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 4uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 2 <: usize) +!
+                          sz 1
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -331,17 +362,13 @@ let compress_then_serialize_5_
         usize)
       (fun i ->
           let i:usize = i in
-          let coefficients:t_Slice i32 =
-            re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ {
-                Core.Ops.Range.f_start = i *! sz 8 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 8 <: usize) +! sz 8 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
           let coefficient1:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 0
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -353,7 +380,11 @@ let compress_then_serialize_5_
           in
           let coefficient2:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 1
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -365,7 +396,11 @@ let compress_then_serialize_5_
           in
           let coefficient3:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 2 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 2
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -377,7 +412,11 @@ let compress_then_serialize_5_
           in
           let coefficient4:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 3 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 3
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -389,7 +428,11 @@ let compress_then_serialize_5_
           in
           let coefficient5:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 4 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 4
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -401,7 +444,11 @@ let compress_then_serialize_5_
           in
           let coefficient6:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 5 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 5
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -413,7 +460,11 @@ let compress_then_serialize_5_
           in
           let coefficient7:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 6 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 6
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -425,7 +476,11 @@ let compress_then_serialize_5_
           in
           let coefficient8:u8 =
             cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
-                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 7 ]
+                  (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +!
+                          sz 7
+                          <:
+                          usize ]
                         <:
                         i32)
                     <:
@@ -485,28 +540,26 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_Polynomi
         usize)
       (fun i ->
           let i:usize = i in
-          let coefficients:t_Slice i32 =
-            re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ {
-                Core.Ops.Range.f_start = i *! sz 8 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 8 <: usize) +! sz 8 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
           Rust_primitives.f_for_loop (sz 0)
-            (Core.Slice.impl__len coefficients <: usize)
+            (sz 8)
             (fun j ->
                 let j:usize = j in
-                let coefficient:i32 = coefficients.[ j ] in
                 let coefficient:u16 =
-                  Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative coefficient
+                  Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 8 <: usize) +! j
+                        <:
+                        usize ]
+                      <:
+                      i32)
                 in
                 let coefficient_compressed:u8 =
                   Libcrux.Kem.Kyber.Compress.compress_message_coefficient coefficient
                 in
                 Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize serialized
                   i
-                  ((serialized.[ i ] <: u8) |. (coefficient_compressed <<! j <: u8) <: u8)))
+                  ((serialized.[ i ] <: u8) |. (coefficient_compressed <<! j <: u8) <: u8))
+          <:
+          Prims.unit)
   in
   serialized
 
@@ -518,11 +571,6 @@ let compress_then_serialize_ring_element_u
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN re
   | 11ul -> compress_then_serialize_11_ v_OUT_LEN re
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -532,11 +580,6 @@ let compress_then_serialize_ring_element_v
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
   | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let deserialize_then_decompress_10_ (serialized: t_Slice u8)
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
@@ -549,19 +592,21 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
       ((Core.Slice.impl__len serialized <: usize) /! sz 5 <: usize)
       (fun i ->
           let i:usize = i in
-          let bytes:t_Slice u8 =
-            serialized.[ {
-                Core.Ops.Range.f_start = i *! sz 5 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 5 <: usize) +! sz 5 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
+          let byte1:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 0 <: usize ] <: u8) <: i32
           in
-          let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
-          let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
-          let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
-          let byte4:i32 = cast (bytes.[ sz 3 ] <: u8) <: i32 in
-          let byte5:i32 = cast (bytes.[ sz 4 ] <: u8) <: i32 in
+          let byte2:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 1 <: usize ] <: u8) <: i32
+          in
+          let byte3:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 2 <: usize ] <: u8) <: i32
+          in
+          let byte4:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 3 <: usize ] <: u8) <: i32
+          in
+          let byte5:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 4 <: usize ] <: u8) <: i32
+          in
           let coefficient1:i32 = ((byte2 &. 3l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
@@ -609,25 +654,39 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
       ((Core.Slice.impl__len serialized <: usize) /! sz 11 <: usize)
       (fun i ->
           let i:usize = i in
-          let bytes:t_Slice u8 =
-            serialized.[ {
-                Core.Ops.Range.f_start = i *! sz 11 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 11 <: usize) +! sz 11 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
+          let byte1:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 0 <: usize ] <: u8) <: i32
           in
-          let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
-          let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
-          let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
-          let byte4:i32 = cast (bytes.[ sz 3 ] <: u8) <: i32 in
-          let byte5:i32 = cast (bytes.[ sz 4 ] <: u8) <: i32 in
-          let byte6:i32 = cast (bytes.[ sz 5 ] <: u8) <: i32 in
-          let byte7:i32 = cast (bytes.[ sz 6 ] <: u8) <: i32 in
-          let byte8:i32 = cast (bytes.[ sz 7 ] <: u8) <: i32 in
-          let byte9:i32 = cast (bytes.[ sz 8 ] <: u8) <: i32 in
-          let byte10:i32 = cast (bytes.[ sz 9 ] <: u8) <: i32 in
-          let byte11:i32 = cast (bytes.[ sz 10 ] <: u8) <: i32 in
+          let byte2:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 1 <: usize ] <: u8) <: i32
+          in
+          let byte3:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 2 <: usize ] <: u8) <: i32
+          in
+          let byte4:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 3 <: usize ] <: u8) <: i32
+          in
+          let byte5:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 4 <: usize ] <: u8) <: i32
+          in
+          let byte6:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 5 <: usize ] <: u8) <: i32
+          in
+          let byte7:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 6 <: usize ] <: u8) <: i32
+          in
+          let byte8:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 7 <: usize ] <: u8) <: i32
+          in
+          let byte9:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 8 <: usize ] <: u8) <: i32
+          in
+          let byte10:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 9 <: usize ] <: u8) <: i32
+          in
+          let byte11:i32 =
+            cast (serialized.[ (i *! sz 11 <: usize) +! sz 10 <: usize ] <: u8) <: i32
+          in
           let coefficient1:i32 = ((byte2 &. 7l <: i32) <<! 8l <: i32) |. byte1 in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
@@ -713,15 +772,16 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
       (Core.Slice.impl__len serialized <: usize)
       (fun i ->
           let i:usize = i in
-          let byte:u8 = serialized.[ i ] in
-          let coefficient1:i32 = cast (byte &. 15uy <: u8) <: i32 in
+          let coefficient1:i32 = cast ((serialized.[ i ] <: u8) &. 15uy <: u8) <: i32 in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
               (sz 2 *! i <: usize)
               (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 4uy coefficient1 <: i32)
           in
-          let coefficient2:i32 = cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32 in
+          let coefficient2:i32 =
+            cast (((serialized.[ i ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i32
+          in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
@@ -743,19 +803,21 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
       ((Core.Slice.impl__len serialized <: usize) /! sz 5 <: usize)
       (fun i ->
           let i:usize = i in
-          let bytes:t_Slice u8 =
-            serialized.[ {
-                Core.Ops.Range.f_start = i *! sz 5 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 5 <: usize) +! sz 5 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
+          let byte1:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 0 <: usize ] <: u8) <: i32
           in
-          let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
-          let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
-          let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
-          let byte4:i32 = cast (bytes.[ sz 3 ] <: u8) <: i32 in
-          let byte5:i32 = cast (bytes.[ sz 4 ] <: u8) <: i32 in
+          let byte2:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 1 <: usize ] <: u8) <: i32
+          in
+          let byte3:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 2 <: usize ] <: u8) <: i32
+          in
+          let byte4:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 3 <: usize ] <: u8) <: i32
+          in
+          let byte5:i32 =
+            cast (serialized.[ (i *! sz 5 <: usize) +! sz 4 <: usize ] <: u8) <: i32
+          in
           let coefficient1:i32 = byte1 &. 31l in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
@@ -853,11 +915,6 @@ let deserialize_then_decompress_ring_element_u
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> deserialize_then_decompress_10_ serialized
   | 11ul -> deserialize_then_decompress_11_ serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let deserialize_then_decompress_ring_element_v
       (v_COMPRESSION_FACTOR: usize)
@@ -867,11 +924,6 @@ let deserialize_then_decompress_ring_element_v
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> deserialize_then_decompress_4_ serialized
   | 5ul -> deserialize_then_decompress_5_ serialized
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
@@ -884,17 +936,15 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
       ((Core.Slice.impl__len serialized <: usize) /! sz 3 <: usize)
       (fun i ->
           let i:usize = i in
-          let bytes:t_Slice u8 =
-            serialized.[ {
-                Core.Ops.Range.f_start = i *! sz 3 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 3 <: usize) +! sz 3 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
+          let byte1:i32 =
+            cast (serialized.[ (i *! sz 3 <: usize) +! sz 0 <: usize ] <: u8) <: i32
           in
-          let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
-          let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
-          let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
+          let byte2:i32 =
+            cast (serialized.[ (i *! sz 3 <: usize) +! sz 1 <: usize ] <: u8) <: i32
+          in
+          let byte3:i32 =
+            cast (serialized.[ (i *! sz 3 <: usize) +! sz 2 <: usize ] <: u8) <: i32
+          in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
                 .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
@@ -926,19 +976,21 @@ let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
         usize)
       (fun i ->
           let i:usize = i in
-          let coefficients:t_Slice i32 =
-            re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ {
-                Core.Ops.Range.f_start = i *! sz 2 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 2 <: usize) +! sz 2 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
           let coefficient1:u16 =
-            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ] <: i32)
+            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 2 <: usize) +! sz 0
+                  <:
+                  usize ]
+                <:
+                i32)
           in
           let coefficient2:u16 =
-            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ] <: i32)
+            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (i *! sz 2 <: usize) +! sz 1
+                  <:
+                  usize ]
+                <:
+                i32)
           in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize serialized

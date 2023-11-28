@@ -11,12 +11,6 @@ static uint32_t v_COEFFICIENTS_IN_RING_ELEMENT = 256U;
 
 static int32_t v_FIELD_MODULUS = (int32_t)3329;
 
-static int64_t v_BARRETT_MULTIPLIER = (int64_t)20159;
-
-static int64_t v_BARRETT_SHIFT = (int64_t)26;
-
-static int64_t v_BARRETT_R = (int64_t)1 << (uint32_t)(int64_t)26;
-
 static uint32_t v_INVERSE_OF_MODULUS_MOD_R = 62209U;
 
 static uint8_t v_MONTGOMERY_SHIFT = 16U;
@@ -24,34 +18,6 @@ static uint8_t v_MONTGOMERY_SHIFT = 16U;
 static uint32_t get_montgomery_r_least_significant_bits(uint32_t value)
 {
   return value & ((1U << (uint32_t)v_MONTGOMERY_SHIFT) - 1U);
-}
-
-static int32_t barrett_reduce(int32_t value)
-{
-  int64_t
-  t =
-    (int64_t)value
-    * v_BARRETT_MULTIPLIER
-    + FStar_Int64_shift_arithmetic_right(v_BARRETT_R, (uint32_t)(int32_t)1);
-  uint32_t m = 32U;
-  int64_t pow2_bits = (int64_t)1 << 32U;
-  int64_t pow2_bits_minus_one = (int64_t)1 << 31U;
-  int64_t
-  a2 =
-    (FStar_Int64_shift_arithmetic_right(t,
-      (uint32_t)v_BARRETT_SHIFT)
-    & (((int64_t)1 << m) - (int64_t)1))
-    - pow2_bits_minus_one;
-  int64_t mask = FStar_Int64_shift_arithmetic_right(a2, 63U);
-  int64_t
-  a3 =
-    (FStar_Int64_shift_arithmetic_right(t,
-      (uint32_t)v_BARRETT_SHIFT)
-    & (((int64_t)1 << m) - (int64_t)1))
-    - pow2_bits;
-  int64_t b = a3 + (mask & pow2_bits);
-  int32_t quotient = (int32_t)b;
-  return value - quotient * v_FIELD_MODULUS;
 }
 
 static int32_t montgomery_reduce(int32_t value)
@@ -73,357 +39,47 @@ static int32_t montgomery_reduce(int32_t value)
   return value_high - c;
 }
 
-static int32_t montgomery_multiply_sfe_by_fer(int32_t fe, int32_t fer)
-{
-  return montgomery_reduce(fe * fer);
-}
-
 typedef int32_t *t_PolynomialRingElement;
 
 static int32_t impl__PolynomialRingElement__ZERO[256U];
 
-int32_t
-Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[128U] =
-  {
-    (int32_t)-1044, (int32_t)-758, (int32_t)-359, (int32_t)-1517, (int32_t)1493, (int32_t)1422,
-    (int32_t)287, (int32_t)202, (int32_t)-171, (int32_t)622, (int32_t)1577, (int32_t)182,
-    (int32_t)962, (int32_t)-1202, (int32_t)-1474, (int32_t)1468, (int32_t)573, (int32_t)-1325,
-    (int32_t)264, (int32_t)383, (int32_t)-829, (int32_t)1458, (int32_t)-1602, (int32_t)-130,
-    (int32_t)-681, (int32_t)1017, (int32_t)732, (int32_t)608, (int32_t)-1542, (int32_t)411,
-    (int32_t)-205, (int32_t)-1571, (int32_t)1223, (int32_t)652, (int32_t)-552, (int32_t)1015,
-    (int32_t)-1293, (int32_t)1491, (int32_t)-282, (int32_t)-1544, (int32_t)516, (int32_t)-8,
-    (int32_t)-320, (int32_t)-666, (int32_t)-1618, (int32_t)-1162, (int32_t)126, (int32_t)1469,
-    (int32_t)-853, (int32_t)-90, (int32_t)-271, (int32_t)830, (int32_t)107, (int32_t)-1421,
-    (int32_t)-247, (int32_t)-951, (int32_t)-398, (int32_t)961, (int32_t)-1508, (int32_t)-725,
-    (int32_t)448, (int32_t)-1065, (int32_t)677, (int32_t)-1275, (int32_t)-1103, (int32_t)430,
-    (int32_t)555, (int32_t)843, (int32_t)-1251, (int32_t)871, (int32_t)1550, (int32_t)105,
-    (int32_t)422, (int32_t)587, (int32_t)177, (int32_t)-235, (int32_t)-291, (int32_t)-460,
-    (int32_t)1574, (int32_t)1653, (int32_t)-246, (int32_t)778, (int32_t)1159, (int32_t)-147,
-    (int32_t)-777, (int32_t)1483, (int32_t)-602, (int32_t)1119, (int32_t)-1590, (int32_t)644,
-    (int32_t)-872, (int32_t)349, (int32_t)418, (int32_t)329, (int32_t)-156, (int32_t)-75,
-    (int32_t)817, (int32_t)1097, (int32_t)603, (int32_t)610, (int32_t)1322, (int32_t)-1285,
-    (int32_t)-1465, (int32_t)384, (int32_t)-1215, (int32_t)-136, (int32_t)1218, (int32_t)-1335,
-    (int32_t)-874, (int32_t)220, (int32_t)-1187, (int32_t)-1659, (int32_t)-1185, (int32_t)-1530,
-    (int32_t)-1278, (int32_t)794, (int32_t)-1510, (int32_t)-854, (int32_t)-870, (int32_t)478,
-    (int32_t)-108, (int32_t)-308, (int32_t)996, (int32_t)991, (int32_t)958, (int32_t)-1460,
-    (int32_t)1522, (int32_t)1628
-  };
+int32_t *Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R;
 
 K___int32_t_int32_t
 Libcrux_Kem_Kyber_Ntt_ntt_multiply_binomials(
-  K___int32_t_int32_t x,
-  K___int32_t_int32_t y,
+  K___int32_t_int32_t a,
+  K___int32_t_int32_t b,
   int32_t zeta
 )
 {
-  int32_t a0 = x.fst;
-  int32_t a1 = x.snd;
-  int32_t b0 = y.fst;
-  int32_t b1 = y.snd;
   return
     (
       (K___int32_t_int32_t){
-        .fst = montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
-        .snd = montgomery_reduce(a0 * b1 + a1 * b0)
+        .fst = montgomery_reduce(a.fst * b.fst + montgomery_reduce(a.snd * b.snd) * zeta),
+        .snd = montgomery_reduce(a.fst * b.snd + a.snd * b.fst)
       }
     );
 }
 
-int32_t *Libcrux_Kem_Kyber_Ntt_invert_ntt_montgomery(uint32_t v_K, int32_t *re)
+void Libcrux_Kem_Kyber_Ntt_invert_ntt_montgomery(uint32_t v_K, int32_t *re)
 {
   KRML_MAYBE_UNUSED_VAR(v_K);
-  uint32_t zeta_i[1U] = { v_COEFFICIENTS_IN_RING_ELEMENT / 2U };
-  uint32_t step = 2U;
-  uint32_t start0 = 0U;
-  uint32_t finish0 = 128U / step;
-  for (uint32_t i0 = start0; i0 < finish0; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] - 1U;
-    uint32_t offset = round * step * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t a_minus_b = re[j + step] - re[j];
-      re[j] = re[j] + re[j + step];
-      re[j + step] =
-        montgomery_reduce(a_minus_b * Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-    }
-  }
-  uint32_t step1 = 4U;
-  uint32_t start2 = 0U;
-  uint32_t finish2 = 128U / step1;
-  for (uint32_t i0 = start2; i0 < finish2; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] - 1U;
-    uint32_t offset = round * step1 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step1;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t a_minus_b = re[j + step1] - re[j];
-      re[j] = re[j] + re[j + step1];
-      re[j + step1] =
-        montgomery_reduce(a_minus_b * Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-    }
-  }
-  uint32_t step2 = 8U;
-  uint32_t start3 = 0U;
-  uint32_t finish3 = 128U / step2;
-  for (uint32_t i0 = start3; i0 < finish3; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] - 1U;
-    uint32_t offset = round * step2 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step2;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t a_minus_b = re[j + step2] - re[j];
-      re[j] = re[j] + re[j + step2];
-      re[j + step2] =
-        montgomery_reduce(a_minus_b * Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-    }
-  }
-  uint32_t step3 = 16U;
-  uint32_t start4 = 0U;
-  uint32_t finish4 = 128U / step3;
-  for (uint32_t i0 = start4; i0 < finish4; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] - 1U;
-    uint32_t offset = round * step3 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step3;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t a_minus_b = re[j + step3] - re[j];
-      re[j] = re[j] + re[j + step3];
-      re[j + step3] =
-        montgomery_reduce(a_minus_b * Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-    }
-  }
-  uint32_t step4 = 32U;
-  uint32_t start5 = 0U;
-  uint32_t finish5 = 128U / step4;
-  for (uint32_t i0 = start5; i0 < finish5; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] - 1U;
-    uint32_t offset = round * step4 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step4;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t a_minus_b = re[j + step4] - re[j];
-      re[j] = re[j] + re[j + step4];
-      re[j + step4] =
-        montgomery_reduce(a_minus_b * Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-    }
-  }
-  uint32_t step5 = 64U;
-  uint32_t start6 = 0U;
-  uint32_t finish6 = 128U / step5;
-  for (uint32_t i0 = start6; i0 < finish6; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] - 1U;
-    uint32_t offset = round * step5 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step5;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t a_minus_b = re[j + step5] - re[j];
-      re[j] = re[j] + re[j + step5];
-      re[j + step5] =
-        montgomery_reduce(a_minus_b * Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-    }
-  }
-  uint32_t step6 = 128U;
-  uint32_t start = 0U;
-  uint32_t finish7 = 128U / step6;
-  for (uint32_t i0 = start; i0 < finish7; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] - 1U;
-    uint32_t offset = round * step6 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step6;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t a_minus_b = re[j + step6] - re[j];
-      re[j] = re[j] + re[j + step6];
-      re[j + step6] =
-        montgomery_reduce(a_minus_b * Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-    }
-  }
-  uint32_t start1 = 0U;
-  uint32_t finish = 8U;
-  for (uint32_t i = start1; i < finish; i++)
-  {
-    uint32_t i1 = i;
-    re[i1] = barrett_reduce(re[i1]);
-  }
-  return re;
-}
-
-static int32_t *impl_23__map__int32_t_int32_t(uint32_t n)
-{
-  KRML_MAYBE_UNUSED_VAR(n);
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "");
+  KRML_MAYBE_UNUSED_VAR(re);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n",
+    __FILE__,
+    __LINE__,
+    "This function was not extracted:\nFailure(\"Argument of FStar.Buffer.createL is not a list literal!\")");
   KRML_HOST_EXIT(255U);
 }
 
 int32_t *Libcrux_Kem_Kyber_Ntt_ntt_binomially_sampled_ring_element(int32_t *re)
 {
-  uint32_t zeta_i[1U] = { 0U };
-  zeta_i[0U] = zeta_i[0U] + 1U;
-  uint32_t start0 = 0U;
-  uint32_t finish0 = 128U;
-  for (uint32_t i = start0; i < finish0; i++)
-  {
-    uint32_t j = i;
-    int32_t t = re[j + 128U] * (int32_t)-1600;
-    re[j + 128U] = re[j] - t;
-    re[j] = re[j] + t;
-  }
-  uint32_t step = 64U;
-  uint32_t start2 = 0U;
-  uint32_t finish2 = 128U / step;
-  for (uint32_t i0 = start2; i0 < finish2; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step1 = 32U;
-  uint32_t start3 = 0U;
-  uint32_t finish3 = 128U / step1;
-  for (uint32_t i0 = start3; i0 < finish3; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step1 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step1;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step1],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step1] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step2 = 16U;
-  uint32_t start4 = 0U;
-  uint32_t finish4 = 128U / step2;
-  for (uint32_t i0 = start4; i0 < finish4; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step2 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step2;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step2],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step2] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step3 = 8U;
-  uint32_t start5 = 0U;
-  uint32_t finish5 = 128U / step3;
-  for (uint32_t i0 = start5; i0 < finish5; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step3 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step3;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step3],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step3] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step4 = 4U;
-  uint32_t start6 = 0U;
-  uint32_t finish6 = 128U / step4;
-  for (uint32_t i0 = start6; i0 < finish6; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step4 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step4;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step4],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step4] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step5 = 2U;
-  uint32_t start = 0U;
-  uint32_t finish = 128U / step5;
-  for (uint32_t i0 = start; i0 < finish; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step5 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step5;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step5],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step5] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  int32_t *re1 = impl_23__map__int32_t_int32_t(256U);
-  return re1;
+  KRML_MAYBE_UNUSED_VAR(re);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n",
+    __FILE__,
+    __LINE__,
+    "This function was not extracted:\nFailure(\"Argument of FStar.Buffer.createL is not a list literal!\")");
+  KRML_HOST_EXIT(255U);
 }
 
 int32_t *Libcrux_Kem_Kyber_Ntt_ntt_multiply(int32_t *left, int32_t *right)
@@ -460,155 +116,11 @@ int32_t
 *Libcrux_Kem_Kyber_Ntt_ntt_vector_u(uint32_t v_VECTOR_U_COMPRESSION_FACTOR, int32_t *re)
 {
   KRML_MAYBE_UNUSED_VAR(v_VECTOR_U_COMPRESSION_FACTOR);
-  uint32_t zeta_i[1U] = { 0U };
-  uint32_t step = 128U;
-  uint32_t start0 = 0U;
-  uint32_t finish0 = 128U / step;
-  for (uint32_t i0 = start0; i0 < finish0; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step1 = 64U;
-  uint32_t start2 = 0U;
-  uint32_t finish2 = 128U / step1;
-  for (uint32_t i0 = start2; i0 < finish2; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step1 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step1;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step1],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step1] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step2 = 32U;
-  uint32_t start3 = 0U;
-  uint32_t finish3 = 128U / step2;
-  for (uint32_t i0 = start3; i0 < finish3; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step2 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step2;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step2],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step2] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step3 = 16U;
-  uint32_t start4 = 0U;
-  uint32_t finish4 = 128U / step3;
-  for (uint32_t i0 = start4; i0 < finish4; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step3 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step3;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step3],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step3] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step4 = 8U;
-  uint32_t start5 = 0U;
-  uint32_t finish5 = 128U / step4;
-  for (uint32_t i0 = start5; i0 < finish5; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step4 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step4;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step4],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step4] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step5 = 4U;
-  uint32_t start6 = 0U;
-  uint32_t finish6 = 128U / step5;
-  for (uint32_t i0 = start6; i0 < finish6; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step5 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step5;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step5],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step5] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  uint32_t step6 = 2U;
-  uint32_t start = 0U;
-  uint32_t finish = 128U / step6;
-  for (uint32_t i0 = start; i0 < finish; i0++)
-  {
-    uint32_t round = i0;
-    zeta_i[0U] = zeta_i[0U] + 1U;
-    uint32_t offset = round * step6 * 2U;
-    uint32_t start1 = offset;
-    uint32_t finish1 = offset + step6;
-    for (uint32_t i = start1; i < finish1; i++)
-    {
-      uint32_t j = i;
-      int32_t
-      t =
-        montgomery_multiply_sfe_by_fer(re[j + step6],
-          Libcrux_Kem_Kyber_Ntt_v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-      re[j + step6] = re[j] - t;
-      re[j] = re[j] + t;
-    }
-  }
-  int32_t *re1 = impl_23__map__int32_t_int32_t(256U);
-  return re1;
+  KRML_MAYBE_UNUSED_VAR(re);
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n",
+    __FILE__,
+    __LINE__,
+    "This function was not extracted:\nFailure(\"Argument of FStar.Buffer.createL is not a list literal!\")");
+  KRML_HOST_EXIT(255U);
 }
 

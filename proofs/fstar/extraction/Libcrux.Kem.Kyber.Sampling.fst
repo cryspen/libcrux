@@ -3,6 +3,10 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
+let increment (x: usize) : FStar.HyperStack.ST.St Prims.unit =
+  let x:usize = x +! sz 1 in
+  ()
+
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -121,28 +125,19 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
-
-        <:
-        Rust_primitives.Hax.t_Never)
 
 let sample_from_uniform_distribution
       (v_SEED_SIZE: usize)
       (randomness: t_Array u8 v_SEED_SIZE)
       (sampling_error: Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-  let sampled_coefficients:t_Array usize (sz 1) =
-    let list = [sz 0] in
-    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-    Rust_primitives.Hax.array_of_list list
-  in
+  let sampled_coefficients:usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let done:t_Array bool (sz 1) =
-    let list = [false] in
+    [@inline_let] let list =  [false] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list
   in
@@ -169,45 +164,34 @@ let sample_from_uniform_distribution
             let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
             let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
             let _:Prims.unit =
-              let sample = (sampled_coefficients.[ sz 0 ] <: usize) in
               if
                 d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-                sample <.
-                Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+                sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let _:Prims.unit =
                   Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize out
                       .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    (sampled_coefficients.[ sz 0 ] <: usize)
+                    sampled_coefficients
                     d1
                 in
-                Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize sampled_coefficients
-                  (sz 0)
-                  ((sampled_coefficients.[ sz 0 ] <: usize) +! sz 1 <: usize)
+                let _:Prims.unit = increment sampled_coefficients in
+                ()
             in
             let _:Prims.unit =
               if
-                let sample = (sampled_coefficients.[ sz 0 ] <: usize) in
                 d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-                sample <.
-                Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+                sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let _:Prims.unit =
                   Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize out
                       .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    (sampled_coefficients.[ sz 0 ] <: usize)
+                    sampled_coefficients
                     d2
                 in
-                let _:Prims.unit =
-                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize sampled_coefficients
-                    (sz 0)
-                    ((sampled_coefficients.[ sz 0 ] <: usize) +! sz 1 <: usize)
-                in
+                let _:Prims.unit = increment sampled_coefficients in
                 ()
             in
-            if
-              (sampled_coefficients.[ sz 0 ] <: usize) =.
-              Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+            if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
             then
               let _:Prims.unit =
                 Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize done (sz 0) true

@@ -16,6 +16,7 @@ type t_Algorithm =
   | Algorithm_Sha3_384_ : t_Algorithm
   | Algorithm_Sha3_512_ : t_Algorithm
 
+inline_for_extraction
 let digest_size (mode: t_Algorithm) : usize =
   match mode with
   | Algorithm_Sha1  -> sz 20

@@ -24,11 +24,11 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     let mut done = [false];
     // for bytes in randomness.chunks(3) {
     for i in 0..randomness.len() / 3 {
-        let bytes = &randomness[(i * 3)..(i * 3) + 3];
+    	let offset = i * 3;
         if !done[0] {
-            let b1 = bytes[0] as i32;
-            let b2 = bytes[1] as i32;
-            let b3 = bytes[2] as i32;
+            let b1 = randomness[offset+0] as i32;
+            let b2 = randomness[offset+1] as i32;
+            let b3 = randomness[offset+2] as i32;
 
             let d1 = ((b2 & 0xF) << 8) | b1;
             let d2 = (b3 << 4) | (b2 >> 4);
@@ -64,11 +64,12 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
 
     // for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
     for chunk_number in 0..randomness.len() / 4 {
-        let byte_chunk = &randomness[(chunk_number * 4)..(chunk_number * 4) + 4];
-        let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
-            | (byte_chunk[1] as u32) << 8
-            | (byte_chunk[2] as u32) << 16
-            | (byte_chunk[3] as u32) << 24;
+    	let offset = chunk_number * 4;
+        let random_bits_as_u32: u32 =
+	      (randomness[offset+0] as u32)
+            | (randomness[offset+1] as u32) << 8
+            | (randomness[offset+2] as u32) << 16
+            | (randomness[offset+3] as u32) << 24;
 
         let even_bits = random_bits_as_u32 & 0x55555555;
         let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
@@ -98,9 +99,9 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
 
     // for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
     for chunk_number in 0..randomness.len() / 3 {
-        let byte_chunk = &randomness[(chunk_number * 3)..(chunk_number * 3) + 3];
+	let offset = chunk_numer * 3;
         let random_bits_as_u24: u32 =
-            (byte_chunk[0] as u32) | (byte_chunk[1] as u32) << 8 | (byte_chunk[2] as u32) << 16;
+            (randomness[offset+0] as u32) | (randomness[offset+1] as u32) << 8 | (randomness[offset+2] as u32) << 16;
 
         let first_bits = random_bits_as_u24 & 0x00249249;
         let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;

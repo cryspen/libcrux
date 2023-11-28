@@ -23,26 +23,22 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list list
 
-val ntt_multiply_binomials: (i32 & i32) -> (i32 & i32) -> (zeta: i32) -> FStar.HyperStack.ST.St (i32 & i32)
-    
-let ntt_multiply_binomials x y  (zeta: i32)
-    : FStar.HyperStack.ST.St (i32 & i32) =
-  let (a0,a1) = x in
-  let (b0,b1) = y in
-  Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((a0 *! b0 <: i32) +!
-      ((Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a1 *! b1 <: i32) <: i32) *! zeta <: i32)
+let ntt_multiply_binomials (a b: (i32 & i32)) (zeta: i32) : FStar.HyperStack.ST.St (i32 & i32) =
+  Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((a._1 *! b._1 <: i32) +!
+      ((Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a._2 *! b._2 <: i32) <: i32) *! zeta <: i32)
       <:
       i32),
-  Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((a0 *! b1 <: i32) +! (a1 *! b0 <: i32) <: i32)
+  Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((a._1 *! b._2 <: i32) +! (a._2 *! b._1 <: i32)
+      <:
+      i32)
   <:
   (i32 & i32)
 
 let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    : FStar.HyperStack.ST.St Prims.unit =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:t_Array usize (sz 1) =
-    [@inline_let]
-    let list = [Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2] in
+    [@inline_let] let list =  [Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list
   in
@@ -342,31 +338,27 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
   in
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let _:Prims.unit =
-    Rust_primitives.f_for_loop (sz 0)
-      (sz 8)
-      (fun i ->
-          let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
-              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            i
-            (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce (re
-                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                  <:
-                  i32)
-              <:
-              i32)
-          <:
-          Prims.unit)
-  in
-  re
+  Rust_primitives.f_for_loop (sz 0)
+    (sz 8)
+    (fun i ->
+        let i:usize = i in
+        Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+          i
+          (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce (re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                <:
+                i32)
+            <:
+            i32)
+        <:
+        Prims.unit)
 
 let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:t_Array usize (sz 1) =
-    [@inline_let]
-    let list = [sz 0] in
+    [@inline_let] let list =  [sz 0] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list
   in
@@ -743,8 +735,7 @@ let ntt_vector_u
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:t_Array usize (sz 1) =
-    [@inline_let]
-    let list = [sz 0] in
+    [@inline_let] let list =  [sz 0] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list
   in

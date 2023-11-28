@@ -9,14 +9,17 @@ type t_Error = | Error_RejectionSampling : t_Error
 type t_KyberCiphertext (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_1 (v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberCiphertext v_SIZE) (t_Slice u8) =
   { f_as_ref = fun (self: t_KyberCiphertext v_SIZE) -> Rust_primitives.unsize self.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_2 (v_SIZE: usize) : Core.Convert.t_From (t_KyberCiphertext v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (value: t_Array u8 v_SIZE) -> { f_value = value } <: t_KyberCiphertext v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_3 (v_SIZE: usize) : Core.Convert.t_From (t_KyberCiphertext v_SIZE) (t_Array u8 v_SIZE) =
   {
     f_from
@@ -26,10 +29,12 @@ let impl_3 (v_SIZE: usize) : Core.Convert.t_From (t_KyberCiphertext v_SIZE) (t_A
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_4 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberCiphertext v_SIZE) =
   { f_from = fun (value: t_KyberCiphertext v_SIZE) -> value.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_5 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberCiphertext v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
@@ -47,6 +52,7 @@ let impl_5 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberCiphertext v_SIZE) (
         Core.Result.t_Result (t_KyberCiphertext v_SIZE) Core.Array.t_TryFromSliceError
   }
 
+inline_for_extraction noextract
 let impl_6__as_slice (v_SIZE: usize) (self: t_KyberCiphertext v_SIZE)
     : FStar.HyperStack.ST.St (t_Array u8 v_SIZE) = self.f_value
 
@@ -54,6 +60,7 @@ inline_for_extraction
 let impl_6__len (v_SIZE: usize) (self: t_KyberCiphertext v_SIZE)
     : FStar.HyperStack.ST.StackInline usize (fun _ -> True) (fun _ _ _ -> True) = v_SIZE
 
+inline_for_extraction noextract
 let impl_6__split_at (v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) (mid: usize)
     : FStar.HyperStack.ST.St (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
@@ -61,14 +68,17 @@ let impl_6__split_at (v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) (mid: usiz
 type t_KyberPrivateKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_13 (v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberPrivateKey v_SIZE) (t_Slice u8) =
   { f_as_ref = fun (self: t_KyberPrivateKey v_SIZE) -> Rust_primitives.unsize self.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_14 (v_SIZE: usize) : Core.Convert.t_From (t_KyberPrivateKey v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (value: t_Array u8 v_SIZE) -> { f_value = value } <: t_KyberPrivateKey v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_15 (v_SIZE: usize) : Core.Convert.t_From (t_KyberPrivateKey v_SIZE) (t_Array u8 v_SIZE) =
   {
     f_from
@@ -78,10 +88,12 @@ let impl_15 (v_SIZE: usize) : Core.Convert.t_From (t_KyberPrivateKey v_SIZE) (t_
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_16 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberPrivateKey v_SIZE) =
   { f_from = fun (value: t_KyberPrivateKey v_SIZE) -> value.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_17 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPrivateKey v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
@@ -99,13 +111,15 @@ let impl_17 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPrivateKey v_SIZE) 
         Core.Result.t_Result (t_KyberPrivateKey v_SIZE) Core.Array.t_TryFromSliceError
   }
 
+inline_for_extraction noextract
 let impl_18__as_slice (v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE)
     : FStar.HyperStack.ST.St (t_Array u8 v_SIZE) = self.f_value
 
-inline_for_extraction
+inline_for_extraction noextract
 let impl_18__len (v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE)
     : FStar.HyperStack.ST.StackInline usize (fun _ -> True) (fun _ _ _ -> True) = v_SIZE
 
+inline_for_extraction noextract
 let impl_18__split_at (v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) (mid: usize)
     : FStar.HyperStack.ST.St (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
@@ -113,14 +127,17 @@ let impl_18__split_at (v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) (mid: usi
 type t_KyberPublicKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_19 (v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberPublicKey v_SIZE) (t_Slice u8) =
   { f_as_ref = fun (self: t_KyberPublicKey v_SIZE) -> Rust_primitives.unsize self.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_20 (v_SIZE: usize) : Core.Convert.t_From (t_KyberPublicKey v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (value: t_Array u8 v_SIZE) -> { f_value = value } <: t_KyberPublicKey v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_21 (v_SIZE: usize) : Core.Convert.t_From (t_KyberPublicKey v_SIZE) (t_Array u8 v_SIZE) =
   {
     f_from
@@ -130,10 +147,12 @@ let impl_21 (v_SIZE: usize) : Core.Convert.t_From (t_KyberPublicKey v_SIZE) (t_A
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_22 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberPublicKey v_SIZE) =
   { f_from = fun (value: t_KyberPublicKey v_SIZE) -> value.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_23 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPublicKey v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
@@ -151,6 +170,7 @@ let impl_23 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberPublicKey v_SIZE) (
         Core.Result.t_Result (t_KyberPublicKey v_SIZE) Core.Array.t_TryFromSliceError
   }
 
+inline_for_extraction noextract
 let impl_24__as_slice (v_SIZE: usize) (self: t_KyberPublicKey v_SIZE)
     : FStar.HyperStack.ST.St (t_Array u8 v_SIZE) = self.f_value
 
@@ -158,6 +178,7 @@ inline_for_extraction
 let impl_24__len (v_SIZE: usize) (self: t_KyberPublicKey v_SIZE)
     : FStar.HyperStack.ST.StackInline usize (fun _ -> True) (fun _ _ _ -> True) = v_SIZE
 
+inline_for_extraction noextract
 let impl_24__split_at (v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) (mid: usize)
     : FStar.HyperStack.ST.St (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
@@ -165,14 +186,17 @@ let impl_24__split_at (v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) (mid: usiz
 type t_KyberSharedSecret (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_7 (v_SIZE: usize) : Core.Convert.t_AsRef (t_KyberSharedSecret v_SIZE) (t_Slice u8) =
   { f_as_ref = fun (self: t_KyberSharedSecret v_SIZE) -> Rust_primitives.unsize self.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_8 (v_SIZE: usize) : Core.Convert.t_From (t_KyberSharedSecret v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (value: t_Array u8 v_SIZE) -> { f_value = value } <: t_KyberSharedSecret v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_9 (v_SIZE: usize) : Core.Convert.t_From (t_KyberSharedSecret v_SIZE) (t_Array u8 v_SIZE) =
   {
     f_from
@@ -182,10 +206,12 @@ let impl_9 (v_SIZE: usize) : Core.Convert.t_From (t_KyberSharedSecret v_SIZE) (t
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_10 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_KyberSharedSecret v_SIZE) =
   { f_from = fun (value: t_KyberSharedSecret v_SIZE) -> value.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_11 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberSharedSecret v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
@@ -203,6 +229,7 @@ let impl_11 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_KyberSharedSecret v_SIZE
         Core.Result.t_Result (t_KyberSharedSecret v_SIZE) Core.Array.t_TryFromSliceError
   }
 
+inline_for_extraction noextract
 let impl_12__as_slice (v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE)
     : FStar.HyperStack.ST.St (t_Array u8 v_SIZE) = self.f_value
 
@@ -210,6 +237,7 @@ inline_for_extraction
 let impl_12__len (v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE)
     : FStar.HyperStack.ST.StackInline usize (fun _ -> True) (fun _ _ _ -> True) = v_SIZE
 
+inline_for_extraction noextract
 let impl_12__split_at (v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) (mid: usize)
     : FStar.HyperStack.ST.St (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
@@ -217,14 +245,17 @@ let impl_12__split_at (v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) (mid: u
 type t_PrivateKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_25 (v_SIZE: usize) : Core.Convert.t_AsRef (t_PrivateKey v_SIZE) (t_Slice u8) =
   { f_as_ref = fun (self: t_PrivateKey v_SIZE) -> Rust_primitives.unsize self.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_26 (v_SIZE: usize) : Core.Convert.t_From (t_PrivateKey v_SIZE) (t_Array u8 v_SIZE) =
   { f_from = fun (value: t_Array u8 v_SIZE) -> { f_value = value } <: t_PrivateKey v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_27 (v_SIZE: usize) : Core.Convert.t_From (t_PrivateKey v_SIZE) (t_Array u8 v_SIZE) =
   {
     f_from
@@ -233,10 +264,12 @@ let impl_27 (v_SIZE: usize) : Core.Convert.t_From (t_PrivateKey v_SIZE) (t_Array
   }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_28 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_PrivateKey v_SIZE) =
   { f_from = fun (value: t_PrivateKey v_SIZE) -> value.f_value }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
+inline_for_extraction noextract
 let impl_29 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_PrivateKey v_SIZE) (t_Slice u8) =
   {
     f_Error = Core.Array.t_TryFromSliceError;
@@ -254,6 +287,7 @@ let impl_29 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_PrivateKey v_SIZE) (t_Sl
         Core.Result.t_Result (t_PrivateKey v_SIZE) Core.Array.t_TryFromSliceError
   }
 
+inline_for_extraction noextract
 let impl_30__as_slice (v_SIZE: usize) (self: t_PrivateKey v_SIZE)
     : FStar.HyperStack.ST.St (t_Array u8 v_SIZE) = self.f_value
 
@@ -261,6 +295,7 @@ inline_for_extraction
 let impl_30__len (v_SIZE: usize) (self: t_PrivateKey v_SIZE)
     : FStar.HyperStack.ST.StackInline usize (fun _ -> True) (fun _ _ _ -> True) = v_SIZE
 
+inline_for_extraction noextract
 let impl_30__split_at (v_SIZE: usize) (self: t_PrivateKey v_SIZE) (mid: usize)
     : FStar.HyperStack.ST.St (t_Slice u8 & t_Slice u8) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
@@ -270,6 +305,7 @@ type t_KyberKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {
   f_pk:t_KyberPublicKey v_PUBLIC_KEY_SIZE
 }
 
+inline_for_extraction noextract
 let impl__from
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (sk: t_KyberPrivateKey v_PRIVATE_KEY_SIZE)
@@ -277,6 +313,7 @@ let impl__from
     : FStar.HyperStack.ST.St (t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE) =
   { f_sk = sk; f_pk = pk } <: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
 
+inline_for_extraction noextract
 let impl__new
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (sk: t_Array u8 v_PRIVATE_KEY_SIZE)
@@ -286,22 +323,26 @@ let impl__new
   <:
   t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
 
+inline_for_extraction noextract
 let impl__pk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : FStar.HyperStack.ST.St (t_Array u8 v_PUBLIC_KEY_SIZE) =
   impl_24__as_slice v_PUBLIC_KEY_SIZE self.f_pk
 
+inline_for_extraction noextract
 let impl__private_key
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : FStar.HyperStack.ST.St (t_KyberPrivateKey v_PRIVATE_KEY_SIZE) = self.f_sk
 
+inline_for_extraction noextract
 let impl__public_key
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : FStar.HyperStack.ST.St (t_KyberPublicKey v_PUBLIC_KEY_SIZE) = self.f_pk
 
+inline_for_extraction noextract
 let impl__sk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)

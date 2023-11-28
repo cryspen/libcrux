@@ -208,8 +208,7 @@ pub(crate) fn encrypt<
     //     .enumerate()
     // {
     for i in 0..T_AS_NTT_ENCODED_SIZE / BYTES_PER_RING_ELEMENT {
-        let pk = &public_key[..T_AS_NTT_ENCODED_SIZE];
-        let t_as_ntt_bytes = &pk
+        let t_as_ntt_bytes = &public_key
             [(i * BYTES_PER_RING_ELEMENT)..(i * BYTES_PER_RING_ELEMENT) + BYTES_PER_RING_ELEMENT];
         t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
     }
