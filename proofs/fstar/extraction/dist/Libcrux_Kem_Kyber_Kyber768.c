@@ -537,7 +537,7 @@ static int32_t *ntt_multiply(int32_t *left, int32_t *right)
           (__int32_t_int32_t){ .fst = left[4U * i1 + 2U], .snd = left[4U * i1 + 3U] }
         ),
         ((__int32_t_int32_t){ .fst = right[4U * i1 + 2U], .snd = right[4U * i1 + 3U] }),
-        KRML_EABORT(int32_t, "") - v_ZETAS_TIMES_MONTGOMERY_R[64U + i1]);
+        (int32_t)0 - v_ZETAS_TIMES_MONTGOMERY_R[64U + i1]);
     out[4U * i1 + 2U] = product1.fst;
     out[4U * i1 + 3U] = product1.snd;
   }
@@ -669,7 +669,7 @@ static int32_t compress_ciphertext_coefficient(uint8_t coefficient_bits, uint16_
 
 static int32_t decompress_message_coefficient(int32_t fe)
 {
-  return (KRML_EABORT(int32_t, "") - fe) & (v_FIELD_MODULUS + (int32_t)1) / (int32_t)2;
+  return ((int32_t)0 - fe) & (v_FIELD_MODULUS + (int32_t)1) / (int32_t)2;
 }
 
 static uint8_t *compress_then_serialize_10_(uint32_t v_OUT_LEN, int32_t *re)
@@ -1433,6 +1433,11 @@ typedef uint8_t *t_KyberPublicKey;
 
 typedef uint8_t *t_PrivateKey;
 
+static void increment(uint32_t x)
+{
+  KRML_MAYBE_UNUSED_VAR(x);
+}
+
 static int32_t *sample_from_binomial_distribution_2_(t_nonempty_Slice__uint8_t randomness)
 {
   int32_t *sampled = impl__PolynomialRingElement__ZERO;
@@ -1441,14 +1446,13 @@ static int32_t *sample_from_binomial_distribution_2_(t_nonempty_Slice__uint8_t r
   for (uint32_t i0 = start; i0 < finish; i0++)
   {
     uint32_t chunk_number = i0;
-    uint32_t len = chunk_number * 4U + 4U - chunk_number * 4U;
-    uint8_t *subbuf = randomness.buffer + chunk_number * 4U;
-    t_nonempty_Slice__uint8_t byte_chunk = { .buffer = subbuf, .len = len };
+    uint32_t offset = chunk_number * 4U;
     uint32_t
     random_bits_as_u32 =
-      (((uint32_t)byte_chunk.buffer[0U] | (uint32_t)byte_chunk.buffer[1U] << (uint32_t)(int32_t)8)
-      | (uint32_t)byte_chunk.buffer[2U] << (uint32_t)(int32_t)16)
-      | (uint32_t)byte_chunk.buffer[3U] << (uint32_t)(int32_t)24;
+      (((uint32_t)randomness.buffer[offset + 0U]
+      | (uint32_t)randomness.buffer[offset + 1U] << (uint32_t)(int32_t)8)
+      | (uint32_t)randomness.buffer[offset + 2U] << (uint32_t)(int32_t)16)
+      | (uint32_t)randomness.buffer[offset + 3U] << (uint32_t)(int32_t)24;
     uint32_t even_bits = random_bits_as_u32 & 1431655765U;
     uint32_t odd_bits = random_bits_as_u32 >> (uint32_t)(int32_t)1 & 1431655765U;
     uint32_t coin_toss_outcomes = even_bits + odd_bits;
@@ -1460,8 +1464,8 @@ static int32_t *sample_from_binomial_distribution_2_(t_nonempty_Slice__uint8_t r
       uint32_t outcome_set = i2 * 4U;
       int32_t outcome_1_ = (int32_t)(coin_toss_outcomes >> outcome_set & 3U);
       int32_t outcome_2_ = (int32_t)(coin_toss_outcomes >> (outcome_set + 2U) & 3U);
-      uint32_t offset = outcome_set >> (uint32_t)(int32_t)2;
-      sampled[8U * chunk_number + offset] = outcome_1_ - outcome_2_;
+      uint32_t offset1 = outcome_set >> (uint32_t)(int32_t)2;
+      sampled[8U * chunk_number + offset1] = outcome_1_ - outcome_2_;
     }
   }
   return sampled;
@@ -1475,13 +1479,12 @@ static int32_t *sample_from_binomial_distribution_3_(t_nonempty_Slice__uint8_t r
   for (uint32_t i0 = start; i0 < finish; i0++)
   {
     uint32_t chunk_number = i0;
-    uint32_t len = chunk_number * 3U + 3U - chunk_number * 3U;
-    uint8_t *subbuf = randomness.buffer + chunk_number * 3U;
-    t_nonempty_Slice__uint8_t byte_chunk = { .buffer = subbuf, .len = len };
+    uint32_t offset = chunk_number * 3U;
     uint32_t
     random_bits_as_u24 =
-      ((uint32_t)byte_chunk.buffer[0U] | (uint32_t)byte_chunk.buffer[1U] << (uint32_t)(int32_t)8)
-      | (uint32_t)byte_chunk.buffer[2U] << (uint32_t)(int32_t)16;
+      ((uint32_t)randomness.buffer[offset + 0U]
+      | (uint32_t)randomness.buffer[offset + 1U] << (uint32_t)(int32_t)8)
+      | (uint32_t)randomness.buffer[offset + 2U] << (uint32_t)(int32_t)16;
     uint32_t first_bits = random_bits_as_u24 & 2396745U;
     uint32_t second_bits = random_bits_as_u24 >> (uint32_t)(int32_t)1 & 2396745U;
     uint32_t third_bits = random_bits_as_u24 >> (uint32_t)(int32_t)2 & 2396745U;
@@ -1495,8 +1498,8 @@ static int32_t *sample_from_binomial_distribution_3_(t_nonempty_Slice__uint8_t r
       int32_t outcome_1_ = (int32_t)(coin_toss_outcomes >> (uint32_t)outcome_set & 7U);
       int32_t
       outcome_2_ = (int32_t)(coin_toss_outcomes >> (uint32_t)(outcome_set + (int32_t)3) & 7U);
-      uint32_t offset = (uint32_t)(outcome_set / (int32_t)6);
-      sampled[4U * chunk_number + offset] = outcome_1_ - outcome_2_;
+      uint32_t offset1 = (uint32_t)(outcome_set / (int32_t)6);
+      sampled[4U * chunk_number + offset1] = outcome_1_ - outcome_2_;
     }
   }
   return sampled;
@@ -1535,14 +1538,46 @@ typedef struct t_Option__Libcrux_Kem_Kyber_Types_t_Error_s
 }
 t_Option__Libcrux_Kem_Kyber_Types_t_Error;
 
-static int32_t *sample_from_uniform_distribution(uint32_t v_SEED_SIZE)
+static int32_t *sample_from_uniform_distribution(uint32_t v_SEED_SIZE, uint8_t *randomness)
 {
-  KRML_MAYBE_UNUSED_VAR(v_SEED_SIZE);
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n",
-    __FILE__,
-    __LINE__,
-    "This function was not extracted:\nFailure(\"Argument of FStar.Buffer.createL is not a list literal!\")");
-  KRML_HOST_EXIT(255U);
+  uint32_t sampled_coefficients = 0U;
+  int32_t *out = impl__PolynomialRingElement__ZERO;
+  bool done[1U] = { false };
+  uint32_t start = 0U;
+  uint32_t finish = v_SEED_SIZE / 3U;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    uint32_t offset = i1 * 3U;
+    if (!done[0U])
+    {
+      int32_t b1 = (int32_t)randomness[offset + 0U];
+      int32_t b2 = (int32_t)randomness[offset + 1U];
+      int32_t b3 = (int32_t)randomness[offset + 2U];
+      int32_t d1 = (b2 & (int32_t)15) << (uint32_t)(int32_t)8 | b1;
+      int32_t
+      d2 = b3 << (uint32_t)(int32_t)4 | FStar_Int32_shift_arithmetic_right(b2, (uint32_t)(int32_t)4);
+      if (d1 < v_FIELD_MODULUS && sampled_coefficients < v_COEFFICIENTS_IN_RING_ELEMENT)
+      {
+        out[sampled_coefficients] = d1;
+        increment(sampled_coefficients);
+      }
+      if (d2 < v_FIELD_MODULUS && sampled_coefficients < v_COEFFICIENTS_IN_RING_ELEMENT)
+      {
+        out[sampled_coefficients] = d2;
+        increment(sampled_coefficients);
+      }
+      if (sampled_coefficients == v_COEFFICIENTS_IN_RING_ELEMENT)
+      {
+        done[0U] = true;
+      }
+    }
+  }
+  if (done[0U])
+  {
+    return out;
+  }
+  return out;
 }
 
 static uint8_t *mk_ciphertext(uint8_t *x)
@@ -1698,9 +1733,9 @@ sample_matrix_A(uint32_t v_K, uint8_t *seed, bool transpose)
     uint8_t *seeds[v_K];
     for (uint32_t _i = 0U; _i < v_K; ++_i)
       seeds[_i] = seed;
-    uint32_t start1 = 0U;
+    uint32_t start10 = 0U;
     uint32_t finish10 = v_K;
-    for (uint32_t i = start1; i < finish10; i++)
+    for (uint32_t i = start10; i < finish10; i++)
     {
       uint32_t j = i;
       uint32_t m = 8U;
@@ -1720,13 +1755,13 @@ sample_matrix_A(uint32_t v_K, uint8_t *seed, bool transpose)
       uint32_t b0 = a3 + (mask0 & pow2_bits);
       seeds[j][33U] = (uint8_t)b0;
     }
-    v_XOFx4(840U, v_K, seeds);
-    uint32_t start10 = 0U;
+    uint8_t **xof_bytes = v_XOFx4(840U, v_K, seeds);
+    uint32_t start1 = 0U;
     uint32_t finish1 = v_K;
-    for (uint32_t i = start10; i < finish1; i++)
+    for (uint32_t i = start1; i < finish1; i++)
     {
       uint32_t j = i;
-      int32_t *sampled = sample_from_uniform_distribution(840U);
+      int32_t *sampled = sample_from_uniform_distribution(840U, xof_bytes[j]);
       if (transpose)
       {
         v_A_transpose[j][i1] = sampled;

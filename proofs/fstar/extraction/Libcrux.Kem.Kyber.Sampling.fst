@@ -18,23 +18,16 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
       ((Core.Slice.impl__len randomness <: usize) /! sz 4 <: usize)
       (fun chunk_number ->
           let chunk_number:usize = chunk_number in
-          let byte_chunk:t_Slice u8 =
-            randomness.[ {
-                Core.Ops.Range.f_start = chunk_number *! sz 4 <: usize;
-                Core.Ops.Range.f_end = (chunk_number *! sz 4 <: usize) +! sz 4 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
+          let offset = chunk_number *! sz 4 in
           let (random_bits_as_u32: u32):u32 =
-            (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
-                ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
+            (((cast (randomness.[ offset +.  sz 0 ] <: u8) <: u32) |.
+                ((cast (randomness.[ offset +.  sz 1 ] <: u8) <: u32) <<! 8l <: u32)
                 <:
                 u32) |.
-              ((cast (byte_chunk.[ sz 2 ] <: u8) <: u32) <<! 16l <: u32)
+              ((cast (randomness.[ offset +.  sz 2 ] <: u8) <: u32) <<! 16l <: u32)
               <:
               u32) |.
-            ((cast (byte_chunk.[ sz 3 ] <: u8) <: u32) <<! 24l <: u32)
+            ((cast (randomness.[ offset +.  sz 3 ] <: u8) <: u32) <<! 24l <: u32)
           in
           let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
           let odd_bits:u32 = (random_bits_as_u32 >>! 1l <: u32) &. 1431655765ul in
@@ -75,20 +68,13 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
       ((Core.Slice.impl__len randomness <: usize) /! sz 3 <: usize)
       (fun chunk_number ->
           let chunk_number:usize = chunk_number in
-          let byte_chunk:t_Slice u8 =
-            randomness.[ {
-                Core.Ops.Range.f_start = chunk_number *! sz 3 <: usize;
-                Core.Ops.Range.f_end = (chunk_number *! sz 3 <: usize) +! sz 3 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
+          let offset = chunk_number *! sz 3 in
           let (random_bits_as_u24: u32):u32 =
-            ((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
-              ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
+            ((cast (randomness.[ offset +.  sz 0 ] <: u8) <: u32) |.
+              ((cast (randomness.[ offset +.  sz 1 ] <: u8) <: u32) <<! 8l <: u32)
               <:
               u32) |.
-            ((cast (byte_chunk.[ sz 2 ] <: u8) <: u32) <<! 16l <: u32)
+            ((cast (randomness.[ offset +.  sz 2 ] <: u8) <: u32) <<! 16l <: u32)
           in
           let first_bits:u32 = random_bits_as_u24 &. 2396745ul in
           let second_bits:u32 = (random_bits_as_u24 >>! 1l <: u32) &. 2396745ul in
@@ -148,19 +134,12 @@ let sample_from_uniform_distribution
         usize)
       (fun i ->
           let i:usize = i in
-          let bytes:t_Slice u8 =
-            randomness.[ {
-                Core.Ops.Range.f_start = i *! sz 3 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 3 <: usize) +! sz 3 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
-          in
+          let offset = i *! sz 3 in
           if ~.(done.[ sz 0 ] <: bool)
           then
-            let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
-            let b2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
-            let b3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
+            let b1:i32 = cast (randomness.[ offset +.  sz 0 ] <: u8) <: i32 in
+            let b2:i32 = cast (randomness.[ offset +.  sz 1 ] <: u8) <: i32 in
+            let b3:i32 = cast (randomness.[ offset +.  sz 2 ] <: u8) <: i32 in
             let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
             let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
             let _:Prims.unit =
