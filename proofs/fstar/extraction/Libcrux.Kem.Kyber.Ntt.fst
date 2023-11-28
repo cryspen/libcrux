@@ -4,6 +4,7 @@ open Core
 open FStar.Mul
 
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
+  [@inline_let]
   let list =
     [
       (-1044l); (-758l); (-359l); (-1517l); 1493l; 1422l; 287l; 202l; (-171l); 622l; 1577l; 182l;
@@ -40,6 +41,7 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:t_Array usize (sz 1) =
+    [@inline_let]
     let list = [Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list
@@ -363,6 +365,7 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:t_Array usize (sz 1) =
+    [@inline_let]
     let list = [sz 0] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list
@@ -740,6 +743,7 @@ let ntt_vector_u
     : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:t_Array usize (sz 1) =
+    [@inline_let]
     let list = [sz 0] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list

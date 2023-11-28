@@ -69,8 +69,10 @@ FSTAR_NO_FLAGS = $(FSTAR_HOME)/bin/fstar.exe $(FSTAR_HINTS) \
 # Important to wildcard both fst and fsti since there are fstis without fsts,
 # etc. Note that I'm using wildcard rather than assume $(SHELL) is bash and has
 # fancy globbing rules -- particularly true on Windows.
-FSTAR_ROOTS =  $(wildcard $(addsuffix /*.fsti,$(SOURCE_DIRS))) \
-	       $(wildcard $(addsuffix /*.fst,$(SOURCE_DIRS)))
+FSTAR_ROOTS = Libcrux.Kem.Kyber.Ntt.fst
+
+#$(wildcard $(addsuffix /*.fsti,$(SOURCE_DIRS))) \
+#	       $(wildcard $(addsuffix /*.fst,$(SOURCE_DIRS)))
 
 #Libcrux.Kem.MLKEM.fst	
 
@@ -208,7 +210,7 @@ dist/Makefile.basic: $(filter-out %prims.krml,$(ALL_KRML_FILES)) $(HAND_WRITTEN_
 	  -warn-error @4@5@18 \
 	  -fparentheses \
 	  -bundle 'LowStar.*,Prims' \
-	  -bundle Libcrux.Kem.Kyber.Kyber768=Rust_primitives.*,Rust_primitives,Core.*,Core,Hax_lib.*,Hax_lib,Libcrux.Digest,Libcrux.Kem.Kyber.*,Libcrux.Kem.Kyber \
+	  -bundle Libcrux.Kem.Kyber.Ntt=Rust_primitives.*,Rust_primitives,Core.*,Core,Hax_lib.*,Hax_lib,Libcrux.Digest,Libcrux.Kem.Kyber.* \
 	  -minimal \
 	  -bundle 'FStar.*' \
 	  -add-include '<stdint.h>' \

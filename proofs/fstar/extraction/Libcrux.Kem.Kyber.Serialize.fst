@@ -2,6 +2,13 @@ module Libcrux.Kem.Kyber.Serialize
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
+open Rust_primitives
+
+let slice #t f a b : FStar.HyperStack.ST.St (t_Slice t) =
+  let l = b -. a in
+  let b = LowStar.Buffer.sub f a l in
+  {buffer = b;
+   len = l}
 
 let compress_then_serialize_10_
       (v_OUT_LEN: usize)
@@ -20,13 +27,7 @@ let compress_then_serialize_10_
         usize)
       (fun i ->
           let i:usize = i in
-          let coefficients:t_Slice i32 =
-            re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ {
-                Core.Ops.Range.f_start = i *! sz 4 <: usize;
-                Core.Ops.Range.f_end = (i *! sz 4 <: usize) +! sz 4 <: usize
-              }
-              <:
-              Core.Ops.Range.t_Range usize ]
+          let coefficients:t_Slice i32 = slice  re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients (i *! sz 4 <: usize) ((i *! sz 4 <: usize) +! sz 4)
           in
           let coefficient1:i32 =
             Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy

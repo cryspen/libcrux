@@ -16,7 +16,7 @@ let v_BARRETT_MULTIPLIER: i64 = 20159L
 
 let v_BARRETT_SHIFT: i64 = 26L
 
-let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
+let v_BARRETT_R: i64 = normalize_term(1L <<! v_BARRETT_SHIFT)
 
 let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
 
@@ -24,7 +24,7 @@ let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
-let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
+let v_MONTGOMERY_R: i32 = normalize_term(1l <<! v_MONTGOMERY_SHIFT)
 
 let get_montgomery_r_least_significant_bits (value: u32) : u32 =
   value &. ((1ul <<! v_MONTGOMERY_SHIFT <: u32) -! 1ul <: u32)
