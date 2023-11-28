@@ -3,17 +3,11 @@ module Libcrux.Kem.Kyber.Compress
 open Core
 open FStar.Mul
 
-let compress_message_coefficient (fe: u16) : u8 =
-  let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
-  let shifted_to_positive:i16 = (shifted >>! 15l <: i16) ^. shifted in
-  let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
-  cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8
-
 let get_n_least_significant_bits (n: u8) (value: u32) : u32 =
   let _:Prims.unit = () <: Prims.unit in
   value &. ((1ul <<! n <: u32) -! 1ul <: u32)
 
-let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) : i32 =
+let compress_q (coefficient_bits: u8) (fe: u16) : i32 =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let compressed:u32 = (cast (fe <: u16) <: u32) <<! (coefficient_bits +! 1uy <: u8) in
@@ -25,7 +19,7 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) : i32 =
   in
   cast (get_n_least_significant_bits coefficient_bits compressed <: u32) <: i32
 
-let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32) : i32 =
+let decompress_q (coefficient_bits: u8) (fe: i32) : i32 =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let decompressed:u32 =
@@ -34,7 +28,3 @@ let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32) : i32 =
   let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! coefficient_bits <: u32) in
   let decompressed:u32 = decompressed >>! (coefficient_bits +! 1uy <: u8) in
   cast (decompressed <: u32) <: i32
-
-let decompress_message_coefficient (fe: i32) : i32 =
-  (Core.Ops.Arith.Neg.neg fe <: i32) &.
-  ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32)

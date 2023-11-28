@@ -16,7 +16,7 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
     : FStar.HyperStack.ST.StackInline u8 (fun _ -> True) (fun _ _ _ -> True) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let r:t_Array u8 (sz 1) =
+  let (r: t_Array u8 (sz 1)):t_Array u8 (sz 1) =
     let list = [0uy] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
     Rust_primitives.Hax.array_of_list list

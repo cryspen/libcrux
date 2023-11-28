@@ -3,8 +3,7 @@ module Libcrux.Kem.Kyber.Ntt
 open Core
 open FStar.Mul
 
-let v_ZETAS_MONTGOMERY_DOMAIN: t_Array i32 (sz 128) =
-  [@inline_let]
+let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   let list =
     [
       (-1044l); (-758l); (-359l); (-1517l); 1493l; 1422l; 287l; 202l; (-171l); 622l; 1577l; 182l;
@@ -33,53 +32,307 @@ let ntt_multiply_binomials (a0, a1: (i32 & i32)) (b0, b1: (i32 & i32)) (zeta: i3
   <:
   (i32 & i32)
 
-let invert_ntt_montgomery
-      (v_K: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
-  let zeta_i:usize = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2 in
+  let zeta_i:t_Array usize (sz 1) =
+    let list = [Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2] in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+    Rust_primitives.Hax.array_of_list list
+  in
   let step:usize = sz 1 <<! 1l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Sub::sub(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let a_minus_b: int = {\n                                            core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step))))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(a_minus_b,core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i))))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) -! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let a_minus_b:i32 =
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                      (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32)
+                      <:
+                      i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                          (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                          <:
+                          i32)
+                      <:
+                      i32)
+                in
+                ()))
   in
   let step:usize = sz 1 <<! 2l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Sub::sub(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let a_minus_b: int = {\n                                            core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step))))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(a_minus_b,core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i))))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) -! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let a_minus_b:i32 =
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                      (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32)
+                      <:
+                      i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                          (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                          <:
+                          i32)
+                      <:
+                      i32)
+                in
+                ()))
   in
   let step:usize = sz 1 <<! 3l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Sub::sub(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let a_minus_b: int = {\n                                            core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step))))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(a_minus_b,core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i))))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) -! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let a_minus_b:i32 =
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                      (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32)
+                      <:
+                      i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                          (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                          <:
+                          i32)
+                      <:
+                      i32)
+                in
+                ()))
   in
   let step:usize = sz 1 <<! 4l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Sub::sub(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let a_minus_b: int = {\n                                            core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step))))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(a_minus_b,core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i))))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) -! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let a_minus_b:i32 =
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                      (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32)
+                      <:
+                      i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                          (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                          <:
+                          i32)
+                      <:
+                      i32)
+                in
+                ()))
   in
   let step:usize = sz 1 <<! 5l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Sub::sub(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let a_minus_b: int = {\n                                            core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step))))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(a_minus_b,core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i))))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) -! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let a_minus_b:i32 =
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                      (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32)
+                      <:
+                      i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                          (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                          <:
+                          i32)
+                      <:
+                      i32)
+                in
+                ()))
   in
   let step:usize = sz 1 <<! 6l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Sub::sub(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let a_minus_b: int = {\n                                            core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step))))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(a_minus_b,core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i))))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) -! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let a_minus_b:i32 =
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                      (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32)
+                      <:
+                      i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                          (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                          <:
+                          i32)
+                      <:
+                      i32)
+                in
+                ()))
   in
   let step:usize = sz 1 <<! 7l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Sub::sub(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let a_minus_b: int = {\n                                            core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step))))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(a_minus_b,core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i))))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) -! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let a_minus_b:i32 =
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32) -!
+                  (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +!
+                      (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ] <: i32)
+                      <:
+                      i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    (Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a_minus_b *!
+                          (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                          <:
+                          i32)
+                      <:
+                      i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
@@ -102,12 +355,19 @@ let invert_ntt_montgomery
   in
   re
 
-let ntt_binomially_sampled_ring_element
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
-  let zeta_i:usize = sz 0 in
-  let zeta_i:usize = zeta_i +! sz 1 in
+  let zeta_i:t_Array usize (sz 1) =
+    let list = [sz 0] in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+    Rust_primitives.Hax.array_of_list list
+  in
+  let _:Prims.unit =
+    Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+      (sz 0)
+      ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+  in
   let _:Prims.unit =
     Rust_primitives.f_for_loop (sz 0)
       (sz 128)
@@ -133,48 +393,234 @@ let ntt_binomially_sampled_ring_element
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 6l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 5l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 4l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 3l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 2l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 1l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     {
       re with
       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
@@ -184,16 +630,16 @@ let ntt_binomially_sampled_ring_element
         Libcrux.Kem.Kyber.Arithmetic.barrett_reduce
     }
     <:
-    Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
+    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   in
   re
 
-let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let out:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
+  let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let _:Prims.unit =
     Rust_primitives.f_for_loop (sz 0)
@@ -221,7 +667,7 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
                   i32)
                 <:
                 (i32 & i32))
-              (v_ZETAS_MONTGOMERY_DOMAIN.[ sz 64 +! i <: usize ] <: i32)
+              (v_ZETAS_TIMES_MONTGOMERY_R.[ sz 64 +! i <: usize ] <: i32)
           in
           let _:Prims.unit =
             Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize out
@@ -263,7 +709,7 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
                   i32)
                 <:
                 (i32 & i32))
-              (Core.Ops.Arith.Neg.neg (v_ZETAS_MONTGOMERY_DOMAIN.[ sz 64 +! i <: usize ] <: i32)
+              (Core.Ops.Arith.Neg.neg (v_ZETAS_TIMES_MONTGOMERY_R.[ sz 64 +! i <: usize ] <: i32)
                 <:
                 i32)
           in
@@ -284,221 +730,283 @@ let ntt_multiply (left right: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRing
   let _:Prims.unit = () <: Prims.unit in
   out
 
-let compute_As_plus_e
-      (v_K: usize)
-      (matrix_A:
-          t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
-      (s_as_ntt error_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
-    : FStar.HyperStack.ST.St (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) =
-  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
-      v_K
-  in
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "{\n        for Tuple2(i, row) in (core::iter::traits::collect::f_into_iter::<\n            core::iter::adapters::enumerate::t_Enumerate<\n                core::slice::iter::t_Iter<\n                    [libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement; K],\n                >,\n            >,\n        >(core::iter::traits::iterator::f_enumerate::<\n            core::slice::iter::t_Iter<\n                [libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement; K],\n            >,\n        >(core::slice::impl__iter::<\n            [libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement; K],\n        >(rust_primitives::unsize(matrix_A)))))\n        {\n            {\n                let _: tuple0 = {\n                    {\n                        for Tuple2(j, matrix_element) in (core::iter::traits::collect::f_into_iter::<\n                            core::iter::adapters::enumerate::t_Enumerate<\n                                core::slice::iter::t_Iter<\n                                    libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement,\n                                >,\n                            >,\n                        >(\n                            core::iter::traits::iterator::f_enumerate::<\n                                core::slice::iter::t_Iter<\n                                    libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement,\n                                >,\n                            >(core::slice::impl__iter::<\n                                libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement,\n                            >(\n                                rust_primitives::unsize(row)\n                            )),\n                        )) {\n                            {\n                                let product: libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement = {libcrux::kem::kyber::ntt::ntt_multiply(matrix_element,core::ops::index::Index::index(s_as_ntt,j))};\n                                {\n                                    let _: tuple0 = {\n                                        libcrux::kem::kyber::arithmetic::add_to_ring_element::<\n                                            generic_value!(todo),\n                                        >(\n                                            core::ops::index::Index::index(result, i), product\n                                        )\n                                    };\n                                    Tuple0\n                                }\n                            }\n                        }\n                    }\n                };\n                {\n                    for j in (0)..(core::slice::impl__len::<int>(rust_primitives::unsize(\n                        proj_libcrux::kem::kyber::arithmetic::f_coefficients(\n                            core::ops::index::Index::index(result, i),\n                        ),\n                    ))) {\n                        {\n                            let coefficient_normal_form: int = {\n                                libcrux::kem::kyber::arithmetic::montgomery_reduce(\n                                    core::ops::arith::Mul::mul(\n                                        core::ops::index::Index::index(\n                                            proj_libcrux::kem::kyber::arithmetic::f_coefficients(\n                                                core::ops::index::Index::index(result, i),\n                                            ),\n                                            j,\n                                        ),\n                                        1353,\n                                    ),\n                                )\n                            };\n                            rust_primitives::hax::monomorphized_update_at::update_array_at_usize(\n                                proj_libcrux::kem::kyber::arithmetic::f_coefficients(\n                                    core::ops::index::Index::index(result, i),\n                                ),\n                                j,\n                                libcrux::kem::kyber::arithmetic::barrett_reduce(\n                                    core::ops::arith::Add::add(\n                                        coefficient_normal_form,\n                                        core::ops::index::Index::index(\n                                            proj_libcrux::kem::kyber::arithmetic::f_coefficients(\n                                                core::ops::index::Index::index(error_as_ntt, i),\n                                            ),\n                                            j,\n                                        ),\n                                    ),\n                                ),\n                            )\n                        }\n                    }\n                }\n            }\n        }\n    }"
-
-  in
-  result
-
-let compute_message
-      (v_K: usize)
-      (v: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-      (secret_as_ntt u_as_ntt:
-          t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
-    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
-  in
-  let _:Prims.unit =
-    Rust_primitives.f_for_loop (sz 0)
-      v_K
-      (fun i ->
-          let i:usize = i in
-          let product:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            ntt_multiply (secret_as_ntt.[ i ]
-                <:
-                Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (u_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-          in
-          let _:Prims.unit = Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element v_K result product in
-          ())
-  in
-  let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    invert_ntt_montgomery v_K result
-  in
-  let _:Prims.unit =
-    Rust_primitives.f_for_loop (sz 0)
-      (Core.Slice.impl__len (Rust_primitives.unsize result
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            t_Slice i32)
-        <:
-        usize)
-      (fun i ->
-          let i:usize = i in
-          let coefficient_normal_form:i32 =
-            Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((result
-                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                  <:
-                  i32) *!
-                1441l
-                <:
-                i32)
-          in
-          let _:Prims.unit =
-            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize result
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-              i
-              (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce ((v
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                      <:
-                      i32) -!
-                    coefficient_normal_form
-                    <:
-                    i32)
-                <:
-                i32)
-          in
-          ())
-  in
-  result
-
-let compute_ring_element_v
-      (v_K: usize)
-      (tt_as_ntt r_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
-      (error_2_ message: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-  let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
-  in
-  let _:Prims.unit =
-    Rust_primitives.f_for_loop (sz 0)
-      v_K
-      (fun i ->
-          let i:usize = i in
-          let product:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-            ntt_multiply (tt_as_ntt.[ i ]
-                <:
-                Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-              (r_as_ntt.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-          in
-          let _:Prims.unit = Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element v_K result product in
-          ())
-  in
-  let result:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
-    invert_ntt_montgomery v_K result
-  in
-  let _:Prims.unit =
-    Rust_primitives.f_for_loop (sz 0)
-      (Core.Slice.impl__len (Rust_primitives.unsize result
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-            <:
-            t_Slice i32)
-        <:
-        usize)
-      (fun i ->
-          let i:usize = i in
-          let coefficient_normal_form:i32 =
-            Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((result
-                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                  <:
-                  i32) *!
-                1441l
-                <:
-                i32)
-          in
-          let _:Prims.unit =
-            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize result
-                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-              i
-              (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce ((coefficient_normal_form +!
-                      (error_2_.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32)
-                      <:
-                      i32) +!
-                    (message.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32)
-                    <:
-                    i32)
-                <:
-                i32)
-          in
-          ())
-  in
-  result
-
-let compute_vector_u
-      (v_K: usize)
-      (a_as_ntt:
-          t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) v_K)
-      (r_as_ntt error_1_: t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K)
-    : FStar.HyperStack.ST.St (t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K) =
-  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__KyberPolynomialRingElement__ZERO
-      v_K
-  in
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "{\n        for Tuple2(i, row) in (core::iter::traits::collect::f_into_iter::<\n            core::iter::adapters::enumerate::t_Enumerate<\n                core::slice::iter::t_Iter<\n                    [libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement; K],\n                >,\n            >,\n        >(core::iter::traits::iterator::f_enumerate::<\n            core::slice::iter::t_Iter<\n                [libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement; K],\n            >,\n        >(core::slice::impl__iter::<\n            [libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement; K],\n        >(rust_primitives::unsize(a_as_ntt)))))\n        {\n            {\n                let _: tuple0 = {\n                    {\n                        for Tuple2(j, a_element) in (core::iter::traits::collect::f_into_iter::<\n                            core::iter::adapters::enumerate::t_Enumerate<\n                                core::slice::iter::t_Iter<\n                                    libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement,\n                                >,\n                            >,\n                        >(\n                            core::iter::traits::iterator::f_enumerate::<\n                                core::slice::iter::t_Iter<\n                                    libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement,\n                                >,\n                            >(core::slice::impl__iter::<\n                                libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement,\n                            >(\n                                rust_primitives::unsize(row)\n                            )),\n                        )) {\n                            {\n                                let product: libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement = {libcrux::kem::kyber::ntt::ntt_multiply(a_element,core::ops::index::Index::index(r_as_ntt,j))};\n                                {\n                                    let _: tuple0 = {\n                                        libcrux::kem::kyber::arithmetic::add_to_ring_element::<\n                                            generic_value!(todo),\n                                        >(\n                                            core::ops::index::Index::index(result, i), product\n                                        )\n                                    };\n                                    Tuple0\n                                }\n                            }\n                        }\n                    }\n                };\n                {\n                    let _: tuple0 = {\n                        rust_primitives::hax::monomorphized_update_at::update_array_at_usize(\n                            result,\n                            i,\n                            libcrux::kem::kyber::ntt::invert_ntt_montgomery::<generic_value!(todo)>(\n                                core::clone::f_clone::<\n                                    libcrux::kem::kyber::arithmetic::t_KyberPolynomialRingElement,\n                                >(core::ops::index::Index::index(\n                                    result, i,\n                                )),\n                            ),\n                        )\n                    };\n                    {\n                        for j in (0)..(core::slice::impl__len::<int>(rust_primitives::unsize(\n                            proj_libcrux::kem::kyber::arithmetic::f_coefficients(\n                                core::ops::index::Index::index(result, i),\n                            ),\n                        ))) {\n                            {\n                                let coefficient_normal_form: int = {\n                                    libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(core::ops::index::Index::index(result,i)),j),1441))\n                                };\n                                {\n                                    let _: tuple0 = {\n                                        rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(core::ops::index::Index::index(result,i)),j,libcrux::kem::kyber::arithmetic::barrett_reduce(core::ops::arith::Add::add(coefficient_normal_form,core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(core::ops::index::Index::index(error_1,i)),j))))\n                                    };\n                                    Tuple0\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }"
-
-  in
-  result
-
 let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement)
-    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+    : FStar.HyperStack.ST.St Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
-  let zeta_i:usize = sz 0 in
+  let zeta_i:t_Array usize (sz 1) =
+    let list = [sz 0] in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+    Rust_primitives.Hax.array_of_list list
+  in
   let step:usize = sz 1 <<! 7l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 6l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 5l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 4l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 3l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 2l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
   let step:usize = sz 1 <<! 1l in
-  let zeta_i:usize =
-    Rust_primitives.Hax.failure ""
-      "{\n        (for round in (0)..(core::ops::arith::Div::div(128, step)) {\n            |zeta_i| {\n                let zeta_i: int = { core::ops::arith::Add::add(zeta_i, 1) };\n                {\n                    let offset: int =\n                        { core::ops::arith::Mul::mul(core::ops::arith::Mul::mul(round, step), 2) };\n                    {\n                        let Tuple0: tuple0 = {\n                            {\n                                for j in (offset)..(core::ops::arith::Add::add(offset, step)) {\n                                    {\n                                        let t: int = {\n                                            libcrux::kem::kyber::arithmetic::montgomery_reduce(core::ops::arith::Mul::mul(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step)),core::ops::index::Index::index(libcrux::kem::kyber::ntt::v_ZETAS_MONTGOMERY_DOMAIN,zeta_i)))\n                                        };\n                                        {\n                                            let _: tuple0 = {\n                                                rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),core::ops::arith::Add::add(j,step),core::ops::arith::Sub::sub(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                            };\n                                            {\n                                                let _: tuple0 = {\n                                                    rust_primitives::hax::monomorphized_update_at::update_array_at_usize(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j,core::ops::arith::Add::add(core::ops::index::Index::index(proj_libcrux::kem::kyber::arithmetic::f_coefficients(re),j),t))\n                                                };\n                                                Tuple0\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        };\n                        zeta_i\n                    }\n                }\n            }\n        })(zeta_i)\n    }"
-
+  let _:Prims.unit =
+    Rust_primitives.f_for_loop (sz 0)
+      (sz 128 /! step <: usize)
+      (fun round ->
+          let round:usize = round in
+          let _:Prims.unit =
+            Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize zeta_i
+              (sz 0)
+              ((zeta_i.[ sz 0 ] <: usize) +! sz 1 <: usize)
+          in
+          let offset:usize = (round *! step <: usize) *! sz 2 in
+          Rust_primitives.f_for_loop offset
+            (offset +! step <: usize)
+            (fun j ->
+                let j:usize = j in
+                let t:i32 =
+                  Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer (re
+                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j +! step <: usize ]
+                      <:
+                      i32)
+                    (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i.[ sz 0 ] <: usize ] <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (j +! step <: usize)
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) -! t <: i32)
+                in
+                let _:Prims.unit =
+                  Rust_primitives.Hax.Monomorphized_update_at.update_array_at_usize re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    j
+                    ((re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ] <: i32) +! t <: i32)
+                in
+                ()))
   in
   let _:Prims.unit = () <: Prims.unit in
-  let re:Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement =
+  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     {
       re with
       Libcrux.Kem.Kyber.Arithmetic.f_coefficients
@@ -508,6 +1016,6 @@ let ntt_vector_u
         Libcrux.Kem.Kyber.Arithmetic.barrett_reduce
     }
     <:
-    Libcrux.Kem.Kyber.Arithmetic.t_KyberPolynomialRingElement
+    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   in
   re
