@@ -99,7 +99,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
 
     // for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
     for chunk_number in 0..randomness.len() / 3 {
-	let offset = chunk_numer * 3;
+	let offset = chunk_number * 3;
         let random_bits_as_u24: u32 =
             (randomness[offset+0] as u32) | (randomness[offset+1] as u32) << 8 | (randomness[offset+2] as u32) << 16;
 

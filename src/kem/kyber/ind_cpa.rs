@@ -65,6 +65,12 @@ fn sample_matrix_A<const K: usize>(
     (A_transpose, sampling_error)
 }
 
+// Work around hax limitations for C extraction
+#[inline(always)]
+fn update_domain_separator(value: &mut [u8;1]) {
+    value[0] += 1;
+}
+
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
@@ -74,11 +80,11 @@ fn sample_vector_cbd_then_ntt<
     const ETA_RANDOMNESS_SIZE: usize,
 >(
     mut prf_input: [u8; 33],
-    domain_separator: &mut u8,
+    domain_separator: &mut [u8;1],
 ) -> [PolynomialRingElement; K] {
     let mut re_as_ntt = [PolynomialRingElement::ZERO; K];
     for i in 0..K {
-        prf_input[32] = *domain_separator;
+        prf_input[32] = domain_separator[0];
         update_domain_separator(domain_separator);
 
         let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
@@ -128,7 +134,7 @@ pub(crate) fn generate_keypair<
     let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed_for_A), true);
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
-    let mut domain_separator = 0;
+    let mut domain_separator = [0];
     let secret_as_ntt = sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(
         prf_input,
         &mut domain_separator,
@@ -174,12 +180,6 @@ fn compress_then_encode_u<
     }
 
     out
-}
-
-// Work around hax limitations for C extraction
-#[inline(always)]
-fn update_domain_separator(value: &mut u8) {
-    *value += 1;
 }
 
 #[allow(non_snake_case)]
@@ -228,7 +228,7 @@ pub(crate) fn encrypt<
     // end for
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
-    let mut domain_separator = 0;
+    let mut domain_separator = [0];
     let r_as_ntt = sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(
         prf_input,
         &mut domain_separator,
@@ -240,7 +240,7 @@ pub(crate) fn encrypt<
     // end for
     let mut error_1 = [PolynomialRingElement::ZERO; K];
     for i in 0..K {
-        prf_input[32] = domain_separator;
+        prf_input[32] = domain_separator[0];
         update_domain_separator(&mut domain_separator);
 
         let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
@@ -248,7 +248,7 @@ pub(crate) fn encrypt<
     }
 
     // e_2 := CBD{η2}(PRF(r, N))
-    prf_input[32] = domain_separator;
+    prf_input[32] = domain_separator[0];
     let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
     let error_2 = sample_from_binomial_distribution::<ETA2>(&prf_output);
 
