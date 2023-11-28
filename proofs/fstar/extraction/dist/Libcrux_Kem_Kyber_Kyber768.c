@@ -2495,14 +2495,14 @@ encrypt(
   int32_t
   *v = compute_ring_element_v(v_K, tt_as_ntt, r_as_ntt, error_2_, message_as_ring_element);
   uint8_t *c1 = compress_then_encode_u(v_K, v_C1_LEN, v_U_COMPRESSION_FACTOR, v_BLOCK_LEN, u);
-  compress_then_serialize_ring_element_v(v_V_COMPRESSION_FACTOR, v_C2_LEN, v);
+  uint8_t *c2 = compress_then_serialize_ring_element_v(v_V_COMPRESSION_FACTOR, v_C2_LEN, v);
   KRML_CHECK_SIZE(sizeof (uint8_t), v_CIPHERTEXT_SIZE);
   uint8_t out[v_CIPHERTEXT_SIZE];
   memset(out, 0U, v_CIPHERTEXT_SIZE * sizeof (uint8_t));
   uint32_t f_start2 = ((t_Range__uint32_t){ .f_start1 = 0U, .f_end1 = v_C1_LEN }).f_start1;
   memcpy(c1, out + f_start2, v_C1_LEN * sizeof (uint8_t));
   uint8_t *ciphertext = out;
-  t_nonempty_Slice__uint8_t uu____2 = KRML_EABORT(t_nonempty_Slice__uint8_t, "");
+  t_nonempty_Slice__uint8_t uu____2 = { .buffer = c2, .len = v_C2_LEN };
   uint32_t f_start = v_C1_LEN;
   uint32_t f_end = v_CIPHERTEXT_SIZE;
   uint32_t len2 = f_end - f_start;
