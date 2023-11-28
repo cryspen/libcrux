@@ -11,6 +11,16 @@
 
 typedef uint8_t t_TryFromSliceError;
 
+static uint8_t impl__u8__wrapping_sub(uint8_t a, uint8_t b)
+{
+  return (uint32_t)a - (uint32_t)b;
+}
+
+static uint16_t impl__u16__wrapping_add(uint16_t a, uint16_t b)
+{
+  return (uint32_t)a + (uint32_t)b;
+}
+
 static uint32_t impl__u32__BITS = 32U;
 
 typedef struct t_nonempty_Slice__uint8_t_s
@@ -39,6 +49,45 @@ static int32_t v_FIELD_MODULUS = (int32_t)3329;
 static uint32_t v_H_DIGEST_SIZE = 32U;
 
 static uint32_t v_SHARED_SECRET_SIZE = 32U;
+
+static uint8_t is_non_zero(uint8_t value)
+{
+  uint16_t value1 = (uint16_t)value;
+  uint16_t
+  result =
+    (((uint32_t)value1 | (uint32_t)impl__u16__wrapping_add(~value1, 1U)) & 0xFFFFU)
+    >> (uint32_t)(int32_t)8
+    & 1U;
+  uint32_t m = 8U;
+  uint16_t pow2_bits = 256U;
+  uint16_t pow2_bits_minus_one = 128U;
+  uint16_t a2 = ((uint32_t)result & ((1U << m) - 1U)) - (uint32_t)pow2_bits_minus_one;
+  uint16_t mask = (uint32_t)a2 >> 15U;
+  uint16_t a3 = ((uint32_t)result & ((1U << m) - 1U)) - (uint32_t)pow2_bits;
+  uint16_t b = (uint32_t)a3 + ((uint32_t)mask & (uint32_t)pow2_bits);
+  return (uint8_t)b;
+}
+
+static uint8_t
+*select_shared_secret_in_constant_time(
+  t_nonempty_Slice__uint8_t lhs,
+  t_nonempty_Slice__uint8_t rhs,
+  uint8_t selector
+)
+{
+  uint8_t mask = impl__u8__wrapping_sub(is_non_zero(selector), 1U);
+  uint8_t out[32U] = { 0U };
+  uint32_t start = 0U;
+  uint32_t finish = v_SHARED_SECRET_SIZE;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    out[i1] =
+      (uint32_t)out[i1]
+      | (((uint32_t)lhs.buffer[i1] & (uint32_t)mask) | ((uint32_t)rhs.buffer[i1] & (uint32_t)~mask));
+  }
+  return out;
+}
 
 static uint8_t *v_G(t_nonempty_Slice__uint8_t input)
 {
@@ -544,6 +593,146 @@ static int32_t *ntt_multiply(int32_t *left, int32_t *right)
   return out;
 }
 
+static int32_t *ntt_vector_u(int32_t *re)
+{
+  uint32_t zeta_i[1U] = { 0U };
+  uint32_t step = 128U;
+  uint32_t start0 = 0U;
+  uint32_t finish0 = 128U / step;
+  for (uint32_t i0 = start0; i0 < finish0; i0++)
+  {
+    uint32_t round = i0;
+    zeta_i[0U] = zeta_i[0U] + 1U;
+    uint32_t offset = round * step * 2U;
+    uint32_t start1 = offset;
+    uint32_t finish1 = offset + step;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      int32_t
+      t = montgomery_multiply_sfe_by_fer(re[j + step], v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+      re[j + step] = re[j] - t;
+      re[j] = re[j] + t;
+    }
+  }
+  uint32_t step1 = 64U;
+  uint32_t start2 = 0U;
+  uint32_t finish2 = 128U / step1;
+  for (uint32_t i0 = start2; i0 < finish2; i0++)
+  {
+    uint32_t round = i0;
+    zeta_i[0U] = zeta_i[0U] + 1U;
+    uint32_t offset = round * step1 * 2U;
+    uint32_t start1 = offset;
+    uint32_t finish1 = offset + step1;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      int32_t
+      t = montgomery_multiply_sfe_by_fer(re[j + step1], v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+      re[j + step1] = re[j] - t;
+      re[j] = re[j] + t;
+    }
+  }
+  uint32_t step2 = 32U;
+  uint32_t start3 = 0U;
+  uint32_t finish3 = 128U / step2;
+  for (uint32_t i0 = start3; i0 < finish3; i0++)
+  {
+    uint32_t round = i0;
+    zeta_i[0U] = zeta_i[0U] + 1U;
+    uint32_t offset = round * step2 * 2U;
+    uint32_t start1 = offset;
+    uint32_t finish1 = offset + step2;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      int32_t
+      t = montgomery_multiply_sfe_by_fer(re[j + step2], v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+      re[j + step2] = re[j] - t;
+      re[j] = re[j] + t;
+    }
+  }
+  uint32_t step3 = 16U;
+  uint32_t start4 = 0U;
+  uint32_t finish4 = 128U / step3;
+  for (uint32_t i0 = start4; i0 < finish4; i0++)
+  {
+    uint32_t round = i0;
+    zeta_i[0U] = zeta_i[0U] + 1U;
+    uint32_t offset = round * step3 * 2U;
+    uint32_t start1 = offset;
+    uint32_t finish1 = offset + step3;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      int32_t
+      t = montgomery_multiply_sfe_by_fer(re[j + step3], v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+      re[j + step3] = re[j] - t;
+      re[j] = re[j] + t;
+    }
+  }
+  uint32_t step4 = 8U;
+  uint32_t start5 = 0U;
+  uint32_t finish5 = 128U / step4;
+  for (uint32_t i0 = start5; i0 < finish5; i0++)
+  {
+    uint32_t round = i0;
+    zeta_i[0U] = zeta_i[0U] + 1U;
+    uint32_t offset = round * step4 * 2U;
+    uint32_t start1 = offset;
+    uint32_t finish1 = offset + step4;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      int32_t
+      t = montgomery_multiply_sfe_by_fer(re[j + step4], v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+      re[j + step4] = re[j] - t;
+      re[j] = re[j] + t;
+    }
+  }
+  uint32_t step5 = 4U;
+  uint32_t start6 = 0U;
+  uint32_t finish6 = 128U / step5;
+  for (uint32_t i0 = start6; i0 < finish6; i0++)
+  {
+    uint32_t round = i0;
+    zeta_i[0U] = zeta_i[0U] + 1U;
+    uint32_t offset = round * step5 * 2U;
+    uint32_t start1 = offset;
+    uint32_t finish1 = offset + step5;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      int32_t
+      t = montgomery_multiply_sfe_by_fer(re[j + step5], v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+      re[j + step5] = re[j] - t;
+      re[j] = re[j] + t;
+    }
+  }
+  uint32_t step6 = 2U;
+  uint32_t start = 0U;
+  uint32_t finish = 128U / step6;
+  for (uint32_t i0 = start; i0 < finish; i0++)
+  {
+    uint32_t round = i0;
+    zeta_i[0U] = zeta_i[0U] + 1U;
+    uint32_t offset = round * step6 * 2U;
+    uint32_t start1 = offset;
+    uint32_t finish1 = offset + step6;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      int32_t
+      t = montgomery_multiply_sfe_by_fer(re[j + step6], v_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+      re[j + step6] = re[j] - t;
+      re[j] = re[j] + t;
+    }
+  }
+  int32_t *re1 = impl_23__map__int32_t_int32_t(256U);
+  return re1;
+}
+
 static int32_t
 **compute_As_plus_e(
   uint32_t v_K,
@@ -582,6 +771,30 @@ static int32_t
       int32_t *uu____0 = result[i1];
       uu____0[j] = barrett_reduce(coefficient_normal_form + error_as_ntt_i[j]);
     }
+  }
+  return result;
+}
+
+static int32_t
+*compute_message(uint32_t v_K, int32_t *v, int32_t **secret_as_ntt, int32_t **u_as_ntt)
+{
+  int32_t *result = impl__PolynomialRingElement__ZERO;
+  uint32_t start = 0U;
+  uint32_t finish0 = v_K;
+  for (uint32_t i = start; i < finish0; i++)
+  {
+    uint32_t i1 = i;
+    int32_t *product = ntt_multiply(secret_as_ntt[i1], u_as_ntt[i1]);
+    add_to_ring_element(result, product);
+  }
+  invert_ntt_montgomery(result);
+  uint32_t start0 = 0U;
+  uint32_t finish = v_COEFFICIENTS_IN_RING_ELEMENT;
+  for (uint32_t i = start0; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    int32_t coefficient_normal_form = montgomery_reduce(result[i1] * (int32_t)1441);
+    result[i1] = barrett_reduce(v[i1] - coefficient_normal_form);
   }
   return result;
 }
@@ -654,6 +867,37 @@ static int32_t
   return result;
 }
 
+static uint8_t compress_message_coefficient(uint16_t fe)
+{
+  int16_t shifted = (int16_t)1664 - (int16_t)fe;
+  int16_t
+  shifted_to_positive =
+    FStar_Int16_shift_arithmetic_right(shifted,
+      (uint32_t)(int32_t)15)
+    ^ shifted;
+  int16_t shifted_positive_in_range = shifted_to_positive - (int16_t)832;
+  uint32_t m = 8U;
+  int16_t pow2_bits = (int16_t)1 << 8U;
+  int16_t pow2_bits_minus_one = (int16_t)1 << 7U;
+  int16_t
+  a2 =
+    ((FStar_Int16_shift_arithmetic_right(shifted_positive_in_range,
+      (uint32_t)(int32_t)15)
+    & (int16_t)1)
+    & (((int16_t)1 << m) - (int16_t)1))
+    - pow2_bits_minus_one;
+  int16_t mask = FStar_Int16_shift_arithmetic_right(a2, 15U);
+  int16_t
+  a3 =
+    ((FStar_Int16_shift_arithmetic_right(shifted_positive_in_range,
+      (uint32_t)(int32_t)15)
+    & (int16_t)1)
+    & (((int16_t)1 << m) - (int16_t)1))
+    - pow2_bits;
+  int16_t b = a3 + (mask & pow2_bits);
+  return (uint8_t)b;
+}
+
 static uint32_t get_n_least_significant_bits(uint8_t n, uint32_t value)
 {
   return value & ((1U << (uint32_t)n) - 1U);
@@ -665,6 +909,15 @@ static int32_t compress_ciphertext_coefficient(uint8_t coefficient_bits, uint16_
   uint32_t compressed1 = compressed + (uint32_t)v_FIELD_MODULUS;
   uint32_t compressed2 = compressed1 / (uint32_t)(v_FIELD_MODULUS << (uint32_t)(int32_t)1);
   return (int32_t)get_n_least_significant_bits(coefficient_bits, compressed2);
+}
+
+static int32_t decompress_ciphertext_coefficient(uint8_t coefficient_bits, int32_t fe)
+{
+  uint32_t decompressed = (uint32_t)fe * (uint32_t)v_FIELD_MODULUS;
+  uint32_t
+  decompressed1 = (decompressed << (uint32_t)(int32_t)1) + (1U << (uint32_t)coefficient_bits);
+  uint32_t decompressed2 = decompressed1 >> (uint32_t)((uint32_t)coefficient_bits + 1U);
+  return (int32_t)decompressed2;
 }
 
 static int32_t decompress_message_coefficient(int32_t fe)
@@ -1277,6 +1530,27 @@ static uint8_t *compress_then_serialize_5_(uint32_t v_OUT_LEN, int32_t *re)
   return serialized;
 }
 
+static uint8_t *compress_then_serialize_message(int32_t *re)
+{
+  uint8_t serialized[32U] = { 0U };
+  uint32_t start = 0U;
+  uint32_t finish = 256U / 8U;
+  for (uint32_t i0 = start; i0 < finish; i0++)
+  {
+    uint32_t i1 = i0;
+    uint32_t start1 = 0U;
+    uint32_t finish1 = 8U;
+    for (uint32_t i = start1; i < finish1; i++)
+    {
+      uint32_t j = i;
+      uint16_t coefficient = to_unsigned_representative(re[i1 * 8U + j]);
+      uint8_t coefficient_compressed = compress_message_coefficient(coefficient);
+      serialized[i1] = (uint32_t)serialized[i1] | (uint32_t)coefficient_compressed << j;
+    }
+  }
+  return serialized;
+}
+
 static uint8_t
 *compress_then_serialize_ring_element_u(
   uint32_t v_COMPRESSION_FACTOR,
@@ -1327,6 +1601,176 @@ static uint8_t
   }
 }
 
+static int32_t *deserialize_then_decompress_10_(t_nonempty_Slice__uint8_t serialized)
+{
+  int32_t *re = impl__PolynomialRingElement__ZERO;
+  uint32_t start = 0U;
+  uint32_t finish = serialized.len / 5U;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    int32_t byte1 = (int32_t)serialized.buffer[i1 * 5U + 0U];
+    int32_t byte2 = (int32_t)serialized.buffer[i1 * 5U + 1U];
+    int32_t byte3 = (int32_t)serialized.buffer[i1 * 5U + 2U];
+    int32_t byte4 = (int32_t)serialized.buffer[i1 * 5U + 3U];
+    int32_t byte5 = (int32_t)serialized.buffer[i1 * 5U + 4U];
+    int32_t coefficient1 = (byte2 & (int32_t)3) << (uint32_t)(int32_t)8 | (byte1 & (int32_t)255);
+    re[4U * i1] = decompress_ciphertext_coefficient(10U, coefficient1);
+    int32_t
+    coefficient2 =
+      (byte3 & (int32_t)15)
+      << (uint32_t)(int32_t)6
+      | FStar_Int32_shift_arithmetic_right(byte2, (uint32_t)(int32_t)2);
+    re[4U * i1 + 1U] = decompress_ciphertext_coefficient(10U, coefficient2);
+    int32_t
+    coefficient3 =
+      (byte4 & (int32_t)63)
+      << (uint32_t)(int32_t)4
+      | FStar_Int32_shift_arithmetic_right(byte3, (uint32_t)(int32_t)4);
+    re[4U * i1 + 2U] = decompress_ciphertext_coefficient(10U, coefficient3);
+    int32_t
+    coefficient4 =
+      byte5
+      << (uint32_t)(int32_t)2
+      | FStar_Int32_shift_arithmetic_right(byte4, (uint32_t)(int32_t)6);
+    re[4U * i1 + 3U] = decompress_ciphertext_coefficient(10U, coefficient4);
+  }
+  return re;
+}
+
+static int32_t *deserialize_then_decompress_11_(t_nonempty_Slice__uint8_t serialized)
+{
+  int32_t *re = impl__PolynomialRingElement__ZERO;
+  uint32_t start = 0U;
+  uint32_t finish = serialized.len / 11U;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    int32_t byte1 = (int32_t)serialized.buffer[i1 * 11U + 0U];
+    int32_t byte2 = (int32_t)serialized.buffer[i1 * 11U + 1U];
+    int32_t byte3 = (int32_t)serialized.buffer[i1 * 11U + 2U];
+    int32_t byte4 = (int32_t)serialized.buffer[i1 * 11U + 3U];
+    int32_t byte5 = (int32_t)serialized.buffer[i1 * 11U + 4U];
+    int32_t byte6 = (int32_t)serialized.buffer[i1 * 11U + 5U];
+    int32_t byte7 = (int32_t)serialized.buffer[i1 * 11U + 6U];
+    int32_t byte8 = (int32_t)serialized.buffer[i1 * 11U + 7U];
+    int32_t byte9 = (int32_t)serialized.buffer[i1 * 11U + 8U];
+    int32_t byte10 = (int32_t)serialized.buffer[i1 * 11U + 9U];
+    int32_t byte11 = (int32_t)serialized.buffer[i1 * 11U + 10U];
+    int32_t coefficient1 = (byte2 & (int32_t)7) << (uint32_t)(int32_t)8 | byte1;
+    re[8U * i1] = decompress_ciphertext_coefficient(11U, coefficient1);
+    int32_t
+    coefficient2 =
+      (byte3 & (int32_t)63)
+      << (uint32_t)(int32_t)5
+      | FStar_Int32_shift_arithmetic_right(byte2, (uint32_t)(int32_t)3);
+    re[8U * i1 + 1U] = decompress_ciphertext_coefficient(11U, coefficient2);
+    int32_t
+    coefficient3 =
+      ((byte5 & (int32_t)1) << (uint32_t)(int32_t)10 | byte4 << (uint32_t)(int32_t)2)
+      | FStar_Int32_shift_arithmetic_right(byte3, (uint32_t)(int32_t)6);
+    re[8U * i1 + 2U] = decompress_ciphertext_coefficient(11U, coefficient3);
+    int32_t
+    coefficient4 =
+      (byte6 & (int32_t)15)
+      << (uint32_t)(int32_t)7
+      | FStar_Int32_shift_arithmetic_right(byte5, (uint32_t)(int32_t)1);
+    re[8U * i1 + 3U] = decompress_ciphertext_coefficient(11U, coefficient4);
+    int32_t
+    coefficient5 =
+      (byte7 & (int32_t)127)
+      << (uint32_t)(int32_t)4
+      | FStar_Int32_shift_arithmetic_right(byte6, (uint32_t)(int32_t)4);
+    re[8U * i1 + 4U] = decompress_ciphertext_coefficient(11U, coefficient5);
+    int32_t
+    coefficient6 =
+      ((byte9 & (int32_t)3) << (uint32_t)(int32_t)9 | byte8 << (uint32_t)(int32_t)1)
+      | FStar_Int32_shift_arithmetic_right(byte7, (uint32_t)(int32_t)7);
+    re[8U * i1 + 5U] = decompress_ciphertext_coefficient(11U, coefficient6);
+    int32_t
+    coefficient7 =
+      (byte10 & (int32_t)31)
+      << (uint32_t)(int32_t)6
+      | FStar_Int32_shift_arithmetic_right(byte9, (uint32_t)(int32_t)2);
+    re[8U * i1 + 6U] = decompress_ciphertext_coefficient(11U, coefficient7);
+    int32_t
+    coefficient8 =
+      byte11
+      << (uint32_t)(int32_t)3
+      | FStar_Int32_shift_arithmetic_right(byte10, (uint32_t)(int32_t)5);
+    re[8U * i1 + 7U] = decompress_ciphertext_coefficient(11U, coefficient8);
+  }
+  return re;
+}
+
+static int32_t *deserialize_then_decompress_4_(t_nonempty_Slice__uint8_t serialized)
+{
+  int32_t *re = impl__PolynomialRingElement__ZERO;
+  uint32_t start = 0U;
+  uint32_t finish = serialized.len;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    int32_t coefficient1 = (int32_t)((uint32_t)serialized.buffer[i1] & 15U);
+    re[2U * i1] = decompress_ciphertext_coefficient(4U, coefficient1);
+    int32_t
+    coefficient2 = (int32_t)((uint32_t)serialized.buffer[i1] >> (uint32_t)(int32_t)4 & 15U);
+    re[2U * i1 + 1U] = decompress_ciphertext_coefficient(4U, coefficient2);
+  }
+  return re;
+}
+
+static int32_t *deserialize_then_decompress_5_(t_nonempty_Slice__uint8_t serialized)
+{
+  int32_t *re = impl__PolynomialRingElement__ZERO;
+  uint32_t start = 0U;
+  uint32_t finish = serialized.len / 5U;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    int32_t byte1 = (int32_t)serialized.buffer[i1 * 5U + 0U];
+    int32_t byte2 = (int32_t)serialized.buffer[i1 * 5U + 1U];
+    int32_t byte3 = (int32_t)serialized.buffer[i1 * 5U + 2U];
+    int32_t byte4 = (int32_t)serialized.buffer[i1 * 5U + 3U];
+    int32_t byte5 = (int32_t)serialized.buffer[i1 * 5U + 4U];
+    int32_t coefficient1 = byte1 & (int32_t)31;
+    re[8U * i1] = decompress_ciphertext_coefficient(5U, coefficient1);
+    int32_t
+    coefficient2 =
+      (byte2 & (int32_t)3)
+      << (uint32_t)(int32_t)3
+      | FStar_Int32_shift_arithmetic_right(byte1, (uint32_t)(int32_t)5);
+    re[8U * i1 + 1U] = decompress_ciphertext_coefficient(5U, coefficient2);
+    int32_t
+    coefficient3 = FStar_Int32_shift_arithmetic_right(byte2, (uint32_t)(int32_t)2) & (int32_t)31;
+    re[8U * i1 + 2U] = decompress_ciphertext_coefficient(5U, coefficient3);
+    int32_t
+    coefficient4 =
+      (byte3 & (int32_t)15)
+      << (uint32_t)(int32_t)1
+      | FStar_Int32_shift_arithmetic_right(byte2, (uint32_t)(int32_t)7);
+    re[8U * i1 + 3U] = decompress_ciphertext_coefficient(5U, coefficient4);
+    int32_t
+    coefficient5 =
+      (byte4 & (int32_t)1)
+      << (uint32_t)(int32_t)4
+      | FStar_Int32_shift_arithmetic_right(byte3, (uint32_t)(int32_t)4);
+    re[8U * i1 + 4U] = decompress_ciphertext_coefficient(5U, coefficient5);
+    int32_t
+    coefficient6 = FStar_Int32_shift_arithmetic_right(byte4, (uint32_t)(int32_t)1) & (int32_t)31;
+    re[8U * i1 + 5U] = decompress_ciphertext_coefficient(5U, coefficient6);
+    int32_t
+    coefficient7 =
+      (byte5 & (int32_t)7)
+      << (uint32_t)(int32_t)2
+      | FStar_Int32_shift_arithmetic_right(byte4, (uint32_t)(int32_t)6);
+    re[8U * i1 + 6U] = decompress_ciphertext_coefficient(5U, coefficient7);
+    int32_t coefficient8 = FStar_Int32_shift_arithmetic_right(byte5, (uint32_t)(int32_t)3);
+    re[8U * i1 + 7U] = decompress_ciphertext_coefficient(5U, coefficient8);
+  }
+  return re;
+}
+
 static int32_t *deserialize_then_decompress_message(uint8_t *serialized)
 {
   int32_t *re = impl__PolynomialRingElement__ZERO;
@@ -1346,6 +1790,54 @@ static int32_t *deserialize_then_decompress_message(uint8_t *serialized)
     }
   }
   return re;
+}
+
+static int32_t
+*deserialize_then_decompress_ring_element_u(
+  uint32_t v_COMPRESSION_FACTOR,
+  t_nonempty_Slice__uint8_t serialized
+)
+{
+  switch (v_COMPRESSION_FACTOR)
+  {
+    case 10U:
+      {
+        return deserialize_then_decompress_10_(serialized);
+      }
+    case 11U:
+      {
+        return deserialize_then_decompress_11_(serialized);
+      }
+    default:
+      {
+        KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__, __LINE__);
+        KRML_HOST_EXIT(253U);
+      }
+  }
+}
+
+static int32_t
+*deserialize_then_decompress_ring_element_v(
+  uint32_t v_COMPRESSION_FACTOR,
+  t_nonempty_Slice__uint8_t serialized
+)
+{
+  switch (v_COMPRESSION_FACTOR)
+  {
+    case 4U:
+      {
+        return deserialize_then_decompress_4_(serialized);
+      }
+    case 5U:
+      {
+        return deserialize_then_decompress_5_(serialized);
+      }
+    default:
+      {
+        KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__, __LINE__);
+        KRML_HOST_EXIT(253U);
+      }
+  }
 }
 
 static int32_t *deserialize_to_uncompressed_ring_element(t_nonempty_Slice__uint8_t serialized)
@@ -1838,6 +2330,61 @@ static uint8_t *serialize_key(uint32_t v_K, uint32_t v_OUT_LEN, int32_t **key)
   return out;
 }
 
+static uint8_t
+*decrypt(
+  uint32_t v_K,
+  uint32_t v_CIPHERTEXT_SIZE,
+  uint32_t v_VECTOR_U_ENCODED_SIZE,
+  uint32_t v_U_COMPRESSION_FACTOR,
+  uint32_t v_V_COMPRESSION_FACTOR,
+  t_nonempty_Slice__uint8_t secret_key,
+  uint8_t *ciphertext
+)
+{
+  KRML_CHECK_SIZE(sizeof (int32_t *), v_K);
+  int32_t *u_as_ntt[v_K];
+  for (uint32_t _i = 0U; _i < v_K; ++_i)
+    u_as_ntt[_i] = impl__PolynomialRingElement__ZERO;
+  KRML_CHECK_SIZE(sizeof (int32_t *), v_K);
+  int32_t *secret_as_ntt[v_K];
+  for (uint32_t _i = 0U; _i < v_K; ++_i)
+    secret_as_ntt[_i] = impl__PolynomialRingElement__ZERO;
+  uint32_t start0 = 0U;
+  uint32_t
+  finish0 =
+    v_VECTOR_U_ENCODED_SIZE
+    / (v_COEFFICIENTS_IN_RING_ELEMENT * v_U_COMPRESSION_FACTOR / 8U);
+  for (uint32_t i = start0; i < finish0; i++)
+  {
+    uint32_t i1 = i;
+    uint32_t len = v_COEFFICIENTS_IN_RING_ELEMENT * v_U_COMPRESSION_FACTOR / 8U;
+    uint8_t
+    *u_buf = ciphertext + i1 * (v_COEFFICIENTS_IN_RING_ELEMENT * v_U_COMPRESSION_FACTOR / 8U);
+    t_nonempty_Slice__uint8_t u_bytes = { .buffer = u_buf, .len = len };
+    int32_t *u = deserialize_then_decompress_ring_element_u(v_U_COMPRESSION_FACTOR, u_bytes);
+    u_as_ntt[i1] = ntt_vector_u(u);
+  }
+  uint32_t len0 = v_CIPHERTEXT_SIZE - v_VECTOR_U_ENCODED_SIZE;
+  uint8_t *subbuf0 = ciphertext + v_VECTOR_U_ENCODED_SIZE;
+  int32_t
+  *v =
+    deserialize_then_decompress_ring_element_v(v_V_COMPRESSION_FACTOR,
+      ((t_nonempty_Slice__uint8_t){ .buffer = subbuf0, .len = len0 }));
+  uint32_t start = 0U;
+  uint32_t finish = secret_key.len / v_BYTES_PER_RING_ELEMENT;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    uint32_t
+    len = i1 * v_BYTES_PER_RING_ELEMENT + v_BYTES_PER_RING_ELEMENT - i1 * v_BYTES_PER_RING_ELEMENT;
+    uint8_t *subbuf = secret_key.buffer + i1 * v_BYTES_PER_RING_ELEMENT;
+    t_nonempty_Slice__uint8_t secret_bytes = { .buffer = subbuf, .len = len };
+    secret_as_ntt[i1] = deserialize_to_uncompressed_ring_element(secret_bytes);
+  }
+  int32_t *message = compute_message(v_K, v, secret_as_ntt, u_as_ntt);
+  return compress_then_serialize_message(message);
+}
+
 typedef struct
 __Libcrux_Kem_Kyber_Types_t_KyberCiphertext_Core_Option_t_Option__Libcrux_Kem_Kyber_Types_t_Error_s
 {
@@ -1974,14 +2521,130 @@ encrypt(
 
 static uint32_t v_KEY_GENERATION_SEED_SIZE = 64U;
 
-static uint8_t *decapsulate(uint32_t v_K)
+static uint8_t
+*decapsulate(
+  uint32_t v_K,
+  uint32_t v_SECRET_KEY_SIZE,
+  uint32_t v_CPA_SECRET_KEY_SIZE,
+  uint32_t v_PUBLIC_KEY_SIZE,
+  uint32_t v_CIPHERTEXT_SIZE,
+  uint32_t v_T_AS_NTT_ENCODED_SIZE,
+  uint32_t v_C1_SIZE,
+  uint32_t v_C2_SIZE,
+  uint32_t v_VECTOR_U_COMPRESSION_FACTOR,
+  uint32_t v_VECTOR_V_COMPRESSION_FACTOR,
+  uint32_t v_C1_BLOCK_SIZE,
+  uint32_t v_ETA1,
+  uint32_t v_ETA1_RANDOMNESS_SIZE,
+  uint32_t v_ETA2,
+  uint32_t v_ETA2_RANDOMNESS_SIZE,
+  uint32_t v_IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+  uint8_t *secret_key,
+  uint8_t *ciphertext
+)
 {
-  KRML_MAYBE_UNUSED_VAR(v_K);
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n",
-    __FILE__,
-    __LINE__,
-    "This function was not extracted:\nFailure(\"Argument of FStar.Buffer.createL is not a list literal!\")");
-  KRML_HOST_EXIT(255U);
+  uint8_t *b10 = secret_key;
+  uint32_t l20 = v_SECRET_KEY_SIZE - v_CPA_SECRET_KEY_SIZE;
+  uint8_t *b20 = secret_key + v_CPA_SECRET_KEY_SIZE;
+  t_nonempty_Slice__uint8_t s10 = { .buffer = b10, .len = v_CPA_SECRET_KEY_SIZE };
+  t_nonempty_Slice__uint8_t s20 = { .buffer = b20, .len = l20 };
+  t_nonempty_Slice__uint8_t ind_cpa_secret_key = s10;
+  t_nonempty_Slice__uint8_t secret_key1 = s20;
+  uint8_t *b11 = secret_key1.buffer;
+  uint32_t l21 = secret_key1.len - v_PUBLIC_KEY_SIZE;
+  uint8_t *b21 = secret_key1.buffer + v_PUBLIC_KEY_SIZE;
+  t_nonempty_Slice__uint8_t s11 = { .buffer = b11, .len = v_PUBLIC_KEY_SIZE };
+  t_nonempty_Slice__uint8_t s21 = { .buffer = b21, .len = l21 };
+  t_nonempty_Slice__uint8_t ind_cpa_public_key = s11;
+  t_nonempty_Slice__uint8_t secret_key2 = s21;
+  uint8_t *b12 = secret_key2.buffer;
+  uint32_t l22 = secret_key2.len - v_H_DIGEST_SIZE;
+  uint8_t *b22 = secret_key2.buffer + v_H_DIGEST_SIZE;
+  t_nonempty_Slice__uint8_t s12 = { .buffer = b12, .len = v_H_DIGEST_SIZE };
+  t_nonempty_Slice__uint8_t s22 = { .buffer = b22, .len = l22 };
+  t_nonempty_Slice__uint8_t ind_cpa_public_key_hash = s12;
+  t_nonempty_Slice__uint8_t implicit_rejection_value = s22;
+  uint8_t
+  *decrypted =
+    decrypt(v_K,
+      v_CIPHERTEXT_SIZE,
+      v_C1_SIZE,
+      v_VECTOR_U_COMPRESSION_FACTOR,
+      v_VECTOR_V_COMPRESSION_FACTOR,
+      ind_cpa_secret_key,
+      ciphertext);
+  uint8_t out0[64U] = { 0U };
+  uint32_t f_start0 = ((t_Range__uint32_t){ .f_start1 = 0U, .f_end1 = 32U }).f_start1;
+  memcpy(decrypted, out0 + f_start0, 32U * sizeof (uint8_t));
+  uint8_t *to_hash = out0;
+  uint32_t f_start1 = v_SHARED_SECRET_SIZE;
+  uint32_t f_end0 = v_SHARED_SECRET_SIZE + v_H_DIGEST_SIZE;
+  uint32_t len = f_end0 - f_start1;
+  uint8_t *buffer0 = to_hash + f_start1;
+  memcpy(ind_cpa_public_key_hash.buffer,
+    ((t_nonempty_Slice__uint8_t){ .buffer = buffer0, .len = len }).buffer,
+    ind_cpa_public_key_hash.len * sizeof (uint8_t));
+  uint8_t *hashed = v_G(((t_nonempty_Slice__uint8_t){ .buffer = to_hash, .len = 64U }));
+  uint8_t *b1 = hashed;
+  uint32_t l2 = 64U - v_SHARED_SECRET_SIZE;
+  uint8_t *b2 = hashed + v_SHARED_SECRET_SIZE;
+  t_nonempty_Slice__uint8_t s1 = { .buffer = b1, .len = v_SHARED_SECRET_SIZE };
+  t_nonempty_Slice__uint8_t s2 = { .buffer = b2, .len = l2 };
+  t_nonempty_Slice__uint8_t shared_secret = s1;
+  t_nonempty_Slice__uint8_t pseudorandomness = s2;
+  KRML_CHECK_SIZE(sizeof (uint8_t), v_IMPLICIT_REJECTION_HASH_INPUT_SIZE);
+  uint8_t out[v_IMPLICIT_REJECTION_HASH_INPUT_SIZE];
+  memset(out, 0U, v_IMPLICIT_REJECTION_HASH_INPUT_SIZE * sizeof (uint8_t));
+  t_Range__uint32_t uu____0 = { .f_start1 = 0U, .f_end1 = implicit_rejection_value.len };
+  uint32_t f_start2 = uu____0.f_start1;
+  uint32_t f_end = uu____0.f_end1;
+  uint32_t len0 = f_end - f_start2;
+  uint8_t *buffer = out + f_start2;
+  memcpy(implicit_rejection_value.buffer,
+    ((t_nonempty_Slice__uint8_t){ .buffer = buffer, .len = len0 }).buffer,
+    implicit_rejection_value.len * sizeof (uint8_t));
+  uint8_t *to_hash1 = out;
+  uint32_t f_start = v_SHARED_SECRET_SIZE;
+  memcpy(ciphertext, to_hash1 + f_start, v_CIPHERTEXT_SIZE * sizeof (uint8_t));
+  uint8_t
+  *implicit_rejection_shared_secret =
+    v_PRF(32U,
+      (
+        (t_nonempty_Slice__uint8_t){
+          .buffer = to_hash1,
+          .len = v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
+        }
+      ));
+  uint8_t
+  *expected_ciphertext =
+    encrypt(v_K,
+      v_CIPHERTEXT_SIZE,
+      v_T_AS_NTT_ENCODED_SIZE,
+      v_C1_SIZE,
+      v_C2_SIZE,
+      v_VECTOR_U_COMPRESSION_FACTOR,
+      v_VECTOR_V_COMPRESSION_FACTOR,
+      v_C1_BLOCK_SIZE,
+      v_ETA1,
+      v_ETA1_RANDOMNESS_SIZE,
+      v_ETA2,
+      v_ETA2_RANDOMNESS_SIZE,
+      ind_cpa_public_key,
+      decrypted,
+      pseudorandomness).fst;
+  uint8_t r[1U] = { 0U };
+  uint32_t start = 0U;
+  uint32_t finish = v_CIPHERTEXT_SIZE;
+  for (uint32_t i = start; i < finish; i++)
+  {
+    uint32_t i1 = i;
+    r[0U] = (uint32_t)r[0U] | ((uint32_t)ciphertext[i1] ^ (uint32_t)expected_ciphertext[i1]);
+  }
+  uint8_t selector = is_non_zero(r[0U]);
+  return
+    select_shared_secret_in_constant_time(shared_secret,
+      ((t_nonempty_Slice__uint8_t){ .buffer = implicit_rejection_shared_secret, .len = 32U }),
+      selector);
 }
 
 typedef struct t_Result___uint8_t__Core_Array_t_TryFromSliceError_s
@@ -2327,9 +2990,25 @@ uint32_t Libcrux_Kem_Kyber_Kyber768_v_IMPLICIT_REJECTION_HASH_INPUT_SIZE = 1120U
 
 uint8_t *Libcrux_Kem_Kyber_Kyber768_decapsulate_768_(uint8_t *secret_key, uint8_t *ciphertext)
 {
-  KRML_MAYBE_UNUSED_VAR(secret_key);
-  KRML_MAYBE_UNUSED_VAR(ciphertext);
-  return decapsulate(3U);
+  return
+    decapsulate(3U,
+      2400U,
+      1152U,
+      1184U,
+      1088U,
+      1152U,
+      960U,
+      128U,
+      10U,
+      4U,
+      320U,
+      2U,
+      128U,
+      2U,
+      128U,
+      1120U,
+      secret_key,
+      ciphertext);
 }
 
 Core_Result_t_Result__Libcrux_Kem_Kyber_Types_t_KyberCiphertext____uint8_t__Libcrux_Kem_Kyber_Types_t_Error
