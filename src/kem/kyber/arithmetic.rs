@@ -107,9 +107,9 @@ impl PolynomialRingElement {
 }
 
 pub(crate) fn add_to_ring_element<const K: usize>(
-    mut lhs: PolynomialRingElement,
+    lhs: &mut PolynomialRingElement,
     rhs: &PolynomialRingElement,
-) -> PolynomialRingElement {
+) {
     hax_lib::debug_assert!(lhs.coefficients.into_iter().all(|coefficient| coefficient
         >= ((K as i32) - 1) * -FIELD_MODULUS
         && coefficient <= ((K as i32) - 1) * FIELD_MODULUS));
@@ -127,5 +127,4 @@ pub(crate) fn add_to_ring_element<const K: usize>(
         .into_iter()
         .all(|coefficient| coefficient >= (K as i32) * -FIELD_MODULUS
             && coefficient <= (K as i32) * FIELD_MODULUS));
-    lhs
 }

@@ -121,9 +121,7 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
 /// Compute the inverse NTT. The coefficients of the output ring element are in
 /// the Montgomery domain.
 #[inline(always)]
-pub(crate) fn invert_ntt_montgomery<const K: usize>(
-    mut re: PolynomialRingElement,
-) -> PolynomialRingElement {
+pub(crate) fn invert_ntt_montgomery<const K: usize>(re: &mut PolynomialRingElement) {
     // We only ever call this function after matrix/vector multiplication
     hax_lib::debug_assert!(re
         .coefficients
@@ -176,18 +174,17 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     for i in 0..8 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
     }
-    re
 }
 
 #[inline(always)]
 fn ntt_multiply_binomials(
-    (a0, a1): (FieldElement, FieldElement),
-    (b0, b1): (FieldElement, FieldElement),
+    a: (FieldElement, FieldElement),
+    b: (FieldElement, FieldElement),
     zeta: FieldElementTimesMontgomeryR,
 ) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
     (
-        montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
-        montgomery_reduce(a0 * b1 + a1 * b0),
+        montgomery_reduce(a.0 * b.0 + montgomery_reduce(a.1 * b.1) * zeta),
+        montgomery_reduce(a.0 * b.1 + a.1 * b.0),
     )
 }
 

@@ -57,7 +57,8 @@ pub(super) fn generate_keypair<
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, Error> {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
-    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+    let implicit_rejection_value =
+        &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..KEY_GENERATION_SEED_SIZE];
 
     let ((ind_cpa_private_key, public_key), sampling_a_error) = ind_cpa::generate_keypair::<
         K,
@@ -102,7 +103,7 @@ pub(super) fn encapsulate<
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> Result<(KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret), Error> {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
+    to_hash[H_DIGEST_SIZE..2 * H_DIGEST_SIZE].copy_from_slice(&H(public_key.as_slice()));
 
     let hashed = G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
@@ -162,14 +163,16 @@ pub(super) fn decapsulate<
     >(ind_cpa_secret_key, ciphertext);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
+    to_hash[SHARED_SECRET_SIZE..SHARED_SECRET_SIZE + H_DIGEST_SIZE]
+        .copy_from_slice(ind_cpa_public_key_hash);
 
     let hashed = G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
     let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
         into_padded_array(&implicit_rejection_value);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
+    to_hash[SHARED_SECRET_SIZE..IMPLICIT_REJECTION_HASH_INPUT_SIZE]
+        .copy_from_slice(ciphertext.as_ref());
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = PRF(&to_hash);
 
     // If a ciphertext C is well-formed, setting aside the fact that a

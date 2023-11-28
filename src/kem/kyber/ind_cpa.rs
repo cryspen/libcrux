@@ -208,7 +208,8 @@ pub(crate) fn encrypt<
     //     .enumerate()
     // {
     for i in 0..T_AS_NTT_ENCODED_SIZE / BYTES_PER_RING_ELEMENT {
-        let t_as_ntt_bytes = &public_key[..T_AS_NTT_ENCODED_SIZE]
+        let pk = &public_key[..T_AS_NTT_ENCODED_SIZE];
+        let t_as_ntt_bytes = &pk
             [(i * BYTES_PER_RING_ELEMENT)..(i * BYTES_PER_RING_ELEMENT) + BYTES_PER_RING_ELEMENT];
         t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
     }
@@ -291,8 +292,8 @@ pub(crate) fn decrypt<
     // {
     for i in 0..VECTOR_U_ENCODED_SIZE / ((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
     {
-        let u_bytes = &ciphertext.value[..VECTOR_U_ENCODED_SIZE][(i
-            * ((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8))
+        let cipher_text = &ciphertext.value[0..VECTOR_U_ENCODED_SIZE];
+        let u_bytes = &cipher_text[(i * ((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8))
             ..(i * ((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8))
                 + ((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)];
         let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);

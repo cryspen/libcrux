@@ -18,21 +18,21 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     secret_as_ntt: &[PolynomialRingElement; K],
     u_as_ntt: &[PolynomialRingElement; K],
 ) -> PolynomialRingElement {
-    let mut result = [PolynomialRingElement::ZERO];
+    let mut result = PolynomialRingElement::ZERO;
 
     for i in 0..K {
         let product = ntt_multiply(&secret_as_ntt[i], &u_as_ntt[i]);
-        result[0] = add_to_ring_element::<K>(result[0], &product);
+        add_to_ring_element::<K>(&mut result, &product);
     }
 
-    result[0] = invert_ntt_montgomery::<K>(result[0]);
+    invert_ntt_montgomery::<K>(&mut result);
 
     for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        let coefficient_normal_form = montgomery_reduce(result[0].coefficients[i] * 1441);
-        result[0].coefficients[i] = barrett_reduce(v.coefficients[i] - coefficient_normal_form);
+        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
+        result.coefficients[i] = barrett_reduce(v.coefficients[i] - coefficient_normal_form);
     }
 
-    result[0]
+    result
 }
 
 /// Compute NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
@@ -43,23 +43,23 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     error_2: &PolynomialRingElement,
     message: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    let mut result = [PolynomialRingElement::ZERO];
+    let mut result = PolynomialRingElement::ZERO;
 
     for i in 0..K {
         let product = ntt_multiply(&t_as_ntt[i], &r_as_ntt[i]);
-        result[0] = add_to_ring_element::<K>(result[0], &product);
+        add_to_ring_element::<K>(&mut result, &product);
     }
 
-    result[0] = invert_ntt_montgomery::<K>(result[0]);
+    invert_ntt_montgomery::<K>(&mut result);
 
     for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        let coefficient_normal_form = montgomery_reduce(result[0].coefficients[i] * 1441);
-        result[0].coefficients[i] = barrett_reduce(
+        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
+        result.coefficients[i] = barrett_reduce(
             coefficient_normal_form + error_2.coefficients[i] + message.coefficients[i],
         );
     }
 
-    result[0]
+    result
 }
 
 /// Compute u := NTT^{-1}(AˆT ◦ rˆ) + e_1
@@ -78,16 +78,19 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
         for j in 0..row.len() {
             let a_element = &row[j];
             let product = ntt_multiply(a_element, &r_as_ntt[j]);
-            result[i] = add_to_ring_element::<K>(result[i], &product);
+            add_to_ring_element::<K>(&mut result[i], &product);
         }
 
-        result[i] = invert_ntt_montgomery::<K>(result[i]);
+        invert_ntt_montgomery::<K>(&mut result[i]);
 
         for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1441);
+            let result_i = &result[i];
+            let error_1_i = &error_1[i];
+
+            let coefficient_normal_form = montgomery_reduce(result_i.coefficients[j] * 1441);
 
             result[i].coefficients[j] =
-                barrett_reduce(coefficient_normal_form + error_1[i].coefficients[j]);
+                barrett_reduce(coefficient_normal_form + error_1_i.coefficients[j]);
         }
     }
 
@@ -111,16 +114,19 @@ pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
         for j in 0..row.len() {
             let matrix_element = &row[j];
             let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
-            result[i] = add_to_ring_element::<K>(result[i], &product);
+            add_to_ring_element::<K>(&mut result[i], &product);
         }
 
         for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            let result_i = &result[i];
+            let error_as_ntt_i = &error_as_ntt[i];
+
             // The coefficients are of the form aR^{-1} mod q, which means
             // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = to_standard_domain(result[i].coefficients[j]);
+            let coefficient_normal_form = to_standard_domain(result_i.coefficients[j]);
 
             result[i].coefficients[j] =
-                barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])
+                barrett_reduce(coefficient_normal_form + error_as_ntt_i.coefficients[j])
         }
     }
 

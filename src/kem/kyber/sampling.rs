@@ -4,12 +4,17 @@ use super::{
     Error,
 };
 
+// hax workaround to avoid local mutability.
+#[inline(always)]
+fn increment(x: &mut usize) {
+    *x += 1;
+}
+
 pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     randomness: [u8; SEED_SIZE],
     sampling_error: &mut Option<Error>,
 ) -> PolynomialRingElement {
-    // XXX: mutable local variables have to be arrays for now to make the C extraction work
-    let mut sampled_coefficients = [0];
+    let mut sampled_coefficients = 0;
     let mut out: PolynomialRingElement = PolynomialRingElement::ZERO;
 
     // This loop is written the way it is since reasoning about early returns,
@@ -28,15 +33,15 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
             let d1 = ((b2 & 0xF) << 8) | b1;
             let d2 = (b3 << 4) | (b2 >> 4);
 
-            if d1 < FIELD_MODULUS && sampled_coefficients[0] < COEFFICIENTS_IN_RING_ELEMENT {
-                out.coefficients[sampled_coefficients[0]] = d1;
-                sampled_coefficients[0] += 1
+            if d1 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+                out.coefficients[sampled_coefficients] = d1;
+                increment(&mut sampled_coefficients);
             }
-            if d2 < FIELD_MODULUS && sampled_coefficients[0] < COEFFICIENTS_IN_RING_ELEMENT {
-                out.coefficients[sampled_coefficients[0]] = d2;
-                sampled_coefficients[0] += 1;
+            if d2 < FIELD_MODULUS && sampled_coefficients < COEFFICIENTS_IN_RING_ELEMENT {
+                out.coefficients[sampled_coefficients] = d2;
+                increment(&mut sampled_coefficients);
             }
-            if sampled_coefficients[0] == COEFFICIENTS_IN_RING_ELEMENT {
+            if sampled_coefficients == COEFFICIENTS_IN_RING_ELEMENT {
                 done[0] = true;
             }
         }
