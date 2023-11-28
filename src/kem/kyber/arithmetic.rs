@@ -15,10 +15,13 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 const MONTGOMERY_SHIFT: u8 = 16;
 const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u32.pow(MONTGOMERY_SHIFT as u32)))]
+#[cfg_attr(hax, hax_lib_macros::requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u32.pow(n.into())))]
 #[inline(always)]
-fn get_montgomery_r_least_significant_bits(value: u32) -> u32 {
-    value & ((1 << MONTGOMERY_SHIFT) - 1)
+pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
+    hax_lib::debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
+
+    value & ((1 << n) - 1)
 }
 
 const BARRETT_SHIFT: i64 = 26;
@@ -61,8 +64,8 @@ pub(crate) fn montgomery_reduce(value: FieldElement) -> FieldElement {
         "value is {value}"
     );
 
-    let t = get_montgomery_r_least_significant_bits(value as u32) * INVERSE_OF_MODULUS_MOD_R;
-    let k = get_montgomery_r_least_significant_bits(t) as i16;
+    let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32) * INVERSE_OF_MODULUS_MOD_R;
+    let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
 
     let k_times_modulus = (k as i32) * FIELD_MODULUS;
 
