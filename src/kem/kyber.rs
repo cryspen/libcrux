@@ -13,6 +13,7 @@ mod constant_time_ops;
 mod conversions;
 mod hash_functions;
 mod ind_cpa;
+mod matrix;
 mod ntt;
 mod sampling;
 mod serialize;

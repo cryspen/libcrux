@@ -1,12 +1,15 @@
 use super::{
     arithmetic::{
-        add_to_ring_element, barrett_reduce, montgomery_reduce, KyberFieldElement,
-        KyberPolynomialRingElement,
+        barrett_reduce, montgomery_multiply_sfe_by_fer, montgomery_reduce, FieldElement,
+        FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
     constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
 
-const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
+#[cfg(not(hax))]
+use super::constants::FIELD_MODULUS;
+
+const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
     573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411, -205, -1571,
     1223, 652, -552, 1015, -1293, 1491, -282, -1544, 516, -8, -320, -666, -1618, -1162, 126, 1469,
@@ -17,18 +20,21 @@ const ZETAS_MONTGOMERY_DOMAIN: [KyberFieldElement; 128] = [
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
+/// Represents an intermediate polynomial splitting step. All resulting coefficients
+/// are in the normal domain since the zetas have been multiplied by MONTGOMERY_R.
 macro_rules! ntt_at_layer {
     ($layer:literal, $zeta_i:ident, $re:ident, $initial_coefficient_bound:literal) => {
         let step = 1 << $layer;
 
         for round in 0..(128 / step) {
-            $zeta_i += 1;
+            $zeta_i[0] += 1;
 
             let offset = round * step * 2;
 
             for j in offset..offset + step {
-                let t = montgomery_reduce(
-                    $re.coefficients[j + step] * ZETAS_MONTGOMERY_DOMAIN[$zeta_i],
+                let t = montgomery_multiply_sfe_by_fer(
+                    $re.coefficients[j + step],
+                    ZETAS_TIMES_MONTGOMERY_R[$zeta_i[0]],
                 );
                 $re.coefficients[j + step] = $re.coefficients[j] - t;
                 $re.coefficients[j] = $re.coefficients[j] + t;
@@ -36,28 +42,30 @@ macro_rules! ntt_at_layer {
         }
 
         hax_lib::debug_assert!($re.coefficients.into_iter().all(|coefficient| {
-            coefficient.abs() < $initial_coefficient_bound + ((8 - $layer) * 3 * (3329 / 2))
+            coefficient.abs()
+                < $initial_coefficient_bound + ((8 - $layer) * ((3 * FIELD_MODULUS) / 2))
         }));
     };
 }
 
-// Over time, all invocations of ntt_representation() will be replaced by
-// invocations to this function, upon which this function will be renamed back to
-// ntt_representation().
+/// This is the first of two functions that computes the NTT representation of
+/// ring elements. This one operates only on those which were produced by binomial
+/// sampling, and thus those which have small coefficients. The small
+/// coefficients let us skip the first round of Montgomery reductions.
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+    mut re: PolynomialRingElement,
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3));
 
-    let mut zeta_i = 0;
+    let mut zeta_i = [0];
 
     // Due to the small coefficient bound, we can skip the first round of
-    // montgomery reductions.
-    zeta_i += 1;
+    // Montgomery reductions.
+    zeta_i[0] += 1;
 
     for j in 0..128 {
         // Multiply by the appropriate zeta in the normal domain.
@@ -69,7 +77,7 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| { coefficient.abs() < 3 + ((3 * 3329) / 2) }));
+        .all(|coefficient| { coefficient.abs() < 3 + ((3 * FIELD_MODULUS) / 2) }));
 
     ntt_at_layer!(6, zeta_i, re, 3);
     ntt_at_layer!(5, zeta_i, re, 3);
@@ -83,16 +91,19 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     re
 }
 
+/// This is the second of two functions that computes the NTT representation of
+/// ring elements. This one operates on the ring element that partly constitutes
+/// the ciphertext.
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+    mut re: PolynomialRingElement,
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3328));
 
-    let mut zeta_i = 0;
+    let mut zeta_i = [0];
 
     ntt_at_layer!(7, zeta_i, re, 3328);
     ntt_at_layer!(6, zeta_i, re, 3328);
@@ -107,24 +118,26 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
     re
 }
 
+/// Compute the inverse NTT. The coefficients of the output ring element are in
+/// the Montgomery domain.
 #[inline(always)]
-fn invert_ntt_montgomery<const K: usize>(
-    mut re: KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+pub(crate) fn invert_ntt_montgomery<const K: usize>(
+    mut re: PolynomialRingElement,
+) -> PolynomialRingElement {
     // We only ever call this function after matrix/vector multiplication
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient.abs() < (K as i32) * 3329));
+        .all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
 
-    let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
+    let mut zeta_i = [COEFFICIENTS_IN_RING_ELEMENT / 2];
 
     macro_rules! invert_ntt_at_layer {
         ($layer:literal) => {
             let step = 1 << $layer;
 
             for round in 0..(128 / step) {
-                zeta_i -= 1;
+                zeta_i[0] -= 1;
 
                 let offset = round * step * 2;
 
@@ -135,7 +148,7 @@ fn invert_ntt_montgomery<const K: usize>(
                     // 2^7 in one go in the end.
                     re.coefficients[j] = re.coefficients[j] + re.coefficients[j + step];
                     re.coefficients[j + step] =
-                        montgomery_reduce(a_minus_b * ZETAS_MONTGOMERY_DOMAIN[zeta_i]);
+                        montgomery_reduce(a_minus_b * ZETAS_TIMES_MONTGOMERY_R[zeta_i[0]]);
                 }
             }
         };
@@ -150,15 +163,15 @@ fn invert_ntt_montgomery<const K: usize>(
     invert_ntt_at_layer!(7);
 
     hax_lib::debug_assert!(
-        re.coefficients[0].abs() < 128 * (K as i32) * 3329
-            && re.coefficients[1].abs() < 128 * (K as i32) * 3329
+        re.coefficients[0].abs() < 128 * (K as i32) * FIELD_MODULUS
+            && re.coefficients[1].abs() < 128 * (K as i32) * FIELD_MODULUS
     );
     hax_lib::debug_assert!(re
         .coefficients
         .into_iter()
         .enumerate()
         .skip(2)
-        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * 3329));
+        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
     for i in 0..8 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
@@ -168,21 +181,23 @@ fn invert_ntt_montgomery<const K: usize>(
 
 #[inline(always)]
 fn ntt_multiply_binomials(
-    (a0, a1): (KyberFieldElement, KyberFieldElement),
-    (b0, b1): (KyberFieldElement, KyberFieldElement),
-    zeta: i32,
-) -> (KyberFieldElement, KyberFieldElement) {
+    (a0, a1): (FieldElement, FieldElement),
+    (b0, b1): (FieldElement, FieldElement),
+    zeta: FieldElementTimesMontgomeryR,
+) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
     (
         montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
         montgomery_reduce(a0 * b1 + a1 * b0),
     )
 }
 
+/// Multiply two polynomial ring elements in the NTT domain. The output coefficients
+/// are in the Montgomery domain.
 #[inline(always)]
-fn ntt_multiply(
-    left: &KyberPolynomialRingElement,
-    right: &KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
+pub(crate) fn ntt_multiply(
+    left: &PolynomialRingElement,
+    right: &PolynomialRingElement,
+) -> PolynomialRingElement {
     hax_lib::debug_assert!(left
         .coefficients
         .into_iter()
@@ -190,15 +205,15 @@ fn ntt_multiply(
     hax_lib::debug_assert!(right
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient >= -3329 && coefficient <= 3329));
+        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
 
-    let mut out = KyberPolynomialRingElement::ZERO;
+    let mut out = PolynomialRingElement::ZERO;
 
     for i in 0..(COEFFICIENTS_IN_RING_ELEMENT / 4) {
         let product = ntt_multiply_binomials(
             (left.coefficients[4 * i], left.coefficients[4 * i + 1]),
             (right.coefficients[4 * i], right.coefficients[4 * i + 1]),
-            ZETAS_MONTGOMERY_DOMAIN[64 + i],
+            ZETAS_TIMES_MONTGOMERY_R[64 + i],
         );
         out.coefficients[4 * i] = product.0;
         out.coefficients[4 * i + 1] = product.1;
@@ -206,7 +221,7 @@ fn ntt_multiply(
         let product = ntt_multiply_binomials(
             (left.coefficients[4 * i + 2], left.coefficients[4 * i + 3]),
             (right.coefficients[4 * i + 2], right.coefficients[4 * i + 3]),
-            -ZETAS_MONTGOMERY_DOMAIN[64 + i],
+            -ZETAS_TIMES_MONTGOMERY_R[64 + i],
         );
         out.coefficients[4 * i + 2] = product.0;
         out.coefficients[4 * i + 3] = product.1;
@@ -215,113 +230,7 @@ fn ntt_multiply(
     hax_lib::debug_assert!(out
         .coefficients
         .into_iter()
-        .all(|coefficient| coefficient >= -3329 && coefficient <= 3329));
+        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
 
     out
-}
-
-#[inline(always)]
-pub(in crate::kem::kyber) fn compute_message<const K: usize>(
-    v: &KyberPolynomialRingElement,
-    secret_as_ntt: &[KyberPolynomialRingElement; K],
-    u_as_ntt: &[KyberPolynomialRingElement; K],
-) -> KyberPolynomialRingElement {
-    let mut result = KyberPolynomialRingElement::ZERO;
-
-    for i in 0..K {
-        let product = ntt_multiply(&secret_as_ntt[i], &u_as_ntt[i]);
-        add_to_ring_element::<K>(&mut result, &product);
-    }
-
-    result = invert_ntt_montgomery::<K>(result);
-
-    for i in 0..result.coefficients.len() {
-        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
-        result.coefficients[i] = barrett_reduce(v.coefficients[i] - coefficient_normal_form);
-    }
-
-    result
-}
-
-// v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
-#[inline(always)]
-pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
-    t_as_ntt: &[KyberPolynomialRingElement; K],
-    r_as_ntt: &[KyberPolynomialRingElement; K],
-    error_2: &KyberPolynomialRingElement,
-    message: &KyberPolynomialRingElement,
-) -> KyberPolynomialRingElement {
-    let mut result = KyberPolynomialRingElement::ZERO;
-
-    for i in 0..K {
-        let product = ntt_multiply(&t_as_ntt[i], &r_as_ntt[i]);
-        add_to_ring_element::<K>(&mut result, &product);
-    }
-
-    result = invert_ntt_montgomery::<K>(result);
-
-    for i in 0..result.coefficients.len() {
-        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
-        result.coefficients[i] = barrett_reduce(
-            coefficient_normal_form + error_2.coefficients[i] + message.coefficients[i],
-        );
-    }
-
-    result
-}
-
-// u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-#[inline(always)]
-pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
-    a_as_ntt: &[[KyberPolynomialRingElement; K]; K],
-    r_as_ntt: &[KyberPolynomialRingElement; K],
-    error_1: &[KyberPolynomialRingElement; K],
-) -> [KyberPolynomialRingElement; K] {
-    let mut result = [KyberPolynomialRingElement::ZERO; K];
-
-    for (i, row) in a_as_ntt.iter().enumerate() {
-        for (j, a_element) in row.iter().enumerate() {
-            let product = ntt_multiply(a_element, &r_as_ntt[j]);
-            add_to_ring_element::<K>(&mut result[i], &product);
-        }
-
-        result[i] = invert_ntt_montgomery::<K>(result[i].clone());
-
-        for j in 0..result[i].coefficients.len() {
-            let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1441);
-
-            result[i].coefficients[j] =
-                barrett_reduce(coefficient_normal_form + error_1[i].coefficients[j]);
-        }
-    }
-
-    result
-}
-
-#[inline(always)]
-#[allow(non_snake_case)]
-pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
-    matrix_A: &[[KyberPolynomialRingElement; K]; K],
-    s_as_ntt: &[KyberPolynomialRingElement; K],
-    error_as_ntt: &[KyberPolynomialRingElement; K],
-) -> [KyberPolynomialRingElement; K] {
-    let mut result = [KyberPolynomialRingElement::ZERO; K];
-
-    for (i, row) in matrix_A.iter().enumerate() {
-        for (j, matrix_element) in row.iter().enumerate() {
-            let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
-            add_to_ring_element::<K>(&mut result[i], &product);
-        }
-
-        for j in 0..result[i].coefficients.len() {
-            // The coefficients are of the form aR^{-1} mod q, which means
-            // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1353);
-
-            result[i].coefficients[j] =
-                barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])
-        }
-    }
-
-    result
 }

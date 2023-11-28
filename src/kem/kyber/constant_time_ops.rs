@@ -11,7 +11,6 @@ use super::constants::SHARED_SECRET_SIZE;
 fn is_non_zero(value: u8) -> u8 {
     let value = value as u16;
 
-    // (!value) + 1 ≡ -value (mod 2^16)
     let result = ((value | (!value).wrapping_add(1)) >> 8) & 1;
 
     result as u8
@@ -28,9 +27,9 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
     hax_lib::debug_assert!(lhs.len() == rhs.len());
     hax_lib::debug_assert!(lhs.len() == CIPHERTEXT_SIZE);
 
-    let mut r: [u8;1] = [0];
+    let mut r = [0];
     for i in 0..CIPHERTEXT_SIZE {
-        r[0] = r[0] | (lhs[i] ^ rhs[i]);
+        r[0] |= lhs[i] ^ rhs[i];
     }
 
     is_non_zero(r[0])
