@@ -1083,16 +1083,36 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
   in
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    {
-      re with
-      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-      =
-      Core.Array.impl_23__map (sz 256)
-        re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        Libcrux.Kem.Kyber.Arithmetic.barrett_reduce
-    }
-    <:
-    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      re
+      (fun re i ->
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+          let i:usize = i in
+          {
+            re with
+            Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              i
+              (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                    <:
+                    i32)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 256)
+          }
+          <:
+          Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
   in
   re
 
@@ -1141,7 +1161,6 @@ let ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
                     bool)
                 <:
                 bool)) =
-  let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
@@ -1270,7 +1289,6 @@ let ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
           in
           out)
   in
-  let _:Prims.unit = () <: Prims.unit in
   out
 
 let ntt_vector_u
@@ -1796,15 +1814,35 @@ let ntt_vector_u
   in
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    {
-      re with
-      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-      =
-      Core.Array.impl_23__map (sz 256)
-        re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-        Libcrux.Kem.Kyber.Arithmetic.barrett_reduce
-    }
-    <:
-    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      re
+      (fun re i ->
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+          let i:usize = i in
+          {
+            re with
+            Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              i
+              (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                    <:
+                    i32)
+                <:
+                i32)
+            <:
+            t_Array i32 (sz 256)
+          }
+          <:
+          Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
   in
   re

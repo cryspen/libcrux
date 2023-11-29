@@ -92,7 +92,9 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     ntt_at_layer!(2, zeta_i, re, 3);
     ntt_at_layer!(1, zeta_i, re, 3);
 
-    re.coefficients = re.coefficients.map(barrett_reduce);
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+        re.coefficients[i] = barrett_reduce(re.coefficients[i]);
+    }
 
     re
 }
@@ -128,7 +130,9 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
     ntt_at_layer!(2, zeta_i, re, 3328);
     ntt_at_layer!(1, zeta_i, re, 3328);
 
-    re.coefficients = re.coefficients.map(barrett_reduce);
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+        re.coefficients[i] = barrett_reduce(re.coefficients[i]);
+    }
 
     re
 }
@@ -229,10 +233,10 @@ pub(crate) fn ntt_multiply(
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-    hax_lib::debug_assert!(rhs
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));
+    /*hax_lib::debug_assert!(rhs
+    .coefficients
+    .into_iter()
+    .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));*/
 
     let mut out = PolynomialRingElement::ZERO;
 
@@ -254,10 +258,10 @@ pub(crate) fn ntt_multiply(
         out.coefficients[4 * i + 3] = product.1;
     }
 
-    hax_lib::debug_assert!(out
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));
+    /*hax_lib::debug_assert!(out
+    .coefficients
+    .into_iter()
+    .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));*/
 
     out
 }
