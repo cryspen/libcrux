@@ -3,6 +3,7 @@ Cargo.lock
 **/*.rs.bk
 .vscode/
 evercrypt_provider/target
+no-std-support-check/target
 rust_crypto_provider/target
 traits/target/
 .DS_Store

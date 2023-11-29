@@ -108,3 +108,18 @@ jobs:
           version: latest
       - name: Fuzz Base w/ RustCrypto
         run: cargo fuzz run base -- -runs=10000
+
+  no-std-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # we use a target that lacks a pre-compiled libstd to check if any dependency is using libstd
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: thumbv7em-none-eabihf
+          default: true
+      - name: build crates in no-std mode
+        run: cargo check --target thumbv7em-none-eabihf
+        working-directory: no-std-support-check

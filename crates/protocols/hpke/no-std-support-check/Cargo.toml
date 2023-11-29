@@ -1,0 +1,15 @@
+[package]
+edition = "2021"
+name = "no-std-support-check"
+publish = false
+version = "0.0.0"
+
+[dependencies]
+hpke-rs = { path = ".." }
+hpke-rs-crypto = { path = "../traits" }
+hpke-rs-rust-crypto = { path = "../rust_crypto_provider" }
+
+# the no-std-support-check CI job uses the `thumbv7em-none-eabihf` target
+# `getrandom` does not support that target out of box so this feature needs to be enabled to avoid a compilation error
+# (normally this feature should NOT be enabled in a library but this crate is just used for a CI check)
+getrandom = { version = "0.2.11", features = ["custom"] }
