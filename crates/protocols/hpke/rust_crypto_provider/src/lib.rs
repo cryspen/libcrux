@@ -12,7 +12,7 @@ use p256::{
     PublicKey, SecretKey,
 };
 use rand_core::SeedableRng;
-use x25519_dalek_ng::{PublicKey as X25519PublicKey, StaticSecret as X25519StaticSecret};
+use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret as X25519StaticSecret};
 
 mod aead;
 mod hkdf;
@@ -109,7 +109,9 @@ impl HpkeCrypto for HpkeRustCrypto {
     fn kem_key_gen(alg: KemAlgorithm, prng: &mut Self::HpkePrng) -> Result<Vec<u8>, Error> {
         let rng = &mut prng.rng;
         match alg {
-            KemAlgorithm::DhKem25519 => Ok(X25519StaticSecret::new(&mut *rng).to_bytes().to_vec()),
+            KemAlgorithm::DhKem25519 => Ok(X25519StaticSecret::random_from_rng(&mut *rng)
+                .to_bytes()
+                .to_vec()),
             KemAlgorithm::DhKemP256 => {
                 Ok(SecretKey::random(&mut *rng).to_bytes().as_slice().into())
             }
