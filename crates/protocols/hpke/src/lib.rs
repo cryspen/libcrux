@@ -8,8 +8,18 @@
     unused_extern_crates,
     unused_qualifications
 )]
+#![cfg_attr(not(test), no_std)]
 
-use std::sync::RwLock;
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
+
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 
 #[cfg(feature = "hpke-test-prng")]
 use hpke_rs_crypto::HpkeTestRng;
@@ -79,15 +89,13 @@ pub enum HpkeError {
 
     /// Unable to collect enough randomness.
     InsufficientRandomness,
-
-    /// A concurrency issue with an [`RwLock`].
-    LockPoisoned,
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for HpkeError {}
 
-impl std::fmt::Display for HpkeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for HpkeError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "HPKE Error: {:?}", self)
     }
 }
@@ -159,8 +167,8 @@ pub enum Mode {
     AuthPsk = 0x03,
 }
 
-impl std::fmt::Display for Mode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for Mode {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "{:?}", self)
     }
 }
@@ -202,8 +210,8 @@ pub struct Context<Crypto: 'static + HpkeCrypto> {
 }
 
 #[cfg(feature = "hazmat")]
-impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<Crypto: HpkeCrypto> core::fmt::Debug for Context<Crypto> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
             "Context {{\n  key: {:?}\n  nonce: {:?}\n exporter_secret: {:?}\n seq no: {:?}\n}}",
@@ -213,8 +221,8 @@ impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
 }
 
 #[cfg(not(feature = "hazmat"))]
-impl<Crypto: HpkeCrypto> std::fmt::Debug for Context<Crypto> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<Crypto: HpkeCrypto> core::fmt::Debug for Context<Crypto> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
             "Context {{\n  key: {:?}\n  nonce: {:?}\n exporter_secret: {:?}\n seq no: {:?}\n}}",
@@ -331,7 +339,7 @@ pub struct Hpke<Crypto: 'static + HpkeCrypto> {
     kem_id: KemAlgorithm,
     kdf_id: KdfAlgorithm,
     aead_id: AeadAlgorithm,
-    prng: RwLock<Crypto::HpkePrng>,
+    prng: Crypto::HpkePrng,
 }
 
 impl<Crypto: 'static + HpkeCrypto> Clone for Hpke<Crypto> {
@@ -341,13 +349,13 @@ impl<Crypto: 'static + HpkeCrypto> Clone for Hpke<Crypto> {
             kem_id: self.kem_id,
             kdf_id: self.kdf_id,
             aead_id: self.aead_id,
-            prng: RwLock::new(Crypto::prng()),
+            prng: Crypto::prng(),
         }
     }
 }
 
-impl<Crypto: HpkeCrypto> std::fmt::Display for Hpke<Crypto> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl<Crypto: HpkeCrypto> core::fmt::Display for Hpke<Crypto> {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(
             f,
             "{}_{}_{}_{}",
@@ -372,7 +380,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
             kem_id,
             kdf_id,
             aead_id,
-            prng: RwLock::new(Crypto::prng()),
+            prng: Crypto::prng(),
         }
     }
 
@@ -391,7 +399,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// The encapsulated secret is returned together with the context.
     /// If the secret key is missing in an authenticated mode, an error is returned.
     pub fn setup_sender(
-        &self,
+        &mut self,
         pk_r: &HpkePublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
@@ -478,7 +486,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// Returns the encapsulated secret and the ciphertext, or an error.
     #[allow(clippy::too_many_arguments)]
     pub fn seal(
-        &self,
+        &mut self,
         pk_r: &HpkePublicKey,
         info: &[u8],
         aad: &[u8],
@@ -534,7 +542,7 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// exporter context and length.
     #[allow(clippy::too_many_arguments)]
     pub fn send_export(
-        &self,
+        &mut self,
         pk_r: &HpkePublicKey,
         info: &[u8],
         psk: Option<&[u8]>,
@@ -674,9 +682,8 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     /// This is equivalent to `derive_key_pair(random_vector(sk.len()))`
     ///
     /// Returns an `HpkeKeyPair`.
-    pub fn generate_key_pair(&self) -> Result<HpkeKeyPair, HpkeError> {
-        let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
-        let (sk, pk) = kem::key_gen::<Crypto>(self.kem_id, &mut prng)?;
+    pub fn generate_key_pair(&mut self) -> Result<HpkeKeyPair, HpkeError> {
+        let (sk, pk) = kem::key_gen::<Crypto>(self.kem_id, &mut self.prng)?;
         Ok(HpkeKeyPair::new(sk, pk))
     }
 
@@ -690,8 +697,8 @@ impl<Crypto: HpkeCrypto> Hpke<Crypto> {
     }
 
     #[inline]
-    pub(crate) fn random(&self, len: usize) -> Result<Vec<u8>, HpkeError> {
-        let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
+    pub(crate) fn random(&mut self, len: usize) -> Result<Vec<u8>, HpkeError> {
+        let prng = &mut self.prng;
         let mut out = vec![0u8; len];
 
         #[cfg(feature = "hpke-test-prng")]
@@ -794,8 +801,8 @@ impl PartialEq for HpkePrivateKey {
 }
 
 #[cfg(not(feature = "hazmat"))]
-impl std::fmt::Debug for HpkePrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl core::fmt::Debug for HpkePrivateKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         f.debug_struct("HpkePrivateKey")
             .field("value", &"***")
             .finish()
@@ -803,8 +810,8 @@ impl std::fmt::Debug for HpkePrivateKey {
 }
 
 #[cfg(feature = "hazmat")]
-impl std::fmt::Debug for HpkePrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl core::fmt::Debug for HpkePrivateKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         f.debug_struct("HpkePrivateKey")
             .field("value", &self.value)
             .finish()
@@ -891,14 +898,15 @@ impl tls_codec::Deserialize for &HpkePublicKey {
 /// Test util module. Should be moved really.
 #[cfg(feature = "hpke-test")]
 pub mod test_util {
+    use alloc::{format, string::String, vec, vec::Vec};
+
     use crate::HpkeError;
     use hpke_rs_crypto::{HpkeCrypto, HpkeTestRng};
 
     impl<Crypto: HpkeCrypto> super::Hpke<Crypto> {
         /// Set PRNG state for testing.
-        pub fn seed(&self, seed: &[u8]) -> Result<(), HpkeError> {
-            let mut prng = self.prng.write().map_err(|_| HpkeError::LockPoisoned)?;
-            prng.seed(seed);
+        pub fn seed(&mut self, seed: &[u8]) -> Result<(), HpkeError> {
+            self.prng.seed(seed);
             Ok(())
         }
     }

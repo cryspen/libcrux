@@ -5,7 +5,7 @@ use hpke_rs::prelude::*;
 use hpke_rs_crypto::types::*;
 
 fuzz_target!(|data: &[u8]| {
-    let hpke = Hpke::<hpke_rs_rust_crypto::HpkeRustCrypto>::new(
+    let mut hpke = Hpke::<hpke_rs_rust_crypto::HpkeRustCrypto>::new(
         HpkeMode::Base,
         KemAlgorithm::DhKemP256,
         KdfAlgorithm::HkdfSha256,

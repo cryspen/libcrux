@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 #[inline]
 pub(crate) fn concat(values: &[&[u8]]) -> Vec<u8> {
     values.join(&[][..])

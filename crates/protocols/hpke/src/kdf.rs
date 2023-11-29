@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use hpke_rs_crypto::{error::Error, types::KdfAlgorithm, HpkeCrypto};
 
 use crate::util::concat;

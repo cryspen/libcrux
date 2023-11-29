@@ -49,7 +49,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                     if Crypto::supports_kem(kem_mode).is_err() {
                         continue;
                     }
-                    let hpke = Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
+                    let mut hpke = Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                     let label = format!("{} {}", Crypto::name(), hpke);
                     let kp = hpke.generate_key_pair().unwrap();
                     let enc = kp.public_key().as_slice();
@@ -83,7 +83,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                     let mut group = c.benchmark_group(format!("{}", label));
                     group.bench_function("Setup Sender", |b| {
                         b.iter(|| {
-                            let hpke =
+                            let mut hpke =
                                 Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                             hpke.setup_sender(
                                 &pk_rm,
@@ -114,7 +114,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                     group.bench_function(&format!("Seal {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
                         b.iter_batched(
                             || {
-                                let hpke =
+                                let mut hpke =
                                     Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                                 let (_enc, context) = hpke
                                     .setup_sender(
@@ -140,7 +140,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                     group.bench_function(&format!("Open {}({})", AEAD_PAYLOAD, AEAD_AAD), |b| {
                         b.iter_batched(
                             || {
-                                let hpke =
+                                let mut hpke =
                                     Hpke::<Crypto>::new(hpke_mode, kem_mode, kdf_mode, aead_mode);
                                 let (enc, mut sender_context) = hpke
                                     .setup_sender(
@@ -190,7 +190,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                                     OsRng.fill_bytes(&mut ptxt);
                                     (hpke, aad, ptxt)
                                 },
-                                |(hpke, aad, ptxt)| {
+                                |(mut hpke, aad, ptxt)| {
                                     let _ctxt = hpke
                                         .seal(
                                             &pk_rm,
@@ -212,7 +212,7 @@ fn benchmark<Crypto: HpkeCrypto + 'static>(c: &mut Criterion) {
                         |b| {
                             b.iter_batched(
                                 || {
-                                    let hpke = Hpke::<Crypto>::new(
+                                    let mut hpke = Hpke::<Crypto>::new(
                                         hpke_mode, kem_mode, kdf_mode, aead_mode,
                                     );
                                     let (enc, mut sender_context) = hpke
