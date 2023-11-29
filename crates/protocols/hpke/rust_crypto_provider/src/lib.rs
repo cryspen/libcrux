@@ -1,5 +1,9 @@
 #![doc = include_str!("../Readme.md")]
+#![cfg_attr(not(test), no_std)]
 
+extern crate alloc;
+
+use alloc::{string::String, vec::Vec};
 use core::fmt::Display;
 
 use hpke_rs_crypto::{
@@ -163,7 +167,7 @@ impl HpkeCrypto for HpkeRustCrypto {
     fn prng() -> Self::HpkePrng {
         #[cfg(feature = "deterministic-prng")]
         {
-            let mut fake_rng = vec![0u8; 256];
+            let mut fake_rng = alloc::vec![0u8; 256];
             rand_chacha::ChaCha20Rng::from_entropy().fill_bytes(&mut fake_rng);
             HpkeRustCryptoPrng {
                 fake_rng,
