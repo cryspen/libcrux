@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs-rust-crypto"
-version = "0.1.3"
+version = "0.2.0-pre.1"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -10,14 +10,19 @@ readme = "Readme.md"
 repository = "https://github.com/franziskuskiefer/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { version = "0.1.3", path = "../traits" }
+hpke-rs-crypto = { version = "0.2.0-pre.1", path = "../traits" }
 # Rust crypto
 hkdf = { version = "0.12" }
 sha2 = { version = "0.10", default-features = false }
-p256 = { version = "0.13", features = ["arithmetic", "ecdh"], default-features = false }
+p256 = { version = "0.13", features = [
+    "arithmetic",
+    "ecdh",
+], default-features = false }
 p384 = { version = "0.13", default-features = false }
 x25519-dalek = { version = "2", features = ["static_secrets"] }
-chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
+chacha20poly1305 = { version = "0.10", default-features = false, features = [
+    "alloc",
+] }
 aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
 # Randomness
 rand_core = { version = "0.6", features = ["getrandom"] }
@@ -28,7 +33,10 @@ criterion = { version = "0.5", features = ["html_reports"] }
 rand = { version = "0.8" }
 
 [features]
-deterministic-prng = ["hpke-rs-crypto/std"] # ⚠️ FOR TESTING ONLY.
+deterministic-prng = [
+    "hpke-rs-crypto/std",
+    "rand_core/std",
+] # ⚠️ FOR TESTING ONLY.
 
 [[bench]]
 name = "bench_hkdf"

@@ -31,11 +31,15 @@ jobs:
       run: cargo build --release --verbose
     - name: Run tests all features
       run: cargo test --release --verbose --all-features
-      # Release
-    - name: Build Release
-      run: cargo build --release --verbose
+      # Debug
+    - name: Build Debug
+      run: cargo build --verbose
     - name: Run tests all features
-      run: cargo test --release --verbose --all-features
+      run: cargo test --verbose --all-features
+      # RC Provider
+    - name: Build Debug RC provider all features
+      working-directory: rust_crypto_provider
+      run: cargo build --verbose --all-features
     # Apple Silicon
     - if: matrix.os == 'macos-11'
       run: |
