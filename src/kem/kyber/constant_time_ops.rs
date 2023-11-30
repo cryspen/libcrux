@@ -1,7 +1,5 @@
 use super::constants::SHARED_SECRET_SIZE;
 
-use super::secret_integers::*;
-
 // TODO: Examine the output that LLVM produces for this code to ensure
 // operations are not being optimized away/constant-timedness is not being broken.
 
@@ -29,12 +27,12 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
     hax_lib::debug_assert!(lhs.len() == rhs.len());
     hax_lib::debug_assert!(lhs.len() == CIPHERTEXT_SIZE);
 
-    let mut r = U8::from(0);
+    let mut r: u8 = 0;
     for i in 0..CIPHERTEXT_SIZE {
-        r |= U8::from(lhs[i] ^ rhs[i]);
+        r |= lhs[i] ^ rhs[i];
     }
 
-    is_non_zero(r.declassify())
+    is_non_zero(r)
 }
 
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|

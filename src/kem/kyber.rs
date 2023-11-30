@@ -16,7 +16,6 @@ mod ind_cpa;
 mod matrix;
 mod ntt;
 mod sampling;
-mod secret_integers;
 mod serialize;
 mod types;
 
