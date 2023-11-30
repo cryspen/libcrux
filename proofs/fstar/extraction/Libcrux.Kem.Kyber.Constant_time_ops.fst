@@ -17,12 +17,12 @@ let is_non_zero (value: u8)
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
                 result =. 1uy <: bool)) =
-  let value:u16 = cast (value <: u8) <: u16 in
+  let value:u16 = Libcrux.Kem.Kyber.Secret_integers.v_U8_as_U16 value in
   let result:u16 =
     ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
     1us
   in
-  cast (result <: u16) <: u8
+  Libcrux.Kem.Kyber.Secret_integers.v_U16_as_U8 result
 
 let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
     : Prims.Pure u8
@@ -40,7 +40,7 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
                 result =. 1uy <: bool)) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let (r: u8):u8 = 0uy in
+  let r:u8 = Core.Convert.f_from 0uy in
   let r:u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
@@ -54,7 +54,7 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
       (fun r i ->
           let r:u8 = r in
           let i:usize = i in
-          r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8)
+          r |. (Core.Convert.f_from ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8) <: u8)
   in
   is_non_zero r
 
@@ -74,7 +74,15 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
                 result =. rhs <: bool)) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
+  let mask:u8 =
+    Core.Num.impl__u8__wrapping_sub (Libcrux.Kem.Kyber.Secret_integers.declassify_U8 (is_non_zero selector
+
+            <:
+            u8)
+        <:
+        u8)
+      1uy
+  in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
