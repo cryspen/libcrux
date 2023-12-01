@@ -17,7 +17,7 @@ Libcrux.Kem.Kyber.Kyber512.fst: some preconditions
 Panic Free
 --------
 
-Libcrux.Kem.Kyber.fst (one admit, one precondition)
+Libcrux.Kem.Kyber.fst (added one precondition)
 
 
 
