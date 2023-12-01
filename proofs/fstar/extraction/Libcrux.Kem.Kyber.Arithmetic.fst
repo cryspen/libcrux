@@ -36,26 +36,6 @@ let get_n_least_significant_bits (n: u8) (value: u32)
   let _:Prims.unit = () <: Prims.unit in
   value &. ((1ul <<! n <: u32) -! 1ul <: u32)
 
-let barrett_reduce (value: i32)
-    : Prims.Pure i32
-      (requires
-        (Core.Convert.f_from value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
-        (Core.Convert.f_from value <: i64) <. v_BARRETT_R)
-      (ensures
-        fun result ->
-          let result:i32 = result in
-          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
-          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
-  let _:Prims.unit = () <: Prims.unit in
-  let t:i64 =
-    ((Core.Convert.f_from value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
-    (v_BARRETT_R >>! 1l <: i64)
-  in
-  let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
-  let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
-  let _:Prims.unit = () <: Prims.unit in
-  result
-
 let montgomery_reduce (value: i32)
     : Prims.Pure i32
       (requires
@@ -108,6 +88,28 @@ let to_unsigned_representative (fe: i32)
   cast (fe +! (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) <: i32)
   <:
   u16
+
+let barrett_reduce (value: i32)
+    : Prims.Pure i32
+      (requires
+        (Core.Convert.f_from value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
+        (Core.Convert.f_from value <: i64) <. v_BARRETT_R)
+      (ensures
+        fun result ->
+          let result:i32 = result in
+          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
+  let _:Prims.unit = () <: Prims.unit in
+  let value:i32 = Core.Convert.f_from value in
+  let t:i64 =
+    ((Libcrux.Kem.Kyber.Secret_integers.v_I64_from_I32 value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
+    (v_BARRETT_R >>! 1l <: i64)
+  in
+  let quotient:i32 =
+    Libcrux.Kem.Kyber.Secret_integers.v_I64_as_I32 (t >>! v_BARRETT_SHIFT <: i64)
+  in
+  let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
+  Libcrux.Kem.Kyber.Secret_integers.declassify_I32 result
 
 type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 

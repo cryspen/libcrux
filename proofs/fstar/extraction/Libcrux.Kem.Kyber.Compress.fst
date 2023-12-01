@@ -27,26 +27,6 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
   <:
   i32
 
-let compress_message_coefficient (fe: u16)
-    : Prims.Pure u8
-      (requires fe <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
-      (ensures
-        fun result ->
-          let result:u8 = result in
-          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 1uy <: bool) &&
-          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 0uy <: bool)) =
-  let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
-  let mask:i16 = shifted >>! 15l in
-  let shifted_to_positive:i16 = mask ^. shifted in
-  let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
-  cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8
-
 let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
     : Prims.Pure i32
       (requires
@@ -71,3 +51,31 @@ let decompress_message_coefficient (fe: i32)
     : Prims.Pure i32 (requires fe =. 0l || fe =. 1l) (fun _ -> Prims.l_True) =
   (Core.Ops.Arith.Neg.neg fe <: i32) &.
   ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32)
+
+let compress_message_coefficient (fe: u16)
+    : Prims.Pure u8
+      (requires fe <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
+      (ensures
+        fun result ->
+          let result:u8 = result in
+          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 1uy <: bool) &&
+          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 0uy <: bool)) =
+  let fe:u16 = Core.Convert.f_from fe in
+  let shifted:i16 = 1664s -! (Libcrux.Kem.Kyber.Secret_integers.v_U16_as_I16 fe <: i16) in
+  let mask:i16 = shifted >>! 15l in
+  let shifted_to_positive:i16 = mask ^. shifted in
+  let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
+  cast (((Libcrux.Kem.Kyber.Secret_integers.declassify_I16 shifted_positive_in_range <: i16) >>! 15l
+        <:
+        i16) &.
+      1s
+      <:
+      i16)
+  <:
+  u8

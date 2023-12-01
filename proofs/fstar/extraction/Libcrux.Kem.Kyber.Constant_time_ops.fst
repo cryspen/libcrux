@@ -74,15 +74,7 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
                 result =. rhs <: bool)) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let mask:u8 =
-    Core.Num.impl__u8__wrapping_sub (Libcrux.Kem.Kyber.Secret_integers.declassify_U8 (is_non_zero selector
-
-            <:
-            u8)
-        <:
-        u8)
-      1uy
-  in
+  let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -100,7 +92,17 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
           Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
             i
             ((out.[ i ] <: u8) |.
-              (((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)
+              (Libcrux.Kem.Kyber.Secret_integers.declassify_U8 (((Core.Convert.f_from (lhs.[ i ]
+                            <:
+                            u8)
+                        <:
+                        u8) &.
+                      mask
+                      <:
+                      u8) |.
+                    ((Core.Convert.f_from (rhs.[ i ] <: u8) <: u8) &. (~.mask <: u8) <: u8)
+                    <:
+                    u8)
                 <:
                 u8)
               <:

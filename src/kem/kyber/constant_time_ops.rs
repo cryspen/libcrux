@@ -49,11 +49,11 @@ pub(crate) fn select_shared_secret_in_constant_time(
     hax_lib::debug_assert!(lhs.len() == rhs.len());
     hax_lib::debug_assert!(lhs.len() == SHARED_SECRET_SIZE);
 
-    let mask = declassify_U8(is_non_zero(selector)).wrapping_sub(1);
+    let mask = is_non_zero(selector).wrapping_sub(1);
     let mut out = [0u8; SHARED_SECRET_SIZE];
 
     for i in 0..SHARED_SECRET_SIZE {
-        out[i] |= (lhs[i] & mask) | (rhs[i] & !mask);
+        out[i] |= declassify_U8((U8::from(lhs[i]) & mask) | (U8::from(rhs[i]) & !mask));
     }
 
     out

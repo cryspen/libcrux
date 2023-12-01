@@ -1,6 +1,7 @@
 use super::{
     arithmetic::{get_n_least_significant_bits, FieldElement},
     constants::FIELD_MODULUS,
+    secret_integers::*,
 };
 
 // The approach used in this function been taken from:
@@ -13,7 +14,8 @@ use super::{
 pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
     // If 833 <= fe <= 2496,
     // then -832 <= shifted <= 831
-    let shifted: i16 = 1664 - (fe as i16);
+    let fe = U16::from(fe);
+    let shifted = 1664i16 - U16_as_I16(fe);
 
     // If shifted < 0, then
     // (shifted >> 15) ^ shifted = flip_bits(shifted) = -shifted - 1, and so
@@ -25,10 +27,10 @@ pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
     let mask = shifted >> 15;
     let shifted_to_positive = mask ^ shifted;
 
-    let shifted_positive_in_range = shifted_to_positive - 832;
+    let shifted_positive_in_range = shifted_to_positive - 832i16;
 
     // If x <= 831, then x - 832 <= -1 => x - 832 < 0.
-    ((shifted_positive_in_range >> 15) & 1) as u8
+    ((declassify_I16(shifted_positive_in_range) >> 15) & 1) as u8
 }
 
 #[cfg_attr(hax,
@@ -81,7 +83,7 @@ pub(super) fn decompress_ciphertext_coefficient(
     );
     hax_lib::debug_assert!(fe >= 0 && fe <= 2i32.pow(coefficient_bits as u32));
 
-    let mut decompressed = (fe as u32) * (FIELD_MODULUS as u32);
+    let mut decompressed = fe as u32 * (FIELD_MODULUS as u32);
     decompressed = (decompressed << 1) + (1 << coefficient_bits);
     decompressed >>= coefficient_bits + 1;
 

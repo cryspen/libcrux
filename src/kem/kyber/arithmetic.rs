@@ -1,4 +1,7 @@
-use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
+use super::{
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    secret_integers::*,
+};
 
 /// Values having this type hold a representative 'x' of the Kyber Field.
 /// Let 'fe' be the shorthand for this type
@@ -36,17 +39,13 @@ pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
         "value is {value}"
     );
 
-    let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
-    let quotient = (t >> BARRETT_SHIFT) as i32;
+    let value = I32::from(value);
+    let t = (I64_from_I32(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    let quotient = I64_as_I32(t >> BARRETT_SHIFT);
 
     let result = value - (quotient * FIELD_MODULUS);
 
-    hax_lib::debug_assert!(
-        result > -FIELD_MODULUS && result < FIELD_MODULUS,
-        "value is {value}"
-    );
-
-    result
+    declassify_I32(result)
 }
 
 const INVERSE_OF_MODULUS_MOD_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
