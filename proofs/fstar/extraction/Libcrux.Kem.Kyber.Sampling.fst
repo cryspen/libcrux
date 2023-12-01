@@ -4,7 +4,33 @@ open Core
 open FStar.Mul
 
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
+      (ensures
+        fun result ->
+          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
+          Hax_lib.v_forall (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <.
+                    (Core.Slice.impl__len (Rust_primitives.unsize result
+                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                          <:
+                          t_Slice i32)
+                      <:
+                      usize)
+                    <:
+                    bool)
+                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                          ]
+                          <:
+                          i32)
+                      <:
+                      i32) <=.
+                    2l
+                    <:
+                    bool)
+                <:
+                bool)) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
@@ -77,7 +103,33 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
   sampled
 
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
+      (ensures
+        fun result ->
+          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
+          Hax_lib.v_forall (fun i ->
+                let i:usize = i in
+                Hax_lib.implies (i <.
+                    (Core.Slice.impl__len (Rust_primitives.unsize result
+                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                          <:
+                          t_Slice i32)
+                      <:
+                      usize)
+                    <:
+                    bool)
+                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                          ]
+                          <:
+                          i32)
+                      <:
+                      i32) <=.
+                    3l
+                    <:
+                    bool)
+                <:
+                bool)) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO

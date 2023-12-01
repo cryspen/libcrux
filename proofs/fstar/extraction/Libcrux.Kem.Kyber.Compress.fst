@@ -6,21 +6,18 @@ open FStar.Mul
 let compress_message_coefficient (fe: u16)
     : Prims.Pure u8
       (requires fe <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
-      (fun _ -> Prims.l_True) =
-  let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
-  let shifted_to_positive:i16 = (shifted >>! 15l <: i16) ^. shifted in
-  let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
-  cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8
-
-let get_n_least_significant_bits (n: u8) (value: u32)
-    : Prims.Pure u32
-      (requires n =. 4uy || n =. 5uy || n =. 10uy || n =. 11uy)
       (ensures
         fun result ->
-          let result:u32 = result in
-          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into n <: u32) <: u32)) =
-  let _:Prims.unit = () <: Prims.unit in
-  value &. ((1ul <<! n <: u32) -! 1ul <: u32)
+          let result:u8 = result in
+          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
+            (result =. 1uy <: bool) &&
+          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
+            (result =. 0uy <: bool)) =
+  let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
+  let mask:i16 = shifted >>! 15l in
+  let shifted_to_positive:i16 = mask ^. shifted in
+  let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
+  cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8
 
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
     : Prims.Pure i32
@@ -42,7 +39,10 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
   let compressed:u32 =
     compressed /! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <<! 1l <: i32) <: u32)
   in
-  cast (get_n_least_significant_bits coefficient_bits compressed <: u32) <: i32
+  cast (Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits coefficient_bits compressed <: u32
+    )
+  <:
+  i32
 
 let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
     : Prims.Pure i32

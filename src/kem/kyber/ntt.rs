@@ -3,11 +3,8 @@ use super::{
         barrett_reduce, montgomery_multiply_sfe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
-
-#[cfg(not(hax))]
-use super::constants::FIELD_MODULUS;
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
@@ -52,6 +49,15 @@ macro_rules! ntt_at_layer {
 /// ring elements. This one operates only on those which were produced by binomial
 /// sampling, and thus those which have small coefficients. The small
 /// coefficients let us skip the first round of Montgomery reductions.
+#[cfg_attr(hax, hax_lib_macros::requires(
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3
+))))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < result.coefficients.len(), ||
+            result.coefficients[i].abs() < FIELD_MODULUS
+))))]
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: PolynomialRingElement,
@@ -86,7 +92,9 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     ntt_at_layer!(2, zeta_i, re, 3);
     ntt_at_layer!(1, zeta_i, re, 3);
 
-    re.coefficients = re.coefficients.map(barrett_reduce);
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+        re.coefficients[i] = barrett_reduce(re.coefficients[i]);
+    }
 
     re
 }
@@ -94,6 +102,15 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 /// This is the second of two functions that computes the NTT representation of
 /// ring elements. This one operates on the ring element that partly constitutes
 /// the ciphertext.
+#[cfg_attr(hax, hax_lib_macros::requires(
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3328
+))))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < result.coefficients.len(), ||
+            result.coefficients[i].abs() < FIELD_MODULUS
+))))]
 #[inline(always)]
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: PolynomialRingElement,
@@ -113,7 +130,9 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
     ntt_at_layer!(2, zeta_i, re, 3328);
     ntt_at_layer!(1, zeta_i, re, 3328);
 
-    re.coefficients = re.coefficients.map(barrett_reduce);
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+        re.coefficients[i] = barrett_reduce(re.coefficients[i]);
+    }
 
     re
 }
@@ -193,44 +212,56 @@ fn ntt_multiply_binomials(
 
 /// Multiply two polynomial ring elements in the NTT domain. The output coefficients
 /// are in the Montgomery domain.
+#[cfg_attr(hax, hax_lib_macros::requires(
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
+            (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
+            (rhs.coefficients[i].abs() <= FIELD_MODULUS)
+
+))))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+    hax_lib::forall(|i:usize|
+        hax_lib::implies(i < result.coefficients.len(), ||
+                result.coefficients[i].abs() <= FIELD_MODULUS
+))))]
 #[inline(always)]
 pub(crate) fn ntt_multiply(
-    left: &PolynomialRingElement,
-    right: &PolynomialRingElement,
+    lhs: &PolynomialRingElement,
+    rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(left
+    hax_lib::debug_assert!(lhs
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-    hax_lib::debug_assert!(right
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
+    /*hax_lib::debug_assert!(rhs
+    .coefficients
+    .into_iter()
+    .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));*/
 
     let mut out = PolynomialRingElement::ZERO;
 
     for i in 0..(COEFFICIENTS_IN_RING_ELEMENT / 4) {
         let product = ntt_multiply_binomials(
-            (left.coefficients[4 * i], left.coefficients[4 * i + 1]),
-            (right.coefficients[4 * i], right.coefficients[4 * i + 1]),
+            (lhs.coefficients[4 * i], lhs.coefficients[4 * i + 1]),
+            (rhs.coefficients[4 * i], rhs.coefficients[4 * i + 1]),
             ZETAS_TIMES_MONTGOMERY_R[64 + i],
         );
         out.coefficients[4 * i] = product.0;
         out.coefficients[4 * i + 1] = product.1;
 
         let product = ntt_multiply_binomials(
-            (left.coefficients[4 * i + 2], left.coefficients[4 * i + 3]),
-            (right.coefficients[4 * i + 2], right.coefficients[4 * i + 3]),
+            (lhs.coefficients[4 * i + 2], lhs.coefficients[4 * i + 3]),
+            (rhs.coefficients[4 * i + 2], rhs.coefficients[4 * i + 3]),
             -ZETAS_TIMES_MONTGOMERY_R[64 + i],
         );
         out.coefficients[4 * i + 2] = product.0;
         out.coefficients[4 * i + 3] = product.1;
     }
 
-    hax_lib::debug_assert!(out
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= -FIELD_MODULUS && coefficient <= FIELD_MODULUS));
+    /*hax_lib::debug_assert!(out
+    .coefficients
+    .into_iter()
+    .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));*/
 
     out
 }

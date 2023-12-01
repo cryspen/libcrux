@@ -1,18 +1,15 @@
-use super::{arithmetic::FieldElement, constants::FIELD_MODULUS};
+use super::{
+    arithmetic::{get_n_least_significant_bits, FieldElement},
+    constants::FIELD_MODULUS,
+};
 
-#[cfg_attr(hax, hax_lib_macros::requires(n == 4 || n == 5 || n == 10 || n == 11))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u32.pow(n.into())))]
-#[inline(always)]
-fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
-    hax_lib::debug_assert!(n == 4 || n == 5 || n == 10 || n == 11);
-
-    value & ((1 << n) - 1)
-}
-
-// Return 1 if 833 <= fe <= 2496 and 0 otherwise.
 // The approach used in this function been taken from:
 // https://github.com/cloudflare/circl/blob/main/pke/kyber/internal/common/poly.go#L150
 #[cfg_attr(hax, hax_lib_macros::requires(fe < (FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+        hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
+        hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
+))]
 pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
     // If 833 <= fe <= 2496,
     // then -832 <= shifted <= 831
@@ -25,7 +22,8 @@ pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
     // If shifted >= 0 then
     // (shifted >> 15) ^ shifted = shifted, and so
     // if 0 <= shifted <= 831 then 0 <= shifted_positive <= 831
-    let shifted_to_positive = (shifted >> 15) ^ shifted;
+    let mask = shifted >> 15;
+    let shifted_to_positive = mask ^ shifted;
 
     let shifted_positive_in_range = shifted_to_positive - 832;
 

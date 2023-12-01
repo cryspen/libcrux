@@ -68,7 +68,7 @@ jobs:
           ./hax-driver.py --kyber-reference
           env FSTAR_HOME=${{ github.workspace }}/fstar \
               HACL_HOME=${{ github.workspace }}/hacl-star \
-              HAX_LIBS_HOME=${{ github.workspace }}/hax/proof-libs/fstar \
+              HAX_HOME=${{ github.workspace }}/hax \
               PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
               ./hax-driver.py typecheck --admit
 
