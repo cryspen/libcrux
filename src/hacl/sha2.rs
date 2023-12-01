@@ -1,6 +1,6 @@
 use libcrux_hacl::{
-    Hacl_Streaming_SHA2_hash_224, Hacl_Streaming_SHA2_hash_256, Hacl_Streaming_SHA2_hash_384,
-    Hacl_Streaming_SHA2_hash_512,
+    Hacl_Hash_SHA2_hash_224, Hacl_Hash_SHA2_hash_256, Hacl_Hash_SHA2_hash_384,
+    Hacl_Hash_SHA2_hash_512,
 };
 
 /// SHA2 224
@@ -9,10 +9,10 @@ use libcrux_hacl::{
 pub fn sha224(payload: &[u8]) -> [u8; 28] {
     let mut digest = [0u8; 28];
     unsafe {
-        Hacl_Streaming_SHA2_hash_224(
+        Hacl_Hash_SHA2_hash_224(
+            digest.as_mut_ptr(),
             payload.as_ptr() as _,
             payload.len().try_into().unwrap(),
-            digest.as_mut_ptr(),
         );
     }
     digest
@@ -24,10 +24,10 @@ pub fn sha224(payload: &[u8]) -> [u8; 28] {
 pub fn sha256(payload: &[u8]) -> [u8; 32] {
     let mut digest = [0u8; 32];
     unsafe {
-        Hacl_Streaming_SHA2_hash_256(
+        Hacl_Hash_SHA2_hash_256(
+            digest.as_mut_ptr(),
             payload.as_ptr() as _,
             payload.len().try_into().unwrap(),
-            digest.as_mut_ptr(),
         );
     }
     digest
@@ -39,10 +39,10 @@ pub fn sha256(payload: &[u8]) -> [u8; 32] {
 pub fn sha384(payload: &[u8]) -> [u8; 48] {
     let mut digest = [0u8; 48];
     unsafe {
-        Hacl_Streaming_SHA2_hash_384(
+        Hacl_Hash_SHA2_hash_384(
+            digest.as_mut_ptr(),
             payload.as_ptr() as _,
             payload.len().try_into().unwrap(),
-            digest.as_mut_ptr(),
         );
     }
     digest
@@ -54,10 +54,10 @@ pub fn sha384(payload: &[u8]) -> [u8; 48] {
 pub fn sha512(payload: &[u8]) -> [u8; 64] {
     let mut digest = [0u8; 64];
     unsafe {
-        Hacl_Streaming_SHA2_hash_512(
+        Hacl_Hash_SHA2_hash_512(
+            digest.as_mut_ptr(),
             payload.as_ptr() as _,
             payload.len().try_into().unwrap(),
-            digest.as_mut_ptr(),
         );
     }
     digest
@@ -65,20 +65,18 @@ pub fn sha512(payload: &[u8]) -> [u8; 64] {
 
 pub mod streaming {
     use libcrux_hacl::{
-        Hacl_Streaming_SHA2_create_in_224, Hacl_Streaming_SHA2_create_in_256,
-        Hacl_Streaming_SHA2_create_in_384, Hacl_Streaming_SHA2_create_in_512,
-        Hacl_Streaming_SHA2_finish_224, Hacl_Streaming_SHA2_finish_256,
-        Hacl_Streaming_SHA2_finish_384, Hacl_Streaming_SHA2_finish_512,
-        Hacl_Streaming_SHA2_free_224, Hacl_Streaming_SHA2_free_256, Hacl_Streaming_SHA2_free_384,
-        Hacl_Streaming_SHA2_free_512, Hacl_Streaming_SHA2_init_224, Hacl_Streaming_SHA2_init_256,
-        Hacl_Streaming_SHA2_init_384, Hacl_Streaming_SHA2_init_512,
-        Hacl_Streaming_SHA2_state_sha2_224, Hacl_Streaming_SHA2_state_sha2_384,
-        Hacl_Streaming_SHA2_update_224, Hacl_Streaming_SHA2_update_256,
-        Hacl_Streaming_SHA2_update_384, Hacl_Streaming_SHA2_update_512,
+        Hacl_Hash_SHA2_digest_224, Hacl_Hash_SHA2_digest_256, Hacl_Hash_SHA2_digest_384,
+        Hacl_Hash_SHA2_digest_512, Hacl_Hash_SHA2_free_224, Hacl_Hash_SHA2_free_256,
+        Hacl_Hash_SHA2_free_384, Hacl_Hash_SHA2_free_512, Hacl_Hash_SHA2_malloc_224,
+        Hacl_Hash_SHA2_malloc_256, Hacl_Hash_SHA2_malloc_384, Hacl_Hash_SHA2_malloc_512,
+        Hacl_Hash_SHA2_reset_224, Hacl_Hash_SHA2_reset_256, Hacl_Hash_SHA2_reset_384,
+        Hacl_Hash_SHA2_reset_512, Hacl_Hash_SHA2_state_t_224, Hacl_Hash_SHA2_state_t_384,
+        Hacl_Hash_SHA2_update_224, Hacl_Hash_SHA2_update_256, Hacl_Hash_SHA2_update_384,
+        Hacl_Hash_SHA2_update_512,
     };
 
     macro_rules! impl_streaming {
-        ($name:ident, $digest_size:literal, $state:ty, $create:expr, $init:expr, $update:expr, $finish:expr, $free:expr) => {
+        ($name:ident, $digest_size:literal, $state:ty, $malloc:expr, $reset:expr, $update:expr, $finish:expr, $free:expr) => {
             pub struct $name {
                 state: *mut $state,
             }
@@ -87,9 +85,9 @@ pub mod streaming {
                 /// Initialize a new digest state.
                 pub fn new() -> $name {
                     let state = $name {
-                        state: unsafe { $create() },
+                        state: unsafe { $malloc() },
                     };
-                    unsafe { $init(state.state) };
+                    unsafe { $reset(state.state) };
                     state
                 }
 
@@ -128,44 +126,44 @@ pub mod streaming {
     impl_streaming!(
         Sha224,
         28,
-        Hacl_Streaming_SHA2_state_sha2_224,
-        Hacl_Streaming_SHA2_create_in_224,
-        Hacl_Streaming_SHA2_init_224,
-        Hacl_Streaming_SHA2_update_224,
-        Hacl_Streaming_SHA2_finish_224,
-        Hacl_Streaming_SHA2_free_224
+        Hacl_Hash_SHA2_state_t_224,
+        Hacl_Hash_SHA2_malloc_224,
+        Hacl_Hash_SHA2_reset_224,
+        Hacl_Hash_SHA2_update_224,
+        Hacl_Hash_SHA2_digest_224,
+        Hacl_Hash_SHA2_free_224
     );
 
     impl_streaming!(
         Sha256,
         32,
-        Hacl_Streaming_SHA2_state_sha2_224,
-        Hacl_Streaming_SHA2_create_in_256,
-        Hacl_Streaming_SHA2_init_256,
-        Hacl_Streaming_SHA2_update_256,
-        Hacl_Streaming_SHA2_finish_256,
-        Hacl_Streaming_SHA2_free_256
+        Hacl_Hash_SHA2_state_t_224,
+        Hacl_Hash_SHA2_malloc_256,
+        Hacl_Hash_SHA2_reset_256,
+        Hacl_Hash_SHA2_update_256,
+        Hacl_Hash_SHA2_digest_256,
+        Hacl_Hash_SHA2_free_256
     );
 
     impl_streaming!(
         Sha384,
         48,
-        Hacl_Streaming_SHA2_state_sha2_384,
-        Hacl_Streaming_SHA2_create_in_384,
-        Hacl_Streaming_SHA2_init_384,
-        Hacl_Streaming_SHA2_update_384,
-        Hacl_Streaming_SHA2_finish_384,
-        Hacl_Streaming_SHA2_free_384
+        Hacl_Hash_SHA2_state_t_384,
+        Hacl_Hash_SHA2_malloc_384,
+        Hacl_Hash_SHA2_reset_384,
+        Hacl_Hash_SHA2_update_384,
+        Hacl_Hash_SHA2_digest_384,
+        Hacl_Hash_SHA2_free_384
     );
 
     impl_streaming!(
         Sha512,
         64,
-        Hacl_Streaming_SHA2_state_sha2_384,
-        Hacl_Streaming_SHA2_create_in_512,
-        Hacl_Streaming_SHA2_init_512,
-        Hacl_Streaming_SHA2_update_512,
-        Hacl_Streaming_SHA2_finish_512,
-        Hacl_Streaming_SHA2_free_512
+        Hacl_Hash_SHA2_state_t_384,
+        Hacl_Hash_SHA2_malloc_512,
+        Hacl_Hash_SHA2_reset_512,
+        Hacl_Hash_SHA2_update_512,
+        Hacl_Hash_SHA2_digest_512,
+        Hacl_Hash_SHA2_free_512
     );
 }
