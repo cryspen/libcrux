@@ -16,11 +16,13 @@ let is_non_zero (value: u8)
     ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
     1us
   in
-  cast (result <: u16) <: u8
+  let res = cast (result <: u16) <: u8 in
+  admit();
+  res
 
 let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
     : Prims.Pure u8
-      Prims.l_True
+      (requires (length lhs == v_CIPHERTEXT_SIZE /\ length rhs == v_CIPHERTEXT_SIZE))
       (ensures
         fun result ->
           let result:u8 = result in
@@ -44,11 +46,14 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
           let i:usize = i in
           r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8)
   in
-  is_non_zero r
+  let res = is_non_zero r in
+  admit();
+  res
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
     : Prims.Pure (t_Array u8 (sz 32))
-      Prims.l_True
+      (requires (length lhs == Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE /\
+                 length rhs == Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE))
       (ensures
         fun result ->
           let result:t_Array u8 (sz 32) = result in
@@ -82,4 +87,5 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
           <:
           t_Array u8 (sz 32))
   in
+  admit();
   out
