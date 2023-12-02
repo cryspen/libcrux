@@ -506,6 +506,7 @@ let encrypt
       <:
       Core.Ops.Range.t_RangeFrom usize ]
   in
+  assume (v_T_AS_NTT_ENCODED_SIZE <=. sz 34);
   let v_A_transpose, sampling_A_error:(t_Array
       (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
     Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =

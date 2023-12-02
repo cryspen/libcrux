@@ -34,11 +34,13 @@ val get_n_least_significant_bits (n: u8) (value: u32)
           let result:u32 = result in
           result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into n <: u32) <: u32))
 
+let barrett_pre (value:i32) = 
+    v value > v (Core.Ops.Arith.Neg.neg v_BARRETT_R) &&
+    v value < v v_BARRETT_R
+
 val barrett_reduce (value: i32)
     : Prims.Pure i32
-      (requires
-        (Core.Convert.f_from value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
-        (Core.Convert.f_from value <: i64) <. v_BARRETT_R)
+      (requires (barrett_pre value))
       (ensures
         fun result ->
           let result:i32 = result in
@@ -46,16 +48,15 @@ val barrett_reduce (value: i32)
           result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 
+let montgomery_pre (value:i32) =
+        v value >=
+        (v (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) *
+          v v_MONTGOMERY_R) /\
+        v value <= (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS * v v_MONTGOMERY_R)
 
 val montgomery_reduce (value: i32)
     : Prims.Pure i32
-      (requires
-        value >=.
-        ((Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) *!
-          v_MONTGOMERY_R
-          <:
-          i32) &&
-        value <=. (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS *! v_MONTGOMERY_R <: i32))
+      (requires (montgomery_pre value))
       (ensures
         fun result ->
           let result:i32 = result in
@@ -92,8 +93,9 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement
       (requires
         v_K >. sz 1 /\
-        v_K <. sz 4 /\
-        (cast (v_K <: usize) <: i32) >. 1l /\
+        v_K <=. sz 4)
+      (ensures fun _ -> True)
+(*
         Hax_lib.v_forall (fun i ->
               let i:usize = i in
               Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
@@ -112,7 +114,7 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
                     bool))
               <:
               bool))
-      (ensures fun _ -> True)
+              *)
 (*      
       (ensures
         fun result ->

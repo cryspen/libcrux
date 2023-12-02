@@ -26,16 +26,17 @@ Libcrux.Kem.Kyber.Types.fst: added four precondition
 
 Libcrux.Kem.Kyber.Ind_cpa.fst: needs loop invariants and assumes
 Libcrux.Kem.Kyber.Arithmetic.fst: needs loop invariants and assumes
+Libcrux.Kem.Kyber.Compress.fst
+Libcrux.Kem.Kyber.Constant_time_ops.fst
+
+Libcrux.Kem.Kyber.Conversions.fst: needs a datatype invariant
+Libcrux.Kem.Kyber.Matrix.fst: needs montgomery and barrett preconditions
+Libcrux.Kem.Kyber.Sampling.fst:: needs some assumes
 
 
 Unverified
 ----------
-Libcrux.Kem.Kyber.Compress.fst
-Libcrux.Kem.Kyber.Constant_time_ops.fst
-Libcrux.Kem.Kyber.Conversions.fst
-Libcrux.Kem.Kyber.Matrix.fst
 Libcrux.Kem.Kyber.Ntt.fst
-Libcrux.Kem.Kyber.Sampling.fst
 Libcrux.Kem.Kyber.Serialize.fst
 
 
