@@ -1,6 +1,6 @@
 [package]
 name = "hpke-rs"
-version = "0.2.0-pre.1"
+version = "0.2.0"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -14,7 +14,7 @@ log = "0.4"
 serde = { version = "1.0", features = ["derive"], optional = true }
 tls_codec = { version = "0.4.0", features = ["derive"], optional = true }
 zeroize = { version = "1.5", features = ["zeroize_derive"] }
-hpke-rs-crypto = { version = "0.2.0-pre.1", path = "./traits" }
+hpke-rs-crypto = { version = "0.2.0", path = "./traits" }
 
 [features]
 default = []
@@ -25,13 +25,13 @@ hpke-test = ["std"]
 hpke-test-prng = []                                                     # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
-hpke-rs-crypto = { version = "0.2.0-pre.1", path = "./traits", features = ["std"] }
+hpke-rs-crypto = { version = "0.2.0", path = "./traits", features = ["std"] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4"
 rayon = "1.5"
 hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
-hpke-rs-rust-crypto = { version = "0.2.0-pre.1", path = "./rust_crypto_provider", features = [
+hpke-rs-rust-crypto = { version = "0.2.0", path = "./rust_crypto_provider", features = [
     "deterministic-prng",
 ] }
 # hpke-rs-evercrypt = { version = "0.1.3-pre.1", path = "./evercrypt_provider", features = ["deterministic-prng"] }
