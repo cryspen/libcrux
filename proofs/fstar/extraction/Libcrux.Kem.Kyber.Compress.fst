@@ -10,9 +10,9 @@ let compress_message_coefficient (fe: u16)
         fun result ->
           let result:u8 = result in
           Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
-            (result =. 1uy <: bool) &&
+            (fun _ -> result =. 1uy <: bool) &&
           Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
-            (result =. 0uy <: bool)) =
+            (fun _ -> result =. 0uy <: bool)) =
   let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
   let mask:i16 = shifted >>! 15l in
   let shifted_to_positive:i16 = mask ^. shifted in

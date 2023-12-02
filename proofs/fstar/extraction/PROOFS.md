@@ -24,16 +24,35 @@ Panic Free
 Libcrux.Kem.Kyber.fst added one precondition
 Libcrux.Kem.Kyber.Types.fst: added four precondition
 
+Libcrux.Kem.Kyber.Ind_cpa.fst: needs loop invariants and assumes
+Libcrux.Kem.Kyber.Arithmetic.fst: needs loop invariants and assumes
 
 
 Unverified
 ----------
-Libcrux.Kem.Kyber.Arithmetic.fst
 Libcrux.Kem.Kyber.Compress.fst
 Libcrux.Kem.Kyber.Constant_time_ops.fst
 Libcrux.Kem.Kyber.Conversions.fst
-Libcrux.Kem.Kyber.Ind_cpa.fst
 Libcrux.Kem.Kyber.Matrix.fst
 Libcrux.Kem.Kyber.Ntt.fst
 Libcrux.Kem.Kyber.Sampling.fst
 Libcrux.Kem.Kyber.Serialize.fst
+
+
+DESIRABLE FEATURES
+=================
+
+- NEEDED: nice way of propagating loop invariants
+
+- NEEDED: deal with implies in Rust with continuation
+
+
+- For each module, generate a .fst and a .fsti
+  For now, just put the pub and pub(crate) bits in the .fsti
+  
+  
+- Support const functions and their applications in types to avoid
+  huge list of constant parameters
+  
+  
+

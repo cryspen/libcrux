@@ -1214,7 +1214,7 @@ let ntt_vector_u
                     usize)
                   <:
                   bool)
-                ((Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                (fun _ -> (Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
                         <:
                         i32)
                     <:
@@ -1238,7 +1238,7 @@ let ntt_vector_u
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                  (fun _ -> (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
                           ]
                           <:
                           i32)

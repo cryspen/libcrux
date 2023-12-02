@@ -20,7 +20,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                  (fun _ -> (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
                           ]
                           <:
                           i32)
@@ -119,7 +119,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
+                  (fun _ -> (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
                           ]
                           <:
                           i32)
