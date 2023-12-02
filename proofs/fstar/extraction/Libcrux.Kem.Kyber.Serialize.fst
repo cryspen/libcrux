@@ -168,7 +168,7 @@ let compress_then_serialize_11_
                   )
                 <:
                 u16)
-          in
+          in 
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 11 *! i <: usize)
@@ -202,7 +202,7 @@ let compress_then_serialize_11_
                 (cast (coefficient3 >>! 10l <: i32) <: u8)
                 <:
                 u8)
-          in
+          in 
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 5 <: usize)
@@ -218,12 +218,12 @@ let compress_then_serialize_11_
                 (cast (coefficient5 >>! 4l <: i32) <: u8)
                 <:
                 u8)
-          in
+          in (* KB: F* blows up
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 7 <: usize)
               (cast ((coefficient6 >>! 1l <: i32) &. 255l <: i32) <: u8)
-          in
+          in 
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 8 <: usize)
@@ -231,7 +231,7 @@ let compress_then_serialize_11_
                 (cast (coefficient6 >>! 9l <: i32) <: u8)
                 <:
                 u8)
-          in
+          in 
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 9 <: usize)
@@ -244,9 +244,9 @@ let compress_then_serialize_11_
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 10 <: usize)
               (cast (coefficient8 >>! 3l <: i32) <: u8)
-          in
-          serialized)
-  in
+          in *)
+          serialized) 
+  in 
   serialized
 
 let compress_then_serialize_4_

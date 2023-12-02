@@ -1,5 +1,5 @@
 module Libcrux.Kem.Kyber.Ind_cpa
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -35,7 +35,7 @@ let serialize_secret_key
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
       (prf_input: t_Array u8 (sz 33))
-      (domain_separator: u8)
+      (domain_separator: u8{v domain_separator <= v v_K /\ v v_K <= 4})
     : (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & u8) =
   let re_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
@@ -59,6 +59,7 @@ let sample_vector_cbd_then_ntt
             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) =
             temp_0_
           in
+          assume (v domain_separator <= v v_K + v #usize_inttype i);
           let i:usize = i in
           let prf_input:t_Array u8 (sz 33) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize prf_input
@@ -261,7 +262,11 @@ let compress_then_encode_u
       out
       (fun out temp_1_ ->
           let out:t_Array u8 v_OUT_LEN = out in
+          assume (v v_K <> 0);
           let i, re:(usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) = temp_1_ in
+          assume ((v i * (v v_OUT_LEN / v v_K)) < v v_OUT_LEN);
+          assume ((v i + 1) < v v_OUT_LEN);
+          assume (((v i + 1) * (v v_OUT_LEN / v v_K)) < v v_OUT_LEN);
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
             ({
                 Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
@@ -314,6 +319,8 @@ let serialize_key
       (fun out temp_1_ ->
           let out:t_Array u8 v_OUT_LEN = out in
           let i, re:(usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) = temp_1_ in
+
+          assume ((v i + 1) * v Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT < v v_OUT_LEN);          
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
             ({
                 Core.Ops.Range.f_start
@@ -366,6 +373,9 @@ let decrypt
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
+  assume (v v_VECTOR_U_ENCODED_SIZE < v v_CIPHERTEXT_SIZE);
+  assume (v Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT * 
+          v v_U_COMPRESSION_FACTOR < v v_CIPHERTEXT_SIZE);
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (ciphertext.Libcrux.Kem.Kyber.Types.f_value.[ {
@@ -394,6 +404,7 @@ let decrypt
             u_as_ntt
           in
           let i, u_bytes:(usize & t_Slice u8) = temp_1_ in
+          assume (v i < v v_K);
           let u:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_u v_U_COMPRESSION_FACTOR
               u_bytes
@@ -433,6 +444,7 @@ let decrypt
             secret_as_ntt
           in
           let i, secret_bytes:(usize & t_Slice u8) = temp_1_ in
+          assume (i <. v_K);
           Rust_primitives.Hax.Monomorphized_update_at.update_at_usize secret_as_ntt
             i
             (Libcrux.Kem.Kyber.Serialize.deserialize_to_uncompressed_ring_element secret_bytes
@@ -457,6 +469,7 @@ let encrypt
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
+  assume (v_T_AS_NTT_ENCODED_SIZE <. length public_key);
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (public_key.[ {
@@ -479,6 +492,7 @@ let encrypt
             tt_as_ntt
           in
           let i, tt_as_ntt_bytes:(usize & t_Slice u8) = temp_1_ in
+          assume (i <. v_K);
           Rust_primitives.Hax.Monomorphized_update_at.update_at_usize tt_as_ntt
             i
             (Libcrux.Kem.Kyber.Serialize.deserialize_to_uncompressed_ring_element tt_as_ntt_bytes
@@ -502,10 +516,12 @@ let encrypt
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 33) randomness
   in
+  assume (v_K <=. sz 4);
   let r_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     u8) =
     sample_vector_cbd_then_ntt v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE prf_input 0uy
   in
+  assume (domain_separator <=. 4uy);
   let error_1_:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
@@ -530,6 +546,7 @@ let encrypt
             t_Array u8 (sz 33)) =
             temp_0_
           in
+          assume (v domain_separator <= 4 + v #usize_inttype i);
           let i:usize = i in
           let prf_input:t_Array u8 (sz 33) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize prf_input
@@ -590,6 +607,7 @@ let encrypt
     Libcrux.Kem.Kyber.Conversions.into_padded_array v_CIPHERTEXT_SIZE
       (Rust_primitives.unsize c1 <: t_Slice u8)
   in
+  assume (v_C1_LEN <. v_CIPHERTEXT_SIZE);
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from ciphertext
       ({ Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize)
@@ -606,6 +624,7 @@ let encrypt
   <:
   (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
     Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+
 
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
@@ -628,11 +647,13 @@ let generate_keypair
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 33) seed_for_secret_and_error
   in
+  assume (v_K <=. sz 4);
   let secret_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       v_K &
     u8) =
     sample_vector_cbd_then_ntt v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE prf_input 0uy
   in
+  assume (v domain_separator <= v #usize_inttype v_K);
   let error_as_ntt, _:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & u8) =
     sample_vector_cbd_then_ntt v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE prf_input domain_separator
   in
