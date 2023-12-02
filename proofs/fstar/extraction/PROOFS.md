@@ -1,3 +1,8 @@
+PREREQUISITES
+==============
+Verifying this branch requires the core-improvements branch of hax.
+
+
 Files
 =====
 
@@ -5,19 +10,19 @@ Verified
 --------
 Libcrux.Kem.fst: nothing to prove
 Libcrux.Kem.Kyber.Constants.fst: nothing to prove
-Libcrux.Kem.Kyber.Types.fst: nothing to prove
 Libcrux.Digest.fsti
 Libcrux.Kem.Kyber.Hash_functions.fst
 
-Libcrux.Kem.Kyber.Kyber768.fst: some preconditions
-Libcrux.Kem.Kyber.Kyber1024.fst: some preconditions
-Libcrux.Kem.Kyber.Kyber512.fst: some preconditions
+Libcrux.Kem.Kyber.Kyber768.fst: enforces some preconditions
+Libcrux.Kem.Kyber.Kyber1024.fst: enforces some preconditions
+Libcrux.Kem.Kyber.Kyber512.fst: enforces some preconditions
 
 
 Panic Free
 --------
 
-Libcrux.Kem.Kyber.fst (added one precondition)
+Libcrux.Kem.Kyber.fst added one precondition
+Libcrux.Kem.Kyber.Types.fst: added four precondition
 
 
 
