@@ -25,7 +25,7 @@ Without assumptions:
 Libcrux.Kem.Kyber.fst added one precondition
 Libcrux.Kem.Kyber.Types.fst: added four precondition
 
-With assumptions:
+With assumptions and admits:
 
 Libcrux.Kem.Kyber.Ind_cpa.fst: needs loop invariants and assumes
 Libcrux.Kem.Kyber.Arithmetic.fst: needs loop invariants and assumes

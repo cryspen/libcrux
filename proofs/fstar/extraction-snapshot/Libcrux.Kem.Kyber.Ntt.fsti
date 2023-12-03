@@ -3,6 +3,17 @@ module Libcrux.Kem.Kyber.Ntt
 open Core
 open FStar.Mul
 
+val ntt_multiply_binomials (a: (i32 & i32)) (b: (i32 & i32)) (zeta: i32) :
+    Pure (i32 & i32)
+    (requires True) (* Need to add preconditions on ranges that imply:
+      let (a0,a1) = a in
+      let (b0,b1) = b in
+      (range (v a0 * v b0) i32_inttype) /\
+      (range (v a1 * v b1) i32_inttype) /\
+      (range (v a0 * v b1) i32_inttype) /\
+      (range (v a1 * v b0) i32_inttype) *)
+    (ensures (fun _ -> True))
+    
 val invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
 
