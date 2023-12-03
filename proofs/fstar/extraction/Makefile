@@ -55,20 +55,17 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Kyber768.fst \
 	Libcrux.Kem.Kyber.Kyber1024.fst \
-	Libcrux.Kem.Kyber.Kyber512.fst \
+	Libcrux.Kem.Kyber.Kyber512.fst
+
+
+UNVERIFIED = \
 	Libcrux.Kem.Kyber.Types.fst \
-	Libcrux.Kem.Kyber.fsti \
 	Libcrux.Kem.Kyber.fst \
 	Libcrux.Kem.Kyber.Ind_cpa.fst \
-	Libcrux.Kem.Kyber.Arithmetic.fsti \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
 	Libcrux.Kem.Kyber.Conversions.fst \
-	Libcrux.Kem.Kyber.Ntt.fsti
-
-
-UNVERIFIED = \
 	Libcrux.Kem.Kyber.Matrix.fst \
 	Libcrux.Kem.Kyber.Ntt.fst \
 	Libcrux.Kem.Kyber.Sampling.fst \

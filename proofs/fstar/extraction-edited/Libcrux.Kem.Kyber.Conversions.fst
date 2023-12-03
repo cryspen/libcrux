@@ -3,9 +3,21 @@ module Libcrux.Kem.Kyber.Conversions
 open Core
 open FStar.Mul
 
+(* KB: This type needs a refinement to be panic free *)
+(* I suggest:
+   class t_UpdatingArray (v_Self: Type) = {
+         upd_len:v_Self -> usize;
+         capacity:v_Self -> usize;
+         f_push:x:v_Self -> y:t_Slice u8{v (upd_len x) + v (length y) <= v (capacity x)} -> v_Self{...} }
+*)
+
 class t_UpdatingArray (v_Self: Type) = { f_push:v_Self -> t_Slice u8 -> v_Self }
 
-let into_padded_array (v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
+let into_padded_array (v_LEN: usize) (slice: t_Slice u8) :
+    Pure (t_Array u8 v_LEN)
+    (requires (length slice <=. v_LEN))
+    (ensures (fun _ -> True))
+    =
   let _:Prims.unit =
     if true
     then
@@ -41,7 +53,7 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
 
 type t_UpdatableArray (v_LEN: usize) = {
   f_value:t_Array u8 v_LEN;
-  f_pointer:usize
+  f_pointer:x:usize{x <=. v_LEN}
 }
 
 let impl__array (v_LEN: usize) (self: t_UpdatableArray v_LEN) : t_Array u8 v_LEN = self.f_value
@@ -55,6 +67,7 @@ let impl_1 (v_LEN: usize) : t_UpdatingArray (t_UpdatableArray v_LEN) =
     f_push
     =
     fun (self: t_UpdatableArray v_LEN) (other: t_Slice u8) ->
+      assume (v self.f_pointer + v (length other) <= v v_LEN);
       let self:t_UpdatableArray v_LEN =
         {
           self with

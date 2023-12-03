@@ -52,7 +52,9 @@ let impl_6__as_slice (v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) : t_Array 
 let impl_6__len (v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) : usize = v_SIZE
 
 let impl_6__split_at (v_SIZE: usize) (self: t_KyberCiphertext v_SIZE) (mid: usize)
-    : (t_Slice u8 & t_Slice u8) =
+    : Pure (t_Slice u8 & t_Slice u8)
+      (requires (mid <=. v_SIZE))
+      (ensures (fun (x,y) -> Seq.length x == v mid /\ Seq.length y == v (v_SIZE -! mid))) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
 type t_KyberPrivateKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
@@ -102,7 +104,9 @@ let impl_18__as_slice (v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) : t_Array
 let impl_18__len (v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) : usize = v_SIZE
 
 let impl_18__split_at (v_SIZE: usize) (self: t_KyberPrivateKey v_SIZE) (mid: usize)
-    : (t_Slice u8 & t_Slice u8) =
+    : Pure (t_Slice u8 & t_Slice u8)
+      (requires (mid <=. v_SIZE))
+      (ensures (fun (x,y) -> Seq.length x == v mid /\ Seq.length y == v (v_SIZE -! mid))) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
 type t_KyberPublicKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
@@ -152,7 +156,9 @@ let impl_24__as_slice (v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) : t_Array 
 let impl_24__len (v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) : usize = v_SIZE
 
 let impl_24__split_at (v_SIZE: usize) (self: t_KyberPublicKey v_SIZE) (mid: usize)
-    : (t_Slice u8 & t_Slice u8) =
+    : Pure (t_Slice u8 & t_Slice u8)
+      (requires (mid <=. v_SIZE))
+      (ensures (fun (x,y) -> Seq.length x == v mid /\ Seq.length y == v (v_SIZE -! mid))) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
 type t_KyberSharedSecret (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
@@ -202,7 +208,9 @@ let impl_12__as_slice (v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) : t_Arr
 let impl_12__len (v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) : usize = v_SIZE
 
 let impl_12__split_at (v_SIZE: usize) (self: t_KyberSharedSecret v_SIZE) (mid: usize)
-    : (t_Slice u8 & t_Slice u8) =
+    : Pure (t_Slice u8 & t_Slice u8)
+      (requires (mid <=. v_SIZE))
+      (ensures (fun (x,y) -> Seq.length x == v mid /\ Seq.length y == v (v_SIZE -! mid))) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
 type t_PrivateKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
@@ -250,7 +258,9 @@ let impl_30__as_slice (v_SIZE: usize) (self: t_PrivateKey v_SIZE) : t_Array u8 v
 let impl_30__len (v_SIZE: usize) (self: t_PrivateKey v_SIZE) : usize = v_SIZE
 
 let impl_30__split_at (v_SIZE: usize) (self: t_PrivateKey v_SIZE) (mid: usize)
-    : (t_Slice u8 & t_Slice u8) =
+    : Pure (t_Slice u8 & t_Slice u8)
+      (requires (mid <=. v_SIZE))
+      (ensures (fun (x,y) -> Seq.length x == v mid /\ Seq.length y == v (v_SIZE -! mid))) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
 type t_KyberKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {

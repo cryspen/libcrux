@@ -168,7 +168,7 @@ let compress_then_serialize_11_
                   )
                 <:
                 u16)
-          in 
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 11 *! i <: usize)
@@ -202,7 +202,7 @@ let compress_then_serialize_11_
                 (cast (coefficient3 >>! 10l <: i32) <: u8)
                 <:
                 u8)
-          in 
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 5 <: usize)
@@ -218,12 +218,12 @@ let compress_then_serialize_11_
                 (cast (coefficient5 >>! 4l <: i32) <: u8)
                 <:
                 u8)
-          in (* KB: F* blows up
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 7 <: usize)
               (cast ((coefficient6 >>! 1l <: i32) &. 255l <: i32) <: u8)
-          in 
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 8 <: usize)
@@ -231,7 +231,7 @@ let compress_then_serialize_11_
                 (cast (coefficient6 >>! 9l <: i32) <: u8)
                 <:
                 u8)
-          in 
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 9 <: usize)
@@ -244,9 +244,9 @@ let compress_then_serialize_11_
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               ((sz 11 *! i <: usize) +! sz 10 <: usize)
               (cast (coefficient8 >>! 3l <: i32) <: u8)
-          in *)
-          serialized) 
-  in 
+          in
+          serialized)
+  in
   serialized
 
 let compress_then_serialize_4_
@@ -506,19 +506,20 @@ let compress_then_serialize_ring_element_u
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : t_Array u8 v_OUT_LEN =
   let _:Prims.unit = () <: Prims.unit in
-  assume (v_COMPRESSION_FACTOR = sz 10 || v_COMPRESSION_FACTOR = sz 11);
-  mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN re
   | 11ul -> compress_then_serialize_11_ v_OUT_LEN re
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+        <:
+        Rust_primitives.Hax.t_Never)
 
 let compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : t_Array u8 v_OUT_LEN =
   let _:Prims.unit = () <: Prims.unit in
-  assume (v_COMPRESSION_FACTOR = sz 4 || v_COMPRESSION_FACTOR = sz 5);
-  mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
   | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
@@ -528,7 +529,6 @@ let compress_then_serialize_ring_element_v
         <:
         Rust_primitives.Hax.t_Never)
 
-#push-options "--z3rlimit 1500"
 let deserialize_then_decompress_10_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
@@ -546,15 +546,12 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          assume (length bytes == sz 5);
           let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
           let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
           let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
           let byte4:i32 = cast (bytes.[ sz 3 ] <: u8) <: i32 in
           let byte5:i32 = cast (bytes.[ sz 4 ] <: u8) <: i32 in
           let coefficient1:i32 = ((byte2 &. 3l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) in
-          assume (v i * 4 + 4 <= 256);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient1);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -571,7 +568,6 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient2:i32 = ((byte3 &. 15l <: i32) <<! 6l <: i32) |. (byte2 >>! 2l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -588,7 +584,6 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient3:i32 = ((byte4 &. 63l <: i32) <<! 4l <: i32) |. (byte3 >>! 4l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient3);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -605,7 +600,6 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient4:i32 = (byte5 <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient4);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -624,9 +618,7 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
           re)
   in
   re
-#pop-options
 
-#push-options "--z3rlimit 500 --max_ifuel 2 --split_queries always"
 let deserialize_then_decompress_11_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
@@ -644,8 +636,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          assume (length bytes == sz 11);
-          assume (v i * 8 + 8 <= 256);
           let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
           let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
           let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
@@ -658,8 +648,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
           let byte10:i32 = cast (bytes.[ sz 9 ] <: u8) <: i32 in
           let byte11:i32 = cast (bytes.[ sz 10 ] <: u8) <: i32 in
           let coefficient1:i32 = ((byte2 &. 7l <: i32) <<! 8l <: i32) |. byte1 in
-          admit();
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient1);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -676,7 +664,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient2:i32 = ((byte3 &. 63l <: i32) <<! 5l <: i32) |. (byte2 >>! 3l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -696,7 +683,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
             (((byte5 &. 1l <: i32) <<! 10l <: i32) |. (byte4 <<! 2l <: i32) <: i32) |.
             (byte3 >>! 6l <: i32)
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient3);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -713,7 +699,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient4:i32 = ((byte6 &. 15l <: i32) <<! 7l <: i32) |. (byte5 >>! 1l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient4);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -730,7 +715,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient5:i32 = ((byte7 &. 127l <: i32) <<! 4l <: i32) |. (byte6 >>! 4l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient5);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -750,8 +734,7 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
             (((byte9 &. 3l <: i32) <<! 9l <: i32) |. (byte8 <<! 1l <: i32) <: i32) |.
             (byte7 >>! 7l <: i32)
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient6);
-         let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
               Libcrux.Kem.Kyber.Arithmetic.f_coefficients
@@ -767,7 +750,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient7:i32 = ((byte10 &. 31l <: i32) <<! 6l <: i32) |. (byte9 >>! 2l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient7);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -784,7 +766,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient8:i32 = (byte11 <<! 3l <: i32) |. (byte10 >>! 5l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient8);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -803,7 +784,6 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
           re)
   in
   re
-#pop-options
 
 let deserialize_then_decompress_4_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
@@ -822,9 +802,7 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
           let i, byte:(usize & u8) = temp_1_ in
-          assume (v i * 2 + 2 <= 256);
           let coefficient1:i32 = cast (byte &. 15uy <: u8) <: i32 in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 4uy coefficient1);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -841,7 +819,6 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient2:i32 = cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32 in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 4uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -878,15 +855,12 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          assume (length bytes = sz 5);
-          assume (v i * 8 + 8 <= 256);
           let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
           let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
           let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
           let byte4:i32 = cast (bytes.[ sz 3 ] <: u8) <: i32 in
           let byte5:i32 = cast (bytes.[ sz 4 ] <: u8) <: i32 in
           let coefficient1:i32 = byte1 &. 31l in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient1);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -902,9 +876,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          admit();
           let coefficient2:i32 = ((byte2 &. 3l <: i32) <<! 3l <: i32) |. (byte1 >>! 5l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -921,7 +893,6 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient3:i32 = (byte2 >>! 2l <: i32) &. 31l in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient3);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -938,7 +909,6 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient4:i32 = ((byte3 &. 15l <: i32) <<! 1l <: i32) |. (byte2 >>! 7l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient4);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -955,7 +925,6 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient5:i32 = ((byte4 &. 1l <: i32) <<! 4l <: i32) |. (byte3 >>! 4l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient5);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -972,7 +941,6 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient6:i32 = (byte4 >>! 1l <: i32) &. 31l in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient6);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -989,7 +957,6 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient7:i32 = ((byte5 &. 7l <: i32) <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient7);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1006,7 +973,6 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           let coefficient8:i32 = byte5 >>! 3l in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient8);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1044,7 +1010,6 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
           let i, byte:(usize & u8) = temp_1_ in
-          assume (i <. sz 32);
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                     Core.Ops.Range.f_start = sz 0;
                     Core.Ops.Range.f_end = sz 8
@@ -1058,7 +1023,6 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
                 let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
                 let j:usize = j in
                 let coefficient_compressed:i32 = cast ((byte >>! j <: u8) &. 1uy <: u8) <: i32 in
-                assume (coefficient_compressed =. 0l || coefficient_compressed =. 1l);
                 let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                   {
                     re with
@@ -1086,8 +1050,6 @@ let deserialize_then_decompress_ring_element_u
       (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
-  assume (v_COMPRESSION_FACTOR = sz 10 || v_COMPRESSION_FACTOR = sz 11);
-  mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> deserialize_then_decompress_10_ serialized
   | 11ul -> deserialize_then_decompress_11_ serialized
@@ -1102,8 +1064,6 @@ let deserialize_then_decompress_ring_element_v
       (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
-  assume (v_COMPRESSION_FACTOR = sz 4 || v_COMPRESSION_FACTOR = sz 5);
-  mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> deserialize_then_decompress_4_ serialized
   | 5ul -> deserialize_then_decompress_5_ serialized
@@ -1130,8 +1090,6 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          assume (length bytes = sz 3);
-          assume (v i * 2 + 2 <= 256);
           let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
           let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
           let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
