@@ -34,12 +34,13 @@ Libcrux.Kem.Kyber.Constant_time_ops.fst
 Libcrux.Kem.Kyber.Conversions.fst: needs a datatype invariant
 Libcrux.Kem.Kyber.Matrix.fst: needs montgomery and barrett preconditions
 Libcrux.Kem.Kyber.Sampling.fst:: needs some assumes
-Libcrux.Kem.Kyber.Serialize.fst
+
+Libcrux.Kem.Kyber.Serialize.fst: lots of assumes and admits
+Libcrux.Kem.Kyber.Ntt.fst: lots of assumes and admits
 
 
 Unverified
 ----------
-Libcrux.Kem.Kyber.Ntt.fst
 
 
 DESIRABLE FEATURES

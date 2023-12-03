@@ -65,14 +65,14 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
 	Libcrux.Kem.Kyber.Conversions.fst \
-	Libcrux.Kem.Kyber.Ntt.fsti
-
-
-UNVERIFIED = \
+	Libcrux.Kem.Kyber.Ntt.fsti \
 	Libcrux.Kem.Kyber.Matrix.fst \
 	Libcrux.Kem.Kyber.Ntt.fst \
 	Libcrux.Kem.Kyber.Sampling.fst \
 	Libcrux.Kem.Kyber.Serialize.fst
+
+UNVERIFIED =
+
 
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(VERIFIED)))
 UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIED)))
