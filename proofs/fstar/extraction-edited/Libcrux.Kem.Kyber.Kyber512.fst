@@ -89,7 +89,7 @@ let encapsulate_512_
 let generate_key_pair_512_ (randomness: t_Array u8 (sz 64))
     : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 1632) (sz 800))
       Libcrux.Kem.Kyber.Types.t_Error =
-  Libcrux.Kem.Kyber.generate_keypair (sz 2)
+  Libcrux.Kem.Kyber.generate_keypair #Spec.Kyber.kyber512_params (sz 2)
     (sz 768)
     (sz 1632)
     (sz 800)

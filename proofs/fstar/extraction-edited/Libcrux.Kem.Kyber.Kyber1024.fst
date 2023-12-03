@@ -5,7 +5,7 @@ open FStar.Mul
 
 let v_ETA1: usize = sz 2
 
-let v_ETA1_RANDOMNESS_SIZE: usize = v_ETA1 *! sz 64
+let v_ETA1_RADOMNESS_SIZE: usize = v_ETA1 *! sz 64
 
 let v_ETA2: usize = sz 2
 
@@ -90,7 +90,7 @@ let encapsulate_1024_
 let generate_key_pair_1024_ (randomness: t_Array u8 (sz 64))
     : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 3168) (sz 1568))
       Libcrux.Kem.Kyber.Types.t_Error =
-  Libcrux.Kem.Kyber.generate_keypair (sz 4)
+  Libcrux.Kem.Kyber.generate_keypair #Spec.Kyber.kyber1024_params (sz 4)
     (sz 1536)
     (sz 3168)
     (sz 1568)

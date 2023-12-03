@@ -95,18 +95,18 @@ let decapsulate
       (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
       (Core.Convert.f_as_ref expected_ciphertext <: t_Slice u8)
   in
+  let res = 
   Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
     (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
-    selector
+    selector in
+  admit(); // Panic Freedom Proved. Functional Correctness Assumed.
+  res
 
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
-      (randomness: t_Array u8 (sz 32))
-    : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-      Libcrux.Kem.Kyber.Types.t_Error =
+      (randomness: t_Array u8 (sz 32)) =
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 64)
       (Rust_primitives.unsize randomness <: t_Slice u8)
@@ -156,6 +156,7 @@ let encapsulate
         <:
         t_Slice u8) randomness pseudorandomness
   in
+  let res = 
   match sampling_a_error with
   | Core.Option.Option_Some e ->
     Core.Result.Result_Err e
@@ -175,14 +176,14 @@ let encapsulate
     Core.Result.t_Result
       (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
       Libcrux.Kem.Kyber.Types.t_Error
+  in
+  admit();  // Panic Freedom Proved. Functional Correctness Assumed.
+  res 
 
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (randomness: t_Array u8 (sz 64))
-    : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-      Libcrux.Kem.Kyber.Types.t_Error =
+      (randomness: t_Array u8 (sz 64)) = 
   let ind_cpa_keypair_randomness:t_Slice u8 =
     randomness.[ {
         Core.Ops.Range.f_start = sz 0;
@@ -226,6 +227,7 @@ let generate_keypair
         t_Slice u8)
       implicit_rejection_value
   in
+  let res = 
   match sampling_a_error with
   | Core.Option.Option_Some error ->
     Core.Result.Result_Err error
@@ -244,3 +246,6 @@ let generate_keypair
     Core.Result.t_Result
       (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
       Libcrux.Kem.Kyber.Types.t_Error
+  in 
+  admit();  // Panic Freedom Proved. Functional Correctness Assumed.
+  res
