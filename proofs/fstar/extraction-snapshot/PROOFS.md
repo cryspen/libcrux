@@ -21,23 +21,25 @@ Libcrux.Kem.Kyber.Kyber512.fst: enforces some preconditions
 Panic Free
 --------
 
+Without assumptions:
 Libcrux.Kem.Kyber.fst added one precondition
 Libcrux.Kem.Kyber.Types.fst: added four precondition
+
+With assumptions:
 
 Libcrux.Kem.Kyber.Ind_cpa.fst: needs loop invariants and assumes
 Libcrux.Kem.Kyber.Arithmetic.fst: needs loop invariants and assumes
 Libcrux.Kem.Kyber.Compress.fst
 Libcrux.Kem.Kyber.Constant_time_ops.fst
-
 Libcrux.Kem.Kyber.Conversions.fst: needs a datatype invariant
 Libcrux.Kem.Kyber.Matrix.fst: needs montgomery and barrett preconditions
 Libcrux.Kem.Kyber.Sampling.fst:: needs some assumes
+Libcrux.Kem.Kyber.Serialize.fst
 
 
 Unverified
 ----------
 Libcrux.Kem.Kyber.Ntt.fst
-Libcrux.Kem.Kyber.Serialize.fst
 
 
 DESIRABLE FEATURES
@@ -45,7 +47,7 @@ DESIRABLE FEATURES
 
 - NEEDED: nice way of propagating loop invariants
 
-- NEEDED: deal with implies in Rust with continuation
+- NEEDED: implies in Rust does not compile to v_implies with continuation
 
 
 - For each module, generate a .fst and a .fsti
