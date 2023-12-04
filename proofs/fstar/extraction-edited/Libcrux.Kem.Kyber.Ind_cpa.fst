@@ -5,8 +5,7 @@ open FStar.Mul
 
 let serialize_secret_key
       (v_SERIALIZED_KEY_LEN: usize)
-      (private_key public_key implicit_rejection_value: t_Slice u8)
-    : t_Array u8 v_SERIALIZED_KEY_LEN =
+      (private_key public_key implicit_rejection_value: t_Slice u8) =
   Libcrux.Kem.Kyber.Conversions.impl__array v_SERIALIZED_KEY_LEN
     (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push
                 (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.impl__new v_SERIALIZED_KEY_LEN
@@ -365,8 +364,7 @@ let decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
       (secret_key: t_Slice u8)
-      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
-    : t_Array u8 (sz 32) =
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE) =
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
@@ -463,9 +461,7 @@ let encrypt
           usize)
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
-      (randomness: t_Slice u8)
-    : (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+      (randomness: t_Slice u8) =
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
@@ -630,10 +626,7 @@ let encrypt
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (key_generation_seed: t_Slice u8)
-    : ((Libcrux.Kem.Kyber.Types.t_PrivateKey v_PRIVATE_KEY_SIZE &
-        Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE) &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+      (key_generation_seed: t_Slice u8) = 
   let hashed:t_Array u8 (sz 64) = Libcrux.Kem.Kyber.Hash_functions.v_G key_generation_seed in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)

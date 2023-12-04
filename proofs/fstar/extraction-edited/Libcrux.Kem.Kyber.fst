@@ -23,6 +23,8 @@ let decapsulate
   let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
   in
+  assert (length implicit_rejection_value = v_SECRET_KEY_SIZE -! v_CPA_SECRET_KEY_SIZE -! v_PUBLIC_KEY_SIZE -! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE);
+  assert (length implicit_rejection_value <. v_IMPLICIT_REJECTION_HASH_INPUT_SIZE);
   let decrypted:t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Ind_cpa.decrypt v_K
       v_CIPHERTEXT_SIZE

@@ -1,5 +1,5 @@
 module Spec.Kyber
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -21,6 +21,7 @@ let v_H_DIGEST_SIZE: usize =
 
 let v_REJECTION_SAMPLING_SEED_SIZE: usize = sz 168 *! sz 5
 
+// KB: This needs to be the same as v_H_DIGEST_SIZE no?
 let v_SHARED_SECRET_SIZE: usize = sz 32
 
 type params_ = {
@@ -86,21 +87,117 @@ type t_KyberPublicKey (p:params) = t_Array u8 (v_CPA_PKE_PUBLIC_KEY_SIZE p)
 type t_KyberPrivateKey (p:params) = t_Array u8 (v_SECRET_KEY_SIZE p)
 type t_KyberKeyPair (p:params) = t_KyberPrivateKey p & t_KyberPublicKey p
 
+type t_KyberCPAPrivateKey (p:params) = t_Array u8 (v_CPA_PKE_SECRET_KEY_SIZE p)
+type t_KyberCPAKeyPair (p:params) = t_KyberCPAPrivateKey p & t_KyberPublicKey p
+
 type t_KyberCiphertext (p:params) = t_Array u8 (v_CPA_PKE_CIPHERTEXT_SIZE p)
 type t_KyberSharedSecret = t_Array u8 (v_SHARED_SECRET_SIZE)
 
+(** Utility and Hash Function *)
+let concat #t #m (#n:usize{range (v m + v n) usize_inttype})
+           (x:t_Array t m) (y:t_Array t n) : t_Array t (m +! n)
+           = Seq.append x y
+
+assume val split #t #l (a:t_Array t l) (m:usize{m <=. l}):
+       Pure (t_Array t m & t_Array t (l -! m))
+       True (ensures (fun (x,y) -> Seq.append x y == a))
+
+assume val v_G (input: t_Slice u8) : t_Array u8 (sz 64)
+assume val v_H (input: t_Slice u8) : t_Array u8 (sz 32)
+assume val v_PRF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
+let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = v_PRF (sz 32) input
+assume val v_XOF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
+
 (** IND-CCA Functions *)
 
-assume val ind_cca_generate_keypair (p:params) (randomness:t_Array u8 v_KEY_GENERATION_SEED_SIZE) :
-                                    t_Result (t_KyberKeyPair p) t_Error
+assume val ind_cpa_generate_keypair (p:params) (randomness:t_Array u8 v_CPA_PKE_KEY_GENERATION_SEED_SIZE) :
+                                    t_Result (t_KyberCPAKeyPair p) t_Error
 
-assume val ind_cca_encapsulate (p:params) (public_key: t_KyberPublicKey p)
-                               (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
-                                t_Result (t_KyberCiphertext p &  t_KyberSharedSecret) t_Error
+assume val ind_cpa_serialize_secret_key (p:params) (secret_key:t_KyberCPAPrivateKey p)
+                                        (implicit_rejection_value: t_Array u8 v_SHARED_SECRET_SIZE):
+                                        t_KyberPrivateKey p
 
-assume val ind_cca_decapsulate (p:params) (secret_key: t_KyberPrivateKey p)
+assume val ind_cpa_encrypt (p:params) (public_key: t_KyberPublicKey p)
+                           (message: t_Array u8 v_SHARED_SECRET_SIZE)
+                           (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
+                            t_Result (t_KyberCiphertext p) t_Error
+
+assume val ind_cpa_decrypt (p:params) (secret_key: t_KyberCPAPrivateKey p)
                                (ciphertext: t_KyberCiphertext p): 
                                t_KyberSharedSecret
+
+
+(** IND-CCA Functions *)
+
+
+/// This function implements most of Algorithm 15 of the
+/// NIST FIPS 203 specification; this is the Kyber CCA-KEM key generation algorithm.
+///
+/// We say "most of" since Algorithm 15 samples the required randomness within
+/// the function itself, whereas this implementation expects it to be provided
+/// through the `randomness` parameter.
+/// 
+/// TODO: input validation
+
+val ind_cca_generate_keypair (p:params) (randomness:t_Array u8 v_KEY_GENERATION_SEED_SIZE) :
+                             t_Result (t_KyberKeyPair p) t_Error
+let ind_cca_generate_keypair p randomness =
+    let (ind_cpa_keypair_randomness, implicit_rejection_value) =
+        split randomness v_CPA_PKE_KEY_GENERATION_SEED_SIZE in
+        
+    match ind_cpa_generate_keypair p ind_cpa_keypair_randomness with
+    | Ok (ind_cpa_secret_key,ind_cpa_public_key) ->
+      let ind_cca_secret_key = ind_cpa_serialize_secret_key p ind_cpa_secret_key implicit_rejection_value in
+      Ok (ind_cca_secret_key, ind_cpa_public_key)
+    | Err e -> Err e
+
+/// This function implements most of Algorithm 16 of the
+/// NIST FIPS 203 specification; this is the Kyber CCA-KEM encapsulation algorithm.
+///
+/// We say "most of" since Algorithm 16 samples the required randomness within
+/// the function itself, whereas this implementation expects it to be provided
+/// through the `randomness` parameter.
+///
+/// TODO: input validation
+
+val ind_cca_encapsulate (p:params) (public_key: t_KyberPublicKey p)
+                        (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
+                        t_Result (t_KyberCiphertext p &  t_KyberSharedSecret) t_Error
+let ind_cca_encapsulate p public_key randomness =
+    let to_hash = concat randomness (v_H public_key) in
+    let hashed = v_G to_hash in
+    let (shared_secret, pseudorandomness) = split hashed v_SHARED_SECRET_SIZE in
+    match ind_cpa_encrypt p public_key randomness pseudorandomness with
+    | Ok ciphertext -> Ok (ciphertext,shared_secret)
+    | Err e -> Err e
+    
+
+/// This function implements Algorithm 17 of the
+/// NIST FIPS 203 specification; this is the Kyber CCA-KEM encapsulation algorithm.
+
+val ind_cca_decapsulate (p:params) (secret_key: t_KyberPrivateKey p)
+                        (ciphertext: t_KyberCiphertext p): 
+                         t_KyberSharedSecret
+let ind_cca_decapsulate p secret_key ciphertext =
+    let (ind_cpa_secret_key,rest) = split secret_key (v_CPA_PKE_SECRET_KEY_SIZE p) in
+    let (ind_cpa_public_key,rest) = split rest (v_CPA_PKE_PUBLIC_KEY_SIZE p) in
+    let (ind_cpa_public_key_hash,implicit_rejection_value) = split rest v_H_DIGEST_SIZE in
+    
+    let decrypted = ind_cpa_decrypt p ind_cpa_secret_key ciphertext in
+    let to_hash = concat decrypted ind_cpa_public_key_hash in
+    let hashed = v_G to_hash in
+    let (success_shared_secret, pseudorandomness) = split hashed v_SHARED_SECRET_SIZE in
+
+    assert (Seq.length implicit_rejection_value = 32);
+    let to_hash = concat implicit_rejection_value ciphertext in
+    let rejection_shared_secret = v_J to_hash in
+
+    match ind_cpa_encrypt p ind_cpa_public_key decrypted pseudorandomness with
+    | Ok reencrypted -> if reencrypted = ciphertext
+                       then success_shared_secret
+                       else rejection_shared_secret
+    | Err e -> rejection_shared_secret
+   
 
 (** Kyber-768 Instantiation *)
 

@@ -53,12 +53,14 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Constants.fst \
 	Libcrux.Digest.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
+	Libcrux.Kem.Kyber.Kyber768.fsti \
 	Libcrux.Kem.Kyber.Kyber768.fst \
 	Libcrux.Kem.Kyber.Kyber1024.fst \
 	Libcrux.Kem.Kyber.Kyber512.fst \
 	Libcrux.Kem.Kyber.Types.fst \
 	Libcrux.Kem.Kyber.fsti \
 	Libcrux.Kem.Kyber.fst \
+	Libcrux.Kem.Kyber.Ind_cpa.fsti \
 	Libcrux.Kem.Kyber.Ind_cpa.fst \
 	Libcrux.Kem.Kyber.Arithmetic.fsti \
 	Libcrux.Kem.Kyber.Arithmetic.fst \

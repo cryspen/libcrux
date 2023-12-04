@@ -12,8 +12,8 @@ val decapsulate
     (requires (let p = let open Spec.Kyber in {v_RANK = v_K; v_ETA1; v_ETA2; v_VECTOR_U_COMPRESSION_FACTOR; v_VECTOR_V_COMPRESSION_FACTOR} in
                 Spec.Kyber.valid_params p /\
                 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE == Spec.Kyber.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE p /\
-                v_CPA_SECRET_KEY_SIZE == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
                 v_SECRET_KEY_SIZE == Spec.Kyber.v_SECRET_KEY_SIZE p /\
+                v_CPA_SECRET_KEY_SIZE == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
                 v_PUBLIC_KEY_SIZE == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
                 v_CIPHERTEXT_SIZE == Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE p
                ))
