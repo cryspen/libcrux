@@ -8,6 +8,8 @@ cd kyber-crate
 mv src/kyber.rs src/lib.rs
 mv src/kyber/* src
 
+SED=$(which gsed &>/dev/null && echo gsed || echo sed)
+
 cat > Cargo.toml <<EOF
 [package]
 name = "libcrux_kyber"
@@ -26,9 +28,9 @@ EOF
 for file in src/*; do 
     if [ -f "$file" ]; then 
         echo "fixing up $file ..."
-        sed -i 's/pub(in .*)/pub(crate)/g' $file
-        sed -i 's/pub(super)/pub(crate)/g' $file
-        sed -i 's/crate::/libcrux::/g' $file
+        $SED -i 's/pub(in .*)/pub(crate)/g' $file
+        $SED -i 's/pub(super)/pub(crate)/g' $file
+        $SED -i 's/crate::/libcrux::/g' $file
     fi 
 done
 
