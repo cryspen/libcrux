@@ -12,6 +12,7 @@ on:
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'
+      - 'proofs/fstar/**'
 
   schedule:
     - cron: '0 0 * * *'
