@@ -76,7 +76,7 @@ UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIE
 
 # By default, we process all the files in the current directory. Here, we
 # *extend* the set of relevant files with the tests.
-ROOTS = $(UNVERIFIED) $(VERIFIED) 
+ROOTS = $(UNVERIFIED) $(VERIFIED)
 
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME)
 
@@ -105,7 +105,7 @@ $(UNVERIFIED_CHECKED): OTHERFLAGS=--admit_smt_queries true
 $(CACHE_DIR)/%.checked: | .depend $(HINT_DIR) $(CACHE_DIR)
 	$(FSTAR) $(OTHERFLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints
 
-verify: $(UNVERIFIED_CHECKED) $(VERIFIED_CHECKED) 
+verify: $(UNVERIFIED_CHECKED) $(VERIFIED_CHECKED)
 
 # Targets for interactive mode
 
