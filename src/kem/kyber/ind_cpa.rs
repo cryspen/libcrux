@@ -1,3 +1,5 @@
+use std::usize;
+
 use super::{
     arithmetic::PolynomialRingElement,
     constants::{
@@ -190,13 +192,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> (super::KyberCiphertext<CIPHERTEXT_SIZE>, Option<Error>) {
     // tˆ := Decode_12(pk)
-    let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
-    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
-        .chunks_exact(BYTES_PER_RING_ELEMENT)
-        .enumerate()
-    {
-        t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
-    }
+    let t_as_ntt = decode_pk::<K, T_AS_NTT_ENCODED_SIZE>(public_key);
 
     // ρ := pk + 12·k·n / 8
     // for i from 0 to k−1 do
@@ -220,14 +216,7 @@ pub(crate) fn encrypt<
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let mut error_1 = [PolynomialRingElement::ZERO; K];
-    for i in 0..K {
-        prf_input[32] = domain_separator;
-        domain_separator += 1;
-
-        let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
-        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
-    }
+    let error_1 = sampling::<K, ETA2_RANDOMNESS_SIZE, ETA2>(&mut prf_input, &mut domain_separator);
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
@@ -252,6 +241,36 @@ pub(crate) fn encrypt<
     (ciphertext.into(), sampling_A_error)
 }
 
+#[inline(always)]
+fn sampling<const K: usize, const ETA2_RANDOMNESS_SIZE: usize, const ETA2: usize>(
+    prf_input: &mut [u8; 33],
+    domain_separator: &mut u8,
+) -> [PolynomialRingElement; K] {
+    let mut error_1 = [PolynomialRingElement::ZERO; K];
+    for i in 0..K {
+        prf_input[32] = *domain_separator;
+        *domain_separator += 1;
+
+        let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(prf_input);
+        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
+    }
+    error_1
+}
+
+#[inline(always)]
+fn decode_pk<const K: usize, const T_AS_NTT_ENCODED_SIZE: usize>(
+    public_key: &[u8],
+) -> [PolynomialRingElement; K] {
+    let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
+    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
+        .chunks_exact(BYTES_PER_RING_ELEMENT)
+        .enumerate()
+    {
+        t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
+    }
+    t_as_ntt
+}
+
 #[allow(non_snake_case)]
 pub(crate) fn decrypt<
     const K: usize,
@@ -263,17 +282,9 @@ pub(crate) fn decrypt<
     secret_key: &[u8],
     ciphertext: &super::KyberCiphertext<CIPHERTEXT_SIZE>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    let mut u_as_ntt = [PolynomialRingElement::ZERO; K];
-    let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
-
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    for (i, u_bytes) in ciphertext.value[..VECTOR_U_ENCODED_SIZE]
-        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
-        .enumerate()
-    {
-        let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
-        u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
-    }
+    let u_as_ntt =
+        decompress::<K, CIPHERTEXT_SIZE, VECTOR_U_ENCODED_SIZE, U_COMPRESSION_FACTOR>(ciphertext);
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR>(
@@ -281,11 +292,38 @@ pub(crate) fn decrypt<
     );
 
     // sˆ := Decode_12(sk)
-    for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
-        secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
-    }
+    let secret_as_ntt = decode_12(secret_key);
 
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
     let message = compute_message(&v, &secret_as_ntt, &u_as_ntt);
     compress_then_serialize_message(message)
+}
+
+#[inline(always)]
+fn decode_12<const K: usize>(secret_key: &[u8]) -> [PolynomialRingElement; K] {
+    let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
+    for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
+        secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
+    }
+    secret_as_ntt
+}
+
+#[inline(always)]
+fn decompress<
+    const K: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const VECTOR_U_ENCODED_SIZE: usize,
+    const U_COMPRESSION_FACTOR: usize,
+>(
+    ciphertext: &super::KyberCiphertext<CIPHERTEXT_SIZE>,
+) -> [PolynomialRingElement; K] {
+    let mut u_as_ntt = [PolynomialRingElement::ZERO; K];
+    for (i, u_bytes) in ciphertext.value[..VECTOR_U_ENCODED_SIZE]
+        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
+        .enumerate()
+    {
+        let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
+        u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
+    }
+    u_as_ntt
 }
