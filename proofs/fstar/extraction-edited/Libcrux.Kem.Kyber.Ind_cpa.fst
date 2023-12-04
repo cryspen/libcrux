@@ -6,6 +6,7 @@ open FStar.Mul
 let serialize_secret_key
       (v_SERIALIZED_KEY_LEN: usize)
       (private_key public_key implicit_rejection_value: t_Slice u8) =
+  let res = 
   Libcrux.Kem.Kyber.Conversions.impl__array v_SERIALIZED_KEY_LEN
     (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push
                 (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.impl__new v_SERIALIZED_KEY_LEN
@@ -30,6 +31,9 @@ let serialize_secret_key
         implicit_rejection_value
       <:
       Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
+   in
+   admit(); // P-F Done, F-C Assumed
+   res
 
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -371,9 +375,6 @@ let decrypt
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
-  assume (v v_VECTOR_U_ENCODED_SIZE < v v_CIPHERTEXT_SIZE);
-  assume (v Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT * 
-          v v_U_COMPRESSION_FACTOR < v v_CIPHERTEXT_SIZE);
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (ciphertext.Libcrux.Kem.Kyber.Types.f_value.[ {
@@ -465,7 +466,6 @@ let encrypt
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
-  assume (v_T_AS_NTT_ENCODED_SIZE <. length public_key);
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (public_key.[ {
@@ -502,7 +502,6 @@ let encrypt
       <:
       Core.Ops.Range.t_RangeFrom usize ]
   in
-  assume (v_T_AS_NTT_ENCODED_SIZE <=. sz 34);
   let v_A_transpose, sampling_A_error:(t_Array
       (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
     Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
@@ -513,7 +512,6 @@ let encrypt
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 33) randomness
   in
-  assume (v_K <=. sz 4);
   let r_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     u8) =
     sample_vector_cbd_then_ntt v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE prf_input 0uy
@@ -604,7 +602,6 @@ let encrypt
     Libcrux.Kem.Kyber.Conversions.into_padded_array v_CIPHERTEXT_SIZE
       (Rust_primitives.unsize c1 <: t_Slice u8)
   in
-  assume (v_C1_LEN <. v_CIPHERTEXT_SIZE);
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from ciphertext
       ({ Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize)
@@ -617,11 +614,14 @@ let encrypt
         <:
         t_Slice u8)
   in
+  let res = 
   Core.Convert.f_into ciphertext, sampling_A_error
   <:
   (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
     Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
-
+  in
+  admit(); // P-F Done, F-C Assumed
+  res
 
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
@@ -641,7 +641,6 @@ let generate_keypair
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
     Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 33) seed_for_secret_and_error
   in
-  assume (v_K <=. sz 4);
   let secret_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       v_K &
     u8) =
@@ -675,6 +674,7 @@ let generate_keypair
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
     serialize_key v_K v_PRIVATE_KEY_SIZE secret_as_ntt
   in
+  let res = 
   (Core.Convert.f_into secret_key_serialized, Core.Convert.f_into public_key_serialized
     <:
     (Libcrux.Kem.Kyber.Types.t_PrivateKey v_PRIVATE_KEY_SIZE &
@@ -683,4 +683,7 @@ let generate_keypair
   <:
   ((Libcrux.Kem.Kyber.Types.t_PrivateKey v_PRIVATE_KEY_SIZE &
       Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE) &
-    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) 
+  in
+  admit(); // Panic Freedom Proved, Functional Correctness Assumed.
+  res

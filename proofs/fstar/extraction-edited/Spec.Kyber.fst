@@ -108,12 +108,12 @@ assume val v_PRF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
 let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = v_PRF (sz 32) input
 assume val v_XOF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
 
-(** IND-CCA Functions *)
+(** IND-CPA Functions *)
 
 assume val ind_cpa_generate_keypair (p:params) (randomness:t_Array u8 v_CPA_PKE_KEY_GENERATION_SEED_SIZE) :
                                     t_Result (t_KyberCPAKeyPair p) t_Error
 
-assume val ind_cpa_serialize_secret_key (p:params) (secret_key:t_KyberCPAPrivateKey p)
+assume val ind_cpa_serialize_secret_key (p:params) (keypair:t_KyberCPAKeyPair p)
                                         (implicit_rejection_value: t_Array u8 v_SHARED_SECRET_SIZE):
                                         t_KyberPrivateKey p
 
@@ -147,7 +147,7 @@ let ind_cca_generate_keypair p randomness =
         
     match ind_cpa_generate_keypair p ind_cpa_keypair_randomness with
     | Ok (ind_cpa_secret_key,ind_cpa_public_key) ->
-      let ind_cca_secret_key = ind_cpa_serialize_secret_key p ind_cpa_secret_key implicit_rejection_value in
+      let ind_cca_secret_key = ind_cpa_serialize_secret_key p (ind_cpa_secret_key,ind_cpa_public_key) implicit_rejection_value in
       Ok (ind_cca_secret_key, ind_cpa_public_key)
     | Err e -> Err e
 
