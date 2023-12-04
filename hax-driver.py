@@ -75,23 +75,12 @@ parser.add_argument(
     default="",
     help="Space-separated list of modules to exclude from extraction. The module names must be fully qualified.",
 )
-typecheck_parser = parser.add_subparsers(
-    description="Typecheck libcrux",
-    dest="typecheck",
-    help="Run F* etc. to typecheck the extracted libcrux code.",
-)
-typecheck_parser = typecheck_parser.add_parser("typecheck")
-typecheck_parser.add_argument(
-    "--lax",
+parser.add_argument(
+    "--verify-extraction",
+    dest="verify_extraction",
+    default=False,
     action="store_true",
-    dest="lax",
-    help="Lax typecheck the code only",
-)
-typecheck_parser.add_argument(
-    "--admit",
-    action="store_true",
-    dest="admit",
-    help="Set admit_smt_queries to true for typechecking",
+    help="Run the make command to run the FStar typechecker on the extracted files. Some files are lax-checked whereas others are strict-typechecked.",
 )
 
 options = parser.parse_args()
@@ -118,21 +107,14 @@ if options.exclude_modules:
     else:
         filter_string += " {}".format(options.exclude_modules)
 
-if options.typecheck:
-    custom_env = {}
-    if options.lax:
-        custom_env.update({"OTHERFLAGS": "--lax"})
-    if options.admit:
-        custom_env.update({"OTHERFLAGS": "--admit_smt_queries true"})
-    shell(["make", "-C", "proofs/fstar/extraction/"], env=custom_env)
-    exit(0)
-
 cargo_hax_into = ["cargo", "hax", "into"]
 hax_env = {}
 
 exclude_sha3_implementations = "-libcrux::hacl::sha3::** -libcrux::jasmin::sha3::**"
 
-if options.kyber_reference:
+if options.verify_extraction:
+    shell(["make", "-C", "proofs/fstar/extraction/"])
+elif options.kyber_reference:
     shell(
         cargo_hax_into
         + [

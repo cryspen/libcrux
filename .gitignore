@@ -8,4 +8,5 @@ proofs/fstar/extraction/#*#
 proofs/fstar/extraction/.#*
 fuzz/corpus
 fuzz/artifacts
+proofs/fstar/extraction/.cache
 __pycache__
