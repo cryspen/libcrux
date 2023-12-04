@@ -38,18 +38,45 @@ FSTAR_HOME    ?= $(WORKSPACE_ROOT)/FStar
 HACL_HOME     ?= $(WORKSPACE_ROOT)/hacl-star
 FSTAR_BIN     ?= $(shell command -v fstar.exe 1>&2 2> /dev/null && echo "fstar.exe" || echo "$(FSTAR_HOME)/bin/fstar.exe")
 
-CACHE_DIR     ?= $(HAX_LIBS_HOME)/.cache
-HINT_DIR      ?= $(HAX_LIBS_HOME)/.hints
+CACHE_DIR     ?= .cache
+HINT_DIR      ?= .hints
 
-.PHONY: all verify clean
+.PHONY: all verify verify-lax clean
 
 all:
 	rm -f .depend && $(MAKE) .depend
 	$(MAKE) verify
 
+
+VERIFIED = \
+	Libcrux.Kem.fst \
+	Libcrux.Kem.Kyber.Constants.fst \
+	Libcrux.Digest.fsti \
+	Libcrux.Kem.Kyber.Hash_functions.fst \
+	Libcrux.Kem.Kyber.Kyber768.fst \
+	Libcrux.Kem.Kyber.Kyber1024.fst \
+	Libcrux.Kem.Kyber.Kyber512.fst
+
+
+UNVERIFIED = \
+	Libcrux.Kem.Kyber.Types.fst \
+	Libcrux.Kem.Kyber.fst \
+	Libcrux.Kem.Kyber.Ind_cpa.fst \
+	Libcrux.Kem.Kyber.Arithmetic.fst \
+	Libcrux.Kem.Kyber.Compress.fst \
+	Libcrux.Kem.Kyber.Constant_time_ops.fst \
+	Libcrux.Kem.Kyber.Conversions.fst \
+	Libcrux.Kem.Kyber.Matrix.fst \
+	Libcrux.Kem.Kyber.Ntt.fst \
+	Libcrux.Kem.Kyber.Sampling.fst \
+	Libcrux.Kem.Kyber.Serialize.fst
+
+VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(VERIFIED)))
+UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIED)))
+
 # By default, we process all the files in the current directory. Here, we
 # *extend* the set of relevant files with the tests.
-ROOTS = $(wildcard *.fst)
+ROOTS = $(UNVERIFIED) $(VERIFIED)
 
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME)
 
@@ -74,10 +101,11 @@ $(HINT_DIR):
 $(CACHE_DIR):
 	mkdir -p $@
 
+$(UNVERIFIED_CHECKED): OTHERFLAGS=--admit_smt_queries true
 $(CACHE_DIR)/%.checked: | .depend $(HINT_DIR) $(CACHE_DIR)
 	$(FSTAR) $(OTHERFLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints
 
-verify: $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(ROOTS)))
+verify: $(UNVERIFIED_CHECKED) $(VERIFIED_CHECKED)
 
 # Targets for interactive mode
 

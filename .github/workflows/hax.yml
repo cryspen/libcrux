@@ -12,6 +12,7 @@ on:
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'
+      - 'proofs/fstar/**'
 
   schedule:
     - cron: '0 0 * * *'
@@ -62,7 +63,7 @@ jobs:
           sudo apt-get install --yes nodejs
           ./setup.sh
 
-      - name: 🏃 Extract and lax-typecheck the Kyber reference code
+      - name: 🏃 Extract and verify the Kyber reference code
         run: |
           eval $(opam env)
           ./hax-driver.py --kyber-reference
@@ -70,7 +71,7 @@ jobs:
               HACL_HOME=${{ github.workspace }}/hacl-star \
               HAX_HOME=${{ github.workspace }}/hax \
               PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
-              ./hax-driver.py typecheck --admit
+              ./hax-driver.py --verify-extraction
 
       - name: 🏃 Extract the Kyber specification
         run: |
