@@ -26,7 +26,6 @@ Libcrux.Kem.Kyber.fst added one precondition
 Libcrux.Kem.Kyber.Types.fst: added four precondition
 
 With assumptions and admits:
-
 Libcrux.Kem.Kyber.Ind_cpa.fst: needs loop invariants and assumes
 Libcrux.Kem.Kyber.Arithmetic.fst: needs loop invariants and assumes
 Libcrux.Kem.Kyber.Compress.fst
@@ -55,7 +54,8 @@ DESIRABLE FEATURES
   For now, just put the pub and pub(crate) bits in the .fsti
   
   
-- Support const functions and their applications in types to avoid
+- OPTIONAL: 
+  Support const functions and their applications in types to avoid
   huge list of constant parameters
   
   
