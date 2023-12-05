@@ -13,11 +13,13 @@ open FStar.Mul
 
 class t_UpdatingArray (v_Self: Type) = { f_push:v_Self -> t_Slice u8 -> v_Self }
 
-let into_padded_array (v_LEN: usize) (slice: t_Slice u8) :
+val into_padded_array (v_LEN: usize) (slice: t_Slice u8) :
     Pure (t_Array u8 v_LEN)
     (requires (length slice <=. v_LEN))
-    (ensures (fun _ -> True))
-    =
+    (ensures (fun res -> Seq.slice res 0 (Seq.length slice) == slice))
+
+
+let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
   let _:Prims.unit =
     if true
     then

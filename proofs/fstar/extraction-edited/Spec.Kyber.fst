@@ -68,8 +68,10 @@ let v_C2_SIZE (p:params) =
 
 let v_CPA_PKE_CIPHERTEXT_SIZE (p:params) = v_C1_SIZE p +! v_C2_SIZE p
 
-let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE (p:params) =
+let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE (p:params)
+  : x:usize{v x == v v_SHARED_SECRET_SIZE + v #usize_inttype (v_CPA_PKE_CIPHERTEXT_SIZE p)} =
     v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE p
+
 
 let v_KEY_GENERATION_SEED_SIZE: usize =
   v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
@@ -100,7 +102,15 @@ let concat #t #m (#n:usize{range (v m + v n) usize_inttype})
 
 assume val split #t #l (a:t_Array t l) (m:usize{m <=. l}):
        Pure (t_Array t m & t_Array t (l -! m))
-       True (ensures (fun (x,y) -> Seq.append x y == a))
+       True (ensures (fun (x,y) ->
+         x == Seq.slice a 0 (v m) /\
+         y == Seq.slice a (v m) (v l) /\
+         Seq.append x y == a))
+
+assume val lemma_slice_append #t (x:t_Slice t) (y:t_Slice t) (z:t_Slice t) (i:usize{i <. length x}) :
+  Lemma ((y == Seq.slice x 0 (v i) /\ z == Seq.slice x (v i) (Seq.length x)) ==>
+         x == Seq.append y x)
+
 
 assume val v_G (input: t_Slice u8) : t_Array u8 (sz 64)
 assume val v_H (input: t_Slice u8) : t_Array u8 (sz 32)

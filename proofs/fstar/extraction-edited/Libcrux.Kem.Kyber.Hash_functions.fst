@@ -3,15 +3,22 @@ module Libcrux.Kem.Kyber.Hash_functions
 open Core
 open FStar.Mul
 
-let v_G (input: t_Slice u8) : t_Array u8 (sz 64) = Libcrux.Digest.sha3_512_ input
+let v_G (input: t_Slice u8) =
+  let res = Libcrux.Digest.sha3_512_ input in
+  admit(); // We assume that sha3_512 correctly implements G
+  res
 
-let v_H (input: t_Slice u8) : t_Array u8 (sz 32) = Libcrux.Digest.sha3_256_ input
+let v_H (input: t_Slice u8) =
+  let res = Libcrux.Digest.sha3_256_ input in
+  admit(); // We assume that sha3_512 correctly implements H
+  res
 
-let v_PRF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN =
-  Libcrux.Digest.shake256 v_LEN input
+let v_PRF (v_LEN: usize) (input: t_Slice u8) =
+  let res = Libcrux.Digest.shake256 v_LEN input in
+  admit(); // We assume that sha3_512 correctly implements H
+  res
 
-let v_XOFx4 (v_LEN v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
-    : t_Array (t_Array u8 v_LEN) v_K =
+let v_XOFx4 (v_LEN v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
   let out:t_Array (t_Array u8 v_LEN) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy v_LEN <: t_Array u8 v_LEN) v_K
   in
@@ -37,4 +44,5 @@ let v_XOFx4 (v_LEN v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
           <:
           t_Array (t_Array u8 v_LEN) v_K)
   in
+  admit(); // We should prove that v_XOFx4 correctly implements Keccakx4
   out
