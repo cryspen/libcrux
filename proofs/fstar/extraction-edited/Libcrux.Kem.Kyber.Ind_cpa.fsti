@@ -19,7 +19,8 @@ val decrypt (#p:Spec.Kyber.params)
       (secret_key: t_Slice u8)
       (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
     : Pure (t_Array u8 (sz 32))
-      (requires (length secret_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
+      (requires (v_K == p.v_RANK /\
+                 length secret_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
                  v_CIPHERTEXT_SIZE == Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE p /\
                  v_VECTOR_U_ENCODED_SIZE == Spec.Kyber.v_C1_SIZE p /\
                  v_U_COMPRESSION_FACTOR == p.v_VECTOR_U_COMPRESSION_FACTOR))
@@ -35,7 +36,8 @@ val encrypt (#p:Spec.Kyber.params)
       (randomness: t_Slice u8{length randomness <. sz 33})
     : Pure (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
            Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
-      (requires (length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
+      (requires (v_K == p.v_RANK /\
+                 length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
                  length randomness == Spec.Kyber.v_SHARED_SECRET_SIZE /\
                  v_CIPHERTEXT_SIZE == Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE p /\
                  v_T_AS_NTT_ENCODED_SIZE == Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE p /\
