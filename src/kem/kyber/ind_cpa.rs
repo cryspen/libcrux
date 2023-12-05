@@ -3,11 +3,10 @@ use std::usize;
 use super::{
     arithmetic::PolynomialRingElement,
     constants::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
-        SHARED_SECRET_SIZE,
+        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, H_DIGEST_SIZE,
+        REJECTION_SAMPLING_SEED_SIZE, SHARED_SECRET_SIZE,
     },
     conversions::into_padded_array,
-    conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{XOFx4, G, H, PRF},
     matrix::*,
     ntt::*,
@@ -22,17 +21,23 @@ use super::{
     Error, KyberPublicKey,
 };
 
-pub fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
+#[inline(always)]
+pub(super) fn serialize_secret_key<const SERIALIZED_KEY_LEN: usize>(
     private_key: &[u8],
     public_key: &[u8],
     implicit_rejection_value: &[u8],
 ) -> [u8; SERIALIZED_KEY_LEN] {
-    UpdatableArray::new([0u8; SERIALIZED_KEY_LEN])
-        .push(private_key)
-        .push(public_key)
-        .push(&H(public_key))
-        .push(implicit_rejection_value)
-        .array()
+    let mut out = [0u8; SERIALIZED_KEY_LEN];
+    let mut pointer = 0;
+    out[pointer..pointer + private_key.len()].copy_from_slice(private_key);
+    pointer += private_key.len();
+    out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
+    pointer += public_key.len();
+    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&H(public_key));
+    pointer += H_DIGEST_SIZE;
+    out[pointer..pointer + implicit_rejection_value.len()]
+        .copy_from_slice(implicit_rejection_value);
+    out
 }
 
 #[inline(always)]
@@ -94,6 +99,7 @@ fn sample_vector_cbd_then_ntt<
     (re_as_ntt, domain_separator)
 }
 
+#[inline(always)]
 fn serialize_key<const K: usize, const OUT_LEN: usize>(
     key: [PolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
@@ -140,10 +146,8 @@ pub(crate) fn generate_keypair<
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized = UpdatableArray::new([0u8; PUBLIC_KEY_SIZE]);
     let public_key_serialized =
-        public_key_serialized.push(&serialize_key::<K, RANKED_BYTES_PER_RING_ELEMENT>(t_as_ntt));
-    let public_key_serialized = public_key_serialized.push(seed_for_A).array();
+        build_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(t_as_ntt, seed_for_A);
 
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = serialize_key(secret_as_ntt);
@@ -152,6 +156,23 @@ pub(crate) fn generate_keypair<
         (secret_key_serialized.into(), public_key_serialized.into()),
         sampling_A_error,
     )
+}
+
+/// Concatenate `t` and `ρ` into the public key.
+#[inline(always)]
+fn build_public_key<
+    const K: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+    const PUBLIC_KEY_SIZE: usize,
+>(
+    t_as_ntt: [PolynomialRingElement; K],
+    seed_for_a: &[u8],
+) -> [u8; PUBLIC_KEY_SIZE] {
+    let mut public_key_serialized = [0u8; PUBLIC_KEY_SIZE];
+    public_key_serialized[0..RANKED_BYTES_PER_RING_ELEMENT]
+        .copy_from_slice(&serialize_key::<K, RANKED_BYTES_PER_RING_ELEMENT>(t_as_ntt));
+    public_key_serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
+    public_key_serialized
 }
 
 fn compress_then_encode_u<

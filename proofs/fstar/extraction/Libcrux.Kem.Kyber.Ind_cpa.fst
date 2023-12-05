@@ -7,30 +7,106 @@ let serialize_secret_key
       (v_SERIALIZED_KEY_LEN: usize)
       (private_key public_key implicit_rejection_value: t_Slice u8)
     : t_Array u8 v_SERIALIZED_KEY_LEN =
-  Libcrux.Kem.Kyber.Conversions.impl__array v_SERIALIZED_KEY_LEN
-    (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.f_push
-                (Libcrux.Kem.Kyber.Conversions.f_push (Libcrux.Kem.Kyber.Conversions.impl__new v_SERIALIZED_KEY_LEN
-                        (Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN
-                          <:
-                          t_Array u8 v_SERIALIZED_KEY_LEN)
-                      <:
-                      Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-                    private_key
-                  <:
-                  Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-                public_key
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
+  let pointer:usize = sz 0 in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+              }
               <:
-              Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-            (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key
-                  <:
-                  t_Array u8 (sz 32))
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          private_key
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! (Core.Slice.impl__len private_key <: usize) in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+              }
               <:
-              t_Slice u8)
-          <:
-          Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
-        implicit_rejection_value
-      <:
-      Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_SERIALIZED_KEY_LEN)
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          public_key
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! (Core.Slice.impl__len public_key <: usize) in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key
+                <:
+                t_Array u8 (sz 32))
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end
+          =
+          pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          implicit_rejection_value
+        <:
+        t_Slice u8)
+  in
+  out
 
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
@@ -480,6 +556,53 @@ let serialize_key
   in
   out
 
+let build_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (tt_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+      (seed_for_a: t_Slice u8)
+    : t_Array u8 v_PUBLIC_KEY_SIZE =
+  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Rust_primitives.Hax.repeat 0uy v_PUBLIC_KEY_SIZE
+  in
+  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range public_key_serialized
+      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (public_key_serialized.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          (Rust_primitives.unsize (serialize_key v_K v_RANKED_BYTES_PER_RING_ELEMENT tt_as_ntt
+                <:
+                t_Array u8 v_RANKED_BYTES_PER_RING_ELEMENT)
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from public_key_serialized
+      ({ Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+        <:
+        Core.Ops.Range.t_RangeFrom usize)
+      (Core.Slice.impl__copy_from_slice (public_key_serialized.[ {
+                Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT
+              }
+              <:
+              Core.Ops.Range.t_RangeFrom usize ]
+            <:
+            t_Slice u8)
+          seed_for_a
+        <:
+        t_Slice u8)
+  in
+  public_key_serialized
+
 let decompress
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR: usize)
       (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
@@ -679,23 +802,8 @@ let generate_keypair
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Libcrux.Kem.Kyber.Matrix.compute_As_plus_e v_K v_A_transpose secret_as_ntt error_as_ntt
   in
-  let public_key_serialized:Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
-    Libcrux.Kem.Kyber.Conversions.impl__new v_PUBLIC_KEY_SIZE
-      (Rust_primitives.Hax.repeat 0uy v_PUBLIC_KEY_SIZE <: t_Array u8 v_PUBLIC_KEY_SIZE)
-  in
-  let public_key_serialized:Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE =
-    Libcrux.Kem.Kyber.Conversions.f_push public_key_serialized
-      (Rust_primitives.unsize (serialize_key v_K v_RANKED_BYTES_PER_RING_ELEMENT tt_as_ntt
-            <:
-            t_Array u8 v_RANKED_BYTES_PER_RING_ELEMENT)
-        <:
-        t_Slice u8)
-  in
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
-    Libcrux.Kem.Kyber.Conversions.impl__array v_PUBLIC_KEY_SIZE
-      (Libcrux.Kem.Kyber.Conversions.f_push public_key_serialized seed_for_A
-        <:
-        Libcrux.Kem.Kyber.Conversions.t_UpdatableArray v_PUBLIC_KEY_SIZE)
+    build_public_key v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE tt_as_ntt seed_for_A
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
     serialize_key v_K v_PRIVATE_KEY_SIZE secret_as_ntt
