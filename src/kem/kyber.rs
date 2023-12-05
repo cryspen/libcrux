@@ -38,12 +38,30 @@ use self::{
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     conversions::into_padded_array,
     hash_functions::{G, H, PRF},
-    ind_cpa::serialize_secret_key,
 };
 
 /// Seed size for key generation
 pub(in crate::kem) const KEY_GENERATION_SEED_SIZE: usize =
     CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
+
+#[inline(always)]
+pub(super) fn serialize_kem_secret_key<const SERIALIZED_KEY_LEN: usize>(
+    private_key: &[u8],
+    public_key: &[u8],
+    implicit_rejection_value: &[u8],
+) -> [u8; SERIALIZED_KEY_LEN] {
+    let mut out = [0u8; SERIALIZED_KEY_LEN];
+    let mut pointer = 0;
+    out[pointer..pointer + private_key.len()].copy_from_slice(private_key);
+    pointer += private_key.len();
+    out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
+    pointer += public_key.len();
+    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&H(public_key));
+    pointer += H_DIGEST_SIZE;
+    out[pointer..pointer + implicit_rejection_value.len()]
+        .copy_from_slice(implicit_rejection_value);
+    out
+}
 
 pub(super) fn generate_keypair<
     const K: usize,
@@ -68,7 +86,7 @@ pub(super) fn generate_keypair<
         ETA1_RANDOMNESS_SIZE,
     >(ind_cpa_keypair_randomness);
 
-    let secret_key_serialized = serialize_secret_key(
+    let secret_key_serialized = serialize_kem_secret_key(
         ind_cpa_private_key.as_slice(),
         public_key.as_slice(),
         implicit_rejection_value,

@@ -10,6 +10,111 @@ let v_KEY_GENERATION_SEED_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
 
+let serialize_kem_secret_key
+      (v_SERIALIZED_KEY_LEN: usize)
+      (private_key public_key implicit_rejection_value: t_Slice u8)
+    : t_Array u8 v_SERIALIZED_KEY_LEN =
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
+  let pointer:usize = sz 0 in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          private_key
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! (Core.Slice.impl__len private_key <: usize) in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          public_key
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! (Core.Slice.impl__len public_key <: usize) in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end = pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key
+                <:
+                t_Array u8 (sz 32))
+            <:
+            t_Slice u8)
+        <:
+        t_Slice u8)
+  in
+  let pointer:usize = pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE in
+  let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({
+          Core.Ops.Range.f_start = pointer;
+          Core.Ops.Range.f_end
+          =
+          pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+        }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = pointer;
+                Core.Ops.Range.f_end
+                =
+                pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          implicit_rejection_value
+        <:
+        t_Slice u8)
+  in
+  out
+
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
@@ -213,7 +318,7 @@ let generate_keypair
       ind_cpa_keypair_randomness
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
-    Libcrux.Kem.Kyber.Ind_cpa.serialize_secret_key v_PRIVATE_KEY_SIZE
+    serialize_kem_secret_key v_PRIVATE_KEY_SIZE
       (Rust_primitives.unsize (Libcrux.Kem.Kyber.Types.impl_30__as_slice v_CPA_PRIVATE_KEY_SIZE
               ind_cpa_private_key
             <:
