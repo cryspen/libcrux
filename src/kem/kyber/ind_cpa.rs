@@ -1,9 +1,6 @@
 use super::{
     arithmetic::PolynomialRingElement,
-    constants::{
-        BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE,
-        SHARED_SECRET_SIZE,
-    },
+    constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     conversions::into_padded_array,
     conversions::{UpdatableArray, UpdatingArray},
     hash_functions::{XOFx4, G, H, PRF},
@@ -48,7 +45,7 @@ fn sample_matrix_A<const K: usize>(
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
-        let xof_bytes = XOFx4::<REJECTION_SAMPLING_SEED_SIZE, K>(seeds);
+        let xof_bytes = XOFx4::<K>(seeds);
 
         for j in 0..K {
             let (sampled, error) = sample_from_uniform_distribution(xof_bytes[j]);

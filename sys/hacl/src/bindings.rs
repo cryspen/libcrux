@@ -1083,6 +1083,87 @@ extern "C" {
         key_len: u32,
     );
 }
+pub type Hacl_SHA3_Vec256_disjoint4_4 = *mut ::core::ffi::c_void;
+extern "C" {
+    pub fn Hacl_SHA3_Vec256_shake128_vec256(
+        inputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        outputByteLen: u32,
+        output0: *mut u8,
+        output1: *mut u8,
+        output2: *mut u8,
+        output3: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_SHA3_Vec256_shake256_vec256(
+        inputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        outputByteLen: u32,
+        output0: *mut u8,
+        output1: *mut u8,
+        output2: *mut u8,
+        output3: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_SHA3_Vec256_sha3_224_vec256(
+        inputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        output0: *mut u8,
+        output1: *mut u8,
+        output2: *mut u8,
+        output3: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_SHA3_Vec256_sha3_256_vec256(
+        inputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        output0: *mut u8,
+        output1: *mut u8,
+        output2: *mut u8,
+        output3: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_SHA3_Vec256_sha3_384_vec256(
+        inputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        output0: *mut u8,
+        output1: *mut u8,
+        output2: *mut u8,
+        output3: *mut u8,
+    );
+}
+extern "C" {
+    pub fn Hacl_SHA3_Vec256_sha3_512_vec256(
+        inputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        output0: *mut u8,
+        output1: *mut u8,
+        output2: *mut u8,
+        output3: *mut u8,
+    );
+}
 extern "C" {
     pub fn EverCrypt_AutoConfig2_has_shaext() -> bool;
 }
