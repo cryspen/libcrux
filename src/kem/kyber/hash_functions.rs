@@ -33,7 +33,10 @@ pub(crate) fn XOFx4<const K: usize>(
     #[cfg(simd256)]
     {
         // Always do 4 SHA3 at a time even if we need less.
-        match K {
+
+        // We cast K to a u8 since otherwise, hax reports:
+        // error[HAX0001]: (FStar backend) something is not implemented yet. usize literals (fail if pattern maching, otherwise TODO)
+        match K as u8 {
             2 => {
                 let (d0, d1, _, _) = crate::hacl::sha3::simd256::shake128::<
                     REJECTION_SAMPLING_SEED_SIZE,
