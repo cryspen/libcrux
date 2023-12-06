@@ -44,8 +44,9 @@ use self::{
 pub(in crate::kem) const KEY_GENERATION_SEED_SIZE: usize =
     CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
 
+/// Serialize the secret key.
 #[inline(always)]
-pub(super) fn serialize_kem_secret_key<const SERIALIZED_KEY_LEN: usize>(
+fn serialize_kem_secret_key<const SERIALIZED_KEY_LEN: usize>(
     private_key: &[u8],
     public_key: &[u8],
     implicit_rejection_value: &[u8],
@@ -86,18 +87,15 @@ pub(super) fn generate_keypair<
         ETA1_RANDOMNESS_SIZE,
     >(ind_cpa_keypair_randomness);
 
-    let secret_key_serialized = serialize_kem_secret_key(
-        ind_cpa_private_key.as_slice(),
-        public_key.as_slice(),
-        implicit_rejection_value,
-    );
+    let secret_key_serialized =
+        serialize_kem_secret_key(&ind_cpa_private_key, &public_key, implicit_rejection_value);
     if let Some(error) = sampling_a_error {
         Err(error)
     } else {
         let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
             KyberPrivateKey::from(secret_key_serialized);
 
-        Ok(KyberKeyPair::from(private_key, public_key))
+        Ok(KyberKeyPair::from(private_key, public_key.into()))
     }
 }
 
@@ -142,7 +140,7 @@ pub(super) fn encapsulate<
 
     match sampling_a_error {
         Some(e) => Err(e),
-        None => Ok((ciphertext, shared_secret.try_into().unwrap())),
+        None => Ok((ciphertext.into(), shared_secret.try_into().unwrap())),
     }
 }
 
@@ -177,7 +175,7 @@ pub(super) fn decapsulate<
         C1_SIZE,
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
-    >(ind_cpa_secret_key, ciphertext);
+    >(ind_cpa_secret_key, &ciphertext.value);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);

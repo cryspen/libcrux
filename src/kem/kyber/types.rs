@@ -93,21 +93,15 @@ macro_rules! impl_index_impls_for_generic_struct {
 }
 
 impl_generic_struct!(KyberCiphertext);
-impl_generic_struct!(KyberSharedSecret);
 impl_generic_struct!(KyberPrivateKey);
 impl_generic_struct!(KyberPublicKey);
-
-// The PKE Private Key
-impl_generic_struct!(PrivateKey);
 
 // These traits are used only in `ind_cpa` for kyber cipher text.
 mod index_impls {
     use super::*;
     impl_index_impls_for_generic_struct!(KyberCiphertext);
-    impl_index_impls_for_generic_struct!(KyberSharedSecret);
     impl_index_impls_for_generic_struct!(KyberPrivateKey);
     impl_index_impls_for_generic_struct!(KyberPublicKey);
-    impl_index_impls_for_generic_struct!(PrivateKey);
 }
 
 /// A Kyber key pair
