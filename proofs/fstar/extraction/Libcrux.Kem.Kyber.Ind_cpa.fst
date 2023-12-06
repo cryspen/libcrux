@@ -3,6 +3,40 @@ module Libcrux.Kem.Kyber.Ind_cpa
 open Core
 open FStar.Mul
 
+let into_padded_array (v_LEN: usize) (slice: t_Slice u8) : t_Array u8 v_LEN =
+  let _:Prims.unit =
+    if true
+    then
+      let _:Prims.unit =
+        if ~.((Core.Slice.impl__len slice <: usize) <=. v_LEN <: bool)
+        then
+          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: slice.len() <= LEN"
+
+              <:
+              Rust_primitives.Hax.t_Never)
+      in
+      ()
+  in
+  let out:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
+  let out:t_Array u8 v_LEN =
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = Core.Slice.impl__len slice <: usize }
+        <:
+        Core.Ops.Range.t_Range usize)
+      (Core.Slice.impl__copy_from_slice (out.[ {
+                Core.Ops.Range.f_start = sz 0;
+                Core.Ops.Range.f_end = Core.Slice.impl__len slice <: usize
+              }
+              <:
+              Core.Ops.Range.t_Range usize ]
+            <:
+            t_Slice u8)
+          slice
+        <:
+        t_Slice u8)
+  in
+  out
+
 let sample_ring_element_cbd
       (v_K v_ETA2_RANDOMNESS_SIZE v_ETA2: usize)
       (prf_input: t_Array u8 (sz 33))
@@ -337,12 +371,10 @@ let encrypt
       (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
     Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     Libcrux.Kem.Kyber.Matrix.sample_matrix_A v_K
-      (Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 34) seed <: t_Array u8 (sz 34))
+      (into_padded_array (sz 34) seed <: t_Array u8 (sz 34))
       false
   in
-  let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
-    Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 33) randomness
-  in
+  let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) = into_padded_array (sz 33) randomness in
   let r_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     u8) =
     sample_vector_cbd_then_ntt v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE prf_input 0uy
@@ -387,8 +419,7 @@ let encrypt
       v
   in
   let (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE):t_Array u8 v_CIPHERTEXT_SIZE =
-    Libcrux.Kem.Kyber.Conversions.into_padded_array v_CIPHERTEXT_SIZE
-      (Rust_primitives.unsize c1 <: t_Slice u8)
+    into_padded_array v_CIPHERTEXT_SIZE (Rust_primitives.unsize c1 <: t_Slice u8)
   in
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from ciphertext
@@ -529,11 +560,11 @@ let generate_keypair
       (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
     Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     Libcrux.Kem.Kyber.Matrix.sample_matrix_A v_K
-      (Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 34) seed_for_A <: t_Array u8 (sz 34))
+      (into_padded_array (sz 34) seed_for_A <: t_Array u8 (sz 34))
       true
   in
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
-    Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 33) seed_for_secret_and_error
+    into_padded_array (sz 33) seed_for_secret_and_error
   in
   let secret_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       v_K &

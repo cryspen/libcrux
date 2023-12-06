@@ -3,7 +3,6 @@ use std::usize;
 use super::{
     arithmetic::PolynomialRingElement,
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
-    conversions::into_padded_array,
     hash_functions::{G, PRF},
     matrix::*,
     ntt::*,
@@ -16,6 +15,15 @@ use super::{
     },
     Error,
 };
+
+/// Pad the `slice` with `0`s at the end.
+#[inline(always)]
+pub(super) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
+    debug_assert!(slice.len() <= LEN);
+    let mut out = [0u8; LEN];
+    out[0..slice.len()].copy_from_slice(slice);
+    out
+}
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]

@@ -140,7 +140,7 @@ let decapsulate
       ciphertext.Libcrux.Kem.Kyber.Types.f_value
   in
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
-    Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 64)
+    Libcrux.Kem.Kyber.Ind_cpa.into_padded_array (sz 64)
       (Rust_primitives.unsize decrypted <: t_Slice u8)
   in
   let to_hash:t_Array u8 (sz 64) =
@@ -168,7 +168,7 @@ let decapsulate
   in
   let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
     v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
-    Libcrux.Kem.Kyber.Conversions.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
+    Libcrux.Kem.Kyber.Ind_cpa.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
       implicit_rejection_value
   in
   let to_hash:t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
@@ -200,7 +200,7 @@ let decapsulate
   let selector:u8 =
     Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
       (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
-      (Core.Convert.f_as_ref expected_ciphertext <: t_Slice u8)
+      (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
   in
   Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
     (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
@@ -215,7 +215,7 @@ let encapsulate
       (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
       Libcrux.Kem.Kyber.Types.t_Error =
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
-    Libcrux.Kem.Kyber.Conversions.into_padded_array (sz 64)
+    Libcrux.Kem.Kyber.Ind_cpa.into_padded_array (sz 64)
       (Rust_primitives.unsize randomness <: t_Slice u8)
   in
   let to_hash:t_Array u8 (sz 64) =

@@ -10,7 +10,6 @@ pub(crate) mod constants;
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
-mod conversions;
 mod hash_functions;
 mod ind_cpa;
 mod matrix;
@@ -36,8 +35,8 @@ use self::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
-    conversions::into_padded_array,
     hash_functions::{G, H, PRF},
+    ind_cpa::into_padded_array,
 };
 
 /// Seed size for key generation
@@ -220,7 +219,7 @@ pub(super) fn decapsulate<
 
     let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
         ciphertext.as_ref(),
-        expected_ciphertext.as_ref(),
+        &expected_ciphertext,
     );
 
     select_shared_secret_in_constant_time(
