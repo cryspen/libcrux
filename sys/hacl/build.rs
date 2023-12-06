@@ -109,7 +109,6 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .allowlist_function("Hacl_Curve25519.*")
         .allowlist_function("Hacl_Hash_SHA2.*")
         .allowlist_function("Hacl_Hash_.*")
-        .allowlist_function("Hacl_SHA3_.*")
         .allowlist_function("Hacl_Blake2.*")
         .allowlist_function("Hacl_HMAC_DRBG.*")
         .allowlist_function("Hacl_Ed25519.*")
@@ -124,7 +123,6 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .allowlist_type("Hacl_HMAC_DRBG.*")
         .allowlist_type("Hacl_Streaming.*")
         .allowlist_type("Hacl_Hash_.*")
-        .allowlist_type("Hacl_SHA3_.*")
         .allowlist_var("Spec_.*")
         .allowlist_var("Hacl_Streaming.*")
         // XXX: These functions use uint128 in the API, which is not FFI safe
@@ -231,7 +229,7 @@ fn build(platform: &Platform, home_path: &Path) {
         "Hacl_EC_K256.c",
         "Hacl_FFDHE.c",
         "Hacl_Hash_SHA3.c",
-        "Hacl_SHA3_Scalar.c",
+        "Hacl_Hash_SHA3_Scalar.c",
         "Hacl_Hash_SHA1.c",
         "Hacl_Hash_MD5.c",
         "Hacl_HKDF.c",

@@ -23,8 +23,8 @@
  */
 
 
-#ifndef __Hacl_SHA3_Vec256_H
-#define __Hacl_SHA3_Vec256_H
+#ifndef __Hacl_Hash_SHA3_Simd256_H
+#define __Hacl_Hash_SHA3_Simd256_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -34,8 +34,6 @@ extern "C" {
 #include "krml/internal/types.h"
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
-
-typedef void *Hacl_SHA3_Vec256_disjoint4_4;
 
 typedef struct K____uint8_t___uint8_t__s
 {
@@ -59,7 +57,7 @@ typedef struct K____uint8_t___uint8_t____K____uint8_t___uint8_t__s
 K____uint8_t___uint8_t____K____uint8_t___uint8_t_;
 
 void
-Hacl_SHA3_Vec256_shake128_vec256(
+Hacl_Hash_SHA3_Simd256_shake128(
   uint32_t inputByteLen,
   uint8_t *input0,
   uint8_t *input1,
@@ -73,7 +71,7 @@ Hacl_SHA3_Vec256_shake128_vec256(
 );
 
 void
-Hacl_SHA3_Vec256_shake256_vec256(
+Hacl_Hash_SHA3_Simd256_shake256(
   uint32_t inputByteLen,
   uint8_t *input0,
   uint8_t *input1,
@@ -87,7 +85,7 @@ Hacl_SHA3_Vec256_shake256_vec256(
 );
 
 void
-Hacl_SHA3_Vec256_sha3_224_vec256(
+Hacl_Hash_SHA3_Simd256_sha3_224(
   uint32_t inputByteLen,
   uint8_t *input0,
   uint8_t *input1,
@@ -100,7 +98,7 @@ Hacl_SHA3_Vec256_sha3_224_vec256(
 );
 
 void
-Hacl_SHA3_Vec256_sha3_256_vec256(
+Hacl_Hash_SHA3_Simd256_sha3_256(
   uint32_t inputByteLen,
   uint8_t *input0,
   uint8_t *input1,
@@ -113,7 +111,7 @@ Hacl_SHA3_Vec256_sha3_256_vec256(
 );
 
 void
-Hacl_SHA3_Vec256_sha3_384_vec256(
+Hacl_Hash_SHA3_Simd256_sha3_384(
   uint32_t inputByteLen,
   uint8_t *input0,
   uint8_t *input1,
@@ -126,7 +124,7 @@ Hacl_SHA3_Vec256_sha3_384_vec256(
 );
 
 void
-Hacl_SHA3_Vec256_sha3_512_vec256(
+Hacl_Hash_SHA3_Simd256_sha3_512(
   uint32_t inputByteLen,
   uint8_t *input0,
   uint8_t *input1,
@@ -142,5 +140,5 @@ Hacl_SHA3_Vec256_sha3_512_vec256(
 }
 #endif
 
-#define __Hacl_SHA3_Vec256_H_DEFINED
+#define __Hacl_Hash_SHA3_Simd256_H_DEFINED
 #endif

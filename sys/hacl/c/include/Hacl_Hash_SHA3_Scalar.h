@@ -23,8 +23,8 @@
  */
 
 
-#ifndef __Hacl_SHA3_Scalar_H
-#define __Hacl_SHA3_Scalar_H
+#ifndef __Hacl_Hash_SHA3_Scalar_H
+#define __Hacl_Hash_SHA3_Scalar_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -36,7 +36,7 @@ extern "C" {
 #include "krml/internal/target.h"
 
 void
-Hacl_SHA3_Scalar_shake128_hacl(
+Hacl_Hash_SHA3_Scalar_shake128(
   uint32_t inputByteLen,
   uint8_t *input,
   uint32_t outputByteLen,
@@ -44,24 +44,24 @@ Hacl_SHA3_Scalar_shake128_hacl(
 );
 
 void
-Hacl_SHA3_Scalar_shake256_hacl(
+Hacl_Hash_SHA3_Scalar_shake256(
   uint32_t inputByteLen,
   uint8_t *input,
   uint32_t outputByteLen,
   uint8_t *output
 );
 
-void Hacl_SHA3_Scalar_sha3_224(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
+void Hacl_Hash_SHA3_Scalar_sha3_224(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
 
-void Hacl_SHA3_Scalar_sha3_256(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
+void Hacl_Hash_SHA3_Scalar_sha3_256(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
 
-void Hacl_SHA3_Scalar_sha3_384(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
+void Hacl_Hash_SHA3_Scalar_sha3_384(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
 
-void Hacl_SHA3_Scalar_sha3_512(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
+void Hacl_Hash_SHA3_Scalar_sha3_512(uint32_t inputByteLen, uint8_t *input, uint8_t *output);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __Hacl_SHA3_Scalar_H_DEFINED
+#define __Hacl_Hash_SHA3_Scalar_H_DEFINED
 #endif

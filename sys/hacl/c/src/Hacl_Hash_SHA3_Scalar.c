@@ -23,7 +23,7 @@
  */
 
 
-#include "internal/Hacl_SHA3_Scalar.h"
+#include "internal/Hacl_Hash_SHA3_Scalar.h"
 
 const
 uint32_t
@@ -54,7 +54,7 @@ Hacl_Impl_SHA3_Vec_keccak_rndc[24U] =
   };
 
 void
-Hacl_SHA3_Scalar_shake128_hacl(
+Hacl_Hash_SHA3_Scalar_shake128(
   uint32_t inputByteLen,
   uint8_t *input,
   uint32_t outputByteLen,
@@ -446,7 +446,7 @@ Hacl_SHA3_Scalar_shake128_hacl(
 }
 
 void
-Hacl_SHA3_Scalar_shake256_hacl(
+Hacl_Hash_SHA3_Scalar_shake256(
   uint32_t inputByteLen,
   uint8_t *input,
   uint32_t outputByteLen,
@@ -837,7 +837,7 @@ Hacl_SHA3_Scalar_shake256_hacl(
   memcpy(output + outputByteLen - remOut, hbuf, remOut * sizeof (uint8_t));
 }
 
-void Hacl_SHA3_Scalar_sha3_224(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
+void Hacl_Hash_SHA3_Scalar_sha3_224(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
 {
   uint32_t rateInBytes = 144U;
   uint64_t s[25U] = { 0U };
@@ -1223,7 +1223,7 @@ void Hacl_SHA3_Scalar_sha3_224(uint32_t inputByteLen, uint8_t *input, uint8_t *o
   memcpy(output + 28U - remOut, hbuf, remOut * sizeof (uint8_t));
 }
 
-void Hacl_SHA3_Scalar_sha3_256(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
+void Hacl_Hash_SHA3_Scalar_sha3_256(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
 {
   uint32_t rateInBytes = 136U;
   uint64_t s[25U] = { 0U };
@@ -1609,7 +1609,7 @@ void Hacl_SHA3_Scalar_sha3_256(uint32_t inputByteLen, uint8_t *input, uint8_t *o
   memcpy(output + 32U - remOut, hbuf, remOut * sizeof (uint8_t));
 }
 
-void Hacl_SHA3_Scalar_sha3_384(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
+void Hacl_Hash_SHA3_Scalar_sha3_384(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
 {
   uint32_t rateInBytes = 104U;
   uint64_t s[25U] = { 0U };
@@ -1995,7 +1995,7 @@ void Hacl_SHA3_Scalar_sha3_384(uint32_t inputByteLen, uint8_t *input, uint8_t *o
   memcpy(output + 48U - remOut, hbuf, remOut * sizeof (uint8_t));
 }
 
-void Hacl_SHA3_Scalar_sha3_512(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
+void Hacl_Hash_SHA3_Scalar_sha3_512(uint32_t inputByteLen, uint8_t *input, uint8_t *output)
 {
   uint32_t rateInBytes = 72U;
   uint64_t s[25U] = { 0U };
