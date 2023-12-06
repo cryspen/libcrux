@@ -65,7 +65,6 @@ UNVERIFIED = \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
-	Libcrux.Kem.Kyber.Conversions.fst \
 	Libcrux.Kem.Kyber.Matrix.fst \
 	Libcrux.Kem.Kyber.Ntt.fst \
 	Libcrux.Kem.Kyber.Sampling.fst \
