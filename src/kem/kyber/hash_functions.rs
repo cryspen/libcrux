@@ -16,9 +16,6 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     digest::shake256::<LEN>(input)
 }
 
-// At the moment, this function is just a stub, and does not actually implement
-// 4xKeccak. Implementation of 4xKeccak is being tracked in:
-// https://github.com/cryspen/libcrux/issues/102
 #[inline(always)]
 pub(crate) fn XOFx4<const K: usize>(
     input: [[u8; 34]; K],

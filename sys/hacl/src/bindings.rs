@@ -1083,9 +1083,8 @@ extern "C" {
         key_len: u32,
     );
 }
-pub type Hacl_SHA3_Vec256_disjoint4_4 = *mut ::core::ffi::c_void;
 extern "C" {
-    pub fn Hacl_SHA3_Vec256_shake128_vec256(
+    pub fn Hacl_Hash_SHA3_Simd256_shake128(
         inputByteLen: u32,
         input0: *mut u8,
         input1: *mut u8,
@@ -1099,7 +1098,7 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn Hacl_SHA3_Vec256_shake256_vec256(
+    pub fn Hacl_Hash_SHA3_Simd256_shake256(
         inputByteLen: u32,
         input0: *mut u8,
         input1: *mut u8,
@@ -1113,7 +1112,7 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn Hacl_SHA3_Vec256_sha3_224_vec256(
+    pub fn Hacl_Hash_SHA3_Simd256_sha3_224(
         inputByteLen: u32,
         input0: *mut u8,
         input1: *mut u8,
@@ -1126,7 +1125,7 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn Hacl_SHA3_Vec256_sha3_256_vec256(
+    pub fn Hacl_Hash_SHA3_Simd256_sha3_256(
         inputByteLen: u32,
         input0: *mut u8,
         input1: *mut u8,
@@ -1139,7 +1138,7 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn Hacl_SHA3_Vec256_sha3_384_vec256(
+    pub fn Hacl_Hash_SHA3_Simd256_sha3_384(
         inputByteLen: u32,
         input0: *mut u8,
         input1: *mut u8,
@@ -1152,7 +1151,7 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn Hacl_SHA3_Vec256_sha3_512_vec256(
+    pub fn Hacl_Hash_SHA3_Simd256_sha3_512(
         inputByteLen: u32,
         input0: *mut u8,
         input1: *mut u8,

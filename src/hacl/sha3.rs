@@ -97,9 +97,9 @@ pub(crate) fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 #[cfg(simd256)]
 pub mod simd256 {
     use libcrux_hacl::{
-        Hacl_SHA3_Vec256_sha3_224_vec256, Hacl_SHA3_Vec256_sha3_256_vec256,
-        Hacl_SHA3_Vec256_sha3_384_vec256, Hacl_SHA3_Vec256_sha3_512_vec256,
-        Hacl_SHA3_Vec256_shake128_vec256, Hacl_SHA3_Vec256_shake256_vec256,
+        Hacl_Hash_SHA3_Simd256_sha3_224, Hacl_Hash_SHA3_Simd256_sha3_256,
+        Hacl_Hash_SHA3_Simd256_sha3_384, Hacl_Hash_SHA3_Simd256_sha3_512,
+        Hacl_Hash_SHA3_Simd256_shake128, Hacl_Hash_SHA3_Simd256_shake256,
     };
 
     macro_rules! impl_sha3_vec {
@@ -145,10 +145,10 @@ pub mod simd256 {
         };
     }
 
-    impl_sha3_vec!(sha224, Hacl_SHA3_Vec256_sha3_224_vec256, 28);
-    impl_sha3_vec!(sha256, Hacl_SHA3_Vec256_sha3_256_vec256, 32);
-    impl_sha3_vec!(sha384, Hacl_SHA3_Vec256_sha3_384_vec256, 48);
-    impl_sha3_vec!(sha512, Hacl_SHA3_Vec256_sha3_512_vec256, 64);
+    impl_sha3_vec!(sha224, Hacl_Hash_SHA3_Simd256_sha3_224, 28);
+    impl_sha3_vec!(sha256, Hacl_Hash_SHA3_Simd256_sha3_256, 32);
+    impl_sha3_vec!(sha384, Hacl_Hash_SHA3_Simd256_sha3_384, 48);
+    impl_sha3_vec!(sha512, Hacl_Hash_SHA3_Simd256_sha3_512, 64);
 
     /// SHAKE 128
     #[inline(always)]
@@ -171,7 +171,7 @@ pub mod simd256 {
         let mut digest2 = [0u8; BYTES];
         let mut digest3 = [0u8; BYTES];
         unsafe {
-            Hacl_SHA3_Vec256_shake128_vec256(
+            Hacl_Hash_SHA3_Simd256_shake128(
                 input_len as u32,
                 payload0.as_ptr() as _,
                 payload1.as_ptr() as _,
@@ -211,7 +211,7 @@ pub mod simd256 {
         let mut digest2 = [0u8; BYTES];
         let mut digest3 = [0u8; BYTES];
         unsafe {
-            Hacl_SHA3_Vec256_shake256_vec256(
+            Hacl_Hash_SHA3_Simd256_shake256(
                 input_len as u32,
                 payload0.as_ptr() as _,
                 payload1.as_ptr() as _,
