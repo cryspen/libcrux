@@ -3,21 +3,16 @@ module Libcrux.Kem.Kyber.Ind_cpa
 open Core
 open FStar.Mul
 
-val serialize_secret_key (#p:Spec.Kyber.params)
-      (v_SERIALIZED_KEY_LEN: usize)
-      (private_key public_key implicit_rejection_value: t_Slice u8)
-    : Pure (t_Array u8 v_SERIALIZED_KEY_LEN)
-      (requires (length private_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
-                 length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
-                 length implicit_rejection_value == Spec.Kyber.v_SHARED_SECRET_SIZE /\
-                 v_SERIALIZED_KEY_LEN == Spec.Kyber.v_SECRET_KEY_SIZE p))
-      (ensures (fun res -> res == Spec.Kyber.ind_cpa_serialize_secret_key p (private_key,public_key) implicit_rejection_value))
-                 
+val into_padded_array (v_LEN: usize) (slice: t_Slice u8) :
+    Pure (t_Array u8 v_LEN)
+    (requires (length slice <=. v_LEN))
+    (ensures (fun res -> Seq.slice res 0 (Seq.length slice) == slice))
+
 val decrypt (#p:Spec.Kyber.params)
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
       (secret_key: t_Slice u8)
-      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : Pure (t_Array u8 (sz 32))
       (requires (v_K == p.v_RANK /\
                  length secret_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
@@ -25,7 +20,7 @@ val decrypt (#p:Spec.Kyber.params)
                  v_VECTOR_U_ENCODED_SIZE == Spec.Kyber.v_C1_SIZE p /\
                  v_U_COMPRESSION_FACTOR == p.v_VECTOR_U_COMPRESSION_FACTOR))
       (ensures (fun res ->
-                res == Spec.Kyber.ind_cpa_decrypt p secret_key ciphertext.f_value))
+                res == Spec.Kyber.ind_cpa_decrypt p secret_key ciphertext))
 
 
 val encrypt (#p:Spec.Kyber.params)
@@ -34,7 +29,7 @@ val encrypt (#p:Spec.Kyber.params)
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8{length randomness <. sz 33})
-    : Pure (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE &
+    : Pure (t_Array u8 v_CIPHERTEXT_SIZE &
            Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
       (requires (v_K == p.v_RANK /\
                  length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
@@ -45,7 +40,7 @@ val encrypt (#p:Spec.Kyber.params)
       (ensures (fun (ct,err) ->
                let spec_result = Spec.Kyber.ind_cpa_encrypt p public_key message randomness in
                match err with
-               | Core.Option.Option_None -> spec_result == Spec.Kyber.Ok (ct.f_value)
+               | Core.Option.Option_None -> spec_result == Spec.Kyber.Ok (ct)
                | Core.Option.Option_Some _ -> spec_result == Spec.Kyber.Err Spec.Kyber.Error_RejectionSampling))
                
 
@@ -53,8 +48,7 @@ val generate_keypair (#p:Spec.Kyber.params)
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (key_generation_seed: t_Slice u8)
-    : Pure ((Libcrux.Kem.Kyber.Types.t_PrivateKey v_PRIVATE_KEY_SIZE &
-           Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE) &
+    : Pure ((t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) &
            Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
       (requires (v_K == p.v_RANK /\
                  v_PUBLIC_KEY_SIZE == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
@@ -63,5 +57,7 @@ val generate_keypair (#p:Spec.Kyber.params)
       (ensures (fun ((sk,pk),err) ->
                let spec_result = Spec.Kyber.ind_cpa_generate_keypair p key_generation_seed in
                match err with
-               | Core.Option.Option_None -> spec_result == Spec.Kyber.Ok (sk.f_value,pk.f_value)
+               | Core.Option.Option_None -> spec_result == Spec.Kyber.Ok (sk,pk)
                | Core.Option.Option_Some _ -> spec_result == Spec.Kyber.Err Spec.Kyber.Error_RejectionSampling))
+ 
+    

@@ -73,23 +73,21 @@ let t_Kyber512PublicKey = Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 800)
 
 let decapsulate_512_
       (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 1632))
-      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 768))
-    : t_Array u8 (sz 32) =
-  Libcrux.Kem.Kyber.decapsulate #Spec.Kyber.kyber512_params (sz 2) (sz 1632) (sz 768) (sz 800) (sz 768) (sz 768) (sz 640)
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 768)) =
+  Libcrux.Kem.Kyber.decapsulate #Spec.Kyber.kyber512_params 
+    (sz 2) (sz 1632) (sz 768) (sz 800) (sz 768) (sz 768) (sz 640)
     (sz 128) (sz 10) (sz 4) (sz 320) (sz 3) (sz 192) (sz 2) (sz 128) (sz 800) secret_key ciphertext
 
 let encapsulate_512_
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 800))
-      (randomness: t_Array u8 (sz 32))
-    : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 768) & t_Array u8 (sz 32))
-      Libcrux.Kem.Kyber.Types.t_Error =
-  Libcrux.Kem.Kyber.encapsulate #Spec.Kyber.kyber512_params (sz 2) (sz 768) (sz 800) (sz 768) (sz 640) (sz 128) (sz 10) (sz 4)
+      (randomness: t_Array u8 (sz 32)) =
+  Libcrux.Kem.Kyber.encapsulate #Spec.Kyber.kyber512_params 
+    (sz 2) (sz 768) (sz 800) (sz 768) (sz 640) (sz 128) (sz 10) (sz 4)
     (sz 320) (sz 3) (sz 192) (sz 2) (sz 128) public_key randomness
 
-let generate_key_pair_512_ (randomness: t_Array u8 (sz 64))
-    : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 1632) (sz 800))
-      Libcrux.Kem.Kyber.Types.t_Error =
-  Libcrux.Kem.Kyber.generate_keypair #Spec.Kyber.kyber512_params (sz 2)
+let generate_key_pair_512_ (randomness: t_Array u8 (sz 64)) =
+  Libcrux.Kem.Kyber.generate_keypair #Spec.Kyber.kyber512_params 
+    (sz 2)
     (sz 768)
     (sz 1632)
     (sz 800)

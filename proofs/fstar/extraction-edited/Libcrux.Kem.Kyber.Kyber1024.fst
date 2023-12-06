@@ -5,7 +5,7 @@ open FStar.Mul
 
 let v_ETA1: usize = sz 2
 
-let v_ETA1_RADOMNESS_SIZE: usize = v_ETA1 *! sz 64
+let v_ETA1_RANDOMNESS_SIZE: usize = v_ETA1 *! sz 64
 
 let v_ETA2: usize = sz 2
 
@@ -71,26 +71,23 @@ let t_Kyber1024PrivateKey = Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 3168)
 unfold
 let t_Kyber1024PublicKey = Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1568)
 
-let decapsulate_1024_
+let decapsulate_1024_ 
       (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 3168))
-      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1568))
-    : t_Array u8 (sz 32) =
-  Libcrux.Kem.Kyber.decapsulate #Spec.Kyber.kyber1024_params (sz 4) (sz 3168) (sz 1536) (sz 1568) (sz 1568) (sz 1536) (sz 1408)
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1568)) =
+  Libcrux.Kem.Kyber.decapsulate #Spec.Kyber.kyber1024_params
+    (sz 4) (sz 3168) (sz 1536) (sz 1568) (sz 1568) (sz 1536) (sz 1408)
     (sz 160) (sz 11) (sz 5) (sz 352) (sz 2) (sz 128) (sz 2) (sz 128) (sz 1600) secret_key ciphertext
 
 let encapsulate_1024_
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1568))
-      (randomness: t_Array u8 (sz 32))
-    : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1568) & t_Array u8 (sz 32))
-      Libcrux.Kem.Kyber.Types.t_Error =
-  Libcrux.Kem.Kyber.encapsulate #Spec.Kyber.kyber1024_params (sz 4) (sz 1568) (sz 1568) (sz 1536) (sz 1408) (sz 160) (sz 11)
+      (randomness: t_Array u8 (sz 32)) =
+  Libcrux.Kem.Kyber.encapsulate #Spec.Kyber.kyber1024_params
+    (sz 4) (sz 1568) (sz 1568) (sz 1536) (sz 1408) (sz 160) (sz 11)
     (sz 5) (sz 352) (sz 2) (sz 128) (sz 2) (sz 128) public_key randomness
 
-let generate_key_pair_1024_ (randomness: t_Array u8 (sz 64))
-    : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 3168) (sz 1568))
-      Libcrux.Kem.Kyber.Types.t_Error =
-  Libcrux.Kem.Kyber.generate_keypair #Spec.Kyber.kyber1024_params (sz 4)
+let generate_key_pair_1024_ (randomness: t_Array u8 (sz 64)) =
+  Libcrux.Kem.Kyber.generate_keypair #Spec.Kyber.kyber1024_params
+    (sz 4)
     (sz 1536)
     (sz 3168)
     (sz 1568)

@@ -49,7 +49,6 @@ all:
 
 
 VERIFIED = \
-	Libcrux.Kem.fst \
 	Libcrux.Kem.Kyber.Constants.fst \
 	Libcrux.Digest.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fsti \
@@ -67,7 +66,6 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
-	Libcrux.Kem.Kyber.Conversions.fst \
 	Libcrux.Kem.Kyber.Ntt.fsti \
 	Libcrux.Kem.Kyber.Matrix.fst \
 	Libcrux.Kem.Kyber.Ntt.fst \
@@ -130,4 +128,3 @@ SHELL=/usr/bin/env bash
 
 clean:
 	rm -rf $(CACHE_DIR)/*
-	rm *.fst
