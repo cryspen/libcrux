@@ -164,7 +164,7 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
                   seeds)
           in
           let xof_bytes:t_Array (t_Array u8 (sz 840)) v_K =
-            Libcrux.Kem.Kyber.Hash_functions.v_XOFx4 (sz 840) v_K seeds
+            Libcrux.Kem.Kyber.Hash_functions.v_XOFx4 v_K seeds
           in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                     Core.Ops.Range.f_start = sz 0;

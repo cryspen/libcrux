@@ -21,12 +21,17 @@ pub(crate) fn XOFx4<const K: usize>(
     input: [[u8; 34]; K],
 ) -> [[u8; REJECTION_SAMPLING_SEED_SIZE]; K] {
     let mut out = [[0u8; REJECTION_SAMPLING_SEED_SIZE]; K];
-    if cfg!(not(simd256)) {
+
+    #[cfg(not(simd256))]
+    {
         for i in 0..K {
             out[i] = digest::shake128::<REJECTION_SAMPLING_SEED_SIZE>(&input[i]);
         }
         out
-    } else {
+    }
+
+    #[cfg(simd256)]
+    {
         // Always do 4 SHA3 at a time even if we need less.
         match K {
             2 => {
