@@ -10,7 +10,6 @@ pub(crate) mod constants;
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
-mod conversions;
 mod hash_functions;
 mod ind_cpa;
 mod matrix;
@@ -36,14 +35,33 @@ use self::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
-    conversions::into_padded_array,
     hash_functions::{G, H, PRF},
-    ind_cpa::serialize_secret_key,
+    ind_cpa::into_padded_array,
 };
 
 /// Seed size for key generation
 pub(in crate::kem) const KEY_GENERATION_SEED_SIZE: usize =
     CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
+
+/// Serialize the secret key.
+#[inline(always)]
+fn serialize_kem_secret_key<const SERIALIZED_KEY_LEN: usize>(
+    private_key: &[u8],
+    public_key: &[u8],
+    implicit_rejection_value: &[u8],
+) -> [u8; SERIALIZED_KEY_LEN] {
+    let mut out = [0u8; SERIALIZED_KEY_LEN];
+    let mut pointer = 0;
+    out[pointer..pointer + private_key.len()].copy_from_slice(private_key);
+    pointer += private_key.len();
+    out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
+    pointer += public_key.len();
+    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&H(public_key));
+    pointer += H_DIGEST_SIZE;
+    out[pointer..pointer + implicit_rejection_value.len()]
+        .copy_from_slice(implicit_rejection_value);
+    out
+}
 
 pub(super) fn generate_keypair<
     const K: usize,
@@ -68,18 +86,15 @@ pub(super) fn generate_keypair<
         ETA1_RANDOMNESS_SIZE,
     >(ind_cpa_keypair_randomness);
 
-    let secret_key_serialized = serialize_secret_key(
-        ind_cpa_private_key.as_slice(),
-        public_key.as_slice(),
-        implicit_rejection_value,
-    );
+    let secret_key_serialized =
+        serialize_kem_secret_key(&ind_cpa_private_key, &public_key, implicit_rejection_value);
     if let Some(error) = sampling_a_error {
         Err(error)
     } else {
         let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
             KyberPrivateKey::from(secret_key_serialized);
 
-        Ok(KyberKeyPair::from(private_key, public_key))
+        Ok(KyberKeyPair::from(private_key, public_key.into()))
     }
 }
 
@@ -124,7 +139,7 @@ pub(super) fn encapsulate<
 
     match sampling_a_error {
         Some(e) => Err(e),
-        None => Ok((ciphertext, shared_secret.try_into().unwrap())),
+        None => Ok((ciphertext.into(), shared_secret.try_into().unwrap())),
     }
 }
 
@@ -159,7 +174,7 @@ pub(super) fn decapsulate<
         C1_SIZE,
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
-    >(ind_cpa_secret_key, ciphertext);
+    >(ind_cpa_secret_key, &ciphertext.value);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
@@ -204,7 +219,7 @@ pub(super) fn decapsulate<
 
     let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
         ciphertext.as_ref(),
-        expected_ciphertext.as_ref(),
+        &expected_ciphertext,
     );
 
     select_shared_secret_in_constant_time(
