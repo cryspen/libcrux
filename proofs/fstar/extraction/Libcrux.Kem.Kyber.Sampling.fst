@@ -3,6 +3,36 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
+let rejection_sampling_panic_msg (randomness: t_Array u8 (sz 840)) (sampled_coefficients: usize)
+    : Alloc.String.t_String =
+  let res:Alloc.String.t_String =
+    Alloc.Fmt.format (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize (let list =
+                  [
+                    "5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but only ";
+                    " coefficients of the ring element could be sampled.\n\nThe (flattened) blocks are: ";
+                    ".\n\nWe would appreciate it if you could report this error verbatim by opening an issue at https://github.com/cryspen/libcrux/issues"
+                  ]
+                in
+                FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 3);
+                Rust_primitives.Hax.array_of_list list)
+            <:
+            t_Slice string)
+          (Rust_primitives.unsize (let list =
+                  [
+                    Core.Fmt.Rt.impl_1__new_display sampled_coefficients <: Core.Fmt.Rt.t_Argument;
+                    Core.Fmt.Rt.impl_1__new_debug randomness <: Core.Fmt.Rt.t_Argument
+                  ]
+                in
+                FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
+                Rust_primitives.Hax.array_of_list list)
+            <:
+            t_Slice Core.Fmt.Rt.t_Argument)
+        <:
+        Core.Fmt.t_Arguments)
+  in
+  let msg:Alloc.String.t_String = res in
+  Alloc.String.f_to_string msg
+
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
@@ -208,7 +238,7 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
         <:
         Rust_primitives.Hax.t_Never)
 
-let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
+let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -317,6 +347,9 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
     let _:Prims.unit = () <: Prims.unit in
     out
   else
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic_display (rejection_sampling_panic_msg randomness
+              sampled_coefficients
+            <:
+            Alloc.String.t_String)
         <:
         Rust_primitives.Hax.t_Never)

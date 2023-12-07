@@ -1,10 +1,22 @@
 use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
 
-pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
-    randomness: [u8; SEED_SIZE],
+fn rejection_sampling_panic_msg(
+    randomness: [u8; REJECTION_SAMPLING_SEED_SIZE],
+    sampled_coefficients: usize,
+) -> String {
+    let msg = format!(
+"5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but only {sampled_coefficients} coefficients of the ring element could be sampled.\n
+The (flattened) blocks are: {randomness:?}.
+\nWe would appreciate it if you could report this error verbatim by opening an issue at https://github.com/cryspen/libcrux/issues");
+
+    msg.to_string()
+}
+
+pub fn sample_from_uniform_distribution(
+    randomness: [u8; REJECTION_SAMPLING_SEED_SIZE],
 ) -> PolynomialRingElement {
     let mut sampled_coefficients: usize = 0;
     let mut out: PolynomialRingElement = PolynomialRingElement::ZERO;
@@ -36,6 +48,7 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
             }
         }
     }
+
     if done {
         hax_lib::debug_assert!(out
             .coefficients
@@ -46,7 +59,10 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
         // Requiring more than 5 blocks to sample a ring element should be very
         // unlikely according to:
         // https://eprint.iacr.org/2023/708.pdf
-        panic!();
+        panic!(
+            "{}",
+            rejection_sampling_panic_msg(randomness, sampled_coefficients)
+        );
     }
 }
 

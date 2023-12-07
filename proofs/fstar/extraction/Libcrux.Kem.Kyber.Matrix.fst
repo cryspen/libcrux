@@ -502,8 +502,9 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
                 in
                 let j:usize = j in
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-                  Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (sz 840)
-                    (xof_bytes.[ j ] <: t_Array u8 (sz 840))
+                  Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (xof_bytes.[ j ]
+                      <:
+                      t_Array u8 (sz 840))
                 in
                 if transpose
                 then
