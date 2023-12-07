@@ -3,32 +3,17 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
-let rejection_sampling_panic_with_diagnostic
-      (randomness: t_Array u8 (sz 840))
-      (sampled_coefficients: usize)
-    : Prims.unit =
+let rejection_sampling_panic_with_diagnostic: Prims.unit =
   let res:Alloc.String.t_String =
-    Alloc.Fmt.format (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize (let list =
+    Alloc.Fmt.format (Core.Fmt.impl_2__new_const (Rust_primitives.unsize (let list =
                   [
-                    "5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but only ";
-                    " coefficients of the ring element could be sampled.\n\nThe (flattened) blocks are: ";
-                    ".\n\nWe would appreciate it if you could report this error verbatim by opening an issue at https://github.com/cryspen/libcrux/issues"
+                    "5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but not all of them could be sampled.\n\n\nWe would appreciate it if you could report this error by opening an issue at https://github.com/cryspen/libcrux/issues"
                   ]
                 in
-                FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 3);
+                FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
                 Rust_primitives.Hax.array_of_list list)
             <:
             t_Slice string)
-          (Rust_primitives.unsize (let list =
-                  [
-                    Core.Fmt.Rt.impl_1__new_display sampled_coefficients <: Core.Fmt.Rt.t_Argument;
-                    Core.Fmt.Rt.impl_1__new_debug randomness <: Core.Fmt.Rt.t_Argument
-                  ]
-                in
-                FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
-                Rust_primitives.Hax.array_of_list list)
-            <:
-            t_Slice Core.Fmt.Rt.t_Argument)
         <:
         Core.Fmt.t_Arguments)
   in
@@ -347,7 +332,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
   let _:Prims.unit =
     if ~.done
     then
-      let _:Prims.unit = rejection_sampling_panic_with_diagnostic randomness sampled_coefficients in
+      let _:Prims.unit = rejection_sampling_panic_with_diagnostic in
       ()
   in
   let _:Prims.unit = () <: Prims.unit in

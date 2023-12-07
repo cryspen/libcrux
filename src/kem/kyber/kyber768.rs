@@ -40,7 +40,7 @@ pub type Kyber768PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 /// Generate Kyber 768 Key Pair
 pub fn generate_key_pair_768(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> Result<KyberKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>, Error> {
+) -> KyberKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768> {
     generate_keypair::<
         RANK_768,
         CPA_PKE_SECRET_KEY_SIZE_768,
@@ -56,13 +56,10 @@ pub fn generate_key_pair_768(
 pub fn encapsulate_768(
     public_key: &KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> Result<
-    (
-        KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
-        KyberSharedSecret,
-    ),
-    Error,
-> {
+) -> (
+    KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
+    KyberSharedSecret,
+) {
     encapsulate::<
         RANK_768,
         CPA_PKE_CIPHERTEXT_SIZE_768,

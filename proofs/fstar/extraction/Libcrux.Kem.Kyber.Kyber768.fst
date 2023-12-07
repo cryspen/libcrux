@@ -81,15 +81,12 @@ let decapsulate_768_
 let encapsulate_768_
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1184))
       (randomness: t_Array u8 (sz 32))
-    : Core.Result.t_Result
-      (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1088) & t_Array u8 (sz 32))
-      Libcrux.Kem.Kyber.Types.t_Error =
+    : (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1088) & t_Array u8 (sz 32)) =
   Libcrux.Kem.Kyber.encapsulate (sz 3) (sz 1088) (sz 1184) (sz 1152) (sz 960) (sz 128) (sz 10)
     (sz 4) (sz 320) (sz 2) (sz 128) (sz 2) (sz 128) public_key randomness
 
 let generate_key_pair_768_ (randomness: t_Array u8 (sz 64))
-    : Core.Result.t_Result (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 2400) (sz 1184))
-      Libcrux.Kem.Kyber.Types.t_Error =
+    : Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 2400) (sz 1184) =
   Libcrux.Kem.Kyber.generate_keypair (sz 3)
     (sz 1152)
     (sz 2400)

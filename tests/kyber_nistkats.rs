@@ -43,7 +43,7 @@ macro_rules! impl_nist_known_answer_tests {
                 serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
             for kat in nist_kats {
-                let key_pair = $key_gen_derand(kat.key_generation_seed).unwrap();
+                let key_pair = $key_gen_derand(kat.key_generation_seed);
 
                 let public_key_hash = digest::sha3_256(key_pair.pk());
                 let secret_key_hash = digest::sha3_256(key_pair.sk());
@@ -52,7 +52,7 @@ macro_rules! impl_nist_known_answer_tests {
                 assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key, "secret keys don't match");
 
                 let (ciphertext, shared_secret) =
-                    $encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed).unwrap();
+                    $encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed);
                 let ciphertext_hash = digest::sha3_256(ciphertext.as_ref());
 
                 assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "ciphertexts don't match");
