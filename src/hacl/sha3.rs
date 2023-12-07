@@ -95,7 +95,7 @@ pub(crate) fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 }
 
 #[cfg(simd256)]
-pub mod simd256 {
+pub mod x4 {
     use libcrux_hacl::{
         Hacl_Hash_SHA3_Simd256_sha3_224, Hacl_Hash_SHA3_Simd256_sha3_256,
         Hacl_Hash_SHA3_Simd256_sha3_384, Hacl_Hash_SHA3_Simd256_sha3_512,
@@ -227,3 +227,90 @@ pub mod simd256 {
         (digest0, digest1, digest2, digest3)
     }
 }
+
+// #[cfg(not(simd256))]
+// pub mod x4 {
+//     macro_rules! impl_sha3_vec {
+//         ($name:ident, $out_len:literal) => {
+//             #[inline(always)]
+//             pub(crate) fn $name(
+//                 payload0: &[u8],
+//                 payload1: &[u8],
+//                 payload2: &[u8],
+//                 payload3: &[u8],
+//             ) -> (
+//                 [u8; $out_len],
+//                 [u8; $out_len],
+//                 [u8; $out_len],
+//                 [u8; $out_len],
+//             ) {
+//                 let input_len = payload0.len();
+//                 debug_assert!(
+//                     input_len == payload1.len()
+//                         && input_len == payload2.len()
+//                         && input_len == payload3.len()
+//                         && input_len <= u32::MAX as usize
+//                 );
+//                 let mut digest0 = super::$name(payload0);
+//                 let mut digest1 = super::$name(payload1);
+//                 let mut digest2 = super::$name(payload2);
+//                 let mut digest3 = super::$name(payload3);
+//                 (digest0, digest1, digest2, digest3)
+//             }
+//         };
+//     }
+
+//     impl_sha3_vec!(sha224, 28);
+//     impl_sha3_vec!(sha256, 32);
+//     impl_sha3_vec!(sha384, 48);
+//     impl_sha3_vec!(sha512, 64);
+
+//     /// SHAKE 128
+//     #[inline(always)]
+//     pub(crate) fn shake128<const BYTES: usize>(
+//         payload0: &[u8],
+//         payload1: &[u8],
+//         payload2: &[u8],
+//         payload3: &[u8],
+//     ) -> ([u8; BYTES], [u8; BYTES], [u8; BYTES], [u8; BYTES]) {
+//         let input_len = payload0.len();
+//         debug_assert!(
+//             input_len == payload1.len()
+//                 && input_len == payload2.len()
+//                 && input_len == payload3.len()
+//                 && input_len <= u32::MAX as usize
+//                 && BYTES <= u32::MAX as usize
+//         );
+//         let mut digest0 = super::shake128(payload0);
+//         let mut digest1 = super::shake128(payload1);
+//         let mut digest2 = super::shake128(payload2);
+//         let mut digest3 = super::shake128(payload3);
+//         (digest0, digest1, digest2, digest3)
+//     }
+
+//     /// SHAKE 256
+//     ///
+//     /// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
+//     /// the output will only return `u32::MAX` bytes.
+//     #[inline(always)]
+//     pub(crate) fn shake256<const BYTES: usize>(
+//         payload0: &[u8],
+//         payload1: &[u8],
+//         payload2: &[u8],
+//         payload3: &[u8],
+//     ) -> ([u8; BYTES], [u8; BYTES], [u8; BYTES], [u8; BYTES]) {
+//         let input_len = payload0.len();
+//         debug_assert!(
+//             input_len == payload1.len()
+//                 && input_len == payload2.len()
+//                 && input_len == payload3.len()
+//                 && input_len <= u32::MAX as usize
+//                 && BYTES <= u32::MAX as usize
+//         );
+//         let mut digest0 = super::shake256(payload0);
+//         let mut digest1 = super::shake256(payload1);
+//         let mut digest2 = super::shake256(payload2);
+//         let mut digest3 = super::shake256(payload3);
+//         (digest0, digest1, digest2, digest3)
+//     }
+// }
