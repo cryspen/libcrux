@@ -4,8 +4,7 @@ use super::{
 };
 
 fn rejection_sampling_panic_with_diagnostic() {
-    panic!("5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but not all of them could be sampled.\n
-\nWe would appreciate it if you could report this error by opening an issue at https://github.com/cryspen/libcrux/issues");
+    panic!("5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but not all of them could be sampled.\nWe would appreciate it if you could report this error by opening an issue at https://github.com/cryspen/libcrux/issues");
 }
 
 pub fn sample_from_uniform_distribution(
