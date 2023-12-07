@@ -1,12 +1,11 @@
 use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    Error,
 };
 
 pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
     randomness: [u8; SEED_SIZE],
-) -> (PolynomialRingElement, Option<Error>) {
+) -> PolynomialRingElement {
     let mut sampled_coefficients: usize = 0;
     let mut out: PolynomialRingElement = PolynomialRingElement::ZERO;
 
@@ -42,9 +41,12 @@ pub fn sample_from_uniform_distribution<const SEED_SIZE: usize>(
             .coefficients
             .into_iter()
             .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
-        (out, None)
+        out
     } else {
-        (out, Some(Error::RejectionSampling))
+        // Requiring more than 5 blocks to sample a ring element should be very
+        // unlikely according to:
+        // https://eprint.iacr.org/2023/708.pdf
+        panic!();
     }
 }
 

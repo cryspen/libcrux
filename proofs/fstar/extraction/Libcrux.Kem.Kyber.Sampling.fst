@@ -209,8 +209,7 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
         Rust_primitives.Hax.t_Never)
 
 let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
-    : (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
@@ -316,16 +315,8 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
   if done
   then
     let _:Prims.unit = () <: Prims.unit in
-    out, (Core.Option.Option_None <: Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
-    <:
-    (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    out
   else
-    out,
-    (Core.Option.Option_Some
-      (Libcrux.Kem.Kyber.Types.Error_RejectionSampling <: Libcrux.Kem.Kyber.Types.t_Error)
-      <:
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
-    <:
-    (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
+        <:
+        Rust_primitives.Hax.t_Never)

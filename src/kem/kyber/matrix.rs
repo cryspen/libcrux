@@ -7,7 +7,6 @@ use super::{
     hash_functions::XOFx4,
     ntt::{invert_ntt_montgomery, ntt_multiply},
     sampling::sample_from_uniform_distribution,
-    Error,
 };
 
 #[inline(always)]
@@ -15,9 +14,8 @@ use super::{
 pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
     seed: [u8; 34],
     transpose: bool,
-) -> ([[PolynomialRingElement; K]; K], Option<Error>) {
+) -> [[PolynomialRingElement; K]; K] {
     let mut A_transpose = [[PolynomialRingElement::ZERO; K]; K];
-    let mut sampling_A_error = None;
 
     for i in 0..K {
         let mut seeds = [seed; K];
@@ -28,10 +26,7 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
         let xof_bytes = XOFx4::<K>(seeds);
 
         for j in 0..K {
-            let (sampled, error) = sample_from_uniform_distribution(xof_bytes[j]);
-            if error.is_some() {
-                sampling_A_error = error;
-            }
+            let sampled = sample_from_uniform_distribution(xof_bytes[j]);
 
             // A[i][j] = A_transpose[j][i]
             if transpose {
@@ -42,7 +37,7 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
         }
     }
 
-    (A_transpose, sampling_A_error)
+    A_transpose
 }
 
 /// The following functions compute various expressions involving
