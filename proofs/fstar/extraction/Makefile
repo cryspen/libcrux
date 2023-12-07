@@ -52,7 +52,6 @@ VERIFIED = \
 	Libcrux.Kem.fst \
 	Libcrux.Kem.Kyber.Constants.fst \
 	Libcrux.Digest.fsti \
-	Libcrux.Hacl.Sha3.Simd256.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Kyber768.fst \
 	Libcrux.Kem.Kyber.Kyber1024.fst \
