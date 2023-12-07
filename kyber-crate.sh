@@ -23,6 +23,7 @@ members = ["."]
 [dependencies]
 hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
 libcrux ={ path = "../" }
+libcrux-platform ={ path = "../sys/platform" }
 EOF
 
 for file in src/*; do 
