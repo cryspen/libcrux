@@ -3,8 +3,10 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
-let rejection_sampling_panic_msg (randomness: t_Array u8 (sz 840)) (sampled_coefficients: usize)
-    : Alloc.String.t_String =
+let rejection_sampling_panic_with_diagnostic
+      (randomness: t_Array u8 (sz 840))
+      (sampled_coefficients: usize)
+    : Prims.unit =
   let res:Alloc.String.t_String =
     Alloc.Fmt.format (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize (let list =
                   [
@@ -31,7 +33,7 @@ let rejection_sampling_panic_msg (randomness: t_Array u8 (sz 840)) (sampled_coef
         Core.Fmt.t_Arguments)
   in
   let msg:Alloc.String.t_String = res in
-  Alloc.String.f_to_string msg
+  Rust_primitives.Hax.never_to_any (Core.Panicking.panic_display msg <: Rust_primitives.Hax.t_Never)
 
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -342,14 +344,11 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
             <:
             (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  if done
-  then
-    let _:Prims.unit = () <: Prims.unit in
-    out
-  else
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic_display (rejection_sampling_panic_msg randomness
-              sampled_coefficients
-            <:
-            Alloc.String.t_String)
-        <:
-        Rust_primitives.Hax.t_Never)
+  let _:Prims.unit =
+    if ~.done
+    then
+      let _:Prims.unit = rejection_sampling_panic_with_diagnostic randomness sampled_coefficients in
+      ()
+  in
+  let _:Prims.unit = () <: Prims.unit in
+  out

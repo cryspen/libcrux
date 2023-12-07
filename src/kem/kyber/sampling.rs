@@ -3,16 +3,16 @@ use super::{
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
 
-fn rejection_sampling_panic_msg(
+fn rejection_sampling_panic_with_diagnostic(
     randomness: [u8; REJECTION_SAMPLING_SEED_SIZE],
     sampled_coefficients: usize,
-) -> String {
+) {
     let msg = format!(
 "5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but only {sampled_coefficients} coefficients of the ring element could be sampled.\n
 The (flattened) blocks are: {randomness:?}.
 \nWe would appreciate it if you could report this error verbatim by opening an issue at https://github.com/cryspen/libcrux/issues");
 
-    msg.to_string()
+    panic!("{}", msg);
 }
 
 pub fn sample_from_uniform_distribution(
@@ -49,21 +49,18 @@ pub fn sample_from_uniform_distribution(
         }
     }
 
-    if done {
-        hax_lib::debug_assert!(out
-            .coefficients
-            .into_iter()
-            .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
-        out
-    } else {
+    if !done {
         // Requiring more than 5 blocks to sample a ring element should be very
         // unlikely according to:
         // https://eprint.iacr.org/2023/708.pdf
-        panic!(
-            "{}",
-            rejection_sampling_panic_msg(randomness, sampled_coefficients)
-        );
+        rejection_sampling_panic_with_diagnostic(randomness, sampled_coefficients);
     }
+
+    hax_lib::debug_assert!(out
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
+    out
 }
 
 #[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 2 * 64))]
