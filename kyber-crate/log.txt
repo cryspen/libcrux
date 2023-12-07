@@ -1,0 +1,2679 @@
+Visiting global: libcrux_kyber::constants::FIELD_MODULUS
+  global libcrux_kyber::constants::FIELD_MODULUS : i32 = libcrux_kyber::constants::FIELD_MODULUS
+Corresponding body:  fn libcrux_kyber::constants::FIELD_MODULUS() -> i32  
+{
+    v@0 : i32;
+
+    v@0 := (3329: i32 : i32);
+    return
+  }
+Visiting global: libcrux_kyber::constants::BITS_PER_COEFFICIENT
+  global libcrux_kyber::constants::BITS_PER_COEFFICIENT : usize = libcrux_kyber::constants::BITS_PER_COEFFICIENT
+Corresponding body:  fn libcrux_kyber::constants::BITS_PER_COEFFICIENT() -> usize  
+{
+    v@0 : usize;
+
+    v@0 := (12: usize : usize);
+    return
+  }
+Visiting global: libcrux_kyber::constants::COEFFICIENTS_IN_RING_ELEMENT
+  global libcrux_kyber::constants::COEFFICIENTS_IN_RING_ELEMENT : usize = libcrux_kyber::constants::COEFFICIENTS_IN_RING_ELEMENT
+Corresponding body:  fn libcrux_kyber::constants::COEFFICIENTS_IN_RING_ELEMENT() -> usize  
+{
+    v@0 : usize;
+
+    v@0 := (256: usize : usize);
+    return
+  }
+Visiting global: libcrux_kyber::constants::BITS_PER_RING_ELEMENT
+  global libcrux_kyber::constants::BITS_PER_RING_ELEMENT : usize = libcrux_kyber::constants::BITS_PER_RING_ELEMENT
+Corresponding body:  fn libcrux_kyber::constants::BITS_PER_RING_ELEMENT() -> usize  
+{
+    v@0 : usize;
+    v@1 : usize;
+
+    v@1 := global libcrux_kyber::constants::COEFFICIENTS_IN_RING_ELEMENT;
+    v@0 := move v@1 * (12: usize : usize);
+    return
+  }
+Visiting global: libcrux_kyber::constants::BYTES_PER_RING_ELEMENT
+  global libcrux_kyber::constants::BYTES_PER_RING_ELEMENT : usize = libcrux_kyber::constants::BYTES_PER_RING_ELEMENT
+Corresponding body:  fn libcrux_kyber::constants::BYTES_PER_RING_ELEMENT() -> usize  
+{
+    v@0 : usize;
+    v@1 : usize;
+
+    v@1 := global libcrux_kyber::constants::BITS_PER_RING_ELEMENT;
+    v@0 := move v@1 / (8: usize : usize);
+    return
+  }
+Visiting global: libcrux_kyber::constants::REJECTION_SAMPLING_SEED_SIZE
+  global libcrux_kyber::constants::REJECTION_SAMPLING_SEED_SIZE : usize = libcrux_kyber::constants::REJECTION_SAMPLING_SEED_SIZE
+Corresponding body:  fn libcrux_kyber::constants::REJECTION_SAMPLING_SEED_SIZE() -> usize  
+{
+    v@0 : usize;
+
+    v@0 := (168: usize : usize) * (5: usize : usize);
+    return
+  }
+Visiting global: libcrux_kyber::constants::SHARED_SECRET_SIZE
+  global libcrux_kyber::constants::SHARED_SECRET_SIZE : usize = libcrux_kyber::constants::SHARED_SECRET_SIZE
+Corresponding body:  fn libcrux_kyber::constants::SHARED_SECRET_SIZE() -> usize  
+{
+    v@0 : usize;
+
+    v@0 := (32: usize : usize);
+    return
+  }
+Visiting global: libcrux_kyber::constants::CPA_PKE_KEY_GENERATION_SEED_SIZE
+  global libcrux_kyber::constants::CPA_PKE_KEY_GENERATION_SEED_SIZE : usize = libcrux_kyber::constants::CPA_PKE_KEY_GENERATION_SEED_SIZE
+Corresponding body:  fn libcrux_kyber::constants::CPA_PKE_KEY_GENERATION_SEED_SIZE() -> usize  
+{
+    v@0 : usize;
+
+    v@0 := (32: usize : usize);
+    return
+  }
+Visiting type: libcrux::digest::Algorithm
+enum libcrux::digest::Algorithm
+  =
+|  Sha1()
+|  Sha224()
+|  Sha256()
+|  Sha384()
+|  Sha512()
+|  Blake2s()
+|  Blake2b()
+|  Sha3_224()
+|  Sha3_256()
+|  Sha3_384()
+|  Sha3_512()
+Visiting opaque function: libcrux::digest::digest_size
+  opaque fn libcrux::digest::digest_size(libcrux::digest::Algorithm) -> usize
+Visiting global: libcrux_kyber::constants::H_DIGEST_SIZE
+  global libcrux_kyber::constants::H_DIGEST_SIZE : usize = libcrux_kyber::constants::H_DIGEST_SIZE
+Corresponding body:  fn libcrux_kyber::constants::H_DIGEST_SIZE() -> usize  
+{
+    v@0 : usize;
+    v@1 : libcrux::digest::Algorithm;
+
+    v@1 := libcrux::digest::Algorithm::libcrux::digest::Algorithm::Sha3_256 ();
+    v@0 := move libcrux::digest::digest_size(move v@1);
+    drop v@1;
+    return
+  }
+Visiting call: libcrux::digest::digest_size
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux::digest::digest_size
+--> name: libcrux::digest::digest_size
+Visiting global: libcrux_kyber::arithmetic::MONTGOMERY_SHIFT
+  global libcrux_kyber::arithmetic::MONTGOMERY_SHIFT : u8 = libcrux_kyber::arithmetic::MONTGOMERY_SHIFT
+Corresponding body:  fn libcrux_kyber::arithmetic::MONTGOMERY_SHIFT() -> u8  
+{
+    v@0 : u8;
+
+    v@0 := (16: u8 : u8);
+    return
+  }
+Visiting global: libcrux_kyber::arithmetic::MONTGOMERY_R
+  global libcrux_kyber::arithmetic::MONTGOMERY_R : i32 = libcrux_kyber::arithmetic::MONTGOMERY_R
+Corresponding body:  fn libcrux_kyber::arithmetic::MONTGOMERY_R() -> i32  
+{
+    v@0 : i32;
+    v@1 : u8;
+
+    v@1 := global libcrux_kyber::arithmetic::MONTGOMERY_SHIFT;
+    v@0 := (1: i32 : i32) << move v@1;
+    return
+  }
+Visiting function: libcrux_kyber::arithmetic::get_n_least_significant_bits
+  fn libcrux_kyber::arithmetic::get_n_least_significant_bits(n^1 : u8, value^2 : u32) -> u32  
+{
+    v@0 : u32;
+    n^1 : u8;
+    value^2 : u32;
+    v@3 : u32;
+    v@4 : u32;
+    v@5 : u32;
+    v@6 : u8;
+
+    v@3 := copy value^2;
+    v@6 := copy n^1;
+    v@5 := (1: u32 : u32) << move v@6;
+    drop v@6;
+    v@4 := move v@5 - (1: u32 : u32);
+    drop v@5;
+    v@0 := move v@3 & move v@4;
+    drop v@4;
+    drop v@3;
+    return
+  }
+Visiting global: libcrux_kyber::arithmetic::BARRETT_SHIFT
+  global libcrux_kyber::arithmetic::BARRETT_SHIFT : i64 = libcrux_kyber::arithmetic::BARRETT_SHIFT
+Corresponding body:  fn libcrux_kyber::arithmetic::BARRETT_SHIFT() -> i64  
+{
+    v@0 : i64;
+
+    v@0 := (26: i64 : i64);
+    return
+  }
+Visiting global: libcrux_kyber::arithmetic::BARRETT_R
+  global libcrux_kyber::arithmetic::BARRETT_R : i64 = libcrux_kyber::arithmetic::BARRETT_R
+Corresponding body:  fn libcrux_kyber::arithmetic::BARRETT_R() -> i64  
+{
+    v@0 : i64;
+    v@1 : i64;
+    v@2 : i64;
+
+    v@1 := global libcrux_kyber::arithmetic::BARRETT_SHIFT;
+    v@2 := global libcrux_kyber::arithmetic::BARRETT_SHIFT;
+    v@0 := (1: i64 : i64) << move v@2;
+    return
+  }
+Visiting global: libcrux_kyber::arithmetic::BARRETT_MULTIPLIER
+  global libcrux_kyber::arithmetic::BARRETT_MULTIPLIER : i64 = libcrux_kyber::arithmetic::BARRETT_MULTIPLIER
+Corresponding body:  fn libcrux_kyber::arithmetic::BARRETT_MULTIPLIER() -> i64  
+{
+    v@0 : i64;
+
+    v@0 := (20159: i64 : i64);
+    return
+  }
+Visiting opaque function: core::convert::num::{i64#59}::from
+  opaque fn core::convert::num::{i64#59}::from(i32) -> i64
+Visiting opaque function: core::convert::From::from
+  opaque fn core::convert::From::from<Self, T>(T) -> Self
+Visiting function: libcrux_kyber::arithmetic::barrett_reduce
+  fn libcrux_kyber::arithmetic::barrett_reduce(value^1 : i32) -> i32  
+{
+    v@0 : i32;
+    value^1 : i32;
+    t^2 : i64;
+    v@3 : i64;
+    v@4 : i64;
+    v@5 : i32;
+    v@6 : i64;
+    quotient^7 : i32;
+    v@8 : i64;
+    v@9 : i64;
+    result^10 : i32;
+    v@11 : i32;
+    v@12 : i32;
+    v@13 : i32;
+    v@14 : i64;
+    v@15 : i64;
+    v@16 : i64;
+    v@17 : i32;
+
+    v@5 := copy value^1;
+    v@4 := move core::convert::num::{i64#59}::from(move v@5);
+    drop v@5;
+    v@14 := global libcrux_kyber::arithmetic::BARRETT_MULTIPLIER;
+    v@3 := move v@4 * move v@14;
+    drop v@4;
+    v@15 := global libcrux_kyber::arithmetic::BARRETT_R;
+    v@6 := move v@15 >> (1: i32 : i32);
+    t^2 := move v@3 + move v@6;
+    drop v@6;
+    drop v@3;
+    fake_read t^2;
+    v@9 := copy t^2;
+    v@16 := global libcrux_kyber::arithmetic::BARRETT_SHIFT;
+    v@8 := move v@9 >> move v@16;
+    drop v@9;
+    quotient^7 := cast<i64,i32> move v@8;
+    drop v@8;
+    fake_read quotient^7;
+    v@11 := copy value^1;
+    v@13 := copy quotient^7;
+    v@17 := global libcrux_kyber::constants::FIELD_MODULUS;
+    v@12 := move v@13 * move v@17;
+    drop v@13;
+    result^10 := move v@11 - move v@12;
+    drop v@12;
+    drop v@11;
+    fake_read result^10;
+    v@0 := copy result^10;
+    drop result^10;
+    drop quotient^7;
+    drop t^2;
+    return
+  }
+Visiting global: libcrux_kyber::arithmetic::INVERSE_OF_MODULUS_MOD_R
+  global libcrux_kyber::arithmetic::INVERSE_OF_MODULUS_MOD_R : u32 = libcrux_kyber::arithmetic::INVERSE_OF_MODULUS_MOD_R
+Corresponding body:  fn libcrux_kyber::arithmetic::INVERSE_OF_MODULUS_MOD_R() -> u32  
+{
+    v@0 : u32;
+
+    v@0 := (62209: u32 : u32);
+    return
+  }
+Visiting function: libcrux_kyber::arithmetic::montgomery_reduce
+  fn libcrux_kyber::arithmetic::montgomery_reduce(value^1 : i32) -> i32  
+{
+    v@0 : i32;
+    value^1 : i32;
+    v@2 : i32;
+    t^3 : u32;
+    v@4 : u32;
+    v@5 : u32;
+    v@6 : i32;
+    k^7 : i16;
+    v@8 : u32;
+    v@9 : u32;
+    k_times_modulus^10 : i32;
+    v@11 : i32;
+    v@12 : i16;
+    c^13 : i32;
+    v@14 : i32;
+    value_high^15 : i32;
+    v@16 : i32;
+    v@17 : i32;
+    v@18 : i32;
+    v@19 : i32;
+    v@20 : u8;
+    v@21 : u32;
+    v@22 : u8;
+    v@23 : i32;
+    v@24 : u8;
+    v@25 : u8;
+
+    v@19 := global libcrux_kyber::arithmetic::MONTGOMERY_R;
+    v@2 := move v@19;
+    fake_read v@2;
+    drop v@2;
+    v@6 := copy value^1;
+    v@5 := cast<i32,u32> move v@6;
+    drop v@6;
+    v@20 := global libcrux_kyber::arithmetic::MONTGOMERY_SHIFT;
+    v@4 := move libcrux_kyber::arithmetic::get_n_least_significant_bits(move v@20, move v@5);
+    drop v@5;
+    v@21 := global libcrux_kyber::arithmetic::INVERSE_OF_MODULUS_MOD_R;
+    t^3 := move v@4 * move v@21;
+    drop v@4;
+    fake_read t^3;
+    v@9 := copy t^3;
+    v@22 := global libcrux_kyber::arithmetic::MONTGOMERY_SHIFT;
+    v@8 := move libcrux_kyber::arithmetic::get_n_least_significant_bits(move v@22, move v@9);
+    drop v@9;
+    k^7 := cast<u32,i16> move v@8;
+    drop v@8;
+    fake_read k^7;
+    v@12 := copy k^7;
+    v@11 := cast<i16,i32> move v@12;
+    drop v@12;
+    v@23 := global libcrux_kyber::constants::FIELD_MODULUS;
+    k_times_modulus^10 := move v@11 * move v@23;
+    drop v@11;
+    fake_read k_times_modulus^10;
+    v@14 := copy k_times_modulus^10;
+    v@24 := global libcrux_kyber::arithmetic::MONTGOMERY_SHIFT;
+    c^13 := move v@14 >> move v@24;
+    drop v@14;
+    fake_read c^13;
+    v@16 := copy value^1;
+    v@25 := global libcrux_kyber::arithmetic::MONTGOMERY_SHIFT;
+    value_high^15 := move v@16 >> move v@25;
+    drop v@16;
+    fake_read value_high^15;
+    v@17 := copy value_high^15;
+    v@18 := copy c^13;
+    v@0 := move v@17 - move v@18;
+    drop v@18;
+    drop v@17;
+    drop value_high^15;
+    drop c^13;
+    drop k_times_modulus^10;
+    drop k^7;
+    drop t^3;
+    return
+  }
+Visiting call: libcrux_kyber::arithmetic::get_n_least_significant_bits
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::arithmetic::get_n_least_significant_bits
+--> name: libcrux_kyber::arithmetic::get_n_least_significant_bits
+Visiting call: libcrux_kyber::arithmetic::get_n_least_significant_bits
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::arithmetic::get_n_least_significant_bits
+--> name: libcrux_kyber::arithmetic::get_n_least_significant_bits
+Visiting function: libcrux_kyber::arithmetic::montgomery_multiply_sfe_by_fer
+  fn libcrux_kyber::arithmetic::montgomery_multiply_sfe_by_fer(fe^1 : i32, fer^2 : i32) -> i32  
+{
+    v@0 : i32;
+    fe^1 : i32;
+    fer^2 : i32;
+    v@3 : i32;
+    v@4 : i32;
+    v@5 : i32;
+
+    v@4 := copy fe^1;
+    v@5 := copy fer^2;
+    v@3 := move v@4 * move v@5;
+    drop v@5;
+    drop v@4;
+    v@0 := move libcrux_kyber::arithmetic::montgomery_reduce(move v@3);
+    drop v@3;
+    return
+  }
+Visiting call: libcrux_kyber::arithmetic::montgomery_reduce
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::arithmetic::montgomery_reduce
+--> name: libcrux_kyber::arithmetic::montgomery_reduce
+Visiting global: libcrux_kyber::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS
+  global libcrux_kyber::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS : i32 = libcrux_kyber::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS
+Corresponding body:  fn libcrux_kyber::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS() -> i32  
+{
+    v@0 : i32;
+
+    v@0 := (1353: i32 : i32);
+    return
+  }
+Visiting function: libcrux_kyber::arithmetic::to_standard_domain
+  fn libcrux_kyber::arithmetic::to_standard_domain(mfe^1 : i32) -> i32  
+{
+    v@0 : i32;
+    mfe^1 : i32;
+    v@2 : i32;
+    v@3 : i32;
+    v@4 : i32;
+
+    v@3 := copy mfe^1;
+    v@4 := global libcrux_kyber::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS;
+    v@2 := move v@3 * move v@4;
+    drop v@3;
+    v@0 := move libcrux_kyber::arithmetic::montgomery_reduce(move v@2);
+    drop v@2;
+    return
+  }
+Visiting call: libcrux_kyber::arithmetic::montgomery_reduce
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::arithmetic::montgomery_reduce
+--> name: libcrux_kyber::arithmetic::montgomery_reduce
+Visiting function: libcrux_kyber::arithmetic::to_unsigned_representative
+  fn libcrux_kyber::arithmetic::to_unsigned_representative(fe^1 : i32) -> u16  
+{
+    v@0 : u16;
+    fe^1 : i32;
+    v@2 : i32;
+    v@3 : i32;
+    v@4 : i32;
+    v@5 : i32;
+    v@6 : i32;
+    v@7 : i32;
+
+    v@3 := copy fe^1;
+    v@6 := copy fe^1;
+    v@5 := move v@6 >> (31: i32 : i32);
+    drop v@6;
+    v@7 := global libcrux_kyber::constants::FIELD_MODULUS;
+    v@4 := move v@7 & move v@5;
+    drop v@5;
+    v@2 := move v@3 + move v@4;
+    drop v@4;
+    drop v@3;
+    v@0 := cast<i32,u16> move v@2;
+    drop v@2;
+    return
+  }
+Visiting type: libcrux_kyber::arithmetic::PolynomialRingElement
+struct libcrux_kyber::arithmetic::PolynomialRingElement
+{
+  coefficients : @Array<i32, 256: usize>
+}
+Visiting function: libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement#1}::clone
+  fn libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement#1}::clone<0>(self^1 : &0 (libcrux_kyber::arithmetic::PolynomialRingElement)) -> libcrux_kyber::arithmetic::PolynomialRingElement  
+{
+    v@0 : libcrux_kyber::arithmetic::PolynomialRingElement;
+    self^1 : &'_ (libcrux_kyber::arithmetic::PolynomialRingElement);
+
+    v@0 := copy *(self^1);
+    return
+  }
+Visiting opaque function: core::array::equality::{@Array<A, N>}::eq
+  opaque fn core::array::equality::{@Array<A, N>}::eq<0, 1, A, B, N>(&0 (@Array<A, N>), &1 (@Array<B, N>)) -> bool
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::cmp::PartialEq<A, B>,
+Visiting opaque function: core::array::equality::{@Array<A, N>}::ne
+  opaque fn core::array::equality::{@Array<A, N>}::ne<0, 1, A, B, N>(&0 (@Array<A, N>), &1 (@Array<B, N>)) -> bool
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::cmp::PartialEq<A, B>,
+Visiting opaque function: core::cmp::impls::{i32#30}::eq
+  opaque fn core::cmp::impls::{i32#30}::eq<0, 1>(&0 (i32), &1 (i32)) -> bool
+Visiting opaque function: core::cmp::impls::{i32#30}::ne
+  opaque fn core::cmp::impls::{i32#30}::ne<0, 1>(&0 (i32), &1 (i32)) -> bool
+Visiting opaque function: core::cmp::PartialEq::eq
+  opaque fn core::cmp::PartialEq::eq<0, 1, Self, Rhs>(&0 (Self), &1 (Rhs)) -> bool
+Visiting function: libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement#4}::eq
+  fn libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement#4}::eq<0, 1>(self^1 : &0 (libcrux_kyber::arithmetic::PolynomialRingElement), other^2 : &1 (libcrux_kyber::arithmetic::PolynomialRingElement)) -> bool  
+{
+    v@0 : bool;
+    self^1 : &'_ (libcrux_kyber::arithmetic::PolynomialRingElement);
+    other^2 : &'_ (libcrux_kyber::arithmetic::PolynomialRingElement);
+    v@3 : &'_ (@Array<i32, 256: usize>);
+    v@4 : &'_ (@Array<i32, 256: usize>);
+
+    v@3 := &(*(self^1)).coefficients;
+    v@4 := &(*(other^2)).coefficients;
+    v@0 := move core::array::equality::{@Array<A, N>}<i32, i32, 256: usize>[core::cmp::impls::{i32#30}]::eq(move v@3, move v@4);
+    drop v@4;
+    drop v@3;
+    return
+  }
+Visiting call: core::array::equality::{@Array<A, N>}<i32, i32, 256: usize>[core::cmp::impls::{i32#30}]::eq
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 2 type_args, 1 const_generics
+--> pattern: core::cmp::PartialEq<[i32; 256], [i32; 256]>::eq
+--> name: core::array::equality::{@Array<A, N>}::eq
+Visiting function: libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement#6}::assert_receiver_is_total_eq
+  fn libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement#6}::assert_receiver_is_total_eq<0>(self^1 : &0 (libcrux_kyber::arithmetic::PolynomialRingElement))  
+{
+    v@0 : ();
+    self^1 : &'_ (libcrux_kyber::arithmetic::PolynomialRingElement);
+    v@2 : ();
+
+    v@2 := ();
+    v@0 := move v@2;
+    v@0 := ();
+    return
+  }
+Visiting global: libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement}::ZERO
+  global libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement}::ZERO : libcrux_kyber::arithmetic::PolynomialRingElement = libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement}::ZERO
+Corresponding body:  fn libcrux_kyber::arithmetic::{libcrux_kyber::arithmetic::PolynomialRingElement}::ZERO() -> libcrux_kyber::arithmetic::PolynomialRingElement  
+{
+    v@0 : libcrux_kyber::arithmetic::PolynomialRingElement;
+    v@1 : @Array<i32, 256: usize>;
+
+    v@1 := move @ArrayRepeat<'_, i32, 256: usize>((0: i32 : i32));
+    v@0 := libcrux_kyber::arithmetic::PolynomialRingElement { coefficients = move v@1; };
+    drop v@1;
+    return
+  }
+Visiting type: core::ops::range::Range
+struct core::ops::range::Range<Idx>
+{
+  start : Idx,
+  end : Idx
+}
+Visiting type: core::option::Option
+enum core::option::Option<T>
+  =
+|  None()
+|  Some(T)
+Visiting opaque function: core::slice::{@Slice<T>}::len
+  opaque fn core::slice::{@Slice<T>}::len<0, T>(&0 (@Slice<T>)) -> usize
+Visiting opaque function: core::iter::traits::collect::{I}::into_iter
+  opaque fn core::iter::traits::collect::{I}::into_iter<I>(I) -> I
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+Visiting type: core::cmp::Ordering
+enum core::cmp::Ordering
+  =
+|  Less()
+|  Equal()
+|  Greater()
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::next
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::next<0, A>(&0 mut (core::ops::range::Range<A>)) -> core::option::Option<A>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::size_hint
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::size_hint<0, A>(&0 (core::ops::range::Range<A>)) -> (usize, core::option::Option<usize>)
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::nth
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::nth<0, A>(&0 mut (core::ops::range::Range<A>), usize) -> core::option::Option<A>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::last
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::last<A>(core::ops::range::Range<A>) -> core::option::Option<A>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::min
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::min<A>(core::ops::range::Range<A>) -> core::option::Option<A>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+    // Local clauses
+    [TraitClause@1]: core::cmp::Ord<A>,
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::max
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::max<A>(core::ops::range::Range<A>) -> core::option::Option<A>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+    // Local clauses
+    [TraitClause@1]: core::cmp::Ord<A>,
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::is_sorted
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::is_sorted<A>(core::ops::range::Range<A>) -> bool
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+Visiting type: core::result::Result
+enum core::result::Result<T, E>
+  =
+|  Ok(T)
+|  Err(E)
+Visiting type: core::num::nonzero::NonZeroUsize
+opaque type core::num::nonzero::NonZeroUsize
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::advance_by
+  opaque fn core::iter::range::{core::ops::range::Range<A>#3}::advance_by<0, A>(&0 mut (core::ops::range::Range<A>), usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+Visiting opaque function: core::iter::range::{core::ops::range::Range<A>#3}::__iterator_get_unchecked
+  opaque unsafe fn core::iter::range::{core::ops::range::Range<A>#3}::__iterator_get_unchecked<0, A>(&0 mut (core::ops::range::Range<A>), usize) -> core::iter::range::{core::ops::range::Range<A>#3}<A>[TraitClause@0]::Item
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::range::Step<A>,
+    // Local clauses
+    [TraitClause@1]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>>,
+ERROR translating core::iter::range::{core::ops::range::Range<A>#3}::__iterator_get_unchecked:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::clone::impls::{usize#5}::clone
+  opaque fn core::clone::impls::{usize#5}::clone<0>(&0 (usize)) -> usize
+Visiting opaque function: core::cmp::impls::{usize#21}::eq
+  opaque fn core::cmp::impls::{usize#21}::eq<0, 1>(&0 (usize), &1 (usize)) -> bool
+Visiting opaque function: core::cmp::impls::{usize#21}::ne
+  opaque fn core::cmp::impls::{usize#21}::ne<0, 1>(&0 (usize), &1 (usize)) -> bool
+Visiting opaque function: core::cmp::impls::{usize#54}::partial_cmp
+  opaque fn core::cmp::impls::{usize#54}::partial_cmp<0, 1>(&0 (usize), &1 (usize)) -> core::option::Option<core::cmp::Ordering>
+Visiting opaque function: core::cmp::impls::{usize#54}::lt
+  opaque fn core::cmp::impls::{usize#54}::lt<0, 1>(&0 (usize), &1 (usize)) -> bool
+Visiting opaque function: core::cmp::impls::{usize#54}::le
+  opaque fn core::cmp::impls::{usize#54}::le<0, 1>(&0 (usize), &1 (usize)) -> bool
+Visiting opaque function: core::cmp::impls::{usize#54}::ge
+  opaque fn core::cmp::impls::{usize#54}::ge<0, 1>(&0 (usize), &1 (usize)) -> bool
+Visiting opaque function: core::cmp::impls::{usize#54}::gt
+  opaque fn core::cmp::impls::{usize#54}::gt<0, 1>(&0 (usize), &1 (usize)) -> bool
+Visiting opaque function: core::iter::range::{usize#37}::steps_between
+  opaque fn core::iter::range::{usize#37}::steps_between<0, 1>(&0 (usize), &1 (usize)) -> core::option::Option<usize>
+Visiting opaque function: core::iter::range::{usize#37}::forward_checked
+  opaque fn core::iter::range::{usize#37}::forward_checked(usize, usize) -> core::option::Option<usize>
+Visiting opaque function: core::iter::range::{usize#37}::backward_checked
+  opaque fn core::iter::range::{usize#37}::backward_checked(usize, usize) -> core::option::Option<usize>
+Visiting opaque function: core::iter::range::{usize#37}::forward_unchecked
+  opaque unsafe fn core::iter::range::{usize#37}::forward_unchecked(usize, usize) -> usize
+Visiting opaque function: core::iter::range::{usize#37}::backward_unchecked
+  opaque unsafe fn core::iter::range::{usize#37}::backward_unchecked(usize, usize) -> usize
+Visiting opaque function: core::iter::range::{usize#37}::forward
+  opaque fn core::iter::range::{usize#37}::forward(usize, usize) -> usize
+Visiting opaque function: core::iter::range::{usize#37}::backward
+  opaque fn core::iter::range::{usize#37}::backward(usize, usize) -> usize
+Visiting opaque function: core::iter::traits::collect::IntoIterator::into_iter
+  opaque fn core::iter::traits::collect::IntoIterator::into_iter<Self>(Self) -> Self::IntoIter
+ERROR translating core::iter::traits::collect::IntoIterator::into_iter:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::iter::traits::iterator::Iterator::next
+  opaque fn core::iter::traits::iterator::Iterator::next<0, Self>(&0 mut (Self)) -> core::option::Option<Self::Item>
+ERROR translating core::iter::traits::iterator::Iterator::next:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 268, characters 40-69
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting function: libcrux_kyber::arithmetic::add_to_ring_element
+  fn libcrux_kyber::arithmetic::add_to_ring_element<0, K>(lhs^1 : libcrux_kyber::arithmetic::PolynomialRingElement, rhs^2 : &0 (libcrux_kyber::arithmetic::PolynomialRingElement)) -> libcrux_kyber::arithmetic::PolynomialRingElement  
+{
+    v@0 : libcrux_kyber::arithmetic::PolynomialRingElement;
+    lhs^1 : libcrux_kyber::arithmetic::PolynomialRingElement;
+    rhs^2 : &'_ (libcrux_kyber::arithmetic::PolynomialRingElement);
+    v@3 : ();
+    v@4 : core::ops::range::Range<usize>;
+    v@5 : core::ops::range::Range<usize>;
+    v@6 : usize;
+    v@7 : &'_ (@Slice<i32>);
+    v@8 : &'_ (@Array<i32, 256: usize>);
+    iter^9 : core::ops::range::Range<usize>;
+    v@10 : ();
+    v@11 : ();
+    v@12 : core::option::Option<usize>;
+    v@13 : &'_ mut (core::ops::range::Range<usize>);
+    v@14 : &'_ mut (core::ops::range::Range<usize>);
+    i^15 : usize;
+    v@16 : i32;
+    v@17 : usize;
+    v@18 : usize;
+    v@19 : ();
+    v@20 : ();
+    v@21 : ();
+    v@22 : &'_ mut (@Array<i32, 256: usize>);
+    v@23 : &'_ mut (i32);
+    v@24 : &'_ (@Array<i32, 256: usize>);
+    v@25 : &'_ (i32);
+    v@26 : &'_ (@Array<i32, 256: usize>);
+    v@27 : &'_ (i32);
+
+    v@8 := &(lhs^1).coefficients;
+    v@7 := move @ArrayToSliceShared<'_, i32, 256: usize>(move v@8);
+    drop v@8;
+    v@6 := move core::slice::{@Slice<T>}::len<i32>(move v@7);
+    drop v@7;
+    v@5 := core::ops::range::Range { start = (0: usize : usize); end = move v@6; };
+    drop v@6;
+    v@4 := move core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter(move v@5);
+    drop v@5;
+    fake_read v@4;
+    iter^9 := move v@4;
+    loop {
+      v@14 := &mut iter^9;
+      v@13 := &two-phase *(v@14);
+      v@12 := move core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next(move v@13);
+      drop v@13;
+      fake_read v@12;
+      match (v@12) {
+      | 0 => {
+          nop
+        }
+      | 1 => {
+          i^15 := copy (v@12 as core::option::Option::Some).0;
+          v@17 := copy i^15;
+          v@26 := &(*(rhs^2)).coefficients;
+          v@27 := move @ArrayIndexShared<'_, i32, 256: usize>(move v@26, copy v@17);
+          v@16 := copy *(v@27);
+          v@18 := copy i^15;
+          v@22 := &mut (lhs^1).coefficients;
+          v@23 := move @ArrayIndexMut<'_, i32, 256: usize>(move v@22, copy v@18);
+          v@24 := &(lhs^1).coefficients;
+          v@25 := move @ArrayIndexShared<'_, i32, 256: usize>(move v@24, copy v@18);
+          *(v@23) := copy *(v@25) + move v@16;
+          drop v@16;
+          drop v@18;
+          drop v@17;
+          v@20 := ();
+          v@11 := move v@20;
+          drop i^15;
+          drop v@14;
+          drop v@12;
+          drop v@11;
+          v@21 := ();
+          v@10 := move v@21;
+          continue 0
+        }
+        _ => {
+          panic
+        }
+      };
+      v@19 := ();
+      v@3 := move v@19;
+      drop v@14;
+      drop v@12;
+      drop v@11;
+      drop iter^9;
+      drop v@4;
+      drop v@3;
+      v@0 := copy lhs^1;
+      return
+    }
+  }
+Visiting call: @ArrayToSliceShared<'_, i32, 256: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, i32, 256>
+Visiting call: core::slice::{@Slice<T>}::len<i32>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::slice::{[@T]}::len<i32>
+--> name: core::slice::{@Slice<T>}::len
+Visiting call: core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::collect::IntoIterator<core::ops::range::Range<usize>>::into_iter
+--> name: core::iter::traits::collect::{I}::into_iter
+Visiting call: core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::iterator::Iterator<core::ops::range::Range<usize>>::next
+--> name: core::iter::range::{core::ops::range::Range<A>#3}::next
+Visiting function: libcrux_kyber::compress::compress_message_coefficient
+  fn libcrux_kyber::compress::compress_message_coefficient(fe^1 : u16) -> u8  
+{
+    v@0 : u8;
+    fe^1 : u16;
+    shifted^2 : i16;
+    v@3 : i16;
+    v@4 : u16;
+    mask^5 : i16;
+    v@6 : i16;
+    shifted_to_positive^7 : i16;
+    v@8 : i16;
+    v@9 : i16;
+    shifted_positive_in_range^10 : i16;
+    v@11 : i16;
+    v@12 : i16;
+    v@13 : i16;
+    v@14 : i16;
+
+    v@4 := copy fe^1;
+    v@3 := cast<u16,i16> move v@4;
+    drop v@4;
+    shifted^2 := (1664: i16 : i16) - move v@3;
+    drop v@3;
+    fake_read shifted^2;
+    v@6 := copy shifted^2;
+    mask^5 := move v@6 >> (15: i32 : i32);
+    drop v@6;
+    fake_read mask^5;
+    v@8 := copy mask^5;
+    v@9 := copy shifted^2;
+    shifted_to_positive^7 := move v@8 ^ move v@9;
+    drop v@9;
+    drop v@8;
+    fake_read shifted_to_positive^7;
+    v@11 := copy shifted_to_positive^7;
+    shifted_positive_in_range^10 := move v@11 - (832: i16 : i16);
+    drop v@11;
+    fake_read shifted_positive_in_range^10;
+    v@14 := copy shifted_positive_in_range^10;
+    v@13 := move v@14 >> (15: i32 : i32);
+    drop v@14;
+    v@12 := move v@13 & (1: i16 : i16);
+    drop v@13;
+    v@0 := cast<i16,u8> move v@12;
+    drop v@12;
+    drop shifted_positive_in_range^10;
+    drop shifted_to_positive^7;
+    drop mask^5;
+    drop shifted^2;
+    return
+  }
+Visiting function: libcrux_kyber::compress::compress_ciphertext_coefficient
+  fn libcrux_kyber::compress::compress_ciphertext_coefficient(coefficient_bits^1 : u8, fe^2 : u16) -> i32  
+{
+    v@0 : i32;
+    coefficient_bits^1 : u8;
+    fe^2 : u16;
+    compressed^3 : u32;
+    v@4 : u32;
+    v@5 : u16;
+    v@6 : u8;
+    v@7 : u8;
+    v@8 : u32;
+    v@9 : u32;
+    v@10 : i32;
+    v@11 : u32;
+    v@12 : u8;
+    v@13 : u32;
+    v@14 : i32;
+    v@15 : i32;
+
+    v@5 := copy fe^2;
+    v@4 := cast<u16,u32> move v@5;
+    drop v@5;
+    v@7 := copy coefficient_bits^1;
+    v@6 := move v@7 + (1: u8 : u8);
+    drop v@7;
+    compressed^3 := move v@4 << move v@6;
+    drop v@6;
+    drop v@4;
+    fake_read compressed^3;
+    v@14 := global libcrux_kyber::constants::FIELD_MODULUS;
+    v@8 := cast<i32,u32> move v@14;
+    compressed^3 := copy compressed^3 + move v@8;
+    drop v@8;
+    v@15 := global libcrux_kyber::constants::FIELD_MODULUS;
+    v@10 := move v@15 << (1: i32 : i32);
+    v@9 := cast<i32,u32> move v@10;
+    drop v@10;
+    compressed^3 := copy compressed^3 / move v@9;
+    drop v@9;
+    v@12 := copy coefficient_bits^1;
+    v@13 := copy compressed^3;
+    v@11 := move libcrux_kyber::arithmetic::get_n_least_significant_bits(move v@12, move v@13);
+    drop v@13;
+    drop v@12;
+    v@0 := cast<u32,i32> move v@11;
+    drop v@11;
+    drop compressed^3;
+    return
+  }
+Visiting call: libcrux_kyber::arithmetic::get_n_least_significant_bits
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::arithmetic::get_n_least_significant_bits
+--> name: libcrux_kyber::arithmetic::get_n_least_significant_bits
+Visiting function: libcrux_kyber::compress::decompress_message_coefficient
+  fn libcrux_kyber::compress::decompress_message_coefficient(fe^1 : i32) -> i32  
+{
+    v@0 : i32;
+    fe^1 : i32;
+    v@2 : i32;
+    v@3 : i32;
+    v@4 : i32;
+    v@5 : i32;
+    v@6 : i32;
+
+    v@3 := copy fe^1;
+    v@2 := - move v@3;
+    drop v@3;
+    v@6 := global libcrux_kyber::constants::FIELD_MODULUS;
+    v@5 := move v@6 + (1: i32 : i32);
+    v@4 := move v@5 / (2: i32 : i32);
+    drop v@5;
+    v@0 := move v@2 & move v@4;
+    drop v@4;
+    drop v@2;
+    return
+  }
+Visiting function: libcrux_kyber::compress::decompress_ciphertext_coefficient
+  fn libcrux_kyber::compress::decompress_ciphertext_coefficient(coefficient_bits^1 : u8, fe^2 : i32) -> i32  
+{
+    v@0 : i32;
+    coefficient_bits^1 : u8;
+    fe^2 : i32;
+    decompressed^3 : u32;
+    v@4 : u32;
+    v@5 : i32;
+    v@6 : u32;
+    v@7 : u32;
+    v@8 : u32;
+    v@9 : u32;
+    v@10 : u8;
+    v@11 : u8;
+    v@12 : u8;
+    v@13 : u32;
+    v@14 : i32;
+
+    v@5 := copy fe^2;
+    v@4 := cast<i32,u32> move v@5;
+    drop v@5;
+    v@14 := global libcrux_kyber::constants::FIELD_MODULUS;
+    v@6 := cast<i32,u32> move v@14;
+    decompressed^3 := move v@4 * move v@6;
+    drop v@6;
+    drop v@4;
+    fake_read decompressed^3;
+    v@8 := copy decompressed^3;
+    v@7 := move v@8 << (1: i32 : i32);
+    drop v@8;
+    v@10 := copy coefficient_bits^1;
+    v@9 := (1: u32 : u32) << move v@10;
+    drop v@10;
+    decompressed^3 := move v@7 + move v@9;
+    drop v@9;
+    drop v@7;
+    v@12 := copy coefficient_bits^1;
+    v@11 := move v@12 + (1: u8 : u8);
+    drop v@12;
+    decompressed^3 := copy decompressed^3 >> move v@11;
+    drop v@11;
+    v@13 := copy decompressed^3;
+    v@0 := cast<u32,i32> move v@13;
+    drop v@13;
+    drop decompressed^3;
+    return
+  }
+Visiting opaque function: core::num::{u16#7}::wrapping_add
+  opaque fn core::num::{u16#7}::wrapping_add(u16, u16) -> u16
+Visiting function: libcrux_kyber::constant_time_ops::is_non_zero
+  fn libcrux_kyber::constant_time_ops::is_non_zero(value^1 : u8) -> u8  
+{
+    v@0 : u8;
+    value^1 : u8;
+    value^2 : u16;
+    v@3 : u8;
+    result^4 : u16;
+    v@5 : u16;
+    v@6 : u16;
+    v@7 : u16;
+    v@8 : u16;
+    v@9 : u16;
+    v@10 : u16;
+    v@11 : u16;
+
+    v@3 := copy value^1;
+    value^2 := cast<u8,u16> move v@3;
+    drop v@3;
+    fake_read value^2;
+    v@7 := copy value^2;
+    v@10 := copy value^2;
+    v@9 := ¬ move v@10;
+    drop v@10;
+    v@8 := move core::num::{u16#7}::wrapping_add(move v@9, (1: u16 : u16));
+    drop v@9;
+    v@6 := move v@7 | move v@8;
+    drop v@8;
+    drop v@7;
+    v@5 := move v@6 >> (8: i32 : i32);
+    drop v@6;
+    result^4 := move v@5 & (1: u16 : u16);
+    drop v@5;
+    fake_read result^4;
+    v@11 := copy result^4;
+    v@0 := cast<u16,u8> move v@11;
+    drop v@11;
+    drop result^4;
+    drop value^2;
+    return
+  }
+Visiting call: core::num::{u16#7}::wrapping_add
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: core::num::{u16}::wrapping_add
+--> name: core::num::{u16#7}::wrapping_add
+Visiting function: libcrux_kyber::constant_time_ops::compare_ciphertexts_in_constant_time
+  fn libcrux_kyber::constant_time_ops::compare_ciphertexts_in_constant_time<0, 1, CIPHERTEXT_SIZE>(lhs^1 : &0 (@Slice<u8>), rhs^2 : &1 (@Slice<u8>)) -> u8  
+{
+    v@0 : u8;
+    lhs^1 : &'_ (@Slice<u8>);
+    rhs^2 : &'_ (@Slice<u8>);
+    r^3 : u8;
+    v@4 : ();
+    v@5 : core::ops::range::Range<usize>;
+    v@6 : core::ops::range::Range<usize>;
+    iter^7 : core::ops::range::Range<usize>;
+    v@8 : ();
+    v@9 : ();
+    v@10 : core::option::Option<usize>;
+    v@11 : &'_ mut (core::ops::range::Range<usize>);
+    v@12 : &'_ mut (core::ops::range::Range<usize>);
+    i^13 : usize;
+    v@14 : u8;
+    v@15 : u8;
+    v@16 : usize;
+    v@17 : u8;
+    v@18 : usize;
+    v@19 : u8;
+    v@20 : ();
+    v@21 : ();
+    v@22 : ();
+    v@23 : &'_ (@Slice<u8>);
+    v@24 : &'_ (u8);
+    v@25 : &'_ (@Slice<u8>);
+    v@26 : &'_ (u8);
+
+    r^3 := (0: u8 : u8);
+    fake_read r^3;
+    v@6 := core::ops::range::Range { start = (0: usize : usize); end = CIPHERTEXT_SIZE; };
+    v@5 := move core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter(move v@6);
+    drop v@6;
+    fake_read v@5;
+    iter^7 := move v@5;
+    loop {
+      v@12 := &mut iter^7;
+      v@11 := &two-phase *(v@12);
+      v@10 := move core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next(move v@11);
+      drop v@11;
+      fake_read v@10;
+      match (v@10) {
+      | 0 => {
+          nop
+        }
+      | 1 => {
+          i^13 := copy (v@10 as core::option::Option::Some).0;
+          v@16 := copy i^13;
+          v@25 := &*(lhs^1);
+          v@26 := move @SliceIndexShared<'_, u8>(move v@25, copy v@16);
+          v@15 := copy *(v@26);
+          v@18 := copy i^13;
+          v@23 := &*(rhs^2);
+          v@24 := move @SliceIndexShared<'_, u8>(move v@23, copy v@18);
+          v@17 := copy *(v@24);
+          v@14 := move v@15 ^ move v@17;
+          drop v@17;
+          drop v@15;
+          r^3 := copy r^3 | move v@14;
+          drop v@14;
+          drop v@18;
+          drop v@16;
+          v@21 := ();
+          v@9 := move v@21;
+          drop i^13;
+          drop v@12;
+          drop v@10;
+          drop v@9;
+          v@22 := ();
+          v@8 := move v@22;
+          continue 0
+        }
+        _ => {
+          panic
+        }
+      };
+      v@20 := ();
+      v@4 := move v@20;
+      drop v@12;
+      drop v@10;
+      drop v@9;
+      drop iter^7;
+      drop v@5;
+      drop v@4;
+      v@19 := copy r^3;
+      v@0 := move libcrux_kyber::constant_time_ops::is_non_zero(move v@19);
+      drop v@19;
+      drop r^3;
+      return
+    }
+  }
+Visiting call: core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::collect::IntoIterator<core::ops::range::Range<usize>>::into_iter
+--> name: core::iter::traits::collect::{I}::into_iter
+Visiting call: core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::iterator::Iterator<core::ops::range::Range<usize>>::next
+--> name: core::iter::range::{core::ops::range::Range<A>#3}::next
+Visiting call: @SliceIndexShared<'_, u8>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: SliceIndexShared<'_, u8>
+Visiting call: @SliceIndexShared<'_, u8>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: SliceIndexShared<'_, u8>
+Visiting call: libcrux_kyber::constant_time_ops::is_non_zero
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::constant_time_ops::is_non_zero
+--> name: libcrux_kyber::constant_time_ops::is_non_zero
+Visiting opaque function: core::num::{u8#6}::wrapping_sub
+  opaque fn core::num::{u8#6}::wrapping_sub(u8, u8) -> u8
+Visiting function: libcrux_kyber::constant_time_ops::select_shared_secret_in_constant_time
+  fn libcrux_kyber::constant_time_ops::select_shared_secret_in_constant_time<0, 1>(lhs^1 : &0 (@Slice<u8>), rhs^2 : &1 (@Slice<u8>), selector^3 : u8) -> @Array<u8, 32: usize>  
+{
+    v@0 : @Array<u8, 32: usize>;
+    lhs^1 : &'_ (@Slice<u8>);
+    rhs^2 : &'_ (@Slice<u8>);
+    selector^3 : u8;
+    mask^4 : u8;
+    v@5 : u8;
+    v@6 : u8;
+    out^7 : @Array<u8, 32: usize>;
+    v@8 : ();
+    v@9 : core::ops::range::Range<usize>;
+    v@10 : core::ops::range::Range<usize>;
+    iter^11 : core::ops::range::Range<usize>;
+    v@12 : ();
+    v@13 : ();
+    v@14 : core::option::Option<usize>;
+    v@15 : &'_ mut (core::ops::range::Range<usize>);
+    v@16 : &'_ mut (core::ops::range::Range<usize>);
+    i^17 : usize;
+    v@18 : u8;
+    v@19 : u8;
+    v@20 : u8;
+    v@21 : usize;
+    v@22 : u8;
+    v@23 : u8;
+    v@24 : u8;
+    v@25 : usize;
+    v@26 : u8;
+    v@27 : u8;
+    v@28 : usize;
+    v@29 : usize;
+    v@30 : ();
+    v@31 : ();
+    v@32 : ();
+    v@33 : &'_ mut (@Array<u8, 32: usize>);
+    v@34 : &'_ mut (u8);
+    v@35 : &'_ (@Array<u8, 32: usize>);
+    v@36 : &'_ (u8);
+    v@37 : &'_ (@Slice<u8>);
+    v@38 : &'_ (u8);
+    v@39 : &'_ (@Slice<u8>);
+    v@40 : &'_ (u8);
+
+    v@6 := copy selector^3;
+    v@5 := move libcrux_kyber::constant_time_ops::is_non_zero(move v@6);
+    drop v@6;
+    mask^4 := move core::num::{u8#6}::wrapping_sub(move v@5, (1: u8 : u8));
+    drop v@5;
+    fake_read mask^4;
+    out^7 := move @ArrayRepeat<'_, u8, 32: usize>((0: u8 : u8));
+    fake_read out^7;
+    v@29 := global libcrux_kyber::constants::SHARED_SECRET_SIZE;
+    v@10 := core::ops::range::Range { start = (0: usize : usize); end = move v@29; };
+    v@9 := move core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter(move v@10);
+    drop v@10;
+    fake_read v@9;
+    iter^11 := move v@9;
+    loop {
+      v@16 := &mut iter^11;
+      v@15 := &two-phase *(v@16);
+      v@14 := move core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next(move v@15);
+      drop v@15;
+      fake_read v@14;
+      match (v@14) {
+      | 0 => {
+          nop
+        }
+      | 1 => {
+          i^17 := copy (v@14 as core::option::Option::Some).0;
+          v@21 := copy i^17;
+          v@39 := &*(lhs^1);
+          v@40 := move @SliceIndexShared<'_, u8>(move v@39, copy v@21);
+          v@20 := copy *(v@40);
+          v@22 := copy mask^4;
+          v@19 := move v@20 & move v@22;
+          drop v@22;
+          drop v@20;
+          v@25 := copy i^17;
+          v@37 := &*(rhs^2);
+          v@38 := move @SliceIndexShared<'_, u8>(move v@37, copy v@25);
+          v@24 := copy *(v@38);
+          v@27 := copy mask^4;
+          v@26 := ¬ move v@27;
+          drop v@27;
+          v@23 := move v@24 & move v@26;
+          drop v@26;
+          drop v@24;
+          v@18 := move v@19 | move v@23;
+          drop v@23;
+          drop v@19;
+          v@28 := copy i^17;
+          v@33 := &mut out^7;
+          v@34 := move @ArrayIndexMut<'_, u8, 32: usize>(move v@33, copy v@28);
+          v@35 := &out^7;
+          v@36 := move @ArrayIndexShared<'_, u8, 32: usize>(move v@35, copy v@28);
+          *(v@34) := copy *(v@36) | move v@18;
+          drop v@18;
+          drop v@28;
+          drop v@25;
+          drop v@21;
+          v@31 := ();
+          v@13 := move v@31;
+          drop i^17;
+          drop v@16;
+          drop v@14;
+          drop v@13;
+          v@32 := ();
+          v@12 := move v@32;
+          continue 0
+        }
+        _ => {
+          panic
+        }
+      };
+      v@30 := ();
+      v@8 := move v@30;
+      drop v@16;
+      drop v@14;
+      drop v@13;
+      drop iter^11;
+      drop v@9;
+      drop v@8;
+      v@0 := copy out^7;
+      drop out^7;
+      drop mask^4;
+      return
+    }
+  }
+Visiting call: libcrux_kyber::constant_time_ops::is_non_zero
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::constant_time_ops::is_non_zero
+--> name: libcrux_kyber::constant_time_ops::is_non_zero
+Visiting call: core::num::{u8#6}::wrapping_sub
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: core::num::{u8}::wrapping_sub
+--> name: core::num::{u8#6}::wrapping_sub
+Visiting call: core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::collect::IntoIterator<core::ops::range::Range<usize>>::into_iter
+--> name: core::iter::traits::collect::{I}::into_iter
+Visiting call: core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::iterator::Iterator<core::ops::range::Range<usize>>::next
+--> name: core::iter::range::{core::ops::range::Range<A>#3}::next
+Visiting call: @SliceIndexShared<'_, u8>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: SliceIndexShared<'_, u8>
+Visiting call: @SliceIndexShared<'_, u8>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: SliceIndexShared<'_, u8>
+Visiting opaque function: libcrux::digest::sha3_512
+  opaque fn libcrux::digest::sha3_512<0>(&0 (@Slice<u8>)) -> @Array<u8, 64: usize>
+Visiting function: libcrux_kyber::hash_functions::G
+  fn libcrux_kyber::hash_functions::G<0>(input^1 : &0 (@Slice<u8>)) -> @Array<u8, 64: usize>  
+{
+    v@0 : @Array<u8, 64: usize>;
+    input^1 : &'_ (@Slice<u8>);
+    v@2 : &'_ (@Slice<u8>);
+
+    v@2 := &*(input^1);
+    v@0 := move libcrux::digest::sha3_512(move v@2);
+    drop v@2;
+    return
+  }
+Visiting call: libcrux::digest::sha3_512
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux::digest::sha3_512
+--> name: libcrux::digest::sha3_512
+Visiting opaque function: libcrux::digest::sha3_256
+  opaque fn libcrux::digest::sha3_256<0>(&0 (@Slice<u8>)) -> @Array<u8, 32: usize>
+Visiting function: libcrux_kyber::hash_functions::H
+  fn libcrux_kyber::hash_functions::H<0>(input^1 : &0 (@Slice<u8>)) -> @Array<u8, 32: usize>  
+{
+    v@0 : @Array<u8, 32: usize>;
+    input^1 : &'_ (@Slice<u8>);
+    v@2 : &'_ (@Slice<u8>);
+
+    v@2 := &*(input^1);
+    v@0 := move libcrux::digest::sha3_256(move v@2);
+    drop v@2;
+    return
+  }
+Visiting call: libcrux::digest::sha3_256
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux::digest::sha3_256
+--> name: libcrux::digest::sha3_256
+Visiting opaque function: libcrux::digest::shake256
+  opaque fn libcrux::digest::shake256<0, LEN>(&0 (@Slice<u8>)) -> @Array<u8, LEN>
+Visiting function: libcrux_kyber::hash_functions::PRF
+  fn libcrux_kyber::hash_functions::PRF<0, LEN>(input^1 : &0 (@Slice<u8>)) -> @Array<u8, LEN>  
+{
+    v@0 : @Array<u8, LEN>;
+    input^1 : &'_ (@Slice<u8>);
+    v@2 : &'_ (@Slice<u8>);
+
+    v@2 := &*(input^1);
+    v@0 := move libcrux::digest::shake256<LEN>(move v@2);
+    drop v@2;
+    return
+  }
+Visiting call: libcrux::digest::shake256<C@0>
+is_array_map: false
+--> 0 type_args, 1 const_generics
+--> 0 type_args, 1 const_generics
+--> pattern: libcrux::digest::shake256<@>
+--> name: libcrux::digest::shake256
+Visiting opaque function: libcrux_platform::simd256_support
+  opaque fn libcrux_platform::simd256_support() -> bool
+Visiting opaque function: libcrux::digest::shake128
+  opaque fn libcrux::digest::shake128<0, LEN>(&0 (@Slice<u8>)) -> @Array<u8, LEN>
+Visiting opaque function: libcrux::digest::shake128x4
+  opaque fn libcrux::digest::shake128x4<0, 1, 2, 3, LEN>(&0 (@Slice<u8>), &1 (@Slice<u8>), &2 (@Slice<u8>), &3 (@Slice<u8>)) -> (@Array<u8, LEN>, @Array<u8, LEN>, @Array<u8, LEN>, @Array<u8, LEN>)
+Visiting function: libcrux_kyber::hash_functions::XOFx4
+  fn libcrux_kyber::hash_functions::XOFx4<K>(input^1 : @Array<@Array<u8, 34: usize>, K>) -> @Array<@Array<u8, 840: usize>, K>  
+{
+    v@0 : @Array<@Array<u8, 840: usize>, K>;
+    input^1 : @Array<@Array<u8, 34: usize>, K>;
+    out^2 : @Array<@Array<u8, 840: usize>, K>;
+    v@3 : @Array<u8, 840: usize>;
+    v@4 : ();
+    v@5 : bool;
+    v@6 : bool;
+    v@7 : bool;
+    v@8 : bool;
+    v@9 : core::ops::range::Range<usize>;
+    v@10 : core::ops::range::Range<usize>;
+    iter^11 : core::ops::range::Range<usize>;
+    v@12 : ();
+    v@13 : ();
+    v@14 : core::option::Option<usize>;
+    v@15 : &'_ mut (core::ops::range::Range<usize>);
+    v@16 : &'_ mut (core::ops::range::Range<usize>);
+    i^17 : usize;
+    v@18 : @Array<u8, 840: usize>;
+    v@19 : &'_ (@Slice<u8>);
+    v@20 : &'_ (@Array<u8, 34: usize>);
+    v@21 : &'_ (@Array<u8, 34: usize>);
+    v@22 : usize;
+    v@23 : usize;
+    v@24 : ();
+    v@25 : bool;
+    d0^26 : @Array<u8, 840: usize>;
+    d1^27 : @Array<u8, 840: usize>;
+    v@28 : (@Array<u8, 840: usize>, @Array<u8, 840: usize>, @Array<u8, 840: usize>, @Array<u8, 840: usize>);
+    v@29 : &'_ (@Slice<u8>);
+    v@30 : &'_ (@Array<u8, 34: usize>);
+    v@31 : &'_ (@Array<u8, 34: usize>);
+    v@32 : usize;
+    v@33 : &'_ (@Slice<u8>);
+    v@34 : &'_ (@Array<u8, 34: usize>);
+    v@35 : &'_ (@Array<u8, 34: usize>);
+    v@36 : usize;
+    v@37 : &'_ (@Slice<u8>);
+    v@38 : &'_ (@Array<u8, 34: usize>);
+    v@39 : &'_ (@Array<u8, 34: usize>);
+    v@40 : usize;
+    v@41 : &'_ (@Slice<u8>);
+    v@42 : &'_ (@Array<u8, 34: usize>);
+    v@43 : &'_ (@Array<u8, 34: usize>);
+    v@44 : usize;
+    v@45 : @Array<u8, 840: usize>;
+    v@46 : usize;
+    v@47 : @Array<u8, 840: usize>;
+    v@48 : usize;
+    v@49 : bool;
+    d0^50 : @Array<u8, 840: usize>;
+    d1^51 : @Array<u8, 840: usize>;
+    d2^52 : @Array<u8, 840: usize>;
+    v@53 : (@Array<u8, 840: usize>, @Array<u8, 840: usize>, @Array<u8, 840: usize>, @Array<u8, 840: usize>);
+    v@54 : &'_ (@Slice<u8>);
+    v@55 : &'_ (@Array<u8, 34: usize>);
+    v@56 : &'_ (@Array<u8, 34: usize>);
+    v@57 : usize;
+    v@58 : &'_ (@Slice<u8>);
+    v@59 : &'_ (@Array<u8, 34: usize>);
+    v@60 : &'_ (@Array<u8, 34: usize>);
+    v@61 : usize;
+    v@62 : &'_ (@Slice<u8>);
+    v@63 : &'_ (@Array<u8, 34: usize>);
+    v@64 : &'_ (@Array<u8, 34: usize>);
+    v@65 : usize;
+    v@66 : &'_ (@Slice<u8>);
+    v@67 : &'_ (@Array<u8, 34: usize>);
+    v@68 : &'_ (@Array<u8, 34: usize>);
+    v@69 : usize;
+    v@70 : @Array<u8, 840: usize>;
+    v@71 : usize;
+    v@72 : @Array<u8, 840: usize>;
+    v@73 : usize;
+    v@74 : @Array<u8, 840: usize>;
+    v@75 : usize;
+    v@76 : bool;
+    d0^77 : @Array<u8, 840: usize>;
+    d1^78 : @Array<u8, 840: usize>;
+    d2^79 : @Array<u8, 840: usize>;
+    d3^80 : @Array<u8, 840: usize>;
+    v@81 : (@Array<u8, 840: usize>, @Array<u8, 840: usize>, @Array<u8, 840: usize>, @Array<u8, 840: usize>);
+    v@82 : &'_ (@Slice<u8>);
+    v@83 : &'_ (@Array<u8, 34: usize>);
+    v@84 : &'_ (@Array<u8, 34: usize>);
+    v@85 : usize;
+    v@86 : &'_ (@Slice<u8>);
+    v@87 : &'_ (@Array<u8, 34: usize>);
+    v@88 : &'_ (@Array<u8, 34: usize>);
+    v@89 : usize;
+    v@90 : &'_ (@Slice<u8>);
+    v@91 : &'_ (@Array<u8, 34: usize>);
+    v@92 : &'_ (@Array<u8, 34: usize>);
+    v@93 : usize;
+    v@94 : &'_ (@Slice<u8>);
+    v@95 : &'_ (@Array<u8, 34: usize>);
+    v@96 : &'_ (@Array<u8, 34: usize>);
+    v@97 : usize;
+    v@98 : @Array<u8, 840: usize>;
+    v@99 : usize;
+    v@100 : @Array<u8, 840: usize>;
+    v@101 : usize;
+    v@102 : @Array<u8, 840: usize>;
+    v@103 : usize;
+    v@104 : @Array<u8, 840: usize>;
+    v@105 : usize;
+    v@106 : ();
+    v@107 : ();
+    v@108 : ();
+    v@109 : ();
+    v@110 : ();
+    v@111 : ();
+    v@112 : ();
+    v@113 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@114 : &'_ mut (@Array<u8, 840: usize>);
+    v@115 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@116 : &'_ (@Array<u8, 34: usize>);
+    v@117 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@118 : &'_ mut (@Array<u8, 840: usize>);
+    v@119 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@120 : &'_ mut (@Array<u8, 840: usize>);
+    v@121 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@122 : &'_ (@Array<u8, 34: usize>);
+    v@123 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@124 : &'_ (@Array<u8, 34: usize>);
+    v@125 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@126 : &'_ (@Array<u8, 34: usize>);
+    v@127 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@128 : &'_ (@Array<u8, 34: usize>);
+    v@129 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@130 : &'_ mut (@Array<u8, 840: usize>);
+    v@131 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@132 : &'_ mut (@Array<u8, 840: usize>);
+    v@133 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@134 : &'_ mut (@Array<u8, 840: usize>);
+    v@135 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@136 : &'_ (@Array<u8, 34: usize>);
+    v@137 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@138 : &'_ (@Array<u8, 34: usize>);
+    v@139 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@140 : &'_ (@Array<u8, 34: usize>);
+    v@141 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@142 : &'_ (@Array<u8, 34: usize>);
+    v@143 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@144 : &'_ mut (@Array<u8, 840: usize>);
+    v@145 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@146 : &'_ mut (@Array<u8, 840: usize>);
+    v@147 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@148 : &'_ mut (@Array<u8, 840: usize>);
+    v@149 : &'_ mut (@Array<@Array<u8, 840: usize>, K>);
+    v@150 : &'_ mut (@Array<u8, 840: usize>);
+    v@151 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@152 : &'_ (@Array<u8, 34: usize>);
+    v@153 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@154 : &'_ (@Array<u8, 34: usize>);
+    v@155 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@156 : &'_ (@Array<u8, 34: usize>);
+    v@157 : &'_ (@Array<@Array<u8, 34: usize>, K>);
+    v@158 : &'_ (@Array<u8, 34: usize>);
+
+    v@3 := move @ArrayRepeat<'_, u8, 840: usize>((0: u8 : u8));
+    out^2 := move @ArrayRepeat<'_, @Array<u8, 840: usize>, K>(move v@3);
+    drop v@3;
+    fake_read out^2;
+    v@7 := move libcrux_platform::simd256_support();
+    v@6 := ¬ move v@7;
+    drop v@7;
+    if (move v@6) {
+      v@5 := (true : bool)
+    }
+    else {
+      v@8 := ¬ (false : bool);
+      v@5 := move v@8
+    };
+    drop v@8;
+    drop v@6;
+    if (move v@5) {
+      v@10 := core::ops::range::Range { start = (0: usize : usize); end = K; };
+      v@9 := move core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter(move v@10);
+      drop v@10;
+      fake_read v@9;
+      iter^11 := move v@9;
+      loop {
+        v@16 := &mut iter^11;
+        v@15 := &two-phase *(v@16);
+        v@14 := move core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next(move v@15);
+        drop v@15;
+        fake_read v@14;
+        match (v@14) {
+        | 0 => {
+            v@106 := ();
+            v@4 := move v@106;
+            drop v@16;
+            drop v@14;
+            drop v@13;
+            drop iter^11;
+            drop v@9
+          }
+        | 1 => {
+            i^17 := copy (v@14 as core::option::Option::Some).0;
+            v@22 := copy i^17;
+            v@115 := &input^1;
+            v@116 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@115, copy v@22);
+            v@21 := &*(v@116);
+            v@20 := &*(v@21);
+            v@19 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@20);
+            drop v@20;
+            v@18 := move libcrux::digest::shake128<840: usize>(move v@19);
+            drop v@19;
+            v@23 := copy i^17;
+            v@113 := &mut out^2;
+            v@114 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@113, copy v@23);
+            *(v@114) := move v@18;
+            drop v@18;
+            drop v@23;
+            drop v@22;
+            drop v@21;
+            v@107 := ();
+            v@13 := move v@107;
+            drop i^17;
+            drop v@16;
+            drop v@14;
+            drop v@13;
+            v@108 := ();
+            v@12 := move v@108;
+            continue 0
+          }
+          _ => {
+            panic
+          }
+        }
+      }
+    }
+    else {
+      v@25 := K == (2: usize : usize);
+      if (move v@25) {
+        v@32 := (0: usize : usize);
+        v@127 := &input^1;
+        v@128 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@127, copy v@32);
+        v@31 := &*(v@128);
+        v@30 := &*(v@31);
+        v@29 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@30);
+        drop v@30;
+        v@36 := (1: usize : usize);
+        v@125 := &input^1;
+        v@126 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@125, copy v@36);
+        v@35 := &*(v@126);
+        v@34 := &*(v@35);
+        v@33 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@34);
+        drop v@34;
+        v@40 := (0: usize : usize);
+        v@123 := &input^1;
+        v@124 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@123, copy v@40);
+        v@39 := &*(v@124);
+        v@38 := &*(v@39);
+        v@37 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@38);
+        drop v@38;
+        v@44 := (1: usize : usize);
+        v@121 := &input^1;
+        v@122 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@121, copy v@44);
+        v@43 := &*(v@122);
+        v@42 := &*(v@43);
+        v@41 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@42);
+        drop v@42;
+        v@28 := move libcrux::digest::shake128x4<840: usize>(move v@29, move v@33, move v@37, move v@41);
+        drop v@41;
+        drop v@37;
+        drop v@33;
+        drop v@29;
+        fake_read v@28;
+        d0^26 := copy (v@28).0;
+        d1^27 := copy (v@28).1;
+        drop v@44;
+        drop v@43;
+        drop v@40;
+        drop v@39;
+        drop v@36;
+        drop v@35;
+        drop v@32;
+        drop v@31;
+        drop v@28;
+        v@45 := copy d0^26;
+        v@46 := (0: usize : usize);
+        v@119 := &mut out^2;
+        v@120 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@119, copy v@46);
+        *(v@120) := move v@45;
+        drop v@45;
+        drop v@46;
+        v@47 := copy d1^27;
+        v@48 := (1: usize : usize);
+        v@117 := &mut out^2;
+        v@118 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@117, copy v@48);
+        *(v@118) := move v@47;
+        drop v@47;
+        drop v@48;
+        v@109 := ();
+        v@24 := move v@109;
+        drop d1^27;
+        drop d0^26;
+        drop v@25;
+        drop v@24;
+        v@110 := ();
+        v@4 := move v@110
+      }
+      else {
+        v@49 := K == (3: usize : usize);
+        if (move v@49) {
+          v@57 := (0: usize : usize);
+          v@141 := &input^1;
+          v@142 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@141, copy v@57);
+          v@56 := &*(v@142);
+          v@55 := &*(v@56);
+          v@54 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@55);
+          drop v@55;
+          v@61 := (1: usize : usize);
+          v@139 := &input^1;
+          v@140 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@139, copy v@61);
+          v@60 := &*(v@140);
+          v@59 := &*(v@60);
+          v@58 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@59);
+          drop v@59;
+          v@65 := (2: usize : usize);
+          v@137 := &input^1;
+          v@138 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@137, copy v@65);
+          v@64 := &*(v@138);
+          v@63 := &*(v@64);
+          v@62 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@63);
+          drop v@63;
+          v@69 := (0: usize : usize);
+          v@135 := &input^1;
+          v@136 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@135, copy v@69);
+          v@68 := &*(v@136);
+          v@67 := &*(v@68);
+          v@66 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@67);
+          drop v@67;
+          v@53 := move libcrux::digest::shake128x4<840: usize>(move v@54, move v@58, move v@62, move v@66);
+          drop v@66;
+          drop v@62;
+          drop v@58;
+          drop v@54;
+          fake_read v@53;
+          d0^50 := copy (v@53).0;
+          d1^51 := copy (v@53).1;
+          d2^52 := copy (v@53).2;
+          drop v@69;
+          drop v@68;
+          drop v@65;
+          drop v@64;
+          drop v@61;
+          drop v@60;
+          drop v@57;
+          drop v@56;
+          drop v@53;
+          v@70 := copy d0^50;
+          v@71 := (0: usize : usize);
+          v@133 := &mut out^2;
+          v@134 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@133, copy v@71);
+          *(v@134) := move v@70;
+          drop v@70;
+          drop v@71;
+          v@72 := copy d1^51;
+          v@73 := (1: usize : usize);
+          v@131 := &mut out^2;
+          v@132 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@131, copy v@73);
+          *(v@132) := move v@72;
+          drop v@72;
+          drop v@73;
+          v@74 := copy d2^52;
+          v@75 := (2: usize : usize);
+          v@129 := &mut out^2;
+          v@130 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@129, copy v@75);
+          *(v@130) := move v@74;
+          drop v@74;
+          drop v@75;
+          v@111 := ();
+          v@24 := move v@111;
+          drop d2^52;
+          drop d1^51;
+          drop d0^50;
+          drop v@49;
+          drop v@25;
+          drop v@24;
+          v@110 := ();
+          v@4 := move v@110
+        }
+        else {
+          v@76 := K == (4: usize : usize);
+          if (move v@76) {
+            v@85 := (0: usize : usize);
+            v@157 := &input^1;
+            v@158 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@157, copy v@85);
+            v@84 := &*(v@158);
+            v@83 := &*(v@84);
+            v@82 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@83);
+            drop v@83;
+            v@89 := (1: usize : usize);
+            v@155 := &input^1;
+            v@156 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@155, copy v@89);
+            v@88 := &*(v@156);
+            v@87 := &*(v@88);
+            v@86 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@87);
+            drop v@87;
+            v@93 := (2: usize : usize);
+            v@153 := &input^1;
+            v@154 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@153, copy v@93);
+            v@92 := &*(v@154);
+            v@91 := &*(v@92);
+            v@90 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@91);
+            drop v@91;
+            v@97 := (3: usize : usize);
+            v@151 := &input^1;
+            v@152 := move @ArrayIndexShared<'_, @Array<u8, 34: usize>, K>(move v@151, copy v@97);
+            v@96 := &*(v@152);
+            v@95 := &*(v@96);
+            v@94 := move @ArrayToSliceShared<'_, u8, 34: usize>(move v@95);
+            drop v@95;
+            v@81 := move libcrux::digest::shake128x4<840: usize>(move v@82, move v@86, move v@90, move v@94);
+            drop v@94;
+            drop v@90;
+            drop v@86;
+            drop v@82;
+            fake_read v@81;
+            d0^77 := copy (v@81).0;
+            d1^78 := copy (v@81).1;
+            d2^79 := copy (v@81).2;
+            d3^80 := copy (v@81).3;
+            drop v@97;
+            drop v@96;
+            drop v@93;
+            drop v@92;
+            drop v@89;
+            drop v@88;
+            drop v@85;
+            drop v@84;
+            drop v@81;
+            v@98 := copy d0^77;
+            v@99 := (0: usize : usize);
+            v@149 := &mut out^2;
+            v@150 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@149, copy v@99);
+            *(v@150) := move v@98;
+            drop v@98;
+            drop v@99;
+            v@100 := copy d1^78;
+            v@101 := (1: usize : usize);
+            v@147 := &mut out^2;
+            v@148 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@147, copy v@101);
+            *(v@148) := move v@100;
+            drop v@100;
+            drop v@101;
+            v@102 := copy d2^79;
+            v@103 := (2: usize : usize);
+            v@145 := &mut out^2;
+            v@146 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@145, copy v@103);
+            *(v@146) := move v@102;
+            drop v@102;
+            drop v@103;
+            v@104 := copy d3^80;
+            v@105 := (3: usize : usize);
+            v@143 := &mut out^2;
+            v@144 := move @ArrayIndexMut<'_, @Array<u8, 840: usize>, K>(move v@143, copy v@105);
+            *(v@144) := move v@104;
+            drop v@104;
+            drop v@105;
+            v@112 := ();
+            v@24 := move v@112;
+            drop d3^80;
+            drop d2^79;
+            drop d1^78;
+            drop d0^77;
+            drop v@76;
+            drop v@49;
+            drop v@25;
+            drop v@24;
+            v@110 := ();
+            v@4 := move v@110
+          }
+          else {
+            panic
+          }
+        }
+      }
+    };
+    drop v@5;
+    drop v@4;
+    v@0 := copy out^2;
+    drop out^2;
+    return
+  }
+Visiting call: libcrux_platform::simd256_support
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_platform::simd256_support
+--> name: libcrux_platform::simd256_support
+Visiting call: core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::collect::IntoIterator<core::ops::range::Range<usize>>::into_iter
+--> name: core::iter::traits::collect::{I}::into_iter
+Visiting call: core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::iterator::Iterator<core::ops::range::Range<usize>>::next
+--> name: core::iter::range::{core::ops::range::Range<A>#3}::next
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: libcrux::digest::shake128<840: usize>
+is_array_map: false
+--> 0 type_args, 1 const_generics
+--> 0 type_args, 1 const_generics
+--> pattern: libcrux::digest::shake128<840>
+--> name: libcrux::digest::shake128
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: libcrux::digest::shake128x4<840: usize>
+is_array_map: false
+--> 0 type_args, 1 const_generics
+--> 0 type_args, 1 const_generics
+--> pattern: libcrux::digest::shake128x4<840>
+--> name: libcrux::digest::shake128x4
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: libcrux::digest::shake128x4<840: usize>
+is_array_map: false
+--> 0 type_args, 1 const_generics
+--> 0 type_args, 1 const_generics
+--> pattern: libcrux::digest::shake128x4<840>
+--> name: libcrux::digest::shake128x4
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: @ArrayToSliceShared<'_, u8, 34: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, u8, 34>
+Visiting call: libcrux::digest::shake128x4<840: usize>
+is_array_map: false
+--> 0 type_args, 1 const_generics
+--> 0 type_args, 1 const_generics
+--> pattern: libcrux::digest::shake128x4<840>
+--> name: libcrux::digest::shake128x4
+Visiting opaque function: core::array::{@Array<T, N>#15}::index
+  opaque fn core::array::{@Array<T, N>#15}::index<0, T, I, N>(&0 (@Array<T, N>), I) -> &0 (core::array::{@Array<T, N>#15}<T, I, N>[TraitClause@0]::Output)
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::ops::index::Index<@Slice<T>, I>,
+ERROR translating core::array::{@Array<T, N>#15}::index:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::array::{@Array<T, N>#16}::index_mut
+  opaque fn core::array::{@Array<T, N>#16}::index_mut<0, T, I, N>(&0 mut (@Array<T, N>), I) -> &0 mut (core::array::{@Array<T, N>#15}<T, I, N>[parent(TraitClause@0)::TraitClause@0]::Output)
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::ops::index::IndexMut<@Slice<T>, I>,
+ERROR translating core::array::{@Array<T, N>#16}::index_mut:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::slice::index::{@Slice<T>}::index
+  opaque fn core::slice::index::{@Slice<T>}::index<0, T, I>(&0 (@Slice<T>), I) -> &0 (TraitClause@0::Output)
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::slice::index::SliceIndex<I, @Slice<T>>,
+ERROR translating core::slice::index::{@Slice<T>}::index:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::slice::index::{@Slice<T>#1}::index_mut
+  opaque fn core::slice::index::{@Slice<T>#1}::index_mut<0, T, I>(&0 mut (@Slice<T>), I) -> &0 mut (TraitClause@0::Output)
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::slice::index::SliceIndex<I, @Slice<T>>,
+ERROR translating core::slice::index::{@Slice<T>#1}::index_mut:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::slice::index::{core::ops::range::Range<usize>#4}::get
+  opaque fn core::slice::index::{core::ops::range::Range<usize>#4}::get<0, T>(core::ops::range::Range<usize>, &0 (@Slice<T>)) -> core::option::Option<&0 (@Slice<T>)>
+Visiting opaque function: core::slice::index::{core::ops::range::Range<usize>#4}::get_mut
+  opaque fn core::slice::index::{core::ops::range::Range<usize>#4}::get_mut<0, T>(core::ops::range::Range<usize>, &0 mut (@Slice<T>)) -> core::option::Option<&0 mut (@Slice<T>)>
+Visiting opaque function: core::slice::index::{core::ops::range::Range<usize>#4}::get_unchecked
+  opaque unsafe fn core::slice::index::{core::ops::range::Range<usize>#4}::get_unchecked<T>(core::ops::range::Range<usize>, *const @Slice<T>) -> *const @Slice<T>
+ERROR translating core::slice::index::{core::ops::range::Range<usize>#4}::get_unchecked:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Stdlib__List.map in file "list.ml", line 92, characters 32-39
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::slice::index::{core::ops::range::Range<usize>#4}::get_unchecked_mut
+  opaque unsafe fn core::slice::index::{core::ops::range::Range<usize>#4}::get_unchecked_mut<T>(core::ops::range::Range<usize>, *mut @Slice<T>) -> *mut @Slice<T>
+ERROR translating core::slice::index::{core::ops::range::Range<usize>#4}::get_unchecked_mut:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Stdlib__List.map in file "list.ml", line 92, characters 32-39
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::slice::index::{core::ops::range::Range<usize>#4}::index
+  opaque fn core::slice::index::{core::ops::range::Range<usize>#4}::index<0, T>(core::ops::range::Range<usize>, &0 (@Slice<T>)) -> &0 (@Slice<T>)
+Visiting opaque function: core::slice::index::{core::ops::range::Range<usize>#4}::index_mut
+  opaque fn core::slice::index::{core::ops::range::Range<usize>#4}::index_mut<0, T>(core::ops::range::Range<usize>, &0 mut (@Slice<T>)) -> &0 mut (@Slice<T>)
+Visiting opaque function: core::ops::index::IndexMut::index_mut
+  opaque fn core::ops::index::IndexMut::index_mut<0, Self, Idx>(&0 mut (Self), Idx) -> &0 mut (parent(Self)::TraitClause@0::Output)
+ERROR translating core::ops::index::IndexMut::index_mut:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::slice::{@Slice<T>}::copy_from_slice
+  opaque fn core::slice::{@Slice<T>}::copy_from_slice<0, 1, T>(&0 mut (@Slice<T>), &1 (@Slice<T>))
+Visiting opaque function: core::clone::impls::{u8#6}::clone
+  opaque fn core::clone::impls::{u8#6}::clone<0>(&0 (u8)) -> u8
+Visiting function: libcrux_kyber::ind_cpa::into_padded_array
+  fn libcrux_kyber::ind_cpa::into_padded_array<0, LEN>(slice^1 : &0 (@Slice<u8>)) -> @Array<u8, LEN>  
+{
+    v@0 : @Array<u8, LEN>;
+    slice^1 : &'_ (@Slice<u8>);
+    v@2 : ();
+    v@3 : bool;
+    v@4 : ();
+    v@5 : bool;
+    v@6 : bool;
+    v@7 : usize;
+    v@8 : &'_ (@Slice<u8>);
+    out^9 : @Array<u8, LEN>;
+    v@10 : ();
+    v@11 : &'_ mut (@Slice<u8>);
+    v@12 : &'_ mut (@Slice<u8>);
+    v@13 : &'_ mut (@Array<u8, LEN>);
+    v@14 : core::ops::range::Range<usize>;
+    v@15 : usize;
+    v@16 : &'_ (@Slice<u8>);
+    v@17 : &'_ (@Slice<u8>);
+    v@18 : ();
+    v@19 : ();
+    v@20 : ();
+
+    v@3 := (false : bool);
+    if (move v@3) {
+      v@8 := &*(slice^1);
+      v@7 := move core::slice::{@Slice<T>}::len<u8>(move v@8);
+      drop v@8;
+      v@6 := move v@7 <= LEN;
+      drop v@7;
+      v@5 := ¬ move v@6;
+      drop v@6;
+      assert(¬move v@5);
+      v@19 := ();
+      v@4 := move v@19;
+      drop v@5;
+      drop v@4;
+      v@20 := ();
+      v@2 := move v@20
+    }
+    else {
+      v@18 := ();
+      v@2 := move v@18
+    };
+    drop v@3;
+    drop v@2;
+    out^9 := move @ArrayRepeat<'_, u8, LEN>((0: u8 : u8));
+    fake_read out^9;
+    v@13 := &mut out^9;
+    v@16 := &*(slice^1);
+    v@15 := move core::slice::{@Slice<T>}::len<u8>(move v@16);
+    drop v@16;
+    v@14 := core::ops::range::Range { start = (0: usize : usize); end = move v@15; };
+    drop v@15;
+    v@12 := move core::array::{@Array<T, N>#16}<u8, core::ops::range::Range<usize>, LEN>[core::slice::index::{@Slice<T>#1}<u8, core::ops::range::Range<usize>>[core::slice::index::{core::ops::range::Range<usize>#4}<u8>]]::index_mut(move v@13, move v@14);
+    v@11 := &two-phase *(v@12);
+    drop v@14;
+    drop v@13;
+    v@17 := &*(slice^1);
+    v@10 := move core::slice::{@Slice<T>}::copy_from_slice<u8>[core::marker::{u8#38}](move v@11, move v@17);
+    drop v@17;
+    drop v@11;
+    drop v@12;
+    drop v@10;
+    v@0 := copy out^9;
+    drop out^9;
+    return
+  }
+Visiting call: core::slice::{@Slice<T>}::len<u8>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::slice::{[@T]}::len<u8>
+--> name: core::slice::{@Slice<T>}::len
+Visiting call: core::slice::{@Slice<T>}::len<u8>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::slice::{[@T]}::len<u8>
+--> name: core::slice::{@Slice<T>}::len
+Visiting call: core::array::{@Array<T, N>#16}<u8, core::ops::range::Range<usize>, C@0>[core::slice::index::{@Slice<T>#1}<u8, core::ops::range::Range<usize>>[core::slice::index::{core::ops::range::Range<usize>#4}<u8>]]::index_mut
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 2 type_args, 1 const_generics
+--> pattern: core::ops::index::IndexMut<[u8; @], core::ops::range::Range<usize>>::index_mut
+Visiting call: core::slice::{@Slice<T>}::copy_from_slice<u8>[core::marker::{u8#38}]
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::slice::{[@T]}::copy_from_slice<u8>
+--> name: core::slice::{@Slice<T>}::copy_from_slice
+Visiting type: core::ops::range::RangeFrom
+struct core::ops::range::RangeFrom<Idx>
+{
+  start : Idx
+}
+Visiting type: core::iter::adapters::enumerate::Enumerate
+opaque type core::iter::adapters::enumerate::Enumerate<I>
+Visiting type: core::array::iter::IntoIter
+opaque type core::array::iter::IntoIter<T, N>
+Visiting opaque function: core::array::iter::{core::array::iter::IntoIter<T, N>#2}::next
+  opaque fn core::array::iter::{core::array::iter::IntoIter<T, N>#2}::next<0, T, N>(&0 mut (core::array::iter::IntoIter<T, N>)) -> core::option::Option<core::array::iter::{core::array::iter::IntoIter<T, N>#2}<T, N>::Item>
+ERROR translating core::array::iter::{core::array::iter::IntoIter<T, N>#2}::next:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 267, characters 8-41
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::array::iter::{core::array::iter::IntoIter<T, N>#2}::size_hint
+  opaque fn core::array::iter::{core::array::iter::IntoIter<T, N>#2}::size_hint<0, T, N>(&0 (core::array::iter::IntoIter<T, N>)) -> (usize, core::option::Option<usize>)
+ERROR translating core::array::iter::{core::array::iter::IntoIter<T, N>#2}::size_hint:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 267, characters 8-41
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::array::iter::{core::array::iter::IntoIter<T, N>#2}::fold
+  opaque fn core::array::iter::{core::array::iter::IntoIter<T, N>#2}::fold<T, Acc, Fold, N>(core::array::iter::IntoIter<T, N>, Acc, Fold) -> Acc
+  where
+    [TraitClause@0]: core::ops::function::FnMut<Fold, (Acc, T)>,
+    parent(TraitClause@0)::TraitClause@0 = Acc,
+ERROR translating core::array::iter::{core::array::iter::IntoIter<T, N>#2}::fold:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 267, characters 8-41
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::array::iter::{core::array::iter::IntoIter<T, N>#2}::count
+  opaque fn core::array::iter::{core::array::iter::IntoIter<T, N>#2}::count<T, N>(core::array::iter::IntoIter<T, N>) -> usize
+ERROR translating core::array::iter::{core::array::iter::IntoIter<T, N>#2}::count:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 267, characters 8-41
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::array::iter::{core::array::iter::IntoIter<T, N>#2}::last
+  opaque fn core::array::iter::{core::array::iter::IntoIter<T, N>#2}::last<T, N>(core::array::iter::IntoIter<T, N>) -> core::option::Option<core::array::iter::{core::array::iter::IntoIter<T, N>#2}<T, N>::Item>
+ERROR translating core::array::iter::{core::array::iter::IntoIter<T, N>#2}::last:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 267, characters 8-41
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::array::iter::{core::array::iter::IntoIter<T, N>#2}::advance_by
+  opaque fn core::array::iter::{core::array::iter::IntoIter<T, N>#2}::advance_by<0, T, N>(&0 mut (core::array::iter::IntoIter<T, N>), usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
+ERROR translating core::array::iter::{core::array::iter::IntoIter<T, N>#2}::advance_by:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 267, characters 8-41
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 257, characters 14-29
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 986, characters 27-58
+
+Visiting opaque function: core::array::iter::{@Array<T, N>}::into_iter
+  opaque fn core::array::iter::{@Array<T, N>}::into_iter<T, N>(@Array<T, N>) -> core::array::iter::{@Array<T, N>}<T, N>::IntoIter
+ERROR translating core::array::iter::{@Array<T, N>}::into_iter:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::iter::traits::iterator::Iterator::enumerate
+  opaque fn core::iter::traits::iterator::Iterator::enumerate<Self>(Self) -> core::iter::adapters::enumerate::Enumerate<Self>
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::next
+  opaque fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::next<0, I>(&0 mut (core::iter::adapters::enumerate::Enumerate<I>)) -> core::option::Option<(usize, TraitClause@0::Item)>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+ERROR translating core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::next:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Stdlib__List.map in file "list.ml", line 92, characters 32-39
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 276, characters 15-46
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 268, characters 40-69
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::size_hint
+  opaque fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::size_hint<0, I>(&0 (core::iter::adapters::enumerate::Enumerate<I>)) -> (usize, core::option::Option<usize>)
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::nth
+  opaque fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::nth<0, I>(&0 mut (core::iter::adapters::enumerate::Enumerate<I>), usize) -> core::option::Option<(usize, TraitClause@0::Item)>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+ERROR translating core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::nth:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Stdlib__List.map in file "list.ml", line 92, characters 32-39
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 276, characters 15-46
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 268, characters 40-69
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::count
+  opaque fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::count<I>(core::iter::adapters::enumerate::Enumerate<I>) -> usize
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+Visiting type: core::ops::control_flow::ControlFlow
+enum core::ops::control_flow::ControlFlow<B, C>
+  =
+|  Continue(C)
+|  Break(B)
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::try_fold
+  opaque fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::try_fold<0, I, Acc, Fold, R>(&0 mut (core::iter::adapters::enumerate::Enumerate<I>), Acc, Fold) -> R
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+    // Local clauses
+    [TraitClause@1]: core::ops::function::FnMut<Fold, (Acc, (usize, TraitClause@0::Item))>,
+    [TraitClause@2]: core::ops::try_trait::Try<R>,
+    parent(TraitClause@1)::TraitClause@0 = R,
+    TraitClause@2 = Acc,
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::fold
+  opaque fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::fold<I, Acc, Fold>(core::iter::adapters::enumerate::Enumerate<I>, Acc, Fold) -> Acc
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+    // Local clauses
+    [TraitClause@1]: core::ops::function::FnMut<Fold, (Acc, (usize, TraitClause@0::Item))>,
+    parent(TraitClause@1)::TraitClause@0 = Acc,
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::advance_by
+  opaque fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::advance_by<0, I>(&0 mut (core::iter::adapters::enumerate::Enumerate<I>), usize) -> core::result::Result<(), core::num::nonzero::NonZeroUsize>
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+Visiting opaque function: core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::__iterator_get_unchecked
+  opaque unsafe fn core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::__iterator_get_unchecked<0, I>(&0 mut (core::iter::adapters::enumerate::Enumerate<I>), usize) -> core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}<I>[TraitClause@0]::Item
+  where
+    // Inherited clauses
+    [TraitClause@0]: core::iter::traits::iterator::Iterator<I>,
+    // Local clauses
+    [TraitClause@1]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::iter::adapters::enumerate::Enumerate<I>>,
+ERROR translating core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}::__iterator_get_unchecked:
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 987, characters 27-47
+
+Visiting function: libcrux_kyber::serialize::compress_coefficients_3
+  fn libcrux_kyber::serialize::compress_coefficients_3(coefficient1^1 : u16, coefficient2^2 : u16) -> (u8, u8, u8)  
+{
+    v@0 : (u8, u8, u8);
+    coefficient1^1 : u16;
+    coefficient2^2 : u16;
+    coef1^3 : u8;
+    v@4 : u16;
+    v@5 : u16;
+    coef2^6 : u8;
+    v@7 : u16;
+    v@8 : u16;
+    v@9 : u16;
+    v@10 : u16;
+    v@11 : u16;
+    v@12 : u16;
+    coef3^13 : u8;
+    v@14 : u16;
+    v@15 : u16;
+    v@16 : u16;
+    v@17 : u8;
+    v@18 : u8;
+    v@19 : u8;
+
+    v@5 := copy coefficient1^1;
+    v@4 := move v@5 & (255: u16 : u16);
+    drop v@5;
+    coef1^3 := cast<u16,u8> move v@4;
+    drop v@4;
+    fake_read coef1^3;
+    v@9 := copy coefficient1^1;
+    v@8 := move v@9 >> (8: i32 : i32);
+    drop v@9;
+    v@12 := copy coefficient2^2;
+    v@11 := move v@12 & (15: u16 : u16);
+    drop v@12;
+    v@10 := move v@11 << (4: i32 : i32);
+    drop v@11;
+    v@7 := move v@8 | move v@10;
+    drop v@10;
+    drop v@8;
+    coef2^6 := cast<u16,u8> move v@7;
+    drop v@7;
+    fake_read coef2^6;
+    v@16 := copy coefficient2^2;
+    v@15 := move v@16 >> (4: i32 : i32);
+    drop v@16;
+    v@14 := move v@15 & (255: u16 : u16);
+    drop v@15;
+    coef3^13 := cast<u16,u8> move v@14;
+    drop v@14;
+    fake_read coef3^13;
+    v@17 := copy coef1^3;
+    v@18 := copy coef2^6;
+    v@19 := copy coef3^13;
+    v@0 := (move v@17, move v@18, move v@19);
+    drop v@19;
+    drop v@18;
+    drop v@17;
+    drop coef3^13;
+    drop coef2^6;
+    drop coef1^3;
+    return
+  }
+Visiting function: libcrux_kyber::serialize::serialize_uncompressed_ring_element
+  fn libcrux_kyber::serialize::serialize_uncompressed_ring_element(re^1 : libcrux_kyber::arithmetic::PolynomialRingElement) -> @Array<u8, 384: usize>  
+{
+    v@0 : @Array<u8, 384: usize>;
+    re^1 : libcrux_kyber::arithmetic::PolynomialRingElement;
+    serialized^2 : @Array<u8, 384: usize>;
+    v@3 : ();
+    v@4 : core::ops::range::Range<usize>;
+    v@5 : core::ops::range::Range<usize>;
+    v@6 : usize;
+    v@7 : usize;
+    v@8 : &'_ (@Slice<i32>);
+    v@9 : &'_ (@Array<i32, 256: usize>);
+    iter^10 : core::ops::range::Range<usize>;
+    v@11 : ();
+    v@12 : ();
+    v@13 : core::option::Option<usize>;
+    v@14 : &'_ mut (core::ops::range::Range<usize>);
+    v@15 : &'_ mut (core::ops::range::Range<usize>);
+    i^16 : usize;
+    coefficient1^17 : u16;
+    v@18 : i32;
+    v@19 : usize;
+    v@20 : usize;
+    v@21 : usize;
+    coefficient2^22 : u16;
+    v@23 : i32;
+    v@24 : usize;
+    v@25 : usize;
+    v@26 : usize;
+    coef1^27 : u8;
+    coef2^28 : u8;
+    coef3^29 : u8;
+    v@30 : (u8, u8, u8);
+    v@31 : u16;
+    v@32 : u16;
+    v@33 : u8;
+    v@34 : usize;
+    v@35 : usize;
+    v@36 : u8;
+    v@37 : usize;
+    v@38 : usize;
+    v@39 : usize;
+    v@40 : u8;
+    v@41 : usize;
+    v@42 : usize;
+    v@43 : usize;
+    v@44 : ();
+    v@45 : ();
+    v@46 : ();
+    v@47 : &'_ mut (@Array<u8, 384: usize>);
+    v@48 : &'_ mut (u8);
+    v@49 : &'_ mut (@Array<u8, 384: usize>);
+    v@50 : &'_ mut (u8);
+    v@51 : &'_ mut (@Array<u8, 384: usize>);
+    v@52 : &'_ mut (u8);
+    v@53 : &'_ (@Array<i32, 256: usize>);
+    v@54 : &'_ (i32);
+    v@55 : &'_ (@Array<i32, 256: usize>);
+    v@56 : &'_ (i32);
+
+    serialized^2 := move @ArrayRepeat<'_, u8, 384: usize>((0: u8 : u8));
+    fake_read serialized^2;
+    v@9 := &(re^1).coefficients;
+    v@8 := move @ArrayToSliceShared<'_, i32, 256: usize>(move v@9);
+    drop v@9;
+    v@7 := move core::slice::{@Slice<T>}::len<i32>(move v@8);
+    drop v@8;
+    v@6 := move v@7 / (2: usize : usize);
+    drop v@7;
+    v@5 := core::ops::range::Range { start = (0: usize : usize); end = move v@6; };
+    drop v@6;
+    v@4 := move core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter(move v@5);
+    drop v@5;
+    fake_read v@4;
+    iter^10 := move v@4;
+    loop {
+      v@15 := &mut iter^10;
+      v@14 := &two-phase *(v@15);
+      v@13 := move core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next(move v@14);
+      drop v@14;
+      fake_read v@13;
+      match (v@13) {
+      | 0 => {
+          nop
+        }
+      | 1 => {
+          i^16 := copy (v@13 as core::option::Option::Some).0;
+          v@21 := copy i^16;
+          v@20 := move v@21 * (2: usize : usize);
+          drop v@21;
+          v@19 := move v@20 + (0: usize : usize);
+          drop v@20;
+          v@55 := &(re^1).coefficients;
+          v@56 := move @ArrayIndexShared<'_, i32, 256: usize>(move v@55, copy v@19);
+          v@18 := copy *(v@56);
+          coefficient1^17 := move libcrux_kyber::arithmetic::to_unsigned_representative(move v@18);
+          drop v@18;
+          fake_read coefficient1^17;
+          drop v@19;
+          v@26 := copy i^16;
+          v@25 := move v@26 * (2: usize : usize);
+          drop v@26;
+          v@24 := move v@25 + (1: usize : usize);
+          drop v@25;
+          v@53 := &(re^1).coefficients;
+          v@54 := move @ArrayIndexShared<'_, i32, 256: usize>(move v@53, copy v@24);
+          v@23 := copy *(v@54);
+          coefficient2^22 := move libcrux_kyber::arithmetic::to_unsigned_representative(move v@23);
+          drop v@23;
+          fake_read coefficient2^22;
+          drop v@24;
+          v@31 := copy coefficient1^17;
+          v@32 := copy coefficient2^22;
+          v@30 := move libcrux_kyber::serialize::compress_coefficients_3(move v@31, move v@32);
+          drop v@32;
+          drop v@31;
+          fake_read v@30;
+          coef1^27 := copy (v@30).0;
+          coef2^28 := copy (v@30).1;
+          coef3^29 := copy (v@30).2;
+          drop v@30;
+          v@33 := copy coef1^27;
+          v@35 := copy i^16;
+          v@34 := (3: usize : usize) * move v@35;
+          drop v@35;
+          v@51 := &mut serialized^2;
+          v@52 := move @ArrayIndexMut<'_, u8, 384: usize>(move v@51, copy v@34);
+          *(v@52) := move v@33;
+          drop v@33;
+          drop v@34;
+          v@36 := copy coef2^28;
+          v@39 := copy i^16;
+          v@38 := (3: usize : usize) * move v@39;
+          drop v@39;
+          v@37 := move v@38 + (1: usize : usize);
+          drop v@38;
+          v@49 := &mut serialized^2;
+          v@50 := move @ArrayIndexMut<'_, u8, 384: usize>(move v@49, copy v@37);
+          *(v@50) := move v@36;
+          drop v@36;
+          drop v@37;
+          v@40 := copy coef3^29;
+          v@43 := copy i^16;
+          v@42 := (3: usize : usize) * move v@43;
+          drop v@43;
+          v@41 := move v@42 + (2: usize : usize);
+          drop v@42;
+          v@47 := &mut serialized^2;
+          v@48 := move @ArrayIndexMut<'_, u8, 384: usize>(move v@47, copy v@41);
+          *(v@48) := move v@40;
+          drop v@40;
+          drop v@41;
+          v@45 := ();
+          v@12 := move v@45;
+          drop coef3^29;
+          drop coef2^28;
+          drop coef1^27;
+          drop coefficient2^22;
+          drop coefficient1^17;
+          drop i^16;
+          drop v@15;
+          drop v@13;
+          drop v@12;
+          v@46 := ();
+          v@11 := move v@46;
+          continue 0
+        }
+        _ => {
+          panic
+        }
+      };
+      v@44 := ();
+      v@3 := move v@44;
+      drop v@15;
+      drop v@13;
+      drop v@12;
+      drop iter^10;
+      drop v@4;
+      drop v@3;
+      v@0 := copy serialized^2;
+      drop serialized^2;
+      return
+    }
+  }
+Visiting call: @ArrayToSliceShared<'_, i32, 256: usize>
+is_array_map: false
+--> 1 type_args, 1 const_generics
+--> 1 type_args, 1 const_generics
+--> pattern: ArrayToSliceShared<'_, i32, 256>
+Visiting call: core::slice::{@Slice<T>}::len<i32>
+is_array_map: false
+--> 1 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::slice::{[@T]}::len<i32>
+--> name: core::slice::{@Slice<T>}::len
+Visiting call: core::iter::traits::collect::{I}<core::ops::range::Range<usize>>[core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]]::into_iter
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::collect::IntoIterator<core::ops::range::Range<usize>>::into_iter
+--> name: core::iter::traits::collect::{I}::into_iter
+Visiting call: core::iter::range::{core::ops::range::Range<A>#3}<usize>[core::iter::range::{usize#37}]::next
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 1 type_args, 0 const_generics
+--> pattern: core::iter::traits::iterator::Iterator<core::ops::range::Range<usize>>::next
+--> name: core::iter::range::{core::ops::range::Range<A>#3}::next
+Visiting call: libcrux_kyber::arithmetic::to_unsigned_representative
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::arithmetic::to_unsigned_representative
+--> name: libcrux_kyber::arithmetic::to_unsigned_representative
+Visiting call: libcrux_kyber::arithmetic::to_unsigned_representative
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::arithmetic::to_unsigned_representative
+--> name: libcrux_kyber::arithmetic::to_unsigned_representative
+Visiting call: libcrux_kyber::serialize::compress_coefficients_3
+is_array_map: false
+--> 0 type_args, 0 const_generics
+--> 0 type_args, 0 const_generics
+--> pattern: libcrux_kyber::serialize::compress_coefficients_3
+--> name: libcrux_kyber::serialize::compress_coefficients_3
+Visiting function: libcrux_kyber::ind_cpa::serialize_secret_key
+  fn libcrux_kyber::ind_cpa::serialize_secret_key<K, OUT_LEN>(key^1 : @Array<libcrux_kyber::arithmetic::PolynomialRingElement, K>) -> @Array<u8, OUT_LEN>  
+{
+    v@0 : @Array<u8, OUT_LEN>;
+    key^1 : @Array<libcrux_kyber::arithmetic::PolynomialRingElement, K>;
+    out^2 : @Array<u8, OUT_LEN>;
+    v@3 : ();
+    v@4 : core::iter::adapters::enumerate::Enumerate<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>;
+    v@5 : core::iter::adapters::enumerate::Enumerate<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>;
+    v@6 : core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>;
+    v@7 : @Array<libcrux_kyber::arithmetic::PolynomialRingElement, K>;
+    iter^8 : core::iter::adapters::enumerate::Enumerate<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>;
+    v@9 : ();
+    v@10 : ();
+    v@11 : core::option::Option<(usize, libcrux_kyber::arithmetic::PolynomialRingElement)>;
+    v@12 : &'_ mut (core::iter::adapters::enumerate::Enumerate<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>);
+    v@13 : &'_ mut (core::iter::adapters::enumerate::Enumerate<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>);
+    i^14 : usize;
+    re^15 : libcrux_kyber::arithmetic::PolynomialRingElement;
+    v@16 : ();
+    v@17 : &'_ mut (@Slice<u8>);
+    v@18 : &'_ mut (@Slice<u8>);
+    v@19 : &'_ mut (@Array<u8, OUT_LEN>);
+    v@20 : core::ops::range::Range<usize>;
+    v@21 : usize;
+    v@22 : usize;
+    v@23 : usize;
+    v@24 : usize;
+    v@25 : usize;
+    v@26 : &'_ (@Slice<u8>);
+    v@27 : &'_ (@Array<u8, 384: usize>);
+    v@28 : &'_ (@Array<u8, 384: usize>);
+    v@29 : @Array<u8, 384: usize>;
+    v@30 : libcrux_kyber::arithmetic::PolynomialRingElement;
+    v@31 : usize;
+    v@32 : usize;
+    v@33 : ();
+    v@34 : ();
+    v@35 : ();
+
+    out^2 := move @ArrayRepeat<'_, u8, OUT_LEN>((0: u8 : u8));
+    fake_read out^2;
+    v@7 := copy key^1;
+    v@6 := move core::array::iter::{@Array<T, N>}<libcrux_kyber::arithmetic::PolynomialRingElement, K>::into_iter(move v@7);
+    drop v@7;
+    v@5 := move core::array::iter::{core::array::iter::IntoIter<T, N>#2}<libcrux_kyber::arithmetic::PolynomialRingElement, K>::enumerate(move v@6);
+    drop v@6;
+    v@4 := move core::iter::traits::collect::{I}<core::iter::adapters::enumerate::Enumerate<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>>[core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>[core::array::iter::{core::array::iter::IntoIter<T, N>#2}<libcrux_kyber::arithmetic::PolynomialRingElement, K>]]::into_iter(move v@5);
+    drop v@5;
+    fake_read v@4;
+    iter^8 := move v@4;
+    loop {
+      v@13 := &mut iter^8;
+      v@12 := &two-phase *(v@13);
+      v@11 := move core::iter::adapters::enumerate::{core::iter::adapters::enumerate::Enumerate<I>#1}<core::array::iter::IntoIter<libcrux_kyber::arithmetic::PolynomialRingElement, K>>[core::array::iter::{core::array::iter::IntoIter<T, N>#2}<libcrux_kyber::arithmetic::PolynomialRingElement, K>]::next(move v@12);
+      drop v@12;
+      fake_read v@11;
+      match (v@11) {
+      | 0 => {
+          nop
+        }
+      | 1 => {
+          i^14 := copy ((v@11 as core::option::Option::Some).0).0;
+          re^15 := copy ((v@11 as core::option::Option::Some).0).1;
+          v@19 := &mut out^2;
+          v@22 := copy i^14;
+          v@31 := global libcrux_kyber::constants::BYTES_PER_RING_ELEMENT;
+          v@21 := move v@22 * move v@31;
+          drop v@22;
+          v@25 := copy i^14;
+          v@24 := move v@25 + (1: usize : usize);
+          drop v@25;
+          v@32 := global libcrux_kyber::constants::BYTES_PER_RING_ELEMENT;
+          v@23 := move v@24 * move v@32;
+          drop v@24;
+          v@20 := core::ops::range::Range { start = move v@21; end = move v@23; };
+          drop v@23;
+          drop v@21;
+          v@18 := move core::array::{@Array<T, N>#16}<u8, core::ops::range::Range<usize>, OUT_LEN>[core::slice::index::{@Slice<T>#1}<u8, core::ops::range::Range<usize>>[core::slice::index::{core::ops::range::Range<usize>#4}<u8>]]::index_mut(move v@19, move v@20);
+          v@17 := &two-phase *(v@18);
+          drop v@20;
+          drop v@19;
+          v@30 := copy re^15;
+          v@29 := move libcrux_kyber::serialize::serialize_uncompressed_ring_element(move v@30);
+          drop v@30;
+          v@28 := &v@29;
+          v@27 := &*(v@28);
+          v@26 := move @ArrayToSliceShared<'_, u8, 384: usize>(move v@27);
+          drop v@27;
+          v@16 := move core::slice::{@Slice<T>}::copy_from_slice<u8>[core::marker::{u8#38}](move v@17, move v@26);
+          drop v@26;
+          drop v@17;
+          drop v@29;
+          drop v@28;
+          drop v@18;
+          drop v@16;
+          v@34 := ();
+          v@10 := move v@34;
+          drop re^15;
+          drop i^14;
+          drop v@13;
+          drop v@11;
+          drop v@10;
+          v@35 := ();
+          v@9 := move v@35;
+          continue 0
+        }
+        _ => {
+          panic
+        }
+      };
+      v@33 := ();
+      v@3 := move v@33;
+      drop v@13;
+      drop v@11;
+      drop v@10;
+      drop iter^8;
+      drop iter^8;
+      drop v@4;
+      drop v@4;
+      drop v@3;
+      v@0 := copy out^2;
+      drop out^2;
+      return
+    }
+  }
+Fatal error: exception Failure("TODO: Adt/generic_args")
+Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 267, characters 8-41
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Eurydice__AstOfLlbc.typ_of_ty in file "lib/AstOfLlbc.ml", line 268, characters 40-69
+Called from Eurydice__AstOfLlbc.push_binder in file "lib/AstOfLlbc.ml", line 342, characters 33-55
+Called from Eurydice__AstOfLlbc.with_locals in file "lib/AstOfLlbc.ml", line 372, characters 16-33
+Called from Eurydice__AstOfLlbc.with_locals in file "lib/AstOfLlbc.ml", line 374, characters 49-75
+Called from Eurydice__AstOfLlbc.with_locals in file "lib/AstOfLlbc.ml", line 374, characters 49-75
+Called from Eurydice__AstOfLlbc.with_locals in file "lib/AstOfLlbc.ml", line 374, characters 49-75
+Called from Eurydice__AstOfLlbc.decls_of_declarations.(fun) in file "lib/AstOfLlbc.ml", line 1021, characters 16-159
+Called from Eurydice__AstOfLlbc.of_declaration_group in file "lib/AstOfLlbc.ml", line 932, characters 24-28
+Called from Eurydice__AstOfLlbc.decls_of_declarations in file "lib/AstOfLlbc.ml", line 968, characters 6-1023
+Called from Stdlib__List.concat_map.aux in file "list.ml", line 268, characters 16-19
+Called from Eurydice__AstOfLlbc.file_of_crate in file "lib/AstOfLlbc.ml", line 1075, characters 8-64
+Called from Stdlib__List.map in file "list.ml", line 92, characters 20-23
+Called from Dune__exe__Main in file "bin/main.ml", line 70, characters 39-172

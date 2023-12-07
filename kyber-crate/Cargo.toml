@@ -1,0 +1,13 @@
+[package]
+name = "libcrux_kyber"
+version = "0.1.0"
+authors = ["Cryspen"]
+edition = "2021"
+
+[workspace]
+members = ["."]
+
+[dependencies]
+hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
+libcrux ={ path = "../" }
+libcrux-platform ={ path = "../sys/platform" }
