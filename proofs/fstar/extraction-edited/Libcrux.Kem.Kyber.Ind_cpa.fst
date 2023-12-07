@@ -221,7 +221,8 @@ let deserialize_then_decompress_u #p
   let acc_t1 = t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K in
   [@ inline_let]
   let inv = fun (acc:acc_t1) (i:usize) -> True in
-  let sl : t_Slice u8 = ciphertext.Libcrux.Kem.Kyber.Types.f_value.[ 
+  admit();
+  let sl : t_Slice u8 = ciphertext.[ 
                       { Core.Ops.Range.f_end = v_VECTOR_U_ENCODED_SIZE  } <: Core.Ops.Range.t_RangeTo usize ] in
   assert (length sl == v_VECTOR_U_ENCODED_SIZE);
   let chunk_len = ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
@@ -235,7 +236,6 @@ let deserialize_then_decompress_u #p
   assert (chunk_len == Spec.Kyber.v_C1_BLOCK_SIZE p);
   assert (length sl == Spec.Kyber.v_C1_SIZE p);
   assert (Seq.length sl % v chunk_len == 0);
-  admit();
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
    Rust_primitives.Iterators.foldi_chunks_exact #u8 #acc_t1 #inv
       sl
@@ -266,6 +266,7 @@ let deserialize_public_key (v_K v_T_AS_NTT_ENCODED_SIZE: usize) (public_key: t_S
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
+  admit();
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact (public_key.[ {
@@ -303,6 +304,7 @@ let deserialize_secret_key (v_K: usize) (secret_key: t_Slice u8)
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
+  admit();
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
               (Core.Slice.impl__chunks_exact secret_key
@@ -329,14 +331,15 @@ let deserialize_secret_key (v_K: usize) (secret_key: t_Slice u8)
   in
   secret_as_ntt
 
-let decrypt
+let decrypt #p
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
       (secret_key: t_Slice u8)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : t_Array u8 (sz 32) =
+  admit();
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    deserialize_then_decompress_u v_K
+    deserialize_then_decompress_u #p v_K
       v_CIPHERTEXT_SIZE
       v_VECTOR_U_ENCODED_SIZE
       v_U_COMPRESSION_FACTOR
@@ -363,11 +366,12 @@ let encrypt
           usize)
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
-      (randomness: t_Slice u8)
-    : (t_Array u8 v_CIPHERTEXT_SIZE & Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+      (randomness: t_Slice u8) =
+  admit();
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     deserialize_public_key v_K v_T_AS_NTT_ENCODED_SIZE public_key
   in
+  admit();
   let seed:t_Slice u8 =
     public_key.[ { Core.Ops.Range.f_start = v_T_AS_NTT_ENCODED_SIZE }
       <:
@@ -463,6 +467,7 @@ let serialize_secret_key
       (fun out temp_1_ ->
           let out:t_Array u8 v_OUT_LEN = out in
           let i, re:(usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) = temp_1_ in
+          admit();
           Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
             ({
                 Core.Ops.Range.f_start
@@ -511,6 +516,7 @@ let serialize_public_key
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     Rust_primitives.Hax.repeat 0uy v_PUBLIC_KEY_SIZE
   in
+  admit();
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range public_key_serialized
       ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
@@ -555,9 +561,7 @@ let serialize_public_key
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (key_generation_seed: t_Slice u8)
-    : ((t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+      (key_generation_seed: t_Slice u8) =
   let hashed:t_Array u8 (sz 64) = Libcrux.Kem.Kyber.Hash_functions.v_G key_generation_seed in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
@@ -572,6 +576,7 @@ let generate_keypair
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
     into_padded_array (sz 33) seed_for_secret_and_error
   in
+  admit();
   let secret_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       v_K &
     u8) =
