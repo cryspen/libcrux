@@ -9,7 +9,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.2-pre.1"
+version = "0.0.2-pre.2"
 authors = ["Cryspen"]
 license = "Apache-2.0"
 homepage = "https://github.com/cryspen/libcrux"
@@ -34,11 +34,11 @@ exclude = ["/tests", "/specs"]
 crate-type = ["staticlib", "cdylib", "lib"]
 
 [build-dependencies]
-libcrux-platform = { version = "=0.0.2-pre.1", path = "sys/platform" }
+libcrux-platform = { version = "=0.0.2-pre.2", path = "sys/platform" }
 
 [dependencies]
-libcrux-hacl = { version = "=0.0.2-pre.1", path = "sys/hacl" }
-libcrux-platform = { version = "=0.0.2-pre.1", path = "sys/platform" }
+libcrux-hacl = { version = "=0.0.2-pre.2", path = "sys/hacl" }
+libcrux-platform = { version = "=0.0.2-pre.2", path = "sys/platform" }
 rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
@@ -55,7 +55,7 @@ hax-lib-macros = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/ha
 getrandom = { version = "0.2", features = ["js"] }
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dependencies]
-libjade-sys = { version = "=0.0.2-pre.1", path = "sys/libjade" }
+libjade-sys = { version = "=0.0.2-pre.2", path = "sys/libjade" }
 
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand"] }

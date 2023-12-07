@@ -3,7 +3,7 @@ use super::{
         add_to_ring_element, barrett_reduce, montgomery_reduce, to_standard_domain,
         PolynomialRingElement,
     },
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, REJECTION_SAMPLING_SEED_SIZE},
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
     hash_functions::XOFx4,
     ntt::{invert_ntt_montgomery, ntt_multiply},
     sampling::sample_from_uniform_distribution,
@@ -25,7 +25,7 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
-        let xof_bytes = XOFx4::<REJECTION_SAMPLING_SEED_SIZE, K>(seeds);
+        let xof_bytes = XOFx4::<K>(seeds);
 
         for j in 0..K {
             let (sampled, error) = sample_from_uniform_distribution(xof_bytes[j]);
