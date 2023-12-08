@@ -10,7 +10,22 @@ let v_KEY_GENERATION_SEED_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
 
-let serialize_kem_secret_key
+val serialize_kem_secret_key (#p:Spec.Kyber.params)
+      (v_SERIALIZED_KEY_LEN: usize)
+      (private_key public_key implicit_rejection_value: t_Slice u8)
+    : Pure (t_Array u8 v_SERIALIZED_KEY_LEN)
+      (requires (length private_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
+                 length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
+                 length implicit_rejection_value == Spec.Kyber.v_SHARED_SECRET_SIZE /\
+                 v_SERIALIZED_KEY_LEN == Spec.Kyber.v_SECRET_KEY_SIZE p))
+      (ensures (fun res -> res ==
+                Seq.append private_key (
+                Seq.append public_key (
+                Seq.append (Libcrux.Kem.Kyber.Hash_functions.v_H public_key) implicit_rejection_value))))
+                
+
+
+let serialize_kem_secret_key #p
       (v_SERIALIZED_KEY_LEN: usize)
       (private_key public_key implicit_rejection_value: t_Slice u8) =
   let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
@@ -37,6 +52,7 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
+  assert (Seq.slice out 0 (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p)) == private_key);
   let pointer:usize = pointer +! (Core.Slice.impl__len private_key <: usize) in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
@@ -60,7 +76,16 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
+  assert (Seq.slice out 0 (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p)) == private_key);
+  assert (Seq.slice out (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p))
+                        (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +!
+                                           Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p))
+          == public_key);
+
   let pointer:usize = pointer +! (Core.Slice.impl__len public_key <: usize) in
+  let h_public_key = (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key)
+                     <: t_Slice u8) in
+
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({
@@ -76,17 +101,17 @@ let serialize_kem_secret_key
                 pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE <: usize
               }
               <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key
-                <:
-                t_Array u8 (sz 32))
-            <:
-            t_Slice u8)
-        <:
-        t_Slice u8)
+              Core.Ops.Range.t_Range usize ]) h_public_key)
   in
+  assume (Seq.slice out 0 (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p)) == private_key);
+  assume (Seq.slice out (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p))
+                        (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +! Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p)) == public_key);
+  assert (Seq.slice out (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +!
+                                           Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p))
+                        (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +!
+                                           Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p +!
+                                           Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE))
+          == Libcrux.Kem.Kyber.Hash_functions.v_H public_key);
   let pointer:usize = pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
@@ -112,7 +137,24 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
-  admit(); // P-F
+  assume (Seq.slice out 0 (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p)) == private_key);
+  assume (Seq.slice out (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p))
+                        (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +! Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p)) == public_key);
+  assume (Seq.slice out (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +!
+                                           Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p))
+                        (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +!
+                                           Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p +!
+                                           Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE))
+          == Libcrux.Kem.Kyber.Hash_functions.v_H public_key);
+  assert (Seq.slice out (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +!
+                                           Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p +!
+                                           Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE))
+                        (v #usize_inttype (Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p +!
+                                           Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p +!
+                                           Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE +!
+                                           Spec.Kyber.v_SHARED_SECRET_SIZE))
+          == implicit_rejection_value);
+  Spec.Kyber.lemma_slice_append_4 out private_key public_key (Libcrux.Kem.Kyber.Hash_functions.v_H public_key) implicit_rejection_value;
   out
 
 let decapsulate #p
@@ -120,6 +162,7 @@ let decapsulate #p
           usize)
       (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE) =
+  let orig_secret_key = secret_key.f_value in
   let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Libcrux.Kem.Kyber.Types.impl_12__split_at v_SECRET_KEY_SIZE secret_key v_CPA_SECRET_KEY_SIZE
   in
@@ -129,6 +172,11 @@ let decapsulate #p
   let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
   in
+  assert (ind_cpa_secret_key == Spec.Kyber.slice orig_secret_key (sz 0) v_CPA_SECRET_KEY_SIZE);
+  assert (ind_cpa_public_key == Spec.Kyber.slice orig_secret_key v_CPA_SECRET_KEY_SIZE (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE));
+  assert (ind_cpa_public_key_hash == Spec.Kyber.slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE) (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE));
+  assert (implicit_rejection_value == Spec.Kyber.slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE) (length orig_secret_key));
+  admit();
   let decrypted:t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Ind_cpa.decrypt #p v_K
       v_CIPHERTEXT_SIZE
@@ -158,7 +206,7 @@ let decapsulate #p
         <:
         t_Slice u8)
   in
-  Spec.Kyber.lemma_slice_append to_hash decrypted ind_cpa_public_key_hash Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE;
+  Spec.Kyber.lemma_slice_append to_hash decrypted ind_cpa_public_key_hash;
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
@@ -248,7 +296,7 @@ let encapsulate #p
         t_Slice u8)
   in
   assert (Seq.slice to_hash 0 (v Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE) == randomness);
-  Spec.Kyber.lemma_slice_append to_hash randomness (Spec.Kyber.v_H public_key.f_value) Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE;
+  Spec.Kyber.lemma_slice_append to_hash randomness (Spec.Kyber.v_H public_key.f_value);
   assert (to_hash == Spec.Kyber.concat randomness (Spec.Kyber.v_H public_key.f_value));
 
   let hashed:t_Array u8 (sz 64) =
@@ -291,6 +339,7 @@ let encapsulate #p
       (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
       Libcrux.Kem.Kyber.Types.t_Error
   in
+  admit();
   res
 
 let generate_keypair #p
@@ -354,4 +403,5 @@ let generate_keypair #p
       (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
       Libcrux.Kem.Kyber.Types.t_Error
    in
+   admit();
    res
