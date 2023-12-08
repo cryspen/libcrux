@@ -4,18 +4,7 @@ open Core
 open FStar.Mul
 
 let rejection_sampling_panic_with_diagnostic: Prims.unit =
-  Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_const (Rust_primitives.unsize
-                (let list =
-                    [
-                      "5 blocks of SHAKE128 output were extracted from the seed for rejection sampling, but not all of them could be sampled.\nWe would appreciate it if you could report this error by opening an issue at https://github.com/cryspen/libcrux/issues"
-                    ]
-                  in
-                  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                  Rust_primitives.Hax.array_of_list list)
-              <:
-              t_Slice string)
-          <:
-          Core.Fmt.t_Arguments)
+  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
       <:
       Rust_primitives.Hax.t_Never)
 
