@@ -4,6 +4,7 @@ open Core
 open FStar.Mul
 
 let rejection_sampling_panic_with_diagnostic: Prims.unit =
+  assume(false); // This should never happen
   Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
       <:
       Rust_primitives.Hax.t_Never)

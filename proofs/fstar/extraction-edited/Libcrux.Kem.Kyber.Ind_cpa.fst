@@ -554,11 +554,10 @@ let serialize_public_key
   in
   public_key_serialized
 
-let generate_keypair
+let generate_keypair #p
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (key_generation_seed: t_Slice u8)
-    : (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) =
+      (key_generation_seed: t_Slice u8) =
   let hashed:t_Array u8 (sz 64) = Libcrux.Kem.Kyber.Hash_functions.v_G key_generation_seed in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
@@ -588,6 +587,10 @@ let generate_keypair
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
     serialize_secret_key v_K v_PRIVATE_KEY_SIZE secret_as_ntt
   in
+  let res = 
   secret_key_serialized, public_key_serialized
   <:
   (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
+  in
+  admit(); //P-F
+  res

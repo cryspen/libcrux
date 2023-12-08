@@ -678,7 +678,7 @@ let compress_then_serialize_ring_element_v
         <:
         Rust_primitives.Hax.t_Never)
 
-#push-options "--z3rlimit 500 --max_ifuel 2 --split_queries always"
+#push-options "--z3rlimit 150 --max_ifuel 2" 
 let deserialize_then_decompress_10_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
@@ -707,6 +707,22 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
           in
           assume (v i * 4 + 4 <= 256);
           assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient1);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient2);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient3);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient4);
+          let coefficient1 = (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient1
+                           <:
+                           i32) in
+          let coefficient2 = (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient2
+                           <:
+                           i32) in
+          let coefficient3 = (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient3
+                           <:
+                           i32) in
+          let coefficient4 = (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient4
+                           <:
+                           i32) in
+         
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -715,14 +731,11 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 4 *! i <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient1
-                  <:
-                  i32)
+                coefficient1 
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -731,14 +744,11 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 1 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient2
-                  <:
-                  i32)
+                coefficient2 
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient3);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -747,14 +757,11 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 2 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient3
-                  <:
-                  i32)
+                coefficient3
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient4);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -763,9 +770,7 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 4 *! i <: usize) +! sz 3 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient4
-                  <:
-                  i32)
+                coefficient4
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -817,6 +822,22 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               byte11
           in
           assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient1);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient2);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient3);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient4);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient5);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient6);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient7);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient8);
+          let coefficient1 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient1 in
+          let coefficient2 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient2 in
+          let coefficient3 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient3 in
+          let coefficient4 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient4 in
+          let coefficient5 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient5 in
+          let coefficient6 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient6 in
+          let coefficient7 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient7 in
+          let coefficient8 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient8 in
+          
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -825,14 +846,11 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 8 *! i <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient1
-                  <:
-                  i32)
+                coefficient1
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -841,14 +859,11 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 1 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient2
-                  <:
-                  i32)
+                coefficient2
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient3);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -857,14 +872,11 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 2 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient3
-                  <:
-                  i32)
+                coefficient3
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient4);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -873,14 +885,11 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 3 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient4
-                  <:
-                  i32)
+                coefficient4
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient5);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -889,14 +898,11 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 4 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient5
-                  <:
-                  i32)
+                coefficient5
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient6);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -905,14 +911,11 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 5 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient6
-                  <:
-                  i32)
+                coefficient6
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient7);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -921,14 +924,11 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 6 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient7
-                  <:
-                  i32)
+                coefficient7
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient8);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -937,9 +937,7 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 7 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient8
-                  <:
-                  i32)
+                coefficient8
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -968,6 +966,7 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
           assume (v i * 2 + 2 <= 256);
           let coefficient1, coefficient2:(i32 & i32) = decompress_coefficients_4_ byte in
           assume (Libcrux.Kem.Kyber.Compress.decompress_pre 4uy coefficient1);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 4uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -983,7 +982,6 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 4uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1039,6 +1037,22 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
             decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5
           in
           assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient1);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient1);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient2);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient3);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient4);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient5);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient6);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient7);
+          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient8);
+          let coefficient1 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient1 in
+          let coefficient2 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient2 in
+          let coefficient3 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient3 in
+          let coefficient4 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient4 in
+          let coefficient5 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient5 in
+          let coefficient6 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient6 in
+          let coefficient7 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient7 in
+          let coefficient8 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient8 in
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1047,14 +1061,11 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 (sz 8 *! i <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient1
-                  <:
-                  i32)
+                coefficient1
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient2);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1063,14 +1074,11 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 1 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient2
-                  <:
-                  i32)
+                coefficient2
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient3);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1079,14 +1087,11 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 2 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient3
-                  <:
-                  i32)
+                coefficient3
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient4);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1095,15 +1100,12 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 3 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient4
-                  <:
-                  i32)
+                coefficient4
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
           admit();
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient5);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1112,14 +1114,11 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 4 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient5
-                  <:
-                  i32)
+                coefficient5
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient6);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1128,14 +1127,11 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 5 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient6
-                  <:
-                  i32)
+                coefficient6
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient7);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1144,14 +1140,11 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 6 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient7
-                  <:
-                  i32)
+                coefficient7
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient8);
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               re with
@@ -1160,9 +1153,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                 ((sz 8 *! i <: usize) +! sz 7 <: usize)
-                (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient8
-                  <:
-                  i32)
+                coefficient8
             }
             <:
             Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
