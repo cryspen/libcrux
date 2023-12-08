@@ -170,12 +170,12 @@ assume val v_XOF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
 (** IND-CPA Functions *)
 
 assume val ind_cpa_generate_keypair (p:params) (randomness:t_Array u8 v_CPA_PKE_KEY_GENERATION_SEED_SIZE) :
-                                    t_Result (t_KyberCPAKeyPair p) t_Error
+                                    t_KyberCPAKeyPair p
 
 assume val ind_cpa_encrypt (p:params) (public_key: t_KyberPublicKey p)
                            (message: t_Array u8 v_SHARED_SECRET_SIZE)
                            (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
-                            t_Result (t_KyberCiphertext p) t_Error
+                            t_KyberCiphertext p
 
 assume val ind_cpa_decrypt (p:params) (secret_key: t_KyberCPAPrivateKey p)
                                (ciphertext: t_KyberCiphertext p): 
@@ -195,18 +195,16 @@ assume val ind_cpa_decrypt (p:params) (secret_key: t_KyberCPAPrivateKey p)
 /// TODO: input validation
 
 val ind_cca_generate_keypair (p:params) (randomness:t_Array u8 v_KEY_GENERATION_SEED_SIZE) :
-                             t_Result (t_KyberKeyPair p) t_Error
+                             t_KyberKeyPair p
 let ind_cca_generate_keypair p randomness =
     let (ind_cpa_keypair_randomness, implicit_rejection_value) =
         split randomness v_CPA_PKE_KEY_GENERATION_SEED_SIZE in
         
-    match ind_cpa_generate_keypair p ind_cpa_keypair_randomness with
-    | Ok (ind_cpa_secret_key,ind_cpa_public_key) ->
-      let ind_cca_secret_key = Seq.append ind_cpa_secret_key (
-                               Seq.append ind_cpa_public_key (
-                               Seq.append (v_H ind_cpa_public_key) implicit_rejection_value)) in
-      Ok (ind_cca_secret_key, ind_cpa_public_key)
-    | Err e -> Err e
+    let (ind_cpa_secret_key,ind_cpa_public_key) = ind_cpa_generate_keypair p ind_cpa_keypair_randomness in
+    let ind_cca_secret_key = Seq.append ind_cpa_secret_key (
+                             Seq.append ind_cpa_public_key (
+                             Seq.append (v_H ind_cpa_public_key) implicit_rejection_value)) in
+    (ind_cca_secret_key, ind_cpa_public_key)
 
 /// This function implements most of Algorithm 16 of the
 /// NIST FIPS 203 specification; this is the Kyber CCA-KEM encapsulation algorithm.
@@ -219,14 +217,13 @@ let ind_cca_generate_keypair p randomness =
 
 val ind_cca_encapsulate (p:params) (public_key: t_KyberPublicKey p)
                         (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
-                        t_Result (t_KyberCiphertext p &  t_KyberSharedSecret) t_Error
+                        (t_KyberCiphertext p &  t_KyberSharedSecret)
 let ind_cca_encapsulate p public_key randomness =
     let to_hash = concat randomness (v_H public_key) in
     let hashed = v_G to_hash in
     let (shared_secret, pseudorandomness) = split hashed v_SHARED_SECRET_SIZE in
-    match ind_cpa_encrypt p public_key randomness pseudorandomness with
-    | Ok ciphertext -> Ok (ciphertext,shared_secret)
-    | Err e -> Err e
+    let ciphertext = ind_cpa_encrypt p public_key randomness pseudorandomness in
+    (ciphertext,shared_secret)
     
 
 /// This function implements Algorithm 17 of the
@@ -249,11 +246,10 @@ let ind_cca_decapsulate p secret_key ciphertext =
     let to_hash = concat implicit_rejection_value ciphertext in
     let rejection_shared_secret = v_J to_hash in
 
-    match ind_cpa_encrypt p ind_cpa_public_key decrypted pseudorandomness with
-    | Ok reencrypted -> if reencrypted = ciphertext
-                       then success_shared_secret
-                       else rejection_shared_secret
-    | Err e -> rejection_shared_secret
+    let reencrypted = ind_cpa_encrypt p ind_cpa_public_key decrypted pseudorandomness in
+    if reencrypted = ciphertext
+    then success_shared_secret
+    else rejection_shared_secret
    
 
 (** Kyber-768 Instantiation *)
@@ -267,11 +263,11 @@ let kyber768_params : params = {
 }
 
 let kyber768_generate_keypair (randomness:t_Array u8 (sz 64)):
-                              t_Result (t_Array u8 (sz 2400) & t_Array u8 (sz 1184)) t_Error =
+                              (t_Array u8 (sz 2400) & t_Array u8 (sz 1184)) =
     ind_cca_generate_keypair kyber768_params randomness
 
 let kyber768_encapsulate (public_key: t_Array u8 (sz 1184)) (randomness: t_Array u8 (sz 32)):
-                         t_Result (t_Array u8 (sz 1088) & t_Array u8 (sz 32)) t_Error =
+                         (t_Array u8 (sz 1088) & t_Array u8 (sz 32)) =
     ind_cca_encapsulate kyber768_params public_key randomness
 
 
@@ -290,16 +286,16 @@ let kyber1024_params : params = {
 }
 
 let kyber1024_generate_keypair (randomness:t_Array u8 (sz 64)):
-                               t_Result (t_Array u8 (sz 3168) & t_Array u8 (sz 1568)) t_Error =
+                               (t_Array u8 (sz 3168) & t_Array u8 (sz 1568)) =
     ind_cca_generate_keypair kyber1024_params randomness
 
 let kyber1024_encapsulate (public_key: t_Array u8 (sz 1568)) (randomness: t_Array u8 (sz 32)):
-                         t_Result (t_Array u8 (sz 1568) & t_Array u8 (sz 32)) t_Error =
+                          (t_Array u8 (sz 1568) & t_Array u8 (sz 32)) =
     ind_cca_encapsulate kyber1024_params public_key randomness
 
 
 let kyber1024_decapsulate (secret_key: t_Array u8 (sz 3168)) (ciphertext: t_Array u8 (sz 1568)):
-                         t_Array u8 (sz 32) =
+                           t_Array u8 (sz 32) =
     ind_cca_decapsulate kyber1024_params secret_key ciphertext
 
 (** Kyber-512 Instantiation *)
@@ -313,11 +309,11 @@ let kyber512_params : params = {
 }
 
 let kyber512_generate_keypair (randomness:t_Array u8 (sz 64)):
-                              t_Result (t_Array u8 (sz 1632) & t_Array u8 (sz 800)) t_Error  =
+                              (t_Array u8 (sz 1632) & t_Array u8 (sz 800))  =
     ind_cca_generate_keypair kyber512_params randomness
 
 let kyber512_encapsulate (public_key: t_Array u8 (sz 800)) (randomness: t_Array u8 (sz 32)):
-                         t_Result (t_Array u8 (sz 768) & t_Array u8 (sz 32)) t_Error =
+                         (t_Array u8 (sz 768) & t_Array u8 (sz 32)) =
     ind_cca_encapsulate kyber512_params public_key randomness
 
 

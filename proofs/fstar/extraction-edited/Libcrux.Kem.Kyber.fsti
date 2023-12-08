@@ -29,9 +29,7 @@ val encapsulate (#p:Spec.Kyber.params)
           usize)
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
-    : Pure (Core.Result.t_Result
-           (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-            Libcrux.Kem.Kyber.Types.t_Error)
+    : Pure (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
       (requires (
                 p == (let open Spec.Kyber in {v_RANK = v_K; v_ETA1; v_ETA2; v_VECTOR_U_COMPRESSION_FACTOR; v_VECTOR_V_COMPRESSION_FACTOR}) /\
                 Spec.Kyber.valid_params p /\
@@ -41,29 +39,22 @@ val encapsulate (#p:Spec.Kyber.params)
                 v_T_AS_NTT_ENCODED_SIZE = Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE p
                 ))
 
-      (ensures (fun res ->
+      (ensures (fun (ct,ss) ->
                 let open Spec.Kyber in
                 let p = {v_RANK = v_K; v_ETA1; v_ETA2; v_VECTOR_U_COMPRESSION_FACTOR; v_VECTOR_V_COMPRESSION_FACTOR} in
-                let spec_result = Spec.Kyber.ind_cca_encapsulate p public_key.f_value randomness in
-                match res with 
-                | Core.Result.Result_Ok (cip,ss) -> spec_result == Ok(cip.f_value,ss)
-                | Core.Result.Result_Err e -> spec_result = Err Error_RejectionSampling))
+                (ct.f_value,ss) == Spec.Kyber.ind_cca_encapsulate p public_key.f_value randomness))
+
 
 val generate_keypair (#p:Spec.Kyber.params)
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (sz 64))
-    : Pure (Core.Result.t_Result
-           (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-           Libcrux.Kem.Kyber.Types.t_Error)
+    : Pure (Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
       (requires (v_K == p.v_RANK /\ v_ETA1 == p.v_ETA1 /\
                 v_PUBLIC_KEY_SIZE == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
                 v_CPA_PRIVATE_KEY_SIZE == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
                 v_PRIVATE_KEY_SIZE == Spec.Kyber.v_SECRET_KEY_SIZE p
                 ))
 
-      (ensures (fun res -> 
-                let spec_result = Spec.Kyber.ind_cca_generate_keypair p randomness in
-                match res with 
-                | Core.Result.Result_Ok (kp) -> spec_result == Spec.Kyber.Ok(kp.Libcrux.Kem.Kyber.Types.f_sk.f_value,kp.Libcrux.Kem.Kyber.Types.f_pk.f_value)
-                | Core.Result.Result_Err e -> spec_result = Spec.Kyber.Err Spec.Kyber.Error_RejectionSampling))
+      (ensures (fun kp -> 
+                (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.ind_cca_generate_keypair p randomness))

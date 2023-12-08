@@ -377,9 +377,7 @@ let encrypt
       <:
       Core.Ops.Range.t_RangeFrom usize ]
   in
-  let v_A_transpose, sampling_A_error:(t_Array
-      (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+  let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
     Libcrux.Kem.Kyber.Matrix.sample_matrix_A v_K
       (into_padded_array (sz 34) seed <: t_Array u8 (sz 34))
       false
@@ -443,9 +441,7 @@ let encrypt
         <:
         t_Slice u8)
   in
-  ciphertext, sampling_A_error
-  <:
-  (t_Array u8 v_CIPHERTEXT_SIZE & Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+  ciphertext
 
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)
@@ -561,14 +557,13 @@ let serialize_public_key
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (key_generation_seed: t_Slice u8) =
+      (key_generation_seed: t_Slice u8)
+    : (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) =
   let hashed:t_Array u8 (sz 64) = Libcrux.Kem.Kyber.Hash_functions.v_G key_generation_seed in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
   in
-  let v_A_transpose, sampling_A_error:(t_Array
-      (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+  let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
     Libcrux.Kem.Kyber.Matrix.sample_matrix_A v_K
       (into_padded_array (sz 34) seed_for_A <: t_Array u8 (sz 34))
       true
@@ -576,7 +571,6 @@ let generate_keypair
   let (prf_input: t_Array u8 (sz 33)):t_Array u8 (sz 33) =
     into_padded_array (sz 33) seed_for_secret_and_error
   in
-  admit();
   let secret_as_ntt, domain_separator:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       v_K &
     u8) =
@@ -594,10 +588,6 @@ let generate_keypair
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
     serialize_secret_key v_K v_PRIVATE_KEY_SIZE secret_as_ntt
   in
-  (secret_key_serialized, public_key_serialized
-    <:
-    (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)),
-  sampling_A_error
+  secret_key_serialized, public_key_serialized
   <:
-  ((t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) &
-    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+  (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)

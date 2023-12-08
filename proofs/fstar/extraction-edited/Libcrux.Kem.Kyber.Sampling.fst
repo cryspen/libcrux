@@ -3,6 +3,11 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
+let rejection_sampling_panic_with_diagnostic: Prims.unit =
+  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
+      <:
+      Rust_primitives.Hax.t_Never)
+
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
@@ -100,7 +105,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                 sampled))
   in
   let _:Prims.unit = () <: Prims.unit in
-  admit(); // Panic Free
+  admit(); // P-F
   sampled
 
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
@@ -200,7 +205,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
 let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
-  admit(); //needs precondition
+  admit();
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
@@ -209,10 +214,9 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
 
         <:
         Rust_primitives.Hax.t_Never)
- 
-let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u8 v_SEED_SIZE)
-    : (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+
+let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
+    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
@@ -238,7 +242,7 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
             temp_0_
           in
           let bytes:t_Slice u8 = bytes in
-          assume (length bytes = sz 3); // Needs loop inv
+          assume (length bytes = sz 3);
           if ~.done <: bool
           then
             let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
@@ -316,19 +320,11 @@ let sample_from_uniform_distribution (v_SEED_SIZE: usize) (randomness: t_Array u
             <:
             (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
   in
-  if done
-  then
-    let _:Prims.unit = () <: Prims.unit in
-    out, (Core.Option.Option_None <: Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
-    <:
-    (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
-  else
-    out,
-    (Core.Option.Option_Some
-      (Libcrux.Kem.Kyber.Types.Error_RejectionSampling <: Libcrux.Kem.Kyber.Types.t_Error)
-      <:
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
-    <:
-    (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+  let _:Prims.unit =
+    if ~.done
+    then
+      let _:Prims.unit = rejection_sampling_panic_with_diagnostic in
+      ()
+  in
+  let _:Prims.unit = () <: Prims.unit in
+  out

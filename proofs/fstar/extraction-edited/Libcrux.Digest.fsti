@@ -36,4 +36,6 @@ val sha3_512_ (payload: t_Slice u8) : t_Array u8 (sz 64)
 
 val shake128 (v_LEN: usize) (data: t_Slice u8) : t_Array u8 v_LEN
 
+val shake128x4 (v_LEN: usize) (data0: t_Slice u8) (data1: t_Slice u8) (data2: t_Slice u8) (data3: t_Slice u8): (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
+
 val shake256 (v_LEN: usize) (data: t_Slice u8) : t_Array u8 v_LEN

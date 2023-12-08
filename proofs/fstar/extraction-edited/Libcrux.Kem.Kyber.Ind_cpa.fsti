@@ -29,35 +29,25 @@ val encrypt (#p:Spec.Kyber.params)
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8{length randomness <. sz 33})
-    : Pure (t_Array u8 v_CIPHERTEXT_SIZE &
-           Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    : Pure (t_Array u8 v_CIPHERTEXT_SIZE)
       (requires (v_K == p.v_RANK /\
                  length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
                  length randomness == Spec.Kyber.v_SHARED_SECRET_SIZE /\
                  v_CIPHERTEXT_SIZE == Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE p /\
                  v_T_AS_NTT_ENCODED_SIZE == Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE p /\
                  v_C1_LEN == Spec.Kyber.v_C1_SIZE p))
-      (ensures (fun (ct,err) ->
-               let spec_result = Spec.Kyber.ind_cpa_encrypt p public_key message randomness in
-               match err with
-               | Core.Option.Option_None -> spec_result == Spec.Kyber.Ok (ct)
-               | Core.Option.Option_Some _ -> spec_result == Spec.Kyber.Err Spec.Kyber.Error_RejectionSampling))
+      (ensures (fun ct -> ct == Spec.Kyber.ind_cpa_encrypt p public_key message randomness))
                
 
 val generate_keypair (#p:Spec.Kyber.params)
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (key_generation_seed: t_Slice u8)
-    : Pure ((t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE) &
-           Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+    : Pure (t_Array u8 v_PRIVATE_KEY_SIZE & t_Array u8 v_PUBLIC_KEY_SIZE)
       (requires (v_K == p.v_RANK /\
                  v_PUBLIC_KEY_SIZE == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
                  v_PRIVATE_KEY_SIZE == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
                  length key_generation_seed == Spec.Kyber.v_CPA_PKE_KEY_GENERATION_SEED_SIZE))
-      (ensures (fun ((sk,pk),err) ->
-               let spec_result = Spec.Kyber.ind_cpa_generate_keypair p key_generation_seed in
-               match err with
-               | Core.Option.Option_None -> spec_result == Spec.Kyber.Ok (sk,pk)
-               | Core.Option.Option_Some _ -> spec_result == Spec.Kyber.Err Spec.Kyber.Error_RejectionSampling))
+      (ensures (fun (sk,pk) -> (sk,pk) == Spec.Kyber.ind_cpa_generate_keypair p key_generation_seed))
  
     

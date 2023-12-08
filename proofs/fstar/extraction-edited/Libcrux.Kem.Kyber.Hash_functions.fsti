@@ -18,9 +18,9 @@ val v_PRF (v_LEN: usize) (input: t_Slice u8)
           (requires True)
           (ensures (fun res -> res == Spec.Kyber.v_PRF v_LEN input))
 
-val v_XOFx4 (v_LEN v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
-        : Pure (t_Array (t_Array u8 v_LEN) v_K)
+val v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
+        : Pure (t_Array (t_Array u8 (sz 840)) v_K)
           (requires True)
           (ensures (fun res ->
-            (forall i. i < v v_K ==> Seq.index res i == Spec.Kyber.v_XOF v_LEN (Seq.index input i))))
+            (forall i. i < v v_K ==> Seq.index res i == Spec.Kyber.v_XOF (sz 840) (Seq.index input i))))
           
