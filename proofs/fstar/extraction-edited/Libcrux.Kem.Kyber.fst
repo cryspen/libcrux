@@ -176,7 +176,6 @@ let decapsulate #p
   assert (ind_cpa_public_key == Spec.Kyber.slice orig_secret_key v_CPA_SECRET_KEY_SIZE (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE));
   assert (ind_cpa_public_key_hash == Spec.Kyber.slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE) (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE));
   assert (implicit_rejection_value == Spec.Kyber.slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE) (length orig_secret_key));
-  admit();
   let decrypted:t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Ind_cpa.decrypt #p v_K
       v_CIPHERTEXT_SIZE
@@ -207,6 +206,8 @@ let decapsulate #p
         t_Slice u8)
   in
   Spec.Kyber.lemma_slice_append to_hash decrypted ind_cpa_public_key_hash;
+  assert (decrypted == Spec.Kyber.ind_cpa_decrypt p ind_cpa_secret_key ciphertext.f_value);
+  assert (to_hash == Spec.Kyber.concat decrypted ind_cpa_public_key_hash);
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
@@ -214,6 +215,7 @@ let decapsulate #p
     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
       Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
   in
+  assert ((shared_secret,pseudorandomness) == Spec.Kyber.split hashed Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE);
   assert (length implicit_rejection_value = v_SECRET_KEY_SIZE -! v_CPA_SECRET_KEY_SIZE -! v_PUBLIC_KEY_SIZE -! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE);
   assert (length implicit_rejection_value = Spec.Kyber.v_SHARED_SECRET_SIZE);
   assert (Spec.Kyber.v_SHARED_SECRET_SIZE <=. Spec.Kyber.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE p);
@@ -238,9 +240,11 @@ let decapsulate #p
         <:
         t_Slice u8)
   in
+  Spec.Kyber.lemma_slice_append to_hash implicit_rejection_value ciphertext.f_value;
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Hash_functions.v_PRF (sz 32) (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
+  assert (implicit_rejection_shared_secret == Spec.Kyber.v_J to_hash);
   let expected_ciphertext, _:(t_Array u8 v_CIPHERTEXT_SIZE &
     Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
     Libcrux.Kem.Kyber.Ind_cpa.encrypt #p v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE
@@ -339,7 +343,6 @@ let encapsulate #p
       (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
       Libcrux.Kem.Kyber.Types.t_Error
   in
-  admit();
   res
 
 let generate_keypair #p
