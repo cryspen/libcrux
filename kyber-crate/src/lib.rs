@@ -139,7 +139,7 @@ pub(crate) fn encapsulate<
 
     match sampling_a_error {
         Some(e) => Err(e),
-        None => Ok((ciphertext.into(), shared_secret.try_into().unwrap())),
+        None => Ok((ciphertext.into(), match shared_secret.try_into() { Ok(r) => r, Err(_) => panic!() })),
     }
 }
 

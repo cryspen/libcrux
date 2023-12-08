@@ -68,7 +68,9 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
 
         let coin_toss_outcomes = even_bits + odd_bits;
 
-        for outcome_set in (0..u32::BITS).step_by(4) {
+        // for outcome_set in (0..u32::BITS).step_by(4) {
+        for outcome_set_ in (0..u32::BITS/4) {
+            let outcome_set = outcome_set_ * 4;
             let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as FieldElement;
             let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as FieldElement;
 
@@ -104,7 +106,9 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
 
         let coin_toss_outcomes = first_bits + second_bits + third_bits;
 
-        for outcome_set in (0..24).step_by(6) {
+        // for outcome_set in (0..24).step_by(6) {
+        for outcome_set_ in (0..24/6) {
+            let outcome_set = outcome_set_ * 6;
             let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as FieldElement;
             let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as FieldElement;
 
