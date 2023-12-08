@@ -513,7 +513,7 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
                 )?;
                 let (xsk, xpk) = DeriveKeyPair(alg, &seed[..32])?;
                 let KyberKeyPair { sk, pk } =
-                    kyber768_generate_keypair_derand(seed[32..].try_into().unwrap()).unwrap();
+                    kyber768_generate_keypair_derand(seed[32..].try_into().unwrap());
 
                 let private = Kyber768X25519PrivateKey {
                     kyber: sk,
@@ -557,12 +557,12 @@ pub fn Encap(alg: KEM, pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult
 ///
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult {
-    crate::kem::kyber768_encapsulate_derand(
+    let (ct, ss) = crate::kem::kyber768_encapsulate_derand(
         &pkR.try_into().unwrap(),
         randomness.try_into().unwrap(),
-    )
-    .map(|(ct, ss)| (ss.as_ref().to_vec(), ct.as_ref().to_vec()))
-    .map_err(|_| HpkeError::EncapError)
+    );
+
+    EncapResult::Ok((ss.as_ref().to_vec(), ct.as_ref().to_vec()))
 }
 
 /// Kyber Decap

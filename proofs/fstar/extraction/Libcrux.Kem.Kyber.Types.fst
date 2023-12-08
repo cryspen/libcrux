@@ -3,8 +3,6 @@ module Libcrux.Kem.Kyber.Types
 open Core
 open FStar.Mul
 
-type t_Error = | Error_RejectionSampling : t_Error
-
 type t_KyberCiphertext (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
