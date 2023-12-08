@@ -1,6 +1,69 @@
 module Hacspec_kyber.Matrix
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
+open FStar.Mul
+
+let multiply_column_by_row
+      (column_vector row_vector:
+          Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3)
+        )
+    : Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+      (sz 256) =
+  let result:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+    (sz 256) =
+    Hacspec_lib.Ring.impl_2__ZERO
+  in
+  let result:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+    (sz 256) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
+              (Hacspec_lib.Vector.impl__iter (sz 3) (sz 256) column_vector
+                <:
+                Core.Slice.Iter.t_Iter
+                (Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
+              (Hacspec_lib.Vector.impl__iter (sz 3) (sz 256) row_vector
+                <:
+                Core.Slice.Iter.t_Iter
+                (Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
+            <:
+            Core.Iter.Adapters.Zip.t_Zip
+              (Core.Slice.Iter.t_Iter
+                (Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
+              (Core.Slice.Iter.t_Iter
+                (Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
+        <:
+        Core.Iter.Adapters.Zip.t_Zip
+          (Core.Slice.Iter.t_Iter
+            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256)))
+          (Core.Slice.Iter.t_Iter
+            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256))))
+      result
+      (fun result temp_1_ ->
+          let result:Hacspec_lib.Ring.t_PolynomialRingElement
+            (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
+            result
+          in
+          let column_element, row_element:(Hacspec_lib.Ring.t_PolynomialRingElement
+              (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) &
+            Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+              (sz 256)) =
+            temp_1_
+          in
+          result +!
+          (Hacspec_kyber.Ntt.multiply_ntts column_element row_element
+            <:
+            Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+              (sz 256))
+          <:
+          Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+            (sz 256))
+  in
+  result
 
 let transpose
       (matrix:
@@ -44,9 +107,21 @@ let transpose
               (sz 256)
               (sz 3))))
       transpose
-      (fun transpose (i, row) ->
+      (fun transpose temp_1_ ->
+          let transpose:t_Array
+            (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                (sz 256)
+                (sz 3)) (sz 3) =
+            transpose
+          in
+          let i, row:(usize &
+            Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+              (sz 256)
+              (sz 3)) =
+            temp_1_
+          in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-                    (Hacspec_lib.Vector.impl__iter row
+                    (Hacspec_lib.Vector.impl__iter (sz 3) (sz 256) row
                       <:
                       Core.Slice.Iter.t_Iter
                       (Hacspec_lib.Ring.t_PolynomialRingElement
@@ -62,10 +137,21 @@ let transpose
                 (Hacspec_lib.Ring.t_PolynomialRingElement
                     (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
             transpose
-            (fun transpose (j, matrix_element) ->
-                Rust_primitives.Hax.update_at transpose
+            (fun transpose temp_1_ ->
+                let transpose:t_Array
+                  (Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+                      (sz 256)
+                      (sz 3)) (sz 3) =
+                  transpose
+                in
+                let j, matrix_element:(usize &
+                  Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) =
+                  temp_1_
+                in
+                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize transpose
                   j
-                  (Rust_primitives.Hax.update_at (transpose.[ j ]
+                  (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (transpose.[ j ]
                         <:
                         Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
                           (sz 256)
@@ -137,9 +223,20 @@ let multiply_matrix_by_column
               (sz 256)
               (sz 3))))
       result
-      (fun result (i, row) ->
+      (fun result temp_1_ ->
+          let result:Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+            (sz 256)
+            (sz 3) =
+            result
+          in
+          let i, row:(usize &
+            Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
+              (sz 256)
+              (sz 3)) =
+            temp_1_
+          in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-                    (Hacspec_lib.Vector.impl__iter row
+                    (Hacspec_lib.Vector.impl__iter (sz 3) (sz 256) row
                       <:
                       Core.Slice.Iter.t_Iter
                       (Hacspec_lib.Ring.t_PolynomialRingElement
@@ -155,7 +252,16 @@ let multiply_matrix_by_column
                 (Hacspec_lib.Ring.t_PolynomialRingElement
                     (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
             result
-            (fun result (j, matrix_element) ->
+            (fun result temp_1_ ->
+                let result:Hacspec_lib.Vector.t_Vector
+                  (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3) =
+                  result
+                in
+                let j, matrix_element:(usize &
+                  Hacspec_lib.Ring.t_PolynomialRingElement
+                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)) =
+                  temp_1_
+                in
                 let product:Hacspec_lib.Ring.t_PolynomialRingElement
                   (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) =
                   Hacspec_kyber.Ntt.multiply_ntts matrix_element
@@ -166,7 +272,7 @@ let multiply_matrix_by_column
                 in
                 let result:Hacspec_lib.Vector.t_Vector
                   (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3) =
-                  Rust_primitives.Hax.update_at result
+                  Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                     i
                     ((result.[ i ]
                         <:
@@ -181,57 +287,5 @@ let multiply_matrix_by_column
           <:
           Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3)
       )
-  in
-  result
-
-let multiply_column_by_row
-      (column_vector row_vector:
-          Hacspec_lib.Vector.t_Vector (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256) (sz 3)
-        )
-    : Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-      (sz 256) =
-  let result:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-    (sz 256) =
-    Hacspec_lib.Ring.impl_2__ZERO
-  in
-  let result:Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-    (sz 256) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_zip
-              (Hacspec_lib.Vector.impl__iter column_vector
-                <:
-                Core.Slice.Iter.t_Iter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
-              (Hacspec_lib.Vector.impl__iter row_vector
-                <:
-                Core.Slice.Iter.t_Iter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
-            <:
-            Core.Iter.Adapters.Zip.t_Zip
-              (Core.Slice.Iter.t_Iter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256)))
-              (Core.Slice.Iter.t_Iter
-                (Hacspec_lib.Ring.t_PolynomialRingElement
-                    (Hacspec_lib.Field.t_PrimeFieldElement 3329us) (sz 256))))
-        <:
-        Core.Iter.Adapters.Zip.t_Zip
-          (Core.Slice.Iter.t_Iter
-            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-                (sz 256)))
-          (Core.Slice.Iter.t_Iter
-            (Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-                (sz 256))))
-      result
-      (fun result (column_element, row_element) ->
-          result +!
-          (Hacspec_kyber.Ntt.multiply_ntts column_element row_element
-            <:
-            Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-              (sz 256))
-          <:
-          Hacspec_lib.Ring.t_PolynomialRingElement (Hacspec_lib.Field.t_PrimeFieldElement 3329us)
-            (sz 256))
   in
   result

@@ -23,7 +23,7 @@ pub mod kyber1024;
 pub mod kyber512;
 pub mod kyber768;
 
-pub use types::{Error, KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey};
+pub use types::{KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey};
 
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
@@ -73,11 +73,11 @@ pub(super) fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> Result<KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>, Error> {
+) -> KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let ((ind_cpa_private_key, public_key), sampling_a_error) = ind_cpa::generate_keypair::<
+    let (ind_cpa_private_key, public_key) = ind_cpa::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
         PUBLIC_KEY_SIZE,
@@ -88,14 +88,10 @@ pub(super) fn generate_keypair<
 
     let secret_key_serialized =
         serialize_kem_secret_key(&ind_cpa_private_key, &public_key, implicit_rejection_value);
-    if let Some(error) = sampling_a_error {
-        Err(error)
-    } else {
-        let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
-            KyberPrivateKey::from(secret_key_serialized);
+    let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
+        KyberPrivateKey::from(secret_key_serialized);
 
-        Ok(KyberKeyPair::from(private_key, public_key.into()))
-    }
+    KyberKeyPair::from(private_key, public_key.into())
 }
 
 pub(super) fn encapsulate<
@@ -115,14 +111,14 @@ pub(super) fn encapsulate<
 >(
     public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> Result<(KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret), Error> {
+) -> (KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret) {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
 
     let hashed = G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
-    let (ciphertext, sampling_a_error) = ind_cpa::encrypt::<
+    let ciphertext = ind_cpa::encrypt::<
         K,
         CIPHERTEXT_SIZE,
         T_AS_NTT_ENCODED_SIZE,
@@ -137,10 +133,7 @@ pub(super) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    match sampling_a_error {
-        Some(e) => Err(e),
-        None => Ok((ciphertext.into(), shared_secret.try_into().unwrap())),
-    }
+    (ciphertext.into(), shared_secret.try_into().unwrap())
 }
 
 pub(super) fn decapsulate<
@@ -187,22 +180,7 @@ pub(super) fn decapsulate<
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = PRF(&to_hash);
 
-    // If a ciphertext C is well-formed, setting aside the fact that a
-    // decryption failure could (with negligible probability) occur, it must hold that:
-    //
-    // Encrypt(pk, Decrypt(sk, C)) = C
-    //
-    // Therefore, if |ind_cpa::encrypt| returns an error,
-    // |expected_ciphertext| cannot equal |ciphertext|, thereby resulting in
-    // implicit rejection.
-    //
-    // If C is ill-formed, due to the use of hashing to obtain |pseudorandomness|
-    // as well as the fact that the Kyber CPA-PKE is sparse pseudo-random, it is
-    // highly likely that |expected_ciphertext| will not equal |ciphertext|, thereby
-    // also resulting in implicit rejection.
-    //
-    // Thus, we ignore the second return value of |ind_cpa::encrypt|.
-    let (expected_ciphertext, _) = ind_cpa::encrypt::<
+    let expected_ciphertext = ind_cpa::encrypt::<
         K,
         CIPHERTEXT_SIZE,
         T_AS_NTT_ENCODED_SIZE,

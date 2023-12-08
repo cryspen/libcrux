@@ -49,6 +49,7 @@ all:
 
 
 VERIFIED = \
+	Libcrux_platform.fsti \
 	Libcrux.Kem.fst \
 	Libcrux.Kem.Kyber.Constants.fst \
 	Libcrux.Digest.fsti \
