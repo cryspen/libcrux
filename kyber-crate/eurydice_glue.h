@@ -19,8 +19,12 @@ typedef struct {
 #define Eurydice_slice_index(s, i, t) (((t*) s.ptr)[i])
 #define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE(((t*)s.ptr), r.start, r.end, t)
 #define Eurydice_array_to_slice(x, end, t) EURYDICE_SLICE(x, 0, end, t)
-#define Eurydice_array_to_subslice(x, r, t, _) EURYDICE_SLICE(x, r.start, r.end, t)
+#define Eurydice_array_to_subslice(arraylen, x, r, t, _) EURYDICE_SLICE(x, r.start, r.end, t)
 #define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
+#define core_slice___Slice_T___copy_from_slice(slice, destination, type) memcpy(destination.ptr, slice.ptr, slice.len)
+#define core_array___Array_T__N__23__as_slice(len, ptr, type) ((Eurydice_slice){ .ptr = ptr, .len = len })
+#define Eurydice_array_to_subslice_from(array_len, array_ptr, slice_start_pos, array_el_type, slice_size_type) ((Eurydice_slice){ .ptr = array_ptr + slice_start_pos, .len = array_len - slice_start_pos })
+
 
 /* For now these are passed by value -- three words. We could conceivably change
  * the representation to heap-allocate this struct and only pass around the
@@ -82,3 +86,7 @@ typedef struct {
   )
 
 #define core_iter_traits_collect__I__into_iter(x, t) (x)
+
+#define core_array_equality___Array_A__N___eq(num_elements, self_ptr, other_ptr, self_type, other_type) 0
+
+#define core_array_TryFromSliceError uint8_t

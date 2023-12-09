@@ -1,0 +1,9 @@
+1) return core_array_equality___Array_A__N___eq((size_t)256U, self[0U], other[0U], int32_t, int32_t); is undefined, since it's preceeeded by a return, it has to be an expression, which makes defining a macro tricky, but the last two "int32_t" arguments also make defining a function tricky. It seems like this function is only invoked once with int32_t arguments, so we don't need a general definition over all types. Also, this should probably be constant time?
+
+2) For expressions of the form:
+
+libcrux_kyber_constants_H_DIGEST_SIZE = libcrux_digest_digest_size(libcrux_digest_Sha3_256);
+
+a macro with computation wouldn't work here, since the right hand side needs to be an expression. Perhaps the easiest way to get around this is for Eurydice to replace this expression with a constant? Or we could do it ourselves in the Rust code.
+
+3) libcrux_kyber.c passes the length of the overall array as the first argument to Eurydice_array_to_subslice, the macro definition or the extraction has to be updated for this.

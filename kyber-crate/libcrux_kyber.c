@@ -33,7 +33,7 @@ const size_t libcrux_kyber_constants_CPA_PKE_KEY_GENERATION_SEED_SIZE = (size_t)
 
 const
 size_t
-libcrux_kyber_constants_H_DIGEST_SIZE = libcrux_digest_digest_size(libcrux_digest_Sha3_256);
+libcrux_kyber_constants_H_DIGEST_SIZE = 32; //libcrux_digest_digest_size(libcrux_digest_Sha3_256);
 
 const uint8_t libcrux_kyber_arithmetic_MONTGOMERY_SHIFT = 16U;
 
