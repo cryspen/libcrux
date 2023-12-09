@@ -66,10 +66,12 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
-	Libcrux.Kem.Kyber.Ntt.fsti \
+	Libcrux.Kem.Kyber.Matrix.fsti \
 	Libcrux.Kem.Kyber.Matrix.fst \
+	Libcrux.Kem.Kyber.Ntt.fsti \
 	Libcrux.Kem.Kyber.Ntt.fst \
 	Libcrux.Kem.Kyber.Sampling.fst \
+	Libcrux.Kem.Kyber.Serialize.fsti \
 	Libcrux.Kem.Kyber.Serialize.fst
 
 UNVERIFIED =

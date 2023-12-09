@@ -6,9 +6,7 @@ open FStar.Mul
 let compute_As_plus_e
       (v_K: usize)
       (matrix_A: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K)
-      (s_as_ntt error_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
-    : t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-  assume (v_K >. sz 1 /\ v_K <=. sz 4);
+      (s_as_ntt error_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) =
   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
@@ -130,13 +128,8 @@ let compute_As_plus_e
   in
   result
 
-let compute_message
-      (v_K: usize)
-      (v: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (secret_as_ntt u_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let compute_message v_K v secret_as_ntt u_as_ntt = 
   let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-  assume (v_K >. sz 1 && v_K <=. sz 4);
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
@@ -179,8 +172,9 @@ let compute_message
       (fun result i ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
           let i:usize = i in
-          assume (range (Rust_primitives.Integers.v #i32_inttype ((result.f_coefficients).[i]) * 1441) i32_inttype);
-          assume (Libcrux.Kem.Kyber.Arithmetic.montgomery_pre (result.f_coefficients.[i] *! 1441l));
+          admit();
+  //        assume (range (Rust_primitives.Integers.v #i32_inttype ((result.f_coefficients).[i]) * 1441) i32_inttype);
+//          assume (Libcrux.Kem.Kyber.Arithmetic.montgomery_pre (result.f_coefficients.[i] *! 1441l));
           let coefficient_normal_form:i32 =
             Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((result
                     .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
@@ -190,8 +184,8 @@ let compute_message
                 <:
                 i32)
           in
-          assume (range (Rust_primitives.Integers.v #i32_inttype ((v.f_coefficients).[i]) - Rust_primitives.Integers.v coefficient_normal_form) i32_inttype);
-          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v.f_coefficients.[i] -! coefficient_normal_form));
+//          assume (range (Rust_primitives.Integers.v #i32_inttype ((v.f_coefficients).[i]) - Rust_primitives.Integers.v coefficient_normal_form) i32_inttype);
+//          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v.f_coefficients.[i] -! coefficient_normal_form));
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               result with
@@ -217,11 +211,11 @@ let compute_message
   in
   result
 
+
 let compute_ring_element_v
       (v_K: usize)
       (tt_as_ntt r_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
-      (error_2_ message: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+      (error_2_ message: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   assume (v_K >. sz 1 && v_K <=. sz 4);
   let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
@@ -311,9 +305,7 @@ let compute_ring_element_v
 let compute_vector_u
       (v_K: usize)
       (a_as_ntt: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K)
-      (r_as_ntt error_1_: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
-    : t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-  assume (v_K >. sz 1 && v_K <=. sz 4);
+      (r_as_ntt error_1_: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) =
   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
@@ -452,8 +444,7 @@ let compute_vector_u
   in
   result
 
-let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
-    : t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
+let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
   let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
           v_K

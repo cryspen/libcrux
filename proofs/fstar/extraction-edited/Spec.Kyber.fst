@@ -34,8 +34,8 @@ type params_ = {
 
 let valid_params p =
   p.v_RANK >=. sz 2 && p.v_RANK <=. sz 4 &&
-  p.v_ETA1 <=. sz 3 &&
-  p.v_ETA2 <=. sz 2 &&
+  (p.v_ETA1 = sz 2 || p.v_ETA1 = sz 3) &&
+  p.v_ETA2 =. sz 2 &&
   (p.v_VECTOR_U_COMPRESSION_FACTOR = sz 10 || p.v_VECTOR_U_COMPRESSION_FACTOR = sz 11) &&
   (p.v_VECTOR_V_COMPRESSION_FACTOR = sz 4 || p.v_VECTOR_V_COMPRESSION_FACTOR = sz 5)
 

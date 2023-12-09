@@ -597,8 +597,7 @@ let compress_then_serialize_5_
   in
   serialized
 
-let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : t_Array u8 (sz 32) =
+let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let serialized:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -641,13 +640,7 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_Polynomi
   in
   serialized
 
-val compress_then_serialize_ring_element_u
-      (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Pure (t_Array u8 v_OUT_LEN)
-      (requires (v_COMPRESSION_FACTOR = sz 10 || v_COMPRESSION_FACTOR = sz 11)) 
-      (ensures (fun _ -> True)) 
-let compress_then_serialize_ring_element_u
+let compress_then_serialize_ring_element_u #p
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   let _:Prims.unit = () <: Prims.unit in
@@ -661,12 +654,8 @@ let compress_then_serialize_ring_element_u
         <:
         Rust_primitives.Hax.t_Never)
 
-let compress_then_serialize_ring_element_v
-      (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Pure (t_Array u8 v_OUT_LEN)
-      (requires (v_COMPRESSION_FACTOR = sz 4 || v_COMPRESSION_FACTOR = sz 5)) 
-      (ensures (fun _ -> True))  =
+
+let compress_then_serialize_ring_element_v #p v_COMPRESSION_FACTOR v_OUT_LEN re =
   let _:Prims.unit = () <: Prims.unit in
   Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
@@ -1163,8 +1152,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
   re
 #pop-options
 
-let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
@@ -1218,12 +1206,8 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
   in
   re
 
-let deserialize_then_decompress_ring_element_u
-      (v_COMPRESSION_FACTOR: usize)
-      (serialized: t_Slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let deserialize_then_decompress_ring_element_u v_COMPRESSION_FACTOR serialized = 
   let _:Prims.unit = () <: Prims.unit in
-  assume (v_COMPRESSION_FACTOR = sz 10 || v_COMPRESSION_FACTOR = sz 11);
   mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> deserialize_then_decompress_10_ serialized
@@ -1234,12 +1218,9 @@ let deserialize_then_decompress_ring_element_u
         <:
         Rust_primitives.Hax.t_Never)
 
-let deserialize_then_decompress_ring_element_v
-      (v_COMPRESSION_FACTOR: usize)
-      (serialized: t_Slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let deserialize_then_decompress_ring_element_v v_COMPRESSION_FACTOR serialized =
   let _:Prims.unit = () <: Prims.unit in
-  assume (v_COMPRESSION_FACTOR = sz 4 || v_COMPRESSION_FACTOR = sz 5);
+  assert (v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5);
   mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> deserialize_then_decompress_4_ serialized
@@ -1250,8 +1231,7 @@ let deserialize_then_decompress_ring_element_v
         <:
         Rust_primitives.Hax.t_Never)
 
-let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) = 
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
@@ -1302,8 +1282,7 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
   in
   re
 
-let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : t_Array u8 (sz 384) =
+let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
   let serialized:t_Array u8 (sz 384) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
