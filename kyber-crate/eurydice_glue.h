@@ -19,12 +19,18 @@ typedef struct {
 #define Eurydice_slice_index(s, i, t) (((t*) s.ptr)[i])
 #define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE(((t*)s.ptr), r.start, r.end, t)
 #define Eurydice_array_to_slice(x, end, t) EURYDICE_SLICE(x, 0, end, t)
+
 #define Eurydice_array_to_subslice(arraylen, x, r, t, _) EURYDICE_SLICE(x, r.start, r.end, t)
 #define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
 #define core_slice___Slice_T___copy_from_slice(slice, destination, type) memcpy(destination.ptr, slice.ptr, slice.len)
 #define core_array___Array_T__N__23__as_slice(len, ptr, type) ((Eurydice_slice){ .ptr = ptr, .len = len })
 #define Eurydice_array_to_subslice_from(array_len, array_ptr, slice_start_pos, array_el_type, slice_size_type) ((Eurydice_slice){ .ptr = array_ptr + slice_start_pos, .len = array_len - slice_start_pos })
+#define Eurydice_slice_subslice_from(slice, subslice_start_pos, t1, t2) ((Eurydice_slice){ .ptr = slice.ptr + subslice_start_pos, .len = slice.len - subslice_start_pos })
 
+#define core_slice___Slice_T___split_at(slice, mid, element_type) ((K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t){ \
+    .fst = (Eurydice_slice){ .ptr = slice.ptr, .len = mid - 1 }, \
+    .snd = (Eurydice_slice){ .ptr = slice.ptr + mid, .len = slice.len - mid} \
+    })
 
 /* For now these are passed by value -- three words. We could conceivably change
  * the representation to heap-allocate this struct and only pass around the
