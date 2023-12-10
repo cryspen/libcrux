@@ -208,6 +208,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
 let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_ETA);
+  let res = 
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
@@ -216,6 +217,9 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
 
         <:
         Rust_primitives.Hax.t_Never)
+  in
+  admit(); //P-F
+  res
 
 let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
   let (sampled_coefficients: usize):usize = sz 0 in

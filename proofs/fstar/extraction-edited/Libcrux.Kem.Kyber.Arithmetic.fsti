@@ -26,6 +26,37 @@ let v_MONTGOMERY_SHIFT: u8 = 16uy
 
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
+type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
+
+let op_String_Access #t #l (a:t_Array t l) (i:usize{v i < v l}) : t = a.[i]
+
+val to_spec_fe (m:t_FieldElement) :
+               Spec.Kyber.field_element
+
+val to_spec_poly (m:t_PolynomialRingElement) :
+                  Pure (Spec.Kyber.polynomial)
+                  (requires True)
+                  (ensures (fun res -> forall (i:usize). 
+                                    v i < 256 ==>
+                                    res.[i] == to_spec_fe (m.f_coefficients.[i])))
+                                    
+val to_spec_vector (#p:Spec.Kyber.params)
+                   (m:t_Array t_PolynomialRingElement p.v_RANK) :
+                   Pure (Spec.Kyber.vector p)
+                   (requires True)
+                   (ensures (fun res -> forall (i:usize). 
+                                     i <. p.v_RANK ==>
+                                     res.[i] == to_spec_poly m.[i]))
+
+val to_spec_matrix (#p:Spec.Kyber.params)
+                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK)) :
+                   Pure (Spec.Kyber.matrix p)
+                   (requires True)
+                   (ensures (fun res -> forall (i:usize). 
+                                     i <. p.v_RANK ==>
+                                     res.[i] == to_spec_vector #p m.[i]))
+
+
 val get_n_least_significant_bits (n: u8) (value: u32)
     : Prims.Pure u32
       (requires n =. 4uy || n =. 5uy || n =. 10uy || n =. 11uy || n =. v_MONTGOMERY_SHIFT)
@@ -83,8 +114,6 @@ val to_unsigned_representative (fe: i32)
           let result:u16 = result in
           result >=. 0us &&
           result <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
-
-type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
 let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement =
   { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) } <: t_PolynomialRingElement

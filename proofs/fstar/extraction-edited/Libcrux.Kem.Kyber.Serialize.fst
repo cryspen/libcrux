@@ -658,6 +658,7 @@ let compress_then_serialize_ring_element_u #p
 let compress_then_serialize_ring_element_v #p v_COMPRESSION_FACTOR v_OUT_LEN re =
   let _:Prims.unit = () <: Prims.unit in
   Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
+  let res = 
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
   | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
@@ -666,6 +667,9 @@ let compress_then_serialize_ring_element_v #p v_COMPRESSION_FACTOR v_OUT_LEN re 
 
         <:
         Rust_primitives.Hax.t_Never)
+  in
+  admit(); //P-F
+  res
 
 #push-options "--z3rlimit 150 --max_ifuel 2" 
 let deserialize_then_decompress_10_ (serialized: t_Slice u8)
@@ -1204,6 +1208,7 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
           <:
           Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
   in
+  admit(); //P-F
   re
 
 let deserialize_then_decompress_ring_element_u v_COMPRESSION_FACTOR serialized = 
@@ -1222,6 +1227,7 @@ let deserialize_then_decompress_ring_element_v v_COMPRESSION_FACTOR serialized =
   let _:Prims.unit = () <: Prims.unit in
   assert (v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5);
   mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
+  let res = 
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> deserialize_then_decompress_4_ serialized
   | 5ul -> deserialize_then_decompress_5_ serialized
@@ -1230,6 +1236,9 @@ let deserialize_then_decompress_ring_element_v v_COMPRESSION_FACTOR serialized =
 
         <:
         Rust_primitives.Hax.t_Never)
+  in
+  admit(); //P-F
+  res
 
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) = 
   let _:Prims.unit = () <: Prims.unit in

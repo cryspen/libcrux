@@ -3,6 +3,18 @@ module Libcrux.Kem.Kyber.Arithmetic
 open Core
 open FStar.Mul
 
+let to_spec_fe (m:t_FieldElement) =
+               admit()
+
+let to_spec_poly (m:t_PolynomialRingElement) =
+               admit()
+                                    
+let to_spec_vector (#p:Spec.Kyber.params) (m:t_Array t_PolynomialRingElement p.v_RANK) =
+               admit()
+
+let to_spec_matrix (#p:Spec.Kyber.params) (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK)) = 
+               admit()
+
 let get_n_least_significant_bits (n: u8) (value: u32) = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in

@@ -126,9 +126,10 @@ let compute_As_plus_e
                     <:
                     Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)))
   in
+  admit(); //P-F
   result
 
-let compute_message v_K v secret_as_ntt u_as_ntt = 
+let compute_message #p v_K v secret_as_ntt u_as_ntt = 
   let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
@@ -209,6 +210,7 @@ let compute_message v_K v secret_as_ntt u_as_ntt =
           in
           result)
   in
+  admit(); //P-F
   result
 
 
@@ -300,6 +302,7 @@ let compute_ring_element_v
           in
           result)
   in
+  admit(); //P-F
   result
 
 let compute_vector_u
@@ -442,6 +445,7 @@ let compute_vector_u
                 in
                 result))
   in
+  admit(); //P-F
   result
 
 let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
@@ -561,4 +565,5 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
                   in
                   v_A_transpose))
   in
+  admit(); //P-F
   v_A_transpose

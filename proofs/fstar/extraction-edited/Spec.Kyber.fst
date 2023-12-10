@@ -8,21 +8,20 @@ let v_BITS_PER_COEFFICIENT: usize = sz 12
 
 let v_COEFFICIENTS_IN_RING_ELEMENT: usize = sz 256
 
-let v_BITS_PER_RING_ELEMENT: usize = v_COEFFICIENTS_IN_RING_ELEMENT *! sz 12
+let v_BITS_PER_RING_ELEMENT: usize = sz 3072 // v_COEFFICIENTS_IN_RING_ELEMENT *! sz 12
 
-let v_BYTES_PER_RING_ELEMENT: usize = v_BITS_PER_RING_ELEMENT /! sz 8
+let v_BYTES_PER_RING_ELEMENT: usize = sz 384 // v_BITS_PER_RING_ELEMENT /! sz 8
 
 let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = sz 32
 
 let v_FIELD_MODULUS: i32 = 3329l
 
-let v_H_DIGEST_SIZE: usize =
-  Libcrux.Digest.digest_size (Libcrux.Digest.Algorithm_Sha3_256_ <: Libcrux.Digest.t_Algorithm)
+let v_H_DIGEST_SIZE: usize = sz 32 
+//  Libcrux.Digest.digest_size (Libcrux.Digest.Algorithm_Sha3_256_ <: Libcrux.Digest.t_Algorithm)
 
-let v_REJECTION_SAMPLING_SEED_SIZE: usize = sz 168 *! sz 5
+let v_REJECTION_SAMPLING_SEED_SIZE: usize =  sz 840 // sz 168 *! sz 5
 
-// KB: This needs to be the same as v_H_DIGEST_SIZE no?
-let v_SHARED_SECRET_SIZE: usize = sz 32
+let v_SHARED_SECRET_SIZE: usize = v_H_DIGEST_SIZE
 
 type params_ = {
     v_RANK: usize;
@@ -33,7 +32,7 @@ type params_ = {
 }
 
 let valid_params p =
-  p.v_RANK >=. sz 2 && p.v_RANK <=. sz 4 &&
+  (p.v_RANK = sz 2 || p.v_RANK = sz 3 || p.v_RANK = sz 4) &&
   (p.v_ETA1 = sz 2 || p.v_ETA1 = sz 3) &&
   p.v_ETA2 =. sz 2 &&
   (p.v_VECTOR_U_COMPRESSION_FACTOR = sz 10 || p.v_VECTOR_U_COMPRESSION_FACTOR = sz 11) &&
@@ -41,38 +40,46 @@ let valid_params p =
 
 let params = p:params_{valid_params p}
 
+val v_ETA1_RANDOMNESS_SIZE (p:params) : u:usize{u == sz 128 \/ u == sz 192}
 let v_ETA1_RANDOMNESS_SIZE (p:params) = p.v_ETA1 *! sz 64
+
+val v_ETA2_RANDOMNESS_SIZE (p:params) : u:usize{u == sz 128}
 let v_ETA2_RANDOMNESS_SIZE (p:params) = p.v_ETA2 *! sz 64
 
-let v_RANKED_BYTES_PER_RING_ELEMENT (p:params)  =
-  (p.v_RANK *! v_BITS_PER_RING_ELEMENT) /! sz 8
+val v_RANKED_BYTES_PER_RING_ELEMENT (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
+let v_RANKED_BYTES_PER_RING_ELEMENT (p:params)  = p.v_RANK *! v_BYTES_PER_RING_ELEMENT
 
-let v_T_AS_NTT_ENCODED_SIZE (p:params) =
-  ((p.v_RANK *! v_COEFFICIENTS_IN_RING_ELEMENT *! v_BITS_PER_COEFFICIENT) /! sz 8)
+val v_T_AS_NTT_ENCODED_SIZE (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
+let v_T_AS_NTT_ENCODED_SIZE (p:params) = v_RANKED_BYTES_PER_RING_ELEMENT p
 
-let v_CPA_PKE_SECRET_KEY_SIZE (p:params) =
-  ((p.v_RANK *! v_COEFFICIENTS_IN_RING_ELEMENT *! v_BITS_PER_COEFFICIENT) /! sz 8)
+val v_CPA_PKE_SECRET_KEY_SIZE (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
+let v_CPA_PKE_SECRET_KEY_SIZE (p:params) = v_RANKED_BYTES_PER_RING_ELEMENT p
 
-let v_CPA_PKE_PUBLIC_KEY_SIZE (p:params) = v_T_AS_NTT_ENCODED_SIZE p +! sz 32
+val v_CPA_PKE_PUBLIC_KEY_SIZE (p:params) : u:usize{u = sz 800 \/ u = sz 1184 \/ u = sz 1568}
+let v_CPA_PKE_PUBLIC_KEY_SIZE (p:params) = v_RANKED_BYTES_PER_RING_ELEMENT p +! sz 32
 
+val v_SECRET_KEY_SIZE (p:params) : u:usize{u = sz 1632 \/ u = sz 2400 \/ u = sz 3168}
 let v_SECRET_KEY_SIZE (p:params) =
   (v_CPA_PKE_SECRET_KEY_SIZE p +! v_CPA_PKE_PUBLIC_KEY_SIZE p +! v_H_DIGEST_SIZE +! v_SHARED_SECRET_SIZE)
 
-let v_C1_BLOCK_SIZE (p:params) =
-  (v_COEFFICIENTS_IN_RING_ELEMENT *! p.v_VECTOR_U_COMPRESSION_FACTOR) /! sz 8
+val v_C1_BLOCK_SIZE (p:params): u:usize{u = sz 320 \/ u = sz 352}
+let v_C1_BLOCK_SIZE (p:params) = sz 32 *! p.v_VECTOR_U_COMPRESSION_FACTOR
 
+val v_C1_SIZE (p:params) : u:usize{u >=. sz 640 \/ u <=. sz 1448}
 let v_C1_SIZE (p:params) = v_C1_BLOCK_SIZE p *! p.v_RANK
 
-let v_C2_SIZE (p:params) =
-  (v_COEFFICIENTS_IN_RING_ELEMENT *! p.v_VECTOR_V_COMPRESSION_FACTOR) /! sz 8
+val v_C2_SIZE (p:params) : u:usize{u = sz 128 \/ u = sz 160}
+let v_C2_SIZE (p:params) = sz 32 *! p.v_VECTOR_V_COMPRESSION_FACTOR
 
+val v_CPA_PKE_CIPHERTEXT_SIZE (p:params) : u:usize {v u = v (v_C1_SIZE p) + v (v_C2_SIZE p)}
 let v_CPA_PKE_CIPHERTEXT_SIZE (p:params) = v_C1_SIZE p +! v_C2_SIZE p
 
-let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE (p:params)
-  : x:usize{v x == v v_SHARED_SECRET_SIZE + v #usize_inttype (v_CPA_PKE_CIPHERTEXT_SIZE p)} =
+val v_IMPLICIT_REJECTION_HASH_INPUT_SIZE (p:params): u:usize{v u == v v_SHARED_SECRET_SIZE + 
+                                                                    v (v_CPA_PKE_CIPHERTEXT_SIZE p)}
+let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE (p:params) =
     v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE p
 
-
+val v_KEY_GENERATION_SEED_SIZE: u:usize{u = sz 64}
 let v_KEY_GENERATION_SEED_SIZE: usize =
   v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
   v_SHARED_SECRET_SIZE
@@ -169,7 +176,7 @@ assume val v_XOF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
 
 (** Kyber Math and Sampling *)
 
-type field_element = n:nat{n < 3329}
+type field_element = n:nat{n < v v_FIELD_MODULUS}
 type polynomial = t_Array field_element (sz 256)
 type vector (p:params) = t_Array polynomial p.v_RANK
 type matrix (p:params) = t_Array (vector p) p.v_RANK
@@ -192,16 +199,24 @@ assume val vector_encode_12: #p:params -> vector p -> t_Array u8 (v_T_AS_NTT_ENC
 assume val vector_decode_12: #p:params -> t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p) -> vector p
 
 // note we take seed of size 32 not 34 as in hacspec
-assume val sample_matrix_A: #p:params -> seed:t_Array u8 (sz 32) -> bool -> matrix p
+assume val sample_matrix_A: #p:params -> seed:t_Array u8 (sz 32) -> matrix p
 // note we take seed of size 32 not 33 as in hacspec
 assume val sample_vector_cbd: #p:params -> seed:t_Array u8 (sz 32) -> domain_sep:usize -> vector p
 // note we take seed of size 32 not 33 as in hacspec
-assume val sample_poly_cbd: #p:params -> seed:t_Array u8 (sz 32) -> domain_sep:usize -> polynomial
+
+assume val sample_poly_binomial: v_ETA:usize{v v_ETA <= 3}  -> t_Array u8 (v_ETA *! sz 64) -> polynomial
+
+val sample_poly_cbd: #p:params -> seed:t_Array u8 (sz 32) -> domain_sep:usize{v domain_sep < 256} -> polynomial
+let sample_poly_cbd #p seed domain_sep =
+  let prf_input = Seq.append seed (Seq.create 1 (mk_int #u8_inttype (v domain_sep))) in
+  let prf_output = v_PRF (v_ETA2_RANDOMNESS_SIZE p) prf_input in
+  sample_poly_binomial p.v_ETA2 prf_output
+
 let sample_vector_cbd_then_ntt (#p:params) (seed:t_Array u8 (sz 32)) (domain_sep:usize) =
   vector_ntt (sample_vector_cbd #p seed domain_sep)
 
-assume val compress_then_encode_message: p:params -> polynomial -> t_Array u8 v_SHARED_SECRET_SIZE
-assume val decode_then_decompress_message: p:params -> t_Array u8 v_SHARED_SECRET_SIZE -> polynomial
+assume val compress_then_encode_message: polynomial -> t_Array u8 v_SHARED_SECRET_SIZE
+assume val decode_then_decompress_message: t_Array u8 v_SHARED_SECRET_SIZE -> polynomial
 assume val compress_then_encode_u: p:params -> vector p -> t_Array u8 (v_C1_SIZE p)
 assume val decode_then_decompress_u: p:params -> t_Array u8 (v_C1_SIZE p) -> vector p
 assume val compress_then_encode_v: p:params -> polynomial -> t_Array u8 (v_C2_SIZE p)
@@ -222,7 +237,7 @@ val ind_cpa_generate_keypair (p:params) (randomness:t_Array u8 v_CPA_PKE_KEY_GEN
 let ind_cpa_generate_keypair p randomness =
     let hashed = v_G randomness in
     let (seed_for_A, seed_for_secret_and_error) = split hashed (sz 32) in
-    let matrix_A_as_ntt = sample_matrix_A #p seed_for_A true in
+    let matrix_A_as_ntt = sample_matrix_A #p seed_for_A in
     let secret_as_ntt = sample_vector_cbd_then_ntt #p seed_for_secret_and_error (sz 0) in
     let error_as_ntt = sample_vector_cbd_then_ntt #p seed_for_secret_and_error p.v_RANK in
     let t_as_ntt = compute_As_plus_e #p matrix_A_as_ntt secret_as_ntt error_as_ntt in
@@ -241,17 +256,17 @@ val ind_cpa_encrypt (p:params) (public_key: t_KyberPublicKey p)
 let ind_cpa_encrypt p public_key message randomness =
     let (t_as_ntt_bytes, seed_for_A) = split public_key (v_T_AS_NTT_ENCODED_SIZE p) in
     let t_as_ntt = vector_decode_12 #p t_as_ntt_bytes in 
-    let matrix_A_as_ntt = sample_matrix_A #p seed_for_A false in
+    let matrix_A_as_ntt = sample_matrix_A #p seed_for_A in
     let r_as_ntt = sample_vector_cbd_then_ntt #p randomness (sz 0) in
     let error_1 = sample_vector_cbd #p randomness p.v_RANK in
-    let error_2 = sample_poly_cbd #p randomness (p.v_RANK +! sz 1) in
+    let error_2 = sample_poly_cbd #p randomness (p.v_RANK +! p.v_RANK) in
     let u = vector_add (vector_inv_ntt (matrix_vector_mul (matrix_transpose matrix_A_as_ntt) r_as_ntt)) error_1 in
-    let mu = decode_then_decompress_message p message in
+    let mu = decode_then_decompress_message message in
     let v = poly_add (poly_add (vector_dot_product t_as_ntt r_as_ntt) error_2) mu in  
     let c1 = compress_then_encode_u p u in
     let c2 = compress_then_encode_v p v in
     concat c1 c2
-    
+
 /// This function implements <strong>Algorithm 14</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
 
@@ -264,7 +279,7 @@ let ind_cpa_decrypt p secret_key ciphertext =
     let v = decode_then_decompress_v p c2 in
     let secret_as_ntt = vector_decode_12 #p secret_key in
     let w = poly_sub v (poly_inv_ntt #p (vector_dot_product secret_as_ntt (vector_ntt u))) in
-    compress_then_encode_message p w
+    compress_then_encode_message w
 
 (** IND-CCA Functions *)
 

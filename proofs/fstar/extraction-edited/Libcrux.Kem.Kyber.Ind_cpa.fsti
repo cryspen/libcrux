@@ -6,7 +6,7 @@ open FStar.Mul
 val into_padded_array (v_LEN: usize) (slice: t_Slice u8) :
     Pure (t_Array u8 v_LEN)
     (requires (length slice <=. v_LEN))
-    (ensures (fun res -> Seq.slice res 0 (Seq.length slice) == slice))
+    (ensures (fun res ->  Seq.slice res 0 (Seq.length slice) == slice))
 
 val decrypt (#p:Spec.Kyber.params)
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:

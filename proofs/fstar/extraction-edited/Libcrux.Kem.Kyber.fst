@@ -1,5 +1,5 @@
 module Libcrux.Kem.Kyber
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -370,3 +370,4 @@ let generate_keypair #p
     v_PUBLIC_KEY_SIZE
     private_key
     (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
+
