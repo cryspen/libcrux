@@ -13,28 +13,14 @@ val sample_from_binomial_distribution (#p:Spec.Kyber.params)
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
           Spec.Kyber.sample_poly_binomial v_ETA randomness /\
-          Hax_lib.v_forall (fun i ->
-                let i:usize = i in
-                Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+          (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
+                  (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
                           <:
-                          t_Slice i32)
-                      <:
-                      usize)
-                      <:
-                    bool)
-                  (fun _ -> (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                          i32) 
                       <:
                       i32) <=.
-                    2l
-                    <:
-                    bool)
-                <:
-                bool))
+                    (mk_int #i32_inttype (v v_ETA))))
+
 
 val sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement 

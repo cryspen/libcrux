@@ -561,7 +561,7 @@ let serialize_secret_key (#p:Spec.Kyber.params)
           <:
           t_Array u8 v_OUT_LEN)
   in
-  admit();
+  admit(); //P-F
   out
 
 val serialize_public_key (#p:Spec.Kyber.params)

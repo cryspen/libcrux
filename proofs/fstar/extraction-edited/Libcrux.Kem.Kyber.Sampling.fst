@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 let rejection_sampling_panic_with_diagnostic () : Prims.unit =
-  assume(false); // This should never happen
+  admit(); // This should never happen
   Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
       <:
       Rust_primitives.Hax.t_Never)
@@ -15,45 +15,39 @@ val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
       (ensures
         fun result ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
-                let i:usize = i in
-                Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+          Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
+          Spec.Kyber.sample_poly_binomial (sz 2) randomness /\
+          (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
+                  (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
                           <:
-                          t_Slice i32)
-                      <:
-                      usize)
-                    <:
-                    bool)
-                  (fun _ -> (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                          i32) 
                       <:
                       i32) <=.
-                    2l
-                    <:
-                    bool)
-                <:
-                bool))
+                    2l))
 
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
+
+  let acc_t = Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement in
+  [@ inline_let]
+  let inv = fun (acc:acc_t) (i:usize) -> True in
+  let sl : t_Slice u8 = randomness in
+  let chunk_len = sz 4 in
+  assert (v (length sl) == 128);
+  assert (Seq.length sl == 128);
+  assert_norm (128 % 4 == 0);
   let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact randomness (sz 4) <: Core.Slice.Iter.t_ChunksExact u8)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+   Rust_primitives.Iterators.foldi_chunks_exact #u8 #acc_t #inv
+      sl
+      chunk_len
       sampled
       (fun sampled temp_1_ ->
           let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
           let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
+          assert(chunk_number <. sz 32);
           let (random_bits_as_u32: u32):u32 =
             (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                 ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -65,20 +59,20 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
             ((cast (byte_chunk.[ sz 3 ] <: u8) <: u32) <<! 24l <: u32)
           in
           let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
+          assume(even_bits <=. 1431655765ul);
           let odd_bits:u32 = (random_bits_as_u32 >>! 1l <: u32) &. 1431655765ul in
+          assume(odd_bits <=. 1431655765ul);
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
-                    ({
+          let acc_t = Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement in
+          [@ inline_let]
+          let inv : acc_t -> u32 -> Type = fun acc i -> True in
+            Rust_primitives.Iterators.foldi_range_step_by #u32_inttype #(acc_t) #inv ({
                         Core.Ops.Range.f_start = 0ul;
                         Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
-                      }
-                      <:
-                      Core.Ops.Range.t_Range u32)
-                    (sz 4)
-                  <:
-                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
-              <:
-              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
+                        }
+                        <:
+                        Core.Ops.Range.t_Range u32)
+            (sz 4)
             sampled
             (fun sampled outcome_set ->
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
@@ -91,7 +85,12 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
                   <:
                   i32
                 in
+                assume (outcome_1_ >=. 0l /\ outcome_1_ <. 3l);
+                assume (outcome_2_ >=. 0l /\ outcome_2_ <. 3l);
                 let offset:usize = cast (outcome_set >>! 2l <: u32) <: usize in
+                assert (outcome_set <. 32ul);
+                assume (offset <. sz 8);
+                assert (8 * v chunk_number + v offset < 256);
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                   {
                     sampled with
@@ -109,47 +108,41 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
   in
   let _:Prims.unit = () <: Prims.unit in
   admit(); // P-F
-  sampled
+  sampled 
 
-let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
+val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
       (ensures
         fun result ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
-                let i:usize = i in
-                Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+          Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
+          Spec.Kyber.sample_poly_binomial (sz 3) randomness /\
+          (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
+                  (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
                           <:
-                          t_Slice i32)
-                      <:
-                      usize)
-                    <:
-                    bool)
-                  (fun _ -> (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                          i32) 
                       <:
                       i32) <=.
-                    3l
-                    <:
-                    bool)
-                <:
-                bool)) =
+                    3l))
+
+let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
+  let acc_t = Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement in
+  [@ inline_let]
+  let inv = fun (acc:acc_t) (i:usize) -> True in
+  let sl : t_Slice u8 = randomness in
+  let chunk_len = sz 3 in
+  assert (v (length sl) == 192);
+  assert (Seq.length sl == 192);
+  assert_norm (192 % 3 == 0);
   let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact randomness (sz 3) <: Core.Slice.Iter.t_ChunksExact u8)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+   Rust_primitives.Iterators.foldi_chunks_exact #u8 #acc_t #inv
+      sl
+      chunk_len
       sampled
       (fun sampled temp_1_ ->
           let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
@@ -162,18 +155,22 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
             ((cast (byte_chunk.[ sz 2 ] <: u8) <: u32) <<! 16l <: u32)
           in
           let first_bits:u32 = random_bits_as_u24 &. 2396745ul in
+          assume (first_bits <=. 2396745ul);
           let second_bits:u32 = (random_bits_as_u24 >>! 1l <: u32) &. 2396745ul in
+          assume (second_bits <=. 2396745ul);
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
+          assume (third_bits <=. 2396745ul);
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
-                    ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
-                      <:
-                      Core.Ops.Range.t_Range i32)
-                    (sz 6)
-                  <:
-                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
-              <:
-              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
+          let acc_t = Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement in
+          [@ inline_let]
+          let inv : acc_t -> i32 -> Type = fun acc i -> True in
+            Rust_primitives.Iterators.foldi_range_step_by #i32_inttype #(acc_t) #inv ({
+                        Core.Ops.Range.f_start = 0l;
+                        Core.Ops.Range.f_end = 24l
+                        }
+                        <:
+                        Core.Ops.Range.t_Range i32)
+            (sz 6)
             sampled
             (fun sampled outcome_set ->
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
@@ -186,7 +183,11 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                   <:
                   i32
                 in
+                assume (outcome_1_ >=. 0l /\ outcome_1_ <. 7l);
+                assume (outcome_2_ >=. 0l /\ outcome_2_ <. 7l);
                 let offset:usize = cast (outcome_set /! 6l <: i32) <: usize in
+                assume(offset <. sz 4);
+                assert(4 * v chunk_number + v offset < 256);
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                   {
                     sampled with
@@ -203,12 +204,12 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                 sampled))
   in
   let _:Prims.unit = () <: Prims.unit in
+  admit();
   sampled
 
 let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_ETA);
-  let res = 
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
@@ -217,9 +218,7 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
 
         <:
         Rust_primitives.Hax.t_Never)
-  in
-  admit(); //P-F
-  res
+
 
 let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
   let (sampled_coefficients: usize):usize = sz 0 in
@@ -228,15 +227,16 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let done:bool = false in
+  let acc_t = (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) in
+  [@ inline_let]
+  let inv = fun (acc:acc_t) -> True in
+  let sl : t_Slice u8 = randomness in
+  let chunk_len = sz 3 in
   let done, out, sampled_coefficients:(bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
     usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks (
-                Rust_primitives.unsize randomness <: t_Slice u8)
-              (sz 3)
-            <:
-            Core.Slice.Iter.t_Chunks u8)
-        <:
-        Core.Slice.Iter.t_Chunks u8)
+   Rust_primitives.Iterators.fold_chunks_exact #u8 #acc_t #inv
+      sl
+      chunk_len
       (done, out, sampled_coefficients
         <:
         (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
@@ -247,7 +247,6 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             temp_0_
           in
           let bytes:t_Slice u8 = bytes in
-          assume (length bytes = sz 3);
           if ~.done <: bool
           then
             let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
@@ -332,4 +331,4 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
       ()
   in
   let _:Prims.unit = () <: Prims.unit in
-  out
+  out 
