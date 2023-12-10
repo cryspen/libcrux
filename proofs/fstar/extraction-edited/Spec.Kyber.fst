@@ -273,6 +273,7 @@ let ind_cpa_encrypt p public_key message randomness =
 val ind_cpa_decrypt (p:params) (secret_key: t_KyberCPAPrivateKey p)
                     (ciphertext: t_KyberCiphertext p): 
                     t_KyberSharedSecret
+
 let ind_cpa_decrypt p secret_key ciphertext =
     let (c1,c2) = split ciphertext (v_C1_SIZE p) in
     let u = decode_then_decompress_u p c1 in

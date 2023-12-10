@@ -342,7 +342,9 @@ val deserialize_secret_key (#p:Spec.Kyber.params) (v_K: usize) (secret_key: t_Sl
     : Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
       (requires v_K == p.v_RANK /\
                 length secret_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p)
-      (ensures fun _ -> True)
+      (ensures fun res ->
+         Libcrux.Kem.Kyber.Arithmetic.to_spec_vector #p res ==
+         Spec.Kyber.vector_decode_12 #p secret_key)
     
 let deserialize_secret_key (#p:Spec.Kyber.params) (v_K: usize) (secret_key: t_Slice u8) =
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
@@ -374,6 +376,7 @@ let deserialize_secret_key (#p:Spec.Kyber.params) (v_K: usize) (secret_key: t_Sl
           <:
           t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
   in
+  admit(); //P-F
   secret_as_ntt
 #pop-options
 
@@ -404,7 +407,6 @@ let decrypt #p
     Libcrux.Kem.Kyber.Matrix.compute_message #p v_K v secret_as_ntt u_as_ntt
   in
   let res = Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message message in
-  admit(); //P-F
   res
   
 #push-options "--z3rlimit 200"
@@ -443,7 +445,8 @@ let encrypt #p
   let prf_input:t_Array u8 (sz 33) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize prf_input (sz 32) domain_separator
   in
-  assume (prf_input == Seq.append randomness (Seq.create 1 domain_separator));
+  assert (Seq.equal prf_input (Seq.append randomness (Seq.create 1 domain_separator)));
+  assert (prf_input == Seq.append randomness (Seq.create 1 domain_separator));
   let (prf_output: t_Array u8 v_ETA2_RANDOMNESS_SIZE):t_Array u8 v_ETA2_RANDOMNESS_SIZE =
     Libcrux.Kem.Kyber.Hash_functions.v_PRF v_ETA2_RANDOMNESS_SIZE
       (Rust_primitives.unsize prf_input <: t_Slice u8)
