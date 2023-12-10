@@ -167,20 +167,104 @@ assume val v_PRF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
 let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = v_PRF (sz 32) input
 assume val v_XOF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
 
+(** Kyber Math and Sampling *)
+
+type field_element = n:nat{n < 3329}
+type polynomial = t_Array field_element (sz 256)
+type vector (p:params) = t_Array polynomial p.v_RANK
+type matrix (p:params) = t_Array (vector p) p.v_RANK
+
+assume val poly_add: polynomial -> polynomial -> polynomial
+assume val poly_sub: polynomial -> polynomial -> polynomial
+assume val vector_add: #p:params -> vector p -> vector p -> vector p
+assume val vector_dot_product: #p:params -> vector p -> vector p -> polynomial
+
+assume val matrix_transpose: #p:params -> matrix p -> matrix p
+assume val matrix_vector_mul: #p:params -> matrix p -> vector p -> vector p
+val compute_As_plus_e: #p:params -> a:matrix p -> s:vector p -> e:vector p -> vector p
+let compute_As_plus_e #p a s e = vector_add (matrix_vector_mul a s) e
+
+assume val poly_inv_ntt: #p:params -> polynomial -> polynomial
+assume val vector_ntt: #p:params -> vector p -> vector p
+assume val vector_inv_ntt: #p:params -> vector p -> vector p
+
+assume val vector_encode_12: #p:params -> vector p -> t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p)
+assume val vector_decode_12: #p:params -> t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p) -> vector p
+
+// note we take seed of size 32 not 34 as in hacspec
+assume val sample_matrix_A: #p:params -> seed:t_Array u8 (sz 32) -> bool -> matrix p
+// note we take seed of size 32 not 33 as in hacspec
+assume val sample_vector_cbd: #p:params -> seed:t_Array u8 (sz 32) -> domain_sep:usize -> vector p
+// note we take seed of size 32 not 33 as in hacspec
+assume val sample_poly_cbd: #p:params -> seed:t_Array u8 (sz 32) -> domain_sep:usize -> polynomial
+let sample_vector_cbd_then_ntt (#p:params) (seed:t_Array u8 (sz 32)) (domain_sep:usize) =
+  vector_ntt (sample_vector_cbd #p seed domain_sep)
+
+assume val compress_then_encode_message: p:params -> polynomial -> t_Array u8 v_SHARED_SECRET_SIZE
+assume val decode_then_decompress_message: p:params -> t_Array u8 v_SHARED_SECRET_SIZE -> polynomial
+assume val compress_then_encode_u: p:params -> vector p -> t_Array u8 (v_C1_SIZE p)
+assume val decode_then_decompress_u: p:params -> t_Array u8 (v_C1_SIZE p) -> vector p
+assume val compress_then_encode_v: p:params -> polynomial -> t_Array u8 (v_C2_SIZE p)
+assume val decode_then_decompress_v: p:params -> t_Array u8 (v_C2_SIZE p) -> polynomial
+
+
 (** IND-CPA Functions *)
 
-assume val ind_cpa_generate_keypair (p:params) (randomness:t_Array u8 v_CPA_PKE_KEY_GENERATION_SEED_SIZE) :
-                                    t_KyberCPAKeyPair p
+/// This function implements most of <strong>Algorithm 12</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
+///
+/// We say "most of" since Algorithm 12 samples the required randomness within
+/// the function itself, whereas this implementation expects it to be provided
+/// through the `key_generation_seed` parameter.
 
-assume val ind_cpa_encrypt (p:params) (public_key: t_KyberPublicKey p)
-                           (message: t_Array u8 v_SHARED_SECRET_SIZE)
-                           (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
-                            t_KyberCiphertext p
+val ind_cpa_generate_keypair (p:params) (randomness:t_Array u8 v_CPA_PKE_KEY_GENERATION_SEED_SIZE) :
+                             t_KyberCPAKeyPair p
+let ind_cpa_generate_keypair p randomness =
+    let hashed = v_G randomness in
+    let (seed_for_A, seed_for_secret_and_error) = split hashed (sz 32) in
+    let matrix_A_as_ntt = sample_matrix_A #p seed_for_A true in
+    let secret_as_ntt = sample_vector_cbd_then_ntt #p seed_for_secret_and_error (sz 0) in
+    let error_as_ntt = sample_vector_cbd_then_ntt #p seed_for_secret_and_error p.v_RANK in
+    let t_as_ntt = compute_As_plus_e #p matrix_A_as_ntt secret_as_ntt error_as_ntt in
+    let public_key_serialized = Seq.append (vector_encode_12 #p t_as_ntt) seed_for_A in
+    let secret_key_serialized = vector_encode_12 #p secret_as_ntt in
+    (secret_key_serialized,public_key_serialized)
 
-assume val ind_cpa_decrypt (p:params) (secret_key: t_KyberCPAPrivateKey p)
-                               (ciphertext: t_KyberCiphertext p): 
-                               t_KyberSharedSecret
+/// This function implements <strong>Algorithm 13</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
 
+val ind_cpa_encrypt (p:params) (public_key: t_KyberPublicKey p)
+                    (message: t_Array u8 v_SHARED_SECRET_SIZE)
+                    (randomness:t_Array u8 v_SHARED_SECRET_SIZE) :
+                    t_KyberCiphertext p
+
+let ind_cpa_encrypt p public_key message randomness =
+    let (t_as_ntt_bytes, seed_for_A) = split public_key (v_T_AS_NTT_ENCODED_SIZE p) in
+    let t_as_ntt = vector_decode_12 #p t_as_ntt_bytes in 
+    let matrix_A_as_ntt = sample_matrix_A #p seed_for_A false in
+    let r_as_ntt = sample_vector_cbd_then_ntt #p randomness (sz 0) in
+    let error_1 = sample_vector_cbd #p randomness p.v_RANK in
+    let error_2 = sample_poly_cbd #p randomness (p.v_RANK +! sz 1) in
+    let u = vector_add (vector_inv_ntt (matrix_vector_mul (matrix_transpose matrix_A_as_ntt) r_as_ntt)) error_1 in
+    let mu = decode_then_decompress_message p message in
+    let v = poly_add (poly_add (vector_dot_product t_as_ntt r_as_ntt) error_2) mu in  
+    let c1 = compress_then_encode_u p u in
+    let c2 = compress_then_encode_v p v in
+    concat c1 c2
+    
+/// This function implements <strong>Algorithm 14</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+
+val ind_cpa_decrypt (p:params) (secret_key: t_KyberCPAPrivateKey p)
+                    (ciphertext: t_KyberCiphertext p): 
+                    t_KyberSharedSecret
+let ind_cpa_decrypt p secret_key ciphertext =
+    let (c1,c2) = split ciphertext (v_C1_SIZE p) in
+    let u = decode_then_decompress_u p c1 in
+    let v = decode_then_decompress_v p c2 in
+    let secret_as_ntt = vector_decode_12 #p secret_key in
+    let w = poly_sub v (poly_inv_ntt #p (vector_dot_product secret_as_ntt (vector_ntt u))) in
+    compress_then_encode_message p w
 
 (** IND-CCA Functions *)
 

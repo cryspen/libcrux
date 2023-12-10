@@ -188,9 +188,6 @@ fn encode_and_compress_u(input: KyberVector) -> Vec<u8> {
     out
 }
 
-/// This function implements <strong>Algorithm 13</strong> of the
-/// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
-///
 /// Algorithm 13 is reproduced below:
 ///
 /// ```plaintext
