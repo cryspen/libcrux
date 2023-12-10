@@ -1,4 +1,13 @@
-1) return core_array_equality___Array_A__N___eq((size_t)256U, self[0U], other[0U], int32_t, int32_t); is undefined, since it's preceeeded by a return, it has to be an expression, which makes defining a macro tricky, but the last two "int32_t" arguments also make defining a function tricky. It seems like this function is only invoked once with int32_t arguments, so we don't need a general definition over all types. Also, this should probably be constant time?
+1) return core_array_equality___Array_A__N___eq((size_t)256U, self[0U],
+other[0U], int32_t, int32_t); is undefined, since it's preceeeded by a return,
+it has to be an expression, which makes defining a macro tricky, but the last
+two "int32_t" arguments also make defining a function tricky. It seems like this
+function is only invoked once with int32_t arguments, so we don't need a general
+definition over all types. Also, this should probably be constant time?
+
+JP: isn't it defined here already?
+https://github.com/AeneasVerif/eurydice/blob/main/include/eurydice_glue.h#L52 (I
+invited you to the repo)
 
 2) For expressions of the form:
 
@@ -8,6 +17,42 @@ a macro with computation wouldn't work here, since the right hand side needs to 
 
 3) libcrux_kyber.c passes the length of the overall array as the first argument to Eurydice_array_to_subslice, the macro definition or the extraction has to be updated for this.
 
+JP: https://github.com/AeneasVerif/eurydice/blob/main/include/eurydice_glue.h#L44C1-L44C98
+isn't the first argument here what we want? I just ignore it... what change do
+you want to see in extraction?
+
 4) Eurydice_slice_to_array seems a bit tricky, I'll have to take a closer look at it.
 
-5) Once we update the rust code to the latest version of libcrux_kyber, we won't have to implement `core_option__core__option__Option_T___is_some` since the salient change is that rejection sampling no longer returns an error value that has to be checked.
+JP: I was thinking of changing code-gen to pass the address of the destination. Example:
+
+    core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError
+    uu____8 = Eurydice_slice_to_array(shared_secret, Eurydice_slice, uint8_t [32U]);
+
+becomes
+
+    core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError uu____8;
+    Eurydice_slice_to_array(&uu____8, shared_secret, Eurydice_slice, uint8_t [32U]);
+
+then, the macro can perform low-level memory casts like
+
+typedef struct core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_s
+{
+  core_result_Result_____core_num_nonzero_NonZeroUsize_tags tag;
+  union {
+    uint8_t case_Ok[0]; // extensible member array
+    core_array_TryFromSliceError case_Err;
+  }
+  val;
+}
+core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError, vlarray;
+
+#define Eurydice_slice_to_array(dst, src, _, t) \
+  ((vlarray*)dst)->tag = Ok,
+  memcpy(((vlarray*)dst)->val.case_Ok, (t*)(src.ptr), sizeof(t))
+
+This relies on C's array decay rule for the second argument to memcpy.
+
+5) Once we update the rust code to the latest version of libcrux_kyber, we won't
+have to implement `core_option__core__option__Option_T___is_some` since the
+salient change is that rejection sampling no longer returns an error value that
+has to be checked.
