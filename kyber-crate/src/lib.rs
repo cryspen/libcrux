@@ -133,7 +133,11 @@ pub(crate) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    (ciphertext.into(), shared_secret.try_into().unwrap())
+    let r = match shared_secret.try_into() {
+        Ok(r) => r,
+        Err(_) => panic!()
+    };
+    (ciphertext.into(), r)
 }
 
 pub(crate) fn decapsulate<
