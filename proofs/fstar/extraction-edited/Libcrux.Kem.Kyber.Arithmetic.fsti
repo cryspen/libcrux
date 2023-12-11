@@ -16,7 +16,7 @@ let v_BARRETT_MULTIPLIER: i64 = 20159L
 
 let v_BARRETT_SHIFT: i64 = 26L
 
-let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
+val v_BARRETT_R: x:i64{v x = pow2 26}
 
 let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
 
@@ -24,37 +24,53 @@ let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
-let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
+val v_MONTGOMERY_R: x:i32{v x = pow2 16}
 
 type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
 let op_String_Access #t #l (a:t_Array t l) (i:usize{v i < v l}) : t = a.[i]
 
-val to_spec_fe (m:t_FieldElement) :
-               Spec.Kyber.field_element
+val createi #t (l:usize) (f:(u:usize{u <. l} -> t))
+    : Pure (t_Array t l)
+      (requires True)
+      (ensures (fun res -> (forall i. res.[i] == f i)))
 
-val to_spec_poly (m:t_PolynomialRingElement) :
-                  Pure (Spec.Kyber.polynomial)
-                  (requires True)
-                  (ensures (fun res -> forall (i:usize). 
-                                    v i < 256 ==>
-                                    res.[i] == to_spec_fe (m.f_coefficients.[i])))
-                                    
-val to_spec_vector (#p:Spec.Kyber.params)
-                   (m:t_Array t_PolynomialRingElement p.v_RANK) :
-                   Pure (Spec.Kyber.vector p)
-                   (requires True)
-                   (ensures (fun res -> forall (i:usize). 
-                                     i <. p.v_RANK ==>
-                                     res.[i] == to_spec_poly m.[i]))
+let to_spec_fe (m:t_FieldElement) : Spec.Kyber.field_element = 
+    let m_v = v m % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS in
+    assert (m_v > -  v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS);
+    if m_v < 0 then
+      m_v + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+    else m_v
 
-val to_spec_matrix (#p:Spec.Kyber.params)
-                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK)) :
-                   Pure (Spec.Kyber.matrix p)
-                   (requires True)
-                   (ensures (fun res -> forall (i:usize). 
-                                     i <. p.v_RANK ==>
-                                     res.[i] == to_spec_vector #p m.[i]))
+val mont_to_spec_fe (m:t_FieldElement)
+    : Spec.Kyber.field_element
+
+
+let to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
+    createi (sz 256) (fun i -> to_spec_fe (m.f_coefficients.[i]))
+
+let mont_to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
+    createi (sz 256) (fun i -> mont_to_spec_fe (m.f_coefficients.[i]))
+
+let to_spec_vector (#p:Spec.Kyber.params)
+                   (m:t_Array t_PolynomialRingElement p.v_RANK)
+                   : (Spec.Kyber.vector p) =
+    createi p.v_RANK (fun i -> to_spec_poly (m.[i]))
+
+let mont_to_spec_vector (#p:Spec.Kyber.params)
+                   (m:t_Array t_PolynomialRingElement p.v_RANK)
+                   : (Spec.Kyber.vector p) =
+    createi p.v_RANK (fun i -> mont_to_spec_poly (m.[i]))
+
+let to_spec_matrix (#p:Spec.Kyber.params)
+                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK))
+                   : (Spec.Kyber.matrix p) =
+    createi p.v_RANK (fun i -> to_spec_vector (m.[i]))
+
+let mont_to_spec_matrix (#p:Spec.Kyber.params)
+                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK))
+                   : (Spec.Kyber.matrix p) =
+    createi p.v_RANK (fun i -> mont_to_spec_vector (m.[i]))
 
 
 val get_n_least_significant_bits (n: u8) (value: u32)
@@ -63,46 +79,55 @@ val get_n_least_significant_bits (n: u8) (value: u32)
       (ensures
         fun result ->
           let result:u32 = result in
-          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into n <: u32) <: u32))
+          v result = v value % pow2 (v n))
 
-let barrett_pre (value:i32) = 
-    v value > v (Core.Ops.Arith.Neg.neg v_BARRETT_R) &&
-    v value < v v_BARRETT_R
+
+let barrett_pre (value:int) = 
+    value > - (pow2 26) /\
+    value < pow2 26
 
 val barrett_reduce (value: i32)
     : Prims.Pure i32
-      (requires (barrett_pre value))
+      (requires (barrett_pre (v value)))
       (ensures
         fun result ->
           let result:i32 = result in
-          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
-          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+          v result = to_spec_fe value)
+//          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+//          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 
-let montgomery_pre (value:i32) =
-        v value >=
-        (v (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) *
-          v v_MONTGOMERY_R) /\
-        v value <= (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS * v v_MONTGOMERY_R)
+let montgomery_pre (value:int) =
+        value >=
+        (v (neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) * v v_MONTGOMERY_R) /\
+        value <= (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS * v v_MONTGOMERY_R)
+
+let montgomery_post_range (output:i32) =
+          output >=.
+          (neg (3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l) /\
+          output <=. (3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l
 
 val montgomery_reduce (value: i32)
     : Prims.Pure i32
-      (requires (montgomery_pre value))
+      (requires (montgomery_pre (v value)))
       (ensures
         fun result ->
           let result:i32 = result in
-          result >=.
-          ((Core.Ops.Arith.Neg.neg (3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: i32
-            ) /!
-            2l
-            <:
-            i32) &&
-          result <=. ((3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l <: i32))
+          montgomery_post_range result)
 
 
-val montgomery_multiply_sfe_by_fer (fe fer: i32) : i32
+val montgomery_multiply_sfe_by_fer (fe fer: i32) 
+    : Pure i32
+      (requires (montgomery_pre (v fe * v fer)))
+      (ensures (fun result -> 
+          montgomery_post_range result))
+      
 
-val to_standard_domain (mfe: i32) : i32
+val to_standard_domain (mfe: i32) 
+    : Pure i32
+      (requires (montgomery_pre (v mfe * v v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS)))
+      (ensures (fun result -> 
+          montgomery_post_range result))
 
 val to_unsigned_representative (fe: i32)
     : Prims.Pure u16
@@ -122,48 +147,12 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement
       (requires
         v_K >. sz 1 /\
-        v_K <=. sz 4)
-      (ensures fun _ -> True)
-(*
-        Hax_lib.v_forall (fun i ->
-              let i:usize = i in
-              Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-                  <:
-                  bool)
-                (fun _ -> ((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i ] <: i32) <: i32) <=.
-                    (((cast (v_K <: usize) <: i32) -! 1l <: i32) *!
-                      Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                      <:
-                      i32)
-                    <:
-                    bool) &&
-                  ((Core.Num.impl__i32__abs (rhs.f_coefficients.[ i ] <: i32) <: i32) <=.
-                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                    <:
-                    bool))
-              <:
-              bool))
-              *)
-(*      
-      (ensures
-        fun result ->
-          let result:t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
-                let i:usize = i in
-                Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result.f_coefficients
-                          <:
-                          t_Slice i32)
-                      <:
-                      usize)
-                    <:
-                    bool)
-                  (fun _ -> (Core.Num.impl__i32__abs (result.f_coefficients.[ i ] <: i32) <: i32) <=.
-                    ((cast (v_K <: usize) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                      <:
-                      i32)
-                    <:
-                    bool)
-                <:
-                bool))
-*)
+        v_K <=. sz 4 /\
+        (forall i. v lhs.f_coefficients.[i] >= -(v v_K - 1) * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
+        (forall i. v lhs.f_coefficients.[i] <= (v v_K - 1) * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
+        (forall i. v rhs.f_coefficients.[i] >= -v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
+        (forall i. v rhs.f_coefficients.[i] <= v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+       )
+      (ensures fun result ->
+        (forall i. v result.f_coefficients.[i] >= -v v_K * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
+        (forall i. v result.f_coefficients.[i] <= v v_K * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS))

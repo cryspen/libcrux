@@ -14,12 +14,8 @@ val sample_from_binomial_distribution (#p:Spec.Kyber.params)
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
           Spec.Kyber.sample_poly_binomial v_ETA randomness /\
           (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-                  (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                          <:
-                          i32) 
-                      <:
-                      i32) <=.
-                    (mk_int #i32_inttype (v v_ETA))))
+             (v #i32_inttype result.f_coefficients.[i] >= - (v v_ETA) /\
+              v #i32_inttype result.f_coefficients.[i] <= (v v_ETA))))
 
 
 val sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))

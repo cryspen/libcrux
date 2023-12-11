@@ -18,12 +18,8 @@ val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
           Spec.Kyber.sample_poly_binomial (sz 2) randomness /\
           (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-                  (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                          <:
-                          i32) 
-                      <:
-                      i32) <=.
-                    2l))
+             (v #i32_inttype result.f_coefficients.[i] >= - 2 /\
+              v #i32_inttype result.f_coefficients.[i] <= 2)))
 
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -118,13 +114,9 @@ val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
           Spec.Kyber.sample_poly_binomial (sz 3) randomness /\
-          (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-                  (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                          <:
-                          i32) 
-                      <:
-                      i32) <=.
-                    3l))
+         (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
+             (v #i32_inttype result.f_coefficients.[i] >= -3 /\
+              v #i32_inttype result.f_coefficients.[i] <= 3)))
 
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement

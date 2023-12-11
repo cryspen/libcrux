@@ -1,19 +1,13 @@
 module Libcrux.Kem.Kyber.Arithmetic
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
-let to_spec_fe (m:t_FieldElement) =
-               admit()
+let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
+let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
-let to_spec_poly (m:t_PolynomialRingElement) =
-               admit()
-                                    
-let to_spec_vector (#p:Spec.Kyber.params) (m:t_Array t_PolynomialRingElement p.v_RANK) =
-               admit()
-
-let to_spec_matrix (#p:Spec.Kyber.params) (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK)) = 
-               admit()
+let createi #t l f = admit()
+let mont_to_spec_fe (m:t_FieldElement) = admit()
 
 let get_n_least_significant_bits (n: u8) (value: u32) = 
   let _:Prims.unit = () <: Prims.unit in
@@ -28,9 +22,9 @@ let barrett_reduce (value: i32) =
     (v_BARRETT_R >>! 1l <: i64)
   in
   let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
-  admit();
   let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
   let _:Prims.unit = () <: Prims.unit in
+  admit();
   result
 
 let montgomery_reduce (value: i32) = 
@@ -50,44 +44,45 @@ let montgomery_reduce (value: i32) =
   admit();
   res
 
-#push-options "--z3rlimit 100"
-let montgomery_multiply_sfe_by_fer (fe fer: i32) : i32 =
-  admit();
+let montgomery_multiply_sfe_by_fer (fe fer: i32) =
+  assert (montgomery_pre (v fe * v fer));
   montgomery_reduce (fe *! fer <: i32)
-#pop-options
 
-let to_standard_domain (mfe: i32) : i32 =
-  admit(); 
+
+let to_standard_domain (mfe: i32) =
   montgomery_reduce (mfe *! v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS <: i32)
 
 let to_unsigned_representative (fe: i32) =
   let _:Prims.unit = () <: Prims.unit in
-  admit();
+  logand_lemma Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS (fe >>! 31l <: i32);
+  let res =  
   cast (fe +! (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) <: i32)
   <:
   u16
+  in
+  admit(); //P-F
+  res
 
 let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) = 
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
+  let orig_lhs = lhs in
+  [@ inline_let]
+  let inv = fun (acc:t_PolynomialRingElement) (i:usize) ->
+      (forall j. j <. i ==> acc.f_coefficients.[j] == lhs.f_coefficients.[j] +! rhs.f_coefficients.[j]) /\
+      (forall j. j >=. i ==> acc.f_coefficients.[j] == orig_lhs.f_coefficients.[j]) in
   let lhs:t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Rust_primitives.Iterators.foldi_range #_ #(t_PolynomialRingElement)  #inv {
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end
-              =
+              Core.Ops.Range.f_end =
               Core.Slice.impl__len (Rust_primitives.unsize lhs.f_coefficients <: t_Slice i32)
-              <:
-              usize
             }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
       lhs
       (fun lhs i ->
           let lhs:t_PolynomialRingElement = lhs in
           let i:usize = i in
-          assume (range (v #i32_inttype lhs.f_coefficients.[ i ] + v #i32_inttype rhs.f_coefficients.[ i ]) i32_inttype);
+          assert (orig_lhs.f_coefficients.[i] == lhs.f_coefficients.[i]);
+          let lhs = 
           {
             lhs with
             f_coefficients
@@ -99,7 +94,13 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
             t_Array i32 (sz 256)
           }
           <:
-          t_PolynomialRingElement)
+          t_PolynomialRingElement
+          in
+          assert (forall j. (j >. i /\ j <. sz 256) ==> lhs.f_coefficients.[j] == orig_lhs.f_coefficients.[j]);
+          lhs
+          )
   in
   let _:Prims.unit = () <: Prims.unit in
+  assert (forall j. j <. sz 256 ==> lhs.f_coefficients.[j] == orig_lhs.f_coefficients.[j] +! rhs.f_coefficients.[j]);
   lhs
+  
