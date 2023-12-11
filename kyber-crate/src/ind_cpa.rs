@@ -13,7 +13,6 @@ use super::{
         deserialize_then_decompress_ring_element_u, deserialize_then_decompress_ring_element_v,
         deserialize_to_uncompressed_ring_element, serialize_uncompressed_ring_element,
     },
-    Error,
 };
 
 /// Pad the `slice` with `0`s at the end.
@@ -52,9 +51,9 @@ fn deserialize_public_key<const K: usize, const T_AS_NTT_ENCODED_SIZE: usize>(
     // for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
     //     .chunks_exact(BYTES_PER_RING_ELEMENT)
     //     .enumerate()
-    for i in 0..T_AS_NTT_ENCODED_SIZE/BYTES_PER_RING_ELEMENT
-    {
-        let t_as_ntt_bytes = &public_key[i*BYTES_PER_RING_ELEMENT..i*(BYTES_PER_RING_ELEMENT + 1)];
+    for i in 0..T_AS_NTT_ENCODED_SIZE / BYTES_PER_RING_ELEMENT {
+        let t_as_ntt_bytes =
+            &public_key[i * BYTES_PER_RING_ELEMENT..i * (BYTES_PER_RING_ELEMENT + 1)];
         t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
     }
     t_as_ntt
@@ -131,15 +130,12 @@ pub(crate) fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     key_generation_seed: &[u8],
-) -> (
-    ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]),
-    Option<Error>,
-) {
+) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // (ρ,σ) := G(d)
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed_for_A), true);
+    let A_transpose = sample_matrix_A(into_padded_array(seed_for_A), true);
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
     let (secret_as_ntt, domain_separator) =
@@ -159,10 +155,7 @@ pub(crate) fn generate_keypair<
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = serialize_secret_key(secret_as_ntt);
 
-    (
-        (secret_key_serialized, public_key_serialized),
-        sampling_A_error,
-    )
+    (secret_key_serialized, public_key_serialized)
 }
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
@@ -207,7 +200,7 @@ pub(crate) fn encrypt<
     public_key: &[u8],
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
-) -> ([u8; CIPHERTEXT_SIZE], Option<Error>) {
+) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
     let t_as_ntt = deserialize_public_key::<K, T_AS_NTT_ENCODED_SIZE>(public_key);
 
@@ -218,7 +211,7 @@ pub(crate) fn encrypt<
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let (A_transpose, sampling_A_error) = sample_matrix_A(into_padded_array(seed), false);
+    let A_transpose = sample_matrix_A(into_padded_array(seed), false);
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
@@ -258,7 +251,8 @@ pub(crate) fn encrypt<
 
     let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
     ciphertext[C1_LEN..].copy_from_slice(c2.as_slice());
-    (ciphertext, sampling_A_error)
+
+    ciphertext
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -277,9 +271,8 @@ fn deserialize_then_decompress_u<
     //     .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
     //     .enumerate()
     let chunk_size = (COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8;
-    for i in 0..VECTOR_U_ENCODED_SIZE
-    {
-        let u_bytes = &ciphertext[i*chunk_size..i*(chunk_size+1)];
+    for i in 0..VECTOR_U_ENCODED_SIZE {
+        let u_bytes = &ciphertext[i * chunk_size..i * (chunk_size + 1)];
         let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
         u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
     }

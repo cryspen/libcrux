@@ -98,7 +98,7 @@ pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PolynomialRingElement {
     pub(crate) coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT],
 }
