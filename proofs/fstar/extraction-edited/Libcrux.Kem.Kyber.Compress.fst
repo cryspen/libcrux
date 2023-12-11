@@ -47,14 +47,14 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
   <:
   i32
   in
-  admit();
+  admit(); // P-F
   res
 
 let decompress_pre (coefficient_bits: u8) (fe: i32) = 
         (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
         coefficient_bits =. 11uy) &&
-        fe >=. 0l &&
-        fe <. (Core.Num.impl__i32__pow 2l (cast (coefficient_bits <: u8) <: u32) <: i32)
+        v fe >= 0 &&
+        v fe < pow2 (v coefficient_bits)
 
 let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
     : Prims.Pure i32
@@ -65,13 +65,14 @@ let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
           result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  admit();
+  assert (v (1ul <<! coefficient_bits) <= pow2 11);
   let decompressed:u32 =
     (cast (fe <: i32) <: u32) *! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u32)
   in
   let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! coefficient_bits <: u32) in
   let decompressed:u32 = decompressed >>! (coefficient_bits +! 1uy <: u8) in
   let res = cast (decompressed <: u32) <: i32 in
+  admit(); // P-F
   res
 
 let decompress_message_coefficient (fe: i32)
