@@ -421,8 +421,7 @@ let compute_vector_u
   result
 
 let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
-    : (t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-      Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+    : t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
   let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
           v_K
@@ -430,12 +429,7 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
         t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
       v_K
   in
-  let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error =
-    Core.Option.Option_None <: Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error
-  in
-  let v_A_transpose, sampling_A_error:(t_Array
-      (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
+  let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = v_K
@@ -444,15 +438,11 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
             Core.Ops.Range.t_Range usize)
         <:
         Core.Ops.Range.t_Range usize)
-      (v_A_transpose, sampling_A_error
-        <:
-        (t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-          Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error))
-      (fun temp_0_ i ->
-          let v_A_transpose, sampling_A_error:(t_Array
-              (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-            Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
-            temp_0_
+      v_A_transpose
+      (fun v_A_transpose i ->
+          let v_A_transpose:t_Array
+            (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
+            v_A_transpose
           in
           let i:usize = i in
           let seeds:t_Array (t_Array u8 (sz 34)) v_K = Rust_primitives.Hax.repeat seed v_K in
@@ -504,30 +494,17 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
                   Core.Ops.Range.t_Range usize)
               <:
               Core.Ops.Range.t_Range usize)
-            (v_A_transpose, sampling_A_error
-              <:
-              (t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-                Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error))
-            (fun temp_0_ j ->
-                let v_A_transpose, sampling_A_error:(t_Array
-                    (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-                  Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
-                  temp_0_
+            v_A_transpose
+            (fun v_A_transpose j ->
+                let v_A_transpose:t_Array
+                  (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
+                  v_A_transpose
                 in
                 let j:usize = j in
-                let sampled, error:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
-                  Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error) =
-                  Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (sz 840)
-                    (xof_bytes.[ j ] <: t_Array u8 (sz 840))
-                in
-                let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error =
-                  if Core.Option.impl__is_some error
-                  then
-                    let sampling_A_error:Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error =
-                      error
-                    in
-                    sampling_A_error
-                  else sampling_A_error
+                let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+                  Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (xof_bytes.[ j ]
+                      <:
+                      t_Array u8 (sz 840))
                 in
                 if transpose
                 then
@@ -544,10 +521,7 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
                         <:
                         t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
                   in
-                  v_A_transpose, sampling_A_error
-                  <:
-                  (t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-                    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+                  v_A_transpose
                 else
                   let v_A_transpose:t_Array
                     (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
@@ -562,12 +536,6 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool)
                         <:
                         t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
                   in
-                  v_A_transpose, sampling_A_error
-                  <:
-                  (t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-                    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)))
+                  v_A_transpose))
   in
-  v_A_transpose, sampling_A_error
-  <:
-  (t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K &
-    Core.Option.t_Option Libcrux.Kem.Kyber.Types.t_Error)
+  v_A_transpose

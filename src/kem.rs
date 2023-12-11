@@ -347,11 +347,9 @@ fn gen_kyber768(
     let mut seed = [0; kyber::KEY_GENERATION_SEED_SIZE];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
 
-    if let Ok(KyberKeyPair { sk, pk }) = kyber768_generate_keypair_derand(seed) {
-        Ok((sk, pk))
-    } else {
-        Err(Error::KeyGen)
-    }
+    let KyberKeyPair { sk, pk } = kyber768_generate_keypair_derand(seed);
+
+    Ok((sk, pk))
 }
 
 /// Generate a key pair for the [`Algorithm`] using the provided rng.
@@ -406,20 +404,14 @@ pub fn encapsulate(pk: &PublicKey, rng: &mut (impl CryptoRng + Rng)) -> Result<(
 
         PublicKey::Kyber512(pk) => {
             let seed = kyber_rand(rng)?;
-            if let Ok((ct, ss)) = kyber::kyber512::encapsulate_512(pk, seed) {
-                Ok((Ss::Kyber512(ss), Ct::Kyber512(ct)))
-            } else {
-                Err(Error::Encapsulate)
-            }
+            let (ct, ss) = kyber::kyber512::encapsulate_512(pk, seed);
+            Ok((Ss::Kyber512(ss), Ct::Kyber512(ct)))
         }
 
         PublicKey::Kyber768(pk) => {
             let seed = kyber_rand(rng)?;
-            if let Ok((ct, ss)) = kyber::kyber768::encapsulate_768(pk, seed) {
-                Ok((Ss::Kyber768(ss), Ct::Kyber768(ct)))
-            } else {
-                Err(Error::Encapsulate)
-            }
+            let (ct, ss) = kyber::kyber768::encapsulate_768(pk, seed);
+            Ok((Ss::Kyber768(ss), Ct::Kyber768(ct)))
         }
 
         PublicKey::Kyber768X25519(Kyber768X25519PublicKey {
@@ -427,8 +419,7 @@ pub fn encapsulate(pk: &PublicKey, rng: &mut (impl CryptoRng + Rng)) -> Result<(
             x25519: xpk,
         }) => {
             let seed = kyber_rand(rng)?;
-            let (kyber_ct, kyber_ss) =
-                kyber::kyber768::encapsulate_768(kpk, seed).map_err(|_| Error::Encapsulate)?;
+            let (kyber_ct, kyber_ss) = kyber::kyber768::encapsulate_768(kpk, seed);
             let (x_sk, x_pk) = ecdh::x25519_key_gen(rng)?;
             let x_ss = x25519::derive(xpk, &x_sk)?;
 
