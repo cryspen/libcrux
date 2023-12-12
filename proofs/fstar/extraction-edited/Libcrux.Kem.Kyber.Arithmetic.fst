@@ -12,7 +12,7 @@ let mont_to_spec_fe (m:t_FieldElement) = admit()
 let get_n_least_significant_bits (n: u8) (value: u32) = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
-  admit();
+  admit(); // P-F
   res
 
 let barrett_reduce (value: i32) = 
@@ -24,7 +24,7 @@ let barrett_reduce (value: i32) =
   let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
   let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
   let _:Prims.unit = () <: Prims.unit in
-  admit();
+  admit(); // P-F
   result
 
 let montgomery_reduce (value: i32) = 
@@ -41,7 +41,7 @@ let montgomery_reduce (value: i32) =
   let c:i32 = k_times_modulus >>! v_MONTGOMERY_SHIFT in
   let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
   let res = value_high -! c in
-  admit();
+  admit(); // P-F
   res
 
 let montgomery_multiply_sfe_by_fer (fe fer: i32) =

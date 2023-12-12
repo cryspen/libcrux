@@ -20,7 +20,10 @@ val invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
 
 val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      (requires True)
+      (requires (
+            (forall (i:usize). i <. length re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
+             (v #i32_inttype re.f_coefficients.[i] >= -3 /\
+              v #i32_inttype re.f_coefficients.[i] <= 3))))
       (ensures (fun _ -> True))
 
 (*

@@ -19,7 +19,7 @@ let compress_message_coefficient (fe: u16)
   assume (shifted_to_positive >=. 0s);
   let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
   let res = cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8 in
-  admit();
+  admit(); //P-F
   res
 
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
