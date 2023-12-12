@@ -9,5 +9,11 @@ members = ["."]
 
 [dependencies]
 hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
-libcrux ={ path = "../" }
-libcrux-platform ={ path = "../sys/platform" }
+libcrux = { path = "../" }
+libcrux-platform = { path = "../sys/platform" }
+hex = { version = "0.4.3", features = ["serde"] }
+
+[dev-dependencies]
+serde_json = { version = "1.0" }
+serde = { version = "1.0", features = ["derive"] }
+rand = { version = "0.8" }

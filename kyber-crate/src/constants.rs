@@ -38,4 +38,4 @@ pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
 //     (COEFFICIENTS_IN_RING_ELEMENT * FACTOR) / 8
 // }
 
-pub(crate) const H_DIGEST_SIZE: usize = digest_size(Algorithm::Sha3_256);
+pub(crate) const H_DIGEST_SIZE: usize = 32;
