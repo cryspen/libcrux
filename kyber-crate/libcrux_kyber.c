@@ -211,30 +211,27 @@ libcrux_kyber_constant_time_ops_select_shared_secret_in_constant_time(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t uu____1 = (uint32_t)Eurydice_slice_index(lhs, i, uint8_t) & (uint32_t)mask;
-        uint8_t *uu____2 = &Eurydice_slice_index(rhs, i, uint8_t);
-        size_t uu____3 = i;
-        out[uu____3] =
-          (uint32_t)out[uu____3]
-          | ((uint32_t)uu____1 | ((uint32_t)uu____2[0U] & (uint32_t)~mask));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t uu____1 = (uint32_t)Eurydice_slice_index(lhs, i, uint8_t) & (uint32_t)mask;
+      uint8_t *uu____2 = &Eurydice_slice_index(rhs, i, uint8_t);
+      size_t uu____3 = i;
+      out[uu____3] =
+        (uint32_t)out[uu____3]
+        | ((uint32_t)uu____1 | ((uint32_t)uu____2[0U] & (uint32_t)~mask));
     }
-    uint8_t uu____4[32U];
-    memcpy(uu____4, out, (size_t)32U * sizeof (uint8_t));
-    memcpy(ret, uu____4, (size_t)32U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____4[32U];
+  memcpy(uu____4, out, (size_t)32U * sizeof (uint8_t));
+  memcpy(ret, uu____4, (size_t)32U * sizeof (uint8_t));
 }
 
 void libcrux_kyber_hash_functions_G(Eurydice_slice input, uint8_t ret[64U])
@@ -281,38 +278,35 @@ libcrux_kyber_serialize_serialize_uncompressed_ring_element(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint16_t
-        coefficient1 =
-          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)0U]);
-        uint16_t
-        coefficient2 =
-          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)1U]);
-        K___uint8_t_uint8_t_uint8_t
-        uu____1 = libcrux_kyber_serialize_compress_coefficients_3(coefficient1, coefficient2);
-        uint8_t coef1 = uu____1.fst;
-        uint8_t coef2 = uu____1.snd;
-        uint8_t coef3 = uu____1.thd;
-        serialized[(size_t)3U * i] = coef1;
-        serialized[(size_t)3U * i + (size_t)1U] = coef2;
-        serialized[(size_t)3U * i + (size_t)2U] = coef3;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint16_t
+      coefficient1 =
+        libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)0U]);
+      uint16_t
+      coefficient2 =
+        libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)1U]);
+      K___uint8_t_uint8_t_uint8_t
+      uu____1 = libcrux_kyber_serialize_compress_coefficients_3(coefficient1, coefficient2);
+      uint8_t coef1 = uu____1.fst;
+      uint8_t coef2 = uu____1.snd;
+      uint8_t coef3 = uu____1.thd;
+      serialized[(size_t)3U * i] = coef1;
+      serialized[(size_t)3U * i + (size_t)1U] = coef2;
+      serialized[(size_t)3U * i + (size_t)2U] = coef3;
     }
-    uint8_t uu____2[384U];
-    memcpy(uu____2, serialized, (size_t)384U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)384U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[384U];
+  memcpy(uu____2, serialized, (size_t)384U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)384U * sizeof (uint8_t));
 }
 
 void
@@ -338,30 +332,27 @@ libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)3U + (size_t)0U, uint8_t);
-        int32_t
-        byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)3U + (size_t)1U, uint8_t);
-        int32_t
-        byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)3U + (size_t)2U, uint8_t);
-        re[(size_t)2U * i] = (byte2 & (int32_t)15) << 8U | (byte1 & (int32_t)255);
-        re[(size_t)2U * i + (size_t)1U] = byte3 << 4U | (byte2 >> 4U & (int32_t)15);
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)3U + (size_t)0U, uint8_t);
+      int32_t
+      byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)3U + (size_t)1U, uint8_t);
+      int32_t
+      byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)3U + (size_t)2U, uint8_t);
+      re[(size_t)2U * i] = (byte2 & (int32_t)15) << 8U | (byte1 & (int32_t)255);
+      re[(size_t)2U * i + (size_t)1U] = byte3 << 4U | (byte2 >> 4U & (int32_t)15);
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -387,66 +378,63 @@ libcrux_kyber_sampling_sample_from_binomial_distribution_2(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      uint32_t
+      uu____1 = (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)0U, uint8_t);
+      uint32_t
+      uu____2 =
+        uu____1
+        | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)1U, uint8_t) << 8U;
+      uint32_t
+      uu____3 =
+        uu____2
+        | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)2U, uint8_t) << 16U;
+      uint32_t
+      random_bits_as_u32 =
+        uu____3
+        | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)3U, uint8_t) << 24U;
+      uint32_t even_bits = random_bits_as_u32 & 1431655765U;
+      uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
+      uint32_t coin_toss_outcomes = even_bits + odd_bits;
+      core_ops_range_Range__uint32_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__uint32_t){ .start = 0U, .end = core_num__u32_8__BITS / 4U }
+          ),
+          core_ops_range_Range__uint32_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        uint32_t
-        uu____1 = (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)0U, uint8_t);
-        uint32_t
-        uu____2 =
-          uu____1
-          | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)1U, uint8_t) << 8U;
-        uint32_t
-        uu____3 =
-          uu____2
-          | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)2U, uint8_t) << 16U;
-        uint32_t
-        random_bits_as_u32 =
-          uu____3
-          | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)4U + (size_t)3U, uint8_t) << 24U;
-        uint32_t even_bits = random_bits_as_u32 & 1431655765U;
-        uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
-        uint32_t coin_toss_outcomes = even_bits + odd_bits;
-        core_ops_range_Range__uint32_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__uint32_t){ .start = 0U, .end = core_num__u32_8__BITS / 4U }
-            ),
-            core_ops_range_Range__uint32_t);
-        while (true)
+        core_option_Option__uint32_t
+        uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, uint32_t);
+        if (uu____4.tag == core_option_None)
+          break;
+        else if (uu____4.tag == core_option_Some)
         {
-          core_option_Option__uint32_t
-          uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, uint32_t);
-          if (uu____4.tag == core_option_None)
-            break;
-          else if (uu____4.tag == core_option_Some)
-          {
-            uint32_t outcome_set_ = uu____4.f0;
-            uint32_t outcome_set = outcome_set_ * 4U;
-            int32_t outcome_1 = (int32_t)(coin_toss_outcomes >> (uint32_t)outcome_set & 3U);
-            int32_t outcome_2 = (int32_t)(coin_toss_outcomes >> (uint32_t)(outcome_set + 2U) & 3U);
-            size_t offset = (size_t)(outcome_set >> 2U);
-            sampled[(size_t)8U * i + offset] = outcome_1 - outcome_2;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          uint32_t outcome_set_ = uu____4.f0;
+          uint32_t outcome_set = outcome_set_ * 4U;
+          int32_t outcome_1 = (int32_t)(coin_toss_outcomes >> (uint32_t)outcome_set & 3U);
+          int32_t outcome_2 = (int32_t)(coin_toss_outcomes >> (uint32_t)(outcome_set + 2U) & 3U);
+          size_t offset = (size_t)(outcome_set >> 2U);
+          sampled[(size_t)8U * i + offset] = outcome_1 - outcome_2;
         }
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    memcpy(ret, sampled, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, sampled, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -472,67 +460,61 @@ libcrux_kyber_sampling_sample_from_binomial_distribution_3(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      uint32_t
+      uu____1 = (uint32_t)Eurydice_slice_index(randomness, i * (size_t)3U + (size_t)0U, uint8_t);
+      uint32_t
+      uu____2 =
+        uu____1
+        | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)3U + (size_t)1U, uint8_t) << 8U;
+      uint32_t
+      random_bits_as_u24 =
+        uu____2
+        | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)3U + (size_t)2U, uint8_t) << 16U;
+      uint32_t first_bits = random_bits_as_u24 & 2396745U;
+      uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
+      uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
+      uint32_t coin_toss_outcomes = first_bits + second_bits + third_bits;
+      core_ops_range_Range__int32_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__int32_t){ .start = (int32_t)0, .end = (int32_t)24 / (int32_t)6 }
+          ),
+          core_ops_range_Range__int32_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        uint32_t
-        uu____1 = (uint32_t)Eurydice_slice_index(randomness, i * (size_t)3U + (size_t)0U, uint8_t);
-        uint32_t
-        uu____2 =
-          uu____1
-          | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)3U + (size_t)1U, uint8_t) << 8U;
-        uint32_t
-        random_bits_as_u24 =
-          uu____2
-          | (uint32_t)Eurydice_slice_index(randomness, i * (size_t)3U + (size_t)2U, uint8_t) << 16U;
-        uint32_t first_bits = random_bits_as_u24 & 2396745U;
-        uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
-        uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
-        uint32_t coin_toss_outcomes = first_bits + second_bits + third_bits;
-        core_ops_range_Range__int32_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__int32_t){
-                .start = (int32_t)0,
-                .end = (int32_t)24 / (int32_t)6
-              }
-            ),
-            core_ops_range_Range__int32_t);
-        while (true)
+        core_option_Option__int32_t
+        uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter, int32_t);
+        if (uu____3.tag == core_option_None)
+          break;
+        else if (uu____3.tag == core_option_Some)
         {
-          core_option_Option__int32_t
-          uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter, int32_t);
-          if (uu____3.tag == core_option_None)
-            break;
-          else if (uu____3.tag == core_option_Some)
-          {
-            int32_t outcome_set_ = uu____3.f0;
-            int32_t outcome_set = outcome_set_ * (int32_t)6;
-            int32_t outcome_1 = (int32_t)(coin_toss_outcomes >> (uint32_t)outcome_set & 7U);
-            int32_t
-            outcome_2 = (int32_t)(coin_toss_outcomes >> (uint32_t)(outcome_set + (int32_t)3) & 7U);
-            size_t offset = (size_t)(outcome_set / (int32_t)6);
-            sampled[(size_t)4U * i + offset] = outcome_1 - outcome_2;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          int32_t outcome_set_ = uu____3.f0;
+          int32_t outcome_set = outcome_set_ * (int32_t)6;
+          int32_t outcome_1 = (int32_t)(coin_toss_outcomes >> (uint32_t)outcome_set & 7U);
+          int32_t
+          outcome_2 = (int32_t)(coin_toss_outcomes >> (uint32_t)(outcome_set + (int32_t)3) & 7U);
+          size_t offset = (size_t)(outcome_set / (int32_t)6);
+          sampled[(size_t)4U * i + offset] = outcome_1 - outcome_2;
         }
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    memcpy(ret, sampled, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, sampled, (size_t)256U * sizeof (int32_t));
 }
 
 const
@@ -583,52 +565,49 @@ libcrux_kyber_ntt_ntt_at_layer(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t round = uu____0.f0;
+      zeta_i[0U] = zeta_i[0U] + (size_t)1U;
+      size_t offset = round * step * (size_t)2U;
+      core_ops_range_Range__size_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = offset, .end = offset + step }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t round = uu____0.f0;
-        zeta_i[0U] = zeta_i[0U] + (size_t)1U;
-        size_t offset = round * step * (size_t)2U;
-        core_ops_range_Range__size_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = offset, .end = offset + step }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t
-            t =
-              libcrux_kyber_arithmetic_montgomery_multiply_sfe_by_fer(re[j + step],
-                libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-            re[j + step] = re[j] - t;
-            re[j] = re[j] + t;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t
+          t =
+            libcrux_kyber_arithmetic_montgomery_multiply_sfe_by_fer(re[j + step],
+              libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+          re[j + step] = re[j] - t;
+          re[j] = re[j] + t;
         }
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -691,24 +670,21 @@ void libcrux_kyber_ntt_ntt_binomially_sampled_ring_element(int32_t re[256U], int
   {
     core_option_Option__size_t
     uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____1.tag == core_option_None))
+    if (uu____1.tag == core_option_None)
+      break;
+    else if (uu____1.tag == core_option_Some)
     {
-      if (uu____1.tag == core_option_Some)
-      {
-        size_t i = uu____1.f0;
-        int32_t uu____2 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
-        re[i] = uu____2;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____1.f0;
+      int32_t uu____2 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
+      re[i] = uu____2;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void libcrux_kyber_sampling_rejection_sampling_panic_with_diagnostic(void)
@@ -741,291 +717,288 @@ libcrux_kyber_sampling_sample_from_uniform_distribution(
   {
     core_option_Option__Eurydice_slice_uint8_t
     uu____0 = core_slice_iter__core__slice__iter__Chunks__a__T__70__next(&iter, uint8_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      Eurydice_slice bytes = uu____0.f0;
+      if (!done)
       {
-        Eurydice_slice bytes = uu____0.f0;
-        if (!done)
+        int32_t b1 = (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t);
+        int32_t b2 = (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t);
+        int32_t b3 = (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t);
+        int32_t d1 = (b2 & (int32_t)15) << 8U | b1;
+        int32_t d2 = b3 << 4U | b2 >> 4U;
+        bool uu____1;
+        int32_t uu____2;
+        size_t uu____3;
+        bool uu____4;
+        bool uu____5;
+        int32_t uu____6;
+        bool uu____7;
+        size_t uu____8;
+        int32_t uu____9;
+        size_t uu____10;
+        bool uu____11;
+        size_t uu____12;
+        int32_t uu____13;
+        size_t uu____14;
+        size_t uu____15;
+        if (d1 < libcrux_kyber_constants_FIELD_MODULUS)
         {
-          int32_t b1 = (int32_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t);
-          int32_t b2 = (int32_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t);
-          int32_t b3 = (int32_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t);
-          int32_t d1 = (b2 & (int32_t)15) << 8U | b1;
-          int32_t d2 = b3 << 4U | b2 >> 4U;
-          bool uu____1;
-          int32_t uu____2;
-          size_t uu____3;
-          bool uu____4;
-          bool uu____5;
-          int32_t uu____6;
-          bool uu____7;
-          size_t uu____8;
-          int32_t uu____9;
-          size_t uu____10;
-          bool uu____11;
-          size_t uu____12;
-          int32_t uu____13;
-          size_t uu____14;
-          size_t uu____15;
-          if (d1 < libcrux_kyber_constants_FIELD_MODULUS)
+          uu____1 = sampled_coefficients < libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+          if (uu____1)
           {
-            uu____1 = sampled_coefficients < libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-            if (uu____1)
+            uu____2 = d1;
+            uu____3 = sampled_coefficients;
+            out[uu____3] = uu____2;
+            sampled_coefficients++;
+            uu____6 = d2;
+            uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
+            uu____5 = uu____6 < uu____13;
+            if (uu____5)
             {
-              uu____2 = d1;
-              uu____3 = sampled_coefficients;
-              out[uu____3] = uu____2;
-              sampled_coefficients++;
-              uu____6 = d2;
-              uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
-              uu____5 = uu____6 < uu____13;
-              if (uu____5)
+              uu____8 = sampled_coefficients;
+              uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+              uu____7 = uu____8 < uu____14;
+              uu____4 = uu____7;
+              if (uu____4)
               {
-                uu____8 = sampled_coefficients;
-                uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                uu____7 = uu____8 < uu____14;
-                uu____4 = uu____7;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
               else
               {
-                uu____4 = false;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
             }
             else
             {
-              uu____6 = d2;
-              uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
-              uu____5 = uu____6 < uu____13;
-              if (uu____5)
+              uu____4 = false;
+              if (uu____4)
               {
-                uu____8 = sampled_coefficients;
-                uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                uu____7 = uu____8 < uu____14;
-                uu____4 = uu____7;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
               else
               {
-                uu____4 = false;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
             }
           }
           else
           {
-            uu____1 = false;
-            if (uu____1)
+            uu____6 = d2;
+            uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
+            uu____5 = uu____6 < uu____13;
+            if (uu____5)
             {
-              uu____2 = d1;
-              uu____3 = sampled_coefficients;
-              out[uu____3] = uu____2;
-              sampled_coefficients++;
-              uu____6 = d2;
-              uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
-              uu____5 = uu____6 < uu____13;
-              if (uu____5)
+              uu____8 = sampled_coefficients;
+              uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+              uu____7 = uu____8 < uu____14;
+              uu____4 = uu____7;
+              if (uu____4)
               {
-                uu____8 = sampled_coefficients;
-                uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                uu____7 = uu____8 < uu____14;
-                uu____4 = uu____7;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
               else
               {
-                uu____4 = false;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
             }
             else
             {
-              uu____6 = d2;
-              uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
-              uu____5 = uu____6 < uu____13;
-              if (uu____5)
+              uu____4 = false;
+              if (uu____4)
               {
-                uu____8 = sampled_coefficients;
-                uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                uu____7 = uu____8 < uu____14;
-                uu____4 = uu____7;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
               else
               {
-                uu____4 = false;
-                if (uu____4)
-                {
-                  uu____9 = d2;
-                  uu____10 = sampled_coefficients;
-                  out[uu____10] = uu____9;
-                  sampled_coefficients++;
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
-                else
-                {
-                  uu____12 = sampled_coefficients;
-                  uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
-                  uu____11 = uu____12 == uu____15;
-                  if (uu____11)
-                    done = true;
-                }
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
               }
             }
           }
         }
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        else
+        {
+          uu____1 = false;
+          if (uu____1)
+          {
+            uu____2 = d1;
+            uu____3 = sampled_coefficients;
+            out[uu____3] = uu____2;
+            sampled_coefficients++;
+            uu____6 = d2;
+            uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
+            uu____5 = uu____6 < uu____13;
+            if (uu____5)
+            {
+              uu____8 = sampled_coefficients;
+              uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+              uu____7 = uu____8 < uu____14;
+              uu____4 = uu____7;
+              if (uu____4)
+              {
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+              else
+              {
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+            }
+            else
+            {
+              uu____4 = false;
+              if (uu____4)
+              {
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+              else
+              {
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+            }
+          }
+          else
+          {
+            uu____6 = d2;
+            uu____13 = libcrux_kyber_constants_FIELD_MODULUS;
+            uu____5 = uu____6 < uu____13;
+            if (uu____5)
+            {
+              uu____8 = sampled_coefficients;
+              uu____14 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+              uu____7 = uu____8 < uu____14;
+              uu____4 = uu____7;
+              if (uu____4)
+              {
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+              else
+              {
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+            }
+            else
+            {
+              uu____4 = false;
+              if (uu____4)
+              {
+                uu____9 = d2;
+                uu____10 = sampled_coefficients;
+                out[uu____10] = uu____9;
+                sampled_coefficients++;
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+              else
+              {
+                uu____12 = sampled_coefficients;
+                uu____15 = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT;
+                uu____11 = uu____12 == uu____15;
+                if (uu____11)
+                  done = true;
+              }
+            }
+          }
+        }
       }
     }
-    if (!done)
-      libcrux_kyber_sampling_rejection_sampling_panic_with_diagnostic();
-    memcpy(ret, out, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  if (!done)
+    libcrux_kyber_sampling_rejection_sampling_panic_with_diagnostic();
+  memcpy(ret, out, (size_t)256U * sizeof (int32_t));
 }
 
 K___int32_t_int32_t
@@ -1073,48 +1046,45 @@ libcrux_kyber_ntt_ntt_multiply(int32_t (*lhs)[256U], int32_t (*rhs)[256U], int32
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        K___int32_t_int32_t lit0;
-        lit0.fst = lhs[0U][(size_t)4U * i];
-        lit0.snd = lhs[0U][(size_t)4U * i + (size_t)1U];
-        K___int32_t_int32_t lit1;
-        lit1.fst = rhs[0U][(size_t)4U * i];
-        lit1.snd = rhs[0U][(size_t)4U * i + (size_t)1U];
-        K___int32_t_int32_t
-        product =
-          libcrux_kyber_ntt_ntt_multiply_binomials(lit0,
-            lit1,
-            libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[(size_t)64U + i]);
-        out[(size_t)4U * i] = product.fst;
-        out[(size_t)4U * i + (size_t)1U] = product.snd;
-        K___int32_t_int32_t lit2;
-        lit2.fst = lhs[0U][(size_t)4U * i + (size_t)2U];
-        lit2.snd = lhs[0U][(size_t)4U * i + (size_t)3U];
-        K___int32_t_int32_t lit;
-        lit.fst = rhs[0U][(size_t)4U * i + (size_t)2U];
-        lit.snd = rhs[0U][(size_t)4U * i + (size_t)3U];
-        K___int32_t_int32_t
-        product0 =
-          libcrux_kyber_ntt_ntt_multiply_binomials(lit2,
-            lit,
-            -libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[(size_t)64U + i]);
-        out[(size_t)4U * i + (size_t)2U] = product0.fst;
-        out[(size_t)4U * i + (size_t)3U] = product0.snd;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      K___int32_t_int32_t lit0;
+      lit0.fst = lhs[0U][(size_t)4U * i];
+      lit0.snd = lhs[0U][(size_t)4U * i + (size_t)1U];
+      K___int32_t_int32_t lit1;
+      lit1.fst = rhs[0U][(size_t)4U * i];
+      lit1.snd = rhs[0U][(size_t)4U * i + (size_t)1U];
+      K___int32_t_int32_t
+      product =
+        libcrux_kyber_ntt_ntt_multiply_binomials(lit0,
+          lit1,
+          libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[(size_t)64U + i]);
+      out[(size_t)4U * i] = product.fst;
+      out[(size_t)4U * i + (size_t)1U] = product.snd;
+      K___int32_t_int32_t lit2;
+      lit2.fst = lhs[0U][(size_t)4U * i + (size_t)2U];
+      lit2.snd = lhs[0U][(size_t)4U * i + (size_t)3U];
+      K___int32_t_int32_t lit;
+      lit.fst = rhs[0U][(size_t)4U * i + (size_t)2U];
+      lit.snd = rhs[0U][(size_t)4U * i + (size_t)3U];
+      K___int32_t_int32_t
+      product0 =
+        libcrux_kyber_ntt_ntt_multiply_binomials(lit2,
+          lit,
+          -libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[(size_t)64U + i]);
+      out[(size_t)4U * i + (size_t)2U] = product0.fst;
+      out[(size_t)4U * i + (size_t)3U] = product0.snd;
     }
-    memcpy(ret, out, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, out, (size_t)256U * sizeof (int32_t));
 }
 
 K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
@@ -1242,53 +1212,50 @@ libcrux_kyber_ntt_invert_ntt_at_layer(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t round = uu____0.f0;
+      zeta_i[0U] = zeta_i[0U] - (size_t)1U;
+      size_t offset = round * step * (size_t)2U;
+      core_ops_range_Range__size_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = offset, .end = offset + step }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t round = uu____0.f0;
-        zeta_i[0U] = zeta_i[0U] - (size_t)1U;
-        size_t offset = round * step * (size_t)2U;
-        core_ops_range_Range__size_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = offset, .end = offset + step }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t a_minus_b = re[j + step] - re[j];
-            re[j] = re[j] + re[j + step];
-            int32_t
-            uu____2 =
-              libcrux_kyber_arithmetic_montgomery_reduce(a_minus_b
-                * libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
-            re[j + step] = uu____2;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t a_minus_b = re[j + step] - re[j];
+          re[j] = re[j] + re[j + step];
+          int32_t
+          uu____2 =
+            libcrux_kyber_arithmetic_montgomery_reduce(a_minus_b
+              * libcrux_kyber_ntt_ZETAS_TIMES_MONTGOMERY_R[zeta_i[0U]]);
+          re[j + step] = uu____2;
         }
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -1312,48 +1279,45 @@ libcrux_kyber_serialize_deserialize_then_decompress_message(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)8U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)8U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t coefficient_compressed = (int32_t)((uint32_t)serialized[i] >> (uint32_t)j & 1U);
-            int32_t
-            uu____2 = libcrux_kyber_compress_decompress_message_coefficient(coefficient_compressed);
-            re[(size_t)8U * i + j] = uu____2;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t coefficient_compressed = (int32_t)((uint32_t)serialized[i] >> (uint32_t)j & 1U);
+          int32_t
+          uu____2 = libcrux_kyber_compress_decompress_message_coefficient(coefficient_compressed);
+          re[(size_t)8U * i + j] = uu____2;
         }
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
@@ -1438,55 +1402,48 @@ libcrux_kyber_serialize_deserialize_then_decompress_10(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)0U, uint8_t);
-        int32_t
-        byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)1U, uint8_t);
-        int32_t
-        byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)2U, uint8_t);
-        int32_t
-        byte4 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)3U, uint8_t);
-        int32_t
-        byte5 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)4U, uint8_t);
-        K___int32_t_int32_t_int32_t_int32_t
-        uu____1 =
-          libcrux_kyber_serialize_decompress_coefficients_10(byte2,
-            byte1,
-            byte3,
-            byte4,
-            byte5);
-        int32_t coefficient1 = uu____1.fst;
-        int32_t coefficient2 = uu____1.snd;
-        int32_t coefficient3 = uu____1.thd;
-        int32_t coefficient4 = uu____1.f3;
-        int32_t
-        uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient1);
-        re[(size_t)4U * i] = uu____2;
-        int32_t
-        uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient2);
-        re[(size_t)4U * i + (size_t)1U] = uu____3;
-        int32_t
-        uu____4 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient3);
-        re[(size_t)4U * i + (size_t)2U] = uu____4;
-        int32_t
-        uu____5 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient4);
-        re[(size_t)4U * i + (size_t)3U] = uu____5;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)0U, uint8_t);
+      int32_t
+      byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)1U, uint8_t);
+      int32_t
+      byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)2U, uint8_t);
+      int32_t
+      byte4 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)3U, uint8_t);
+      int32_t
+      byte5 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)4U, uint8_t);
+      K___int32_t_int32_t_int32_t_int32_t
+      uu____1 =
+        libcrux_kyber_serialize_decompress_coefficients_10(byte2,
+          byte1,
+          byte3,
+          byte4,
+          byte5);
+      int32_t coefficient1 = uu____1.fst;
+      int32_t coefficient2 = uu____1.snd;
+      int32_t coefficient3 = uu____1.thd;
+      int32_t coefficient4 = uu____1.f3;
+      int32_t uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient1);
+      re[(size_t)4U * i] = uu____2;
+      int32_t uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient2);
+      re[(size_t)4U * i + (size_t)1U] = uu____3;
+      int32_t uu____4 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient3);
+      re[(size_t)4U * i + (size_t)2U] = uu____4;
+      int32_t uu____5 = libcrux_kyber_compress_decompress_ciphertext_coefficient(10U, coefficient4);
+      re[(size_t)4U * i + (size_t)3U] = uu____5;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 K___int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t
@@ -1550,89 +1507,78 @@ libcrux_kyber_serialize_deserialize_then_decompress_11(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)0U, uint8_t);
-        int32_t
-        byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)1U, uint8_t);
-        int32_t
-        byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)2U, uint8_t);
-        int32_t
-        byte4 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)3U, uint8_t);
-        int32_t
-        byte5 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)4U, uint8_t);
-        int32_t
-        byte6 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)5U, uint8_t);
-        int32_t
-        byte7 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)6U, uint8_t);
-        int32_t
-        byte8 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)7U, uint8_t);
-        int32_t
-        byte9 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)8U, uint8_t);
-        int32_t
-        byte10 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)9U, uint8_t);
-        int32_t
-        byte11 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)10U, uint8_t);
-        K___int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t
-        uu____1 =
-          libcrux_kyber_serialize_decompress_coefficients_11(byte2,
-            byte1,
-            byte3,
-            byte5,
-            byte4,
-            byte6,
-            byte7,
-            byte9,
-            byte8,
-            byte10,
-            byte11);
-        int32_t coefficient1 = uu____1.fst;
-        int32_t coefficient2 = uu____1.snd;
-        int32_t coefficient3 = uu____1.thd;
-        int32_t coefficient4 = uu____1.f3;
-        int32_t coefficient5 = uu____1.f4;
-        int32_t coefficient6 = uu____1.f5;
-        int32_t coefficient7 = uu____1.f6;
-        int32_t coefficient8 = uu____1.f7;
-        int32_t
-        uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient1);
-        re[(size_t)8U * i] = uu____2;
-        int32_t
-        uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient2);
-        re[(size_t)8U * i + (size_t)1U] = uu____3;
-        int32_t
-        uu____4 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient3);
-        re[(size_t)8U * i + (size_t)2U] = uu____4;
-        int32_t
-        uu____5 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient4);
-        re[(size_t)8U * i + (size_t)3U] = uu____5;
-        int32_t
-        uu____6 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient5);
-        re[(size_t)8U * i + (size_t)4U] = uu____6;
-        int32_t
-        uu____7 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient6);
-        re[(size_t)8U * i + (size_t)5U] = uu____7;
-        int32_t
-        uu____8 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient7);
-        re[(size_t)8U * i + (size_t)6U] = uu____8;
-        int32_t
-        uu____9 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient8);
-        re[(size_t)8U * i + (size_t)7U] = uu____9;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)0U, uint8_t);
+      int32_t
+      byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)1U, uint8_t);
+      int32_t
+      byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)2U, uint8_t);
+      int32_t
+      byte4 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)3U, uint8_t);
+      int32_t
+      byte5 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)4U, uint8_t);
+      int32_t
+      byte6 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)5U, uint8_t);
+      int32_t
+      byte7 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)6U, uint8_t);
+      int32_t
+      byte8 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)7U, uint8_t);
+      int32_t
+      byte9 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)8U, uint8_t);
+      int32_t
+      byte10 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)9U, uint8_t);
+      int32_t
+      byte11 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)11U + (size_t)10U, uint8_t);
+      K___int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t
+      uu____1 =
+        libcrux_kyber_serialize_decompress_coefficients_11(byte2,
+          byte1,
+          byte3,
+          byte5,
+          byte4,
+          byte6,
+          byte7,
+          byte9,
+          byte8,
+          byte10,
+          byte11);
+      int32_t coefficient1 = uu____1.fst;
+      int32_t coefficient2 = uu____1.snd;
+      int32_t coefficient3 = uu____1.thd;
+      int32_t coefficient4 = uu____1.f3;
+      int32_t coefficient5 = uu____1.f4;
+      int32_t coefficient6 = uu____1.f5;
+      int32_t coefficient7 = uu____1.f6;
+      int32_t coefficient8 = uu____1.f7;
+      int32_t uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient1);
+      re[(size_t)8U * i] = uu____2;
+      int32_t uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient2);
+      re[(size_t)8U * i + (size_t)1U] = uu____3;
+      int32_t uu____4 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient3);
+      re[(size_t)8U * i + (size_t)2U] = uu____4;
+      int32_t uu____5 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient4);
+      re[(size_t)8U * i + (size_t)3U] = uu____5;
+      int32_t uu____6 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient5);
+      re[(size_t)8U * i + (size_t)4U] = uu____6;
+      int32_t uu____7 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient6);
+      re[(size_t)8U * i + (size_t)5U] = uu____7;
+      int32_t uu____8 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient7);
+      re[(size_t)8U * i + (size_t)6U] = uu____8;
+      int32_t uu____9 = libcrux_kyber_compress_decompress_ciphertext_coefficient(11U, coefficient8);
+      re[(size_t)8U * i + (size_t)7U] = uu____9;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -1678,35 +1624,30 @@ libcrux_kyber_serialize_deserialize_then_decompress_4(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        K___int32_t_int32_t
-        uu____1 =
-          libcrux_kyber_serialize_decompress_coefficients_4(&Eurydice_slice_index(serialized,
-              i,
-              uint8_t));
-        int32_t coefficient1 = uu____1.fst;
-        int32_t coefficient2 = uu____1.snd;
-        int32_t
-        uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(4U, coefficient1);
-        re[(size_t)2U * i] = uu____2;
-        int32_t
-        uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(4U, coefficient2);
-        re[(size_t)2U * i + (size_t)1U] = uu____3;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      K___int32_t_int32_t
+      uu____1 =
+        libcrux_kyber_serialize_decompress_coefficients_4(&Eurydice_slice_index(serialized,
+            i,
+            uint8_t));
+      int32_t coefficient1 = uu____1.fst;
+      int32_t coefficient2 = uu____1.snd;
+      int32_t uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(4U, coefficient1);
+      re[(size_t)2U * i] = uu____2;
+      int32_t uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(4U, coefficient2);
+      re[(size_t)2U * i + (size_t)1U] = uu____3;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 K___int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t
@@ -1764,71 +1705,55 @@ libcrux_kyber_serialize_deserialize_then_decompress_5(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)0U, uint8_t);
-        int32_t
-        byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)1U, uint8_t);
-        int32_t
-        byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)2U, uint8_t);
-        int32_t
-        byte4 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)3U, uint8_t);
-        int32_t
-        byte5 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)4U, uint8_t);
-        K___int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t
-        uu____1 =
-          libcrux_kyber_serialize_decompress_coefficients_5(byte1,
-            byte2,
-            byte3,
-            byte4,
-            byte5);
-        int32_t coefficient1 = uu____1.fst;
-        int32_t coefficient2 = uu____1.snd;
-        int32_t coefficient3 = uu____1.thd;
-        int32_t coefficient4 = uu____1.f3;
-        int32_t coefficient5 = uu____1.f4;
-        int32_t coefficient6 = uu____1.f5;
-        int32_t coefficient7 = uu____1.f6;
-        int32_t coefficient8 = uu____1.f7;
-        int32_t
-        uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient1);
-        re[(size_t)8U * i] = uu____2;
-        int32_t
-        uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient2);
-        re[(size_t)8U * i + (size_t)1U] = uu____3;
-        int32_t
-        uu____4 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient3);
-        re[(size_t)8U * i + (size_t)2U] = uu____4;
-        int32_t
-        uu____5 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient4);
-        re[(size_t)8U * i + (size_t)3U] = uu____5;
-        int32_t
-        uu____6 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient5);
-        re[(size_t)8U * i + (size_t)4U] = uu____6;
-        int32_t
-        uu____7 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient6);
-        re[(size_t)8U * i + (size_t)5U] = uu____7;
-        int32_t
-        uu____8 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient7);
-        re[(size_t)8U * i + (size_t)6U] = uu____8;
-        int32_t
-        uu____9 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient8);
-        re[(size_t)8U * i + (size_t)7U] = uu____9;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      byte1 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)0U, uint8_t);
+      int32_t
+      byte2 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)1U, uint8_t);
+      int32_t
+      byte3 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)2U, uint8_t);
+      int32_t
+      byte4 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)3U, uint8_t);
+      int32_t
+      byte5 = (int32_t)Eurydice_slice_index(serialized, i * (size_t)5U + (size_t)4U, uint8_t);
+      K___int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t_int32_t
+      uu____1 = libcrux_kyber_serialize_decompress_coefficients_5(byte1, byte2, byte3, byte4, byte5);
+      int32_t coefficient1 = uu____1.fst;
+      int32_t coefficient2 = uu____1.snd;
+      int32_t coefficient3 = uu____1.thd;
+      int32_t coefficient4 = uu____1.f3;
+      int32_t coefficient5 = uu____1.f4;
+      int32_t coefficient6 = uu____1.f5;
+      int32_t coefficient7 = uu____1.f6;
+      int32_t coefficient8 = uu____1.f7;
+      int32_t uu____2 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient1);
+      re[(size_t)8U * i] = uu____2;
+      int32_t uu____3 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient2);
+      re[(size_t)8U * i + (size_t)1U] = uu____3;
+      int32_t uu____4 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient3);
+      re[(size_t)8U * i + (size_t)2U] = uu____4;
+      int32_t uu____5 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient4);
+      re[(size_t)8U * i + (size_t)3U] = uu____5;
+      int32_t uu____6 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient5);
+      re[(size_t)8U * i + (size_t)4U] = uu____6;
+      int32_t uu____7 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient6);
+      re[(size_t)8U * i + (size_t)5U] = uu____7;
+      int32_t uu____8 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient7);
+      re[(size_t)8U * i + (size_t)6U] = uu____8;
+      int32_t uu____9 = libcrux_kyber_compress_decompress_ciphertext_coefficient(5U, coefficient8);
+      re[(size_t)8U * i + (size_t)7U] = uu____9;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -1849,56 +1774,51 @@ libcrux_kyber_serialize_compress_then_serialize_message(int32_t re[256U], uint8_
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)8U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)8U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            uint16_t
-            coefficient =
-              libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + j]);
-            uint8_t
-            coefficient_compressed =
-              libcrux_kyber_compress_compress_message_coefficient(coefficient);
-            size_t uu____2 = i;
-            serialized[uu____2] =
-              (uint32_t)serialized[uu____2]
-              | (uint32_t)coefficient_compressed << (uint32_t)j;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          uint16_t
+          coefficient = libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + j]);
+          uint8_t
+          coefficient_compressed = libcrux_kyber_compress_compress_message_coefficient(coefficient);
+          size_t uu____2 = i;
+          serialized[uu____2] =
+            (uint32_t)serialized[uu____2]
+            | (uint32_t)coefficient_compressed << (uint32_t)j;
         }
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    uint8_t uu____3[32U];
-    memcpy(uu____3, serialized, (size_t)32U * sizeof (uint8_t));
-    memcpy(ret, uu____3, (size_t)32U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____3[32U];
+  memcpy(uu____3, serialized, (size_t)32U * sizeof (uint8_t));
+  memcpy(ret, uu____3, (size_t)32U * sizeof (uint8_t));
 }
 
 const size_t libcrux_kyber_kyber1024_RANK_1024 = (size_t)4U;
@@ -2861,22 +2781,21 @@ libcrux_kyber_hash_functions_XOFx4___4size_t(uint8_t input[4U][34U], uint8_t ret
     {
       core_option_Option__size_t
       uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-      if (!(uu____1.tag == core_option_None))
+      if (uu____1.tag == core_option_None)
+        break;
+      else if (uu____1.tag == core_option_Some)
       {
-        if (uu____1.tag == core_option_Some)
-        {
-          size_t i = uu____1.f0;
-          uint8_t uu____2[840U];
-          libcrux_digest_shake128((size_t)840U,
-            Eurydice_array_to_slice((size_t)34U, input[i], uint8_t),
-            uu____2);
-          memcpy(out[i], uu____2, (size_t)840U * sizeof (uint8_t));
-        }
-        else
-        {
-          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-          KRML_HOST_EXIT(255U);
-        }
+        size_t i = uu____1.f0;
+        uint8_t uu____2[840U];
+        libcrux_digest_shake128((size_t)840U,
+          Eurydice_array_to_slice((size_t)34U, input[i], uint8_t),
+          uu____2);
+        memcpy(out[i], uu____2, (size_t)840U * sizeof (uint8_t));
+      }
+      else
+      {
+        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+        KRML_HOST_EXIT(255U);
       }
     }
   }
@@ -2951,87 +2870,84 @@ libcrux_kyber_matrix_sample_matrix_A___4size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i0 = uu____0.f0;
+      uint8_t uu____1[34U];
+      memcpy(uu____1, seed, (size_t)34U * sizeof (uint8_t));
+      uint8_t seeds[4U][34U];
+      for (size_t i = (size_t)0U; i < (size_t)4U; i++)
+        memcpy(seeds[i], uu____1, (size_t)34U * sizeof (uint8_t));
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)4U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i0 = uu____0.f0;
-        uint8_t uu____1[34U];
-        memcpy(uu____1, seed, (size_t)34U * sizeof (uint8_t));
-        uint8_t seeds[4U][34U];
-        for (size_t i = (size_t)0U; i < (size_t)4U; i++)
-          memcpy(seeds[i], uu____1, (size_t)34U * sizeof (uint8_t));
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)4U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____2 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____2.tag == core_option_None)
+          break;
+        else if (uu____2.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____2 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____2.tag == core_option_None)
-            break;
-          else if (uu____2.tag == core_option_Some)
-          {
-            size_t j = uu____2.f0;
-            seeds[j][32U] = (uint8_t)i0;
-            seeds[j][33U] = (uint8_t)j;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____2.f0;
+          seeds[j][32U] = (uint8_t)i0;
+          seeds[j][33U] = (uint8_t)j;
         }
-        uint8_t uu____3[4U][34U];
-        memcpy(uu____3, seeds, (size_t)4U * sizeof (uint8_t [34U]));
-        uint8_t xof_bytes[4U][840U];
-        libcrux_kyber_hash_functions_XOFx4___4size_t(uu____3, xof_bytes);
-        core_ops_range_Range__size_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)4U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____4.tag == core_option_None)
-            break;
-          else if (uu____4.tag == core_option_Some)
-          {
-            size_t j = uu____4.f0;
-            uint8_t uu____5[840U];
-            memcpy(uu____5, xof_bytes[j], (size_t)840U * sizeof (uint8_t));
-            int32_t sampled[256U];
-            libcrux_kyber_sampling_sample_from_uniform_distribution(uu____5, sampled);
-            if (transpose)
-              memcpy(A_transpose[j][i0], sampled, (size_t)256U * sizeof (int32_t));
-            else
-              memcpy(A_transpose[i0][j], sampled, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      uint8_t uu____3[4U][34U];
+      memcpy(uu____3, seeds, (size_t)4U * sizeof (uint8_t [34U]));
+      uint8_t xof_bytes[4U][840U];
+      libcrux_kyber_hash_functions_XOFx4___4size_t(uu____3, xof_bytes);
+      core_ops_range_Range__size_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)4U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____4.tag == core_option_None)
+          break;
+        else if (uu____4.tag == core_option_Some)
+        {
+          size_t j = uu____4.f0;
+          uint8_t uu____5[840U];
+          memcpy(uu____5, xof_bytes[j], (size_t)840U * sizeof (uint8_t));
+          int32_t sampled[256U];
+          libcrux_kyber_sampling_sample_from_uniform_distribution(uu____5, sampled);
+          if (transpose)
+            memcpy(A_transpose[j][i0], sampled, (size_t)256U * sizeof (int32_t));
+          else
+            memcpy(A_transpose[i0][j], sampled, (size_t)256U * sizeof (int32_t));
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____6[4U][4U][256U];
-    memcpy(uu____6, A_transpose, (size_t)4U * sizeof (int32_t [4U][256U]));
-    memcpy(ret, uu____6, (size_t)4U * sizeof (int32_t [4U][256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____6[4U][4U][256U];
+  memcpy(uu____6, A_transpose, (size_t)4U * sizeof (int32_t [4U][256U]));
+  memcpy(ret, uu____6, (size_t)4U * sizeof (int32_t [4U][256U]));
 }
 
 void libcrux_kyber_ind_cpa_into_padded_array___34size_t(Eurydice_slice slice, uint8_t ret[34U])
@@ -3131,41 +3047,39 @@ libcrux_kyber_ind_cpa_sample_vector_cbd_then_ntt___4size_t_2size_t_128size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        prf_input[32U] = domain_separator;
-        domain_separator = (uint32_t)domain_separator + 1U;
-        uint8_t prf_output[128U];
-        libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
-            prf_input,
-            uint8_t),
-          prf_output);
-        int32_t r[256U];
-        libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
-            prf_output,
-            uint8_t),
-          r);
-        int32_t uu____1[256U];
-        libcrux_kyber_ntt_ntt_binomially_sampled_ring_element(r, uu____1);
-        memcpy(re_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      prf_input[32U] = domain_separator;
+      domain_separator = (uint32_t)domain_separator + 1U;
+      uint8_t prf_output[128U];
+      libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
+          prf_input,
+          uint8_t),
+        prf_output);
+      int32_t r[256U];
+      libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
+          prf_output,
+          uint8_t),
+        r);
+      int32_t uu____1[256U];
+      libcrux_kyber_ntt_ntt_binomially_sampled_ring_element(r, uu____1);
+      memcpy(re_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[4U][256U];
-    memcpy(uu____2, re_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
-    K___libcrux_kyber_arithmetic_PolynomialRingElement_4size_t__uint8_t lit;
-    memcpy(lit.fst, uu____2, (size_t)4U * sizeof (int32_t [256U]));
-    lit.snd = domain_separator;
-    return lit;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[4U][256U];
+  memcpy(uu____2, re_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
+  K___libcrux_kyber_arithmetic_PolynomialRingElement_4size_t__uint8_t lit;
+  memcpy(lit.fst, uu____2, (size_t)4U * sizeof (int32_t [256U]));
+  lit.snd = domain_separator;
+  return lit;
 }
 
 void
@@ -3186,24 +3100,21 @@ libcrux_kyber_arithmetic_add_to_ring_element___4size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        size_t uu____1 = i;
-        lhs[uu____1] = lhs[uu____1] + rhs[0U][i];
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      size_t uu____1 = i;
+      lhs[uu____1] = lhs[uu____1] + rhs[0U][i];
     }
-    memcpy(ret, lhs, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, lhs, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -3232,85 +3143,80 @@ libcrux_kyber_matrix_compute_As_plus_e___4size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t lit;
+      lit.start = (size_t)0U;
+      lit.end =
+        core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)4U, matrix_A[i], int32_t [256U]),
+          int32_t [256U]);
+      core_ops_range_Range__size_t
+      iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t lit;
-        lit.start = (size_t)0U;
-        lit.end =
-          core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)4U,
-              matrix_A[i],
-              int32_t [256U]),
-            int32_t [256U]);
-        core_ops_range_Range__size_t
-        iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t product[256U];
-            libcrux_kyber_ntt_ntt_multiply(&matrix_A[i][j], &s_as_ntt[j], product);
-            int32_t uu____2[256U];
-            libcrux_kyber_arithmetic_add_to_ring_element___4size_t(result[i], &product, uu____2);
-            memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t product[256U];
+          libcrux_kyber_ntt_ntt_multiply(&matrix_A[i][j], &s_as_ntt[j], product);
+          int32_t uu____2[256U];
+          libcrux_kyber_arithmetic_add_to_ring_element___4size_t(result[i], &product, uu____2);
+          memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
         }
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){
-                .start = (size_t)0U,
-                .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
-              }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____3.tag == core_option_None)
-            break;
-          else if (uu____3.tag == core_option_Some)
-          {
-            size_t j = uu____3.f0;
-            int32_t
-            coefficient_normal_form = libcrux_kyber_arithmetic_to_standard_domain(result[i][j]);
-            int32_t
-            uu____4 =
-              libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_as_ntt[i][j]);
-            result[i][j] = uu____4;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){
+              .start = (size_t)0U,
+              .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
+            }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____3.tag == core_option_None)
+          break;
+        else if (uu____3.tag == core_option_Some)
+        {
+          size_t j = uu____3.f0;
+          int32_t
+          coefficient_normal_form = libcrux_kyber_arithmetic_to_standard_domain(result[i][j]);
+          int32_t
+          uu____4 =
+            libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_as_ntt[i][j]);
+          result[i][j] = uu____4;
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____5[4U][256U];
-    memcpy(uu____5, result, (size_t)4U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____5, (size_t)4U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____5[4U][256U];
+  memcpy(uu____5, result, (size_t)4U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____5, (size_t)4U * sizeof (int32_t [256U]));
 }
 
 void
@@ -3333,43 +3239,40 @@ libcrux_kyber_ind_cpa_serialize_secret_key___4size_t_1536size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t re[256U];
-        memcpy(re, key[i], (size_t)256U * sizeof (int32_t));
-        Eurydice_slice
-        uu____1 =
-          Eurydice_array_to_subslice((size_t)1536U,
-            out,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = (i + (size_t)1U) * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        uint8_t ret[384U];
-        libcrux_kyber_serialize_serialize_uncompressed_ring_element(re, ret);
-        core_slice___Slice_T___copy_from_slice(uu____1,
-          Eurydice_array_to_slice((size_t)384U, ret, uint8_t),
-          uint8_t);
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t re[256U];
+      memcpy(re, key[i], (size_t)256U * sizeof (int32_t));
+      Eurydice_slice
+      uu____1 =
+        Eurydice_array_to_subslice((size_t)1536U,
+          out,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = (i + (size_t)1U) * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      uint8_t ret[384U];
+      libcrux_kyber_serialize_serialize_uncompressed_ring_element(re, ret);
+      core_slice___Slice_T___copy_from_slice(uu____1,
+        Eurydice_array_to_slice((size_t)384U, ret, uint8_t),
+        uint8_t);
     }
-    uint8_t uu____2[1536U];
-    memcpy(uu____2, out, (size_t)1536U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)1536U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[1536U];
+  memcpy(uu____2, out, (size_t)1536U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)1536U * sizeof (uint8_t));
 }
 
 void
@@ -3696,40 +3599,37 @@ libcrux_kyber_ind_cpa_deserialize_public_key___4size_t_1536size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        Eurydice_slice
-        t_as_ntt_bytes =
-          Eurydice_slice_subslice(public_key,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i
-                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        int32_t uu____1[256U];
-        libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(t_as_ntt_bytes, uu____1);
-        memcpy(t_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      Eurydice_slice
+      t_as_ntt_bytes =
+        Eurydice_slice_subslice(public_key,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = i
+              * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+              + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      int32_t uu____1[256U];
+      libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(t_as_ntt_bytes, uu____1);
+      memcpy(t_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[4U][256U];
-    memcpy(uu____2, t_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[4U][256U];
+  memcpy(uu____2, t_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
 }
 
 void
@@ -3754,37 +3654,34 @@ libcrux_kyber_ind_cpa_sample_ring_element_cbd___4size_t_128size_t_2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        prf_input[32U] = domain_separator[0U];
-        domain_separator[0U] = (uint32_t)domain_separator[0U] + 1U;
-        uint8_t prf_output[128U];
-        libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
-            prf_input,
-            uint8_t),
-          prf_output);
-        int32_t uu____1[256U];
-        libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
-            prf_output,
-            uint8_t),
-          uu____1);
-        memcpy(error_1[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      prf_input[32U] = domain_separator[0U];
+      domain_separator[0U] = (uint32_t)domain_separator[0U] + 1U;
+      uint8_t prf_output[128U];
+      libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
+          prf_input,
+          uint8_t),
+        prf_output);
+      int32_t uu____1[256U];
+      libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
+          prf_output,
+          uint8_t),
+        uu____1);
+      memcpy(error_1[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[4U][256U];
-    memcpy(uu____2, error_1, (size_t)4U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[4U][256U];
+  memcpy(uu____2, error_1, (size_t)4U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
 }
 
 void libcrux_kyber_ntt_invert_ntt_montgomery___4size_t(int32_t re[256U], int32_t ret[256U])
@@ -3807,24 +3704,21 @@ void libcrux_kyber_ntt_invert_ntt_montgomery___4size_t(int32_t re[256U], int32_t
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
-        re[i] = uu____1;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
+      re[i] = uu____1;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -3853,89 +3747,83 @@ libcrux_kyber_matrix_compute_vector_u___4size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t lit;
+      lit.start = (size_t)0U;
+      lit.end =
+        core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)4U, a_as_ntt[i], int32_t [256U]),
+          int32_t [256U]);
+      core_ops_range_Range__size_t
+      iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t lit;
-        lit.start = (size_t)0U;
-        lit.end =
-          core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)4U,
-              a_as_ntt[i],
-              int32_t [256U]),
-            int32_t [256U]);
-        core_ops_range_Range__size_t
-        iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t product[256U];
-            libcrux_kyber_ntt_ntt_multiply(&a_as_ntt[i][j], &r_as_ntt[j], product);
-            int32_t uu____2[256U];
-            libcrux_kyber_arithmetic_add_to_ring_element___4size_t(result[i], &product, uu____2);
-            memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t product[256U];
+          libcrux_kyber_ntt_ntt_multiply(&a_as_ntt[i][j], &r_as_ntt[j], product);
+          int32_t uu____2[256U];
+          libcrux_kyber_arithmetic_add_to_ring_element___4size_t(result[i], &product, uu____2);
+          memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
         }
-        int32_t uu____3[256U];
-        libcrux_kyber_ntt_invert_ntt_montgomery___4size_t(result[i], uu____3);
-        memcpy(result[i], uu____3, (size_t)256U * sizeof (int32_t));
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){
-                .start = (size_t)0U,
-                .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
-              }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____4.tag == core_option_None)
-            break;
-          else if (uu____4.tag == core_option_Some)
-          {
-            size_t j = uu____4.f0;
-            int32_t
-            coefficient_normal_form =
-              libcrux_kyber_arithmetic_montgomery_reduce(result[i][j] * (int32_t)1441);
-            int32_t
-            uu____5 =
-              libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_1[i][j]);
-            result[i][j] = uu____5;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      int32_t uu____3[256U];
+      libcrux_kyber_ntt_invert_ntt_montgomery___4size_t(result[i], uu____3);
+      memcpy(result[i], uu____3, (size_t)256U * sizeof (int32_t));
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){
+              .start = (size_t)0U,
+              .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
+            }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____4.tag == core_option_None)
+          break;
+        else if (uu____4.tag == core_option_Some)
+        {
+          size_t j = uu____4.f0;
+          int32_t
+          coefficient_normal_form =
+            libcrux_kyber_arithmetic_montgomery_reduce(result[i][j] * (int32_t)1441);
+          int32_t
+          uu____5 = libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_1[i][j]);
+          result[i][j] = uu____5;
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____6[4U][256U];
-    memcpy(uu____6, result, (size_t)4U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____6, (size_t)4U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____6[4U][256U];
+  memcpy(uu____6, result, (size_t)4U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____6, (size_t)4U * sizeof (int32_t [256U]));
 }
 
 void
@@ -3990,31 +3878,28 @@ libcrux_kyber_matrix_compute_ring_element_v___4size_t(
   {
     core_option_Option__size_t
     uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____1.tag == core_option_None))
+    if (uu____1.tag == core_option_None)
+      break;
+    else if (uu____1.tag == core_option_Some)
     {
-      if (uu____1.tag == core_option_Some)
-      {
-        size_t i = uu____1.f0;
-        int32_t
-        coefficient_normal_form =
-          libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
-        int32_t
-        uu____2 =
-          libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form
-            + error_2[0U][i]
-            + message[0U][i]);
-        result[i] = uu____2;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____1.f0;
+      int32_t
+      coefficient_normal_form =
+        libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
+      int32_t
+      uu____2 =
+        libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form
+          + error_2[0U][i]
+          + message[0U][i]);
+      result[i] = uu____2;
     }
-    memcpy(ret, result, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, result, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -4038,56 +3923,53 @@ libcrux_kyber_serialize_compress_then_serialize_10___352size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        coefficient1 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)0U]));
-        int32_t
-        coefficient2 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)1U]));
-        int32_t
-        coefficient3 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)2U]));
-        int32_t
-        coefficient4 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)3U]));
-        K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
-        uu____1 =
-          libcrux_kyber_serialize_compress_coefficients_10(coefficient1,
-            coefficient2,
-            coefficient3,
-            coefficient4);
-        uint8_t coef1 = uu____1.fst;
-        uint8_t coef2 = uu____1.snd;
-        uint8_t coef3 = uu____1.thd;
-        uint8_t coef4 = uu____1.f3;
-        uint8_t coef5 = uu____1.f4;
-        serialized[(size_t)5U * i] = coef1;
-        serialized[(size_t)5U * i + (size_t)1U] = coef2;
-        serialized[(size_t)5U * i + (size_t)2U] = coef3;
-        serialized[(size_t)5U * i + (size_t)3U] = coef4;
-        serialized[(size_t)5U * i + (size_t)4U] = coef5;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      coefficient1 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)0U]));
+      int32_t
+      coefficient2 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)1U]));
+      int32_t
+      coefficient3 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)2U]));
+      int32_t
+      coefficient4 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)3U]));
+      K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
+      uu____1 =
+        libcrux_kyber_serialize_compress_coefficients_10(coefficient1,
+          coefficient2,
+          coefficient3,
+          coefficient4);
+      uint8_t coef1 = uu____1.fst;
+      uint8_t coef2 = uu____1.snd;
+      uint8_t coef3 = uu____1.thd;
+      uint8_t coef4 = uu____1.f3;
+      uint8_t coef5 = uu____1.f4;
+      serialized[(size_t)5U * i] = coef1;
+      serialized[(size_t)5U * i + (size_t)1U] = coef2;
+      serialized[(size_t)5U * i + (size_t)2U] = coef3;
+      serialized[(size_t)5U * i + (size_t)3U] = coef4;
+      serialized[(size_t)5U * i + (size_t)4U] = coef5;
     }
-    uint8_t uu____2[352U];
-    memcpy(uu____2, serialized, (size_t)352U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)352U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[352U];
+  memcpy(uu____2, serialized, (size_t)352U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)352U * sizeof (uint8_t));
 }
 
 void
@@ -4111,88 +3993,85 @@ libcrux_kyber_serialize_compress_then_serialize_11___352size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        coefficient1 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
-        int32_t
-        coefficient2 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
-        int32_t
-        coefficient3 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
-        int32_t
-        coefficient4 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
-        int32_t
-        coefficient5 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
-        int32_t
-        coefficient6 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
-        int32_t
-        coefficient7 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
-        int32_t
-        coefficient8 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
-        K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
-        uu____1 =
-          libcrux_kyber_serialize_compress_coefficients_11(coefficient1,
-            coefficient2,
-            coefficient3,
-            coefficient4,
-            coefficient5,
-            coefficient6,
-            coefficient7,
-            coefficient8);
-        uint8_t coef1 = uu____1.fst;
-        uint8_t coef2 = uu____1.snd;
-        uint8_t coef3 = uu____1.thd;
-        uint8_t coef4 = uu____1.f3;
-        uint8_t coef5 = uu____1.f4;
-        uint8_t coef6 = uu____1.f5;
-        uint8_t coef7 = uu____1.f6;
-        uint8_t coef8 = uu____1.f7;
-        uint8_t coef9 = uu____1.f8;
-        uint8_t coef10 = uu____1.f9;
-        uint8_t coef11 = uu____1.f10;
-        serialized[(size_t)11U * i] = coef1;
-        serialized[(size_t)11U * i + (size_t)1U] = coef2;
-        serialized[(size_t)11U * i + (size_t)2U] = coef3;
-        serialized[(size_t)11U * i + (size_t)3U] = coef4;
-        serialized[(size_t)11U * i + (size_t)4U] = coef5;
-        serialized[(size_t)11U * i + (size_t)5U] = coef6;
-        serialized[(size_t)11U * i + (size_t)6U] = coef7;
-        serialized[(size_t)11U * i + (size_t)7U] = coef8;
-        serialized[(size_t)11U * i + (size_t)8U] = coef9;
-        serialized[(size_t)11U * i + (size_t)9U] = coef10;
-        serialized[(size_t)11U * i + (size_t)10U] = coef11;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      coefficient1 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
+      int32_t
+      coefficient2 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
+      int32_t
+      coefficient3 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
+      int32_t
+      coefficient4 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
+      int32_t
+      coefficient5 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
+      int32_t
+      coefficient6 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
+      int32_t
+      coefficient7 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
+      int32_t
+      coefficient8 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
+      K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
+      uu____1 =
+        libcrux_kyber_serialize_compress_coefficients_11(coefficient1,
+          coefficient2,
+          coefficient3,
+          coefficient4,
+          coefficient5,
+          coefficient6,
+          coefficient7,
+          coefficient8);
+      uint8_t coef1 = uu____1.fst;
+      uint8_t coef2 = uu____1.snd;
+      uint8_t coef3 = uu____1.thd;
+      uint8_t coef4 = uu____1.f3;
+      uint8_t coef5 = uu____1.f4;
+      uint8_t coef6 = uu____1.f5;
+      uint8_t coef7 = uu____1.f6;
+      uint8_t coef8 = uu____1.f7;
+      uint8_t coef9 = uu____1.f8;
+      uint8_t coef10 = uu____1.f9;
+      uint8_t coef11 = uu____1.f10;
+      serialized[(size_t)11U * i] = coef1;
+      serialized[(size_t)11U * i + (size_t)1U] = coef2;
+      serialized[(size_t)11U * i + (size_t)2U] = coef3;
+      serialized[(size_t)11U * i + (size_t)3U] = coef4;
+      serialized[(size_t)11U * i + (size_t)4U] = coef5;
+      serialized[(size_t)11U * i + (size_t)5U] = coef6;
+      serialized[(size_t)11U * i + (size_t)6U] = coef7;
+      serialized[(size_t)11U * i + (size_t)7U] = coef8;
+      serialized[(size_t)11U * i + (size_t)8U] = coef9;
+      serialized[(size_t)11U * i + (size_t)9U] = coef10;
+      serialized[(size_t)11U * i + (size_t)10U] = coef11;
     }
-    uint8_t uu____2[352U];
-    memcpy(uu____2, serialized, (size_t)352U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)352U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[352U];
+  memcpy(uu____2, serialized, (size_t)352U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)352U * sizeof (uint8_t));
 }
 
 void
@@ -4226,44 +4105,40 @@ libcrux_kyber_ind_cpa_compress_then_serialize_u___4size_t_1408size_t_11size_t_35
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t re[256U];
-        memcpy(re, input[i], (size_t)256U * sizeof (int32_t));
-        Eurydice_slice
-        uu____1 =
-          Eurydice_array_to_subslice((size_t)1408U,
-            out,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * ((size_t)1408U / (size_t)4U),
-                .end = (i + (size_t)1U) * ((size_t)1408U / (size_t)4U)
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        uint8_t ret[352U];
-        libcrux_kyber_serialize_compress_then_serialize_ring_element_u___11size_t_352size_t(re,
-          ret);
-        core_slice___Slice_T___copy_from_slice(uu____1,
-          Eurydice_array_to_slice((size_t)352U, ret, uint8_t),
-          uint8_t);
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t re[256U];
+      memcpy(re, input[i], (size_t)256U * sizeof (int32_t));
+      Eurydice_slice
+      uu____1 =
+        Eurydice_array_to_subslice((size_t)1408U,
+          out,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * ((size_t)1408U / (size_t)4U),
+              .end = (i + (size_t)1U) * ((size_t)1408U / (size_t)4U)
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      uint8_t ret[352U];
+      libcrux_kyber_serialize_compress_then_serialize_ring_element_u___11size_t_352size_t(re, ret);
+      core_slice___Slice_T___copy_from_slice(uu____1,
+        Eurydice_array_to_slice((size_t)352U, ret, uint8_t),
+        uint8_t);
     }
-    uint8_t uu____2[1408U];
-    memcpy(uu____2, out, (size_t)1408U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)1408U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[1408U];
+  memcpy(uu____2, out, (size_t)1408U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)1408U * sizeof (uint8_t));
 }
 
 void
@@ -4287,33 +4162,30 @@ libcrux_kyber_serialize_compress_then_serialize_4___160size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t
-        coefficient1 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)0U]));
-        uint8_t
-        coefficient2 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)1U]));
-        serialized[i] = (uint32_t)coefficient2 << 4U | (uint32_t)coefficient1;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t
+      coefficient1 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)0U]));
+      uint8_t
+      coefficient2 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)1U]));
+      serialized[i] = (uint32_t)coefficient2 << 4U | (uint32_t)coefficient1;
     }
-    uint8_t uu____1[160U];
-    memcpy(uu____1, serialized, (size_t)160U * sizeof (uint8_t));
-    memcpy(ret, uu____1, (size_t)160U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____1[160U];
+  memcpy(uu____1, serialized, (size_t)160U * sizeof (uint8_t));
+  memcpy(ret, uu____1, (size_t)160U * sizeof (uint8_t));
 }
 
 void
@@ -4337,76 +4209,73 @@ libcrux_kyber_serialize_compress_then_serialize_5___160size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t
-        coefficient1 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
-        uint8_t
-        coefficient2 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
-        uint8_t
-        coefficient3 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
-        uint8_t
-        coefficient4 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
-        uint8_t
-        coefficient5 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
-        uint8_t
-        coefficient6 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
-        uint8_t
-        coefficient7 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
-        uint8_t
-        coefficient8 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
-        K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
-        uu____1 =
-          libcrux_kyber_serialize_compress_coefficients_5(coefficient2,
-            coefficient1,
-            coefficient4,
-            coefficient3,
-            coefficient5,
-            coefficient7,
-            coefficient6,
-            coefficient8);
-        uint8_t coef1 = uu____1.fst;
-        uint8_t coef2 = uu____1.snd;
-        uint8_t coef3 = uu____1.thd;
-        uint8_t coef4 = uu____1.f3;
-        uint8_t coef5 = uu____1.f4;
-        serialized[(size_t)5U * i] = coef1;
-        serialized[(size_t)5U * i + (size_t)1U] = coef2;
-        serialized[(size_t)5U * i + (size_t)2U] = coef3;
-        serialized[(size_t)5U * i + (size_t)3U] = coef4;
-        serialized[(size_t)5U * i + (size_t)4U] = coef5;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t
+      coefficient1 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
+      uint8_t
+      coefficient2 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
+      uint8_t
+      coefficient3 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
+      uint8_t
+      coefficient4 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
+      uint8_t
+      coefficient5 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
+      uint8_t
+      coefficient6 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
+      uint8_t
+      coefficient7 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
+      uint8_t
+      coefficient8 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
+      K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
+      uu____1 =
+        libcrux_kyber_serialize_compress_coefficients_5(coefficient2,
+          coefficient1,
+          coefficient4,
+          coefficient3,
+          coefficient5,
+          coefficient7,
+          coefficient6,
+          coefficient8);
+      uint8_t coef1 = uu____1.fst;
+      uint8_t coef2 = uu____1.snd;
+      uint8_t coef3 = uu____1.thd;
+      uint8_t coef4 = uu____1.f3;
+      uint8_t coef5 = uu____1.f4;
+      serialized[(size_t)5U * i] = coef1;
+      serialized[(size_t)5U * i + (size_t)1U] = coef2;
+      serialized[(size_t)5U * i + (size_t)2U] = coef3;
+      serialized[(size_t)5U * i + (size_t)3U] = coef4;
+      serialized[(size_t)5U * i + (size_t)4U] = coef5;
     }
-    uint8_t uu____2[160U];
-    memcpy(uu____2, serialized, (size_t)160U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)160U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[160U];
+  memcpy(uu____2, serialized, (size_t)160U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)160U * sizeof (uint8_t));
 }
 
 void
@@ -4666,24 +4535,21 @@ void libcrux_kyber_ntt_ntt_vector_u___11size_t(int32_t re[256U], int32_t ret[256
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
-        re[i] = uu____1;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
+      re[i] = uu____1;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -4709,41 +4575,38 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___4size_t_1568size_t_1408siz
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        Eurydice_slice
-        u_bytes =
-          Eurydice_array_to_subslice((size_t)1568U,
-            ciphertext,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * chunk_size,
-                .end = i * chunk_size + chunk_size
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        int32_t u[256U];
-        libcrux_kyber_serialize_deserialize_then_decompress_ring_element_u___11size_t(u_bytes, u);
-        int32_t uu____1[256U];
-        libcrux_kyber_ntt_ntt_vector_u___11size_t(u, uu____1);
-        memcpy(u_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      Eurydice_slice
+      u_bytes =
+        Eurydice_array_to_subslice((size_t)1568U,
+          ciphertext,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * chunk_size,
+              .end = i * chunk_size + chunk_size
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      int32_t u[256U];
+      libcrux_kyber_serialize_deserialize_then_decompress_ring_element_u___11size_t(u_bytes, u);
+      int32_t uu____1[256U];
+      libcrux_kyber_ntt_ntt_vector_u___11size_t(u, uu____1);
+      memcpy(u_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[4U][256U];
-    memcpy(uu____2, u_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[4U][256U];
+  memcpy(uu____2, u_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
 }
 
 void
@@ -4783,38 +4646,35 @@ libcrux_kyber_ind_cpa_deserialize_secret_key___4size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1[256U];
-        libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(Eurydice_slice_subslice(secret_key,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i
-                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t),
-          uu____1);
-        memcpy(secret_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1[256U];
+      libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(Eurydice_slice_subslice(secret_key,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = i
+              * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+              + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t),
+        uu____1);
+      memcpy(secret_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[4U][256U];
-    memcpy(uu____2, secret_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[4U][256U];
+  memcpy(uu____2, secret_as_ntt, (size_t)4U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)4U * sizeof (int32_t [256U]));
 }
 
 void
@@ -4868,28 +4728,24 @@ libcrux_kyber_matrix_compute_message___4size_t(
   {
     core_option_Option__size_t
     uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____1.tag == core_option_None))
+    if (uu____1.tag == core_option_None)
+      break;
+    else if (uu____1.tag == core_option_Some)
     {
-      if (uu____1.tag == core_option_Some)
-      {
-        size_t i = uu____1.f0;
-        int32_t
-        coefficient_normal_form =
-          libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
-        int32_t
-        uu____2 = libcrux_kyber_arithmetic_barrett_reduce(v[0U][i] - coefficient_normal_form);
-        result[i] = uu____2;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____1.f0;
+      int32_t
+      coefficient_normal_form =
+        libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
+      int32_t uu____2 = libcrux_kyber_arithmetic_barrett_reduce(v[0U][i] - coefficient_normal_form);
+      result[i] = uu____2;
     }
-    memcpy(ret, result, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, result, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -4980,23 +4836,21 @@ libcrux_kyber_constant_time_ops_compare_ciphertexts_in_constant_time___1568size_
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t uu____1 = Eurydice_slice_index(lhs, i, uint8_t);
-        r = (uint32_t)r | ((uint32_t)uu____1 ^ (uint32_t)Eurydice_slice_index(rhs, i, uint8_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t uu____1 = Eurydice_slice_index(lhs, i, uint8_t);
+      r = (uint32_t)r | ((uint32_t)uu____1 ^ (uint32_t)Eurydice_slice_index(rhs, i, uint8_t));
     }
-    return libcrux_kyber_constant_time_ops_is_non_zero(r);
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  return libcrux_kyber_constant_time_ops_is_non_zero(r);
 }
 
 void
@@ -6055,22 +5909,21 @@ libcrux_kyber_hash_functions_XOFx4___2size_t(uint8_t input[2U][34U], uint8_t ret
     {
       core_option_Option__size_t
       uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-      if (!(uu____1.tag == core_option_None))
+      if (uu____1.tag == core_option_None)
+        break;
+      else if (uu____1.tag == core_option_Some)
       {
-        if (uu____1.tag == core_option_Some)
-        {
-          size_t i = uu____1.f0;
-          uint8_t uu____2[840U];
-          libcrux_digest_shake128((size_t)840U,
-            Eurydice_array_to_slice((size_t)34U, input[i], uint8_t),
-            uu____2);
-          memcpy(out[i], uu____2, (size_t)840U * sizeof (uint8_t));
-        }
-        else
-        {
-          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-          KRML_HOST_EXIT(255U);
-        }
+        size_t i = uu____1.f0;
+        uint8_t uu____2[840U];
+        libcrux_digest_shake128((size_t)840U,
+          Eurydice_array_to_slice((size_t)34U, input[i], uint8_t),
+          uu____2);
+        memcpy(out[i], uu____2, (size_t)840U * sizeof (uint8_t));
+      }
+      else
+      {
+        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+        KRML_HOST_EXIT(255U);
       }
     }
   }
@@ -6129,87 +5982,84 @@ libcrux_kyber_matrix_sample_matrix_A___2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i0 = uu____0.f0;
+      uint8_t uu____1[34U];
+      memcpy(uu____1, seed, (size_t)34U * sizeof (uint8_t));
+      uint8_t seeds[2U][34U];
+      for (size_t i = (size_t)0U; i < (size_t)2U; i++)
+        memcpy(seeds[i], uu____1, (size_t)34U * sizeof (uint8_t));
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)2U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i0 = uu____0.f0;
-        uint8_t uu____1[34U];
-        memcpy(uu____1, seed, (size_t)34U * sizeof (uint8_t));
-        uint8_t seeds[2U][34U];
-        for (size_t i = (size_t)0U; i < (size_t)2U; i++)
-          memcpy(seeds[i], uu____1, (size_t)34U * sizeof (uint8_t));
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)2U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____2 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____2.tag == core_option_None)
+          break;
+        else if (uu____2.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____2 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____2.tag == core_option_None)
-            break;
-          else if (uu____2.tag == core_option_Some)
-          {
-            size_t j = uu____2.f0;
-            seeds[j][32U] = (uint8_t)i0;
-            seeds[j][33U] = (uint8_t)j;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____2.f0;
+          seeds[j][32U] = (uint8_t)i0;
+          seeds[j][33U] = (uint8_t)j;
         }
-        uint8_t uu____3[2U][34U];
-        memcpy(uu____3, seeds, (size_t)2U * sizeof (uint8_t [34U]));
-        uint8_t xof_bytes[2U][840U];
-        libcrux_kyber_hash_functions_XOFx4___2size_t(uu____3, xof_bytes);
-        core_ops_range_Range__size_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)2U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____4.tag == core_option_None)
-            break;
-          else if (uu____4.tag == core_option_Some)
-          {
-            size_t j = uu____4.f0;
-            uint8_t uu____5[840U];
-            memcpy(uu____5, xof_bytes[j], (size_t)840U * sizeof (uint8_t));
-            int32_t sampled[256U];
-            libcrux_kyber_sampling_sample_from_uniform_distribution(uu____5, sampled);
-            if (transpose)
-              memcpy(A_transpose[j][i0], sampled, (size_t)256U * sizeof (int32_t));
-            else
-              memcpy(A_transpose[i0][j], sampled, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      uint8_t uu____3[2U][34U];
+      memcpy(uu____3, seeds, (size_t)2U * sizeof (uint8_t [34U]));
+      uint8_t xof_bytes[2U][840U];
+      libcrux_kyber_hash_functions_XOFx4___2size_t(uu____3, xof_bytes);
+      core_ops_range_Range__size_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)2U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____4.tag == core_option_None)
+          break;
+        else if (uu____4.tag == core_option_Some)
+        {
+          size_t j = uu____4.f0;
+          uint8_t uu____5[840U];
+          memcpy(uu____5, xof_bytes[j], (size_t)840U * sizeof (uint8_t));
+          int32_t sampled[256U];
+          libcrux_kyber_sampling_sample_from_uniform_distribution(uu____5, sampled);
+          if (transpose)
+            memcpy(A_transpose[j][i0], sampled, (size_t)256U * sizeof (int32_t));
+          else
+            memcpy(A_transpose[i0][j], sampled, (size_t)256U * sizeof (int32_t));
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____6[2U][2U][256U];
-    memcpy(uu____6, A_transpose, (size_t)2U * sizeof (int32_t [2U][256U]));
-    memcpy(ret, uu____6, (size_t)2U * sizeof (int32_t [2U][256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____6[2U][2U][256U];
+  memcpy(uu____6, A_transpose, (size_t)2U * sizeof (int32_t [2U][256U]));
+  memcpy(ret, uu____6, (size_t)2U * sizeof (int32_t [2U][256U]));
 }
 
 void libcrux_kyber_hash_functions_PRF___192size_t(Eurydice_slice input, uint8_t ret[192U])
@@ -6251,41 +6101,39 @@ libcrux_kyber_ind_cpa_sample_vector_cbd_then_ntt___2size_t_3size_t_192size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        prf_input[32U] = domain_separator;
-        domain_separator = (uint32_t)domain_separator + 1U;
-        uint8_t prf_output[192U];
-        libcrux_kyber_hash_functions_PRF___192size_t(Eurydice_array_to_slice((size_t)33U,
-            prf_input,
-            uint8_t),
-          prf_output);
-        int32_t r[256U];
-        libcrux_kyber_sampling_sample_from_binomial_distribution___3size_t(Eurydice_array_to_slice((size_t)192U,
-            prf_output,
-            uint8_t),
-          r);
-        int32_t uu____1[256U];
-        libcrux_kyber_ntt_ntt_binomially_sampled_ring_element(r, uu____1);
-        memcpy(re_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      prf_input[32U] = domain_separator;
+      domain_separator = (uint32_t)domain_separator + 1U;
+      uint8_t prf_output[192U];
+      libcrux_kyber_hash_functions_PRF___192size_t(Eurydice_array_to_slice((size_t)33U,
+          prf_input,
+          uint8_t),
+        prf_output);
+      int32_t r[256U];
+      libcrux_kyber_sampling_sample_from_binomial_distribution___3size_t(Eurydice_array_to_slice((size_t)192U,
+          prf_output,
+          uint8_t),
+        r);
+      int32_t uu____1[256U];
+      libcrux_kyber_ntt_ntt_binomially_sampled_ring_element(r, uu____1);
+      memcpy(re_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[2U][256U];
-    memcpy(uu____2, re_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
-    K___libcrux_kyber_arithmetic_PolynomialRingElement_2size_t__uint8_t lit;
-    memcpy(lit.fst, uu____2, (size_t)2U * sizeof (int32_t [256U]));
-    lit.snd = domain_separator;
-    return lit;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[2U][256U];
+  memcpy(uu____2, re_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
+  K___libcrux_kyber_arithmetic_PolynomialRingElement_2size_t__uint8_t lit;
+  memcpy(lit.fst, uu____2, (size_t)2U * sizeof (int32_t [256U]));
+  lit.snd = domain_separator;
+  return lit;
 }
 
 void
@@ -6306,24 +6154,21 @@ libcrux_kyber_arithmetic_add_to_ring_element___2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        size_t uu____1 = i;
-        lhs[uu____1] = lhs[uu____1] + rhs[0U][i];
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      size_t uu____1 = i;
+      lhs[uu____1] = lhs[uu____1] + rhs[0U][i];
     }
-    memcpy(ret, lhs, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, lhs, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -6352,85 +6197,80 @@ libcrux_kyber_matrix_compute_As_plus_e___2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t lit;
+      lit.start = (size_t)0U;
+      lit.end =
+        core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)2U, matrix_A[i], int32_t [256U]),
+          int32_t [256U]);
+      core_ops_range_Range__size_t
+      iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t lit;
-        lit.start = (size_t)0U;
-        lit.end =
-          core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)2U,
-              matrix_A[i],
-              int32_t [256U]),
-            int32_t [256U]);
-        core_ops_range_Range__size_t
-        iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t product[256U];
-            libcrux_kyber_ntt_ntt_multiply(&matrix_A[i][j], &s_as_ntt[j], product);
-            int32_t uu____2[256U];
-            libcrux_kyber_arithmetic_add_to_ring_element___2size_t(result[i], &product, uu____2);
-            memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t product[256U];
+          libcrux_kyber_ntt_ntt_multiply(&matrix_A[i][j], &s_as_ntt[j], product);
+          int32_t uu____2[256U];
+          libcrux_kyber_arithmetic_add_to_ring_element___2size_t(result[i], &product, uu____2);
+          memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
         }
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){
-                .start = (size_t)0U,
-                .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
-              }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____3.tag == core_option_None)
-            break;
-          else if (uu____3.tag == core_option_Some)
-          {
-            size_t j = uu____3.f0;
-            int32_t
-            coefficient_normal_form = libcrux_kyber_arithmetic_to_standard_domain(result[i][j]);
-            int32_t
-            uu____4 =
-              libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_as_ntt[i][j]);
-            result[i][j] = uu____4;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){
+              .start = (size_t)0U,
+              .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
+            }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____3.tag == core_option_None)
+          break;
+        else if (uu____3.tag == core_option_Some)
+        {
+          size_t j = uu____3.f0;
+          int32_t
+          coefficient_normal_form = libcrux_kyber_arithmetic_to_standard_domain(result[i][j]);
+          int32_t
+          uu____4 =
+            libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_as_ntt[i][j]);
+          result[i][j] = uu____4;
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____5[2U][256U];
-    memcpy(uu____5, result, (size_t)2U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____5, (size_t)2U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____5[2U][256U];
+  memcpy(uu____5, result, (size_t)2U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____5, (size_t)2U * sizeof (int32_t [256U]));
 }
 
 void
@@ -6453,43 +6293,40 @@ libcrux_kyber_ind_cpa_serialize_secret_key___2size_t_768size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t re[256U];
-        memcpy(re, key[i], (size_t)256U * sizeof (int32_t));
-        Eurydice_slice
-        uu____1 =
-          Eurydice_array_to_subslice((size_t)768U,
-            out,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = (i + (size_t)1U) * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        uint8_t ret[384U];
-        libcrux_kyber_serialize_serialize_uncompressed_ring_element(re, ret);
-        core_slice___Slice_T___copy_from_slice(uu____1,
-          Eurydice_array_to_slice((size_t)384U, ret, uint8_t),
-          uint8_t);
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t re[256U];
+      memcpy(re, key[i], (size_t)256U * sizeof (int32_t));
+      Eurydice_slice
+      uu____1 =
+        Eurydice_array_to_subslice((size_t)768U,
+          out,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = (i + (size_t)1U) * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      uint8_t ret[384U];
+      libcrux_kyber_serialize_serialize_uncompressed_ring_element(re, ret);
+      core_slice___Slice_T___copy_from_slice(uu____1,
+        Eurydice_array_to_slice((size_t)384U, ret, uint8_t),
+        uint8_t);
     }
-    uint8_t uu____2[768U];
-    memcpy(uu____2, out, (size_t)768U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)768U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[768U];
+  memcpy(uu____2, out, (size_t)768U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)768U * sizeof (uint8_t));
 }
 
 void
@@ -6786,40 +6623,37 @@ libcrux_kyber_ind_cpa_deserialize_public_key___2size_t_768size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        Eurydice_slice
-        t_as_ntt_bytes =
-          Eurydice_slice_subslice(public_key,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i
-                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        int32_t uu____1[256U];
-        libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(t_as_ntt_bytes, uu____1);
-        memcpy(t_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      Eurydice_slice
+      t_as_ntt_bytes =
+        Eurydice_slice_subslice(public_key,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = i
+              * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+              + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      int32_t uu____1[256U];
+      libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(t_as_ntt_bytes, uu____1);
+      memcpy(t_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[2U][256U];
-    memcpy(uu____2, t_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[2U][256U];
+  memcpy(uu____2, t_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
 }
 
 void
@@ -6844,37 +6678,34 @@ libcrux_kyber_ind_cpa_sample_ring_element_cbd___2size_t_128size_t_2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        prf_input[32U] = domain_separator[0U];
-        domain_separator[0U] = (uint32_t)domain_separator[0U] + 1U;
-        uint8_t prf_output[128U];
-        libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
-            prf_input,
-            uint8_t),
-          prf_output);
-        int32_t uu____1[256U];
-        libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
-            prf_output,
-            uint8_t),
-          uu____1);
-        memcpy(error_1[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      prf_input[32U] = domain_separator[0U];
+      domain_separator[0U] = (uint32_t)domain_separator[0U] + 1U;
+      uint8_t prf_output[128U];
+      libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
+          prf_input,
+          uint8_t),
+        prf_output);
+      int32_t uu____1[256U];
+      libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
+          prf_output,
+          uint8_t),
+        uu____1);
+      memcpy(error_1[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[2U][256U];
-    memcpy(uu____2, error_1, (size_t)2U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[2U][256U];
+  memcpy(uu____2, error_1, (size_t)2U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
 }
 
 void libcrux_kyber_ntt_invert_ntt_montgomery___2size_t(int32_t re[256U], int32_t ret[256U])
@@ -6897,24 +6728,21 @@ void libcrux_kyber_ntt_invert_ntt_montgomery___2size_t(int32_t re[256U], int32_t
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
-        re[i] = uu____1;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
+      re[i] = uu____1;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -6943,89 +6771,83 @@ libcrux_kyber_matrix_compute_vector_u___2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t lit;
+      lit.start = (size_t)0U;
+      lit.end =
+        core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)2U, a_as_ntt[i], int32_t [256U]),
+          int32_t [256U]);
+      core_ops_range_Range__size_t
+      iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t lit;
-        lit.start = (size_t)0U;
-        lit.end =
-          core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)2U,
-              a_as_ntt[i],
-              int32_t [256U]),
-            int32_t [256U]);
-        core_ops_range_Range__size_t
-        iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t product[256U];
-            libcrux_kyber_ntt_ntt_multiply(&a_as_ntt[i][j], &r_as_ntt[j], product);
-            int32_t uu____2[256U];
-            libcrux_kyber_arithmetic_add_to_ring_element___2size_t(result[i], &product, uu____2);
-            memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t product[256U];
+          libcrux_kyber_ntt_ntt_multiply(&a_as_ntt[i][j], &r_as_ntt[j], product);
+          int32_t uu____2[256U];
+          libcrux_kyber_arithmetic_add_to_ring_element___2size_t(result[i], &product, uu____2);
+          memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
         }
-        int32_t uu____3[256U];
-        libcrux_kyber_ntt_invert_ntt_montgomery___2size_t(result[i], uu____3);
-        memcpy(result[i], uu____3, (size_t)256U * sizeof (int32_t));
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){
-                .start = (size_t)0U,
-                .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
-              }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____4.tag == core_option_None)
-            break;
-          else if (uu____4.tag == core_option_Some)
-          {
-            size_t j = uu____4.f0;
-            int32_t
-            coefficient_normal_form =
-              libcrux_kyber_arithmetic_montgomery_reduce(result[i][j] * (int32_t)1441);
-            int32_t
-            uu____5 =
-              libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_1[i][j]);
-            result[i][j] = uu____5;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      int32_t uu____3[256U];
+      libcrux_kyber_ntt_invert_ntt_montgomery___2size_t(result[i], uu____3);
+      memcpy(result[i], uu____3, (size_t)256U * sizeof (int32_t));
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){
+              .start = (size_t)0U,
+              .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
+            }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____4.tag == core_option_None)
+          break;
+        else if (uu____4.tag == core_option_Some)
+        {
+          size_t j = uu____4.f0;
+          int32_t
+          coefficient_normal_form =
+            libcrux_kyber_arithmetic_montgomery_reduce(result[i][j] * (int32_t)1441);
+          int32_t
+          uu____5 = libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_1[i][j]);
+          result[i][j] = uu____5;
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____6[2U][256U];
-    memcpy(uu____6, result, (size_t)2U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____6, (size_t)2U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____6[2U][256U];
+  memcpy(uu____6, result, (size_t)2U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____6, (size_t)2U * sizeof (int32_t [256U]));
 }
 
 void
@@ -7080,31 +6902,28 @@ libcrux_kyber_matrix_compute_ring_element_v___2size_t(
   {
     core_option_Option__size_t
     uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____1.tag == core_option_None))
+    if (uu____1.tag == core_option_None)
+      break;
+    else if (uu____1.tag == core_option_Some)
     {
-      if (uu____1.tag == core_option_Some)
-      {
-        size_t i = uu____1.f0;
-        int32_t
-        coefficient_normal_form =
-          libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
-        int32_t
-        uu____2 =
-          libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form
-            + error_2[0U][i]
-            + message[0U][i]);
-        result[i] = uu____2;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____1.f0;
+      int32_t
+      coefficient_normal_form =
+        libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
+      int32_t
+      uu____2 =
+        libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form
+          + error_2[0U][i]
+          + message[0U][i]);
+      result[i] = uu____2;
     }
-    memcpy(ret, result, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, result, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -7128,56 +6947,53 @@ libcrux_kyber_serialize_compress_then_serialize_10___320size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        coefficient1 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)0U]));
-        int32_t
-        coefficient2 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)1U]));
-        int32_t
-        coefficient3 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)2U]));
-        int32_t
-        coefficient4 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)3U]));
-        K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
-        uu____1 =
-          libcrux_kyber_serialize_compress_coefficients_10(coefficient1,
-            coefficient2,
-            coefficient3,
-            coefficient4);
-        uint8_t coef1 = uu____1.fst;
-        uint8_t coef2 = uu____1.snd;
-        uint8_t coef3 = uu____1.thd;
-        uint8_t coef4 = uu____1.f3;
-        uint8_t coef5 = uu____1.f4;
-        serialized[(size_t)5U * i] = coef1;
-        serialized[(size_t)5U * i + (size_t)1U] = coef2;
-        serialized[(size_t)5U * i + (size_t)2U] = coef3;
-        serialized[(size_t)5U * i + (size_t)3U] = coef4;
-        serialized[(size_t)5U * i + (size_t)4U] = coef5;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      coefficient1 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)0U]));
+      int32_t
+      coefficient2 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)1U]));
+      int32_t
+      coefficient3 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)2U]));
+      int32_t
+      coefficient4 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(10U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)4U + (size_t)3U]));
+      K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
+      uu____1 =
+        libcrux_kyber_serialize_compress_coefficients_10(coefficient1,
+          coefficient2,
+          coefficient3,
+          coefficient4);
+      uint8_t coef1 = uu____1.fst;
+      uint8_t coef2 = uu____1.snd;
+      uint8_t coef3 = uu____1.thd;
+      uint8_t coef4 = uu____1.f3;
+      uint8_t coef5 = uu____1.f4;
+      serialized[(size_t)5U * i] = coef1;
+      serialized[(size_t)5U * i + (size_t)1U] = coef2;
+      serialized[(size_t)5U * i + (size_t)2U] = coef3;
+      serialized[(size_t)5U * i + (size_t)3U] = coef4;
+      serialized[(size_t)5U * i + (size_t)4U] = coef5;
     }
-    uint8_t uu____2[320U];
-    memcpy(uu____2, serialized, (size_t)320U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)320U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[320U];
+  memcpy(uu____2, serialized, (size_t)320U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)320U * sizeof (uint8_t));
 }
 
 void
@@ -7201,88 +7017,85 @@ libcrux_kyber_serialize_compress_then_serialize_11___320size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t
-        coefficient1 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
-        int32_t
-        coefficient2 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
-        int32_t
-        coefficient3 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
-        int32_t
-        coefficient4 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
-        int32_t
-        coefficient5 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
-        int32_t
-        coefficient6 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
-        int32_t
-        coefficient7 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
-        int32_t
-        coefficient8 =
-          libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
-        K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
-        uu____1 =
-          libcrux_kyber_serialize_compress_coefficients_11(coefficient1,
-            coefficient2,
-            coefficient3,
-            coefficient4,
-            coefficient5,
-            coefficient6,
-            coefficient7,
-            coefficient8);
-        uint8_t coef1 = uu____1.fst;
-        uint8_t coef2 = uu____1.snd;
-        uint8_t coef3 = uu____1.thd;
-        uint8_t coef4 = uu____1.f3;
-        uint8_t coef5 = uu____1.f4;
-        uint8_t coef6 = uu____1.f5;
-        uint8_t coef7 = uu____1.f6;
-        uint8_t coef8 = uu____1.f7;
-        uint8_t coef9 = uu____1.f8;
-        uint8_t coef10 = uu____1.f9;
-        uint8_t coef11 = uu____1.f10;
-        serialized[(size_t)11U * i] = coef1;
-        serialized[(size_t)11U * i + (size_t)1U] = coef2;
-        serialized[(size_t)11U * i + (size_t)2U] = coef3;
-        serialized[(size_t)11U * i + (size_t)3U] = coef4;
-        serialized[(size_t)11U * i + (size_t)4U] = coef5;
-        serialized[(size_t)11U * i + (size_t)5U] = coef6;
-        serialized[(size_t)11U * i + (size_t)6U] = coef7;
-        serialized[(size_t)11U * i + (size_t)7U] = coef8;
-        serialized[(size_t)11U * i + (size_t)8U] = coef9;
-        serialized[(size_t)11U * i + (size_t)9U] = coef10;
-        serialized[(size_t)11U * i + (size_t)10U] = coef11;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t
+      coefficient1 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
+      int32_t
+      coefficient2 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
+      int32_t
+      coefficient3 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
+      int32_t
+      coefficient4 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
+      int32_t
+      coefficient5 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
+      int32_t
+      coefficient6 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
+      int32_t
+      coefficient7 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
+      int32_t
+      coefficient8 =
+        libcrux_kyber_compress_compress_ciphertext_coefficient(11U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
+      K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
+      uu____1 =
+        libcrux_kyber_serialize_compress_coefficients_11(coefficient1,
+          coefficient2,
+          coefficient3,
+          coefficient4,
+          coefficient5,
+          coefficient6,
+          coefficient7,
+          coefficient8);
+      uint8_t coef1 = uu____1.fst;
+      uint8_t coef2 = uu____1.snd;
+      uint8_t coef3 = uu____1.thd;
+      uint8_t coef4 = uu____1.f3;
+      uint8_t coef5 = uu____1.f4;
+      uint8_t coef6 = uu____1.f5;
+      uint8_t coef7 = uu____1.f6;
+      uint8_t coef8 = uu____1.f7;
+      uint8_t coef9 = uu____1.f8;
+      uint8_t coef10 = uu____1.f9;
+      uint8_t coef11 = uu____1.f10;
+      serialized[(size_t)11U * i] = coef1;
+      serialized[(size_t)11U * i + (size_t)1U] = coef2;
+      serialized[(size_t)11U * i + (size_t)2U] = coef3;
+      serialized[(size_t)11U * i + (size_t)3U] = coef4;
+      serialized[(size_t)11U * i + (size_t)4U] = coef5;
+      serialized[(size_t)11U * i + (size_t)5U] = coef6;
+      serialized[(size_t)11U * i + (size_t)6U] = coef7;
+      serialized[(size_t)11U * i + (size_t)7U] = coef8;
+      serialized[(size_t)11U * i + (size_t)8U] = coef9;
+      serialized[(size_t)11U * i + (size_t)9U] = coef10;
+      serialized[(size_t)11U * i + (size_t)10U] = coef11;
     }
-    uint8_t uu____2[320U];
-    memcpy(uu____2, serialized, (size_t)320U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)320U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[320U];
+  memcpy(uu____2, serialized, (size_t)320U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)320U * sizeof (uint8_t));
 }
 
 void
@@ -7316,44 +7129,40 @@ libcrux_kyber_ind_cpa_compress_then_serialize_u___2size_t_640size_t_10size_t_320
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t re[256U];
-        memcpy(re, input[i], (size_t)256U * sizeof (int32_t));
-        Eurydice_slice
-        uu____1 =
-          Eurydice_array_to_subslice((size_t)640U,
-            out,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * ((size_t)640U / (size_t)2U),
-                .end = (i + (size_t)1U) * ((size_t)640U / (size_t)2U)
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        uint8_t ret[320U];
-        libcrux_kyber_serialize_compress_then_serialize_ring_element_u___10size_t_320size_t(re,
-          ret);
-        core_slice___Slice_T___copy_from_slice(uu____1,
-          Eurydice_array_to_slice((size_t)320U, ret, uint8_t),
-          uint8_t);
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t re[256U];
+      memcpy(re, input[i], (size_t)256U * sizeof (int32_t));
+      Eurydice_slice
+      uu____1 =
+        Eurydice_array_to_subslice((size_t)640U,
+          out,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * ((size_t)640U / (size_t)2U),
+              .end = (i + (size_t)1U) * ((size_t)640U / (size_t)2U)
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      uint8_t ret[320U];
+      libcrux_kyber_serialize_compress_then_serialize_ring_element_u___10size_t_320size_t(re, ret);
+      core_slice___Slice_T___copy_from_slice(uu____1,
+        Eurydice_array_to_slice((size_t)320U, ret, uint8_t),
+        uint8_t);
     }
-    uint8_t uu____2[640U];
-    memcpy(uu____2, out, (size_t)640U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)640U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[640U];
+  memcpy(uu____2, out, (size_t)640U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)640U * sizeof (uint8_t));
 }
 
 void
@@ -7377,33 +7186,30 @@ libcrux_kyber_serialize_compress_then_serialize_4___128size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t
-        coefficient1 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)0U]));
-        uint8_t
-        coefficient2 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)1U]));
-        serialized[i] = (uint32_t)coefficient2 << 4U | (uint32_t)coefficient1;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t
+      coefficient1 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)0U]));
+      uint8_t
+      coefficient2 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(4U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)2U + (size_t)1U]));
+      serialized[i] = (uint32_t)coefficient2 << 4U | (uint32_t)coefficient1;
     }
-    uint8_t uu____1[128U];
-    memcpy(uu____1, serialized, (size_t)128U * sizeof (uint8_t));
-    memcpy(ret, uu____1, (size_t)128U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____1[128U];
+  memcpy(uu____1, serialized, (size_t)128U * sizeof (uint8_t));
+  memcpy(ret, uu____1, (size_t)128U * sizeof (uint8_t));
 }
 
 void
@@ -7427,76 +7233,73 @@ libcrux_kyber_serialize_compress_then_serialize_5___128size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t
-        coefficient1 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
-        uint8_t
-        coefficient2 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
-        uint8_t
-        coefficient3 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
-        uint8_t
-        coefficient4 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
-        uint8_t
-        coefficient5 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
-        uint8_t
-        coefficient6 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
-        uint8_t
-        coefficient7 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
-        uint8_t
-        coefficient8 =
-          (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
-            libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
-        K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
-        uu____1 =
-          libcrux_kyber_serialize_compress_coefficients_5(coefficient2,
-            coefficient1,
-            coefficient4,
-            coefficient3,
-            coefficient5,
-            coefficient7,
-            coefficient6,
-            coefficient8);
-        uint8_t coef1 = uu____1.fst;
-        uint8_t coef2 = uu____1.snd;
-        uint8_t coef3 = uu____1.thd;
-        uint8_t coef4 = uu____1.f3;
-        uint8_t coef5 = uu____1.f4;
-        serialized[(size_t)5U * i] = coef1;
-        serialized[(size_t)5U * i + (size_t)1U] = coef2;
-        serialized[(size_t)5U * i + (size_t)2U] = coef3;
-        serialized[(size_t)5U * i + (size_t)3U] = coef4;
-        serialized[(size_t)5U * i + (size_t)4U] = coef5;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t
+      coefficient1 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)0U]));
+      uint8_t
+      coefficient2 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)1U]));
+      uint8_t
+      coefficient3 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)2U]));
+      uint8_t
+      coefficient4 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)3U]));
+      uint8_t
+      coefficient5 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)4U]));
+      uint8_t
+      coefficient6 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)5U]));
+      uint8_t
+      coefficient7 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)6U]));
+      uint8_t
+      coefficient8 =
+        (uint8_t)libcrux_kyber_compress_compress_ciphertext_coefficient(5U,
+          libcrux_kyber_arithmetic_to_unsigned_representative(re[i * (size_t)8U + (size_t)7U]));
+      K___uint8_t_uint8_t_uint8_t_uint8_t_uint8_t
+      uu____1 =
+        libcrux_kyber_serialize_compress_coefficients_5(coefficient2,
+          coefficient1,
+          coefficient4,
+          coefficient3,
+          coefficient5,
+          coefficient7,
+          coefficient6,
+          coefficient8);
+      uint8_t coef1 = uu____1.fst;
+      uint8_t coef2 = uu____1.snd;
+      uint8_t coef3 = uu____1.thd;
+      uint8_t coef4 = uu____1.f3;
+      uint8_t coef5 = uu____1.f4;
+      serialized[(size_t)5U * i] = coef1;
+      serialized[(size_t)5U * i + (size_t)1U] = coef2;
+      serialized[(size_t)5U * i + (size_t)2U] = coef3;
+      serialized[(size_t)5U * i + (size_t)3U] = coef4;
+      serialized[(size_t)5U * i + (size_t)4U] = coef5;
     }
-    uint8_t uu____2[128U];
-    memcpy(uu____2, serialized, (size_t)128U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)128U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[128U];
+  memcpy(uu____2, serialized, (size_t)128U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)128U * sizeof (uint8_t));
 }
 
 void
@@ -7756,24 +7559,21 @@ void libcrux_kyber_ntt_ntt_vector_u___10size_t(int32_t re[256U], int32_t ret[256
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
-        re[i] = uu____1;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
+      re[i] = uu____1;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -7799,41 +7599,38 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___2size_t_768size_t_640size_
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        Eurydice_slice
-        u_bytes =
-          Eurydice_array_to_subslice((size_t)768U,
-            ciphertext,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * chunk_size,
-                .end = i * chunk_size + chunk_size
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        int32_t u[256U];
-        libcrux_kyber_serialize_deserialize_then_decompress_ring_element_u___10size_t(u_bytes, u);
-        int32_t uu____1[256U];
-        libcrux_kyber_ntt_ntt_vector_u___10size_t(u, uu____1);
-        memcpy(u_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      Eurydice_slice
+      u_bytes =
+        Eurydice_array_to_subslice((size_t)768U,
+          ciphertext,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * chunk_size,
+              .end = i * chunk_size + chunk_size
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      int32_t u[256U];
+      libcrux_kyber_serialize_deserialize_then_decompress_ring_element_u___10size_t(u_bytes, u);
+      int32_t uu____1[256U];
+      libcrux_kyber_ntt_ntt_vector_u___10size_t(u, uu____1);
+      memcpy(u_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[2U][256U];
-    memcpy(uu____2, u_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[2U][256U];
+  memcpy(uu____2, u_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
 }
 
 void
@@ -7873,38 +7670,35 @@ libcrux_kyber_ind_cpa_deserialize_secret_key___2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1[256U];
-        libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(Eurydice_slice_subslice(secret_key,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i
-                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t),
-          uu____1);
-        memcpy(secret_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1[256U];
+      libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(Eurydice_slice_subslice(secret_key,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = i
+              * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+              + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t),
+        uu____1);
+      memcpy(secret_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[2U][256U];
-    memcpy(uu____2, secret_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[2U][256U];
+  memcpy(uu____2, secret_as_ntt, (size_t)2U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)2U * sizeof (int32_t [256U]));
 }
 
 void
@@ -7958,28 +7752,24 @@ libcrux_kyber_matrix_compute_message___2size_t(
   {
     core_option_Option__size_t
     uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____1.tag == core_option_None))
+    if (uu____1.tag == core_option_None)
+      break;
+    else if (uu____1.tag == core_option_Some)
     {
-      if (uu____1.tag == core_option_Some)
-      {
-        size_t i = uu____1.f0;
-        int32_t
-        coefficient_normal_form =
-          libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
-        int32_t
-        uu____2 = libcrux_kyber_arithmetic_barrett_reduce(v[0U][i] - coefficient_normal_form);
-        result[i] = uu____2;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____1.f0;
+      int32_t
+      coefficient_normal_form =
+        libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
+      int32_t uu____2 = libcrux_kyber_arithmetic_barrett_reduce(v[0U][i] - coefficient_normal_form);
+      result[i] = uu____2;
     }
-    memcpy(ret, result, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, result, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -8063,23 +7853,21 @@ libcrux_kyber_constant_time_ops_compare_ciphertexts_in_constant_time___768size_t
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t uu____1 = Eurydice_slice_index(lhs, i, uint8_t);
-        r = (uint32_t)r | ((uint32_t)uu____1 ^ (uint32_t)Eurydice_slice_index(rhs, i, uint8_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t uu____1 = Eurydice_slice_index(lhs, i, uint8_t);
+      r = (uint32_t)r | ((uint32_t)uu____1 ^ (uint32_t)Eurydice_slice_index(rhs, i, uint8_t));
     }
-    return libcrux_kyber_constant_time_ops_is_non_zero(r);
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  return libcrux_kyber_constant_time_ops_is_non_zero(r);
 }
 
 void
@@ -9138,22 +8926,21 @@ libcrux_kyber_hash_functions_XOFx4___3size_t(uint8_t input[3U][34U], uint8_t ret
     {
       core_option_Option__size_t
       uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-      if (!(uu____1.tag == core_option_None))
+      if (uu____1.tag == core_option_None)
+        break;
+      else if (uu____1.tag == core_option_Some)
       {
-        if (uu____1.tag == core_option_Some)
-        {
-          size_t i = uu____1.f0;
-          uint8_t uu____2[840U];
-          libcrux_digest_shake128((size_t)840U,
-            Eurydice_array_to_slice((size_t)34U, input[i], uint8_t),
-            uu____2);
-          memcpy(out[i], uu____2, (size_t)840U * sizeof (uint8_t));
-        }
-        else
-        {
-          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-          KRML_HOST_EXIT(255U);
-        }
+        size_t i = uu____1.f0;
+        uint8_t uu____2[840U];
+        libcrux_digest_shake128((size_t)840U,
+          Eurydice_array_to_slice((size_t)34U, input[i], uint8_t),
+          uu____2);
+        memcpy(out[i], uu____2, (size_t)840U * sizeof (uint8_t));
+      }
+      else
+      {
+        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+        KRML_HOST_EXIT(255U);
       }
     }
   }
@@ -9220,87 +9007,84 @@ libcrux_kyber_matrix_sample_matrix_A___3size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i0 = uu____0.f0;
+      uint8_t uu____1[34U];
+      memcpy(uu____1, seed, (size_t)34U * sizeof (uint8_t));
+      uint8_t seeds[3U][34U];
+      for (size_t i = (size_t)0U; i < (size_t)3U; i++)
+        memcpy(seeds[i], uu____1, (size_t)34U * sizeof (uint8_t));
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)3U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i0 = uu____0.f0;
-        uint8_t uu____1[34U];
-        memcpy(uu____1, seed, (size_t)34U * sizeof (uint8_t));
-        uint8_t seeds[3U][34U];
-        for (size_t i = (size_t)0U; i < (size_t)3U; i++)
-          memcpy(seeds[i], uu____1, (size_t)34U * sizeof (uint8_t));
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)3U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____2 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____2.tag == core_option_None)
+          break;
+        else if (uu____2.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____2 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____2.tag == core_option_None)
-            break;
-          else if (uu____2.tag == core_option_Some)
-          {
-            size_t j = uu____2.f0;
-            seeds[j][32U] = (uint8_t)i0;
-            seeds[j][33U] = (uint8_t)j;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____2.f0;
+          seeds[j][32U] = (uint8_t)i0;
+          seeds[j][33U] = (uint8_t)j;
         }
-        uint8_t uu____3[3U][34U];
-        memcpy(uu____3, seeds, (size_t)3U * sizeof (uint8_t [34U]));
-        uint8_t xof_bytes[3U][840U];
-        libcrux_kyber_hash_functions_XOFx4___3size_t(uu____3, xof_bytes);
-        core_ops_range_Range__size_t
-        iter =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)3U }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____4.tag == core_option_None)
-            break;
-          else if (uu____4.tag == core_option_Some)
-          {
-            size_t j = uu____4.f0;
-            uint8_t uu____5[840U];
-            memcpy(uu____5, xof_bytes[j], (size_t)840U * sizeof (uint8_t));
-            int32_t sampled[256U];
-            libcrux_kyber_sampling_sample_from_uniform_distribution(uu____5, sampled);
-            if (transpose)
-              memcpy(A_transpose[j][i0], sampled, (size_t)256U * sizeof (int32_t));
-            else
-              memcpy(A_transpose[i0][j], sampled, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      uint8_t uu____3[3U][34U];
+      memcpy(uu____3, seeds, (size_t)3U * sizeof (uint8_t [34U]));
+      uint8_t xof_bytes[3U][840U];
+      libcrux_kyber_hash_functions_XOFx4___3size_t(uu____3, xof_bytes);
+      core_ops_range_Range__size_t
+      iter =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)3U }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____4.tag == core_option_None)
+          break;
+        else if (uu____4.tag == core_option_Some)
+        {
+          size_t j = uu____4.f0;
+          uint8_t uu____5[840U];
+          memcpy(uu____5, xof_bytes[j], (size_t)840U * sizeof (uint8_t));
+          int32_t sampled[256U];
+          libcrux_kyber_sampling_sample_from_uniform_distribution(uu____5, sampled);
+          if (transpose)
+            memcpy(A_transpose[j][i0], sampled, (size_t)256U * sizeof (int32_t));
+          else
+            memcpy(A_transpose[i0][j], sampled, (size_t)256U * sizeof (int32_t));
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____6[3U][3U][256U];
-    memcpy(uu____6, A_transpose, (size_t)3U * sizeof (int32_t [3U][256U]));
-    memcpy(ret, uu____6, (size_t)3U * sizeof (int32_t [3U][256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____6[3U][3U][256U];
+  memcpy(uu____6, A_transpose, (size_t)3U * sizeof (int32_t [3U][256U]));
+  memcpy(ret, uu____6, (size_t)3U * sizeof (int32_t [3U][256U]));
 }
 
 K___libcrux_kyber_arithmetic_PolynomialRingElement_3size_t__uint8_t
@@ -9324,41 +9108,39 @@ libcrux_kyber_ind_cpa_sample_vector_cbd_then_ntt___3size_t_2size_t_128size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        prf_input[32U] = domain_separator;
-        domain_separator = (uint32_t)domain_separator + 1U;
-        uint8_t prf_output[128U];
-        libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
-            prf_input,
-            uint8_t),
-          prf_output);
-        int32_t r[256U];
-        libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
-            prf_output,
-            uint8_t),
-          r);
-        int32_t uu____1[256U];
-        libcrux_kyber_ntt_ntt_binomially_sampled_ring_element(r, uu____1);
-        memcpy(re_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      prf_input[32U] = domain_separator;
+      domain_separator = (uint32_t)domain_separator + 1U;
+      uint8_t prf_output[128U];
+      libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
+          prf_input,
+          uint8_t),
+        prf_output);
+      int32_t r[256U];
+      libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
+          prf_output,
+          uint8_t),
+        r);
+      int32_t uu____1[256U];
+      libcrux_kyber_ntt_ntt_binomially_sampled_ring_element(r, uu____1);
+      memcpy(re_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[3U][256U];
-    memcpy(uu____2, re_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
-    K___libcrux_kyber_arithmetic_PolynomialRingElement_3size_t__uint8_t lit;
-    memcpy(lit.fst, uu____2, (size_t)3U * sizeof (int32_t [256U]));
-    lit.snd = domain_separator;
-    return lit;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[3U][256U];
+  memcpy(uu____2, re_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
+  K___libcrux_kyber_arithmetic_PolynomialRingElement_3size_t__uint8_t lit;
+  memcpy(lit.fst, uu____2, (size_t)3U * sizeof (int32_t [256U]));
+  lit.snd = domain_separator;
+  return lit;
 }
 
 void
@@ -9379,24 +9161,21 @@ libcrux_kyber_arithmetic_add_to_ring_element___3size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        size_t uu____1 = i;
-        lhs[uu____1] = lhs[uu____1] + rhs[0U][i];
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      size_t uu____1 = i;
+      lhs[uu____1] = lhs[uu____1] + rhs[0U][i];
     }
-    memcpy(ret, lhs, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, lhs, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -9425,85 +9204,80 @@ libcrux_kyber_matrix_compute_As_plus_e___3size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t lit;
+      lit.start = (size_t)0U;
+      lit.end =
+        core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)3U, matrix_A[i], int32_t [256U]),
+          int32_t [256U]);
+      core_ops_range_Range__size_t
+      iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t lit;
-        lit.start = (size_t)0U;
-        lit.end =
-          core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)3U,
-              matrix_A[i],
-              int32_t [256U]),
-            int32_t [256U]);
-        core_ops_range_Range__size_t
-        iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t product[256U];
-            libcrux_kyber_ntt_ntt_multiply(&matrix_A[i][j], &s_as_ntt[j], product);
-            int32_t uu____2[256U];
-            libcrux_kyber_arithmetic_add_to_ring_element___3size_t(result[i], &product, uu____2);
-            memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t product[256U];
+          libcrux_kyber_ntt_ntt_multiply(&matrix_A[i][j], &s_as_ntt[j], product);
+          int32_t uu____2[256U];
+          libcrux_kyber_arithmetic_add_to_ring_element___3size_t(result[i], &product, uu____2);
+          memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
         }
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){
-                .start = (size_t)0U,
-                .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
-              }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____3.tag == core_option_None)
-            break;
-          else if (uu____3.tag == core_option_Some)
-          {
-            size_t j = uu____3.f0;
-            int32_t
-            coefficient_normal_form = libcrux_kyber_arithmetic_to_standard_domain(result[i][j]);
-            int32_t
-            uu____4 =
-              libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_as_ntt[i][j]);
-            result[i][j] = uu____4;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){
+              .start = (size_t)0U,
+              .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
+            }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____3 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____3.tag == core_option_None)
+          break;
+        else if (uu____3.tag == core_option_Some)
+        {
+          size_t j = uu____3.f0;
+          int32_t
+          coefficient_normal_form = libcrux_kyber_arithmetic_to_standard_domain(result[i][j]);
+          int32_t
+          uu____4 =
+            libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_as_ntt[i][j]);
+          result[i][j] = uu____4;
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____5[3U][256U];
-    memcpy(uu____5, result, (size_t)3U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____5, (size_t)3U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____5[3U][256U];
+  memcpy(uu____5, result, (size_t)3U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____5, (size_t)3U * sizeof (int32_t [256U]));
 }
 
 void
@@ -9526,43 +9300,40 @@ libcrux_kyber_ind_cpa_serialize_secret_key___3size_t_1152size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t re[256U];
-        memcpy(re, key[i], (size_t)256U * sizeof (int32_t));
-        Eurydice_slice
-        uu____1 =
-          Eurydice_array_to_subslice((size_t)1152U,
-            out,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = (i + (size_t)1U) * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        uint8_t ret[384U];
-        libcrux_kyber_serialize_serialize_uncompressed_ring_element(re, ret);
-        core_slice___Slice_T___copy_from_slice(uu____1,
-          Eurydice_array_to_slice((size_t)384U, ret, uint8_t),
-          uint8_t);
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t re[256U];
+      memcpy(re, key[i], (size_t)256U * sizeof (int32_t));
+      Eurydice_slice
+      uu____1 =
+        Eurydice_array_to_subslice((size_t)1152U,
+          out,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = (i + (size_t)1U) * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      uint8_t ret[384U];
+      libcrux_kyber_serialize_serialize_uncompressed_ring_element(re, ret);
+      core_slice___Slice_T___copy_from_slice(uu____1,
+        Eurydice_array_to_slice((size_t)384U, ret, uint8_t),
+        uint8_t);
     }
-    uint8_t uu____2[1152U];
-    memcpy(uu____2, out, (size_t)1152U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)1152U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[1152U];
+  memcpy(uu____2, out, (size_t)1152U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)1152U * sizeof (uint8_t));
 }
 
 void
@@ -9860,40 +9631,37 @@ libcrux_kyber_ind_cpa_deserialize_public_key___3size_t_1152size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        Eurydice_slice
-        t_as_ntt_bytes =
-          Eurydice_slice_subslice(public_key,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i
-                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        int32_t uu____1[256U];
-        libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(t_as_ntt_bytes, uu____1);
-        memcpy(t_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      Eurydice_slice
+      t_as_ntt_bytes =
+        Eurydice_slice_subslice(public_key,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = i
+              * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+              + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      int32_t uu____1[256U];
+      libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(t_as_ntt_bytes, uu____1);
+      memcpy(t_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[3U][256U];
-    memcpy(uu____2, t_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[3U][256U];
+  memcpy(uu____2, t_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
 }
 
 void
@@ -9918,37 +9686,34 @@ libcrux_kyber_ind_cpa_sample_ring_element_cbd___3size_t_128size_t_2size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        prf_input[32U] = domain_separator[0U];
-        domain_separator[0U] = (uint32_t)domain_separator[0U] + 1U;
-        uint8_t prf_output[128U];
-        libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
-            prf_input,
-            uint8_t),
-          prf_output);
-        int32_t uu____1[256U];
-        libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
-            prf_output,
-            uint8_t),
-          uu____1);
-        memcpy(error_1[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      prf_input[32U] = domain_separator[0U];
+      domain_separator[0U] = (uint32_t)domain_separator[0U] + 1U;
+      uint8_t prf_output[128U];
+      libcrux_kyber_hash_functions_PRF___128size_t(Eurydice_array_to_slice((size_t)33U,
+          prf_input,
+          uint8_t),
+        prf_output);
+      int32_t uu____1[256U];
+      libcrux_kyber_sampling_sample_from_binomial_distribution___2size_t(Eurydice_array_to_slice((size_t)128U,
+          prf_output,
+          uint8_t),
+        uu____1);
+      memcpy(error_1[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[3U][256U];
-    memcpy(uu____2, error_1, (size_t)3U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[3U][256U];
+  memcpy(uu____2, error_1, (size_t)3U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
 }
 
 void libcrux_kyber_ntt_invert_ntt_montgomery___3size_t(int32_t re[256U], int32_t ret[256U])
@@ -9971,24 +9736,21 @@ void libcrux_kyber_ntt_invert_ntt_montgomery___3size_t(int32_t re[256U], int32_t
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
-        re[i] = uu____1;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1 = libcrux_kyber_arithmetic_barrett_reduce(re[i]);
+      re[i] = uu____1;
     }
-    memcpy(ret, re, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, re, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -10017,89 +9779,83 @@ libcrux_kyber_matrix_compute_vector_u___3size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
+      size_t i = uu____0.f0;
+      core_ops_range_Range__size_t lit;
+      lit.start = (size_t)0U;
+      lit.end =
+        core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)3U, a_as_ntt[i], int32_t [256U]),
+          int32_t [256U]);
+      core_ops_range_Range__size_t
+      iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
+      while (true)
       {
-        size_t i = uu____0.f0;
-        core_ops_range_Range__size_t lit;
-        lit.start = (size_t)0U;
-        lit.end =
-          core_slice___Slice_T___len(Eurydice_array_to_slice((size_t)3U,
-              a_as_ntt[i],
-              int32_t [256U]),
-            int32_t [256U]);
-        core_ops_range_Range__size_t
-        iter = core_iter_traits_collect__I__into_iter(lit, core_ops_range_Range__size_t);
-        while (true)
+        core_option_Option__size_t
+        uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
+        if (uu____1.tag == core_option_None)
+          break;
+        else if (uu____1.tag == core_option_Some)
         {
-          core_option_Option__size_t
-          uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-          if (uu____1.tag == core_option_None)
-            break;
-          else if (uu____1.tag == core_option_Some)
-          {
-            size_t j = uu____1.f0;
-            int32_t product[256U];
-            libcrux_kyber_ntt_ntt_multiply(&a_as_ntt[i][j], &r_as_ntt[j], product);
-            int32_t uu____2[256U];
-            libcrux_kyber_arithmetic_add_to_ring_element___3size_t(result[i], &product, uu____2);
-            memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          size_t j = uu____1.f0;
+          int32_t product[256U];
+          libcrux_kyber_ntt_ntt_multiply(&a_as_ntt[i][j], &r_as_ntt[j], product);
+          int32_t uu____2[256U];
+          libcrux_kyber_arithmetic_add_to_ring_element___3size_t(result[i], &product, uu____2);
+          memcpy(result[i], uu____2, (size_t)256U * sizeof (int32_t));
         }
-        int32_t uu____3[256U];
-        libcrux_kyber_ntt_invert_ntt_montgomery___3size_t(result[i], uu____3);
-        memcpy(result[i], uu____3, (size_t)256U * sizeof (int32_t));
-        core_ops_range_Range__size_t
-        iter0 =
-          core_iter_traits_collect__I__into_iter((
-              (core_ops_range_Range__size_t){
-                .start = (size_t)0U,
-                .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
-              }
-            ),
-            core_ops_range_Range__size_t);
-        while (true)
+        else
         {
-          core_option_Option__size_t
-          uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-          if (uu____4.tag == core_option_None)
-            break;
-          else if (uu____4.tag == core_option_Some)
-          {
-            size_t j = uu____4.f0;
-            int32_t
-            coefficient_normal_form =
-              libcrux_kyber_arithmetic_montgomery_reduce(result[i][j] * (int32_t)1441);
-            int32_t
-            uu____5 =
-              libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_1[i][j]);
-            result[i][j] = uu____5;
-          }
-          else
-          {
-            KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-            KRML_HOST_EXIT(255U);
-          }
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
         }
-        continue;
       }
-      else
+      int32_t uu____3[256U];
+      libcrux_kyber_ntt_invert_ntt_montgomery___3size_t(result[i], uu____3);
+      memcpy(result[i], uu____3, (size_t)256U * sizeof (int32_t));
+      core_ops_range_Range__size_t
+      iter0 =
+        core_iter_traits_collect__I__into_iter((
+            (core_ops_range_Range__size_t){
+              .start = (size_t)0U,
+              .end = libcrux_kyber_constants_COEFFICIENTS_IN_RING_ELEMENT
+            }
+          ),
+          core_ops_range_Range__size_t);
+      while (true)
       {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
+        core_option_Option__size_t
+        uu____4 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
+        if (uu____4.tag == core_option_None)
+          break;
+        else if (uu____4.tag == core_option_Some)
+        {
+          size_t j = uu____4.f0;
+          int32_t
+          coefficient_normal_form =
+            libcrux_kyber_arithmetic_montgomery_reduce(result[i][j] * (int32_t)1441);
+          int32_t
+          uu____5 = libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form + error_1[i][j]);
+          result[i][j] = uu____5;
+        }
+        else
+        {
+          KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+          KRML_HOST_EXIT(255U);
+        }
       }
     }
-    int32_t uu____6[3U][256U];
-    memcpy(uu____6, result, (size_t)3U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____6, (size_t)3U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____6[3U][256U];
+  memcpy(uu____6, result, (size_t)3U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____6, (size_t)3U * sizeof (int32_t [256U]));
 }
 
 void
@@ -10154,31 +9910,28 @@ libcrux_kyber_matrix_compute_ring_element_v___3size_t(
   {
     core_option_Option__size_t
     uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____1.tag == core_option_None))
+    if (uu____1.tag == core_option_None)
+      break;
+    else if (uu____1.tag == core_option_Some)
     {
-      if (uu____1.tag == core_option_Some)
-      {
-        size_t i = uu____1.f0;
-        int32_t
-        coefficient_normal_form =
-          libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
-        int32_t
-        uu____2 =
-          libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form
-            + error_2[0U][i]
-            + message[0U][i]);
-        result[i] = uu____2;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____1.f0;
+      int32_t
+      coefficient_normal_form =
+        libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
+      int32_t
+      uu____2 =
+        libcrux_kyber_arithmetic_barrett_reduce(coefficient_normal_form
+          + error_2[0U][i]
+          + message[0U][i]);
+      result[i] = uu____2;
     }
-    memcpy(ret, result, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, result, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -10201,44 +9954,40 @@ libcrux_kyber_ind_cpa_compress_then_serialize_u___3size_t_960size_t_10size_t_320
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t re[256U];
-        memcpy(re, input[i], (size_t)256U * sizeof (int32_t));
-        Eurydice_slice
-        uu____1 =
-          Eurydice_array_to_subslice((size_t)960U,
-            out,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * ((size_t)960U / (size_t)3U),
-                .end = (i + (size_t)1U) * ((size_t)960U / (size_t)3U)
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        uint8_t ret[320U];
-        libcrux_kyber_serialize_compress_then_serialize_ring_element_u___10size_t_320size_t(re,
-          ret);
-        core_slice___Slice_T___copy_from_slice(uu____1,
-          Eurydice_array_to_slice((size_t)320U, ret, uint8_t),
-          uint8_t);
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t re[256U];
+      memcpy(re, input[i], (size_t)256U * sizeof (int32_t));
+      Eurydice_slice
+      uu____1 =
+        Eurydice_array_to_subslice((size_t)960U,
+          out,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * ((size_t)960U / (size_t)3U),
+              .end = (i + (size_t)1U) * ((size_t)960U / (size_t)3U)
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      uint8_t ret[320U];
+      libcrux_kyber_serialize_compress_then_serialize_ring_element_u___10size_t_320size_t(re, ret);
+      core_slice___Slice_T___copy_from_slice(uu____1,
+        Eurydice_array_to_slice((size_t)320U, ret, uint8_t),
+        uint8_t);
     }
-    uint8_t uu____2[960U];
-    memcpy(uu____2, out, (size_t)960U * sizeof (uint8_t));
-    memcpy(ret, uu____2, (size_t)960U * sizeof (uint8_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  uint8_t uu____2[960U];
+  memcpy(uu____2, out, (size_t)960U * sizeof (uint8_t));
+  memcpy(ret, uu____2, (size_t)960U * sizeof (uint8_t));
 }
 
 void
@@ -10476,41 +10225,38 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___3size_t_1088size_t_960size
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        Eurydice_slice
-        u_bytes =
-          Eurydice_array_to_subslice((size_t)1088U,
-            ciphertext,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * chunk_size,
-                .end = i * chunk_size + chunk_size
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t);
-        int32_t u[256U];
-        libcrux_kyber_serialize_deserialize_then_decompress_ring_element_u___10size_t(u_bytes, u);
-        int32_t uu____1[256U];
-        libcrux_kyber_ntt_ntt_vector_u___10size_t(u, uu____1);
-        memcpy(u_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      Eurydice_slice
+      u_bytes =
+        Eurydice_array_to_subslice((size_t)1088U,
+          ciphertext,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * chunk_size,
+              .end = i * chunk_size + chunk_size
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t);
+      int32_t u[256U];
+      libcrux_kyber_serialize_deserialize_then_decompress_ring_element_u___10size_t(u_bytes, u);
+      int32_t uu____1[256U];
+      libcrux_kyber_ntt_ntt_vector_u___10size_t(u, uu____1);
+      memcpy(u_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[3U][256U];
-    memcpy(uu____2, u_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[3U][256U];
+  memcpy(uu____2, u_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
 }
 
 void
@@ -10539,38 +10285,35 @@ libcrux_kyber_ind_cpa_deserialize_secret_key___3size_t(
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        int32_t uu____1[256U];
-        libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(Eurydice_slice_subslice(secret_key,
-            (
-              (core_ops_range_Range__size_t){
-                .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i
-                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
-              }
-            ),
-            uint8_t,
-            core_ops_range_Range__size_t),
-          uu____1);
-        memcpy(secret_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      int32_t uu____1[256U];
+      libcrux_kyber_serialize_deserialize_to_uncompressed_ring_element(Eurydice_slice_subslice(secret_key,
+          (
+            (core_ops_range_Range__size_t){
+              .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
+              .end = i
+              * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+              + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+            }
+          ),
+          uint8_t,
+          core_ops_range_Range__size_t),
+        uu____1);
+      memcpy(secret_as_ntt[i], uu____1, (size_t)256U * sizeof (int32_t));
     }
-    int32_t uu____2[3U][256U];
-    memcpy(uu____2, secret_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
-    memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  int32_t uu____2[3U][256U];
+  memcpy(uu____2, secret_as_ntt, (size_t)3U * sizeof (int32_t [256U]));
+  memcpy(ret, uu____2, (size_t)3U * sizeof (int32_t [256U]));
 }
 
 void
@@ -10624,28 +10367,24 @@ libcrux_kyber_matrix_compute_message___3size_t(
   {
     core_option_Option__size_t
     uu____1 = core_iter_range__core__ops__range__Range_A__3__next(&iter0, size_t);
-    if (!(uu____1.tag == core_option_None))
+    if (uu____1.tag == core_option_None)
+      break;
+    else if (uu____1.tag == core_option_Some)
     {
-      if (uu____1.tag == core_option_Some)
-      {
-        size_t i = uu____1.f0;
-        int32_t
-        coefficient_normal_form =
-          libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
-        int32_t
-        uu____2 = libcrux_kyber_arithmetic_barrett_reduce(v[0U][i] - coefficient_normal_form);
-        result[i] = uu____2;
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____1.f0;
+      int32_t
+      coefficient_normal_form =
+        libcrux_kyber_arithmetic_montgomery_reduce(result[i] * (int32_t)1441);
+      int32_t uu____2 = libcrux_kyber_arithmetic_barrett_reduce(v[0U][i] - coefficient_normal_form);
+      result[i] = uu____2;
     }
-    memcpy(ret, result, (size_t)256U * sizeof (int32_t));
-    return;
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  memcpy(ret, result, (size_t)256U * sizeof (int32_t));
 }
 
 void
@@ -10729,23 +10468,21 @@ libcrux_kyber_constant_time_ops_compare_ciphertexts_in_constant_time___1088size_
   {
     core_option_Option__size_t
     uu____0 = core_iter_range__core__ops__range__Range_A__3__next(&iter, size_t);
-    if (!(uu____0.tag == core_option_None))
+    if (uu____0.tag == core_option_None)
+      break;
+    else if (uu____0.tag == core_option_Some)
     {
-      if (uu____0.tag == core_option_Some)
-      {
-        size_t i = uu____0.f0;
-        uint8_t uu____1 = Eurydice_slice_index(lhs, i, uint8_t);
-        r = (uint32_t)r | ((uint32_t)uu____1 ^ (uint32_t)Eurydice_slice_index(rhs, i, uint8_t));
-        continue;
-      }
-      else
-      {
-        KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-        KRML_HOST_EXIT(255U);
-      }
+      size_t i = uu____0.f0;
+      uint8_t uu____1 = Eurydice_slice_index(lhs, i, uint8_t);
+      r = (uint32_t)r | ((uint32_t)uu____1 ^ (uint32_t)Eurydice_slice_index(rhs, i, uint8_t));
     }
-    return libcrux_kyber_constant_time_ops_is_non_zero(r);
+    else
+    {
+      KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+      KRML_HOST_EXIT(255U);
+    }
   }
+  return libcrux_kyber_constant_time_ops_is_non_zero(r);
 }
 
 void
