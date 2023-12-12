@@ -6,25 +6,16 @@ open FStar.Mul
 unfold
 let t_FieldElement = i32
 
+val v_BARRETT_R: x:i64{v x = pow2 26}
+
+val v_MONTGOMERY_R: x:i32{v x = pow2 16}
+
+
 unfold
 let t_FieldElementTimesMontgomeryR = i32
 
 unfold
 let t_MontgomeryFieldElement = i32
-
-let v_BARRETT_MULTIPLIER: i64 = 20159L
-
-let v_BARRETT_SHIFT: i64 = 26L
-
-val v_BARRETT_R: x:i64{v x = pow2 26}
-
-let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
-
-let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
-
-let v_MONTGOMERY_SHIFT: u8 = 16uy
-
-val v_MONTGOMERY_R: x:i32{v x = pow2 16}
 
 type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 
@@ -80,7 +71,7 @@ let mont_to_spec_matrix (#p:Spec.Kyber.params)
 
 val get_n_least_significant_bits (n: u8) (value: u32)
     : Prims.Pure u32
-      (requires n =. 4uy || n =. 5uy || n =. 10uy || n =. 11uy || n =. v_MONTGOMERY_SHIFT)
+      (requires n < 32)
       (ensures
         fun result ->
           let result:u32 = result in

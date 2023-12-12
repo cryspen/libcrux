@@ -3,6 +3,20 @@ module Libcrux.Kem.Kyber.Arithmetic
 open Core
 open FStar.Mul
 
+let v_BARRETT_MULTIPLIER: i64 = 20159L
+
+val v_BARRETT_R: x:i64{v x = pow2 26}
+
+let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
+
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
+
+let v_MONTGOMERY_SHIFT: u8 = 16uy
+
+val v_MONTGOMERY_R: x:i32{v x = pow2 16}
+
+
+let v_BARRETT_SHIFT: i64 = 26L
 let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
@@ -12,7 +26,7 @@ let mont_to_spec_fe (m:t_FieldElement) = admit()
 let get_n_least_significant_bits (n: u8) (value: u32) = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
-  admit(); // P-F
+  logand_mask_lemma value (v n);
   res
 
 let barrett_reduce (value: i32) = 
