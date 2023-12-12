@@ -19,9 +19,7 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 }
 
 #[inline(always)]
-pub(crate) fn XOFx4<const K: usize>(
-    input: [[u8; 34]; K],
-) -> [[u8; REJECTION_SAMPLING_SEED_SIZE]; K] {
+pub fn XOFx4<const K: usize>(input: [[u8; 34]; K]) -> [[u8; REJECTION_SAMPLING_SEED_SIZE]; K] {
     let mut out = [[0u8; REJECTION_SAMPLING_SEED_SIZE]; K];
 
     if !simd256_support() || !cfg!(simd256) {
@@ -34,29 +32,32 @@ pub(crate) fn XOFx4<const K: usize>(
     } else {
         // Always do 4 SHA3 at a time even if we need less.
         // XXX: Cast for hax extraction
-        if K == 2 {
-            let (d0, d1, _, _) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
-                &input[0], &input[1], &input[0], &input[1],
-            );
-            out[0] = d0;
-            out[1] = d1;
-        } else if K == 3 {
-            let (d0, d1, d2, _) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
-                &input[0], &input[1], &input[2], &input[0],
-            );
-            out[0] = d0;
-            out[1] = d1;
-            out[2] = d2;
-        } else if K == 4 {
-            let (d0, d1, d2, d3) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
-                &input[0], &input[1], &input[2], &input[3],
-            );
-            out[0] = d0;
-            out[1] = d1;
-            out[2] = d2;
-            out[3] = d3;
-        } else {
-            unreachable!()
+        match K as u8 {
+            2 => {
+                let (d0, d1, _, _) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
+                    &input[0], &input[1], &input[0], &input[1],
+                );
+                out[0] = d0;
+                out[1] = d1;
+            }
+            3 => {
+                let (d0, d1, d2, _) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
+                    &input[0], &input[1], &input[2], &input[0],
+                );
+                out[0] = d0;
+                out[1] = d1;
+                out[2] = d2;
+            }
+            4 => {
+                let (d0, d1, d2, d3) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
+                    &input[0], &input[1], &input[2], &input[3],
+                );
+                out[0] = d0;
+                out[1] = d1;
+                out[2] = d2;
+                out[3] = d3;
+            }
+            _ => unreachable!(),
         };
     }
 

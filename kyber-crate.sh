@@ -22,8 +22,14 @@ members = ["."]
 
 [dependencies]
 hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
-libcrux ={ path = "../" }
-libcrux-platform ={ path = "../sys/platform" }
+libcrux = { path = "../" }
+libcrux-platform = { path = "../sys/platform" }
+hex = { version = "0.4.3", features = ["serde"] }
+
+[dev-dependencies]
+serde_json = { version = "1.0" }
+serde = { version = "1.0", features = ["derive"] }
+rand = { version = "0.8" }
 EOF
 
 for file in src/*; do 
@@ -35,4 +41,17 @@ for file in src/*; do
     fi 
 done
 
-cargo build
+mkdir -p tests
+cp -r ../kyber-crate-tests/* tests/
+
+# Build & test
+cargo test
+
+# Extract
+CHARON_HOME=${CHARON_HOME:-~/repos/charon/}
+EURYDICE_HOME=${EURYDICE_HOME:-~/repos/eurydice/}
+$CHARON_HOME/bin/charon --errors-as-warnings
+mkdir c
+cd c
+$EURYDICE_HOME/eurydice ../libcrux_kyber.llbc
+cp $EURYDICE_HOME/include/eurydice_glue.h .

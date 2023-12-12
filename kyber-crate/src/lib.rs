@@ -7,6 +7,27 @@
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 pub(crate) mod constants;
 
+macro_rules! enumerate {
+    (for ($i:ident, $chunk:ident) in $values:ident.$fun:ident($($chunk_size:expr),*) $body:block) => {
+        {
+            let mut $i = 0;
+            for $chunk in $values.$fun($($chunk_size)*) {
+                $body
+                $i += 1;
+            }
+        }
+    };
+    (for ($i:ident, $chunk:ident) in $values:ident.$val:ident.$fun:ident($($chunk_size:expr),*) $body:block) => {
+        {
+            let mut $i = 0;
+            for $chunk in $values.$val.$fun($($chunk_size)*) {
+                $body
+                $i += 1;
+            }
+        }
+    };
+}
+
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
@@ -133,11 +154,11 @@ pub(crate) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    let r = match shared_secret.try_into() {
-        Ok(r) => r,
+    let shared_secret = match shared_secret.try_into() {
+        Ok(ss) => ss,
         Err(_) => panic!()
     };
-    (ciphertext.into(), r)
+    (ciphertext.into(), shared_secret)
 }
 
 pub(crate) fn decapsulate<
