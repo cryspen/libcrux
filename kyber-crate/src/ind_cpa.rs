@@ -136,12 +136,12 @@ pub(crate) fn generate_keypair<
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
     let A_transpose = sample_matrix_A(into_padded_array(seed_for_A), true);
-    eprintln!(
-        "A_transpose: {} {} {}",
-        A_transpose[0][0].coefficients[0],
-        A_transpose[0][0].coefficients[1],
-        A_transpose[0][0].coefficients[2]
-    );
+    // eprintln!(
+    //     "A_transpose: {} {} {}",
+    //     A_transpose[0][0].coefficients[0],
+    //     A_transpose[0][0].coefficients[1],
+    //     A_transpose[0][0].coefficients[2]
+    // );
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
     let (secret_as_ntt, domain_separator) =
@@ -150,22 +150,22 @@ pub(crate) fn generate_keypair<
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, domain_separator);
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    eprintln!(
-        "secret_as_ntt: {} {} {}",
-        secret_as_ntt[0].coefficients[0], secret_as_ntt[0].coefficients[1], secret_as_ntt[0].coefficients[2]
-    );
-    eprintln!(
-        "error_as_ntt: {} {} {}",
-        error_as_ntt[0].coefficients[0], error_as_ntt[0].coefficients[1], error_as_ntt[0].coefficients[2]
-    );
+    // eprintln!(
+    //     "secret_as_ntt: {} {} {}",
+    //     secret_as_ntt[0].coefficients[0], secret_as_ntt[0].coefficients[1], secret_as_ntt[0].coefficients[2]
+    // );
+    // eprintln!(
+    //     "error_as_ntt: {} {} {}",
+    //     error_as_ntt[0].coefficients[0], error_as_ntt[0].coefficients[1], error_as_ntt[0].coefficients[2]
+    // );
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    eprintln!("seed_for_A: {}", hex::encode(&seed_for_A));
-    eprintln!(
-        "t_as_ntt: {} {} {}",
-        t_as_ntt[0].coefficients[0], t_as_ntt[0].coefficients[1], t_as_ntt[0].coefficients[2]
-    );
+    // eprintln!("seed_for_A: {}", hex::encode(&seed_for_A));
+    // eprintln!(
+    //     "t_as_ntt: {} {} {}",
+    //     t_as_ntt[0].coefficients[0], t_as_ntt[0].coefficients[1], t_as_ntt[0].coefficients[2]
+    // );
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
             t_as_ntt, seed_for_A,

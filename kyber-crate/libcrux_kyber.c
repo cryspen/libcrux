@@ -31,9 +31,7 @@ const size_t libcrux_kyber_constants_SHARED_SECRET_SIZE = (size_t)32U;
 
 const size_t libcrux_kyber_constants_CPA_PKE_KEY_GENERATION_SEED_SIZE = (size_t)32U;
 
-const
-size_t
-libcrux_kyber_constants_H_DIGEST_SIZE = libcrux_digest_digest_size(libcrux_digest_Sha3_256);
+const size_t libcrux_kyber_constants_H_DIGEST_SIZE = (size_t)32U;
 
 const uint8_t libcrux_kyber_arithmetic_MONTGOMERY_SHIFT = 16U;
 
@@ -3709,7 +3707,9 @@ libcrux_kyber_ind_cpa_deserialize_public_key___4size_t_1536size_t(
             (
               (core_ops_range_Range__size_t){
                 .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i * (libcrux_kyber_constants_BYTES_PER_RING_ELEMENT + (size_t)1U)
+                .end = i
+                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
               }
             ),
             uint8_t,
@@ -4702,7 +4702,7 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___4size_t_1568size_t_1408siz
   core_ops_range_Range__size_t
   iter =
     core_iter_traits_collect__I__into_iter((
-        (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)1408U }
+        (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)1408U / chunk_size }
       ),
       core_ops_range_Range__size_t);
   while (true)
@@ -4721,7 +4721,7 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___4size_t_1568size_t_1408siz
             (
               (core_ops_range_Range__size_t){
                 .start = i * chunk_size,
-                .end = i * (chunk_size + (size_t)1U)
+                .end = i * chunk_size + chunk_size
               }
             ),
             uint8_t,
@@ -6797,7 +6797,9 @@ libcrux_kyber_ind_cpa_deserialize_public_key___2size_t_768size_t(
             (
               (core_ops_range_Range__size_t){
                 .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i * (libcrux_kyber_constants_BYTES_PER_RING_ELEMENT + (size_t)1U)
+                .end = i
+                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
               }
             ),
             uint8_t,
@@ -7790,7 +7792,7 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___2size_t_768size_t_640size_
   core_ops_range_Range__size_t
   iter =
     core_iter_traits_collect__I__into_iter((
-        (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)640U }
+        (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)640U / chunk_size }
       ),
       core_ops_range_Range__size_t);
   while (true)
@@ -7809,7 +7811,7 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___2size_t_768size_t_640size_
             (
               (core_ops_range_Range__size_t){
                 .start = i * chunk_size,
-                .end = i * (chunk_size + (size_t)1U)
+                .end = i * chunk_size + chunk_size
               }
             ),
             uint8_t,
@@ -9869,7 +9871,9 @@ libcrux_kyber_ind_cpa_deserialize_public_key___3size_t_1152size_t(
             (
               (core_ops_range_Range__size_t){
                 .start = i * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT,
-                .end = i * (libcrux_kyber_constants_BYTES_PER_RING_ELEMENT + (size_t)1U)
+                .end = i
+                * libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
+                + libcrux_kyber_constants_BYTES_PER_RING_ELEMENT
               }
             ),
             uint8_t,
@@ -10465,7 +10469,7 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___3size_t_1088size_t_960size
   core_ops_range_Range__size_t
   iter =
     core_iter_traits_collect__I__into_iter((
-        (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)960U }
+        (core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)960U / chunk_size }
       ),
       core_ops_range_Range__size_t);
   while (true)
@@ -10484,7 +10488,7 @@ libcrux_kyber_ind_cpa_deserialize_then_decompress_u___3size_t_1088size_t_960size
             (
               (core_ops_range_Range__size_t){
                 .start = i * chunk_size,
-                .end = i * (chunk_size + (size_t)1U)
+                .end = i * chunk_size + chunk_size
               }
             ),
             uint8_t,

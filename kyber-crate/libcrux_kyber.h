@@ -27,22 +27,6 @@ extern const size_t libcrux_kyber_constants_SHARED_SECRET_SIZE;
 
 extern const size_t libcrux_kyber_constants_CPA_PKE_KEY_GENERATION_SEED_SIZE;
 
-#define libcrux_digest_Sha1 0
-#define libcrux_digest_Sha224 1
-#define libcrux_digest_Sha256 2
-#define libcrux_digest_Sha384 3
-#define libcrux_digest_Sha512 4
-#define libcrux_digest_Blake2s 5
-#define libcrux_digest_Blake2b 6
-#define libcrux_digest_Sha3_224 7
-#define libcrux_digest_Sha3_256 8
-#define libcrux_digest_Sha3_384 9
-#define libcrux_digest_Sha3_512 10
-
-typedef uint8_t libcrux_digest_Algorithm;
-
-extern size_t libcrux_digest_digest_size(libcrux_digest_Algorithm x0);
-
 extern const size_t libcrux_kyber_constants_H_DIGEST_SIZE;
 
 extern const uint8_t libcrux_kyber_arithmetic_MONTGOMERY_SHIFT;
