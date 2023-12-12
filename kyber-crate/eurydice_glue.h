@@ -51,21 +51,22 @@ typedef struct {
 } Eurydice_slice;
 
 // Helper macro to create a slice out of a pointer x, a start index in x (included), and an end
-// index in x (excluded). The macro also needs the type of the *elements* in order to perform
-// suitable pointer casts (see remark above about how pointer arithmetic works in C).
-#define EURYDICE_SLICE(x, start, end, t) ((Eurydice_slice){ .ptr = (void*)((t*)x + start), .len = end - start })
+// index in x (excluded). The argument x must be suitably cast to something that can decay (see
+// remark above about how pointer arithmetic works in C), meaning either pointer or array type.
+#define EURYDICE_SLICE(x, start, end) ((Eurydice_slice){ .ptr = (void*)(x + start), .len = end - start })
 #define EURYDICE_SLICE_LEN(s, _) s.len
 #define Eurydice_slice_index(s, i, t) (((t*) s.ptr)[i])
-#define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE(s.ptr, r.start, r.end, t)
-#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _) EURYDICE_SLICE(s.ptr, subslice_start_pos, s.len, t)
-#define Eurydice_array_to_slice(end, x, t) EURYDICE_SLICE(x, 0, end, t)
-#define Eurydice_array_to_subslice(_arraylen, x, r, t, _) EURYDICE_SLICE(x, r.start, r.end, t)
-#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t) EURYDICE_SLICE(x, 0, r, t)
-#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t) EURYDICE_SLICE(x, r, size, t)
+#define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE((t*)s.ptr, r.start, r.end)
+#define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _) EURYDICE_SLICE((t*)s.ptr, 0, subslice_end_pos)
+#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _) EURYDICE_SLICE((t*)s.ptr, subslice_start_pos, s.len)
+#define Eurydice_array_to_slice(end, x, t) EURYDICE_SLICE(x, 0, end) /* x is already at an array type, no need for cast */
+#define Eurydice_array_to_subslice(_arraylen, x, r, t, _) EURYDICE_SLICE((t*)x, r.start, r.end)
+#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t) EURYDICE_SLICE((t*)x, 0, r)
+#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t) EURYDICE_SLICE((t*)x, r, size)
 #define Eurydice_array_repeat(dst, len, init, t) ERROR "should've been desugared"
 #define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
 #define core_slice___Slice_T___copy_from_slice(dst, src, t) memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
-#define core_array___Array_T__N__23__as_slice(len, ptr, t) ((Eurydice_slice){ .ptr = ptr, .len = len })
+#define core_array___Array_T__N__23__as_slice(len_, ptr_, t) ((Eurydice_slice){ .ptr = ptr_, .len = len_ })
 
 #define core_array_TryFromSliceError uint8_t
 
@@ -73,9 +74,23 @@ typedef struct {
 
 #define core_slice___Slice_T___split_at(slice, mid, element_type) \
   ((K___Eurydice_slice_##element_type##_Eurydice_slice_##element_type){ \
-    .fst = EURYDICE_SLICE(slice.ptr, 0, mid, element_type), \
-    .snd = EURYDICE_SLICE(slice.ptr, mid, slice.len, element_type)})
+    .fst = EURYDICE_SLICE((element_type*)slice.ptr, 0, mid), \
+    .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
 
+// Can't have a flexible array as a member of a union -- this violates strict aliasing rules.
+typedef struct
+{
+  uint8_t tag;
+  uint8_t case_Ok[];
+}
+result_tryfromslice_flexible;
+
+#define Eurydice_slice_to_array2(dst, src, _, t_arr) Eurydice_slice_to_array3((result_tryfromslice_flexible *)dst, src, sizeof(t_arr))
+
+static inline void Eurydice_slice_to_array3(result_tryfromslice_flexible *dst, Eurydice_slice src, size_t sz) {
+  dst->tag = 0;
+  memcpy(dst->case_Ok, src.ptr, sz);
+}
 
 // CORE STUFF (conversions, endianness, ...)
 
@@ -84,7 +99,14 @@ static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   memcpy(dst, &x, 4);
 }
 
+static inline int64_t core_convert_num__i64_59__from(int32_t x) { return x; }
 static inline int32_t core_convert_num__i32_56__from(int16_t x) { return x; }
+// unsigned overflow wraparound semantics in C
+static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) { return x + y; }
+static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) { return x - y; }
+
+static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) { return (*p) & v; }
+static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) { return (*p) >> v; }
 
 
 // ITERATORS
@@ -97,6 +119,38 @@ static inline int32_t core_convert_num__i32_56__from(int16_t x) { return x; }
   )
 
 #define core_iter_traits_collect__I__into_iter(x, t) (x)
+
+typedef struct {
+  Eurydice_slice slice;
+  size_t chunk_size;
+} Eurydice_chunks;
+
+
+// Can't use macros Eurydice_slice_subslice_{to,from} because they require a type, and this static
+// inline function cannot receive a type as an argument. Instead, we receive the element size and
+// use it to peform manual offset computations rather than going through the macros.
+static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks, size_t element_size) {
+  size_t chunk_size = chunks->slice.len >= chunks->chunk_size ? chunks->chunk_size : chunks->slice.len;
+  Eurydice_slice curr_chunk = ((Eurydice_slice) { .ptr = chunks->slice.ptr, .len = chunk_size });
+  chunks->slice = ((Eurydice_slice) {
+    .ptr = chunks->slice.ptr + chunk_size * element_size,
+    .len = chunks->slice.len - chunk_size
+  });
+  return curr_chunk;
+}
+
+#define core_slice___Slice_T___chunks(slice_, sz_, t) ((Eurydice_chunks){ .slice = slice_, .chunk_size = sz_ })
+#define core_slice_iter_Chunks Eurydice_chunks
+#define core_slice_iter__core__slice__iter__Chunks__a__T__70__next(iter, t) \
+  (((iter)->slice.len == 0) ? \
+    ((core_option_Option__Eurydice_slice_##t) { .tag = core_option_None }) : \
+    ((core_option_Option__Eurydice_slice_##t){ \
+       .tag = core_option_Some, \
+       .f0 = chunk_next(iter, sizeof(t)) }))
+
+// MISC
+
+#define core_fmt_Formatter void
 
 
 // VECTORS
