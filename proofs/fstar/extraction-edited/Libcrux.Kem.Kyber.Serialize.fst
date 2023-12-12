@@ -3,6 +3,7 @@ module Libcrux.Kem.Kyber.Serialize
 open Core
 open FStar.Mul
 
+//each input has 10 bits
 let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32)
     : (u8 & u8 & u8 & u8 & u8) =
   let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in

@@ -24,8 +24,6 @@ val decapsulate (#p:Spec.Kyber.params)
                 v_T_AS_NTT_ENCODED_SIZE = Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE p
                ))
     (ensures (fun res ->
-                let open Spec.Kyber in
-                let p = {v_RANK = v_K; v_ETA1; v_ETA2; v_VECTOR_U_COMPRESSION_FACTOR; v_VECTOR_V_COMPRESSION_FACTOR} in
                 res == Spec.Kyber.ind_cca_decapsulate p secret_key.f_value ciphertext.f_value))
 
 val encapsulate (#p:Spec.Kyber.params)
@@ -34,8 +32,7 @@ val encapsulate (#p:Spec.Kyber.params)
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
     : Pure (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-      (requires (
-                p == (let open Spec.Kyber in {v_RANK = v_K; v_ETA1; v_ETA2; v_VECTOR_U_COMPRESSION_FACTOR; v_VECTOR_V_COMPRESSION_FACTOR}) /\
+     (requires (p == (let open Spec.Kyber in {v_RANK = v_K; v_ETA1; v_ETA2; v_VECTOR_U_COMPRESSION_FACTOR; v_VECTOR_V_COMPRESSION_FACTOR}) /\
                 Spec.Kyber.valid_params p /\
                 v_ETA1_RANDOMNESS_SIZE == Spec.Kyber.v_ETA1_RANDOMNESS_SIZE p /\
                 v_ETA2_RANDOMNESS_SIZE == Spec.Kyber.v_ETA2_RANDOMNESS_SIZE p /\
@@ -48,8 +45,6 @@ val encapsulate (#p:Spec.Kyber.params)
                 ))
 
       (ensures (fun (ct,ss) ->
-                let open Spec.Kyber in
-                let p = {v_RANK = v_K; v_ETA1; v_ETA2; v_VECTOR_U_COMPRESSION_FACTOR; v_VECTOR_V_COMPRESSION_FACTOR} in
                 (ct.f_value,ss) == Spec.Kyber.ind_cca_encapsulate p public_key.f_value randomness))
 
 
@@ -65,6 +60,5 @@ val generate_keypair (#p:Spec.Kyber.params)
                 v_PRIVATE_KEY_SIZE == Spec.Kyber.v_SECRET_KEY_SIZE p /\
                 v_BYTES_PER_RING_ELEMENT == Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT p
                 ))
-
       (ensures (fun kp -> 
                 (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.ind_cca_generate_keypair p randomness))
