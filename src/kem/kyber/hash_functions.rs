@@ -19,7 +19,9 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 }
 
 #[inline(always)]
-pub fn XOFx4<const K: usize>(input: [[u8; 34]; K]) -> [[u8; REJECTION_SAMPLING_SEED_SIZE]; K] {
+pub(crate) fn XOFx4<const K: usize>(
+    input: [[u8; 34]; K],
+) -> [[u8; REJECTION_SAMPLING_SEED_SIZE]; K] {
     let mut out = [[0u8; REJECTION_SAMPLING_SEED_SIZE]; K];
 
     if !simd256_support() || !cfg!(simd256) {

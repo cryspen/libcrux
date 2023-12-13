@@ -6,6 +6,7 @@ use super::{
     },
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
+use crate::cloop;
 
 #[cfg(not(hax))]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
@@ -39,9 +40,9 @@ pub(super) fn deserialize_then_decompress_message(
     let mut re = PolynomialRingElement::ZERO;
 
     cloop! {
-        for (i, byte) in serialized.iter().enumerate() {
+        for (i, byte) in serialized.into_iter().enumerate() {
             for j in 0..8 {
-                let coefficient_compressed = ((*byte >> j) & 0x1) as FieldElement;
+                let coefficient_compressed = ((byte >> j) & 0x1) as FieldElement;
                 re.coefficients[8 * i + j] = decompress_message_coefficient(coefficient_compressed);
             }
         }

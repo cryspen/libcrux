@@ -7,32 +7,8 @@
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 pub(crate) mod constants;
 
-macro_rules! cloop {
-    (for ($i:ident, $chunk:ident) in $val:ident.$values:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
-        for $i in 0..$val.$values.len() / ($($chunk_size)*) {
-            let $chunk = &$val.$values[$i*($($chunk_size)*) .. $i*($($chunk_size)*)+($($chunk_size)*)];
-            $body
-        }
-    };
-    (for ($i:ident, $chunk:ident) in $val:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
-        for $i in 0..$val.len() / ($($chunk_size)*) {
-            let $chunk = &$val[$i*($($chunk_size)*) .. $i*($($chunk_size)*)+($($chunk_size)*)];
-            $body
-        }
-    };
-    (for ($i:ident, $chunk:ident) in $val:ident.iter().enumerate() $body:block) => {
-        for $i in 0..$val.len() {
-            let $chunk = &$val[$i];
-            $body
-        }
-    };
-    (for $i:ident in ($start:literal..$end:expr).step_by($step:literal) $body:block) => {
-        for $i in $start..$end / $step {
-            let $i = $i * $step;
-            $body
-        }
-    };
-}
+/// Helpers for verification and extraction
+mod helper;
 
 mod arithmetic;
 mod compress;
@@ -161,7 +137,7 @@ pub(super) fn encapsulate<
     >(public_key.as_slice(), randomness, pseudorandomness);
 
     let shared_secret = match shared_secret.try_into() {
-        Ok(ss) => ss,
+        Ok(shared_secret) => shared_secret,
         Err(_) => panic!(),
     };
     (ciphertext.into(), shared_secret)

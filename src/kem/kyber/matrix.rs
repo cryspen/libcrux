@@ -8,6 +8,7 @@ use super::{
     ntt::{invert_ntt_montgomery, ntt_multiply},
     sampling::sample_from_uniform_distribution,
 };
+use crate::cloop;
 
 #[inline(always)]
 #[allow(non_snake_case)]

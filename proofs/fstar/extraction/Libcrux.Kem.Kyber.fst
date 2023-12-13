@@ -259,10 +259,15 @@ let encapsulate
         <:
         t_Slice u8) randomness pseudorandomness
   in
-  Core.Convert.f_into ciphertext,
-  Core.Result.impl__unwrap (Core.Convert.f_try_into shared_secret
-      <:
-      Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
+  let shared_secret:t_Array u8 (sz 32) =
+    match Core.Convert.f_try_into shared_secret with
+    | Core.Result.Result_Ok shared_secret -> shared_secret
+    | Core.Result.Result_Err _ ->
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
+          <:
+          Rust_primitives.Hax.t_Never)
+  in
+  Core.Convert.f_into ciphertext, shared_secret
   <:
   (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 

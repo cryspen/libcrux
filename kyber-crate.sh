@@ -53,18 +53,28 @@ rm src/kyber1024.rs
 cargo test
 
 # Extract
-CHARON_HOME=${CHARON_HOME:-~/repos/charon/}
-EURYDICE_HOME=${EURYDICE_HOME:-~/repos/eurydice/}
-HACL_PACKAGES_HOME=${HACL_PACKAGES_HOME:-~/repos/hacl-packages/}
+if [[ -z "$CHARON_HOME" ]]; then
+    echo "Please set CHARON_HOME to the Charon directory" 1>&2
+    exit 1
+fi
+if [[ -z "$EURYDICE_HOME" ]]; then
+    echo "Please set EURYDICE_HOME to the Eurydice directory" 1>&2
+    exit 1
+fi
+if [[ -z "$HACL_PACKAGES_HOME" ]]; then
+    echo "Please set HACL_PACKAGES_HOME to the hacl-packages directory" 1>&2
+    exit 1
+fi
+
 $CHARON_HOME/bin/charon --errors-as-warnings
 mkdir -p c
 cd c
 $EURYDICE_HOME/eurydice ../libcrux_kyber.llbc
-# XXX: clang-format -i libcrux_kyber.c libcrux_kyber.h
 # Add header
 $SED -i -z 's!\(#include "libcrux_kyber.h"\)!\1\n#include "libcrux_hacl_glue.h"!g' libcrux_kyber.c
 # Drop definition
 $SED -i -z 's!typedef struct __uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__s.*__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t_;!!g' libcrux_kyber.c
+clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
 
 cp $EURYDICE_HOME/include/eurydice_glue.h .
 cp *.h $HACL_PACKAGES_HOME/libcrux/include

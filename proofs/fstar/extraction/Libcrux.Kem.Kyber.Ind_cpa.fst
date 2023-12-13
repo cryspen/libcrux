@@ -214,13 +214,7 @@ let deserialize_then_decompress_u
   in
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (ciphertext.[ {
-                        Core.Ops.Range.f_end = v_VECTOR_U_ENCODED_SIZE
-                      }
-                      <:
-                      Core.Ops.Range.t_RangeTo usize ]
-                    <:
-                    t_Slice u8)
+              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize ciphertext <: t_Slice u8)
                   ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
                       v_U_COMPRESSION_FACTOR
                       <:
@@ -262,13 +256,7 @@ let deserialize_public_key (v_K v_T_AS_NTT_ENCODED_SIZE: usize) (public_key: t_S
   in
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (public_key.[ {
-                        Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE
-                      }
-                      <:
-                      Core.Ops.Range.t_RangeTo usize ]
-                    <:
-                    t_Slice u8)
+              (Core.Slice.impl__chunks_exact public_key
                   Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)

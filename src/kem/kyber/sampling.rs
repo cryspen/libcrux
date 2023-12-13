@@ -2,6 +2,7 @@ use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
+use crate::cloop;
 
 fn rejection_sampling_panic_with_diagnostic() {
     panic!()
