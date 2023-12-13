@@ -16,10 +16,10 @@ pub(super) fn compress_then_serialize_message(
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
 
-    enumerate! {
-        for (i, coefficients) in re.coefficients.chunks_exact(8) {
-            enumerate! {
-                for (j, coefficient) in coefficients.iter() {
+    cloop! {
+        for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+            cloop! {
+                for (j, coefficient) in coefficients.iter().enumerate() {
                     let coefficient = to_unsigned_representative(*coefficient);
 
                     let coefficient_compressed = compress_message_coefficient(coefficient);
@@ -38,8 +38,8 @@ pub(super) fn deserialize_then_decompress_message(
 ) -> PolynomialRingElement {
     let mut re = PolynomialRingElement::ZERO;
 
-    enumerate! {
-        for (i, byte) in serialized.iter() {
+    cloop! {
+        for (i, byte) in serialized.iter().enumerate() {
             for j in 0..8 {
                 let coefficient_compressed = ((*byte >> j) & 0x1) as FieldElement;
                 re.coefficients[8 * i + j] = decompress_message_coefficient(coefficient_compressed);
@@ -56,8 +56,8 @@ pub(super) fn serialize_uncompressed_ring_element(
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
 
-    enumerate! {
-        for (i, coefficients) in re.coefficients.chunks_exact(2) {
+    cloop! {
+        for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
             let coefficient1 = to_unsigned_representative(coefficients[0]);
             let coefficient2 = to_unsigned_representative(coefficients[1]);
 
@@ -85,8 +85,8 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
 
     let mut re = PolynomialRingElement::ZERO;
 
-    enumerate! {
-        for (i, bytes) in serialized.chunks_exact(3) {
+    cloop! {
+        for (i, bytes) in serialized.chunks_exact(3).enumerate() {
             let byte1 = bytes[0] as FieldElement;
             let byte2 = bytes[1] as FieldElement;
             let byte3 = bytes[2] as FieldElement;
@@ -103,8 +103,8 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
 fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
-    enumerate! {
-        for (i, coefficients) in re.coefficients.chunks_exact(4) {
+    cloop! {
+        for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(10, to_unsigned_representative(coefficients[0]));
             let coefficient2 =
@@ -146,8 +146,8 @@ fn compress_coefficients_10(
 fn compress_then_serialize_11<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
-    enumerate! {
-        for (i, coefficients) in re.coefficients.chunks_exact(8) {
+    cloop! {
+        for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(11, to_unsigned_representative(coefficients[0]));
             let coefficient2 =
@@ -239,8 +239,8 @@ pub(super) fn compress_then_serialize_ring_element_u<
 fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
-    enumerate! {
-        for (i, coefficients) in re.coefficients.chunks_exact(2) {
+    cloop! {
+        for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(4, to_unsigned_representative(coefficients[0])) as u8;
             let coefficient2 =
@@ -257,8 +257,8 @@ fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) ->
 fn compress_then_serialize_5<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
 
-    enumerate! {
-        for (i, coefficients) in re.coefficients.chunks_exact(8) {
+    cloop! {
+        for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(5, to_unsigned_representative(coefficients[0])) as u8;
             let coefficient2 =
@@ -338,8 +338,8 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
 
     let mut re = PolynomialRingElement::ZERO;
 
-    enumerate! {
-        for (i, bytes) in serialized.chunks_exact(5) {
+    cloop! {
+        for (i, bytes) in serialized.chunks_exact(5).enumerate() {
             let byte1 = bytes[0] as FieldElement;
             let byte2 = bytes[1] as FieldElement;
             let byte3 = bytes[2] as FieldElement;
@@ -380,8 +380,8 @@ fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
 
     let mut re = PolynomialRingElement::ZERO;
 
-    enumerate! {
-        for (i, bytes) in serialized.chunks_exact(11) {
+    cloop! {
+        for (i, bytes) in serialized.chunks_exact(11).enumerate() {
             let byte1 = bytes[0] as FieldElement;
             let byte2 = bytes[1] as FieldElement;
             let byte3 = bytes[2] as FieldElement;
@@ -476,8 +476,8 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
 
     let mut re = PolynomialRingElement::ZERO;
 
-    enumerate! {
-        for (i, byte) in serialized.iter() {
+    cloop! {
+        for (i, byte) in serialized.iter().enumerate() {
             let (coefficient1, coefficient2) = decompress_coefficients_4(byte);
 
             re.coefficients[2 * i] = decompress_ciphertext_coefficient(4, coefficient1);
@@ -501,8 +501,8 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
 
     let mut re = PolynomialRingElement::ZERO;
 
-    enumerate! {
-        for (i, bytes) in serialized.chunks_exact(5) {
+    cloop! {
+        for (i, bytes) in serialized.chunks_exact(5).enumerate() {
             let byte1 = bytes[0] as FieldElement;
             let byte2 = bytes[1] as FieldElement;
             let byte3 = bytes[2] as FieldElement;

@@ -10,7 +10,7 @@ mv src/kyber/* src
 
 SED=$(which gsed &>/dev/null && echo gsed || echo sed)
 
-cat > Cargo.toml <<EOF
+cat >Cargo.toml <<EOF
 [package]
 name = "libcrux_kyber"
 version = "0.1.0"
@@ -32,17 +32,22 @@ serde = { version = "1.0", features = ["derive"] }
 rand = { version = "0.8" }
 EOF
 
-for file in src/*; do 
-    if [ -f "$file" ]; then 
+# Fixup Rust for standalone crate
+for file in src/*; do
+    if [ -f "$file" ]; then
         echo "fixing up $file ..."
         $SED -i 's/pub(in .*)/pub(crate)/g' $file
         $SED -i 's/pub(super)/pub(crate)/g' $file
         $SED -i 's/crate::/libcrux::/g' $file
-    fi 
+        $SED -i 's/pub mod kyber512;//g' $file
+        $SED -i 's/pub mod kyber1024;//g' $file
+    fi
 done
 
 mkdir -p tests
 cp -r ../kyber-crate-tests/* tests/
+rm src/kyber512.rs
+rm src/kyber1024.rs
 
 # Build & test
 cargo test
@@ -50,8 +55,17 @@ cargo test
 # Extract
 CHARON_HOME=${CHARON_HOME:-~/repos/charon/}
 EURYDICE_HOME=${EURYDICE_HOME:-~/repos/eurydice/}
+HACL_PACKAGES_HOME=${HACL_PACKAGES_HOME:-~/repos/hacl-packages/}
 $CHARON_HOME/bin/charon --errors-as-warnings
-mkdir c
+mkdir -p c
 cd c
 $EURYDICE_HOME/eurydice ../libcrux_kyber.llbc
+# XXX: clang-format -i libcrux_kyber.c libcrux_kyber.h
+# Add header
+$SED -i -z 's!\(#include "libcrux_kyber.h"\)!\1\n#include "libcrux_hacl_glue.h"!g' libcrux_kyber.c
+# Drop definition
+$SED -i -z 's!typedef struct __uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__s.*__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t_;!!g' libcrux_kyber.c
+
 cp $EURYDICE_HOME/include/eurydice_glue.h .
+cp *.h $HACL_PACKAGES_HOME/libcrux/include
+cp *.c $HACL_PACKAGES_HOME/libcrux/src

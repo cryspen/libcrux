@@ -104,10 +104,10 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
 ) -> [PolynomialRingElement; K] {
     let mut result = [PolynomialRingElement::ZERO; K];
 
-    enumerate! {
-        for (i, row) in a_as_ntt.iter() {
-            enumerate! {
-                for (j, a_element) in row.iter() {
+    cloop! {
+        for (i, row) in a_as_ntt.iter().enumerate() {
+            cloop! {
+                for (j, a_element) in row.iter().enumerate() {
                     let product = ntt_multiply(a_element, &r_as_ntt[j]);
                     result[i] = add_to_ring_element::<K>(result[i], &product);
                 }
@@ -137,10 +137,10 @@ pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
 ) -> [PolynomialRingElement; K] {
     let mut result = [PolynomialRingElement::ZERO; K];
 
-    enumerate! {
-        for (i, row) in matrix_A.iter() {
-            enumerate! {
-                for (j, matrix_element) in row.iter() {
+    cloop! {
+        for (i, row) in matrix_A.iter().enumerate() {
+            cloop! {
+                for (j, matrix_element) in row.iter().enumerate() {
                     let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
                     result[i] = add_to_ring_element::<K>(result[i], &product);
                 }
