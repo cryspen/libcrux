@@ -122,17 +122,19 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
               Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                   <:
                   bool)
-                (((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i ] <: i32) <: i32) <=.
-                    (((cast (v_K <: usize) <: i32) -! 1l <: i32) *!
+                (fun temp_0_ ->
+                    let _:Prims.unit = temp_0_ in
+                    ((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i ] <: i32) <: i32) <=.
+                      (((cast (v_K <: usize) <: i32) -! 1l <: i32) *!
+                        Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                        <:
+                        i32)
+                      <:
+                      bool) &&
+                    ((Core.Num.impl__i32__abs (rhs.f_coefficients.[ i ] <: i32) <: i32) <=.
                       Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
                       <:
-                      i32)
-                    <:
-                    bool) &&
-                  ((Core.Num.impl__i32__abs (rhs.f_coefficients.[ i ] <: i32) <: i32) <=.
-                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                    <:
-                    bool))
+                      bool))
               <:
               bool))
       (ensures
@@ -148,12 +150,14 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.f_coefficients.[ i ] <: i32) <: i32) <=.
-                    ((cast (v_K <: usize) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Core.Num.impl__i32__abs (result.f_coefficients.[ i ] <: i32) <: i32) <=.
+                      ((cast (v_K <: usize) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+                        <:
+                        i32)
                       <:
-                      i32)
-                    <:
-                    bool)
+                      bool)
                 <:
                 bool)) =
   let _:Prims.unit = () <: Prims.unit in
