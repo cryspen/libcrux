@@ -58,82 +58,106 @@ K____uint8_t___uint8_t____K____uint8_t___uint8_t_;
 
 void
 Hacl_Hash_SHA3_Simd256_shake128(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
+  uint32_t outputByteLen,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint32_t outputByteLen,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_shake256(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
+  uint32_t outputByteLen,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint32_t outputByteLen,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_224(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_256(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_384(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_512(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
+  uint32_t inputByteLen
+);
+
+uint64_t *Hacl_Hash_SHA3_Simd256_state_malloc(void);
+
+void Hacl_Hash_SHA3_Simd256_state_free(uint64_t *s);
+
+void
+Hacl_Hash_SHA3_Simd256_shake128_absorb(
+  Lib_IntVector_Intrinsics_vec256 *state,
+  uint8_t *input0,
+  uint8_t *input1,
+  uint8_t *input2,
+  uint8_t *input3,
+  uint32_t inputByteLen
+);
+
+void
+Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(
+  Lib_IntVector_Intrinsics_vec256 *state,
   uint8_t *output0,
   uint8_t *output1,
   uint8_t *output2,
-  uint8_t *output3
+  uint8_t *output3,
+  uint32_t outputByteLen
 );
 
 #if defined(__cplusplus)
