@@ -6,6 +6,7 @@ use libcrux::digest;
 use libcrux::drbg::Drbg;
 use libcrux::kem::Algorithm;
 use rand_core::OsRng;
+use rand_core::RngCore;
 
 pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
@@ -13,14 +14,22 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Key Generation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable", |b| {
+    group.bench_function("libcrux portable (external random)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = libcrux::kem::kyber768_generate_keypair_derand(seed);
+        })
+    });
+
+    group.bench_function("libcrux portable (HACL-DRBG)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
                 libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
         })
     });
 
-    group.bench_function("libcrux portable OsRng", |b| {
+    group.bench_function("libcrux portable (OsRng)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
                 libcrux::kem::key_gen(Algorithm::Kyber768, &mut rng).unwrap();
@@ -37,6 +46,21 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
 pub fn comparisons_encapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Encapsulation");
     group.measurement_time(Duration::from_secs(10));
+
+    group.bench_function("libcrux portable (external random)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || libcrux::kem::kyber768_generate_keypair_derand(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    libcrux::kem::kyber768_encapsulate_derand(&keypair.public_key(), seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
 
     group.bench_function("libcrux portable", |b| {
         b.iter_batched(
