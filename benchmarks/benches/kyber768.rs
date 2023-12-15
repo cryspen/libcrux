@@ -16,10 +16,9 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
 
     group.bench_function("libcrux portable (external random)", |b| {
         let mut seed = [0; 64];
-    	rng.fill_bytes(&mut seed);
+        rng.fill_bytes(&mut seed);
         b.iter(|| {
-            let _kp =
-                libcrux::kem::kyber768_generate_keypair_derand(seed);
+            let _kp = libcrux::kem::kyber768_generate_keypair_derand(seed);
         })
     });
 
@@ -54,9 +53,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         let mut seed2 = [0; 32];
         OsRng.fill_bytes(&mut seed2);
         b.iter_batched(
-            || {
-	        libcrux::kem::kyber768_generate_keypair_derand(seed1)
-            },
+            || libcrux::kem::kyber768_generate_keypair_derand(seed1),
             |keypair| {
                 let (_shared_secret, _ciphertext) =
                     libcrux::kem::kyber768_encapsulate_derand(&keypair.public_key(), seed2);
