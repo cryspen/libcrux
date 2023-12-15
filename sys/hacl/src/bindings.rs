@@ -895,6 +895,26 @@ extern "C" {
     );
 }
 extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_state_malloc() -> *mut u64;
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_state_free(s: *mut u64);
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_shake128_absorb(
+        state: *mut u64,
+        input: *mut u8,
+        inputByteLen: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
+        state: *mut u64,
+        output: *mut u8,
+        outputByteLen: u32,
+    );
+}
+extern "C" {
     pub fn hacl_free(ptr: *mut ::core::ffi::c_void);
 }
 extern "C" {

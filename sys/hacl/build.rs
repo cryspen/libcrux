@@ -111,6 +111,10 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .allowlist_function("Hacl_Hash_SHA2.*")
         .allowlist_function("Hacl_Hash_SHA3.*")
         .allowlist_function("Hacl_Hash_Blake2.*")
+        .allowlist_function("Hacl_Hash_SHA3_Scalar_state_malloc")
+        .allowlist_function("Hacl_Hash_SHA3_Scalar_state_free")
+        .allowlist_function("Hacl_Hash_SHA3_Scalar_shake128_absorb")
+        .allowlist_function("Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks")
         .allowlist_function("Hacl_HMAC_DRBG.*")
         .allowlist_function("Hacl_Ed25519.*")
         .allowlist_function("Hacl_HKDF_.*")
@@ -135,6 +139,10 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
         .blocklist_function("Hacl_Hash_Blake2b_update_last")
         .blocklist_function("Hacl_Hash_Blake2b_Simd256_update_multi")
         .blocklist_function("Hacl_Hash_Blake2b_Simd256_update_last")
+        // The following functions aren't needed at the moment
+        .blocklist_function("Hacl_Hash_SHA3_Scalar_sha3.*")
+        .blocklist_function("Hacl_Hash_SHA3_Scalar_shake128")
+        .blocklist_function("Hacl_Hash_SHA3_Scalar_shake256")
         // Disable tests to avoid warnings and keep it portable
         .layout_tests(false)
         // Generate bindings
