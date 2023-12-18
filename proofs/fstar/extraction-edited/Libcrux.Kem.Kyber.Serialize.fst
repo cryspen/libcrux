@@ -3,10 +3,10 @@ module Libcrux.Kem.Kyber.Serialize
 open Core
 open FStar.Mul
 
-open Libcrux.Kem.Kyber.Arithmetic
+// open Libcrux.Kem.Kyber.Arithmetic
 
 unfold let map (f:'a -> 'b) (s: t_Array 'a 'n): t_Array 'b 'n
-  = createi 'n (fun i -> f s.[i])
+  = Libcrux.Kem.Kyber.Arithmetic.createi 'n (fun i -> f s.[i])
 
 type bit = n: nat {n < 2}
 
@@ -22,7 +22,7 @@ unfold let bits_to_byte (bits: t_Array bit (sz 8)): u8
 
 let bits_to_bytes (#n: usize {v n < 100}) (bits: t_Array bit (n *! sz 8))
   : t_Array u8 n
-  = createi n (fun i -> bits_to_byte (Seq.slice bits (8 * v i) (8 * v i + 8)))
+  = Libcrux.Kem.Kyber.Arithmetic.createi n (fun i -> bits_to_byte (Seq.slice bits (8 * v i) (8 * v i + 8)))
 
 let get_bit_nat (x: nat) (nth: nat): bit
   = (x / pow2 nth) % 2
@@ -64,14 +64,15 @@ let get_bit_shl #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
     [SMTPat (get_bit (x <<! y) i)]
   = admit ()
 
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 50"
 let get_bit_arr
   (#n: inttype) (#len: usize) 
   (arr: t_Array (int_t n) len)
   (d: d_param n)
   (nth: usize {v nth < v len * v d})
   : bit
-  = get_bit (arr.[nth /! d]) (nth %! d)
-
+  = get_bit Libcrux.Kem.Kyber.Arithmetic.(arr.[nth /! d]) (nth %! d)
+#pop-options
 
 let get_bit_arr_nat
   (#n: inttype) (#len: nat {len < max_usize})
@@ -81,19 +82,14 @@ let get_bit_arr_nat
   : bit
   = get_bit_arr arr (mk_int d) (mk_int nth)
 
-// let bit_vector_slice (#n: inttype) (x: int_t n {v x > 0}) (d: d_param n): t_Array bit d
-//   = createi d (get_bit x)
-
 let bit_vector
   (#n: inttype) (#len: usize)
   (arr: t_Array (int_t n) len)
   (d: d_param n)
   : t_Array bit (len *. d)
-  = createi (len *. d) (get_bit_arr arr d)
+  = Libcrux.Kem.Kyber.Arithmetic.createi (len *. d) (get_bit_arr arr d)
 
 open MkSeq
-
-open FStar.Tactics
 
 
 let pow2_minus_one_mod_lemma1 (n: nat) (m: nat {m < n})
@@ -116,6 +112,51 @@ let get_bit_pow2_minus_one
   = reveal_opaque (`%get_bit) (get_bit (mk_int #t (pow2 n - 1)) nth);
     if v nth < n then pow2_minus_one_mod_lemma1 n (v nth)
                  else pow2_minus_one_mod_lemma2 n (v nth)
+
+
+// open FStar.Tactics
+// let gen_get_bit_pow2_minus_one (signed: bool) (bits: nat) (x_log: nat): Tac sigelt
+//   = let x = pow2 x_log - 1 in
+//     let t_binder = fresh_binder_named "t" (`inttype) in
+//     let nth_binder = fresh_binder_named "nth" (`usize) in
+//     let nth = binder_to_term nth_binder in
+//     let int_name = (if signed then "i" else "u") ^ string_of_int bits in
+//     let inttype = pack (Tv_FVar (pack_fv [ "Rust_primitives"; "Integers"; int_name ^ "_inttype"])) in
+//     let pre = `(v (`#nth) < `@bits /\ (`#t_binder) == (`#inttype)) in
+//     let to_t = pack_fv [ "FStar"
+//                        ; (if signed then "Int" else "UInt") ^ string_of_int bits
+//                        ; if signed then "int_to_t" else "uint_to_t"] in
+//     let to_t = pack (Tv_FVar to_t) in
+//     let post = `(fun () -> get_bit #(`#inttype) ((`#to_t) (`@x)) (`#nth) == (if v (`#nth) < `@x_log then 1 else 0)) in
+//     let bds = [t_binder; nth_binder] in
+//     let sv = Sg_Let false [pack_lb {
+//         lb_fv = pack_fv (cur_module () @ ["get_bit_pow2_minus_one_" ^ int_name ^ "_" ^ string_of_int x]);
+//         lb_us = [];
+//         lb_typ = mk_arr bds (pack_comp (C_Lemma pre post (`[SMTPat (get_bit #(`#t_binder) ((`#to_t) (`@x)) (`#nth))])));
+//         lb_def = mk_abs bds (`( 
+//           assert_norm (pow2 (`@x_log) - 1 == (`@x));
+//           mk_int_equiv_lemma #(`#inttype) (`@x);
+//           get_bit_pow2_minus_one #(`#inttype) (`@x_log) (`#nth)
+//         ))
+//     }] in
+//     // fail (term_to_string (quote sv));
+//     pack_sigelt sv
+
+
+// %splice[] (
+//   let flatmap #a #b (f: a -> Tac (list b)) l = FStar.List.Tot.flatten (map f l) in
+//   flatmap (fun size -> 
+//     flatmap (fun x -> 
+//       flatmap (fun signed -> 
+//         if x <= size - (if signed then 1 else 0)
+//         then [gen_get_bit_pow2_minus_one signed size x]
+//         else []
+//       ) [false; true]
+//     ) [1;2;3;4;5;6;7;8]
+//   ) [8; 32]
+// )
+
+
 
 unfold let mask_inv_opt =
   function | 0   -> Some 0
@@ -324,9 +365,9 @@ val decompress_coefficients_10_
     (ensures fun tuple ->
          let inputs = get_bit_arr_nat (mk_seq5 i1 i2 i3 i4 i5) 8 in
          let outputs = get_bit_arr_nat (mk_seq_tup4 tuple) 10 in
-         forall (i: nat). i < 40 ==> inputs i == outputs i
+         (forall (i: nat). i < 40 ==> inputs i == outputs i)
     )
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 160"
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 40 --split_queries always"
 let decompress_coefficients_10_ (byte2 byte1 byte3 byte4 byte5: int_t_b i32_inttype (sz 8)) : (i32 & i32 & i32 & i32) =
   let coefficient1:i32 = ((byte2 &. 3l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) in
   let coefficient2:i32 = ((byte3 &. 15l <: i32) <<! 6l <: i32) |. (byte2 >>! 2l <: i32) in
@@ -430,18 +471,9 @@ let compress_then_serialize_10_
     : t_Array u8 v_OUT_LEN =
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    <:
-                    t_Slice i32)
-                  (sz 4)
-                <:
-                Core.Slice.Iter.t_ChunksExact i32)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
+    Rust_primitives.Iterators.foldi_chunks_exact
+      (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients <: t_Slice i32)
+      (sz 4)
       serialized
       (fun serialized temp_1_ ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
@@ -512,18 +544,9 @@ let compress_then_serialize_11_
     : t_Array u8 v_OUT_LEN =
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                    <:
-                    t_Slice i32)
-                  (sz 8)
-                <:
-                Core.Slice.Iter.t_ChunksExact i32)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact i32))
+    Rust_primitives.Iterators.foldi_chunks_exact
+      (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients <: t_Slice i32)
+      (sz 8)
       serialized
       (fun serialized temp_1_ ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
