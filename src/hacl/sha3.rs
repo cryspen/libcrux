@@ -94,6 +94,55 @@ pub(crate) fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     out
 }
 
+pub mod incremental {
+    use libcrux_hacl::{
+        Hacl_Hash_SHA3_Scalar_shake128_absorb, Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks,
+        Hacl_Hash_SHA3_Scalar_state_free, Hacl_Hash_SHA3_Scalar_state_malloc,
+    };
+
+    pub struct IncrementalShake128 {
+        state: *mut u64,
+    }
+
+    impl IncrementalShake128 {
+        pub fn new() -> Self {
+            let state = Self {
+                state: unsafe { Hacl_Hash_SHA3_Scalar_state_malloc() },
+            };
+
+            state
+        }
+
+        pub fn absorb(&mut self, input: &[u8]) {
+            unsafe {
+                Hacl_Hash_SHA3_Scalar_shake128_absorb(
+                    self.state,
+                    input.as_ptr() as _,
+                    input.len() as u32,
+                )
+            };
+        }
+
+        pub fn squeeze_nblocks<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
+            let mut output = [0u8; OUTPUT_BYTES];
+            unsafe {
+                Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
+                    self.state,
+                    output.as_mut_ptr(),
+                    OUTPUT_BYTES as u32,
+                )
+            };
+
+            output
+        }
+    }
+    impl Drop for IncrementalShake128 {
+        fn drop(&mut self) {
+            unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
+        }
+    }
+}
+
 #[cfg(simd256)]
 pub mod x4 {
     use libcrux_hacl::{
