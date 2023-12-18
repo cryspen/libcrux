@@ -3,223 +3,8 @@ module Libcrux.Kem.Kyber.Serialize
 open Core
 open FStar.Mul
 
-// open Libcrux.Kem.Kyber.Arithmetic
-
-unfold let map (f:'a -> 'b) (s: t_Array 'a 'n): t_Array 'b 'n
-  = Libcrux.Kem.Kyber.Arithmetic.createi 'n (fun i -> f s.[i])
-
-type bit = n: nat {n < 2}
-
-unfold let bits_to_byte (bits: t_Array bit (sz 8)): u8
-  = mk_int ( bits.[sz 0]
-           + bits.[sz 1] * 2
-           + bits.[sz 2] * 4
-           + bits.[sz 3] * 8
-           + bits.[sz 4] * 16
-           + bits.[sz 5] * 32
-           + bits.[sz 6] * 64
-           + bits.[sz 7] * 128 )
-
-let bits_to_bytes (#n: usize {v n < 100}) (bits: t_Array bit (n *! sz 8))
-  : t_Array u8 n
-  = Libcrux.Kem.Kyber.Arithmetic.createi n (fun i -> bits_to_byte (Seq.slice bits (8 * v i) (8 * v i + 8)))
-
-let get_bit_nat (x: nat) (nth: nat): bit
-  = (x / pow2 nth) % 2
-
-[@"opaque_to_smt"]
-let get_bit (#n: inttype) (x: int_t n) (nth: usize {v nth < bits n}): bit
-  = if v x >= 0
-    then get_bit_nat (v x) (v nth)
-    else 
-      let x' = pow2 (bits n) + v x in
-      get_bit_nat x' (v nth)
-
-type d_param n = d: usize {v d > 0 /\ v d <= bits n}
-
-unfold let bit_and (x y: bit): bit
-    = match x, y with
-      | (1, 1) -> 1
-      | _ -> 0
-      
-unfold let bit_or (x y: bit): bit
-    = (x + y) % 2
-
-let get_bit_and #t (x y: int_t t) (i: usize {v i < bits t})
-  : Lemma (get_bit (x &. y) i == get_bit x i `bit_and` get_bit y i)
-          [SMTPat (get_bit (x &. y) i)]
-  = admit ()
-
-let get_bit_or #t (x y: int_t t) (i: usize {v i < bits t})
-  : Lemma (get_bit (x |. y) i == get_bit x i `bit_or` get_bit y i)
-          [SMTPat (get_bit (x |. y) i)]
-  = admit ()
-
-let get_bit_shl #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
-  : Lemma
-    (requires v y >= 0 /\ v y < bits t)
-    (ensures get_bit (x <<! y) i == (if v i < v y
-                                     then 0
-                                     else get_bit x (mk_int (v i - v y))))
-    [SMTPat (get_bit (x <<! y) i)]
-  = admit ()
-
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 50"
-let get_bit_arr
-  (#n: inttype) (#len: usize) 
-  (arr: t_Array (int_t n) len)
-  (d: d_param n)
-  (nth: usize {v nth < v len * v d})
-  : bit
-  = get_bit Libcrux.Kem.Kyber.Arithmetic.(arr.[nth /! d]) (nth %! d)
-#pop-options
-
-let get_bit_arr_nat
-  (#n: inttype) (#len: nat {len < max_usize})
-  (arr: t_Array (int_t n) (sz len))
-  (d: nat {d > 0 /\ d <= bits n}) // v d > 0 /\ v d <= bits n
-  (nth: nat {nth < len * d /\ nth < max_usize})
-  : bit
-  = get_bit_arr arr (mk_int d) (mk_int nth)
-
-let bit_vector
-  (#n: inttype) (#len: usize)
-  (arr: t_Array (int_t n) len)
-  (d: d_param n)
-  : t_Array bit (len *. d)
-  = Libcrux.Kem.Kyber.Arithmetic.createi (len *. d) (get_bit_arr arr d)
-
+open Bit
 open MkSeq
-
-
-let pow2_minus_one_mod_lemma1 (n: nat) (m: nat {m < n})
-   : Lemma (((pow2 n - 1) / pow2 m) % 2 == 1)
-   = let d: pos = n - m in
-     Math.Lemmas.pow2_plus m d;
-     Math.Lemmas.lemma_div_plus (-1) (pow2 d) (pow2 m);
-     if d > 0 then Math.Lemmas.pow2_double_mult (d-1)
-
-let pow2_minus_one_mod_lemma2 (n: nat) (m: nat {n <= m})
-  : Lemma (((pow2 n - 1) / pow2 m) % 2 == 0)
-  = Math.Lemmas.pow2_le_compat m n;
-    Math.Lemmas.small_div (pow2 n - 1) (pow2 m)
-
-let get_bit_pow2_minus_one
-  #t (n: nat {pow2 n - 1 <= maxint t}) 
-  (nth: usize {v nth < bits t})
-  : Lemma (  get_bit (mk_int #t (pow2 n - 1)) nth
-          == (if v nth < n then 1 else 0))
-  = reveal_opaque (`%get_bit) (get_bit (mk_int #t (pow2 n - 1)) nth);
-    if v nth < n then pow2_minus_one_mod_lemma1 n (v nth)
-                 else pow2_minus_one_mod_lemma2 n (v nth)
-
-
-// open FStar.Tactics
-// let gen_get_bit_pow2_minus_one (signed: bool) (bits: nat) (x_log: nat): Tac sigelt
-//   = let x = pow2 x_log - 1 in
-//     let t_binder = fresh_binder_named "t" (`inttype) in
-//     let nth_binder = fresh_binder_named "nth" (`usize) in
-//     let nth = binder_to_term nth_binder in
-//     let int_name = (if signed then "i" else "u") ^ string_of_int bits in
-//     let inttype = pack (Tv_FVar (pack_fv [ "Rust_primitives"; "Integers"; int_name ^ "_inttype"])) in
-//     let pre = `(v (`#nth) < `@bits /\ (`#t_binder) == (`#inttype)) in
-//     let to_t = pack_fv [ "FStar"
-//                        ; (if signed then "Int" else "UInt") ^ string_of_int bits
-//                        ; if signed then "int_to_t" else "uint_to_t"] in
-//     let to_t = pack (Tv_FVar to_t) in
-//     let post = `(fun () -> get_bit #(`#inttype) ((`#to_t) (`@x)) (`#nth) == (if v (`#nth) < `@x_log then 1 else 0)) in
-//     let bds = [t_binder; nth_binder] in
-//     let sv = Sg_Let false [pack_lb {
-//         lb_fv = pack_fv (cur_module () @ ["get_bit_pow2_minus_one_" ^ int_name ^ "_" ^ string_of_int x]);
-//         lb_us = [];
-//         lb_typ = mk_arr bds (pack_comp (C_Lemma pre post (`[SMTPat (get_bit #(`#t_binder) ((`#to_t) (`@x)) (`#nth))])));
-//         lb_def = mk_abs bds (`( 
-//           assert_norm (pow2 (`@x_log) - 1 == (`@x));
-//           mk_int_equiv_lemma #(`#inttype) (`@x);
-//           get_bit_pow2_minus_one #(`#inttype) (`@x_log) (`#nth)
-//         ))
-//     }] in
-//     // fail (term_to_string (quote sv));
-//     pack_sigelt sv
-
-
-// %splice[] (
-//   let flatmap #a #b (f: a -> Tac (list b)) l = FStar.List.Tot.flatten (map f l) in
-//   flatmap (fun size -> 
-//     flatmap (fun x -> 
-//       flatmap (fun signed -> 
-//         if x <= size - (if signed then 1 else 0)
-//         then [gen_get_bit_pow2_minus_one signed size x]
-//         else []
-//       ) [false; true]
-//     ) [1;2;3;4;5;6;7;8]
-//   ) [8; 32]
-// )
-
-
-
-unfold let mask_inv_opt =
-  function | 0   -> Some 0
-           | 1   -> Some 1
-           | 3   -> Some 2
-           | 7   -> Some 3
-           | 15  -> Some 4
-           | 31  -> Some 5
-           | 63  -> Some 6
-           | 127 -> Some 7
-           | 255 -> Some 8
-           | _   -> None
-
-let get_bit_pow2_minus_one_i32
-  (x: int {Some? (mask_inv_opt x)})
-  (nth: usize {v nth < 32})
-  : Lemma (
-     get_bit (FStar.Int32.int_to_t x) nth == (if v nth < Some?.v (mask_inv_opt x) then 1 else 0)
-  )
-  [SMTPat (get_bit (FStar.Int32.int_to_t x) nth)]
-  = let n = Some?.v (mask_inv_opt x) in
-    mk_int_equiv_lemma #i32_inttype x;
-    get_bit_pow2_minus_one #i32_inttype n nth
-  
-let get_bit_pow2_minus_one_u8
-  (t: _ {t == u8_inttype})
-  (x: int {Some? (mask_inv_opt x)})
-  (nth: usize {v nth < 8})
-  : Lemma (
-        get_bit #t (FStar.UInt8.uint_to_t x) nth 
-     == (if v nth < Some?.v (mask_inv_opt x) then 1 else 0)
-  )
-  [SMTPat (get_bit #t (FStar.UInt8.uint_to_t x) nth)]
-  = let n = Some?.v (mask_inv_opt x) in
-    mk_int_equiv_lemma #u8_inttype x;
-    get_bit_pow2_minus_one #u8_inttype n nth
-
-let get_bit_cast #t #u
-  (x: int_t t) (nth: usize)
-  : Lemma (requires v nth < bits u /\ v nth < bits t)
-          (ensures get_bit x nth == get_bit (cast x <: int_t u) nth)
-          [SMTPat (get_bit (cast #(int_t t) #(int_t u) x <: int_t u) nth)]
-  = reveal_opaque (`%get_bit) (get_bit x nth);
-    reveal_opaque (`%get_bit) (get_bit (cast x <: int_t u) nth);
-    admit ()
-
-let get_bit_shr #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
-  : Lemma 
-    (requires v y >= 0 /\ v y < bits t)
-    (ensures get_bit (x >>! y) i == (if v i < bits t - v y
-                                     then get_bit x (mk_int (v i + v y))
-                                     else 
-                                       if signed t
-                                       then get_bit x (mk_int (bits t - 1))
-                                       else 0))
-    [SMTPat (get_bit (x >>! y) i)]
-  = admit ()
-
-let get_last_bit_signed_lemma (#t: inttype{signed t}) (x: int_t t)
-  : Lemma (   get_bit x (mk_int (bits t - 1)) 
-          == (if v x < 0 then 1 else 0))
-    [SMTPat (get_bit x (mk_int (bits t - 1)))]
-  = admit ()
 
 //each input has 10 bits
 val compress_coefficients_10_ 
@@ -228,8 +13,8 @@ val compress_coefficients_10_
     (u8 & u8 & u8 & u8 & u8)
     (requires True)
     (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (mk_seq4 i1 i2 i3 i4) 10 in
-         let outputs = get_bit_arr_nat (mk_seq_tup5 tuple) 8 in
+         let inputs = get_bit_arr_nat (mk_seq4 (i1, i2, i3, i4)) 10 in
+         let outputs = get_bit_arr_nat (mk_seq5 tuple) 8 in
          forall (i: nat). i < 40 ==> inputs i == outputs i
     )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 90"
@@ -252,8 +37,6 @@ let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficien
   result
 #pop-options
 
-let int_t_b t (d: d_param t) = n: int_t t {forall (i: usize). (v i < bits t /\ v i >= v d) ==> get_bit n i == 0}
-
 // each input has 11 bits
 val compress_coefficients_11_ 
   (i1 i2 i3 i4 i5 i6 i7 i8: int_t_b i32_inttype (sz 11))
@@ -261,9 +44,8 @@ val compress_coefficients_11_
     (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
     (requires True)
     (ensures fun tuple ->
-      let _ = mk_seq8 #i32 i1 i2 i3 i4 i5 i6 i7 i8 in
-         let inputs = get_bit_arr_nat (mk_seq8 i1 i2 i3 i4 i5 i6 i7 i8) 11 in
-         let outputs = get_bit_arr_nat (mk_seq_tup11 tuple) 8 in
+         let inputs = get_bit_arr_nat (mk_seq8 (i1, i2, i3, i4, i5, i6, i7, i8)) 11 in
+         let outputs = get_bit_arr_nat (mk_seq11 tuple) 8 in
          forall (i: nat). i < 88 ==> inputs i == outputs i
     )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
@@ -314,8 +96,8 @@ val compress_coefficients_2_
     (u8 & u8 & u8)
     (requires True)
     (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (mk_seq2 i1 i2) 12 in
-         let outputs = get_bit_arr_nat (mk_seq_tup3 tuple) 8 in
+         let inputs = get_bit_arr_nat (mk_seq2 (i1, i2)) 12 in
+         let outputs = get_bit_arr_nat (mk_seq3 tuple) 8 in
          forall (i: nat). i < 24 ==> inputs i == outputs i
     )
 let compress_coefficients_3_ (coefficient1 coefficient2: u16) : (u8 & u8 & u8) =
@@ -334,8 +116,8 @@ val compress_coefficients_5_
     (u8 & u8 & u8 & u8 & u8)
     (requires True)
     (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (mk_seq8 i1 i2 i3 i4 i5 i6 i7 i8) 5 in
-         let outputs = get_bit_arr_nat (mk_seq_tup5 tuple) 8 in
+         let inputs = get_bit_arr_nat (mk_seq8 (i1, i2, i3, i4, i5, i6, i7, i8)) 5 in
+         let outputs = get_bit_arr_nat (mk_seq5 tuple) 8 in
          forall (i: nat). i < 40 ==> inputs i == outputs i
     )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 160"
@@ -363,8 +145,8 @@ val decompress_coefficients_10_
     (i32 & i32 & i32 & i32)
     (requires True)
     (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (mk_seq5 i1 i2 i3 i4 i5) 8 in
-         let outputs = get_bit_arr_nat (mk_seq_tup4 tuple) 10 in
+         let inputs = get_bit_arr_nat (mk_seq5 (i1, i2, i3, i4, i5)) 8 in
+         let outputs = get_bit_arr_nat (mk_seq4 tuple) 10 in
          (forall (i: nat). i < 40 ==> inputs i == outputs i)
     )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 40 --split_queries always"
@@ -382,8 +164,8 @@ val decompress_coefficients_11_
     (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
     (requires True)
     (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (mk_seq11 i1 i2 i3 i4 i5 i6 i7 i8 i9 i10 i11) 8 in
-         let outputs = get_bit_arr_nat (mk_seq_tup8 tuple) 11 in
+         let inputs = get_bit_arr_nat (mk_seq11 (i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11)) 8 in
+         let outputs = get_bit_arr_nat (mk_seq8 tuple) 11 in
          forall (i: nat). i < 88 ==> inputs i == outputs i
     )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 260"
@@ -422,7 +204,7 @@ val decompress_coefficients_4_
     (requires True)
     (ensures fun tuple ->
          let inputs = get_bit_arr_nat (mk_seq1 i1) 8 in
-         let outputs = get_bit_arr_nat (mk_seq_tup2 tuple) 4 in
+         let outputs = get_bit_arr_nat (mk_seq2 tuple) 4 in
          forall (i: nat). i < 4 ==> inputs i == outputs i
     )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 40"
@@ -438,8 +220,8 @@ val decompress_coefficients_5_
     (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
     (requires True)
     (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (mk_seq5 i1 i2 i3 i4 i5) 8 in
-         let outputs = get_bit_arr_nat (mk_seq_tup8 tuple) 5 in
+         let inputs = get_bit_arr_nat (mk_seq5 (i1, i2, i3, i4, i5)) 8 in
+         let outputs = get_bit_arr_nat (mk_seq8 tuple) 5 in
          forall (i: nat). i < 40 ==> inputs i == outputs i
     )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 90"
