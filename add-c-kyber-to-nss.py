@@ -61,7 +61,6 @@ def add_libcrux_kyber_c():
     sed_cmd = shutil.which("gsed")
     if sed_cmd is None:
         sed_cmd = "sed"
-    remove_funs = []
     ctags = shell(["ctags", "--fields=+ne", "-o", "-", destination])
     for line in ctags.splitlines():
         if (
