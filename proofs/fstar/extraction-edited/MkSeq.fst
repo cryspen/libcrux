@@ -89,4 +89,3 @@ private let create_gen_tac (n: nat): Tac sigelt
     Sg_Let { isrec = false; lbs = [{ lb_fv; lb_us = []; lb_typ; lb_def }] }
 
 %splice[] (init 13 (fun i -> create_gen_tac (i + 1)))
-

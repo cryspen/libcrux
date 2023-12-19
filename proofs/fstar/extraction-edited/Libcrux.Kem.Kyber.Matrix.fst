@@ -3,6 +3,10 @@ module Libcrux.Kem.Kyber.Matrix
 open Core
 open FStar.Mul
 
+let op_Array_Access (x:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) (i:usize{v i < 256}): i32  =
+    x.f_coefficients.[i]
+    
+
 let compute_As_plus_e
       (v_K: usize)
       (matrix_A: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K)
@@ -65,7 +69,7 @@ let compute_As_plus_e
                   result
                 in
                 let j:usize = j in
-                assume Libcrux.Kem.Kyber.Arithmetic.(montgomery_pre (v (result.[i]).f_coefficients.[j] * v v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS));
+                assume (range (v (result.[i]).(j) * 1353) i32_inttype);
                 let coefficient_normal_form:i32 =
                   Libcrux.Kem.Kyber.Arithmetic.to_standard_domain ((result.[ i ]
                         <:
@@ -76,9 +80,7 @@ let compute_As_plus_e
                 in
                 let x1: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = error_as_ntt.[i] in
                 let x2 : i32 = x1.f_coefficients.[j] in
-                assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v coefficient_normal_form + v x2));
-                assert ((v coefficient_normal_form + v x2) > -(pow2 26));
-                assert (range (v coefficient_normal_form + v x2) i32_inttype);
+                assume (range (v coefficient_normal_form + v x2) i32_inttype);
                 Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                   i
                   ({
@@ -153,11 +155,10 @@ let compute_message #p v_K m_v secret_as_ntt u_as_ntt =
       (fun result i ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
           let i:usize = i in
-          assume (Libcrux.Kem.Kyber.Arithmetic.montgomery_pre (v #i32_inttype result.f_coefficients.[i] *  1441));
+          assume (range (v result.(i) *  1441) i32_inttype);
           let coefficient_normal_form:i32 = Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce 
                            (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] *! 1441l) in
-          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v #i32_inttype m_v.f_coefficients.[i] - v coefficient_normal_form));
-          assert ((v #i32_inttype m_v.f_coefficients.[i] - v coefficient_normal_form) > - pow2 26);
+          assume (range (v m_v.(i) - v coefficient_normal_form) i32_inttype);
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               result with
@@ -233,7 +234,7 @@ let compute_ring_element_v
       (fun result i ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
           let i:usize = i in
-          assume (Libcrux.Kem.Kyber.Arithmetic.montgomery_pre (v #i32_inttype result.f_coefficients.[i] * 1441));
+          assume (range (v result.(i) * 1441) i32_inttype);
           let coefficient_normal_form:i32 =
             Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((result
                     .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
@@ -248,7 +249,6 @@ let compute_ring_element_v
           assume (range (v coefficient_normal_form +
                         v #i32_inttype error_2_.f_coefficients.[ i ] +
                         v #i32_inttype message.f_coefficients.[ i ]) i32_inttype);
-          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v coefficient_normal_form + v #i32_inttype error_2_.f_coefficients.[ i ] + v #i32_inttype message.f_coefficients.[ i ]));
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               result with
@@ -346,7 +346,7 @@ let compute_vector_u
                 let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
                   result
                 in
-                assume (Libcrux.Kem.Kyber.Arithmetic.montgomery_pre (v #i32_inttype (result.[i]).Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[j] * 1441));
+                assume (range (v (result.[i]).(j) * 1441) i32_inttype);
 
                 let j:usize = j in
                 let coefficient_normal_form:i32 =
@@ -360,10 +360,7 @@ let compute_vector_u
                       <:
                       i32)
                 in
-                assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v coefficient_normal_form + v #i32_inttype (error_1_.[i]).Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ]));
-                assert ((v coefficient_normal_form + v #i32_inttype (error_1_.[i]).Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ]) > -pow2 26);
-                assert ((v coefficient_normal_form + v #i32_inttype (error_1_.[i]).Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ j ]) < pow2 26);
-
+                assume (range (v coefficient_normal_form + v (error_1_.[i]).( j )) i32_inttype);
                 let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
                   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                     i

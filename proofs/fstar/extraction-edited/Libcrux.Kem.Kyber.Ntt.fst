@@ -416,7 +416,6 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
       re
       (fun re i ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
-          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v #i32_inttype re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]));
           let i:usize = i in
           {
             re with
@@ -632,7 +631,6 @@ let ntt_vector_u
       re
       (fun re i ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
-          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (v #i32_inttype re.f_coefficients.[i]));
           let i:usize = i in
           {
             re with

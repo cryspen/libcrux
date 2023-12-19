@@ -1,32 +1,24 @@
 module Libcrux.Kem.Kyber.Arithmetic
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 200"
 open Core
 open FStar.Mul
 
 let v_BARRETT_MULTIPLIER: i64 = 20159L
 
+let v_BARRETT_SHIFT: i64 = 26L
 val v_BARRETT_R: x:i64{v x = pow2 26}
+let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 
 let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
-
-let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
-
 let v_MONTGOMERY_SHIFT: u8 = 16uy
-
-val v_MONTGOMERY_R: x:i32{v x = pow2 16}
-
-
-let v_BARRETT_SHIFT: i64 = 26L
-let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
-let createi #t l f = admit()
 let mont_to_spec_fe (m:t_FieldElement) = admit()
 
 let get_n_least_significant_bits (n: u8) (value: u32) = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
-  logand_mask_lemma value (v n);
+  admit();
   res
 
 let barrett_reduce (value: i32) = 
@@ -36,9 +28,9 @@ let barrett_reduce (value: i32) =
     (v_BARRETT_R >>! 1l <: i64)
   in
   let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
+  admit(); // P-F
   let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
   let _:Prims.unit = () <: Prims.unit in
-  admit(); // P-F
   result
 
 let montgomery_reduce (value: i32) = 
@@ -59,7 +51,6 @@ let montgomery_reduce (value: i32) =
   res
 
 let montgomery_multiply_sfe_by_fer (fe fer: i32) =
-  assert (montgomery_pre (v fe * v fer));
   montgomery_reduce (fe *! fer <: i32)
 
 

@@ -6,10 +6,8 @@ open FStar.Mul
 unfold
 let t_FieldElement = i32
 
-val v_BARRETT_R: x:i64{v x = pow2 26}
-
 val v_MONTGOMERY_R: x:i32{v x = pow2 16}
-
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
 unfold
 let t_FieldElementTimesMontgomeryR = i32
@@ -32,21 +30,17 @@ val mont_to_spec_fe (m:t_FieldElement)
     : Spec.Kyber.field_element
 
 
-let to_spec_poly (m:t_PolynomialRingElement) : Spec.Kyber.polynomial =
-    let arr = createi (sz 256) (fun i -> to_spec_fe (m.f_coefficients.[i])) in
-    admit ();
-    // assert (forall i. Seq.index arr i == to_spec_fe (m.f_coefficients.[sz i]));
-    // assert (forall i. i < 256 ==> to_spec_fe (m.f_coefficients.[sz i]) < v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS);
-    arr
+let to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
+    let p = createi #nat (sz 256) (fun i -> to_spec_fe (m.f_coefficients.[i])) in
+    assert (forall i. Seq.index p i = to_spec_fe (m.f_coefficients.[sz i]));
+    assert (forall i. Seq.index p i < v Spec.Kyber.v_FIELD_MODULUS);
+    p
 
 let mont_to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
-    let arr = createi (sz 256) (fun i -> mont_to_spec_fe (m.f_coefficients.[i])) in
-    assert (forall i. Seq.index arr i == mont_to_spec_fe (m.f_coefficients.[sz i]));
-    assert (forall i. i < 256 ==> mont_to_spec_fe (m.f_coefficients.[sz i]) < v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS);
-    assert (forall i. Seq.index arr i < v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS);
-    admit ();
-    arr
-
+    let p = createi #nat (sz 256) (fun i -> mont_to_spec_fe (m.f_coefficients.[i])) in
+    assert (forall i. Seq.index p i = mont_to_spec_fe (m.f_coefficients.[sz i]));
+    assert (forall i. Seq.index p i < v Spec.Kyber.v_FIELD_MODULUS);
+    p
 
 let to_spec_vector (#p:Spec.Kyber.params)
                    (m:t_Array t_PolynomialRingElement p.v_RANK)
@@ -71,59 +65,49 @@ let mont_to_spec_matrix (#p:Spec.Kyber.params)
 
 val get_n_least_significant_bits (n: u8) (value: u32)
     : Prims.Pure u32
-      (requires n < 32)
+      (requires v n < 32)
       (ensures
         fun result ->
           let result:u32 = result in
           v result = v value % pow2 (v n))
 
 
-let barrett_pre (value:int) = 
-    value > - (pow2 26) /\
-    value < pow2 26
+let barrett_post (value:i32) (result:i32) = 
+    v result = to_spec_fe value /\
+    v result > - (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
+    v result < (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 val barrett_reduce (value: i32)
     : Prims.Pure i32
-      (requires (barrett_pre (v value)))
-      (ensures
-        fun result ->
-          let result:i32 = result in
-          v result = to_spec_fe value)
-//          result >. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
-//          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+      (requires True)
+      (ensures fun result -> barrett_post value result)
 
-
-let montgomery_pre (value:int) =
-        value >=
-        (v (neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) * v v_MONTGOMERY_R) /\
-        value <= (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS * v v_MONTGOMERY_R)
-
-let montgomery_post_range (output:i32) =
-          output >=.
-          (neg (3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l) /\
-          output <=. (3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l
+let montgomery_post (value:i32) (result:i32) =
+    v result = to_spec_fe (value /! v_MONTGOMERY_R) /\
+    v result >= (- 3 * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) / 2 /\
+    v result <= (3 * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) / 2
 
 val montgomery_reduce (value: i32)
     : Prims.Pure i32
-      (requires (montgomery_pre (v value)))
+      (requires True)
       (ensures
         fun result ->
           let result:i32 = result in
-          montgomery_post_range result)
+          montgomery_post value result)
 
 
 val montgomery_multiply_sfe_by_fer (fe fer: i32) 
     : Pure i32
-      (requires (montgomery_pre (v fe * v fer)))
+      (requires (range (v fe * v fer) i32_inttype))
       (ensures (fun result -> 
-          montgomery_post_range result))
+          montgomery_post (fe *! fer) (result)))
       
 
 val to_standard_domain (mfe: i32) 
     : Pure i32
-      (requires (montgomery_pre (v mfe * v v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS)))
+      (requires (range (v mfe * 1353) i32_inttype))
       (ensures (fun result -> 
-          montgomery_post_range result))
+          montgomery_post (mfe *! 1353l) result))
 
 val to_unsigned_representative (fe: i32)
     : Prims.Pure u16

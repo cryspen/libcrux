@@ -86,6 +86,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
                 let offset:usize = cast (outcome_set >>! 2l <: u32) <: usize in
                 assert (outcome_set <. 32ul);
                 assume (offset <. sz 8);
+                assert (8 * v chunk_number + 8 <= 256);
                 assert (8 * v chunk_number + v offset < 256);
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                   {
