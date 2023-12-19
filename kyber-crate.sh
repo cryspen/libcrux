@@ -77,5 +77,6 @@ $SED -i -z 's!typedef struct __uint8_t_840size_t__uint8_t_840size_t__uint8_t_840
 clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
 
 cp $EURYDICE_HOME/include/eurydice_glue.h .
+cp internal/*.h $HACL_PACKAGES_HOME/libcrux/include/internal/
 cp *.h $HACL_PACKAGES_HOME/libcrux/include
 cp *.c $HACL_PACKAGES_HOME/libcrux/src
