@@ -4,6 +4,7 @@ import os
 import subprocess
 import re
 import shutil
+import argparse
 
 
 def shell(command, expect=0, cwd=None, env={}):
@@ -105,11 +106,25 @@ def add_eurydice_glue_h(c_extraction_root, freebl_verified_root):
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
 
-nss_root = os.path.join("/", "Users", "wxyz", "repos", "nss", "nss")
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--nss-root",
+    required=True,
+    help="Absolute or relative path to the root directory containing the NSS source code.",
+    type=os.path.abspath,
+)
+parser.add_argument(
+    "--kyber-c-root",
+    required=True,
+    help="Absolute or relative path to the root directory containing the extracted Kyber C code.",
+    type=os.path.abspath,
+)
+args = parser.parse_args()
+
+nss_root = args.nss_root
 freebl_verified_root = os.path.join(nss_root, "lib", "freebl", "verified")
 
-c_extraction_root = os.path.join("kyber-crate", "c")
-
+c_extraction_root = args.kyber_c_root
 
 add_libcrux_kyber_h(c_extraction_root, freebl_verified_root)
 add_libcrux_kyber_c(c_extraction_root, freebl_verified_root)
