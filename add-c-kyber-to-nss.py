@@ -5,11 +5,6 @@ import subprocess
 import re
 import shutil
 
-NSS_ROOT = os.path.join("/", "Users", "wxyz", "repos", "nss", "nss")
-FREEBL_VERIFIED_ROOT = os.path.join(NSS_ROOT, "lib", "freebl", "verified")
-
-C_EXTRACTION_ROOT = os.path.join("kyber-crate", "c")
-
 
 def shell(command, expect=0, cwd=None, env={}):
     subprocess_stdout = subprocess.DEVNULL
@@ -27,13 +22,13 @@ def shell(command, expect=0, cwd=None, env={}):
     return result.stdout
 
 
-def add_libcrux_kyber_h():
-    path_to_header = os.path.join(C_EXTRACTION_ROOT, "libcrux_kyber.h")
+def add_libcrux_kyber_h(c_extraction_root, freebl_verified_root):
+    path_to_header = os.path.join(c_extraction_root, "libcrux_kyber.h")
+    destination = os.path.join(freebl_verified_root, "internal", "Libcrux_Kyber_768.h")
 
-    shell(["clang-format", "-i", "-style=Google", path_to_header])
-    destination = os.path.join(FREEBL_VERIFIED_ROOT, "internal", "Libcrux_Kyber_768.h")
+    shell(["clang-format", "-i", "-style=Google", destination])
 
-    with open(path_to_header, "r") as f:
+    with open(destination, "r") as f:
         original = f.read()
         replaced = re.sub("extern void libcrux_digest_sha3_512.*\n", "", original)
         replaced = re.sub("extern void libcrux_digest_sha3_256.*\n", "", replaced)
@@ -43,12 +38,12 @@ def add_libcrux_kyber_h():
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
 
-def add_libcrux_kyber_c():
-    path_to_c_file = os.path.join(C_EXTRACTION_ROOT, "libcrux_kyber.c")
-
-    shell(["clang-format", "-i", "-style=Google", path_to_c_file])
-    destination = os.path.join(FREEBL_VERIFIED_ROOT, "Libcrux_Kyber_768.c")
+def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
+    path_to_c_file = os.path.join(c_extraction_root, "libcrux_kyber.c")
+    destination = os.path.join(freebl_verified_root, "Libcrux_Kyber_768.c")
     shutil.copyfile(path_to_c_file, destination)
+
+    shell(["clang-format", "-i", "-style=Google", destination])
 
     sed_cmd = shutil.which("gsed")
     if sed_cmd is None:
@@ -69,9 +64,15 @@ def add_libcrux_kyber_c():
 
     with open(destination, "r") as f:
         original = f.read()
-        replaced = re.sub("libcrux_kyber.h", "internal/Libcrux_Kyber_768.h", original)
         replaced = re.sub(
-            "libcrux_hacl_glue.h", "Libcrux_Kyber_Hash_Functions.h", replaced
+            '#include "libcrux_kyber.h"',
+            '#include "internal/Libcrux_Kyber_768.h"',
+            original,
+        )
+        replaced = re.sub(
+            '#include "libcrux_hacl_glue.h"',
+            '#include "Libcrux_Kyber_Hash_Functions.h"',
+            replaced,
         )
         replaced = re.sub("uu____0 = !false", "uu____0 = false", replaced)
     with open(destination, "w") as f:
@@ -80,32 +81,38 @@ def add_libcrux_kyber_c():
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
 
-def add_internal_core_h():
-    src_file = os.path.join(C_EXTRACTION_ROOT, "internal", "core.h")
-    destination = os.path.join(FREEBL_VERIFIED_ROOT, "internal", "core.h")
+def add_internal_core_h(c_extraction_root, freebl_verified_root):
+    src_file = os.path.join(c_extraction_root, "internal", "core.h")
+    destination = os.path.join(freebl_verified_root, "internal", "core.h")
 
     shutil.copyfile(src_file, destination)
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
 
-def add_Eurydice_h():
-    src_file = os.path.join(C_EXTRACTION_ROOT, "Eurydice.h")
-    destination = os.path.join(FREEBL_VERIFIED_ROOT, "eurydice", "Eurydice.h")
+def add_Eurydice_h(c_extraction_root, freebl_verified_root):
+    src_file = os.path.join(c_extraction_root, "Eurydice.h")
+    destination = os.path.join(freebl_verified_root, "eurydice", "Eurydice.h")
 
     shutil.copyfile(src_file, destination)
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
 
-def add_eurydice_glue_h():
-    src_file = os.path.join(C_EXTRACTION_ROOT, "eurydice_glue.h")
-    destination = os.path.join(FREEBL_VERIFIED_ROOT, "eurydice", "eurydice_glue.h")
+def add_eurydice_glue_h(c_extraction_root, freebl_verified_root):
+    src_file = os.path.join(c_extraction_root, "eurydice_glue.h")
+    destination = os.path.join(freebl_verified_root, "eurydice", "eurydice_glue.h")
 
     shutil.copyfile(src_file, destination)
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
 
-add_libcrux_kyber_h()
-add_libcrux_kyber_c()
-add_internal_core_h()
-add_Eurydice_h()
-add_eurydice_glue_h()
+nss_root = os.path.join("/", "Users", "wxyz", "repos", "nss", "nss")
+freebl_verified_root = os.path.join(nss_root, "lib", "freebl", "verified")
+
+c_extraction_root = os.path.join("kyber-crate", "c")
+
+
+add_libcrux_kyber_h(c_extraction_root, freebl_verified_root)
+add_libcrux_kyber_c(c_extraction_root, freebl_verified_root)
+add_internal_core_h(c_extraction_root, freebl_verified_root)
+add_Eurydice_h(c_extraction_root, freebl_verified_root)
+add_eurydice_glue_h(c_extraction_root, freebl_verified_root)
