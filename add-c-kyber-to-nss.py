@@ -48,8 +48,26 @@ def add_libcrux_kyber_c():
 
     shell(["clang-format", "-i", "-style=Google", path_to_c_file])
     destination = os.path.join(FREEBL_VERIFIED_ROOT, "Libcrux_Kyber_768.c")
+    shutil.copyfile(path_to_c_file, destination)
 
-    with open(path_to_c_file, "r") as f:
+    sed_cmd = shutil.which("gsed")
+    if sed_cmd is None:
+        sed_cmd = shutil.which("sed")
+
+    ctags = shell(["ctags", "--fields=+ne", "-o", "-", destination])
+    sed_input = ""
+    for line in ctags.splitlines():
+        if (
+            "libcrux_kyber_serialize_compress_then_serialize_11___320size_t" in line
+            or "libcrux_kyber_serialize_compress_then_serialize_5___128size_t" in line
+        ):
+            line_start = re.findall(r"line:(\d+)", line)[0]
+            line_end = re.findall(r"end:(\d+)", line)[0]
+            sed_input = "{},{}d;{}".format(line_start, line_end, sed_input)
+
+    shell([sed_cmd, "-i", sed_input, destination])
+
+    with open(destination, "r") as f:
         original = f.read()
         replaced = re.sub("libcrux_kyber.h", "internal/Libcrux_Kyber_768.h", original)
         replaced = re.sub(
@@ -57,19 +75,6 @@ def add_libcrux_kyber_c():
         )
     with open(destination, "w") as f:
         f.write(replaced)
-
-    sed_cmd = shutil.which("gsed")
-    if sed_cmd is None:
-        sed_cmd = "sed"
-    ctags = shell(["ctags", "--fields=+ne", "-o", "-", destination])
-    for line in ctags.splitlines():
-        if (
-            "libcrux_kyber_serialize_compress_then_serialize_11___320size_t" in line
-            or "libcrux_kyber_serialize_compress_then_serialize_5___128size_t" in line
-        ):
-            line_start = int(re.findall(r"line:\d+", line)[0].split(":")[1])
-            line_end = int(re.findall(r"end:\d+", line)[0].split(":")[1])
-            shell([sed_cmd, "-i", "{},{}d".format(line_start, line_end), destination])
 
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
