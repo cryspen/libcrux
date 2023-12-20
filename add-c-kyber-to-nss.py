@@ -73,6 +73,7 @@ def add_libcrux_kyber_c():
         replaced = re.sub(
             "libcrux_hacl_glue.h", "Libcrux_Kyber_Hash_Functions.h", replaced
         )
+        replaced = re.sub("uu____0 = !false", "uu____0 = false", replaced)
     with open(destination, "w") as f:
         f.write(replaced)
 
