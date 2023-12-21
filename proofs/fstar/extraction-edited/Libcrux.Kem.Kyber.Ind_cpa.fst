@@ -304,7 +304,7 @@ val deserialize_public_key (#p:Spec.Kyber.params)
                 v_T_AS_NTT_ENCODED_SIZE == Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE p)
       (ensures fun res -> 
         Libcrux.Kem.Kyber.Arithmetic.to_spec_vector res ==
-        Spec.Kyber.vector_decode_12 #p (Spec.Kyber.slice public_key (sz 0) v_T_AS_NTT_ENCODED_SIZE))
+        Spec.Kyber.vector_decode_12 #p (slice public_key (sz 0) v_T_AS_NTT_ENCODED_SIZE))
    
 let deserialize_public_key (#p:Spec.Kyber.params) 
     (v_K v_T_AS_NTT_ENCODED_SIZE: usize) (public_key: t_Slice u8) =
@@ -495,7 +495,7 @@ let encrypt #p
         <:
         t_Slice u8)
   in
-  Spec.Kyber.lemma_slice_append ciphertext c1 c2;
+  lemma_slice_append ciphertext c1 c2;
   ciphertext
 #pop-options
 
@@ -623,7 +623,7 @@ let serialize_public_key (#p:Spec.Kyber.params)
         <:
         t_Slice u8)
   in
-  Spec.Kyber.lemma_slice_append public_key_serialized
+  lemma_slice_append public_key_serialized
     (Spec.Kyber.vector_encode_12 (Libcrux.Kem.Kyber.Arithmetic.to_spec_vector #p tt_as_ntt))
     seed_for_a;
   public_key_serialized

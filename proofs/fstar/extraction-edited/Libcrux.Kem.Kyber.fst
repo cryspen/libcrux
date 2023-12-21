@@ -153,7 +153,7 @@ let serialize_kem_secret_key #p
                                            Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE +!
                                            Spec.Kyber.v_SHARED_SECRET_SIZE))
           == implicit_rejection_value);
-  Spec.Kyber.lemma_slice_append_4 out private_key public_key (Libcrux.Kem.Kyber.Hash_functions.v_H public_key) implicit_rejection_value;
+  lemma_slice_append_4 out private_key public_key (Libcrux.Kem.Kyber.Hash_functions.v_H public_key) implicit_rejection_value;
   out
 
 let decapsulate #p
@@ -171,10 +171,10 @@ let decapsulate #p
   let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
   in
-  assert (ind_cpa_secret_key == Spec.Kyber.slice orig_secret_key (sz 0) v_CPA_SECRET_KEY_SIZE);
-  assert (ind_cpa_public_key == Spec.Kyber.slice orig_secret_key v_CPA_SECRET_KEY_SIZE (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE));
-  assert (ind_cpa_public_key_hash == Spec.Kyber.slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE) (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE));
-  assert (implicit_rejection_value == Spec.Kyber.slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE) (length orig_secret_key));
+  assert (ind_cpa_secret_key == slice orig_secret_key (sz 0) v_CPA_SECRET_KEY_SIZE);
+  assert (ind_cpa_public_key == slice orig_secret_key v_CPA_SECRET_KEY_SIZE (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE));
+  assert (ind_cpa_public_key_hash == slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE) (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE));
+  assert (implicit_rejection_value == slice orig_secret_key (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE) (length orig_secret_key));
   let decrypted:t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Ind_cpa.decrypt #p v_K
       v_CIPHERTEXT_SIZE
@@ -204,9 +204,9 @@ let decapsulate #p
         <:
         t_Slice u8)
   in
-  Spec.Kyber.lemma_slice_append to_hash decrypted ind_cpa_public_key_hash;
+  lemma_slice_append to_hash decrypted ind_cpa_public_key_hash;
   assert (decrypted == Spec.Kyber.ind_cpa_decrypt p ind_cpa_secret_key ciphertext.f_value);
-  assert (to_hash == Spec.Kyber.concat decrypted ind_cpa_public_key_hash);
+  assert (to_hash == concat decrypted ind_cpa_public_key_hash);
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
@@ -214,7 +214,7 @@ let decapsulate #p
     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
       Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
   in
-  assert ((shared_secret,pseudorandomness) == Spec.Kyber.split hashed Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE);
+  assert ((shared_secret,pseudorandomness) == split hashed Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE);
   assert (length implicit_rejection_value = v_SECRET_KEY_SIZE -! v_CPA_SECRET_KEY_SIZE -! v_PUBLIC_KEY_SIZE -! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE);
   assert (length implicit_rejection_value = Spec.Kyber.v_SHARED_SECRET_SIZE);
   assert (Spec.Kyber.v_SHARED_SECRET_SIZE <=. Spec.Kyber.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE p);
@@ -239,7 +239,7 @@ let decapsulate #p
         <:
         t_Slice u8)
   in
-  Spec.Kyber.lemma_slice_append to_hash implicit_rejection_value ciphertext.f_value;
+  lemma_slice_append to_hash implicit_rejection_value ciphertext.f_value;
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Hash_functions.v_PRF (sz 32) (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
@@ -298,8 +298,8 @@ let encapsulate #p
         t_Slice u8)
   in
   assert (Seq.slice to_hash 0 (v Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE) == randomness);
-  Spec.Kyber.lemma_slice_append to_hash randomness (Spec.Kyber.v_H public_key.f_value);
-  assert (to_hash == Spec.Kyber.concat randomness (Spec.Kyber.v_H public_key.f_value));
+  lemma_slice_append to_hash randomness (Spec.Kyber.v_H public_key.f_value);
+  assert (to_hash == concat randomness (Spec.Kyber.v_H public_key.f_value));
 
   let hashed:t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
