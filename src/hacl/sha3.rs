@@ -144,9 +144,8 @@ pub mod incremental {
     }
 
     use libcrux_hacl::{
-        Hacl_Hash_SHA3_state_t_s,
-        Hacl_Hash_SHA3_malloc, Hacl_Hash_SHA3_free,
-        Hacl_Hash_SHA3_update, Hacl_Hash_SHA3_squeeze,
+        Hacl_Hash_SHA3_free, Hacl_Hash_SHA3_malloc, Hacl_Hash_SHA3_squeeze,
+        Hacl_Hash_SHA3_state_t_s, Hacl_Hash_SHA3_update,
     };
 
     pub struct AbsorbManySqueezeOnceShake128 {
@@ -161,24 +160,12 @@ pub mod incremental {
         }
 
         pub fn absorb(&mut self, input: &[u8]) {
-            unsafe {
-                Hacl_Hash_SHA3_update(
-                    self.state,
-                    input.as_ptr() as _,
-                    input.len() as u32,
-                )
-            };
+            unsafe { Hacl_Hash_SHA3_update(self.state, input.as_ptr() as _, input.len() as u32) };
         }
 
         pub fn squeeze<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
             let mut output = [0u8; OUTPUT_BYTES];
-            unsafe {
-                Hacl_Hash_SHA3_squeeze(
-                    self.state,
-                    output.as_mut_ptr(),
-                    OUTPUT_BYTES as u32,
-                )
-            };
+            unsafe { Hacl_Hash_SHA3_squeeze(self.state, output.as_mut_ptr(), OUTPUT_BYTES as u32) };
 
             output
         }

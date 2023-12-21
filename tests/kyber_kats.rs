@@ -1,11 +1,10 @@
 use libcrux::{
-    digest::incremental::{AbsorbOnceSqueezeManyShake128, AbsorbManySqueezeOnceShake128},
-    kem
+    digest::incremental::{AbsorbManySqueezeOnceShake128, AbsorbOnceSqueezeManyShake128},
+    kem,
 };
 
 struct Shake128Rng {
-    bytes: [u8; 248_640],
-    index: u32,
+    buffer: Vec<u8>,
     shake128: AbsorbOnceSqueezeManyShake128,
 }
 
@@ -18,37 +17,37 @@ impl Shake128Rng {
         let mut shake128 = AbsorbOnceSqueezeManyShake128::new();
         shake128.absorb(&[]);
 
-        let bytes = shake128.squeeze_nblocks::<{ Self::BUFFER_SIZE as usize }>();
+        let buffer = shake128
+            .squeeze_nblocks::<{ Self::BUFFER_SIZE as usize }>()
+            .to_vec();
 
-        Self {
-            bytes: bytes,
-            index: 0,
-            shake128: shake128,
-        }
+        Self { buffer, shake128 }
     }
 
     pub fn read<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
-        if !(self.index < Self::BUFFER_SIZE) {
-            self.bytes = self
-                .shake128
-                .squeeze_nblocks::<{ Self::BUFFER_SIZE as usize }>();
-            self.index = 0;
+        if self.buffer.is_empty() {
+            self.buffer.extend_from_slice(
+                &self
+                    .shake128
+                    .squeeze_nblocks::<{ Self::BUFFER_SIZE as usize }>(),
+            );
         }
 
-        self.index += OUTPUT_BYTES as u32;
-
-        self.bytes[(self.index as usize) - OUTPUT_BYTES..(self.index as usize)]
+        self.buffer
+            .drain(0..OUTPUT_BYTES)
+            .collect::<Vec<_>>()
+            .as_slice()
             .try_into()
             .unwrap()
     }
 }
 
 #[test]
-fn kyber_768_10000_kats() {
+fn kyber_768_100000_kats() {
     let mut rng = Shake128Rng::new();
     let mut shake128 = AbsorbManySqueezeOnceShake128::new();
 
-    for _ in 0..10000 {
+    for _ in 0..100_000 {
         let key_generation_seed = rng.read::<64>();
         let key_pair = kem::kyber768_generate_keypair_derand(key_generation_seed);
 
@@ -69,6 +68,9 @@ fn kyber_768_10000_kats() {
         shake128.absorb(implicit_rejection_secret.as_ref());
     }
 
-    let all_kats_hash : [u8; 32] = shake128.squeeze::<32>();
-    assert_eq!(hex::encode(&all_kats_hash), "f7db260e1137a742e05fe0db9525012812b004d29040a5b606aad3d134b548d3");
+    let all_kats_hash: [u8; 32] = shake128.squeeze::<32>();
+    assert_eq!(
+        hex::encode(&all_kats_hash),
+        "35d56f1cc040b71fc97a9b77b05485d97354b296483d2539ade224374ec8d325"
+    );
 }
