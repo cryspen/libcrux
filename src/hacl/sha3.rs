@@ -100,11 +100,11 @@ pub mod incremental {
         Hacl_Hash_SHA3_Scalar_state_free, Hacl_Hash_SHA3_Scalar_state_malloc,
     };
 
-    pub struct IncrementalShake128 {
+    pub struct AbsorbOnceSqueezeManyShake128 {
         state: *mut u64,
     }
 
-    impl IncrementalShake128 {
+    impl AbsorbOnceSqueezeManyShake128 {
         pub fn new() -> Self {
             let state = Self {
                 state: unsafe { Hacl_Hash_SHA3_Scalar_state_malloc() },
@@ -124,6 +124,7 @@ pub mod incremental {
         }
 
         pub fn squeeze_nblocks<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
+            debug_assert!(OUTPUT_BYTES % 168 == 0);
             let mut output = [0u8; OUTPUT_BYTES];
             unsafe {
                 Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
@@ -136,7 +137,7 @@ pub mod incremental {
             output
         }
     }
-    impl Drop for IncrementalShake128 {
+    impl Drop for AbsorbOnceSqueezeManyShake128 {
         fn drop(&mut self) {
             unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
         }
