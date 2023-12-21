@@ -142,6 +142,52 @@ pub mod incremental {
             unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
         }
     }
+
+    use libcrux_hacl::{
+        Hacl_Hash_SHA3_state_t_s,
+        Hacl_Hash_SHA3_malloc, Hacl_Hash_SHA3_free,
+        Hacl_Hash_SHA3_update, Hacl_Hash_SHA3_squeeze,
+    };
+
+    pub struct AbsorbManySqueezeOnceShake128 {
+        state: *mut Hacl_Hash_SHA3_state_t_s,
+    }
+
+    impl AbsorbManySqueezeOnceShake128 {
+        pub fn new() -> Self {
+            Self {
+                state: unsafe { Hacl_Hash_SHA3_malloc(12) },
+            }
+        }
+
+        pub fn absorb(&mut self, input: &[u8]) {
+            unsafe {
+                Hacl_Hash_SHA3_update(
+                    self.state,
+                    input.as_ptr() as _,
+                    input.len() as u32,
+                )
+            };
+        }
+
+        pub fn squeeze<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
+            let mut output = [0u8; OUTPUT_BYTES];
+            unsafe {
+                Hacl_Hash_SHA3_squeeze(
+                    self.state,
+                    output.as_mut_ptr(),
+                    OUTPUT_BYTES as u32,
+                )
+            };
+
+            output
+        }
+    }
+    impl Drop for AbsorbManySqueezeOnceShake128 {
+        fn drop(&mut self) {
+            unsafe { Hacl_Hash_SHA3_free(self.state) }
+        }
+    }
 }
 
 #[cfg(simd256)]
