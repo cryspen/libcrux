@@ -345,81 +345,6 @@ let is_fe fe =
   fe >= v (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
   fe < v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
 
-(*
-let rewrite_length_unsized_array
-  (arr: t_Array 'a 'n)
-  : Lemma (length ((array_to_slice_unsize 'a 'n).unsize arr) == 'n)
-    [SMTPat (length ((array_to_slice_unsize 'a 'n).unsize arr))]
-  = ()
-
-let get_chunk (s: Seq.seq 'a) (chunk_len: pos) (i: nat {i < Seq.length s / chunk_len})
-  : Seq.seq 'a
-  = Seq.slice s (i * chunk_len) ((i + 1) * chunk_len)
-
-let chunking_lemma (s: Seq.seq 'a) (n: pos) (i: nat {i < Seq.length s / n})
-  : Lemma (i * n < Seq.length s - n)
-  = let k = Seq.length s / n in
-    let r = Seq.length s % n in
-    Math.Lib.lemma_div_def (Seq.length s) n;
-    assert (k * n + r = Seq.length s);
-    assert (i < k);
-    assert (r < n);
-    if i = k - 1 then 
-      admit ()
-    else ()
-      // assert (i * n < k * n + r - n)
-
-
-let get_chunk_eq
-  (s: Seq.seq 'a) (chunk_len: pos)
-  (chunk: Seq.seq 'a {Seq.length chunk == chunk_len})
-  (i: nat {i < Seq.length s / chunk_len})
-  : Type0
-  = assert (i < Seq.length s / chunk_len);
-    assume (i * chunk_len < Seq.length s - chunk_len);
-    assert (forall (j: nat {j < chunk_len}). i * chunk_len + j < Seq.length s);
-    forall (j: nat {j < chunk_len}). Seq.index chunk j == Seq.index s (i * chunk_len + j)
-
-assume val foldi_chunks_exact
-                 (#t:Type) (#acc_t:Type)
-                 (#inv:(acc_t -> usize -> Type))
-                 (s:t_Slice t)
-                 (chunk_len:usize{v chunk_len > 0
-                     // `chunks_exact` works even if the last chunk is not exact; it will just omit it
-                     // https://doc.rust-lang.org/std/primitive.slice.html#method.chunks_exact
-                     // /\ Seq.length s % v chunk_len == 0
-                   })
-                 (acc:acc_t{inv acc (sz 0)})
-                 (f: (acc:acc_t -> it:(usize & t_Slice t){
-                                  let (i, item) = it in
-                                  v i >= 0 /\
-                                  // True
-                                  v i < Seq.length s / v chunk_len /\
-                                  length item == chunk_len /\
-                                  inv acc i /\
-                                  get_chunk s (v chunk_len) (v i) == item /\
-                                  // get_chunk_eq s (v chunk_len) item (v i)
-                                  // Seq.slice s (v i * v chunk_len) ((v i + 1) * v chunk_len) == item
-                                  // (forall (j: nat {j < v chunk_len}). Seq.index item j == Seq.index s (v i * v chunk_len + j))
-                                  
-                                  True
-                                  }
-                       -> acc':acc_t{inv acc' (fst it +! sz 1)}))
-                 : res:acc_t{inv res (length s /! chunk_len)}
-
-// val compress_coefficients_10_arr (s: t_Array i32 (sz 4))
-//   : Pure (t_Array u8 (sz 5)) 
-//          (requires True)
-//          (ensures fun s' -> bit_vector s (sz 10) `Seq.equal` bit_vector s' (sz 8))
-// let compress_coefficients_10_arr s =
-//   let r = create5 (compress_coefficients_10_ s.[sz 0] s.[sz 1] s.[sz 2] s.[sz 3]) in
-//   bit_vector_lemma s r (sz 10) (sz 8);
-//   admit ();
-//   r
-//   // Seq.Base.lemma_index_create
-
-*)
-
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 20"
 let encode_bytes_spec
   (d: bit_num i32_inttype)
@@ -476,12 +401,13 @@ val compress_then_serialize_10_body
     //                      coefficients
     //                      serialized'
     //   )
-      )
+    )
 #pop-options
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 150"
 let compress_then_serialize_10_body
   v_OUT_LEN serialized i coefficients
-  = let coefficient1:i32 =
+  = admit (); 
+    let coefficient1:i32 =
         Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
           (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ] <: i32))
     in
@@ -524,69 +450,58 @@ let compress_then_serialize_10_body
 
 
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+let offset_lemma (i n: nat) (d: pos) (j: nat {j < d})
+  : Lemma (requires i < n)
+          (ensures  i * d + j < n * d)
+  = assert ((i+1) * d <= n * d);
+    assert (i * d + d <= n * d);
+    assert (i * d + j < n * d)
+#pop-options
+
+// #push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+// let offset_lemma' (i n: nat) (d: pos) (j: nat {j < })
+//   : Lemma (requires i < n)
+//           (ensures  i * d + j < n * d)
+//   = assert ((i+1) * d <= n * d);
+//     assert (i * d + d <= n * d);
+//     assert (i * d + j < n * d)
+// #pop-options
+
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 let compress_then_serialize_10_
       (v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement {
         forall i. i < 256 ==> is_fe (v (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[sz i] <: i32))
       })
     : t_Array u8 v_OUT_LEN =
-  admit ();
   let accT = t_Array u8 v_OUT_LEN in
-  let inv = fun (acc: accT) (i: usize) -> True in
+  let inv = fun (acc: t_Array u8 v_OUT_LEN) (i: usize) -> 
+    // (forall (j: nat). j < 5 * v i ==> Seq.index accT j == Seq.index serialized j)
+    let coefs: t_Array i32 (sz 256) = map (fun (x: i32 {is_fe (v x)}) ->
+           Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
+             (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative x)
+         ) re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    in
+    forall (j: usize). v j < v i * 40 + 40 ==>
+      (
+         assert (v j < v (sz 256) * v (sz 10));
+         assert (v j < v v_OUT_LEN * v (sz 8));
+         
+         // offset_lemma (v i) (v v_OUT_LEN) 8 (v j);
+         // offset_lemma (v i) 256 10 (v j);
+         True
+      //    get_bit_arr coefs (sz 10) j
+      // == get_bit_arr acc   (sz  8) j
+      )
+  in
+  admit ();
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
     Rust_primitives.Iterators.foldi_chunks_exact #i32 #accT #inv
       (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients <: t_Slice i32)
       (sz 4)
       (serialized)
-      (fun serialized temp_1_ -> 
-        admit ()
-          // // let serialized:t_Array u8 v_OUT_LEN = serialized in
-          // let i, coefficients:(usize & t_Slice i32) = temp_1_ in
-          // // assert (fst temp_1_ == i);
-          // assert (v i * 4 + 4 <= 256);
-          // serialized
-          // admit ();
-          // let get (k: usize {v k < 4}) = 
-          //   let s = (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients <: t_Slice i32) in
-          //  // assert (v (length s) == 256);
-          //  // assert (v i < 256 / 4);
-          //  // assert (get_chunk s 4 (v (fst temp_1_)) == coefficients);
-          //  assert (get_chunk s 4 (v i) == coefficients);
-          //  // assert ((Core.Slice.impl__index i32 usize_inttype).Core.Ops.Index.in_range coefficients k);
-          //  assert (get_chunk_eq s 4 coefficients (v i));
-           
-          //  // assert ((coefficients.[k] <: i32) == re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[(k +. i *. sz 4) <: usize] <: i32);
-          //  // assert (v k + v i * 4 < 256);
-          //  // assert ((coefficients.[k] <: i32) == Seq.index re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients (v k + v i * 4) <: i32);
-          //  // assume ((coefficients.[k] <: i32) == re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[k +. i *. 4] <: i32);
-          //  // assert (is_fe (coefficients.[sz 0] <: i32));
-          //  admit ();
-          //  let fe = Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative
-          //    (coefficients.[k] <: i32)
-          //  in
-          //  admit ();
-          //  Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy fe
-          // in
-          // admit ();
-          // let coefficient1:i32 = get (sz 0) in
-          // let coefficient2:i32 = get (sz 1) in
-          // let coefficient3:i32 = get (sz 2) in
-          // let coefficient4:i32 = get (sz 3) in
-          // let coef1, coef2, coef3, coef4, coef5:(u8 & u8 & u8 & u8 & u8) =
-          //   compress_coefficients_10_ coefficient1 coefficient2 coefficient3 coefficient4
-          // in
-          // let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
-          //    serialized (sz 5 *! i <: usize) coef1 in
-          // let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
-          //    serialized ((sz 5 *! i <: usize) +! sz 1 <: usize) coef2 in
-          // let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
-          //    serialized ((sz 5 *! i <: usize) +! sz 2 <: usize) coef3 in
-          // let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
-          //    serialized ((sz 5 *! i <: usize) +! sz 3 <: usize) coef4 in
-          // let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.Monomorphized_update_at.update_at_usize
-          //    serialized ((sz 5 *! i <: usize) +! sz 4 <: usize) coef5 in
-          )
+      (fun serialized temp_1_ -> admit ())
   in
   serialized
 #pop-options
