@@ -110,17 +110,29 @@ val compress_then_serialize_5_
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+    : Pure (t_Array u8 (sz 32))
+      (requires True)
+      (ensures (fun res ->
+        res == Spec.Kyber.compress_then_encode_message (Libcrux.Kem.Kyber.Arithmetic.to_spec_poly re)))
 
-val compress_then_serialize_ring_element_u (#p: Spec.Kyber.params)
+val compress_then_serialize_ring_element_u (#p:Spec.Kyber.params)
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
-
-val compress_then_serialize_ring_element_v (#p: Spec.Kyber.params)
+    : Pure (t_Array u8 v_OUT_LEN)
+      (requires (v_COMPRESSION_FACTOR = sz 10 || v_COMPRESSION_FACTOR = sz 11) /\
+                v_OUT_LEN = Spec.Kyber.v_C1_BLOCK_SIZE p) 
+      (ensures (fun _ -> True)) 
+      
+val compress_then_serialize_ring_element_v (#p:Spec.Kyber.params)
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Pure (t_Array u8 v_OUT_LEN)
+      (requires (v_COMPRESSION_FACTOR = sz 4 || v_COMPRESSION_FACTOR = sz 5) /\
+                 v_OUT_LEN = Spec.Kyber.v_C2_SIZE p)
+      (ensures (fun res -> 
+        res == 
+        Spec.Kyber.compress_then_encode_v p 
+          (Libcrux.Kem.Kyber.Arithmetic.to_spec_poly re)))
 
 val deserialize_then_decompress_10_ (serialized: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -143,28 +155,36 @@ val deserialize_then_decompress_5_ (serialized: t_Slice u8)
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (requires True)
+      (ensures fun res ->
+        Libcrux.Kem.Kyber.Arithmetic.to_spec_poly res == 
+        Spec.Kyber.decode_then_decompress_message serialized)
 
 val deserialize_then_decompress_ring_element_u
       (v_COMPRESSION_FACTOR: usize)
       (serialized: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (requires v_COMPRESSION_FACTOR = sz 10 || v_COMPRESSION_FACTOR = sz 11)
+      (ensures fun _ -> True)
 
-val deserialize_then_decompress_ring_element_v
+val deserialize_then_decompress_ring_element_v (#p:Spec.Kyber.params)
       (v_COMPRESSION_FACTOR: usize)
       (serialized: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (requires (p.v_VECTOR_V_COMPRESSION_FACTOR == v_COMPRESSION_FACTOR /\
+                 length serialized == Spec.Kyber.v_C2_SIZE p))
+      (ensures fun res ->
+       Libcrux.Kem.Kyber.Arithmetic.to_spec_poly res ==
+       Spec.Kyber.decode_then_decompress_v p serialized)
+
 
 val deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+    : Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (requires (length serialized == Spec.Kyber.v_BYTES_PER_RING_ELEMENT))
+      (ensures fun _ -> True)
 
 val serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Prims.Pure (t_Array u8 (sz 384)) Prims.l_True (fun _ -> Prims.l_True)
+    : Pure (t_Array u8 (sz 384))
+      (requires True)
+      (ensures (fun res -> True))
