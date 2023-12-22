@@ -9,18 +9,6 @@ let rejection_sampling_panic_with_diagnostic () : Prims.unit =
       <:
       Rust_primitives.Hax.t_Never)
 
-val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
-      (ensures
-        fun result ->
-          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
-          Spec.Kyber.sample_poly_binomial (sz 2) randomness /\
-          (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-             (v #i32_inttype result.f_coefficients.[i] >= - 2 /\
-              v #i32_inttype result.f_coefficients.[i] <= 2)))
-
 let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
@@ -106,18 +94,6 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   admit(); // P-F
   sampled 
-
-val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
-      (ensures
-        fun result ->
-          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Libcrux.Kem.Kyber.Arithmetic.to_spec_poly result == 
-          Spec.Kyber.sample_poly_binomial (sz 3) randomness /\
-         (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-             (v #i32_inttype result.f_coefficients.[i] >= -3 /\
-              v #i32_inttype result.f_coefficients.[i] <= 3)))
 
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement

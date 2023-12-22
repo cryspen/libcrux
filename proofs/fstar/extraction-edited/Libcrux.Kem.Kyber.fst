@@ -3,26 +3,6 @@ module Libcrux.Kem.Kyber
 open Core
 open FStar.Mul
 
-unfold
-let t_KyberSharedSecret = t_Array u8 (sz 32)
-
-let v_KEY_GENERATION_SEED_SIZE: usize =
-  Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
-  Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
-
-val serialize_kem_secret_key (#p:Spec.Kyber.params)
-      (v_SERIALIZED_KEY_LEN: usize)
-      (private_key public_key implicit_rejection_value: t_Slice u8)
-    : Pure (t_Array u8 v_SERIALIZED_KEY_LEN)
-      (requires (length private_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
-                 length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
-                 length implicit_rejection_value == Spec.Kyber.v_SHARED_SECRET_SIZE /\
-                 v_SERIALIZED_KEY_LEN == Spec.Kyber.v_SECRET_KEY_SIZE p))
-      (ensures (fun res -> res ==
-                Seq.append private_key (
-                Seq.append public_key (
-                Seq.append (Libcrux.Kem.Kyber.Hash_functions.v_H public_key) implicit_rejection_value))))
-
 let update_at_range_lemma #n
   (s: t_Slice 't)
   (i: Core.Ops.Range.t_Range (int_t n) {(Core.Ops.Range.impl_index_range_slice 't n).in_range s i}) 

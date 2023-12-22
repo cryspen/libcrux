@@ -3,6 +3,26 @@ module Libcrux.Kem.Kyber
 open Core
 open FStar.Mul
 
+unfold
+let t_KyberSharedSecret = t_Array u8 (sz 32)
+
+let v_KEY_GENERATION_SEED_SIZE: usize =
+  Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
+  Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
+
+val serialize_kem_secret_key (#p:Spec.Kyber.params)
+      (v_SERIALIZED_KEY_LEN: usize)
+      (private_key public_key implicit_rejection_value: t_Slice u8)
+    : Pure (t_Array u8 v_SERIALIZED_KEY_LEN)
+      (requires (length private_key == Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE p /\
+                 length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
+                 length implicit_rejection_value == Spec.Kyber.v_SHARED_SECRET_SIZE /\
+                 v_SERIALIZED_KEY_LEN == Spec.Kyber.v_SECRET_KEY_SIZE p))
+      (ensures (fun res -> res ==
+                Seq.append private_key (
+                Seq.append public_key (
+                Seq.append (Libcrux.Kem.Kyber.Hash_functions.v_H public_key) implicit_rejection_value))))
+
 val decapsulate (#p:Spec.Kyber.params)
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)

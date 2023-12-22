@@ -4,10 +4,6 @@ open Core
 open FStar.Mul
 
 
-val v_ZETAS_TIMES_MONTGOMERY_R:
-  a:t_Array i32 (sz 128){
-    (forall i. Seq.index a i >. -1665l /\ Seq.index a i <. 1665l)}
-
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   let list =
     [
@@ -28,7 +24,7 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   admit();
   Rust_primitives.Hax.array_of_list list
 
-let ntt_multiply_binomials (a0, a1: (i32 & i32)) (b0, b1: (i32 & i32)) (zeta: i32) : (i32 & i32) =
+let ntt_multiply_binomials (a0, a1: (i32 & i32)) (b0, b1: (i32 & i32)) (zeta: i32) =
   admit(); // Needs preconditions on ranges of all inputs
   Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce ((a0 *! b0 <: i32) +!
       ((Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce (a1 *! b1 <: i32) <: i32) *! zeta <: i32)
@@ -41,8 +37,7 @@ let ntt_multiply_binomials (a0, a1: (i32 & i32)) (b0, b1: (i32 & i32)) (zeta: i3
 let invert_ntt_at_layer
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (layer: usize)
-    : (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
+      (layer: usize) =
   admit();
   let step:usize = sz 1 <<! layer in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
@@ -120,8 +115,7 @@ let invert_ntt_at_layer
   let hax_temp_output:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
   zeta_i, hax_temp_output <: (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
 
-let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:usize = Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2 in
   let tmp0, out:(usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
@@ -203,14 +197,6 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
   in
   re
 
-val ntt_at_layer
-      (zeta_i: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (layer initial_coefficient_bound: usize)
-    : Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (requires (v layer >= 1 /\ v layer <= 7 /\ v zeta_i < 128 (* ??? *)))
-      (ensures fun result -> True)
-
 let ntt_at_layer
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
@@ -291,8 +277,7 @@ let ntt_at_layer
 let ntt_at_layer_3_
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (layer: usize)
-    : (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
+      (layer: usize) =
   admit();
   let tmp0, out:(usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
     ntt_at_layer zeta_i re layer (sz 3)
@@ -304,8 +289,7 @@ let ntt_at_layer_3_
 let ntt_at_layer_3328_
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (layer: usize)
-    : (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
+      (layer: usize) =
   admit();
   let tmp0, out:(usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
     ntt_at_layer zeta_i re layer (sz 3328)

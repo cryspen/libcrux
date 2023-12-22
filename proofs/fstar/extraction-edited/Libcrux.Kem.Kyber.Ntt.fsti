@@ -3,6 +3,10 @@ module Libcrux.Kem.Kyber.Ntt
 open Core
 open FStar.Mul
 
+val v_ZETAS_TIMES_MONTGOMERY_R:
+  a:t_Array i32 (sz 128){
+    (forall i. Seq.index a i >. -1665l /\ Seq.index a i <. 1665l)}
+
 val ntt_multiply_binomials (a: (i32 & i32)) (b: (i32 & i32)) (zeta: i32) :
     Pure (i32 & i32)
     (requires True) (* Need to add preconditions on ranges that imply:
@@ -13,10 +17,41 @@ val ntt_multiply_binomials (a: (i32 & i32)) (b: (i32 & i32)) (zeta: i32) :
       (range (v a0 * v b1) i32_inttype) /\
       (range (v a1 * v b0) i32_inttype) *)
     (ensures (fun _ -> True))
-    
+
+val invert_ntt_at_layer
+      (zeta_i: usize)
+      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (layer: usize)
+    : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
 
+val ntt_at_layer
+      (zeta_i: usize)
+      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (layer initial_coefficient_bound: usize)
+    : Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (requires (v layer >= 1 /\ v layer <= 7 /\ v zeta_i < 128 (* ??? *)))
+      (ensures fun result -> True)
+
+val ntt_at_layer_3_
+      (zeta_i: usize)
+      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (layer: usize)
+    : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_at_layer_3328_
+      (zeta_i: usize)
+      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      (layer: usize)
+    : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
 
 val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
