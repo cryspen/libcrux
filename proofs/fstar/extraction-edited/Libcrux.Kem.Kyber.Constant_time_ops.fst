@@ -3,14 +3,7 @@ module Libcrux.Kem.Kyber.Constant_time_ops
 open Core
 open FStar.Mul
 
-let is_non_zero (value: u8)
-    : Prims.Pure u8
-      Prims.l_True
-      (ensures
-        fun result ->
-          let result:u8 = result in
-          Hax_lib.implies (value =. 0uy <: bool) (fun _ -> result =. 0uy <: bool) &&
-          Hax_lib.implies (value <>. 0uy <: bool) (fun _ -> result =. 1uy <: bool)) =
+let is_non_zero (value: u8) =
   let value:u16 = cast (value <: u8) <: u16 in
   let result:u16 =
     ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
@@ -20,14 +13,7 @@ let is_non_zero (value: u8)
   admit();
   res
 
-let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
-    : Prims.Pure u8
-      (requires (length lhs == v_CIPHERTEXT_SIZE /\ length rhs == v_CIPHERTEXT_SIZE))
-      (ensures
-        fun result ->
-          let result:u8 = result in
-          Hax_lib.implies (lhs =. rhs <: bool) (fun _ -> result =. 0uy <: bool) &&
-          Hax_lib.implies (lhs <>. rhs <: bool) (fun _ -> result =. 1uy <: bool)) =
+let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let (r: u8):u8 = 0uy in
@@ -50,15 +36,7 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
   admit();
   res
 
-let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
-    : Prims.Pure (t_Array u8 (sz 32))
-      (requires (length lhs == Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE /\
-                 length rhs == Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE))
-      (ensures
-        fun result ->
-          let result:t_Array u8 (sz 32) = result in
-          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
-          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool)) =
+let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in

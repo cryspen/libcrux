@@ -64,7 +64,9 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Ind_cpa.fst \
 	Libcrux.Kem.Kyber.Arithmetic.fsti \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
+	Libcrux.Kem.Kyber.Compress.fsti \
 	Libcrux.Kem.Kyber.Compress.fst \
+	Libcrux.Kem.Kyber.Constant_time_ops.fsti \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
 	Libcrux.Kem.Kyber.Matrix.fsti \
 	Libcrux.Kem.Kyber.Matrix.fst \
