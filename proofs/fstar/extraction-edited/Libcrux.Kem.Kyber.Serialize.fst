@@ -4,107 +4,9 @@ open Core
 open FStar.Mul
 
 open Libcrux.Kem.Kyber.Arithmetic
-(*
-unfold let map (f:'a -> 'b) (s: t_Array 'a 'n): t_Array 'b 'n
-  = createi 'n (fun i -> f s.[i])
 
-type bit = n: nat {n < 2}
-
-unfold let bits_to_byte (bits: t_Array bit (sz 8)): u8
-  = mk_int ( bits.[sz 0]
-           + bits.[sz 1] * 2
-           + bits.[sz 2] * 4
-           + bits.[sz 3] * 8
-           + bits.[sz 4] * 16
-           + bits.[sz 5] * 32
-           + bits.[sz 6] * 64
-           + bits.[sz 7] * 128 )
-
-let bits_to_bytes (#n: usize {v n < 100}) (bits: t_Array bit (n *! sz 8))
-  : t_Array u8 n
-  = createi n (fun i -> bits_to_byte (Seq.slice bits (8 * v i) (8 * v i + 8)))
-
-let get_bit_nat (x: nat) (nth: nat): bit
-  = (x / pow2 nth) % 2
-
-[@"opaque_to_smt"]
-let get_bit (#n: inttype) (x: int_t n) (nth: usize {v nth < bits n}): bit
-  = if v x >= 0
-    then get_bit_nat (v x) (v nth)
-    else 
-      let x' = pow2 (bits n) + v x in
-      get_bit_nat x' (v nth)
-
-type d_param n = d: usize {v d > 0 /\ v d <= bits n}
-
-unfold let bit_and (x y: bit): bit
-    = match x, y with
-      | (1, 1) -> 1
-      | _ -> 0
-      
-unfold let bit_or (x y: bit): bit
-    = (x + y) % 2
-
-let get_bit_and #t (x y: int_t t) (i: usize {v i < bits t})
-  : Lemma (get_bit (x &. y) i == get_bit x i `bit_and` get_bit y i)
-          [SMTPat (get_bit (x &. y) i)]
-  = admit ()
-
-let get_bit_or #t (x y: int_t t) (i: usize {v i < bits t})
-  : Lemma (get_bit (x |. y) i == get_bit x i `bit_or` get_bit y i)
-          [SMTPat (get_bit (x |. y) i)]
-  = admit ()
-
-let get_bit_shl #t #u (x: int_t t) (y: int_t u) (i: usize {v i < bits t})
-  : Lemma
-    (requires v y >= 0 /\ v y < bits t)
-    (ensures get_bit (x <<! y) i == (if v i < v y
-                                     then 0
-                                     else get_bit x (mk_int (v i - v y))))
-    [SMTPat (get_bit (x <<! y) i)]
-  = admit ()
-
-let get_bit_arr
-  (#n: inttype) (#len: usize) 
-  (arr: t_Array (int_t n) len)
-  (d: d_param n)
-  (nth: usize {v nth < v len * v d})
-  : bit
-  = FStar.Math.Lemmas.cancel_mul_div (v len) (v d);
-    get_bit (arr.[nth /! d]) (nth %! d)
-
-
-let get_bit_arr_nat
-  (#n: inttype) (#len: nat {len < max_usize})
-  (arr: t_Array (int_t n) (sz len))
-  (d: nat {d > 0 /\ d <= bits n}) // v d > 0 /\ v d <= bits n
-  (nth: nat {nth < len * d /\ nth < max_usize})
-  : bit
-  = get_bit_arr arr (mk_int d) (mk_int nth)
-
-// let bit_vector_slice (#n: inttype) (x: int_t n {v x > 0}) (d: d_param n): t_Array bit d
-//   = createi d (get_bit x)
-
-let bit_vector
-  (#n: inttype) (#len: usize)
-  (arr: t_Array (int_t n) len)
-  (d: d_param n)
-  : t_Array bit (len *. d)
-  = createi (len *. d) (get_bit_arr arr d)
-*)
 open MkSeq
 
-//each input has 10 bits
-val compress_coefficients_10_ 
-  (i1 i2 i3 i4: i32)
-  : Pure 
-    (u8 & u8 & u8 & u8 & u8)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create4 (i1, i2, i3, i4)) 10 in
-         let outputs = get_bit_arr_nat (create5 tuple) 8 in
-         forall i. i < 40 ==> inputs i == outputs i
-    )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32) =
   let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in // coefficient1[0-8]
@@ -125,22 +27,9 @@ let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficien
   result
 #pop-options
 
-// each input has 11 bits
-val compress_coefficients_11_ 
-  (i1 i2 i3 i4 i5 i6 i7 i8: int_t_d i32_inttype (sz 11))
-  : Pure 
-    (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create8 (i1, i2, i3, i4, i5, i6, i7, i8)) 11 in
-         let outputs = get_bit_arr_nat (create11 tuple) 8 in
-         forall i. i < 88 ==> inputs i == outputs i
-    )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
 let compress_coefficients_11_
-      (coefficient1 coefficient2 coefficient3 coefficient4 coefficient5 coefficient6 coefficient7 coefficient8:
-          int_t_d i32_inttype (sz 11))
-    : (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
+      coefficient1 coefficient2 coefficient3 coefficient4 coefficient5 coefficient6 coefficient7 coefficient8 =
   let coef1:u8 = cast (coefficient1 <: i32) <: u8 in
   let coef2:u8 =
     ((cast (coefficient2 &. 31l <: i32) <: u8) <<! 3l <: u8) |.
@@ -178,47 +67,23 @@ let compress_coefficients_11_
   (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
 #pop-options
 
-val compress_coefficients_3_ 
-  (i1 i2: int_t_d u16_inttype (sz 12))
-  : Pure 
-    (u8 & u8 & u8)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create2 (i1, i2)) 12 in
-         let outputs = get_bit_arr_nat (create3 tuple) 8 in
-         forall i. i < 24 ==> inputs i == outputs i
-    )
-    
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
-let compress_coefficients_3_ (coefficient1 coefficient2: u16) =
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 40"
+let compress_coefficients_3_ coefficient1 coefficient2 =
   let coef1:u8 = cast (coefficient1 &. 255us <: u16) <: u8 in
+  get_bit_pow2_minus_one_u16 255 (sz 0);
   let coef2:u8 =
     cast ((coefficient1 >>! 8l <: u16) |. ((coefficient2 &. 15us <: u16) <<! 4l <: u16) <: u16)
     <:
     u8
   in
   let coef3:u8 = cast ((coefficient2 >>! 4l <: u16) &. 255us <: u16) <: u8 in
-  admit();
   coef1, coef2, coef3 <: (u8 & u8 & u8) 
 #pop-options
 
-
-
-val compress_coefficients_5_ 
-  (i2 i1 i4 i3 i5 i7 i6 i8: int_t_d u8_inttype (sz 5))
-  : Pure 
-    (u8 & u8 & u8 & u8 & u8)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create8 (i1, i2, i3, i4, i5, i6, i7, i8)) 5 in
-         let outputs = get_bit_arr_nat (create5 tuple) 8 in
-         forall i. i < 40 ==> inputs i == outputs i
-    )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 160"
 let compress_coefficients_5_
-      (coefficient2 coefficient1 coefficient4 coefficient3 coefficient5 coefficient7 coefficient6 coefficient8:
-          int_t_d u8_inttype (sz 5))
-    : (u8 & u8 & u8 & u8 & u8) =
+      coefficient2 coefficient1 coefficient4 coefficient3 coefficient5 coefficient7 coefficient6 coefficient8
+  =
   let coef1:u8 = ((coefficient2 &. 7uy <: u8) <<! 5l <: u8) |. coefficient1 in
   let coef2:u8 =
     (((coefficient4 &. 1uy <: u8) <<! 7l <: u8) |. (coefficient3 <<! 2l <: u8) <: u8) |.
@@ -233,39 +98,18 @@ let compress_coefficients_5_
   coef1, coef2, coef3, coef4, coef5 <: (u8 & u8 & u8 & u8 & u8)
 #pop-options
 
-val decompress_coefficients_10_
-  (i2 i1 i3 i4 i5: int_t_d i32_inttype (sz 8))
-  : Pure 
-    (i32 & i32 & i32 & i32)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create5 (i1, i2, i3, i4, i5)) 8 in
-         let outputs = get_bit_arr_nat (create4 tuple) 10 in
-         (forall i. i < 40 ==> inputs i == outputs i)
-    )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 40 --split_queries always"
-let decompress_coefficients_10_ (byte2 byte1 byte3 byte4 byte5: int_t_d i32_inttype (sz 8)) =
+let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   let coefficient1:i32 = ((byte2 &. 3l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) in
   let coefficient2:i32 = ((byte3 &. 15l <: i32) <<! 6l <: i32) |. (byte2 >>! 2l <: i32) in
   let coefficient3:i32 = ((byte4 &. 63l <: i32) <<! 4l <: i32) |. (byte3 >>! 4l <: i32) in
   let coefficient4:i32 = (byte5 <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
-  admit();
   coefficient1, coefficient2, coefficient3, coefficient4 <: (i32 & i32 & i32 & i32)
 #pop-options
 
-val decompress_coefficients_11_
-  (i2 i1 i3 i5 i4 i6 i7 i9 i8 i10 i11: int_t_d i32_inttype (sz 8))
-  : Pure 
-    (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create11 (i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11)) 8 in
-         let outputs = get_bit_arr_nat (create8 tuple) 11 in
-         forall i. i < 88 ==> inputs i == outputs i
-    )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 260"
 let decompress_coefficients_11_
-      (byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10 byte11: int_t_d i32_inttype (sz 8)) =
+      byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10 byte11 =
   let coefficient1:i32 = ((byte2 &. 7l <: i32) <<! 8l <: i32) |. byte1 in
   let coefficient2:i32 = ((byte3 &. 63l <: i32) <<! 5l <: i32) |. (byte2 >>! 3l <: i32) in
   let coefficient3:i32 =
@@ -290,34 +134,13 @@ let decompress_coefficients_11_
   (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
 #pop-options
 
-
-val decompress_coefficients_4_
-  (i1: u8)
-  : Pure 
-    (i32 & i32)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create1 i1) 8 in
-         let outputs = get_bit_arr_nat (create2 tuple) 4 in
-         forall i. i < 4 ==> inputs i == outputs i
-    )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 40"
-let decompress_coefficients_4_ (byte: u8) =
+let decompress_coefficients_4_ byte =
   let coefficient1:i32 = cast (byte &. 15uy <: u8) <: i32 in
   let coefficient2:i32 = cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32 in
   coefficient1, coefficient2 <: (i32 & i32)
 #pop-options
 
-val decompress_coefficients_5_
-  (i1 i2 i3 i4 i5: int_t_d i32_inttype (sz 5))
-  : Pure 
-    (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
-    (requires True)
-    (ensures fun tuple ->
-         let inputs = get_bit_arr_nat (create5 (i1, i2, i3, i4, i5)) 8 in
-         let outputs = get_bit_arr_nat (create8 tuple) 5 in
-         forall i. i < 40 ==> inputs i == outputs i
-    )
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
   let coefficient1:i32 = byte1 &. 31l in
@@ -328,7 +151,6 @@ let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
   let coefficient6:i32 = (byte4 >>! 1l <: i32) &. 31l in
   let coefficient7:i32 = ((byte5 &. 7l <: i32) <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
   let coefficient8:i32 = byte5 >>! 3l in
-  admit();
   coefficient1,
   coefficient2,
   coefficient3,
@@ -349,7 +171,7 @@ let is_fe fe =
 let encode_bytes_spec
   (d: bit_num i32_inttype)
   (len_in: usize)
-  (len_out: usize { v len_in * v d == v len_out * 8 })
+  (len_out: usize { v len_in * d == v len_out * 8 })
   (coefficients: t_Array i32 len_in {forall i. i < v len_in ==> is_fe (v (coefficients.[sz i] <: i32))})
   // (serialized: (i:usize{v i < v len_out * 8} -> bit))
   (serialized: t_Array u8 len_out)
@@ -358,20 +180,20 @@ let encode_bytes_spec
              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative x)
          ) coefficients
     in
-    forall i. v i < v len_out * 8 ==>
-         get_bit_arr coefs       d     i
-      == get_bit_arr serialized (sz 8) i
+    forall i. i < v len_out * 8 ==>
+         bit_vec_of_int_arr coefs      d i
+      == bit_vec_of_int_arr serialized 8 i
 #pop-options
 
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 20"
 let encode_bytes_spec_offset
   (d: bit_num i32_inttype)
   (len_in: usize)
-  (len_out: usize { v len_in * v d <= v len_out * 8 })
+  (len_out: usize { v len_in * d <= v len_out * 8 })
   (offset: usize {
       range (v offset * 8) usize_inttype
     /\ range (v len_out * 8) usize_inttype
-    /\ v (offset *! sz 8) + v len_in * v d <= v (len_out *! sz 8)
+    /\ v (offset *! sz 8) + v len_in * d <= v (len_out *! sz 8)
   })
   (coefficients: t_Array i32 len_in {forall i. i < v len_in ==> is_fe (v (coefficients.[sz i] <: i32))})
   // (offset: usize {v offset * 8 + v len_in * v d <= v len_out * 8})
@@ -381,9 +203,9 @@ let encode_bytes_spec_offset
              (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative x)
          ) coefficients
     in
-    forall i. v i < v len_in * v d ==>
-         get_bit_arr coefs       d     i
-      == get_bit_arr serialized (sz 8) (offset *! sz 8 +! i)
+    forall i. i < v len_in * d ==>
+         bit_vec_of_int_arr coefs      d i
+      == bit_vec_of_int_arr serialized 8 (v offset * 8 + i)
 
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
 val compress_then_serialize_10_body
@@ -470,29 +292,32 @@ let offset_lemma (i n: nat) (d: pos) (j: nat {j < d})
 #push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 let compress_then_serialize_10_
       (v_OUT_LEN: usize)
-      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement {
-        forall i. i < 256 ==> is_fe (v (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[sz i] <: i32))
-      })
-    : t_Array u8 v_OUT_LEN =
+      re
+    //   (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement {
+    //     forall i. i < 256 ==> is_fe (v (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[sz i] <: i32))
+    //   })
+    // : t_Array u8 v_OUT_LEN 
+    =
   let accT = t_Array u8 v_OUT_LEN in
   let inv = fun (acc: t_Array u8 v_OUT_LEN) (i: usize) -> 
     // (forall (j: nat). j < 5 * v i ==> Seq.index accT j == Seq.index serialized j)
-    let coefs: t_Array i32 (sz 256) = map (fun (x: i32 {is_fe (v x)}) ->
-           Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
-             (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative x)
-         ) re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-    in
-    forall (j: usize). v j < v i * 40 + 40 ==>
-      (
-         assert (v j < v (sz 256) * v (sz 10));
-         assert (v j < v v_OUT_LEN * v (sz 8));
+    // let coefs: t_Array i32 (sz 256) = map (fun (x: i32 {is_fe (v x)}) ->
+    //        Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
+    //          (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative x)
+    //      ) re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    // in
+    // forall (j: usize). v j < v i * 40 + 40 ==>
+    //   (
+    //      assert (v j < v (sz 256) * v (sz 10));
+    //      assert (v j < v v_OUT_LEN * v (sz 8));
          
-         // offset_lemma (v i) (v v_OUT_LEN) 8 (v j);
-         // offset_lemma (v i) 256 10 (v j);
-         True
-      //    get_bit_arr coefs (sz 10) j
-      // == get_bit_arr acc   (sz  8) j
-      )
+    //      // offset_lemma (v i) (v v_OUT_LEN) 8 (v j);
+    //      // offset_lemma (v i) 256 10 (v j);
+    //      True
+    //   //    get_bit_arr coefs (sz 10) j
+    //   // == get_bit_arr acc   (sz  8) j
+    //   )
+    True
   in
   admit ();
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
@@ -914,7 +739,7 @@ let compress_then_serialize_ring_element_u #p
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   let _:Prims.unit = () <: Prims.unit in
-  Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
+  Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR);
   admit ();
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN re
@@ -928,8 +753,9 @@ let compress_then_serialize_ring_element_u #p
 
 let compress_then_serialize_ring_element_v #p v_COMPRESSION_FACTOR v_OUT_LEN re =
   let _:Prims.unit = () <: Prims.unit in
-  Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
+  Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR);
   let res = 
+  admit ();
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
   | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
@@ -1489,7 +1315,8 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
 
 let deserialize_then_decompress_ring_element_u v_COMPRESSION_FACTOR serialized = 
   let _:Prims.unit = () <: Prims.unit in
-  mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
+  mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR);
+  admit ();
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> deserialize_then_decompress_10_ serialized
   | 11ul -> deserialize_then_decompress_11_ serialized
@@ -1501,7 +1328,7 @@ let deserialize_then_decompress_ring_element_u v_COMPRESSION_FACTOR serialized =
 
 let deserialize_then_decompress_ring_element_v v_COMPRESSION_FACTOR serialized =
   let _:Prims.unit = () <: Prims.unit in
-  assert (v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5);
+  assume (v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5);
   mk_int_equiv_lemma #u32_inttype (v v_COMPRESSION_FACTOR);
   let res = 
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
@@ -1531,7 +1358,7 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
       re
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
-          let i, bytes:(usize & t_Array u8 (sz 3)) = temp_1_ in
+          let i, bytes:(usize & t_Array u8 (sz 3)) = admit (); temp_1_ in
           assume (length bytes = sz 3);
           assume (v i * 2 + 2 <= 256);
           let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in

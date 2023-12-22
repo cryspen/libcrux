@@ -152,35 +152,35 @@ let sample_poly_cbd #p seed domain_sep =
 let sample_vector_cbd_then_ntt (#p:params) (seed:t_Array u8 (sz 32)) (domain_sep:usize) =
   vector_ntt (sample_vector_cbd #p seed domain_sep)
 
-type dT = d: usize {v d = 1 \/ v d = 4 \/ v d = 5 \/ v d = 11 \/ v d = 12}
+type dT = d: nat {d = 1 \/ d = 4 \/ d = 5 \/ d = 11 \/ d = 12}
 
 assume val compress_ciphertext_coefficient
   : dT -> field_element -> r: field_element
 
-assume val bits_to_bytes (#bytes: usize) (f: (i:usize {v i < v bytes * 8} -> bit))
+assume val bits_to_bytes (#bytes: usize) (f: (i:nat {i < v bytes * 8} -> bit))
   : Pure (t_Array u8 bytes)
          (requires True)
-         (ensures fun r -> (forall i. get_bit_arr r (sz 8) i == f i))
+         (ensures fun r -> (forall i. bit_vec_of_int_arr r 8 i == f i))
 
 let encode_bytes
   (d: dT)
   (coefficients: polynomial)
-  : t_Array u8 (sz 32 *! d)
+  : t_Array u8 (sz (32 * d))
   = let coefs: t_Array nat (sz 256) = map (fun (f: nat {f < v v_FIELD_MODULUS}) ->
            compress_ciphertext_coefficient d f <: nat
          ) coefficients
     in
-    bits_to_bytes #(sz 32 *! d) (get_bit_nat_arr coefs d)
+    bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_arr coefs d)
     
 let compress_then_encode_message: polynomial -> t_Array u8 v_SHARED_SECRET_SIZE
-  = encode_bytes (sz 1)
+  = encode_bytes 1
 
 assume val decode_then_decompress_message: t_Array u8 v_SHARED_SECRET_SIZE -> polynomial
 assume val compress_then_encode_u (p:params): vector p -> t_Array u8 (v_C1_SIZE p)
   
 assume val decode_then_decompress_u: p:params -> t_Array u8 (v_C1_SIZE p) -> vector p
 let compress_then_encode_v (p:params): polynomial -> t_Array u8 (v_C2_SIZE p)
-  = encode_bytes p.v_VECTOR_V_COMPRESSION_FACTOR
+  = encode_bytes (v p.v_VECTOR_V_COMPRESSION_FACTOR)
 assume val decode_then_decompress_v: p:params -> t_Array u8 (v_C2_SIZE p) -> polynomial
 
 (** IND-CPA Functions *)
