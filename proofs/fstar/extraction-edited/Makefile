@@ -49,13 +49,15 @@ all:
 
 
 VERIFIED = \
-	Libcrux.Kem.Kyber.Constants.fst \
+	Libcrux.Kem.Kyber.Constants.fsti \
 	Libcrux.Digest.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Kyber768.fsti \
 	Libcrux.Kem.Kyber.Kyber768.fst \
+	Libcrux.Kem.Kyber.Kyber1024.fsti \
 	Libcrux.Kem.Kyber.Kyber1024.fst \
+	Libcrux.Kem.Kyber.Kyber512.fsti \
 	Libcrux.Kem.Kyber.Kyber512.fst \
 	Libcrux.Kem.Kyber.Types.fst \
 	Libcrux.Kem.Kyber.fsti \
