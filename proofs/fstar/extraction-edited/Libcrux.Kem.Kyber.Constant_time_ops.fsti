@@ -20,7 +20,8 @@ val is_non_zero (value: u8)
 
 val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
     : Prims.Pure u8
-      Prims.l_True
+      (requires (length lhs == v_CIPHERTEXT_SIZE /\
+                 length rhs == v_CIPHERTEXT_SIZE))
       (ensures
         fun result ->
           let result:u8 = result in
