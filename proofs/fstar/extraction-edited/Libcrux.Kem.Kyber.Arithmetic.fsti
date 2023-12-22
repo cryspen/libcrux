@@ -6,18 +6,25 @@ open FStar.Mul
 unfold
 let t_FieldElement = i32
 
-val v_MONTGOMERY_R: x:i32{v x = pow2 16}
-let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
-
 unfold
 let t_FieldElementTimesMontgomeryR = i32
 
 unfold
 let t_MontgomeryFieldElement = i32
 
-type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
+let v_BARRETT_MULTIPLIER: i64 = 20159L
 
-let op_String_Access #t #l (a:t_Array t l) (i:usize{v i < v l}) : t = a.[i]
+let v_BARRETT_SHIFT: i64 = 26L
+
+let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
+
+let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
+
+let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
+
+let v_MONTGOMERY_SHIFT: u8 = 16uy
+
+val v_MONTGOMERY_R: x:i32{v x = pow2 16}
 
 let to_spec_fe (m:t_FieldElement) : Spec.Kyber.field_element = 
     let m_v = v m % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS in
@@ -28,39 +35,6 @@ let to_spec_fe (m:t_FieldElement) : Spec.Kyber.field_element =
 
 val mont_to_spec_fe (m:t_FieldElement)
     : Spec.Kyber.field_element
-
-
-let to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
-    let p = createi #nat (sz 256) (fun i -> to_spec_fe (m.f_coefficients.[i])) in
-    assert (forall i. Seq.index p i = to_spec_fe (m.f_coefficients.[sz i]));
-    assert (forall i. Seq.index p i < v Spec.Kyber.v_FIELD_MODULUS);
-    p
-
-let mont_to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
-    let p = createi #nat (sz 256) (fun i -> mont_to_spec_fe (m.f_coefficients.[i])) in
-    assert (forall i. Seq.index p i = mont_to_spec_fe (m.f_coefficients.[sz i]));
-    assert (forall i. Seq.index p i < v Spec.Kyber.v_FIELD_MODULUS);
-    p
-
-let to_spec_vector (#p:Spec.Kyber.params)
-                   (m:t_Array t_PolynomialRingElement p.v_RANK)
-                   : (Spec.Kyber.vector p) =
-    createi p.v_RANK (fun i -> to_spec_poly (m.[i]))
-
-let mont_to_spec_vector (#p:Spec.Kyber.params)
-                   (m:t_Array t_PolynomialRingElement p.v_RANK)
-                   : (Spec.Kyber.vector p) =
-    createi p.v_RANK (fun i -> mont_to_spec_poly (m.[i]))
-
-let to_spec_matrix (#p:Spec.Kyber.params)
-                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK))
-                   : (Spec.Kyber.matrix p) =
-    createi p.v_RANK (fun i -> to_spec_vector (m.[i]))
-
-let mont_to_spec_matrix (#p:Spec.Kyber.params)
-                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK))
-                   : (Spec.Kyber.matrix p) =
-    createi p.v_RANK (fun i -> mont_to_spec_vector (m.[i]))
 
 
 val get_n_least_significant_bits (n: u8) (value: u32)
@@ -120,6 +94,43 @@ val to_unsigned_representative (fe: i32)
           result >=. 0us &&
           result <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
 
+
+type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
+
+let op_String_Access #t #l (a:t_Array t l) (i:usize{v i < v l}) : t = a.[i]
+
+let to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
+    let p = createi #nat (sz 256) (fun i -> to_spec_fe (m.f_coefficients.[i])) in
+    assert (forall i. Seq.index p i = to_spec_fe (m.f_coefficients.[sz i]));
+    assert (forall i. Seq.index p i < v Spec.Kyber.v_FIELD_MODULUS);
+    p
+
+let mont_to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
+    let p = createi #nat (sz 256) (fun i -> mont_to_spec_fe (m.f_coefficients.[i])) in
+    assert (forall i. Seq.index p i = mont_to_spec_fe (m.f_coefficients.[sz i]));
+    assert (forall i. Seq.index p i < v Spec.Kyber.v_FIELD_MODULUS);
+    p
+
+let to_spec_vector (#p:Spec.Kyber.params)
+                   (m:t_Array t_PolynomialRingElement p.v_RANK)
+                   : (Spec.Kyber.vector p) =
+    createi p.v_RANK (fun i -> to_spec_poly (m.[i]))
+
+let mont_to_spec_vector (#p:Spec.Kyber.params)
+                   (m:t_Array t_PolynomialRingElement p.v_RANK)
+                   : (Spec.Kyber.vector p) =
+    createi p.v_RANK (fun i -> mont_to_spec_poly (m.[i]))
+
+let to_spec_matrix (#p:Spec.Kyber.params)
+                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK))
+                   : (Spec.Kyber.matrix p) =
+    createi p.v_RANK (fun i -> to_spec_vector (m.[i]))
+
+let mont_to_spec_matrix (#p:Spec.Kyber.params)
+                   (m:(t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK))
+                   : (Spec.Kyber.matrix p) =
+    createi p.v_RANK (fun i -> mont_to_spec_vector (m.[i]))
+
 let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement =
   { f_coefficients = Rust_primitives.Hax.repeat 0l (sz 256) } <: t_PolynomialRingElement
 
@@ -136,3 +147,7 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
       (ensures fun result ->
         (forall i. v result.f_coefficients.[i] >= -v v_K * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
         (forall i. v result.f_coefficients.[i] <= v v_K * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS))
+
+
+
+

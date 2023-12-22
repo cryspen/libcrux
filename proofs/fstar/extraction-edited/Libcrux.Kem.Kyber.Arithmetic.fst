@@ -3,14 +3,6 @@ module Libcrux.Kem.Kyber.Arithmetic
 open Core
 open FStar.Mul
 
-let v_BARRETT_MULTIPLIER: i64 = 20159L
-
-let v_BARRETT_SHIFT: i64 = 26L
-val v_BARRETT_R: x:i64{v x = pow2 26}
-let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
-
-let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
-let v_MONTGOMERY_SHIFT: u8 = 16uy
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let mont_to_spec_fe (m:t_FieldElement) = admit()
