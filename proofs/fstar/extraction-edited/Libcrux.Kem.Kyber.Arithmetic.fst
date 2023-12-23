@@ -1,5 +1,5 @@
 module Libcrux.Kem.Kyber.Arithmetic
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 open Core
 open FStar.Mul
 
@@ -10,7 +10,7 @@ let mont_to_spec_fe (m:t_FieldElement) = admit()
 let get_n_least_significant_bits n value = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
-  admit();
+  logand_mask_lemma value (v n);
   res
 
 let barrett_reduce (value: i32) = 
@@ -20,9 +20,9 @@ let barrett_reduce (value: i32) =
     (v_BARRETT_R >>! 1l <: i64)
   in
   let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
-  admit(); // P-F
   let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
   let _:Prims.unit = () <: Prims.unit in
+  admit();
   result
 
 let montgomery_reduce (value: i32) = 
@@ -99,5 +99,5 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
   in
   let _:Prims.unit = () <: Prims.unit in
   assert (forall j. j <. sz 256 ==> lhs.f_coefficients.[j] == orig_lhs.f_coefficients.[j] +! rhs.f_coefficients.[j]);
-  lhs
+  lhs 
   

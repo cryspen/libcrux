@@ -45,20 +45,27 @@ val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n <= 32}) (value: u32)
           v result = v value % pow2 (v n))
 
 
+let barrett_pre (value:i32) = 
+    v value <= v v_BARRETT_R /\ v value >= - v v_BARRETT_R
+// Appears to work up to +/- 2^28, but not at +/- 2^29
+
 let barrett_post (value:i32) (result:i32) = 
-    v result = to_spec_fe value /\
+    v result % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS =
+    v value % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /\
     v result > - (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
     v result < (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 val barrett_reduce (value: i32)
     : Prims.Pure i32
-      (requires True)
-      (ensures fun result -> barrett_post value result)
+    (requires barrett_pre value)
+    (ensures barrett_post value)
 
 let montgomery_post (value:i32) (result:i32) =
-    v result = to_spec_fe (value /! v_MONTGOMERY_R) /\
-    v result >= (- 3 * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) / 2 /\
-    v result <= (3 * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) / 2
+    v result % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS =
+    (v value / v v_MONTGOMERY_R) % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS /\
+   (let abs_v = abs (v value) in
+    v result >= - (abs_v / v v_MONTGOMERY_R) - v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS / 2 /\
+    v result <= (abs_v / v v_MONTGOMERY_R) + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS / 2)
 
 val montgomery_reduce (value: i32)
     : Prims.Pure i32
@@ -136,17 +143,9 @@ let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement =
 
 val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement
-      (requires
-        v_K >. sz 1 /\
-        v_K <=. sz 4 /\
-        (forall i. v lhs.f_coefficients.[i] >= -(v v_K - 1) * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
-        (forall i. v lhs.f_coefficients.[i] <= (v v_K - 1) * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
-        (forall i. v rhs.f_coefficients.[i] >= -v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
-        (forall i. v rhs.f_coefficients.[i] <= v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
-       )
+      (requires forall i. range (v lhs.f_coefficients.[i] + v rhs.f_coefficients.[i]) i32_inttype)
       (ensures fun result ->
-        (forall i. v result.f_coefficients.[i] >= -v v_K * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
-        (forall i. v result.f_coefficients.[i] <= v v_K * v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS))
+        (forall i. v result.f_coefficients.[i] == v lhs.f_coefficients.[i] + v rhs.f_coefficients.[i]))
 
 
 
