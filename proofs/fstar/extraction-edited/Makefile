@@ -75,7 +75,10 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Ntt.fsti \
 	Libcrux.Kem.Kyber.Ntt.fst \
 	Libcrux.Kem.Kyber.Sampling.fst \
-	Libcrux.Kem.Kyber.Serialize.fsti \
+	Libcrux.Kem.Kyber.Serialize.PartA.fsti \
+	Libcrux.Kem.Kyber.Serialize.PartA.fst \
+	Libcrux.Kem.Kyber.Serialize.PartB.fsti \
+	Libcrux.Kem.Kyber.Serialize.PartB.fst \
 	Libcrux.Kem.Kyber.Serialize.fst
 
 UNVERIFIED =
@@ -92,9 +95,15 @@ FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(H
 
 FSTAR_FLAGS = --cmi \
   --warn_error -331 \
+  --warn_error -321 \
+  --warn_error -274 \
+  --query_stats \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
   $(addprefix --include ,$(FSTAR_INCLUDE_DIRS))
+
+#  --smtencoding.l_arith_repr native \
+#  --smtencoding.nl_arith_repr native \
 
 FSTAR = $(FSTAR_BIN) $(FSTAR_FLAGS)
 

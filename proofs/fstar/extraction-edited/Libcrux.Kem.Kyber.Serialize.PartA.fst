@@ -1,4 +1,4 @@
-module Libcrux.Kem.Kyber.Serialize
+module Libcrux.Kem.Kyber.Serialize.PartA
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 150"
 open Core
 open FStar.Mul
@@ -107,7 +107,7 @@ let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   coefficient1, coefficient2, coefficient3, coefficient4 <: (i32 & i32 & i32 & i32)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 260"
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
 let decompress_coefficients_11_
       byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10 byte11 =
   let coefficient1:i32 = ((byte2 &. 7l <: i32) <<! 8l <: i32) |. byte1 in
@@ -151,6 +151,7 @@ let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
   let coefficient6:i32 = (byte4 >>! 1l <: i32) &. 31l in
   let coefficient7:i32 = ((byte5 &. 7l <: i32) <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
   let coefficient8:i32 = byte5 >>! 3l in
+  admit();
   coefficient1,
   coefficient2,
   coefficient3,

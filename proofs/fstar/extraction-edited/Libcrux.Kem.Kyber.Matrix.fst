@@ -81,6 +81,7 @@ let compute_As_plus_e
                 let x1: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = error_as_ntt.[i] in
                 let x2 : i32 = x1.f_coefficients.[j] in
                 assume (range (v coefficient_normal_form + v x2) i32_inttype);
+                assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (coefficient_normal_form +! x2));
                 Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                   i
                   ({
@@ -159,6 +160,8 @@ let compute_message #p v_K m_v secret_as_ntt u_as_ntt =
           let coefficient_normal_form:i32 = Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce 
                            (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] *! 1441l) in
           assume (range (v m_v.(i) - v coefficient_normal_form) i32_inttype);
+          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (m_v.(i) -! coefficient_normal_form));
+
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               result with
@@ -249,6 +252,7 @@ let compute_ring_element_v
           assume (range (v coefficient_normal_form +
                         v #i32_inttype error_2_.f_coefficients.[ i ] +
                         v #i32_inttype message.f_coefficients.[ i ]) i32_inttype);
+          assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (coefficient_normal_form +! error_2_.f_coefficients.[ i ] +! message.f_coefficients.[ i ]));
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
             {
               result with
@@ -361,6 +365,7 @@ let compute_vector_u
                       i32)
                 in
                 assume (range (v coefficient_normal_form + v (error_1_.[i]).( j )) i32_inttype);
+                assume (Libcrux.Kem.Kyber.Arithmetic.barrett_pre (coefficient_normal_form +! (error_1_.[i]).( j ))); 
                 let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
                   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                     i

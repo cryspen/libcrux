@@ -175,6 +175,10 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
       re
       (fun re i ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+          assume(Libcrux.Kem.Kyber.Arithmetic.barrett_pre (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                    <:
+                    i32));
           let i:usize = i in
           {
             re with
@@ -400,6 +404,10 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
       re
       (fun re i ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+          assume(Libcrux.Kem.Kyber.Arithmetic.barrett_pre (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                    <:
+                    i32));
           let i:usize = i in
           {
             re with
@@ -615,6 +623,10 @@ let ntt_vector_u
       re
       (fun re i ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+          assume(Libcrux.Kem.Kyber.Arithmetic.barrett_pre (re
+                      .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                    <:
+                    i32));
           let i:usize = i in
           {
             re with

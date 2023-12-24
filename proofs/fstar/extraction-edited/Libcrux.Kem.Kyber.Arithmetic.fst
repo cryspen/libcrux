@@ -7,11 +7,14 @@ let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let mont_to_spec_fe (m:t_FieldElement) = admit()
 
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
 let get_n_least_significant_bits n value = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
   logand_mask_lemma value (v n);
+  assert (bounded res (v n));
   res
+#pop-options 
 
 let barrett_reduce (value: i32) = 
   let _:Prims.unit = () <: Prims.unit in
@@ -100,4 +103,5 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
   let _:Prims.unit = () <: Prims.unit in
   assert (forall j. j <. sz 256 ==> lhs.f_coefficients.[j] == orig_lhs.f_coefficients.[j] +! rhs.f_coefficients.[j]);
   lhs 
+  
   

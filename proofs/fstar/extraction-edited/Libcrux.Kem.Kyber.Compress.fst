@@ -35,6 +35,7 @@ let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   assert (v (1ul <<! coefficient_bits) <= pow2 11);
+  assert (v fe < pow2 11);
   let decompressed:u32 =
     (cast (fe <: i32) <: u32) *! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u32)
   in

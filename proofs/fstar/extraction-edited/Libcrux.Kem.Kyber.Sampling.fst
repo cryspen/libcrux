@@ -30,7 +30,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
       sampled
       (fun sampled temp_1_ ->
           let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
-          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
+          let chunk_number, byte_chunk:(usize & t_Array u8 chunk_len) = temp_1_ in
           assert(chunk_number <. sz 32);
           let (random_bits_as_u32: u32):u32 =
             (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
@@ -115,7 +115,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
       sampled
       (fun sampled temp_1_ ->
           let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
-          let chunk_number, byte_chunk:(usize & t_Slice u8) = temp_1_ in
+          let chunk_number, byte_chunk:(usize & t_Array u8 chunk_len) = temp_1_ in
           let (random_bits_as_u24: u32):u32 =
             ((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
               ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
@@ -215,7 +215,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             usize) =
             temp_0_
           in
-          let bytes:t_Slice u8 = bytes in
+          let bytes:t_Array u8 chunk_len = bytes in
           if ~.done <: bool
           then
             let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in

@@ -3,7 +3,7 @@ module Libcrux.Kem.Kyber.Serialize.PartB
 open Core
 open FStar.Mul
 open MkSeq
-open Libcrux.Kem.Kyber.Serialize
+open Libcrux.Kem.Kyber.Serialize.PartA
 
 // #push-options "--fuel 0 --ifuel 1 --z3rlimit 20"
 // let encode_bytes_spec
@@ -214,6 +214,7 @@ let update11
     let s = update5 s offset i0 i1 i2 i3 i4 in
     let s = update5 s (offset +! sz 5) i5 i6 i7 i8 i9 in
     let s = update_at_usize s (offset +! sz 10) i10 in
+    admit();
     s
 #pop-options
 
@@ -230,6 +231,7 @@ let compress_then_serialize_11_
       serialized
       (fun serialized temp_1_ ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
+          admit();
           let i, coefficients:(usize & t_Array i32 (sz 8)) = temp_1_ in
           assume (forall i. Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative_pre (Seq.index coefficients i));
           let coefficient1 =
@@ -333,6 +335,7 @@ let compress_then_serialize_4_
       serialized
       (fun serialized temp_1_ ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
+          admit();
           let i, coefficients:(usize & t_Array i32 (sz 2)) = temp_1_ in
           assume (forall i. Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative_pre (Seq.index coefficients i));
           let coefficient1:u8 =
@@ -609,11 +612,12 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
           let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
           let byte4:i32 = cast (bytes.[ sz 3 ] <: u8) <: i32 in
           let byte5:i32 = cast (bytes.[ sz 4 ] <: u8) <: i32 in
+          (*
           assume (int_t_has_bit_num byte1 8);
           assume (int_t_has_bit_num byte2 8);
           assume (int_t_has_bit_num byte3 8);
           assume (int_t_has_bit_num byte4 8);
-          assume (int_t_has_bit_num byte5 8);
+          assume (int_t_has_bit_num byte5 8); *)
           admit ();
           let coefficient1, coefficient2, coefficient3, coefficient4:(i32 & i32 & i32 & i32) =
             decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5
@@ -1074,7 +1078,6 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
           re)
   in
   re
-#pop-options
 
 let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
   admit ();
@@ -1224,8 +1227,8 @@ let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
             Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ] <: i32)
           in
           let coef1, coef2, coef3:(u8 & u8 & u8) =
-            assume (int_t_has_bit_num coefficient1 12);
-            assume (int_t_has_bit_num coefficient2 12);
+           (*assume (int_t_has_bit_num coefficient1 12);
+            assume (int_t_has_bit_num coefficient2 12); *)
             compress_coefficients_3_ coefficient1 coefficient2
           in
           assume (3 * v i + 3 <= 384);

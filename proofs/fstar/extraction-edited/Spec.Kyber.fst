@@ -62,13 +62,14 @@ val v_SECRET_KEY_SIZE (p:params) : u:usize{u = sz 1632 \/ u = sz 2400 \/ u = sz 
 let v_SECRET_KEY_SIZE (p:params) =
   (v_CPA_PKE_SECRET_KEY_SIZE p +! v_CPA_PKE_PUBLIC_KEY_SIZE p +! v_H_DIGEST_SIZE +! v_SHARED_SECRET_SIZE)
 
-val v_C1_BLOCK_SIZE (p:params): u:usize{u = sz 320 \/ u = sz 352}
+val v_C1_BLOCK_SIZE (p:params): u:usize{(u = sz 320 \/ u = sz 352) /\ v u == 32 * v p.v_VECTOR_U_COMPRESSION_FACTOR}
 let v_C1_BLOCK_SIZE (p:params) = sz 32 *! p.v_VECTOR_U_COMPRESSION_FACTOR
 
-val v_C1_SIZE (p:params) : u:usize{u >=. sz 640 \/ u <=. sz 1448}
+val v_C1_SIZE (p:params) : u:usize{(u >=. sz 640 \/ u <=. sz 1448) /\ 
+                                    v u == v (v_C1_BLOCK_SIZE p) * v p.v_RANK}
 let v_C1_SIZE (p:params) = v_C1_BLOCK_SIZE p *! p.v_RANK
 
-val v_C2_SIZE (p:params) : u:usize{u = sz 128 \/ u = sz 160}
+val v_C2_SIZE (p:params) : u:usize{(u = sz 128 \/ u = sz 160) /\ v u == 32 * v p.v_VECTOR_V_COMPRESSION_FACTOR }
 let v_C2_SIZE (p:params) = sz 32 *! p.v_VECTOR_V_COMPRESSION_FACTOR
 
 val v_CPA_PKE_CIPHERTEXT_SIZE (p:params) : u:usize {v u = v (v_C1_SIZE p) + v (v_C2_SIZE p)}
