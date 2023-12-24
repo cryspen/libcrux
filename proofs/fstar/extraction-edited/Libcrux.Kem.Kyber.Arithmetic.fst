@@ -7,7 +7,7 @@ let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let mont_to_spec_fe (m:t_FieldElement) = admit()
 
-let get_n_least_significant_bits (n: u8) (value: u32) = 
+let get_n_least_significant_bits n value = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
   admit();

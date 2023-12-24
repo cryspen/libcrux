@@ -36,9 +36,8 @@ let to_spec_fe (m:t_FieldElement) : Spec.Kyber.field_element =
 val mont_to_spec_fe (m:t_FieldElement)
     : Spec.Kyber.field_element
 
-
-val get_n_least_significant_bits (n: u8) (value: u32)
-    : Prims.Pure u32
+val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n <= 32}) (value: u32)
+    : Prims.Pure (int_t_d u32_inttype (v n))
       (requires v n < 32)
       (ensures
         fun result ->
@@ -83,17 +82,18 @@ val to_standard_domain (mfe: i32)
       (ensures (fun result -> 
           montgomery_post (mfe *! 1353l) result))
 
+let to_unsigned_representative_pre (fe: i32)
+  = fe >=. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
+    fe <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+
 val to_unsigned_representative (fe: i32)
-    : Prims.Pure u16
-      (requires
-        fe >=. (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) &&
-        fe <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+    : Prims.Pure (int_t_d u16_inttype 12)
+      (requires to_unsigned_representative_pre fe)
       (ensures
         fun result ->
           let result:u16 = result in
           result >=. 0us &&
           result <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
-
 
 type t_PolynomialRingElement = { f_coefficients:t_Array i32 (sz 256) }
 

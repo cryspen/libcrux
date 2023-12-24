@@ -18,8 +18,8 @@ val compress_message_coefficient (fe: u16)
                 let _:Prims.unit = temp_0_ in
                 result =. 0uy <: bool))
 
-val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
-    : Prims.Pure i32
+val compress_ciphertext_coefficient (coefficient_bits: u8 {v coefficient_bits > 0 /\ v coefficient_bits <= 32}) (fe: u16)
+    : Prims.Pure (int_t_d i32_inttype (v coefficient_bits))
       (requires
         (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
         coefficient_bits =. 11uy) &&
