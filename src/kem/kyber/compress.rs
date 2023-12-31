@@ -50,15 +50,18 @@ pub(super) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
     );
     hax_lib::debug_assert!(fe <= (FIELD_MODULUS as u16));
 
-    let mut compressed = (fe as u32) << (coefficient_bits + 1);
-    compressed += FIELD_MODULUS as u32;
+    let mut compressed = (fe as u64) << (coefficient_bits + 1);
+    compressed += FIELD_MODULUS as u64;
 
-    // N.B.: This division is not constant time since FIELD_MODULUS is prime.
-    // This is fine since we're compressing the coefficients of a public value
-    // (i.e. the ciphertext)
-    compressed /= (FIELD_MODULUS << 1) as u32;
+    // Let V = |compressed| / FIELD_MODULUS
+    // The following 2 lines compute floor(V)
+    compressed *= 82_570_714; // round(2^38 / FIELD_MODULUS)
+    compressed >>= 38;
 
-    get_n_least_significant_bits(coefficient_bits, compressed) as FieldElement
+    // Compute floor(V / 2) = floor(floor(V) / 2)
+    compressed >>= 1;
+
+    get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 }
 
 #[cfg_attr(hax, hax_lib_macros::requires((fe == 0) || (fe == 1)))]

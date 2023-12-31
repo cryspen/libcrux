@@ -28,7 +28,7 @@ fn ntt_at_layer(
 ) -> PolynomialRingElement {
     let step = 1 << layer;
 
-    for round in 0..(128 / step) {
+    for round in 0..(128 >> layer) {
         *zeta_i += 1;
 
         let offset = round * step * 2;
@@ -171,7 +171,7 @@ fn invert_ntt_at_layer(
 ) -> PolynomialRingElement {
     let step = 1 << layer;
 
-    for round in 0..(128 / step) {
+    for round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
         let offset = round * step * 2;
@@ -223,7 +223,7 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
         .skip(2)
         .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
-    for i in 0..8 {
+    for i in 0..2 {
         re.coefficients[i] = barrett_reduce(re.coefficients[i]);
     }
     re
