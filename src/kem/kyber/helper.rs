@@ -13,15 +13,15 @@ macro_rules! cloop {
             $body
         }
     };
-    (for ($i:ident, $chunk:ident) in $val:ident.iter().enumerate() $body:block) => {
+    (for ($i:ident, $item:ident) in $val:ident.iter().enumerate() $body:block) => {
         for $i in 0..$val.len() {
-            let $chunk = &$val[$i];
+            let $item = &$val[$i];
             $body
         }
     };
-    (for ($i:ident, $chunk:ident) in $val:ident.into_iter().enumerate() $body:block) => {
+    (for ($i:ident, $item:ident) in $val:ident.into_iter().enumerate() $body:block) => {
         for $i in 0..$val.len() {
-            let $chunk = $val[$i];
+            let $item = $val[$i];
             $body
         }
     };
@@ -42,11 +42,11 @@ macro_rules! cloop {
     (for ($i:ident, $chunk:ident) in $val:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
         for ($i, $chunk) in $val.chunks_exact($($chunk_size),*).enumerate() $body
     };
-    (for ($i:ident, $chunk:ident) in $val:ident.iter().enumerate() $body:block) => {
-        for ($i, $chunk) in $val.iter().enumerate() $body
+    (for ($i:ident, $item:ident) in $val:ident.iter().enumerate() $body:block) => {
+        for ($i, $item) in $val.iter().enumerate() $body
     };
-    (for ($i:ident, $chunk:ident) in $val:ident.into_iter().enumerate() $body:block) => {
-        for ($i, $chunk) in $val.into_iter().enumerate() $body
+    (for ($i:ident, $item:ident) in $val:ident.into_iter().enumerate() $body:block) => {
+        for ($i, $item) in $val.into_iter().enumerate() $body
     };
     (for $i:ident in ($start:literal..$end:expr).step_by($step:literal) $body:block) => {
         for $i in ($start..$end).step_by($step) $body

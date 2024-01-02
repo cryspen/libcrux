@@ -45,9 +45,7 @@ fn serialize_public_key<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] on each ring element.
 #[inline(always)]
-fn deserialize_public_key<const K: usize, const T_AS_NTT_ENCODED_SIZE: usize>(
-    public_key: &[u8],
-) -> [PolynomialRingElement; K] {
+fn deserialize_public_key<const K: usize>(public_key: &[u8]) -> [PolynomialRingElement; K] {
     let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
     cloop! {
         for (i, t_as_ntt_bytes) in public_key
@@ -203,7 +201,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_public_key::<K, T_AS_NTT_ENCODED_SIZE>(public_key);
+    let t_as_ntt = deserialize_public_key::<K>(public_key);
 
     // ρ := pk + 12·k·n / 8
     // for i from 0 to k−1 do
@@ -262,7 +260,6 @@ pub(crate) fn encrypt<
 fn deserialize_then_decompress_u<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
-    const VECTOR_U_ENCODED_SIZE: usize,
     const U_COMPRESSION_FACTOR: usize,
 >(
     ciphertext: &[u8; CIPHERTEXT_SIZE],
@@ -305,12 +302,8 @@ pub(super) fn decrypt<
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [u8; SHARED_SECRET_SIZE] {
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    let u_as_ntt = deserialize_then_decompress_u::<
-        K,
-        CIPHERTEXT_SIZE,
-        VECTOR_U_ENCODED_SIZE,
-        U_COMPRESSION_FACTOR,
-    >(ciphertext);
+    let u_as_ntt =
+        deserialize_then_decompress_u::<K, CIPHERTEXT_SIZE, U_COMPRESSION_FACTOR>(ciphertext);
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR>(
