@@ -206,7 +206,7 @@ let compress_then_serialize_u
   out
 
 let deserialize_then_decompress_u
-      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR: usize)
+      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
@@ -214,13 +214,7 @@ let deserialize_then_decompress_u
   in
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (ciphertext.[ {
-                        Core.Ops.Range.f_end = v_VECTOR_U_ENCODED_SIZE
-                      }
-                      <:
-                      Core.Ops.Range.t_RangeTo usize ]
-                    <:
-                    t_Slice u8)
+              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize ciphertext <: t_Slice u8)
                   ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
                       v_U_COMPRESSION_FACTOR
                       <:
@@ -255,20 +249,14 @@ let deserialize_then_decompress_u
   in
   u_as_ntt
 
-let deserialize_public_key (v_K v_T_AS_NTT_ENCODED_SIZE: usize) (public_key: t_Slice u8)
+let deserialize_public_key (v_K: usize) (public_key: t_Slice u8)
     : t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (public_key.[ {
-                        Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE
-                      }
-                      <:
-                      Core.Ops.Range.t_RangeTo usize ]
-                    <:
-                    t_Slice u8)
+              (Core.Slice.impl__chunks_exact public_key
                   Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -330,11 +318,7 @@ let decrypt
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : t_Array u8 (sz 32) =
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    deserialize_then_decompress_u v_K
-      v_CIPHERTEXT_SIZE
-      v_VECTOR_U_ENCODED_SIZE
-      v_U_COMPRESSION_FACTOR
-      ciphertext
+    deserialize_then_decompress_u v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR ciphertext
   in
   let v:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_v v_V_COMPRESSION_FACTOR
@@ -360,7 +344,7 @@ let encrypt
       (randomness: t_Slice u8)
     : t_Array u8 v_CIPHERTEXT_SIZE =
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    deserialize_public_key v_K v_T_AS_NTT_ENCODED_SIZE public_key
+    deserialize_public_key v_K public_key
   in
   let seed:t_Slice u8 =
     public_key.[ { Core.Ops.Range.f_start = v_T_AS_NTT_ENCODED_SIZE }

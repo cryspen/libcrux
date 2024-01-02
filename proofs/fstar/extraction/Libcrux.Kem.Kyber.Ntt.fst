@@ -307,14 +307,16 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                     usize)
                   <:
                   bool)
-                ((Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                        <:
-                        i32)
+                (fun temp_0_ ->
+                    let _:Prims.unit = temp_0_ in
+                    (Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                          <:
+                          i32)
+                      <:
+                      i32) <=.
+                    3l
                     <:
-                    i32) <=.
-                  3l
-                  <:
-                  bool)
+                    bool)
               <:
               bool))
       (ensures
@@ -331,15 +333,17 @@ let ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[
+                              i ]
+                            <:
+                            i32)
+                        <:
+                        i32) <.
+                      Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
                       <:
-                      i32) <.
-                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                    <:
-                    bool)
+                      bool)
                 <:
                 bool)) =
   let _:Prims.unit = () <: Prims.unit in
@@ -468,16 +472,19 @@ let ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
               Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                   <:
                   bool)
-                (((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) >=. 0l <: bool) &&
-                  ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) <. 4096l <: bool) &&
-                  ((Core.Num.impl__i32__abs (rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                          <:
-                          i32)
+                (fun temp_0_ ->
+                    let _:Prims.unit = temp_0_ in
+                    ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) >=. 0l <: bool) &&
+                    ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) <. 4096l <: bool
+                    ) &&
+                    ((Core.Num.impl__i32__abs (rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                            <:
+                            i32)
+                        <:
+                        i32) <=.
+                      Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
                       <:
-                      i32) <=.
-                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                    <:
-                    bool))
+                      bool))
               <:
               bool))
       (ensures
@@ -494,15 +501,17 @@ let ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[
+                              i ]
+                            <:
+                            i32)
+                        <:
+                        i32) <=.
+                      Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
                       <:
-                      i32) <=.
-                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                    <:
-                    bool)
+                      bool)
                 <:
                 bool)) =
   let _:Prims.unit = () <: Prims.unit in
@@ -651,14 +660,16 @@ let ntt_vector_u
                     usize)
                   <:
                   bool)
-                ((Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
-                        <:
-                        i32)
+                (fun temp_0_ ->
+                    let _:Prims.unit = temp_0_ in
+                    (Core.Num.impl__i32__abs (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
+                          <:
+                          i32)
+                      <:
+                      i32) <=.
+                    3328l
                     <:
-                    i32) <=.
-                  3328l
-                  <:
-                  bool)
+                    bool)
               <:
               bool))
       (ensures
@@ -675,15 +686,17 @@ let ntt_vector_u
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[
+                              i ]
+                            <:
+                            i32)
+                        <:
+                        i32) <.
+                      Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
                       <:
-                      i32) <.
-                    Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                    <:
-                    bool)
+                      bool)
                 <:
                 bool)) =
   let _:Prims.unit = () <: Prims.unit in

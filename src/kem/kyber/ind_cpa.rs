@@ -14,6 +14,7 @@ use super::{
         deserialize_to_uncompressed_ring_element, serialize_uncompressed_ring_element,
     },
 };
+use crate::cloop;
 
 /// Pad the `slice` with `0`s at the end.
 #[inline(always)]
@@ -44,15 +45,15 @@ fn serialize_public_key<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] on each ring element.
 #[inline(always)]
-fn deserialize_public_key<const K: usize, const T_AS_NTT_ENCODED_SIZE: usize>(
-    public_key: &[u8],
-) -> [PolynomialRingElement; K] {
+fn deserialize_public_key<const K: usize>(public_key: &[u8]) -> [PolynomialRingElement; K] {
     let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
-    for (i, t_as_ntt_bytes) in public_key[..T_AS_NTT_ENCODED_SIZE]
-        .chunks_exact(BYTES_PER_RING_ELEMENT)
-        .enumerate()
-    {
-        t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
+    cloop! {
+        for (i, t_as_ntt_bytes) in public_key
+            .chunks_exact(BYTES_PER_RING_ELEMENT)
+            .enumerate()
+        {
+            t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
+        }
     }
     t_as_ntt
 }
@@ -64,9 +65,11 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize>(
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
 
-    for (i, re) in key.into_iter().enumerate() {
-        out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
+    cloop! {
+        for (i, re) in key.into_iter().enumerate() {
+            out[i * BYTES_PER_RING_ELEMENT..(i + 1) * BYTES_PER_RING_ELEMENT]
             .copy_from_slice(&serialize_uncompressed_ring_element(re));
+        }
     }
 
     out
@@ -164,10 +167,12 @@ fn compress_then_serialize_u<
     input: [PolynomialRingElement; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
-    for (i, re) in input.into_iter().enumerate() {
-        out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
-            &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN>(re),
-        );
+    cloop! {
+        for (i, re) in input.into_iter().enumerate() {
+            out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
+                &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN>(re),
+            );
+        }
     }
 
     out
@@ -196,7 +201,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_public_key::<K, T_AS_NTT_ENCODED_SIZE>(public_key);
+    let t_as_ntt = deserialize_public_key::<K>(public_key);
 
     // ρ := pk + 12·k·n / 8
     // for i from 0 to k−1 do
@@ -255,18 +260,19 @@ pub(crate) fn encrypt<
 fn deserialize_then_decompress_u<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
-    const VECTOR_U_ENCODED_SIZE: usize,
     const U_COMPRESSION_FACTOR: usize,
 >(
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [PolynomialRingElement; K] {
     let mut u_as_ntt = [PolynomialRingElement::ZERO; K];
-    for (i, u_bytes) in ciphertext[..VECTOR_U_ENCODED_SIZE]
-        .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
-        .enumerate()
-    {
-        let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
-        u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
+    cloop! {
+        for (i, u_bytes) in ciphertext
+            .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
+            .enumerate()
+        {
+            let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
+            u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
+        }
     }
     u_as_ntt
 }
@@ -275,8 +281,10 @@ fn deserialize_then_decompress_u<
 #[inline(always)]
 fn deserialize_secret_key<const K: usize>(secret_key: &[u8]) -> [PolynomialRingElement; K] {
     let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
-    for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
-        secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
+    cloop! {
+        for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
+            secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
+        }
     }
     secret_as_ntt
 }
@@ -294,12 +302,8 @@ pub(super) fn decrypt<
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [u8; SHARED_SECRET_SIZE] {
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    let u_as_ntt = deserialize_then_decompress_u::<
-        K,
-        CIPHERTEXT_SIZE,
-        VECTOR_U_ENCODED_SIZE,
-        U_COMPRESSION_FACTOR,
-    >(ciphertext);
+    let u_as_ntt =
+        deserialize_then_decompress_u::<K, CIPHERTEXT_SIZE, U_COMPRESSION_FACTOR>(ciphertext);
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
     let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR>(

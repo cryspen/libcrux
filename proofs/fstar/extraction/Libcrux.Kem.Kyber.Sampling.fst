@@ -3,7 +3,7 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
-let rejection_sampling_panic_with_diagnostic: Prims.unit =
+let rejection_sampling_panic_with_diagnostic (_: Prims.unit) : Prims.unit =
   Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
       <:
       Rust_primitives.Hax.t_Never)
@@ -25,15 +25,17 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[
+                              i ]
+                            <:
+                            i32)
+                        <:
+                        i32) <=.
+                      2l
                       <:
-                      i32) <=.
-                    2l
-                    <:
-                    bool)
+                      bool)
                 <:
                 bool)) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -124,15 +126,17 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
                       usize)
                     <:
                     bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
+                  (fun temp_0_ ->
+                      let _:Prims.unit = temp_0_ in
+                      (Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[
+                              i ]
+                            <:
+                            i32)
+                        <:
+                        i32) <=.
+                      3l
                       <:
-                      i32) <=.
-                    3l
-                    <:
-                    bool)
+                      bool)
                 <:
                 bool)) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -320,7 +324,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
   let _:Prims.unit =
     if ~.done
     then
-      let _:Prims.unit = rejection_sampling_panic_with_diagnostic in
+      let _:Prims.unit = rejection_sampling_panic_with_diagnostic () in
       ()
   in
   let _:Prims.unit = () <: Prims.unit in

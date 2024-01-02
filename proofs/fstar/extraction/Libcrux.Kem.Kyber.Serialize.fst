@@ -1138,13 +1138,13 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__iter (Rust_primitives.unsize serialized <: t_Slice u8)
+              (Core.Iter.Traits.Collect.f_into_iter serialized
                 <:
-                Core.Slice.Iter.t_Iter u8)
+                Core.Array.Iter.t_IntoIter u8 (sz 32))
             <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
+            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Array.Iter.t_IntoIter u8 (sz 32)))
         <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Array.Iter.t_IntoIter u8 (sz 32)))
       re
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in

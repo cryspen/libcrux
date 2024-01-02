@@ -8,6 +8,7 @@ use super::{
     ntt::{invert_ntt_montgomery, ntt_multiply},
     sampling::sample_from_uniform_distribution,
 };
+use crate::cloop;
 
 #[inline(always)]
 #[allow(non_snake_case)]
@@ -104,19 +105,23 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
 ) -> [PolynomialRingElement; K] {
     let mut result = [PolynomialRingElement::ZERO; K];
 
-    for (i, row) in a_as_ntt.iter().enumerate() {
-        for (j, a_element) in row.iter().enumerate() {
-            let product = ntt_multiply(a_element, &r_as_ntt[j]);
-            result[i] = add_to_ring_element::<K>(result[i], &product);
-        }
+    cloop! {
+        for (i, row) in a_as_ntt.iter().enumerate() {
+            cloop! {
+                for (j, a_element) in row.iter().enumerate() {
+                    let product = ntt_multiply(a_element, &r_as_ntt[j]);
+                    result[i] = add_to_ring_element::<K>(result[i], &product);
+                }
+            }
 
-        result[i] = invert_ntt_montgomery::<K>(result[i]);
+            result[i] = invert_ntt_montgomery::<K>(result[i]);
 
-        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1441);
+            for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+                let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1441);
 
-            result[i].coefficients[j] =
-                barrett_reduce(coefficient_normal_form + error_1[i].coefficients[j]);
+                result[i].coefficients[j] =
+                    barrett_reduce(coefficient_normal_form + error_1[i].coefficients[j]);
+            }
         }
     }
 
@@ -133,19 +138,23 @@ pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(
 ) -> [PolynomialRingElement; K] {
     let mut result = [PolynomialRingElement::ZERO; K];
 
-    for (i, row) in matrix_A.iter().enumerate() {
-        for (j, matrix_element) in row.iter().enumerate() {
-            let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
-            result[i] = add_to_ring_element::<K>(result[i], &product);
-        }
+    cloop! {
+        for (i, row) in matrix_A.iter().enumerate() {
+            cloop! {
+                for (j, matrix_element) in row.iter().enumerate() {
+                    let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
+                    result[i] = add_to_ring_element::<K>(result[i], &product);
+                }
+            }
 
-        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            // The coefficients are of the form aR^{-1} mod q, which means
-            // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = to_standard_domain(result[i].coefficients[j]);
+            for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+                // The coefficients are of the form aR^{-1} mod q, which means
+                // calling to_montgomery_domain() on them should return a mod q.
+                let coefficient_normal_form = to_standard_domain(result[i].coefficients[j]);
 
-            result[i].coefficients[j] =
-                barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])
+                result[i].coefficients[j] =
+                    barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])
+            }
         }
     }
 
