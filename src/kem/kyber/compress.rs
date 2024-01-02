@@ -50,16 +50,13 @@ pub(super) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
     );
     hax_lib::debug_assert!(fe <= (FIELD_MODULUS as u16));
 
-    let mut compressed = (fe as u64) << (coefficient_bits + 1);
-    compressed += FIELD_MODULUS as u64;
+    // This has to be constant time due to:
+    // https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/ldX0ThYJuBo/m/ovODsdY7AwAJ
+    let mut compressed = (fe as u64) << coefficient_bits;
+    compressed += 1664 as u64;
 
-    // Let V = |compressed| / FIELD_MODULUS
-    // The following 2 lines compute floor(V)
-    compressed *= 82_570_714; // round(2^38 / FIELD_MODULUS)
-    compressed >>= 38;
-
-    // Compute floor(V / 2) = floor(floor(V) / 2)
-    compressed >>= 1;
+    compressed *= 10_321_340;
+    compressed >>= 35;
 
     get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 }
