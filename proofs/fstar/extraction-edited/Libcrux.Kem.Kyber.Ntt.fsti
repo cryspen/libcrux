@@ -56,7 +56,7 @@ val ntt_at_layer_3328_ #b
       (fun _ -> Prims.l_True)
 
 val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3)
-    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (8*3328))
+    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
       (requires True)
       (ensures (fun _ -> True))
 
@@ -168,7 +168,7 @@ val ntt_multiply (lhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 40
 val ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3328)
-    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (8*3328))
+    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
       (requires True)
       (ensures fun _ -> True)
 

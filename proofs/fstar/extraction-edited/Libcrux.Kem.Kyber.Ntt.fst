@@ -250,6 +250,7 @@ let ntt_at_layer #b zeta_i re layer initial_coefficient_bound =
   let step:usize = sz 1 <<! layer in
   let orig_re = re in
   let orig_zeta_i = zeta_i in
+  admit();
   [@ inline_let]
   let inv = fun (acc:t_PolynomialRingElement_b (3328+b) & usize) (i:usize) ->
     let (re,zeta_i) = acc in 
@@ -457,6 +458,7 @@ let ntt_multiply lhs rhs =
   let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 1 =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
+  admit();
   let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3328 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;

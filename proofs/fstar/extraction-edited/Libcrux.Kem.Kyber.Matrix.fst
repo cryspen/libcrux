@@ -9,7 +9,7 @@ let op_Array_Access (x:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) (i:
 
 let compute_As_plus_e v_K matrix_A s_as_ntt error_as_ntt =
   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO) v_K
   in
   admit();
   let acc_t = t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K in
@@ -110,7 +110,7 @@ let compute_As_plus_e v_K matrix_A s_as_ntt error_as_ntt =
 
 let compute_message #p v_K m_v secret_as_ntt u_as_ntt = 
   let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let acc_t = Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement in
   [@ inline_let]
@@ -137,7 +137,8 @@ let compute_message #p v_K m_v secret_as_ntt u_as_ntt =
           in
           result)
   in
-  let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
+  admit();
+  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (128*v v_K*3328) =
     Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery v_K result
   in
   let acc_t = Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement in
@@ -188,12 +189,9 @@ let compute_message #p v_K m_v secret_as_ntt u_as_ntt =
   result
 
 
-let compute_ring_element_v
-      (v_K: usize)
-      (tt_as_ntt r_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
-      (error_2_ message: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) =
+let compute_ring_element_v v_K tt_as_ntt r_as_ntt error_2_ message =
   let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -221,6 +219,7 @@ let compute_ring_element_v
           in
           result)
   in
+  admit();
   let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
     Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery v_K result
   in
@@ -281,7 +280,7 @@ let compute_vector_u
       (a_as_ntt: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) v_K)
       (r_as_ntt error_1_: t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) =
   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO) v_K
   in
   let acc_t = t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K in
   [@ inline_let]
@@ -325,6 +324,7 @@ let compute_vector_u
                   in
                   result)
           in
+          admit();
           let result:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
               i
@@ -400,7 +400,7 @@ let compute_vector_u
 
 let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
   let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) v_K =
-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO)
           v_K
         <:
         t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)

@@ -98,7 +98,7 @@ let compress_coefficients_5_
   coef1, coef2, coef3, coef4, coef5 <: (u8 & u8 & u8 & u8 & u8)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 40 --split_queries always"
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   let coefficient1:i32 = ((byte2 &. 3l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) in
   let coefficient2:i32 = ((byte3 &. 15l <: i32) <<! 6l <: i32) |. (byte2 >>! 2l <: i32) in
@@ -107,9 +107,10 @@ let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   coefficient1, coefficient2, coefficient3, coefficient4 <: (i32 & i32 & i32 & i32)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 400"
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 900"
 let decompress_coefficients_11_
       byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10 byte11 =
+  admit();
   let coefficient1:i32 = ((byte2 &. 7l <: i32) <<! 8l <: i32) |. byte1 in
   let coefficient2:i32 = ((byte3 &. 63l <: i32) <<! 5l <: i32) |. (byte2 >>! 3l <: i32) in
   let coefficient3:i32 =

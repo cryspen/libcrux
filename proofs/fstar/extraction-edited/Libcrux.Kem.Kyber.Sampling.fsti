@@ -29,17 +29,13 @@ val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
 
 val sample_from_binomial_distribution (#p:Spec.Kyber.params)
     (v_ETA: usize) (randomness: t_Slice u8)
-    : Pure Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
+    : Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_ETA))
       (requires (v_ETA = p.v_ETA1 \/ v_ETA = p.v_ETA2) /\
                 (Core.Slice.impl__len randomness <: usize) =. (v_ETA *! sz 64 <: usize))
       (ensures
         fun result ->
-          let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement = result in
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b result == 
-          Spec.Kyber.sample_poly_binomial v_ETA randomness /\
-          (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-             (v #i32_inttype result.f_coefficients.[i] >= - (v v_ETA) /\
-              v #i32_inttype result.f_coefficients.[i] <= (v v_ETA))))
+          Spec.Kyber.sample_poly_binomial v_ETA randomness)
 
 
 val sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))

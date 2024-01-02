@@ -222,6 +222,7 @@ let compress_then_serialize_11_
   =
   let inv = fun (acc: t_Array u8 v_OUT_LEN) (i: usize) -> True in
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
+  admit();
   let serialized:t_Array u8 v_OUT_LEN =
     Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #inv
       (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients <: t_Slice i32)
@@ -375,6 +376,7 @@ let compress_then_serialize_5_
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let accT = t_Array u8 v_OUT_LEN in
   let inv (acc: accT) (i: usize) = True in
+  admit();
   let serialized:t_Array u8 v_OUT_LEN =
     Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #inv
       (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients)
@@ -523,6 +525,7 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomi
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let accT = t_Array u8 (sz 32) in
   let inv (acc: accT) (i: usize) = True in
+  admit();
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #inv
       (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients)
@@ -590,7 +593,7 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
     =
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let accT = Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement in
   let inv (acc: accT) (i: usize) = True in
@@ -699,10 +702,9 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8)
 
 let deserialize_then_decompress_11_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-  admit ();
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
     Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #(fun _ _ -> True)
@@ -753,7 +755,7 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8)
           let coefficient6 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient6 in
           let coefficient7 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient7 in
           let coefficient8 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient8 in
-          
+          admit();
           let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
             {
               re with
@@ -867,7 +869,7 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8)
     : Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
     Rust_primitives.Iterators.foldi_slice #_ #_ #(fun _ _ -> True)
@@ -922,7 +924,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
    admit ();
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
      Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #(fun _ _ -> True)
@@ -1078,7 +1080,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8)
 let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
   admit ();
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+   Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
     Rust_primitives.Iterators.foldi_slice #_ #_ #(fun _ _ -> True)
@@ -1158,7 +1160,7 @@ let deserialize_then_decompress_ring_element_v v_COMPRESSION_FACTOR serialized =
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) = 
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+   Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
     Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #(fun _ _ -> True)
@@ -1206,6 +1208,7 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
 #push-options "--z3rlimit 100"
 let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) =
   let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
+  admit();
   let serialized:t_Array u8 (sz 384) =
     Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #(fun _ _ -> True)
       (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients)

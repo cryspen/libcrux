@@ -127,7 +127,7 @@ type t_PolynomialRingElement = { f_coefficients:t_Array (t_FieldElement) (sz 256
 
 type t_PolynomialRingElement_b b = { f_coefficients:t_Array (i32_b b) (sz 256) }
 
-type wfPolynomialRingElement = t_PolynomialRingElement_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+type wfPolynomialRingElement = t_PolynomialRingElement_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS - 1)
 
 val derefine_poly_b (#b1:nat) (x:t_PolynomialRingElement_b b1):  
     r:t_PolynomialRingElement{

@@ -43,12 +43,16 @@ let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 let mont_to_spec_fe (m:t_FieldElement) = admit()
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 200"
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 let get_n_least_significant_bits n value = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
   logand_mask_lemma value (v n);
-  assert (v res <= v n);
+  mk_int_equiv_lemma #u32_inttype 1;
+  assert ((1ul <<! n) == mk_int (pow2 (v n)));
+  assert (res == logand value (mk_int (pow2 (v n)) -! mk_int 1));
+  assert (v res == v value % (pow2 (v n)));
+  assert (v res < pow2 (v n));
   res
 #pop-options 
 

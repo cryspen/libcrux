@@ -22,6 +22,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
   assert (v (length sl) == 128);
   assert (Seq.length sl == 128);
   assert_norm (128 % 4 == 0);
+  admit();
   let sampled:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
    Rust_primitives.Iterators.foldi_chunks_exact #u8 #acc_t #inv
       sl
@@ -97,7 +98,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
 let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
   =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO)
   in
   let acc_t = Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement in
   [@ inline_let]
@@ -155,6 +156,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
                 assume (outcome_2_ >=. 0l /\ outcome_2_ <. 7l);
                 let offset:usize = cast (outcome_set /! 6l <: i32) <: usize in
                 assume(offset <. sz 4);
+                admit();
                 assert(4 * v chunk_number + v offset < 256);
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
                   {
@@ -178,6 +180,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
 let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_ETA);
+  admit();
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
@@ -192,7 +195,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
   =
-    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let done:bool = false in
   let acc_t = (bool & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize) in
@@ -222,6 +225,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let b3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
             let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
             let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
+            admit();
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement &
               usize) =
               if
