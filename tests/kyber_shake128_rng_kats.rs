@@ -62,6 +62,8 @@ macro_rules! impl_shake128_rng_answer_tests {
                 let key_generation_seed = rng.read::<64>();
                 let key_pair = $key_gen_derand(key_generation_seed);
 
+                // TODO: See if there's a way to parallelize this, perhaps
+                // using a different hash function?
                 shake128.absorb(key_pair.public_key().as_ref());
                 shake128.absorb(key_pair.private_key().as_ref());
 

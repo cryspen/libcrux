@@ -94,12 +94,20 @@ pub(crate) fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     out
 }
 
+/// This module groups together functions that can be used to absorb or squeeze
+/// bytes in increments.
+/// TODO: This module should not be public, see: https://github.com/cryspen/libcrux/issues/157
 pub mod incremental {
     use libcrux_hacl::{
         Hacl_Hash_SHA3_Scalar_shake128_absorb, Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks,
         Hacl_Hash_SHA3_Scalar_state_free, Hacl_Hash_SHA3_Scalar_state_malloc,
     };
 
+    /// SHAKE 128
+    ///
+    /// The caller must only call absorb() once, but may call squeeze_nblocks()
+    /// as many times as it wishes, provided the output size passed to
+    /// squeeze_nblocks() is multiple of the SHAKE128 block size (168 bytes).
     pub struct AbsorbOnceSqueezeManyShake128 {
         state: *mut u64,
     }
@@ -145,9 +153,13 @@ pub mod incremental {
 
     use libcrux_hacl::{
         Hacl_Hash_SHA3_free, Hacl_Hash_SHA3_malloc, Hacl_Hash_SHA3_squeeze,
-        Hacl_Hash_SHA3_state_t_s, Hacl_Hash_SHA3_update,
+        Hacl_Hash_SHA3_state_t_s, Hacl_Hash_SHA3_update, Spec_Hash_Definitions_Shake128,
     };
 
+    /// SHAKE 128
+    ///
+    /// The caller may call absorb() as many times as it wishes, but must only
+    /// call squeeze() once.
     pub struct AbsorbManySqueezeOnceShake128 {
         state: *mut Hacl_Hash_SHA3_state_t_s,
     }
@@ -155,7 +167,9 @@ pub mod incremental {
     impl AbsorbManySqueezeOnceShake128 {
         pub fn new() -> Self {
             Self {
-                state: unsafe { Hacl_Hash_SHA3_malloc(12) },
+                state: unsafe {
+                    Hacl_Hash_SHA3_malloc(Spec_Hash_Definitions_Shake128.try_into().unwrap())
+                },
             }
         }
 
