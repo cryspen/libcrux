@@ -76,3 +76,4 @@ hacspec = []            # TODO: #7 Use specs instead of efficient implementation
 rand = []
 wasm = ["wasm-bindgen"]
 log = ["dep:log"]
+slow_kat_tests = []

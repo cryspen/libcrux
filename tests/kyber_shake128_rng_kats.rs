@@ -17,7 +17,8 @@ impl Shake128Rng {
     //
     // The SHAKE128 block size is 168 bytes.
     //
-    // To keep things simple, we set:
+    // TODO: We can clean up this Rng using the above facts, but to keep things
+    // simple for now we set:
     // |BUFFER_SIZE| = 168,000
     const BUFFER_SIZE: u32 = 168_000;
 
@@ -50,7 +51,7 @@ impl Shake128Rng {
     }
 }
 
-macro_rules! impl_known_answer_tests {
+macro_rules! impl_shake128_rng_answer_tests {
     ($name:ident, $kat_rounds:literal, $ciphertext_size:literal, $key_gen_derand:expr, $encapsulate_derand:expr, $decapsulate_derand: expr, $expected_final_hash:expr) => {
         #[test]
         fn $name() {
@@ -88,7 +89,9 @@ macro_rules! impl_known_answer_tests {
     };
 }
 
-impl_known_answer_tests!(
+// The 5,000 KAT tests.
+
+impl_shake128_rng_answer_tests!(
     kyber512_shake128_rng_5000_known_answer_tests,
     5000,
     768,
@@ -97,7 +100,7 @@ impl_known_answer_tests!(
     kem::kyber512_decapsulate_derand,
     "e837d3b8ede8fe19a2442d25c921851811f87d054b66e453b82b620582ab0629"
 );
-impl_known_answer_tests!(
+impl_shake128_rng_answer_tests!(
     kyber768_shake128_rng_5000_known_answer_tests,
     5000,
     1088,
@@ -106,7 +109,7 @@ impl_known_answer_tests!(
     kem::kyber768_decapsulate_derand,
     "17745bc1564b01ab4752e86438973d7120e92d46082c33d05dbef07f0688cc77"
 );
-impl_known_answer_tests!(
+impl_shake128_rng_answer_tests!(
     kyber1024_shake128_rng_5000_known_answer_tests,
     5000,
     1568,
@@ -116,36 +119,37 @@ impl_known_answer_tests!(
     "44079dcea6b7d596c0c00431f012e0f3b63777736720921fdc50668d9c0c6ad0"
 );
 
-#[test]
-#[ignore = "this runs on CI but is excluded by default since it can take a while"]
-fn kyber768_100_000_kats() {
-    let mut rng = Shake128Rng::new();
-    let mut shake128 = AbsorbManySqueezeOnceShake128::new();
+// The 100,000 KAT tests.
 
-    for _ in 0..100_000 {
-        let key_generation_seed = rng.read::<64>();
-        let key_pair = kem::kyber768_generate_keypair_derand(key_generation_seed);
+#[cfg(feature = "slow_kat_tests")]
+impl_shake128_rng_answer_tests!(
+    kyber512_shake128_rng_100_000_known_answer_tests,
+    100_000,
+    768,
+    kem::kyber512_generate_keypair_derand,
+    kem::kyber512_encapsulate_derand,
+    kem::kyber512_decapsulate_derand,
+    "99520ba1dd26f7da7d5c8e71110cb12b6c15664478b0ea0dbb7991c74e374392"
+);
 
-        shake128.absorb(key_pair.public_key().as_ref());
-        shake128.absorb(key_pair.private_key().as_ref());
+#[cfg(feature = "slow_kat_tests")]
+impl_shake128_rng_answer_tests!(
+    kyber768_shake128_rng_100_000_known_answer_tests,
+    100_000,
+    1088,
+    kem::kyber768_generate_keypair_derand,
+    kem::kyber768_encapsulate_derand,
+    kem::kyber768_decapsulate_derand,
+    "35d56f1cc040b71fc97a9b77b05485d97354b296483d2539ade224374ec8d325"
+);
 
-        let encapsulation_seed = rng.read::<32>();
-        let (ciphertext, shared_secret) =
-            kem::kyber768_encapsulate_derand(key_pair.public_key(), encapsulation_seed);
-
-        shake128.absorb(ciphertext.as_ref());
-        shake128.absorb(shared_secret.as_ref());
-
-        let invalid_ciphertext = rng.read::<1088>();
-        let implicit_rejection_secret =
-            kem::kyber768_decapsulate_derand(key_pair.private_key(), &invalid_ciphertext.into());
-
-        shake128.absorb(implicit_rejection_secret.as_ref());
-    }
-
-    let all_kats_hash: [u8; 32] = shake128.squeeze::<32>();
-    assert_eq!(
-        hex::encode(&all_kats_hash),
-        "35d56f1cc040b71fc97a9b77b05485d97354b296483d2539ade224374ec8d325"
-    );
-}
+#[cfg(feature = "slow_kat_tests")]
+impl_shake128_rng_answer_tests!(
+    kyber1024_shake128_rng_100_000_known_answer_tests,
+    100_000,
+    1568,
+    kem::kyber1024_generate_keypair_derand,
+    kem::kyber1024_encapsulate_derand,
+    kem::kyber1024_decapsulate_derand,
+    "b9440d4fe3231bf70cb07f6f7ebd6ffaa469b3f08e644a1449e851f30e4d0d23"
+);
