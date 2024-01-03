@@ -1,5 +1,5 @@
 module Libcrux.Kem.Kyber.Serialize.PartA
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 150"
+#set-options "--fuel 0 --ifuel 0 --z3rlimit 50"
 open Core
 open FStar.Mul
 
@@ -7,7 +7,7 @@ open Libcrux.Kem.Kyber.Arithmetic
 
 open MkSeq
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#push-options "--z3rlimit 50"
 let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32) =
   let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in // coefficient1[0-8]
   let coef2:u8 =
@@ -27,7 +27,7 @@ let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficien
   result
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 300"
+#push-options "--z3rlimit 150"
 let compress_coefficients_11_
       coefficient1 coefficient2 coefficient3 coefficient4 coefficient5 coefficient6 coefficient7 coefficient8 =
   let coef1:u8 = cast (coefficient1 <: i32) <: u8 in
@@ -67,7 +67,7 @@ let compress_coefficients_11_
   (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 40"
+#push-options "--z3rlimit 20"
 let compress_coefficients_3_ coefficient1 coefficient2 =
   let coef1:u8 = cast (coefficient1 &. 255us <: u16) <: u8 in
   get_bit_pow2_minus_one_u16 255 (sz 0);
@@ -80,7 +80,7 @@ let compress_coefficients_3_ coefficient1 coefficient2 =
   coef1, coef2, coef3 <: (u8 & u8 & u8) 
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 160"
+#push-options "--z3rlimit 40 --split_queries always"
 let compress_coefficients_5_
       coefficient2 coefficient1 coefficient4 coefficient3 coefficient5 coefficient7 coefficient6 coefficient8
   =
@@ -98,7 +98,7 @@ let compress_coefficients_5_
   coef1, coef2, coef3, coef4, coef5 <: (u8 & u8 & u8 & u8 & u8)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
+#push-options "--z3rlimit 20 --split_queries always --retry 4"
 let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   let coefficient1:i32 = ((byte2 &. 3l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) in
   let coefficient2:i32 = ((byte3 &. 15l <: i32) <<! 6l <: i32) |. (byte2 >>! 2l <: i32) in
@@ -107,10 +107,9 @@ let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   coefficient1, coefficient2, coefficient3, coefficient4 <: (i32 & i32 & i32 & i32)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 900"
+#push-options "--z3rlimit 80 --split_queries always"
 let decompress_coefficients_11_
       byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10 byte11 =
-  admit();
   let coefficient1:i32 = ((byte2 &. 7l <: i32) <<! 8l <: i32) |. byte1 in
   let coefficient2:i32 = ((byte3 &. 63l <: i32) <<! 5l <: i32) |. (byte2 >>! 3l <: i32) in
   let coefficient3:i32 =
@@ -135,14 +134,14 @@ let decompress_coefficients_11_
   (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 40"
+#push-options "--z3rlimit 20"
 let decompress_coefficients_4_ byte =
   let coefficient1:i32 = cast (byte &. 15uy <: u8) <: i32 in
   let coefficient2:i32 = cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32 in
   coefficient1, coefficient2 <: (i32 & i32)
 #pop-options
 
-#push-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#push-options "--z3rlimit 60"
 let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
   let coefficient1:i32 = byte1 &. 31l in
   let coefficient2:i32 = ((byte2 &. 3l <: i32) <<! 3l <: i32) |. (byte1 >>! 5l <: i32) in
@@ -152,7 +151,6 @@ let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
   let coefficient6:i32 = (byte4 >>! 1l <: i32) &. 31l in
   let coefficient7:i32 = ((byte5 &. 7l <: i32) <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
   let coefficient8:i32 = byte5 >>! 3l in
-  admit();
   coefficient1,
   coefficient2,
   coefficient3,
