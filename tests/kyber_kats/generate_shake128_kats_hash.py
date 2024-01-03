@@ -1,7 +1,6 @@
 #! /usr/bin/env pypy3
 
 from kyber import *
-import Crypto
 from tqdm import tqdm
 import argparse
 
