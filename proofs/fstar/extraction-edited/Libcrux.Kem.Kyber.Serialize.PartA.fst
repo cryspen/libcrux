@@ -1,5 +1,5 @@
 module Libcrux.Kem.Kyber.Serialize.PartA
-#set-options "--fuel 0 --ifuel 0 --z3rlimit 50"
+#set-options "--fuel 0 --ifuel 0 --z3rlimit 50 --retry 3"
 open Core
 open FStar.Mul
 
@@ -80,7 +80,7 @@ let compress_coefficients_3_ coefficient1 coefficient2 =
   coef1, coef2, coef3 <: (u8 & u8 & u8) 
 #pop-options
 
-#push-options "--z3rlimit 40 --split_queries always"
+#push-options "--z3rlimit 60 --split_queries always"
 let compress_coefficients_5_
       coefficient2 coefficient1 coefficient4 coefficient3 coefficient5 coefficient7 coefficient6 coefficient8
   =
