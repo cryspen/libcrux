@@ -27,7 +27,7 @@ let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficien
   result
 #pop-options
 
-#push-options "--z3rlimit 150"
+#push-options "--ifuel 1 --z3rlimit 600 --split_queries always"
 let compress_coefficients_11_
       coefficient1 coefficient2 coefficient3 coefficient4 coefficient5 coefficient6 coefficient7 coefficient8 =
   let coef1:u8 = cast (coefficient1 <: i32) <: u8 in
@@ -122,6 +122,7 @@ let decompress_coefficients_11_
   in
   let coefficient7:i32 = ((byte10 &. 31l <: i32) <<! 6l <: i32) |. (byte9 >>! 2l <: i32) in
   let coefficient8:i32 = (byte11 <<! 3l <: i32) |. (byte10 >>! 5l <: i32) in
+  admit();
   coefficient1,
   coefficient2,
   coefficient3,

@@ -32,28 +32,35 @@ val ntt_at_layer
       (zeta_i: usize{v zeta_i < 128})
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b b)
       (layer: usize{v layer > 0 /\ 
-                    v layer <= 6 /\ 
+                    v layer <= 7 /\ 
                     v zeta_i == pow2 (7 - v layer) - 1})
       (initial_coefficient_bound: usize{b == (7 - v layer) * 3328 + v initial_coefficient_bound})
     : Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (3328+b))
       (requires True)
-      (ensures fun result -> True)
+      (ensures fun result -> v zeta_i == pow2 (8 - v layer) - 1)
 
-val ntt_at_layer_3_ #b
-      (zeta_i: usize)
+val ntt_at_layer_3_ (#b:nat{b <= 7*3328})
+      (zeta_i: usize{v zeta_i < 128})
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b b)
-      (layer: usize)
-    : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (7*3328+3))
+      (layer: usize{v layer > 0 /\ 
+                    v layer <= 6 /\ 
+                    v zeta_i == pow2 (7 - v layer) - 1 /\
+                    b == (6 - v layer) * 3328 + 4803})
+    : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (3328+b))
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures fun result -> v zeta_i == pow2 (6 - v layer) - 1)
 
-val ntt_at_layer_3328_ #b 
-      (zeta_i: usize)
+val ntt_at_layer_3328_ (#b:nat{b <= 7*3328})
+      (zeta_i: usize{v zeta_i < 128})
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b b)
-      (layer: usize)
-    : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (8*3328))
+      (layer: usize{v layer > 0 /\ 
+                    v layer <= 7 /\ 
+                    v zeta_i == pow2 (7 - v layer) - 1  /\
+                    b == (7 - v layer) * 3328 + 3328})
+    : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (3328+b))
       Prims.l_True
-      (fun _ -> Prims.l_True)
+      (ensures fun result -> v zeta_i == pow2 (8 - v layer) - 1)
+
 
 val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3)
     : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)

@@ -59,7 +59,7 @@ val lemma_zeta_decr: orig:usize -> fin:usize -> layer:usize{v layer <= 7} ->
          v fin == pow2 (7 - v layer))
 let lemma_zeta_decr orig fin layer = ()
 
-#push-options "--ifuel 0 --z3rlimit 400"
+#push-options "--ifuel 0 --z3rlimit 500"
 let invert_ntt_at_layer #v_K #b zeta_i re layer =
   let step:usize = sz 1 <<! layer in
   assert (v step > 0);
@@ -146,7 +146,7 @@ let invert_ntt_at_layer #v_K #b zeta_i re layer =
   let hax_temp_output:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (2*b) = re in
   lemma_zeta_decr orig_zeta_i zeta_i layer;
   zeta_i, hax_temp_output <: (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (2*b))  
-#pop-options  
+#pop-options
 
 #push-options "--z3rlimit 200"
 let invert_ntt_montgomery v_K re =
@@ -333,17 +333,15 @@ let ntt_at_layer #b zeta_i re layer initial_coefficient_bound =
   zeta_i, hax_temp_output <: (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (3328+b))
 #pop-options 
 
-let ntt_at_layer_3_ zeta_i re layer = 
-  admit();
+let ntt_at_layer_3_ #b zeta_i re layer = 
   let tmp0, out =
-    ntt_at_layer zeta_i re layer (sz 3)
+    ntt_at_layer zeta_i re layer (sz 1475)
   in
   let zeta_i:usize = tmp0 in
   let hax_temp_output = out in
   zeta_i, hax_temp_output
-
+ 
 let ntt_at_layer_3328_ zeta_i re layer = 
-  admit();
   let tmp0, out =
     ntt_at_layer zeta_i re layer (sz 3328)
   in
@@ -354,7 +352,6 @@ let ntt_at_layer_3328_ zeta_i re layer =
 let ntt_binomially_sampled_ring_element re =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:usize = sz 1 in
-  admit();
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 4803 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
@@ -401,6 +398,7 @@ let ntt_binomially_sampled_ring_element re =
           re)
   in
   let _:Prims.unit = () <: Prims.unit in
+  assert (v zeta_i = pow2 (7 - 6) - 1);
   let zeta_i, re =
     ntt_at_layer_3_ zeta_i re (sz 6)
   in
@@ -428,7 +426,7 @@ let ntt_binomially_sampled_ring_element re =
             Core.Ops.Range.t_Range usize)
         <:
         Core.Ops.Range.t_Range usize)
-      re
+      (cast_poly_b re)
       (fun re i ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (7*3328+3) = re in
           let i:usize = i in
