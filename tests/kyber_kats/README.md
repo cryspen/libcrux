@@ -1,4 +1,6 @@
-1. Install dependencies using `pip install -r requirements. txt`
+0. To run the `generate_shake128_kats_hash.py` script you'll need [PyPy](https://www.pypy.org/).
+
+1. Install dependencies using `pip install -r requirements. txt`.
 
 2. Generate the JSON KAT files for all parameter sets using `./generate_nist_kats.py`.
 
