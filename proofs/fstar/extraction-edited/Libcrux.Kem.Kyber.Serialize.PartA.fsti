@@ -8,7 +8,7 @@ let int_arr_bitwise_eq
        #t1 #t2 #n1 #n2
        (arr1: t_Array (int_t t1) n1)
        (d1: bit_num t1)
-       (arr2: t_Array (int_t t2) n2)
+       (arr2: t_Array (x: int_t t2) n2)
        (d2: bit_num t2 {v n1 * d1 == v n2 * d2})
      = forall i. i < v n1 * d1
        ==> bit_vec_of_int_arr arr1 d1 i == bit_vec_of_int_arr arr2 d2 i
@@ -52,39 +52,40 @@ val compress_coefficients_5_
                 (create5 tuple) 8
       )
 
+private unfold type i32_d = int_t_d i32_inttype
 val decompress_coefficients_10_ (byte2 byte1 byte3 byte4 byte5: int_t_d i32_inttype 8)
-    : Prims.Pure (i32 & i32 & i32 & i32)
+    : Prims.Pure (i32_d 10 & i32_d 10 & i32_d 10 & i32_d 10)
       (requires True)
-      (ensures fun tuple ->
+      (ensures fun (r1, r2, r3, r4) ->
          int_arr_bitwise_eq
                 (create5 (byte1, byte2, byte3, byte4, byte5)) 8
-                (create4 tuple) 10
+                (create4 #i32 (r1, r2, r3, r4)) 10
       )
 
 val decompress_coefficients_11_
       (byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10 byte11: int_t_d i32_inttype 8)
-    : Prims.Pure (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
+    : Prims.Pure (i32_d 11 & i32_d 11 & i32_d 11 & i32_d 11 & i32_d 11 & i32_d 11 & i32_d 11 & i32_d 11)
       (requires True)
-      (ensures fun tuple ->
+      (ensures fun (r1, r2, r3, r4, r5, r6, r7, r8) ->
          int_arr_bitwise_eq
                 (create11 (byte1, byte2, byte3, byte4, byte5, byte6, byte7, byte8, byte9, byte10, byte11)) 8
-                (create8 tuple) 11
+                (create8 (r1, r2, r3, r4, r5, r6, r7, r8)) 11
       )
 
 val decompress_coefficients_4_ (byte: u8)
-    : Prims.Pure (i32 & i32) 
+    : Prims.Pure (i32_d 4 & i32_d 4)
       (requires True)
-      (ensures fun tuple ->
+      (ensures fun (r1, r2) ->
          int_arr_bitwise_eq
                 (create1 byte) 8
-                (create2 tuple) 4
+                (create2 (r1, r2)) 4
       )
 
 val decompress_coefficients_5_ (byte1 byte2 byte3 byte4 byte5: int_t_d i32_inttype 5)
-    : Prims.Pure (i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32)
+    : Prims.Pure (i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5)
       (requires True)
-      (ensures fun tuple ->
+      (ensures fun (r1, r2, r3, r4, r5, r6, r7, r8) ->
          int_arr_bitwise_eq
                 (create5 (byte1, byte2, byte3, byte4, byte5)) 8
-                (create8 tuple) 5
+                (create8 (r1, r2, r3, r4, r5, r6, r7, r8)) 5
       )
