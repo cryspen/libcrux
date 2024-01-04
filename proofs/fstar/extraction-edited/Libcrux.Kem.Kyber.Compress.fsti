@@ -36,8 +36,12 @@ let decompress_pre (coefficient_bits: u8) (fe: i32) =
         v fe >= 0 &&
         v fe < pow2 (v coefficient_bits)
 
+
+open Rust_primitives.Integers
+
+
 val decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
-    : Prims.Pure i32
+    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.i32_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS - 1))
       (requires (decompress_pre coefficient_bits fe))
       (ensures
         fun result ->
@@ -45,4 +49,6 @@ val decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
           result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 val decompress_message_coefficient (fe: i32)
-    : Prims.Pure i32 (requires fe =. 0l || fe =. 1l) (fun _ -> Prims.l_True)
+    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.i32_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS - 1))
+      (requires fe =. 0l || fe =. 1l) 
+      (ensures fun _ -> Prims.l_True)

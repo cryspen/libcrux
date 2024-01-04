@@ -9,10 +9,10 @@ open MkSeq
 
 #push-options "--z3rlimit 50"
 let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32) =
-  let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in // coefficient1[0-8]
+  let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in
   let coef2:u8 =
     ((cast (coefficient2 &. 63l <: i32) <: u8) <<! 2l <: u8) |.
-    (cast ((coefficient1 >>! 8l <: i32) &. 3l <: i32) <: u8) // 8-10
+    (cast ((coefficient1 >>! 8l <: i32) &. 3l <: i32) <: u8)
   in
   let coef3:u8 =
     ((cast (coefficient3 &. 15l <: i32) <: u8) <<! 4l <: u8) |.
@@ -23,8 +23,7 @@ let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficien
     (cast ((coefficient3 >>! 4l <: i32) &. 63l <: i32) <: u8)
   in
   let coef5:u8 = cast ((coefficient4 >>! 2l <: i32) &. 255l <: i32) <: u8 in
-  let result = coef1, coef2, coef3, coef4, coef5 <: (u8 & u8 & u8 & u8 & u8) in
-  result
+  coef1, coef2, coef3, coef4, coef5 <: (u8 & u8 & u8 & u8 & u8)
 #pop-options
 
 #push-options "--ifuel 1 --z3rlimit 600 --split_queries always"
