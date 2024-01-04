@@ -13,15 +13,7 @@ let cast_bound_lemma
           (ensures  bounded (cast #(int_t t) #(int_t u) n) d)
           [SMTPat (bounded n d); SMTPat (cast #(int_t t) #(int_t u) n)]
   = ()
-assume val lemma_get_bit_bounded' #t (x:int_t t) (d:bit_num t):
-  Lemma (requires forall i. v i > d ==> get_bit x i == 0)
-        (ensures bounded x d)
-assume val intro_refinement_slice #p (a: t_Slice 't {forall i. p (Seq.index a i)})
-  : r: t_Slice (x: 't {p x}) {Seq.length r == Seq.length a /\ (forall i. Seq.index a i == Seq.index r i)}
-  = admit ()
-assume val elim_refinement_slice #p (a: t_Slice (x: 't {p x}))
-  : r: t_Slice 't {(forall i. p (Seq.index r i)) /\ Seq.length r == Seq.length a /\ (forall i. Seq.index a i == Seq.index r i)}
-  = admit ()
+
 #push-options "--z3rlimit 60"
 let int_t_d_cast_lemma #t #u d (n: int_t_d t d)
   : Lemma (requires bits t < bits u /\ v n >= 0)
@@ -36,11 +28,6 @@ let mul_in_range (n m: nat)
   = Math.Lemmas.pow2_plus 8 8;
     Math.Lemmas.pow2_le_compat 32 16
 #pop-options
-
-
-
-
-
 
 #push-options "--fuel 0 --ifuel 1 --query_stats --z3rlimit 100"
 let compress_then_serialize_10_
@@ -593,14 +580,6 @@ let compress_then_serialize_ring_element_v #p v_COMPRESSION_FACTOR v_OUT_LEN re 
   admit (); // P-F
   res
 
-let decompress_coefficients_10_ (byte2 byte1 byte3 byte4 byte5: int_t_d i32_inttype 8)
-    : (tuple: (i32 & i32 & i32 & i32) {
-          int_arr_bitwise_eq
-                (create5 (byte1, byte2, byte3, byte4, byte5)) 8
-                (create4 tuple) 10
-      })
-    = decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5
-
 #push-options "--z3rlimit 60"
 let deserialize_then_decompress_10_ serialized =
   let _:Prims.unit = () <: Prims.unit in
@@ -625,10 +604,6 @@ let deserialize_then_decompress_10_ serialized =
           let coefficient1, coefficient2, coefficient3, coefficient4 =
             decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient1);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient2);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient3);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 10uy coefficient4);
           let coefficient1 = (Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 10uy coefficient1
                            <:
                            i32) in
@@ -735,18 +710,10 @@ let deserialize_then_decompress_11_ serialized
           coefficient5,
           coefficient6,
           coefficient7,
-          coefficient8:(i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32) =
+          coefficient8 =
             decompress_coefficients_11_ byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10
               byte11
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient1);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient2);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient3);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient4);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient5);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient6);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient7);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 11uy coefficient8);
           let coefficient1 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient1 in
           let coefficient2 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient2 in
           let coefficient3 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 11uy coefficient3 in
@@ -879,9 +846,7 @@ let deserialize_then_decompress_4_ serialized =
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement = re in
           let i, byte:(usize & u8) = temp_1_ in
-          let coefficient1, coefficient2:(i32 & i32) = decompress_coefficients_4_ byte in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 4uy coefficient1);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 4uy coefficient2);
+          let coefficient1, coefficient2 = decompress_coefficients_4_ byte in
           assert_spinoff (v i < 128 ==> 2 * v i + 1 < 256);
           assert_spinoff (v i < 128 ==> range (v (sz 2) * v i) usize_inttype);
           let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
@@ -947,18 +912,9 @@ let deserialize_then_decompress_5_ serialized =
           coefficient5,
           coefficient6,
           coefficient7,
-          coefficient8:(i32 & i32 & i32 & i32 & i32 & i32 & i32 & i32) =
+          coefficient8 =
             decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5
           in
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient1);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient1);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient2);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient3);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient4);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient5);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient6);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient7);
-          assume (Libcrux.Kem.Kyber.Compress.decompress_pre 5uy coefficient8);
           let coefficient1 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient1 in
           let coefficient2 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient2 in
           let coefficient3 = Libcrux.Kem.Kyber.Compress.decompress_ciphertext_coefficient 5uy coefficient3 in
