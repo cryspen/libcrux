@@ -31,7 +31,7 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
   admit(); // P-F
   res
 
-let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32) =
+let decompress_ciphertext_coefficient coefficient_bits fe =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   assert (v (1ul <<! coefficient_bits) <= pow2 11);
@@ -46,5 +46,9 @@ let decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32) =
   res
 
 let decompress_message_coefficient (fe: i32) =
-  (Core.Ops.Arith.Neg.neg fe <: i32) &.
-  ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32)
+  let r = (Core.Ops.Arith.Neg.neg fe <: i32) &.
+  ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32) in
+  admit ();
+  r
+  
+
