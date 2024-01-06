@@ -62,6 +62,27 @@ pub fn declassify_U8(v: U8) -> u8 {
     v
 }
 
+#[cfg(feature = "secret_integers")]
+pub fn classify_u8_array<const ARRAY_LENGTH: usize>(
+    array: [u8; ARRAY_LENGTH],
+) -> [U8; ARRAY_LENGTH] {
+    array.map(|v| U8::from(v))
+}
+
+#[cfg(not(feature = "secret_integers"))]
+pub fn classify_u8_array<const ARRAY_LENGTH: usize>(
+    array: [u8; ARRAY_LENGTH],
+) -> [U8; ARRAY_LENGTH] {
+    array
+}
+
+#[allow(non_snake_case)]
+pub fn declassify_U8_array<const ARRAY_LENGTH: usize>(
+    array: [U8; ARRAY_LENGTH],
+) -> [u8; ARRAY_LENGTH] {
+    array.map(|v| declassify_U8(v))
+}
+
 // ---- U16 -----
 
 #[cfg(feature = "secret_integers")]

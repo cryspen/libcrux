@@ -28,8 +28,19 @@ let v_U16_as_U8 (v: u16) : u8 = cast (v <: u16) <: u8
 
 let v_U8_as_U16 (v: u8) : u16 = cast (v <: u8) <: u16
 
+let classify_u8_array (v_ARRAY_LENGTH: usize) (array: t_Array u8 v_ARRAY_LENGTH)
+    : t_Array u8 v_ARRAY_LENGTH = array
+
 let declassify_I16 (v: i16) : i16 = v
 
 let declassify_I32 (v: i32) : i32 = v
 
 let declassify_U8 (v: u8) : u8 = v
+
+let declassify_U8_array (v_ARRAY_LENGTH: usize) (array: t_Array u8 v_ARRAY_LENGTH)
+    : t_Array u8 v_ARRAY_LENGTH =
+  Core.Array.impl_23__map v_ARRAY_LENGTH
+    array
+    (fun v ->
+        let v:u8 = v in
+        declassify_U8 v <: u8)

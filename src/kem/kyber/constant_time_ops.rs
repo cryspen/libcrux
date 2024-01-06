@@ -23,15 +23,13 @@ fn is_non_zero(value: U8) -> U8 {
     hax_lib::implies(lhs != rhs, || result == 1)
 ))]
 pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>(
-    lhs: &[u8],
-    rhs: &[u8],
+    lhs: [U8; CIPHERTEXT_SIZE],
+    rhs: [U8; CIPHERTEXT_SIZE],
 ) -> U8 {
-    hax_lib::debug_assert!(lhs.len() == rhs.len());
-    hax_lib::debug_assert!(lhs.len() == CIPHERTEXT_SIZE);
-
     let mut r = U8::from(0);
+
     for i in 0..CIPHERTEXT_SIZE {
-        r |= U8::from(lhs[i] ^ rhs[i]);
+        r |= lhs[i] ^ rhs[i];
     }
 
     is_non_zero(r)
@@ -42,18 +40,15 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
     hax_lib::implies(selector != 0, || result == rhs)
 ))]
 pub(crate) fn select_shared_secret_in_constant_time(
-    lhs: &[u8],
-    rhs: &[u8],
+    lhs: [U8; SHARED_SECRET_SIZE],
+    rhs: [U8; SHARED_SECRET_SIZE],
     selector: U8,
-) -> [u8; SHARED_SECRET_SIZE] {
-    hax_lib::debug_assert!(lhs.len() == rhs.len());
-    hax_lib::debug_assert!(lhs.len() == SHARED_SECRET_SIZE);
-
+) -> [U8; SHARED_SECRET_SIZE] {
     let mask = is_non_zero(selector).wrapping_sub(1);
-    let mut out = [0u8; SHARED_SECRET_SIZE];
+    let mut out = [U8::from(0); SHARED_SECRET_SIZE];
 
     for i in 0..SHARED_SECRET_SIZE {
-        out[i] |= declassify_U8((U8::from(lhs[i]) & mask) | (U8::from(rhs[i]) & !mask));
+        out[i] |= (lhs[i] & mask) | (rhs[i] & !mask);
     }
 
     out

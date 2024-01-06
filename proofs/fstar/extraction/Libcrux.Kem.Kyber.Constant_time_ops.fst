@@ -24,7 +24,9 @@ let is_non_zero (value: u8)
   in
   Libcrux.Kem.Kyber.Secret_integers.v_U16_as_U8 result
 
-let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
+let compare_ciphertexts_in_constant_time
+      (v_CIPHERTEXT_SIZE: usize)
+      (lhs rhs: t_Array u8 v_CIPHERTEXT_SIZE)
     : Prims.Pure u8
       Prims.l_True
       (ensures
@@ -38,8 +40,6 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
                 result =. 1uy <: bool)) =
-  let _:Prims.unit = () <: Prims.unit in
-  let _:Prims.unit = () <: Prims.unit in
   let r:u8 = Core.Convert.f_from 0uy in
   let r:u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -54,11 +54,11 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
       (fun r i ->
           let r:u8 = r in
           let i:usize = i in
-          r |. (Core.Convert.f_from ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8) <: u8)
+          r |. ((lhs.[ i ] <: u8) ^. (rhs.[ i ] <: u8) <: u8) <: u8)
   in
   is_non_zero r
 
-let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
+let select_shared_secret_in_constant_time (lhs rhs: t_Array u8 (sz 32)) (selector: u8)
     : Prims.Pure (t_Array u8 (sz 32))
       Prims.l_True
       (ensures
@@ -72,10 +72,8 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
                 result =. rhs <: bool)) =
-  let _:Prims.unit = () <: Prims.unit in
-  let _:Prims.unit = () <: Prims.unit in
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
-  let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
+  let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat (Core.Convert.f_from 0uy <: u8) (sz 32) in
   let out:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
@@ -92,17 +90,7 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
           Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
             i
             ((out.[ i ] <: u8) |.
-              (Libcrux.Kem.Kyber.Secret_integers.declassify_U8 (((Core.Convert.f_from (lhs.[ i ]
-                            <:
-                            u8)
-                        <:
-                        u8) &.
-                      mask
-                      <:
-                      u8) |.
-                    ((Core.Convert.f_from (rhs.[ i ] <: u8) <: u8) &. (~.mask <: u8) <: u8)
-                    <:
-                    u8)
+              (((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)
                 <:
                 u8)
               <:

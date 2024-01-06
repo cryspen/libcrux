@@ -198,12 +198,36 @@ let decapsulate
   in
   let selector:u8 =
     Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
-      (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
-      (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
+      (Libcrux.Kem.Kyber.Secret_integers.classify_u8_array v_CIPHERTEXT_SIZE
+          (Core.Result.impl__unwrap (Core.Convert.f_try_into (Core.Convert.f_as_ref ciphertext
+                    <:
+                    t_Slice u8)
+                <:
+                Core.Result.t_Result (t_Array u8 v_CIPHERTEXT_SIZE) Core.Array.t_TryFromSliceError)
+            <:
+            t_Array u8 v_CIPHERTEXT_SIZE)
+        <:
+        t_Array u8 v_CIPHERTEXT_SIZE)
+      (Libcrux.Kem.Kyber.Secret_integers.classify_u8_array v_CIPHERTEXT_SIZE expected_ciphertext
+        <:
+        t_Array u8 v_CIPHERTEXT_SIZE)
   in
-  Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
-    (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
-    selector
+  let output_shared_secret:t_Array u8 (sz 32) =
+    Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time (Libcrux.Kem.Kyber.Secret_integers.classify_u8_array
+          (sz 32)
+          (Core.Result.impl__unwrap (Core.Convert.f_try_into shared_secret
+                <:
+                Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
+            <:
+            t_Array u8 (sz 32))
+        <:
+        t_Array u8 (sz 32))
+      (Libcrux.Kem.Kyber.Secret_integers.classify_u8_array (sz 32) implicit_rejection_shared_secret
+        <:
+        t_Array u8 (sz 32))
+      selector
+  in
+  Libcrux.Kem.Kyber.Secret_integers.declassify_U8_array (sz 32) output_shared_secret
 
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:

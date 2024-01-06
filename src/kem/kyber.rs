@@ -29,6 +29,8 @@ pub mod kyber768;
 
 pub use types::{KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey};
 
+use secret_integers::*;
+
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
 // https://github.com/cryspen/libcrux/issues/123
@@ -204,13 +206,15 @@ pub(super) fn decapsulate<
     >(ind_cpa_public_key, decrypted, pseudorandomness);
 
     let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
-        ciphertext.as_ref(),
-        &expected_ciphertext,
+        classify_u8_array::<{ CIPHERTEXT_SIZE }>(ciphertext.as_ref().try_into().unwrap()),
+        classify_u8_array::<{ CIPHERTEXT_SIZE }>(expected_ciphertext),
     );
 
-    select_shared_secret_in_constant_time(
-        shared_secret,
-        &implicit_rejection_shared_secret,
+    let output_shared_secret = select_shared_secret_in_constant_time(
+        classify_u8_array::<{ constants::SHARED_SECRET_SIZE }>(shared_secret.try_into().unwrap()),
+        classify_u8_array::<{ constants::SHARED_SECRET_SIZE }>(implicit_rejection_shared_secret),
         selector,
-    )
+    );
+
+    declassify_U8_array::<{ constants::SHARED_SECRET_SIZE }>(output_shared_secret)
 }
