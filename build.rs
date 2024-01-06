@@ -3,10 +3,10 @@ use std::env;
 fn main() {
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
-    if libcrux_platform::simd128_support() {
+    if libcrux_platform::simd128_support() && target_arch != "x86" {
         println!("cargo:rustc-cfg=simd128");
     }
-    if libcrux_platform::simd256_support() {
+    if libcrux_platform::simd256_support() && target_arch != "x86" {
         println!("cargo:rustc-cfg=simd256");
     }
     if libcrux_platform::bmi2_adx_support() {
