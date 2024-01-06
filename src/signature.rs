@@ -125,7 +125,9 @@ pub mod rsa_pss {
     /// A [`Algorithm::RsaPss`] public key.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct RsaPssPublicKey {
-        n: Vec<u8>,
+        n: Vec<u8>, // XXX: remove, but that's a breaking API change.
+        key_size_bits: u32,
+        p_key: *mut u64,
     }
 
     fn rsa_pss_digest(hash_algorithm: DigestAlgorithm) -> u8 {
@@ -163,12 +165,34 @@ pub mod rsa_pss {
     // We only support this e.
     const E: [u8; 3] = [0x01, 0x00, 0x01];
 
+    impl Drop for RsaPssPublicKey {
+        fn drop(&mut self) {
+            unsafe { hacl_free(self.p_key as _) }
+        }
+    }
+
     impl RsaPssPublicKey {
         pub fn new(key_size: RsaPssKeySize, n: &[u8]) -> Result<Self, Error> {
             if n.len() != key_size as usize {
                 return Err(Error::InvalidKey);
             }
-            Ok(Self { n: n.into() })
+
+            let key_size_bits = (n.len() as u32) * 8;
+
+            let p_key = unsafe {
+                Hacl_RSAPSS_new_rsapss_load_pkey(
+                    key_size_bits,
+                    E_BITS,
+                    n.as_ptr() as _,
+                    E.as_ptr() as _,
+                )
+            };
+
+            Ok(Self {
+                n: n.into(),
+                key_size_bits,
+                p_key,
+            })
         }
 
         /// Verify the `signature` on the `msg` with the `public_key` using the
@@ -184,19 +208,12 @@ pub mod rsa_pss {
             msg: &[u8],
             salt_len: usize,
         ) -> Result<(), Error> {
-            let key_size_bits = (self.n.len() as u32) * 8;
             unsafe {
-                let pkey = Hacl_RSAPSS_new_rsapss_load_pkey(
-                    key_size_bits,
-                    E_BITS,
-                    self.n.as_ptr() as _,
-                    E.as_ptr() as _,
-                );
                 if Hacl_RSAPSS_rsapss_verify(
                     rsa_pss_digest(hash_algorithm),
-                    key_size_bits,
+                    self.key_size_bits,
                     E_BITS,
-                    pkey,
+                    self.p_key,
                     salt_len as u32,
                     signature.value.len() as u32,
                     signature.value.as_ptr() as _,
@@ -213,21 +230,42 @@ pub mod rsa_pss {
     /// An RSA-PSS private key.
     /// The private key holds a [`RsaPssPublicKey`] with the public modulus.
     /// A [`Algorithm::RsaPss`] private key.
-    pub struct RsaPssPrivateKey<'a> {
-        pk: &'a RsaPssPublicKey,
+    pub struct RsaPssPrivateKey {
         d: Vec<u8>,
+        s_key: *mut u64,
     }
 
-    impl<'a> RsaPssPrivateKey<'a> {
+    impl Drop for RsaPssPrivateKey {
+        fn drop(&mut self) {
+            unsafe { hacl_free(self.s_key as _) };
+        }
+    }
+
+    impl RsaPssPrivateKey {
         ///Create a new [`RsaPssPrivateKey`] from a byte slice and a public key.
         ///
         /// Returns an error if the length of the byte slice is not equal to the
         /// key/modulus size.
-        pub fn new(pk: &'a RsaPssPublicKey, d: &[u8]) -> Result<Self, Error> {
-            if pk.n.len() != d.len() {
+        pub fn new(pk: &RsaPssPublicKey, d: &[u8]) -> Result<Self, Error> {
+            if pk.key_size_bits / 8 != d.len() as u32 {
                 return Err(Error::InvalidKey);
             }
-            Ok(Self { pk, d: d.into() })
+
+            let key_len = d.len();
+            let key_size_bits = (key_len as u32) * 8;
+
+            let s_key = unsafe {
+                Hacl_RSAPSS_new_rsapss_load_skey(
+                    key_size_bits,
+                    E_BITS,
+                    key_size_bits,
+                    pk.n.as_ptr() as _,
+                    E.as_ptr() as _,
+                    d.as_ptr() as _,
+                )
+            };
+
+            Ok(Self { d: d.into(), s_key })
         }
 
         /// Sign the provided `msg` with the `private_key` using the `hash_algorithm`
@@ -250,31 +288,20 @@ pub mod rsa_pss {
             let key_size_bits = (key_len as u32) * 8;
 
             unsafe {
-                let s_key = Hacl_RSAPSS_new_rsapss_load_skey(
-                    key_size_bits,
-                    E_BITS,
-                    key_size_bits,
-                    self.pk.n.as_ptr() as _,
-                    E.as_ptr() as _,
-                    self.d.as_ptr() as _,
-                );
-
                 if !Hacl_RSAPSS_rsapss_sign(
                     rsa_pss_digest(hash_algorithm),
                     key_size_bits,
                     E_BITS,
                     key_size_bits,
-                    s_key,
+                    self.s_key,
                     salt.len() as u32,
                     salt.as_ptr() as _,
                     msg.len() as u32,
                     msg.as_ptr() as _,
                     signature.as_mut_ptr(),
                 ) {
-                    hacl_free(s_key as _);
                     return Err(Error::SigningError);
                 }
-                hacl_free(s_key as _);
             }
             Ok(RsaPssSignature { value: signature })
         }
@@ -289,7 +316,7 @@ impl Ed25519Signature {
 
     /// Generate a signature from the raw bytes slice.
     ///
-    /// Returns an error if the slice has legnth != 64.
+    /// Returns an error if the slice has length != 64.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             signature: bytes.try_into().map_err(|_| Error::InvalidSignature)?,
