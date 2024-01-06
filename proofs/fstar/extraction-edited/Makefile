@@ -98,6 +98,7 @@ FSTAR_FLAGS = --cmi \
   --warn_error -321 \
   --warn_error -274 \
   --query_stats \
+  --log_queries \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
   $(addprefix --include ,$(FSTAR_INCLUDE_DIRS))

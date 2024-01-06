@@ -7,11 +7,14 @@ let i32_range (n:i32) (b:nat) =
   b < pow2 31 /\ v n <= b /\ v n >= -b
 
 type i32_b b = x:i32{i32_range x b}
+let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
+//(x + y - 1)/y
 
 val mul_i32_b (#b1:nat) (#b2:nat{b1 * b2 < pow2 31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 * b2){v r == v x * v y}
 val add_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2 31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 + b2){v r == v x + v y}
 val sub_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2 31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 + b2){v r == v x - v y}
 val cast_i32_b (#b1:nat) (#b2:nat{b1 <= b2 /\ b2 < pow2 31}) (x:i32_b b1): r:i32_b b2{v r == v x}
+val shr_i32_b (#b:nat) (#t:inttype) (x:i32_b b) (y:int_t t{v y>0 /\ v y<32}): r:i32_b (nat_div_ceil b (pow2 (v y)))
 
 unfold
 let t_FieldElement = i32
@@ -42,20 +45,25 @@ let v_MONTGOMERY_SHIFT: u8 = 16uy
 
 val v_MONTGOMERY_R: x:i32{v x = pow2 16}
 
-let to_spec_fe (m:i32) : Spec.Kyber.field_element = 
-    let m_v = v m % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS in
+val v_MONTGOMERY_R_INV: x:i32{v x >= 0 /\ v x < 3329 /\ (v x * v v_MONTGOMERY_R) % 3329 == 1}
+
+let int_to_spec_fe (m:int) : Spec.Kyber.field_element = 
+    let m_v = m % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS in
     assert (m_v > -  v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS);
     if m_v < 0 then
       m_v + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
     else m_v
 
+
+let to_spec_fe (m:i32) : Spec.Kyber.field_element = 
+    int_to_spec_fe (v m)
+
 let to_spec_fe_b #b (m:i32_b b) : Spec.Kyber.field_element = to_spec_fe m
 
+let mont_to_spec_fe (m:t_FieldElement) : Spec.Kyber.field_element =
+    int_to_spec_fe (v m * v v_MONTGOMERY_R_INV)
 
-val mont_to_spec_fe (m:t_FieldElement)
-    : Spec.Kyber.field_element
-
-val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n <= 32}) (value: u32)
+val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n < 32}) (value: u32)
     : Prims.Pure (int_t_d u32_inttype (v n))
       (requires v n < 32)
       (ensures
@@ -71,9 +79,6 @@ val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n <= 32}) (value: u32)
 let barrett_post (value:i32) (result:i32) = 
     v result % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS =
     v value % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-//    /\
-//    v result > - (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS) /\
-//    v result < (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 val barrett_reduce (value: i32_b (v v_BARRETT_R))
     : Prims.Pure wfFieldElement
@@ -82,16 +87,11 @@ val barrett_reduce (value: i32_b (v v_BARRETT_R))
 
 let montgomery_post (value:i32) (result:i32) =
     v result % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS =
-    (v value / v v_MONTGOMERY_R) % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-    
-(*    /\
-   (let abs_v = abs (v value) in
-    v result >= - (abs_v / v v_MONTGOMERY_R) - v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS / 2 /\
-    v result <= (abs_v / v v_MONTGOMERY_R) + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS / 2)
-*)
+    (v value * v v_MONTGOMERY_R_INV) % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+
 
 val montgomery_reduce #b (value: i32_b b)
-    : Prims.Pure (i32_b ((b / v v_MONTGOMERY_R) + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS/2))
+    : Prims.Pure (i32_b (nat_div_ceil b (v v_MONTGOMERY_R) + 1665))
       (requires True)
       (ensures
         fun result ->
@@ -100,14 +100,14 @@ val montgomery_reduce #b (value: i32_b b)
 
 
 val montgomery_multiply_sfe_by_fer #b1 #b2 (fe:i32_b b1) (fer: i32_b b2)
-    : Pure i32
+    : Pure (i32_b (nat_div_ceil (b1 * b2) (v v_MONTGOMERY_R) + 1665))
       (requires (b1 * b2 < pow2 31))
       (ensures (fun result -> 
           montgomery_post (mul_i32_b fe fer) (result)))
       
 
 val to_standard_domain #b (mfe: i32_b b) 
-    : Pure i32
+    : Pure (i32_b (nat_div_ceil (b * 1363) (v v_MONTGOMERY_R) + 1665))
       (requires (b * 1353 < pow2 31))
       (ensures (fun result -> 
           montgomery_post (mul_i32_b mfe (1353l <: i32_b 1353)) result))

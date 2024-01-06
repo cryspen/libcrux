@@ -4,12 +4,12 @@ open Core
 open FStar.Mul
 
 
-let lemma_mul_i32_range (n1 n2:i32) (b1 b2:nat):
-  Lemma (requires (i32_range n1 b1 /\ i32_range n2 b2 /\ b1 * b2 < pow2 31))
-        (ensures (range (v n1 * v n2) i32_inttype /\
-                  i32_range (n1 *! n2) (b1 * b2)))
-  = if v n1 = 0 || v n2 = 0 then ()
-    else 
+let lemma_mul_i32_range (n1 n2: i32) (b1 b2: nat)
+    : Lemma (requires (i32_range n1 b1 /\ i32_range n2 b2 /\ b1 * b2 < pow2 31))
+      (ensures (range (v n1 * v n2) i32_inttype /\ i32_range (n1 *! n2) (b1 * b2))) =
+  if v n1 = 0 || v n2 = 0
+  then ()
+  else 
     let open FStar.Math.Lemmas in
     lemma_abs_bound (v n1) b1;
     lemma_abs_bound (v n2) b2;
@@ -17,7 +17,6 @@ let lemma_mul_i32_range (n1 n2:i32) (b1 b2:nat):
     lemma_mult_le_left (abs (v n1)) (abs (v n2)) b2;
     lemma_mult_le_right b2 (abs (v n1)) b1;
     lemma_abs_bound (v n1 * v n2) (b1 * b2)
-
 
 let lemma_add_i32_range (n1 n2:i32) (b1 b2:nat):
   Lemma (requires (i32_range n1 b1 /\ i32_range n2 b2 /\ b1 + b2 < pow2 31))
@@ -37,25 +36,75 @@ let sub_i32_b #b1 #b2 x y =
   x -! y
 
 let cast_i32_b #b1 #b2 x =
-  x <: i32_b b2
+  x <: i32_b b2 
+
+#push-options "--ifuel 0 --z3rlimit 150"
+let shr_i32_b #b #t x y =
+  let r = (x <: i32) >>! y in
+  assert (v r == v x / pow2 (v y));
+  Math.Lemmas.lemma_div_le (v x) b (pow2 (v y));
+  assert (v x / (pow2 (v y)) <= b / (pow2 (v y)));
+  Math.Lemmas.lemma_div_le (-b) (v x) (pow2 (v y));
+  assert (v x / (pow2 (v y)) >= (-b) / (pow2 (v y)));
+  if (b % pow2 (v y) = 0)  
+  then (Math.Lemmas.div_exact_r b (pow2 (v y));
+        assert (b = (b/pow2 (v y)) * pow2 (v y));
+        assert (-b = -((b/pow2 (v y)) * pow2 (v y)));
+        Math.Lemmas.neg_mul_left (b/pow2 (v y)) (pow2 (v y));
+        assert (-b = (-(b/pow2 (v y))) * pow2 (v y));
+        assert ((-b)/pow2(v y) = ((-(b/pow2 (v y))) * pow2 (v y)) / pow2 (v y));
+        Math.Lemmas.cancel_mul_div (-(b/pow2 (v y))) (pow2 (v y));
+        assert ((-b)/pow2(v y) = -(b/pow2 (v y)));
+        assert (nat_div_ceil b (pow2 (v y)) == b / pow2 (v y));
+        assert (i32_range r (b / pow2 ( v y)));
+        r <: i32_b (nat_div_ceil b (pow2 (v y))))
+  else (let rem = b % pow2 (v y) in
+        let quo = b / pow2 (v y) in
+        Math.Lemmas.lemma_div_mod b (pow2 (v y));        
+        assert (b = quo * pow2 (v y) + rem);
+        assert (-b = -(quo * pow2 (v y)) - rem);
+        Math.Lemmas.neg_mul_left quo (pow2 (v y));
+        assert (-b = (-quo) * pow2 (v y) - rem);
+        assert ((-b)/pow2(v y) = (-rem + (-quo) * pow2 (v y))/pow2 (v y));
+        Math.Lemmas.division_addition_lemma (-rem) (pow2 (v y)) (-quo);
+        assert ((-b)/pow2(v y) = ((-rem)/pow2 (v y) -quo));
+        Math.Lemmas.division_definition (-rem) (pow2 (v y)) (-1);
+        assert ((-rem)/pow2 (v y) == -1);
+        assert ((-b)/pow2(v y) = -1 -quo);
+        assert ((-b)/pow2(v y) = (-quo - 1));
+        assert ((-b)/pow2(v y) = -(quo + 1));
+        assert (nat_div_ceil b (pow2 (v y)) == quo + 1);
+        assert (i32_range r (quo+1));
+        r <: i32_b (nat_div_ceil b (pow2 (v y))))
+#pop-options
 
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
-
-let mont_to_spec_fe (m:t_FieldElement) = admit()
-
-#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
+let v_MONTGOMERY_R_INV = 
+  assert_norm((v 169l * pow2 16) % 3329 == 1);
+  169l
+  
+#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --split_queries always"
 let get_n_least_significant_bits n value = 
   let _:Prims.unit = () <: Prims.unit in
   let res = value &. ((1ul <<! n <: u32) -! 1ul <: u32) in
-  logand_mask_lemma value (v n);
-  mk_int_equiv_lemma #u32_inttype 1;
-  assert ((1ul <<! n) == mk_int (pow2 (v n)));
-  assert (res == logand value (mk_int (pow2 (v n)) -! mk_int 1));
-  assert (v res == v value % (pow2 (v n)));
+  calc (==) {
+    v res;
+    (==) { }
+    v (logand value ((1ul <<! n) -! 1ul));
+    (==) {mk_int_equiv_lemma #u32_inttype 1} 
+    v (logand value (((mk_int 1) <<! n) -! (mk_int 1)));
+    (==) { }
+    v (logand value (mk_int ((1 * pow2 (v n)) % pow2 32) -! (mk_int 1)));
+    (==) {Math.Lemmas.small_mod (pow2 (v n)) (pow2 32); Math.Lemmas.pow2_lt_compat 32 (v n)}
+    v (logand value ((mk_int (pow2 (v n))) -! (mk_int 1)));
+    (==) {Math.Lemmas.pow2_lt_compat 32 (v n); logand_mask_lemma value (v n)}
+    v value % (pow2 (v n));
+  };
   assert (v res < pow2 (v n));
   res
 #pop-options 
 
+#push-options "--z3rlimit 250"
 let barrett_reduce value = 
   let _:Prims.unit = () <: Prims.unit in
   let x : i32 = value in
@@ -63,28 +112,110 @@ let barrett_reduce value =
     ((Core.Convert.f_from x <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
     (v_BARRETT_R >>! 1l <: i64)
   in
+  assert_norm (v v_BARRETT_MULTIPLIER == (pow2 27 + 3329) / (2*3329));
+  assert (v t = v x * v v_BARRETT_MULTIPLIER + pow2 25);
   let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
+  assert (v quotient = v t / pow2 26);
   let result:i32 = value -! (quotient *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) in
-  let _:Prims.unit = () <: Prims.unit in
-  admit();
+  calc (==) {
+    v result % 3329;
+    (==) { }
+    (v value - (v quotient * 3329)) % 3329;
+    (==) {Math.Lemmas.lemma_mod_sub_distr (v value) (v quotient * 3329) 3329}
+    (v value - (v quotient * 3329) % 3329) % 3329;
+    (==) {Math.Lemmas.cancel_mul_mod (v quotient) 3329}
+    (v value - 0) % 3329;    
+    (==) {}
+    (v value) % 3329;    
+  };
   result
+#pop-options 
 
-let montgomery_reduce value = 
+#push-options "--ifuel 0 --z3rlimit 300"
+let montgomery_reduce #b value = 
   let _:i32 = v_MONTGOMERY_R in
   let _:Prims.unit = () <: Prims.unit in
+  let v0 = (cast (value <: i32) <: u32) in
+  assert (v v0 == v value % pow2 32);
+  let t0 = (get_n_least_significant_bits v_MONTGOMERY_SHIFT v0 <: u32) in
+  assert (v t0 = (v value % pow2 32) % pow2 16);
+  Math.Lemmas.pow2_modulo_modulo_lemma_1 (v value) 16 32;
+  assert (v t0 = v value % pow2 16);
   let t:u32 =
-    (get_n_least_significant_bits v_MONTGOMERY_SHIFT (cast (value <: i32) <: u32) <: u32) *!
+    t0 *!
     v_INVERSE_OF_MODULUS_MOD_R
   in
-  let k:i16 = cast (get_n_least_significant_bits v_MONTGOMERY_SHIFT t <: u32) <: i16 in
-  let k_times_modulus:i32 =
-    (cast (k <: i16) <: i32) *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+  assert (v t = (v value % pow2 16) * v v_INVERSE_OF_MODULUS_MOD_R);
+  let k0 = get_n_least_significant_bits v_MONTGOMERY_SHIFT t <: u32 in
+  let k:i32_b (pow2 15) = cast (cast k0 <: i16) <: i32 in
+  calc (==) {
+    v k % pow2 16;
+    == { }
+    v k0 % pow2 16;
+    == { }
+    v t % pow2 16;
+    == { }
+    ((v value % pow2 16) * v v_INVERSE_OF_MODULUS_MOD_R) % pow2 16;
+    == {Math.Lemmas.lemma_mod_mul_distr_l (v value) (v v_INVERSE_OF_MODULUS_MOD_R) (pow2 16)}
+    (v value * v v_INVERSE_OF_MODULUS_MOD_R) % pow2 16;
+  };
+  assert_norm((62209 * 3329) % pow2 16 == 1);
+  assert((v v_INVERSE_OF_MODULUS_MOD_R * 3329) % pow2 16 == 1);
+  calc (==) {
+    (v k * 3329) % pow2 16;
+    == {Math.Lemmas.lemma_mod_mul_distr_l (v k) 3329 (pow2 16)}
+    ((v k % pow2 16) * 3329) % pow2 16;
+    == { }
+    ((v value * v v_INVERSE_OF_MODULUS_MOD_R) % pow2 16 * 3329) % pow2 16;
+    == {Math.Lemmas.lemma_mod_mul_distr_l (v value * v v_INVERSE_OF_MODULUS_MOD_R) (3329) (pow2 16)}
+    (v value * v v_INVERSE_OF_MODULUS_MOD_R * 3329) % pow2 16;   
+    == {Math.Lemmas.paren_mul_right (v value) (v v_INVERSE_OF_MODULUS_MOD_R) 3329}
+    (v value * (v v_INVERSE_OF_MODULUS_MOD_R * 3329)) % pow2 16;   
+    == {Math.Lemmas.lemma_mod_mul_distr_r (v value) (v v_INVERSE_OF_MODULUS_MOD_R * 3329) (pow2 16)}
+    (v value * ((v v_INVERSE_OF_MODULUS_MOD_R * 3329) % pow2 16)) % pow2 16;   
+    == {Math.Lemmas.mul_one_right_is_same (v value)}
+    (v value) % pow2 16;   
+  };
+  Math.Lemmas.modulo_add (pow2 16) (- (v k * 3329)) (v value) (v k * 3329);
+  assert ((v value - v k * 3329) % pow2 16 == (v k * 3329 - v k * 3329) % pow2 16);
+  assert ((v value - v k * 3329) % v v_MONTGOMERY_R == 0);
+  let k_times_modulus:i32_b (pow2 15 * 3329) =
+      mul_i32_b k Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
   in
-  let c:i32 = k_times_modulus >>! v_MONTGOMERY_SHIFT in
-  let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
-  let res = value_high -! c in
-  admit(); // P-F
+  let c:i32_b 1665 = shr_i32_b k_times_modulus v_MONTGOMERY_SHIFT in
+  let value_high:i32_b (nat_div_ceil b (v v_MONTGOMERY_R)) = shr_i32_b value v_MONTGOMERY_SHIFT in
+  assert (v value_high = v value / v v_MONTGOMERY_R);
+  let res: i32_b (nat_div_ceil b (v v_MONTGOMERY_R) + 1665) = sub_i32_b value_high c in
+  calc (==) {
+    v res;
+    == { }
+    (v value_high - v c);
+    == { }
+    ((v value / v v_MONTGOMERY_R) - ((v k * 3329) / v v_MONTGOMERY_R));
+    == {Math.Lemmas.lemma_div_exact (v value - v k * 3329) (v v_MONTGOMERY_R)}
+    ((v value - (v k * 3329)) / v v_MONTGOMERY_R);
+  };
+  calc (==) {
+    v res % 3329;
+    == {Math.Lemmas.lemma_div_exact (v value - v k * 3329) (v v_MONTGOMERY_R)}
+    (((v value - (v k * 3329)) / v v_MONTGOMERY_R) * ((v v_MONTGOMERY_R * v v_MONTGOMERY_R_INV) % 3329)) % 3329 ;
+    == {Math.Lemmas.lemma_mod_mul_distr_r ((v value - (v k * 3329)) / v v_MONTGOMERY_R) (v v_MONTGOMERY_R * v v_MONTGOMERY_R_INV) 3329}
+    (((v value - (v k * 3329)) / v v_MONTGOMERY_R) * (v v_MONTGOMERY_R * v v_MONTGOMERY_R_INV)) % 3329 ;
+    == {Math.Lemmas.lemma_div_exact (v value - v k * 3329) (v v_MONTGOMERY_R)}
+    ((v value - (v k * 3329)) * v v_MONTGOMERY_R_INV) % 3329 ;
+    == { }
+    ((v value * v v_MONTGOMERY_R_INV) - ((v k * 3329) * v v_MONTGOMERY_R_INV)) % 3329 ;
+    == {Math.Lemmas.paren_mul_right (v k) 3329 (v v_MONTGOMERY_R_INV)} 
+    ((v value * v v_MONTGOMERY_R_INV) - (v k * (3329 * v v_MONTGOMERY_R_INV))) % 3329 ;
+    == {Math.Lemmas.swap_mul 3329 (v v_MONTGOMERY_R_INV)} 
+    ((v value * v v_MONTGOMERY_R_INV) - (v k * (v v_MONTGOMERY_R_INV * 3329))) % 3329 ;
+    == {Math.Lemmas.paren_mul_right (v k) (v v_MONTGOMERY_R_INV) 3329} 
+    ((v value * v v_MONTGOMERY_R_INV) - ((v k * v v_MONTGOMERY_R_INV) * 3329)) % 3329 ;
+    == {Math.Lemmas.lemma_mod_sub (v value * v v_MONTGOMERY_R_INV) 3329 (v k * v v_MONTGOMERY_R_INV)}
+    (v value * v v_MONTGOMERY_R_INV) % 3329 ;
+  };
   res
+#pop-options
 
 let montgomery_multiply_sfe_by_fer fe fer =
   montgomery_reduce (mul_i32_b fe fer)
@@ -101,7 +232,6 @@ let to_unsigned_representative (fe: i32) =
   <:
   u16
   in
-  admit(); //P-F
   res
 
 let derefine_poly_b #b x =
