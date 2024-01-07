@@ -3,7 +3,7 @@ module Libcrux.Kem.Kyber.Compress
 open Core
 open FStar.Mul
 
-let compress_message_coefficient (fe: u16) =
+let compress_message_coefficient fe =
   let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
   assert (v shifted == 1664 - v fe);
   let mask:i16 = shifted >>! 15l in
@@ -12,7 +12,8 @@ let compress_message_coefficient (fe: u16) =
   let shifted_to_positive:i16 = mask ^. shifted in
   logxor_lemma shifted mask;
   assert (v shifted < 0 ==> v shifted_to_positive = v (lognot shifted));
-  assume (v (lognot shifted) = -(v shifted) -1);
+  neg_equiv_lemma shifted;
+  assert (v (lognot shifted) = -(v shifted) -1);
   assert (v shifted >= 0 ==> v shifted_to_positive = v (mask `logxor` shifted));
   assert (v shifted >= 0 ==> mask = zero);
   assert (v shifted >= 0 ==> mask ^. shifted = shifted);
@@ -34,7 +35,7 @@ let compress_message_coefficient (fe: u16) =
   assert (v res = v r1);
   res
 
-let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
+let compress_ciphertext_coefficient coefficient_bits fe =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let compressed:u32 = (cast (fe <: u16) <: u32) <<! (coefficient_bits +! 1uy <: u8) in
