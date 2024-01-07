@@ -6,11 +6,8 @@ open FStar.Mul
 let is_non_zero (value: u8) =
   let orig_value = value in
   let value:u16 = cast (value <: u8) <: u16 in
-  let result:u16 =
-    ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
-    1us
-  in
-  let res = cast (result <: u16) <: u8 in
+  let result:u8 = cast ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l <: u16) in
+  let res:u8 = result &. 1uy in
   if v orig_value = 0 then  (
     assert(value == zero);
     lognot_lemma value;
@@ -18,20 +15,26 @@ let is_non_zero (value: u8) =
     assert((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) == zero);
     logor_lemma value zero;
     assert((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) == value);
-    assert (result == ((value >>! 8l) &. 1us));
+    assert (v result == v ((value >>! 8l)));
     assert ((v value / pow2 8) == 0);
-    logand_lemma 1us zero;
-    assert (result == 0us);
+    assert (result == 0uy);
+    logand_lemma 1uy result;
+    assert (res == 0uy);
     res)
-  else (// need some get_bit reasoning here
+  else (
     assert (v value <> 0);
-    assume (v (~.value) = pow2 16 - 1 - v value);
+    lognot_lemma value;
+    assert (v (~.value) = pow2 16 - 1 - v value);
     assert (v (~.value) + 1 = pow2 16 - v value);
     assert (v (value) <= pow2 8 - 1);
     assert ((v (~.value) + 1) = (pow2 16 - pow2 8) + (pow2 8 - v value));
     assert ((v (~.value) + 1) = (pow2 8 - 1) * pow2 8 + (pow2 8 - v value));
     assert ((v (~.value) + 1)/pow2 8 = (pow2 8 - 1));
-    admit() 
+    assert (v ((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) >>! 8l) = pow2 8 - 1);
+    assert (result = ones);
+    logand_lemma 1uy result;
+    assert (res = 1uy);
+    res
   )
 
 let compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE lhs rhs =
