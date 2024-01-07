@@ -104,7 +104,7 @@ val deserialize_then_decompress_ring_element_u
 
 val deserialize_then_decompress_ring_element_v (#p:Spec.Kyber.params)
       (v_COMPRESSION_FACTOR: usize {v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5})
-      (serialized: t_Slice (if v v_COMPRESSION_FACTOR = 4 then u8 else int_t_d u8_inttype 5))
+      (serialized: t_Slice (int_t_d u8_inttype (v v_COMPRESSION_FACTOR))) //KB: NOT SURE THIS IS RIGHT
     : Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
       (requires (p.v_VECTOR_V_COMPRESSION_FACTOR == v_COMPRESSION_FACTOR /\
                  length serialized == Spec.Kyber.v_C2_SIZE p))
