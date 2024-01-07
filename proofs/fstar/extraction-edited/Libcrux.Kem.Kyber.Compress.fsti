@@ -5,18 +5,14 @@ open FStar.Mul
 
 val compress_message_coefficient (fe: u16)
     : Prims.Pure u8
-      (requires fe <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
+      (requires v fe < 3329)
       (ensures
         fun result ->
           let result:u8 = result in
-          Hax_lib.implies ((833us <=. fe <: bool) && (fe <=. 2596us <: bool))
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 1uy <: bool) &&
-          Hax_lib.implies (~.((833us <=. fe <: bool) && (fe <=. 2596us <: bool)) <: bool)
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 0uy <: bool))
+          if 833 <= v fe && v fe <=  2496
+          then result =. 1uy
+          else result =. 0uy)
+
 
 val compress_ciphertext_coefficient (coefficient_bits: u8 {v coefficient_bits > 0 /\ v coefficient_bits <= 32}) (fe: u16)
     : Prims.Pure (int_t_d i32_inttype (v coefficient_bits))
@@ -32,17 +28,17 @@ val compress_ciphertext_coefficient (coefficient_bits: u8 {v coefficient_bits > 
 
 open Rust_primitives.Integers
 
-val decompress_ciphertext_coefficient
-    (coefficient_bits: u8 {coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy || coefficient_bits =. 11uy})
-    (fe: int_t_d i32_inttype (v coefficient_bits))
-    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.i32_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS - 1))
-      (requires True)
+val decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.wfFieldElement
+      (requires (
+       (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
+        coefficient_bits =. 11uy) &&
+	v fe >= 0 /\
+        v fe < pow2 (v coefficient_bits)))
       (ensures
-        fun result ->
-          let result:i32 = result in
-          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
+        fun result -> v result >= 0 /\ v result < 3329)
 
 val decompress_message_coefficient (fe: i32)
-    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.i32_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS - 1))
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.wfFieldElement
       (requires fe =. 0l || fe =. 1l) 
-      (ensures fun _ -> Prims.l_True)
+      (fun result -> v result >= 0 /\ v result < 3329)

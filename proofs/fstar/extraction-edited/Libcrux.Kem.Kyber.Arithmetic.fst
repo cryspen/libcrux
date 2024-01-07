@@ -224,15 +224,22 @@ let montgomery_multiply_sfe_by_fer fe fer =
 let to_standard_domain mfe =
   montgomery_reduce (mul_i32_b mfe (v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS <: i32_b 1353))
 
-let to_unsigned_representative (fe: i32) =
+let to_unsigned_representative fe =
   let _:Prims.unit = () <: Prims.unit in
   logand_lemma Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS (fe >>! 31l <: i32);
   let res =  
-  cast (fe +! (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) <: i32)
-  <:
-  u16
+  cast (fe +! (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) <: i32) <: u16
   in
-  res
+  assert (v fe < 0 ==> (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) == 3329l);
+  assert (v fe >= 0 ==> (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) == 0l);
+  assert (v fe + 3329 < pow2 16);
+  assert (v fe >= -3328);
+  assert (v fe < 0 ==> v fe + 3329 >= 0);
+  assert (v fe < 0 ==> v res == (v fe + 3329) % pow2 16);
+  Math.Lemmas.small_mod (v fe + 3329) (pow2 16);
+  assert (v fe < 0 ==> v res == v fe + 3329);
+  assert (v fe >= 0 ==> v res == v fe);
+  res <: int_t_d u16_inttype 12
 
 let derefine_poly_b #b x =
   let r = createi (sz 256) (fun i -> (x.f_coefficients.[i] <: i32)) in

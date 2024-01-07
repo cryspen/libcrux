@@ -1,16 +1,37 @@
 module Libcrux.Kem.Kyber.Compress
-#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
+#set-options "--fuel 0 --ifuel 0 --z3rlimit 200"
 open Core
 open FStar.Mul
 
 let compress_message_coefficient (fe: u16) =
   let (shifted: i16):i16 = 1664s -! (cast (fe <: u16) <: i16) in
+  assert (v shifted == 1664 - v fe);
   let mask:i16 = shifted >>! 15l in
+  assert (v mask = v shifted / pow2 15);
+  assert (if v shifted < 0 then mask = ones else mask = zero);
   let shifted_to_positive:i16 = mask ^. shifted in
-  assume (shifted_to_positive >=. 0s);
+  logxor_lemma shifted mask;
+  assert (v shifted < 0 ==> v shifted_to_positive = v (lognot shifted));
+  assume (v (lognot shifted) = -(v shifted) -1);
+  assert (v shifted >= 0 ==> v shifted_to_positive = v (mask `logxor` shifted));
+  assert (v shifted >= 0 ==> mask = zero);
+  assert (v shifted >= 0 ==> mask ^. shifted = shifted);
+  assert (v shifted >= 0 ==> v shifted_to_positive = v shifted);
+  assert (shifted_to_positive >=. 0s);
   let shifted_positive_in_range:i16 = shifted_to_positive -! 832s in
-  let res = cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8 in
-  admit(); //P-F
+  assert (1664 - v fe >= 0 ==> v shifted_positive_in_range == 832 - v fe);
+  assert (1664 - v fe < 0 ==> v shifted_positive_in_range == -2497 + v fe);
+  let r0 = shifted_positive_in_range >>! 15l in
+  let r1 = r0 &. 1s in
+  let res = cast (r1) <: u8 in
+  assert (v r0 = v shifted_positive_in_range / pow2 15);
+  assert (if v shifted_positive_in_range < 0 then r0 = ones else r0 = zero);
+  logand_lemma 1s r0; 
+  assert (if v shifted_positive_in_range < 0 then r1 = 1s else r1 = 0s);
+  assert ((v fe >= 833 && v fe <= 2496) ==> r1 = 1s);
+  assert (v fe < 833 ==> r1 = 0s);
+  assert (v fe > 2496 ==> r1 = 0s);
+  assert (v res = v r1);
   res
 
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
@@ -28,9 +49,9 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) =
   <:
   i32
   in
-  admit(); // P-F
   res
 
+#push-options "--z3rlimit 300"
 let decompress_ciphertext_coefficient coefficient_bits fe =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
@@ -42,13 +63,16 @@ let decompress_ciphertext_coefficient coefficient_bits fe =
   let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! coefficient_bits <: u32) in
   let decompressed:u32 = decompressed >>! (coefficient_bits +! 1uy <: u8) in
   let res = cast (decompressed <: u32) <: i32 in
-  admit(); // P-F
+  let res : Libcrux.Kem.Kyber.Arithmetic.i32_b 3328 = res in
   res
 
-let decompress_message_coefficient (fe: i32) =
-  let r = (Core.Ops.Arith.Neg.neg fe <: i32) &.
-  ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32) in
-  admit ();
-  r
-  
-
+let decompress_message_coefficient fe =
+  let res = (Core.Ops.Arith.Neg.neg fe <: i32) &.
+             ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32) in
+  assert (v ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32) == 1665);
+  assert (res == logand #i32_inttype (Core.Ops.Arith.Neg.neg fe) 1665l);
+  assert (v fe == 0 ==> Core.Ops.Arith.Neg.neg fe = zero);
+  logand_lemma 1665l zero;
+  assert (v fe == 0 ==> res == zero);
+  res <: Libcrux.Kem.Kyber.Arithmetic.i32_b 3328
+#pop-options
