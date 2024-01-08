@@ -3,14 +3,15 @@ use super::{
     constants::FIELD_MODULUS,
 };
 
-// The approach used in this function been taken from:
-// https://github.com/cloudflare/circl/blob/main/pke/kyber/internal/common/poly.go#L150
 #[cfg_attr(hax, hax_lib_macros::requires(fe < (FIELD_MODULUS as u16)))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
         hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
         hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
 ))]
 pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
+    // The approach used here is inspired by:
+    // https://github.com/cloudflare/circl/blob/main/pke/kyber/internal/common/poly.go#L150
+
     // If 833 <= fe <= 2496,
     // then -832 <= shifted <= 831
     let shifted: i16 = 1664 - (fe as i16);
