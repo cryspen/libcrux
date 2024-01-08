@@ -1,6 +1,6 @@
 use super::{
     arithmetic::{
-        barrett_reduce, montgomery_multiply_sfe_by_fer, montgomery_reduce, FieldElement,
+        barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
@@ -34,7 +34,7 @@ fn ntt_at_layer(
         let offset = round * step * 2;
 
         for j in offset..offset + step {
-            let t = montgomery_multiply_sfe_by_fer(
+            let t = montgomery_multiply_fe_by_fer(
                 re.coefficients[j + step],
                 ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             );
