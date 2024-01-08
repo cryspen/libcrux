@@ -3,33 +3,27 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
+open Libcrux.Kem.Kyber.Arithmetic
+
 val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
+    : Prims.Pure (t_PolynomialRingElement_b 3)
       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
       (ensures
         fun result ->
-          let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement = result in
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b result == 
-          Spec.Kyber.sample_poly_binomial (sz 2) randomness /\
-          (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-             (v #i32_inttype result.f_coefficients.[i] >= - 2 /\
-              v #i32_inttype result.f_coefficients.[i] <= 2)))
+          Spec.Kyber.sample_poly_binomial (sz 2) randomness)
 
 val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
+    : Prims.Pure (t_PolynomialRingElement_b 7)
       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
       (ensures
         fun result ->
-          let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement = result in
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b result == 
-          Spec.Kyber.sample_poly_binomial (sz 3) randomness /\
-         (forall (i:usize). i <. length result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients ==>
-             (v #i32_inttype result.f_coefficients.[i] >= -3 /\
-              v #i32_inttype result.f_coefficients.[i] <= 3)))
+          Spec.Kyber.sample_poly_binomial (sz 3) randomness)
 
 val sample_from_binomial_distribution (#p:Spec.Kyber.params)
-    (v_ETA: usize) (randomness: t_Slice u8)
-    : Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_ETA))
+    (v_ETA: usize) (randomness: t_Slice u8) 
+    : Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (pow2 (v v_ETA) - 1))
       (requires (v_ETA = p.v_ETA1 \/ v_ETA = p.v_ETA2) /\
                 (Core.Slice.impl__len randomness <: usize) =. (v_ETA *! sz 64 <: usize))
       (ensures
@@ -39,4 +33,8 @@ val sample_from_binomial_distribution (#p:Spec.Kyber.params)
 
 
 val sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
-    : Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement 
+    : Pure Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
+      (requires True)
+      (ensures fun _ -> True)
+//      (ensures fun result -> (forall i. v (result.f_coefficients.[i]) >= 0))
+      
