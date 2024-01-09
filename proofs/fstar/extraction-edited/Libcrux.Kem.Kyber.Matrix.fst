@@ -205,7 +205,7 @@ let compute_message #p v_K m_v secret_as_ntt u_as_ntt =
   admit(); //P-F
   result
 
-
+// TODO: error_2_ changed from `t_PolynomialRingElement_b 3` to `t_PolynomialRingElement_b 7`
 let compute_ring_element_v v_K tt_as_ntt r_as_ntt error_2_ message =
   let result:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
     Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO

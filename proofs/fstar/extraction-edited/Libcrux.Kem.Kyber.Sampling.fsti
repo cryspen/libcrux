@@ -31,7 +31,6 @@ val sample_from_binomial_distribution (#p:Spec.Kyber.params)
           Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b result == 
           Spec.Kyber.sample_poly_binomial v_ETA randomness)
 
-
 val sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
     : Pure Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
       (requires True)

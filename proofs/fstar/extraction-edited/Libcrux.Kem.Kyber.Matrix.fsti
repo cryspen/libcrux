@@ -33,10 +33,11 @@ val compute_message (#p:Spec.Kyber.params)
         Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b res ==
         Spec.Kyber.(poly_sub v_spec (poly_inv_ntt #p (vector_dot_product secret_spec u_spec)))))
 
+// TODO: error_2_ changed from `t_PolynomialRingElement_b 3` to `t_PolynomialRingElement_b 7`
 val compute_ring_element_v (#p:Spec.Kyber.params)
       (v_K: usize)
       (tt_as_ntt r_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
-      (error_2_: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3)
+      (error_2_: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 7)
       (message: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
     : Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
       (requires (v_K == p.v_RANK))

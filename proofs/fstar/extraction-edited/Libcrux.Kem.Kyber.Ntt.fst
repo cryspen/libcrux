@@ -350,6 +350,7 @@ let ntt_at_layer_3328_ zeta_i re layer =
   let hax_temp_output = out in
   zeta_i, hax_temp_output
 
+// Precondition has changed to 7, change the code
 let ntt_binomially_sampled_ring_element re =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:usize = sz 1 in
@@ -448,6 +449,7 @@ let ntt_binomially_sampled_ring_element re =
             t_Array i32 (sz 256)
           })
   in
+  assert (false);
   admit();
   re
 

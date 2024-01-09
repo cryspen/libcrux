@@ -61,8 +61,7 @@ val ntt_at_layer_3328_ (#b:nat{b <= 7*3328})
       Prims.l_True
       (ensures fun result -> v zeta_i == pow2 (8 - v layer) - 1)
 
-
-val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3)
+val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 7)
     : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
       (requires True)
       (ensures (fun _ -> True))
