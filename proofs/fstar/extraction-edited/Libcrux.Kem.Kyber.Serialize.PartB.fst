@@ -36,23 +36,6 @@ let compress_then_serialize_10_
     =
   let accT = t_Array u8 v_OUT_LEN in
   let inv = fun (acc: t_Array u8 v_OUT_LEN) (i: usize) -> 
-    // (forall (j: nat). j < 5 * v i ==> Seq.index accT j == Seq.index serialized j)
-    // let coefs: t_Array i32 (sz 256) = map (fun (x: i32 {is_fe53 (v x)}) ->
-    //        Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
-    //          (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative x)
-    //      ) re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-    // in
-    // forall (j: usize). v j < v i * 40 + 40 ==>
-    //   (
-    //      assert (v j < v (sz 256) * v (sz 10));
-    //      assert (v j < v v_OUT_LEN * v (sz 8));
-         
-    //      // offset_lemma (v i) (v v_OUT_LEN) 8 (v j);
-    //      // offset_lemma (v i) 256 10 (v j);
-    //      True
-    //   //    get_bit_arr coefs (sz 10) j
-    //   // == get_bit_arr acc   (sz  8) j
-    //   )
     True
   in
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
