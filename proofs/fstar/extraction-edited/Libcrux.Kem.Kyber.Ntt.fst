@@ -239,13 +239,13 @@ val mul_zeta_red2   (#b:nat{b <= 7 * 3328})
 let mul_zeta_red2 #b zeta_i layer x i = 
     let zeta_i = zeta_i +! sz 1 +! i in
     let zeta = v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] in
-    assert (b * 1664 < pow2 16 * 3328);
+    assert (b * 1664 < 65536 * 3328);
     let red = Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer #(3328+b) #1664 x
                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32) in
     assume (v red <= 3328 /\ v red >= -3328);
     red
 
-#push-options "--ifuel 0 --z3rlimit 900" 
+#push-options "--ifuel 0 --z3rlimit 1100" 
 let ntt_at_layer #b zeta_i re layer initial_coefficient_bound =
   let step = sz 1 <<! layer in
   let orig_re = re in
