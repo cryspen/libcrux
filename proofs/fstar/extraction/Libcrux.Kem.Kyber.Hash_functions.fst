@@ -3,18 +3,20 @@ module Libcrux.Kem.Kyber.Hash_functions
 open Core
 open FStar.Mul
 
-let v_G (input: t_Slice u8) = Libcrux.Digest.sha3_512_ input
+let v_G (input: t_Slice u8) : t_Array u8 (sz 64) = Libcrux.Digest.sha3_512_ input
 
-let v_H (input: t_Slice u8) = Libcrux.Digest.sha3_256_ input
+let v_H (input: t_Slice u8) : t_Array u8 (sz 32) = Libcrux.Digest.sha3_256_ input
 
-let v_PRF (v_LEN: usize) (input: t_Slice u8) = Libcrux.Digest.shake256 v_LEN input
+let v_PRF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN =
+  Libcrux.Digest.shake256 v_LEN input
 
-let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
+let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
+    : t_Array (t_Array u8 (sz 840)) v_K =
   let out:t_Array (t_Array u8 (sz 840)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 840) <: t_Array u8 (sz 840)) v_K
   in
   let out:t_Array (t_Array u8 (sz 840)) v_K =
-    if ~.(Libcrux_platform.simd256_support () <: bool) || ~.true
+    if ~.(Libcrux_platform.simd256_support <: bool) || ~.false
     then
       Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                 Core.Ops.Range.f_start = sz 0;

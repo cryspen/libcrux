@@ -3,8 +3,8 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
-val rejection_sampling_panic_with_diagnostic (_0: Prims.unit)
-    : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
+val rejection_sampling_panic_with_diagnostic: Prims.unit
+  -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
 
 val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement

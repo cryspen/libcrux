@@ -22,8 +22,8 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list list
 
-val ntt_multiply_binomials (_0 _1: (i32 & i32)) (zeta: i32)
-    : Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
+val ntt_multiply_binomials: (i32 & i32) -> (i32 & i32) -> zeta: i32
+  -> Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer
       (zeta_i: usize)

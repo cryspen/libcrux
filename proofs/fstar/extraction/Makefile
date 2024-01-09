@@ -51,15 +51,15 @@ all:
 VERIFIED = \
 	Libcrux_platform.fsti \
 	Libcrux.Kem.fst \
-	Libcrux.Kem.Kyber.Constants.fsti \
+	Libcrux.Kem.Kyber.Constants.fst \
 	Libcrux.Digest.fsti \
+	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Kyber768.fst \
 	Libcrux.Kem.Kyber.Kyber1024.fst \
 	Libcrux.Kem.Kyber.Kyber512.fst
 
 
 UNVERIFIED = \
-	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Types.fst \
 	Libcrux.Kem.Kyber.fst \
 	Libcrux.Kem.Kyber.Ind_cpa.fst \

@@ -29,13 +29,13 @@ val compress_then_serialize_u
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_u
-      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR: usize)
+      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_public_key (v_K v_T_AS_NTT_ENCODED_SIZE: usize) (public_key: t_Slice u8)
+val deserialize_public_key (v_K: usize) (public_key: t_Slice u8)
     : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)

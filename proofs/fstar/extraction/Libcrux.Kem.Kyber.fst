@@ -3,10 +3,17 @@ module Libcrux.Kem.Kyber
 open Core
 open FStar.Mul
 
+unfold
+let t_KyberSharedSecret = t_Array u8 (sz 32)
+
+let v_KEY_GENERATION_SEED_SIZE: usize =
+  Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
+  Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
+
 let serialize_kem_secret_key
       (v_SERIALIZED_KEY_LEN: usize)
       (private_key public_key implicit_rejection_value: t_Slice u8)
-     =
+    : t_Array u8 v_SERIALIZED_KEY_LEN =
   let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
   let pointer:usize = sz 0 in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
@@ -113,7 +120,7 @@ let decapsulate
           usize)
       (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
-     =
+    : t_Array u8 (sz 32) =
   let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Libcrux.Kem.Kyber.Types.impl_12__split_at v_SECRET_KEY_SIZE secret_key v_CPA_SECRET_KEY_SIZE
   in
@@ -203,7 +210,7 @@ let encapsulate
           usize)
       (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
-     =
+    : (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) =
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Ind_cpa.into_padded_array (sz 64)
       (Rust_primitives.unsize randomness <: t_Slice u8)
@@ -263,7 +270,7 @@ let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (sz 64))
-     =
+    : Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
   let ind_cpa_keypair_randomness:t_Slice u8 =
     randomness.[ {
         Core.Ops.Range.f_start = sz 0;
