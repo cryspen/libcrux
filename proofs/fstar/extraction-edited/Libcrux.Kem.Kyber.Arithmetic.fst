@@ -132,7 +132,7 @@ let barrett_reduce value =
   result
 #pop-options 
 
-#push-options "--ifuel 0 --z3rlimit 300"
+#push-options "--ifuel 0 --z3rlimit 1600"
 let montgomery_reduce #b value = 
   let _:i32 = v_MONTGOMERY_R in
   let _:Prims.unit = () <: Prims.unit in
