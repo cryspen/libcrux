@@ -32,13 +32,8 @@ val compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomi
 
 val compress_then_serialize_ring_element_u
       (#p:Spec.Kyber.params)
-      (v_COMPRESSION_FACTOR: usize)
-      (v_OUT_LEN: usize {
-        match v v_COMPRESSION_FACTOR with
-        | 10 -> v v_OUT_LEN >= 320
-        | 11 -> v v_OUT_LEN >= 352
-        | _ -> False
-      })
+      (v_COMPRESSION_FACTOR: usize {v v_COMPRESSION_FACTOR == 10 \/ v v_COMPRESSION_FACTOR == 11})
+      (v_OUT_LEN: usize { v_OUT_LEN == sz 32 *! v_COMPRESSION_FACTOR })
       (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
     : Pure (t_Array u8 v_OUT_LEN)
       (requires (v_COMPRESSION_FACTOR = sz 10 || v_COMPRESSION_FACTOR = sz 11) /\
@@ -46,13 +41,8 @@ val compress_then_serialize_ring_element_u
       (ensures (fun _ -> True)) 
       
 val compress_then_serialize_ring_element_v (#p:Spec.Kyber.params)
-      (v_COMPRESSION_FACTOR: usize)
-      (v_OUT_LEN: usize {
-        match v v_COMPRESSION_FACTOR with
-        | 4 -> v v_OUT_LEN >= 256
-        | 5 -> v v_OUT_LEN >= 160
-        | _ -> False
-      })
+      (v_COMPRESSION_FACTOR: usize {v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5})
+      (v_OUT_LEN: usize { v_OUT_LEN == sz 32 *! v_COMPRESSION_FACTOR })
       (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
     : Pure (t_Array u8 v_OUT_LEN)
       (requires (v_COMPRESSION_FACTOR = sz 4 || v_COMPRESSION_FACTOR = sz 5) /\
@@ -78,7 +68,7 @@ val deserialize_then_decompress_4_ (serialized: t_Slice u8 {Seq.length serialize
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_5_ 
-  (serialized: t_Slice (int_t_d u8_inttype 5) {Seq.length serialized == 160})
+  (serialized: t_Slice u8 {Seq.length serialized == 160})
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -104,15 +94,12 @@ val deserialize_then_decompress_ring_element_u
 
 val deserialize_then_decompress_ring_element_v (#p:Spec.Kyber.params)
       (v_COMPRESSION_FACTOR: usize {v v_COMPRESSION_FACTOR == 4 \/ v v_COMPRESSION_FACTOR == 5})
-      (serialized: t_Slice (int_t_d u8_inttype (v v_COMPRESSION_FACTOR))) //KB: NOT SURE THIS IS RIGHT
+      (serialized: t_Slice u8)
     : Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
       (requires (p.v_VECTOR_V_COMPRESSION_FACTOR == v_COMPRESSION_FACTOR /\
                  length serialized == Spec.Kyber.v_C2_SIZE p))
-      (ensures fun res ->
-        True
-       // Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b res ==
-       // Spec.Kyber.decode_then_decompress_v p serialized
-       )
+      (ensures fun res -> Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b res
+                    == Spec.Kyber.decode_then_decompress_v p serialized)
 
 val deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
     : Pure (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)

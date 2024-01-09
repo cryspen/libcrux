@@ -538,13 +538,8 @@ let compress_then_serialize_message re =
   serialized
 
 let compress_then_serialize_ring_element_u #p
-      (v_COMPRESSION_FACTOR: usize) 
-      (v_OUT_LEN: usize {
-        match v v_COMPRESSION_FACTOR with
-        | 10 -> v v_OUT_LEN >= 320
-        | 11 -> v v_OUT_LEN >= 352
-        | _ -> False
-      })
+      v_COMPRESSION_FACTOR
+      v_OUT_LEN
       (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) =
   let _:Prims.unit = () <: Prims.unit in
   assert (
@@ -896,14 +891,13 @@ let deserialize_then_decompress_5_ serialized =
       re
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement = re in
-          let i, bytes:(usize & t_Array (int_t_d u8_inttype 5) (sz 5)) = temp_1_ in
+          let i, bytes:(usize & t_Array u8 (sz 5)) = temp_1_ in
           assert (v i < 32);
           let byte1 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
           let byte2 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
           let byte3 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
           let byte4 = cast (bytes.[ sz 3 ] <: u8) <: i32 in
           let byte5 = cast (bytes.[ sz 4 ] <: u8) <: i32 in
-          assert (bounded byte1 5 /\ bounded byte2 5 /\ bounded byte3 5 /\ bounded byte4 5 /\ bounded byte5 5);
           let
           coefficient1,
           coefficient2,

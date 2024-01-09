@@ -81,7 +81,7 @@ val decompress_coefficients_4_ (byte: u8)
                 (create2 (r1, r2)) 4
       )
 
-val decompress_coefficients_5_ (byte1 byte2 byte3 byte4 byte5: int_t_d i32_inttype 5)
+val decompress_coefficients_5_ (byte1 byte2 byte3 byte4 byte5: int_t_d i32_inttype 8)
     : Prims.Pure (i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5 & i32_d 5)
       (requires True)
       (ensures fun (r1, r2, r3, r4, r5, r6, r7, r8) ->
