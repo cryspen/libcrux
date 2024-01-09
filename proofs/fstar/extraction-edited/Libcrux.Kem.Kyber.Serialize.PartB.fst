@@ -575,7 +575,7 @@ let compress_then_serialize_ring_element_v #p v_COMPRESSION_FACTOR v_OUT_LEN re 
   admit (); // P-F
   res
 
-#push-options "--z3rlimit 60"
+#push-options "--z3rlimit 160"
 let deserialize_then_decompress_10_ serialized =
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
@@ -670,7 +670,7 @@ let deserialize_then_decompress_10_ serialized =
   re
 #pop-options
 
-#push-options "--z3rlimit 80"
+#push-options "--z3rlimit 100 --ifuel 0"
 let deserialize_then_decompress_11_ serialized
     : Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
   let _:Prims.unit = () <: Prims.unit in
@@ -1033,7 +1033,6 @@ let deserialize_then_decompress_5_ serialized =
   re
 #pop-options
 
-// TODO
 #push-options "--z3rlimit 60"
 let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =

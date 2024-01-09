@@ -28,15 +28,15 @@ val compress_ciphertext_coefficient (coefficient_bits: u8 {v coefficient_bits > 
 
 open Rust_primitives.Integers
 
-val decompress_ciphertext_coefficient (coefficient_bits: u8) (fe: i32)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.wfFieldElement
-      (requires (
-       (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
-        coefficient_bits =. 11uy) &&
-	v fe >= 0 /\
-        v fe < pow2 (v coefficient_bits)))
+val decompress_ciphertext_coefficient
+    (coefficient_bits: u8 {coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy || coefficient_bits =. 11uy})
+    (fe: int_t_d i32_inttype (v coefficient_bits))
+    : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.i32_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS - 1))
+      (requires True)
       (ensures
-        fun result -> v result >= 0 /\ v result < 3329)
+        fun result ->
+          let result:i32 = result in
+          result <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 val decompress_message_coefficient (fe: i32)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.wfFieldElement
