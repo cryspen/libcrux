@@ -118,7 +118,7 @@ val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
 *)
 
 
-val ntt_multiply (lhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 4095)
+val ntt_multiply (lhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3328)
                  (rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3328)
     : Prims.Pure (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3328)
       (requires True)

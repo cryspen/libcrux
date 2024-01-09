@@ -78,6 +78,7 @@ let shr_i32_b #b #t x y =
         r <: i32_b (nat_div_ceil b (pow2 (v y))))
 #pop-options
 
+let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 let v_MONTGOMERY_R_INV = 
   assert_norm((v 169l * pow2 16) % 3329 == 1);
@@ -245,12 +246,12 @@ let derefine_poly_b #b x =
   let r = createi (sz 256) (fun i -> (x.f_coefficients.[i] <: i32)) in
   {f_coefficients = r}
 
-let derefine_vector_b #p #b x =
-  let r = createi (p.v_RANK) (fun i -> derefine_poly_b #b x.[i]) in
+let derefine_vector_b #v_K #b x =
+  let r = createi v_K (fun i -> derefine_poly_b #b x.[i]) in
   r
 
-let derefine_matrix_b #p #b x =
-  let r = createi (p.v_RANK) (fun i -> derefine_vector_b #p #b x.[i]) in
+let derefine_matrix_b #v_K #b x =
+  let r = createi v_K (fun i -> derefine_vector_b #v_K #b x.[i]) in
   r
 
 let cast_poly_b #b1 #b2 x =
@@ -265,6 +266,47 @@ let cast_poly_b #b1 #b2 x =
   eq_intro dx dr;
   assert(Seq.equal dx dr);
   res
+
+let cast_vector_b #v_K #b1 #b2 x =
+  let r = createi v_K (fun i -> cast_poly_b #b1 #b2 x.[i]) in
+  let dx = derefine_vector_b x in
+  let dr = derefine_vector_b r in
+  assert (forall (i:usize). v i < v v_K ==>
+    dx.[i] == dr.[i]);
+  assert (forall i. Seq.index dx i == dx.[sz i]);
+  assert (forall i. Seq.index dr i == dr.[sz i]);
+  eq_intro dx dr;
+  r
+
+let down_cast_poly_b #b1 #b2 x =
+  let r = createi (sz 256) 
+      (fun i -> 
+        let xi:i32_b b2 = x.f_coefficients.[i] in
+        xi) in
+  let res = {f_coefficients = r} in
+  let dx = (derefine_poly_b x).f_coefficients in
+  let dr = (derefine_poly_b res).f_coefficients in
+  assert (forall (i:usize). v i < 256 ==> 
+    (dx.[i] <: i32) == 
+    (dr.[i] <: i32));
+  assert (forall i. Seq.index dx i == (dx.[sz i] <: i32));
+  eq_intro dx dr;
+  assert(Seq.equal dx dr);
+  res
+
+let down_cast_vector_b #v_K #b1 #b2 x =
+  let r = createi (v_K) 
+      (fun i -> down_cast_poly_b #b1 #b2 x.[i]) in
+  let dx = derefine_vector_b x in
+  let dr = derefine_vector_b r in
+  assert (forall (i:usize). v i < v v_K ==> 
+    dx.[i] == dr.[i]);
+  assert (forall i. Seq.index dx i == dx.[sz i]);
+  assert (forall i. Seq.index dr i == dr.[sz i]);
+  eq_intro dx dr;
+  assert(Seq.equal dx dr);
+  r
+
 
 let add_to_ring_element #b1 #b2 v_K lhs rhs =
   let _:Prims.unit = () <: Prims.unit in

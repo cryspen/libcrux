@@ -3,17 +3,21 @@ module Libcrux.Kem.Kyber.Arithmetic
 open Core
 open FStar.Mul
 
+let pow2_31 = 2147483648
 let i32_range (n:i32) (b:nat) =
-  b < pow2 31 /\ v n <= b /\ v n >= -b
+  b < pow2_31 /\ v n <= b /\ v n >= -b
 
 type i32_b b = x:i32{i32_range x b}
 let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
 //(x + y - 1)/y
 
-val mul_i32_b (#b1:nat) (#b2:nat{b1 * b2 < pow2 31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 * b2){v r == v x * v y}
-val add_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2 31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 + b2){v r == v x + v y}
-val sub_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2 31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 + b2){v r == v x - v y}
-val cast_i32_b (#b1:nat) (#b2:nat{b1 <= b2 /\ b2 < pow2 31}) (x:i32_b b1): r:i32_b b2{v r == v x}
+val mul_i32_b (#b1:nat) (#b2:nat{b1 * b2 < pow2_31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 * b2){v r == v x * v y}
+val add_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2_31}) (x:i32_b b1) (y: i32_b b2): 
+  Pure (i32_b (b1 + b2))
+  (requires True)
+  (ensures fun r -> v r == v x + v y)
+val sub_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2_31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 + b2){v r == v x - v y}
+val cast_i32_b (#b1:nat) (#b2:nat{b1 <= b2 /\ b2 < pow2_31}) (x:i32_b b1): r:i32_b b2{v r == v x}
 val shr_i32_b (#b:nat) (#t:inttype) (x:i32_b b) (y:int_t t{v y>0 /\ v y<32}): r:i32_b (nat_div_ceil b (pow2 (v y)))
 
 unfold
@@ -35,7 +39,7 @@ let v_BARRETT_MULTIPLIER: i64 = 20159L
 
 let v_BARRETT_SHIFT: i64 = 26L
 
-let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
+val v_BARRETT_R: x:i64{v x = pow2 26 /\ x = 67108864L}
 
 let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
 
@@ -43,9 +47,9 @@ let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
 let v_MONTGOMERY_SHIFT: u8 = 16uy
 
-val v_MONTGOMERY_R: x:i32{v x = pow2 16}
+val v_MONTGOMERY_R: x:i32{v x = pow2 16 /\ x = 65536l}
 
-val v_MONTGOMERY_R_INV: x:i32{v x >= 0 /\ v x < 3329 /\ (v x * v v_MONTGOMERY_R) % 3329 == 1}
+val v_MONTGOMERY_R_INV: x:i32{v x >= 0 /\ v x < 3329 /\ (v x * v v_MONTGOMERY_R) % 3329 == 1 /\ x = 169l}
 
 let int_to_spec_fe (m:int) : Spec.Kyber.field_element = 
     let m_v = m % v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS in
@@ -101,14 +105,14 @@ val montgomery_reduce #b (value: i32_b b)
 
 val montgomery_multiply_sfe_by_fer #b1 #b2 (fe:i32_b b1) (fer: i32_b b2)
     : Pure (i32_b (nat_div_ceil (b1 * b2) (v v_MONTGOMERY_R) + 1665))
-      (requires (b1 * b2 < pow2 31))
+      (requires (b1 * b2 < pow2_31))
       (ensures (fun result -> 
           montgomery_post (mul_i32_b fe fer) (result)))
       
 
 val to_standard_domain #b (mfe: i32_b b) 
-    : Pure (i32_b (nat_div_ceil (b * 1363) (v v_MONTGOMERY_R) + 1665))
-      (requires (b * 1353 < pow2 31))
+    : Pure (i32_b (nat_div_ceil (b * 1353) (v v_MONTGOMERY_R) + 1665))
+      (requires (b * 1353 < pow2_31))
       (ensures (fun result -> 
           montgomery_post (mul_i32_b mfe (1353l <: i32_b 1353)) result))
 
@@ -133,28 +137,51 @@ val derefine_poly_b (#b1:nat) (x:t_PolynomialRingElement_b b1):
     r:t_PolynomialRingElement{
     forall (i:usize). v i < 256 ==> (r.f_coefficients.[i] <: i32) ==  (x.f_coefficients.[i] <: i32)}
 
-val derefine_vector_b (#p:Spec.Kyber.params) (#b:nat) (x:t_Array (t_PolynomialRingElement_b b) p.v_RANK):
-    r:t_Array t_PolynomialRingElement p.v_RANK{
-    forall (i j:usize). (v i < v p.v_RANK /\ v j < 256) ==>
+val derefine_vector_b (#v_K:usize) (#b:nat) (x:t_Array (t_PolynomialRingElement_b b) v_K):
+    r:t_Array t_PolynomialRingElement v_K{
+    forall (i:usize). (v i < v v_K) ==>
      (let ri : t_PolynomialRingElement = r.[i] in
       let xi : t_PolynomialRingElement_b b = x.[i] in
-      (ri.f_coefficients.[j] <: i32) == 
-      (xi.f_coefficients.[j] <: i32))}
+      ri == derefine_poly_b xi)}
 
-val derefine_matrix_b (#p:Spec.Kyber.params) (#b:nat) 
-  (x:t_Array (t_Array (t_PolynomialRingElement_b b) p.v_RANK) p.v_RANK) :
-    r:t_Array (t_Array t_PolynomialRingElement p.v_RANK) p.v_RANK{
-    forall (i j k:usize). (v i < v p.v_RANK /\ v j < v p.v_RANK /\ v k < 256) ==>
-     (let ri : t_Array (t_PolynomialRingElement) p.v_RANK = r.[i] in
-      let xi : t_Array (t_PolynomialRingElement_b b) p.v_RANK = x.[i] in
-      let rij : t_PolynomialRingElement = ri.[j] in
-      let xij : t_PolynomialRingElement_b b = xi.[j] in
-      (rij.f_coefficients.[k] <: i32) == 
-      (xij.f_coefficients.[k] <: i32))}
+val derefine_matrix_b (#v_K:usize) (#b:nat) 
+  (x:t_Array (t_Array (t_PolynomialRingElement_b b) v_K) v_K) :
+    r:t_Array (t_Array t_PolynomialRingElement v_K) v_K{
+    forall (i:usize). (v i < v v_K) ==>
+     (let ri : t_Array (t_PolynomialRingElement) v_K = r.[i] in
+      let xi : t_Array (t_PolynomialRingElement_b b) v_K = x.[i] in
+      ri == derefine_vector_b xi)}
 
-val cast_poly_b (#b1:nat) (#b2:nat{b1 <= b2 /\ b2 < pow2 31}) 
-  (x:t_PolynomialRingElement_b b1): r:t_PolynomialRingElement_b b2{
-    derefine_poly_b x == derefine_poly_b r}
+
+val cast_poly_b (#b1:nat) (#b2:nat{b1 <= b2 /\ b2 < pow2_31}) 
+  (x:t_PolynomialRingElement_b b1)
+  : Pure (t_PolynomialRingElement_b b2) 
+    (requires True)
+    (ensures fun r -> derefine_poly_b x == derefine_poly_b r)
+
+val cast_vector_b (#v_K:usize) (#b1:nat) (#b2:nat{b1 <= b2 /\ b2 < pow2_31}) 
+  (x:t_Array (t_PolynomialRingElement_b b1) v_K)
+  : Pure (t_Array (t_PolynomialRingElement_b b2) v_K)
+    (requires True)
+    (ensures fun r -> derefine_vector_b x == derefine_vector_b r)
+
+let poly_range (#b:nat) (x:t_PolynomialRingElement_b b) (b':nat) =
+  (forall (i:usize). v i < 256 ==> i32_range (x.f_coefficients.[i] <: i32) b')
+
+let vector_range (#v_K:usize) (#b:nat) (x:t_Array (t_PolynomialRingElement_b b) v_K) (b':nat) =
+  (forall (i:usize). v i < v v_K ==> poly_range #b x.[i] b')
+
+val down_cast_poly_b (#b1:nat) (#b2:nat{b2 <= b1 /\ b1 < pow2_31}) 
+  (x:t_PolynomialRingElement_b b1): 
+  Pure (t_PolynomialRingElement_b b2)
+  (requires (poly_range x b2))
+  (ensures fun r ->  derefine_poly_b x == derefine_poly_b r) 
+
+val down_cast_vector_b (#v_K:usize) (#b1:nat) (#b2:nat{b2 <= b1 /\ b1 < pow2_31}) 
+  (x:t_Array (t_PolynomialRingElement_b b1) v_K): 
+  Pure (t_Array (t_PolynomialRingElement_b b2) v_K)
+  (requires (vector_range x b2))
+  (ensures fun r ->  derefine_vector_b x == derefine_vector_b r) 
 
 let op_String_Access #t #l (a:t_Array t l) (i:usize{v i < v l}) : t = a.[i]
 
@@ -213,7 +240,7 @@ let mont_to_spec_matrix (#p:Spec.Kyber.params)
 let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement_b 1 =
   { f_coefficients = Rust_primitives.Hax.repeat (0l <: i32_b 1) (sz 256) } <: t_PolynomialRingElement_b 1
 
-val add_to_ring_element (#b1:nat) (#b2:nat{b1 + b2 < pow2 31}) (v_K: usize) (lhs: t_PolynomialRingElement_b b1) (rhs: t_PolynomialRingElement_b b2)
+val add_to_ring_element (#b1:nat) (#b2:nat{b1 + b2 < pow2_31}) (v_K: usize) (lhs: t_PolynomialRingElement_b b1) (rhs: t_PolynomialRingElement_b b2)
     : Prims.Pure (t_PolynomialRingElement_b (b1 + b2))
       (requires True) 
       (ensures fun result ->
