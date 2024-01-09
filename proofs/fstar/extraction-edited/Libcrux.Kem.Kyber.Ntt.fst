@@ -59,7 +59,7 @@ val lemma_zeta_decr: orig:usize -> fin:usize -> layer:usize{v layer <= 7} ->
          v fin == pow2 (7 - v layer))
 let lemma_zeta_decr orig fin layer = ()
 
-#push-options "--ifuel 0 --z3rlimit 500"
+#push-options "--ifuel 0 --z3rlimit 800"
 let invert_ntt_at_layer #v_K #b zeta_i re layer =
   let step:usize = sz 1 <<! layer in
   assert (v step > 0);
@@ -148,7 +148,7 @@ let invert_ntt_at_layer #v_K #b zeta_i re layer =
   zeta_i, hax_temp_output <: (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (2*b))  
 #pop-options
 
-#push-options "--z3rlimit 200"
+#push-options "--z3rlimit 500"
 let invert_ntt_montgomery v_K re =
   let _:Prims.unit = () <: Prims.unit in
   let b = v v_K * 3328 in
@@ -228,6 +228,7 @@ let invert_ntt_montgomery v_K re =
   re 
 #pop-options
 
+#push-options "--z3rlimit 500"
 val mul_zeta_red2   (#b:nat{b <= 7 * 3328}) 
                    (zeta_i:usize{v zeta_i >= 0 /\ v zeta_i <= 63} )
                    (layer:usize{v layer > 0 /\ 
@@ -244,8 +245,9 @@ let mul_zeta_red2 #b zeta_i layer x i =
                              (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32) in
     assume (v red <= 3328 /\ v red >= -3328);
     red
+#pop-options
 
-#push-options "--ifuel 0 --z3rlimit 1100" 
+#push-options "--ifuel 0 --z3rlimit 1900"
 let ntt_at_layer #b zeta_i re layer initial_coefficient_bound =
   let step = sz 1 <<! layer in
   let orig_re = re in
