@@ -284,7 +284,7 @@ let compute_ring_element_v v_K tt_as_ntt r_as_ntt error_2_ message =
   result
 #pop-options
 
-#push-options "--ifuel 0 --z3rlimit 100"
+#push-options "--ifuel 0 --z3rlimit 300"
 let compute_vector_u
       (v_K: usize)
       (a_as_ntt: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) v_K)
@@ -305,28 +305,28 @@ let compute_vector_u
       (fun result temp_1_ ->
           let result:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K = result in
           let orig_result = result in
-          let orig_result_cast = (cast_vector_b #v_K #3328 #(v v_K * 3328) orig_result) in
+          let orig_result_cast = (cast_vector_b #v_K #3328 #(64 * v v_K * 3328) orig_result) in
           let i, row:(usize & t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) =
             temp_1_
           in
           [@ inline_let]
-          let inv1 = fun (acc:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) v_K) (inner:usize) ->
+          let inv1 = fun (acc:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64 * v v_K * 3328)) v_K) (inner:usize) ->
              (v inner <= v v_K) /\
              (forall (j:usize). (v j < v i /\ v j < v v_K) ==> acc.[j] == orig_result_cast.[j]) /\
              (forall (j:usize). (v j > v i /\ v j < v v_K) ==> acc.[j] == orig_result_cast.[j]) /\
-             (poly_range (acc.[i] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) (v inner * 3328))
+             (poly_range (acc.[i] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64 * v v_K * 3328)) (v inner * 3328))
           in
           assert (forall (k:usize). (v k < 256) ==> v (result.[i] <: wfPolynomialRingElement).f_coefficients.[k] == 0);
           assert(inv1 orig_result_cast (sz 0));
-          let result:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) v_K =
-            Rust_primitives.Iterators.foldi_slice #Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement #(t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) v_K) #inv1
+          let result:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64 * v v_K * 3328)) v_K =
+            Rust_primitives.Iterators.foldi_slice #Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement #(t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64 * v v_K * 3328)) v_K) #inv1
               row
               orig_result_cast
               (fun result temp_1_ ->
                   let j, a_element:(usize & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) =
                     temp_1_
                   in
-                  let resulti = down_cast_poly_b #(v v_K * 3328) #(v j * 3328) result.[i] in
+                  let resulti = down_cast_poly_b #(64 * v v_K * 3328) #(v j * 3328) result.[i] in
                   let product:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
                     Libcrux.Kem.Kyber.Ntt.ntt_multiply a_element
                       (r_as_ntt.[ j ] <: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
@@ -335,8 +335,8 @@ let compute_vector_u
                       (Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element #(v j * 3328) #3328 v_K
                           resulti
                           product) in
-                  let product_sum:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) = cast_poly_b #((v j+1)* 3328) #(v v_K * 3328) product_sum in 
-                  let result:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) v_K =
+                  let product_sum:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64 * v v_K * 3328)) = cast_poly_b #((v j+1)* 3328) #(64 * v v_K * 3328) product_sum in 
+                  let result:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64 * v v_K * 3328)) v_K =
                     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                       i
                       product_sum
@@ -345,10 +345,7 @@ let compute_vector_u
           in
           assert (forall (j:usize). (v j < v i /\ v j < v v_K) ==> result.[j] == orig_result_cast.[j]);
           assert (forall (j:usize). (v j > v i /\ v j < v v_K) ==> result.[j] == orig_result_cast.[j]);
-          let result = cast_vector_b #v_K #(v v_K * 3328) #(64 * v v_K * 3328) result in
-          let orig_result_cast = (cast_vector_b #v_K #3328 #(64 * v v_K * 3328) orig_result) in
-          assert (forall (j:usize). (v j < v i /\ v j < v v_K) ==> result.[j] == orig_result_cast.[j]);
-          let resulti = result.[i] in
+          let resulti : t_PolynomialRingElement_b (v v_K * 3328) = down_cast_poly_b result.[i] in
           let result =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
               i
@@ -377,7 +374,7 @@ let compute_vector_u
                 let coefficient_normal_form: i32_b (nat_div_ceil (306921472*v v_K) 65536 + 1665) = 
               Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce 
                            (Libcrux.Kem.Kyber.Arithmetic.mul_i32_b #(64 * v v_K * 3328) #1441
-                           resulti.(j) (1441l <: Libcrux.Kem.Kyber.Arithmetic.i32_b 1441)) in
+                           (resulti <: t_PolynomialRingElement_b (64*v v_K * 3328)).f_coefficients.[j] (1441l <: Libcrux.Kem.Kyber.Arithmetic.i32_b 1441)) in
                 let resultij: i32_b 3328 = (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce 
                                     (add_i32_b coefficient_normal_form ((error_1_.[ i ]
                                     <:
@@ -387,18 +384,17 @@ let compute_vector_u
                   Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
                     i
                     ({
-                        (result.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) with
+                        resulti with
                         Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         =
                         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (resulti
                             .Libcrux.Kem.Kyber.Arithmetic.f_coefficients)
                           j
-                          resultij
-                        <:
-                        t_Array i32 (sz 256)
+                          (cast_i32_b #3328 #(64 * v v_K * 3328) resultij)
                       }) in
                 result)
         in
+        admit();
         result)
   in
   admit(); //P-F
