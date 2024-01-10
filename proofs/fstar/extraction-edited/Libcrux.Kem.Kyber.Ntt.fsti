@@ -25,7 +25,7 @@ val invert_ntt_at_layer (#v_K:usize{v v_K >= 1 /\ v v_K <= 4})
 
 val invert_ntt_montgomery (v_K: usize{v v_K >= 1 /\ v v_K <= 4}) 
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328))
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (128 * v v_K * 3328)
+    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64 * v v_K * 3328)
 
 val ntt_at_layer 
       (#b:nat{b <= 7*3328})

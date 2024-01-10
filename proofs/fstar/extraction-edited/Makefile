@@ -103,6 +103,7 @@ FSTAR_FLAGS = --cmi \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
   $(addprefix --include ,$(FSTAR_INCLUDE_DIRS))
 
+#  --z3version 4.12.3 \
 #  --smtencoding.l_arith_repr native \
 #  --smtencoding.nl_arith_repr native \
 
