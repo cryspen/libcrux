@@ -117,10 +117,10 @@ let compute_As_plus_e v_K matrix_A s_as_ntt error_as_ntt =
                 assert(inv2 result (j +! sz 1));
                 let result: x:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) v_K{inv2 x (j +! mk_int 1)} = result in
                 result) in
-          let result: t_Array wfPolynomialRingElement v_K =
-            down_cast_vector_b #v_K #(v v_K * 3328) #3328 result in
-          admit();
-          result)
+      let result: t_Array wfPolynomialRingElement v_K =
+        down_cast_vector_b #v_K #(v v_K * 3328) #3328 result in
+      admit();
+      result)
   in
   admit(); //P-F
   result  
