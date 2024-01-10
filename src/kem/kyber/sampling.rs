@@ -2,6 +2,7 @@ use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
+use crate::cloop;
 
 fn rejection_sampling_panic_with_diagnostic() {
     panic!()
@@ -65,23 +66,27 @@ pub fn sample_from_uniform_distribution(
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
     let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 
-    for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
-        let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
-            | (byte_chunk[1] as u32) << 8
-            | (byte_chunk[2] as u32) << 16
-            | (byte_chunk[3] as u32) << 24;
+    cloop! {
+        for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
+            let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
+                | (byte_chunk[1] as u32) << 8
+                | (byte_chunk[2] as u32) << 16
+                | (byte_chunk[3] as u32) << 24;
 
-        let even_bits = random_bits_as_u32 & 0x55555555;
-        let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
+            let even_bits = random_bits_as_u32 & 0x55555555;
+            let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
 
-        let coin_toss_outcomes = even_bits + odd_bits;
+            let coin_toss_outcomes = even_bits + odd_bits;
 
-        for outcome_set in (0..u32::BITS).step_by(4) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as FieldElement;
-            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as FieldElement;
+            cloop! {
+                for outcome_set in (0..u32::BITS).step_by(4) {
+                    let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as FieldElement;
+                    let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as FieldElement;
 
-            let offset = (outcome_set >> 2) as usize;
-            sampled.coefficients[8 * chunk_number + offset] = outcome_1 - outcome_2;
+                    let offset = (outcome_set >> 2) as usize;
+                    sampled.coefficients[8 * chunk_number + offset] = outcome_1 - outcome_2;
+                }
+            }
         }
     }
 
@@ -100,22 +105,26 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
 fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
     let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
 
-    for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
-        let random_bits_as_u24: u32 =
-            (byte_chunk[0] as u32) | (byte_chunk[1] as u32) << 8 | (byte_chunk[2] as u32) << 16;
+    cloop! {
+        for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
+            let random_bits_as_u24: u32 =
+                (byte_chunk[0] as u32) | (byte_chunk[1] as u32) << 8 | (byte_chunk[2] as u32) << 16;
 
-        let first_bits = random_bits_as_u24 & 0x00249249;
-        let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
-        let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
+            let first_bits = random_bits_as_u24 & 0x00249249;
+            let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
+            let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
 
-        let coin_toss_outcomes = first_bits + second_bits + third_bits;
+            let coin_toss_outcomes = first_bits + second_bits + third_bits;
 
-        for outcome_set in (0..24).step_by(6) {
-            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as FieldElement;
-            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as FieldElement;
+            cloop! {
+                for outcome_set in (0..24).step_by(6) {
+                    let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as FieldElement;
+                    let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as FieldElement;
 
-            let offset = (outcome_set / 6) as usize;
-            sampled.coefficients[4 * chunk_number + offset] = outcome_1 - outcome_2;
+                    let offset = (outcome_set / 6) as usize;
+                    sampled.coefficients[4 * chunk_number + offset] = outcome_1 - outcome_2;
+                }
+            }
         }
     }
 

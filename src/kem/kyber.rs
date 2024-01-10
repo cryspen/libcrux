@@ -7,6 +7,9 @@
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
 pub(crate) mod constants;
 
+/// Helpers for verification and extraction
+mod helper;
+
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
@@ -133,7 +136,11 @@ pub(super) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    (ciphertext.into(), shared_secret.try_into().unwrap())
+    let shared_secret = match shared_secret.try_into() {
+        Ok(shared_secret) => shared_secret,
+        Err(_) => panic!(),
+    };
+    (ciphertext.into(), shared_secret)
 }
 
 pub(super) fn decapsulate<

@@ -3,39 +3,12 @@ module Libcrux.Kem.Kyber.Sampling
 open Core
 open FStar.Mul
 
-let rejection_sampling_panic_with_diagnostic: Prims.unit =
+let rejection_sampling_panic_with_diagnostic (_: Prims.unit) =
   Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
       <:
       Rust_primitives.Hax.t_Never)
 
-let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
-      (ensures
-        fun result ->
-          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
-                let i:usize = i in
-                Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                          <:
-                          t_Slice i32)
-                      <:
-                      usize)
-                    <:
-                    bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
-                      <:
-                      i32) <=.
-                    2l
-                    <:
-                    bool)
-                <:
-                bool)) =
+let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
@@ -107,34 +80,7 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
   let _:Prims.unit = () <: Prims.unit in
   sampled
 
-let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
-      (ensures
-        fun result ->
-          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
-                let i:usize = i in
-                Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                          <:
-                          t_Slice i32)
-                      <:
-                      usize)
-                    <:
-                    bool)
-                  ((Core.Num.impl__i32__abs (result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i
-                          ]
-                          <:
-                          i32)
-                      <:
-                      i32) <=.
-                    3l
-                    <:
-                    bool)
-                <:
-                bool)) =
+let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
   let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
@@ -201,8 +147,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
   let _:Prims.unit = () <: Prims.unit in
   sampled
 
-let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
@@ -213,8 +158,7 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
         <:
         Rust_primitives.Hax.t_Never)
 
-let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
-    : Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
   =
@@ -320,7 +264,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
   let _:Prims.unit =
     if ~.done
     then
-      let _:Prims.unit = rejection_sampling_panic_with_diagnostic in
+      let _:Prims.unit = rejection_sampling_panic_with_diagnostic () in
       ()
   in
   let _:Prims.unit = () <: Prims.unit in
