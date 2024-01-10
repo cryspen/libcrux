@@ -123,6 +123,8 @@ elif options.kyber_reference:
                 exclude_sha3_implementations
             ),
             "fstar",
+            "--interfaces",
+            "+* -libcrux::kem::kyber::types"
         ],
         cwd=".",
         env=hax_env,
