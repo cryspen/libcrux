@@ -11,14 +11,16 @@ let op_Array_Access (x:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) (i:
 
 #push-options "--ifuel 0 --z3rlimit 700"
 let compute_As_plus_e v_K matrix_A s_as_ntt error_as_ntt =
+  let wfZero: wfPolynomialRingElement = (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO) in
   let result:t_Array wfPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO) v_K
+    Rust_primitives.Hax.repeat wfZero v_K
   in
   [@ inline_let]
   let inv0 = fun (acc:t_Array wfPolynomialRingElement v_K) (i:usize) -> 
    (v i <= v v_K) /\
-   (forall (j k:usize). (v j >= v i /\ v j < v v_K /\ v k < 256) ==> v (((acc.[j] <: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement).f_coefficients.[k]) <: i32) == 0)
+   (forall (j:usize). (v j >= v i /\ v j < v v_K) ==> (acc.[j] <: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) == wfZero)
   in
+  assert (inv0 result (sz 0));
   let result:t_Array wfPolynomialRingElement v_K =
     Rust_primitives.Iterators.foldi_slice #(t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) #(t_Array wfPolynomialRingElement v_K) #inv0
       matrix_A
@@ -117,9 +119,11 @@ let compute_As_plus_e v_K matrix_A s_as_ntt error_as_ntt =
                 assert(inv2 result (j +! sz 1));
                 let result: x:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328)) v_K{inv2 x (j +! mk_int 1)} = result in
                 result) in
+      assert (v i + 1 < v v_K ==> result.[i +! sz 1] == orig_result_cast.[i +! sz 1]);
       let result: t_Array wfPolynomialRingElement v_K =
         down_cast_vector_b #v_K #(v v_K * 3328) #3328 result in
-      admit();
+      assert (forall (j:usize). (v j >= v i + 1 /\ v j < v v_K) ==> derefine_poly_b result.[j] == derefine_poly_b orig_result.[j]); 
+      assume (inv0 result (i +! sz 1));
       result)
   in
   admit(); //P-F
@@ -289,14 +293,15 @@ let compute_vector_u
       (v_K: usize)
       (a_as_ntt: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) v_K)
       (r_as_ntt error_1_: t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) =
+  let wfZero: wfPolynomialRingElement = (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO) in
   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO) v_K
+    Rust_primitives.Hax.repeat wfZero v_K
   in
   let acc_t = t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K in
   [@ inline_let]
   let inv0 = fun (acc:t_Array wfPolynomialRingElement v_K) (i:usize) -> 
    (v i <= v v_K) /\
-   (forall (j k:usize). (v j >= v i /\ v j < v v_K /\ v k < 256) ==> v (((acc.[j] <: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement).f_coefficients.[k]) <: i32) == 0)
+   (forall (j:usize). (v j >= v i /\ v j < v v_K) ==> (acc.[j] <: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) == wfZero)
   in
   let result:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
     Rust_primitives.Iterators.foldi_slice #(t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) #acc_t #inv0
@@ -394,7 +399,10 @@ let compute_vector_u
                       }) in
                 result)
         in
-        admit();
+        let result: t_Array wfPolynomialRingElement v_K =
+          down_cast_vector_b #v_K #(64 * v v_K * 3328) #3328 result in
+        assert (forall (j:usize). (v j >= v i + 1 /\ v j < v v_K) ==> derefine_poly_b result.[j] == derefine_poly_b orig_result.[j]); 
+        assume (inv0 result (i +! sz 1));
         result)
   in
   admit(); //P-F
@@ -402,12 +410,9 @@ let compute_vector_u
 #pop-options
 
 let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
+  let wfZero: wfPolynomialRingElement = (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO) in
   let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) v_K =
-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b #1 #3328 Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO)
-          v_K
-        <:
-        t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
-      v_K
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat wfZero v_K) v_K
   in
   let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
