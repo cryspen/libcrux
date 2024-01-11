@@ -51,7 +51,7 @@ all:
 VERIFIED = \
 	Libcrux_platform.fsti \
 	Libcrux.Kem.fst \
-	Libcrux.Kem.Kyber.Constants.fst \
+	Libcrux.Kem.Kyber.Constants.fsti \
 	Libcrux.Digest.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Kyber768.fst \
