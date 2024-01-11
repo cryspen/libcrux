@@ -44,6 +44,10 @@ HINT_DIR      ?= .hints
 .PHONY: all verify verify-lax clean
 
 all:
+	@echo "==============================================="
+	@echo "VERIFYING SECRET INDEPENDENCE ONLY"
+	@echo "Run this with the secret_integers branch of hax"
+	@echo "==============================================="
 	rm -f .depend && $(MAKE) .depend
 	$(MAKE) verify
 
@@ -97,8 +101,7 @@ FSTAR_FLAGS = --cmi \
   --warn_error -331 \
   --warn_error -321 \
   --warn_error -274 \
-  --query_stats \
-  --log_queries \
+  --admit_smt_queries true \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
   $(addprefix --include ,$(FSTAR_INCLUDE_DIRS))

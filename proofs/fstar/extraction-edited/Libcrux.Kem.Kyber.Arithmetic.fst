@@ -78,7 +78,7 @@ let shr_i32_b #b #t x y =
         r <: i32_b (nat_div_ceil b (pow2 (v y))))
 #pop-options
 
-let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
+let v_BARRETT_R: i64 = (1L <<! v_BARRETT_SHIFT)
 let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 let v_MONTGOMERY_R_INV = 
   assert_norm((v 169l * pow2 16) % 3329 == 1);

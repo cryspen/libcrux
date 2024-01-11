@@ -28,7 +28,7 @@ let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
       Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                 Core.Ops.Range.f_start = sz 0;
                 Core.Ops.Range.f_end = v_K
-              }
+                }
               <:
               Core.Ops.Range.t_Range usize)
           <:
@@ -47,7 +47,7 @@ let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
             t_Array (t_Array u8 (sz 840)) v_K)
     else
       let out:t_Array (t_Array u8 (sz 840)) v_K =
-        match cast (v_K <: usize) <: u8 with
+        match cast (v_K <: usize) <: pub_int_t u8_inttype with
         | 2uy ->
           let d0, d1, _, _:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
             t_Array u8 (sz 840)) =

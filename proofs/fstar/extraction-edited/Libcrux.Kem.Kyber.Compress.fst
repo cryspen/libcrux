@@ -38,13 +38,16 @@ let compress_message_coefficient fe =
 let compress_ciphertext_coefficient coefficient_bits fe =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
-  let compressed:u32 = (cast (fe <: u16) <: u32) <<! (coefficient_bits +! 1uy <: u8) in
+  let compressed:u32 = (cast (fe <: u16) <: u32) <<! (coefficient_bits +! 1uy <: pub_u8) in
   let compressed:u32 =
     compressed +! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u32)
   in
+ (* LEAK: *)
+ (*
   let compressed:u32 =
     compressed /! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <<! 1l <: i32) <: u32)
   in
+  *)
   let res = cast (Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits coefficient_bits compressed <: u32
     )
   <:
@@ -61,8 +64,8 @@ let decompress_ciphertext_coefficient coefficient_bits fe =
   let decompressed:u32 =
     (cast (fe <: i32) <: u32) *! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u32)
   in
-  let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! coefficient_bits <: u32) in
-  let decompressed:u32 = decompressed >>! (coefficient_bits +! 1uy <: u8) in
+  let decompressed:u32 = (decompressed <<! 1l <: u32) +! (1ul <<! coefficient_bits <: pub_u32) in
+  let decompressed:u32 = decompressed >>! (coefficient_bits +! 1uy <: pub_u8) in
   let res = cast (decompressed <: u32) <: i32 in
   let res : Libcrux.Kem.Kyber.Arithmetic.i32_b 3328 = res in
   res
@@ -73,7 +76,7 @@ let decompress_message_coefficient fe =
   assert (v ((Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS +! 1l <: i32) /! 2l <: i32) == 1665);
   assert (res == logand #i32_inttype (Core.Ops.Arith.Neg.neg fe) 1665l);
   assert (v fe == 0 ==> Core.Ops.Arith.Neg.neg fe = zero);
-  logand_lemma 1665l zero;
+  logand_lemma 1665l (zero #i32_inttype #Lib.IntTypes.SEC);
   assert (v fe == 0 ==> res == zero);
   res <: Libcrux.Kem.Kyber.Arithmetic.i32_b 3328
 #pop-options

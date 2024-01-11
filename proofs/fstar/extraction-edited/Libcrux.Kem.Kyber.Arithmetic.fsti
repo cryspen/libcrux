@@ -17,7 +17,7 @@ val add_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2_31}) (x:i32_b b1) (y: i32_b b2):
   (ensures fun r -> v r == v x + v y)
 val sub_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2_31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 + b2){v r == v x - v y}
 val cast_i32_b (#b1:nat) (#b2:nat{b1 <= b2 /\ b2 < pow2_31}) (x:i32_b b1): r:i32_b b2{v r == v x}
-val shr_i32_b (#b:nat) (#t:inttype) (x:i32_b b) (y:int_t t{v y>0 /\ v y<32}): r:i32_b (nat_div_ceil b (pow2 (v y)))
+val shr_i32_b (#b:nat) (#t:inttype) (x:i32_b b) (y:pub_int_t t{v y>0 /\ v y<32}): r:i32_b (nat_div_ceil b (pow2 (v y)))
 
 unfold
 let t_FieldElement = i32
@@ -36,7 +36,7 @@ let t_MontgomeryFieldElement = i32
 
 let v_BARRETT_MULTIPLIER: i64 = 20159L
 
-let v_BARRETT_SHIFT: i64 = 26L
+let v_BARRETT_SHIFT: pub_i64 = 26L
 
 val v_BARRETT_R: x:i64{v x = pow2 26 /\ x = 67108864L}
 
@@ -44,7 +44,7 @@ let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
 
 let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
-let v_MONTGOMERY_SHIFT: u8 = 16uy
+let v_MONTGOMERY_SHIFT: pub_u8 = 16uy
 
 val v_MONTGOMERY_R: x:i32{v x = pow2 16 /\ x = 65536l}
 
@@ -66,7 +66,7 @@ let to_spec_fe_b #b (m:i32_b b) : Spec.Kyber.field_element = to_spec_fe m
 let mont_to_spec_fe (m:t_FieldElement) : Spec.Kyber.field_element =
     int_to_spec_fe (v m * v v_MONTGOMERY_R_INV)
 
-val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n < 32}) (value: u32)
+val get_n_least_significant_bits (n: pub_u8 {v n > 0 /\ v n < 32}) (value: u32)
     : Prims.Pure (int_t_d u32_inttype (v n))
       (requires v n < 32)
       (ensures
@@ -123,8 +123,8 @@ val to_unsigned_representative (fe: wfFieldElement)
         fun result ->
           let result:u16 = result in
           v result == to_spec_fe fe /\
-          result >=. 0us &&
-          result <. (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u16))
+          v result >= 0 &&
+          v result < v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS)
 
 type t_PolynomialRingElement = { f_coefficients:t_Array (t_FieldElement) (sz 256) }
 

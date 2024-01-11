@@ -13,7 +13,7 @@ let is_non_zero (value: u8) =
     lognot_lemma value;
     assert((~.value +. 1us) == zero);
     assert((Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) == zero);
-    logor_lemma value zero;
+    logor_lemma value (zero #u16_inttype #Lib.IntTypes.SEC);
     assert((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) == value);
     assert (v result == v ((value >>! 8l)));
     assert ((v value / pow2 8) == 0);
@@ -141,8 +141,8 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
             assert (((lhs.[ i ] <: u8) &. mask <: u8) == zero);
             logand_lemma (rhs.[ i ] <: u8) (~.mask);
             assert (((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8) == (rhs.[ i ] <: u8));
-            logor_lemma (rhs.[ i ] <: u8) zero;
-            assert ((logor zero (rhs.[ i ] <: u8)) == (rhs.[ i ] <: u8));
+            logor_lemma (rhs.[ i ] <: u8) (zero #u8_inttype #Lib.IntTypes.SEC);
+            assert ((logor (zero #u8_inttype #Lib.IntTypes.SEC) (rhs.[ i ] <: u8)) == (rhs.[ i ] <: u8));
             assert ((((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8)) == (rhs.[ i ] <: u8));
             logor_lemma (out.[ i ] <: u8) (rhs.[ i ] <: u8);
             assert (((out.[ i ] <: u8) |. (((lhs.[ i ] <: u8) &. mask <: u8) |. ((rhs.[ i ] <: u8) &. (~.mask <: u8) <: u8) <: u8) <: u8) == (rhs.[ i ] <: u8));

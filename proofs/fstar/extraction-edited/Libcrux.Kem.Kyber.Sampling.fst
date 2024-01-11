@@ -56,17 +56,17 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
                         Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
                         }
                         <:
-                        Core.Ops.Range.t_Range u32)
+                        Core.Ops.Range.t_Range pub_u32)
             (sz 4)
             sampled
             (fun sampled outcome_set ->
-                let outcome_set:u32 = outcome_set in
+                let outcome_set:pub_u32 = outcome_set in
                 assert (v outcome_set + 4 <= 32);
                 let out_1 = ((coin_toss_outcomes >>! outcome_set <: u32) &. 3ul <: u32) in
                 let outcome_1_:i32 =
                   cast out_1  <: i32
                 in
-                let out_2 = ((coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) &. 3ul <: u32) in
+                let out_2 = ((coin_toss_outcomes >>! (outcome_set +! 2ul <: pub_u32) <: u32) &. 3ul <: u32) in
                 let outcome_2_:i32 =
                   cast out_2  <: i32
                 in
@@ -77,14 +77,14 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
                 Math.Lemmas.small_modulo_lemma_1 (v out_1) (pow2 32);
                 assert (v outcome_1_ == v out_1);
                 assert (v outcome_1_ >= 0 /\ v outcome_1_ <= 3);
-                logand_lemma (coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) 3ul;
+                logand_lemma (coin_toss_outcomes >>! (outcome_set +! 2ul <: pub_u32) <: u32) 3ul;
                 assert (v out_2 >= 0);
                 assert (v out_2 <= 3);
                 assert (v outcome_2_ == v out_2 @% pow2 32);
                 Math.Lemmas.small_modulo_lemma_1 (v out_2) (pow2 32);
                 assert (v outcome_2_ == v out_2);
                 assert (v outcome_2_ >= 0 /\ v outcome_2_ <= 3);
-                let offset:usize = cast (outcome_set >>! 2l <: u32) <: usize in
+                let offset:usize = cast (outcome_set >>! 2l <: pub_u32) <: usize in
                 assert (outcome_set <. 32ul);
                 assert (v (outcome_set >>! 2l <: u32) = v outcome_set / 4);
                 assert (v (outcome_set >>! 2l <: u32) < 8);
@@ -159,27 +159,27 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
                         Core.Ops.Range.f_end = 24l
                         }
                         <:
-                        Core.Ops.Range.t_Range i32)
+                        Core.Ops.Range.t_Range pub_i32)
             (sz 6)
             sampled
             (fun sampled outcome_set ->
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 7 = sampled in
-                let outcome_set:i32 = outcome_set in
+                let outcome_set:pub_i32 = outcome_set in
                 let outcome_1_:i32 =
                   cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32) <: i32
                 in
                 let outcome_2_:i32 =
-                  cast ((coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) &. 7ul <: u32)
+                  cast ((coin_toss_outcomes >>! (outcome_set +! 3l <: pub_i32) <: u32) &. 7ul <: u32)
                   <:
                   i32
                 in
                 logand_lemma (coin_toss_outcomes >>! outcome_set <: u32) 7ul;
-                Math.Lemmas.small_modulo_lemma_1 (v ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32)) (pow2 32);
+                Math.Lemmas.small_modulo_lemma_1 (v ((coin_toss_outcomes >>! outcome_set) &. 7ul <: u32)) (pow2 32);
                 assert (v outcome_1_ >= 0 /\ v outcome_1_ <= 7);
-                logand_lemma (coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) 7ul;
-                Math.Lemmas.small_modulo_lemma_1 (v ((coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) &. 7ul <: u32)) (pow2 32);
+                logand_lemma (coin_toss_outcomes >>! (outcome_set +! 3l <: pub_i32) <: u32) 7ul;
+                Math.Lemmas.small_modulo_lemma_1 (v ((coin_toss_outcomes >>! (outcome_set +! 3l <: pub_i32) <: u32) &. 7ul <: u32)) (pow2 32);
                 assert (v outcome_2_ >= 0 /\ v outcome_2_ <= 7);
-                let offset:usize = cast (outcome_set /! 6l <: i32) <: usize in
+                let offset:usize = cast (outcome_set /! 6l <: pub_i32) <: usize in
                 assert (outcome_set <. 24l);
                 assert (v (outcome_set /! 6l <: i32) = v outcome_set / 6);
                 assert (v (outcome_set /! 6l <: i32) < 4);
@@ -211,7 +211,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
 let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   Rust_primitives.Integers.mk_int_equiv_lemma #u32_inttype (v v_ETA);
-  match cast (v_ETA <: usize) <: u32 with
+  match cast (v_ETA <: usize) <: pub_u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
   | _ ->
@@ -259,7 +259,6 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
             assert (15 = pow2 4 - 1);
             mk_int_equiv_lemma #i32_inttype 15;
-            assert (15l = mk_int (pow2 4) -! mk_int 1);
             logand_mask_lemma b2 4;
             assert (v ((b2 &. 15l <: i32) <<! 8l <: i32) == (v b2 % 16) * pow2 8);
             logor_lemma ((b2 &. 15l <: i32) <<! 8l <: i32) b1;
@@ -272,7 +271,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement &
               usize) =
               if
-                d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+                (* LEAK d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS && *)
                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let out:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
@@ -299,7 +298,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement &
               usize) =
               if
-                d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+               (* LEAK d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS && *)
                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let out:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
