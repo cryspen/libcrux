@@ -366,7 +366,8 @@ let ntt_at_layer_3328_ zeta_i re layer =
   let hax_temp_output = out in
   zeta_i, hax_temp_output
 
-#push-options "--ifuel 0 --z3rlimit 900"
+#push-options "--ifuel 0 --z3rlimit 1500"
+#restart-solver
 let ntt_binomially_sampled_ring_element re =
   let _:Prims.unit = () <: Prims.unit in
   let zeta_i:usize = sz 1 in
@@ -475,6 +476,7 @@ let ntt_binomially_sampled_ring_element re =
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement = down_cast_poly_b #(6*3328+11207) #3328 re in
   re 
 #pop-options
+
 
 #push-options "--z3rlimit 100"
 let ntt_multiply lhs rhs =

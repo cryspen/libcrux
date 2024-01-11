@@ -9,7 +9,6 @@ let i32_range (n:i32) (b:nat) =
 
 type i32_b b = x:i32{i32_range x b}
 let nat_div_ceil (x:nat) (y:pos) : nat = if (x % y = 0) then x/y else (x/y)+1
-//(x + y - 1)/y
 
 val mul_i32_b (#b1:nat) (#b2:nat{b1 * b2 < pow2_31}) (x:i32_b b1) (y: i32_b b2): r:i32_b (b1 * b2){v r == v x * v y}
 val add_i32_b (#b1:nat) (#b2:nat{b1 + b2 < pow2_31}) (x:i32_b b1) (y: i32_b b2): 
