@@ -74,8 +74,6 @@ jobs:
 
       - name: 🏃 Verify Kyber `extraction-edited` F* code
         run: |
-          # for now, we disable this, see issue #168
-          true || \
           env FSTAR_HOME=${{ github.workspace }}/fstar \
               HACL_HOME=${{ github.workspace }}/hacl-star \
               HAX_HOME=${{ github.workspace }}/hax \
