@@ -42,12 +42,11 @@ let compress_ciphertext_coefficient coefficient_bits fe =
   let compressed:u32 =
     compressed +! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) <: u32)
   in
- (* LEAK: *)
- (*
-  let compressed:u32 =
+  (* Potential Timing Leak: division is not secret indepdnent *)
+(*  let compressed:u32 =
     compressed /! (cast (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <<! 1l <: i32) <: u32)
   in
-  *)
+*)
   let res = cast (Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits coefficient_bits compressed <: u32
     )
   <:

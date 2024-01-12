@@ -25,14 +25,8 @@ val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
       (ensures
         fun result ->
           let result:u8 = result in
-          Hax_lib.implies (lhs =. rhs <: bool)
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 0uy <: bool) &&
-          Hax_lib.implies (lhs <>. rhs <: bool)
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 1uy <: bool))
+          (lhs == rhs ==> v result = 0) /\
+          (lhs =!= rhs ==> v result = 1))
 
 val select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
     : Prims.Pure (t_Array u8 (sz 32))
@@ -41,5 +35,5 @@ val select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
       (ensures
         fun result ->
           let result:t_Array u8 (sz 32) = result in
-          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
-          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool))
+          (v selector == 0) ==> (result == lhs) /\
+          (v selector =!= 0) ==> (result == rhs))
