@@ -289,7 +289,7 @@ pub fn SerializePublicKey(alg: KEM, pk: PublicKey) -> PublicKey {
 
 /// Remove the leading 0x04 from the public key.
 fn nist_curve_from_uncompressed(pk: &PublicKeyIn) -> Vec<u8> {
-    if pk[0] == 0x04 {
+    if pk[0] == 0x04 && pk.len() > 64 {
         pk[1..].to_vec()
     } else {
         pk.to_vec()
