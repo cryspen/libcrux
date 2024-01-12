@@ -47,6 +47,11 @@ all:
 	rm -f .depend && $(MAKE) .depend
 	$(MAKE) verify
 
+ifeq ($(OTHERFLAGS),$(subst --admit_smt_queries true,,$(OTHERFLAGS)))
+FSTAR_HINTS ?= --use_hints --use_hint_hashes --record_hints
+else
+FSTAR_HINTS ?= --use_hints --use_hint_hashes
+endif
 
 VERIFIED = \
 	Libcrux.Kem.Kyber.Constants.fsti \
@@ -93,7 +98,8 @@ ROOTS = $(UNVERIFIED) $(VERIFIED)
 
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME)
 
-FSTAR_FLAGS = --cmi \
+FSTAR_FLAGS = $(FSTAR_HINTS) \
+  --cmi \
   --warn_error -331 \
   --warn_error -321 \
   --warn_error -274 \
