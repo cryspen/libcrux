@@ -32,17 +32,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: 🔨 OCaml Setup
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: 4.14.1
 
-      - name: ⤵ Get Fstar binaries
-        run: |
-          curl -L https://github.com/FStarLang/FStar/releases/download/v2023.09.03/fstar_2023.09.03_Linux_x86_64.tar.gz \
-            --output Fstar.tar.gz
-          tar --extract --file Fstar.tar.gz
+      - name: ⤵ Install FStar
+        run: nix profile install github:FStarLang/FStar/bc622701c668f6b4092760879372968265d4a4e1
 
       - name: ⤵ Clone HACL-star repository
         uses: actions/checkout@v4
@@ -72,6 +71,14 @@ jobs:
               HAX_HOME=${{ github.workspace }}/hax \
               PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
               ./hax-driver.py --verify-extraction
+
+      - name: 🏃 Verify Kyber `extraction-edited` F* code
+        run: |
+          env FSTAR_HOME=${{ github.workspace }}/fstar \
+              HACL_HOME=${{ github.workspace }}/hacl-star \
+              HAX_HOME=${{ github.workspace }}/hax \
+              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+              make -C proofs/fstar/extraction-edited
 
       - name: 🏃 Extract the Kyber specification
         run: |

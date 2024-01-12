@@ -1,0 +1,26 @@
+[
+  "\u000fË\\ˆ\u0006ð²$\u000b‚5\"0M¨)",
+  [
+    [
+      "Core.Array.impl_23__as_slice",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "equation_Rust_primitives.Integers.max_usize",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.usize",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "typing_Rust_primitives.Integers.usize_inttype",
+        "typing_Rust_primitives.Integers.v"
+      ],
+      0,
+      "6f4ce370b8866e98540496030b9ea2bc"
+    ]
+  ]
+]

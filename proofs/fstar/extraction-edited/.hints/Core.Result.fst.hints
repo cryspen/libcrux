@@ -1,0 +1,38 @@
+[
+  "\u0001€!p∆•g–î!\\ä%Ë‘˚",
+  [
+    [
+      "Core.Result.t_Result",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "d4ea713f07cead2467950257f47f8ba0"
+    ],
+    [
+      "Core.Result.__proj__Result_Ok__item__v",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_3ef50004145708f7faa55478b042784f"
+      ],
+      0,
+      "61ccc61f12c86c89a84ad866a1cdc949"
+    ],
+    [
+      "Core.Result.__proj__Result_Err__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_ad2cd3db184f75cfdd234980c2ed5525"
+      ],
+      0,
+      "39488b85c02c91c43e07c4142d8edf44"
+    ]
+  ]
+]
