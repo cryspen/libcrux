@@ -202,6 +202,8 @@ let montgomery_reduce #b value =
     (((v value - (v k * 3329)) / v v_MONTGOMERY_R) * ((v v_MONTGOMERY_R * v v_MONTGOMERY_R_INV) % 3329)) % 3329 ;
     == {Math.Lemmas.lemma_mod_mul_distr_r ((v value - (v k * 3329)) / v v_MONTGOMERY_R) (v v_MONTGOMERY_R * v v_MONTGOMERY_R_INV) 3329}
     (((v value - (v k * 3329)) / v v_MONTGOMERY_R) * (v v_MONTGOMERY_R * v v_MONTGOMERY_R_INV)) % 3329 ;
+    == {Math.Lemmas.paren_mul_right ((v value - (v k * 3329)) / v v_MONTGOMERY_R) (v v_MONTGOMERY_R) (v v_MONTGOMERY_R_INV)}
+    ((((v value - (v k * 3329)) / v v_MONTGOMERY_R) * v v_MONTGOMERY_R) * v v_MONTGOMERY_R_INV) % 3329 ;
     == {Math.Lemmas.lemma_div_exact (v value - v k * 3329) (v v_MONTGOMERY_R)}
     ((v value - (v k * 3329)) * v v_MONTGOMERY_R_INV) % 3329 ;
     == { }
