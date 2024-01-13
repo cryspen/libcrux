@@ -38,8 +38,8 @@ FSTAR_HOME    ?= $(WORKSPACE_ROOT)/FStar
 HACL_HOME     ?= $(WORKSPACE_ROOT)/hacl-star
 FSTAR_BIN     ?= $(shell command -v fstar.exe 1>&2 2> /dev/null && echo "fstar.exe" || echo "$(FSTAR_HOME)/bin/fstar.exe")
 
-CACHE_DIR     ?= cache
-HINT_DIR      ?= hints
+CACHE_DIR     ?= .cache
+HINT_DIR      ?= .hints
 
 .PHONY: all verify verify-lax clean
 
@@ -75,10 +75,7 @@ SECRET_INDEPENDENT = \
 	Libcrux.Kem.Kyber.Ntt.fsti \
 	Libcrux.Kem.Kyber.Ntt.fst \
 	Libcrux.Kem.Kyber.Sampling.fst \
-	Libcrux.Kem.Kyber.Serialize.PartA.fsti \
-	Libcrux.Kem.Kyber.Serialize.PartA.fst \
-	Libcrux.Kem.Kyber.Serialize.PartB.fsti \
-	Libcrux.Kem.Kyber.Serialize.PartB.fst \
+	Libcrux.Kem.Kyber.Serialize.fsti \
 	Libcrux.Kem.Kyber.Serialize.fst
 
 SECRET_INDEPENDENT_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(SECRET_INDEPENDENT)))
@@ -90,7 +87,7 @@ ROOTS = $(SECRET_INDEPENDENT)
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME)
 
 FSTAR_FLAGS = --cmi \
-  --warn_error -331 \
+  --warn_error -331-321-274 \
   --admit_smt_queries true \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \

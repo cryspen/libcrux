@@ -465,7 +465,7 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
                             <:
                             t_Array u8 (sz 34))
                           (sz 32)
-                          (cast (i <: usize) <: u8)
+                          (classify (cast (i <: usize) <: pub_u8))
                         <:
                         t_Array u8 (sz 34))
                   in
@@ -476,7 +476,7 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
                             <:
                             t_Array u8 (sz 34))
                           (sz 33)
-                          (cast (j <: usize) <: u8)
+                          (classify (cast (j <: usize) <: pub_u8))
                         <:
                         t_Array u8 (sz 34))
                   in

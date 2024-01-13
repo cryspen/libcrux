@@ -643,7 +643,7 @@ let compress_then_serialize_ring_element_u
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
      =
   let _:Prims.unit = () <: Prims.unit in
-  match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+  match cast (v_COMPRESSION_FACTOR <: usize) <: pub_u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN re
   | 11ul -> compress_then_serialize_11_ v_OUT_LEN re
   | _ ->
@@ -657,7 +657,7 @@ let compress_then_serialize_ring_element_v
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
      =
   let _:Prims.unit = () <: Prims.unit in
-  match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+  match cast (v_COMPRESSION_FACTOR <: usize) <: pub_u32 with
   | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
   | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
   | _ ->
@@ -1181,7 +1181,7 @@ let deserialize_then_decompress_ring_element_u
       (serialized: t_Slice u8)
      =
   let _:Prims.unit = () <: Prims.unit in
-  match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+  match cast (v_COMPRESSION_FACTOR <: usize) <: pub_u32 with
   | 10ul -> deserialize_then_decompress_10_ serialized
   | 11ul -> deserialize_then_decompress_11_ serialized
   | _ ->
@@ -1195,7 +1195,7 @@ let deserialize_then_decompress_ring_element_v
       (serialized: t_Slice u8)
      =
   let _:Prims.unit = () <: Prims.unit in
-  match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+  match cast (v_COMPRESSION_FACTOR <: usize) <: pub_u32 with
   | 4ul -> deserialize_then_decompress_4_ serialized
   | 5ul -> deserialize_then_decompress_5_ serialized
   | _ ->

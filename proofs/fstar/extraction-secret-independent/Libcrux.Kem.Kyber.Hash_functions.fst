@@ -38,7 +38,7 @@ let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
             t_Array (t_Array u8 (sz 840)) v_K)
     else
       let out:t_Array (t_Array u8 (sz 840)) v_K =
-        match cast (v_K <: usize) <: u8 with
+        match cast (v_K <: usize) <: pub_u8 with
         | 2uy ->
           let d0, d1, _, _:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
             t_Array u8 (sz 840)) =

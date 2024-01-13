@@ -3,7 +3,7 @@ module Libcrux.Kem.Kyber.Arithmetic
 open Core
 open FStar.Mul
 
-let get_n_least_significant_bits (n: u8) (value: u32) =
+let get_n_least_significant_bits (n: pub_u8) (value: u32) =
   let _:Prims.unit = () <: Prims.unit in
   value &. ((1ul <<! n <: u32) -! 1ul <: u32)
 

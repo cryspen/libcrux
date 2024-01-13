@@ -43,25 +43,25 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
                         Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
                       }
                       <:
-                      Core.Ops.Range.t_Range u32)
+                      Core.Ops.Range.t_Range pub_u32)
                     (sz 4)
                   <:
-                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
+                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range pub_u32))
               <:
-              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range u32))
+              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range pub_u32))
             sampled
             (fun sampled outcome_set ->
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
-                let outcome_set:u32 = outcome_set in
+                let outcome_set:pub_u32 = outcome_set in
                 let outcome_1_:i32 =
                   cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 3ul <: u32) <: i32
                 in
                 let outcome_2_:i32 =
-                  cast ((coin_toss_outcomes >>! (outcome_set +! 2ul <: u32) <: u32) &. 3ul <: u32)
+                  cast ((coin_toss_outcomes >>! (outcome_set +! 2ul <: pub_u32) <: u32) &. 3ul <: u32)
                   <:
                   i32
                 in
-                let offset:usize = cast (outcome_set >>! 2l <: u32) <: usize in
+                let offset:usize = cast (outcome_set >>! 2l <: pub_u32) <: usize in
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                   {
                     sampled with
@@ -110,25 +110,25 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
                     ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
                       <:
-                      Core.Ops.Range.t_Range i32)
+                      Core.Ops.Range.t_Range pub_i32)
                     (sz 6)
                   <:
-                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
+                  Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range pub_i32))
               <:
-              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range i32))
+              Core.Iter.Adapters.Step_by.t_StepBy (Core.Ops.Range.t_Range pub_i32))
             sampled
             (fun sampled outcome_set ->
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = sampled in
-                let outcome_set:i32 = outcome_set in
+                let outcome_set:pub_i32 = outcome_set in
                 let outcome_1_:i32 =
-                  cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32) <: i32
+                  cast ((coin_toss_outcomes >>! outcome_set <: pub_u32) &. 7ul <: u32) <: i32
                 in
                 let outcome_2_:i32 =
-                  cast ((coin_toss_outcomes >>! (outcome_set +! 3l <: i32) <: u32) &. 7ul <: u32)
+                  cast ((coin_toss_outcomes >>! (outcome_set +! 3l <: pub_i32) <: u32) &. 7ul <: u32)
                   <:
                   i32
                 in
-                let offset:usize = cast (outcome_set /! 6l <: i32) <: usize in
+                let offset:usize = cast (outcome_set /! 6l <: pub_i32) <: usize in
                 let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
                   {
                     sampled with
@@ -149,7 +149,7 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
 
 let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
-  match cast (v_ETA <: usize) <: u32 with
+  match cast (v_ETA <: usize) <: pub_u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
   | _ ->
@@ -194,7 +194,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
               usize) =
               if
-                d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+                declassify d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
@@ -221,7 +221,7 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
               usize) =
               if
-                d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+                declassify d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
                 let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
