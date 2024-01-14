@@ -80,6 +80,14 @@ jobs:
               PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
               make -C proofs/fstar/extraction-edited
 
+      - name: 🏃 Verify Kyber `extraction-secret-independent` F* code
+        run: |
+          env FSTAR_HOME=${{ github.workspace }}/fstar \
+              HACL_HOME=${{ github.workspace }}/hacl-star \
+              HAX_HOME=${{ github.workspace }}/hax \
+              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+              make -C proofs/fstar/extraction-secret-independent
+
       - name: 🏃 Extract the Kyber specification
         run: |
           eval $(opam env)
