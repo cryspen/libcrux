@@ -242,6 +242,7 @@ fn build(platform: &Platform, home_path: &Path) {
     }
     if platform.target_arch == "x86_64" {
         defines.push(("HACL_CAN_COMPILE_VALE", "1"));
+        defines.push(("HACL_CAN_COMPILE_INTRINSICS", "1"));
     }
 
     // Platform detection

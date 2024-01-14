@@ -158,7 +158,7 @@ pub mod rsa_pss {
     }
 
     // Size of e.
-    const E_BITS: u32 = 24;
+    const E_BITS: u32 = 17;
 
     // We only support this e.
     const E: [u8; 3] = [0x01, 0x00, 0x01];
