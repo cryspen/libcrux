@@ -51,12 +51,12 @@
         let pt = new TextEncoder().encode(document.sender_form.payload.value);
         let pkR = hex_to_bytes(document.receiver_form.pkR.value);
 
-        let rand = new Uint8Array(32);
+        let rand = new Uint8Array(64);
         window.crypto.getRandomValues(rand);
 
         let result = hpke_seal_base(pkR, info, aad, pt, rand);
-        let enc = new Uint8Array(result.slice(0, 32));
-        let ct = new Uint8Array(result.slice(32));
+        let enc = new Uint8Array(result.slice(0, 1120));
+        let ct = new Uint8Array(result.slice(1120));
 
         document.receiver_form.enc.value = bytes_to_hex(enc);
         document.receiver_form.ct.value = bytes_to_hex(ct);
@@ -81,12 +81,12 @@
       document.getElementById("hpke_open").onclick = hpke_open;
 
       function gen_receiver_kp() {
-        let rand = new Uint8Array(32);
+        let rand = new Uint8Array(64);
         window.crypto.getRandomValues(rand);
 
         const receiver_sk_pk = hpke_key_gen(rand);
-        let skR = receiver_sk_pk.slice(0, 32);
-        let pkR = receiver_sk_pk.slice(32);
+        let skR = receiver_sk_pk.slice(0, 2432);
+        let pkR = receiver_sk_pk.slice(2432);
         document.receiver_form.pkR.value = bytes_to_hex(pkR);
         document.receiver_form.skR.value = bytes_to_hex(skR);
       }

@@ -1,0 +1,41 @@
+[
+  "\u001d$\u0001Ê˜Åà”—Ÿ’8\u001eä\\é",
+  [
+    [
+      "Core.Option.t_Option",
+      1,
+      2,
+      1,
+      [ "@query" ],
+      0,
+      "e1c0eebad655a2e72d5a76604727e69f"
+    ],
+    [
+      "Core.Option.__proj__Option_Some__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_8bd1c29d2c4ea486afa014610f999aad"
+      ],
+      0,
+      "78663749a43eeb328c127832c93f034d"
+    ],
+    [
+      "Core.Option.impl__and_then",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Core.Option.Option_None",
+        "disc_equation_Core.Option.Option_Some",
+        "fuel_guarded_inversion_Core.Option.t_Option",
+        "projection_inverse_BoxBool_proj_0"
+      ],
+      0,
+      "beea137ff48a566463793bd9bb673b5a"
+    ]
+  ]
+]

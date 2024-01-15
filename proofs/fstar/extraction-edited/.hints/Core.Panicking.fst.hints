@@ -1,0 +1,29 @@
+[
+  "@I?\u0018ù¡(nj\rá‹½xPø",
+  [
+    [
+      "Core.Panicking.panic",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_f1ecc6ab6882a651504f328937700647"
+      ],
+      0,
+      "82ab84f30432fd12cf60facccfcb3574"
+    ],
+    [
+      "Core.Panicking.assert_failed",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_f1ecc6ab6882a651504f328937700647"
+      ],
+      0,
+      "84764ee4448f964544c5999fe8579618"
+    ]
+  ]
+]

@@ -4,12 +4,11 @@
 //! * EdDSA 25519
 //! * RSA PSS
 
-use rand::{CryptoRng, Rng, RngCore};
-
 use crate::{
     ecdh,
     hacl::{self, ed25519, p256},
 };
+use rand::{CryptoRng, Rng, RngCore};
 
 use self::rsa_pss::RsaPssSignature;
 

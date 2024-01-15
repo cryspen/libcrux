@@ -18,7 +18,7 @@ pub const X25519_SHA2_256_CHACHA: (Mode, KEM, KDF, AEAD) = (
 
 pub const KYBER768_X25519_SHA2_256_CHACHA: (Mode, KEM, KDF, AEAD) = (
     Mode::mode_base,
-    KEM::DHKEM_X25519_HKDF_SHA256,
+    KEM::X25519Kyber768Draft00,
     KDF::HKDF_SHA256,
     AEAD::ChaCha20Poly1305,
 );
@@ -28,11 +28,11 @@ pub const KYBER768_X25519_SHA2_256_CHACHA: (Mode, KEM, KDF, AEAD) = (
 /// This function exposes a simplified API to be called from WASM and panics on
 /// any error.
 ///
-/// It generates x25519 keys sk||pk.
+/// It generates keys sk||pk.
 #[wasm_bindgen]
 pub fn hpke_key_gen(randomness: &[u8]) -> Vec<u8> {
     let (mut sk, mut pk) =
-        GenerateKeyPair(KEM::DHKEM_X25519_HKDF_SHA256, randomness.to_vec()).unwrap();
+        GenerateKeyPair(KEM::X25519Kyber768Draft00, randomness.to_vec()).unwrap();
     sk.append(&mut pk);
     sk
 }
@@ -42,7 +42,7 @@ pub fn hpke_key_gen(randomness: &[u8]) -> Vec<u8> {
 /// This function exposes a simplified API to be called from WASM and panics on
 /// any error.
 ///
-/// It uses x25519 as KEM, SHA256 as hash function and Chacha20Poly1305 as AEAD.
+/// It uses x25519kyber768 as KEM, SHA256 as hash function and Chacha20Poly1305 as AEAD.
 #[wasm_bindgen]
 pub fn hpke_seal_base(
     pk_r: &[u8],
@@ -54,7 +54,7 @@ pub fn hpke_seal_base(
     let HPKECiphertext(mut enc, mut ct) = HpkeSeal(
         HPKEConfig(
             Mode::mode_base,
-            KEM::DHKEM_X25519_HKDF_SHA256,
+            KEM::X25519Kyber768Draft00,
             KDF::HKDF_SHA256,
             AEAD::ChaCha20Poly1305,
         ),
@@ -84,7 +84,7 @@ pub fn hpke_open_base(ctxt: &[u8], enc: &[u8], sk_r: &[u8], info: &[u8], aad: &[
     let pt = HpkeOpen(
         HPKEConfig(
             Mode::mode_base,
-            KEM::DHKEM_X25519_HKDF_SHA256,
+            KEM::X25519Kyber768Draft00,
             KDF::HKDF_SHA256,
             AEAD::ChaCha20Poly1305,
         ),
