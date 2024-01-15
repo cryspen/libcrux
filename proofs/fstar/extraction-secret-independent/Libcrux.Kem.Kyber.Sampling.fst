@@ -194,6 +194,12 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
               usize) =
               if
+                // NOTE: We declassify d1 here, and this should be carefully reviewed.
+                //       We believe this is safe because d1 is derived from b1 and b2, 
+                //       both of which are fresh random inputs, not used anywhere else.
+                //       The comparison between d1 and 3329 tells the adversary whether d1
+                //       is in the field. This is not secret information, since the
+                //       failure of this comparison leads to d1 being discarded,
                 declassify d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
@@ -221,6 +227,12 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
             let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
               usize) =
               if
+                // NOTE: We declassify d2 here, and this should be carefully reviewed.
+                //       We believe this is safe because d2 is derived from b2 and b3, 
+                //       both of which are fresh random inputs, not used anywhere else.
+                //       The comparison between d2 and 3329 tells the adversary whether d2
+                //       is in the field. This is not secret information, since the
+                //       failure of this comparison leads to d2 being discarded,
                 declassify d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
               then
