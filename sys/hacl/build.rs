@@ -237,6 +237,14 @@ fn build(platform: &Platform, home_path: &Path) {
     let mut defines = vec![];
     defines.push(("RELOCATABLE", "1"));
 
+    if platform.int128 {
+        defines.push(("HACL_CAN_COMPILE_UINT128", "1"));
+    }
+    if platform.target_arch == "x86_64" {
+        defines.push(("HACL_CAN_COMPILE_VALE", "1"));
+        defines.push(("HACL_CAN_COMPILE_INTRINSICS", "1"));
+    }
+
     // Platform detection
     if platform.simd128 {
         let files128 = svec![
@@ -387,6 +395,7 @@ struct Platform {
     pmull: bool,
     adv_simd: bool,
     sha256: bool,
+    int128: bool,
     target_arch: String,
     target_env: String,
     target_os: String,
@@ -416,6 +425,7 @@ fn main() {
             target_arch: target_arch.clone(),
             target_env: target_env.clone(),
             target_os: target_os.clone(),
+            int128: target_arch == "x86_64" || target_arch == "aarch64",
         }
     } else {
         Platform {
