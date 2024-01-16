@@ -1,4 +1,4 @@
-# F* Proofs for Libbcrux Kyber
+# F\* Proofs for Libcrux Kyber
 
 This directory holds F\* proofs for code compiled by hax from the
 Libcrux Rust implementation of Kyber.
@@ -10,7 +10,7 @@ Each Rust module `m` in the implementation is translated to two files:
 ## Specifications
 
 A partial high-level specification of Kyber is included in
-Spec.Kyber.fst.  This file is hand-written and includes the
+Spec.Kyber.fst. This file is hand-written and includes the
 specification of the IND-CCA KEM, the IND-CPA PKE, and the sampling
 and serialization functions from the ML-KEM draft standard (FIPS 203).
 
@@ -18,7 +18,7 @@ The specification currently assumes, but does not define, the matrix
 operations and the NTT polynomial definitions. We intend to fill out
 the specification to be fully standalone in the future.
 
-We extend the types and function declartions in each interface file
+We extend the types and function declarations in each interface file
 `M.fsti` to reflect the specification. For example, if a Rust function
 `m::f` is intended to implement the specification function
 `Spec.Kyber.f`, then we annotate the post-condition of `f` in `M.fsti`
@@ -31,13 +31,14 @@ the implementation of `m::f`.
 
 The first guarantee we need to prove for the Rust code is that it never panics.
 In particular, we would like to prove that:
+
 - arithmetic operations never over- or under-flow
 - array and vector operations never go out of bounds
-- `unwrap`s always succeed and `panic`s are alwaysunreachable
+- `unwrap`s always succeed and `panic`s are always unreachable
 
 To achieve this, we compile each primitive operation in Rust to the
 equivalent operation in F\*, as specified in
-`hax/proof-libs/fstar/rust_primitives`.  For example, the Rust
+`hax/proof-libs/fstar/rust_primitives`. For example, the Rust
 addition operation `+` translates to the polymorphic, strict machine
 integer operation `+!` in F\*, which requires, as a precondition, that
 the addition of its inputs does not overflow the target type.
@@ -65,7 +66,6 @@ on all possible inputs. Currently, the proofs of panic freedom are
 interleaved with the proofs of functional correctness, but we plan
 to separate them out in the future.
 
-
 ## Implementation Correctness
 
 In addition to panic freedom, we would like to prove functional
@@ -91,10 +91,11 @@ If the function is fully verified without any `admit` or `assume`, we
 say that it is verified.
 
 As of January 15, 2023, the following modules are fully verified:
-- Libcrux.Kem.Kyber.Constants.fst 
-- Libcrux.Kem.Kyber.Types.fst 
+
+- Libcrux.Kem.Kyber.Constants.fst
+- Libcrux.Kem.Kyber.Types.fst
 - Libcrux.Kem.Kyber.Arithmetic.fsti
-- Libcrux.Kem.Kyber.fst 
+- Libcrux.Kem.Kyber.fst
 - Libcrux.Kem.Kyber.Compress.fst
 - Libcrux.Kem.Kyber.Serialize.PartA.fst
 - Libcrux.Kem.Kyber.Constant_time_ops.fst
@@ -102,8 +103,8 @@ As of January 15, 2023, the following modules are fully verified:
 - Libcrux.Kem.Kyber.Kyber768.fst
 - Libcrux.Kem.Kyber.Kyber1024.fst
 
-
 The following modules are panic free but only partially verified:
+
 - Libcrux.Kem.Kyber.Ntt.fst: Functional correctness remaining
 - Libcrux.Kem.Kyber.Matrix.fst: Functional correctness remaining
 - Libcrux.Kem.Kyber.Sampling.fst: Functional correctness remaining
@@ -115,7 +116,7 @@ The proofs for the above modules are ongoing.
 ## Secret Independence
 
 We prove secret independence for the Rust code by typechecking the generated F\* code
-againt a library of _secret integers_ in hax. The proofs of secret independence are in
+against a library of _secret integers_ in hax. The proofs of secret independence are in
 a separate directory `../extraction-secret-independent`, since they require very few
 annotations and rely on different assumptions on the `rust_primitives` library.
 
@@ -125,5 +126,3 @@ including the PQ-Crystals reference code. In response to our findings, the code 
 PQ Clean, liboqs, and many other implementations have now been patched.
 
 This timing bug was later independently discovered by Dan Bernstein, who calls it [KyberSlash](https://kyberslash.cr.yp.to/)
-
-
