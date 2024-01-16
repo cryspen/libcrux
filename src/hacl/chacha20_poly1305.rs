@@ -39,7 +39,6 @@ pub fn encrypt(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 /// Portable 32-bit in-place decrypt.
 ///
 /// There are no special hardware requirements to call this function.
-#[must_use]
 pub fn decrypt(
     key: &Chacha20Key,
     ctxt_msg: &mut [u8],
@@ -103,7 +102,6 @@ pub mod simd128 {
     /// * x86_64: AVX, SSE2, SSE3, SSE4.1
     /// * ARM: Arm64, NEON
     /// * s390x: z14
-    #[must_use]
     #[inline(always)]
     pub fn decrypt(
         key: &Chacha20Key,
@@ -165,7 +163,6 @@ pub mod simd256 {
     ///
     /// This function requires
     /// * x86_64: AVX, AVX2
-    #[must_use]
     #[inline(always)]
     pub fn decrypt(
         key: &Chacha20Key,

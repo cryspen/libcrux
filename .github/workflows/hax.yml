@@ -2,13 +2,13 @@ name: hax
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'
 
   pull_request:
-    branches: ["dev"]
+    branches: ["dev", "main"]
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'

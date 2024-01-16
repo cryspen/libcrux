@@ -8,8 +8,6 @@ pub enum Error {
 /// Compute the ECDH with the `private_key` and `public_key`.
 ///
 /// Returns the 32 bytes shared key.
-
-#[must_use]
 #[inline(always)]
 pub fn ecdh(
     private_key: impl AsRef<[u8; 32]>,
@@ -34,7 +32,6 @@ pub fn ecdh(
 /// with the base point).
 ///
 /// Returns the 32 bytes shared key.
-
 #[must_use]
 #[inline(always)]
 pub fn secret_to_public(private_key: impl AsRef<[u8; 32]>) -> [u8; 32] {
@@ -53,8 +50,6 @@ pub mod vale {
     /// Compute the ECDH with the `private_key` and `public_key`.
     ///
     /// Returns the 32 bytes shared key.
-
-    #[must_use]
     #[inline(always)]
     pub fn ecdh(
         private_key: impl AsRef<[u8; 32]>,

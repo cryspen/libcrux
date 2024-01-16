@@ -491,9 +491,9 @@ pub fn key_gen(
                 }
 
                 // We clamp the key already to make sure it can't be misused.
-                sk[0] = sk[0] & 248u8;
-                sk[31] = sk[31] & 127u8;
-                sk[31] = sk[31] | 64u8;
+                sk[0] &= 248u8;
+                sk[31] &= 127u8;
+                sk[31] |= 64u8;
 
                 break;
             }
