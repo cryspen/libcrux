@@ -124,7 +124,7 @@ elif options.kyber_reference:
             ),
             "fstar",
             "--interfaces",
-            "+* -libcrux::kem::kyber::types"
+            "+* -libcrux::kem::kyber::types",
         ],
         cwd=".",
         env=hax_env,
