@@ -229,6 +229,7 @@ fn build(platform: &Platform, home_path: &Path) {
         "Hacl_EC_K256.c",
         "Hacl_FFDHE.c",
         "Hacl_Hash_SHA3.c",
+        "Hacl_Hash_SHA3_Scalar.c",
         "Hacl_Hash_SHA1.c",
         "Hacl_Hash_MD5.c",
         "Hacl_HKDF.c",
@@ -280,6 +281,7 @@ fn build(platform: &Platform, home_path: &Path) {
             "Hacl_MAC_Poly1305_Simd256.c",
             "Hacl_Chacha20_Vec256.c",
             "Hacl_SHA2_Vec256.c",
+            "Hacl_Hash_SHA3_Simd256.c",
             "Hacl_HKDF_Blake2b_256.c",
             "Hacl_HMAC_Blake2b_256.c",
         ];

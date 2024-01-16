@@ -4,12 +4,11 @@
 //! * EdDSA 25519
 //! * RSA PSS
 
-use rand::{CryptoRng, Rng, RngCore};
-
 use crate::{
     ecdh,
     hacl::{self, ed25519, p256},
 };
+use rand::{CryptoRng, Rng, RngCore};
 
 use self::rsa_pss::RsaPssSignature;
 
@@ -492,9 +491,9 @@ pub fn key_gen(
                 }
 
                 // We clamp the key already to make sure it can't be misused.
-                sk[0] = sk[0] & 248u8;
-                sk[31] = sk[31] & 127u8;
-                sk[31] = sk[31] | 64u8;
+                sk[0] &= 248u8;
+                sk[31] &= 127u8;
+                sk[31] |= 64u8;
 
                 break;
             }

@@ -288,6 +288,67 @@ impl_streaming!(Sha2_512, Sha512, Sha2_512Digest);
 
 // SHAKE messages from SHA 3
 
+#[cfg(simd256)]
+fn shake128x4_256<const LEN: usize>(
+    data0: &[u8],
+    data1: &[u8],
+    data2: &[u8],
+    data3: &[u8],
+) -> ([u8; LEN], [u8; LEN], [u8; LEN], [u8; LEN]) {
+    sha3::x4::shake128(data0, data1, data2, data3)
+}
+
+#[cfg(not(simd256))]
+fn shake128x4_256<const LEN: usize>(
+    data0: &[u8],
+    data1: &[u8],
+    data2: &[u8],
+    data3: &[u8],
+) -> ([u8; LEN], [u8; LEN], [u8; LEN], [u8; LEN]) {
+    shake128x4_portable(data0, data1, data2, data3)
+}
+
+// Fake the x4 and call shake128 4 times.
+fn shake128x4_portable<const LEN: usize>(
+    data0: &[u8],
+    data1: &[u8],
+    data2: &[u8],
+    data3: &[u8],
+) -> ([u8; LEN], [u8; LEN], [u8; LEN], [u8; LEN]) {
+    let input_len = data0.len();
+    debug_assert!(
+        input_len == data1.len()
+            && input_len == data2.len()
+            && input_len == data3.len()
+            && input_len <= u32::MAX as usize
+            && LEN <= u32::MAX as usize
+    );
+    let digest0 = sha3::shake128(data0);
+    let digest1 = sha3::shake128(data1);
+    let digest2 = sha3::shake128(data2);
+    let digest3 = sha3::shake128(data3);
+    (digest0, digest1, digest2, digest3)
+}
+
+/// SHAKE 128 x4
+///
+/// This calls 4 times shake128 at a time. If there's no SIMD256 support present
+/// on the platform, regular shake128 is executed 4 times.
+///
+/// The caller must define the size of the output in the return type.
+pub fn shake128x4<const LEN: usize>(
+    data0: &[u8],
+    data1: &[u8],
+    data2: &[u8],
+    data3: &[u8],
+) -> ([u8; LEN], [u8; LEN], [u8; LEN], [u8; LEN]) {
+    if simd256_support() {
+        shake128x4_256(data0, data1, data2, data3)
+    } else {
+        shake128x4_portable(data0, data1, data2, data3)
+    }
+}
+
 /// SHAKE 128
 ///
 /// The caller must define the size of the output in the return type.

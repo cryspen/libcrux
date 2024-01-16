@@ -28,7 +28,7 @@ repository.workspace = true
 readme.workspace = true
 documentation = "https://docs.rs/libcrux/"
 description = "The Formally Verified Cryptography Library"
-exclude = ["/tests"]
+exclude = ["/tests", "/specs"]
 
 [lib]
 crate-type = ["staticlib", "cdylib", "lib"]
@@ -43,6 +43,12 @@ rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
+hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
+
+# When using the hax toolchain, we have more dependencies.
+# This is only required when doing proofs.
+[target.'cfg(hax)'.dependencies]
+hax-lib-macros = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax" }
 
 # WASM needs the js feature on getrandom
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -60,7 +66,7 @@ quickcheck = "1"
 quickcheck_macros = "1"
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
-hex = "0.4"
+hex = { version = "0.4.3", features = ["serde"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
