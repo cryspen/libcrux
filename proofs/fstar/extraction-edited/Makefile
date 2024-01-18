@@ -103,6 +103,7 @@ FSTAR_FLAGS = $(FSTAR_HINTS) \
   --warn_error -331 \
   --warn_error -321 \
   --warn_error -274 \
+  --z3version 4.12.3 \
   --query_stats \
   --log_queries \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
