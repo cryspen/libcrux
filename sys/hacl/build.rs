@@ -76,7 +76,7 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
 
     if platform.simd128 {
         append_simd128_flags(platform, &mut clang_args, true);
-        clang_args.push("-DSIMD128".to_string());
+        clang_args.push("-DHACL_CAN_COMPILE_VEC128".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 128 headers
             .header("c/config/hacl128.h");
@@ -84,7 +84,7 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
 
     if platform.simd256 {
         append_simd256_flags(platform, &mut clang_args, true);
-        clang_args.push("-DSIMD256".to_string());
+        clang_args.push("-DHACL_CAN_COMPILE_VEC256".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
             .header("c/config/hacl256.h");
@@ -95,12 +95,12 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
             || platform.target_os == "macos"
             || (platform.target_os == "windows"
                 && (platform.target_env == "msvc" || platform.target_env == "gnu")))
+        && (platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull)
     {
-        if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
-            bindings = bindings
-                // Header to wrap EverCrypt_AutoConfig2
-                .header("c/config/vale-aes.h");
-        }
+        clang_args.push("-DHACL_CAN_COMPILE_INLINE_ASM".to_string());
+        bindings = bindings
+            // Header to wrap EverCrypt_AutoConfig2
+            .header("c/config/vale-aes.h");
     }
 
     let generated_bindings = bindings
