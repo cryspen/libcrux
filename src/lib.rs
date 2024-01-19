@@ -5,7 +5,11 @@
 pub use libcrux_platform::aes_ni_support;
 
 // Jasmin
-#[cfg(all(target_arch = "x86_64", any(target_os = "linux", target_os = "macos")))]
+#[cfg(all(
+    libjade,
+    target_arch = "x86_64",
+    any(target_os = "linux", target_os = "macos")
+))]
 pub(crate) mod jasmin;
 
 // HACL
