@@ -177,7 +177,7 @@ let invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
 let ntt_at_layer
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (layer initial_coefficient_bound: usize)
+      (layer v__initial_coefficient_bound: usize)
      =
   let step:usize = sz 1 <<! layer in
   let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
