@@ -71,7 +71,7 @@ val lemma_zeta_decr: orig:usize -> fin:usize -> layer:usize{v layer <= 7} ->
          v fin == pow2 (7 - v layer))
 let lemma_zeta_decr orig fin layer = ()
 
-#push-options "--ifuel 0 --z3rlimit 800"
+#push-options "--ifuel 0 --z3rlimit 1200"
 let invert_ntt_at_layer #v_K #b zeta_i re layer =
   let step:usize = sz 1 <<! layer in
   assert (v step > 0);
