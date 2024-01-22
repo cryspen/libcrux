@@ -126,9 +126,8 @@ val ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
                   bool)
                 (fun temp_0_ ->
                     let _:Prims.unit = temp_0_ in
-                    let lhs_i = (lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32)  in
-                    (lhs_i >=. 0l <: bool) &&
-                    (lhs_i <. 4096l <: bool
+                    ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) >=. 0l <: bool) &&
+                    ((lhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32) <. 4096l <: bool
                     ) &&
                     ((Core.Num.impl__i32__abs (rhs.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
                             <:
