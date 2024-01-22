@@ -220,7 +220,7 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
         <:
         Rust_primitives.Hax.t_Never)
 
-
+#push-options "--z3rlimit 50"
 let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
   let (sampled_coefficients: usize):usize = sz 0 in
   let (out: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
@@ -347,3 +347,4 @@ let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
   in
   let _:Prims.unit = () <: Prims.unit in
   out 
+#pop-options

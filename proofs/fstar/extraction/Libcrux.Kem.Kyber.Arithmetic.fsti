@@ -96,7 +96,7 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
                   bool)
                 (fun temp_0_ ->
                     let _:Prims.unit = temp_0_ in
-                    ((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i ] <: i32) <: i32) <=.
+                    ((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i <: usize ] <: i32) <: i32) <=.
                       (((cast (v_K <: usize) <: i32) -! 1l <: i32) *!
                         Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
                         <:
