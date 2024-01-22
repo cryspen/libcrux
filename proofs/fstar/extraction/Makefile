@@ -63,6 +63,7 @@ UNVERIFIED = \
 	Libcrux.Kem.Kyber.fst \
 	Libcrux.Kem.Kyber.Ind_cpa.fst \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
+	Libcrux.Kem.Kyber.Arithmetic.fsti \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
