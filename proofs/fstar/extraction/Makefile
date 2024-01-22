@@ -63,6 +63,7 @@ UNVERIFIED = \
 	Libcrux.Kem.Kyber.fst \
 	Libcrux.Kem.Kyber.Ind_cpa.fst \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
+	Libcrux.Kem.Kyber.Arithmetic.fsti \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
@@ -81,7 +82,7 @@ ROOTS = $(UNVERIFIED) $(VERIFIED)
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME)
 
 FSTAR_FLAGS = --cmi \
-  --warn_error -331 \
+  --warn_error -331-321-274 \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
   $(addprefix --include ,$(FSTAR_INCLUDE_DIRS))
