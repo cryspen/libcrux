@@ -41,7 +41,7 @@ val invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_Polyn
 val ntt_at_layer
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-      (layer initial_coefficient_bound: usize)
+      (layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
       Prims.l_True
       (fun _ -> Prims.l_True)

@@ -54,7 +54,7 @@ hax-lib-macros = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/ha
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 
-[target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64"))'.dependencies]
+[target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64", libjade))'.dependencies]
 libjade-sys = { version = "=0.0.2-pre.2", path = "sys/libjade" }
 
 [dev-dependencies]
