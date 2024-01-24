@@ -92,7 +92,8 @@ pub(crate) fn montgomery_reduce(value: FieldElement) -> MontgomeryFieldElement {
         "value is {value}"
     );
 
-    let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32) * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
+        * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
     let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
 
     let k_times_modulus = (k as i32) * FIELD_MODULUS;
@@ -120,7 +121,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 }
 
 /// This is calculated as (MONTGOMERY_R)^2 mod FIELD_MODULUS
-const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353; 
+const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
 
 /// If x is some field element of the Kyber field and `mfe` is congruent to
 /// x · MONTGOMERY_R^{-1}, this procedure outputs a value that is congruent to
