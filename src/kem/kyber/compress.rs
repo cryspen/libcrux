@@ -3,6 +3,27 @@ use super::{
     constants::FIELD_MODULUS,
 };
 
+/// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
+/// 203 standard (Page 18, Expression 4.5), which is defined as:
+///
+/// ```plaintext
+/// Compress_d: ℤq -> ℤ_{2ᵈ}
+/// Compress_d(x) = ⌈(2ᵈ/q)·x⌋
+/// ```
+///
+/// Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+///
+/// ```plaintext
+/// Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
+///               = ⌊(2^{d+1}·x + q) / 2q⌋
+/// ```
+///
+/// For further information about the function implementations, consult the
+/// `implementation_notes.pdf` document in this directory.
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+
 #[cfg_attr(hax, hax_lib_macros::requires(fe < (FIELD_MODULUS as u16)))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
         hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
@@ -28,7 +49,8 @@ pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
 
     let shifted_positive_in_range = shifted_to_positive - 832;
 
-    // If x <= 831, then x - 832 <= -1 => x - 832 < 0.
+    // If x <= 831, then x - 832 <= -1, and so x - 832 < 0, which means
+    // the most significant bit of shifted_positive_in_range will be 1.
     ((shifted_positive_in_range >> 15) & 1) as u8
 }
 
@@ -61,6 +83,27 @@ pub(super) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
 
     get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 }
+
+/// The `decompress_*` functions implement the `Decompress` function specified in the NIST FIPS
+/// 203 standard (Page 18, Expression 4.6), which is defined as:
+///
+/// ```plaintext
+/// Decompress_d: ℤ_{2ᵈ} -> ℤq
+/// Decompress_d(y) = ⌈(q/2ᵈ)·y⌋
+/// ```
+///
+/// Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+///
+/// ```plaintext
+/// Decompress_d(y) = ⌊(q/2ᵈ)·y + 1/2⌋
+///                 = ⌊(2·y·q + 2ᵈ) / 2^{d+1})⌋
+/// ```
+///
+/// For further information about the function implementations, consult the
+/// `implementation_notes.pdf` document in this directory.
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 
 #[cfg_attr(hax, hax_lib_macros::requires((fe == 0) || (fe == 1)))]
 #[inline(always)]
