@@ -17,8 +17,9 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
-/// Represents an intermediate polynomial splitting step. All resulting coefficients
-/// are in the normal domain since the zetas have been multiplied by MONTGOMERY_R.
+/// Represents an intermediate polynomial splitting step in the NTT. All
+/// resulting coefficients are in the normal domain since the zetas have been
+/// multiplied by MONTGOMERY_R.
 #[inline(always)]
 fn ntt_at_layer(
     zeta_i: &mut usize,
@@ -71,8 +72,10 @@ fn ntt_at_layer_3328(
     ntt_at_layer(zeta_i, re, layer, 3328)
 }
 
-/// This is the first of two functions that computes the NTT representation of
-/// ring elements. This one operates only on those which were produced by binomial
+/// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
+/// of a `KyberPolynomialRingElement`.
+///
+/// This function operates only on those which were produced by binomial
 /// sampling, and thus those which have small coefficients. The small
 /// coefficients let us skip the first round of Montgomery reductions.
 #[cfg_attr(hax, hax_lib_macros::requires(
@@ -124,8 +127,10 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     re
 }
 
-/// This is the second of two functions that computes the NTT representation of
-/// ring elements. This one operates on the ring element that partly constitutes
+/// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
+/// of a `KyberPolynomialRingElement`.
+///
+/// This function operates on the ring element that partly constitutes
 /// the ciphertext.
 #[cfg_attr(hax, hax_lib_macros::requires(
     hax_lib::forall(|i:usize|
@@ -162,7 +167,6 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
     re
 }
 
-/// Inverse NTT at `layer`.
 #[inline(always)]
 fn invert_ntt_at_layer(
     zeta_i: &mut usize,
@@ -190,8 +194,9 @@ fn invert_ntt_at_layer(
     re
 }
 
-/// Compute the inverse NTT. The coefficients of the output ring element are in
-/// the Montgomery domain.
+/// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
+/// of a `KyberPolynomialRingElement`. The coefficients of the output
+/// ring element are in the Montgomery domain.
 #[inline(always)]
 pub(crate) fn invert_ntt_montgomery<const K: usize>(
     mut re: PolynomialRingElement,
@@ -229,6 +234,26 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     re
 }
 
+/// Compute the product of two Kyber binomials with respect to the
+/// modulus `X² - zeta`.
+///
+/// This function almost implements <strong>Algorithm 11</strong> of the
+/// NIST FIPS 203 standard, which is reproduced below:
+///
+/// ```plaintext
+/// Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+/// Input: γ ∈ ℤq.
+/// Output: c₀, c₁ ∈ ℤq.
+///
+/// c₀ ← a₀·b₀ + a₁·b₁·γ
+/// c₁ ← a₀·b₁ + a₁·b₀
+/// return c₀, c₁
+/// ```
+/// We say "almost" because the coefficients output by this function are in
+/// the Montgomery domain (unlike in the specification).
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
 fn ntt_multiply_binomials(
     (a0, a1): (FieldElement, FieldElement),
@@ -241,8 +266,31 @@ fn ntt_multiply_binomials(
     )
 }
 
-/// Multiply two polynomial ring elements in the NTT domain. The output coefficients
-/// are in the Montgomery domain.
+/// Given two `KyberPolynomialRingElement`s in their NTT representations,
+/// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
+/// the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
+///
+/// ```plaintext
+/// ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X² - ζ^(2·BitRev₇(i) + 1))
+/// ```
+///
+/// This function almost implements <strong>Algorithm 10</strong> of the
+/// NIST FIPS 203 standard, which is reproduced below:
+///
+/// ```plaintext
+/// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
+/// Output: An array ĥ ∈ ℤq.
+///
+/// for(i ← 0; i < 128; i++)
+///     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1], ζ^(2·BitRev₇(i) + 1))
+/// end for
+/// return ĥ
+/// ```
+/// We say "almost" because the coefficients of the ring element output by
+/// this function are in the Montgomery domain.
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[cfg_attr(hax, hax_lib_macros::requires(
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
@@ -264,10 +312,6 @@ pub(crate) fn ntt_multiply(
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-    /*hax_lib::debug_assert!(rhs
-    .coefficients
-    .into_iter()
-    .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));*/
 
     let mut out = PolynomialRingElement::ZERO;
 
@@ -288,11 +332,6 @@ pub(crate) fn ntt_multiply(
         out.coefficients[4 * i + 2] = product.0;
         out.coefficients[4 * i + 3] = product.1;
     }
-
-    /*hax_lib::debug_assert!(out
-    .coefficients
-    .into_iter()
-    .all(|coefficient| coefficient.abs() <= FIELD_MODULUS));*/
 
     out
 }
