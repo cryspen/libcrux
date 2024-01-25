@@ -69,21 +69,21 @@ macro_rules! impl_nist_known_answer_tests {
 impl_nist_known_answer_tests!(
     kyber512_nist_known_answer_tests,
     512,
-    kem::kyber512_generate_keypair_derand,
-    kem::kyber512_encapsulate_derand,
-    kem::kyber512_decapsulate_derand
+    kem::deterministic::kyber512_generate_keypair_derand,
+    kem::deterministic::kyber512_encapsulate_derand,
+    kem::deterministic::kyber512_decapsulate_derand
 );
 impl_nist_known_answer_tests!(
     kyber768_nist_known_answer_tests,
     768,
-    kem::kyber768_generate_keypair_derand,
-    kem::kyber768_encapsulate_derand,
-    kem::kyber768_decapsulate_derand
+    kem::deterministic::kyber768_generate_keypair_derand,
+    kem::deterministic::kyber768_encapsulate_derand,
+    kem::deterministic::kyber768_decapsulate_derand
 );
 impl_nist_known_answer_tests!(
     kyber1024_nist_known_answer_tests,
     1024,
-    kem::kyber1024_generate_keypair_derand,
-    kem::kyber1024_encapsulate_derand,
-    kem::kyber1024_decapsulate_derand
+    kem::deterministic::kyber1024_generate_keypair_derand,
+    kem::deterministic::kyber1024_encapsulate_derand,
+    kem::deterministic::kyber1024_decapsulate_derand
 );

@@ -84,6 +84,6 @@ val encapsulate_1024_
       (fun _ -> Prims.l_True)
 
 val generate_key_pair_1024_ (randomness: t_Array u8 (sz 64))
-    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 3168) (sz 1568))
+    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemKeyPair (sz 3168) (sz 1568))
       Prims.l_True
       (fun _ -> Prims.l_True)

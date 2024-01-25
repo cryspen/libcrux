@@ -103,12 +103,12 @@ fuzz_target!(|data: &[u8]| {
         data: data.to_vec(),
     };
 
-    if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::Kyber1024, &mut rng) {
+    if let Ok((secret_key, public_key)) = kem::key_gen(Algorithm::MlKem1024, &mut rng) {
         if let Ok((_, ciphertext)) = kem::encapsulate(&public_key, &mut rng) {
-            let ciphertext = modify_ciphertext(Algorithm::Kyber1024, &mut rng, ciphertext);
+            let ciphertext = modify_ciphertext(Algorithm::MlKem1024, &mut rng, ciphertext);
             let shared_secret_decapsulated = kem::decapsulate(&ciphertext, &secret_key).unwrap();
 
-            let secret_key = modify_secret_key(Algorithm::Kyber1024, &mut rng, secret_key, true);
+            let secret_key = modify_secret_key(Algorithm::MlKem1024, &mut rng, secret_key, true);
             let shared_secret_decapsulated_1 = kem::decapsulate(&ciphertext, &secret_key).unwrap();
 
             assert_ne!(

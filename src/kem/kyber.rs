@@ -26,7 +26,7 @@ pub mod kyber1024;
 pub mod kyber512;
 pub mod kyber768;
 
-pub use types::{KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey};
+pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
@@ -76,7 +76,7 @@ pub(super) fn generate_keypair<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
@@ -91,10 +91,10 @@ pub(super) fn generate_keypair<
 
     let secret_key_serialized =
         serialize_kem_secret_key(&ind_cpa_private_key, &public_key, implicit_rejection_value);
-    let private_key: KyberPrivateKey<PRIVATE_KEY_SIZE> =
-        KyberPrivateKey::from(secret_key_serialized);
+    let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
+        MlKemPrivateKey::from(secret_key_serialized);
 
-    KyberKeyPair::from(private_key, public_key.into())
+    MlKemKeyPair::from(private_key, public_key.into())
 }
 
 pub(super) fn encapsulate<
@@ -112,9 +112,9 @@ pub(super) fn encapsulate<
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
-    public_key: &KyberPublicKey<PUBLIC_KEY_SIZE>,
+    public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> (KyberCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret) {
+) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret) {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
 
@@ -161,8 +161,8 @@ pub(super) fn decapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
-    secret_key: &KyberPrivateKey<SECRET_KEY_SIZE>,
-    ciphertext: &KyberCiphertext<CIPHERTEXT_SIZE>,
+    secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+    ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> KyberSharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);

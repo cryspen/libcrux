@@ -25,14 +25,14 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     group.bench_function("libcrux portable (HACL-DRBG)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
-                libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+                libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
         })
     });
 
     group.bench_function("libcrux portable (OsRng)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
-                libcrux::kem::key_gen(Algorithm::Kyber768, &mut rng).unwrap();
+                libcrux::kem::key_gen(Algorithm::MlKem768, &mut rng).unwrap();
         })
     });
 
@@ -67,7 +67,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             || {
                 let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
                 let (_secret_key, public_key) =
-                    libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+                    libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
 
                 (drbg, public_key)
             },
@@ -84,7 +84,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             || {
                 let mut drbg = OsRng;
                 let (_secret_key, public_key) =
-                    libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+                    libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
 
                 (drbg, public_key)
             },
@@ -121,7 +121,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             || {
                 let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
                 let (secret_key, public_key) =
-                    libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+                    libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
                 let (_shared_secret, ciphertext) =
                     libcrux::kem::encapsulate(&public_key, &mut drbg).unwrap();
                 (secret_key, ciphertext)

@@ -12,6 +12,6 @@ fn main() {
     let mut rng = OsRng;
 
     for _i in 0..100000 {
-        let (_secret_key, _public_key) = kem::key_gen(kem::Algorithm::Kyber768, &mut rng).unwrap();
+        let (_secret_key, _public_key) = kem::key_gen(kem::Algorithm::MlKem768, &mut rng).unwrap();
     }
 }
