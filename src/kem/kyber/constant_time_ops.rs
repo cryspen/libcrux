@@ -3,6 +3,7 @@ use crate::{hax_utils::hax_debug_assert, kem::kyber::constants::SHARED_SECRET_SI
 // TODO: Examine the output that LLVM produces for this code to ensure
 // operations are not being optimized away/constant-timedness is not being broken.
 
+/// Return 1 if `value` is not zero and 0 otherwise.
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
     hax_lib::implies(value == 0, || result == 0) &&
     hax_lib::implies(value != 0, || result == 1)
@@ -16,6 +17,8 @@ fn is_non_zero(value: u8) -> u8 {
     result as u8
 }
 
+/// Return 1 if the bytes of `lhs` and `rhs` do not exactly
+/// match and 0 otherwise.
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
     hax_lib::implies(lhs == rhs, || result == 0) &&
     hax_lib::implies(lhs != rhs, || result == 1)
@@ -35,6 +38,8 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
     is_non_zero(r)
 }
 
+/// If `selector` is not zero, return the bytes in `rhs`; return the bytes in
+/// `lhs` otherwise.
 #[cfg_attr(hax, hax_lib_macros::ensures(|result|
     hax_lib::implies(selector == 0, || result == lhs) &&
     hax_lib::implies(selector != 0, || result == rhs)
@@ -51,7 +56,7 @@ pub(crate) fn select_shared_secret_in_constant_time(
     let mut out = [0u8; SHARED_SECRET_SIZE];
 
     for i in 0..SHARED_SECRET_SIZE {
-        out[i] |= (lhs[i] & mask) | (rhs[i] & !mask);
+        out[i] = (lhs[i] & mask) | (rhs[i] & !mask);
     }
 
     out
