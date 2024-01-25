@@ -2,7 +2,7 @@ use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
-use crate::cloop;
+use crate::{cloop, hax_utils::hax_debug_assert};
 
 fn rejection_sampling_panic_with_diagnostic() {
     panic!()
@@ -51,7 +51,7 @@ pub fn sample_from_uniform_distribution(
         rejection_sampling_panic_with_diagnostic();
     }
 
-    hax_lib::debug_assert!(out
+    hax_debug_assert!(out
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
@@ -90,7 +90,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
         }
     }
 
-    hax_lib::debug_assert!(sampled
+    hax_debug_assert!(sampled
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= -2 && coefficient <= 2));
@@ -128,7 +128,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
         }
     }
 
-    hax_lib::debug_assert!(sampled
+    hax_debug_assert!(sampled
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= -3 && coefficient <= 3));
@@ -139,7 +139,7 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
 pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
     randomness: &[u8],
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(randomness.len() == ETA * 64);
+    hax_debug_assert!(randomness.len() == ETA * 64);
 
     match ETA as u32 {
         2 => sample_from_binomial_distribution_2(randomness),

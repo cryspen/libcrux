@@ -107,7 +107,7 @@ if options.exclude_modules:
     else:
         filter_string += " {}".format(options.exclude_modules)
 
-cargo_hax_into = ["cargo", "hax", "into"]
+cargo_hax_into = ["cargo", "hax", "-C", "--profile=test", ";", "into"]
 hax_env = {}
 
 exclude_sha3_implementations = "-libcrux::hacl::sha3::** -libcrux::jasmin::sha3::**"
