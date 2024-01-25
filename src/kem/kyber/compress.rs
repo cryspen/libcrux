@@ -1,3 +1,5 @@
+use crate::hax_utils::hax_debug_assert;
+
 use super::{
     arithmetic::{get_n_least_significant_bits, FieldElement},
     constants::FIELD_MODULUS,
@@ -65,13 +67,13 @@ pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
      hax_lib_macros::ensures(
      |result| result >= 0 && result < 2i32.pow(coefficient_bits as u32)))]
 pub(super) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
-    hax_lib::debug_assert!(
+    hax_debug_assert!(
         coefficient_bits == 4
             || coefficient_bits == 5
             || coefficient_bits == 10
             || coefficient_bits == 11
     );
-    hax_lib::debug_assert!(fe <= (FIELD_MODULUS as u16));
+    hax_debug_assert!(fe <= (FIELD_MODULUS as u16));
 
     // This has to be constant time due to:
     // https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/ldX0ThYJuBo/m/ovODsdY7AwAJ
@@ -117,13 +119,13 @@ pub(super) fn decompress_ciphertext_coefficient(
     coefficient_bits: u8,
     fe: FieldElement,
 ) -> FieldElement {
-    hax_lib::debug_assert!(
+    hax_debug_assert!(
         coefficient_bits == 4
             || coefficient_bits == 5
             || coefficient_bits == 10
             || coefficient_bits == 11
     );
-    hax_lib::debug_assert!(fe >= 0 && fe <= 2i32.pow(coefficient_bits as u32));
+    hax_debug_assert!(fe >= 0 && fe <= 2i32.pow(coefficient_bits as u32));
 
     let mut decompressed = (fe as u32) * (FIELD_MODULUS as u32);
     decompressed = (decompressed << 1) + (1 << coefficient_bits);

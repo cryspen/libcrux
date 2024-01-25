@@ -1,3 +1,5 @@
+use crate::hax_utils::hax_debug_assert;
+
 use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 /// Values having this type hold a representative 'x' of the Kyber field.
@@ -21,7 +23,7 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u32.pow(n.into())))]
 #[inline(always)]
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
-    hax_lib::debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
+    hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
 
     value & ((1 << n) - 1)
 }
@@ -47,7 +49,7 @@ const BARRETT_MULTIPLIER: i64 = 20159;
 #[cfg_attr(hax, hax_lib_macros::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
-    hax_lib::debug_assert!(
+    hax_debug_assert!(
         i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R,
         "value is {value}"
     );
@@ -57,7 +59,7 @@ pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
 
     let result = value - (quotient * FIELD_MODULUS);
 
-    hax_lib::debug_assert!(
+    hax_debug_assert!(
         result > -FIELD_MODULUS && result < FIELD_MODULUS,
         "value is {value}"
     );
@@ -87,7 +89,7 @@ pub(crate) fn montgomery_reduce(value: FieldElement) -> MontgomeryFieldElement {
     // https://github.com/cryspen/libcrux/issues/134
     let _ = MONTGOMERY_R;
 
-    hax_lib::debug_assert!(
+    hax_debug_assert!(
         value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R,
         "value is {value}"
     );
@@ -145,7 +147,7 @@ pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
-    hax_lib::debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
+    hax_debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
@@ -178,11 +180,11 @@ pub(crate) fn add_to_ring_element<const K: usize>(
     mut lhs: PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(lhs
+    hax_debug_assert!(lhs
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() <= ((K as i32) - 1) * FIELD_MODULUS));
-    hax_lib::debug_assert!(rhs
+    hax_debug_assert!(rhs
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() < FIELD_MODULUS));
@@ -191,7 +193,7 @@ pub(crate) fn add_to_ring_element<const K: usize>(
         lhs.coefficients[i] += rhs.coefficients[i];
     }
 
-    hax_lib::debug_assert!(lhs
+    hax_debug_assert!(lhs
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() <= (K as i32) * FIELD_MODULUS));
