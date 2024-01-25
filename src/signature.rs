@@ -157,7 +157,7 @@ pub mod rsa_pss {
     }
 
     // Size of e.
-    const E_BITS: u32 = 24;
+    const E_BITS: u32 = 17;
 
     // We only support this e.
     const E: [u8; 3] = [0x01, 0x00, 0x01];
@@ -491,9 +491,9 @@ pub fn key_gen(
                 }
 
                 // We clamp the key already to make sure it can't be misused.
-                sk[0] = sk[0] & 248u8;
-                sk[31] = sk[31] & 127u8;
-                sk[31] = sk[31] | 64u8;
+                sk[0] &= 248u8;
+                sk[31] &= 127u8;
+                sk[31] |= 64u8;
 
                 break;
             }

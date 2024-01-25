@@ -1,9 +1,11 @@
+#[cfg(debug_assertions)]
+use super::constants::FIELD_MODULUS;
 use super::{
     arithmetic::{
         barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -25,7 +27,7 @@ fn ntt_at_layer(
     zeta_i: &mut usize,
     mut re: PolynomialRingElement,
     layer: usize,
-    initial_coefficient_bound: usize,
+    _initial_coefficient_bound: usize,
 ) -> PolynomialRingElement {
     let step = 1 << layer;
 
@@ -46,7 +48,7 @@ fn ntt_at_layer(
 
     hax_lib::debug_assert!(re.coefficients.into_iter().all(|coefficient| {
         coefficient.abs()
-            < initial_coefficient_bound as i32 + ((8 - layer as i32) * ((3 * FIELD_MODULUS) / 2))
+            < _initial_coefficient_bound as i32 + ((8 - layer as i32) * ((3 * FIELD_MODULUS) / 2))
     }));
 
     re

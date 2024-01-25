@@ -2,13 +2,13 @@ name: hax
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'
 
   pull_request:
-    branches: ["dev"]
+    branches: ["dev", "main"]
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'
@@ -41,7 +41,7 @@ jobs:
           ocaml-compiler: 4.14.1
 
       - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/bc622701c668f6b4092760879372968265d4a4e1
+        run: nix profile install github:FStarLang/FStar/v2024.01.13
 
       - name: ⤵ Clone HACL-star repository
         uses: actions/checkout@v4

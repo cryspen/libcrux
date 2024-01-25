@@ -9,6 +9,8 @@ use crate::ecdh::p256;
 use crate::ecdh::p256_derive;
 use crate::ecdh::x25519;
 
+// hacspec code: don't let clippy touch it.
+#[allow(clippy::all)]
 pub(crate) mod kyber;
 
 // TODO: These functions are currently exposed simply in order to make NIST KAT
@@ -191,19 +193,19 @@ impl PrivateKey {
             Algorithm::X25519 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
-                .map(|k| Self::X25519(k)),
+                .map(Self::X25519),
             Algorithm::Secp256r1 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
-                .map(|k| Self::P256(k)),
+                .map(Self::P256),
             Algorithm::Kyber512 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
-                .map(|k| Self::Kyber512(k)),
+                .map(Self::Kyber512),
             Algorithm::Kyber768 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
-                .map(|k| Self::Kyber768(k)),
+                .map(Self::Kyber768),
             Algorithm::Kyber768X25519 => {
                 let key: [u8; kyber::kyber768::SECRET_KEY_SIZE_768 + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
@@ -216,7 +218,7 @@ impl PrivateKey {
             Algorithm::Kyber1024 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
-                .map(|k| Self::Kyber1024(k)),
+                .map(Self::Kyber1024),
             _ => Err(Error::UnsupportedAlgorithm),
         }
     }
@@ -241,22 +243,22 @@ impl PublicKey {
             Algorithm::X25519 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)
-                .map(|k| Self::X25519(k)),
+                .map(Self::X25519),
             Algorithm::Secp256r1 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)
-                .map(|k| Self::P256(k)),
+                .map(Self::P256),
             Algorithm::Kyber768 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)
-                .map(|k| Self::Kyber768(k)),
+                .map(Self::Kyber768),
             Algorithm::Kyber768X25519 => {
-                Kyber768X25519PublicKey::decode(bytes).map(|k| Self::Kyber768X25519(k))
+                Kyber768X25519PublicKey::decode(bytes).map(Self::Kyber768X25519)
             }
             Algorithm::Kyber1024 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)
-                .map(|k| Self::Kyber1024(k)),
+                .map(Self::Kyber1024),
             _ => Err(Error::UnsupportedAlgorithm),
         }
     }
@@ -303,15 +305,15 @@ impl Ct {
             Algorithm::X25519 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidCiphertext)
-                .map(|ct| Self::X25519(ct)),
+                .map(Self::X25519),
             Algorithm::Secp256r1 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidCiphertext)
-                .map(|ct| Self::P256(ct)),
+                .map(Self::P256),
             Algorithm::Kyber768 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidCiphertext)
-                .map(|ct| Self::Kyber768(ct)),
+                .map(Self::Kyber768),
             Algorithm::Kyber768X25519 => {
                 let key: [u8; kyber::kyber768::CPA_PKE_CIPHERTEXT_SIZE_768 + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
@@ -324,7 +326,7 @@ impl Ct {
             Algorithm::Kyber1024 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidCiphertext)
-                .map(|ct| Self::Kyber1024(ct)),
+                .map(Self::Kyber1024),
             _ => Err(Error::UnsupportedAlgorithm),
         }
     }
@@ -449,9 +451,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             } else {
                 return Err(Error::InvalidPrivateKey);
             };
-            x25519::derive(ct, sk)
-                .map_err(|e| e.into())
-                .map(|k| Ss::X25519(k))
+            x25519::derive(ct, sk).map_err(|e| e.into()).map(Ss::X25519)
         }
         Ct::P256(ct) => {
             let sk = if let PrivateKey::P256(k) = sk {
@@ -459,9 +459,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             } else {
                 return Err(Error::InvalidPrivateKey);
             };
-            p256_derive(ct, sk)
-                .map_err(|e| e.into())
-                .map(|k| Ss::P256(k))
+            p256_derive(ct, sk).map_err(|e| e.into()).map(Ss::P256)
         }
         Ct::Kyber512(ct) => {
             let sk = if let PrivateKey::Kyber512(k) = sk {
@@ -471,7 +469,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             };
             let ss = kyber::kyber512::decapsulate_512(sk, ct);
 
-            Ok(Ss::Kyber768(ss.into()))
+            Ok(Ss::Kyber768(ss))
         }
         Ct::Kyber768(ct) => {
             let sk = if let PrivateKey::Kyber768(k) = sk {
@@ -481,7 +479,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             };
             let ss = kyber::kyber768::decapsulate_768(sk, ct);
 
-            Ok(Ss::Kyber768(ss.into()))
+            Ok(Ss::Kyber768(ss))
         }
         Ct::Kyber768X25519(kct, xct) => {
             let (ksk, xsk) = if let PrivateKey::Kyber768X25519(Kyber768X25519PrivateKey {
@@ -496,7 +494,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             let kss = kyber::kyber768::decapsulate_768(ksk, kct);
             let xss = x25519::derive(xct, xsk)?;
 
-            Ok(Ss::Kyber768X25519(kss.into(), xss))
+            Ok(Ss::Kyber768X25519(kss, xss))
         }
 
         Ct::Kyber1024(ct) => {
@@ -507,7 +505,7 @@ pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
             };
             let ss = kyber::kyber1024::decapsulate_1024(sk, ct);
 
-            Ok(Ss::Kyber1024(ss.into()))
+            Ok(Ss::Kyber1024(ss))
         }
     }
 }
