@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{cloop, hax_utils::hax_debug_assert};
 
-#[cfg(all(not(hax), debug_assertions))]
+#[cfg(not(hax))]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
 
 #[inline(always)]

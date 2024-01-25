@@ -1,13 +1,11 @@
 use crate::hax_utils::hax_debug_assert;
 
-#[cfg(debug_assertions)]
-use super::constants::FIELD_MODULUS;
 use super::{
     arithmetic::{
         barrett_reduce, montgomery_multiply_sfe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
