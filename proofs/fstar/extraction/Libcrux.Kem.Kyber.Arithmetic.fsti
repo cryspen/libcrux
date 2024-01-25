@@ -18,7 +18,7 @@ let v_BARRETT_SHIFT: i64 = 26L
 
 let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
 
-let v_INVERSE_OF_MODULUS_MOD_R: u32 = 62209ul
+let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
 
 let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353l
 
@@ -65,7 +65,7 @@ val montgomery_reduce (value: i32)
             i32) &&
           result <=. ((3l *! Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32) /! 2l <: i32))
 
-val montgomery_multiply_sfe_by_fer (fe fer: i32)
+val montgomery_multiply_fe_by_fer (fe fer: i32)
     : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
 
 val to_standard_domain (mfe: i32) : Prims.Pure i32 Prims.l_True (fun _ -> Prims.l_True)
@@ -96,7 +96,7 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
                   bool)
                 (fun temp_0_ ->
                     let _:Prims.unit = temp_0_ in
-                    ((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i <: usize ] <: i32) <: i32) <=.
+                    ((Core.Num.impl__i32__abs (lhs.f_coefficients.[ i ] <: i32) <: i32) <=.
                       (((cast (v_K <: usize) <: i32) -! 1l <: i32) *!
                         Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
                         <:
