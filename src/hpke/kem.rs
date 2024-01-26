@@ -7,6 +7,9 @@ use crate::kem::{kyber::KyberKeyPair, kyber768_generate_keypair_derand, *};
 use super::errors::*;
 use super::kdf::*;
 
+use alloc::vec::Vec;
+use alloc::vec;
+
 /// ## Key Encapsulation Mechanisms (KEMs)
 ///
 /// | Value  | KEM                        | Nsecret  | Nenc | Npk  | Nsk  | Auth | Reference               |

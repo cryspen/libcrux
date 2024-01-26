@@ -23,6 +23,7 @@ use crate::hacl::{
 };
 
 use libcrux_platform::{simd128_support, simd256_support};
+use alloc::vec::Vec;
 
 #[derive(Debug)]
 pub enum Error {

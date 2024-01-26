@@ -15,6 +15,8 @@
 use crate::hacl::aesgcm;
 use crate::hacl::chacha20_poly1305;
 
+use alloc::vec::Vec;
+
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
 /// The AEAD Errors.

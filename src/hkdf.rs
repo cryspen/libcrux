@@ -1,6 +1,7 @@
 //! HKDF
 //!
 //! This module implements HKDF on SHA 1 and SHA 2 (except for SHA 224).
+use alloc::vec::Vec;
 
 /// The HKDF algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]

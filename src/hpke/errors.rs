@@ -94,6 +94,7 @@ pub enum HpkeError {
     /// An opaque error happened in a crypto operation outside of this code.
     CryptoError,
 }
+use alloc::vec::Vec;
 
 /// A [`Result`] type that returns a [`Bytes`] or an [`HpkeError`].
 pub type HpkeBytesResult = Result<Vec<u8>, HpkeError>;

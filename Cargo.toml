@@ -73,6 +73,8 @@ wasm-bindgen-test = "0.3"
 
 [features]
 hacspec = []            # TODO: #7 Use specs instead of efficient implementations
-rand = []
+rand = ["std"]          # rand requires std because of std::error::Error
 wasm = ["wasm-bindgen"]
 log = ["dep:log"]
+default = ["std"]
+std = []
