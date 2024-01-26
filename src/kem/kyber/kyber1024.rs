@@ -34,14 +34,14 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_1024;
 
 // Kyber 1024 types
-pub type Kyber1024Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
-pub type Kyber1024PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_1024>;
-pub type Kyber1024PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
+pub type Kyber1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
+pub type Kyber1024PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_1024>;
+pub type Kyber1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
 /// Generate Kyber 1024 Key Pair
 pub fn generate_key_pair_1024(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> KyberKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
+) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
     generate_keypair::<
         RANK_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,
@@ -55,10 +55,10 @@ pub fn generate_key_pair_1024(
 
 /// Encapsulate Kyber 1024
 pub fn encapsulate_1024(
-    public_key: &KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>,
+    public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (
-    KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
+    MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
     KyberSharedSecret,
 ) {
     encapsulate::<
@@ -80,8 +80,8 @@ pub fn encapsulate_1024(
 
 /// Decapsulate Kyber 1024
 pub fn decapsulate_1024(
-    secret_key: &KyberPrivateKey<SECRET_KEY_SIZE_1024>,
-    ciphertext: &KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
+    secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_1024>,
+    ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
 ) -> [u8; SHARED_SECRET_SIZE] {
     decapsulate::<
         RANK_1024,

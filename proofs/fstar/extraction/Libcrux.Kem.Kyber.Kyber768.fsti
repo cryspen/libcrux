@@ -63,23 +63,23 @@ let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_768_
 
 unfold
-let t_Kyber768Ciphertext = Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1088)
+let t_Kyber768Ciphertext = Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088)
 
 unfold
-let t_Kyber768PrivateKey = Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 2400)
+let t_Kyber768PrivateKey = Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400)
 
 unfold
-let t_Kyber768PublicKey = Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1184)
+let t_Kyber768PublicKey = Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1184)
 
 val decapsulate_768_
-      (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 2400))
-      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1088))
+      (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088))
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 val encapsulate_768_
-      (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1184))
+      (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1184))
       (randomness: t_Array u8 (sz 32))
-    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1088) & t_Array u8 (sz 32))
+    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088) & t_Array u8 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -87,6 +87,6 @@ val validate_public_key_768_ (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicK
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 val generate_key_pair_768_ (randomness: t_Array u8 (sz 64))
-    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 2400) (sz 1184))
+    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemKeyPair (sz 2400) (sz 1184))
       Prims.l_True
       (fun _ -> Prims.l_True)

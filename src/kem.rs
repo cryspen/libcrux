@@ -1,13 +1,38 @@
 //! # Key Encapsulation Mechanism
 //!
 //! A KEM interface.
+//!
+//! For ECDH structs, check the [`ecdh`] module.
+//!
+//! Available algorithms:
+//! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`ecdh#x25519`].
+//! * [`Algorithm::Secp256r1`]\: NIST P256 ECDH KEM. Also see [`ecdh#P256`].
+//! * [`Algorithm::MlKem512`]\: ML-KEM 512 from [FIPS 203].
+//! * [`Algorithm::MlKem768`]\: ML-KEM 768 from [FIPS 203].
+//! * [`Algorithm::MlKem1024`]\: ML-KEM 1024 from [FIPS 203].
+//! * [`Algorithm::X25519MlKem768Draft00`]\: Hybrid x25519 - ML-KEM 768 [draft kem for hpke](https://www.ietf.org/archive/id/draft-westerbaan-cfrg-hpke-xyber768d00-00.html).
+//!
+//! ```
+//! use libcrux::{kem::*, drbg::Drbg, digest::Algorithm::Sha256};
+//!
+//! let mut rng = Drbg::new(Sha256).unwrap();
+//! let (sk_a, pk_a) = key_gen(Algorithm::MlKem768, &mut rng).unwrap();
+//! let received_pk = pk_a.encode();
+//!
+//! let pk = PublicKey::decode(Algorithm::MlKem768, &received_pk).unwrap();
+//! let (ss_b, ct_b) = pk.encapsulate(&mut rng).unwrap();
+//! let received_ct = ct_b.encode();
+//!
+//! let ct_a = Ct::decode(Algorithm::MlKem768, &received_ct).unwrap();
+//! let ss_a = ct_a.decapsulate(&sk_a).unwrap();
+//! assert_eq!(ss_b.encode(), ss_a.encode());
+//! ```
+//!
+//! [FIPS 203]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.ipd.pdf
 
 use rand::{CryptoRng, Rng};
 
-use crate::ecdh;
-use crate::ecdh::p256;
-use crate::ecdh::p256_derive;
-use crate::ecdh::x25519;
+use crate::ecdh::{self, p256, p256_derive, x25519};
 
 // hacspec code: don't let clippy touch it.
 #[allow(clippy::all)]
@@ -18,24 +43,28 @@ pub(crate) mod kyber;
 // (and change the visibility of the exported functions to pub(crate)) the
 // moment we have an implementation of one. This is tracked by:
 // https://github.com/cryspen/libcrux/issues/36
-pub use kyber::kyber1024::decapsulate_1024 as kyber1024_decapsulate_derand;
-pub use kyber::kyber1024::encapsulate_1024 as kyber1024_encapsulate_derand;
-pub use kyber::kyber1024::generate_key_pair_1024 as kyber1024_generate_keypair_derand;
-pub use kyber::kyber512::decapsulate_512 as kyber512_decapsulate_derand;
-pub use kyber::kyber512::encapsulate_512 as kyber512_encapsulate_derand;
-pub use kyber::kyber512::generate_key_pair_512 as kyber512_generate_keypair_derand;
-pub use kyber::kyber768::decapsulate_768 as kyber768_decapsulate_derand;
-pub use kyber::kyber768::encapsulate_768 as kyber768_encapsulate_derand;
-pub use kyber::kyber768::generate_key_pair_768 as kyber768_generate_keypair_derand;
+#[cfg(feature = "tests")]
+pub mod deterministic {
+    pub use super::kyber::kyber1024::decapsulate_1024 as kyber1024_decapsulate_derand;
+    pub use super::kyber::kyber1024::encapsulate_1024 as kyber1024_encapsulate_derand;
+    pub use super::kyber::kyber1024::generate_key_pair_1024 as kyber1024_generate_keypair_derand;
+    pub use super::kyber::kyber512::decapsulate_512 as kyber512_decapsulate_derand;
+    pub use super::kyber::kyber512::encapsulate_512 as kyber512_encapsulate_derand;
+    pub use super::kyber::kyber512::generate_key_pair_512 as kyber512_generate_keypair_derand;
+    pub use super::kyber::kyber768::decapsulate_768 as kyber768_decapsulate_derand;
+    pub use super::kyber::kyber768::encapsulate_768 as kyber768_encapsulate_derand;
+    pub use super::kyber::kyber768::generate_key_pair_768 as kyber768_generate_keypair_derand;
+}
 pub use kyber::kyber768::validate_public_key_768;
 
+use self::kyber::{kyber1024, kyber512, kyber768};
 use self::kyber::{
     kyber1024::{Kyber1024Ciphertext, Kyber1024PrivateKey, Kyber1024PublicKey},
     kyber512::{Kyber512Ciphertext, Kyber512PrivateKey, Kyber512PublicKey},
     kyber768::{Kyber768Ciphertext, Kyber768PrivateKey, Kyber768PublicKey},
     KyberSharedSecret,
 };
-pub use kyber::{KyberCiphertext, KyberKeyPair};
+pub use kyber::{MlKemCiphertext, MlKemKeyPair};
 
 /// KEM Algorithms
 ///
@@ -47,10 +76,10 @@ pub enum Algorithm {
     Secp256r1,
     Secp384r1,
     Secp521r1,
-    Kyber512,
-    Kyber768,
-    Kyber768X25519,
-    Kyber1024,
+    MlKem512,
+    MlKem768,
+    X25519MlKem768Draft00,
+    MlKem1024,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -75,7 +104,7 @@ impl TryFrom<Algorithm> for ecdh::Algorithm {
             Algorithm::Secp256r1 => Ok(ecdh::Algorithm::P256),
             Algorithm::Secp384r1 => Ok(ecdh::Algorithm::P384),
             Algorithm::Secp521r1 => Ok(ecdh::Algorithm::P521),
-            Algorithm::Kyber768X25519 => Ok(ecdh::Algorithm::X25519),
+            Algorithm::X25519MlKem768Draft00 => Ok(ecdh::Algorithm::X25519),
             _ => Err("provided algorithm is not an ECDH algorithm"),
         }
     }
@@ -87,12 +116,13 @@ impl From<ecdh::Error> for Error {
     }
 }
 
-pub struct Kyber768X25519PrivateKey {
+/// An ML-KEM768-x25519 private key.
+pub struct MlKem768X25519PrivateKey {
     pub kyber: Kyber768PrivateKey,
     pub x25519: x25519::PrivateKey,
 }
 
-impl Kyber768X25519PrivateKey {
+impl MlKem768X25519PrivateKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             kyber: bytes[32..]
@@ -117,16 +147,17 @@ pub enum PrivateKey {
     P256(p256::PrivateKey),
     Kyber512(Kyber512PrivateKey),
     Kyber768(Kyber768PrivateKey),
-    Kyber768X25519(Kyber768X25519PrivateKey),
+    Kyber768X25519(MlKem768X25519PrivateKey),
     Kyber1024(Kyber1024PrivateKey),
 }
 
-pub struct Kyber768X25519PublicKey {
+/// An ML-KEM768-x25519 public key.
+pub struct MlKem768X25519PublicKey {
     pub kyber: Kyber768PublicKey,
     pub x25519: x25519::PublicKey,
 }
 
-impl Kyber768X25519PublicKey {
+impl MlKem768X25519PublicKey {
     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             kyber: bytes[32..]
@@ -151,7 +182,7 @@ pub enum PublicKey {
     P256(p256::PublicKey),
     Kyber512(Kyber512PublicKey),
     Kyber768(Kyber768PublicKey),
-    Kyber768X25519(Kyber768X25519PublicKey),
+    Kyber768X25519(MlKem768X25519PublicKey),
     Kyber1024(Kyber1024PublicKey),
 }
 
@@ -163,6 +194,76 @@ pub enum Ct {
     Kyber768(Kyber768Ciphertext),
     Kyber768X25519(Kyber768Ciphertext, x25519::PublicKey),
     Kyber1024(Kyber1024Ciphertext),
+}
+
+impl Ct {
+    /// Decapsulate the shared secret in `ct` using the private key `sk`.
+    pub fn decapsulate(&self, sk: &PrivateKey) -> Result<Ss, Error> {
+        match self {
+            Ct::X25519(ct) => {
+                let sk = if let PrivateKey::X25519(k) = sk {
+                    k
+                } else {
+                    return Err(Error::InvalidPrivateKey);
+                };
+                x25519::derive(ct, sk).map_err(|e| e.into()).map(Ss::X25519)
+            }
+            Ct::P256(ct) => {
+                let sk = if let PrivateKey::P256(k) = sk {
+                    k
+                } else {
+                    return Err(Error::InvalidPrivateKey);
+                };
+                p256_derive(ct, sk).map_err(|e| e.into()).map(Ss::P256)
+            }
+            Ct::Kyber512(ct) => {
+                let sk = if let PrivateKey::Kyber512(k) = sk {
+                    k
+                } else {
+                    return Err(Error::InvalidPrivateKey);
+                };
+                let ss = kyber::kyber512::decapsulate_512(sk, ct);
+
+                Ok(Ss::Kyber768(ss))
+            }
+            Ct::Kyber768(ct) => {
+                let sk = if let PrivateKey::Kyber768(k) = sk {
+                    k
+                } else {
+                    return Err(Error::InvalidPrivateKey);
+                };
+                let ss = kyber768::decapsulate_768(sk, ct);
+
+                Ok(Ss::Kyber768(ss))
+            }
+            Ct::Kyber768X25519(kct, xct) => {
+                let (ksk, xsk) = if let PrivateKey::Kyber768X25519(MlKem768X25519PrivateKey {
+                    kyber: kk,
+                    x25519: xk,
+                }) = sk
+                {
+                    (kk, xk)
+                } else {
+                    return Err(Error::InvalidPrivateKey);
+                };
+                let kss = kyber768::decapsulate_768(ksk, kct);
+                let xss = x25519::derive(xct, xsk)?;
+
+                Ok(Ss::Kyber768X25519(kss, xss))
+            }
+
+            Ct::Kyber1024(ct) => {
+                let sk = if let PrivateKey::Kyber1024(k) = sk {
+                    k
+                } else {
+                    return Err(Error::InvalidPrivateKey);
+                };
+                let ss = kyber::kyber1024::decapsulate_1024(sk, ct);
+
+                Ok(Ss::Kyber1024(ss))
+            }
+        }
+    }
 }
 
 /// A KEM shared secret
@@ -199,24 +300,24 @@ impl PrivateKey {
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::P256),
-            Algorithm::Kyber512 => bytes
+            Algorithm::MlKem512 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::Kyber512),
-            Algorithm::Kyber768 => bytes
+            Algorithm::MlKem768 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::Kyber768),
-            Algorithm::Kyber768X25519 => {
-                let key: [u8; kyber::kyber768::SECRET_KEY_SIZE_768 + 32] =
+            Algorithm::X25519MlKem768Draft00 => {
+                let key: [u8; kyber768::SECRET_KEY_SIZE_768 + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
-                let (ksk, xsk) = key.split_at(kyber::kyber768::SECRET_KEY_SIZE_768);
-                Ok(Self::Kyber768X25519(Kyber768X25519PrivateKey {
+                let (ksk, xsk) = key.split_at(kyber768::SECRET_KEY_SIZE_768);
+                Ok(Self::Kyber768X25519(MlKem768X25519PrivateKey {
                     kyber: ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
                     x25519: xsk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
                 }))
             }
-            Algorithm::Kyber1024 => bytes
+            Algorithm::MlKem1024 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::Kyber1024),
@@ -226,6 +327,55 @@ impl PrivateKey {
 }
 
 impl PublicKey {
+    /// Encapsulate a shared secret to the provided `pk` and return the `(Key, Enc)` tuple.
+    pub fn encapsulate(&self, rng: &mut (impl CryptoRng + Rng)) -> Result<(Ss, Ct), Error> {
+        match self {
+            PublicKey::X25519(pk) => {
+                let (new_sk, new_pk) = ecdh::x25519_key_gen(rng)?;
+                let gxy = x25519::derive(pk, &new_sk)?;
+                Ok((Ss::X25519(gxy), Ct::X25519(new_pk)))
+            }
+            PublicKey::P256(pk) => {
+                let (new_sk, new_pk) = ecdh::p256_key_gen(rng)?;
+                let gxy = p256_derive(pk, &new_sk)?;
+                Ok((Ss::P256(gxy), Ct::P256(new_pk)))
+            }
+
+            PublicKey::Kyber512(pk) => {
+                let seed = kyber_rand(rng)?;
+                let (ct, ss) = kyber::kyber512::encapsulate_512(pk, seed);
+                Ok((Ss::Kyber512(ss), Ct::Kyber512(ct)))
+            }
+
+            PublicKey::Kyber768(pk) => {
+                let seed = kyber_rand(rng)?;
+                let (ct, ss) = kyber768::encapsulate_768(pk, seed);
+                Ok((Ss::Kyber768(ss), Ct::Kyber768(ct)))
+            }
+
+            PublicKey::Kyber1024(pk) => {
+                let seed = kyber_rand(rng)?;
+                let (ct, ss) = kyber1024::encapsulate_1024(pk, seed);
+                Ok((Ss::Kyber1024(ss), Ct::Kyber1024(ct)))
+            }
+
+            PublicKey::Kyber768X25519(MlKem768X25519PublicKey {
+                kyber: kpk,
+                x25519: xpk,
+            }) => {
+                let seed = kyber_rand(rng)?;
+                let (kyber_ct, kyber_ss) = kyber768::encapsulate_768(kpk, seed);
+                let (x_sk, x_pk) = ecdh::x25519_key_gen(rng)?;
+                let x_ss = x25519::derive(xpk, &x_sk)?;
+
+                Ok((
+                    Ss::Kyber768X25519(kyber_ss, x_ss),
+                    Ct::Kyber768X25519(kyber_ct, x_pk),
+                ))
+            }
+        }
+    }
+
     /// Encode public key.
     pub fn encode(&self) -> Vec<u8> {
         match self {
@@ -249,14 +399,14 @@ impl PublicKey {
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)
                 .map(Self::P256),
-            Algorithm::Kyber768 => bytes
+            Algorithm::MlKem768 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)
                 .map(Self::Kyber768),
-            Algorithm::Kyber768X25519 => {
-                Kyber768X25519PublicKey::decode(bytes).map(Self::Kyber768X25519)
+            Algorithm::X25519MlKem768Draft00 => {
+                MlKem768X25519PublicKey::decode(bytes).map(Self::Kyber768X25519)
             }
-            Algorithm::Kyber1024 => bytes
+            Algorithm::MlKem1024 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidPublicKey)
                 .map(Self::Kyber1024),
@@ -311,20 +461,24 @@ impl Ct {
                 .try_into()
                 .map_err(|_| Error::InvalidCiphertext)
                 .map(Self::P256),
-            Algorithm::Kyber768 => bytes
+            Algorithm::MlKem512 => bytes
+                .try_into()
+                .map_err(|_| Error::InvalidCiphertext)
+                .map(Self::Kyber512),
+            Algorithm::MlKem768 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidCiphertext)
                 .map(Self::Kyber768),
-            Algorithm::Kyber768X25519 => {
-                let key: [u8; kyber::kyber768::CPA_PKE_CIPHERTEXT_SIZE_768 + 32] =
+            Algorithm::X25519MlKem768Draft00 => {
+                let key: [u8; kyber768::CPA_PKE_CIPHERTEXT_SIZE_768 + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (kct, xct) = key.split_at(kyber::kyber768::CPA_PKE_CIPHERTEXT_SIZE_768);
+                let (kct, xct) = key.split_at(kyber768::CPA_PKE_CIPHERTEXT_SIZE_768);
                 Ok(Self::Kyber768X25519(
                     kct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     xct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                 ))
             }
-            Algorithm::Kyber1024 => bytes
+            Algorithm::MlKem1024 => bytes
                 .try_into()
                 .map_err(|_| Error::InvalidCiphertext)
                 .map(Self::Kyber1024),
@@ -347,7 +501,7 @@ pub fn secret_to_public(alg: Algorithm, sk: impl AsRef<[u8]>) -> Result<Vec<u8>,
 fn gen_kyber768(
     rng: &mut (impl CryptoRng + Rng),
 ) -> Result<(Kyber768PrivateKey, Kyber768PublicKey), Error> {
-    let KyberKeyPair { sk, pk } = kyber768_generate_keypair_derand(random_array(rng)?);
+    let MlKemKeyPair { sk, pk } = kyber768::generate_key_pair_768(random_array(rng)?);
     Ok((sk, pk))
 }
 
@@ -373,27 +527,27 @@ pub fn key_gen(
         Algorithm::Secp256r1 => ecdh::p256_key_gen(rng)
             .map_err(|e| e.into())
             .map(|(private, public)| (PrivateKey::P256(private), PublicKey::P256(public))),
-        Algorithm::Kyber512 => {
-            let KyberKeyPair { sk, pk } = kyber512_generate_keypair_derand(random_array(rng)?);
+        Algorithm::MlKem512 => {
+            let MlKemKeyPair { sk, pk } = kyber512::generate_key_pair_512(random_array(rng)?);
             Ok((PrivateKey::Kyber512(sk), PublicKey::Kyber512(pk)))
         }
-        Algorithm::Kyber768 => {
-            let KyberKeyPair { sk, pk } = kyber768_generate_keypair_derand(random_array(rng)?);
+        Algorithm::MlKem768 => {
+            let MlKemKeyPair { sk, pk } = kyber768::generate_key_pair_768(random_array(rng)?);
             Ok((PrivateKey::Kyber768(sk), PublicKey::Kyber768(pk)))
         }
-        Algorithm::Kyber1024 => {
-            let KyberKeyPair { sk, pk } = kyber1024_generate_keypair_derand(random_array(rng)?);
+        Algorithm::MlKem1024 => {
+            let MlKemKeyPair { sk, pk } = kyber1024::generate_key_pair_1024(random_array(rng)?);
             Ok((PrivateKey::Kyber1024(sk), PublicKey::Kyber1024(pk)))
         }
-        Algorithm::Kyber768X25519 => {
+        Algorithm::X25519MlKem768Draft00 => {
             let (kyber_private, kyber_public) = gen_kyber768(rng)?;
             let (x25519_private, x25519_public) = ecdh::x25519_key_gen(rng)?;
             Ok((
-                PrivateKey::Kyber768X25519(Kyber768X25519PrivateKey {
+                PrivateKey::Kyber768X25519(MlKem768X25519PrivateKey {
                     kyber: kyber_private,
                     x25519: x25519_private,
                 }),
-                PublicKey::Kyber768X25519(Kyber768X25519PublicKey {
+                PublicKey::Kyber768X25519(MlKem768X25519PublicKey {
                     kyber: kyber_public,
                     x25519: x25519_public,
                 }),
@@ -403,123 +557,10 @@ pub fn key_gen(
     }
 }
 
-/// Encapsulate a shared secret to the provided `pk` and return the `(Key, Enc)` tuple.
-pub fn encapsulate(pk: &PublicKey, rng: &mut (impl CryptoRng + Rng)) -> Result<(Ss, Ct), Error> {
-    match pk {
-        PublicKey::X25519(pk) => {
-            let (new_sk, new_pk) = ecdh::x25519_key_gen(rng)?;
-            let gxy = x25519::derive(pk, &new_sk)?;
-            Ok((Ss::X25519(gxy), Ct::X25519(new_pk)))
-        }
-        PublicKey::P256(pk) => {
-            let (new_sk, new_pk) = ecdh::p256_key_gen(rng)?;
-            let gxy = p256_derive(pk, &new_sk)?;
-            Ok((Ss::P256(gxy), Ct::P256(new_pk)))
-        }
-        PublicKey::Kyber512(pk) => {
-            let seed = kyber_rand(rng)?;
-            let (ct, ss) = kyber::kyber512::encapsulate_512(pk, seed);
-            Ok((Ss::Kyber512(ss), Ct::Kyber512(ct)))
-        }
-        PublicKey::Kyber768(pk) => {
-            let seed = kyber_rand(rng)?;
-            let (ct, ss) = kyber::kyber768::encapsulate_768(pk, seed);
-            Ok((Ss::Kyber768(ss), Ct::Kyber768(ct)))
-        }
-        PublicKey::Kyber1024(pk) => {
-            let seed = kyber_rand(rng)?;
-            let (ct, ss) = kyber::kyber1024::encapsulate_1024(pk, seed);
-            Ok((Ss::Kyber1024(ss), Ct::Kyber1024(ct)))
-        }
-        PublicKey::Kyber768X25519(Kyber768X25519PublicKey {
-            kyber: kpk,
-            x25519: xpk,
-        }) => {
-            let seed = kyber_rand(rng)?;
-            let (kyber_ct, kyber_ss) = kyber::kyber768::encapsulate_768(kpk, seed);
-            let (x_sk, x_pk) = ecdh::x25519_key_gen(rng)?;
-            let x_ss = x25519::derive(xpk, &x_sk)?;
-
-            Ok((
-                Ss::Kyber768X25519(kyber_ss, x_ss),
-                Ct::Kyber768X25519(kyber_ct, x_pk),
-            ))
-        }
-    }
-}
-
 fn kyber_rand(
     rng: &mut (impl CryptoRng + Rng),
 ) -> Result<[u8; kyber::constants::SHARED_SECRET_SIZE], Error> {
     let mut seed = [0; kyber::constants::SHARED_SECRET_SIZE];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
     Ok(seed)
-}
-
-/// Decapsulate the shared secret in `ct` using the private key `sk`.
-pub fn decapsulate(ct: &Ct, sk: &PrivateKey) -> Result<Ss, Error> {
-    match ct {
-        Ct::X25519(ct) => {
-            let sk = if let PrivateKey::X25519(k) = sk {
-                k
-            } else {
-                return Err(Error::InvalidPrivateKey);
-            };
-            x25519::derive(ct, sk).map_err(|e| e.into()).map(Ss::X25519)
-        }
-        Ct::P256(ct) => {
-            let sk = if let PrivateKey::P256(k) = sk {
-                k
-            } else {
-                return Err(Error::InvalidPrivateKey);
-            };
-            p256_derive(ct, sk).map_err(|e| e.into()).map(Ss::P256)
-        }
-        Ct::Kyber512(ct) => {
-            let sk = if let PrivateKey::Kyber512(k) = sk {
-                k
-            } else {
-                return Err(Error::InvalidPrivateKey);
-            };
-            let ss = kyber::kyber512::decapsulate_512(sk, ct);
-
-            Ok(Ss::Kyber768(ss))
-        }
-        Ct::Kyber768(ct) => {
-            let sk = if let PrivateKey::Kyber768(k) = sk {
-                k
-            } else {
-                return Err(Error::InvalidPrivateKey);
-            };
-            let ss = kyber::kyber768::decapsulate_768(sk, ct);
-
-            Ok(Ss::Kyber768(ss))
-        }
-        Ct::Kyber768X25519(kct, xct) => {
-            let (ksk, xsk) = if let PrivateKey::Kyber768X25519(Kyber768X25519PrivateKey {
-                kyber: kk,
-                x25519: xk,
-            }) = sk
-            {
-                (kk, xk)
-            } else {
-                return Err(Error::InvalidPrivateKey);
-            };
-            let kss = kyber::kyber768::decapsulate_768(ksk, kct);
-            let xss = x25519::derive(xct, xsk)?;
-
-            Ok(Ss::Kyber768X25519(kss, xss))
-        }
-
-        Ct::Kyber1024(ct) => {
-            let sk = if let PrivateKey::Kyber1024(k) = sk {
-                k
-            } else {
-                return Err(Error::InvalidPrivateKey);
-            };
-            let ss = kyber::kyber1024::decapsulate_1024(sk, ct);
-
-            Ok(Ss::Kyber1024(ss))
-        }
-    }
 }
