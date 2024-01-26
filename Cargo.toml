@@ -43,16 +43,12 @@ rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
-hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
 
 # When using the hax toolchain, we have more dependencies.
 # This is only required when doing proofs.
 [target.'cfg(hax)'.dependencies]
 hax-lib-macros = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax" }
-
-# WASM needs the js feature on getrandom
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.2", features = ["js"] }
+hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/", branch = "main" }
 
 [target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64", libjade))'.dependencies]
 libjade-sys = { version = "=0.0.2-pre.2", path = "sys/libjade" }
@@ -70,6 +66,7 @@ hex = { version = "0.4.3", features = ["serde"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
+getrandom = { version = "0.2", features = ["js"] }
 
 [features]
 hacspec = []            # TODO: #7 Use specs instead of efficient implementations
