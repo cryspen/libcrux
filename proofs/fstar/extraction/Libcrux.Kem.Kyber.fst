@@ -264,6 +264,27 @@ let encapsulate
   <:
   (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
+let validate_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
+     =
+  let pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+    Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key v_K
+      (Rust_primitives.unsize public_key <: t_Slice u8)
+  in
+  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key v_K
+      v_RANKED_BYTES_PER_RING_ELEMENT
+      v_PUBLIC_KEY_SIZE
+      pk
+      (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+          <:
+          Core.Ops.Range.t_RangeFrom usize ]
+        <:
+        t_Slice u8)
+  in
+  public_key =. public_key_serialized
+
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)

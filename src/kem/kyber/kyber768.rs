@@ -37,6 +37,15 @@ pub type Kyber768Ciphertext = KyberCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
 pub type Kyber768PrivateKey = KyberPrivateKey<SECRET_KEY_SIZE_768>;
 pub type Kyber768PublicKey = KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
+/// Validate a public key.
+///
+/// Returns `false` if the provided `public_key` is invalid, and `true` otherwise.
+pub fn validate_public_key_768(public_key: &KyberPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>) -> bool {
+    validate_public_key::<RANK_768, RANKED_BYTES_PER_RING_ELEMENT_768, CPA_PKE_PUBLIC_KEY_SIZE_768>(
+        &public_key.value,
+    )
+}
+
 /// Generate Kyber 768 Key Pair
 pub fn generate_key_pair_768(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
@@ -100,4 +109,22 @@ pub fn decapsulate_768(
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(secret_key, ciphertext)
+}
+
+#[cfg(test)]
+mod tests {
+    use rand_core::{OsRng, RngCore};
+
+    use crate::kem::kyber::kyber768::validate_public_key_768;
+
+    use super::{kyber768::generate_key_pair_768, KEY_GENERATION_SEED_SIZE};
+
+    #[test]
+    fn pk_validation() {
+        let mut randomness = [0u8; KEY_GENERATION_SEED_SIZE];
+        OsRng.fill_bytes(&mut randomness);
+
+        let key_pair = generate_key_pair_768(randomness);
+        assert!(validate_public_key_768(key_pair.public_key()));
+    }
 }

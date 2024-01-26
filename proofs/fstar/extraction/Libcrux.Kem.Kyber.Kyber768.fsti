@@ -83,6 +83,9 @@ val encapsulate_768_
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val validate_public_key_768_ (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1184))
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 val generate_key_pair_768_ (randomness: t_Array u8 (sz 64))
     : Prims.Pure (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 2400) (sz 1184))
       Prims.l_True

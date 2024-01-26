@@ -38,3 +38,9 @@ test = false
 doc = false
 harness = false
 bench = false
+
+[[bin]]
+name = "pk_validation"
+path = "fuzz_targets/pk_validation.rs"
+test = false
+doc = false

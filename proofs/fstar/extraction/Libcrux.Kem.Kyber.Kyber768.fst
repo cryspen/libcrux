@@ -17,6 +17,12 @@ let encapsulate_768_
   Libcrux.Kem.Kyber.encapsulate (sz 3) (sz 1088) (sz 1184) (sz 1152) (sz 960) (sz 128) (sz 10)
     (sz 4) (sz 320) (sz 2) (sz 128) (sz 2) (sz 128) public_key randomness
 
+let validate_public_key_768_ (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1184)) =
+  Libcrux.Kem.Kyber.validate_public_key (sz 3)
+    (sz 1152)
+    (sz 1184)
+    public_key.Libcrux.Kem.Kyber.Types.f_value
+
 let generate_key_pair_768_ (randomness: t_Array u8 (sz 64)) =
   Libcrux.Kem.Kyber.generate_keypair (sz 3)
     (sz 1152)

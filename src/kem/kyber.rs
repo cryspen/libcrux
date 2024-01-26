@@ -33,6 +33,8 @@ pub use types::{KyberCiphertext, KyberKeyPair, KyberPrivateKey, KyberPublicKey};
 // https://github.com/cryspen/libcrux/issues/123
 pub type KyberSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
+use crate::kem::kyber::ind_cpa::{deserialize_public_key, serialize_public_key};
+
 use self::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
@@ -64,6 +66,24 @@ fn serialize_kem_secret_key<const SERIALIZED_KEY_LEN: usize>(
     out[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
     out
+}
+
+pub(super) fn validate_public_key<
+    const K: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+    const PUBLIC_KEY_SIZE: usize,
+>(
+    public_key: &[u8; PUBLIC_KEY_SIZE],
+) -> bool {
+    // public_key ==
+    let pk = deserialize_public_key::<K>(public_key);
+    let public_key_serialized = serialize_public_key::<
+        K,
+        RANKED_BYTES_PER_RING_ELEMENT,
+        PUBLIC_KEY_SIZE,
+    >(pk, &public_key[RANKED_BYTES_PER_RING_ELEMENT..]);
+
+    public_key == &public_key_serialized
 }
 
 pub(super) fn generate_keypair<

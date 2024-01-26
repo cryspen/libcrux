@@ -31,6 +31,11 @@ val encapsulate
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val validate_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+
 val generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
