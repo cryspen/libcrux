@@ -1,11 +1,11 @@
-#[cfg(debug_assertions)]
-use super::constants::FIELD_MODULUS;
+use crate::hax_utils::hax_debug_assert;
+
 use super::{
     arithmetic::{
         barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -46,7 +46,7 @@ fn ntt_at_layer(
         }
     }
 
-    hax_lib::debug_assert!(re.coefficients.into_iter().all(|coefficient| {
+    hax_debug_assert!(re.coefficients.into_iter().all(|coefficient| {
         coefficient.abs()
             < _initial_coefficient_bound as i32 + ((8 - layer as i32) * ((3 * FIELD_MODULUS) / 2))
     }));
@@ -93,7 +93,7 @@ fn ntt_at_layer_3328(
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(re
+    hax_debug_assert!(re
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3));
@@ -110,7 +110,7 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
         re.coefficients[j] = re.coefficients[j] + t;
     }
 
-    hax_lib::debug_assert!(re
+    hax_debug_assert!(re
         .coefficients
         .into_iter()
         .all(|coefficient| { coefficient.abs() < 3 + ((3 * FIELD_MODULUS) / 2) }));
@@ -147,7 +147,7 @@ pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
 pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(re
+    hax_debug_assert!(re
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3328));
@@ -204,7 +204,7 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
     // We only ever call this function after matrix/vector multiplication
-    hax_lib::debug_assert!(re
+    hax_debug_assert!(re
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
@@ -219,11 +219,11 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     re = invert_ntt_at_layer(&mut zeta_i, re, 6);
     re = invert_ntt_at_layer(&mut zeta_i, re, 7);
 
-    hax_lib::debug_assert!(
+    hax_debug_assert!(
         re.coefficients[0].abs() < 128 * (K as i32) * FIELD_MODULUS
             && re.coefficients[1].abs() < 128 * (K as i32) * FIELD_MODULUS
     );
-    hax_lib::debug_assert!(re
+    hax_debug_assert!(re
         .coefficients
         .into_iter()
         .enumerate()
@@ -310,7 +310,7 @@ pub(crate) fn ntt_multiply(
     lhs: &PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(lhs
+    hax_debug_assert!(lhs
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= 0 && coefficient < 4096));
