@@ -3,6 +3,7 @@
 //! This module implements HMAC on SHA 1 and SHA 2 (except for SHA 224).
 
 use crate::hkdf;
+use alloc::vec::Vec;
 
 /// The HMAC algorithm defining the used hash function.
 #[derive(Copy, Clone, Debug, PartialEq)]

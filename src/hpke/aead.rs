@@ -34,6 +34,7 @@ use crate::{
     aead::{self, *},
     hmac::tag_size,
 };
+use alloc::vec::Vec;
 
 use super::errors::*;
 

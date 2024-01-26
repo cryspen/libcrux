@@ -1,4 +1,4 @@
-use std::usize;
+use core::usize;
 
 use super::{
     arithmetic::PolynomialRingElement,

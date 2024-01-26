@@ -1,6 +1,7 @@
 //! # Key Encapsulation Mechanism
 //!
 //! A KEM interface.
+use alloc::vec::Vec;
 
 use rand::{CryptoRng, Rng};
 

@@ -9,6 +9,9 @@ use super::kem::*;
 
 use super::errors::*;
 
+use alloc::vec::Vec;
+use alloc::vec;
+
 // === Constants ===
 
 ///  A one-byte value indicating the HPKE mode, defined in the following table.

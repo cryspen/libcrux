@@ -2,7 +2,10 @@
 //!
 //! The unified, formally verified, cryptography library.
 
+#![cfg_attr(all(not(test), not(feature = "std")), no_std)]
+
 pub use libcrux_platform::aes_ni_support;
+extern crate alloc;
 
 // Jasmin
 #[cfg(all(target_arch = "x86_64", any(target_os = "linux", target_os = "macos")))]
