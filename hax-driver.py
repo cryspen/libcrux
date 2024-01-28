@@ -115,11 +115,39 @@ exclude_sha3_implementations = "-libcrux::hacl::sha3::** -libcrux::jasmin::sha3:
 if options.verify_extraction:
     shell(["make", "-C", "proofs/fstar/extraction/"])
 elif options.kyber_reference:
+    # Delete all extracted F* files
+    shell(["rm", "-f", "./proofs/fstar/extraction/Libcrux*"])
+    # Extract the platform crate
+    shell(
+        [
+            "cargo",
+            "hax",
+            "-C",
+            "-p",
+            "libcrux-platform",
+            ";",
+            "into",
+            "fstar",
+            "--interfaces",
+            "+**",
+        ],
+        cwd=".",
+        env=hax_env,
+    )
+    # Copy over the platform fsti
+    shell(
+        [
+            "cp",
+            "sys/platform/proofs/fstar/extraction/Libcrux_platform.fsti",
+            "proofs/fstar/extraction/",
+        ]
+    )
+    # Extract ml-kem from libcrux
     shell(
         cargo_hax_into
         + [
             "-i",
-            "-** +libcrux::kem::kyber::** {} -libcrux::digest::** -libcrux::**::types::index_impls::**".format(
+            "-** +libcrux::kem::kyber::** +libcrux_platform::** {} -libcrux::**::types::index_impls::**".format(
                 exclude_sha3_implementations
             ),
             "fstar",

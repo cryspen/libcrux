@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 unfold
-let t_KyberSharedSecret = t_Array u8 (sz 32)
+let t_MlKemSharedSecret = t_Array u8 (sz 32)
 
 let v_KEY_GENERATION_SEED_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
