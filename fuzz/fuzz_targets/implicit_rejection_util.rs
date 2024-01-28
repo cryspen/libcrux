@@ -10,7 +10,11 @@ use rand::CryptoRng;
 
 use libcrux::kem::Algorithm;
 
-pub(crate) fn modify_ciphertext(alg: Algorithm, rng: &mut (impl CryptoRng + Rng), ciphertext: Ct) -> Ct {
+pub(crate) fn modify_ciphertext(
+    alg: Algorithm,
+    rng: &mut (impl CryptoRng + Rng),
+    ciphertext: Ct,
+) -> Ct {
     let mut raw_ciphertext = ciphertext.encode();
 
     let mut random_u32: usize = rng.next_u32().try_into().unwrap();

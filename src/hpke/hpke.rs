@@ -405,8 +405,10 @@ pub fn SetupBaseS(
         KEM::X25519Kyber768Draft00 => {
             // FIXME: clean up
             // Decode the public key
-            let X25519MlKem768Draft00PublicKey { mlkem: kyber, x25519 } =
-                X25519MlKem768Draft00PublicKey::decode(pkR).unwrap();
+            let X25519MlKem768Draft00PublicKey {
+                mlkem: kyber,
+                x25519,
+            } = X25519MlKem768Draft00PublicKey::decode(pkR).unwrap();
             let (ss1, enc1) = Encap(
                 KEM::DHKEM_X25519_HKDF_SHA256,
                 &x25519.0,
@@ -460,8 +462,10 @@ pub fn SetupBaseR(
         KEM::X25519Kyber768Draft00 => {
             // FIXME: clean up
             // Decode the public key
-            let X25519MlKem768Draft00PrivateKey { mlkem: kyber, x25519 } =
-                X25519MlKem768Draft00PrivateKey::decode(skR).unwrap();
+            let X25519MlKem768Draft00PrivateKey {
+                mlkem: kyber,
+                x25519,
+            } = X25519MlKem768Draft00PrivateKey::decode(skR).unwrap();
             let ss1 = Decap(KEM::DHKEM_X25519_HKDF_SHA256, &enc[0..32], &x25519.0)?;
             let ss2 = Kyber768Draft00_Decap(kyber.as_ref(), &enc[32..])?;
             let ss = crate::kem::Ss::X25519MlKem768Draft00(

@@ -560,8 +560,7 @@ pub fn Encap(alg: KEM, pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult
 ///
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult {
-    let (ct, ss) =
-        kyber768::encapsulate(&pkR.try_into().unwrap(), randomness.try_into().unwrap());
+    let (ct, ss) = kyber768::encapsulate(&pkR.try_into().unwrap(), randomness.try_into().unwrap());
 
     EncapResult::Ok((ss.as_ref().to_vec(), ct.as_ref().to_vec()))
 }
