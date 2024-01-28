@@ -34,15 +34,31 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_1024;
 
 // Kyber 1024 types
-pub type Kyber1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
-pub type Kyber1024PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_1024>;
-pub type Kyber1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
+pub type MlKem1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
+pub type MlKem1024PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_1024>;
+pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
-/// Generate Kyber 1024 Key Pair
-pub fn generate_key_pair_1024(
+/// Validate a public key.
+///
+/// Returns `Some(public_key)` if valid, and `None` otherwise.
+pub(crate) fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024PublicKey> {
+    if super::validate_public_key::<
+        RANK_1024,
+        RANKED_BYTES_PER_RING_ELEMENT_1024,
+        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+    >(&public_key.value)
+    {
+        Some(public_key)
+    } else {
+        None
+    }
+}
+
+/// Generate ML-KEM 1024 Key Pair
+pub fn generate_key_pair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
-    generate_keypair::<
+    super::generate_keypair::<
         RANK_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,
         SECRET_KEY_SIZE_1024,
@@ -53,15 +69,15 @@ pub fn generate_key_pair_1024(
     >(randomness)
 }
 
-/// Encapsulate Kyber 1024
-pub fn encapsulate_1024(
+/// Encapsulate ML-KEM 1024
+pub fn encapsulate(
     public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (
     MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
-    KyberSharedSecret,
+    MlKemSharedSecret,
 ) {
-    encapsulate::<
+    super::encapsulate::<
         RANK_1024,
         CPA_PKE_CIPHERTEXT_SIZE_1024,
         CPA_PKE_PUBLIC_KEY_SIZE_1024,
@@ -78,12 +94,12 @@ pub fn encapsulate_1024(
     >(public_key, randomness)
 }
 
-/// Decapsulate Kyber 1024
-pub fn decapsulate_1024(
+/// Decapsulate ML-KEM 1024
+pub fn decapsulate(
     secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_1024>,
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    decapsulate::<
+    super::decapsulate::<
         RANK_1024,
         SECRET_KEY_SIZE_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,

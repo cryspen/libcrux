@@ -31,7 +31,7 @@ pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
 // https://github.com/cryspen/libcrux/issues/123
-pub type KyberSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
+pub type MlKemSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
 use crate::kem::kyber::ind_cpa::{deserialize_public_key, serialize_public_key};
 
@@ -134,7 +134,7 @@ pub(super) fn encapsulate<
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, KyberSharedSecret) {
+) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&H(public_key.as_slice()));
 
@@ -183,7 +183,7 @@ pub(super) fn decapsulate<
 >(
     secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
-) -> KyberSharedSecret {
+) -> MlKemSharedSecret {
     let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
