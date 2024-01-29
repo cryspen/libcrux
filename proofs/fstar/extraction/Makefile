@@ -77,7 +77,7 @@ UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIE
 # *extend* the set of relevant files with the tests.
 ROOTS = $(UNVERIFIED) $(VERIFIED)
 
-FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME)
+FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) ../../../sys/platform/proofs/fstar/extraction/
 
 FSTAR_FLAGS = --cmi \
   --warn_error -331-321-274 \

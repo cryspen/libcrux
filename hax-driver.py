@@ -117,46 +117,25 @@ if options.verify_extraction:
 elif options.kyber_reference:
     # Delete all extracted F* files
     shell(["rm", "-f", "./proofs/fstar/extraction/Libcrux*"])
-    # Extract the platform crate
+    # Extract both `libcrux` and `libcrux-platform`
     shell(
         [
-            "cargo",
-            "hax",
-            "-C",
-            "-p",
-            "libcrux-platform",
-            ";",
+            "cargo", "hax",
+            "-C", "-p", "libcrux", "-p", "libcrux-platform", ";",
             "into",
-            "fstar",
-            "--interfaces",
-            "+**",
-        ],
-        cwd=".",
-        env=hax_env,
-    )
-    # Copy over the platform fsti
-    shell(
-        [
-            "cp",
-            "sys/platform/proofs/fstar/extraction/Libcrux_platform.fsti",
-            "proofs/fstar/extraction/",
-        ]
-    )
-    # Extract ml-kem from libcrux
-    shell(
-        cargo_hax_into
-        + [
             "-i",
-            "-** +libcrux::kem::kyber::** +libcrux_platform::** {} -libcrux::**::types::index_impls::**".format(
-                exclude_sha3_implementations
-            ),
+            f"-** +libcrux::kem::kyber::** +libcrux_platform::** {exclude_sha3_implementations} -libcrux::**::types::index_impls::**",
             "fstar",
             "--interfaces",
-            "+* -libcrux::kem::kyber::types",
+            "+* -libcrux::kem::kyber::types +!libcrux_platform::**",
         ],
         cwd=".",
         env=hax_env,
     )
+    # Delete F* implementation modules for `libcrux_platform` (TODO:
+    # remove this when https://github.com/hacspec/hax/issues/465 is
+    # closed)
+    shell(["rm", "-f", "./sys/platform/proofs/fstar/extraction/*.fst"])
 elif options.kyber_specification:
     shell(
         cargo_hax_into
