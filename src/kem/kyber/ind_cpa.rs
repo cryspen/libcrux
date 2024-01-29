@@ -27,7 +27,7 @@ pub(super) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
-fn serialize_public_key<
+pub(super) fn serialize_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -45,7 +45,9 @@ fn serialize_public_key<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] on each ring element.
 #[inline(always)]
-fn deserialize_public_key<const K: usize>(public_key: &[u8]) -> [PolynomialRingElement; K] {
+pub(super) fn deserialize_public_key<const K: usize>(
+    public_key: &[u8],
+) -> [PolynomialRingElement; K] {
     let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
     cloop! {
         for (i, t_as_ntt_bytes) in public_key

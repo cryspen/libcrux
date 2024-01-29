@@ -86,7 +86,7 @@ pub mod rsa_pss {
 
     use super::{DigestAlgorithm, Error};
 
-    /// A [`Algorithm::RsaPss`] Signature
+    /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) Signature
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct RsaPssSignature {
         pub(super) value: Vec<u8>,
@@ -121,7 +121,7 @@ pub mod rsa_pss {
         }
     }
 
-    /// A [`Algorithm::RsaPss`] public key.
+    /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) public key.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct RsaPssPublicKey {
         n: Vec<u8>,
@@ -211,7 +211,7 @@ pub mod rsa_pss {
 
     /// An RSA-PSS private key.
     /// The private key holds a [`RsaPssPublicKey`] with the public modulus.
-    /// A [`Algorithm::RsaPss`] private key.
+    /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) private key.
     pub struct RsaPssPrivateKey<'a> {
         pk: &'a RsaPssPublicKey,
         d: Vec<u8>,
