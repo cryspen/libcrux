@@ -72,6 +72,9 @@ jobs:
               PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
               ./hax-driver.py --verify-extraction
 
+      - name: 🏃 Regenerate `extraction-*` folders
+        run: ./proofs/fstar/patches.sh apply
+
       - name: 🏃 Verify Kyber `extraction-edited` F* code
         run: |
           env FSTAR_HOME=${{ github.workspace }}/fstar \
