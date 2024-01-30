@@ -1,6 +1,6 @@
 use crate::{hax_utils::hax_debug_assert, kem::kyber::constants::SHARED_SECRET_SIZE};
 
-// TODO: Examine the output that LLVM produces for this code to ensure
+// Examine the output that LLVM produces for this code from time to time to ensure
 // operations are not being optimized away/constant-timedness is not being broken.
 
 /// Return 1 if `value` is not zero and 0 otherwise.
@@ -8,7 +8,7 @@ use crate::{hax_utils::hax_debug_assert, kem::kyber::constants::SHARED_SECRET_SI
     hax_lib::implies(value == 0, || result == 0) &&
     hax_lib::implies(value != 0, || result == 1)
 ))]
-#[inline]
+#[inline(never)] // Don't inline this to avoid that the compiler optimizes this out.
 fn is_non_zero(value: u8) -> u8 {
     let value = value as u16;
 

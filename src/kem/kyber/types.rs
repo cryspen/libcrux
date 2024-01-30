@@ -92,28 +92,28 @@ macro_rules! impl_index_impls_for_generic_struct {
     };
 }
 
-impl_generic_struct!(KyberCiphertext);
-impl_generic_struct!(KyberPrivateKey);
-impl_generic_struct!(KyberPublicKey);
+impl_generic_struct!(MlKemCiphertext);
+impl_generic_struct!(MlKemPrivateKey);
+impl_generic_struct!(MlKemPublicKey);
 
 // These traits are used only in `ind_cpa` for kyber cipher text.
 mod index_impls {
     use super::*;
-    impl_index_impls_for_generic_struct!(KyberCiphertext);
-    impl_index_impls_for_generic_struct!(KyberPrivateKey);
-    impl_index_impls_for_generic_struct!(KyberPublicKey);
+    impl_index_impls_for_generic_struct!(MlKemCiphertext);
+    impl_index_impls_for_generic_struct!(MlKemPrivateKey);
+    impl_index_impls_for_generic_struct!(MlKemPublicKey);
 }
 
-/// A Kyber key pair
-pub struct KyberKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
-    pub(crate) sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
-    pub(crate) pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
+/// An ML-KEM key pair
+pub struct MlKemKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
+    pub(crate) sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
+    pub(crate) pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
 }
 
 impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
-    KyberKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
+    MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>
 {
-    /// Creates a new [`KyberKeyPair`].
+    /// Creates a new [`MlKemKeyPair`].
     pub fn new(sk: [u8; PRIVATE_KEY_SIZE], pk: [u8; PUBLIC_KEY_SIZE]) -> Self {
         Self {
             sk: sk.into(),
@@ -122,17 +122,17 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     }
 
     pub fn from(
-        sk: KyberPrivateKey<PRIVATE_KEY_SIZE>,
-        pk: KyberPublicKey<PUBLIC_KEY_SIZE>,
+        sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
+        pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
     ) -> Self {
         Self { sk, pk }
     }
 
-    pub fn public_key(&self) -> &KyberPublicKey<PUBLIC_KEY_SIZE> {
+    pub fn public_key(&self) -> &MlKemPublicKey<PUBLIC_KEY_SIZE> {
         &self.pk
     }
 
-    pub fn private_key(&self) -> &KyberPrivateKey<PRIVATE_KEY_SIZE> {
+    pub fn private_key(&self) -> &MlKemPrivateKey<PRIVATE_KEY_SIZE> {
         &self.sk
     }
 
