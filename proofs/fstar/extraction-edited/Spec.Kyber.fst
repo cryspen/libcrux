@@ -167,15 +167,13 @@ type dT = d: nat {d = 1 \/ d = 4 \/ d = 5 \/ d = 10 \/ d = 11 \/ d = 12}
 let compress_d (d: dT {d <> 12}) (x: field_element): field_element
   = (pow2 d * x + 1664) / v v_FIELD_MODULUS
 
-assume val bits_to_bytes (#bytes: usize) (f: (i:nat {i < v bytes * 8} -> bit))
-  : Pure (t_Array u8 bytes)
-         (requires True)
-         (ensures fun r -> (forall i. bit_vec_of_int_arr r 8 i == f i))
+let bits_to_bytes #bytes = bit_vec_to_u8_arr #bytes
 
-assume val bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
-  : Pure (i:nat {i < v bytes * 8} -> bit)
+let bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
+  : Pure (i: bit_vec (v bytes * 8))
          (requires True)
          (ensures fun f -> (forall i. bit_vec_of_int_arr r 8 i == f i))
+  = bit_vec_of_int_arr r 8
 
 let byte_encode (d: dT) (coefficients: polynomial): t_Array u8 (sz (32 * d))
   = bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_arr coefficients d)
