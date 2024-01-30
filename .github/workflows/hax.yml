@@ -62,10 +62,14 @@ jobs:
           sudo apt-get install --yes nodejs
           ./setup.sh
 
-      - name: 🏃 Extract and verify the Kyber reference code
+      - name: 🏃 Make sure the extracted Kyber snapshot is up-to-date
         run: |
           eval $(opam env)
           ./hax-driver.py --kyber-reference
+          git diff --exit-code
+
+      - name: 🏃 Extract and verify the Kyber reference code
+        run: |
           env FSTAR_HOME=${{ github.workspace }}/fstar \
               HACL_HOME=${{ github.workspace }}/hacl-star \
               HAX_HOME=${{ github.workspace }}/hax \
