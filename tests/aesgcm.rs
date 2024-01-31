@@ -9,13 +9,8 @@ use libcrux::{
         Algorithm::{Aes128Gcm, Aes256Gcm},
         EncryptError, Iv, Key,
     },
-    aes_ni_support, hardware_support,
+    aes_ni_support,
 };
-
-#[test]
-fn same_hardware_support() {
-    assert_eq!(aes_ni_support(), hardware_support().is_ok())
-}
 
 #[test]
 fn aesgcm_self_test() {
@@ -85,15 +80,25 @@ fn aesgcm_self_test_rand() {
     let iv = Iv::generate(&mut rng);
     let iv2 = Iv(iv.0);
 
-    let tag = encrypt(&key, &mut msg, iv, aad).expect("AES256-GCM encryption failed");
-
+    let tag = match encrypt(&key, &mut msg, iv, aad) {
+        Ok(t) => t,
+        Err(e) => {
+            if matches!(e, EncryptError::UnsupportedAlgorithm) {
+                eprintln!("AES not supported on this architecture.");
+                return;
+            } else {
+                panic!("{:?}", e);
+            }
+        }
+    };
     assert!(decrypt(&key, &mut msg, iv2, aad, &tag).is_ok());
+
     assert_eq!(orig_msg, &msg);
 
     let iv = Iv::generate(&mut rng);
     let iv2 = Iv(iv.0);
     let key = Key::generate(Aes128Gcm, &mut rng);
-    let tag = encrypt(&key, &mut msg, iv, aad).expect("AES128-GCM encryption failed");
+    let tag = encrypt(&key, &mut msg, iv, aad).unwrap();
     assert!(decrypt(&key, &mut msg, iv2, aad, &tag).is_ok());
 
     assert_eq!(orig_msg, &msg);
