@@ -27,8 +27,8 @@ pub enum KeyError {
     InvalidKey,
 }
 
-impl std::fmt::Display for KeyError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for KeyError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             KeyError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
             KeyError::InvalidKey => write!(f, "Invalid key."),
@@ -40,8 +40,8 @@ impl std::fmt::Display for KeyError {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct InvalidTagError;
 
-impl std::fmt::Display for InvalidTagError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for InvalidTagError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "Invalid tag.")
     }
 }
@@ -50,8 +50,8 @@ impl std::fmt::Display for InvalidTagError {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct InvalidIvError;
 
-impl std::fmt::Display for InvalidIvError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for InvalidIvError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "Invalid IV.")
     }
 }
@@ -60,8 +60,8 @@ impl std::fmt::Display for InvalidIvError {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct UnsupportedAlgorithmError;
 
-impl std::fmt::Display for UnsupportedAlgorithmError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for UnsupportedAlgorithmError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "Algorithm not supported.")
     }
 }
@@ -76,8 +76,8 @@ pub enum EncryptError {
     InternalError,
 }
 
-impl std::fmt::Display for EncryptError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for EncryptError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             EncryptError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
             EncryptError::InternalError => write!(f, "Internal error."),
@@ -98,8 +98,8 @@ pub enum DecryptError {
     InternalError,
 }
 
-impl std::fmt::Display for DecryptError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for DecryptError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             DecryptError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
             DecryptError::DecryptionFailed => write!(f, "Decryption failed."),
@@ -107,13 +107,6 @@ impl std::fmt::Display for DecryptError {
         }
     }
 }
-
-impl std::error::Error for UnsupportedAlgorithmError {}
-impl std::error::Error for KeyError {}
-impl std::error::Error for InvalidTagError {}
-impl std::error::Error for InvalidIvError {}
-impl std::error::Error for DecryptError {}
-impl std::error::Error for EncryptError {}
 
 impl From<UnsupportedAlgorithmError> for DecryptError {
     fn from(_: UnsupportedAlgorithmError) -> Self {
