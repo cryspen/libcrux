@@ -80,10 +80,7 @@ VERIFIED = \
 	Libcrux.Kem.Kyber.Ntt.fsti \
 	Libcrux.Kem.Kyber.Ntt.fst \
 	Libcrux.Kem.Kyber.Sampling.fst \
-	Libcrux.Kem.Kyber.Serialize.PartA.fsti \
-	Libcrux.Kem.Kyber.Serialize.PartA.fst \
-	Libcrux.Kem.Kyber.Serialize.PartB.fsti \
-	Libcrux.Kem.Kyber.Serialize.PartB.fst \
+	Libcrux.Kem.Kyber.Serialize.fsti \
 	Libcrux.Kem.Kyber.Serialize.fst
 
 UNVERIFIED =
