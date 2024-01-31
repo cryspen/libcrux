@@ -183,7 +183,12 @@ let byte_encode (d: dT) (coefficients: polynomial): t_Array u8 (sz (32 * d))
   = bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_arr coefficients d)
 
 let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial
-  = admit ()
+  = let bv = bit_vec_of_int_arr coefficients 8 in
+    let arr: t_Array nat (sz 256) = bit_vec_to_nat_arr d bv in
+    let p = map' (fun (x: nat) -> x % v v_FIELD_MODULUS <: nat) arr in
+    introduce forall i. Seq.index p i < v v_FIELD_MODULUS
+    with assert (Seq.index p i == Seq.index p (v (sz i)));
+    p
 
 let vector_encode_12 (#p:params) (v: vector p): t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p)
   = let s: t_Array (t_Array _ (sz 384)) p.v_RANK = map' (byte_encode 12) v in
