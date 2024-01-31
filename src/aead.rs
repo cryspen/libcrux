@@ -17,17 +17,120 @@ use crate::hacl::chacha20_poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
-/// The AEAD Errors.
+/// An error occurred when reading a [`Key`].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Error {
+pub enum KeyError {
+    /// An provided algorithm is not supported.
     UnsupportedAlgorithm,
-    EncryptionError,
+
+    /// The provided key is invalid.
     InvalidKey,
-    DecryptionFailed,
-    InvalidIv,
-    InvalidTag,
 }
 
+impl std::fmt::Display for KeyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            KeyError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
+            KeyError::InvalidKey => write!(f, "Invalid key."),
+        }
+    }
+}
+
+/// An error occurred when reading a [`Tag`].
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct InvalidTagError;
+
+impl std::fmt::Display for InvalidTagError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Invalid tag.")
+    }
+}
+
+/// An error occurred when reading an [`Iv`].
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct InvalidIvError;
+
+impl std::fmt::Display for InvalidIvError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Invalid IV.")
+    }
+}
+
+/// An provided algorithm is not supported.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct UnsupportedAlgorithmError;
+
+impl std::fmt::Display for UnsupportedAlgorithmError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Algorithm not supported.")
+    }
+}
+
+/// An error occurred during encryption.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum EncryptError {
+    /// An provided algorithm is not supported.
+    UnsupportedAlgorithm,
+
+    /// An internal error occurred.
+    InternalError,
+}
+
+impl std::fmt::Display for EncryptError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EncryptError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
+            EncryptError::InternalError => write!(f, "Internal error."),
+        }
+    }
+}
+
+/// An error occurred during decryption.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum DecryptError {
+    /// An provided algorithm is not supported.
+    UnsupportedAlgorithm,
+
+    /// The ciphertext could not be decrypted with the given key.
+    DecryptionFailed,
+
+    /// An internal error occurred.
+    InternalError,
+}
+
+impl std::fmt::Display for DecryptError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DecryptError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
+            DecryptError::DecryptionFailed => write!(f, "Decryption failed."),
+            DecryptError::InternalError => write!(f, "Internal error."),
+        }
+    }
+}
+
+impl std::error::Error for UnsupportedAlgorithmError {}
+impl std::error::Error for KeyError {}
+impl std::error::Error for InvalidTagError {}
+impl std::error::Error for InvalidIvError {}
+impl std::error::Error for DecryptError {}
+impl std::error::Error for EncryptError {}
+
+impl From<UnsupportedAlgorithmError> for DecryptError {
+    fn from(_: UnsupportedAlgorithmError) -> Self {
+        DecryptError::UnsupportedAlgorithm
+    }
+}
+
+impl From<UnsupportedAlgorithmError> for KeyError {
+    fn from(_: UnsupportedAlgorithmError) -> Self {
+        KeyError::UnsupportedAlgorithm
+    }
+}
+impl From<UnsupportedAlgorithmError> for EncryptError {
+    fn from(_: UnsupportedAlgorithmError) -> Self {
+        EncryptError::UnsupportedAlgorithm
+    }
+}
 /// The AEAD Algorithm Identifier.
 #[derive(Clone, Copy, PartialEq, Debug)]
 #[repr(u32)]
@@ -86,9 +189,9 @@ impl Algorithm {
 
     /// Make sure the algorithm is supported by the hardware.
     #[inline]
-    fn supported(self) -> Result<(), Error> {
+    fn supported(self) -> Result<(), UnsupportedAlgorithmError> {
         if matches!(self, Algorithm::Aes128Gcm | Algorithm::Aes256Gcm) && !aes_ni_support() {
-            Err(Error::UnsupportedAlgorithm)
+            Err(UnsupportedAlgorithmError)
         } else {
             Ok(())
         }
@@ -142,8 +245,8 @@ mod keygen {
         }
 
         /// Wrap an array.
-        pub fn new(iv: impl AsRef<[u8]>) -> Result<Self, Error> {
-            Ok(Self(iv.as_ref().try_into().map_err(|_| Error::InvalidIv)?))
+        pub fn new(iv: impl AsRef<[u8]>) -> Result<Self, InvalidIvError> {
+            Ok(Self(iv.as_ref().try_into().map_err(|_| InvalidIvError)?))
         }
     }
 }
@@ -157,37 +260,37 @@ pub enum Key {
 
 impl Key {
     /// Generate a [`Key`] for the [`Algorithm`] from the raw `bytes`.
-    pub fn from_bytes(alg: Algorithm, bytes: Vec<u8>) -> Result<Self, Error> {
+    pub fn from_bytes(alg: Algorithm, bytes: Vec<u8>) -> Result<Self, KeyError> {
         alg.supported()?;
 
-        Ok(match alg {
-            Algorithm::Aes128Gcm => {
-                Self::Aes128(Aes128Key(bytes.try_into().map_err(|_| Error::InvalidKey)?))
-            }
-            Algorithm::Aes256Gcm => {
-                Self::Aes256(Aes256Key(bytes.try_into().map_err(|_| Error::InvalidKey)?))
-            }
-            Algorithm::Chacha20Poly1305 => Self::Chacha20Poly1305(Chacha20Key(
-                bytes.try_into().map_err(|_| Error::InvalidKey)?,
-            )),
-        })
+        fn to_array<const N: usize>(bytes: Vec<u8>) -> Result<[u8; N], KeyError> {
+            bytes.try_into().map_err(|_| KeyError::InvalidKey)
+        }
+
+        let key = match alg {
+            Algorithm::Aes128Gcm => Self::Aes128(Aes128Key(to_array(bytes)?)),
+            Algorithm::Aes256Gcm => Self::Aes256(Aes256Key(to_array(bytes)?)),
+            Algorithm::Chacha20Poly1305 => Self::Chacha20Poly1305(Chacha20Key(to_array(bytes)?)),
+        };
+
+        Ok(key)
     }
 
     /// Generate a [`Key`] for the [`Algorithm`] from the raw `bytes` slice.
-    pub fn from_slice(alg: Algorithm, bytes: impl AsRef<[u8]>) -> Result<Self, Error> {
+    pub fn from_slice(alg: Algorithm, bytes: impl AsRef<[u8]>) -> Result<Self, KeyError> {
         alg.supported()?;
 
-        Ok(match alg {
-            Algorithm::Aes128Gcm => Self::Aes128(Aes128Key(
-                bytes.as_ref().try_into().map_err(|_| Error::InvalidKey)?,
-            )),
-            Algorithm::Aes256Gcm => Self::Aes256(Aes256Key(
-                bytes.as_ref().try_into().map_err(|_| Error::InvalidKey)?,
-            )),
-            Algorithm::Chacha20Poly1305 => Self::Chacha20Poly1305(Chacha20Key(
-                bytes.as_ref().try_into().map_err(|_| Error::InvalidKey)?,
-            )),
-        })
+        fn to_array<const N: usize>(bytes: impl AsRef<[u8]>) -> Result<[u8; N], KeyError> {
+            bytes.as_ref().try_into().map_err(|_| KeyError::InvalidKey)
+        }
+
+        let key = match alg {
+            Algorithm::Aes128Gcm => Self::Aes128(Aes128Key(to_array(bytes)?)),
+            Algorithm::Aes256Gcm => Self::Aes256(Aes256Key(to_array(bytes)?)),
+            Algorithm::Chacha20Poly1305 => Self::Chacha20Poly1305(Chacha20Key(to_array(bytes)?)),
+        };
+
+        Ok(key)
     }
 }
 
@@ -196,8 +299,8 @@ pub struct Tag([u8; 16]);
 
 impl Tag {
     /// Convert slice into a [`Tag`]
-    pub fn from_slice(t: impl AsRef<[u8]>) -> Result<Self, Error> {
-        Ok(Self(t.as_ref().try_into().map_err(|_| Error::InvalidTag)?))
+    pub fn from_slice(t: impl AsRef<[u8]>) -> Result<Self, InvalidTagError> {
+        Ok(Self(t.as_ref().try_into().map_err(|_| InvalidTagError)?))
     }
 }
 
@@ -257,9 +360,9 @@ fn decrypt_256(
     iv: Iv,
     aad: &[u8],
     tag: &Tag,
-) -> Result<(), Error> {
+) -> Result<(), DecryptError> {
     chacha20_poly1305::simd256::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
-        .map_err(|_| Error::DecryptionFailed)
+        .map_err(|_| DecryptError::DecryptionFailed)
 }
 
 /// Fallback when simd256 is detected at runtime but it wasn't compiled.
@@ -282,9 +385,9 @@ fn decrypt_128(
     iv: Iv,
     aad: &[u8],
     tag: &Tag,
-) -> Result<(), Error> {
+) -> Result<(), DecryptError> {
     chacha20_poly1305::simd128::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
-        .map_err(|_| Error::DecryptionFailed)
+        .map_err(|_| DecryptError::DecryptionFailed)
 }
 
 /// Fallback when simd128 is detected at runtime but it wasn't compiled.
@@ -306,17 +409,22 @@ fn decrypt_32(
     iv: Iv,
     aad: &[u8],
     tag: &Tag,
-) -> Result<(), Error> {
+) -> Result<(), DecryptError> {
     chacha20_poly1305::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
-        .map_err(|_| Error::DecryptionFailed)
+        .map_err(|_| DecryptError::DecryptionFailed)
 }
 
 #[cfg(aes_ni)]
-fn aes_encrypt_128(key: &Aes128Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
+fn aes_encrypt_128(
+    key: &Aes128Key,
+    msg_ctxt: &mut [u8],
+    iv: Iv,
+    aad: &[u8],
+) -> Result<Tag, EncryptError> {
     aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
-            aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-            _ => Error::EncryptionError,
+            aesgcm::Error::UnsupportedHardware => EncryptError::UnsupportedAlgorithm,
+            _ => EncryptError::InternalError,
         })
         .map(|t| t.into())
 }
@@ -327,11 +435,16 @@ fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag,
 }
 
 #[cfg(aes_ni)]
-fn aes_encrypt_256(key: &Aes256Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
+fn aes_encrypt_256(
+    key: &Aes256Key,
+    msg_ctxt: &mut [u8],
+    iv: Iv,
+    aad: &[u8],
+) -> Result<Tag, EncryptError> {
     aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
-            aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-            _ => Error::EncryptionError,
+            aesgcm::Error::UnsupportedHardware => EncryptError::UnsupportedAlgorithm,
+            _ => EncryptError::InternalError,
         })
         .map(|t| t.into())
 }
@@ -348,16 +461,22 @@ fn aes_decrypt_128(
     iv: Iv,
     aad: &[u8],
     tag: &Tag,
-) -> Result<(), Error> {
+) -> Result<(), DecryptError> {
     aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
-        aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-        _ => Error::EncryptionError,
+        aesgcm::Error::UnsupportedHardware => DecryptError::UnsupportedAlgorithm,
+        _ => DecryptError::InternalError,
     })
 }
 
 #[cfg(not(aes_ni))]
-fn aes_decrypt_128(_: &Aes128Key, _: &mut [u8], _: Iv, _: &[u8], _: &Tag) -> Result<(), Error> {
-    Err(Error::UnsupportedAlgorithm)
+fn aes_decrypt_128(
+    _: &Aes128Key,
+    _: &mut [u8],
+    _: Iv,
+    _: &[u8],
+    _: &Tag,
+) -> Result<(), DecryptError> {
+    Err(DecryptError::UnsupportedAlgorithm)
 }
 
 #[cfg(aes_ni)]
@@ -367,35 +486,41 @@ fn aes_decrypt_256(
     iv: Iv,
     aad: &[u8],
     tag: &Tag,
-) -> Result<(), Error> {
+) -> Result<(), DecryptError> {
     aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
-        aesgcm::Error::UnsupportedHardware => Error::UnsupportedAlgorithm,
-        _ => Error::EncryptionError,
+        aesgcm::Error::UnsupportedHardware => DecryptError::UnsupportedAlgorithm,
+        _ => DecryptError::InternalError,
     })
 }
 
 #[cfg(not(aes_ni))]
-fn aes_decrypt_256(_: &Aes256Key, _: &mut [u8], _: Iv, _: &[u8], _: &Tag) -> Result<(), Error> {
-    Err(Error::UnsupportedAlgorithm)
+fn aes_decrypt_256(
+    _: &Aes256Key,
+    _: &mut [u8],
+    _: Iv,
+    _: &[u8],
+    _: &Tag,
+) -> Result<(), DecryptError> {
+    Err(DecryptError::UnsupportedAlgorithm)
 }
 
 /// AEAD encrypt the message in `msg_ctxt` with the `key`, `iv` and `aad`.
 ///
 /// Returns the `Tag` and the ciphertext in `msg_ctxt`.
-pub fn encrypt(key: &Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, Error> {
+pub fn encrypt(key: &Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag, EncryptError> {
     match key {
         Key::Aes128(key) => {
             if aes_ni_support() {
                 aes_encrypt_128(key, msg_ctxt, iv, aad)
             } else {
-                Err(Error::UnsupportedAlgorithm)
+                Err(EncryptError::UnsupportedAlgorithm)
             }
         }
         Key::Aes256(key) => {
             if aes_ni_support() {
                 aes_encrypt_256(key, msg_ctxt, iv, aad)
             } else {
-                Err(Error::UnsupportedAlgorithm)
+                Err(EncryptError::UnsupportedAlgorithm)
             }
         }
         Key::Chacha20Poly1305(key) => Ok(if simd256_support() {
@@ -416,7 +541,7 @@ pub fn encrypt_detached(
     msg: impl AsRef<[u8]>,
     iv: Iv,
     aad: impl AsRef<[u8]>,
-) -> Result<(Tag, Vec<u8>), Error> {
+) -> Result<(Tag, Vec<u8>), EncryptError> {
     let mut msg_ctxt = msg.as_ref().to_vec();
     let tag = encrypt(key, &mut msg_ctxt, iv, aad.as_ref())?;
     Ok((tag, msg_ctxt))
@@ -426,20 +551,26 @@ pub fn encrypt_detached(
 /// `tag`.
 ///
 /// Returns the plaintext in `ctxt_msg` or an error if the decryption fails.
-pub fn decrypt(key: &Key, ctxt_msg: &mut [u8], iv: Iv, aad: &[u8], tag: &Tag) -> Result<(), Error> {
+pub fn decrypt(
+    key: &Key,
+    ctxt_msg: &mut [u8],
+    iv: Iv,
+    aad: &[u8],
+    tag: &Tag,
+) -> Result<(), DecryptError> {
     match key {
         Key::Aes128(key) => {
             if aes_ni_support() {
                 aes_decrypt_128(key, ctxt_msg, iv, aad, tag)
             } else {
-                Err(Error::UnsupportedAlgorithm)
+                Err(DecryptError::UnsupportedAlgorithm)
             }
         }
         Key::Aes256(key) => {
             if aes_ni_support() {
                 aes_decrypt_256(key, ctxt_msg, iv, aad, tag)
             } else {
-                Err(Error::UnsupportedAlgorithm)
+                Err(DecryptError::UnsupportedAlgorithm)
             }
         }
         Key::Chacha20Poly1305(key) => {
@@ -464,7 +595,7 @@ pub fn decrypt_detached(
     iv: Iv,
     aad: impl AsRef<[u8]>,
     tag: &Tag,
-) -> Result<Vec<u8>, Error> {
+) -> Result<Vec<u8>, DecryptError> {
     let mut ctxt_msg = ctxt.as_ref().to_vec();
     decrypt(key, &mut ctxt_msg, iv, aad.as_ref(), tag)?;
     Ok(ctxt_msg)
