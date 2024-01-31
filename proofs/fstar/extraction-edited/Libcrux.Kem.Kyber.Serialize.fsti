@@ -7,11 +7,11 @@ open MkSeq
 let int_arr_bitwise_eq
        #t1 #t2 #n1 #n2
        (arr1: t_Array (int_t t1) n1)
-       (d1: bit_num t1)
+       (d1: num_bits t1)
        (arr2: t_Array (x: int_t t2) n2)
-       (d2: bit_num t2 {v n1 * d1 == v n2 * d2})
+       (d2: num_bits t2 {v n1 * d1 == v n2 * d2})
      = forall i. i < v n1 * d1
-       ==> bit_vec_of_int_arr arr1 d1 i == bit_vec_of_int_arr arr2 d2 i
+       ==> bit_vec_of_int_t_array arr1 d1 i == bit_vec_of_int_t_array arr2 d2 i
 
 val compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32)
     : Prims.Pure (u8 & u8 & u8 & u8 & u8) 

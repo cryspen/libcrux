@@ -170,21 +170,21 @@ let compress_d (d: dT {d <> 12}) (x: field_element): field_element
 let bits_to_bytes (#bytes: usize) (bv: bit_vec (v bytes * 8))
   : Pure (t_Array u8 bytes)
          (requires True)
-         (ensures fun r -> (forall i. bit_vec_of_int_arr r 8 i == bv i))
-  = bit_vec_to_int_arr 8 bv
+         (ensures fun r -> (forall i. bit_vec_of_int_t_array r 8 i == bv i))
+  = bit_vec_to_int_t_array 8 bv
 
 let bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
   : Pure (i: bit_vec (v bytes * 8))
          (requires True)
-         (ensures fun f -> (forall i. bit_vec_of_int_arr r 8 i == f i))
-  = bit_vec_of_int_arr r 8
+         (ensures fun f -> (forall i. bit_vec_of_int_t_array r 8 i == f i))
+  = bit_vec_of_int_t_array r 8
 
 let byte_encode (d: dT) (coefficients: polynomial): t_Array u8 (sz (32 * d))
-  = bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_arr coefficients d)
+  = bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_array coefficients d)
 
 let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial
-  = let bv = bit_vec_of_int_arr coefficients 8 in
-    let arr: t_Array nat (sz 256) = bit_vec_to_nat_arr d bv in
+  = let bv = bit_vec_of_int_t_array coefficients 8 in
+    let arr: t_Array nat (sz 256) = bit_vec_to_nat_array d bv in
     let p = map' (fun (x: nat) -> x % v v_FIELD_MODULUS <: nat) arr in
     introduce forall i. Seq.index p i < v v_FIELD_MODULUS
     with assert (Seq.index p i == Seq.index p (v (sz i)));
