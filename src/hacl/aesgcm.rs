@@ -15,8 +15,8 @@ pub enum Error {
     /// The hardware does not support the required features.
     UnsupportedHardware,
 
-    /// Encryption failed because the provided arguments were not valid.
-    EncryptionError,
+    /// An error occurred because the provided arguments were not valid.
+    InvalidArgument,
 
     /// Decryption failed.
     InvalidCiphertext,
@@ -60,19 +60,19 @@ macro_rules! implement {
                 let mut state_ptr: *mut EverCrypt_AEAD_state_s = std::ptr::null_mut();
                 let e = EverCrypt_AEAD_create_in($alg as u8, &mut state_ptr, key.as_ptr() as _);
                 if e != 0 {
-                    return Err(Error::EncryptionError);
+                    return Err(Error::InvalidArgument);
                 }
                 EverCrypt_AEAD_encrypt(
                     state_ptr,
                     iv.as_ptr() as _,
-                    iv.len().try_into().map_err(|_| Error::EncryptionError)?,
+                    iv.len().try_into().map_err(|_| Error::InvalidArgument)?,
                     aad.as_ptr() as _,
-                    aad.len().try_into().map_err(|_| Error::EncryptionError)?,
+                    aad.len().try_into().map_err(|_| Error::InvalidArgument)?,
                     msg_ctxt.as_ptr() as _,
                     msg_ctxt
                         .len()
                         .try_into()
-                        .map_err(|_| Error::EncryptionError)?,
+                        .map_err(|_| Error::InvalidArgument)?,
                     msg_ctxt.as_mut_ptr(),
                     tag.as_mut_ptr(),
                 )
@@ -80,7 +80,7 @@ macro_rules! implement {
             if ok == 0 {
                 Ok(tag)
             } else {
-                Err(Error::EncryptionError)
+                Err(Error::InvalidArgument)
             }
         }
 
@@ -102,19 +102,19 @@ macro_rules! implement {
                 let mut state_ptr: *mut EverCrypt_AEAD_state_s = std::ptr::null_mut();
                 let e = EverCrypt_AEAD_create_in($alg as u8, &mut state_ptr, key.as_ptr() as _);
                 if e != 0 {
-                    return Err(Error::EncryptionError);
+                    return Err(Error::InvalidArgument);
                 }
                 EverCrypt_AEAD_decrypt(
                     state_ptr,
                     iv.as_ptr() as _,
-                    iv.len().try_into().map_err(|_| Error::EncryptionError)?,
+                    iv.len().try_into().map_err(|_| Error::InvalidArgument)?,
                     aad.as_ptr() as _,
-                    aad.len().try_into().map_err(|_| Error::EncryptionError)?,
+                    aad.len().try_into().map_err(|_| Error::InvalidArgument)?,
                     payload.as_ptr() as _,
                     payload
                         .len()
                         .try_into()
-                        .map_err(|_| Error::EncryptionError)?,
+                        .map_err(|_| Error::InvalidArgument)?,
                     tag.as_ptr() as _,
                     payload.as_mut_ptr(),
                 )
