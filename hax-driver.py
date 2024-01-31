@@ -115,20 +115,27 @@ exclude_sha3_implementations = "-libcrux::hacl::sha3::** -libcrux::jasmin::sha3:
 if options.verify_extraction:
     shell(["make", "-C", "proofs/fstar/extraction/"])
 elif options.kyber_reference:
+    # Delete all extracted F* files
+    shell(["rm", "-f", "./proofs/fstar/extraction/Libcrux*"])
+    # Extract both `libcrux` and `libcrux-platform`
     shell(
-        cargo_hax_into
-        + [
+        [
+            "cargo", "hax",
+            "-C", "-p", "libcrux", "-p", "libcrux-platform", ";",
+            "into",
             "-i",
-            "-** +libcrux::kem::kyber::** {} -libcrux::digest::** -libcrux::**::types::index_impls::**".format(
-                exclude_sha3_implementations
-            ),
+            f"-** +libcrux::kem::kyber::** +!libcrux_platform::* {exclude_sha3_implementations} -libcrux::**::types::index_impls::**",
             "fstar",
             "--interfaces",
-            "+* -libcrux::kem::kyber::types",
+            "+* -libcrux::kem::kyber::types +!libcrux_platform::**",
         ],
         cwd=".",
         env=hax_env,
     )
+    # Delete F* implementation modules for `libcrux_platform` (TODO:
+    # remove this when https://github.com/hacspec/hax/issues/465 is
+    # closed)
+    shell(["rm", "-f", "./sys/platform/proofs/fstar/extraction/*.fst"])
 elif options.kyber_specification:
     shell(
         cargo_hax_into

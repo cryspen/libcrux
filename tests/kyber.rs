@@ -23,9 +23,8 @@ macro_rules! impl_consistency {
             let mut rng = OsRng;
 
             if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
-                if let Ok((shared_secret, ciphertext)) = kem::encapsulate(&public_key, &mut rng) {
-                    let shared_secret_decapsulated =
-                        kem::decapsulate(&ciphertext, &secret_key).unwrap();
+                if let Ok((shared_secret, ciphertext)) = public_key.encapsulate(&mut rng) {
+                    let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
                     assert_eq!(shared_secret.encode(), shared_secret_decapsulated.encode());
                 }
             }
@@ -65,10 +64,9 @@ macro_rules! impl_modified_ciphertext {
             let mut rng = OsRng;
 
             if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
-                if let Ok((shared_secret, ciphertext)) = kem::encapsulate(&public_key, &mut rng) {
+                if let Ok((shared_secret, ciphertext)) = public_key.encapsulate(&mut rng) {
                     let ciphertext = modify_ciphertext($alg, &mut rng, ciphertext);
-                    let shared_secret_decapsulated =
-                        kem::decapsulate(&ciphertext, &secret_key).unwrap();
+                    let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
 
                     assert_ne!(shared_secret.encode(), shared_secret_decapsulated.encode());
                 }
@@ -130,15 +128,13 @@ macro_rules! impl_modified_secret_key {
             let mut rng = OsRng;
 
             if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
-                if let Ok((shared_secret, ciphertext)) = kem::encapsulate(&public_key, &mut rng) {
+                if let Ok((shared_secret, ciphertext)) = public_key.encapsulate(&mut rng) {
                     let secret_key = modify_secret_key($alg, &mut rng, secret_key, false);
-                    let shared_secret_decapsulated =
-                        kem::decapsulate(&ciphertext, &secret_key).unwrap();
+                    let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
                     assert_ne!(shared_secret.encode(), shared_secret_decapsulated.encode());
 
                     let secret_key = modify_secret_key($alg, &mut rng, secret_key, true);
-                    let shared_secret_decapsulated =
-                        kem::decapsulate(&ciphertext, &secret_key).unwrap();
+                    let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
 
                     assert_eq!(
                         shared_secret_decapsulated.encode(),
@@ -165,14 +161,12 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
             let mut rng = OsRng;
 
             if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
-                if let Ok((_, ciphertext)) = kem::encapsulate(&public_key, &mut rng) {
+                if let Ok((_, ciphertext)) = public_key.encapsulate(&mut rng) {
                     let ciphertext = modify_ciphertext($alg, &mut rng, ciphertext);
-                    let shared_secret_decapsulated =
-                        kem::decapsulate(&ciphertext, &secret_key).unwrap();
+                    let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
 
                     let secret_key = modify_secret_key($alg, &mut rng, secret_key, true);
-                    let shared_secret_decapsulated_1 =
-                        kem::decapsulate(&ciphertext, &secret_key).unwrap();
+                    let shared_secret_decapsulated_1 = ciphertext.decapsulate(&secret_key).unwrap();
 
                     assert_ne!(
                         shared_secret_decapsulated.encode(),
@@ -193,27 +187,27 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
     };
 }
 
-impl_consistency!(consistency_512, Algorithm::Kyber512);
-impl_consistency!(consistency_768, Algorithm::Kyber768);
-impl_consistency!(consistency_1024, Algorithm::Kyber1024);
+impl_consistency!(consistency_512, Algorithm::MlKem512);
+impl_consistency!(consistency_768, Algorithm::MlKem768);
+impl_consistency!(consistency_1024, Algorithm::MlKem1024);
 
-impl_modified_ciphertext!(modified_ciphertext_512, Algorithm::Kyber512);
-impl_modified_ciphertext!(modified_ciphertext_768, Algorithm::Kyber768);
-impl_modified_ciphertext!(modified_ciphertext_1024, Algorithm::Kyber1024);
+impl_modified_ciphertext!(modified_ciphertext_512, Algorithm::MlKem512);
+impl_modified_ciphertext!(modified_ciphertext_768, Algorithm::MlKem768);
+impl_modified_ciphertext!(modified_ciphertext_1024, Algorithm::MlKem1024);
 
-impl_modified_secret_key!(modified_secret_key_512, Algorithm::Kyber512);
-impl_modified_secret_key!(modified_secret_key_768, Algorithm::Kyber768);
-impl_modified_secret_key!(modified_secret_key_1024, Algorithm::Kyber1024);
+impl_modified_secret_key!(modified_secret_key_512, Algorithm::MlKem512);
+impl_modified_secret_key!(modified_secret_key_768, Algorithm::MlKem768);
+impl_modified_secret_key!(modified_secret_key_1024, Algorithm::MlKem1024);
 
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_512,
-    Algorithm::Kyber512
+    Algorithm::MlKem512
 );
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_768,
-    Algorithm::Kyber768
+    Algorithm::MlKem768
 );
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_1024,
-    Algorithm::Kyber1024
+    Algorithm::MlKem1024
 );
