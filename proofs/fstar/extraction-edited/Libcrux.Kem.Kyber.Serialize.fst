@@ -183,7 +183,7 @@ let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
 let cast_bound_lemma 
   #t #u
   (n: int_t t) 
-  (d: bit_num t)
+  (d: num_bits t)
   : Lemma (requires bounded n d /\ d <= bits u /\ unsigned u /\ v n >= 0)
           (ensures  bounded (cast #(int_t t) #(int_t u) n) d)
           [SMTPat (bounded n d); SMTPat (cast #(int_t t) #(int_t u) n)]
