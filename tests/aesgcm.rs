@@ -9,8 +9,13 @@ use libcrux::{
         Algorithm::{Aes128Gcm, Aes256Gcm},
         EncryptError, Iv, Key,
     },
-    aes_ni_support,
+    aes_ni_support, hardware_support,
 };
+
+#[test]
+fn same_hardware_support() {
+    assert_eq!(aes_ni_support(), hardware_support().is_ok())
+}
 
 #[test]
 fn aesgcm_self_test() {

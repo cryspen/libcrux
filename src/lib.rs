@@ -6,6 +6,7 @@
 // `hax` configuration.
 pub(crate) mod hax_utils;
 
+pub use hacl::aesgcm::hardware_support;
 pub use libcrux_platform::aes_ni_support;
 
 // Jasmin

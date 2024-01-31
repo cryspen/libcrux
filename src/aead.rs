@@ -443,7 +443,8 @@ fn aes_encrypt_256(
     aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
             aesgcm::Error::UnsupportedHardware => EncryptError::UnsupportedAlgorithm,
-            _ => EncryptError::InternalError,
+            aesgcm::Error::InvalidArgument => EncryptError::InvalidArgument,
+            aesgcm::Error::InvalidCiphertext => EncryptError::InternalError,
         })
         .map(|t| t.into())
 }
