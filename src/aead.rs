@@ -374,7 +374,7 @@ fn decrypt_256(
     iv: Iv,
     aad: &[u8],
     tag: &Tag,
-) -> Result<(), Error> {
+) -> Result<(), DecryptError> {
     decrypt_128(key, ctxt_msg, iv, aad, tag)
 }
 
@@ -399,7 +399,7 @@ fn decrypt_128(
     iv: Iv,
     aad: &[u8],
     tag: &Tag,
-) -> Result<(), Error> {
+) -> Result<(), DecryptError> {
     decrypt_32(key, ctxt_msg, iv, aad, tag)
 }
 
@@ -430,8 +430,8 @@ fn aes_encrypt_128(
 }
 
 #[cfg(not(aes_ni))]
-fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag, Error> {
-    Err(Error::UnsupportedAlgorithm)
+fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag, EncryptError> {
+    Err(EncryptError::UnsupportedAlgorithm)
 }
 
 #[cfg(aes_ni)]
@@ -450,8 +450,8 @@ fn aes_encrypt_256(
 }
 
 #[cfg(not(aes_ni))]
-fn aes_encrypt_256(_: &Aes256Key, _: &mut [u8], _: Iv, _: &[u8]) -> Result<Tag, Error> {
-    Err(Error::UnsupportedAlgorithm)
+fn aes_encrypt_256(_: &Aes256Key, _: &mut [u8], _: Iv, _: &[u8]) -> Result<Tag, EncryptError> {
+    Err(EncryptError::UnsupportedAlgorithm)
 }
 
 #[cfg(aes_ni)]
