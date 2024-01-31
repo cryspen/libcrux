@@ -9,14 +9,14 @@ The edits (1) on the one hand between `extraction` and
 via diff files.
 
 Whenever the rust code changes, the extracted F* code in `extraction`
-changes as well. The CI then apply the diff files: if the patch
+changes as well. The CI then applies the diff files: if the patch
 process fails or if the resulting patched F* doesn't typecheck, the CI
 fails.
 
 The bash script `./patches.sh` takes care of the diffs:
  - `./patches.sh create` creates patches out of the `extraction*` folders;
  - `./patches.sh apply` drops the `extraction-edited` and
-   `extraction-secret-independent` folders and re-create them out of
+   `extraction-secret-independent` folders and re-creates them out of
    the `extraction-edited.patch` and
    `extraction-secret-independent.patch` files.
 
@@ -33,4 +33,5 @@ anything in the F* proofs, we should always make sure we keep the diff
 files and those folder in a coherent state.
 
 In other words, this means that the last commit of each PR should be
-about regeneration of diff files, using the command `./patches.sh create`.
+about regeneration of diff files (using the command `./patches.sh
+create`) and regeneration of the `extraction` folder.
