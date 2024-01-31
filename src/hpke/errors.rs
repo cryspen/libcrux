@@ -103,6 +103,7 @@ impl From<crate::aead::EncryptError> for HpkeError {
         match value {
             crate::aead::EncryptError::UnsupportedAlgorithm => Self::UnsupportedAlgorithm,
             crate::aead::EncryptError::InternalError => Self::CryptoError,
+            crate::aead::EncryptError::InvalidArgument => Self::InvalidParameters,
         }
     }
 }

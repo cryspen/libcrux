@@ -72,6 +72,9 @@ pub enum EncryptError {
     /// An provided algorithm is not supported.
     UnsupportedAlgorithm,
 
+    /// An error occurred because the provided arguments were not valid.
+    InvalidArgument,
+
     /// An internal error occurred.
     InternalError,
 }
@@ -81,6 +84,7 @@ impl core::fmt::Display for EncryptError {
         match self {
             EncryptError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
             EncryptError::InternalError => write!(f, "Internal error."),
+            EncryptError::InvalidArgument => write!(f, "Invalid argument."),
         }
     }
 }
@@ -124,6 +128,7 @@ impl From<UnsupportedAlgorithmError> for EncryptError {
         EncryptError::UnsupportedAlgorithm
     }
 }
+
 /// The AEAD Algorithm Identifier.
 #[derive(Clone, Copy, PartialEq, Debug)]
 #[repr(u32)]
@@ -417,7 +422,8 @@ fn aes_encrypt_128(
     aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
             aesgcm::Error::UnsupportedHardware => EncryptError::UnsupportedAlgorithm,
-            _ => EncryptError::InternalError,
+            aesgcm::Error::InvalidArgument => EncryptError::InvalidArgument,
+            aesgcm::Error::InvalidCiphertext => EncryptError::InternalError,
         })
         .map(|t| t.into())
 }
@@ -457,7 +463,8 @@ fn aes_decrypt_128(
 ) -> Result<(), DecryptError> {
     aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         aesgcm::Error::UnsupportedHardware => DecryptError::UnsupportedAlgorithm,
-        _ => DecryptError::InternalError,
+        aesgcm::Error::InvalidCiphertext => DecryptError::DecryptionFailed,
+        aesgcm::Error::InvalidArgument => DecryptError::InternalError,
     })
 }
 
@@ -482,7 +489,8 @@ fn aes_decrypt_256(
 ) -> Result<(), DecryptError> {
     aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
         aesgcm::Error::UnsupportedHardware => DecryptError::UnsupportedAlgorithm,
-        _ => DecryptError::InternalError,
+        aesgcm::Error::InvalidCiphertext => DecryptError::DecryptionFailed,
+        aesgcm::Error::InvalidArgument => DecryptError::InternalError,
     })
 }
 
