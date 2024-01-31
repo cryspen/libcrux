@@ -1323,6 +1323,21 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
   re
 #pop-options
 
+module A = Libcrux.Kem.Kyber.Arithmetic
+
+let bitwise_equality #len #d (p1 p2: (p: t_Array nat len {forall i. Seq.index p i < pow2 d}))
+  : Lemma 
+    (requires forall i. bit_vec_of_nat_array p1 d i == bit_vec_of_nat_array p2 d i)
+    (ensures p1 == p2)
+  = admit ()
+  
+let eq_rw #len (re_poly: t_Array nat len)
+  : Lemma (
+       
+        bit_vec_to_int_t_array 8 (bit_vec_of_nat_array re_poly 12)
+    )
+  = admit ()
+  
 #push-options "--z3rlimit 100"
 let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) =
   let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
@@ -1363,5 +1378,13 @@ let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.wfPoly
           in
           serialized)
   in
+  // admitP (bitwise_equality serialized (Spec.Kyber.byte_encode 12 (A.wf_poly_to_spec_poly re)));
+  // admitP (serialized == Spec.Kyber.byte_encode 12 (A.wf_poly_to_spec_poly re));
+  let re_poly = A.wf_poly_to_spec_poly re in
+  assert (
+       bit_vec_to_int_t_array 8 (bit_vec_of_nat_array re_poly 12)
+    == Spec.Kyber.byte_encode 12 re_poly
+  );
+  admit ();
   serialized
 #pop-options
