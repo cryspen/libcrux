@@ -7,7 +7,8 @@ open Libcrux.Kem.Kyber.Arithmetic
 
 open MkSeq
 
-#push-options "--z3rlimit 50"
+#push-options "--z3rlimit 80"
+[@@"opaque_to_smt"]
 let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32) =
   let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in
   let coef2:u8 =
@@ -27,6 +28,7 @@ let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficien
 #pop-options
 
 #push-options "--ifuel 1 --z3rlimit 600 --split_queries always"
+[@@"opaque_to_smt"]
 let compress_coefficients_11_
       coefficient1 coefficient2 coefficient3 coefficient4 coefficient5 coefficient6 coefficient7 coefficient8 =
   let coef1:u8 = cast (coefficient1 <: i32) <: u8 in
@@ -67,6 +69,7 @@ let compress_coefficients_11_
 #pop-options
 
 #push-options "--z3rlimit 20"
+[@@"opaque_to_smt"]
 let compress_coefficients_3_ coefficient1 coefficient2 =
   let coef1:u8 = cast (coefficient1 &. 255us <: u16) <: u8 in
   get_bit_pow2_minus_one_u16 255 (sz 0);
@@ -80,6 +83,7 @@ let compress_coefficients_3_ coefficient1 coefficient2 =
 #pop-options
 
 #push-options "--z3rlimit 60 --split_queries always"
+[@@"opaque_to_smt"]
 let compress_coefficients_5_
       coefficient2 coefficient1 coefficient4 coefficient3 coefficient5 coefficient7 coefficient6 coefficient8
   =
@@ -98,6 +102,7 @@ let compress_coefficients_5_
 #pop-options
 
 #push-options "--z3rlimit 500"
+[@@"opaque_to_smt"]
 let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   let coefficient1:i32 = ((byte2 &. 3l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) in
   let coefficient2:i32 = ((byte3 &. 15l <: i32) <<! 6l <: i32) |. (byte2 >>! 2l <: i32) in
@@ -111,6 +116,7 @@ let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
 #pop-options
 
 #push-options "--z3rlimit 300"
+[@@"opaque_to_smt"]
 let decompress_coefficients_11_
       byte2 byte1 byte3 byte5 byte4 byte6 byte7 byte9 byte8 byte10 byte11 =
   let coefficient1:i32 = ((byte2 &. 7l <: i32) <<! 8l <: i32) |. byte1 in
@@ -144,6 +150,7 @@ let decompress_coefficients_11_
 #pop-options
 
 #push-options "--z3rlimit 50"
+[@@"opaque_to_smt"]
 let decompress_coefficients_4_ byte =
   let coefficient1:i32 = cast (byte &. 15uy <: u8) <: i32 in
   let coefficient2:i32 = cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32 in
@@ -153,6 +160,7 @@ let decompress_coefficients_4_ byte =
 #pop-options
 
 #push-options "--z3rlimit 400"
+[@@"opaque_to_smt"]
 let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
   let coefficient1:i32 = byte1 &. 31l in
   let coefficient2:i32 = ((byte2 &. 3l <: i32) <<! 3l <: i32) |. (byte1 >>! 5l <: i32) in
@@ -189,7 +197,8 @@ let cast_bound_lemma
           [SMTPat (bounded n d); SMTPat (cast #(int_t t) #(int_t u) n)]
   = ()
 
-#push-options "--z3rlimit 60"
+#push-options "--z3rlimit 90"
+[@@"opaque_to_smt"]
 let int_t_d_cast_lemma #t #u d (n: int_t_d t d)
   : Lemma (requires bits t < bits u /\ v n >= 0)
           (ensures bounded (cast #(int_t t) #(int_t u) n) d)
@@ -204,7 +213,10 @@ let mul_in_range (n m: nat)
     Math.Lemmas.pow2_le_compat 32 16
 #pop-options
 
+#restart-solver
+
 #push-options "--fuel 0 --ifuel 1 --query_stats --z3rlimit 100"
+[@@"opaque_to_smt"]
 let compress_then_serialize_10_
       v_OUT_LEN
       re
@@ -284,6 +296,7 @@ let compress_then_serialize_10_
 #pop-options
 
 #push-options "--fuel 0 --ifuel 0 --z3rlimit 30"
+[@@"opaque_to_smt"]
 let update5
   #n
   (s: t_Array 't n)
