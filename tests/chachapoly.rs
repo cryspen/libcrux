@@ -12,7 +12,7 @@ use libcrux::{
     aead::{
         self, decrypt, encrypt,
         Algorithm::{self, Chacha20Poly1305},
-        Chacha20Key, EncryptError, Iv, Key, Tag,
+        Chacha20Key, EncryptError, InvalidArgumentError, Iv, Key, Tag,
     },
     aes_ni_support,
 };
@@ -176,7 +176,12 @@ fn wycheproof() {
                 let tag = match aead::encrypt(&aead_key, &mut msg_ctxt, Iv(nonce), &aad) {
                     Ok(v) => v,
                     Err(e) => {
-                        if matches!(e, EncryptError::UnsupportedAlgorithm) {
+                        if matches!(
+                            e,
+                            EncryptError::InvalidArgument(
+                                InvalidArgumentError::UnsupportedAlgorithm
+                            )
+                        ) {
                             eprintln!("AES not supported on this architecture.");
                             *skipped_tests += 1;
                             continue;
