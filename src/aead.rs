@@ -17,6 +17,7 @@ use crate::hacl::chacha20_poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
+/// The caller has provided an invalid argument.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum InvalidArgumentError {
     /// An provided algorithm is not supported.
@@ -31,7 +32,7 @@ pub enum InvalidArgumentError {
     /// The provided IV is invalid.
     InvalidIv,
 
-    /// An unknown argument is invalid. Returned when another library reports an invalid argument.
+    /// An unknown argument is invalid.
     Unknown,
 }
 
@@ -52,6 +53,7 @@ impl core::fmt::Display for InvalidArgumentError {
 pub enum EncryptError {
     /// An error occurred because the provided arguments were not valid.
     /// The inner error can be one of the variants [`InvalidArgumentError::UnsupportedAlgorithm`] and [`InvalidArgumentError::Unknown`].
+    /// The latter can be returned e.g. when the provided message is too long.
     InvalidArgument(InvalidArgumentError),
 
     /// An internal error occurred.
