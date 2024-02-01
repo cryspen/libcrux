@@ -17,63 +17,42 @@ use crate::hacl::chacha20_poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
-/// An error occurred when reading a [`Key`].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum KeyError {
+pub enum InvalidArgumentError {
     /// An provided algorithm is not supported.
     UnsupportedAlgorithm,
 
     /// The provided key is invalid.
     InvalidKey,
+
+    /// The provided tag is invalid.
+    InvalidTag,
+
+    /// The provided IV is invalid.
+    InvalidIv,
+
+    /// An unknown argument is invalid. Returned when another library reports an invalid argument.
+    Unknown,
 }
 
-impl core::fmt::Display for KeyError {
+impl core::fmt::Display for InvalidArgumentError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            KeyError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
-            KeyError::InvalidKey => write!(f, "Invalid key."),
+            InvalidArgumentError::UnsupportedAlgorithm => write!(f, "algorithm not supported"),
+            InvalidArgumentError::InvalidKey => write!(f, "key is invalid"),
+            InvalidArgumentError::InvalidTag => write!(f, "tag is invalid"),
+            InvalidArgumentError::InvalidIv => write!(f, "IV is invalid"),
+            InvalidArgumentError::Unknown => write!(f, "an unknown argument is invalid"),
         }
-    }
-}
-
-/// An error occurred when reading a [`Tag`].
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct InvalidTagError;
-
-impl core::fmt::Display for InvalidTagError {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "Invalid tag.")
-    }
-}
-
-/// An error occurred when reading an [`Iv`].
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct InvalidIvError;
-
-impl core::fmt::Display for InvalidIvError {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "Invalid IV.")
-    }
-}
-
-/// An provided algorithm is not supported.
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct UnsupportedAlgorithmError;
-
-impl core::fmt::Display for UnsupportedAlgorithmError {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "Algorithm not supported.")
     }
 }
 
 /// An error occurred during encryption.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum EncryptError {
-    /// An provided algorithm is not supported.
-    UnsupportedAlgorithm,
-
     /// An error occurred because the provided arguments were not valid.
-    InvalidArgument,
+    /// The inner error can be one of the variants [`InvalidArgumentError::UnsupportedAlgorithm`] and [`InvalidArgumentError::Unknown`].
+    InvalidArgument(InvalidArgumentError),
 
     /// An internal error occurred.
     InternalError,
@@ -82,9 +61,14 @@ pub enum EncryptError {
 impl core::fmt::Display for EncryptError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            EncryptError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
-            EncryptError::InternalError => write!(f, "Internal error."),
-            EncryptError::InvalidArgument => write!(f, "Invalid argument."),
+            EncryptError::InvalidArgument(e) => {
+                debug_assert!(matches!(
+                    e,
+                    InvalidArgumentError::UnsupportedAlgorithm | InvalidArgumentError::Unknown
+                ));
+                write!(f, "invalid argument provided: {e}")
+            }
+            EncryptError::InternalError => write!(f, "internal error"),
         }
     }
 }
@@ -92,8 +76,8 @@ impl core::fmt::Display for EncryptError {
 /// An error occurred during decryption.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum DecryptError {
-    /// An provided algorithm is not supported.
-    UnsupportedAlgorithm,
+    /// An argument is invalid. Inner variant can only be [`InvalidArgumentError::UnsupportedAlgorithm`].
+    InvalidArgument(InvalidArgumentError),
 
     /// The ciphertext could not be decrypted with the given key.
     DecryptionFailed,
@@ -105,27 +89,13 @@ pub enum DecryptError {
 impl core::fmt::Display for DecryptError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            DecryptError::UnsupportedAlgorithm => UnsupportedAlgorithmError.fmt(f),
-            DecryptError::DecryptionFailed => write!(f, "Decryption failed."),
-            DecryptError::InternalError => write!(f, "Internal error."),
+            DecryptError::InvalidArgument(e) => {
+                debug_assert!(matches!(e, InvalidArgumentError::UnsupportedAlgorithm));
+                write!(f, "invalid argument provided: {e}")
+            }
+            DecryptError::DecryptionFailed => write!(f, "decryption failed"),
+            DecryptError::InternalError => write!(f, "internal error"),
         }
-    }
-}
-
-impl From<UnsupportedAlgorithmError> for DecryptError {
-    fn from(_: UnsupportedAlgorithmError) -> Self {
-        DecryptError::UnsupportedAlgorithm
-    }
-}
-
-impl From<UnsupportedAlgorithmError> for KeyError {
-    fn from(_: UnsupportedAlgorithmError) -> Self {
-        KeyError::UnsupportedAlgorithm
-    }
-}
-impl From<UnsupportedAlgorithmError> for EncryptError {
-    fn from(_: UnsupportedAlgorithmError) -> Self {
-        EncryptError::UnsupportedAlgorithm
     }
 }
 
@@ -186,10 +156,11 @@ impl Algorithm {
     }
 
     /// Make sure the algorithm is supported by the hardware.
+    /// Returns `Ok(())` or `Err(InvalidArgumentError::UnsupportedAlgorithm)`.
     #[inline]
-    fn supported(self) -> Result<(), UnsupportedAlgorithmError> {
+    fn supported(self) -> Result<(), InvalidArgumentError> {
         if matches!(self, Algorithm::Aes128Gcm | Algorithm::Aes256Gcm) && !aes_ni_support() {
-            Err(UnsupportedAlgorithmError)
+            Err(InvalidArgumentError::UnsupportedAlgorithm)
         } else {
             Ok(())
         }
@@ -242,9 +213,12 @@ mod keygen {
             n
         }
 
-        /// Wrap an array.
-        pub fn new(iv: impl AsRef<[u8]>) -> Result<Self, InvalidIvError> {
-            Ok(Self(iv.as_ref().try_into().map_err(|_| InvalidIvError)?))
+        pub fn new(iv: impl AsRef<[u8]>) -> Result<Self, InvalidArgumentError> {
+            Ok(Self(
+                iv.as_ref()
+                    .try_into()
+                    .map_err(|_| InvalidArgumentError::InvalidIv)?,
+            ))
         }
     }
 }
@@ -258,11 +232,13 @@ pub enum Key {
 
 impl Key {
     /// Generate a [`Key`] for the [`Algorithm`] from the raw `bytes`.
-    pub fn from_bytes(alg: Algorithm, bytes: Vec<u8>) -> Result<Self, KeyError> {
+    pub fn from_bytes(alg: Algorithm, bytes: Vec<u8>) -> Result<Self, InvalidArgumentError> {
         alg.supported()?;
 
-        fn to_array<const N: usize>(bytes: Vec<u8>) -> Result<[u8; N], KeyError> {
-            bytes.try_into().map_err(|_| KeyError::InvalidKey)
+        fn to_array<const N: usize>(bytes: Vec<u8>) -> Result<[u8; N], InvalidArgumentError> {
+            bytes
+                .try_into()
+                .map_err(|_| InvalidArgumentError::InvalidKey)
         }
 
         let key = match alg {
@@ -275,11 +251,19 @@ impl Key {
     }
 
     /// Generate a [`Key`] for the [`Algorithm`] from the raw `bytes` slice.
-    pub fn from_slice(alg: Algorithm, bytes: impl AsRef<[u8]>) -> Result<Self, KeyError> {
+    pub fn from_slice(
+        alg: Algorithm,
+        bytes: impl AsRef<[u8]>,
+    ) -> Result<Self, InvalidArgumentError> {
         alg.supported()?;
 
-        fn to_array<const N: usize>(bytes: impl AsRef<[u8]>) -> Result<[u8; N], KeyError> {
-            bytes.as_ref().try_into().map_err(|_| KeyError::InvalidKey)
+        fn to_array<const N: usize>(
+            bytes: impl AsRef<[u8]>,
+        ) -> Result<[u8; N], InvalidArgumentError> {
+            bytes
+                .as_ref()
+                .try_into()
+                .map_err(|_| InvalidArgumentError::InvalidKey)
         }
 
         let key = match alg {
@@ -297,8 +281,12 @@ pub struct Tag([u8; 16]);
 
 impl Tag {
     /// Convert slice into a [`Tag`]
-    pub fn from_slice(t: impl AsRef<[u8]>) -> Result<Self, InvalidTagError> {
-        Ok(Self(t.as_ref().try_into().map_err(|_| InvalidTagError)?))
+    pub fn from_slice(t: impl AsRef<[u8]>) -> Result<Self, InvalidArgumentError> {
+        Ok(Self(
+            t.as_ref()
+                .try_into()
+                .map_err(|_| InvalidArgumentError::InvalidTag)?,
+        ))
     }
 }
 
@@ -421,8 +409,12 @@ fn aes_encrypt_128(
 ) -> Result<Tag, EncryptError> {
     aesgcm::encrypt_128(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
-            aesgcm::Error::UnsupportedHardware => EncryptError::UnsupportedAlgorithm,
-            aesgcm::Error::InvalidArgument => EncryptError::InvalidArgument,
+            aesgcm::Error::UnsupportedHardware => {
+                EncryptError::InvalidArgument(InvalidArgumentError::UnsupportedAlgorithm)
+            }
+            aesgcm::Error::InvalidArgument => {
+                EncryptError::InvalidArgument(InvalidArgumentError::Unknown)
+            }
             aesgcm::Error::InvalidCiphertext => EncryptError::InternalError,
         })
         .map(|t| t.into())
@@ -430,7 +422,9 @@ fn aes_encrypt_128(
 
 #[cfg(not(aes_ni))]
 fn aes_encrypt_128(_: &Aes128Key, _: &mut [u8], _v: Iv, _: &[u8]) -> Result<Tag, EncryptError> {
-    Err(EncryptError::UnsupportedAlgorithm)
+    Err(EncryptError::InvalidArgument(
+        InvalidArgumentError::UnsupportedAlgorithm,
+    ))
 }
 
 #[cfg(aes_ni)]
@@ -442,8 +436,12 @@ fn aes_encrypt_256(
 ) -> Result<Tag, EncryptError> {
     aesgcm::encrypt_256(&key.0, msg_ctxt, iv.0, aad)
         .map_err(|e| match e {
-            aesgcm::Error::UnsupportedHardware => EncryptError::UnsupportedAlgorithm,
-            aesgcm::Error::InvalidArgument => EncryptError::InvalidArgument,
+            aesgcm::Error::UnsupportedHardware => {
+                EncryptError::InvalidArgument(InvalidArgumentError::UnsupportedAlgorithm)
+            }
+            aesgcm::Error::InvalidArgument => {
+                EncryptError::InvalidArgument(InvalidArgumentError::Unknown)
+            }
             aesgcm::Error::InvalidCiphertext => EncryptError::InternalError,
         })
         .map(|t| t.into())
@@ -451,7 +449,9 @@ fn aes_encrypt_256(
 
 #[cfg(not(aes_ni))]
 fn aes_encrypt_256(_: &Aes256Key, _: &mut [u8], _: Iv, _: &[u8]) -> Result<Tag, EncryptError> {
-    Err(EncryptError::UnsupportedAlgorithm)
+    Err(EncryptError::InvalidArgument(
+        InvalidArgumentError::UnsupportedAlgorithm,
+    ))
 }
 
 #[cfg(aes_ni)]
@@ -463,7 +463,9 @@ fn aes_decrypt_128(
     tag: &Tag,
 ) -> Result<(), DecryptError> {
     aesgcm::decrypt_128(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
-        aesgcm::Error::UnsupportedHardware => DecryptError::UnsupportedAlgorithm,
+        aesgcm::Error::UnsupportedHardware => {
+            DecryptError::InvalidArgument(InvalidArgumentError::UnsupportedAlgorithm)
+        }
         aesgcm::Error::InvalidCiphertext => DecryptError::DecryptionFailed,
         aesgcm::Error::InvalidArgument => DecryptError::InternalError,
     })
@@ -477,7 +479,9 @@ fn aes_decrypt_128(
     _: &[u8],
     _: &Tag,
 ) -> Result<(), DecryptError> {
-    Err(DecryptError::UnsupportedAlgorithm)
+    Err(DecryptError::InvalidArgument(
+        InvalidArgumentError::UnsupportedAlgorithm,
+    ))
 }
 
 #[cfg(aes_ni)]
@@ -489,7 +493,9 @@ fn aes_decrypt_256(
     tag: &Tag,
 ) -> Result<(), DecryptError> {
     aesgcm::decrypt_256(&key.0, ctxt_msg, iv.0, aad, &tag.0).map_err(|e| match e {
-        aesgcm::Error::UnsupportedHardware => DecryptError::UnsupportedAlgorithm,
+        aesgcm::Error::UnsupportedHardware => {
+            DecryptError::InvalidArgument(InvalidArgumentError::UnsupportedAlgorithm)
+        }
         aesgcm::Error::InvalidCiphertext => DecryptError::DecryptionFailed,
         aesgcm::Error::InvalidArgument => DecryptError::InternalError,
     })
@@ -503,7 +509,9 @@ fn aes_decrypt_256(
     _: &[u8],
     _: &Tag,
 ) -> Result<(), DecryptError> {
-    Err(DecryptError::UnsupportedAlgorithm)
+    Err(DecryptError::InvalidArgument(
+        InvalidArgumentError::UnsupportedAlgorithm,
+    ))
 }
 
 /// AEAD encrypt the message in `msg_ctxt` with the `key`, `iv` and `aad`.
@@ -515,14 +523,18 @@ pub fn encrypt(key: &Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Result<Tag
             if aes_ni_support() {
                 aes_encrypt_128(key, msg_ctxt, iv, aad)
             } else {
-                Err(EncryptError::UnsupportedAlgorithm)
+                Err(EncryptError::InvalidArgument(
+                    InvalidArgumentError::UnsupportedAlgorithm,
+                ))
             }
         }
         Key::Aes256(key) => {
             if aes_ni_support() {
                 aes_encrypt_256(key, msg_ctxt, iv, aad)
             } else {
-                Err(EncryptError::UnsupportedAlgorithm)
+                Err(EncryptError::InvalidArgument(
+                    InvalidArgumentError::UnsupportedAlgorithm,
+                ))
             }
         }
         Key::Chacha20Poly1305(key) => Ok(if simd256_support() {
@@ -565,14 +577,18 @@ pub fn decrypt(
             if aes_ni_support() {
                 aes_decrypt_128(key, ctxt_msg, iv, aad, tag)
             } else {
-                Err(DecryptError::UnsupportedAlgorithm)
+                Err(DecryptError::InvalidArgument(
+                    InvalidArgumentError::UnsupportedAlgorithm,
+                ))
             }
         }
         Key::Aes256(key) => {
             if aes_ni_support() {
                 aes_decrypt_256(key, ctxt_msg, iv, aad, tag)
             } else {
-                Err(DecryptError::UnsupportedAlgorithm)
+                Err(DecryptError::InvalidArgument(
+                    InvalidArgumentError::UnsupportedAlgorithm,
+                ))
             }
         }
         Key::Chacha20Poly1305(key) => {

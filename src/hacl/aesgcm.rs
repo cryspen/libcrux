@@ -102,7 +102,7 @@ macro_rules! implement {
                 let mut state_ptr: *mut EverCrypt_AEAD_state_s = std::ptr::null_mut();
                 let e = EverCrypt_AEAD_create_in($alg as u8, &mut state_ptr, key.as_ptr() as _);
                 if e != 0 {
-                    return Err(Error::InvalidArgument);
+                    return Err(Error::UnsupportedHardware);
                 }
                 EverCrypt_AEAD_decrypt(
                     state_ptr,
