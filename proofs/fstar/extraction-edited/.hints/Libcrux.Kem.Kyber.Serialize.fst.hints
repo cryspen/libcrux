@@ -1,5 +1,5 @@
 [
-  "\u0006ó\\uç\u0016%\u0018\u001b\u0002w\u0006»‰v)",
+  "[1\u001d-p\u001a69½ƒ5z\u00106º«",
   [
     [
       "Libcrux.Kem.Kyber.Serialize.int_arr_bitwise_eq",
@@ -8011,7 +8011,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "a6b0fff7dfca38a6f6126a4623df7712"
+      "cf4275373c55a87f388b992affdd1fd4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element",

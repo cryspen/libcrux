@@ -1284,7 +1284,7 @@ let deserialize_then_decompress_ring_element_v v_COMPRESSION_FACTOR serialized =
   admit(); //P-F
   res
 
-#push-options "--z3rlimit 160"
+#push-options "--z3rlimit 220"
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) = 
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
@@ -1335,7 +1335,7 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
   in
   re
 #pop-options
-  
+
 #push-options "--z3rlimit 100"
 let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) =
   let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
