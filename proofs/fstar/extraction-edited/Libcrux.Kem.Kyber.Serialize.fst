@@ -1284,7 +1284,7 @@ let deserialize_then_decompress_ring_element_v v_COMPRESSION_FACTOR serialized =
   admit(); //P-F
   res
 
-#push-options "--z3rlimit 100"
+#push-options "--z3rlimit 160"
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) = 
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
