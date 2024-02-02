@@ -4,7 +4,6 @@ set -e
 
 mkdir -p kyber-crate/src
 cp -r src/kem/kyber* kyber-crate/src
-cp src/hax_utils.rs kyber-crate/src/hax_utils.rs
 cd kyber-crate
 mv src/kyber.rs src/lib.rs
 mv src/kyber/* src
@@ -47,6 +46,14 @@ for file in src/*; do
         $SED -i 's/pub mod kyber1024;//g' $file
     fi
 done
+
+cat >src/hax_utils.rs <<EOF
+macro_rules! hax_debug_assert {
+    (\$(\$arg:tt)*) => {};
+}
+
+pub(crate) use hax_debug_assert;
+EOF
 
 $SED -i '1ipub(crate) mod hax_utils;' src/lib.rs
 
