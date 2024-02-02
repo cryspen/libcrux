@@ -122,9 +122,10 @@ pub fn decapsulate(
 mod tests {
     use rand_core::{OsRng, RngCore};
 
-    use crate::kem::kyber::kyber768::validate_public_key;
-
-    use super::{kyber768::generate_key_pair, KEY_GENERATION_SEED_SIZE};
+    use super::{
+        kyber768::{generate_key_pair, validate_public_key},
+        KEY_GENERATION_SEED_SIZE,
+    };
 
     #[test]
     fn pk_validation() {

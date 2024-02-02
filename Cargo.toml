@@ -7,6 +7,7 @@ members = [
     "benchmarks",
     "fuzz",
 ]
+exclude = ["target"]
 
 [workspace.package]
 version = "0.0.2-pre.2"

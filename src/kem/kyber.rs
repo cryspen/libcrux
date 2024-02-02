@@ -33,15 +33,13 @@ pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 // https://github.com/cryspen/libcrux/issues/123
 pub type MlKemSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
-use crate::kem::kyber::ind_cpa::{deserialize_public_key, serialize_public_key};
-
 use self::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::{G, H, PRF},
-    ind_cpa::into_padded_array,
+    ind_cpa::{deserialize_public_key, into_padded_array, serialize_public_key},
 };
 
 /// Seed size for key generation
