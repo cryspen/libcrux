@@ -18,12 +18,13 @@ let v_PRF (v_LEN: usize) (input: t_Slice u8) =
   admit(); // We assume that sha3_512 correctly implements H
   res
 
-let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
+let v_XOFx4 v_K (input: t_Array (t_Array u8 (sz 34)) v_K) =
+  assert (v v_K >= 2);
   let out:t_Array (t_Array u8 (sz 840)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 840) <: t_Array u8 (sz 840)) v_K
   in
   let out:t_Array (t_Array u8 (sz 840)) v_K =
-    if ~.(Libcrux_platform.simd256_support <: bool) || ~.false
+    if ~.(Libcrux_platform.simd256_support () <: bool) || ~.true
     then
       Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                 Core.Ops.Range.f_start = sz 0;
@@ -65,6 +66,7 @@ let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
           in
           out
         | 3uy ->
+          assert (v (cast v_K <: u8) = 3);
           let d0, d1, d2, _:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
             t_Array u8 (sz 840)) =
             Libcrux.Digest.shake128x4 (sz 840)
@@ -84,6 +86,7 @@ let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
           in
           out
         | 4uy ->
+          assert (v (cast v_K <: u8) = 4);
           let d0, d1, d2, d3:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
             t_Array u8 (sz 840)) =
             Libcrux.Digest.shake128x4 (sz 840)
@@ -109,5 +112,5 @@ let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
       in
       out
   in
-  admit(); //P-F
-  out
+  admit(); // We assume that shake128x4 correctly implements XOFx4
+  out 

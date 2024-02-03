@@ -40,7 +40,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "541e9050a5fdb4db4a93fd468c5c0df6"
+      "7208b56beb566f02c03ef97d59c2b7ca"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_ETA1_RANDOMNESS_SIZE",
@@ -94,7 +94,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "c2758d6f0d34f887b854fc8f5c885626"
+      "d70304a3c6be5ed8a07fd1ecb30f91eb"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_ETA2",
@@ -135,7 +135,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "d36cce2e1f36911e98141a3d319130ad"
+      "26db693e9072faa535245239e9c1a08e"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_ETA2_RANDOMNESS_SIZE",
@@ -189,7 +189,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "c74b230b3bf0a80a21bd535fa7bae451"
+      "0feb16ec8fdf3b9f4d0f4d9cfb8ece39"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_RANK_768_",
@@ -230,7 +230,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e021fc13d25d1b3c7cc1ebeb542e394e"
+      "a9cdbb19cb70f1f3808320b4c5f6692c"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_CPA_PKE_SECRET_KEY_SIZE_768_",
@@ -293,7 +293,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "a2e0ebc68dbe1950b5ef310deece9288"
+      "0c31637b01f1390f46ea5958134a99e9"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_RANKED_BYTES_PER_RING_ELEMENT_768_",
@@ -353,7 +353,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "6c926cd50b2db20e3e6ecadeb97ebb39"
+      "07e50967a03018595ad33062f6b4c10e"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_T_AS_NTT_ENCODED_SIZE_768_",
@@ -416,7 +416,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "b77f402b6a4cf8d8adcac71a51f65481"
+      "9ab6dc9141ea6de07b150c46cce858c0"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_CPA_PKE_PUBLIC_KEY_SIZE_768_",
@@ -478,7 +478,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "d0c16fec4e6639a17045e30635c0c62a"
+      "e5a80d353b61f285775c6a7df518ae39"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_SECRET_KEY_SIZE_768_",
@@ -537,10 +537,15 @@
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "refinement_interpretation_Tm_refine_e477cd5567f25e8e57e00f0185fa1ab0",
         "typing_Lib.IntTypes.v",
+        "typing_Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT",
+        "typing_Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT",
         "typing_Libcrux.Kem.Kyber.Kyber768.v_CPA_PKE_PUBLIC_KEY_SIZE_768_",
         "typing_Libcrux.Kem.Kyber.Kyber768.v_CPA_PKE_SECRET_KEY_SIZE_768_",
+        "typing_Libcrux.Kem.Kyber.Kyber768.v_RANK_768_",
         "typing_Rust_primitives.Integers.bits",
+        "typing_Rust_primitives.Integers.mul",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
@@ -549,7 +554,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "e94af2e3d2a7cca106c37fc107d3d5eb"
+      "a97ef53f1593de144d17710a486e0f20"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_SECRET_KEY_SIZE_768_",
@@ -565,19 +570,16 @@
         "constructor_distinct_Lib.IntTypes.S32",
         "constructor_distinct_Lib.IntTypes.S8",
         "constructor_distinct_Lib.IntTypes.U1",
-        "constructor_distinct_Lib.IntTypes.U128",
         "constructor_distinct_Lib.IntTypes.U16",
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
-        "constructor_distinct_Libcrux.Digest.Algorithm_Sha3_256_",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
-        "equality_tok_Lib.IntTypes.U64@tok",
-        "equality_tok_Libcrux.Digest.Algorithm_Sha3_256_@tok",
+        "equality_tok_Lib.IntTypes.U64@tok", "equation_FStar.UInt.max_int",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.minint",
         "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
-        "equation_Lib.IntTypes.v", "equation_Libcrux.Digest.digest_size",
+        "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT",
         "equation_Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT",
         "equation_Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE",
@@ -599,9 +601,8 @@
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v",
-        "equation_Spec.Kyber.v_H_DIGEST_SIZE",
-        "equation_Spec.Kyber.v_SHARED_SECRET_SIZE", "int_typing",
-        "lemma_Rust_primitives.Integers.pow2_values",
+        "equation_with_fuel_Prims.pow2.fuel_instrumented", "int_inversion",
+        "int_typing", "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_Division", "primitive_Prims.op_LessThanOrEqual",
@@ -627,11 +628,10 @@
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
-        "typing_Spec.Kyber.v_SHARED_SECRET_SIZE",
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "10da19c6aa9670e5ece7098cd999a8e6"
+      "c75969d73aa3c777eed00f09a3d85551"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_SECRET_KEY_SIZE_768_",
@@ -647,19 +647,16 @@
         "constructor_distinct_Lib.IntTypes.S32",
         "constructor_distinct_Lib.IntTypes.S8",
         "constructor_distinct_Lib.IntTypes.U1",
-        "constructor_distinct_Lib.IntTypes.U128",
         "constructor_distinct_Lib.IntTypes.U16",
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
-        "constructor_distinct_Libcrux.Digest.Algorithm_Sha3_256_",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
-        "equality_tok_Lib.IntTypes.U64@tok",
-        "equality_tok_Libcrux.Digest.Algorithm_Sha3_256_@tok",
+        "equality_tok_Lib.IntTypes.U64@tok", "equation_FStar.UInt.max_int",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.minint",
         "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
-        "equation_Lib.IntTypes.v", "equation_Libcrux.Digest.digest_size",
+        "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT",
         "equation_Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT",
         "equation_Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE",
@@ -700,7 +697,6 @@
         "typing_Lib.IntTypes.v",
         "typing_Libcrux.Kem.Kyber.Constants.v_BITS_PER_COEFFICIENT",
         "typing_Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT",
-        "typing_Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE",
         "typing_Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE",
         "typing_Libcrux.Kem.Kyber.Kyber768.v_CPA_PKE_PUBLIC_KEY_SIZE_768_",
         "typing_Libcrux.Kem.Kyber.Kyber768.v_CPA_PKE_SECRET_KEY_SIZE_768_",
@@ -714,7 +710,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "c6f6005ccff9f45848fe969305a5f96c"
+      "0be579af7dbe70bd0c412f0f1ed611b6"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_VECTOR_U_COMPRESSION_FACTOR_768_",
@@ -753,7 +749,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "311f23abac501033b5a772ba4a0f49aa"
+      "15b32607a4d059692850641eeb943cfe"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_C1_BLOCK_SIZE_768_",
@@ -810,7 +806,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "5729bb73d9bb3cda0b3997edc15efac6"
+      "86e6ae5c474bed545cba0a85c2e0691e"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_C1_SIZE_768_",
@@ -881,7 +877,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "e7abbce5979671529c25a70a99f5ca21"
+      "4df29dfa3ecfb24c88653b11702626ac"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_VECTOR_V_COMPRESSION_FACTOR_768_",
@@ -920,7 +916,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "11aeee28608b3a69900bbd6dc6164eaf"
+      "73fd9a2acdc50a9cf85c9780446a2566"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_C2_SIZE_768_",
@@ -979,7 +975,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "f3f368cf0e92bb77e0d2c448b67460eb"
+      "405b18fbdb1192692991fc14daf70721"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_CPA_PKE_CIPHERTEXT_SIZE_768_",
@@ -1052,7 +1048,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "b2231d972be64fb015707b54f2b6fe78"
+      "3cf874f3236d893c5f379c415c574e1a"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE",
@@ -1130,7 +1126,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "0af8b9e81d142473508476bb64ea697f"
+      "eca6e7ada7a305d674d3cddf9c832741"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.t_Kyber768Ciphertext",
@@ -1169,7 +1165,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a1dae7a7519f5e91182f1b4e7977cade"
+      "ed59e32a63b0e512c02db1e7877d0bb0"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.t_Kyber768PrivateKey",
@@ -1208,7 +1204,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "ae115b763f08f95985c3712751f9d007"
+      "6704776d5bd448f9332972521e373637"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.t_Kyber768PublicKey",
@@ -1247,7 +1243,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "82c635b26398b2855d362e29def5535f"
+      "9e90d833ca11c6982a954d976f2e114b"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.decapsulate_768_",
@@ -1285,7 +1281,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "96fc23cc7393bfeb01bfef6be4fec069"
+      "c770f9affc38995bc07d8fe685908df5"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.decapsulate_768_",
@@ -1389,7 +1385,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "21c3658232488bb584636fdc54bb0d19"
+      "9befeae9b0cc07597b50d0b3bd9c0ce7"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.decapsulate_768_",
@@ -1493,7 +1489,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "c79866f6299aca76c07206cd83f79eb5"
+      "c9fa8a0e97e79d6630246199479384e2"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.encapsulate_768_",
@@ -1532,7 +1528,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "8701e8b4c81230e75181c9ba4ce0d767"
+      "6e3e5b1dc0bf70d8e9bc61f706b98d83"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.encapsulate_768_",
@@ -1631,7 +1627,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "96a6212d6d999f3b4a86c56d8ca37cf8"
+      "eaec5471e19e1145482d49f4ea0b8275"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.encapsulate_768_",
@@ -1729,7 +1725,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "6b6724adae5f7b9879e1e9493b1b1eae"
+      "7e594ef9d13f788687f74fb580a09b1f"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.generate_key_pair_768_",
@@ -1769,7 +1765,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "18d0d552c98acf50bff6e74cae2ee310"
+      "d1a28da316ef6c06e1bd8bb23a0e3ab7"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.generate_key_pair_768_",
@@ -1840,7 +1836,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "f8e8082f252de7038c2c4386dc475832"
+      "969a556584d443f27bc997f799108ff5"
     ],
     [
       "Libcrux.Kem.Kyber.Kyber768.generate_key_pair_768_",
@@ -1911,7 +1907,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "8b4f90d2a655569a10f79af5c8a4ac0d"
+      "2f139c02406638e016150e64c3d996d7"
     ]
   ]
 ]

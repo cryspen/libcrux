@@ -47,7 +47,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e59a5c323cad2e69ea5165b1915f943d"
+      "58db6c1b7b91c1719177a43068e77df2"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.into_padded_array",
@@ -140,7 +140,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "776e4fb7b7aeec0e75a77324a0befd47"
+      "46ad4cd3bfbe8730e8f5c25e38cf1de9"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.acc_t",
@@ -181,7 +181,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "30d35a3c79993000e2fe499566fd9469"
+      "8b9f5b38051459de4fff6f138986d482"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.wfZero",
@@ -193,7 +193,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "a08375c17c0f09409f03d28c78dc2929"
+      "c582ee3bcdf335804960a3995af89453"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.etaZero",
@@ -219,7 +219,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7038e8a6ee0911f59c991375a8d63375"
+      "cbe46d8e8105ed364c7fef63ad3c4866"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
@@ -303,7 +303,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "f8f75e06fad13a1152f79c4ff674c8d4"
+      "a05d7fec075cbe9d87bca9595461c5b1"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
@@ -413,7 +413,7 @@
         "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "1c47c1bc0aaebdcba9b54031b7086ae5"
+      "7e950f8f87ebf1903b13e8d885cd878d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
@@ -523,7 +523,7 @@
         "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "f1ae045c299b25ed0aa61383e56e628d"
+      "9eb31ca45e2ec3f3b3363798f8c40bf1"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd_then_ntt",
@@ -603,7 +603,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "dfe624bf8e2313e7b7d22627adcc8423"
+      "1d5b2b51a2f2f648ee32326a5d7af675"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd_then_ntt",
@@ -724,7 +724,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "8e4901e31dd83747399fd96899bf26f6"
+      "970bd870a2ac8f81defd51d62825b11e"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd_then_ntt",
@@ -843,7 +843,7 @@
         "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "7a457d8d6c4785a4c2948e63143ddf76"
+      "9317c0959281fdb6fd1396ab9f5e2285"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.compress_then_serialize_u",
@@ -907,7 +907,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "a37e8e7c5927d6459c6ed473e3c9179a"
+      "9a25635d6a224e0186f3a41d2e657025"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.compress_then_serialize_u",
@@ -1040,7 +1040,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "47462c80da4a42028cb648f4ee43f778"
+      "b5baa74616385a90d1187f3f836db7cf"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1090,7 +1090,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "727d6d746a48cc9312a23a8c163eec74"
+      "9355d4eb9f868a54f2a6ccc2e15e6911"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1104,7 +1104,7 @@
         "refinement_interpretation_Tm_refine_257ddf45d97229b8c327236723913127"
       ],
       0,
-      "6a024e654630366a75842a950371386c"
+      "2eec9933f05fe2e4aea74cd2ca489654"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1125,7 +1125,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "0230d766a36244e4baecdd15765420df"
+      "8fa386df82b4f4b11464b7c67670136e"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1146,7 +1146,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "6b141e37465667ae31d1660aa58dd2b3"
+      "7319694fbe75cb0da8095ac05595de34"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1183,7 +1183,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "dd47652e8c6b1718266bb98131de1ae0"
+      "3977fdc65352f4f31a629221c79d861b"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1217,7 +1217,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7d86f7b392c3e605afcb4333e45eb4a7"
+      "c849d3524f4764d99274ec8b7d02c747"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1273,7 +1273,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "de7478574faa7a2ff57a80caa8ed1ac1"
+      "2573da285da5dfac52dc9452281a9d73"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1353,7 +1353,7 @@
         "typing_Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE"
       ],
       0,
-      "d816926d51c40f79417cbdb3c59d6bb0"
+      "721df3aeb7e72c0caa226ec729ea8054"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1406,7 +1406,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "59a6195352cffbcdb6a2943ad07af81a"
+      "3f6461e472ba2a961f171cd2e4a07ae6"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1446,7 +1446,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "80e82f69a0b33661f9f36581226b55c9"
+      "d24e15c9aa01108c4b10a8c2eb256b2f"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1496,7 +1496,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "3bea21db4db5b9b803cb638c343f8711"
+      "3bb5f245e494231bbcb7e18f72325571"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1551,7 +1551,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "ca13fb996285305cfaac912b84f96f13"
+      "305d434fb5b280b7c72c6e99c27f583a"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1617,7 +1617,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "84179668e4e0e0fa9e7e88719ea990a2"
+      "50b946c7394e9eb67d3b85fc88de5cb2"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1630,7 +1630,7 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "da17e3402e3f116d4e5c789375e846df"
+      "6b4cf08c3746c431f4d9b9dd8e7cd795"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1717,7 +1717,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "be3f47e40d94821b2d7aa045a0285d8f"
+      "77856f75b79853eaba13961a9696c36e"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1729,7 +1729,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "e032e45a78e08f4cf025652b33cb8e9e"
+      "b8ace7fdb078fb82e095804beba3164f"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1738,7 +1738,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "709c6122f8381a7e969ca852fcb861df"
+      "79d4b12bd3af5e0157a85c7533cfd135"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1781,7 +1781,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e33c2a66e108c857e6b016ae3fc336ab"
+      "fe8cf91aee96193e5b1643010bc03d30"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1794,7 +1794,7 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "9d225169555733e3efddfb32028477db"
+      "8b3b97dac8cfee1a79d1f30e74f36eb4"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1865,7 +1865,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "f369750674de059e3960adb604d9986e"
+      "ff5f459376accae8cbd7311e781a346c"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1879,7 +1879,7 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "e1f9b674fe7276c44e637accabe9de94"
+      "f9006b753cf0965101f8d4b9bea2358b"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1894,7 +1894,7 @@
         "typing_Rust_primitives.Hax.repeat"
       ],
       0,
-      "6be43a954b2777c2ed571efd8974d74d"
+      "0be67e0897a8a57d09d142074fad8b1f"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1908,7 +1908,7 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "edf96f52ab34ee74ca368a8e3ad21581"
+      "dde4af97d39504ccb5f7628b8f2f6698"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1917,7 +1917,7 @@
       1,
       [ "@query" ],
       0,
-      "d6c2eaf50168b9728afc44dc34cfe127"
+      "d1a00c1a47d70f86477b5503abada788"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1952,7 +1952,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "a959f45fe15163be004f6136ed1e1b17"
+      "27ac33ead15a445d625731d5dd365f76"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2005,7 +2005,7 @@
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "6f96730ccd379939e20bb20be1746305"
+      "1469212f5bfc99845977ace99228f3bf"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2036,7 +2036,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "5bd964c3fffb53a2309a5fb2b27472c0"
+      "eaf3bbb621430bdffdb25037982d2a30"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2058,7 +2058,7 @@
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE"
       ],
       0,
-      "fcb90648828f91eea47ceac52af397ff"
+      "cd93ae5a71739adf638f2657ac581ac6"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2080,7 +2080,7 @@
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE"
       ],
       0,
-      "68d1d77e422eb06073da4568d99e6f9a"
+      "bf1ade477b7f77c8aac24484c3aa9c30"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2135,7 +2135,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "3606f0c6eec3af47b544be99f9d1d37b"
+      "04ab2fba73ea7232aae1fccf7a9e95e0"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2160,7 +2160,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "34daa9f858e984e916fc18827fc40189"
+      "a27afc3a97a12cbef54def3c6f360f27"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2177,7 +2177,7 @@
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688"
       ],
       0,
-      "cd5b2f23ddbbf4734bad598dfd524114"
+      "14a146b41c694bf3dcf652389c2afc3e"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2197,7 +2197,7 @@
         "refinement_interpretation_Tm_refine_e2e762f87b9fab3208089befe760c551"
       ],
       0,
-      "4e7a315725ae8039fcd8dba888be7de3"
+      "a464e94a9b13a2e9ea53c7ced298accf"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2224,7 +2224,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "fe98c7edf5ff81b0fff5e687dca2286b"
+      "c29b4f91562d0210b5431a92d783222c"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2240,7 +2240,7 @@
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178"
       ],
       0,
-      "10fdb4193715ee1d60744082a1119dd9"
+      "1da9ed4c9a2605fd788c1d73fa7e309b"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2263,7 +2263,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "815ae84cfbd97f414dcb6adb9368aa2c"
+      "7bd63a6cfdfdd50265bcf4d9ac079333"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2275,7 +2275,7 @@
         "refinement_interpretation_Tm_refine_1780e3e3423d75725ae206b5df95a0a6"
       ],
       0,
-      "60486d7456385e993423a14e23da4f61"
+      "5b3dd371e9b0ea55b2a3999a56869b2d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -2287,7 +2287,7 @@
         "refinement_interpretation_Tm_refine_bb4a6fcea4effb263c4c9aec6fa6b2f7"
       ],
       0,
-      "2517a242089b5054b5a9e1fe36a2228f"
+      "57b97b9fc4148424346fae03317cf12b"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key",
@@ -2371,7 +2371,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "7b1d9e649746b4d90049dae485843577"
+      "c4c6bf9e3a97a1269c9a7d5c2cdca147"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key",
@@ -2508,7 +2508,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "cd56e7031712c60316df4ac3cb89ad7d"
+      "7e31a50fba466e68a2b528ea86aea655"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2558,7 +2558,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "c3b3ddf2fcc24c180604d8d688181a48"
+      "04cd332efb0f6621874cc111b3469d36"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2572,7 +2572,7 @@
         "refinement_interpretation_Tm_refine_04d1a41375cb265cfbd8785ad22877c0"
       ],
       0,
-      "e12c93d4471c40153c7ebb2fc169c1bb"
+      "fe83fab64cb2bffed313293b4d28d8bd"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2609,7 +2609,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "03e916fc52d2db8ccceddfb824002d65"
+      "bab967d79729b39069765b592f08a78a"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2663,7 +2663,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "1f7645ba7b1305136d9754d8e1637fdb"
+      "ce4b2451abe7f95bbe84a0c3293acf42"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2675,7 +2675,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "bab5d9bbcbafd2ee4133325849ba38f9"
+      "729d57a74857227ce69493dc5666ae9f"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2684,7 +2684,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "4f6a8d3f12e89b888df1132f3465facf"
+      "09f18d26ab41051fddedafeae439fedc"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2721,7 +2721,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "23879d451a0b175208f949f679dcfe9f"
+      "6759decc94aacf4b9b251f3df8fa8200"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2797,7 +2797,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "e26cc7af6d3739a1eec35aef7e379fc2"
+      "1d14054608e0aeca234b68bac6a69770"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2809,7 +2809,7 @@
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec"
       ],
       0,
-      "4a192b3649fa328f29b613d81f949a69"
+      "7623a77fb255268ebe33507774ff1f67"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2824,7 +2824,7 @@
         "typing_Rust_primitives.Hax.repeat"
       ],
       0,
-      "4e6a2d9e764e5c39371523c522604585"
+      "c00cc9d123aeee94347cd6e6673e5690"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2836,7 +2836,7 @@
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec"
       ],
       0,
-      "0046d4d8bdc6ae72a8f290bb9456d83f"
+      "356f714fcb2cef1def10eb05a5838a30"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2845,7 +2845,7 @@
       1,
       [ "@query" ],
       0,
-      "99f46e9dd41c3c4dc3a8fac877698ead"
+      "44442f02600d806c586b1ec92ea4ba1d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2878,7 +2878,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7711a6cf0fa82669498d284d1871a56b"
+      "e02593783a88553171d603a68af99c12"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2929,7 +2929,7 @@
         "typing_Rust_primitives.Integers.v", "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "97e04257863a5862070c95b5a890120a"
+      "68e1a5bbdea6f3b262d97ae12c84ac20"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2952,7 +2952,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "bee8a9764048cb152bab526373531979"
+      "442f40b1d2fcc6c21cbbac848e925d10"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2974,7 +2974,7 @@
         "refinement_interpretation_Tm_refine_feb7e834582289fbd89a200bfbc499b9"
       ],
       0,
-      "17bc19c669a0bc9e1f37625fad9f3364"
+      "87a5a8359dbc4e8088aadccd53e8b507"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2994,7 +2994,7 @@
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec"
       ],
       0,
-      "23df95e25d15ad50e35f17268035ce2b"
+      "83b5d334880468926018af6dfd463eb8"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -3020,7 +3020,7 @@
         "refinement_interpretation_Tm_refine_feb7e834582289fbd89a200bfbc499b9"
       ],
       0,
-      "88696527b5359a18c6f60f96f4d06a40"
+      "514ca48b00b672a69da6f80493f9d144"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -3043,7 +3043,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "83324114da879bb7a37755c35bedd76e"
+      "705f4de342a19f2c6c680e56d55322a7"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -3055,7 +3055,7 @@
         "refinement_interpretation_Tm_refine_91aef11d36a5ef4d927e7ba47e560947"
       ],
       0,
-      "5afeb1d03dd2ad2720b59def1a48d008"
+      "4ad049e85ccbb6ffb7ebd1e21d57bede"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -3067,7 +3067,7 @@
         "refinement_interpretation_Tm_refine_584f0eb673831c31e84c27dd07e5ce0a"
       ],
       0,
-      "66855dde4b52897477374f1b0f80f87d"
+      "826a09549d01daf1300ace4eaed9d2fb"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.decrypt",
@@ -3127,7 +3127,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "cd312079bb9459c6faa686a30cbba0b5"
+      "810efeb2cf6c29dd4b8dc1f77b6c509e"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.decrypt",
@@ -3264,7 +3264,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "10c59a6053c9799fa9fbfd1b55a0b71c"
+      "97e393eb5b985b323d8617aa3fd37241"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.encrypt",
@@ -3335,7 +3335,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "891607c78ff6864f4bc4ed666a25683e"
+      "89738ed209b7dfc3225843e09a4deb17"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.encrypt",
@@ -3529,7 +3529,7 @@
         "typing_tok_Lib.IntTypes.U64@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "07c194699d4bacf1144d95dab7ac9980"
+      "47aaae1204aec95dd75fbef8aaa2ad3f"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.encrypt",
@@ -3721,7 +3721,7 @@
         "typing_tok_Lib.IntTypes.U64@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "101a7ae8a434449d0f371ac5dacf36b4"
+      "8c9f344227b0af4bada678ddb7fba892"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_secret_key",
@@ -3775,7 +3775,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "ce0d5da893bb2976139844c021b75cca"
+      "45bd1168062fce58740865856c797a50"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_secret_key",
@@ -3926,7 +3926,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "a047adc38d5af1fd310a200f54ee376e"
+      "e2c98d1ef40dcef3178075dc5ded0a02"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key",
@@ -3996,7 +3996,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b404bb38ac71ececa9ec8049363ae3b5"
+      "80570167f273d63fc4d47d9bfa6b5d88"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key",
@@ -4122,7 +4122,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "a84d618591ceddfc2b8b2ae6f1b2edc4"
+      "7ffad24322422259832584512e3ac149"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.generate_keypair",
@@ -4159,7 +4159,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "f02a58f4d2d25977bc0a0e18df91154b"
+      "515cf6522da324a31339a48cdbc17862"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.generate_keypair",
@@ -4271,7 +4271,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "3c1df48304d3337a3c6fe207e3e6982f"
+      "b468c80bbf1bbe97f171a26249b886bb"
     ]
   ]
 ]

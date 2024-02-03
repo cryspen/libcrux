@@ -54,8 +54,8 @@ FSTAR_HINTS ?= --use_hints --use_hint_hashes
 endif
 
 VERIFIED = \
-	Libcrux.Kem.Kyber.Constants.fsti \
 	Libcrux.Digest.fsti \
+	Libcrux.Kem.Kyber.Constants.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Kyber768.fsti \
@@ -101,11 +101,11 @@ FSTAR_FLAGS = $(FSTAR_HINTS) \
   --warn_error -321 \
   --warn_error -274 \
   --query_stats \
-  --log_queries \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
   $(addprefix --include ,$(FSTAR_INCLUDE_DIRS))
 
+#  --log_queries \
 #  --z3version 4.12.3 \
 #  --smtencoding.l_arith_repr native \
 #  --smtencoding.nl_arith_repr native \

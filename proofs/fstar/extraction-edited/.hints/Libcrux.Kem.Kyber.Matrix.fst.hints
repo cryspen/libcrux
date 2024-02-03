@@ -60,7 +60,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "1d4f0e76fa91b31022ccaa099711f10a"
+      "7008c7a7436a225b9ac6fff74e24f640"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_As_plus_e",
@@ -118,7 +118,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "48468c572146e16bfa7a2840b05e5653"
+      "07ef51cecbe04a26797878192bcf4828"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_As_plus_e",
@@ -297,7 +297,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "491ef94da7d623e46f7287f3d22da1fc"
+      "832b709b90df27c552e7f068eb4da3ff"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_message",
@@ -344,7 +344,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "35af93c30faeb5ca0ac339d9d573abeb"
+      "75e3df765b9ebb9475fe15775e7eff13"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_message",
@@ -510,7 +510,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "707595d0de70771cdb19be1993e87e99"
+      "7ad70817eb9affef2751fc7aecbd5d1b"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_ring_element_v",
@@ -557,7 +557,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "eaafb151f1b01e1960f58c3e93fff263"
+      "78cb5af1193a06c1874bb56ca3b499b0"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_ring_element_v",
@@ -723,7 +723,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "9f7df60f9ba8281e9228e2f9fdd090f6"
+      "02488c7a2595183dd8e678e7486c4af0"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_vector_u",
@@ -770,7 +770,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "39916bfc380441ce9ae29b99e0716d0f"
+      "4801271542346a89be49789241dc4738"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.compute_vector_u",
@@ -959,7 +959,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "5154b72bc4a4103c18d9e41c390a75e4"
+      "6f4ca3b3736a322c49b1db7bef717240"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.sample_matrix_A",
@@ -1038,7 +1038,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "cc87b93fe4dc4a1bd200dea715959727"
+      "dc2b816c10dca2a5a2ab2dafff087374"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.sample_matrix_A",
@@ -1099,6 +1099,8 @@
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_BarBar",
+        "primitive_Prims.op_Equality",
+        "primitive_Prims.op_GreaterThanOrEqual",
         "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Minus", "primitive_Prims.op_Subtraction",
         "proj_equation_Core.Iter.Traits.Iterator.Mkiterator_f_contains",
@@ -1135,7 +1137,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "cc07d67fa446757c0372fc101dc95a80"
+      "97a99c867c2142bbfa1bd4d770478ee5"
     ],
     [
       "Libcrux.Kem.Kyber.Matrix.sample_matrix_A",
@@ -1232,7 +1234,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "63eeb907e49aadf8d5699f76d869e78c"
+      "a445f49801e645275e4d0caec3448201"
     ]
   ]
 ]

@@ -24,7 +24,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "85be0a6251a7c79f8f46c30cccc98f8c"
+      "23f016d200d6249c05de2f8973891cb2"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.lemma_mul_i32_range",
@@ -88,7 +88,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "9c34ccd2426244de45403fb21951573f"
+      "83a1295baff28cab759ddd443e0df657"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.lemma_add_i32_range",
@@ -128,7 +128,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "9bd607b28d1ceeba549c6a5577d38ec6"
+      "ccaa8f4af859a50dfde793e59da24ac8"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.mul_i32_b",
@@ -162,7 +162,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "9f2313bad42c63d876bd0181ed6241ba"
+      "182ba15c5085c961cfe524fa4cfc6f94"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.mul_i32_b",
@@ -200,7 +200,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "7c73c486db50615ef0b3c8fd632f42f5"
+      "dd282ecfe99b48b3051e02cb09921e7f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.add_i32_b",
@@ -214,7 +214,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "c1677ca87756e94704adce27931090e7"
+      "ceff2299e7dd65488e6f7ad6b9920b51"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.add_i32_b",
@@ -252,7 +252,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "def12a88748d0ee3b1b1568bdc8fdec0"
+      "959d03ea1ce2a58fb1948f2718376080"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.sub_i32_b",
@@ -266,7 +266,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "22f0918de6554de78d918567972cfcf3"
+      "9f7ed5f5c93116070aaefeb3c3ccabb7"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.sub_i32_b",
@@ -307,7 +307,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "cee15ba68a8f8231db35a7ce2e19b649"
+      "f19e43fe26958ae8ad58eb6f77957fb2"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.cast_i32_b",
@@ -323,7 +323,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "c118627868bd2245c1d9b772b912646d"
+      "3e28dc99c20ad1643d25a720d58523d5"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.shr_i32_b",
@@ -335,7 +335,7 @@
         "refinement_interpretation_Tm_refine_1e068ce857e1bf578a12a06697989d54"
       ],
       0,
-      "d9ba5b2da8e172010c9a24289cd78b16"
+      "06bba66147736af460ec4023df35c2e4"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.shr_i32_b",
@@ -390,7 +390,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "0ec8abf1930330f65b4059c939a8c108"
+      "43ca8d4b5d269ecde46acaa588313aaa"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.v_BARRETT_R",
@@ -399,7 +399,7 @@
       1,
       [ "@query" ],
       0,
-      "ca09aa222c3f10c7308f751c8121f8fc"
+      "24dffb0237318668c1fb0272a81f2b9c"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.v_BARRETT_R",
@@ -428,7 +428,7 @@
         "equation_FStar.Int.min_int", "equation_FStar.Int.size",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.int_t",
         "equation_Lib.IntTypes.pub_int_t", "equation_Lib.IntTypes.pub_int_v",
-        "equation_Lib.IntTypes.v",
+        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Arithmetic.v_BARRETT_SHIFT",
         "equation_Prims.nat", "equation_Prims.pos",
         "equation_Rust_primitives.Integers.bits",
@@ -459,8 +459,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
-        "token_correspondence_Prims.pow2.fuel_instrumented",
-        "typing_Lib.IntTypes.pub_int_v",
+        "typing_FStar.Int.fits", "typing_Lib.IntTypes.pub_int_v",
         "typing_Libcrux.Kem.Kyber.Arithmetic.v_BARRETT_SHIFT",
         "typing_Prims.pow2", "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.op_At_Percent_Dot",
@@ -470,7 +469,7 @@
         "typing_tok_Lib.IntTypes.S64@tok"
       ],
       0,
-      "8dff7c5883c6219ac1780cd2503472d0"
+      "f11e9b8b9198b7ea8664272ce27e0d9a"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.v_MONTGOMERY_R",
@@ -479,7 +478,7 @@
       1,
       [ "@query" ],
       0,
-      "bf4467dff15d12ba57fc02dcfefdf79c"
+      "3f75fd324db7251f610ebf5d3787f513"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.v_MONTGOMERY_R",
@@ -584,7 +583,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "d08d5026b0fd0f430b04ac318e3dab4c"
+      "41f496132633adc28559414f0b9c306e"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.int_to_spec_fe",
@@ -626,7 +625,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "16b234ecc784afab8b09dda84685ba62"
+      "e1340a73f8a769bfadae927d3fa989ab"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -638,7 +637,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "b311f29a6dbb07e8dd48ff8417025169"
+      "7eb132cfb110efbd7a35df9de4c64bdc"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -650,7 +649,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "75ca9c65e4510e5f3fe708518553309d"
+      "7683a1372ef853a5608388c0dfe35d8e"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -666,7 +665,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "db19cfa1e5783314ff023f1b2b82ab00"
+      "462cc09845d7278b58a89c2376b01133"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -682,7 +681,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "89a41c06d80bdb9bbd2917bf0c165693"
+      "77b2b681437d7b753777058ae565cf7f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -694,7 +693,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "38e2562203d662f0953b5019d075df63"
+      "d109c219b7ae9e0731bca2c7ae46cb08"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -706,7 +705,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "6b4be3cd080af9d9acfd9d2c10d1f73a"
+      "31c94a8d1dee5fbd6a6784916f977900"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -722,7 +721,7 @@
         "refinement_interpretation_Tm_refine_c1a7d9a33f6eb5e647f30c5da8bd80df"
       ],
       0,
-      "7a4a1370199528e13a34fef671e98c26"
+      "9a6c4b14570c693fe24cae96086721eb"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -738,7 +737,7 @@
         "refinement_interpretation_Tm_refine_c1a7d9a33f6eb5e647f30c5da8bd80df"
       ],
       0,
-      "ca9362a5a4471be39244f7263faa2096"
+      "26976c84a7989f650b71b7f83fc46d26"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -755,7 +754,7 @@
         "refinement_interpretation_Tm_refine_96eaf149ca660c51799b17b0997d1167"
       ],
       0,
-      "b987ee172b9aa04a3d39ea2ac8547784"
+      "69e2699c11fc1b961edd01962992f5a1"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -767,7 +766,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "4195cfcafb0bfac403b7fd35c3348a2b"
+      "fd5f618cf210effa156b7b15eb695eea"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -779,7 +778,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "69100f2b27e4638d57fea05a4fe010e8"
+      "d62a877a000bfe3dbb9fc2727150150b"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -791,7 +790,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "e328e977a8b43c2ac77eb0f5de9a90df"
+      "f021be2bd5da9e80f0437935abd44bf7"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -806,7 +805,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "24a86a07364dcd694db7c9964d9534db"
+      "16422e4ef72d13305726b4d60545c60c"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -873,7 +872,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "baf51f24f8d11c2a55d83a9744b9770e"
+      "fbd645589cc52a77a09e5cafd49fd58e"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -885,7 +884,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "ddee053eb6eebaa6d9edd5f037be34b8"
+      "462ef1b2bf9635b1a351cad375c2cacd"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -897,7 +896,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "b51bfe674e9abf064a75ffff07481de1"
+      "9dbf84db2eb3a4dceade11c861909d74"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -949,7 +948,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "3bba13c27e772271e2203f3a063b2809"
+      "6aa7fe168324afba6de4c855c1601e6d"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -961,7 +960,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "0170fe8e6a0b83807d912b3f2d26a9bb"
+      "db7b41501e5e7e5abb1a5b021ded7a4d"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1016,7 +1015,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "addb239b0d1671bd65694992f5468a08"
+      "10c0d419cb9ca85f3b150f20febb76b4"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1041,7 +1040,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "b5c4e1e6842a75e44e566131b2685f9e"
+      "e6d6b1464836a53dd0f2764724532263"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1073,7 +1072,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "76d61a1c1ebe55f19a2aa4bf412db017"
+      "7e6d29c79c2793bc8a19672a0c5a55cc"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1085,7 +1084,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "126b3cadc77c79e2dc26f34a046a2ed3"
+      "1764fe1b9b062f6791a35fab89b835d3"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1098,7 +1097,7 @@
         "refinement_interpretation_Tm_refine_e3fe9b7b2b1f21f6c8f47835047505be"
       ],
       0,
-      "feb91ada329549a7cbf3ac71decf0099"
+      "120b978e3c71caab8480d2b05477f9f1"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1113,7 +1112,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "d68bb3683a39069a5bcdebff0368afdd"
+      "e970828f7f90ce2101425ecf6af2e413"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1125,7 +1124,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "718bc617038d3e637415d34f28a1ba5d"
+      "ab52ac608f6b5ff6db0a8f6127309f75"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1137,7 +1136,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "13d463a2f87c74999c582cfe843317bd"
+      "aec3a02fc319338ccbae869d4ac818c0"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1191,7 +1190,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "6fc455492ba2c04992deccd5ee4bc7df"
+      "63e928ed8468d1eddbcb7b7767b3a3ca"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1216,7 +1215,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "a26a7f93f017940e70e9412570857f9b"
+      "a9fbf13d6dfc6c044b097ba98029a922"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1265,7 +1264,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "7049bbc2474f1feadaecf92118be7874"
+      "253389787caf4cde23fc9640d38b4de7"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1277,7 +1276,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "68b18510d3a5c0b25972476989654f10"
+      "c7bea45b8adac643eda7d672f131abc5"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1292,7 +1291,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "12c9425948d79dda0c635b32657ca5d6"
+      "87b75f08fb68593951059e70dc91ce14"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1317,7 +1316,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "00c4edd08b3eff35f4803dee7570c139"
+      "ba526f9507839cc81d8f2e4e915729ac"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1330,7 +1329,7 @@
         "refinement_interpretation_Tm_refine_fb1c28ee85d5f1790627f05ada419592"
       ],
       0,
-      "96f10736962bbcb840b2d195076f7a52"
+      "54b25cd2ce7d82cc0905a48c644c8ec1"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1355,7 +1354,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "4ea41be76cd59f3c690d99c76e6f2e20"
+      "fd331d8fe9ed6ad1e13b7a34c415b715"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1367,7 +1366,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "21c88ae18639f6bdc3eeda32eaa33289"
+      "3336c40ee914aa03d901796a27d01fb5"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1382,7 +1381,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "c9eefee48fbf45eb86e4b95d755ba3b5"
+      "3a0c84ffb3a7db4fa1f7bf8c8a237198"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1407,7 +1406,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "d0917f17b2a70648e406a44c253077a0"
+      "d412aa5a6cd4ffea6f84d387fb628914"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1447,7 +1446,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "54abed678ebe672414a14a1f669cf4bf"
+      "844bc9bc6b7a385f441f53fdea9ca8a0"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1459,7 +1458,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "faeba5d1e936d55b5629aae3e634091c"
+      "630e5820714eb171d29a7469f542cf69"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1472,7 +1471,7 @@
         "refinement_interpretation_Tm_refine_91328468f4440a8bf8d3581ecc377b34"
       ],
       0,
-      "f9996db052809c52431c65b6fda52263"
+      "41c4500e5b11e48aee482935c8c2b542"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1487,7 +1486,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "0c22a99c2afb22ec603047c004f0f164"
+      "b4093904bd62b088b3dd026337c5fce9"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1512,7 +1511,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "cc54ae4cae4b941a685b3e14dd35d7c5"
+      "e7d64cd1602d8791674576eff7d1763b"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1525,7 +1524,7 @@
         "refinement_interpretation_Tm_refine_fb1c28ee85d5f1790627f05ada419592"
       ],
       0,
-      "baeec75fb0795723b55f369eac63625a"
+      "7e0d143f378d5b67608927f880108f34"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1537,7 +1536,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "ad3115770876627f1ad78431509008d0"
+      "74988904f279a8414a441dbd3a275638"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1552,7 +1551,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "ef5b4e6cc7422107c7fb30d157bd0f4e"
+      "0231c68e0150d234ea9d21d593a94f6f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1565,7 +1564,7 @@
         "refinement_interpretation_Tm_refine_bb48eb6c77e49e9cd30a94dbf9b2ae7e"
       ],
       0,
-      "1179fc228755ad4de5d9c80bfd5ce268"
+      "38bead55dcf37b45fecb855d4aafbc8f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1590,7 +1589,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "6dee917eae53050bffd100ebd226aab6"
+      "a9da3acc4f8f709f466a62fedf915fdd"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1602,7 +1601,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "a988aa4174cf7a5948ffe46605a4f1b1"
+      "c51cf1982630f039dc63844d1919dc36"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1617,7 +1616,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "6f44d9fb7d88951b602e2b0efe4e3b3b"
+      "fed04f906b346aeb268e214c3ac40c7b"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1642,7 +1641,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "8c2f1453589098f7bf6f1da8e55654ee"
+      "3eb1347b5491d611e9e125b77e217c9e"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1655,7 +1654,7 @@
         "refinement_interpretation_Tm_refine_fb1c28ee85d5f1790627f05ada419592"
       ],
       0,
-      "766e756436207c19e6ddcee120eb52a4"
+      "aa502eab0e5d632b0ee91bf94a1ee7c5"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1667,7 +1666,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "27cafa272034d475692f2d3d2539626c"
+      "d37084859284e3ae7a9742a12fbf6bce"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1682,7 +1681,7 @@
         "refinement_interpretation_Tm_refine_806a87d48cb3833a16a9f7d4f6750785"
       ],
       0,
-      "077742117d762ede0209eb4b7e5babeb"
+      "eb092fc3635a1f0d1cf60e316d597bcd"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1695,7 +1694,7 @@
         "refinement_interpretation_Tm_refine_bb48eb6c77e49e9cd30a94dbf9b2ae7e"
       ],
       0,
-      "8dfce732fd4f066186ce8c98375a28e5"
+      "575ee3aaa33d9f35ed5eb23146d687bc"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1721,7 +1720,7 @@
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0"
       ],
       0,
-      "da916f663bfb41fe65a4b7c4ad1cbca8"
+      "e6f3db8161a950f9538aeab31cd941a1"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1734,7 +1733,7 @@
         "equation_Rust_primitives.Integers.u32_inttype"
       ],
       0,
-      "2ddf388e30580e3e97540c289d125586"
+      "f4c65e5eb7a61ff95d93546b5ba554b1"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1773,7 +1772,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "50847051fd1b43c53a25a3b5f3f9f322"
+      "df668ba2730cbea168ade732a103609f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1785,7 +1784,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "049a529a783253fdec60709ddc8c9895"
+      "1f9fc754f63673452838eccb16e8023f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1797,7 +1796,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "51f8a20e10882224c822ed513654e3dd"
+      "c887fa1d994f7cd1bba53096fcf578d1"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1841,7 +1840,7 @@
         "typing_FStar.UInt32.v", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "b4ce2e102dee28b510b7b0c273f5dd11"
+      "4e0f9f1abb7499bab08140d815393cc6"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1853,7 +1852,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "08a3439cdcb5a7cce1dc97416f5a4880"
+      "afc5d169faa1c2567f4bb1b45ece9943"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1865,7 +1864,7 @@
         "refinement_interpretation_Tm_refine_456b84c18ac29e6b940ba25902afa9fa"
       ],
       0,
-      "c8bedc5ff0c468937ee49ffec421b35b"
+      "932df9eeec92cd01769a6904e0842a4d"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1925,7 +1924,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "ac447018c827196fe4c5a96037ab7ed7"
+      "54243ea95ef827c9579529be7237aa93"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1937,7 +1936,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "4e8c7050d4b8df83a91b626996b87878"
+      "513bb01ce281720da35c18abcfd3b9a5"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1949,7 +1948,7 @@
         "refinement_interpretation_Tm_refine_456b84c18ac29e6b940ba25902afa9fa"
       ],
       0,
-      "f26a80b665475fb7c98289abf657f989"
+      "04b91478ad8c70bbe5af559b559eae4f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1961,7 +1960,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "2bf298555d36f7c4ec0fd7c220c5bac7"
+      "c6ab8383646ffb0048ef901e727135ec"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1976,7 +1975,7 @@
         "refinement_interpretation_Tm_refine_456b84c18ac29e6b940ba25902afa9fa"
       ],
       0,
-      "0f3c7e74941b0d89843aef00bf3606d4"
+      "a65557cb42aab01defda9a3cd94bf76f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -1994,7 +1993,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "645cd4d945ae347e89215e6ab2fe7ab8"
+      "04def587350a3f000cac09a97f785478"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -2003,7 +2002,7 @@
       1,
       [ "@query" ],
       0,
-      "8bdc538d271969318498b4dbefcff61d"
+      "f642e42bf416cc41d73e22e771154188"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -2015,7 +2014,7 @@
         "refinement_interpretation_Tm_refine_654a196bc9f685aac047ab4dd7c22761"
       ],
       0,
-      "48f02744b72d3511b4cd7eee0da4e24f"
+      "f076610ee9d76accd9f2d94e232b3ff5"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -2032,7 +2031,7 @@
         "refinement_interpretation_Tm_refine_948ff553951d7fa3b6aa3bceb324368e"
       ],
       0,
-      "5877666924e298ca6764cfeb672d05ed"
+      "ba5bc1107dd199c3e3fe152e408f9e43"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -2053,7 +2052,7 @@
         "refinement_interpretation_Tm_refine_948ff553951d7fa3b6aa3bceb324368e"
       ],
       0,
-      "ebc6adeac2202968a2c457f967dd7935"
+      "6225f1d9229c1c17876c764f230f7f35"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.get_n_least_significant_bits",
@@ -2068,7 +2067,7 @@
         "refinement_interpretation_Tm_refine_e52b4600b58a10f95ba9a5252b69d191"
       ],
       0,
-      "4032f5283b06bc418ca893abcd00a2b4"
+      "57f8f298d0c4fd8851a4b4c2eaa1ff6f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.barrett_post",
@@ -2107,7 +2106,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b64e994fd66a180556ba9f35a9ffe782"
+      "c0b64057b79f26bafc3dfef1d3169eed"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.barrett_post",
@@ -2120,7 +2119,7 @@
         "refinement_interpretation_Tm_refine_da29c9b9e29d9389ae9376ed75fe59eb"
       ],
       0,
-      "1b613170449b50d365286188e9b8cfdf"
+      "b3f9218a955b72f53019fe366892f84b"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.barrett_reduce",
@@ -2141,7 +2140,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "379ae486e10f528a9ae284af561923e3"
+      "1ab44114148eaa1967ee35282433e9e8"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.barrett_reduce",
@@ -2249,7 +2248,7 @@
         "typing_tok_Lib.IntTypes.S64@tok"
       ],
       0,
-      "83e44ecc44f698be0eeb7f705680b2ab"
+      "71d91d4026a74014d1aea42af0281adb"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.barrett_reduce",
@@ -2346,7 +2345,7 @@
         "typing_tok_Lib.IntTypes.S64@tok"
       ],
       0,
-      "5cd283354e9a57e6fb03205a864cf15d"
+      "2f6f4056586b42cfd7ea6e1212a2ae69"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.montgomery_post",
@@ -2386,7 +2385,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "aff931f93c12ef122538a2fa1fba8686"
+      "5fd1afec9810b8720db2ebe4eda9859d"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce",
@@ -2407,7 +2406,7 @@
         "typing_Prims.pow2"
       ],
       0,
-      "b41d164f99a1d878a55e99e5ab7b8301"
+      "8033c513a306c55fad83b3403411565c"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.montgomery_reduce",
@@ -2527,7 +2526,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "296286f05b3c82ed64e47e71da75bec0"
+      "e98499f30e259eec7d4b6767890adc12"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer",
@@ -2573,7 +2572,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7eedbc6e59035e2e2f38cfd207cf0864"
+      "f2afbc5a14e9a7f3c3c7f96a827c6245"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.montgomery_multiply_sfe_by_fer",
@@ -2590,7 +2589,7 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2"
       ],
       0,
-      "1d1a4d25082593781e92acb944bcbdf8"
+      "e129ec6b6bc0d9d10a64b57200f8afbc"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.to_standard_domain",
@@ -2664,7 +2663,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "87396f8ad959249ca5395cfaf5dd7f45"
+      "46c5a695bf7ce852e90c4e905216ead0"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.to_standard_domain",
@@ -2724,7 +2723,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "0ee2a545d9dc14e938fce7f3d1cc4fec"
+      "8242d88c729f11aab79d1ef3dea19c15"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative",
@@ -2744,7 +2743,7 @@
         "refinement_interpretation_Tm_refine_96eaf149ca660c51799b17b0997d1167"
       ],
       0,
-      "d9d9bb7ee00d0d182f660a29fddf0304"
+      "d6e63bdeee4ebfdd5c3f1b2de2574f70"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative",
@@ -2851,7 +2850,7 @@
         "typing_tok_Lib.IntTypes.U16@tok"
       ],
       0,
-      "3338a0f0de9695c67cffa84f18af65dc"
+      "80eac8cba9866dd8c68fb986a5f3cb73"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement",
@@ -2889,7 +2888,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "c15684bf96f9de5576932e72f8d60e95"
+      "138bc1c13c56d8d20bc2161248bdaac3"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement",
@@ -2927,7 +2926,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "2c37abab5e40dbbd56166e80f6577042"
+      "c6349e3ff788a811d1971daae9471e9f"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement",
@@ -2952,7 +2951,7 @@
         "typing_FStar.Int32.t"
       ],
       0,
-      "c400030890969130fb6001c6766acd01"
+      "ae0aa57f53bbcc7a3bd4d016cb66c80a"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.__proj__Mkt_PolynomialRingElement__item__f_coefficients",
@@ -2990,7 +2989,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "b92269903359daffc5ff0af49f1c9b01"
+      "82ce6ced024a5de2b936ab09416b22c4"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.__proj__Mkt_PolynomialRingElement__item__f_coefficients",
@@ -3028,7 +3027,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "eccd6ae77b0d64bb912f7650e8f687f7"
+      "97db3be31cccdc71a8bda905b374be06"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b",
@@ -3066,7 +3065,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "81573750b4920dcf9a84e9f8a5209896"
+      "01858143ef0b98970afee50bfef5bdd9"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b",
@@ -3104,7 +3103,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "0e9fbbdc0b6a6f4bd60b629beed30c1a"
+      "31eb2497a48e35bab5fb53c1da99443d"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b",
@@ -3132,7 +3131,7 @@
         "typing_FStar.Int32.t", "typing_Libcrux.Kem.Kyber.Arithmetic.i32_b"
       ],
       0,
-      "6d3379e3dc1deb1c1c863f0583903b24"
+      "83b961b64cc6c2c10a42f7bde347944c"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.__proj__Mkt_PolynomialRingElement_b__item__f_coefficients",
@@ -3170,7 +3169,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "49040f02eb11928faeb9e2e8bb29161d"
+      "bb9f6e774ed61c988bfd4781ab12060a"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.__proj__Mkt_PolynomialRingElement_b__item__f_coefficients",
@@ -3208,7 +3207,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e9b6d4dccf905ac8a1b1c1cd177dbb76"
+      "b33bb3a6e4d92f4cd909c0cdc9bb1624"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
@@ -3259,7 +3258,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "455463324ee7d2863959b3062560ca26"
+      "dd4199e4394af44fe1e8340ee7570a3d"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.derefine_poly_b",
@@ -3338,7 +3337,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b13ddf98cdbaa230e6b301013f2218e1"
+      "ffdb2d03245713325189f611c28ae8b9"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.derefine_poly_b",
@@ -3462,7 +3461,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "5107b7fe76c17b62cd259601818978ad"
+      "f401c471dd9e2bf8ccd16453837db656"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.derefine_vector_b",
@@ -3506,7 +3505,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "5867092ded5974bbc53393c6ed525125"
+      "76b6f7fd05217b69b31433b6bd4609f2"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.derefine_matrix_b",
@@ -3540,7 +3539,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "0fe5175cdfbb12b3db958316aacfca0f"
+      "840b8579ead2d7bf933d1633291cae7c"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.derefine_matrix_b",
@@ -3584,7 +3583,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "ee3338c8df2b452460a822ecefd34880"
+      "6c62ffb7eea456b71e529f094abb80e6"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.cast_poly_b",
@@ -3768,7 +3767,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "bb7774b440377939089733c46cd82589"
+      "75e6ff43ad3f42887c764c074c8a516b"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.cast_vector_b",
@@ -3812,7 +3811,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "a53f1bc08cf35eb243024e7fa2f02985"
+      "e224dacbab4d730fb26075f2887348e0"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.cast_vector_b",
@@ -3889,7 +3888,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "7a9a71aecaf9e9d90527b2475dbe9185"
+      "66625689d7096439ccd81b7cadb3fd55"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.poly_range",
@@ -4010,7 +4009,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "24c87ded66a7a2dacb229844d5de7e17"
+      "c5d450ff17deb8b5f1c18774495e01e1"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.down_cast_poly_b",
@@ -4195,7 +4194,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "5987574b41b6acac0856eb2a510ca2a3"
+      "d4d21e5b66b8f15a5124f23d9a2884f3"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.down_cast_vector_b",
@@ -4239,7 +4238,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e33ae52dd8c0bc5b0ea09c10ab49a75f"
+      "45c2301d65665d2bb51f1a2075e66c3c"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.down_cast_vector_b",
@@ -4318,7 +4317,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "e8c9f992e365fe4a7ee7a8cd846fb637"
+      "a35901f3021a43456eefa9c96f6dbf67"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.op_String_Access",
@@ -4364,7 +4363,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "6cbd1561b6303d362ba28120abf8e03a"
+      "9f19081abfd3ea8a526b9cfd019b2eac"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.to_spec_poly",
@@ -4443,7 +4442,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "ca2d123af61c0da2f8fa055102fe5153"
+      "d08265cb03f7ddc2b4fb116cffa3db30"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.mont_to_spec_poly",
@@ -4518,7 +4517,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "4beac8a4894a529e4355d374336ca8a4"
+      "49ef211ae1b388af3dcb587f86bff5fb"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.to_spec_vector",
@@ -4531,7 +4530,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "d5c54657332de365a6584574b590bf9e"
+      "592b0693a01f154146420723b4364b85"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.mont_to_spec_vector",
@@ -4544,7 +4543,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "03eb14c08668b17637f71b3ce01f307e"
+      "d836e09e1481d625c989674212afd746"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix",
@@ -4557,7 +4556,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "fc7299ce7953d3014f7657a4dc84d75f"
+      "dcee002fd3eed85ddf33ce1a63ee3d7e"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.mont_to_spec_matrix",
@@ -4570,7 +4569,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "d9779e7c6c011bbb65d369b7156b5dcd"
+      "fea29108f6b7f5b2789b7058ad226bbc"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO",
@@ -4678,7 +4677,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "f721e641c917d45bb5bd64935f8b284c"
+      "72b50dfb134d6fe26f1f19b373297cdd"
     ],
     [
       "Libcrux.Kem.Kyber.Arithmetic.add_to_ring_element",
@@ -4804,7 +4803,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "f4439ea944490ffc1731750cfc73e140"
+      "47027e6fdb05ea09b47111986c755931"
     ]
   ]
 ]
