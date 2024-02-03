@@ -20,7 +20,7 @@ def environment():
         "HACL_HOME": str(hax_dep_path) + "/hacl-star",
         "KRML_HOME": str(hax_dep_path) + "/karamel",
         "EURYDICE_HOME": str(hax_dep_path) + "/eurydice",
-        "CHARON_HOME": str(hax_dep_path) + "/hacl-charon",
+        "CHARON_HOME": str(hax_dep_path) + "/charon",
         "FSTAR_HOME": str(hax_dep_path) + "/fstar",
     }
     return hax_env
@@ -143,6 +143,11 @@ def rm_deps():
     shutil.rmtree(hax_dep_path)
 
 
+# extract C code
+def extract_c(target):
+    shell(["./kyber-crate.sh"])
+
+
 # run verification for the target
 def verify(target):
     dependencies(target)
@@ -211,4 +216,5 @@ if args.verify:
     print(f"Verifying target {args.target} ...")
     verify(target)
 if args.extract_c:
-    print(f"NOT IMPLEMENTED YET - Extracting C code for {args.target}")
+    print(f"Extracting C code for {args.target}")
+    extract_c(target)
