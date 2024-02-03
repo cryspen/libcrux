@@ -45,9 +45,7 @@ pub(super) fn serialize_public_key<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] on each ring element.
 #[inline(always)]
-pub(super) fn deserialize_public_key<
-    const K: usize
->(
+pub(super) fn deserialize_public_key<const K: usize>(
     public_key: &[u8],
 ) -> [PolynomialRingElement; K] {
     let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
