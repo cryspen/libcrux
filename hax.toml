@@ -1,0 +1,41 @@
+[target.ml-kem]
+cargo = "-p libcrux -p libcrux-platform"
+target = "fstar"
+include = "-** +libcrux::kem::kyber::** +!libcrux_platform::* -libcrux::hacl::sha3::** -libcrux::jasmin::sha3::** -libcrux::**::types::index_impls::**"
+interfaces = "+* -libcrux::kem::kyber::types +!libcrux_platform::**"
+verify = ["make"]
+
+[target.ml-kem.dependencies.fstar]
+git = "https://github.com/FStarLang/fstar"
+version = "v2024.01.13"
+build = ["make -j"]
+
+[target.ml-kem.dependencies.charon]
+git = "https://github.com/AeneasVerif/charon"
+rev = "9d48f7e484e57927281749392d094bf453010ba0"
+build = ["make -j"]
+
+[target.ml-kem.dependencies.karamel]
+git = "https://github.com/FStarLang/karamel"
+rev = "fdf6a10aa22f9b1b3effffeeb270229447b5bb9b"
+build = ["make -j"]
+
+[target.ml-kem.dependencies.eurydice]
+git = "https://github.com/AeneasVerif/eurydice"
+rev = "d6529b00eb33d3aaf71ee9ead3ce6e233ae7f533"
+build = [
+    "rm -f charon",
+    "ln -s ../charon/charon-ml charon",
+    "rm -f krml",
+    "ln -s ../karamel/lib krml",
+    "make -j",
+]
+
+[target.ml-kem.dependencies.hacl-star]
+git = "https://github.com/hacl-star/hacl-star"
+rev = "2f5f95bc0ced5f51b3a9ecf59b870722749ec8a1"
+
+
+[target.ml-kem-spec]
+cargo = "--manifest-path specs/kyber/Cargo.toml"
+include = "-** +compress::* +ind_cpa::* +hacspec_kyber::* +matrix::* +ntt::* +parameters::* +sampling::* +serialize::* -libcrux::hacl::sha3::** -libcrux::jasmin::sha3::** -libcrux::digest::*"
