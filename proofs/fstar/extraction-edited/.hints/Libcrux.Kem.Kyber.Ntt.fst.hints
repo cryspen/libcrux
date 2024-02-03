@@ -73,7 +73,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "cf48d9ea0359d01e20cb702ca51a5d91"
+      "9a552b5592beace7090cfd72b5e470b5"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.v_ZETAS_TIMES_MONTGOMERY_R",
@@ -164,7 +164,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "1d9e9c12e0469c71b14af08efa73bb0f"
+      "da5864e2b5e411a1932c437cf4e568bb"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_multiply_binomials",
@@ -229,7 +229,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "eafb5e28fe3422e3d8198be38116d031"
+      "cd1a03593dbf3f30ea60ca1910d95e64"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.mul_zeta_red",
@@ -251,7 +251,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "339ad547ee0d5379d4dafed2be954fa9"
+      "c2f8719077b0e8cf45374be709e91ddb"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.mul_zeta_red",
@@ -357,7 +357,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "d90bd88d64f14e8e45ad10938512a774"
+      "1169bdbcb1ad548c72b4be84025137e0"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.mul_zeta_red",
@@ -463,7 +463,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "ca91169cfb8fe57056c4c4bb19e4ca5e"
+      "4923b60c55aa43f301a0c3527ee1edf9"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.lemma_zeta_decr",
@@ -492,7 +492,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "5e5019163fafe4950b491e2eb869fca7"
+      "e134a8b13d31f7f383b1a580e64616c9"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.lemma_zeta_decr",
@@ -550,7 +550,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "bae58bcd1a8fe6ae8ab6cac7ea7ddce6"
+      "bd348cb0bc19a0858d31093f730334c1"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.invert_ntt_at_layer",
@@ -568,7 +568,7 @@
         "refinement_interpretation_Tm_refine_f8174c18c56fd6df717c2f2a2413c1d6"
       ],
       0,
-      "8b1081f894b65d96f35ec42b82796773"
+      "67ce7023e1d0d57d818fe2d01656c964"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.invert_ntt_at_layer",
@@ -701,7 +701,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "f90a02739d5b7e225f14f9cbbb410309"
+      "c44ec9da292de9bb7c2421e2533a12a7"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.invert_ntt_at_layer",
@@ -857,7 +857,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "a800f47101d33c188da741c82c09b15c"
+      "28761dd3fd28c4d54874beb44426ae51"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery",
@@ -870,7 +870,7 @@
         "refinement_interpretation_Tm_refine_b96c3a91ffd08381895b0572c92ca1f1"
       ],
       0,
-      "9826555ae0b4a2ce0f467852b8109b47"
+      "df9c7a5ca544504cc050a88a390b1efa"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery",
@@ -1008,7 +1008,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "47ecae6604d9ea8401df982ddb14b2ee"
+      "a7a954e0a3a0b1c4d4287ee57e13744c"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery",
@@ -1151,7 +1151,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "3c3a24cc69dedfad73b15bb0f22ff17d"
+      "468e4807111852aa767400ca86a64eaf"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.mul_zeta_red2",
@@ -1170,7 +1170,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "20b3f412f897f22ec57a339f3ef6961c"
+      "2500c3ff8d0dbc5ec2324fcb21a15a6c"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.mul_zeta_red2",
@@ -1258,7 +1258,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e89bd11a3e247d5cfdfdf17ccb285edd"
+      "ec108fb9cb231444286157706ec1bb42"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.mul_zeta_red2",
@@ -1344,7 +1344,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "27cd8ff08fee3a4cb57907945bbba439"
+      "ed7bcd85131ab26f9ff6c7bae39bc0d7"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer",
@@ -1363,7 +1363,7 @@
         "refinement_interpretation_Tm_refine_d19e07791df93b4105608038d77338a3"
       ],
       0,
-      "9c53a41b8b3ceacb655146e9d77067b4"
+      "ac1c38ebfbc5440237acfaad4beb1419"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer",
@@ -1540,7 +1540,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "14186ca65e89479be67e9e5371022c29"
+      "afb1782245859f832384a3886c105feb"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer",
@@ -1700,7 +1700,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "e0cb594e12fba2a3c0bcec4c7f853e05"
+      "31a0447c0bfdd7742890bd10a4fbea3a"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer_3_",
@@ -1716,7 +1716,7 @@
         "refinement_interpretation_Tm_refine_9a2bee04172a2f8c14b17f79602284fb"
       ],
       0,
-      "132a6d5b83c612b62be0b22a05db28f3"
+      "2a7a30a67562dd3ff346eb03d1bd3293"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer_3_",
@@ -1784,7 +1784,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "fc1456207663411c5df8b38dfdfcf6d8"
+      "3fabf4e0052a1e2e23b84e602e3deb1b"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer_3_",
@@ -1852,7 +1852,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "12ae34d460e7759b9ffe76e25a269e0f"
+      "f2db496c82a2ec40f0d8be8fc0851a3b"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer_3328_",
@@ -1868,7 +1868,7 @@
         "refinement_interpretation_Tm_refine_298356af413859d3c4b76a94198c2329"
       ],
       0,
-      "979517ae9bb6f810e0d546273c3ca210"
+      "690056f1be9133d2dc5d3917054d464b"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer_3328_",
@@ -1937,7 +1937,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "3db65d8ce34789c9463cb4b0635fc33d"
+      "06b9c4231d734ecfe9531e242412c766"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_at_layer_3328_",
@@ -2006,7 +2006,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "0bc7eb8bada29994a8ed587a4500e5e2"
+      "754b615fffe85f5a2d75c8445c9e75ee"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_binomially_sampled_ring_element",
@@ -2154,7 +2154,7 @@
         "typing_tok_Lib.IntTypes.S64@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "26ab6acac8bc502a0a4c1afbd282816a"
+      "dca392376e9bb82af5855e54db66c28f"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_multiply",
@@ -2259,7 +2259,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "6d52d0ce0994b644b298f02621fcfdeb"
+      "d5dc4767d1c8f8c9614a25907ff85ec5"
     ],
     [
       "Libcrux.Kem.Kyber.Ntt.ntt_vector_u",
@@ -2380,7 +2380,7 @@
         "typing_tok_Lib.IntTypes.S64@tok"
       ],
       0,
-      "7ed58e43524432b660a1b9213bc22189"
+      "e871b91775da1ced48406ca5bb8b1c0b"
     ]
   ]
 ]

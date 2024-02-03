@@ -61,10 +61,7 @@ let v_ETA2_RANDOMNESS_SIZE (p:params) = p.v_ETA2 *! sz 64
 val v_RANKED_BYTES_PER_RING_ELEMENT (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
 let v_RANKED_BYTES_PER_RING_ELEMENT (p:params)  = p.v_RANK *! v_BYTES_PER_RING_ELEMENT
 
-val v_T_AS_NTT_ENCODED_SIZE (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
 let v_T_AS_NTT_ENCODED_SIZE (p:params) = v_RANKED_BYTES_PER_RING_ELEMENT p
-
-val v_CPA_PKE_SECRET_KEY_SIZE (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
 let v_CPA_PKE_SECRET_KEY_SIZE (p:params) = v_RANKED_BYTES_PER_RING_ELEMENT p
 
 val v_CPA_PKE_PUBLIC_KEY_SIZE (p:params) : u:usize{u = sz 800 \/ u = sz 1184 \/ u = sz 1568}

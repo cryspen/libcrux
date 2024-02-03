@@ -11,7 +11,7 @@
         "refinement_interpretation_Tm_refine_c088daa4a5eac181331aa22c1694881a"
       ],
       0,
-      "9eda7b2b3a5c6fc00cb7f86441d4d83c"
+      "22ba0612e5430e2f88a8ac6691be7bb2"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -68,7 +68,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "0c533792437d8230181821ea09b95b81"
+      "6970c473eb35bbc86b83fa87f8050598"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -126,7 +126,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "61499fd6c94e2f1f6b598e53b5ee1203"
+      "b0679e911cd929811652614230f9ff0a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_3_",
@@ -187,7 +187,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "81adfcf11a065c875d8b8e5258452c21"
+      "d293c613eae390e6768de85c77bd1e77"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -230,7 +230,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "76b00231eb1c7aca9ac9cba254ec11d5"
+      "e91546ead68bf093f6a5d146ee49726b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_10_",
@@ -288,7 +288,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "d383d7848c8735f93f82385f8f3b3330"
+      "bf84cfe5887c96b94dada84e68371b54"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_11_",
@@ -344,7 +344,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "ad2587e5db1875a8de147c3f54d8edab"
+      "6f1347797f10c12af4689b1fe0d1a77e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_4_",
@@ -403,7 +403,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "151436b42ca8d4ced1d0547f40def550"
+      "4f45e54db197a2a7050d00166cb0d8b0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_5_",
@@ -459,7 +459,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "334ff402d6b907963a172053590d964b"
+      "3d82aa320a8663516cef4d11fb081c15"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message",
@@ -500,7 +500,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "853a44b2f9a8968cad4341985fdfed30"
+      "2aaef48693417dd53b97674eda0b2572"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_v",
@@ -566,7 +566,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "09b39a65a58125556c00f4f7256dd0e3"
+      "c96a5ba7debbe63986324c8ad57b7b8e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message",
@@ -627,7 +627,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "8761f895d5722593437c8bbc5b2ee706"
+      "c8465652b8cea75c9794f2c25986019b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_u",
@@ -674,7 +674,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "ce22a5da19362588168ba96a3d1f2ff1"
+      "f0aad7978b72668902311767df97841d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_v",
@@ -713,7 +713,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a500911378941555b28134684be2ae7b"
+      "f66950a0fa86a562251194a54d4ef205"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element",
@@ -751,7 +751,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "86c899b10bc7d462cfbd29714f11f055"
+      "a9325ae41bc8947f712f46194637203f"
     ]
   ]
 ]
