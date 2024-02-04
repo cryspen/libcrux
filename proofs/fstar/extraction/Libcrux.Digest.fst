@@ -3,9 +3,6 @@ module Libcrux.Digest
 open Core
 open FStar.Mul
 
-let shake128x4_256_ (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
-  Libcrux.Hacl.Sha3.X4.shake128 v_LEN data0 data1 data2 data3
-
 let sha3_256_ (payload: t_Slice u8) = Libcrux.Hacl.Sha3.sha256 payload
 
 let sha3_512_ (payload: t_Slice u8) = Libcrux.Hacl.Sha3.sha512 payload
@@ -41,6 +38,9 @@ let shake128x4_portable (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
   digest0, digest1, digest2, digest3
   <:
   (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
+
+let shake128x4_256_ (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
+  shake128x4_portable v_LEN data0 data1 data2 data3
 
 let shake128x4 (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
   if Libcrux_platform.simd256_support ()
