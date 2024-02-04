@@ -8,10 +8,27 @@ import subprocess
 import tomllib
 
 
+version = 0.1
+
+
 # Make path absolute
 def abs_path(path):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     return Path(dir_path).joinpath(path)
+
+
+# Absolute path in the home directory
+def home_path(path):
+    return os.path.expanduser(path)
+
+
+# Path for hax dependencies
+hax_dep_path = home_path("~/.hax")
+proof_path = abs_path("proofs")
+
+
+def target_proof_path(target):
+    return proof_path.joinpath(target["target"]).joinpath("extraction")
 
 
 # build environment used for the hax world
@@ -31,6 +48,20 @@ def path_environment():
     return "$FSTAR_HOME/bin"
 
 
+# get the config as string to print
+def config_str():
+    config = [
+        "Config:",
+        f"  - Dependencies are stored in {hax_dep_path}",
+        f"  - The prove code is expected in {proof_path}/target.target/extracted",
+        f"  - Set environment variables",
+    ]
+    for key, value in environment().items():
+        config.append(f"    - {key}={value}")
+    config.append(f"    - PATH=$PATH{os.pathsep}{path_environment()}")
+    return "\n".join(config)
+
+
 # Run a shell command
 def shell(command, cwd=None, env={}):
     os_env = os.environ
@@ -41,8 +72,86 @@ def shell(command, cwd=None, env={}):
     subprocess.run(command, cwd=cwd, env=os_env, check=True)
 
 
-# cargo hax for target
-def cargo_hax(target):
+# The main parser to attach to with the decorator.
+cli = argparse.ArgumentParser(
+    description=f"Hax driver v{version}\n\n{config_str()}",
+    formatter_class=argparse.RawTextHelpFormatter,
+)
+cli.add_argument(
+    "target",
+    help="The target from hax.toml to extract.",
+)
+subparsers = cli.add_subparsers(dest="subcommand")
+cli.add_argument(
+    "--clean",
+    type=str,
+    nargs="*",
+    action="append",
+    help="Clean dependencies and code.\n\
+Use 'proof' or 'dep' to only clean one or the other",
+)
+
+
+def subcommand(args=[], parent=subparsers):
+    """Decorator for sub commands."""
+    # dependency_check() TODO: add
+
+    def decorator(func):
+        parser = parent.add_parser(
+            func.__name__,
+            description=func.__doc__,
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
+        for arg in args:
+            parser.add_argument(*arg[0], **arg[1])
+        parser.set_defaults(func=func)
+
+    return decorator
+
+
+def argument(*name_or_flags, **kwargs):
+    """Helper for subcommand decorator"""
+    return ([*name_or_flags], kwargs)
+
+
+def read_config():
+    """Reading config"""
+
+    with open("hax.toml", "rb") as f:
+        hax_config = tomllib.load(f)
+    return hax_config
+
+
+def get_target(hax_config, name):
+    """Getting the target"""
+
+    targets = hax_config.get("target")
+    if name not in targets:
+        print(f"No target '{name}' configured!")
+        print("Check your hax.toml for available targets.")
+        exit(1)
+
+    return targets[name]
+
+
+def read_target(name):
+    """Get the target with the given `name`"""
+
+    config = read_config()
+    return get_target(config, name)
+
+
+@subcommand()
+def extract(args):
+    _extract(args)
+
+
+def _extract(args):
+    """Extract the proof code for the given target"""
+
+    name = args.target
+    target = read_target(name)
+
     hax_cmd = ["cargo", "hax"]
 
     cargo_args = target["cargo"]
@@ -65,6 +174,7 @@ def cargo_hax(target):
         hax_cmd.append("--interfaces")
         hax_cmd.append(interfaces_args)
 
+    print(f"Running {' '.join(hax_cmd)}")
     shell(hax_cmd)
 
 
@@ -118,103 +228,87 @@ def build_dep(dependency, target_path):
         shell(cmd.split(), cwd=target_path)
 
 
-# Path for hax dependencies
-hax_dep_path = abs_path("target/hax")
-proof_path = abs_path("proofs")
+@subcommand()
+def dependencies(args):
+    """Download all required dependencies for target and build them"""
+
+    _dependencies(args)
 
 
-# download all required dependencies for target
-def dependencies(target):
+def _dependencies(args):
+    name = args.target
+    target = read_target(name)
+
     Path(hax_dep_path).mkdir(parents=True, exist_ok=True)
     for dependency in target["dependencies"]:
         print(f"Getting dependency {dependency} ...")
         get_dep(
-            target["dependencies"][dependency], Path(hax_dep_path).joinpath(dependency)
+            target["dependencies"][dependency],
+            Path(hax_dep_path).joinpath(dependency),
         )
     for dependency in target["dependencies"]:
         print(f"Building dependency {dependency} ...")
         build_dep(
-            target["dependencies"][dependency], Path(hax_dep_path).joinpath(dependency)
+            target["dependencies"][dependency],
+            Path(hax_dep_path).joinpath(dependency),
         )
 
 
-# delete dependencies
-def rm_deps():
-    shutil.rmtree(hax_dep_path)
-
-
-# extract C code
+@subcommand()
 def extract_c(target):
+    """Extract C code"""
     shell(["./kyber-crate.sh"])
 
 
-# run verification for the target
-def verify(target):
-    dependencies(target)
+@subcommand()
+def verify(args):
+    """Run verification for the target"""
 
-    directory = proof_path.joinpath(target["target"]).joinpath("extraction")
+    name = args.target
+    _dependencies(args)
+
+    target = read_target(name)
+    directory = target_proof_path(target)
     if not directory.exists():
         # extract if the directory doesn't exist
-        cargo_hax(target)
+        _extract(args)
     cmd = target["verify"]
     shell(cmd, cwd=directory)
 
 
-# === Interface ===
+def clean(args):
+    """Remove all prove artifacts and dependencies"""
 
-# CLI interface
-parser = argparse.ArgumentParser(description="Hax driver.")
-parser.add_argument(
-    "target",
-    help="The target from hax.toml to extract.",
-)
-parser.add_argument(
-    "--extract",
-    action="store_true",
-    help="Extract F* for the given target.",
-)
-parser.add_argument(
-    "--verify",
-    action="store_true",
-    help="Verify the extracted F* code for the given target.\nExtracts if necessary",
-)
-parser.add_argument(
-    "--extract-c",
-    action="store_true",
-    help="Extract C code for the given target.",
-)
-parser.add_argument(
-    "--clean",
-    action="store_true",
-    help="Clean dependencies. TODO: clean extracted code",
-)
+    to_clean = args.clean[0]
+    if len(to_clean) == 0:
+        to_clean = ["proof", "dep"]
 
-args = parser.parse_args()
+    if "proof" in to_clean:
+        name = args.target
+        target = read_target(name)
+        directory = target_proof_path(target)
 
-# Reading config
-with open("hax.toml", "rb") as f:
-    hax_config = tomllib.load(f)
+        for cmd in target["clean"]:
+            print(f"Run {cmd} in {directory}")
+            shell(cmd.split(), cwd=directory)
 
-# Getting the target
-targets = hax_config.get("target")
-if args.target not in targets:
-    print(f"No target '{args.target}' configured!")
-    print("Check your hax.toml for available targets.")
-    exit(1)
-
-target = targets[args.target]
+    if "dep" in to_clean:
+        shutil.rmtree(hax_dep_path, ignore_errors=True)
 
 
-# Dispatch actions for target
-if args.clean:
-    print(f"Cleaning target {args.target} ...")
-    rm_deps()
-if args.extract:
-    print(f"Extracting target {args.target} ...")
-    cargo_hax(target)
-if args.verify:
-    print(f"Verifying target {args.target} ...")
-    verify(target)
-if args.extract_c:
-    print(f"Extracting C code for {args.target}")
-    extract_c(target)
+# === Boiler plate === #
+
+
+def main():
+    args = cli.parse_args()
+    # print(args)
+    if args.clean:
+        clean(args)
+    elif args.subcommand is None:
+        cli.print_help()
+    else:
+        args.func(args)
+
+
+if __name__ == "__main__":
+    main()

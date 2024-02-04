@@ -4,6 +4,7 @@ target = "fstar"
 include = "-** +libcrux::kem::kyber::** +!libcrux_platform::* -libcrux::hacl::sha3::** -libcrux::jasmin::sha3::** -libcrux::**::types::index_impls::**"
 interfaces = "+* -libcrux::kem::kyber::types +!libcrux_platform::**"
 verify = ["make"]
+clean = ["./clean.sh"]
 
 [target.ml-kem.dependencies.fstar]
 git = "https://github.com/FStarLang/fstar"
