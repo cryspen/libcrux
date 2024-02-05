@@ -167,21 +167,28 @@ type dT = d: nat {d = 1 \/ d = 4 \/ d = 5 \/ d = 10 \/ d = 11 \/ d = 12}
 let compress_d (d: dT {d <> 12}) (x: field_element): field_element
   = (pow2 d * x + 1664) / v v_FIELD_MODULUS
 
-assume val bits_to_bytes (#bytes: usize) (f: (i:nat {i < v bytes * 8} -> bit))
+let bits_to_bytes (#bytes: usize) (bv: bit_vec (v bytes * 8))
   : Pure (t_Array u8 bytes)
          (requires True)
-         (ensures fun r -> (forall i. bit_vec_of_int_arr r 8 i == f i))
+         (ensures fun r -> (forall i. bit_vec_of_int_t_array r 8 i == bv i))
+  = bit_vec_to_int_t_array 8 bv
 
-assume val bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
-  : Pure (i:nat {i < v bytes * 8} -> bit)
+let bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
+  : Pure (i: bit_vec (v bytes * 8))
          (requires True)
-         (ensures fun f -> (forall i. bit_vec_of_int_arr r 8 i == f i))
+         (ensures fun f -> (forall i. bit_vec_of_int_t_array r 8 i == f i))
+  = bit_vec_of_int_t_array r 8
 
 let byte_encode (d: dT) (coefficients: polynomial): t_Array u8 (sz (32 * d))
-  = bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_arr coefficients d)
+  = bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_array coefficients d)
 
 let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial
-  = admit ()
+  = let bv = bit_vec_of_int_t_array coefficients 8 in
+    let arr: t_Array nat (sz 256) = bit_vec_to_nat_array d bv in
+    let p = map' (fun (x: nat) -> x % v v_FIELD_MODULUS <: nat) arr in
+    introduce forall i. Seq.index p i < v v_FIELD_MODULUS
+    with assert (Seq.index p i == Seq.index p (v (sz i)));
+    p
 
 let vector_encode_12 (#p:params) (v: vector p): t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p)
   = let s: t_Array (t_Array _ (sz 384)) p.v_RANK = map' (byte_encode 12) v in

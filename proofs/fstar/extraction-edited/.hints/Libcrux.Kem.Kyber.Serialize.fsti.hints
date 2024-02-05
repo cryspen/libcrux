@@ -1,5 +1,5 @@
 [
-  "÷³!}¼É\u0014ÍU<»x˜=\u000e",
+  "–@ŸæNÃ\fnt'Ù”ÐØt\u0012",
   [
     [
       "Libcrux.Kem.Kyber.Serialize.int_arr_bitwise_eq",
@@ -11,7 +11,7 @@
         "refinement_interpretation_Tm_refine_c088daa4a5eac181331aa22c1694881a"
       ],
       0,
-      "9d12f2ae5f57bf324b1bad63c9b16e73"
+      "d37f1b91938dcc83207fea4586c1b804"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -68,7 +68,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "38b5732c4b9e46d08ca0ed2b9d1ab5f4"
+      "07b897a3afdf5881d7d4b8f7bb024129"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -126,7 +126,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "32b908e5b24628c1f3d831921978e144"
+      "99747a419730ed6a01245be128ddba4b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_3_",
@@ -187,7 +187,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "bf952b4a4df8f431724863b1ac97f3ce"
+      "ec1f79b3f808356b8b3b9adea355240c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -230,7 +230,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "55184ed816e31b580664b43263ffaba2"
+      "ddd843b97ed6a5acffad25a21b59154e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_10_",
@@ -288,7 +288,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "4b1a7f54629138f62789a4b14c1a6a0c"
+      "9812e7837f522cea2551f0801b5fc81b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_11_",
@@ -344,7 +344,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "523da5559515778b527dec024b2d82f0"
+      "3c6cfde5c3cb9aaac497ceceb1b61b98"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_4_",
@@ -403,7 +403,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "59079c8b9ae66bc03574e770dca9462e"
+      "3a00f4436666ab08816939aad86cebdd"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_5_",
@@ -459,7 +459,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "1c589dc806d39bd23789966caf924eb3"
+      "6665c8ddce250f88a188614c69dc5cc1"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message",
@@ -500,7 +500,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "ab802ad9c684dba57246b2930f5914ca"
+      "2023d91571e343d57e3e5276b2eacb32"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_v",
@@ -566,7 +566,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e4bbe5a76f3946775e5ab60640ce07d3"
+      "07b879f1a1a15c90057d3b43c928ccfc"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message",
@@ -627,7 +627,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "36dd91b8c24b1b5a86f13424e197f380"
+      "52395aeb38bad494d10da691f4d775c9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_u",
@@ -674,7 +674,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "6f0b5bd2025a52cd93bdcd77d0053805"
+      "98b2bb1e6dd73dc26db1d264a1ebf2c4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_v",
@@ -713,7 +713,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "9ec8fe0a5a87cefb95c8dea327517ffc"
+      "a2e5be173f2218e91a1e2f49c94290fa"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element",
@@ -751,7 +751,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "37e9afa0396057fa1c1ba265b6832875"
+      "f3e5444cf6a53e3b80dba1283161387b"
     ]
   ]
 ]

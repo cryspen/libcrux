@@ -1,6 +1,36 @@
 [
-  "\u0018üﬂèx∞ÒÁŒ\t¶\u0017óì\"\u0004",
+  "”µ‡√Ê}\u0002ˆ“\u0019O·dœ=◊",
   [
+    [
+      "Rust_primitives.op_let_Question",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Core.Option.Option_None",
+        "disc_equation_Core.Option.Option_Some",
+        "fuel_guarded_inversion_Core.Option.t_Option",
+        "projection_inverse_BoxBool_proj_0"
+      ],
+      0,
+      "2efd6f859071faa06a73a5ce7332d076"
+    ],
+    [
+      "Rust_primitives.op_let_Bar",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Core.Result.Result_Err",
+        "disc_equation_Core.Result.Result_Ok",
+        "fuel_guarded_inversion_Core.Result.t_Result",
+        "projection_inverse_BoxBool_proj_0"
+      ],
+      0,
+      "0c2e6e80219cbcb09537961e07bf0278"
+    ],
     [
       "Rust_primitives.array_to_slice_unsize",
       1,
@@ -25,7 +55,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "79c1fd31a96a9ad1f06100f1c4a9e986"
+      "520fd290f9855d6584281703e3ac2a9c"
     ]
   ]
 ]
