@@ -35,11 +35,6 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: 🔨 OCaml Setup
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: 4.14.1
-
       - name: ⤵ Install FStar
         run: nix profile install github:FStarLang/FStar/v2024.01.13
 
@@ -55,12 +50,14 @@ jobs:
           repository: hacspec/hacspec-v2
           path: hax
 
-      - name: 🔨 Setup hax
-        working-directory: hax
+      - name: ⤵ Install & confiure Cachix
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes nodejs
-          ./setup.sh
+          nix profile install nixpkgs#cachix
+          cachix use hax
+
+      - name: ⤵ Install hax
+        run: |
+          nix profile install ./hax
 
       - name: 🏃 Extract the Kyber reference code
         run: |
