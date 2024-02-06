@@ -62,6 +62,8 @@
 //! - `InvalidParameters`: Parameters to an algorithm are inconsistent or wrong.
 //! - `CryptoError`: An opaque error happened in a crypto operation outside of this code.
 
+use crate::aead::InvalidArgumentError;
+
 /// Explicit errors generated throughout this specification.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum HpkeError {
@@ -98,15 +100,37 @@ pub enum HpkeError {
 /// A [`Result`] type that returns a [`Bytes`] or an [`HpkeError`].
 pub type HpkeBytesResult = Result<Vec<u8>, HpkeError>;
 
-impl From<crate::aead::Error> for HpkeError {
-    fn from(value: crate::aead::Error) -> Self {
+impl From<crate::aead::EncryptError> for HpkeError {
+    fn from(value: crate::aead::EncryptError) -> Self {
         match value {
-            crate::aead::Error::UnsupportedAlgorithm => Self::UnsupportedAlgorithm,
-            crate::aead::Error::EncryptionError => Self::EncapError,
-            crate::aead::Error::DecryptionFailed => Self::DecapError,
-            crate::aead::Error::InvalidKey
-            | crate::aead::Error::InvalidIv
-            | crate::aead::Error::InvalidTag => Self::InvalidParameters,
+            crate::aead::EncryptError::InternalError => Self::CryptoError,
+            crate::aead::EncryptError::InvalidArgument(
+                InvalidArgumentError::UnsupportedAlgorithm,
+            ) => Self::UnsupportedAlgorithm,
+            crate::aead::EncryptError::InvalidArgument(_) => Self::InvalidParameters,
+        }
+    }
+}
+
+impl From<crate::aead::DecryptError> for HpkeError {
+    fn from(value: crate::aead::DecryptError) -> Self {
+        match value {
+            crate::aead::DecryptError::InvalidArgument(
+                InvalidArgumentError::UnsupportedAlgorithm,
+            ) => Self::UnsupportedAlgorithm,
+
+            crate::aead::DecryptError::InvalidArgument(_) => Self::CryptoError,
+            crate::aead::DecryptError::InternalError => Self::CryptoError,
+            crate::aead::DecryptError::DecryptionFailed => Self::OpenError,
+        }
+    }
+}
+
+impl From<crate::aead::InvalidArgumentError> for HpkeError {
+    fn from(err: crate::aead::InvalidArgumentError) -> Self {
+        match err {
+            InvalidArgumentError::UnsupportedAlgorithm => Self::UnsupportedAlgorithm,
+            _ => Self::InvalidParameters,
         }
     }
 }
