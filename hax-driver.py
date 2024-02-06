@@ -124,7 +124,7 @@ elif options.kyber_reference:
             "-C", "-p", "libcrux", "-p", "libcrux-platform", ";",
             "into",
             "-i",
-            f"-** +libcrux::kem::kyber::** +!libcrux_platform::* {exclude_sha3_implementations} -libcrux::**::types::index_impls::**",
+            f"-** +libcrux::kem::kyber::** +!libcrux_platform::platform::* {exclude_sha3_implementations} -libcrux::**::types::index_impls::**",
             "fstar",
             "--interfaces",
             "+* -libcrux::kem::kyber::types +!libcrux_platform::**",

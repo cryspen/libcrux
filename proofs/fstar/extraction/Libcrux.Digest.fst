@@ -43,6 +43,6 @@ let shake128x4_256_ (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
   shake128x4_portable v_LEN data0 data1 data2 data3
 
 let shake128x4 (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
-  if Libcrux_platform.simd256_support ()
+  if Libcrux_platform.Platform.simd256_support ()
   then shake128x4_256_ v_LEN data0 data1 data2 data3
   else shake128x4_portable v_LEN data0 data1 data2 data3
