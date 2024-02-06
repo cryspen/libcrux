@@ -24,7 +24,7 @@ let v_XOFx4 v_K (input: t_Array (t_Array u8 (sz 34)) v_K) =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 840) <: t_Array u8 (sz 840)) v_K
   in
   let out:t_Array (t_Array u8 (sz 840)) v_K =
-    if ~.(Libcrux_platform.simd256_support () <: bool) || ~.true
+    if ~.(Libcrux_platform.Platform.simd256_support () <: bool)
     then
       Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                 Core.Ops.Range.f_start = sz 0;
