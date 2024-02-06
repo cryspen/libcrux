@@ -49,7 +49,6 @@ all:
 
 
 VERIFIED = \
-	Libcrux_platform.fsti \
 	Libcrux.Kem.Kyber.Constants.fsti \
 	Libcrux.Kem.Kyber.Kyber768.fst \
 	Libcrux.Kem.Kyber.Kyber1024.fst \
