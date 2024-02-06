@@ -1,5 +1,5 @@
 diff -ruN extraction/Libcrux.Digest.fst extraction-edited/Libcrux.Digest.fst
---- extraction/Libcrux.Digest.fst	2024-02-06 13:19:38.575673639 +0100
+--- extraction/Libcrux.Digest.fst	2024-02-06 13:46:34.807520230 +0100
 +++ extraction-edited/Libcrux.Digest.fst	1970-01-01 01:00:00.000000000 +0100
 @@ -1,48 +0,0 @@
 -module Libcrux.Digest
@@ -51,8 +51,8 @@ diff -ruN extraction/Libcrux.Digest.fst extraction-edited/Libcrux.Digest.fst
 -  then shake128x4_256_ v_LEN data0 data1 data2 data3
 -  else shake128x4_portable v_LEN data0 data1 data2 data3
 diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
---- extraction/Libcrux.Digest.fsti	2024-02-06 13:19:38.562673639 +0100
-+++ extraction-edited/Libcrux.Digest.fsti	2024-02-06 13:19:38.595673639 +0100
+--- extraction/Libcrux.Digest.fsti	2024-02-06 13:46:34.776521132 +0100
++++ extraction-edited/Libcrux.Digest.fsti	2024-02-06 13:46:34.843519182 +0100
 @@ -3,6 +3,11 @@
  open Core
  open FStar.Mul
@@ -79,7 +79,7 @@ diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
      : Prims.Pure (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
 diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 --- extraction/Libcrux.Kem.fst	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/Libcrux.Kem.fst	2024-02-06 13:19:38.604673639 +0100
++++ extraction-edited/Libcrux.Kem.fst	2024-02-06 13:46:34.861518658 +0100
 @@ -0,0 +1,6 @@
 +module Libcrux.Kem
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -88,8 +88,8 @@ diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 +
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-06 13:19:38.564673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-06 13:19:38.601673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-06 13:46:34.783520929 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-06 13:46:34.854518862 +0100
 @@ -1,81 +1,356 @@
  module Libcrux.Kem.Kyber.Arithmetic
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -487,8 +487,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.
 +  
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-06 13:19:38.566673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-06 13:19:38.603673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-06 13:46:34.788520783 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-06 13:46:34.857518775 +0100
 @@ -3,10 +3,32 @@
  open Core
  open FStar.Mul
@@ -828,8 +828,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
 -                <:
 -                bool))
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Kem.Kyber.Compress.fst
---- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-02-06 13:19:38.577673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-02-06 13:19:38.596673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-02-06 13:46:34.813520055 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-02-06 13:46:34.845519124 +0100
 @@ -1,39 +1,79 @@
  module Libcrux.Kem.Kyber.Compress
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -933,8 +933,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Ke
 +  res <: Libcrux.Kem.Kyber.Arithmetic.i32_b 3328
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.Kem.Kyber.Compress.fsti
---- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-02-06 13:19:38.560673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-02-06 13:19:38.602673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-02-06 13:46:34.771521278 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-02-06 13:46:34.856518804 +0100
 @@ -3,8 +3,19 @@
  open Core
  open FStar.Mul
@@ -1000,8 +1000,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.K
 +      (requires fe =. 0l || fe =. 1l) 
 +      (fun result -> v result >= 0 /\ v result < 3329)
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-06 13:19:38.573673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-06 13:19:38.593673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-06 13:46:34.802520376 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-06 13:46:34.840519270 +0100
 @@ -4,56 +4,163 @@
  open FStar.Mul
  
@@ -1187,8 +1187,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/L
 +  )
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-06 13:19:38.563673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-06 13:19:38.592673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-06 13:46:34.780521016 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-06 13:46:34.839519299 +0100
 @@ -20,7 +20,8 @@
  
  val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
@@ -1220,8 +1220,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/
 +          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
 +          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool))
 diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.fst
---- extraction/Libcrux.Kem.Kyber.fst	2024-02-06 13:19:38.578673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-02-06 13:19:38.582673639 +0100
+--- extraction/Libcrux.Kem.Kyber.fst	2024-02-06 13:46:34.815519997 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-02-06 13:46:34.821519823 +0100
 @@ -1,12 +1,29 @@
  module Libcrux.Kem.Kyber
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -1495,8 +1495,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
      (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.fsti
---- extraction/Libcrux.Kem.Kyber.fsti	2024-02-06 13:19:38.563673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-02-06 13:19:38.596673639 +0100
+--- extraction/Libcrux.Kem.Kyber.fsti	2024-02-06 13:46:34.778521074 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-02-06 13:46:34.846519095 +0100
 @@ -10,36 +10,84 @@
    Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
    Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
@@ -1597,8 +1597,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.
 +      (ensures (fun kp -> 
 +                (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.ind_cca_generate_keypair p randomness))
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-06 13:19:38.577673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-06 13:19:38.598673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-06 13:46:34.812520085 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-06 13:46:34.849519008 +0100
 @@ -3,13 +3,23 @@
  open Core
  open FStar.Mul
@@ -1651,8 +1651,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 +  admit(); // We assume that shake128x4 correctly implements XOFx4
 +  out 
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-06 13:19:38.558673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-06 13:19:38.599673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-06 13:46:34.768521365 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-06 13:46:34.851518950 +0100
 @@ -3,12 +3,17 @@
  open Core
  open FStar.Mul
@@ -1678,8 +1678,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Lib
 +          (ensures (fun res ->
 +            (forall i. i < v v_K ==> Seq.index res i == Spec.Kyber.v_XOF (sz 840) (Seq.index input i))))
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-06 13:19:38.575673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-06 13:19:38.585673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-06 13:46:34.809520172 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-06 13:46:34.826519677 +0100
 @@ -1,5 +1,5 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -2390,8 +2390,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  res
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-06 13:19:38.565673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-06 13:19:38.609673638 +0100
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-06 13:46:34.785520870 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-06 13:46:34.869518426 +0100
 @@ -1,80 +1,151 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -2593,8 +2593,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Ke
 + 
 +    
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst
---- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-06 13:19:38.572673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-06 13:19:38.584673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-06 13:46:34.800520434 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-06 13:46:34.824519735 +0100
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568))
@@ -2628,8 +2628,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.K
      (sz 3168)
      (sz 1568)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst
---- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-06 13:19:38.568673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-06 13:19:38.588673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-06 13:46:34.791520696 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-06 13:46:34.831519532 +0100
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 1632))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 768))
@@ -2663,8 +2663,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Ke
      (sz 1632)
      (sz 800)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst
---- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-06 13:19:38.570673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-06 13:19:38.581673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-06 13:46:34.796520550 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-06 13:46:34.820519852 +0100
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088))
@@ -2698,8 +2698,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Ke
      (sz 2400)
      (sz 1184)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti
---- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-06 13:19:38.567673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-06 13:19:38.591673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-06 13:46:34.790520725 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-06 13:46:34.837519357 +0100
 @@ -74,14 +74,15 @@
  val decapsulate
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
@@ -2725,8 +2725,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.K
 -      (fun _ -> Prims.l_True)
 +      (ensures (fun kp -> (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.kyber768_generate_keypair randomness))
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.Kyber.Matrix.fst
---- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-02-06 13:19:38.576673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-02-06 13:19:38.605673638 +0100
+--- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-02-06 13:46:34.810520143 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-02-06 13:46:34.862518629 +0100
 @@ -3,192 +3,188 @@
  open Core
  open FStar.Mul
@@ -3517,8 +3517,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +  admit(); //P-F
    v_A_transpose
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti
---- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-06 13:19:38.571673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-06 13:19:38.597673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-06 13:46:34.799520463 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-06 13:46:34.848519037 +0100
 @@ -3,39 +3,71 @@
  open Core
  open FStar.Mul
@@ -3621,8 +3621,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem
 +        if transpose then Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == matrix_A
 +        else Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == Spec.Kyber.matrix_transpose matrix_A)
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyber.Ntt.fst
---- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-02-06 13:19:38.574673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-02-06 13:19:38.584673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-02-06 13:46:34.805520288 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-02-06 13:46:34.823519765 +0100
 @@ -1,56 +1,130 @@
  module Libcrux.Kem.Kyber.Ntt
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -4553,8 +4553,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +  down_cast_poly_b #(8*3328) #3328 re 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti
---- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-06 13:19:38.561673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-06 13:19:38.586673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-06 13:46:34.774521191 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-06 13:46:34.828519619 +0100
 @@ -2,223 +2,80 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
@@ -4847,8 +4847,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 +      (ensures fun _ -> True)
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Kem.Kyber.Sampling.fst
---- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-02-06 13:19:38.566673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-02-06 13:19:38.608673638 +0100
+--- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-02-06 13:46:34.787520812 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-02-06 13:46:34.867518484 +0100
 @@ -3,27 +3,34 @@
  open Core
  open FStar.Mul
@@ -5261,8 +5261,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +  out 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti
---- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-06 13:19:38.564673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-06 13:19:38.610673638 +0100
+--- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-06 13:46:34.781520987 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-06 13:46:34.870518397 +0100
 @@ -3,77 +3,37 @@
  open Core
  open FStar.Mul
@@ -5363,8 +5363,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.K
 +//      (ensures fun result -> (forall i. v (result.f_coefficients.[i]) >= 0))
 +      
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.Kem.Kyber.Serialize.fst
---- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-02-06 13:19:38.568673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-02-06 13:19:38.590673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-02-06 13:46:34.793520638 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-02-06 13:46:34.835519415 +0100
 @@ -1,8 +1,14 @@
  module Libcrux.Kem.Kyber.Serialize
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -6751,8 +6751,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
    serialized
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti
---- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-06 13:19:38.569673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-06 13:19:38.594673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-06 13:46:34.794520608 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-06 13:46:34.842519212 +0100
 @@ -2,118 +2,193 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
@@ -7015,8 +7015,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.
 +      (requires True)
 +      (ensures (fun res -> True))
 diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.Kyber.Types.fst
---- extraction/Libcrux.Kem.Kyber.Types.fst	2024-02-06 13:19:38.573673639 +0100
-+++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-02-06 13:19:38.589673639 +0100
+--- extraction/Libcrux.Kem.Kyber.Types.fst	2024-02-06 13:46:34.804520317 +0100
++++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-02-06 13:46:34.834519444 +0100
 @@ -50,7 +50,9 @@
  let impl_6__len (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) : usize = v_SIZE
  
@@ -7050,9 +7050,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
    Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
  
  type t_MlKemKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {
-diff -ruN extraction/Libcrux_platform.fsti extraction-edited/Libcrux_platform.fsti
---- extraction/Libcrux_platform.fsti	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/Libcrux_platform.fsti	2024-02-06 13:19:38.580673639 +0100
+diff -ruN extraction/Libcrux_platform.Platform.fsti extraction-edited/Libcrux_platform.Platform.fsti
+--- extraction/Libcrux_platform.Platform.fsti	1970-01-01 01:00:00.000000000 +0100
++++ extraction-edited/Libcrux_platform.Platform.fsti	2024-02-06 13:46:34.832519503 +0100
 @@ -0,0 +1,20 @@
 +module Libcrux_platform
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7076,7 +7076,7 @@ diff -ruN extraction/Libcrux_platform.fsti extraction-edited/Libcrux_platform.fs
 +val simd128_support: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 --- extraction/MkSeq.fst	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/MkSeq.fst	2024-02-06 13:19:38.604673639 +0100
++++ extraction-edited/MkSeq.fst	2024-02-06 13:46:34.859518717 +0100
 @@ -0,0 +1,91 @@
 +module MkSeq
 +open Core
@@ -7171,7 +7171,7 @@ diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 +%splice[] (init 13 (fun i -> create_gen_tac (i + 1)))
 diff -ruN extraction/Spec.Kyber.fst extraction-edited/Spec.Kyber.fst
 --- extraction/Spec.Kyber.fst	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/Spec.Kyber.fst	2024-02-06 13:19:38.600673639 +0100
++++ extraction-edited/Spec.Kyber.fst	2024-02-06 13:46:34.853518891 +0100
 @@ -0,0 +1,430 @@
 +module Spec.Kyber
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
