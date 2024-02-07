@@ -76,7 +76,7 @@ pub(super) fn validate_public_key<
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
     // public_key ==
-    let pk = deserialize_public_key::<K>(public_key);
+    let pk = deserialize_public_key::<K>(&public_key[..RANKED_BYTES_PER_RING_ELEMENT]);
     let public_key_serialized = serialize_public_key::<
         K,
         RANKED_BYTES_PER_RING_ELEMENT,

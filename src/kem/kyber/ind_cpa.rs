@@ -274,7 +274,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_public_key::<K>(public_key);
+    let t_as_ntt = deserialize_public_key::<K>(&public_key[..T_AS_NTT_ENCODED_SIZE]);
 
     // ρ := pk + 12·k·n / 8
     // for i from 0 to k−1 do
