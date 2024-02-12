@@ -73,15 +73,12 @@ pub(super) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    // public_key ==
     let pk = deserialize_public_key::<K>(public_key);
-    let public_key_serialized = serialize_public_key::<
-        K,
-        RANKED_BYTES_PER_RING_ELEMENT,
-        PUBLIC_KEY_SIZE,
-    >(pk, &public_key[RANKED_BYTES_PER_RING_ELEMENT..]);
+    let seed_for_a = &public_key[RANKED_BYTES_PER_RING_ELEMENT..];
+    let public_key_serialized =
+        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(pk, seed_for_a);
 
-    public_key == &public_key_serialized
+    *public_key == public_key_serialized
 }
 
 pub(super) fn generate_keypair<
@@ -154,11 +151,9 @@ pub(super) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    let shared_secret = match shared_secret.try_into() {
-        Ok(shared_secret) => shared_secret,
-        Err(_) => panic!(),
-    };
-    (ciphertext.into(), shared_secret)
+    let mut shared_secret_array = [0u8; constants::SHARED_SECRET_SIZE];
+    shared_secret_array.copy_from_slice(shared_secret);
+    (ciphertext.into(), shared_secret_array)
 }
 
 pub(super) fn decapsulate<
