@@ -10,6 +10,8 @@ files:
       - [ libcrux_kyber, kyber768 ]
     private:
       - [ libcrux_kyber, "*" ]
+    include_in_c:
+      - '"libcrux_primitive_glue.h"'
   - name: core
     private:
       - [ core, "*" ]
