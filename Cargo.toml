@@ -74,3 +74,4 @@ rand = []
 wasm = ["wasm-bindgen"]
 log = ["dep:log"]
 tests = []              # Expose functions for testing.
+slow_kat_tests = []     
