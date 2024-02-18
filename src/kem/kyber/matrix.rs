@@ -6,7 +6,7 @@ use super::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     hash_functions::XOFx4,
     ntt::{invert_ntt_montgomery, ntt_multiply},
-    sampling::sample_from_uniform_distribution,
+    sampling::{sample_from_uniform_distribution, sample_from_xof},
 };
 use crate::cloop;
 
@@ -24,16 +24,15 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
-        let xof_bytes = XOFx4::<K>(seeds);
 
+        let sampled = sample_from_xof(seeds);
+        
         for j in 0..K {
-            let sampled = sample_from_uniform_distribution(xof_bytes[j]);
-
             // A[i][j] = A_transpose[j][i]
             if transpose {
-                A_transpose[j][i] = sampled;
+                A_transpose[j][i] = sampled[j];
             } else {
-                A_transpose[i][j] = sampled;
+                A_transpose[i][j] = sampled[j];
             }
         }
     }

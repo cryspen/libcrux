@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![allow(non_camel_case_types)]
 
 use libcrux_platform::simd256_support;
 
@@ -63,5 +64,40 @@ pub(crate) fn XOFx4<const K: usize>(
         };
     }
 
+    out
+}
+
+// The following API uses the repeated squeeze API
+// Currently it only supports Scalar SHAKE, adapting it to SIMD SHAKE is a todo
+type XOF_state = crate::digest::incremental::AbsorbOnceSqueezeManyShake128;
+
+#[inline(always)]
+pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> [XOF_state; K] {
+    let mut out =
+        core::array::from_fn(|_| crate::digest::incremental::AbsorbOnceSqueezeManyShake128::new());
+
+    for i in 0..K {
+        out[i].absorb(&input[i]);
+    }
+    out
+}
+
+#[inline(always)]
+pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(state: &mut [XOF_state; K]) -> [[u8;168*3];K] {
+    let mut out = [[0; 168 * 3];K];
+       
+    for i in 0..K {
+        out[i] = state[i].squeeze_nblocks();
+    }
+    out
+}
+
+#[inline(always)]
+pub(crate) fn XOF_squeeze_block<const K: usize>(state: &mut [XOF_state; K]) -> [[u8;168];K] {
+    let mut out = [[0; 168];K];
+       
+    for i in 0..K {
+        out[i] = state[i].squeeze_nblocks();
+    }
     out
 }

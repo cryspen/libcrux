@@ -2,7 +2,60 @@ use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
-use crate::cloop;
+use crate::{cloop, kem::kyber::hash_functions::{XOF_absorb, XOF_squeeze_three_blocks, XOF_squeeze_block}};
+
+pub fn sample_from_uniform_distribution_next<const K:usize, const N:usize>(
+    randomness: [[u8; N]; K], 
+    sampled_coefficients:&mut [usize; K], 
+    out:&mut [PolynomialRingElement; K])
+ -> bool {
+    let mut done = true;
+    for i in 0..K {
+        for bytes in randomness[i].chunks(3) {
+            let b1 = bytes[0] as i32;
+            let b2 = bytes[1] as i32;
+            let b3 = bytes[2] as i32;
+
+            let d1 = ((b2 & 0xF) << 8) | b1;
+            let d2 = (b3 << 4) | (b2 >> 4);
+
+            if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+                out[i].coefficients[sampled_coefficients[i]] = d1;
+                sampled_coefficients[i] += 1
+            }
+            if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+                out[i].coefficients[sampled_coefficients[i]] = d2;
+                sampled_coefficients[i] += 1;
+            }
+        }
+        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {done = false}
+    }
+    done
+}
+
+pub fn sample_from_xof<const K:usize>(
+    seeds: [[u8; 34]; K]
+) -> [PolynomialRingElement; K] {
+    let mut sampled_coefficients: [usize;K] = [0; K];
+    let mut out: [PolynomialRingElement; K] = [PolynomialRingElement::ZERO; K];
+
+    let mut xof_states = XOF_absorb::<K>(seeds);
+    let randomness = XOF_squeeze_three_blocks(&mut xof_states);
+    
+    let mut done = false;
+    done = sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+
+    while !done {
+        let randomness = XOF_squeeze_block(&mut xof_states);
+        done = sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+    }
+
+    hax_lib::debug_assert!(out[0]
+        .coefficients
+        .into_iter()
+        .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
+    out
+}
 
 fn rejection_sampling_panic_with_diagnostic() {
     panic!()
