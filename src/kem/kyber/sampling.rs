@@ -2,7 +2,7 @@ use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
-use crate::{cloop, kem::kyber::hash_functions::{XOF_absorb, XOF_squeeze_three_blocks, XOF_squeeze_block}};
+use crate::{cloop, hax_utils::hax_debug_assert, kem::kyber::hash_functions::{XOF_absorb, XOF_squeeze_three_blocks, XOF_squeeze_block}};
 
 pub fn sample_from_uniform_distribution_next<const K:usize, const N:usize>(
     randomness: [[u8; N]; K], 
@@ -50,15 +50,12 @@ pub fn sample_from_xof<const K:usize>(
         done = sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
     }
 
-    hax_lib::debug_assert!(out[0]
+    hax_debug_assert!(out[0]
         .coefficients
         .into_iter()
         .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
     out
 }
-=======
-use crate::{cloop, hax_utils::hax_debug_assert};
->>>>>>> main
 
 fn rejection_sampling_panic_with_diagnostic() {
     panic!()

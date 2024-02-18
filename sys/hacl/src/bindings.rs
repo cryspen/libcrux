@@ -1011,6 +1011,7 @@ extern "C" {
         key_len: u32,
     );
 }
+
 extern "C" {
     #[doc = "Encrypt a message `input` with key `key`.\n\nThe arguments `key`, `nonce`, `data`, and `data_len` are same in encryption/decryption.\nNote: Encryption and decryption can be executed in-place, i.e., `input` and `output` can point to the same memory.\n\n@param output Pointer to `input_len` bytes of memory where the ciphertext is written to.\n@param tag Pointer to 16 bytes of memory where the mac is written to.\n@param input Pointer to `input_len` bytes of memory where the message is read from.\n@param input_len Length of the message.\n@param data Pointer to `data_len` bytes of memory where the associated data is read from.\n@param data_len Length of the associated data.\n@param key Pointer to 32 bytes of memory where the AEAD key is read from.\n@param nonce Pointer to 12 bytes of memory where the AEAD nonce is read from."]
     pub fn Hacl_AEAD_Chacha20Poly1305_Simd256_encrypt(
@@ -1037,6 +1038,10 @@ extern "C" {
         tag: *mut u8,
     ) -> u32;
 }
+
+pub type uint32x8_t = [u32; 8usize];
+pub type Lib_IntVector_Intrinsics_vec256 = uint32x8_t;
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Hacl_Hash_Blake2b_Simd256_block_state_t_s {
@@ -1482,4 +1487,3 @@ extern "C" {
     #[doc = "Execute the diffie-hellmann key exchange.\n\n@param out Pointer to 32 bytes of memory, allocated by the caller, where the resulting point is written to.\n@param priv Pointer to 32 bytes of memory where **our** secret/private key is read from.\n@param pub Pointer to 32 bytes of memory where **their** public point is read from."]
     pub fn Hacl_Curve25519_64_ecdh(out: *mut u8, priv_: *mut u8, pub_: *mut u8) -> bool;
 }
->>>>>>> main

@@ -97,27 +97,27 @@ impl_shake128_rng_answer_tests!(
     kyber512_shake128_rng_5000_known_answer_tests,
     5000,
     768,
-    kem::kyber512_generate_keypair_derand,
-    kem::kyber512_encapsulate_derand,
-    kem::kyber512_decapsulate_derand,
+    kem::deterministic::kyber512_generate_keypair_derand,
+    kem::deterministic::kyber512_encapsulate_derand,
+    kem::deterministic::kyber512_decapsulate_derand,
     "e837d3b8ede8fe19a2442d25c921851811f87d054b66e453b82b620582ab0629"
 );
 impl_shake128_rng_answer_tests!(
     kyber768_shake128_rng_5000_known_answer_tests,
     5000,
     1088,
-    kem::kyber768_generate_keypair_derand,
-    kem::kyber768_encapsulate_derand,
-    kem::kyber768_decapsulate_derand,
+    kem::deterministic::kyber768_generate_keypair_derand,
+    kem::deterministic::kyber768_encapsulate_derand,
+    kem::deterministic::kyber768_decapsulate_derand,
     "17745bc1564b01ab4752e86438973d7120e92d46082c33d05dbef07f0688cc77"
 );
 impl_shake128_rng_answer_tests!(
     kyber1024_shake128_rng_5000_known_answer_tests,
     5000,
     1568,
-    kem::kyber1024_generate_keypair_derand,
-    kem::kyber1024_encapsulate_derand,
-    kem::kyber1024_decapsulate_derand,
+    kem::deterministic::kyber1024_generate_keypair_derand,
+    kem::deterministic::kyber1024_encapsulate_derand,
+    kem::deterministic::kyber1024_decapsulate_derand,
     "44079dcea6b7d596c0c00431f012e0f3b63777736720921fdc50668d9c0c6ad0"
 );
 
@@ -128,9 +128,9 @@ impl_shake128_rng_answer_tests!(
     kyber512_shake128_rng_100_000_known_answer_tests,
     100_000,
     768,
-    kem::kyber512_generate_keypair_derand,
-    kem::kyber512_encapsulate_derand,
-    kem::kyber512_decapsulate_derand,
+    kem::deterministic::kyber512_generate_keypair_derand,
+    kem::deterministic::kyber512_encapsulate_derand,
+    kem::deterministic::kyber512_decapsulate_derand,
     "99520ba1dd26f7da7d5c8e71110cb12b6c15664478b0ea0dbb7991c74e374392"
 );
 
@@ -139,9 +139,9 @@ impl_shake128_rng_answer_tests!(
     kyber768_shake128_rng_100_000_known_answer_tests,
     100_000,
     1088,
-    kem::kyber768_generate_keypair_derand,
-    kem::kyber768_encapsulate_derand,
-    kem::kyber768_decapsulate_derand,
+    kem::deterministic::kyber768_generate_keypair_derand,
+    kem::deterministic::kyber768_encapsulate_derand,
+    kem::deterministic::kyber768_decapsulate_derand,
     "35d56f1cc040b71fc97a9b77b05485d97354b296483d2539ade224374ec8d325"
 );
 
@@ -150,8 +150,8 @@ impl_shake128_rng_answer_tests!(
     kyber1024_shake128_rng_100_000_known_answer_tests,
     100_000,
     1568,
-    kem::kyber1024_generate_keypair_derand,
-    kem::kyber1024_encapsulate_derand,
-    kem::kyber1024_decapsulate_derand,
+    kem::deterministic::kyber1024_generate_keypair_derand,
+    kem::deterministic::kyber1024_encapsulate_derand,
+    kem::deterministic::kyber1024_decapsulate_derand,
     "b9440d4fe3231bf70cb07f6f7ebd6ffaa469b3f08e644a1449e851f30e4d0d23"
 );
