@@ -1,0 +1,61 @@
+[
+  "ÓµàÃæ}\u0002öÒ\u0019OádÏ=×",
+  [
+    [
+      "Rust_primitives.op_let_Question",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Core.Option.Option_None",
+        "disc_equation_Core.Option.Option_Some",
+        "fuel_guarded_inversion_Core.Option.t_Option",
+        "projection_inverse_BoxBool_proj_0"
+      ],
+      0,
+      "c0f79656219baf407a3f097d50c53ef8"
+    ],
+    [
+      "Rust_primitives.op_let_Bar",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "disc_equation_Core.Result.Result_Err",
+        "disc_equation_Core.Result.Result_Ok",
+        "fuel_guarded_inversion_Core.Result.t_Result",
+        "projection_inverse_BoxBool_proj_0"
+      ],
+      0,
+      "efd4130c52d455bccbf035bc6ca2deba"
+    ],
+    [
+      "Rust_primitives.array_to_slice_unsize",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "bool_inversion",
+        "equality_tok_Lib.IntTypes.PUB@tok", "equation_Lib.IntTypes.maxint",
+        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
+        "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.int_t",
+        "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.max_usize",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.usize",
+        "equation_Rust_primitives.Integers.v",
+        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
+        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "typing_Lib.IntTypes.v", "typing_Rust_primitives.Integers.unsigned",
+        "typing_Rust_primitives.Integers.usize_inttype",
+        "typing_tok_Lib.IntTypes.PUB@tok"
+      ],
+      0,
+      "9023ca5f324a52b5ba8d36753d50d1dc"
+    ]
+  ]
+]

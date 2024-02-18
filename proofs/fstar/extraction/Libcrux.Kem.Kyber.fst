@@ -3,17 +3,10 @@ module Libcrux.Kem.Kyber
 open Core
 open FStar.Mul
 
-unfold
-let t_KyberSharedSecret = t_Array u8 (sz 32)
-
-let v_KEY_GENERATION_SEED_SIZE: usize =
-  Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
-  Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
-
 let serialize_kem_secret_key
       (v_SERIALIZED_KEY_LEN: usize)
       (private_key public_key implicit_rejection_value: t_Slice u8)
-    : t_Array u8 v_SERIALIZED_KEY_LEN =
+     =
   let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
   let pointer:usize = sz 0 in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
@@ -118,9 +111,9 @@ let serialize_kem_secret_key
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
-      (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey v_SECRET_KEY_SIZE)
-      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE)
-    : t_Array u8 (sz 32) =
+      (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+     =
   let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Libcrux.Kem.Kyber.Types.impl_12__split_at v_SECRET_KEY_SIZE secret_key v_CPA_SECRET_KEY_SIZE
   in
@@ -208,9 +201,9 @@ let decapsulate
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
-      (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
+      (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
-    : (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)) =
+     =
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux.Kem.Kyber.Ind_cpa.into_padded_array (sz 64)
       (Rust_primitives.unsize randomness <: t_Slice u8)
@@ -269,13 +262,38 @@ let encapsulate
   in
   Core.Convert.f_into ciphertext, shared_secret
   <:
-  (Libcrux.Kem.Kyber.Types.t_KyberCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+  (Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+
+let validate_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
+     =
+  let pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+    Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key v_K
+      (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
+          <:
+          Core.Ops.Range.t_RangeTo usize ]
+        <:
+        t_Slice u8)
+  in
+  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key v_K
+      v_RANKED_BYTES_PER_RING_ELEMENT
+      v_PUBLIC_KEY_SIZE
+      pk
+      (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+          <:
+          Core.Ops.Range.t_RangeFrom usize ]
+        <:
+        t_Slice u8)
+  in
+  public_key =. public_key_serialized
 
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (sz 64))
-    : Libcrux.Kem.Kyber.Types.t_KyberKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
+     =
   let ind_cpa_keypair_randomness:t_Slice u8 =
     randomness.[ {
         Core.Ops.Range.f_start = sz 0;
@@ -307,11 +325,11 @@ let generate_keypair
       (Rust_primitives.unsize public_key <: t_Slice u8)
       implicit_rejection_value
   in
-  let (private_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey v_PRIVATE_KEY_SIZE):Libcrux.Kem.Kyber.Types.t_KyberPrivateKey
+  let (private_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE):Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey
   v_PRIVATE_KEY_SIZE =
     Core.Convert.f_from secret_key_serialized
   in
   Libcrux.Kem.Kyber.Types.impl__from v_PRIVATE_KEY_SIZE
     v_PUBLIC_KEY_SIZE
     private_key
-    (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_KyberPublicKey v_PUBLIC_KEY_SIZE)
+    (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)

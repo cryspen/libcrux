@@ -44,7 +44,7 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
 /// vectors and matrices. The computation of these expressions has been
 /// abstracted away into these functions in order to save on loop iterations.
 
-/// Compute v − NTT^{−1}(sˆT ◦ NTT(u))
+/// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     v: &PolynomialRingElement,
@@ -68,7 +68,7 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     result
 }
 
-/// Compute NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
+/// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     t_as_ntt: &[PolynomialRingElement; K],
@@ -95,7 +95,7 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     result
 }
 
-/// Compute u := NTT^{-1}(AˆT ◦ rˆ) + e_1
+/// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     a_as_ntt: &[[PolynomialRingElement; K]; K],
@@ -127,7 +127,7 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     result
 }
 
-/// compute Aˆ ◦ sˆ + eˆ
+/// Compute Â ◦ ŝ + ê
 #[inline(always)]
 #[allow(non_snake_case)]
 pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(

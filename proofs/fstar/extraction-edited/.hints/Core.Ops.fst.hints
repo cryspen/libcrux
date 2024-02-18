@@ -1,0 +1,21 @@
+[
+  "ÅqÀ\u0012vD·c\u0018q¾ë²‘ìH",
+  [
+    [
+      "Core.Ops.op_String_Access",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Core.Ops.Index.in_range",
+        "fuel_guarded_inversion_Core.Ops.Index.t_Index",
+        "interpretation_Tm_abs_bc0ae3740b8cfb7a7b7143f61a432dbc",
+        "proj_equation_Core.Ops.Index.Mkt_Index_in_range",
+        "token_correspondence_Core.Ops.Index.__proj__Mkt_Index__item__in_range",
+        "token_correspondence_Core.Ops.Index.in_range"
+      ],
+      0,
+      "3cd847f4f421eb1541c8febade998a71"
+    ]
+  ]
+]

@@ -18,21 +18,21 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter(|| {
-            let _kp = libcrux::kem::kyber768_generate_keypair_derand(seed);
+            let _kp = libcrux::kem::deterministic::kyber768_generate_keypair_derand(seed);
         })
     });
 
     group.bench_function("libcrux portable (HACL-DRBG)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
-                libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+                libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
         })
     });
 
     group.bench_function("libcrux portable (OsRng)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
-                libcrux::kem::key_gen(Algorithm::Kyber768, &mut rng).unwrap();
+                libcrux::kem::key_gen(Algorithm::MlKem768, &mut rng).unwrap();
         })
     });
 
@@ -53,10 +53,13 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         let mut seed2 = [0; 32];
         OsRng.fill_bytes(&mut seed2);
         b.iter_batched(
-            || libcrux::kem::kyber768_generate_keypair_derand(seed1),
+            || libcrux::kem::deterministic::kyber768_generate_keypair_derand(seed1),
             |keypair| {
                 let (_shared_secret, _ciphertext) =
-                    libcrux::kem::kyber768_encapsulate_derand(&keypair.public_key(), seed2);
+                    libcrux::kem::deterministic::kyber768_encapsulate_derand(
+                        &keypair.public_key(),
+                        seed2,
+                    );
             },
             BatchSize::SmallInput,
         )
@@ -67,13 +70,12 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             || {
                 let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
                 let (_secret_key, public_key) =
-                    libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+                    libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
 
                 (drbg, public_key)
             },
             |(mut rng, public_key)| {
-                let (_shared_secret, _ciphertext) =
-                    libcrux::kem::encapsulate(&public_key, &mut rng).unwrap();
+                let (_shared_secret, _ciphertext) = public_key.encapsulate(&mut rng).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -84,13 +86,12 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             || {
                 let mut drbg = OsRng;
                 let (_secret_key, public_key) =
-                    libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
+                    libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
 
                 (drbg, public_key)
             },
             |(mut rng, public_key)| {
-                let (_shared_secret, _ciphertext) =
-                    libcrux::kem::encapsulate(&public_key, &mut rng).unwrap();
+                let (_shared_secret, _ciphertext) = public_key.encapsulate(&mut rng).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -121,13 +122,12 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             || {
                 let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
                 let (secret_key, public_key) =
-                    libcrux::kem::key_gen(Algorithm::Kyber768, &mut drbg).unwrap();
-                let (_shared_secret, ciphertext) =
-                    libcrux::kem::encapsulate(&public_key, &mut drbg).unwrap();
+                    libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
+                let (_shared_secret, ciphertext) = public_key.encapsulate(&mut drbg).unwrap();
                 (secret_key, ciphertext)
             },
             |(secret_key, ciphertext)| {
-                let _shared_secret = libcrux::kem::decapsulate(&ciphertext, &secret_key);
+                let _shared_secret = ciphertext.decapsulate(&secret_key);
             },
             BatchSize::SmallInput,
         )

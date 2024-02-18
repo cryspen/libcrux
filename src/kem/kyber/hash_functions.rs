@@ -25,7 +25,7 @@ pub(crate) fn XOFx4<const K: usize>(
 ) -> [[u8; REJECTION_SAMPLING_SEED_SIZE]; K] {
     let mut out = [[0u8; REJECTION_SAMPLING_SEED_SIZE]; K];
 
-    if !simd256_support() || !cfg!(simd256) {
+    if !simd256_support() {
         // Without SIMD256 support we fake it and call shak128 4 times.
         // While shak128x4 does this too, this is faster because we only do the
         // required number of invocations (K).

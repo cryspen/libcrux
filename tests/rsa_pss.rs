@@ -3,6 +3,8 @@ use libcrux::signature::{
     rsa_pss::{RsaPssKeySize, RsaPssPrivateKey, RsaPssPublicKey},
     DigestAlgorithm,
 };
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use test_util::*;
 
 const MODULUS: [u8; 256] = [
