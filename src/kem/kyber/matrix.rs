@@ -26,7 +26,7 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
         }
 
         let sampled = sample_from_xof(seeds);
-        
+
         for j in 0..K {
             // A[i][j] = A_transpose[j][i]
             if transpose {

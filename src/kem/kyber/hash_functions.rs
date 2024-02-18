@@ -83,9 +83,11 @@ pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> [XOF_state; K]
 }
 
 #[inline(always)]
-pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(state: &mut [XOF_state; K]) -> [[u8;168*3];K] {
-    let mut out = [[0; 168 * 3];K];
-       
+pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
+    state: &mut [XOF_state; K],
+) -> [[u8; 168 * 3]; K] {
+    let mut out = [[0; 168 * 3]; K];
+
     for i in 0..K {
         out[i] = state[i].squeeze_nblocks();
     }
@@ -93,9 +95,9 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(state: &mut [XOF_state; K
 }
 
 #[inline(always)]
-pub(crate) fn XOF_squeeze_block<const K: usize>(state: &mut [XOF_state; K]) -> [[u8;168];K] {
-    let mut out = [[0; 168];K];
-       
+pub(crate) fn XOF_squeeze_block<const K: usize>(state: &mut [XOF_state; K]) -> [[u8; 168]; K] {
+    let mut out = [[0; 168]; K];
+
     for i in 0..K {
         out[i] = state[i].squeeze_nblocks();
     }

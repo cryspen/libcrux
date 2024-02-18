@@ -2,13 +2,17 @@ use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS, REJECTION_SAMPLING_SEED_SIZE},
 };
-use crate::{cloop, hax_utils::hax_debug_assert, kem::kyber::hash_functions::{XOF_absorb, XOF_squeeze_three_blocks, XOF_squeeze_block}};
+use crate::{
+    cloop,
+    hax_utils::hax_debug_assert,
+    kem::kyber::hash_functions::{XOF_absorb, XOF_squeeze_block, XOF_squeeze_three_blocks},
+};
 
-pub fn sample_from_uniform_distribution_next<const K:usize, const N:usize>(
-    randomness: [[u8; N]; K], 
-    sampled_coefficients:&mut [usize; K], 
-    out:&mut [PolynomialRingElement; K])
- -> bool {
+pub fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
+    randomness: [[u8; N]; K],
+    sampled_coefficients: &mut [usize; K],
+    out: &mut [PolynomialRingElement; K],
+) -> bool {
     let mut done = true;
     for i in 0..K {
         for bytes in randomness[i].chunks(3) {
@@ -28,26 +32,27 @@ pub fn sample_from_uniform_distribution_next<const K:usize, const N:usize>(
                 sampled_coefficients[i] += 1;
             }
         }
-        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {done = false}
+        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+            done = false
+        }
     }
     done
 }
 
-pub fn sample_from_xof<const K:usize>(
-    seeds: [[u8; 34]; K]
-) -> [PolynomialRingElement; K] {
-    let mut sampled_coefficients: [usize;K] = [0; K];
+pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
+    let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [PolynomialRingElement; K] = [PolynomialRingElement::ZERO; K];
 
     let mut xof_states = XOF_absorb::<K>(seeds);
     let randomness = XOF_squeeze_three_blocks(&mut xof_states);
-    
+
     let mut done = false;
     done = sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
 
     while !done {
         let randomness = XOF_squeeze_block(&mut xof_states);
-        done = sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+        done =
+            sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
     }
 
     hax_debug_assert!(out[0]
