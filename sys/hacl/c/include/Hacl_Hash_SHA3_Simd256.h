@@ -35,6 +35,10 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
 
+#include "Hacl_Krmllib.h"
+#include "libintvector.h"
+
+
 typedef struct K____uint8_t___uint8_t__s
 {
   uint8_t *fst;

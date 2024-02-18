@@ -116,7 +116,7 @@ jobs:
 
       - name: 🏃🏻‍♀️ Test Release
         run: |
-          cargo test --verbose --release $RUST_TARGET_FLAG --skip shake128_rng
+          cargo test --verbose --release $RUST_TARGET_FLAG -- --skip shake128_rng
           cargo test --features slow_kat_tests --verbose $RUST_TARGET_FLAG 100_000_known_answer_tests
 
       - name: 🔨 Build sys/hacl
