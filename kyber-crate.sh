@@ -88,8 +88,6 @@ echo "Running eurydice ..."
 $EURYDICE_HOME/eurydice ../libcrux_kyber.llbc
 # Add header
 $SED -i -z 's!\(#include "libcrux_kyber.h"\)!\1\n#include "libcrux_hacl_glue.h"!g' libcrux_kyber.c
-# Drop definition
-$SED -i -z 's!typedef struct __uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__s.*__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t_;!!g' libcrux_kyber.c
 clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
 
 cp $EURYDICE_HOME/include/eurydice_glue.h .
