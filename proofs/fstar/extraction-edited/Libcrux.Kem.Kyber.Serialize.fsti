@@ -183,4 +183,7 @@ val deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
 val serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement)
     : Pure (t_Array u8 (sz 384))
       (requires True)
-      (ensures (fun res -> True))
+      (ensures (fun res ->
+        let coefficients: t_Array _ (sz 256) = Spec.Kyber.map' Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative re.f_coefficients in
+        int_t_array_bitwise_eq res 8 coefficients 12
+      ))

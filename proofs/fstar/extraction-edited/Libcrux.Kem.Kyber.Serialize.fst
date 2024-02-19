@@ -1345,45 +1345,79 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
   re
 #pop-options
 
-#push-options "--z3rlimit 100"
-let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) =
-  let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
-  let serialized:t_Array u8 (sz 384) =
-    Rust_primitives.Iterators.foldi_chunks_exact #_ #_ #(fun _ _ -> True)
-      (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients)
+module A = Libcrux.Kem.Kyber.Arithmetic
+
+[@@"opaque_to_smt"]
+let update3 #n (s: t_Array 't n) (offset: usize {v offset + 3 <= v n}) (i0 i1 i2: 't)
+  : s': t_Array 't n { Seq.index s' (v offset +  0) == i0
+                    /\ Seq.index s' (v offset +  1) == i1
+                    /\ Seq.index s' (v offset +  2) == i2
+                    /\ (forall i. (i < v offset \/ i >= v offset + 3) ==> Seq.index s' i == Seq.index s i) }
+ = let open Rust_primitives.Hax.Monomorphized_update_at in
+    let s = update_at_usize s  offset           i0 in
+    let s = update_at_usize s (offset +! sz  1) i1 in
+    update_at_usize s (offset +! sz  2) i2
+
+let slice_map_lemma #t #u #n (f: t -> u) (arr: t_Array t n)
+  (start: nat) (len: nat {start + len <= v n})
+  : Lemma (  Seq.slice (Spec.Kyber.map' f arr) start (start + len)
+          == Spec.Kyber.map' f (Seq.slice arr start (start + len))
+          )
+  = let f_arr = Spec.Kyber.map' f arr in
+    let lhs = Seq.slice f_arr start (start + len) in
+    let rhs = Spec.Kyber.map' f (Seq.slice arr start (start + len)) in
+    introduce forall i. Seq.index lhs i == Seq.index rhs i
+    with (
+      Seq.lemma_index_slice f_arr start (start + len) i;
+      Seq.lemma_index_slice   arr start (start + len) i;
+      let sz_i_start, sz_i = sz (i + start), sz i in
+      assert (Seq.index f_arr (v sz_i_start) == f (Seq.index arr (v (sz_i_start))));
+      assert (Seq.index rhs (v sz_i) == f (Seq.index (Seq.slice arr start (start + len)) (v sz_i)))
+    );
+    assert (Seq.equal lhs rhs)
+
+#push-options "--z3rlimit 2800 --fuel 0 --ifuel 0 --retry 0 --split_queries no"
+let serialize_uncompressed_ring_element re =
+  let serialized: t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
+  let max = v (sz 384) * 8 in
+  assert (max == 256 * 12 /\ max == 384 * 8 /\ 128 * 2 * 12 == max);
+  assert (128 == v (length re.f_coefficients /! (sz 2)));
+  let serialized =
+    Rust_primitives.Iterators.foldi_chunks_exact #_ #_ 
+      #(fun serialized i -> 
+        let i = v i in
+        i <= 128 /\ (
+            let limit = i * 2 * 12 in
+            let coefficients: t_Array _ (sz 256) = Spec.Kyber.map' to_unsigned_representative re.f_coefficients in
+            bit_vec_sub (bit_vec_of_int_t_array serialized   8 ) 0 limit
+         == bit_vec_sub (bit_vec_of_int_t_array coefficients 12) 0 limit)
+      )
+      (re.A.f_coefficients <: t_Array _ (sz 256))
       (sz 2)
       serialized
-      (fun serialized temp_1_ ->
-          let serialized:t_Array u8 (sz 384) = serialized in
-          let i, coefficients:(usize & t_Array (Libcrux.Kem.Kyber.Arithmetic.i32_b (v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS - 1)) (sz 2)) = temp_1_ in
-          assert (v i < 128);
-          let coefficient1:u16 =
-            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ] <: i32)
-          in
-          let coefficient2:u16 =
-            Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 1 ] <: i32)
-          in
-          let coef1, coef2, coef3:(u8 & u8 & u8) =
-            compress_coefficients_3_ coefficient1 coefficient2
-          in
-          assert_spinoff (3 * v i + 3 <= 384);
-          assert_spinoff (range (v (sz 3) * v i) usize_inttype);
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (sz 3 *! i <: usize)
-              coef1
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 3 *! i <: usize) +! sz 1 <: usize)
-              coef2
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 3 *! i <: usize) +! sz 2 <: usize)
-              coef3
-          in
-          serialized)
+      (fun serialized it -> let i, coefficients = it in
+
+    let coefficient1 = A.to_unsigned_representative (coefficients.[ sz 0 ] <: i32) in
+    let coefficient2 = A.to_unsigned_representative (coefficients.[ sz 1 ] <: i32) in
+    let (coef1, coef2, coef3) = compress_coefficients_3_ coefficient1 coefficient2 in
+    let j = sz 3 *! i in
+    let serialized' = update3 serialized j coef1 coef2 coef3 in
+    assert (      Seq.slice serialized' (v j) (v j + 3)
+      `Seq.equal` Seq.slice (create3 (coef1, coef2, coef3)) 0 3);
+    bit_vec_equal_intro 
+        (let coefficients: t_Array _ (sz 2) = Spec.Kyber.map' to_unsigned_representative coefficients in
+         bit_vec_of_int_t_array coefficients 12)
+        (retype (bit_vec_sub (bit_vec_of_int_t_array serialized'   8) (3 * v i * 8) (3 * 8)));
+    let full_coefficients: t_Array u16 (sz 256) = Spec.Kyber.map' to_unsigned_representative re.f_coefficients in
+    slice_map_lemma #_ #u16 to_unsigned_representative re.f_coefficients (v i * 2) 2;
+    bit_vec_equal_intro
+        (bit_vec_sub (bit_vec_of_int_t_array serialized'   8) 0 (v i * 2 * 12))
+        (bit_vec_sub (bit_vec_of_int_t_array serialized   8 ) 0 (v i * 2 * 12));
+    bit_vec_equal_extend (bit_vec_of_int_t_array serialized' 8)
+                         (bit_vec_of_int_t_array full_coefficients 12)
+                         0 0 (v i * 2 * 12) (3 * 8);
+    serialized' <: t_Array u8 (sz 384))
   in
   serialized
 #pop-options
+
