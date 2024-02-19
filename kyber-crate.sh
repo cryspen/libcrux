@@ -2,6 +2,7 @@
 
 set -e
 
+rm -rf kyber-crate
 mkdir -p kyber-crate/src
 cp -r src/kem/kyber* kyber-crate/src
 cd kyber-crate
@@ -85,9 +86,7 @@ mkdir -p c
 cd c
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice ../libcrux_kyber.llbc
-# Add header
-$SED -i -z 's!\(#include "libcrux_kyber.h"\)!\1\n#include "libcrux_hacl_glue.h"!g' libcrux_kyber.c
+$EURYDICE_HOME/eurydice --config ../../kyber-c.yaml ../libcrux_kyber.llbc
 clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
 
 cp $EURYDICE_HOME/include/eurydice_glue.h .

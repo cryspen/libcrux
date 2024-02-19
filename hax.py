@@ -63,13 +63,16 @@ def config_str():
 
 
 # Run a shell command
-def shell(command, cwd=None, env={}):
+def shell(command, cwd=None, env={}, stdout=None):
     os_env = os.environ
     os_env.update(env)
     os_env.update(environment())
     os_env["PATH"] += os.pathsep + path_environment()
 
-    subprocess.run(command, cwd=cwd, env=os_env, check=True)
+    print("env:")
+    print(os_env)
+
+    return subprocess.run(command, cwd=cwd, env=os_env, check=True, stdout=stdout)
 
 
 # The main parser to attach to with the decorator.
@@ -180,8 +183,20 @@ def _extract(args):
 
 # download required dependencies with git for target
 def get_dep(dependency, target_path):
+    def get_rev():
+        git_cmd = ["git", "-C", target_path, "fetch", "origin", dependency["rev"]]
+        shell(git_cmd)
+        git_cmd = ["git", "-C", target_path, "reset", "--hard", "FETCH_HEAD"]
+        shell(git_cmd)
+
     if os.path.exists(target_path):
-        # Only do something when the path doesn't exist
+        if "version" in dependency:
+            # TODO: update
+            return
+        elif "rev" in dependency:
+            # Update to the revision in the config. This may be a no-op.
+            get_rev()
+
         return
 
     if "version" in dependency:
@@ -212,10 +227,7 @@ def get_dep(dependency, target_path):
             dependency["git"],
         ]
         shell(git_cmd)
-        git_cmd = ["git", "-C", target_path, "fetch", "origin", dependency["rev"]]
-        shell(git_cmd)
-        git_cmd = ["git", "-C", target_path, "reset", "--hard", "FETCH_HEAD"]
-        shell(git_cmd)
+        get_rev()
 
 
 # build required dependencies for target
@@ -252,6 +264,40 @@ def _dependencies(args):
             target["dependencies"][dependency],
             Path(hax_dep_path).joinpath(dependency),
         )
+
+
+@subcommand()
+def setup(args):
+    """
+    Install all dependencies required to get the toolchain running.
+    This includes the call to 'dependencies'.
+
+    Note that this requires 'opam' to be installed on your system.
+    """
+
+    cmd = ["opam", "switch", "list"]
+    switches = shell(cmd, stdout=subprocess.PIPE)
+    # XXX: Make ocaml version configurable?
+    if "4.14.1" in str(switches.stdout):
+        print("ocaml 4.14.1 is already installed.")
+    else:
+        print("Installing ocaml 4.14.1 ...")
+        cmd = [
+            "opam",
+            "init",
+            "--bare",
+            "--disable-sandboxing",
+            "--yes",
+            "--shell-setup",
+        ]
+        shell(cmd)
+        cmd = ["opam", "switch", "create", "4.14.1", "--yes"]
+        shell(cmd)
+
+    cmd = ["opam", "install", "dune", "--yes"]
+    shell(cmd)
+
+    _dependencies(args)
 
 
 @subcommand()

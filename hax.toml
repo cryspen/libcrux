@@ -9,22 +9,23 @@ clean = ["./clean.sh"]
 [target.ml-kem.dependencies.fstar]
 git = "https://github.com/FStarLang/fstar"
 version = "v2024.01.13"
-build = ["make -j"]
+build = ["opam install . --deps-only --yes", "make -j"]
 
 [target.ml-kem.dependencies.charon]
 git = "https://github.com/AeneasVerif/charon"
-rev = "9d48f7e484e57927281749392d094bf453010ba0"
+rev = "89cecf5d1074fae7e8007be7f6cdf2f38e9782b1"
 build = ["make -j"]
 
 [target.ml-kem.dependencies.karamel]
 git = "https://github.com/FStarLang/karamel"
-rev = "fdf6a10aa22f9b1b3effffeeb270229447b5bb9b"
-build = ["make -j"]
+rev = "08bfa78ae1df5639446e6c5897b07c9823fbf3b0"
+build = ["opam install . --deps-only --yes", "make -j"]
 
 [target.ml-kem.dependencies.eurydice]
 git = "https://github.com/AeneasVerif/eurydice"
-rev = "d6529b00eb33d3aaf71ee9ead3ce6e233ae7f533"
+rev = "7780d2b4c44c7811d02d7e05789b5611fd497480"
 build = [
+    "opam install . --deps-only --yes",
     "rm -f charon",
     "ln -s ../charon/charon-ml charon",
     "rm -f krml",
