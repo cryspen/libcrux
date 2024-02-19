@@ -6,8 +6,9 @@ open FStar.Mul
 open Libcrux.Kem.Kyber.Arithmetic
 
 open MkSeq
+open BitVecEq
 
-#push-options "--z3rlimit 80"
+#push-options "--z3rlimit 180"
 [@@"opaque_to_smt"]
 let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32) =
   let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in
@@ -24,6 +25,7 @@ let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficien
     (cast ((coefficient3 >>! 4l <: i32) &. 63l <: i32) <: u8)
   in
   let coef5:u8 = cast ((coefficient4 >>! 2l <: i32) &. 255l <: i32) <: u8 in
+  bit_vec_equal_intro_principle ();
   coef1, coef2, coef3, coef4, coef5 <: (u8 & u8 & u8 & u8 & u8)
 #pop-options
 
@@ -63,6 +65,7 @@ let compress_coefficients_11_
     (cast (coefficient7 >>! 6l <: i32) <: u8)
   in
   let coef11:u8 = cast (coefficient8 >>! 3l <: i32) <: u8 in
+  bit_vec_equal_intro_principle ();
   coef1, coef2, coef3, coef4, coef5, coef6, coef7, coef8, coef9, coef10, coef11
   <:
   (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
@@ -79,6 +82,7 @@ let compress_coefficients_3_ coefficient1 coefficient2 =
     u8
   in
   let coef3:u8 = cast ((coefficient2 >>! 4l <: u16) &. 255us <: u16) <: u8 in
+  bit_vec_equal_intro_principle ();
   coef1, coef2, coef3 <: (u8 & u8 & u8) 
 #pop-options
 
@@ -98,6 +102,7 @@ let compress_coefficients_5_
     (coefficient5 >>! 4l <: u8)
   in
   let coef5:u8 = (coefficient8 <<! 3l <: u8) |. (coefficient7 >>! 2l <: u8) in
+  bit_vec_equal_intro_principle ();
   coef1, coef2, coef3, coef4, coef5 <: (u8 & u8 & u8 & u8 & u8)
 #pop-options
 
@@ -112,6 +117,7 @@ let decompress_coefficients_10_ byte2 byte1 byte3 byte4 byte5 =
   lemma_get_bit_bounded' coefficient2 10;
   lemma_get_bit_bounded' coefficient3 10;
   lemma_get_bit_bounded' coefficient4 10;
+  bit_vec_equal_intro_principle ();
   coefficient1, coefficient2, coefficient3, coefficient4
 #pop-options
 
@@ -131,6 +137,7 @@ let decompress_coefficients_11_
   in
   let coefficient7:i32 = ((byte10 &. 31l <: i32) <<! 6l <: i32) |. (byte9 >>! 2l <: i32) in
   let coefficient8:i32 = (byte11 <<! 3l <: i32) |. (byte10 >>! 5l <: i32) in
+  bit_vec_equal_intro_principle ();
   lemma_get_bit_bounded' coefficient1 11;
   lemma_get_bit_bounded' coefficient2 11;
   lemma_get_bit_bounded' coefficient3 11;
@@ -156,6 +163,7 @@ let decompress_coefficients_4_ byte =
   let coefficient2:i32 = cast ((byte >>! 4l <: u8) &. 15uy <: u8) <: i32 in
   lemma_get_bit_bounded' coefficient1 4;
   lemma_get_bit_bounded' coefficient2 4;
+  bit_vec_equal_intro_principle ();
   coefficient1, coefficient2
 #pop-options
 
@@ -170,6 +178,7 @@ let decompress_coefficients_5_ byte1 byte2 byte3 byte4 byte5 =
   let coefficient6:i32 = (byte4 >>! 1l <: i32) &. 31l in
   let coefficient7:i32 = ((byte5 &. 7l <: i32) <<! 2l <: i32) |. (byte4 >>! 6l <: i32) in
   let coefficient8:i32 = byte5 >>! 3l in
+  bit_vec_equal_intro_principle ();
   lemma_get_bit_bounded' coefficient1 5;
   lemma_get_bit_bounded' coefficient2 5;
   lemma_get_bit_bounded' coefficient3 5;
