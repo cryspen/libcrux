@@ -8,7 +8,7 @@ open Libcrux.Kem.Kyber.Arithmetic
 open MkSeq
 open BitVecEq
 
-#push-options "--z3rlimit 180"
+#push-options "--z3rlimit 480  --split_queries always"
 [@@"opaque_to_smt"]
 let compress_coefficients_10_ (coefficient1 coefficient2 coefficient3 coefficient4: i32) =
   let coef1:u8 = cast (coefficient1 &. 255l <: i32) <: u8 in
@@ -86,7 +86,7 @@ let compress_coefficients_3_ coefficient1 coefficient2 =
   coef1, coef2, coef3 <: (u8 & u8 & u8) 
 #pop-options
 
-#push-options "--z3rlimit 60 --split_queries always"
+#push-options "--z3rlimit 160 --split_queries always"
 [@@"opaque_to_smt"]
 let compress_coefficients_5_
       coefficient2 coefficient1 coefficient4 coefficient3 coefficient5 coefficient7 coefficient6 coefficient8
