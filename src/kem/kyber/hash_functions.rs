@@ -65,3 +65,40 @@ pub(crate) fn XOFx4<const K: usize>(
 
     out
 }
+
+// The following API uses the repeated squeeze API
+// Currently it only supports Scalar SHAKE, adapting it to SIMD SHAKE is a todo
+type XofState = crate::digest::incremental::Shake128State;
+
+#[inline(always)]
+pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> [XofState; K] {
+    let mut out =
+        core::array::from_fn(|_| crate::digest::incremental::Shake128State::new());
+
+    for i in 0..K {
+        out[i].absorb_final(&input[i]);
+    }
+    out
+}
+
+#[inline(always)]
+pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
+    state: &mut [XofState; K],
+) -> [[u8; 168 * 3]; K] {
+    let mut out = [[0; 168 * 3]; K];
+
+    for i in 0..K {
+        out[i] = state[i].squeeze_nblocks();
+    }
+    out
+}
+
+#[inline(always)]
+pub(crate) fn XOF_squeeze_block<const K: usize>(state: &mut [XofState; K]) -> [[u8; 168]; K] {
+    let mut out = [[0; 168]; K];
+
+    for i in 0..K {
+        out[i] = state[i].squeeze_nblocks();
+    }
+    out
+}

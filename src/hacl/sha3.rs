@@ -227,3 +227,71 @@ pub mod x4 {
         (digest0, digest1, digest2, digest3)
     }
 }
+
+/// This module groups together functions that can be used to absorb or squeeze
+/// bytes in increments.
+/// TODO: This module should not be public, see: https://github.com/cryspen/libcrux/issues/157
+pub mod incremental {
+    use libcrux_hacl::{
+        Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks, 
+        Hacl_Hash_SHA3_Scalar_shake128_absorb_final,
+        Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks,
+        Hacl_Hash_SHA3_Scalar_state_free, Hacl_Hash_SHA3_Scalar_state_malloc,
+    };
+
+    /// SHAKE 128
+    ///
+   
+    /// Handle to internal SHAKE 129 state
+    pub struct Shake128State {
+        state: *mut u64,
+    }
+
+    impl Shake128State {
+        pub fn new() -> Self {
+            let state = Self {
+                state: unsafe { Hacl_Hash_SHA3_Scalar_state_malloc() },
+            };
+
+            state
+        }
+
+        pub fn absorb_nblocks(&mut self, input: &[u8]) {
+            unsafe {
+                Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks(
+                    self.state,
+                    input.as_ptr() as _,
+                    input.len() as u32,
+                )
+            };
+        }
+
+        pub fn absorb_final(&mut self, input: &[u8]) {
+            unsafe {
+                Hacl_Hash_SHA3_Scalar_shake128_absorb_final(
+                    self.state,
+                    input.as_ptr() as _,
+                    input.len() as u32,
+                )
+            };
+        }
+        pub fn squeeze_nblocks<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
+            debug_assert!(OUTPUT_BYTES % 168 == 0);
+            let mut output = [0u8; OUTPUT_BYTES];
+            unsafe {
+                Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
+                    self.state,
+                    output.as_mut_ptr(),
+                    OUTPUT_BYTES as u32,
+                )
+            };
+
+            output
+        }
+    }
+    impl Drop for Shake128State {
+        fn drop(&mut self) {
+            unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
+        }
+    }
+}

@@ -24,6 +24,8 @@ use crate::hacl::{
 
 use libcrux_platform::{simd128_support, simd256_support};
 
+pub use sha3::incremental;
+
 #[derive(Debug)]
 pub enum Error {
     InvalidStateFinished,
