@@ -15,8 +15,7 @@ let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = sz 32
 
 let v_FIELD_MODULUS: i32 = 3329l
 
-let v_H_DIGEST_SIZE: usize =
-  Libcrux.Digest.digest_size (Libcrux.Digest.Algorithm_Sha3_256_ <: Libcrux.Digest.t_Algorithm)
+let v_H_DIGEST_SIZE: usize = sz 32
 
 let v_REJECTION_SAMPLING_SEED_SIZE: usize = sz 168 *! sz 5
 

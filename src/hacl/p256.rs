@@ -18,7 +18,6 @@ pub enum Error {
 
 /// Parse an uncompressed P256 point and return the 64 byte array with the
 /// concatenation of X||Y
-#[must_use]
 pub fn uncompressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
     let mut concat_point = [0u8; 64];
     if point.len() >= 65 {
@@ -37,7 +36,6 @@ pub fn uncompressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
 
 /// Parse an compressed P256 point and return the 64 byte array with the
 /// concatenation of `X` and `Y`.
-#[must_use]
 pub fn compressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
     let mut concat_point = [0u8; 64];
     if point.len() >= 33 {
@@ -57,7 +55,6 @@ pub fn compressed_to_coordinates(point: &[u8]) -> Result<[u8; 64], Error> {
 /// concatenation of `X` and `Y`.
 ///
 /// Returns [`Error::InvalidPoint`] if the `point` is not valid.
-#[must_use]
 pub fn validate_point(point: impl AsRef<[u8; 64]>) -> Result<(), Error> {
     if unsafe { Hacl_P256_validate_public_key(point.as_ref().as_ptr() as _) } {
         Ok(())
@@ -108,7 +105,6 @@ pub fn validate_scalar_slice(scalar: &[u8]) -> Result<PrivateKey, Error> {
 /// Compute the ECDH with the `private_key` and `public_key`.
 ///
 /// Returns the 64 bytes shared key.
-#[must_use]
 pub fn ecdh(
     private_key: impl AsRef<[u8; 32]>,
     public_key: impl AsRef<[u8; 64]>,
@@ -131,7 +127,6 @@ pub fn ecdh(
 /// Compute the public key for the provided `private_key`.
 ///
 /// Returns the 64 bytes public key.
-#[must_use]
 pub fn secret_to_public(s: impl AsRef<[u8; 32]>) -> Result<[u8; 64], Error> {
     validate_scalar(&s)?;
 
@@ -157,7 +152,6 @@ pub mod ecdsa {
             /// Sign
             ///
             /// * private key validation must be performed before calling this function
-            #[must_use]
             pub fn $sign(
                 payload: &[u8],
                 private_key: &[u8; 32],
@@ -182,7 +176,6 @@ pub mod ecdsa {
             /// Verification
             ///
             /// * public key validation must be performed before calling this function
-            #[must_use]
             pub fn $verify(
                 payload: &[u8],
                 public_key: &[u8; 64],

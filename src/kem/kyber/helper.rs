@@ -1,3 +1,6 @@
+/// The following macros are defined so that the extraction from Rust to C code
+/// can go through.
+
 #[cfg(not(hax))]
 #[macro_export]
 macro_rules! cloop {

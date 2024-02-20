@@ -342,7 +342,12 @@ let encrypt
       (randomness: t_Slice u8)
      =
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    deserialize_public_key v_K public_key
+    deserialize_public_key v_K
+      (public_key.[ { Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE }
+          <:
+          Core.Ops.Range.t_RangeTo usize ]
+        <:
+        t_Slice u8)
   in
   let seed:t_Slice u8 =
     public_key.[ { Core.Ops.Range.f_start = v_T_AS_NTT_ENCODED_SIZE }

@@ -19,5 +19,6 @@
 #include "Hacl_HMAC.h"
 #include "Hacl_P256.h"
 #include "Hacl_RSAPSS.h"
+#include "Hacl_Hash_SHA3_Scalar.h"
 
 void hacl_free(void *ptr);

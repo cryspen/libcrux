@@ -1,4 +1,6 @@
 mod test_util;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use test_util::*;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -10,7 +12,7 @@ use libcrux::{
     aead::{
         self, decrypt, encrypt,
         Algorithm::{self, Chacha20Poly1305},
-        Chacha20Key, Error, Iv, Key, Tag,
+        Chacha20Key, EncryptError, InvalidArgumentError, Iv, Key, Tag,
     },
     aes_ni_support,
 };
@@ -154,11 +156,6 @@ fn wycheproof() {
                     *skipped_tests += 1;
                     continue;
                 }
-                let invalid_iv = if test.comment == "invalid nonce size" || invalid_iv {
-                    true
-                } else {
-                    false
-                };
                 println!("Test {:?}: {:?}", test.tcId, test.comment);
                 let nonce = hex_str_to_array(&test.iv);
                 let msg = hex_str_to_bytes(&test.msg);
@@ -179,9 +176,12 @@ fn wycheproof() {
                 let tag = match aead::encrypt(&aead_key, &mut msg_ctxt, Iv(nonce), &aad) {
                     Ok(v) => v,
                     Err(e) => {
-                        if invalid_iv {
-                            assert_eq!(e, Error::InvalidIv);
-                        } else if matches!(e, Error::UnsupportedAlgorithm) {
+                        if matches!(
+                            e,
+                            EncryptError::InvalidArgument(
+                                InvalidArgumentError::UnsupportedAlgorithm
+                            )
+                        ) {
                             eprintln!("AES not supported on this architecture.");
                             *skipped_tests += 1;
                             continue;

@@ -14,6 +14,7 @@ rand = { version = "0.8" }
 
 [dependencies.libcrux]
 path = "../"
+features = ["tests"]
 
 [[bin]]
 name = "kyber768_implicit_rejection"
@@ -30,3 +31,17 @@ test = false
 doc = false
 harness = false
 bench = false
+
+[[bin]]
+name = "hpke"
+path = "fuzz_targets/hpke.rs"
+test = false
+doc = false
+harness = false
+bench = false
+
+[[bin]]
+name = "mlkem_pk_validation"
+path = "fuzz_targets/mlkem_pk_validation.rs"
+test = false
+doc = false

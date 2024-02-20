@@ -55,7 +55,7 @@ pub(crate) mod x25519 {
 
     impl From<&[u8; 32]> for PublicKey {
         fn from(value: &[u8; 32]) -> Self {
-            Self(value.clone())
+            Self(*value)
         }
     }
 
@@ -81,7 +81,7 @@ pub(crate) mod x25519 {
 
     impl From<&[u8; 32]> for PrivateKey {
         fn from(value: &[u8; 32]) -> Self {
-            Self(value.clone())
+            Self(*value)
         }
     }
 
@@ -177,7 +177,7 @@ pub(crate) mod x25519 {
 
         curve25519::ecdh(s, p)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-            .map(|p| PublicKey(p))
+            .map(PublicKey)
     }
 
     // XXX: libjade's secret to public is broken on Windows (overflows the stack).
@@ -208,9 +208,9 @@ pub(crate) mod x25519 {
             }
 
             // We clamp the key already to make sure it can't be misused.
-            out[0] = out[0] & 248u8;
-            out[31] = out[31] & 127u8;
-            out[31] = out[31] | 64u8;
+            out[0] &= 248u8;
+            out[31] &= 127u8;
+            out[31] |= 64u8;
 
             return Ok(PrivateKey(out));
         }
@@ -242,7 +242,7 @@ pub(crate) mod p256 {
 
     impl From<&[u8; 64]> for PublicKey {
         fn from(value: &[u8; 64]) -> Self {
-            Self(value.clone())
+            Self(*value)
         }
     }
 
@@ -256,7 +256,7 @@ pub(crate) mod p256 {
 
     impl From<&[u8; 32]> for PrivateKey {
         fn from(value: &[u8; 32]) -> Self {
-            Self(value.clone())
+            Self(*value)
         }
     }
 
@@ -296,14 +296,14 @@ pub(crate) mod p256 {
         // We assume that the private key has been validated.
         p256::ecdh(s, p)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-            .map(|p| PublicKey(p))
+            .map(PublicKey)
     }
 
     pub(super) fn secret_to_public(s: &PrivateKey) -> Result<PublicKey, Error> {
         p256::validate_scalar(s).map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))?;
         p256::secret_to_public(s)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-            .map(|p| PublicKey(p))
+            .map(PublicKey)
     }
 
     pub fn validate_scalar(s: &PrivateKey) -> Result<(), Error> {
@@ -397,7 +397,7 @@ pub(crate) fn p256_derive(
     p256::validate_point(point)?;
     p256::validate_scalar(scalar)?;
 
-    p256::derive(&point, &scalar)
+    p256::derive(point, scalar)
 }
 
 /// Derive the public key for the provided secret key `scalar`.

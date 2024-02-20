@@ -25,7 +25,8 @@ def shell(command, expect=0, cwd=None, env={}):
 
 def add_libcrux_kyber_h(c_extraction_root, freebl_verified_root):
     path_to_header = os.path.join(c_extraction_root, "libcrux_kyber.h")
-    destination = os.path.join(freebl_verified_root, "internal", "Libcrux_Kyber_768.h")
+    destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.h")
+    shutil.copyfile(path_to_header, destination)
 
     shell(["clang-format", "-i", "-style=Google", destination])
 
@@ -41,7 +42,7 @@ def add_libcrux_kyber_h(c_extraction_root, freebl_verified_root):
 
 def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     path_to_c_file = os.path.join(c_extraction_root, "libcrux_kyber.c")
-    destination = os.path.join(freebl_verified_root, "Libcrux_Kyber_768.c")
+    destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.c")
     shutil.copyfile(path_to_c_file, destination)
 
     shell(["clang-format", "-i", "-style=Google", destination])
@@ -67,12 +68,12 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
         original = f.read()
         replaced = re.sub(
             '#include "libcrux_kyber.h"',
-            '#include "internal/Libcrux_Kyber_768.h"',
+            '#include "Libcrux_ML_KEM_768.h"',
             original,
         )
         replaced = re.sub(
             '#include "libcrux_hacl_glue.h"',
-            '#include "Libcrux_Kyber_Hash_Functions.h"',
+            '#include "../Libcrux_ML_KEM_Hash_Functions.h"',
             replaced,
         )
         replaced = re.sub("uu____0 = !false", "uu____0 = false", replaced)

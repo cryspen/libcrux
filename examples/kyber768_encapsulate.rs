@@ -11,9 +11,9 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     let mut rng = OsRng;
 
-    let (_secret_key, public_key) = kem::key_gen(kem::Algorithm::Kyber768, &mut rng).unwrap();
+    let (_secret_key, public_key) = kem::key_gen(kem::Algorithm::MlKem768, &mut rng).unwrap();
 
     for _i in 0..100000 {
-        let (_shared_secret, _ciphertext) = kem::encapsulate(&public_key, &mut rng).unwrap();
+        let (_shared_secret, _ciphertext) = public_key.encapsulate(&mut rng).unwrap();
     }
 }

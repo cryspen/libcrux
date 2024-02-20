@@ -63,27 +63,32 @@ let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_1024_
 
 unfold
-let t_Kyber1024Ciphertext = Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1568)
+let t_MlKem1024Ciphertext = Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568)
 
 unfold
-let t_Kyber1024PrivateKey = Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 3168)
+let t_MlKem1024PrivateKey = Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168)
 
 unfold
-let t_Kyber1024PublicKey = Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1568)
+let t_MlKem1024PublicKey = Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)
 
-val decapsulate_1024_
-      (secret_key: Libcrux.Kem.Kyber.Types.t_KyberPrivateKey (sz 3168))
-      (ciphertext: Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1568))
+val decapsulate
+      (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168))
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568))
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
-val encapsulate_1024_
-      (public_key: Libcrux.Kem.Kyber.Types.t_KyberPublicKey (sz 1568))
+val encapsulate
+      (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568))
       (randomness: t_Array u8 (sz 32))
-    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_KyberCiphertext (sz 1568) & t_Array u8 (sz 32))
+    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568) & t_Array u8 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val generate_key_pair_1024_ (randomness: t_Array u8 (sz 64))
-    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_KyberKeyPair (sz 3168) (sz 1568))
+val validate_public_key (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568))
+    : Prims.Pure (Core.Option.t_Option (Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val generate_key_pair (randomness: t_Array u8 (sz 64))
+    : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemKeyPair (sz 3168) (sz 1568))
       Prims.l_True
       (fun _ -> Prims.l_True)

@@ -27,10 +27,10 @@ fn xkyber_selftest() {
     #[cfg(target_arch = "wasm32")]
     let mut rng = OsRng;
 
-    let (skr, pkr) = kem::key_gen(Algorithm::Kyber768X25519, &mut rng).unwrap();
+    let (skr, pkr) = kem::key_gen(Algorithm::X25519MlKem768Draft00, &mut rng).unwrap();
 
-    let (ss, ct) = kem::encapsulate(&pkr, &mut rng).unwrap();
-    let rss = kem::decapsulate(&ct, &skr).unwrap();
+    let (ss, ct) = pkr.encapsulate(&mut rng).unwrap();
+    let rss = ct.decapsulate(&skr).unwrap();
 
     assert_eq!(rss.encode(), ss.encode());
 }

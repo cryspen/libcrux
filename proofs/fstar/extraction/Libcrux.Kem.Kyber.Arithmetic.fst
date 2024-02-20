@@ -23,7 +23,7 @@ let montgomery_reduce (value: i32) =
   let _:Prims.unit = () <: Prims.unit in
   let t:u32 =
     (get_n_least_significant_bits v_MONTGOMERY_SHIFT (cast (value <: i32) <: u32) <: u32) *!
-    v_INVERSE_OF_MODULUS_MOD_R
+    v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R
   in
   let k:i16 = cast (get_n_least_significant_bits v_MONTGOMERY_SHIFT t <: u32) <: i16 in
   let k_times_modulus:i32 =
@@ -33,7 +33,7 @@ let montgomery_reduce (value: i32) =
   let value_high:i32 = value >>! v_MONTGOMERY_SHIFT in
   value_high -! c
 
-let montgomery_multiply_sfe_by_fer (fe fer: i32) = montgomery_reduce (fe *! fer <: i32)
+let montgomery_multiply_fe_by_fer (fe fer: i32) = montgomery_reduce (fe *! fer <: i32)
 
 let to_standard_domain (mfe: i32) =
   montgomery_reduce (mfe *! v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS <: i32)

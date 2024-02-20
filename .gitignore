@@ -10,4 +10,5 @@ fuzz/corpus
 fuzz/artifacts
 proofs/fstar/extraction/.cache
 __pycache__
+tests/kyber_kats/__pycache__
 kyber-crate/

@@ -27,7 +27,7 @@ pub(super) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
-fn serialize_public_key<
+pub(super) fn serialize_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -45,7 +45,9 @@ fn serialize_public_key<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] on each ring element.
 #[inline(always)]
-fn deserialize_public_key<const K: usize>(public_key: &[u8]) -> [PolynomialRingElement; K] {
+pub(super) fn deserialize_public_key<const K: usize>(
+    public_key: &[u8],
+) -> [PolynomialRingElement; K] {
     let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
     cloop! {
         for (i, t_as_ntt_bytes) in public_key
@@ -75,6 +77,23 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize>(
     out
 }
 
+/// Sample a vector of ring elements from a centered binomial distribution.
+#[inline(always)]
+fn sample_ring_element_cbd<const K: usize, const ETA2_RANDOMNESS_SIZE: usize, const ETA2: usize>(
+    prf_input: &mut [u8; 33],
+    domain_separator: &mut u8,
+) -> [PolynomialRingElement; K] {
+    let mut error_1 = [PolynomialRingElement::ZERO; K];
+    for i in 0..K {
+        prf_input[32] = *domain_separator;
+        *domain_separator += 1;
+
+        let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(prf_input);
+        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
+    }
+    error_1
+}
+
 /// Sample a vector of ring elements from a centered binomial distribution and
 /// convert them into their NTT representations.
 #[inline(always)]
@@ -99,26 +118,44 @@ fn sample_vector_cbd_then_ntt<
     (re_as_ntt, domain_separator)
 }
 
-#[inline(always)]
-fn sample_ring_element_cbd<const K: usize, const ETA2_RANDOMNESS_SIZE: usize, const ETA2: usize>(
-    prf_input: &mut [u8; 33],
-    domain_separator: &mut u8,
-) -> [PolynomialRingElement; K] {
-    let mut error_1 = [PolynomialRingElement::ZERO; K];
-    for i in 0..K {
-        prf_input[32] = *domain_separator;
-        *domain_separator += 1;
-
-        let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(prf_input);
-        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
-    }
-    error_1
-}
-
-/// Generate the IND-CPA key pair.
+/// This function implements most of <strong>Algorithm 12</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
 ///
-/// Return a tuple of private and public key, as well as an [`Option`] with a
-/// potential [`Error`].
+/// We say "most of" since Algorithm 12 samples the required randomness within
+/// the function itself, whereas this implementation expects it to be provided
+/// through the `key_generation_seed` parameter.
+///
+/// Algorithm 12 is reproduced below:
+///
+/// ```plaintext
+/// Output: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+/// Output: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+///
+/// d ←$ B
+/// (ρ,σ) ← G(d)
+/// N ← 0
+/// for (i ← 0; i < k; i++)
+///     for(j ← 0; j < k; j++)
+///         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+///     end for
+/// end for
+/// for(i ← 0; i < k; i++)
+///     s[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(σ,N))
+///     N ← N + 1
+/// end for
+/// for(i ← 0; i < k; i++)
+///     e[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(σ,N))
+///     N ← N + 1
+/// end for
+/// ŝ ← NTT(s)
+/// ê ← NTT(e)
+/// t̂ ← Â◦ŝ + ê
+/// ekₚₖₑ ← ByteEncode₁₂(t̂) ‖ ρ
+/// dkₚₖₑ ← ByteEncode₁₂(ŝ)
+/// ```
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 pub(super) fn generate_keypair<
     const K: usize,
@@ -178,9 +215,45 @@ fn compress_then_serialize_u<
     out
 }
 
-/// IND-CPA encryption.
+/// This function implements <strong>Algorithm 13</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
 ///
-/// Returns the ciphertext bytes and an optional error.
+/// Algorithm 13 is reproduced below:
+///
+/// ```plaintext
+/// Input: encryption key ekₚₖₑ ∈ 𝔹^{384k+32}.
+/// Input: message m ∈ 𝔹^{32}.
+/// Input: encryption randomness r ∈ 𝔹^{32}.
+/// Output: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+///
+/// N ← 0
+/// t̂ ← ByteDecode₁₂(ekₚₖₑ[0:384k])
+/// ρ ← ekₚₖₑ[384k: 384k + 32]
+/// for (i ← 0; i < k; i++)
+///     for(j ← 0; j < k; j++)
+///         Â[i,j] ← SampleNTT(XOF(ρ, i, j))
+///     end for
+/// end for
+/// for(i ← 0; i < k; i++)
+///     r[i] ← SamplePolyCBD_{η₁}(PRF_{η₁}(r,N))
+///     N ← N + 1
+/// end for
+/// for(i ← 0; i < k; i++)
+///     e₁[i] ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+///     N ← N + 1
+/// end for
+/// e₂ ← SamplePolyCBD_{η₂}(PRF_{η₂}(r,N))
+/// r̂ ← NTT(r)
+/// u ← NTT-¹(Âᵀ ◦ r̂) + e₁
+/// μ ← Decompress₁(ByteDecode₁(m)))
+/// v ← NTT-¹(t̂ᵀ ◦ rˆ) + e₂ + μ
+/// c₁ ← ByteEncode_{dᵤ}(Compress_{dᵤ}(u))
+/// c₂ ← ByteEncode_{dᵥ}(Compress_{dᵥ}(v))
+/// return c ← (c₁ ‖ c₂)
+/// ```
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 pub(crate) fn encrypt<
     const K: usize,
@@ -201,7 +274,7 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_public_key::<K>(public_key);
+    let t_as_ntt = deserialize_public_key::<K>(&public_key[..T_AS_NTT_ENCODED_SIZE]);
 
     // ρ := pk + 12·k·n / 8
     // for i from 0 to k−1 do
@@ -289,7 +362,28 @@ fn deserialize_secret_key<const K: usize>(secret_key: &[u8]) -> [PolynomialRingE
     secret_as_ntt
 }
 
-/// IND-CPA decryption
+/// This function implements <strong>Algorithm 14</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+///
+/// Algorithm 14 is reproduced below:
+///
+/// ```plaintext
+/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+/// Output: message m ∈ 𝔹^{32}.
+///
+/// c₁ ← c[0 : 32dᵤk]
+/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
+/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+/// m ← ByteEncode₁(Compress₁(w))
+/// return m
+/// ```
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
 pub(super) fn decrypt<
     const K: usize,

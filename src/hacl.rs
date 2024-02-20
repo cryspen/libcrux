@@ -32,32 +32,32 @@ pub enum Error {
     Hkdf(hkdf::Error),
 }
 
-impl Into<Error> for chacha20_poly1305::Error {
-    fn into(self) -> Error {
-        Error::ChaCha20Poly1305(self)
+impl From<chacha20_poly1305::Error> for Error {
+    fn from(val: chacha20_poly1305::Error) -> Self {
+        Error::ChaCha20Poly1305(val)
     }
 }
 
-impl Into<Error> for curve25519::Error {
-    fn into(self) -> Error {
-        Error::Curve25519(self)
+impl From<curve25519::Error> for Error {
+    fn from(val: curve25519::Error) -> Self {
+        Error::Curve25519(val)
     }
 }
 
-impl Into<Error> for p256::Error {
-    fn into(self) -> Error {
-        Error::P256(self)
+impl From<p256::Error> for Error {
+    fn from(val: p256::Error) -> Self {
+        Error::P256(val)
     }
 }
 
-impl Into<Error> for hkdf::Error {
-    fn into(self) -> Error {
-        Error::Hkdf(self)
+impl From<hkdf::Error> for Error {
+    fn from(val: hkdf::Error) -> Self {
+        Error::Hkdf(val)
     }
 }
 
-impl Into<Error> for ed25519::Error {
-    fn into(self) -> Error {
-        Error::Ed25519(self)
+impl From<ed25519::Error> for Error {
+    fn from(val: ed25519::Error) -> Self {
+        Error::Ed25519(val)
     }
 }

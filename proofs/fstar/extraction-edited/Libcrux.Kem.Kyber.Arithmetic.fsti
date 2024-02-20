@@ -57,7 +57,6 @@ let int_to_spec_fe (m:int) : Spec.Kyber.field_element =
       m_v + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
     else m_v
 
-
 let to_spec_fe (m:i32) : Spec.Kyber.field_element = 
     int_to_spec_fe (v m)
 
@@ -73,7 +72,6 @@ val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n < 32}) (value: u32)
         fun result ->
           let result:u32 = result in
           v result = v value % pow2 (v n))
-
 
 //let barrett_pre (value:i32) = 
 //    v value <= v v_BARRETT_R /\ v value >= - v v_BARRETT_R
