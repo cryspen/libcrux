@@ -31,24 +31,12 @@ pub(crate) struct XofState<const K:usize> {
 #[cfg(not(simd256))]
 #[inline(always)]
 pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState<K> {
-    let mut out_vec : Vec<Shake128State> = Vec::new();
+    let mut states =
+        core::array::from_fn(|_| shake128_init();
     for i in 0..K {
-        let mut st = shake128_init();
-        shake128_absorb_final(&mut st,&input[i]);
-        out_vec.push(st);
+        shake128_absorb_final(&mut states[i],&input[i]);
     }
-    match out_vec.try_into() {
-        Ok(states) => XofState{states},
-        Err(_) => panic!(),
-    }
-
-    // The following does not work with Eurydice because of "from_fn"
-    // let mut out : [Shake128State; K] = 
-    //     core::array::from_fn(|_| Shake128State::new());
-    // for i in 0..K {
-    //     out[i].absorb_final(&input[i]);
-    // }
-    // out
+    XofState{states}
 }
 
 #[cfg(not(simd256))]
@@ -63,7 +51,6 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
     out
 }
 
-#[cfg(not(simd256))]
 #[inline(always)]
 pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: &mut XofState<K>) -> [[u8; 168]; K] {
     let mut out: [[u8; 168]; K] = [[0; 168]; K];
@@ -81,11 +68,11 @@ type XofState<const K:usize> = X4(crate::digest::Shake128StateX4);
 #[cfg(simd256)]
 #[inline(always)]
 pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState<K> {
-    let mut out : crate::digest::Shake128StateX4 = crate::digest::Shake128StateX4::new();
+    let mut state : Shake128StateX4 = shake128_init_x4();
     match K {
-        2 => {out.absorb_final(input[0],input[1],input[0],input[0]);out}
-        3 => {out.absorb_final(input[0],input[1],input[2],input[0]);out}
-        4 => {out.absorb_final(input[0],input[1],input[2],input[3]);out}
+        2 => {shake128_absorb_final_x4(&mut state,input[0],input[1],input[0],input[0]);state}
+        3 => {shake128_absorb_final_x4(&mut state,input[0],input[1],input[2],input[0]);state}
+        4 => {shake128_absorb_final_x4(&mut state,input[0],input[1],input[2],input[3]);state}
         _ => {unreachable!()}
     }
 }
@@ -98,9 +85,9 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
     let mut output = [[0; 168 * 3]; K];
     let mut tmp = [[0; 168 * 3]; 2];
     match K {
-        2 => {state.squeeze_nblocks(&mut output[0],&mut output[1],&mut tmp[0],&mut tmp[1]); output}
-        3 => {state.squeeze_nblocks(&mut output[0],&mut output[1],&mut output[2],&mut tmp[1]); output}
-        4 => {state.squeeze_nblocks(&mut output[0],&mut output[1],&mut output[2],&mut output[3]); output}
+        2 => {shake128_squeeze_nblocks_x4(&mut state,&mut output[0],&mut output[1],&mut tmp[0],&mut tmp[1]); output}
+        3 => {shake128_squeeze_nblocks_x4(&mut state,&mut output[0],&mut output[1],&mut output[2],&mut tmp[1]); output}
+        4 => {shake128_squeeze_nblocks_x4(&mut state,&mut output[0],&mut output[1],&mut output[2],&mut output[3]); output}
         _ => {unreachable!()}
     }
 }
@@ -111,9 +98,9 @@ pub(crate) fn XOF_squeeze_block<const K: usize>(state: &mut XofState<K>) -> [[u8
     let mut out: [[u8; 168]; K] = [[0; 168]; K];
     let mut tmp = [[0; 168 * 3]; 2];
     match K {
-        2 => {state.squeeze_nblocks(&mut output[0],&mut output[1],&mut tmp[0],&mut tmp[1]); output}
-        3 => {state.squeeze_nblocks(&mut output[0],&mut output[1],&mut output[2],&mut tmp[0]); output}
-        4 => {state.squeeze_nblocks(&mut output[0],&mut output[1],&mut output[2],&mut output[3]); output}
+        2 => {shake128_squeeze_nblocks_x4(&mut state,&mut output[0],&mut output[1],&mut tmp[0],&mut tmp[1]); output}
+        3 => {shake128_squeeze_nblocks_x4(&mut state,&mut output[0],&mut output[1],&mut output[2],&mut tmp[1]); output}
+        4 => {shake128_squeeze_nblocks_x4(&mut state,&mut output[0],&mut output[1],&mut output[2],&mut output[3]); output}
         _ => {unreachable!()}
     }
 }
