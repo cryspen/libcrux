@@ -21,6 +21,7 @@
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
@@ -37,7 +38,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e4a1ec4a0933a6ab327ce13cb1e28b39"
+      "f26a2e49f56d40250df1e2f9476b7b48"
     ],
     [
       "Libcrux.Digest.sha3_512_",
@@ -59,6 +60,7 @@
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
@@ -75,7 +77,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a9427a29acec1cff0c0e43e404dde6c1"
+      "a0647846f179226d784258d07151d326"
     ]
   ]
 ]
