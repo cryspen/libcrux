@@ -101,7 +101,6 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
     out
 }
 
-
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
 /// the `sample_from_binomial_distribution_{eta}` functions sample
 /// a ring element from a binomial distribution centered at 0 that uses two sets
