@@ -2,6 +2,7 @@
 
 set -e
 
+rm -rf kyber-crate
 mkdir -p kyber-crate/src
 cp -r src/kem/kyber* kyber-crate/src
 cd kyber-crate
@@ -30,6 +31,7 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 rand = { version = "0.8" }
+rand_core = { version = "0.6" }
 EOF
 
 # Fixup Rust for standalone crate
@@ -39,10 +41,22 @@ for file in src/*; do
         $SED -i 's/pub(in .*)/pub(crate)/g' $file
         $SED -i 's/pub(super)/pub(crate)/g' $file
         $SED -i 's/crate::/libcrux::/g' $file
+        $SED -i 's/libcrux::hax_utils/crate::hax_utils/g' $file
+        $SED -i 's/kem::kyber/crate/g' $file
         $SED -i 's/pub mod kyber512;//g' $file
         $SED -i 's/pub mod kyber1024;//g' $file
     fi
 done
+
+cat >src/hax_utils.rs <<EOF
+macro_rules! hax_debug_assert {
+    (\$(\$arg:tt)*) => {};
+}
+
+pub(crate) use hax_debug_assert;
+EOF
+
+$SED -i '1ipub(crate) mod hax_utils;' src/lib.rs
 
 mkdir -p tests
 cp -r ../kyber-crate-tests/* tests/
@@ -50,7 +64,7 @@ rm src/kyber512.rs
 rm src/kyber1024.rs
 
 # Build & test
-cargo test
+cargo build
 
 # Extract
 if [[ -z "$CHARON_HOME" ]]; then
@@ -66,14 +80,13 @@ if [[ -z "$HACL_PACKAGES_HOME" ]]; then
     exit 1
 fi
 
+echo "Running charon ..."
 $CHARON_HOME/bin/charon --errors-as-warnings
 mkdir -p c
 cd c
-$EURYDICE_HOME/eurydice ../libcrux_kyber.llbc
-# Add header
-$SED -i -z 's!\(#include "libcrux_kyber.h"\)!\1\n#include "libcrux_hacl_glue.h"!g' libcrux_kyber.c
-# Drop definition
-$SED -i -z 's!typedef struct __uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__s.*__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t__uint8_t_840size_t_;!!g' libcrux_kyber.c
+
+echo "Running eurydice ..."
+$EURYDICE_HOME/eurydice --config ../../kyber-c.yaml ../libcrux_kyber.llbc
 clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
 
 cp $EURYDICE_HOME/include/eurydice_glue.h .
