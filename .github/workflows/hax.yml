@@ -118,33 +118,18 @@ jobs:
 
   extract-c:
     runs-on: "ubuntu-latest"
+    container: franziskus/libcrux-c
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-          cache: "pip" # caching pip dependencies
 
-      - name: Cache Toolchain
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.hax
-            ~/.opam
-          key: cache-${{ runner.os }}-${{ hashFiles('**/hax.toml') }}
-
-      - name: 🔨 OCaml Setup
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: 4.14.1
-
-      - name: 🔨 Toolchain Setup
-        run: |
-          eval $(opam env)
-          opam install dune
-          ./hax.py ml-kem dependencies
-
+      - name: Check for dockerenv file
+        run: (ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)
       - name: 🏃 Extract ML-KEM C
+        shell: bash -e {0}
         run: |
+          source $HOME/.bashrc
+          echo KRML_HOME: $KRML_HOME
+          pwd
+          ls -l
           eval $(opam env)
-          ./hax.py ml-kem extract_c
+          ./kyber-crate.sh
