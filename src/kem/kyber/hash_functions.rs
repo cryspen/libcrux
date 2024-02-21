@@ -70,15 +70,27 @@ pub(crate) fn XOFx4<const K: usize>(
 // Currently it only supports Scalar SHAKE, adapting it to SIMD SHAKE is a todo
 type XofState = crate::digest::incremental::Shake128State;
 
+// The following does not work with Eurydice because of "from_fn"
 #[inline(always)]
 pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> [XofState; K] {
-    let mut out =
-        core::array::from_fn(|_| crate::digest::incremental::Shake128State::new());
-
+    let mut out = core::array::from_fn(|_| crate::digest::incremental::Shake128State::new());
     for i in 0..K {
         out[i].absorb_final(&input[i]);
     }
     out
+}
+
+// The following is an experiment to avoid "from_fn" and use "map" instead
+#[inline(always)]
+pub(crate) fn XofStateAbsorb(input: [u8; 34]) -> XofState {
+    let mut out = crate::digest::incremental::Shake128State::new();
+    out.absorb_final(&input);
+    out
+} 
+
+#[inline(always)]
+pub(crate) fn XOF_absorb_map<const K: usize>(input: [[u8; 34]; K]) -> [XofState; K] {
+    input.map(XofStateAbsorb)
 }
 
 #[inline(always)]
@@ -86,7 +98,6 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
     state: &mut [XofState; K],
 ) -> [[u8; 168 * 3]; K] {
     let mut out = [[0; 168 * 3]; K];
-
     for i in 0..K {
         out[i] = state[i].squeeze_nblocks();
     }
@@ -95,8 +106,7 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_block<const K: usize>(state: &mut [XofState; K]) -> [[u8; 168]; K] {
-    let mut out = [[0; 168]; K];
-
+    let mut out: [[u8; 168]; K] = [[0; 168]; K];
     for i in 0..K {
         out[i] = state[i].squeeze_nblocks();
     }
