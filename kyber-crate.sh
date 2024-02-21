@@ -75,10 +75,6 @@ if [[ -z "$EURYDICE_HOME" ]]; then
     echo "Please set EURYDICE_HOME to the Eurydice directory" 1>&2
     exit 1
 fi
-if [[ -z "$HACL_PACKAGES_HOME" ]]; then
-    echo "Please set HACL_PACKAGES_HOME to the hacl-packages directory" 1>&2
-    exit 1
-fi
 
 echo "Running charon ..."
 $CHARON_HOME/bin/charon --errors-as-warnings
@@ -87,9 +83,12 @@ cd c
 
 echo "Running eurydice ..."
 $EURYDICE_HOME/eurydice --config ../../kyber-c.yaml ../libcrux_kyber.llbc
-clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
-
 cp $EURYDICE_HOME/include/eurydice_glue.h .
-cp internal/*.h $HACL_PACKAGES_HOME/libcrux/include/internal/
-cp *.h $HACL_PACKAGES_HOME/libcrux/include
-cp *.c $HACL_PACKAGES_HOME/libcrux/src
+
+if [[ -n "$HACL_PACKAGES_HOME" ]]; then
+    clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
+    cp internal/*.h $HACL_PACKAGES_HOME/libcrux/include/internal/
+    cp *.h $HACL_PACKAGES_HOME/libcrux/include
+    cp *.c $HACL_PACKAGES_HOME/libcrux/src
+fi
+echo "Please set HACL_PACKAGES_HOME to the hacl-packages directory to copy the code over" 1>&2
