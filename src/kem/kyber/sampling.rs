@@ -1,10 +1,10 @@
 use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    hash_functions::{XOF_absorb, XOF_squeeze_block, XOF_squeeze_three_blocks},
 };
-use crate::{cloop, hax_utils::hax_debug_assert, 
-            kem::kyber::hash_functions::{XOF_absorb, XOF_squeeze_block, XOF_squeeze_three_blocks}};
-
+use crate::cloop;
+use crate::hax_utils::hax_debug_assert;
 
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation
@@ -82,7 +82,8 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
     let mut xof_states = XOF_absorb::<K>(seeds);
     let randomness = XOF_squeeze_three_blocks(&mut xof_states);
 
-    let mut done = sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+    let mut done =
+        sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
 
     // Requiring more than 5 blocks to sample a ring element should be very
     // unlikely according to:
@@ -99,7 +100,6 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
         .all(|coefficient| coefficient >= 0 && coefficient < FIELD_MODULUS));
     out
 }
-
 
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
 /// the `sample_from_binomial_distribution_{eta}` functions sample

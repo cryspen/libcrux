@@ -6,7 +6,8 @@ use super::{
     },
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
-use crate::{cloop, hax_utils::hax_debug_assert};
+use crate::cloop;
+use crate::hax_utils::hax_debug_assert;
 
 #[cfg(not(hax))]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
