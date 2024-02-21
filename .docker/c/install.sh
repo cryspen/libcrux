@@ -2,12 +2,11 @@
 
 set -v -e -x
 
-# eval $(opam env)
+curl https://sh.rustup.rs -sSf | bash -s -- -y
 
-# # Install hax
-# cd $HOME/$USER
-# ./setup.sh -j 2
-# cd ~/
+# Prepare the sources
+opam init --bare --disable-sandboxing --shell-setup --yes
+opam switch create 4.14.1
 
 # Get F*, HACL*, Charon, Karamel, Eurydice for running proofs and extraction
 curl -L https://github.com/FStarLang/FStar/releases/download/v2024.01.13/fstar_2024.01.13_Linux_x86_64.tar.gz \
@@ -52,7 +51,6 @@ echo "export CHARON_HOME=$HOME/charon" >>$HOME/.profile
 echo "export HAX_HOME=$HOME/hax" >>$HOME/.profile
 echo "export PATH=\"${PATH}:$HOME/fstar/bin:$HOME/z3/bin\"" >>$HOME/.profile
 echo "[[ ! -r /home/$USER/.opam/opam-init/init.sh ]] || source /home/$USER/.opam/opam-init/init.sh  > /dev/null 2> /dev/null" >>$HOME/.profile
-echo ""
 
 source $HOME/.profile
 opam install --yes ocamlfind visitors menhir ppx_deriving_yojson sedlex wasm fix process pprint zarith yaml easy_logging terminal

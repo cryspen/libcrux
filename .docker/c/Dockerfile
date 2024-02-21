@@ -21,8 +21,12 @@ USER $USER
 COPY --chown=$USER:$USER . $HOME/$USER
 
 # Setup & install.
-ADD lang-setup.sh /tmp/lang-setup.sh
-RUN bash /tmp/lang-setup.sh
-
 ADD install.sh /tmp/install.sh
 RUN bash /tmp/install.sh
+
+ENV FSTAR_HOME $HOME/fstar
+ENV HACL_HOME $HOME/hacl-star
+ENV KRML_HOME $HOME/karamel
+ENV EURYDICE_HOME $HOME/eurydice
+ENV CHARON_HOME $HOME/charon
+ENV PATH "${PATH}:$HOME/fstar/bin:$HOME/z3/bin"
