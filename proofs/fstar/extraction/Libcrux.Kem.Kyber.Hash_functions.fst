@@ -39,21 +39,12 @@ let v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
           in
           out_vec)
   in
-  let (states: t_Array Libcrux.Digest.t_Shake128State v_K):t_Array Libcrux.Digest.t_Shake128State
-    v_K =
-    Core.Result.impl__unwrap_or_else (Core.Convert.f_try_into out_vec
+  match Core.Convert.f_try_into out_vec with
+  | Core.Result.Result_Ok states -> { f_states = states } <: t_XofState v_K
+  | Core.Result.Result_Err _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
         <:
-        Core.Result.t_Result (t_Array Libcrux.Digest.t_Shake128State v_K)
-          (Alloc.Vec.t_Vec Libcrux.Digest.t_Shake128State Alloc.Alloc.t_Global))
-      (fun temp_0_ ->
-          let _:Alloc.Vec.t_Vec Libcrux.Digest.t_Shake128State Alloc.Alloc.t_Global = temp_0_ in
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
-              <:
-              Rust_primitives.Hax.t_Never)
-          <:
-          t_Array Libcrux.Digest.t_Shake128State v_K)
-  in
-  { f_states = states } <: t_XofState v_K
+        Rust_primitives.Hax.t_Never)
 
 let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState v_K) =
   let (out: t_Array (t_Array u8 (sz 168)) v_K):t_Array (t_Array u8 (sz 168)) v_K =

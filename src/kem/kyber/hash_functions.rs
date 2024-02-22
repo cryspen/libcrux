@@ -37,8 +37,10 @@ pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState<K> {
         shake128_absorb_final(&mut st,&input[i]);
         out_vec.push(st);
     }
-    let states:[Shake128State; K] = out_vec.try_into().unwrap_or_else(|_| panic!());
-    XofState {states}
+    match out_vec.try_into() {
+        Ok(states) => XofState{states},
+        Err(_) => panic!(),
+    }
 
     // The following does not work with Eurydice because of "from_fn"
     // let mut out : [Shake128State; K] = 
