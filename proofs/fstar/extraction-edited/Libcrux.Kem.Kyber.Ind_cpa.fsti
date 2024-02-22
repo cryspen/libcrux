@@ -56,14 +56,13 @@ val deserialize_then_decompress_u (#p:Spec.Kyber.params)
         Spec.Kyber.(vector_ntt (decode_then_decompress_u p (Seq.slice ciphertext 0 (v (Spec.Kyber.v_C1_SIZE p))))))
 
 val deserialize_public_key (#p:Spec.Kyber.params) 
-    (v_K v_T_AS_NTT_ENCODED_SIZE: usize) (public_key: t_Slice u8)
+    (v_K: usize) (public_key: t_Array u8 (Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE p))
     : Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
       (requires v_K == p.v_RANK /\
-                length public_key == Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE p /\
-                v_T_AS_NTT_ENCODED_SIZE == Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE p)
+                length public_key == Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT p)
       (ensures fun res -> 
         Libcrux.Kem.Kyber.Arithmetic.to_spec_vector_b res ==
-        Spec.Kyber.vector_decode_12 #p (slice public_key (sz 0) v_T_AS_NTT_ENCODED_SIZE))
+        Spec.Kyber.vector_decode_12 #p public_key)
    
 val deserialize_secret_key (#p:Spec.Kyber.params) (v_K: usize) (secret_key: t_Slice u8)
     : Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)

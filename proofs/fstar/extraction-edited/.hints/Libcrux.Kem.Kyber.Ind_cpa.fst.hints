@@ -1,5 +1,5 @@
 [
-  "lRÕ\u001f?E¨ò¯-àª˜®\u000fu",
+  ",W„\u0005¼ˆ\u0013È_F1 ãÄD•",
   [
     [
       "Libcrux.Kem.Kyber.Ind_cpa.into_padded_array",
@@ -47,7 +47,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e59a5c323cad2e69ea5165b1915f943d"
+      "4d23ad6ec1514aef095a2623a87647e1"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.into_padded_array",
@@ -140,7 +140,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "776e4fb7b7aeec0e75a77324a0befd47"
+      "3c8290c69164c2ab3fa5be025e8b1ff9"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.acc_t",
@@ -181,7 +181,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "30d35a3c79993000e2fe499566fd9469"
+      "cffeb995ce316338a954cd49954be6f1"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.wfZero",
@@ -193,7 +193,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "a08375c17c0f09409f03d28c78dc2929"
+      "3bbb28cbf0abdcff08a4e270b3611bd4"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.etaZero",
@@ -219,7 +219,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7038e8a6ee0911f59c991375a8d63375"
+      "9af167bd2484fc6b49f79ef0361f66b6"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
@@ -303,7 +303,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "f8f75e06fad13a1152f79c4ff674c8d4"
+      "76691f001a255ab6b0b5645883cad252"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
@@ -413,7 +413,7 @@
         "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "1c47c1bc0aaebdcba9b54031b7086ae5"
+      "e3e561f43a78a7cabd69752ae3122daa"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
@@ -423,107 +423,34 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "b2t_def", "bool_inversion", "bool_typing",
-        "constructor_distinct_Lib.IntTypes.PUB",
-        "constructor_distinct_Lib.IntTypes.S16",
-        "constructor_distinct_Lib.IntTypes.S32",
+        "bool_inversion", "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S8",
         "constructor_distinct_Lib.IntTypes.U1",
         "constructor_distinct_Lib.IntTypes.U16",
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
-        "data_elim_FStar.Pervasives.Native.Mktuple3",
-        "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
-        "equality_tok_Lib.IntTypes.U64@tok",
-        "equality_tok_Lib.IntTypes.U8@tok", "equation_Core.Slice.impl__len",
-        "equation_FStar.UInt.fits", "equation_FStar.UInt.max_int",
-        "equation_FStar.UInt.min_int", "equation_FStar.UInt.size",
-        "equation_FStar.UInt.uint_t", "equation_Lib.IntTypes.bits",
-        "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.maxint",
-        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_t",
-        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
-        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
-        "equation_Prims.eqtype", "equation_Prims.nat", "equation_Prims.pos",
-        "equation_Rust_primitives.Arrays.length",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Arrays.t_Slice",
-        "equation_Rust_primitives.Integers.add",
-        "equation_Rust_primitives.Integers.bits",
-        "equation_Rust_primitives.Integers.gte",
-        "equation_Rust_primitives.Integers.int_t",
+        "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.lt",
-        "equation_Rust_primitives.Integers.lte",
-        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.range_t",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.u8",
-        "equation_Rust_primitives.Integers.u8_inttype",
         "equation_Rust_primitives.Integers.unsigned",
-        "equation_Rust_primitives.Integers.usize",
-        "equation_Rust_primitives.Integers.v",
-        "equation_Rust_primitives.array_to_slice_unsize",
-        "equation_Rust_primitives.unsize", "equation_Spec.Kyber.params",
-        "equation_Spec.Kyber.v_ETA2_RANDOMNESS_SIZE",
-        "equation_Spec.Kyber.valid_params",
-        "fuel_guarded_inversion_FStar.Pervasives.Native.tuple3",
-        "int_inversion", "int_typing",
-        "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
-        "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
-        "lemma_FStar.UInt8.vu_inv", "lemma_Lib.IntTypes.pow2_2",
-        "lemma_Lib.IntTypes.pow2_3",
-        "lemma_Rust_primitives.Integers.mk_int_v_lemma",
         "lemma_Rust_primitives.Integers.pow2_values",
-        "lemma_Rust_primitives.Integers.v_mk_int_lemma",
-        "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
-        "primitive_Prims.op_BarBar", "primitive_Prims.op_Equality",
-        "primitive_Prims.op_GreaterThanOrEqual",
-        "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
-        "proj_equation_Core.Ops.Range.Mkt_Range_f_end",
-        "proj_equation_Core.Ops.Range.Mkt_Range_f_start",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
-        "projection_inverse_Core.Ops.Range.Mkt_Range_f_end",
-        "projection_inverse_Core.Ops.Range.Mkt_Range_f_start",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__1",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__2",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__3",
-        "projection_inverse_Rust_primitives.Mkunsize_tc_unsize",
-        "refinement_interpretation_Tm_refine_221edc532b512849362f091b0318b99d",
-        "refinement_interpretation_Tm_refine_303f3ed7da7fa515960d4d09b7f6f790",
-        "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
-        "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
-        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
-        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
-        "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "refinement_interpretation_Tm_refine_f13070840248fced9d9d60d77bdae3ec",
-        "token_correspondence_Prims.pow2.fuel_instrumented",
-        "token_correspondence_Rust_primitives.unsize",
-        "typing_FStar.UInt8.t", "typing_Lib.IntTypes.bits",
-        "typing_Lib.IntTypes.v", "typing_Rust_primitives.Integers.add",
         "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.gte",
-        "typing_Rust_primitives.Integers.minint",
-        "typing_Rust_primitives.Integers.mk_int",
-        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
-        "typing_Rust_primitives.Integers.usize_inttype",
-        "typing_Rust_primitives.Integers.v",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
-        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U8@tok"
+        "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "f1ae045c299b25ed0aa61383e56e628d"
+      "c615893ec5ffc71e01510cb38e463ad2"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd_then_ntt",
@@ -533,7 +460,8 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "b2t_def", "bool_inversion", "bool_typing",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "bool_inversion", "bool_typing",
         "constructor_distinct_Lib.IntTypes.PUB",
         "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S32",
@@ -551,12 +479,13 @@
         "equation_FStar.Int.int_t", "equation_FStar.Int.max_int",
         "equation_FStar.Int.min_int", "equation_FStar.Int.size",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.byte_t",
-        "equation_Lib.IntTypes.maxint", "equation_Lib.IntTypes.minint",
-        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
-        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
+        "equation_Lib.IntTypes.maxint", "equation_Lib.IntTypes.pub_int_v",
+        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
+        "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
         "equation_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
-        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Prims.nat", "equation_Prims.pos",
+        "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.i32",
         "equation_Rust_primitives.Integers.int_t",
@@ -572,8 +501,9 @@
         "equation_Rust_primitives.Integers.v",
         "equation_Spec.Kyber.v_H_DIGEST_SIZE",
         "equation_Spec.Kyber.v_SHARED_SECRET_SIZE",
-        "function_token_typing_Lib.IntTypes.byte_t", "int_inversion",
-        "int_typing", "lemma_FStar.Int32.vu_inv",
+        "function_token_typing_Lib.IntTypes.byte_t",
+        "function_token_typing_Prims.__cache_version_number__",
+        "int_inversion", "int_typing", "lemma_FStar.Int32.vu_inv",
         "lemma_FStar.Seq.Base.lemma_len_slice",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
@@ -584,6 +514,7 @@
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_6429d8e304d352f05a83669146e6cacf",
+        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
         "refinement_interpretation_Tm_refine_81407705a0828c2c1b1976675443f647",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
@@ -592,8 +523,7 @@
         "refinement_interpretation_Tm_refine_d4027175170ef1ba257f27664168c6e2",
         "typing_FStar.Seq.Base.length", "typing_Lib.IntTypes.v",
         "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
-        "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.minint",
+        "typing_Prims.pow2", "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
@@ -603,7 +533,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "dfe624bf8e2313e7b7d22627adcc8423"
+      "1e5803cf6abc13ca85e4169de15a82f4"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd_then_ntt",
@@ -624,7 +554,6 @@
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
         "data_elim_FStar.Pervasives.Native.Mktuple3",
-        "data_elim_Libcrux.Kem.Kyber.Arithmetic.Mkt_PolynomialRingElement",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
@@ -646,7 +575,6 @@
         "equation_Rust_primitives.Integers.add",
         "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.gte",
-        "equation_Rust_primitives.Integers.i32",
         "equation_Rust_primitives.Integers.int_t",
         "equation_Rust_primitives.Integers.inttype",
         "equation_Rust_primitives.Integers.lt",
@@ -667,7 +595,6 @@
         "equation_Spec.Kyber.v_ETA1_RANDOMNESS_SIZE",
         "equation_Spec.Kyber.valid_params",
         "fuel_guarded_inversion_FStar.Pervasives.Native.tuple3",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement",
         "fuel_guarded_inversion_Spec.Kyber.params_", "int_inversion",
         "int_typing",
         "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
@@ -701,7 +628,6 @@
         "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "refinement_interpretation_Tm_refine_b576f09784d790ce06644f00d7b5f1a4",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_d9709c468a55d1c148eb4fc0d0233e6f",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
@@ -709,22 +635,18 @@
         "token_correspondence_Rust_primitives.unsize",
         "typing_FStar.UInt.fits", "typing_FStar.UInt8.t",
         "typing_Lib.IntTypes.bits", "typing_Lib.IntTypes.v",
-        "typing_Libcrux.Kem.Kyber.Arithmetic.derefine_poly_b",
         "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.gte",
         "typing_Rust_primitives.Integers.minint",
-        "typing_Rust_primitives.Integers.mk_int",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
-        "typing_Spec.Kyber.__proj__Mkparams___item__v_ETA2",
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
-        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
-        "typing_tok_Lib.IntTypes.U8@tok"
+        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "8e4901e31dd83747399fd96899bf26f6"
+      "e55fc4399558864823ce4dacc3f1cfe3"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd_then_ntt",
@@ -734,9 +656,7 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "b2t_def", "bool_inversion", "bool_typing",
-        "constructor_distinct_Lib.IntTypes.PUB",
-        "constructor_distinct_Lib.IntTypes.S16",
+        "bool_inversion", "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S32",
         "constructor_distinct_Lib.IntTypes.S8",
         "constructor_distinct_Lib.IntTypes.U1",
@@ -744,106 +664,27 @@
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
-        "data_elim_FStar.Pervasives.Native.Mktuple3",
-        "data_elim_Libcrux.Kem.Kyber.Arithmetic.Mkt_PolynomialRingElement",
-        "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
-        "equality_tok_Lib.IntTypes.U64@tok",
-        "equality_tok_Lib.IntTypes.U8@tok", "equation_Core.Slice.impl__len",
-        "equation_FStar.UInt.fits", "equation_FStar.UInt.max_int",
-        "equation_FStar.UInt.min_int", "equation_FStar.UInt.size",
-        "equation_FStar.UInt.uint_t", "equation_Lib.IntTypes.bits",
-        "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.maxint",
-        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_t",
-        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
-        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.pow2_31",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
-        "equation_Prims.eqtype", "equation_Prims.nat", "equation_Prims.pos",
-        "equation_Rust_primitives.Arrays.length",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Arrays.t_Slice",
-        "equation_Rust_primitives.Integers.add",
-        "equation_Rust_primitives.Integers.bits",
-        "equation_Rust_primitives.Integers.gte",
-        "equation_Rust_primitives.Integers.i32",
-        "equation_Rust_primitives.Integers.int_t",
+        "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.lt",
-        "equation_Rust_primitives.Integers.lte",
-        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.range_t",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.u8",
-        "equation_Rust_primitives.Integers.u8_inttype",
         "equation_Rust_primitives.Integers.unsigned",
-        "equation_Rust_primitives.Integers.usize",
-        "equation_Rust_primitives.Integers.v",
-        "equation_Rust_primitives.array_to_slice_unsize",
-        "equation_Rust_primitives.unsize", "equation_Spec.Kyber.params",
-        "equation_Spec.Kyber.v_ETA1_RANDOMNESS_SIZE",
-        "equation_Spec.Kyber.valid_params",
-        "fuel_guarded_inversion_FStar.Pervasives.Native.tuple3",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement",
-        "fuel_guarded_inversion_Spec.Kyber.params_", "int_inversion",
-        "int_typing",
-        "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
-        "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
-        "lemma_FStar.UInt8.vu_inv", "lemma_Lib.IntTypes.pow2_2",
-        "lemma_Lib.IntTypes.pow2_3",
-        "lemma_Rust_primitives.Integers.mk_int_v_lemma",
         "lemma_Rust_primitives.Integers.pow2_values",
-        "lemma_Rust_primitives.Integers.v_mk_int_lemma",
-        "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
-        "primitive_Prims.op_BarBar", "primitive_Prims.op_Equality",
-        "primitive_Prims.op_GreaterThanOrEqual",
-        "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
-        "proj_equation_Core.Ops.Range.Mkt_Range_f_end",
-        "proj_equation_Core.Ops.Range.Mkt_Range_f_start",
-        "proj_equation_Spec.Kyber.Mkparams__v_ETA2",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
-        "projection_inverse_Core.Ops.Range.Mkt_Range_f_end",
-        "projection_inverse_Core.Ops.Range.Mkt_Range_f_start",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__1",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__2",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__3",
-        "projection_inverse_Rust_primitives.Mkunsize_tc_unsize",
-        "refinement_interpretation_Tm_refine_303f3ed7da7fa515960d4d09b7f6f790",
-        "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
-        "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_6429d8e304d352f05a83669146e6cacf",
-        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
-        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
-        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "refinement_interpretation_Tm_refine_b576f09784d790ce06644f00d7b5f1a4",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
-        "refinement_interpretation_Tm_refine_d9709c468a55d1c148eb4fc0d0233e6f",
-        "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "refinement_interpretation_Tm_refine_f13070840248fced9d9d60d77bdae3ec",
-        "token_correspondence_Rust_primitives.unsize",
-        "typing_FStar.UInt.fits", "typing_FStar.UInt8.t",
-        "typing_Lib.IntTypes.bits", "typing_Lib.IntTypes.v",
-        "typing_Libcrux.Kem.Kyber.Arithmetic.derefine_poly_b",
         "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.gte",
-        "typing_Rust_primitives.Integers.minint",
-        "typing_Rust_primitives.Integers.mk_int",
-        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
-        "typing_Rust_primitives.Integers.usize_inttype",
-        "typing_Rust_primitives.Integers.v",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
-        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U8@tok"
+        "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7a457d8d6c4785a4c2948e63143ddf76"
+      "1e4cff0201e9deb7894cf3ac78d60009"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.compress_then_serialize_u",
@@ -907,7 +748,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "a37e8e7c5927d6459c6ed473e3c9179a"
+      "c0ce452d8e09e4e84c2383d4b0eb9c79"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.compress_then_serialize_u",
@@ -977,7 +818,10 @@
         "equation_Rust_primitives.array_to_slice_unsize",
         "equation_Rust_primitives.unsize", "equation_Spec.Kyber.params",
         "equation_Spec.Kyber.v_C1_BLOCK_SIZE",
-        "equation_Spec.Kyber.v_C1_SIZE", "equation_Spec.Kyber.valid_params",
+        "equation_Spec.Kyber.v_C1_SIZE",
+        "equation_Spec.Kyber.v_H_DIGEST_SIZE",
+        "equation_Spec.Kyber.v_SHARED_SECRET_SIZE",
+        "equation_Spec.Kyber.valid_params",
         "fuel_guarded_inversion_FStar.Pervasives.Native.tuple2",
         "function_token_typing_Lib.IntTypes.byte_t",
         "function_token_typing_Prims.__cache_version_number__",
@@ -1035,12 +879,13 @@
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE", "typing_Spec.Kyber.v_C1_SIZE",
+        "typing_Spec.Kyber.v_SHARED_SECRET_SIZE",
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
         "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "47462c80da4a42028cb648f4ee43f778"
+      "24e2ba666da39f317f2339d6ecc00d49"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1090,7 +935,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "727d6d746a48cc9312a23a8c163eec74"
+      "b9147adbe5c0ce257630f92b7920c085"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1104,7 +949,7 @@
         "refinement_interpretation_Tm_refine_257ddf45d97229b8c327236723913127"
       ],
       0,
-      "6a024e654630366a75842a950371386c"
+      "f822cc58e6376a9a1a2fcf97f82cd5df"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1125,7 +970,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "0230d766a36244e4baecdd15765420df"
+      "4a900db89b75677a1b6f4297ff0adf7c"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1146,7 +991,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "6b141e37465667ae31d1660aa58dd2b3"
+      "32c1c20993552a264931089954e6c722"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1183,7 +1028,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "dd47652e8c6b1718266bb98131de1ae0"
+      "851ba6e8f9d2caa7650dc50bb92f7859"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1217,7 +1062,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7d86f7b392c3e605afcb4333e45eb4a7"
+      "5040b47855deabe98af7707eaf8e0055"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1273,7 +1118,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "de7478574faa7a2ff57a80caa8ed1ac1"
+      "be94fb6ccc17ccf5e42c376db9571a14"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1282,8 +1127,7 @@
       1,
       [
         "@MaxIFuel_assumption", "@query", "b2t_def", "bool_inversion",
-        "bool_typing", "constructor_distinct_Lib.IntTypes.S32",
-        "equality_tok_Lib.IntTypes.U8@tok",
+        "bool_typing", "equality_tok_Lib.IntTypes.U8@tok",
         "equation_Core.Ops.Index.f_index",
         "equation_Core.Ops.Index.in_range",
         "equation_Core.Ops.Range.impl_index_range_to_slice",
@@ -1353,7 +1197,7 @@
         "typing_Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE"
       ],
       0,
-      "d816926d51c40f79417cbdb3c59d6bb0"
+      "855904a21f7b22b384d2ad9108b48fd4"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1372,11 +1216,15 @@
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
+        "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
+        "equation_Lib.IntTypes.maxint", "equation_Lib.IntTypes.range",
+        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.int_t",
         "equation_Rust_primitives.Integers.inttype",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
@@ -1385,28 +1233,35 @@
         "equation_Rust_primitives.Integers.sz",
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.usize",
-        "equation_Spec.Kyber.params", "equation_Spec.Kyber.valid_params",
-        "int_typing", "lemma_Rust_primitives.Integers.pow2_values",
+        "equation_Rust_primitives.Integers.v", "equation_Spec.Kyber.params",
+        "equation_Spec.Kyber.v_C1_BLOCK_SIZE",
+        "equation_Spec.Kyber.valid_params",
+        "fuel_guarded_inversion_Spec.Kyber.params_", "int_typing",
+        "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_BarBar",
         "primitive_Prims.op_Equality", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_117f68d1f96cf8c1d2700eebe70084e5",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_bf40e610c32e14a3d663fc274afbf5a9",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "typing_Rust_primitives.Integers.bits",
+        "typing_Lib.IntTypes.v", "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.S32@tok",
-        "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
+        "typing_Spec.Kyber.v_C1_BLOCK_SIZE",
+        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
+        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
+        "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "59a6195352cffbcdb6a2943ad07af81a"
+      "556cc14d144bc2038e7413240fc7552e"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1446,7 +1301,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "80e82f69a0b33661f9f36581226b55c9"
+      "5448a2b7f23ed3bac80647aa09c104d5"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1496,7 +1351,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "3bea21db4db5b9b803cb638c343f8711"
+      "2e3b3b2598197a52b329988da65bf221"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1551,7 +1406,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "ca13fb996285305cfaac912b84f96f13"
+      "66e0ba97d0265ae13a9a0bff896d9e3d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1570,13 +1425,15 @@
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
-        "equality_tok_Lib.IntTypes.S32@tok",
+        "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
+        "equation_Lib.IntTypes.maxint", "equation_Lib.IntTypes.range",
+        "equation_Lib.IntTypes.unsigned",
         "equation_Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT",
-        "equation_Prims.nat", "equation_Prims.pos",
-        "equation_Rust_primitives.Integers.bits",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.div",
+        "equation_Rust_primitives.Integers.int_t",
         "equation_Rust_primitives.Integers.inttype",
         "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
@@ -1589,7 +1446,7 @@
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v", "equation_Spec.Kyber.params",
         "equation_Spec.Kyber.v_C1_BLOCK_SIZE",
-        "equation_Spec.Kyber.valid_params", "int_inversion", "int_typing",
+        "equation_Spec.Kyber.valid_params", "int_typing",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_BarBar",
@@ -1601,23 +1458,23 @@
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Tm_refine_117f68d1f96cf8c1d2700eebe70084e5",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
+        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_bf40e610c32e14a3d663fc274afbf5a9",
         "refinement_interpretation_Tm_refine_d8836626372248741cc7d6582bd93782",
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "typing_Rust_primitives.Integers.bits",
+        "typing_Lib.IntTypes.v", "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.S32@tok",
+        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "84179668e4e0e0fa9e7e88719ea990a2"
+      "92155b051e9f8ef5a15ef0e31852177d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1630,7 +1487,7 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "da17e3402e3f116d4e5c789375e846df"
+      "c42cdbdc555d0709906d05c639e1675c"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1650,15 +1507,13 @@
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
         "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok",
         "equality_tok_Lib.IntTypes.U8@tok",
         "equation_Core.Ops.Range.impl_index_range_to_slice",
         "equation_Core.Ops.Range.impl_range_to_index_array",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.v",
-        "equation_Prims.nat", "equation_Prims.nonzero",
-        "equation_Rust_primitives.Arrays.length",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Arrays.t_Slice",
         "equation_Rust_primitives.Integers.bits",
@@ -1667,7 +1522,6 @@
         "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
-        "equation_Rust_primitives.Integers.mul",
         "equation_Rust_primitives.Integers.range",
         "equation_Rust_primitives.Integers.range_t",
         "equation_Rust_primitives.Integers.sz",
@@ -1676,7 +1530,7 @@
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v", "equation_Spec.Kyber.params",
         "equation_Spec.Kyber.v_C1_BLOCK_SIZE",
-        "equation_Spec.Kyber.valid_params",
+        "equation_Spec.Kyber.v_C2_SIZE", "equation_Spec.Kyber.valid_params",
         "fuel_guarded_inversion_Spec.Kyber.params_",
         "function_token_typing_Prims.__cache_version_number__",
         "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
@@ -1688,16 +1542,17 @@
         "primitive_Prims.op_Subtraction",
         "proj_equation_Core.Ops.Index.Mkt_Index_f_Output",
         "proj_equation_Spec.Kyber.Mkparams__v_VECTOR_U_COMPRESSION_FACTOR",
+        "proj_equation_Spec.Kyber.Mkparams__v_VECTOR_V_COMPRESSION_FACTOR",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Core.Ops.Index.Mkt_Index_f_Output",
-        "refinement_interpretation_Tm_refine_0766302b68bb44ab7aff8c4d8be0b46f",
         "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
         "refinement_interpretation_Tm_refine_117f68d1f96cf8c1d2700eebe70084e5",
         "refinement_interpretation_Tm_refine_157e850f1e9d871f026114e5e258ee5b",
         "refinement_interpretation_Tm_refine_2684b5609986811a544b67627d3f8aa8",
         "refinement_interpretation_Tm_refine_2e68eda577cdf0178587ec036ef9d838",
         "refinement_interpretation_Tm_refine_3c4cd2150cd81734c22bec1482ed9b1e",
+        "refinement_interpretation_Tm_refine_4c253f027b5d09b5555e1c4f903eeb5c",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_5a8283617c705d6efb56e42ade090de5",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
@@ -1705,7 +1560,6 @@
         "refinement_interpretation_Tm_refine_bf40e610c32e14a3d663fc274afbf5a9",
         "refinement_interpretation_Tm_refine_d657049734f4b26ad593ec14b9cdd5b3",
         "refinement_interpretation_Tm_refine_d8836626372248741cc7d6582bd93782",
-        "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
         "typing_FStar.Seq.Base.length",
         "typing_Rust_primitives.Integers.bits",
@@ -1713,11 +1567,11 @@
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE", "typing_Spec.Kyber.v_C1_SIZE",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.S32@tok",
+        "typing_Spec.Kyber.v_C2_SIZE", "typing_Spec.Kyber.valid_params",
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "be3f47e40d94821b2d7aa045a0285d8f"
+      "7c8e4a1fb0082fbe3203368cd9f3bdd4"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1729,7 +1583,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "e032e45a78e08f4cf025652b33cb8e9e"
+      "6bb4f8237ae77bf810dd87849b09aa29"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1738,7 +1592,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "709c6122f8381a7e969ca852fcb861df"
+      "0981223244a1c37930efedab4dd9d45c"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1781,7 +1635,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e33c2a66e108c857e6b016ae3fc336ab"
+      "645269e3f2f511ea91b9225f543e67b2"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1794,7 +1648,7 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "9d225169555733e3efddfb32028477db"
+      "1ceed2ad16d94fd29fd49c871710f9aa"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1806,6 +1660,7 @@
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
         "b2t_def", "bool_inversion", "bool_typing",
         "constructor_distinct_Lib.IntTypes.S16",
+        "constructor_distinct_Lib.IntTypes.S32",
         "constructor_distinct_Lib.IntTypes.S8",
         "constructor_distinct_Lib.IntTypes.U1",
         "constructor_distinct_Lib.IntTypes.U16",
@@ -1816,14 +1671,11 @@
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
         "equation_Lib.IntTypes.v", "equation_Prims.nat",
-        "equation_Prims.nonzero", "equation_Prims.pos",
-        "equation_Rust_primitives.Integers.bits",
-        "equation_Rust_primitives.Integers.gte",
+        "equation_Prims.pos", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
         "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
-        "equation_Rust_primitives.Integers.mul",
         "equation_Rust_primitives.Integers.range",
         "equation_Rust_primitives.Integers.range_t",
         "equation_Rust_primitives.Integers.sz",
@@ -1837,13 +1689,12 @@
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_BarBar",
         "primitive_Prims.op_Division", "primitive_Prims.op_Equality",
-        "primitive_Prims.op_GreaterThanOrEqual",
         "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Modulus",
         "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
         "proj_equation_Spec.Kyber.Mkparams__v_VECTOR_U_COMPRESSION_FACTOR",
+        "proj_equation_Spec.Kyber.Mkparams__v_VECTOR_V_COMPRESSION_FACTOR",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
-        "refinement_interpretation_Tm_refine_0766302b68bb44ab7aff8c4d8be0b46f",
         "refinement_interpretation_Tm_refine_117f68d1f96cf8c1d2700eebe70084e5",
         "refinement_interpretation_Tm_refine_2684b5609986811a544b67627d3f8aa8",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
@@ -1857,7 +1708,9 @@
         "refinement_interpretation_Tm_refine_d8836626372248741cc7d6582bd93782",
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
+        "token_correspondence_Prims.pow2.fuel_instrumented",
         "typing_Rust_primitives.Integers.bits",
+        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE", "typing_Spec.Kyber.v_C1_SIZE",
@@ -1865,7 +1718,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "f369750674de059e3960adb604d9986e"
+      "82484985026d9366777478e8dd8e4486"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1879,7 +1732,7 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "e1f9b674fe7276c44e637accabe9de94"
+      "575789cef6b5d083062e8d8f714aa738"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1894,7 +1747,7 @@
         "typing_Rust_primitives.Hax.repeat"
       ],
       0,
-      "6be43a954b2777c2ed571efd8974d74d"
+      "52862c1247ac9e23b339260939eb6fd5"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
@@ -1908,20 +1761,80 @@
         "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5"
       ],
       0,
-      "edf96f52ab34ee74ca368a8e3ad21581"
+      "3d642ffcd10f41b93d9c22caff0a469f"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
       24,
       0,
       1,
-      [ "@query" ],
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.pos",
+        "refinement_interpretation_Tm_refine_123d3f2a6ebc208c38f7459190d0bed8",
+        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
+        "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5",
+        "refinement_interpretation_Tm_refine_fc6288bfb0b62302ffeb8e7a6904ca9c"
+      ],
       0,
-      "d6c2eaf50168b9728afc44dc34cfe127"
+      "8dd95e68061238f604c59c44622d0a12"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
       25,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "b2t_def", "bool_inversion",
+        "equation_Prims.pos", "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.v", "primitive_Prims.op_AmpAmp",
+        "primitive_Prims.op_Equality", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Modulus", "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
+        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "refinement_interpretation_Tm_refine_e33ef3e91a65929af022db19081d1ff5",
+        "typing_Rust_primitives.Integers.unsigned",
+        "typing_Rust_primitives.Integers.usize_inttype"
+      ],
+      0,
+      "935e6103b90edd0828f5a0da45159237"
+    ],
+    [
+      "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
+      26,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "b2t_def",
+        "equality_tok_Lib.IntTypes.U8@tok",
+        "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Integers.div",
+        "equation_Rust_primitives.Integers.int_t",
+        "equation_Rust_primitives.Integers.u8",
+        "primitive_Prims.op_LessThan", "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Tm_refine_0dee8cb03258a67c2f7ec66427696212",
+        "refinement_interpretation_Tm_refine_123d3f2a6ebc208c38f7459190d0bed8",
+        "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
+        "refinement_interpretation_Tm_refine_5f17bcf83b3fb372e54fdcee35f86e1f"
+      ],
+      0,
+      "c600a7928d3c84cc7b5e28f32ebdaa34"
+    ],
+    [
+      "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
+      27,
+      0,
+      1,
+      [ "@query" ],
+      0,
+      "f1a685029689c45400bcb149319ebc3c"
+    ],
+    [
+      "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
+      28,
       0,
       1,
       [
@@ -1952,11 +1865,11 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "a959f45fe15163be004f6136ed1e1b17"
+      "ee0760d0f0498432ef76a9f99387e13e"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      26,
+      29,
       0,
       1,
       [
@@ -1979,6 +1892,8 @@
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v", "equation_Spec.Kyber.params",
         "equation_Spec.Kyber.valid_params",
+        "function_token_typing_Rust_primitives.Integers.u8",
+        "function_token_typing_Rust_primitives.Integers.usize",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_BarBar", "primitive_Prims.op_Equality",
@@ -1988,7 +1903,7 @@
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Tm_refine_102e3e2ffae46eb544d4497226c91fb5",
         "refinement_interpretation_Tm_refine_123d3f2a6ebc208c38f7459190d0bed8",
-        "refinement_interpretation_Tm_refine_5793a44a550e77acd1321e067ab7e8d8",
+        "refinement_interpretation_Tm_refine_262d24f71da14fa26e5d80576ff35b6d",
         "refinement_interpretation_Tm_refine_5a8283617c705d6efb56e42ade090de5",
         "refinement_interpretation_Tm_refine_5f17bcf83b3fb372e54fdcee35f86e1f",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
@@ -1998,18 +1913,21 @@
         "refinement_interpretation_Tm_refine_e2e762f87b9fab3208089befe760c551",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15",
-        "typing_Lib.IntTypes.v", "typing_Rust_primitives.Integers.range",
+        "refinement_interpretation_Tm_refine_ebcd6d395397cc299dbfc3b9e02b1ea8",
+        "typing_FStar.Pervasives.Native.fst", "typing_Lib.IntTypes.v",
+        "typing_Rust_primitives.Arrays.t_Array",
+        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "6f96730ccd379939e20bb20be1746305"
+      "ac7873cbdc8374e42ccc8217640a0a12"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      27,
+      30,
       0,
       1,
       [
@@ -2036,11 +1954,11 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "5bd964c3fffb53a2309a5fb2b27472c0"
+      "0067354ef7c6cae4b30a6a886a951488"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      28,
+      31,
       0,
       1,
       [
@@ -2058,11 +1976,11 @@
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE"
       ],
       0,
-      "fcb90648828f91eea47ceac52af397ff"
+      "85df4b3819bd2eaf46a7ffe5ec430b08"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      29,
+      32,
       0,
       1,
       [
@@ -2080,11 +1998,11 @@
         "typing_Spec.Kyber.v_C1_BLOCK_SIZE"
       ],
       0,
-      "68d1d77e422eb06073da4568d99e6f9a"
+      "c11dd52721f90db9131a576fc8a3f46a"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      30,
+      33,
       0,
       1,
       [
@@ -2135,11 +2053,11 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "3606f0c6eec3af47b544be99f9d1d37b"
+      "c03c9818fc2cf737e6541b50c75eb5c7"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      31,
+      34,
       0,
       1,
       [
@@ -2160,11 +2078,11 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "34daa9f858e984e916fc18827fc40189"
+      "610739c89e73a2647f6fad677754a463"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      32,
+      35,
       0,
       1,
       [
@@ -2177,11 +2095,11 @@
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688"
       ],
       0,
-      "cd5b2f23ddbbf4734bad598dfd524114"
+      "71c1f748cb15682cc6d7af5effa79eec"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      33,
+      36,
       0,
       1,
       [
@@ -2192,16 +2110,16 @@
         "projection_inverse_FStar.Pervasives.Native.Mktuple2__1",
         "refinement_interpretation_Tm_refine_0dee8cb03258a67c2f7ec66427696212",
         "refinement_interpretation_Tm_refine_123d3f2a6ebc208c38f7459190d0bed8",
-        "refinement_interpretation_Tm_refine_5793a44a550e77acd1321e067ab7e8d8",
         "refinement_interpretation_Tm_refine_6c05b962c93007578b1f366e509d39dd",
-        "refinement_interpretation_Tm_refine_e2e762f87b9fab3208089befe760c551"
+        "refinement_interpretation_Tm_refine_e2e762f87b9fab3208089befe760c551",
+        "refinement_interpretation_Tm_refine_ebcd6d395397cc299dbfc3b9e02b1ea8"
       ],
       0,
-      "4e7a315725ae8039fcd8dba888be7de3"
+      "b961b68a304e03d87c3b1ca5c5670f7d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      34,
+      37,
       0,
       1,
       [
@@ -2224,11 +2142,11 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "fe98c7edf5ff81b0fff5e687dca2286b"
+      "c8f8312ead85e66ad2c1239df3b39cfa"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      35,
+      38,
       0,
       1,
       [
@@ -2240,11 +2158,11 @@
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178"
       ],
       0,
-      "10fdb4193715ee1d60744082a1119dd9"
+      "ce2d893fa2c9f7583b77b38cd5d7a203"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      36,
+      39,
       0,
       1,
       [
@@ -2263,11 +2181,11 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "815ae84cfbd97f414dcb6adb9368aa2c"
+      "130f9af2030693e0fa085e873808ddbf"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      37,
+      40,
       0,
       1,
       [
@@ -2275,19 +2193,19 @@
         "refinement_interpretation_Tm_refine_1780e3e3423d75725ae206b5df95a0a6"
       ],
       0,
-      "60486d7456385e993423a14e23da4f61"
+      "a4d4783e8adc34468067a701ac725079"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_then_decompress_u",
-      38,
+      41,
       0,
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_bb4a6fcea4effb263c4c9aec6fa6b2f7"
+        "refinement_interpretation_Tm_refine_93fb9e1bf1ae5c8bee720bcd2dbb8bc9"
       ],
       0,
-      "2517a242089b5054b5a9e1fe36a2228f"
+      "85be3caf409b5306422673189a8492d9"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key",
@@ -2299,79 +2217,62 @@
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
         "b2t_def", "bool_inversion", "bool_typing",
         "constructor_distinct_Lib.IntTypes.PUB",
-        "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S32",
-        "constructor_distinct_Lib.IntTypes.S8",
-        "constructor_distinct_Lib.IntTypes.U1",
-        "constructor_distinct_Lib.IntTypes.U16",
-        "constructor_distinct_Lib.IntTypes.U32",
-        "constructor_distinct_Lib.IntTypes.U64",
-        "constructor_distinct_Lib.IntTypes.U8",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.S32@tok",
-        "equality_tok_Lib.IntTypes.U32@tok",
-        "equality_tok_Lib.IntTypes.U64@tok",
         "equality_tok_Lib.IntTypes.U8@tok", "equation_FStar.Int.fits",
         "equation_FStar.Int.int_t", "equation_FStar.Int.max_int",
         "equation_FStar.Int.min_int", "equation_FStar.Int.size",
-        "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.byte_t",
-        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.v",
+        "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.minint",
+        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
+        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
         "equation_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Integers.add",
         "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.i32",
         "equation_Rust_primitives.Integers.int_t",
         "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.lte",
         "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
         "equation_Rust_primitives.Integers.range_t",
-        "equation_Rust_primitives.Integers.sub",
-        "equation_Rust_primitives.Integers.sz",
         "equation_Rust_primitives.Integers.u8",
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v", "equation_Spec.Kyber.params",
-        "equation_Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE",
-        "equation_Spec.Kyber.v_H_DIGEST_SIZE",
-        "equation_Spec.Kyber.v_SHARED_SECRET_SIZE",
         "equation_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
         "equation_Spec.Kyber.valid_params",
-        "function_token_typing_Lib.IntTypes.byte_t", "int_inversion",
-        "int_typing", "lemma_FStar.Int32.vu_inv",
+        "fuel_guarded_inversion_Spec.Kyber.params_", "int_typing",
+        "lemma_FStar.Int32.vu_inv",
         "lemma_Rust_primitives.Integers.pow2_values",
-        "lemma_Rust_primitives.Integers.v_mk_int_lemma",
-        "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
-        "primitive_Prims.op_BarBar", "primitive_Prims.op_LessThanOrEqual",
-        "primitive_Prims.op_Minus", "primitive_Prims.op_Subtraction",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_BarBar",
+        "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Subtraction",
+        "proj_equation_Spec.Kyber.Mkparams__v_RANK",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_5ad0b43cafdef0cff83117f75740fd8e",
+        "refinement_interpretation_Tm_refine_5c7a8ecadec3819edb097b2d5f1a6d30",
+        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
         "refinement_interpretation_Tm_refine_d8958f2388129bdac6873f4cda807036",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "typing_Rust_primitives.Arrays.length",
-        "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.lte",
-        "typing_Rust_primitives.Integers.minint",
-        "typing_Rust_primitives.Integers.range",
+        "typing_Lib.IntTypes.v",
+        "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
-        "typing_Spec.Kyber.v_SHARED_SECRET_SIZE",
         "typing_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.S32@tok",
-        "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
+        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
+        "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "7b1d9e649746b4d90049dae485843577"
+      "13485117687adeb15038d989eca5ace4"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key",
@@ -2381,8 +2282,7 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "b2t_def", "bool_inversion", "bool_typing",
-        "constructor_distinct_Lib.IntTypes.PUB",
+        "bool_inversion", "bool_typing",
         "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S32",
         "constructor_distinct_Lib.IntTypes.S8",
@@ -2392,34 +2292,23 @@
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
         "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok",
         "equality_tok_Lib.IntTypes.U8@tok",
-        "equation_Core.Ops.Index.f_index",
-        "equation_Core.Ops.Index.in_range",
-        "equation_Core.Ops.Range.impl_index_range_to_slice",
-        "equation_Core.Ops.op_String_Access", "equation_FStar.Int.fits",
-        "equation_FStar.Int.int_t", "equation_FStar.Int.max_int",
-        "equation_FStar.Int.min_int", "equation_FStar.Int.size",
-        "equation_FStar.Pervasives.Native.fst", "equation_Lib.IntTypes.bits",
-        "equation_Lib.IntTypes.byte_t", "equation_Lib.IntTypes.int_t",
-        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_t",
-        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
+        "equation_FStar.Pervasives.Native.fst",
+        "equation_FStar.UInt.max_int", "equation_Lib.IntTypes.bits",
+        "equation_Lib.IntTypes.byte_t", "equation_Lib.IntTypes.maxint",
+        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.range",
         "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
         "equation_Libcrux.Kem.Kyber.Constants.v_BITS_PER_RING_ELEMENT",
         "equation_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
         "equation_Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT",
-        "equation_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
-        "equation_Prims.nat", "equation_Prims.pos",
-        "equation_Rust_primitives.Arrays.length",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Arrays.t_Slice",
-        "equation_Rust_primitives.Integers.add",
         "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.div",
-        "equation_Rust_primitives.Integers.i32",
         "equation_Rust_primitives.Integers.int_t",
         "equation_Rust_primitives.Integers.inttype",
         "equation_Rust_primitives.Integers.max_usize",
@@ -2434,81 +2323,78 @@
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v", "equation_Spec.Kyber.params",
         "equation_Spec.Kyber.v_BYTES_PER_RING_ELEMENT",
-        "equation_Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE",
-        "equation_Spec.Kyber.v_H_DIGEST_SIZE",
         "equation_Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT",
-        "equation_Spec.Kyber.v_SHARED_SECRET_SIZE",
-        "equation_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
         "equation_Spec.Kyber.valid_params",
         "fuel_guarded_inversion_FStar.Pervasives.Native.tuple2",
         "fuel_guarded_inversion_Spec.Kyber.params_",
         "function_token_typing_Lib.IntTypes.byte_t",
         "function_token_typing_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
         "function_token_typing_Rust_primitives.Integers.usize",
-        "int_inversion", "int_typing",
-        "interpretation_Tm_abs_bc0ae3740b8cfb7a7b7143f61a432dbc",
-        "interpretation_Tm_abs_d9386b413ca358f7b51026b6adfc9221",
-        "interpretation_Tm_abs_efab849ed2b09d0ecb6a8d3f4d35f6d2",
-        "interpretation_Tm_abs_f8f66a0d95ba9bd5e7d77f6d4806c3ff",
-        "lemma_FStar.Int32.vu_inv", "lemma_FStar.Seq.Base.lemma_len_slice",
-        "lemma_Lib.IntTypes.v_injective",
+        "int_inversion", "int_typing", "lemma_Lib.IntTypes.v_injective",
         "lemma_Rust_primitives.Integers.mk_int_v_lemma",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_BarBar", "primitive_Prims.op_Division",
-        "primitive_Prims.op_Equality", "primitive_Prims.op_LessThan",
-        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Minus",
+        "primitive_Prims.op_Equality", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
-        "proj_equation_Core.Ops.Index.Mkt_Index_f_Output",
         "proj_equation_FStar.Pervasives.Native.Mktuple2__1",
         "proj_equation_Spec.Kyber.Mkparams__v_ETA2",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
-        "projection_inverse_Core.Ops.Index.Mkt_Index_f_Output",
-        "projection_inverse_Core.Ops.Index.Mkt_Index_f_index",
-        "projection_inverse_Core.Ops.Index.Mkt_Index_in_range",
-        "projection_inverse_Core.Ops.Range.Mkt_RangeTo_f_end",
         "projection_inverse_FStar.Pervasives.Native.Mktuple2__1",
         "projection_inverse_FStar.Pervasives.Native.Mktuple2__2",
         "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
-        "refinement_interpretation_Tm_refine_81407705a0828c2c1b1976675443f647",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
-        "refinement_interpretation_Tm_refine_bdca77408788da7ccbca06afe1286933",
-        "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
         "refinement_interpretation_Tm_refine_d8958f2388129bdac6873f4cda807036",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "token_correspondence_Core.Ops.Index.f_index",
-        "token_correspondence_Core.Ops.Index.in_range",
-        "token_correspondence_Core.Ops.op_String_Access",
-        "typing_FStar.Int.fits", "typing_FStar.Int32.v",
-        "typing_FStar.Pervasives.Native.__proj__Mktuple2__item___1",
-        "typing_FStar.Seq.Base.length", "typing_Lib.IntTypes.v",
+        "refinement_interpretation_Tm_refine_f370b7bc691b475fe8729dc511b40eb1",
+        "typing_FStar.Pervasives.Native.fst", "typing_FStar.Seq.Base.length",
+        "typing_Lib.IntTypes.v",
         "typing_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
-        "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "typing_Libcrux.Kem.Kyber.Ind_cpa.wfZero",
         "typing_Rust_primitives.Arrays.t_Array",
         "typing_Rust_primitives.Hax.repeat",
         "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.minint",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
         "typing_Spec.Kyber.v_BYTES_PER_RING_ELEMENT",
-        "typing_Spec.Kyber.v_SHARED_SECRET_SIZE",
-        "typing_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
+        "typing_Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT",
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
-        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
-        "typing_tok_Lib.IntTypes.U64@tok"
+        "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "cd56e7031712c60316df4ac3cb89ad7d"
+      "92559814b3dfbc87e886af464b92a581"
+    ],
+    [
+      "Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key",
+      3,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "equation_Rust_primitives.Integers.max_usize",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.usize",
+        "equation_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "refinement_interpretation_Tm_refine_d8958f2388129bdac6873f4cda807036",
+        "typing_Rust_primitives.Integers.usize_inttype",
+        "typing_Rust_primitives.Integers.v",
+        "typing_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE"
+      ],
+      0,
+      "b21c167b7aab7984641131f65595fcb5"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2558,7 +2444,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "c3b3ddf2fcc24c180604d8d688181a48"
+      "79202ae1eb1a068f4527118879bf17aa"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2572,7 +2458,7 @@
         "refinement_interpretation_Tm_refine_04d1a41375cb265cfbd8785ad22877c0"
       ],
       0,
-      "e12c93d4471c40153c7ebb2fc169c1bb"
+      "3cea211e8cd3f102d3f4d1c321931874"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2609,7 +2495,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "03e916fc52d2db8ccceddfb824002d65"
+      "19abc59e8d5964839d708f45ef8b91e9"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2663,7 +2549,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "1f7645ba7b1305136d9754d8e1637fdb"
+      "f55dfa18dedfe5eeaf8b25f9e72030f2"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2675,7 +2561,7 @@
         "projection_inverse_BoxBool_proj_0"
       ],
       0,
-      "bab5d9bbcbafd2ee4133325849ba38f9"
+      "d27ec3313777bf5fe65265ab0ca45907"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2684,7 +2570,7 @@
       1,
       [ "@query", "b2t_def" ],
       0,
-      "4f6a8d3f12e89b888df1132f3465facf"
+      "be6b77e22ca7526a96ebf86b43dd9591"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2721,7 +2607,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "23879d451a0b175208f949f679dcfe9f"
+      "e2bde24e142e52f4e97e966abd069bb0"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2744,9 +2630,9 @@
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
         "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.maxint",
-        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_t",
-        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
-        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
+        "equation_Lib.IntTypes.pub_int_t", "equation_Lib.IntTypes.pub_int_v",
+        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
+        "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.int_t",
@@ -2765,8 +2651,8 @@
         "equation_Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE",
         "equation_Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT",
         "equation_Spec.Kyber.valid_params",
-        "fuel_guarded_inversion_Spec.Kyber.params_", "int_inversion",
-        "int_typing", "lemma_Rust_primitives.Integers.mk_int_v_lemma",
+        "fuel_guarded_inversion_Spec.Kyber.params_", "int_typing",
+        "lemma_Rust_primitives.Integers.mk_int_v_lemma",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_BarBar",
@@ -2775,7 +2661,6 @@
         "primitive_Prims.op_Subtraction",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
-        "refinement_interpretation_Tm_refine_3c2321b362f4959d6b365af065dec404",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_80fe7060a0bda510a663a8a75b424076",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
@@ -2784,6 +2669,7 @@
         "refinement_interpretation_Tm_refine_b1f6a4be83d420945bc389bb80ce5827",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec",
+        "refinement_interpretation_Tm_refine_d8958f2388129bdac6873f4cda807036",
         "refinement_interpretation_Tm_refine_e0b16d74ee3644bd585df5e7938934c6",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
         "typing_Lib.IntTypes.v",
@@ -2793,11 +2679,12 @@
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
+        "typing_Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE",
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "e26cc7af6d3739a1eec35aef7e379fc2"
+      "27402fc30d3e98b5baeba80c654f2fae"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2809,7 +2696,7 @@
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec"
       ],
       0,
-      "4a192b3649fa328f29b613d81f949a69"
+      "62942767c23afe003d6e1a668fe854ec"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2824,7 +2711,7 @@
         "typing_Rust_primitives.Hax.repeat"
       ],
       0,
-      "4e6a2d9e764e5c39371523c522604585"
+      "2a15471d962418f533d1f9a897867454"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2836,16 +2723,20 @@
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec"
       ],
       0,
-      "0046d4d8bdc6ae72a8f290bb9456d83f"
+      "095d5620739e5c6077448c206f148b0a"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
       12,
       0,
       1,
-      [ "@query" ],
+      [
+        "@MaxIFuel_assumption", "@query", "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_2d6483de55b07bdeb440f10d9eb4d60c",
+        "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec"
+      ],
       0,
-      "99f46e9dd41c3c4dc3a8fac877698ead"
+      "66cafe69be086862e7149f1489dde66d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2853,32 +2744,20 @@
       0,
       1,
       [
-        "@MaxIFuel_assumption", "@query", "bool_inversion",
-        "equality_tok_Lib.IntTypes.U8@tok",
-        "equation_Rust_primitives.Arrays.t_Slice",
-        "equation_Rust_primitives.Integers.int_t",
+        "@MaxIFuel_assumption", "@query", "b2t_def", "bool_inversion",
         "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.u8",
         "equation_Rust_primitives.Integers.unsigned",
-        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_Division",
+        "equation_Rust_primitives.Integers.v", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_LessThanOrEqual",
         "projection_inverse_BoxBool_proj_0",
-        "projection_inverse_BoxInt_proj_0",
-        "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
-        "refinement_interpretation_Tm_refine_80fe7060a0bda510a663a8a75b424076",
-        "refinement_interpretation_Tm_refine_ac78135e7c4904c448ce333a35a13716",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
-        "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec",
-        "refinement_interpretation_Tm_refine_db58f5326219eb771889c7b12cd17f30",
-        "refinement_interpretation_Tm_refine_feb7e834582289fbd89a200bfbc499b9",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7711a6cf0fa82669498d284d1871a56b"
+      "9c3675434d62fda1568ca9a750c3ca20"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
@@ -2886,10 +2765,68 @@
       0,
       1,
       [
+        "@MaxIFuel_assumption", "@query", "b2t_def",
+        "equality_tok_Lib.IntTypes.U8@tok",
+        "equation_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
+        "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Integers.int_t",
+        "equation_Rust_primitives.Integers.u8",
+        "primitive_Prims.op_LessThan", "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Tm_refine_0dee8cb03258a67c2f7ec66427696212",
+        "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178"
+      ],
+      0,
+      "1b92ff28ce82d10f04aca44703bdc022"
+    ],
+    [
+      "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
+      15,
+      0,
+      1,
+      [ "@query" ],
+      0,
+      "c81ca7cb023adcae8001478f13fd0a99"
+    ],
+    [
+      "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
+      16,
+      0,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "bool_inversion",
+        "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.maxint",
+        "equation_Rust_primitives.Integers.minint",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.unsigned",
+        "equation_Rust_primitives.Integers.usize",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_0f9322c78299b04ab1d7d20014330e35",
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec",
+        "typing_Rust_primitives.Integers.unsigned",
+        "typing_Rust_primitives.Integers.usize_inttype",
+        "typing_Rust_primitives.Integers.v"
+      ],
+      0,
+      "9fd1822af18ae380c95bf741fb679fc9"
+    ],
+    [
+      "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
+      17,
+      0,
+      1,
+      [
         "@MaxIFuel_assumption", "@query", "bool_inversion", "bool_typing",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.U8@tok",
-        "equation_FStar.Pervasives.Native.fst", "equation_Lib.IntTypes.v",
+        "equation_FStar.Pervasives.Native.fst",
+        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.range",
+        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Arrays.t_Slice",
         "equation_Rust_primitives.Integers.int_t",
@@ -2905,6 +2842,8 @@
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v", "equation_Spec.Kyber.params",
         "equation_Spec.Kyber.valid_params",
+        "function_token_typing_Rust_primitives.Integers.u8",
+        "function_token_typing_Rust_primitives.Integers.usize",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_BarBar", "primitive_Prims.op_Division",
@@ -2915,6 +2854,7 @@
         "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
         "refinement_interpretation_Tm_refine_102e3e2ffae46eb544d4497226c91fb5",
         "refinement_interpretation_Tm_refine_80fe7060a0bda510a663a8a75b424076",
+        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_ac78135e7c4904c448ce333a35a13716",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
@@ -2922,18 +2862,22 @@
         "refinement_interpretation_Tm_refine_db58f5326219eb771889c7b12cd17f30",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
         "refinement_interpretation_Tm_refine_e9fd75cceaaeb3c4516e200cfb4bee15",
-        "refinement_interpretation_Tm_refine_feb7e834582289fbd89a200bfbc499b9",
+        "refinement_interpretation_Tm_refine_f370b7bc691b475fe8729dc511b40eb1",
+        "typing_FStar.Pervasives.Native.fst", "typing_Lib.IntTypes.v",
+        "typing_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
+        "typing_Rust_primitives.Arrays.t_Array",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
-        "typing_Rust_primitives.Integers.v", "typing_Spec.Kyber.valid_params"
+        "typing_Rust_primitives.Integers.v",
+        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "97e04257863a5862070c95b5a890120a"
+      "715f2c52f9d69ae11d406c577dbc9671"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
-      15,
+      18,
       0,
       1,
       [
@@ -2952,33 +2896,35 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "bee8a9764048cb152bab526373531979"
+      "692bf60083a475583077443056d7d756"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
-      16,
+      19,
       0,
       1,
       [
-        "@MaxIFuel_assumption", "@query", "equality_tok_Lib.IntTypes.U8@tok",
-        "equation_Rust_primitives.Arrays.t_Slice",
-        "equation_Rust_primitives.Integers.int_t",
-        "equation_Rust_primitives.Integers.u8",
-        "primitive_Prims.op_Division", "projection_inverse_BoxInt_proj_0",
-        "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
+        "@MaxIFuel_assumption", "@query",
+        "equation_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
+        "equation_Rust_primitives.Integers.max_usize",
+        "equation_Rust_primitives.Integers.range",
+        "equation_Rust_primitives.Integers.range_t",
+        "equation_Rust_primitives.Integers.usize",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
+        "projection_inverse_BoxBool_proj_0",
         "refinement_interpretation_Tm_refine_2d6483de55b07bdeb440f10d9eb4d60c",
-        "refinement_interpretation_Tm_refine_80fe7060a0bda510a663a8a75b424076",
-        "refinement_interpretation_Tm_refine_ac78135e7c4904c448ce333a35a13716",
-        "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec",
-        "refinement_interpretation_Tm_refine_db58f5326219eb771889c7b12cd17f30",
-        "refinement_interpretation_Tm_refine_feb7e834582289fbd89a200bfbc499b9"
+        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
+        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "typing_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
+        "typing_Rust_primitives.Integers.usize_inttype",
+        "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "17bc19c669a0bc9e1f37625fad9f3364"
+      "fb0ab767d4984db2cb5f2ba5e71cbcf6"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
-      17,
+      20,
       0,
       1,
       [
@@ -2994,11 +2940,11 @@
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec"
       ],
       0,
-      "23df95e25d15ad50e35f17268035ce2b"
+      "ddbe091422beb92b40743b251d3a0871"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
-      18,
+      21,
       0,
       1,
       [
@@ -3017,14 +2963,14 @@
         "refinement_interpretation_Tm_refine_ac78135e7c4904c448ce333a35a13716",
         "refinement_interpretation_Tm_refine_d0dc20bdedceec60adaee00b6c4072ec",
         "refinement_interpretation_Tm_refine_db58f5326219eb771889c7b12cd17f30",
-        "refinement_interpretation_Tm_refine_feb7e834582289fbd89a200bfbc499b9"
+        "refinement_interpretation_Tm_refine_f370b7bc691b475fe8729dc511b40eb1"
       ],
       0,
-      "88696527b5359a18c6f60f96f4d06a40"
+      "d698069577e30469249bbcf8aa09be68"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
-      19,
+      22,
       0,
       1,
       [
@@ -3043,11 +2989,11 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "83324114da879bb7a37755c35bedd76e"
+      "489d98a92da8926cbc382f3978d6843b"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
-      20,
+      23,
       0,
       1,
       [
@@ -3055,19 +3001,19 @@
         "refinement_interpretation_Tm_refine_91aef11d36a5ef4d927e7ba47e560947"
       ],
       0,
-      "5afeb1d03dd2ad2720b59def1a48d008"
+      "5d64dc5d1b18c9169fe3b7bd30d9d01d"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.deserialize_secret_key",
-      21,
+      24,
       0,
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "refinement_interpretation_Tm_refine_584f0eb673831c31e84c27dd07e5ce0a"
+        "refinement_interpretation_Tm_refine_309460ec23e8baa46fd34dc9044dc979"
       ],
       0,
-      "66855dde4b52897477374f1b0f80f87d"
+      "57c86facbfa119e9deeee755da8ee7ca"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.decrypt",
@@ -3127,7 +3073,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "cd312079bb9459c6faa686a30cbba0b5"
+      "af7162f47608728fd9cf2005bd743c2a"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.decrypt",
@@ -3137,7 +3083,7 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "b2t_def", "bool_inversion", "bool_typing",
+        "bool_inversion", "bool_typing",
         "constructor_distinct_Lib.IntTypes.PUB",
         "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S32",
@@ -3160,10 +3106,8 @@
         "equation_FStar.Int.int_t", "equation_FStar.Int.max_int",
         "equation_FStar.Int.min_int", "equation_FStar.Int.size",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.byte_t",
-        "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.minint",
-        "equation_Lib.IntTypes.pub_int_t", "equation_Lib.IntTypes.pub_int_v",
-        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
-        "equation_Lib.IntTypes.v",
+        "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.pub_int_t",
+        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO",
         "equation_Libcrux.Kem.Kyber.Arithmetic.pow2_31",
         "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
@@ -3195,8 +3139,7 @@
         "equation_Spec.Kyber.valid_params",
         "fuel_guarded_inversion_Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b",
         "fuel_guarded_inversion_Spec.Kyber.params_",
-        "function_token_typing_Lib.IntTypes.byte_t",
-        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
+        "function_token_typing_Lib.IntTypes.byte_t", "int_inversion",
         "int_typing",
         "interpretation_Tm_abs_0956da15530cc0f64a16a4548bf6da82",
         "interpretation_Tm_abs_0cb90ffdaac009e5428b856a53fc2c98",
@@ -3204,8 +3147,7 @@
         "interpretation_Tm_abs_bc0ae3740b8cfb7a7b7143f61a432dbc",
         "interpretation_Tm_abs_c383c10040deb921f8edacb536247c52",
         "interpretation_Tm_abs_efab849ed2b09d0ecb6a8d3f4d35f6d2",
-        "l_and-interp", "lemma_FStar.Int32.vu_inv",
-        "lemma_FStar.Seq.Base.lemma_len_slice",
+        "l_and-interp", "lemma_FStar.Seq.Base.lemma_len_slice",
         "lemma_FStar.Seq.Properties.slice_is_empty",
         "lemma_FStar.Seq.Properties.slice_length",
         "lemma_Rust_primitives.Integers.pow2_values",
@@ -3233,7 +3175,6 @@
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
         "refinement_interpretation_Tm_refine_81407705a0828c2c1b1976675443f647",
-        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_b361ba8089a6e963921008d537e799a1",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
@@ -3244,27 +3185,22 @@
         "token_correspondence_Core.Ops.Index.f_index",
         "token_correspondence_Core.Ops.Index.in_range",
         "token_correspondence_Core.Ops.op_String_Access",
-        "typing_FStar.Int.fits", "typing_FStar.Int32.v",
-        "typing_FStar.Seq.Base.length", "typing_FStar.Seq.Base.slice",
-        "typing_Lib.IntTypes.v",
+        "typing_FStar.Int32.v", "typing_FStar.Seq.Base.length",
         "typing_Libcrux.Kem.Kyber.Arithmetic.cast_poly_b",
         "typing_Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO",
         "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "typing_Libcrux.Kem.Kyber.Ind_cpa.wfZero", "typing_Prims.pow2",
         "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.minint",
-        "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v", "typing_Spec.Kyber.v_C1_SIZE",
         "typing_Spec.Kyber.v_C2_SIZE",
         "typing_Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
-        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
-        "typing_tok_Lib.IntTypes.U64@tok"
+        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.S32@tok",
+        "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "10c59a6053c9799fa9fbfd1b55a0b71c"
+      "53121e8ba3512a1198761f8261f3cded"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.encrypt",
@@ -3335,7 +3271,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "891607c78ff6864f4bc4ed666a25683e"
+      "ce6866cbf47b421d3fd7c761e0f067aa"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.encrypt",
@@ -3345,6 +3281,9 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "FStar.Sealed_interpretation_Tm_arrow_6980332764c4493a7b0df5c02f7aefbe",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565",
+        "Rust_primitives_interpretation_Tm_arrow_0dc9533934fadb6b25c05502d946f2d2",
         "b2t_def", "bool_inversion", "bool_typing",
         "constructor_distinct_Lib.IntTypes.PUB",
         "constructor_distinct_Lib.IntTypes.S16",
@@ -3355,7 +3294,9 @@
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
-        "data_elim_FStar.Pervasives.Native.Mktuple2",
+        "data_elim_FStar.Pervasives.Native.Mktuple3",
+        "data_elim_Libcrux.Kem.Kyber.Arithmetic.Mkt_PolynomialRingElement_b",
+        "data_elim_Rust_primitives.Mkunsize_tc",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
@@ -3365,11 +3306,13 @@
         "equation_Core.Ops.Index.f_index",
         "equation_Core.Ops.Index.in_range",
         "equation_Core.Ops.Range.impl_index_range_from_slice",
+        "equation_Core.Ops.Range.impl_index_range_to_slice",
         "equation_Core.Ops.Range.impl_range_from_index_array",
         "equation_Core.Ops.op_String_Access",
         "equation_Core.Slice.impl__copy_from_slice",
         "equation_Core.Slice.impl__len", "equation_FStar.Int.fits",
-        "equation_FStar.Int.int_t", "equation_FStar.Int.size",
+        "equation_FStar.Int.int_t", "equation_FStar.Int.max_int",
+        "equation_FStar.Int.min_int", "equation_FStar.Int.size",
         "equation_FStar.UInt.fits", "equation_FStar.UInt.max_int",
         "equation_FStar.UInt.min_int", "equation_FStar.UInt.size",
         "equation_FStar.UInt.uint_t", "equation_Lib.IntTypes.bits",
@@ -3378,13 +3321,14 @@
         "equation_Lib.IntTypes.pub_int_t", "equation_Lib.IntTypes.pub_int_v",
         "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
         "equation_Lib.IntTypes.v",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO",
         "equation_Libcrux.Kem.Kyber.Arithmetic.pow2_31",
         "equation_Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
         "equation_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
-        "equation_Libcrux.Kem.Kyber.Ind_cpa.wfZero", "equation_Prims.eqtype",
-        "equation_Prims.nat", "equation_Prims.pos",
+        "equation_Libcrux.Kem.Kyber.Ind_cpa.compress_then_serialize_u",
+        "equation_Libcrux.Kem.Kyber.Ind_cpa.into_padded_array",
+        "equation_Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
+        "equation_Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd_then_ntt",
+        "equation_Prims.eqtype", "equation_Prims.nat", "equation_Prims.pos",
         "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.slice",
         "equation_Rust_primitives.Arrays.split",
@@ -3402,7 +3346,6 @@
         "equation_Rust_primitives.Integers.mul",
         "equation_Rust_primitives.Integers.range",
         "equation_Rust_primitives.Integers.range_t",
-        "equation_Rust_primitives.Integers.sub",
         "equation_Rust_primitives.Integers.sz",
         "equation_Rust_primitives.Integers.u8",
         "equation_Rust_primitives.Integers.u8_inttype",
@@ -3424,16 +3367,17 @@
         "fuel_guarded_inversion_Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b",
         "fuel_guarded_inversion_Spec.Kyber.params_",
         "function_token_typing_Lib.IntTypes.byte_t",
-        "function_token_typing_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
-        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
-        "int_typing",
+        "function_token_typing_Prims.__cache_version_number__",
+        "int_inversion", "int_typing",
         "interpretation_Tm_abs_0cb90ffdaac009e5428b856a53fc2c98",
         "interpretation_Tm_abs_4bb6412701dfeac9ce6df5500b93361d",
         "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
         "interpretation_Tm_abs_bc0ae3740b8cfb7a7b7143f61a432dbc",
         "interpretation_Tm_abs_c383c10040deb921f8edacb536247c52",
+        "interpretation_Tm_abs_d9386b413ca358f7b51026b6adfc9221",
         "interpretation_Tm_abs_efab849ed2b09d0ecb6a8d3f4d35f6d2",
         "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
+        "interpretation_Tm_abs_f8f66a0d95ba9bd5e7d77f6d4806c3ff",
         "l_and-interp", "lemma_FStar.Seq.Base.lemma_create_len",
         "lemma_FStar.Seq.Base.lemma_eq_elim",
         "lemma_FStar.Seq.Base.lemma_eq_intro",
@@ -3452,11 +3396,12 @@
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_BarBar", "primitive_Prims.op_Equality",
         "primitive_Prims.op_GreaterThanOrEqual",
-        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Multiply",
-        "primitive_Prims.op_Subtraction",
+        "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
         "proj_equation_Core.Ops.Index.Mkt_Index_f_Output",
         "proj_equation_Core.Ops.Index.Mkt_Index_in_range",
         "proj_equation_Core.Ops.Range.Mkt_RangeFrom_f_start",
+        "proj_equation_Core.Ops.Range.Mkt_Range_f_end",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Core.Ops.Index.Mkt_Index_f_Output",
@@ -3464,6 +3409,8 @@
         "projection_inverse_Core.Ops.Index.Mkt_Index_in_range",
         "projection_inverse_Core.Ops.Range.Mkt_RangeFrom_f_start",
         "projection_inverse_Core.Ops.Range.Mkt_RangeTo_f_end",
+        "projection_inverse_Core.Ops.Range.Mkt_Range_f_end",
+        "projection_inverse_Core.Ops.Range.Mkt_Range_f_start",
         "projection_inverse_FStar.Pervasives.Native.Mktuple2__1",
         "projection_inverse_FStar.Pervasives.Native.Mktuple2__2",
         "projection_inverse_FStar.Pervasives.Native.Mktuple3__1",
@@ -3471,31 +3418,36 @@
         "projection_inverse_FStar.Pervasives.Native.Mktuple3__3",
         "projection_inverse_Rust_primitives.Mkunsize_tc_unsize",
         "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
-        "refinement_interpretation_Tm_refine_0a1fc74b53c69a41eceb9d7368f73b62",
         "refinement_interpretation_Tm_refine_0e1d8acba93710c332370f20ed925486",
-        "refinement_interpretation_Tm_refine_1d1f1ecbbef37067035a7c7f276e4e21",
         "refinement_interpretation_Tm_refine_2684b5609986811a544b67627d3f8aa8",
         "refinement_interpretation_Tm_refine_35a0739c434508f48d0bb1d5cd5df9e8",
         "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
-        "refinement_interpretation_Tm_refine_4aa066355e9384aa98eb2ace9b0d012f",
         "refinement_interpretation_Tm_refine_4c253f027b5d09b5555e1c4f903eeb5c",
+        "refinement_interpretation_Tm_refine_4c7a3e67d6e49e55853e46baa0a96b49",
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_6105c7ce460aee61a34bed3fa4b1ad68",
+        "refinement_interpretation_Tm_refine_6429d8e304d352f05a83669146e6cacf",
+        "refinement_interpretation_Tm_refine_6922a3ea497d18a6298404694de57096",
+        "refinement_interpretation_Tm_refine_769d89d2adb5ba14177e537ed06ba341",
         "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
+        "refinement_interpretation_Tm_refine_7ab4c08e82642b7b946f13776623927e",
         "refinement_interpretation_Tm_refine_81407705a0828c2c1b1976675443f647",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
+        "refinement_interpretation_Tm_refine_869cd00b9b08aea538452a3807ad489e",
+        "refinement_interpretation_Tm_refine_943a9db6fa247c14bae589c16a6247db",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_ac201cf927190d39c033967b63cb957b",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "refinement_interpretation_Tm_refine_bf333b56f611b2f0fd0272ff3b9465b1",
         "refinement_interpretation_Tm_refine_c1424615841f28cac7fc34e92b7ff33c",
         "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
-        "refinement_interpretation_Tm_refine_d26fa327c2c1ff0a9633e2624291cd2a",
         "refinement_interpretation_Tm_refine_d3d07693cd71377864ef84dc97d10ec1",
         "refinement_interpretation_Tm_refine_d83f8da8ef6c1cb9f71d1465c1bb1c55",
         "refinement_interpretation_Tm_refine_d8958f2388129bdac6873f4cda807036",
+        "refinement_interpretation_Tm_refine_df39062c63978e2744bc40e21040ce6c",
         "refinement_interpretation_Tm_refine_df81b3f17797c6f405c1dbb191651292",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "refinement_interpretation_Tm_refine_ed95cbcc65ce70ece9e84ad5f1db743e",
         "refinement_interpretation_Tm_refine_f13070840248fced9d9d60d77bdae3ec",
         "token_correspondence_Core.Ops.Index.__proj__Mkt_Index__item__in_range",
         "token_correspondence_Core.Ops.Index.f_index",
@@ -3504,32 +3456,39 @@
         "token_correspondence_Rust_primitives.unsize",
         "typing_FStar.Int32.v", "typing_FStar.Seq.Base.append",
         "typing_FStar.Seq.Base.create", "typing_FStar.Seq.Base.length",
-        "typing_FStar.Seq.Base.upd", "typing_FStar.UInt32.t",
-        "typing_FStar.UInt64.t", "typing_Lib.IntTypes.v",
-        "typing_Libcrux.Kem.Kyber.Arithmetic.cast_poly_b",
-        "typing_Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO",
+        "typing_FStar.UInt32.t", "typing_FStar.UInt64.t",
+        "typing_Lib.IntTypes.v",
         "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
-        "typing_Libcrux.Kem.Kyber.Ind_cpa.wfZero", "typing_Prims.pow2",
-        "typing_Rust_primitives.Arrays.length",
-        "typing_Rust_primitives.Arrays.slice",
-        "typing_Rust_primitives.Arrays.split",
+        "typing_Libcrux.Kem.Kyber.Hash_functions.v_PRF",
+        "typing_Libcrux.Kem.Kyber.Ind_cpa.compress_then_serialize_u",
+        "typing_Libcrux.Kem.Kyber.Ind_cpa.into_padded_array",
+        "typing_Libcrux.Kem.Kyber.Ind_cpa.sample_vector_cbd",
+        "typing_Libcrux.Kem.Kyber.Matrix.compute_vector_u",
+        "typing_Libcrux.Kem.Kyber.Sampling.sample_from_binomial_distribution",
+        "typing_Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message",
+        "typing_Prims.pow2",
+        "typing_Rust_primitives.Hax.Monomorphized_update_at.update_at_usize",
         "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.minint",
-        "typing_Rust_primitives.Integers.mk_int",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.sz",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
-        "typing_Rust_primitives.Integers.v", "typing_Spec.Kyber.v_C1_SIZE",
-        "typing_Spec.Kyber.v_C2_SIZE",
+        "typing_Rust_primitives.Integers.v",
+        "typing_Rust_primitives.array_to_slice_unsize",
+        "typing_Spec.Kyber.v_C1_SIZE", "typing_Spec.Kyber.v_C2_SIZE",
         "typing_Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE",
+        "typing_Spec.Kyber.v_ETA2_RANDOMNESS_SIZE",
+        "typing_Spec.Kyber.v_SHARED_SECRET_SIZE",
         "typing_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
-        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
-        "typing_tok_Lib.IntTypes.U64@tok", "typing_tok_Lib.IntTypes.U8@tok"
+        "typing_Spec.Kyber.valid_params",
+        "typing_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
+        "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok",
+        "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok",
+        "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "07c194699d4bacf1144d95dab7ac9980"
+      "a48ba4bb0f9c276daa8732414aac5b96"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.encrypt",
@@ -3539,9 +3498,7 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "b2t_def", "bool_inversion", "bool_typing",
-        "constructor_distinct_Lib.IntTypes.PUB",
-        "constructor_distinct_Lib.IntTypes.S16",
+        "bool_inversion", "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S32",
         "constructor_distinct_Lib.IntTypes.S8",
         "constructor_distinct_Lib.IntTypes.U1",
@@ -3549,179 +3506,27 @@
         "constructor_distinct_Lib.IntTypes.U32",
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
-        "data_elim_FStar.Pervasives.Native.Mktuple2",
-        "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
-        "equality_tok_Lib.IntTypes.U64@tok",
-        "equality_tok_Lib.IntTypes.U8@tok",
-        "equation_Core.Array.impl_23__as_slice",
-        "equation_Core.Ops.Index.f_index",
-        "equation_Core.Ops.Index.in_range",
-        "equation_Core.Ops.Range.impl_index_range_from_slice",
-        "equation_Core.Ops.Range.impl_range_from_index_array",
-        "equation_Core.Ops.op_String_Access",
-        "equation_Core.Slice.impl__copy_from_slice",
-        "equation_Core.Slice.impl__len", "equation_FStar.Int.fits",
-        "equation_FStar.Int.int_t", "equation_FStar.Int.size",
-        "equation_FStar.UInt.fits", "equation_FStar.UInt.max_int",
-        "equation_FStar.UInt.min_int", "equation_FStar.UInt.size",
-        "equation_FStar.UInt.uint_t", "equation_Lib.IntTypes.bits",
-        "equation_Lib.IntTypes.byte_t", "equation_Lib.IntTypes.int_t",
-        "equation_Lib.IntTypes.maxint", "equation_Lib.IntTypes.minint",
-        "equation_Lib.IntTypes.pub_int_t", "equation_Lib.IntTypes.pub_int_v",
-        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
-        "equation_Lib.IntTypes.v",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.pow2_31",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b",
-        "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
-        "equation_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
-        "equation_Libcrux.Kem.Kyber.Ind_cpa.wfZero", "equation_Prims.eqtype",
-        "equation_Prims.nat", "equation_Prims.pos",
-        "equation_Rust_primitives.Arrays.length",
-        "equation_Rust_primitives.Arrays.slice",
-        "equation_Rust_primitives.Arrays.split",
-        "equation_Rust_primitives.Arrays.t_Array",
-        "equation_Rust_primitives.Arrays.t_Slice",
-        "equation_Rust_primitives.Integers.add",
-        "equation_Rust_primitives.Integers.bits",
-        "equation_Rust_primitives.Integers.i32",
-        "equation_Rust_primitives.Integers.int_t",
+        "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.lte",
-        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
-        "equation_Rust_primitives.Integers.mul",
         "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.range_t",
-        "equation_Rust_primitives.Integers.sub",
-        "equation_Rust_primitives.Integers.sz",
-        "equation_Rust_primitives.Integers.u8",
-        "equation_Rust_primitives.Integers.u8_inttype",
         "equation_Rust_primitives.Integers.unsigned",
-        "equation_Rust_primitives.Integers.usize",
-        "equation_Rust_primitives.Integers.v",
-        "equation_Rust_primitives.array_to_slice_unsize",
-        "equation_Rust_primitives.unsize",
-        "equation_Spec.Kyber.ind_cpa_encrypt", "equation_Spec.Kyber.params",
-        "equation_Spec.Kyber.sample_poly_cbd",
-        "equation_Spec.Kyber.v_C1_SIZE", "equation_Spec.Kyber.v_C2_SIZE",
-        "equation_Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE",
-        "equation_Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE",
-        "equation_Spec.Kyber.v_ETA2_RANDOMNESS_SIZE",
-        "equation_Spec.Kyber.v_H_DIGEST_SIZE",
-        "equation_Spec.Kyber.v_SHARED_SECRET_SIZE",
-        "equation_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
-        "equation_Spec.Kyber.valid_params",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b",
-        "fuel_guarded_inversion_Spec.Kyber.params_",
-        "function_token_typing_Lib.IntTypes.byte_t",
-        "function_token_typing_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
-        "function_token_typing_Rust_primitives.Integers.u8", "int_inversion",
-        "int_typing",
-        "interpretation_Tm_abs_0cb90ffdaac009e5428b856a53fc2c98",
-        "interpretation_Tm_abs_4bb6412701dfeac9ce6df5500b93361d",
-        "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
-        "interpretation_Tm_abs_bc0ae3740b8cfb7a7b7143f61a432dbc",
-        "interpretation_Tm_abs_c383c10040deb921f8edacb536247c52",
-        "interpretation_Tm_abs_efab849ed2b09d0ecb6a8d3f4d35f6d2",
-        "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
-        "l_and-interp", "lemma_FStar.Seq.Base.lemma_create_len",
-        "lemma_FStar.Seq.Base.lemma_eq_elim",
-        "lemma_FStar.Seq.Base.lemma_eq_intro",
-        "lemma_FStar.Seq.Base.lemma_index_app1",
-        "lemma_FStar.Seq.Base.lemma_index_app2",
-        "lemma_FStar.Seq.Base.lemma_index_create",
-        "lemma_FStar.Seq.Base.lemma_index_slice",
-        "lemma_FStar.Seq.Base.lemma_index_upd1",
-        "lemma_FStar.Seq.Base.lemma_index_upd2",
-        "lemma_FStar.Seq.Base.lemma_len_append",
-        "lemma_FStar.Seq.Base.lemma_len_slice", "lemma_FStar.UInt8.vu_inv",
-        "lemma_Lib.IntTypes.pow2_2",
-        "lemma_Rust_primitives.Integers.mk_int_v_lemma",
         "lemma_Rust_primitives.Integers.pow2_values",
-        "lemma_Rust_primitives.Integers.v_mk_int_lemma",
-        "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
-        "primitive_Prims.op_BarBar", "primitive_Prims.op_Equality",
-        "primitive_Prims.op_GreaterThanOrEqual",
-        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Multiply",
+        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
-        "proj_equation_Core.Ops.Index.Mkt_Index_f_Output",
-        "proj_equation_Core.Ops.Index.Mkt_Index_in_range",
-        "proj_equation_Core.Ops.Range.Mkt_RangeFrom_f_start",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
-        "projection_inverse_Core.Ops.Index.Mkt_Index_f_Output",
-        "projection_inverse_Core.Ops.Index.Mkt_Index_f_index",
-        "projection_inverse_Core.Ops.Index.Mkt_Index_in_range",
-        "projection_inverse_Core.Ops.Range.Mkt_RangeFrom_f_start",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple2__1",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple2__2",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__1",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__2",
-        "projection_inverse_FStar.Pervasives.Native.Mktuple3__3",
-        "projection_inverse_Rust_primitives.Mkunsize_tc_unsize",
-        "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
-        "refinement_interpretation_Tm_refine_0a1fc74b53c69a41eceb9d7368f73b62",
-        "refinement_interpretation_Tm_refine_0e1d8acba93710c332370f20ed925486",
-        "refinement_interpretation_Tm_refine_1d1f1ecbbef37067035a7c7f276e4e21",
-        "refinement_interpretation_Tm_refine_2684b5609986811a544b67627d3f8aa8",
-        "refinement_interpretation_Tm_refine_35a0739c434508f48d0bb1d5cd5df9e8",
-        "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
-        "refinement_interpretation_Tm_refine_4aa066355e9384aa98eb2ace9b0d012f",
-        "refinement_interpretation_Tm_refine_4c253f027b5d09b5555e1c4f903eeb5c",
-        "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
-        "refinement_interpretation_Tm_refine_81407705a0828c2c1b1976675443f647",
-        "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
-        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "refinement_interpretation_Tm_refine_ac201cf927190d39c033967b63cb957b",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
-        "refinement_interpretation_Tm_refine_c1424615841f28cac7fc34e92b7ff33c",
-        "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
-        "refinement_interpretation_Tm_refine_d26fa327c2c1ff0a9633e2624291cd2a",
-        "refinement_interpretation_Tm_refine_d3d07693cd71377864ef84dc97d10ec1",
-        "refinement_interpretation_Tm_refine_d83f8da8ef6c1cb9f71d1465c1bb1c55",
-        "refinement_interpretation_Tm_refine_d8958f2388129bdac6873f4cda807036",
-        "refinement_interpretation_Tm_refine_df81b3f17797c6f405c1dbb191651292",
-        "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
-        "refinement_interpretation_Tm_refine_ed95cbcc65ce70ece9e84ad5f1db743e",
-        "refinement_interpretation_Tm_refine_f13070840248fced9d9d60d77bdae3ec",
-        "token_correspondence_Core.Ops.Index.__proj__Mkt_Index__item__in_range",
-        "token_correspondence_Core.Ops.Index.f_index",
-        "token_correspondence_Core.Ops.Index.in_range",
-        "token_correspondence_Core.Ops.op_String_Access",
-        "token_correspondence_Rust_primitives.unsize",
-        "typing_FStar.Int32.v", "typing_FStar.Seq.Base.append",
-        "typing_FStar.Seq.Base.create", "typing_FStar.Seq.Base.length",
-        "typing_FStar.Seq.Base.upd", "typing_FStar.UInt32.t",
-        "typing_FStar.UInt64.t", "typing_Lib.IntTypes.v",
-        "typing_Libcrux.Kem.Kyber.Arithmetic.cast_poly_b",
-        "typing_Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO",
-        "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
-        "typing_Libcrux.Kem.Kyber.Ind_cpa.wfZero", "typing_Prims.pow2",
-        "typing_Rust_primitives.Arrays.slice",
-        "typing_Rust_primitives.Arrays.split",
         "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.minint",
-        "typing_Rust_primitives.Integers.mk_int",
-        "typing_Rust_primitives.Integers.range",
-        "typing_Rust_primitives.Integers.sz",
         "typing_Rust_primitives.Integers.unsigned",
-        "typing_Rust_primitives.Integers.usize_inttype",
-        "typing_Rust_primitives.Integers.v", "typing_Spec.Kyber.v_C1_SIZE",
-        "typing_Spec.Kyber.v_C2_SIZE",
-        "typing_Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE",
-        "typing_Spec.Kyber.v_T_AS_NTT_ENCODED_SIZE",
-        "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
-        "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
-        "typing_tok_Lib.IntTypes.U64@tok", "typing_tok_Lib.IntTypes.U8@tok"
+        "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "101a7ae8a434449d0f371ac5dacf36b4"
+      "9dba11cdb7f09b3c9cd7188470743cfd"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_secret_key",
@@ -3775,7 +3580,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "ce0d5da893bb2976139844c021b75cca"
+      "ce3358d2a9c89ee9e43bbdc1669e5759"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_secret_key",
@@ -3785,7 +3590,8 @@
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "b2t_def", "bool_inversion", "bool_typing",
+        "Prims_pretyping_ae567c2fb75be05905677af440075565", "b2t_def",
+        "bool_inversion", "bool_typing",
         "constructor_distinct_Lib.IntTypes.PUB",
         "constructor_distinct_Lib.IntTypes.S16",
         "constructor_distinct_Lib.IntTypes.S32",
@@ -3800,11 +3606,9 @@
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok",
         "equality_tok_Lib.IntTypes.U8@tok",
-        "equation_Core.Ops.Index.f_index",
         "equation_Core.Ops.Index.in_range",
         "equation_Core.Ops.Range.impl_index_range_slice",
         "equation_Core.Ops.Range.impl_range_index_array",
-        "equation_Core.Ops.op_String_Access",
         "equation_Core.Slice.impl__copy_from_slice",
         "equation_FStar.Int.fits", "equation_FStar.Int.int_t",
         "equation_FStar.Int.max_int", "equation_FStar.Int.min_int",
@@ -3813,10 +3617,9 @@
         "equation_FStar.UInt.min_int", "equation_FStar.UInt.size",
         "equation_FStar.UInt.uint_t", "equation_Lib.IntTypes.bits",
         "equation_Lib.IntTypes.byte_t", "equation_Lib.IntTypes.int_t",
-        "equation_Lib.IntTypes.maxint", "equation_Lib.IntTypes.minint",
-        "equation_Lib.IntTypes.pub_int_t", "equation_Lib.IntTypes.pub_int_v",
-        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
-        "equation_Lib.IntTypes.v",
+        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_t",
+        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
+        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
         "equation_Libcrux.Kem.Kyber.Constants.v_BITS_PER_RING_ELEMENT",
         "equation_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
@@ -3832,7 +3635,6 @@
         "equation_Rust_primitives.Integers.i32",
         "equation_Rust_primitives.Integers.int_t",
         "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.lt",
         "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
@@ -3851,18 +3653,18 @@
         "equation_Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT",
         "equation_Spec.Kyber.valid_params",
         "fuel_guarded_inversion_FStar.Pervasives.Native.tuple2",
-        "function_token_typing_Lib.IntTypes.byte_t", "int_inversion",
-        "int_typing",
+        "fuel_guarded_inversion_Spec.Kyber.params_",
+        "function_token_typing_Lib.IntTypes.byte_t",
+        "function_token_typing_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
+        "function_token_typing_Prims.__cache_version_number__",
+        "int_inversion", "int_typing",
         "interpretation_Tm_abs_3fed82ae903d42e820576b470eb7bc5b",
-        "interpretation_Tm_abs_572e0e093c6cc78cd0d8e5493e04bc44",
         "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
-        "interpretation_Tm_abs_b3488160bd206c09ce676bc441b5de6a",
         "interpretation_Tm_abs_bc0ae3740b8cfb7a7b7143f61a432dbc",
-        "interpretation_Tm_abs_efab849ed2b09d0ecb6a8d3f4d35f6d2",
         "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
         "interpretation_Tm_abs_fa65ac303f30fcb41df8f1fc6e9818e3",
-        "l_and-interp", "lemma_FStar.Seq.Base.lemma_len_slice",
-        "lemma_Lib.IntTypes.pow2_3",
+        "l_and-interp", "lemma_Lib.IntTypes.pow2_3",
+        "lemma_Lib.IntTypes.v_injective",
         "lemma_Rust_primitives.Integers.mk_int_v_lemma",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
@@ -3870,16 +3672,15 @@
         "primitive_Prims.op_BarBar", "primitive_Prims.op_Division",
         "primitive_Prims.op_Equality",
         "primitive_Prims.op_GreaterThanOrEqual",
-        "primitive_Prims.op_LessThan", "primitive_Prims.op_LessThanOrEqual",
-        "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
-        "proj_equation_Core.Ops.Index.Mkt_Index_f_index",
+        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Multiply",
+        "primitive_Prims.op_Subtraction",
         "proj_equation_Core.Ops.Index.Mkt_Index_in_range",
         "proj_equation_Core.Ops.Range.Mkt_Range_f_end",
         "proj_equation_Core.Ops.Range.Mkt_Range_f_start",
         "proj_equation_FStar.Pervasives.Native.Mktuple2__1",
+        "proj_equation_Spec.Kyber.Mkparams__v_ETA2",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
-        "projection_inverse_Core.Ops.Index.Mkt_Index_f_index",
         "projection_inverse_Core.Ops.Index.Mkt_Index_in_range",
         "projection_inverse_Core.Ops.Range.Mkt_Range_f_end",
         "projection_inverse_Core.Ops.Range.Mkt_Range_f_start",
@@ -3889,28 +3690,21 @@
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_774ba3f728d91ead8ef40be66c9802e5",
-        "refinement_interpretation_Tm_refine_81407705a0828c2c1b1976675443f647",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "refinement_interpretation_Tm_refine_b913a3f691ca99086652e0a655e72f17",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
-        "refinement_interpretation_Tm_refine_d3c00e1782637cf4f2c36066ee60018b",
         "refinement_interpretation_Tm_refine_d8958f2388129bdac6873f4cda807036",
         "refinement_interpretation_Tm_refine_d91142390c6c387fb0ead558066ab16a",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
         "refinement_interpretation_Tm_refine_f13070840248fced9d9d60d77bdae3ec",
-        "token_correspondence_Core.Ops.Index.__proj__Mkt_Index__item__f_index",
         "token_correspondence_Core.Ops.Index.__proj__Mkt_Index__item__in_range",
-        "token_correspondence_Core.Ops.Index.f_index",
         "token_correspondence_Core.Ops.Index.in_range",
-        "token_correspondence_Core.Ops.op_String_Access",
         "token_correspondence_Prims.pow2.fuel_instrumented",
         "token_correspondence_Rust_primitives.unsize",
-        "typing_FStar.Int32.v", "typing_FStar.Seq.Base.empty",
-        "typing_FStar.Seq.Base.length", "typing_FStar.UInt.fits",
-        "typing_FStar.UInt8.uint_to_t", "typing_Lib.IntTypes.v",
-        "typing_Libcrux.Kem.Kyber.Constants.v_BITS_PER_RING_ELEMENT",
+        "typing_FStar.Int32.v", "typing_FStar.Seq.Base.length",
+        "typing_FStar.UInt.fits", "typing_FStar.UInt8.uint_to_t",
+        "typing_Lib.IntTypes.pub_int_v", "typing_Lib.IntTypes.v",
         "typing_Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT",
         "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "typing_Prims.pow2", "typing_Rust_primitives.Hax.repeat",
@@ -3920,13 +3714,14 @@
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
+        "typing_Spec.Kyber.__proj__Mkparams___item__v_ETA2",
         "typing_Spec.Kyber.v_CPA_PKE_SECRET_KEY_SIZE",
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
         "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "a047adc38d5af1fd310a200f54ee376e"
+      "a4a4dee071e021634c46b53087cd5cc2"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key",
@@ -3996,7 +3791,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b404bb38ac71ececa9ec8049363ae3b5"
+      "91218ab30fb5d141b9047260563998f6"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key",
@@ -4122,7 +3917,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "a84d618591ceddfc2b8b2ae6f1b2edc4"
+      "aaf87fc836cfdef5ba5e05e87ff873dd"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.generate_keypair",
@@ -4159,7 +3954,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "f02a58f4d2d25977bc0a0e18df91154b"
+      "8d290b304964f5f019ea2477baba0487"
     ],
     [
       "Libcrux.Kem.Kyber.Ind_cpa.generate_keypair",
@@ -4184,20 +3979,24 @@
         "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok",
-        "equality_tok_Lib.IntTypes.U8@tok", "equation_FStar.UInt.fits",
-        "equation_FStar.UInt.max_int", "equation_FStar.UInt.min_int",
-        "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
-        "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.byte_t",
-        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_v",
-        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
-        "equation_Lib.IntTypes.v",
+        "equality_tok_Lib.IntTypes.U8@tok", "equation_FStar.Int.fits",
+        "equation_FStar.Int.int_t", "equation_FStar.Int.max_int",
+        "equation_FStar.Int.min_int", "equation_FStar.Int.size",
+        "equation_FStar.UInt.fits", "equation_FStar.UInt.max_int",
+        "equation_FStar.UInt.min_int", "equation_FStar.UInt.size",
+        "equation_FStar.UInt.uint_t", "equation_Lib.IntTypes.bits",
+        "equation_Lib.IntTypes.byte_t", "equation_Lib.IntTypes.minint",
+        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
+        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement",
+        "equation_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "equation_Prims.nat", "equation_Prims.pos",
         "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.split",
         "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Arrays.t_Slice",
         "equation_Rust_primitives.Integers.bits",
+        "equation_Rust_primitives.Integers.i32",
         "equation_Rust_primitives.Integers.int_t",
         "equation_Rust_primitives.Integers.inttype",
         "equation_Rust_primitives.Integers.lte",
@@ -4214,26 +4013,27 @@
         "equation_Rust_primitives.array_to_slice_unsize",
         "equation_Rust_primitives.unsize",
         "equation_Spec.Kyber.ind_cpa_generate_keypair",
-        "equation_Spec.Kyber.params",
+        "equation_Spec.Kyber.params", "equation_Spec.Kyber.polynomial",
         "equation_Spec.Kyber.t_KyberCPAPrivateKey",
         "equation_Spec.Kyber.t_KyberPublicKey",
         "equation_Spec.Kyber.v_CPA_PKE_KEY_GENERATION_SEED_SIZE",
         "equation_Spec.Kyber.v_H_DIGEST_SIZE",
         "equation_Spec.Kyber.v_SHARED_SECRET_SIZE",
-        "equation_Spec.Kyber.valid_params",
+        "equation_Spec.Kyber.valid_params", "equation_Spec.Kyber.vector",
         "fuel_guarded_inversion_Spec.Kyber.params_",
         "function_token_typing_Lib.IntTypes.byte_t",
         "function_token_typing_Prims.__cache_version_number__",
         "int_inversion", "int_typing",
         "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
         "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
-        "lemma_FStar.UInt8.vu_inv", "lemma_Lib.IntTypes.pow2_3",
+        "lemma_FStar.Int32.vu_inv", "lemma_FStar.UInt8.vu_inv",
+        "lemma_Lib.IntTypes.pow2_3",
         "lemma_Rust_primitives.Integers.mk_int_v_lemma",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_BarBar", "primitive_Prims.op_Equality",
-        "primitive_Prims.op_LessThanOrEqual",
+        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Minus",
         "primitive_Prims.op_Subtraction",
         "proj_equation_Rust_primitives.Mkunsize_tc_output",
         "proj_equation_Spec.Kyber.Mkparams__v_ETA2",
@@ -4252,12 +4052,15 @@
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
         "refinement_interpretation_Tm_refine_e44c15fb5d8160f1569ee39a0b3d9688",
         "refinement_interpretation_Tm_refine_f13070840248fced9d9d60d77bdae3ec",
         "token_correspondence_Prims.pow2.fuel_instrumented",
         "token_correspondence_Rust_primitives.unsize",
         "typing_Core.Slice.impl__split_at", "typing_FStar.Seq.Base.length",
         "typing_FStar.UInt.fits", "typing_Lib.IntTypes.v",
+        "typing_Libcrux.Kem.Kyber.Arithmetic.to_spec_vector_b",
+        "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "typing_Prims.pow2", "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.minint",
         "typing_Rust_primitives.Integers.range",
@@ -4268,10 +4071,10 @@
         "typing_Spec.Kyber.v_CPA_PKE_KEY_GENERATION_SEED_SIZE",
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.PUB@tok",
         "typing_tok_Lib.IntTypes.S32@tok", "typing_tok_Lib.IntTypes.U32@tok",
-        "typing_tok_Lib.IntTypes.U64@tok"
+        "typing_tok_Lib.IntTypes.U64@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "3c1df48304d3337a3c6fe207e3e6982f"
+      "dc36df0633a912013f41c1e0727d5fa0"
     ]
   ]
 ]

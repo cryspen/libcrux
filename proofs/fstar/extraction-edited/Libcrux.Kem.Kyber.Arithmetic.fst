@@ -38,7 +38,7 @@ let sub_i32_b #b1 #b2 x y =
 let cast_i32_b #b1 #b2 x =
   x <: i32_b b2 
 
-#push-options "--ifuel 0 --z3rlimit 150"
+#push-options "--ifuel 0 --z3rlimit 250"
 let shr_i32_b #b #t x y =
   let r = (x <: i32) >>! y in
   assert (v r == v x / pow2 (v y));
@@ -78,8 +78,16 @@ let shr_i32_b #b #t x y =
         r <: i32_b (nat_div_ceil b (pow2 (v y))))
 #pop-options
 
-let v_BARRETT_R: i64 = 1L <<! v_BARRETT_SHIFT
-let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
+let v_BARRETT_R: i64 =
+  let result = 1L <<! v_BARRETT_SHIFT in
+  assert_norm (result == mk_int (67108864 @%. Lib.IntTypes.S64));
+  result
+
+let v_MONTGOMERY_R =
+  let result: i32 = 1l <<! v_MONTGOMERY_SHIFT in
+  assert_norm (result == mk_int (65536 @%. Lib.IntTypes.S32));
+  result
+
 let v_MONTGOMERY_R_INV = 
   assert_norm((v 169l * pow2 16) % 3329 == 1);
   169l

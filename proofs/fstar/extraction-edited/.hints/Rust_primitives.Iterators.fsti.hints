@@ -1,5 +1,5 @@
 [
-  "/ÏÆçàVc0»%+¦\u0004\u00032\u001b",
+  "¹Ò\"\r‰:¸\tæó#Ñ Ãà\u0001",
   [
     [
       "Rust_primitives.Iterators.foldi_range",
@@ -10,7 +10,8 @@
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented",
         "@fuel_irrelevance_Prims.pow2.fuel_instrumented", "@query",
-        "bool_inversion", "constructor_distinct_Lib.IntTypes.PUB",
+        "bool_inversion", "bool_typing",
+        "constructor_distinct_Lib.IntTypes.PUB",
         "equality_tok_Lib.IntTypes.PUB@tok", "equation_Lib.IntTypes.bits",
         "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.maxint",
         "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_t",
@@ -53,7 +54,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "f8c4926be16ef786118836308e9ac1e3"
+      "27e6e1f720eb2d10efa3b8819e0b7a89"
     ],
     [
       "Rust_primitives.Iterators.foldi_range_step_by",
@@ -93,7 +94,43 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "edad7abf2fb0378bc161dc4bcb5ce358"
+      "a9e205e2b38eacd597a3158e7531739c"
+    ],
+    [
+      "Rust_primitives.Iterators.nth_chunk_of",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "bool_inversion",
+        "equation_Prims.nat", "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.unsigned", "int_inversion",
+        "primitive_Prims.op_Addition", "primitive_Prims.op_Division",
+        "primitive_Prims.op_LessThanOrEqual", "primitive_Prims.op_Multiply",
+        "projection_inverse_BoxBool_proj_0",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_167ef714932ec832fb671890fc3eee6c",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
+        "refinement_interpretation_Tm_refine_58c74419d2bc26ef0ef4b9aa914fe0ed",
+        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "typing_FStar.Seq.Base.length",
+        "typing_Rust_primitives.Integers.unsigned",
+        "typing_Rust_primitives.Integers.usize_inttype"
+      ],
+      0,
+      "b08e438e4fe02ecdd38e8d4d7e6a1a1d"
+    ],
+    [
+      "Rust_primitives.Iterators.nth_chunk_of",
+      2,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "refinement_interpretation_Tm_refine_167ef714932ec832fb671890fc3eee6c"
+      ],
+      0,
+      "c21650c13983a82ca8be6d0e8d591935"
     ],
     [
       "Rust_primitives.Iterators.foldi_chunks_exact",
@@ -117,7 +154,7 @@
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok",
         "equation_FStar.Pervasives.Native.fst", "equation_Lib.IntTypes.bits",
-        "equation_Lib.IntTypes.maxint", "equation_Lib.IntTypes.range",
+        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.range",
         "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
         "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Arrays.t_Slice",
@@ -133,19 +170,18 @@
         "equation_Rust_primitives.Integers.unsigned",
         "equation_Rust_primitives.Integers.usize",
         "equation_Rust_primitives.Integers.v",
-        "equation_with_fuel_Prims.pow2.fuel_instrumented",
         "function_token_typing_Rust_primitives.Integers.usize",
-        "int_inversion", "int_typing",
-        "lemma_Rust_primitives.Integers.pow2_values",
+        "int_inversion", "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
         "primitive_Prims.op_Division", "primitive_Prims.op_LessThanOrEqual",
-        "primitive_Prims.op_Multiply", "primitive_Prims.op_Subtraction",
+        "primitive_Prims.op_Subtraction",
         "proj_equation_FStar.Pervasives.Native.Mktuple2__1",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
-        "refinement_interpretation_Tm_refine_312fead453b8d1455a96d41846416689",
+        "refinement_interpretation_Tm_refine_4232f68751df30a07310a58e484e5244",
+        "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_595fe4c5b993375d778d294c5f40f7ba",
         "refinement_interpretation_Tm_refine_83845a86f2550cdf941eeb1d9b59602b",
@@ -161,7 +197,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "92d27a1c45b4d7a63e6c2c5dc381f0cf"
+      "9d0ce7cb79216110f3d0a8a8b0f7627d"
     ],
     [
       "Rust_primitives.Iterators.foldi_slice",
@@ -202,7 +238,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "4f6f0e276789e86eff22fb10d0299db5"
+      "575f10953a1be3f64d550cebf6558efe"
     ]
   ]
 ]

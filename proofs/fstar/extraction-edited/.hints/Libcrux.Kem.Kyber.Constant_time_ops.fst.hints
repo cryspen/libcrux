@@ -84,6 +84,8 @@
         "token_correspondence_Rust_primitives.cast", "typing_FStar.Int.fits",
         "typing_FStar.UInt8.t", "typing_Prims.pow2",
         "typing_Rust_primitives.Integers.bits",
+        "typing_Rust_primitives.Integers.cast_mod",
+        "typing_Rust_primitives.Integers.lognot",
         "typing_Rust_primitives.Integers.maxint",
         "typing_Rust_primitives.Integers.minint",
         "typing_Rust_primitives.Integers.mk_int",
@@ -96,7 +98,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "09ecbfc7efe2c77697240b54065d14bd"
+      "f5aaac81393bd85c4059b07d98f65cad"
     ],
     [
       "Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time",
@@ -120,7 +122,7 @@
         "typing_FStar.UInt8.t"
       ],
       0,
-      "015ce96d492b9706b4d16e0d1dc4052d"
+      "1361205da7d6b4370b287a152b2d03fd"
     ],
     [
       "Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time",
@@ -144,12 +146,11 @@
         "equation_FStar.UInt.max_int", "equation_FStar.UInt.min_int",
         "equation_FStar.UInt.size", "equation_FStar.UInt.uint_t",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.byte_t",
-        "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.maxint",
-        "equation_Lib.IntTypes.minint", "equation_Lib.IntTypes.pub_int_t",
-        "equation_Lib.IntTypes.pub_int_v", "equation_Lib.IntTypes.range",
-        "equation_Lib.IntTypes.unsigned", "equation_Lib.IntTypes.v",
-        "equation_Prims.eqtype", "equation_Prims.nat",
-        "equation_Rust_primitives.Arrays.length",
+        "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.minint",
+        "equation_Lib.IntTypes.pub_int_t", "equation_Lib.IntTypes.pub_int_v",
+        "equation_Lib.IntTypes.range", "equation_Lib.IntTypes.unsigned",
+        "equation_Lib.IntTypes.v", "equation_Prims.eqtype",
+        "equation_Prims.nat", "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.t_Slice",
         "equation_Rust_primitives.Integers.add",
         "equation_Rust_primitives.Integers.bits",
@@ -159,7 +160,6 @@
         "equation_Rust_primitives.Integers.lt",
         "equation_Rust_primitives.Integers.lte",
         "equation_Rust_primitives.Integers.max_usize",
-        "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
         "equation_Rust_primitives.Integers.range_t",
@@ -223,6 +223,7 @@
         "typing_FStar.Seq.Base.length", "typing_FStar.Seq.Base.slice",
         "typing_FStar.UInt.fits", "typing_FStar.UInt8.t",
         "typing_Lib.IntTypes.bits", "typing_Lib.IntTypes.v",
+        "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.gte",
         "typing_Rust_primitives.Integers.lt",
         "typing_Rust_primitives.Integers.minint",
@@ -233,7 +234,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "667c7074c780365e4f7e2a48896df1b7"
+      "2c9755918d3bb96ec9655e497fcec71a"
     ],
     [
       "Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time",
@@ -282,7 +283,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "0d721c969f1b50e9dc91d53a399d8091"
+      "45fd18e7a9a42672ad461f36b5c75f84"
     ],
     [
       "Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time",
@@ -303,7 +304,6 @@
         "constructor_distinct_Lib.IntTypes.U64",
         "constructor_distinct_Lib.IntTypes.U8",
         "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.S32@tok",
         "equality_tok_Lib.IntTypes.U16@tok",
         "equality_tok_Lib.IntTypes.U32@tok",
         "equality_tok_Lib.IntTypes.U64@tok",
@@ -391,7 +391,7 @@
         "projection_inverse_Core.Ops.Range.Mkt_Range_f_end",
         "projection_inverse_Core.Ops.Range.Mkt_Range_f_start",
         "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
-        "refinement_interpretation_Tm_refine_25c72d704900d626b30894312c325451",
+        "refinement_interpretation_Tm_refine_221edc532b512849362f091b0318b99d",
         "refinement_interpretation_Tm_refine_3e451401036abbbcd0e047b54d5d14fc",
         "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
         "refinement_interpretation_Tm_refine_45d042023a6c411a073523e2875322ee",
@@ -419,14 +419,15 @@
         "token_correspondence_Core.Ops.Index.in_range",
         "token_correspondence_Core.Ops.op_String_Access",
         "token_correspondence_Core.Ops.op_Tilde_Dot",
-        "typing_FStar.Seq.Base.length", "typing_FStar.UInt.fits",
-        "typing_FStar.UInt16.v", "typing_FStar.UInt8.t",
-        "typing_FStar.UInt8.uint_to_t", "typing_Lib.IntTypes.bits",
+        "typing_FStar.Int.fits", "typing_FStar.Seq.Base.length",
+        "typing_FStar.UInt.fits", "typing_FStar.UInt16.v",
+        "typing_FStar.UInt8.t", "typing_Lib.IntTypes.bits",
         "typing_Lib.IntTypes.maxint", "typing_Lib.IntTypes.minint",
         "typing_Lib.IntTypes.v",
         "typing_Libcrux.Kem.Kyber.Constant_time_ops.is_non_zero",
         "typing_Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE",
         "typing_Prims.pow2", "typing_Rust_primitives.Hax.repeat",
+        "typing_Rust_primitives.Integers.add",
         "typing_Rust_primitives.Integers.bits",
         "typing_Rust_primitives.Integers.gte",
         "typing_Rust_primitives.Integers.lt",
@@ -437,12 +438,12 @@
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v",
-        "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok",
-        "typing_tok_Lib.IntTypes.U16@tok", "typing_tok_Lib.IntTypes.U32@tok",
-        "typing_tok_Lib.IntTypes.U64@tok", "typing_tok_Lib.IntTypes.U8@tok"
+        "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U16@tok",
+        "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok",
+        "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "2a94efd3f1f12da9e3f83b9a20f88099"
+      "3d17d99c2f133d71577825cc346e8291"
     ]
   ]
 ]

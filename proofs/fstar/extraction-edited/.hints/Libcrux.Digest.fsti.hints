@@ -1,59 +1,6 @@
 [
-  "9*|\u0003UWƒ,rR*Eˆ*hÀ",
+  "­a\u000eÄv1j¼å \u007f! ÷à ",
   [
-    [
-      "Libcrux.Digest.digest_size",
-      1,
-      0,
-      1,
-      [
-        "@MaxFuel_assumption", "@MaxIFuel_assumption",
-        "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
-        "bool_inversion", "bool_typing",
-        "constructor_distinct_Lib.IntTypes.S16",
-        "constructor_distinct_Lib.IntTypes.S32",
-        "constructor_distinct_Lib.IntTypes.S8",
-        "constructor_distinct_Lib.IntTypes.U1",
-        "constructor_distinct_Lib.IntTypes.U16",
-        "constructor_distinct_Lib.IntTypes.U32",
-        "constructor_distinct_Lib.IntTypes.U64",
-        "constructor_distinct_Lib.IntTypes.U8",
-        "disc_equation_Libcrux.Digest.Algorithm_Blake2b",
-        "disc_equation_Libcrux.Digest.Algorithm_Blake2s",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha1",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha224",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha256",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha384",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha3_224_",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha3_256_",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha3_384_",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha3_512_",
-        "disc_equation_Libcrux.Digest.Algorithm_Sha512",
-        "equality_tok_Lib.IntTypes.U32@tok",
-        "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
-        "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
-        "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.maxint",
-        "equation_Rust_primitives.Integers.minint",
-        "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.unsigned",
-        "fuel_guarded_inversion_Libcrux.Digest.t_Algorithm", "int_typing",
-        "lemma_Rust_primitives.Integers.pow2_values",
-        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
-        "primitive_Prims.op_Subtraction",
-        "projection_inverse_BoxBool_proj_0",
-        "projection_inverse_BoxInt_proj_0",
-        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
-        "typing_Libcrux.Digest.uu___is_Algorithm_Sha1",
-        "typing_Rust_primitives.Integers.bits",
-        "typing_Rust_primitives.Integers.range",
-        "typing_Rust_primitives.Integers.unsigned",
-        "typing_Rust_primitives.Integers.usize_inttype"
-      ],
-      0,
-      "5da8d161accf15cf2ef8015bc7f927a8"
-    ],
     [
       "Libcrux.Digest.sha3_256_",
       1,
@@ -74,6 +21,7 @@
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
@@ -90,7 +38,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "264bf2615fbf776da2fae750ea6b4d8c"
+      "f26a2e49f56d40250df1e2f9476b7b48"
     ],
     [
       "Libcrux.Digest.sha3_512_",
@@ -112,6 +60,7 @@
         "equality_tok_Lib.IntTypes.U64@tok", "equation_Lib.IntTypes.bits",
         "equation_Prims.nat", "equation_Rust_primitives.Integers.bits",
         "equation_Rust_primitives.Integers.inttype",
+        "equation_Rust_primitives.Integers.max_usize",
         "equation_Rust_primitives.Integers.maxint",
         "equation_Rust_primitives.Integers.minint",
         "equation_Rust_primitives.Integers.range",
@@ -128,7 +77,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "289a981c77fa6504f972fc7e59a9d2ad"
+      "a0647846f179226d784258d07151d326"
     ]
   ]
 ]

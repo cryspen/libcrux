@@ -61,10 +61,7 @@ let v_ETA2_RANDOMNESS_SIZE (p:params) = p.v_ETA2 *! sz 64
 val v_RANKED_BYTES_PER_RING_ELEMENT (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
 let v_RANKED_BYTES_PER_RING_ELEMENT (p:params)  = p.v_RANK *! v_BYTES_PER_RING_ELEMENT
 
-val v_T_AS_NTT_ENCODED_SIZE (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
 let v_T_AS_NTT_ENCODED_SIZE (p:params) = v_RANKED_BYTES_PER_RING_ELEMENT p
-
-val v_CPA_PKE_SECRET_KEY_SIZE (p:params) : u:usize{u = sz 768 \/ u = sz 1152 \/ u = sz 1536}
 let v_CPA_PKE_SECRET_KEY_SIZE (p:params) = v_RANKED_BYTES_PER_RING_ELEMENT p
 
 val v_CPA_PKE_PUBLIC_KEY_SIZE (p:params) : u:usize{u = sz 800 \/ u = sz 1184 \/ u = sz 1568}
@@ -179,12 +176,15 @@ let bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
          (ensures fun f -> (forall i. bit_vec_of_int_t_array r 8 i == f i))
   = bit_vec_of_int_t_array r 8
 
+unfold let retype_bit_vector #a #b (#_:unit{a == b}) (x: a): b = x
+
 let byte_encode (d: dT) (coefficients: polynomial): t_Array u8 (sz (32 * d))
-  = bits_to_bytes #(sz (32 * d)) (bit_vec_of_nat_array coefficients d)
+  = bits_to_bytes #(sz (32 * d))
+       (retype_bit_vector (bit_vec_of_nat_array coefficients d))
 
 let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial
   = let bv = bit_vec_of_int_t_array coefficients 8 in
-    let arr: t_Array nat (sz 256) = bit_vec_to_nat_array d bv in
+    let arr: t_Array nat (sz 256) = bit_vec_to_nat_array d (retype_bit_vector bv) in
     let p = map' (fun (x: nat) -> x % v v_FIELD_MODULUS <: nat) arr in
     introduce forall i. Seq.index p i < v v_FIELD_MODULUS
     with assert (Seq.index p i == Seq.index p (v (sz i)));

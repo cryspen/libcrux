@@ -1,8 +1,8 @@
 [
-  "4ÔîÞ\u0013&´]%RôÅì`c",
+  ">+\ff\t{«¼˜­{¸<ä+¨",
   [
     [
-      "Libcrux.Kem.Kyber.Types.t_KyberCiphertext",
+      "Libcrux.Kem.Kyber.Types.t_MlKemCiphertext",
       1,
       0,
       1,
@@ -23,7 +23,7 @@
         "typing_FStar.UInt8.t"
       ],
       0,
-      "cb66d2fcb36055f0eb857becfee4bbc2"
+      "610b7e7b01b002a158d706be53e79498"
     ],
     [
       "Libcrux.Kem.Kyber.Types.impl_5",
@@ -52,7 +52,7 @@
         "typing_Tm_abs_fc413d795e9c18d46bf344f13a23c593"
       ],
       0,
-      "78bc3e9ef8d5a68a5240f29c27afbe47"
+      "a2af16b0f816deaaf1d40f950f012e33"
     ],
     [
       "Libcrux.Kem.Kyber.Types.impl_6__split_at",
@@ -61,7 +61,7 @@
       1,
       [
         "@MaxIFuel_assumption", "@query", "bool_inversion",
-        "data_elim_Libcrux.Kem.Kyber.Types.Mkt_KyberCiphertext",
+        "data_elim_Libcrux.Kem.Kyber.Types.Mkt_MlKemCiphertext",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.U8@tok", "equation_Lib.IntTypes.byte_t",
         "equation_Lib.IntTypes.v", "equation_Prims.nat",
@@ -81,14 +81,14 @@
         "equation_Rust_primitives.Integers.v",
         "equation_Rust_primitives.array_to_slice_unsize",
         "equation_Rust_primitives.unsize",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_KyberCiphertext",
+        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_MlKemCiphertext",
         "function_token_typing_Lib.IntTypes.byte_t", "int_typing",
         "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
         "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
-        "proj_equation_Libcrux.Kem.Kyber.Types.Mkt_KyberCiphertext_f_value",
+        "proj_equation_Libcrux.Kem.Kyber.Types.Mkt_MlKemCiphertext_f_value",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Rust_primitives.Mkunsize_tc_unsize",
@@ -105,10 +105,10 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "b1dba2a4b608417a864c224bb1e3b8d6"
+      "6582b2b4d897b5e882efa19aa2605665"
     ],
     [
-      "Libcrux.Kem.Kyber.Types.t_KyberPrivateKey",
+      "Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey",
       1,
       0,
       1,
@@ -129,7 +129,7 @@
         "typing_FStar.UInt8.t"
       ],
       0,
-      "ab1dced8e726842733016a6375125a15"
+      "df4f3b15b9a886235f1309f1da87c2e1"
     ],
     [
       "Libcrux.Kem.Kyber.Types.impl_11",
@@ -158,7 +158,7 @@
         "typing_Tm_abs_fc413d795e9c18d46bf344f13a23c593"
       ],
       0,
-      "dd25ce524e963d2eb3ee870641d609e9"
+      "181efc9defdec05ba60fccdfd52b3e9b"
     ],
     [
       "Libcrux.Kem.Kyber.Types.impl_12__split_at",
@@ -167,49 +167,10 @@
       1,
       [
         "@MaxIFuel_assumption", "@query", "bool_inversion",
+        "data_elim_Libcrux.Kem.Kyber.Types.Mkt_MlKemPrivateKey",
         "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.U8@tok", "equation_Lib.IntTypes.v",
-        "equation_Prims.nat", "equation_Rust_primitives.Arrays.t_Slice",
-        "equation_Rust_primitives.Integers.int_t",
-        "equation_Rust_primitives.Integers.inttype",
-        "equation_Rust_primitives.Integers.lte",
-        "equation_Rust_primitives.Integers.maxint",
-        "equation_Rust_primitives.Integers.minint",
-        "equation_Rust_primitives.Integers.range",
-        "equation_Rust_primitives.Integers.range_t",
-        "equation_Rust_primitives.Integers.u8",
-        "equation_Rust_primitives.Integers.unsigned",
-        "equation_Rust_primitives.Integers.usize",
-        "equation_Rust_primitives.Integers.v",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_KyberPrivateKey",
-        "function_token_typing_Rust_primitives.Integers.u8",
-        "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
-        "primitive_Prims.op_Subtraction",
-        "projection_inverse_BoxBool_proj_0",
-        "projection_inverse_BoxInt_proj_0",
-        "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
-        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
-        "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
-        "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
-        "refinement_interpretation_Tm_refine_cd6296ba7d7661a167fff3d9610a6b8a",
-        "typing_FStar.Seq.Base.length",
-        "typing_Rust_primitives.Integers.unsigned",
-        "typing_Rust_primitives.Integers.usize_inttype",
-        "typing_Rust_primitives.Integers.v"
-      ],
-      0,
-      "5ce53b70f0eeaf084e02119984f48393"
-    ],
-    [
-      "Libcrux.Kem.Kyber.Types.impl_12__split_at",
-      2,
-      0,
-      1,
-      [
-        "@MaxIFuel_assumption", "@query", "bool_inversion",
-        "data_elim_Libcrux.Kem.Kyber.Types.Mkt_KyberPrivateKey",
-        "equality_tok_Lib.IntTypes.PUB@tok",
-        "equality_tok_Lib.IntTypes.U8@tok", "equation_Lib.IntTypes.v",
+        "equality_tok_Lib.IntTypes.U8@tok", "equation_Lib.IntTypes.byte_t",
+        "equation_Lib.IntTypes.v", "equation_Prims.nat",
         "equation_Rust_primitives.Arrays.t_Array",
         "equation_Rust_primitives.Arrays.t_Slice",
         "equation_Rust_primitives.Integers.int_t",
@@ -226,30 +187,34 @@
         "equation_Rust_primitives.Integers.v",
         "equation_Rust_primitives.array_to_slice_unsize",
         "equation_Rust_primitives.unsize",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_KyberPrivateKey",
-        "int_typing",
+        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey",
+        "function_token_typing_Lib.IntTypes.byte_t", "int_typing",
         "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
         "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
-        "proj_equation_Libcrux.Kem.Kyber.Types.Mkt_KyberPrivateKey_f_value",
+        "proj_equation_Libcrux.Kem.Kyber.Types.Mkt_MlKemPrivateKey_f_value",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Rust_primitives.Mkunsize_tc_unsize",
+        "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
+        "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
         "refinement_interpretation_Tm_refine_a6d4eccfb2603ce5e66d6162c32df2b0",
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
+        "refinement_interpretation_Tm_refine_cd6296ba7d7661a167fff3d9610a6b8a",
         "token_correspondence_Rust_primitives.unsize",
+        "typing_FStar.Seq.Base.length",
         "typing_Rust_primitives.Integers.unsigned",
         "typing_Rust_primitives.Integers.usize_inttype",
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "5bd2388e1d4d02e7147678240049c7f8"
+      "29b4bf4233a60128bb2efa349c541f27"
     ],
     [
-      "Libcrux.Kem.Kyber.Types.t_KyberPublicKey",
+      "Libcrux.Kem.Kyber.Types.t_MlKemPublicKey",
       1,
       0,
       1,
@@ -270,7 +235,7 @@
         "typing_FStar.UInt8.t"
       ],
       0,
-      "7e36f936ce3ad1870eeff6a09def7240"
+      "c8e8bb3628a59f590a610b0ee2840c49"
     ],
     [
       "Libcrux.Kem.Kyber.Types.impl_17",
@@ -299,7 +264,7 @@
         "typing_Tm_abs_fc413d795e9c18d46bf344f13a23c593"
       ],
       0,
-      "da0b35c9371f098d9e55f8ea584d0f5f"
+      "e8017e50940e192cfed713330bb67e03"
     ],
     [
       "Libcrux.Kem.Kyber.Types.impl_18__split_at",
@@ -308,7 +273,7 @@
       1,
       [
         "@MaxIFuel_assumption", "@query", "bool_inversion",
-        "data_elim_Libcrux.Kem.Kyber.Types.Mkt_KyberPublicKey",
+        "data_elim_Libcrux.Kem.Kyber.Types.Mkt_MlKemPublicKey",
         "equality_tok_Lib.IntTypes.PUB@tok",
         "equality_tok_Lib.IntTypes.U8@tok", "equation_Lib.IntTypes.byte_t",
         "equation_Lib.IntTypes.v", "equation_Prims.nat",
@@ -328,14 +293,14 @@
         "equation_Rust_primitives.Integers.v",
         "equation_Rust_primitives.array_to_slice_unsize",
         "equation_Rust_primitives.unsize",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_KyberPublicKey",
+        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_MlKemPublicKey",
         "function_token_typing_Lib.IntTypes.byte_t", "int_typing",
         "interpretation_Tm_abs_94963984a705f03fe78dd8ccd37a8094",
         "interpretation_Tm_abs_f5770e15f23008f76908f7a623d8cb34",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_AmpAmp", "primitive_Prims.op_LessThanOrEqual",
         "primitive_Prims.op_Subtraction",
-        "proj_equation_Libcrux.Kem.Kyber.Types.Mkt_KyberPublicKey_f_value",
+        "proj_equation_Libcrux.Kem.Kyber.Types.Mkt_MlKemPublicKey_f_value",
         "projection_inverse_BoxBool_proj_0",
         "projection_inverse_BoxInt_proj_0",
         "projection_inverse_Rust_primitives.Mkunsize_tc_unsize",
@@ -352,22 +317,22 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "9efc28919d379d83f04468c4e51a71a5"
+      "ee0c430647509b7786f95341c534833e"
     ],
     [
-      "Libcrux.Kem.Kyber.Types.t_KyberKeyPair",
+      "Libcrux.Kem.Kyber.Types.t_MlKemKeyPair",
       1,
       0,
       1,
       [
         "@MaxIFuel_assumption", "@query",
-        "assumption_Libcrux.Kem.Kyber.Types.t_KyberPrivateKey__uu___haseq",
-        "assumption_Libcrux.Kem.Kyber.Types.t_KyberPublicKey__uu___haseq",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_KyberPrivateKey",
-        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_KyberPublicKey"
+        "assumption_Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey__uu___haseq",
+        "assumption_Libcrux.Kem.Kyber.Types.t_MlKemPublicKey__uu___haseq",
+        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey",
+        "fuel_guarded_inversion_Libcrux.Kem.Kyber.Types.t_MlKemPublicKey"
       ],
       0,
-      "b2faba3d63fd7b54a07539bff14b9c30"
+      "a53fa0aeb4f0b8aca00150b4727a2c57"
     ]
   ]
 ]

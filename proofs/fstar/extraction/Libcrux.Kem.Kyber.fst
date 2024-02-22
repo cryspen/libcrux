@@ -270,7 +270,11 @@ let validate_public_key
      =
   let pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key v_K
-      (Rust_primitives.unsize public_key <: t_Slice u8)
+      (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
+          <:
+          Core.Ops.Range.t_RangeTo usize ]
+        <:
+        t_Slice u8)
   in
   let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key v_K
