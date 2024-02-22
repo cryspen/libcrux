@@ -51,6 +51,7 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
     out
 }
 
+#[cfg(not(simd256))]
 #[inline(always)]
 pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: &mut XofState<K>) -> [[u8; 168]; K] {
     let mut out: [[u8; 168]; K] = [[0; 168]; K];

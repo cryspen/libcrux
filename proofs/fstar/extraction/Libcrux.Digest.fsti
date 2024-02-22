@@ -14,7 +14,6 @@ val shake256 (v_LEN: usize) (data: t_Slice u8)
 
 type t_Shake128State
 
-
 val shake128_absorb_final (st: t_Shake128State) (data: t_Slice u8)
     : Prims.Pure t_Shake128State Prims.l_True (fun _ -> Prims.l_True)
 
