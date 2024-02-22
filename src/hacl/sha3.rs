@@ -295,3 +295,81 @@ pub mod incremental {
         }
     }
 }
+
+#[cfg(simd256)]
+pub mod incremental_x4 {
+        use libcrux_hacl::{
+            Hacl_Hash_SHA3_Simd256_shake128_absorb_final, Hacl_Hash_SHA3_Simd256_shake128_absorb_nblocks, Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks, Hacl_Hash_SHA3_Simd256_state_free, Hacl_Hash_SHA3_Simd256_state_malloc, Lib_IntVector_Intrinsics_vec256
+        };
+    
+        /// SHAKE 128
+        ///
+       
+        /// Handle to internal SHAKE 129 state
+        pub struct Shake128State {
+            state: *mut Lib_IntVector_Intrinsics_vec256,
+        }
+    
+        impl Shake128StateX4 {
+            pub fn new() -> Self {
+                let state = Self {
+                    state: unsafe { Hacl_Hash_SHA3_Simd256_state_malloc() },
+                };
+    
+                state
+            }
+    
+            pub fn absorb_nblocks(&mut self, input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) {
+                debug_assert!(input0.len() == input1.len() && input0.len() == input2.len() && input0.len() == input3.len());
+                debug_assert!(input0.len() % 168 == 0);
+               
+                unsafe {
+                    Hacl_Hash_SHA3_Scimd256_shake128_absorb_nblocks(
+                        self.state,
+                        input0.as_ptr() as _,
+                        input1.as_ptr() as _,
+                        input2.as_ptr() as _,
+                        input3.as_ptr() as _,
+                        input0.len() as u32,
+                    )
+                };
+            }
+    
+            pub fn absorb_final(&mut self, input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) {
+                debug_assert!(input0.len() == input1.len() && input0.len() == input2.len() && input0.len() == input3.len());
+                debug_assert!(input0.len() < 168);
+               
+                unsafe {
+                    Hacl_Hash_SHA3_Simd256_shake128_absorb_final(
+                        self.state,
+                        input0.as_ptr() as _,
+                        input1.as_ptr() as _,
+                        input2.as_ptr() as _,
+                        input3.as_ptr() as _,
+                        input0.len() as u32,
+                    )
+                };
+            }
+            pub fn squeeze_nblocks<const OUTPUT_BYTES: usize>(&mut self) -> [[u8; OUTPUT_BYTES];4] {
+                debug_assert!(OUTPUT_BYTES % 168 == 0);
+                let mut output = [[0u8; OUTPUT_BYTES];4];
+                unsafe {
+                    Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(
+                        self.state,
+                        output[0].as_mut_ptr(),
+                        output[1].as_mut_ptr(),
+                        output[2].as_mut_ptr(),
+                        output[3].as_mut_ptr(),
+                        OUTPUT_BYTES as u32,
+                    )
+                };
+    
+                output
+            }
+        }
+        impl Drop for Shake128StateX4 {
+            fn drop(&mut self) {
+                unsafe { Hacl_Hash_SHA3_Simd256_state_free(self.state) }
+            }
+        }
+}

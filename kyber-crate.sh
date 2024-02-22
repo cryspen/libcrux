@@ -86,7 +86,7 @@ mkdir -p c
 cd c
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../../kyber-c.yaml ../libcrux_kyber.llbc
+$EURYDICE_HOME/eurydice --log * --config ../../kyber-c.yaml ../libcrux_kyber.llbc
 clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
 
 cp $EURYDICE_HOME/include/eurydice_glue.h .
