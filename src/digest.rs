@@ -24,7 +24,6 @@ use crate::hacl::{
 
 use libcrux_platform::{simd128_support, simd256_support};
 
-
 #[derive(Debug)]
 pub enum Error {
     InvalidStateFinished,
@@ -370,18 +369,20 @@ pub struct Shake128State(sha3::incremental::Shake128State);
 
 pub fn shake128_init() -> Shake128State {
     Shake128State(sha3::incremental::Shake128State::new())
-} 
+}
 
-pub fn shake128_absorb_nblocks(st:&mut Shake128State,data:&[u8]) {
+pub fn shake128_absorb_nblocks(st: &mut Shake128State, data: &[u8]) {
     st.0.absorb_nblocks(data);
-} 
+}
 
-pub fn shake128_absorb_final(st:&mut Shake128State,data:&[u8]) {
+pub fn shake128_absorb_final(st: &mut Shake128State, data: &[u8]) {
     st.0.absorb_final(data);
-} 
+}
 
-pub fn shake128_squeeze_nblocks<const OUTPUT_BYTES:usize>(st:&mut Shake128State) -> [u8;OUTPUT_BYTES] {
-   st.0.squeeze_nblocks()
+pub fn shake128_squeeze_nblocks<const OUTPUT_BYTES: usize>(
+    st: &mut Shake128State,
+) -> [u8; OUTPUT_BYTES] {
+    st.0.squeeze_nblocks()
 }
 
 /// SHAKE 128 Incremental API (SIMD)
@@ -391,20 +392,34 @@ pub struct Shake128StateX4(sha3::incremental_x4::Shake128StateX4);
 #[cfg(simd256)]
 pub fn shake128_init_x4() -> Shake128StateX4 {
     Shake128StateX4(sha3::incremental_x4::Shake128StateX4::new())
-} 
+}
 
 #[cfg(simd256)]
-pub fn shake128_absorb_nblocks_x4(st:&mut Shake128StateX4,data0:&[u8],data1:&[u8],data2:&[u8],data3:&[u8]) {
-    st.0.absorb_nblocks(data0,data1,data2,data3);
-} 
+pub fn shake128_absorb_nblocks_x4(
+    st: &mut Shake128StateX4,
+    data0: &[u8],
+    data1: &[u8],
+    data2: &[u8],
+    data3: &[u8],
+) {
+    st.0.absorb_nblocks(data0, data1, data2, data3);
+}
 
 #[cfg(simd256)]
-pub fn shake128_absorb_final_x4(st:&mut Shake128StateX4,data0:&[u8],data1:&[u8],data2:&[u8],data3:&[u8]) {
-    st.0.absorb_final(data0,data1,data2,data3);
-} 
+pub fn shake128_absorb_final_x4(
+    st: &mut Shake128StateX4,
+    data0: &[u8],
+    data1: &[u8],
+    data2: &[u8],
+    data3: &[u8],
+) {
+    st.0.absorb_final(data0, data1, data2, data3);
+}
 
 #[cfg(simd256)]
-pub fn shake128_squeeze_nblocks_x4<const OUTPUT_BYTES:usize>(st:&mut Shake128StateX4) -> [[u8;OUTPUT_BYTES];4] {
+pub fn shake128_squeeze_nblocks_x4<const OUTPUT_BYTES: usize>(
+    st: &mut Shake128StateX4,
+) -> [[u8; OUTPUT_BYTES]; 4] {
     st.0.squeeze_nblocks()
 }
 

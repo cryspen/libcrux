@@ -136,6 +136,7 @@ elif options.kyber_reference:
     # remove this when https://github.com/hacspec/hax/issues/465 is
     # closed)
     shell(["rm", "-f", "./sys/platform/proofs/fstar/extraction/*.fst"])
+
 elif options.kyber_specification:
     shell(
         cargo_hax_into
