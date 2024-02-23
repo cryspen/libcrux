@@ -71,24 +71,10 @@ macro_rules! impl_nist_known_answer_tests {
     };
 }
 
-// impl_nist_known_answer_tests!(
-//     kyber512_nist_known_answer_tests,
-//     512,
-//     kyber512_generate_keypair_derand,
-//     kyber512_encapsulate_derand,
-//     kyber512_decapsulate_derand
-// );
 impl_nist_known_answer_tests!(
     kyber768_nist_known_answer_tests,
     768,
-    generate_key_pair_768,
-    encapsulate_768,
-    decapsulate_768
+    generate_key_pair,
+    encapsulate,
+    decapsulate
 );
-// impl_nist_known_answer_tests!(
-//     kyber1024_nist_known_answer_tests,
-//     1024,
-//     kyber1024_generate_keypair_derand,
-//     kyber1024_encapsulate_derand,
-//     kyber1024_decapsulate_derand
-// );
