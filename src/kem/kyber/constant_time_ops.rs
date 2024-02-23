@@ -1,4 +1,5 @@
-use crate::{hax_utils::hax_debug_assert, kem::kyber::constants::SHARED_SECRET_SIZE};
+use super::constants::SHARED_SECRET_SIZE;
+use crate::hax_utils::hax_debug_assert;
 
 // Examine the output that LLVM produces for this code from time to time to ensure
 // operations are not being optimized away/constant-timedness is not being broken.
