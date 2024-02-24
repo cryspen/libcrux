@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 
+#[cfg(not(simd256))]
 use digest::{shake128_absorb_final, shake128_init, shake128_squeeze_nblocks, Shake128State};
 #[cfg(simd256)]
 use digest::{
@@ -65,7 +66,9 @@ pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: &mut XofState<K>) -> 
 // The following API uses the repeated squeeze API
 // The second version uses SIMD256 SHAKE 128
 #[cfg(simd256)]
-type XofState<const K: usize> = X4(crate::digest::Shake128StateX4);
+pub(crate) struct XofState<const K: usize> {
+    state: crate::digest::Shake128StateX4
+}
 
 #[cfg(simd256)]
 #[inline(always)]
@@ -73,21 +76,19 @@ pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState<K> {
     let mut state: Shake128StateX4 = shake128_init_x4();
     match K {
         2 => {
-            shake128_absorb_final_x4(&mut state, input[0], input[1], input[0], input[0]);
-            state
+            shake128_absorb_final_x4(&mut state, &input[0], &input[1], &input[0], &input[0]);
         }
         3 => {
-            shake128_absorb_final_x4(&mut state, input[0], input[1], input[2], input[0]);
-            state
+            shake128_absorb_final_x4(&mut state, &input[0], &input[1], &input[2], &input[0]);
         }
         4 => {
-            shake128_absorb_final_x4(&mut state, input[0], input[1], input[2], input[3]);
-            state
+            shake128_absorb_final_x4(&mut state, &input[0], &input[1], &input[2], &input[3]);
         }
         _ => {
             unreachable!()
         }
     }
+    XofState {state}
 }
 
 #[cfg(simd256)]
@@ -96,82 +97,70 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
     state: &mut XofState<K>,
 ) -> [[u8; 168 * 3]; K] {
     let mut output = [[0; 168 * 3]; K];
-    let mut tmp = [[0; 168 * 3]; 2];
     match K {
         2 => {
-            shake128_squeeze_nblocks_x4(
-                &mut state,
-                &mut output[0],
-                &mut output[1],
-                &mut tmp[0],
-                &mut tmp[1],
+            let tmp = shake128_squeeze_nblocks_x4(
+                &mut state.state
             );
-            output
+            output[0] = tmp[0];
+            output[1] = tmp[1];
         }
         3 => {
-            shake128_squeeze_nblocks_x4(
-                &mut state,
-                &mut output[0],
-                &mut output[1],
-                &mut output[2],
-                &mut tmp[1],
+            let tmp = shake128_squeeze_nblocks_x4(
+                &mut state.state
             );
-            output
+            output[0] = tmp[0];
+            output[1] = tmp[1];
+            output[2] = tmp[2];
         }
         4 => {
-            shake128_squeeze_nblocks_x4(
-                &mut state,
-                &mut output[0],
-                &mut output[1],
-                &mut output[2],
-                &mut output[3],
-            );
-            output
+            let tmp = shake128_squeeze_nblocks_x4(
+                &mut state.state
+            ); 
+            output[0] = tmp[0];
+            output[1] = tmp[1];
+            output[2] = tmp[2];
+            output[3] = tmp[3];
         }
         _ => {
             unreachable!()
         }
     }
+    output
 }
 
 #[cfg(simd256)]
 #[inline(always)]
 pub(crate) fn XOF_squeeze_block<const K: usize>(state: &mut XofState<K>) -> [[u8; 168]; K] {
     let mut output: [[u8; 168]; K] = [[0; 168]; K];
-    let mut tmp = [[0; 168 * 3]; 2];
     match K {
         2 => {
-            shake128_squeeze_nblocks_x4(
-                &mut state,
-                &mut output[0],
-                &mut output[1],
-                &mut tmp[0],
-                &mut tmp[1],
+            let tmp = shake128_squeeze_nblocks_x4(
+                &mut state.state
             );
-            output
+            output[0] = tmp[0];
+            output[1] = tmp[1];
         }
         3 => {
-            shake128_squeeze_nblocks_x4(
-                &mut state,
-                &mut output[0],
-                &mut output[1],
-                &mut output[2],
-                &mut tmp[1],
+            let tmp = shake128_squeeze_nblocks_x4(
+                &mut state.state
             );
-            output
+            output[0] = tmp[0];
+            output[1] = tmp[1];
+            output[2] = tmp[2];
         }
         4 => {
-            shake128_squeeze_nblocks_x4(
-                &mut state,
-                &mut output[0],
-                &mut output[1],
-                &mut output[2],
-                &mut output[3],
-            );
-            output
+            let tmp = shake128_squeeze_nblocks_x4(
+                &mut state.state
+            ); 
+            output[0] = tmp[0];
+            output[1] = tmp[1];
+            output[2] = tmp[2];
+            output[3] = tmp[3];
         }
         _ => {
             unreachable!()
         }
     }
+    output
 }

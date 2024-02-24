@@ -141,12 +141,12 @@ Hacl_Hash_SHA3_Simd256_sha3_512(
 /**
 Allocate quadruple state buffer (200-bytes for each)
 */
-uint64_t *Hacl_Hash_SHA3_Simd256_state_malloc(void);
+Lib_IntVector_Intrinsics_vec256 *Hacl_Hash_SHA3_Simd256_state_malloc(void);
 
 /**
 Free quadruple state buffer
 */
-void Hacl_Hash_SHA3_Simd256_state_free(uint64_t *s);
+void Hacl_Hash_SHA3_Simd256_state_free(Lib_IntVector_Intrinsics_vec256 *s);
 
 /**
 Absorb number of blocks of 4 input buffers and write the output states
