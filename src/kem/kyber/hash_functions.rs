@@ -18,14 +18,14 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 
 // The following API uses the repeated squeeze API
 // The first version uses Scalar SHAKE 128
-pub(crate) enum XofState<const K: usize> {
+pub(crate) enum XofState {
     X2(digest::Shake128StateX2),
     X3(digest::Shake128StateX3),
     X4(digest::Shake128StateX4),
 }
 
 #[inline(always)]
-pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState<K> {
+pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState {
     match K as u8 {
         2 => {let mut state = digest::shake128_init_x2();
               digest::shake128_absorb_final_x2(&mut state, &input[0], &input[1]);
@@ -42,8 +42,8 @@ pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState<K> {
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
-    xof_state: XofState<K>,
-) -> ([[u8; 168 * 3]; K],XofState<K>) {
+    xof_state: XofState,
+) -> ([[u8; 168 * 3]; K],XofState) {
     let mut output = [[0; 168 * 3]; K];
     match (K as u8, xof_state) {
         (2, XofState::X2(mut st)) => {
@@ -73,8 +73,8 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_block<const K: usize>(
-    xof_state: XofState<K>,
-) -> ([[u8; 168]; K],XofState<K>) {
+    xof_state: XofState,
+) -> ([[u8; 168]; K],XofState) {
     let mut output = [[0; 168]; K];
     match (K as u8, xof_state) {
         (2, XofState::X2(mut st)) => {

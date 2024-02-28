@@ -10,112 +10,202 @@ let v_H (input: t_Slice u8) = Libcrux.Digest.sha3_256_ input
 let v_PRF (v_LEN: usize) (input: t_Slice u8) = Libcrux.Digest.shake256 v_LEN input
 
 let v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
-  let states:t_Array Libcrux.Digest.t_Shake128State v_K =
-    Core.Array.from_fn v_K
-      (fun temp_0_ ->
-          let _:usize = temp_0_ in
-          Libcrux.Digest.shake128_init () <: Libcrux.Digest.t_Shake128State)
-  in
-  let states:t_Array Libcrux.Digest.t_Shake128State v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
+  match cast (v_K <: usize) <: u8 with
+  | 2uy ->
+    let state:Libcrux.Digest.t_Shake128StateX2 = Libcrux.Digest.shake128_init_x2 () in
+    let state:Libcrux.Digest.t_Shake128StateX2 =
+      Libcrux.Digest.shake128_absorb_final_x2 state
+        (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+        (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+    in
+    XofState_X2 state <: t_XofState v_K
+  | 3uy ->
+    let state:Libcrux.Digest.t_Shake128StateX3 = Libcrux.Digest.shake128_init_x3 () in
+    let state:Libcrux.Digest.t_Shake128StateX3 =
+      Libcrux.Digest.shake128_absorb_final_x3 state
+        (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+        (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+        (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+    in
+    XofState_X3 state <: t_XofState v_K
+  | 4uy ->
+    let state:Libcrux.Digest.t_Shake128StateX4 = Libcrux.Digest.shake128_init_x4 () in
+    let state:Libcrux.Digest.t_Shake128StateX4 =
+      Libcrux.Digest.shake128_absorb_final_x4 state
+        (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+        (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+        (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+        (Rust_primitives.unsize (input.[ sz 3 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+    in
+    XofState_X4 state <: t_XofState v_K
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
         <:
-        Core.Ops.Range.t_Range usize)
-      states
-      (fun states i ->
-          let states:t_Array Libcrux.Digest.t_Shake128State v_K = states in
-          let i:usize = i in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize states
-            i
-            (Libcrux.Digest.shake128_absorb_final (states.[ i ] <: Libcrux.Digest.t_Shake128State)
-                (Rust_primitives.unsize (input.[ i ] <: t_Array u8 (sz 34)) <: t_Slice u8)
-              <:
-              Libcrux.Digest.t_Shake128State)
-          <:
-          t_Array Libcrux.Digest.t_Shake128State v_K)
-  in
-  { f_states = states } <: t_XofState v_K
+        Rust_primitives.Hax.t_Never)
 
 let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState v_K) =
-  let (block: t_Array (t_Array u8 (sz 168)) v_K):t_Array (t_Array u8 (sz 168)) v_K =
+  let output:t_Array (t_Array u8 (sz 168)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 168) <: t_Array u8 (sz 168)) v_K
   in
-  let block, xof_state:(t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
+  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState v_K) with
+  | 2uy, XofState_X2 st ->
+    let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 168)) (sz 2)) =
+      Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 168) st
+    in
+    let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
+    let tmp:t_Array (t_Array u8 (sz 168)) (sz 2) = out in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 0)
+        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+    in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 1)
+        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+    in
+    output, (XofState_X2 st <: t_XofState v_K)
+    <:
+    (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K)
+  | 3uy, XofState_X3 st ->
+    let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 168)) (sz 3)) =
+      Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 168) st
+    in
+    let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
+    let tmp:t_Array (t_Array u8 (sz 168)) (sz 3) = out in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 0)
+        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+    in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 1)
+        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+    in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 2)
+        (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
+    in
+    output, (XofState_X3 st <: t_XofState v_K)
+    <:
+    (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K)
+  | 4uy, XofState_X4 st ->
+    let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 168)) (sz 4)) =
+      Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 168) st
+    in
+    let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
+    let tmp:t_Array (t_Array u8 (sz 168)) (sz 4) = out in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 0)
+        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+    in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 1)
+        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+    in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 2)
+        (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
+    in
+    let output:t_Array (t_Array u8 (sz 168)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 3)
+        (tmp.[ sz 3 ] <: t_Array u8 (sz 168))
+    in
+    output, (XofState_X4 st <: t_XofState v_K)
+    <:
+    (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K)
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
         <:
-        Core.Ops.Range.t_Range usize)
-      (block, xof_state <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K))
-      (fun temp_0_ i ->
-          let block, xof_state:(t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K) = temp_0_ in
-          let i:usize = i in
-          let tmp0, out:(Libcrux.Digest.t_Shake128State & t_Array u8 (sz 168)) =
-            Libcrux.Digest.shake128_squeeze_nblocks (sz 168)
-              (xof_state.f_states.[ i ] <: Libcrux.Digest.t_Shake128State)
-          in
-          let xof_state:t_XofState v_K =
-            {
-              xof_state with
-              f_states
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize xof_state.f_states i tmp0
-            }
-            <:
-            t_XofState v_K
-          in
-          let hoist21:t_Array u8 (sz 168) = out in
-          let hoist22:t_Array (t_Array u8 (sz 168)) v_K =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize block i hoist21
-          in
-          hoist22, xof_state <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K))
-  in
-  let hax_temp_output:t_Array (t_Array u8 (sz 168)) v_K = block in
-  xof_state, hax_temp_output <: (t_XofState v_K & t_Array (t_Array u8 (sz 168)) v_K)
+        Rust_primitives.Hax.t_Never)
 
 let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState v_K) =
-  let blocks:t_Array (t_Array u8 (sz 504)) v_K =
+  let output:t_Array (t_Array u8 (sz 504)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 504) <: t_Array u8 (sz 504)) v_K
   in
-  let blocks, xof_state:(t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
+  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState v_K) with
+  | 2uy, XofState_X2 st ->
+    let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 504)) (sz 2)) =
+      Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 504) st
+    in
+    let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
+    let tmp:t_Array (t_Array u8 (sz 504)) (sz 2) = out in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 0)
+        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+    in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 1)
+        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+    in
+    output, (XofState_X2 st <: t_XofState v_K)
+    <:
+    (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K)
+  | 3uy, XofState_X3 st ->
+    let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 504)) (sz 3)) =
+      Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 504) st
+    in
+    let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
+    let tmp:t_Array (t_Array u8 (sz 504)) (sz 3) = out in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 0)
+        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+    in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 1)
+        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+    in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 2)
+        (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
+    in
+    output, (XofState_X3 st <: t_XofState v_K)
+    <:
+    (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K)
+  | 4uy, XofState_X4 st ->
+    let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 504)) (sz 4)) =
+      Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 504) st
+    in
+    let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
+    let tmp:t_Array (t_Array u8 (sz 504)) (sz 4) = out in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 0)
+        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+    in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 1)
+        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+    in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 2)
+        (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
+    in
+    let output:t_Array (t_Array u8 (sz 504)) v_K =
+      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+        (sz 3)
+        (tmp.[ sz 3 ] <: t_Array u8 (sz 504))
+    in
+    output, (XofState_X4 st <: t_XofState v_K)
+    <:
+    (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K)
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
         <:
-        Core.Ops.Range.t_Range usize)
-      (blocks, xof_state <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K))
-      (fun temp_0_ i ->
-          let blocks, xof_state:(t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K) = temp_0_ in
-          let i:usize = i in
-          let tmp0, out:(Libcrux.Digest.t_Shake128State & t_Array u8 (sz 504)) =
-            Libcrux.Digest.shake128_squeeze_nblocks (sz 504)
-              (xof_state.f_states.[ i ] <: Libcrux.Digest.t_Shake128State)
-          in
-          let xof_state:t_XofState v_K =
-            {
-              xof_state with
-              f_states
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize xof_state.f_states i tmp0
-            }
-            <:
-            t_XofState v_K
-          in
-          let hoist23:t_Array u8 (sz 504) = out in
-          let hoist24:t_Array (t_Array u8 (sz 504)) v_K =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize blocks i hoist23
-          in
-          hoist24, xof_state <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K))
-  in
-  let hax_temp_output:t_Array (t_Array u8 (sz 504)) v_K = blocks in
-  xof_state, hax_temp_output <: (t_XofState v_K & t_Array (t_Array u8 (sz 504)) v_K)
+        Rust_primitives.Hax.t_Never)

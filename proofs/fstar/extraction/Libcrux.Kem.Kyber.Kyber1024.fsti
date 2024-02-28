@@ -71,11 +71,6 @@ let t_MlKem1024PrivateKey = Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168)
 unfold
 let t_MlKem1024PublicKey = Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)
 
-val validate_public_key (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568))
-    : Prims.Pure (Core.Option.t_Option (Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val decapsulate
       (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168))
       (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568))
@@ -85,6 +80,11 @@ val encapsulate
       (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568))
       (randomness: t_Array u8 (sz 32))
     : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568) & t_Array u8 (sz 32))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val validate_public_key (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568))
+    : Prims.Pure (Core.Option.t_Option (Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
