@@ -79,8 +79,9 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
     let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [PolynomialRingElement; K] = [PolynomialRingElement::ZERO; K];
 
-    let mut xof_states = XOF_absorb::<K>(seeds);
-    let randomness = XOF_squeeze_three_blocks(&mut xof_states);
+    let mut xof_state = XOF_absorb::<K>(seeds);
+    let (randomness,new_state) = XOF_squeeze_three_blocks(xof_state);
+    xof_state = new_state;
 
     let mut done =
         sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
@@ -89,7 +90,8 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
     // unlikely according to:
     // https://eprint.iacr.org/2023/708.pdf
     while !done {
-        let randomness = XOF_squeeze_block(&mut xof_states);
+        let (randomness, new_state) = XOF_squeeze_block(xof_state);
+        xof_state = new_state;
         done =
             sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
     }
