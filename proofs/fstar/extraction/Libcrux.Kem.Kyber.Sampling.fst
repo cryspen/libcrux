@@ -314,64 +314,64 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
     Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
-  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K =
+  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState =
     Libcrux.Kem.Kyber.Hash_functions.v_XOF_absorb v_K seeds
   in
   let randomness, new_state:(t_Array (t_Array u8 (sz 504)) v_K &
-    Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K) =
+    Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
     Libcrux.Kem.Kyber.Hash_functions.v_XOF_squeeze_three_blocks v_K xof_state
   in
-  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K = new_state in
-  let tmp0, tmp1, out:(t_Array usize v_K &
+  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState = new_state in
+  let tmp0, tmp1, out1:(t_Array usize v_K &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     bool) =
     sample_from_uniform_distribution_next v_K (sz 504) randomness sampled_coefficients out
   in
   let sampled_coefficients:t_Array usize v_K = tmp0 in
   let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K = tmp1 in
-  let done:bool = out in
+  let done:bool = out1 in
   let done, out, sampled_coefficients, xof_state:(bool &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     t_Array usize v_K &
-    Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K) =
+    Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
     Rust_primitives.f_while_loop (fun temp_0_ ->
           let done, out, sampled_coefficients, xof_state:(bool &
             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K &
-            Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K) =
+            Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
             temp_0_
           in
           ~.done <: bool)
       (done, out, sampled_coefficients, xof_state
         <:
         (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & t_Array usize v_K &
-          Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K))
+          Libcrux.Kem.Kyber.Hash_functions.t_XofState))
       (fun temp_0_ ->
           let done, out, sampled_coefficients, xof_state:(bool &
             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K &
-            Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K) =
+            Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
             temp_0_
           in
           let randomness, new_state:(t_Array (t_Array u8 (sz 168)) v_K &
-            Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K) =
+            Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
             Libcrux.Kem.Kyber.Hash_functions.v_XOF_squeeze_block v_K xof_state
           in
-          let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K = new_state in
-          let tmp0, tmp1, out:(t_Array usize v_K &
+          let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState = new_state in
+          let tmp0, tmp1, out1:(t_Array usize v_K &
             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             bool) =
             sample_from_uniform_distribution_next v_K (sz 168) randomness sampled_coefficients out
           in
           let sampled_coefficients:t_Array usize v_K = tmp0 in
           let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K = tmp1 in
-          let hoist21:bool = out in
+          let hoist21:bool = out1 in
           let done:bool = hoist21 in
           done, out, sampled_coefficients, xof_state
           <:
           (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K &
-            Libcrux.Kem.Kyber.Hash_functions.t_XofState v_K))
+            Libcrux.Kem.Kyber.Hash_functions.t_XofState))
   in
   let _:Prims.unit = () <: Prims.unit in
   out

@@ -12,11 +12,11 @@ val sha3_512_ (payload: t_Slice u8)
 val shake256 (v_LEN: usize) (data: t_Slice u8)
     : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
-type t_Shake128StateX2 =
+val t_Shake128StateX2:Type
 
-type t_Shake128StateX3 =
+val t_Shake128StateX3:Type
 
-type t_Shake128StateX4 =
+val t_Shake128StateX4:Type
 
 val shake128_absorb_final_x2 (st: t_Shake128StateX2) (data0 data1: t_Slice u8)
     : Prims.Pure t_Shake128StateX2 Prims.l_True (fun _ -> Prims.l_True)

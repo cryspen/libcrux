@@ -18,7 +18,7 @@ let v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
         (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
         (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
     in
-    XofState_X2 state <: t_XofState v_K
+    XofState_X2 state <: t_XofState
   | 3uy ->
     let state:Libcrux.Digest.t_Shake128StateX3 = Libcrux.Digest.shake128_init_x3 () in
     let state:Libcrux.Digest.t_Shake128StateX3 =
@@ -27,7 +27,7 @@ let v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
         (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
         (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
     in
-    XofState_X3 state <: t_XofState v_K
+    XofState_X3 state <: t_XofState
   | 4uy ->
     let state:Libcrux.Digest.t_Shake128StateX4 = Libcrux.Digest.shake128_init_x4 () in
     let state:Libcrux.Digest.t_Shake128StateX4 =
@@ -37,18 +37,18 @@ let v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
         (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
         (Rust_primitives.unsize (input.[ sz 3 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
     in
-    XofState_X4 state <: t_XofState v_K
+    XofState_X4 state <: t_XofState
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
         <:
         Rust_primitives.Hax.t_Never)
 
-let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState v_K) =
+let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState) =
   let output:t_Array (t_Array u8 (sz 168)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 168) <: t_Array u8 (sz 168)) v_K
   in
-  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState v_K) with
+  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState) with
   | 2uy, XofState_X2 st ->
     let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 168)) (sz 2)) =
       Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 168) st
@@ -65,9 +65,7 @@ let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState v_K) =
         (sz 1)
         (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
     in
-    output, (XofState_X2 st <: t_XofState v_K)
-    <:
-    (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K)
+    output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
   | 3uy, XofState_X3 st ->
     let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 168)) (sz 3)) =
       Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 168) st
@@ -89,9 +87,7 @@ let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState v_K) =
         (sz 2)
         (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
     in
-    output, (XofState_X3 st <: t_XofState v_K)
-    <:
-    (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K)
+    output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
   | 4uy, XofState_X4 st ->
     let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 168)) (sz 4)) =
       Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 168) st
@@ -118,20 +114,18 @@ let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState v_K) =
         (sz 3)
         (tmp.[ sz 3 ] <: t_Array u8 (sz 168))
     in
-    output, (XofState_X4 st <: t_XofState v_K)
-    <:
-    (t_Array (t_Array u8 (sz 168)) v_K & t_XofState v_K)
+    output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
         <:
         Rust_primitives.Hax.t_Never)
 
-let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState v_K) =
+let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState) =
   let output:t_Array (t_Array u8 (sz 504)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 504) <: t_Array u8 (sz 504)) v_K
   in
-  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState v_K) with
+  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState) with
   | 2uy, XofState_X2 st ->
     let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 504)) (sz 2)) =
       Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 504) st
@@ -148,9 +142,7 @@ let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState v_K) =
         (sz 1)
         (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
     in
-    output, (XofState_X2 st <: t_XofState v_K)
-    <:
-    (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K)
+    output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
   | 3uy, XofState_X3 st ->
     let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 504)) (sz 3)) =
       Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 504) st
@@ -172,9 +164,7 @@ let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState v_K) =
         (sz 2)
         (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
     in
-    output, (XofState_X3 st <: t_XofState v_K)
-    <:
-    (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K)
+    output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
   | 4uy, XofState_X4 st ->
     let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 504)) (sz 4)) =
       Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 504) st
@@ -201,9 +191,7 @@ let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState v_K) =
         (sz 3)
         (tmp.[ sz 3 ] <: t_Array u8 (sz 504))
     in
-    output, (XofState_X4 st <: t_XofState v_K)
-    <:
-    (t_Array (t_Array u8 (sz 504)) v_K & t_XofState v_K)
+    output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
   | _ ->
     Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 

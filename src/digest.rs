@@ -365,6 +365,7 @@ pub fn shake128<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
 }
 
 /// SHAKE 128 Incremental API (Scalar - SIMD X4)
+#[cfg_attr(hax, hax_lib_macros::opaque_type)]
 pub struct Shake128State(sha3::incremental::Shake128State);
 
 pub fn shake128_init() -> Shake128State {
@@ -387,9 +388,11 @@ pub fn shake128_squeeze_nblocks<const OUTPUT_BYTES: usize>(
 
 /// SHAKE 128 Incremental API (SIMD)
 #[cfg(simd256)]
+#[cfg_attr(hax, hax_lib_macros::opaque_type)]
 pub struct Shake128StateX4(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
+#[cfg_attr(hax, hax_lib_macros::opaque_type)]
 pub struct Shake128StateX4([sha3::incremental::Shake128State;4]);
 
 #[cfg(simd256)]
@@ -475,9 +478,11 @@ pub fn shake128_squeeze_nblocks_x4<const OUTPUT_BYTES: usize>(
 
 /// SHAKE 128 Incremental API (SIMD)
 #[cfg(simd256)]
+#[cfg_attr(hax, hax_lib_macros::opaque_type)]
 pub struct Shake128StateX2(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
+#[cfg_attr(hax, hax_lib_macros::opaque_type)]
 pub struct Shake128StateX2([sha3::incremental::Shake128State;2]);
 
 #[cfg(simd256)]
@@ -552,9 +557,11 @@ pub fn shake128_squeeze_nblocks_x2<const OUTPUT_BYTES: usize>(
 
 /// SHAKE 128 Incremental API (SIMD)
 #[cfg(simd256)]
+#[cfg_attr(hax, hax_lib_macros::opaque_type)]
 pub struct Shake128StateX3(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
+#[cfg_attr(hax, hax_lib_macros::opaque_type)]
 pub struct Shake128StateX3([sha3::incremental::Shake128State;3]);
 
 #[cfg(simd256)]
