@@ -387,14 +387,14 @@ pub fn shake128_squeeze_nblocks<const OUTPUT_BYTES: usize>(
 
 /// SHAKE 128 Incremental API (SIMD)
 #[cfg(simd256)]
-pub struct Shake128StateX4(sha3::incremental::Shake128StateX4);
+pub struct Shake128StateX4(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
 pub struct Shake128StateX4([sha3::incremental::Shake128State;4]);
 
 #[cfg(simd256)]
 pub fn shake128_init_x4() -> Shake128StateX4 {
-    Shake128StateX4(sha3::incremental_x4::Shake128StateX4::new())
+    Shake128StateX4(sha3::incremental_x4::Shake128StateX4::new()) 
 }
 
 #[cfg(not(simd256))]
@@ -475,7 +475,7 @@ pub fn shake128_squeeze_nblocks_x4<const OUTPUT_BYTES: usize>(
 
 /// SHAKE 128 Incremental API (SIMD)
 #[cfg(simd256)]
-pub struct Shake128StateX2(sha3::incremental::Shake128StateX4);
+pub struct Shake128StateX2(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
 pub struct Shake128StateX2([sha3::incremental::Shake128State;2]);
@@ -534,7 +534,11 @@ pub fn shake128_absorb_final_x2(
 pub fn shake128_squeeze_nblocks_x2<const OUTPUT_BYTES: usize>(
     st: &mut Shake128StateX2,
 ) -> [[u8; OUTPUT_BYTES]; 2] {
-    st.0.squeeze_nblocks()[0..1]
+    let mut output = [[0u8;OUTPUT_BYTES];2];
+    let tmp = st.0.squeeze_nblocks();
+    output[0] = tmp[0];
+    output[1] = tmp[1];
+    output
 }
 
 #[cfg(not(simd256))]
@@ -548,7 +552,7 @@ pub fn shake128_squeeze_nblocks_x2<const OUTPUT_BYTES: usize>(
 
 /// SHAKE 128 Incremental API (SIMD)
 #[cfg(simd256)]
-pub struct Shake128StateX3(sha3::incremental::Shake128StateX4);
+pub struct Shake128StateX3(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
 pub struct Shake128StateX3([sha3::incremental::Shake128State;3]);
@@ -614,7 +618,12 @@ pub fn shake128_absorb_final_x3(
 pub fn shake128_squeeze_nblocks_x3<const OUTPUT_BYTES: usize>(
     st: &mut Shake128StateX3,
 ) -> [[u8; OUTPUT_BYTES]; 3] {
-    st.0.squeeze_nblocks()[0..2]
+    let mut output = [[0u8;OUTPUT_BYTES];3];
+    let tmp = st.0.squeeze_nblocks();
+    output[0] = tmp[0];
+    output[1] = tmp[1];
+    output[2] = tmp[2];
+    output
 }
 
 #[cfg(not(simd256))]

@@ -314,7 +314,6 @@ pub mod incremental_x4 {
 
     impl Shake128StateX4 {
         pub fn new() -> Self {
-            println!("allocating shake128statex4 state");
             let state = Self {
                 state: unsafe { Hacl_Hash_SHA3_Simd256_state_malloc() },
             };
@@ -349,7 +348,7 @@ pub mod incremental_x4 {
         }
 
         pub fn absorb_final(&mut self, input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) {
-            println!("absorbing shake128statex4 state");
+            
             debug_assert!(
                 input0.len() == input1.len()
                 && input0.len() == input2.len()
@@ -387,7 +386,6 @@ pub mod incremental_x4 {
     }
     impl Drop for Shake128StateX4 {
         fn drop(&mut self) {
-            println!("dropping shake128statex4 state");
             unsafe { Hacl_Hash_SHA3_Simd256_state_free(self.state) }
         }
     }

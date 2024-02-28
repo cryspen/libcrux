@@ -9919,7 +9919,7 @@ Hacl_Hash_SHA3_Simd256_sha3_512(
 
 Lib_IntVector_Intrinsics_vec256 *Hacl_Hash_SHA3_Simd256_state_malloc(void)
 {
-  Lib_IntVector_Intrinsics_vec256 *buf = (Lib_IntVector_Intrinsics_vec256 *)KRML_ALIGNED_MALLOC(32,25U * sizeof (Lib_IntVector_Intrinsics_vec256));
+  Lib_IntVector_Intrinsics_vec256 *buf = (Lib_IntVector_Intrinsics_vec256 *)KRML_ALIGNED_MALLOC(32, 25U * sizeof (Lib_IntVector_Intrinsics_vec256));
   for (int i = 0; i < 25; i++){
     buf[i] = Lib_IntVector_Intrinsics_vec256_zero;
   }
@@ -10626,8 +10626,7 @@ Hacl_Hash_SHA3_Simd256_shake128_absorb_final(
   ws[31U] = ws310;
   for (uint32_t i = 0U; i < 25U; i++)
   {
-    Lib_IntVector_Intrinsics_vec256 tmp = Lib_IntVector_Intrinsics_vec256_xor(state[i], ws[i]);
-    state[i] = tmp;
+    state[i] = Lib_IntVector_Intrinsics_vec256_xor(state[i], ws[i]);
   }
   uint8_t b04[256U] = { 0U };
   uint8_t b14[256U] = { 0U };
