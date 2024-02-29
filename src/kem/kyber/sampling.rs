@@ -80,7 +80,7 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
     let mut out: [PolynomialRingElement; K] = [PolynomialRingElement::ZERO; K];
 
     let mut xof_state = XOF_absorb::<K>(seeds);
-    let (randomness,new_state) = XOF_squeeze_three_blocks(xof_state);
+    let (randomness, new_state) = XOF_squeeze_three_blocks(xof_state);
     xof_state = new_state;
 
     let mut done =

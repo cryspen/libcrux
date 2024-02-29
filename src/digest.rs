@@ -393,19 +393,21 @@ pub struct Shake128StateX4(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
 #[cfg_attr(hax, hax_lib_macros::opaque_type)]
-pub struct Shake128StateX4([sha3::incremental::Shake128State;4]);
+pub struct Shake128StateX4([sha3::incremental::Shake128State; 4]);
 
 #[cfg(simd256)]
 pub fn shake128_init_x4() -> Shake128StateX4 {
-    Shake128StateX4(sha3::incremental_x4::Shake128StateX4::new()) 
+    Shake128StateX4(sha3::incremental_x4::Shake128StateX4::new())
 }
 
 #[cfg(not(simd256))]
 pub fn shake128_init_x4() -> Shake128StateX4 {
-    Shake128StateX4([sha3::incremental::Shake128State::new(), 
-                     sha3::incremental::Shake128State::new(), 
-                     sha3::incremental::Shake128State::new(), 
-                     sha3::incremental::Shake128State::new()])
+    Shake128StateX4([
+        sha3::incremental::Shake128State::new(),
+        sha3::incremental::Shake128State::new(),
+        sha3::incremental::Shake128State::new(),
+        sha3::incremental::Shake128State::new(),
+    ])
 }
 
 #[cfg(simd256)]
@@ -473,7 +475,7 @@ pub fn shake128_squeeze_nblocks_x4<const OUTPUT_BYTES: usize>(
     let out1: [u8; OUTPUT_BYTES] = st.0[1].squeeze_nblocks();
     let out2: [u8; OUTPUT_BYTES] = st.0[2].squeeze_nblocks();
     let out3: [u8; OUTPUT_BYTES] = st.0[3].squeeze_nblocks();
-    [out0,out1,out2,out3]
+    [out0, out1, out2, out3]
 }
 
 /// SHAKE 128 Incremental API (SIMD)
@@ -483,7 +485,7 @@ pub struct Shake128StateX2(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
 #[cfg_attr(hax, hax_lib_macros::opaque_type)]
-pub struct Shake128StateX2([sha3::incremental::Shake128State;2]);
+pub struct Shake128StateX2([sha3::incremental::Shake128State; 2]);
 
 #[cfg(simd256)]
 pub fn shake128_init_x2() -> Shake128StateX2 {
@@ -492,45 +494,30 @@ pub fn shake128_init_x2() -> Shake128StateX2 {
 
 #[cfg(not(simd256))]
 pub fn shake128_init_x2() -> Shake128StateX2 {
-    Shake128StateX2([sha3::incremental::Shake128State::new(), 
-                     sha3::incremental::Shake128State::new(), 
-                     ])
+    Shake128StateX2([
+        sha3::incremental::Shake128State::new(),
+        sha3::incremental::Shake128State::new(),
+    ])
 }
 
 #[cfg(simd256)]
-pub fn shake128_absorb_nblocks_x2(
-    st: &mut Shake128StateX2,
-    data0: &[u8],
-    data1: &[u8],
-) {
+pub fn shake128_absorb_nblocks_x2(st: &mut Shake128StateX2, data0: &[u8], data1: &[u8]) {
     st.0.absorb_nblocks(data0, data1, data0, data1);
 }
 
 #[cfg(not(simd256))]
-pub fn shake128_absorb_nblocks_x2(
-    st: &mut Shake128StateX2,
-    data0: &[u8],
-    data1: &[u8],
-) {
+pub fn shake128_absorb_nblocks_x2(st: &mut Shake128StateX2, data0: &[u8], data1: &[u8]) {
     st.0[0].absorb_nblocks(data0);
     st.0[1].absorb_nblocks(data1);
 }
 
 #[cfg(simd256)]
-pub fn shake128_absorb_final_x2(
-    st: &mut Shake128StateX2,
-    data0: &[u8],
-    data1: &[u8],
-) {
+pub fn shake128_absorb_final_x2(st: &mut Shake128StateX2, data0: &[u8], data1: &[u8]) {
     st.0.absorb_final(data0, data1, data0, data1);
 }
 
 #[cfg(not(simd256))]
-pub fn shake128_absorb_final_x2(
-    st: &mut Shake128StateX2,
-    data0: &[u8],
-    data1: &[u8],
-) {
+pub fn shake128_absorb_final_x2(st: &mut Shake128StateX2, data0: &[u8], data1: &[u8]) {
     st.0[0].absorb_final(data0);
     st.0[1].absorb_final(data1);
 }
@@ -539,7 +526,7 @@ pub fn shake128_absorb_final_x2(
 pub fn shake128_squeeze_nblocks_x2<const OUTPUT_BYTES: usize>(
     st: &mut Shake128StateX2,
 ) -> [[u8; OUTPUT_BYTES]; 2] {
-    let mut output = [[0u8;OUTPUT_BYTES];2];
+    let mut output = [[0u8; OUTPUT_BYTES]; 2];
     let tmp = st.0.squeeze_nblocks();
     output[0] = tmp[0];
     output[1] = tmp[1];
@@ -552,7 +539,7 @@ pub fn shake128_squeeze_nblocks_x2<const OUTPUT_BYTES: usize>(
 ) -> [[u8; OUTPUT_BYTES]; 2] {
     let out0: [u8; OUTPUT_BYTES] = st.0[0].squeeze_nblocks();
     let out1: [u8; OUTPUT_BYTES] = st.0[1].squeeze_nblocks();
-    [out0,out1]
+    [out0, out1]
 }
 
 /// SHAKE 128 Incremental API (SIMD)
@@ -562,7 +549,7 @@ pub struct Shake128StateX3(sha3::incremental_x4::Shake128StateX4);
 
 #[cfg(not(simd256))]
 #[cfg_attr(hax, hax_lib_macros::opaque_type)]
-pub struct Shake128StateX3([sha3::incremental::Shake128State;3]);
+pub struct Shake128StateX3([sha3::incremental::Shake128State; 3]);
 
 #[cfg(simd256)]
 pub fn shake128_init_x3() -> Shake128StateX3 {
@@ -571,10 +558,11 @@ pub fn shake128_init_x3() -> Shake128StateX3 {
 
 #[cfg(not(simd256))]
 pub fn shake128_init_x3() -> Shake128StateX3 {
-    Shake128StateX3([sha3::incremental::Shake128State::new(), 
-                     sha3::incremental::Shake128State::new(), 
-                     sha3::incremental::Shake128State::new(), 
-                     ])
+    Shake128StateX3([
+        sha3::incremental::Shake128State::new(),
+        sha3::incremental::Shake128State::new(),
+        sha3::incremental::Shake128State::new(),
+    ])
 }
 
 #[cfg(simd256)]
@@ -625,7 +613,7 @@ pub fn shake128_absorb_final_x3(
 pub fn shake128_squeeze_nblocks_x3<const OUTPUT_BYTES: usize>(
     st: &mut Shake128StateX3,
 ) -> [[u8; OUTPUT_BYTES]; 3] {
-    let mut output = [[0u8;OUTPUT_BYTES];3];
+    let mut output = [[0u8; OUTPUT_BYTES]; 3];
     let tmp = st.0.squeeze_nblocks();
     output[0] = tmp[0];
     output[1] = tmp[1];
@@ -640,7 +628,7 @@ pub fn shake128_squeeze_nblocks_x3<const OUTPUT_BYTES: usize>(
     let out0: [u8; OUTPUT_BYTES] = st.0[0].squeeze_nblocks();
     let out1: [u8; OUTPUT_BYTES] = st.0[1].squeeze_nblocks();
     let out2: [u8; OUTPUT_BYTES] = st.0[2].squeeze_nblocks();
-    [out0,out1,out2]
+    [out0, out1, out2]
 }
 
 /// SHAKE 256

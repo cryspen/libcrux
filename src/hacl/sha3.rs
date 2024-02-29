@@ -330,8 +330,8 @@ pub mod incremental_x4 {
         ) {
             debug_assert!(
                 input0.len() == input1.len()
-                && input0.len() == input2.len()
-                && input0.len() == input3.len()
+                    && input0.len() == input2.len()
+                    && input0.len() == input3.len()
             );
             debug_assert!(input0.len() % 168 == 0);
 
@@ -348,11 +348,10 @@ pub mod incremental_x4 {
         }
 
         pub fn absorb_final(&mut self, input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) {
-            
             debug_assert!(
                 input0.len() == input1.len()
-                && input0.len() == input2.len()
-                && input0.len() == input3.len()
+                    && input0.len() == input2.len()
+                    && input0.len() == input3.len()
             );
             debug_assert!(input0.len() < 168);
 

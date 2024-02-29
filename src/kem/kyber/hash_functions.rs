@@ -27,77 +27,83 @@ pub(crate) enum XofState {
 #[inline(always)]
 pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> XofState {
     match K as u8 {
-        2 => {let mut state = digest::shake128_init_x2();
-              digest::shake128_absorb_final_x2(&mut state, &input[0], &input[1]);
-              XofState::X2(state)},
-        3 => {let mut state = digest::shake128_init_x3();
-              digest::shake128_absorb_final_x3(&mut state, &input[0], &input[1], &input[2]);
-              XofState::X3(state)},
-        4 => {let mut state = digest::shake128_init_x4();
-              digest::shake128_absorb_final_x4(&mut state, &input[0], &input[1], &input[2], &input[3]);
-              XofState::X4(state)},
-        _ => unreachable!()
+        2 => {
+            let mut state = digest::shake128_init_x2();
+            digest::shake128_absorb_final_x2(&mut state, &input[0], &input[1]);
+            XofState::X2(state)
         }
+        3 => {
+            let mut state = digest::shake128_init_x3();
+            digest::shake128_absorb_final_x3(&mut state, &input[0], &input[1], &input[2]);
+            XofState::X3(state)
+        }
+        4 => {
+            let mut state = digest::shake128_init_x4();
+            digest::shake128_absorb_final_x4(
+                &mut state, &input[0], &input[1], &input[2], &input[3],
+            );
+            XofState::X4(state)
+        }
+        _ => unreachable!(),
+    }
 }
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
     xof_state: XofState,
-) -> ([[u8; 168 * 3]; K],XofState) {
+) -> ([[u8; 168 * 3]; K], XofState) {
     let mut output = [[0; 168 * 3]; K];
     match (K as u8, xof_state) {
         (2, XofState::X2(mut st)) => {
             let tmp = digest::shake128_squeeze_nblocks_x2::<504>(&mut st);
             output[0] = tmp[0];
             output[1] = tmp[1];
-            (output,XofState::X2(st))
-        },
+            (output, XofState::X2(st))
+        }
         (3, XofState::X3(mut st)) => {
             let tmp = digest::shake128_squeeze_nblocks_x3::<504>(&mut st);
             output[0] = tmp[0];
             output[1] = tmp[1];
             output[2] = tmp[2];
-            (output,XofState::X3(st))
-        },
+            (output, XofState::X3(st))
+        }
         (4, XofState::X4(mut st)) => {
             let tmp = digest::shake128_squeeze_nblocks_x4::<504>(&mut st);
             output[0] = tmp[0];
             output[1] = tmp[1];
             output[2] = tmp[2];
             output[3] = tmp[3];
-            (output,XofState::X4(st))
-        },
-        _ => unreachable!()
+            (output, XofState::X4(st))
+        }
+        _ => unreachable!(),
     }
 }
 
 #[inline(always)]
-pub(crate) fn XOF_squeeze_block<const K: usize>(
-    xof_state: XofState,
-) -> ([[u8; 168]; K],XofState) {
+pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: XofState) -> ([[u8; 168]; K], XofState) {
     let mut output = [[0; 168]; K];
     match (K as u8, xof_state) {
         (2, XofState::X2(mut st)) => {
             let tmp = digest::shake128_squeeze_nblocks_x2::<168>(&mut st);
             output[0] = tmp[0];
             output[1] = tmp[1];
-            (output,XofState::X2(st))
-        },
+            (output, XofState::X2(st))
+        }
         (3, XofState::X3(mut st)) => {
             let tmp = digest::shake128_squeeze_nblocks_x3::<168>(&mut st);
             output[0] = tmp[0];
             output[1] = tmp[1];
             output[2] = tmp[2];
-            (output,XofState::X3(st))
-        },
+            (output, XofState::X3(st))
+        }
         (4, XofState::X4(mut st)) => {
             let tmp = digest::shake128_squeeze_nblocks_x4::<168>(&mut st);
             output[0] = tmp[0];
             output[1] = tmp[1];
             output[2] = tmp[2];
             output[3] = tmp[3];
-            (output,XofState::X4(st))
-        },
-        _ => unreachable!()
+            (output, XofState::X4(st))
+        }
+        _ => unreachable!(),
     }
 }
