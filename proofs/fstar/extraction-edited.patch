@@ -1,6 +1,6 @@
 diff -ruN extraction/BitVecEq.fst extraction-edited/BitVecEq.fst
 --- extraction/BitVecEq.fst	1970-01-01 01:00:00
-+++ extraction-edited/BitVecEq.fst	2024-02-22 11:01:52
++++ extraction-edited/BitVecEq.fst	2024-02-29 12:58:34
 @@ -0,0 +1,12 @@
 +module BitVecEq
 +
@@ -16,7 +16,7 @@ diff -ruN extraction/BitVecEq.fst extraction-edited/BitVecEq.fst
 +
 diff -ruN extraction/BitVecEq.fsti extraction-edited/BitVecEq.fsti
 --- extraction/BitVecEq.fsti	1970-01-01 01:00:00
-+++ extraction-edited/BitVecEq.fsti	2024-02-22 11:01:52
++++ extraction-edited/BitVecEq.fsti	2024-02-29 12:58:35
 @@ -0,0 +1,294 @@
 +module BitVecEq
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -312,62 +312,10 @@ diff -ruN extraction/BitVecEq.fsti extraction-edited/BitVecEq.fsti
 +           (ensures int_arr_bitwise_eq_range arr1 d arr2 d (n_offset1 * d) (n_offset2 * d) bits)
 + = admit ()
 +*)
-diff -ruN extraction/Libcrux.Digest.fst extraction-edited/Libcrux.Digest.fst
---- extraction/Libcrux.Digest.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Digest.fst	1970-01-01 01:00:00
-@@ -1,48 +0,0 @@
--module Libcrux.Digest
--#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
--open Core
--open FStar.Mul
--
--let sha3_256_ (payload: t_Slice u8) = Libcrux.Hacl.Sha3.sha256 payload
--
--let sha3_512_ (payload: t_Slice u8) = Libcrux.Hacl.Sha3.sha512 payload
--
--let shake128 (v_LEN: usize) (data: t_Slice u8) = Libcrux.Hacl.Sha3.shake128 v_LEN data
--
--let shake256 (v_LEN: usize) (data: t_Slice u8) = Libcrux.Hacl.Sha3.shake256 v_LEN data
--
--let shake128x4_portable (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
--  let input_len:usize = Core.Slice.impl__len data0 in
--  let _:Prims.unit =
--    if true
--    then
--      let _:Prims.unit =
--        if
--          ~.((input_len =. (Core.Slice.impl__len data1 <: usize) <: bool) &&
--            (input_len =. (Core.Slice.impl__len data2 <: usize) <: bool) &&
--            (input_len =. (Core.Slice.impl__len data3 <: usize) <: bool) &&
--            (input_len <=. (cast (Core.Num.impl__u32__MAX <: u32) <: usize) <: bool) &&
--            (v_LEN <=. (cast (Core.Num.impl__u32__MAX <: u32) <: usize) <: bool))
--        then
--          Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: input_len == data1.len() && input_len == data2.len() &&\\n            input_len == data3.len() && input_len <= u32::MAX as usize &&\\n    LEN <= u32::MAX as usize"
--
--              <:
--              Rust_primitives.Hax.t_Never)
--      in
--      ()
--  in
--  let digest0:t_Array u8 v_LEN = Libcrux.Hacl.Sha3.shake128 v_LEN data0 in
--  let digest1:t_Array u8 v_LEN = Libcrux.Hacl.Sha3.shake128 v_LEN data1 in
--  let digest2:t_Array u8 v_LEN = Libcrux.Hacl.Sha3.shake128 v_LEN data2 in
--  let digest3:t_Array u8 v_LEN = Libcrux.Hacl.Sha3.shake128 v_LEN data3 in
--  digest0, digest1, digest2, digest3
--  <:
--  (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
--
--let shake128x4_256_ (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
--  shake128x4_portable v_LEN data0 data1 data2 data3
--
--let shake128x4 (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8) =
--  if Libcrux_platform.Platform.simd256_support ()
--  then shake128x4_256_ v_LEN data0 data1 data2 data3
--  else shake128x4_portable v_LEN data0 data1 data2 data3
 diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
---- extraction/Libcrux.Digest.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Digest.fsti	2024-02-22 11:01:52
-@@ -3,6 +3,11 @@
+--- extraction/Libcrux.Digest.fsti	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Digest.fsti	2024-02-29 12:58:34
+@@ -3,50 +3,29 @@
  open Core
  open FStar.Mul
  
@@ -379,21 +327,60 @@ diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
  val sha3_256_ (payload: t_Slice u8)
      : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
  
-@@ -16,11 +21,6 @@
+ val sha3_512_ (payload: t_Slice u8)
+     : Prims.Pure (t_Array u8 (sz 64)) Prims.l_True (fun _ -> Prims.l_True)
+ 
++val shake128 (v_LEN: usize) (data: t_Slice u8)
++    : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
++
+ val shake256 (v_LEN: usize) (data: t_Slice u8)
      : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
  
- val shake128x4_portable (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8)
--    : Prims.Pure (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
+-val t_Shake128StateX2:Type
+-
+-val t_Shake128StateX3:Type
+-
+-val t_Shake128StateX4:Type
+-
+-val shake128_absorb_final_x2 (st: t_Shake128StateX2) (data0 data1: t_Slice u8)
+-    : Prims.Pure t_Shake128StateX2 Prims.l_True (fun _ -> Prims.l_True)
+-
+-val shake128_absorb_final_x3 (st: t_Shake128StateX3) (data0 data1 data2: t_Slice u8)
+-    : Prims.Pure t_Shake128StateX3 Prims.l_True (fun _ -> Prims.l_True)
+-
+-val shake128_absorb_final_x4 (st: t_Shake128StateX4) (data0 data1 data2 data3: t_Slice u8)
+-    : Prims.Pure t_Shake128StateX4 Prims.l_True (fun _ -> Prims.l_True)
+-
+-val shake128_init_x2: Prims.unit
+-  -> Prims.Pure t_Shake128StateX2 Prims.l_True (fun _ -> Prims.l_True)
+-
+-val shake128_init_x3: Prims.unit
+-  -> Prims.Pure t_Shake128StateX3 Prims.l_True (fun _ -> Prims.l_True)
+-
+-val shake128_init_x4: Prims.unit
+-  -> Prims.Pure t_Shake128StateX4 Prims.l_True (fun _ -> Prims.l_True)
+-
+-val shake128_squeeze_nblocks_x2 (v_OUTPUT_BYTES: usize) (st: t_Shake128StateX2)
+-    : Prims.Pure (t_Shake128StateX2 & t_Array (t_Array u8 v_OUTPUT_BYTES) (sz 2))
++val shake128x4_portable (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8)
++    : Prims.Pure (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
+       Prims.l_True
+       (fun _ -> Prims.l_True)
+ 
+-val shake128_squeeze_nblocks_x3 (v_OUTPUT_BYTES: usize) (st: t_Shake128StateX3)
+-    : Prims.Pure (t_Shake128StateX3 & t_Array (t_Array u8 v_OUTPUT_BYTES) (sz 3))
 -      Prims.l_True
 -      (fun _ -> Prims.l_True)
 -
--val shake128x4_256_ (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8)
-     : Prims.Pure (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
+-val shake128_squeeze_nblocks_x4 (v_OUTPUT_BYTES: usize) (st: t_Shake128StateX4)
+-    : Prims.Pure (t_Shake128StateX4 & t_Array (t_Array u8 v_OUTPUT_BYTES) (sz 4))
++val shake128x4 (v_LEN: usize) (data0 data1 data2 data3: t_Slice u8)
++    : Prims.Pure (t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN)
        Prims.l_True
        (fun _ -> Prims.l_True)
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-29 12:58:32
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-02-29 12:58:35
 @@ -1,81 +1,364 @@
  module Libcrux.Kem.Kyber.Arithmetic
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -799,8 +786,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.
 +  
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-02-29 12:58:32
 @@ -3,10 +3,32 @@
  open Core
  open FStar.Mul
@@ -1148,8 +1135,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
 +
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Kem.Kyber.Compress.fst
---- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-02-29 12:58:32
 @@ -1,39 +1,79 @@
  module Libcrux.Kem.Kyber.Compress
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -1253,8 +1240,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Ke
 +  res <: Libcrux.Kem.Kyber.Arithmetic.i32_b 3328
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.Kem.Kyber.Compress.fsti
---- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-02-29 12:58:34
 @@ -3,8 +3,19 @@
  open Core
  open FStar.Mul
@@ -1320,8 +1307,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.K
 +      (requires fe =. 0l || fe =. 1l) 
 +      (fun result -> v result >= 0 /\ v result < 3329)
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-29 12:58:28
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-02-29 12:58:32
 @@ -4,56 +4,163 @@
  open FStar.Mul
  
@@ -1507,8 +1494,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/L
 +  )
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-29 12:58:32
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-02-29 12:58:35
 @@ -20,7 +20,8 @@
  
  val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
@@ -1539,10 +1526,20 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/
 -                result =. rhs <: bool))
 +          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
 +          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool))
+diff -ruN extraction/Libcrux.Kem.Kyber.Constants.fsti extraction-edited/Libcrux.Kem.Kyber.Constants.fsti
+--- extraction/Libcrux.Kem.Kyber.Constants.fsti	2024-02-29 12:58:31
++++ extraction-edited/Libcrux.Kem.Kyber.Constants.fsti	2024-02-29 12:58:34
+@@ -17,4 +17,6 @@
+ 
+ let v_H_DIGEST_SIZE: usize = sz 32
+ 
++let v_REJECTION_SAMPLING_SEED_SIZE: usize = sz 168 *! sz 5
++
+ let v_SHARED_SECRET_SIZE: usize = sz 32
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-22 11:01:52
-@@ -3,13 +3,23 @@
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-02-29 12:58:33
+@@ -3,197 +3,114 @@
  open Core
  open FStar.Mul
  
@@ -1564,39 +1561,292 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 +  admit(); // We assume that sha3_512 correctly implements H
 +  res
  
--let v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
+-let v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
+-  match cast (v_K <: usize) <: u8 with
+-  | 2uy ->
+-    let state:Libcrux.Digest.t_Shake128StateX2 = Libcrux.Digest.shake128_init_x2 () in
+-    let state:Libcrux.Digest.t_Shake128StateX2 =
+-      Libcrux.Digest.shake128_absorb_final_x2 state
+-        (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-        (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-    in
+-    XofState_X2 state <: t_XofState
+-  | 3uy ->
+-    let state:Libcrux.Digest.t_Shake128StateX3 = Libcrux.Digest.shake128_init_x3 () in
+-    let state:Libcrux.Digest.t_Shake128StateX3 =
+-      Libcrux.Digest.shake128_absorb_final_x3 state
+-        (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-        (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-        (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-    in
+-    XofState_X3 state <: t_XofState
+-  | 4uy ->
+-    let state:Libcrux.Digest.t_Shake128StateX4 = Libcrux.Digest.shake128_init_x4 () in
+-    let state:Libcrux.Digest.t_Shake128StateX4 =
+-      Libcrux.Digest.shake128_absorb_final_x4 state
+-        (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-        (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-        (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-        (Rust_primitives.unsize (input.[ sz 3 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
+-    in
+-    XofState_X4 state <: t_XofState
+-  | _ ->
+-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-        <:
+-        Rust_primitives.Hax.t_Never)
+-
+-let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState) =
+-  let output:t_Array (t_Array u8 (sz 168)) v_K =
+-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 168) <: t_Array u8 (sz 168)) v_K
 +let v_XOFx4 v_K (input: t_Array (t_Array u8 (sz 34)) v_K) =
 +  assert (v v_K >= 2);
-   let out:t_Array (t_Array u8 (sz 840)) v_K =
-     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 840) <: t_Array u8 (sz 840)) v_K
++  let out:t_Array (t_Array u8 (sz 840)) v_K =
++    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 840) <: t_Array u8 (sz 840)) v_K
    in
-@@ -56,6 +66,7 @@
-           in
-           out
-         | 3uy ->
+-  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState) with
+-  | 2uy, XofState_X2 st ->
+-    let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 168)) (sz 2)) =
+-      Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 168) st
+-    in
+-    let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
+-    let tmp:t_Array (t_Array u8 (sz 168)) (sz 2) = out in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 0)
+-        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+-    in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 1)
+-        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+-    in
+-    output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
+-  | 3uy, XofState_X3 st ->
+-    let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 168)) (sz 3)) =
+-      Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 168) st
+-    in
+-    let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
+-    let tmp:t_Array (t_Array u8 (sz 168)) (sz 3) = out in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 0)
+-        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+-    in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 1)
+-        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+-    in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 2)
+-        (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
+-    in
+-    output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
+-  | 4uy, XofState_X4 st ->
+-    let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 168)) (sz 4)) =
+-      Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 168) st
+-    in
+-    let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
+-    let tmp:t_Array (t_Array u8 (sz 168)) (sz 4) = out in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 0)
+-        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+-    in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 1)
+-        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+-    in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 2)
+-        (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
+-    in
+-    let output:t_Array (t_Array u8 (sz 168)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 3)
+-        (tmp.[ sz 3 ] <: t_Array u8 (sz 168))
+-    in
+-    output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
+-  | _ ->
+-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-        <:
+-        Rust_primitives.Hax.t_Never)
+-
+-let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState) =
+-  let output:t_Array (t_Array u8 (sz 504)) v_K =
+-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 504) <: t_Array u8 (sz 504)) v_K
++  let out:t_Array (t_Array u8 (sz 840)) v_K =
++    if ~.(Libcrux_platform.Platform.simd256_support () <: bool)
++    then
++      Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++                Core.Ops.Range.f_start = sz 0;
++                Core.Ops.Range.f_end = v_K
++              }
++              <:
++              Core.Ops.Range.t_Range usize)
++          <:
++          Core.Ops.Range.t_Range usize)
++        out
++        (fun out i ->
++            let out:t_Array (t_Array u8 (sz 840)) v_K = out in
++            let i:usize = i in
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
++              i
++              (Libcrux.Digest.shake128 (sz 840)
++                  (Rust_primitives.unsize (input.[ i ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++                <:
++                t_Array u8 (sz 840))
++            <:
++            t_Array (t_Array u8 (sz 840)) v_K)
++    else
++      let out:t_Array (t_Array u8 (sz 840)) v_K =
++        match cast (v_K <: usize) <: u8 with
++        | 2uy ->
++          let d0, d1, _, _:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
++            t_Array u8 (sz 840)) =
++            Libcrux.Digest.shake128x4 (sz 840)
++              (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) d0
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) d1
++          in
++          out
++        | 3uy ->
 +          assert (v (cast v_K <: u8) = 3);
-           let d0, d1, d2, _:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-             t_Array u8 (sz 840)) =
-             Libcrux.Digest.shake128x4 (sz 840)
-@@ -75,6 +86,7 @@
-           in
-           out
-         | 4uy ->
++          let d0, d1, d2, _:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
++            t_Array u8 (sz 840)) =
++            Libcrux.Digest.shake128x4 (sz 840)
++              (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) d0
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) d1
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) d2
++          in
++          out
++        | 4uy ->
 +          assert (v (cast v_K <: u8) = 4);
-           let d0, d1, d2, d3:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
-             t_Array u8 (sz 840)) =
-             Libcrux.Digest.shake128x4 (sz 840)
-@@ -100,4 +112,5 @@
-       in
-       out
++          let d0, d1, d2, d3:(t_Array u8 (sz 840) & t_Array u8 (sz 840) & t_Array u8 (sz 840) &
++            t_Array u8 (sz 840)) =
++            Libcrux.Digest.shake128x4 (sz 840)
++              (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++              (Rust_primitives.unsize (input.[ sz 3 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) d0
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) d1
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) d2
++          in
++          let out:t_Array (t_Array u8 (sz 840)) v_K =
++            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 3) d3
++          in
++          out
++        | _ -> out
++      in
++      out
    in
--  out
+-  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState) with
+-  | 2uy, XofState_X2 st ->
+-    let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 504)) (sz 2)) =
+-      Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 504) st
+-    in
+-    let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
+-    let tmp:t_Array (t_Array u8 (sz 504)) (sz 2) = out in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 0)
+-        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+-    in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 1)
+-        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+-    in
+-    output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-  | 3uy, XofState_X3 st ->
+-    let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 504)) (sz 3)) =
+-      Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 504) st
+-    in
+-    let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
+-    let tmp:t_Array (t_Array u8 (sz 504)) (sz 3) = out in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 0)
+-        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+-    in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 1)
+-        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+-    in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 2)
+-        (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
+-    in
+-    output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-  | 4uy, XofState_X4 st ->
+-    let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 504)) (sz 4)) =
+-      Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 504) st
+-    in
+-    let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
+-    let tmp:t_Array (t_Array u8 (sz 504)) (sz 4) = out in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 0)
+-        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+-    in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 1)
+-        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+-    in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 2)
+-        (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
+-    in
+-    let output:t_Array (t_Array u8 (sz 504)) v_K =
+-      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-        (sz 3)
+-        (tmp.[ sz 3 ] <: t_Array u8 (sz 504))
+-    in
+-    output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-  | _ ->
+-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-        <:
+-        Rust_primitives.Hax.t_Never)
 +  admit(); // We assume that shake128x4 correctly implements XOFx4
 +  out 
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-22 11:01:52
-@@ -3,12 +3,17 @@
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-02-29 12:58:33
+@@ -3,27 +3,17 @@
  open Core
  open FStar.Mul
  
@@ -1611,8 +1861,23 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Lib
  val v_PRF (v_LEN: usize) (input: t_Slice u8)
 -    : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
 -
--val v_XOFx4 (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
--    : Prims.Pure (t_Array (t_Array u8 (sz 840)) v_K) Prims.l_True (fun _ -> Prims.l_True)
+-type t_XofState =
+-  | XofState_X2 : Libcrux.Digest.t_Shake128StateX2 -> t_XofState
+-  | XofState_X3 : Libcrux.Digest.t_Shake128StateX3 -> t_XofState
+-  | XofState_X4 : Libcrux.Digest.t_Shake128StateX4 -> t_XofState
+-
+-val v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
+-    : Prims.Pure t_XofState Prims.l_True (fun _ -> Prims.l_True)
+-
+-val v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState)
+-    : Prims.Pure (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
+-      Prims.l_True
+-      (fun _ -> Prims.l_True)
+-
+-val v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState)
+-    : Prims.Pure (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-      Prims.l_True
+-      (fun _ -> Prims.l_True)
 +    : Prims.Pure (t_Array u8 v_LEN) Prims.l_True
 +          (ensures (fun res -> res == Spec.Kyber.v_PRF v_LEN input))
 +          
@@ -1621,8 +1886,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Lib
 +          (ensures (fun res ->
 +            (forall i. i < v v_K ==> Seq.index res i == Spec.Kyber.v_XOF (sz 840) (Seq.index input i))))
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-02-29 12:58:34
 @@ -1,5 +1,5 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -2326,8 +2591,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  res
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-29 12:58:32
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-02-29 12:58:34
 @@ -1,80 +1,151 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -2528,8 +2793,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Ke
 + 
 +    
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst
---- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-02-29 12:58:34
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568))
@@ -2563,8 +2828,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.K
      (sz 3168)
      (sz 1568)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst
---- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-29 12:58:31
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-02-29 12:58:34
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 1632))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 768))
@@ -2598,8 +2863,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Ke
      (sz 1632)
      (sz 800)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst
---- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-02-29 12:58:32
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088))
@@ -2633,8 +2898,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Ke
      (sz 2400)
      (sz 1184)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti
---- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-02-29 12:58:33
 @@ -74,14 +74,15 @@
  val decapsulate
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
@@ -2660,8 +2925,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.K
 -      (fun _ -> Prims.l_True)
 +      (ensures (fun kp -> (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.kyber768_generate_keypair randomness))
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.Kyber.Matrix.fst
---- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-02-29 12:58:33
 @@ -3,192 +3,188 @@
  open Core
  open FStar.Mul
@@ -3391,7 +3656,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
              v_A_transpose
            in
            let i:usize = i in
-@@ -496,11 +482,11 @@
+@@ -482,8 +468,8 @@
+                   in
+                   seeds)
+           in
+-          let sampled:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+-            Libcrux.Kem.Kyber.Sampling.sample_from_xof v_K seeds
++          let xof_bytes:t_Array (t_Array u8 (sz 840)) v_K =
++            Libcrux.Kem.Kyber.Hash_functions.v_XOFx4 v_K seeds
+           in
+           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+                     Core.Ops.Range.f_start = sz 0;
+@@ -496,40 +482,46 @@
              v_A_transpose
              (fun v_A_transpose j ->
                  let v_A_transpose:t_Array
@@ -3400,12 +3676,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
                    v_A_transpose
                  in
                  let j:usize = j in
--                let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
 +                let sampled:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-                   Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (xof_bytes.[ j ]
-                       <:
-                       t_Array u8 (sz 840))
-@@ -508,33 +494,34 @@
++                  Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (xof_bytes.[ j ]
++                      <:
++                      t_Array u8 (sz 840))
++                in
                  if transpose
                  then
                    let v_A_transpose:t_Array
@@ -3419,7 +3694,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 -                            t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
 +                            t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
                            i
-                           sampled
+-                          (sampled.[ j ] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
++                          sampled
                          <:
 -                        t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
 +                        t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
@@ -3437,7 +3713,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 -                            t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
 +                            t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
                            j
-                           sampled
+-                          (sampled.[ j ] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
++                          sampled
                          <:
 -                        t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
 +                        t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K)
@@ -3447,8 +3724,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +  admit(); //P-F
    v_A_transpose
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti
---- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-29 12:58:32
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-02-29 12:58:35
 @@ -3,39 +3,71 @@
  open Core
  open FStar.Mul
@@ -3550,8 +3827,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem
 +        if transpose then Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == matrix_A
 +        else Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == Spec.Kyber.matrix_transpose matrix_A)
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyber.Ntt.fst
---- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-02-29 12:58:33
 @@ -1,56 +1,130 @@
  module Libcrux.Kem.Kyber.Ntt
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -4481,8 +4758,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +  down_cast_poly_b #(8*3328) #3328 re 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti
---- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-02-29 12:58:33
 @@ -2,223 +2,80 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
@@ -4771,19 +5048,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 +      (ensures fun _ -> True)
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Kem.Kyber.Sampling.fst
---- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-02-22 11:01:52
-@@ -3,27 +3,34 @@
+--- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-02-29 12:58:33
+@@ -3,22 +3,34 @@
  open Core
  open FStar.Mul
  
--let rejection_sampling_panic_with_diagnostic (_: Prims.unit) =
 +let rejection_sampling_panic_with_diagnostic () : Prims.unit =
 +  admit(); // This should never be reachable
-   Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
-       <:
-       Rust_primitives.Hax.t_Never)
- 
++  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
++      <:
++      Rust_primitives.Hax.t_Never)
++
 +#push-options "--ifuel 0 --z3rlimit 100"
  let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
 -  let (sampled: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
@@ -4821,7 +5097,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
            let (random_bits_as_u32: u32):u32 =
              (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                  ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
-@@ -35,34 +42,58 @@
+@@ -30,34 +42,58 @@
              ((cast (byte_chunk.[ sz 3 ] <: u8) <: u32) <<! 24l <: u32)
            in
            let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
@@ -4896,7 +5172,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
                    {
                      sampled with
                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -73,29 +104,36 @@
+@@ -68,29 +104,36 @@
                        (outcome_1_ -! outcome_2_ <: i32)
                    }
                    <:
@@ -4949,7 +5225,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
            let (random_bits_as_u24: u32):u32 =
              ((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
-@@ -104,21 +142,28 @@
+@@ -99,21 +142,28 @@
              ((cast (byte_chunk.[ sz 2 ] <: u8) <: u32) <<! 16l <: u32)
            in
            let first_bits:u32 = random_bits_as_u24 &. 2396745ul in
@@ -4988,7 +5264,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
                  let outcome_set:i32 = outcome_set in
                  let outcome_1_:i32 =
                    cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32) <: i32
-@@ -128,8 +173,22 @@
+@@ -123,8 +173,22 @@
                    <:
                    i32
                  in
@@ -5012,7 +5288,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
                    {
                      sampled with
                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -140,15 +199,18 @@
+@@ -135,15 +199,18 @@
                        (outcome_1_ -! outcome_2_ <: i32)
                    }
                    <:
@@ -5032,60 +5308,79 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
    match cast (v_ETA <: usize) <: u32 with
    | 2ul -> sample_from_binomial_distribution_2_ randomness
    | 3ul -> sample_from_binomial_distribution_3_ randomness
-@@ -158,46 +220,62 @@
+@@ -153,225 +220,131 @@
          <:
          Rust_primitives.Hax.t_Never)
  
+-let sample_from_uniform_distribution_next
+-      (v_K v_N: usize)
+-      (randomness: t_Array (t_Array u8 v_N) v_K)
+-      (sampled_coefficients: t_Array usize v_K)
+-      (out: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-     =
+-  let done:bool = true in
+-  let done, out, sampled_coefficients:(bool &
+-    t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-    t_Array usize v_K) =
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-              Core.Ops.Range.f_start = sz 0;
+-              Core.Ops.Range.f_end = v_K
+-            }
+-            <:
+-            Core.Ops.Range.t_Range usize)
+-        <:
+-        Core.Ops.Range.t_Range usize)
 +#push-options "--z3rlimit 50"
- let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
-   let (sampled_coefficients: usize):usize = sz 0 in
--  let (out: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
++let sample_from_uniform_distribution (randomness: t_Array u8 (sz 840)) =
++  let (sampled_coefficients: usize):usize = sz 0 in
 +  let (out: Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement):Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
-   =
--    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
++  =
 +    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
-   in
-   let done:bool = false in
--  let done, out, sampled_coefficients:(bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
++  in
++  let done:bool = false in
 +  let acc_t = (bool & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize) in
 +  [@ inline_let]
 +  let inv = fun (acc:acc_t) -> True in
 +  let sl : t_Slice u8 = randomness in
 +  let chunk_len = sz 3 in
 +  let done, out, sampled_coefficients:(bool & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement &
-     usize) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks (
--                Rust_primitives.unsize randomness <: t_Slice u8)
--              (sz 3)
--            <:
--            Core.Slice.Iter.t_Chunks u8)
--        <:
--        Core.Slice.Iter.t_Chunks u8)
++    usize) =
 +   Rust_primitives.Iterators.fold_chunks_exact #u8 #acc_t #inv
 +      sl
 +      chunk_len
        (done, out, sampled_coefficients
          <:
--        (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+-        (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & t_Array usize v_K
+-        ))
+-      (fun temp_0_ i ->
 +        (bool & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize))
-       (fun temp_0_ bytes ->
++      (fun temp_0_ bytes ->
            let done, out, sampled_coefficients:(bool &
--            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
+-            t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-            t_Array usize v_K) =
 +            Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement &
-             usize) =
++            usize) =
              temp_0_
            in
--          let bytes:t_Slice u8 = bytes in
+-          let i:usize = i in
+-          let out, sampled_coefficients:(t_Array
+-              Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-            t_Array usize v_K) =
+-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks
+-                      (Rust_primitives.unsize (randomness.[ i ] <: t_Array u8 v_N) <: t_Slice u8)
+-                      (sz 3)
+-                    <:
+-                    Core.Slice.Iter.t_Chunks u8)
 +          let bytes:t_Array u8 chunk_len = bytes in
-           if ~.done <: bool
-           then
-             let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
-             let b2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
-             let b3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
++          if ~.done <: bool
++          then
++            let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
++            let b2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
++            let b3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
 +            assert(v b1 >= 0 /\ v b1 < pow2 8);
 +            assert(v b2 >= 0 /\ v b2 < pow2 8);
 +            assert(v b3 >= 0 /\ v b3 < pow2 8);
-             let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
++            let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
 +            assert (15 = pow2 4 - 1);
 +            mk_int_equiv_lemma #i32_inttype 15;
 +            assert (15l = mk_int (pow2 4) -! mk_int 1);
@@ -5094,107 +5389,275 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +            logor_lemma ((b2 &. 15l <: i32) <<! 8l <: i32) b1;
 +            assert (v d1 >= v b1);
 +            assert (v d1 >= 0);
-             let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
--            let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
++            let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
 +            logor_lemma (b3 <<! 4l <: i32) (b2 >>! 4l <: i32);
 +            assert (v d2 >= v b3 * pow2 4);
 +            assert (v d2 >= 0);
 +            let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement &
-               usize) =
-               if
-                 d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-               then
--                let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
++              usize) =
++              if
++                d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
++                sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
++              then
 +                let out:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-                   {
-                     out with
-                     Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -208,23 +286,23 @@
-                       d1
-                   }
-                   <:
--                  Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
++                  {
++                    out with
++                    Libcrux.Kem.Kyber.Arithmetic.f_coefficients
++                    =
++                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
++                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
++                      sampled_coefficients
++                      d1
++                  }
++                  <:
 +                  Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
-                 in
-                 out, sampled_coefficients +! sz 1
++                in
++                out, sampled_coefficients +! sz 1
                  <:
--                (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
+-                Core.Slice.Iter.t_Chunks u8)
+-              (out, sampled_coefficients
 +                (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize)
-               else
-                 out, sampled_coefficients
++              else
++                out, sampled_coefficients
                  <:
--                (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
+-                (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-                  t_Array usize v_K))
+-              (fun temp_0_ bytes ->
+-                  let out, sampled_coefficients:(t_Array
+-                      Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-                    t_Array usize v_K) =
+-                    temp_0_
+-                  in
+-                  let bytes:t_Slice u8 = bytes in
+-                  let b1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
+-                  let b2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
+-                  let b3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
+-                  let d1:i32 = ((b2 &. 15l <: i32) <<! 8l <: i32) |. b1 in
+-                  let d2:i32 = (b3 <<! 4l <: i32) |. (b2 >>! 4l <: i32) in
+-                  let out, sampled_coefficients:(t_Array
+-                      Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-                    t_Array usize v_K) =
+-                    if
+-                      d1 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+-                      (sampled_coefficients.[ i ] <: usize) <.
+-                      Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+-                    then
+-                      let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+-                        Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+-                          i
+-                          ({
+-                              (out.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) with
+-                              Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                              =
+-                              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (out.[ i ]
+-                                  <:
+-                                  Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+-                                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                                (sampled_coefficients.[ i ] <: usize)
+-                                d1
+-                              <:
+-                              t_Array i32 (sz 256)
+-                            }
+-                            <:
+-                            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+-                      in
+-                      out,
+-                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize sampled_coefficients
+-                        i
+-                        ((sampled_coefficients.[ i ] <: usize) +! sz 1 <: usize)
+-                      <:
+-                      (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-                        t_Array usize v_K)
+-                    else
+-                      out, sampled_coefficients
+-                      <:
+-                      (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-                        t_Array usize v_K)
+-                  in
+-                  if
+-                    d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
+-                    (sampled_coefficients.[ i ] <: usize) <.
+-                    Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+-                  then
+-                    let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+-                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+-                        i
+-                        ({
+-                            (out.[ i ] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) with
+-                            Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                            =
+-                            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (out.[ i ]
+-                                <:
+-                                Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+-                                .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                              (sampled_coefficients.[ i ] <: usize)
+-                              d2
+-                            <:
+-                            t_Array i32 (sz 256)
+-                          }
+-                          <:
+-                          Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+-                    in
+-                    let sampled_coefficients:t_Array usize v_K =
+-                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize sampled_coefficients
+-                        i
+-                        ((sampled_coefficients.[ i ] <: usize) +! sz 1 <: usize)
+-                    in
+-                    out, sampled_coefficients
+-                    <:
+-                    (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-                      t_Array usize v_K)
+-                  else
+-                    out, sampled_coefficients
+-                    <:
+-                    (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-                      t_Array usize v_K))
+-          in
+-          if
+-            (sampled_coefficients.[ i ] <: usize) <.
+-            Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
+-          then
+-            false, out, sampled_coefficients
+-            <:
+-            (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-              t_Array usize v_K)
 +                (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize)
-             in
--            let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement &
++            in
 +            let out, sampled_coefficients:(Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement &
-               usize) =
-               if
-                 d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
-                 sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-               then
--                let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
++              usize) =
++              if
++                d2 <. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &&
++                sampled_coefficients <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
++              then
 +                let out:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement =
-                   {
-                     out with
-                     Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -235,31 +313,31 @@
-                       d2
-                   }
-                   <:
--                  Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
++                  {
++                    out with
++                    Libcrux.Kem.Kyber.Arithmetic.f_coefficients
++                    =
++                    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
++                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
++                      sampled_coefficients
++                      d2
++                  }
++                  <:
 +                  Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
-                 in
-                 let sampled_coefficients:usize = sampled_coefficients +! sz 1 in
-                 out, sampled_coefficients
-                 <:
--                (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
++                in
++                let sampled_coefficients:usize = sampled_coefficients +! sz 1 in
++                out, sampled_coefficients
++                <:
 +                (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize)
-               else
-                 out, sampled_coefficients
-                 <:
--                (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
++              else
++                out, sampled_coefficients
++                <:
 +                (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize)
-             in
-             if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
-             then
-               let done:bool = true in
-               done, out, sampled_coefficients
-               <:
--              (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
++            in
++            if sampled_coefficients =. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
++            then
++              let done:bool = true in
++              done, out, sampled_coefficients
++              <:
 +              (bool & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize)
-             else
-               done, out, sampled_coefficients
-               <:
--              (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize)
++            else
++              done, out, sampled_coefficients
++              <:
 +              (bool & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize)
            else
              done, out, sampled_coefficients
              <:
--            (bool & Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
+-            (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-              t_Array usize v_K))
 +            (bool & Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement & usize))
    in
-   let _:Prims.unit =
-     if ~.done
-@@ -268,4 +346,5 @@
-       ()
+-  let hax_temp_output:bool = done in
+-  sampled_coefficients, out, hax_temp_output
+-  <:
+-  (t_Array usize v_K & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & bool)
+-
+-let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
+-  let (sampled_coefficients: t_Array usize v_K):t_Array usize v_K =
+-    Rust_primitives.Hax.repeat (sz 0) v_K
++  let _:Prims.unit =
++    if ~.done
++    then
++      let _:Prims.unit = rejection_sampling_panic_with_diagnostic () in
++      ()
    in
+-  let (out: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K):t_Array
+-    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
+-  in
+-  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState =
+-    Libcrux.Kem.Kyber.Hash_functions.v_XOF_absorb v_K seeds
+-  in
+-  let randomness, new_state:(t_Array (t_Array u8 (sz 504)) v_K &
+-    Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
+-    Libcrux.Kem.Kyber.Hash_functions.v_XOF_squeeze_three_blocks v_K xof_state
+-  in
+-  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState = new_state in
+-  let tmp0, tmp1, out1:(t_Array usize v_K &
+-    t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-    bool) =
+-    sample_from_uniform_distribution_next v_K (sz 504) randomness sampled_coefficients out
+-  in
+-  let sampled_coefficients:t_Array usize v_K = tmp0 in
+-  let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K = tmp1 in
+-  let done:bool = out1 in
+-  let done, out, sampled_coefficients, xof_state:(bool &
+-    t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-    t_Array usize v_K &
+-    Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
+-    Rust_primitives.f_while_loop (fun temp_0_ ->
+-          let done, out, sampled_coefficients, xof_state:(bool &
+-            t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-            t_Array usize v_K &
+-            Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
+-            temp_0_
+-          in
+-          ~.done <: bool)
+-      (done, out, sampled_coefficients, xof_state
+-        <:
+-        (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & t_Array usize v_K &
+-          Libcrux.Kem.Kyber.Hash_functions.t_XofState))
+-      (fun temp_0_ ->
+-          let done, out, sampled_coefficients, xof_state:(bool &
+-            t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-            t_Array usize v_K &
+-            Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
+-            temp_0_
+-          in
+-          let randomness, new_state:(t_Array (t_Array u8 (sz 168)) v_K &
+-            Libcrux.Kem.Kyber.Hash_functions.t_XofState) =
+-            Libcrux.Kem.Kyber.Hash_functions.v_XOF_squeeze_block v_K xof_state
+-          in
+-          let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_XofState = new_state in
+-          let tmp0, tmp1, out1:(t_Array usize v_K &
+-            t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-            bool) =
+-            sample_from_uniform_distribution_next v_K (sz 168) randomness sampled_coefficients out
+-          in
+-          let sampled_coefficients:t_Array usize v_K = tmp0 in
+-          let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K = tmp1 in
+-          let hoist21:bool = out1 in
+-          let done:bool = hoist21 in
+-          done, out, sampled_coefficients, xof_state
+-          <:
+-          (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+-            t_Array usize v_K &
+-            Libcrux.Kem.Kyber.Hash_functions.t_XofState))
+-  in
    let _:Prims.unit = () <: Prims.unit in
 -  out
 +  out 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti
---- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-22 11:01:52
-@@ -3,77 +3,37 @@
+--- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-02-29 12:58:33
+@@ -3,84 +3,37 @@
  open Core
  open FStar.Mul
  
--val rejection_sampling_panic_with_diagnostic: Prims.unit
--  -> Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
 +open Libcrux.Kem.Kyber.Arithmetic
- 
++
  val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
 -    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
 +    : Prims.Pure (t_PolynomialRingElement_b 3)
@@ -5277,18 +5740,29 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.K
 +          Libcrux.Kem.Kyber.Arithmetic.to_spec_poly_b result == 
 +          Spec.Kyber.sample_poly_binomial v_ETA randomness)
  
- val sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
--    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+-val sample_from_uniform_distribution_next
+-      (v_K v_N: usize)
+-      (randomness: t_Array (t_Array u8 v_N) v_K)
+-      (sampled_coefficients: t_Array usize v_K)
+-      (out: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-    : Prims.Pure
+-      (t_Array usize v_K & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & bool)
 -      Prims.l_True
 -      (fun _ -> Prims.l_True)
+-
+-val sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K)
+-    : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-      Prims.l_True
+-      (fun _ -> Prims.l_True)
++val sample_from_uniform_distribution (randomness: t_Array u8 (sz 840))
 +    : Pure Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement
 +      (requires True)
 +      (ensures fun _ -> True)
 +//      (ensures fun result -> (forall i. v (result.f_coefficients.[i]) >= 0))
 +      
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.Kem.Kyber.Serialize.fst
---- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-02-29 12:58:32
 @@ -1,8 +1,15 @@
  module Libcrux.Kem.Kyber.Serialize
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -6764,8 +7238,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +#pop-options
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti
---- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-29 12:58:32
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-02-29 12:58:35
 @@ -2,118 +2,188 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
@@ -7019,8 +7493,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.
 +        int_t_array_bitwise_eq res 8 coefficients 12
 +      ))
 diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.Kyber.Types.fst
---- extraction/Libcrux.Kem.Kyber.Types.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.Types.fst	2024-02-29 12:58:30
++++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-02-29 12:58:34
 @@ -50,7 +50,9 @@
  let impl_6__len (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) : usize = v_SIZE
  
@@ -7055,8 +7529,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
  
  type t_MlKemKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {
 diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.fst
---- extraction/Libcrux.Kem.Kyber.fst	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.fst	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-02-29 12:58:32
 @@ -1,12 +1,29 @@
  module Libcrux.Kem.Kyber
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7326,8 +7800,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
      (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.fsti
---- extraction/Libcrux.Kem.Kyber.fsti	2024-02-22 11:01:52
-+++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-02-22 11:01:52
+--- extraction/Libcrux.Kem.Kyber.fsti	2024-02-29 12:58:29
++++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-02-29 12:58:33
 @@ -10,36 +10,84 @@
    Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
    Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
@@ -7429,7 +7903,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.
 +                (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.ind_cca_generate_keypair p randomness))
 diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 --- extraction/Libcrux.Kem.fst	1970-01-01 01:00:00
-+++ extraction-edited/Libcrux.Kem.fst	2024-02-22 11:01:52
++++ extraction-edited/Libcrux.Kem.fst	2024-02-29 12:58:35
 @@ -0,0 +1,6 @@
 +module Libcrux.Kem
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7439,7 +7913,7 @@ diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 +
 diff -ruN extraction/Libcrux_platform.Platform.fsti extraction-edited/Libcrux_platform.Platform.fsti
 --- extraction/Libcrux_platform.Platform.fsti	1970-01-01 01:00:00
-+++ extraction-edited/Libcrux_platform.Platform.fsti	2024-02-22 11:01:52
++++ extraction-edited/Libcrux_platform.Platform.fsti	2024-02-29 12:58:32
 @@ -0,0 +1,20 @@
 +module Libcrux_platform.Platform
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7463,7 +7937,7 @@ diff -ruN extraction/Libcrux_platform.Platform.fsti extraction-edited/Libcrux_pl
 +val simd128_support: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 --- extraction/MkSeq.fst	1970-01-01 01:00:00
-+++ extraction-edited/MkSeq.fst	2024-02-22 11:01:52
++++ extraction-edited/MkSeq.fst	2024-02-29 12:58:35
 @@ -0,0 +1,91 @@
 +module MkSeq
 +open Core
@@ -7558,7 +8032,7 @@ diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 +%splice[] (init 13 (fun i -> create_gen_tac (i + 1)))
 diff -ruN extraction/Spec.Kyber.fst extraction-edited/Spec.Kyber.fst
 --- extraction/Spec.Kyber.fst	1970-01-01 01:00:00
-+++ extraction-edited/Spec.Kyber.fst	2024-02-22 11:01:52
++++ extraction-edited/Spec.Kyber.fst	2024-02-29 12:58:33
 @@ -0,0 +1,433 @@
 +module Spec.Kyber
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
