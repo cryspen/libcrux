@@ -11,7 +11,7 @@ DENYLIST="Makefile Kyber.fst.config.json PROOFS.md"
 prepare_folder() {
     original="$1"
     workdir="$2"
-    find "$original" \( -name '*.fst' -o -name '*.fsti' \) -exec cp --parents \{\} "$workdir" \;
+    find "$original" \( -name '*.fst' -o -name '*.fsti' \) -exec gcp --parents \{\} "$workdir" \;
 }
 
 # `patch_folder ORIGINAL DESTINATION PATCH` creates the folder
