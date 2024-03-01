@@ -56,11 +56,13 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
     match K as u8 {
         2 => {
             if let XofState::X2(mut st) = xof_state {
-               let tmp = digest::shake128_squeeze_nblocks_x2::<504>(&mut st);
+                let tmp = digest::shake128_squeeze_nblocks_x2::<504>(&mut st);
                 output[0] = tmp[0];
                 output[1] = tmp[1];
                 (output, XofState::X2(st))
-            } else {unreachable!()}
+            } else {
+                unreachable!()
+            }
         }
         3 => {
             if let XofState::X3(mut st) = xof_state {
@@ -69,7 +71,9 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
                 output[1] = tmp[1];
                 output[2] = tmp[2];
                 (output, XofState::X3(st))
-            } else {unreachable!()}
+            } else {
+                unreachable!()
+            }
         }
         4 => {
             if let XofState::X4(mut st) = xof_state {
@@ -79,7 +83,9 @@ pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
                 output[2] = tmp[2];
                 output[3] = tmp[3];
                 (output, XofState::X4(st))
-            } else {unreachable!()}
+            } else {
+                unreachable!()
+            }
         }
         _ => unreachable!(),
     }
@@ -91,11 +97,13 @@ pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: XofState) -> ([[u8; 1
     match K as u8 {
         2 => {
             if let XofState::X2(mut st) = xof_state {
-               let tmp = digest::shake128_squeeze_nblocks_x2::<168>(&mut st);
+                let tmp = digest::shake128_squeeze_nblocks_x2::<168>(&mut st);
                 output[0] = tmp[0];
                 output[1] = tmp[1];
                 (output, XofState::X2(st))
-            } else {unreachable!()}
+            } else {
+                unreachable!()
+            }
         }
         3 => {
             if let XofState::X3(mut st) = xof_state {
@@ -104,7 +112,9 @@ pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: XofState) -> ([[u8; 1
                 output[1] = tmp[1];
                 output[2] = tmp[2];
                 (output, XofState::X3(st))
-            } else {unreachable!()}
+            } else {
+                unreachable!()
+            }
         }
         4 => {
             if let XofState::X4(mut st) = xof_state {
@@ -114,7 +124,9 @@ pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: XofState) -> ([[u8; 1
                 output[2] = tmp[2];
                 output[3] = tmp[3];
                 (output, XofState::X4(st))
-            } else {unreachable!()}
+            } else {
+                unreachable!()
+            }
         }
         _ => unreachable!(),
     }
