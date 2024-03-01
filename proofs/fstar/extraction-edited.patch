@@ -1,6 +1,6 @@
 diff -ruN extraction/BitVecEq.fst extraction-edited/BitVecEq.fst
 --- extraction/BitVecEq.fst	1970-01-01 01:00:00
-+++ extraction-edited/BitVecEq.fst	2024-03-01 09:24:06
++++ extraction-edited/BitVecEq.fst	2024-03-01 10:44:26
 @@ -0,0 +1,12 @@
 +module BitVecEq
 +
@@ -16,7 +16,7 @@ diff -ruN extraction/BitVecEq.fst extraction-edited/BitVecEq.fst
 +
 diff -ruN extraction/BitVecEq.fsti extraction-edited/BitVecEq.fsti
 --- extraction/BitVecEq.fsti	1970-01-01 01:00:00
-+++ extraction-edited/BitVecEq.fsti	2024-03-01 09:24:06
++++ extraction-edited/BitVecEq.fsti	2024-03-01 10:44:26
 @@ -0,0 +1,294 @@
 +module BitVecEq
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -313,8 +313,8 @@ diff -ruN extraction/BitVecEq.fsti extraction-edited/BitVecEq.fsti
 + = admit ()
 +*)
 diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
---- extraction/Libcrux.Digest.fsti	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Digest.fsti	2024-03-01 09:24:05
+--- extraction/Libcrux.Digest.fsti	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Digest.fsti	2024-03-01 10:44:26
 @@ -3,50 +3,29 @@
  open Core
  open FStar.Mul
@@ -379,8 +379,8 @@ diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
        Prims.l_True
        (fun _ -> Prims.l_True)
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-03-01 09:24:06
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-03-01 10:44:24
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-03-01 10:44:26
 @@ -1,81 +1,364 @@
  module Libcrux.Kem.Kyber.Arithmetic
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -786,8 +786,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.
 +  
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-03-01 10:44:24
 @@ -3,10 +3,32 @@
  open Core
  open FStar.Mul
@@ -1135,8 +1135,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
 +
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Kem.Kyber.Compress.fst
---- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-03-01 10:44:24
 @@ -1,39 +1,79 @@
  module Libcrux.Kem.Kyber.Compress
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -1240,8 +1240,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Ke
 +  res <: Libcrux.Kem.Kyber.Arithmetic.i32_b 3328
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.Kem.Kyber.Compress.fsti
---- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-03-01 10:44:25
 @@ -3,8 +3,19 @@
  open Core
  open FStar.Mul
@@ -1307,8 +1307,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.K
 +      (requires fe =. 0l || fe =. 1l) 
 +      (fun result -> v result >= 0 /\ v result < 3329)
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-03-01 09:24:02
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-03-01 10:44:21
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-03-01 10:44:24
 @@ -4,56 +4,163 @@
  open FStar.Mul
  
@@ -1494,8 +1494,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/L
 +  )
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-03-01 09:24:06
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-03-01 10:44:24
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-03-01 10:44:26
 @@ -20,7 +20,8 @@
  
  val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
@@ -1527,8 +1527,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/
 +          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
 +          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool))
 diff -ruN extraction/Libcrux.Kem.Kyber.Constants.fsti extraction-edited/Libcrux.Kem.Kyber.Constants.fsti
---- extraction/Libcrux.Kem.Kyber.Constants.fsti	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Constants.fsti	2024-03-01 09:24:06
+--- extraction/Libcrux.Kem.Kyber.Constants.fsti	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Kem.Kyber.Constants.fsti	2024-03-01 10:44:26
 @@ -17,4 +17,6 @@
  
  let v_H_DIGEST_SIZE: usize = sz 32
@@ -1537,9 +1537,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constants.fsti extraction-edited/Libcrux.
 +
  let v_SHARED_SECRET_SIZE: usize = sz 32
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-03-01 09:24:05
-@@ -3,197 +3,114 @@
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-03-01 10:44:24
+@@ -3,239 +3,114 @@
  open Core
  open FStar.Mul
  
@@ -1604,82 +1604,29 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 +  let out:t_Array (t_Array u8 (sz 840)) v_K =
 +    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 840) <: t_Array u8 (sz 840)) v_K
    in
--  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState) with
--  | 2uy, XofState_X2 st ->
--    let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 168)) (sz 2)) =
--      Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 168) st
--    in
--    let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
--    let tmp:t_Array (t_Array u8 (sz 168)) (sz 2) = out in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 0)
--        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
--    in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 1)
--        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
--    in
--    output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
--  | 3uy, XofState_X3 st ->
--    let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 168)) (sz 3)) =
--      Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 168) st
--    in
--    let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
--    let tmp:t_Array (t_Array u8 (sz 168)) (sz 3) = out in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 0)
--        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
--    in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 1)
--        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
--    in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 2)
--        (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
--    in
--    output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
--  | 4uy, XofState_X4 st ->
--    let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 168)) (sz 4)) =
--      Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 168) st
--    in
--    let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
--    let tmp:t_Array (t_Array u8 (sz 168)) (sz 4) = out in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 0)
--        (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
--    in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 1)
--        (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
--    in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 2)
--        (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
--    in
--    let output:t_Array (t_Array u8 (sz 168)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 3)
--        (tmp.[ sz 3 ] <: t_Array u8 (sz 168))
--    in
--    output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
--  | _ ->
--    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-  match cast (v_K <: usize) <: u8 with
+-  | 2uy ->
+-    (match xof_state with
+-      | XofState_X2 st ->
+-        let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 168)) (sz 2)) =
+-          Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 168) st
+-        in
+-        let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
+-        let tmp:t_Array (t_Array u8 (sz 168)) (sz 2) = out in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 0)
+-            (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+-        in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 1)
+-            (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+-        in
+-        output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
+-      | _ ->
+-        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 -
--        <:
--        Rust_primitives.Hax.t_Never)
--
--let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState) =
--  let output:t_Array (t_Array u8 (sz 504)) v_K =
--    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 504) <: t_Array u8 (sz 504)) v_K
 +  let out:t_Array (t_Array u8 (sz 840)) v_K =
 +    if ~.(Libcrux_platform.Platform.simd256_support () <: bool)
 +    then
@@ -1701,7 +1648,80 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 +                  (Rust_primitives.unsize (input.[ i ] <: t_Array u8 (sz 34)) <: t_Slice u8)
 +                <:
 +                t_Array u8 (sz 840))
-+            <:
+             <:
+-            Rust_primitives.Hax.t_Never))
+-  | 3uy ->
+-    (match xof_state with
+-      | XofState_X3 st ->
+-        let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 168)) (sz 3)) =
+-          Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 168) st
+-        in
+-        let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
+-        let tmp:t_Array (t_Array u8 (sz 168)) (sz 3) = out in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 0)
+-            (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+-        in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 1)
+-            (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+-        in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 2)
+-            (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
+-        in
+-        output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
+-      | _ ->
+-        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-            <:
+-            Rust_primitives.Hax.t_Never))
+-  | 4uy ->
+-    (match xof_state with
+-      | XofState_X4 st ->
+-        let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 168)) (sz 4)) =
+-          Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 168) st
+-        in
+-        let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
+-        let tmp:t_Array (t_Array u8 (sz 168)) (sz 4) = out in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 0)
+-            (tmp.[ sz 0 ] <: t_Array u8 (sz 168))
+-        in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 1)
+-            (tmp.[ sz 1 ] <: t_Array u8 (sz 168))
+-        in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 2)
+-            (tmp.[ sz 2 ] <: t_Array u8 (sz 168))
+-        in
+-        let output:t_Array (t_Array u8 (sz 168)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 3)
+-            (tmp.[ sz 3 ] <: t_Array u8 (sz 168))
+-        in
+-        output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 168)) v_K & t_XofState)
+-      | _ ->
+-        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-            <:
+-            Rust_primitives.Hax.t_Never))
+-  | _ ->
+-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-        <:
+-        Rust_primitives.Hax.t_Never)
+-
+-let v_XOF_squeeze_three_blocks (v_K: usize) (xof_state: t_XofState) =
+-  let output:t_Array (t_Array u8 (sz 504)) v_K =
+-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 504) <: t_Array u8 (sz 504)) v_K
 +            t_Array (t_Array u8 (sz 840)) v_K)
 +    else
 +      let out:t_Array (t_Array u8 (sz 840)) v_K =
@@ -1769,73 +1789,94 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 +      in
 +      out
    in
--  match (cast (v_K <: usize) <: u8), xof_state <: (u8 & t_XofState) with
--  | 2uy, XofState_X2 st ->
--    let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 504)) (sz 2)) =
--      Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 504) st
--    in
--    let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
--    let tmp:t_Array (t_Array u8 (sz 504)) (sz 2) = out in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 0)
--        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
--    in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 1)
--        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
--    in
--    output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
--  | 3uy, XofState_X3 st ->
--    let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 504)) (sz 3)) =
--      Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 504) st
--    in
--    let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
--    let tmp:t_Array (t_Array u8 (sz 504)) (sz 3) = out in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 0)
--        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
--    in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 1)
--        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
--    in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 2)
--        (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
--    in
--    output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
--  | 4uy, XofState_X4 st ->
--    let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 504)) (sz 4)) =
--      Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 504) st
--    in
--    let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
--    let tmp:t_Array (t_Array u8 (sz 504)) (sz 4) = out in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 0)
--        (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
--    in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 1)
--        (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
--    in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 2)
--        (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
--    in
--    let output:t_Array (t_Array u8 (sz 504)) v_K =
--      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
--        (sz 3)
--        (tmp.[ sz 3 ] <: t_Array u8 (sz 504))
--    in
--    output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-  match cast (v_K <: usize) <: u8 with
+-  | 2uy ->
+-    (match xof_state with
+-      | XofState_X2 st ->
+-        let tmp0, out:(Libcrux.Digest.t_Shake128StateX2 & t_Array (t_Array u8 (sz 504)) (sz 2)) =
+-          Libcrux.Digest.shake128_squeeze_nblocks_x2 (sz 504) st
+-        in
+-        let st:Libcrux.Digest.t_Shake128StateX2 = tmp0 in
+-        let tmp:t_Array (t_Array u8 (sz 504)) (sz 2) = out in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 0)
+-            (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+-        in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 1)
+-            (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+-        in
+-        output, (XofState_X2 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-      | _ ->
+-        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-            <:
+-            Rust_primitives.Hax.t_Never))
+-  | 3uy ->
+-    (match xof_state with
+-      | XofState_X3 st ->
+-        let tmp0, out:(Libcrux.Digest.t_Shake128StateX3 & t_Array (t_Array u8 (sz 504)) (sz 3)) =
+-          Libcrux.Digest.shake128_squeeze_nblocks_x3 (sz 504) st
+-        in
+-        let st:Libcrux.Digest.t_Shake128StateX3 = tmp0 in
+-        let tmp:t_Array (t_Array u8 (sz 504)) (sz 3) = out in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 0)
+-            (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+-        in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 1)
+-            (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+-        in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 2)
+-            (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
+-        in
+-        output, (XofState_X3 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-      | _ ->
+-        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-            <:
+-            Rust_primitives.Hax.t_Never))
+-  | 4uy ->
+-    (match xof_state with
+-      | XofState_X4 st ->
+-        let tmp0, out:(Libcrux.Digest.t_Shake128StateX4 & t_Array (t_Array u8 (sz 504)) (sz 4)) =
+-          Libcrux.Digest.shake128_squeeze_nblocks_x4 (sz 504) st
+-        in
+-        let st:Libcrux.Digest.t_Shake128StateX4 = tmp0 in
+-        let tmp:t_Array (t_Array u8 (sz 504)) (sz 4) = out in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 0)
+-            (tmp.[ sz 0 ] <: t_Array u8 (sz 504))
+-        in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 1)
+-            (tmp.[ sz 1 ] <: t_Array u8 (sz 504))
+-        in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 2)
+-            (tmp.[ sz 2 ] <: t_Array u8 (sz 504))
+-        in
+-        let output:t_Array (t_Array u8 (sz 504)) v_K =
+-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize output
+-            (sz 3)
+-            (tmp.[ sz 3 ] <: t_Array u8 (sz 504))
+-        in
+-        output, (XofState_X4 st <: t_XofState) <: (t_Array (t_Array u8 (sz 504)) v_K & t_XofState)
+-      | _ ->
+-        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+-
+-            <:
+-            Rust_primitives.Hax.t_Never))
 -  | _ ->
 -    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 -
@@ -1844,8 +1885,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 +  admit(); // We assume that shake128x4 correctly implements XOFx4
 +  out 
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-03-01 10:44:25
 @@ -3,27 +3,17 @@
  open Core
  open FStar.Mul
@@ -1886,8 +1927,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Lib
 +          (ensures (fun res ->
 +            (forall i. i < v v_K ==> Seq.index res i == Spec.Kyber.v_XOF (sz 840) (Seq.index input i))))
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-03-01 10:44:25
 @@ -1,5 +1,5 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -2591,8 +2632,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  res
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-03-01 09:24:06
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-03-01 10:44:26
 @@ -1,80 +1,151 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -2793,8 +2834,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Ke
 + 
 +    
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst
---- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-03-01 10:44:25
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568))
@@ -2828,8 +2869,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.K
      (sz 3168)
      (sz 1568)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst
---- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-03-01 09:24:06
+--- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-03-01 10:44:26
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 1632))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 768))
@@ -2863,8 +2904,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Ke
      (sz 1632)
      (sz 800)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst
---- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-03-01 10:44:21
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-03-01 10:44:24
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088))
@@ -2898,8 +2939,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Ke
      (sz 2400)
      (sz 1184)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti
---- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-03-01 10:44:25
 @@ -74,14 +74,15 @@
  val decapsulate
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
@@ -2925,8 +2966,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.K
 -      (fun _ -> Prims.l_True)
 +      (ensures (fun kp -> (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.kyber768_generate_keypair randomness))
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.Kyber.Matrix.fst
---- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-03-01 10:44:24
 @@ -3,192 +3,188 @@
  open Core
  open FStar.Mul
@@ -3724,8 +3765,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +  admit(); //P-F
    v_A_transpose
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti
---- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-03-01 09:24:06
+--- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-03-01 10:44:24
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-03-01 10:44:26
 @@ -3,39 +3,71 @@
  open Core
  open FStar.Mul
@@ -3827,8 +3868,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem
 +        if transpose then Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == matrix_A
 +        else Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == Spec.Kyber.matrix_transpose matrix_A)
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyber.Ntt.fst
---- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-03-01 10:44:24
 @@ -1,56 +1,130 @@
  module Libcrux.Kem.Kyber.Ntt
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -4758,8 +4799,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +  down_cast_poly_b #(8*3328) #3328 re 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti
---- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-03-01 10:44:24
 @@ -2,223 +2,80 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
@@ -5048,8 +5089,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 +      (ensures fun _ -> True)
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Kem.Kyber.Sampling.fst
---- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-03-01 10:44:24
 @@ -3,22 +3,34 @@
  open Core
  open FStar.Mul
@@ -5650,8 +5691,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +  out 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti
---- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-03-01 10:44:24
 @@ -3,84 +3,37 @@
  open Core
  open FStar.Mul
@@ -5761,8 +5802,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.K
 +//      (ensures fun result -> (forall i. v (result.f_coefficients.[i]) >= 0))
 +      
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.Kem.Kyber.Serialize.fst
---- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-03-01 10:44:21
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-03-01 10:44:24
 @@ -1,8 +1,15 @@
  module Libcrux.Kem.Kyber.Serialize
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7238,8 +7279,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +#pop-options
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti
---- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-03-01 09:24:06
+--- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-03-01 10:44:24
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-03-01 10:44:26
 @@ -2,118 +2,188 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
@@ -7493,8 +7534,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.
 +        int_t_array_bitwise_eq res 8 coefficients 12
 +      ))
 diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.Kyber.Types.fst
---- extraction/Libcrux.Kem.Kyber.Types.fst	2024-03-01 09:24:04
-+++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-03-01 09:24:05
+--- extraction/Libcrux.Kem.Kyber.Types.fst	2024-03-01 10:44:23
++++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-03-01 10:44:25
 @@ -50,7 +50,9 @@
  let impl_6__len (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) : usize = v_SIZE
  
@@ -7529,8 +7570,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
  
  type t_MlKemKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {
 diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.fst
---- extraction/Libcrux.Kem.Kyber.fst	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.fst	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-03-01 10:44:24
 @@ -1,12 +1,29 @@
  module Libcrux.Kem.Kyber
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7800,8 +7841,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
      (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.fsti
---- extraction/Libcrux.Kem.Kyber.fsti	2024-03-01 09:24:03
-+++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-03-01 09:24:04
+--- extraction/Libcrux.Kem.Kyber.fsti	2024-03-01 10:44:22
++++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-03-01 10:44:24
 @@ -10,36 +10,84 @@
    Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
    Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
@@ -7903,7 +7944,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.
 +                (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.ind_cca_generate_keypair p randomness))
 diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 --- extraction/Libcrux.Kem.fst	1970-01-01 01:00:00
-+++ extraction-edited/Libcrux.Kem.fst	2024-03-01 09:24:06
++++ extraction-edited/Libcrux.Kem.fst	2024-03-01 10:44:26
 @@ -0,0 +1,6 @@
 +module Libcrux.Kem
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7913,7 +7954,7 @@ diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 +
 diff -ruN extraction/Libcrux_platform.Platform.fsti extraction-edited/Libcrux_platform.Platform.fsti
 --- extraction/Libcrux_platform.Platform.fsti	1970-01-01 01:00:00
-+++ extraction-edited/Libcrux_platform.Platform.fsti	2024-03-01 09:24:04
++++ extraction-edited/Libcrux_platform.Platform.fsti	2024-03-01 10:44:24
 @@ -0,0 +1,20 @@
 +module Libcrux_platform.Platform
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7937,7 +7978,7 @@ diff -ruN extraction/Libcrux_platform.Platform.fsti extraction-edited/Libcrux_pl
 +val simd128_support: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 --- extraction/MkSeq.fst	1970-01-01 01:00:00
-+++ extraction-edited/MkSeq.fst	2024-03-01 09:24:06
++++ extraction-edited/MkSeq.fst	2024-03-01 10:44:26
 @@ -0,0 +1,91 @@
 +module MkSeq
 +open Core
@@ -8032,7 +8073,7 @@ diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 +%splice[] (init 13 (fun i -> create_gen_tac (i + 1)))
 diff -ruN extraction/Spec.Kyber.fst extraction-edited/Spec.Kyber.fst
 --- extraction/Spec.Kyber.fst	1970-01-01 01:00:00
-+++ extraction-edited/Spec.Kyber.fst	2024-03-01 09:24:05
++++ extraction-edited/Spec.Kyber.fst	2024-03-01 10:44:25
 @@ -0,0 +1,433 @@
 +module Spec.Kyber
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
