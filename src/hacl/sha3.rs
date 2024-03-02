@@ -291,7 +291,6 @@ pub mod incremental {
 
             output
         }
-
     }
 
     // For now, we are explicitly using "free" to work around a memory leak in the generated C code
@@ -394,7 +393,7 @@ pub mod incremental_x4 {
             output
         }
     }
-    
+
     // For now, we are explicitly using "free" to work around a memory leak in the generated C code
     // impl Drop for Shake128StateX4 {
     //     fn drop(&mut self) {

@@ -386,7 +386,7 @@ pub fn shake128_squeeze_nblocks<const OUTPUT_BYTES: usize>(
     st.0.squeeze_nblocks()
 }
 
-pub fn shake128_free(mut st:Shake128State) {
+pub fn shake128_free(mut st: Shake128State) {
     st.0.free()
 }
 
@@ -415,12 +415,12 @@ pub fn shake128_init_x4() -> Shake128StateX4 {
 }
 
 #[cfg(simd256)]
-pub fn shake128_free_x4(mut st:Shake128StateX4) {
+pub fn shake128_free_x4(mut st: Shake128StateX4) {
     st.0.free()
 }
 
 #[cfg(not(simd256))]
-pub fn shake128_free_x4(mut st:Shake128StateX4) {
+pub fn shake128_free_x4(mut st: Shake128StateX4) {
     st.0[0].free();
     st.0[1].free();
     st.0[2].free();
@@ -518,12 +518,12 @@ pub fn shake128_init_x2() -> Shake128StateX2 {
 }
 
 #[cfg(simd256)]
-pub fn shake128_free_x2(mut st:Shake128StateX2) {
+pub fn shake128_free_x2(mut st: Shake128StateX2) {
     st.0.free()
 }
 
 #[cfg(not(simd256))]
-pub fn shake128_free_x2(mut st:Shake128StateX2) {
+pub fn shake128_free_x2(mut st: Shake128StateX2) {
     st.0[0].free();
     st.0[1].free();
 }
@@ -594,12 +594,12 @@ pub fn shake128_init_x3() -> Shake128StateX3 {
 }
 
 #[cfg(simd256)]
-pub fn shake128_free_x3(mut st:Shake128StateX3) {
+pub fn shake128_free_x3(mut st: Shake128StateX3) {
     st.0.free()
 }
 
 #[cfg(not(simd256))]
-pub fn shake128_free_x3(mut st:Shake128StateX3) {
+pub fn shake128_free_x3(mut st: Shake128StateX3) {
     st.0[0].free();
     st.0[1].free();
     st.0[2].free();

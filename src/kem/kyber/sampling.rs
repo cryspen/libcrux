@@ -1,7 +1,7 @@
 use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    hash_functions::{XOF_absorb, XOF_squeeze_block, XOF_squeeze_three_blocks, XOF_free},
+    hash_functions::{XOF_absorb, XOF_free, XOF_squeeze_block, XOF_squeeze_three_blocks},
 };
 use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
