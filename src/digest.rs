@@ -386,6 +386,10 @@ pub fn shake128_squeeze_nblocks<const OUTPUT_BYTES: usize>(
     st.0.squeeze_nblocks()
 }
 
+pub fn shake128_free(mut st:Shake128State) {
+    st.0.free()
+}
+
 /// SHAKE 128 Incremental API (SIMD)
 #[cfg(simd256)]
 #[cfg_attr(hax, hax_lib_macros::opaque_type)]
@@ -408,6 +412,19 @@ pub fn shake128_init_x4() -> Shake128StateX4 {
         sha3::incremental::Shake128State::new(),
         sha3::incremental::Shake128State::new(),
     ])
+}
+
+#[cfg(simd256)]
+pub fn shake128_free_x4(mut st:Shake128StateX4) {
+    st.0.free()
+}
+
+#[cfg(not(simd256))]
+pub fn shake128_free_x4(mut st:Shake128StateX4) {
+    st.0[0].free();
+    st.0[1].free();
+    st.0[2].free();
+    st.0[3].free();
 }
 
 #[cfg(simd256)]
@@ -501,6 +518,17 @@ pub fn shake128_init_x2() -> Shake128StateX2 {
 }
 
 #[cfg(simd256)]
+pub fn shake128_free_x2(mut st:Shake128StateX2) {
+    st.0.free()
+}
+
+#[cfg(not(simd256))]
+pub fn shake128_free_x2(mut st:Shake128StateX2) {
+    st.0[0].free();
+    st.0[1].free();
+}
+
+#[cfg(simd256)]
 pub fn shake128_absorb_nblocks_x2(st: &mut Shake128StateX2, data0: &[u8], data1: &[u8]) {
     st.0.absorb_nblocks(data0, data1, data0, data1);
 }
@@ -563,6 +591,18 @@ pub fn shake128_init_x3() -> Shake128StateX3 {
         sha3::incremental::Shake128State::new(),
         sha3::incremental::Shake128State::new(),
     ])
+}
+
+#[cfg(simd256)]
+pub fn shake128_free_x3(mut st:Shake128StateX3) {
+    st.0.free()
+}
+
+#[cfg(not(simd256))]
+pub fn shake128_free_x3(mut st:Shake128StateX3) {
+    st.0[0].free();
+    st.0[1].free();
+    st.0[2].free();
 }
 
 #[cfg(simd256)]

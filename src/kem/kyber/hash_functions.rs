@@ -131,3 +131,31 @@ pub(crate) fn XOF_squeeze_block<const K: usize>(xof_state: XofState) -> ([[u8; 1
         _ => unreachable!(),
     }
 }
+
+#[inline(always)]
+pub(crate) fn XOF_free<const K: usize>(xof_state: XofState) {
+    match K as u8 {
+        2 => {
+            if let XofState::X2(st) = xof_state {
+                digest::shake128_free_x2(st);
+            } else {
+                unreachable!()
+            }
+        }
+        3 => {
+            if let XofState::X3(st) = xof_state {
+                digest::shake128_free_x3(st);
+            } else {
+                unreachable!()
+            }
+        }
+        4 => {
+            if let XofState::X4(st) = xof_state {
+                digest::shake128_free_x4(st);
+            } else {
+                unreachable!()
+            }
+        }
+        _ => unreachable!(),
+    }
+}

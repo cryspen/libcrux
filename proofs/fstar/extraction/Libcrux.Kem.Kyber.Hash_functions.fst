@@ -44,6 +44,44 @@ let v_XOF_absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
         <:
         Rust_primitives.Hax.t_Never)
 
+let v_XOF_free (v_K: usize) (xof_state: t_XofState) =
+  match cast (v_K <: usize) <: u8 with
+  | 2uy ->
+    (match xof_state with
+      | XofState_X2 st ->
+        let _:Prims.unit = Libcrux.Digest.shake128_free_x2 st in
+        ()
+      | _ ->
+        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+            <:
+            Rust_primitives.Hax.t_Never))
+  | 3uy ->
+    (match xof_state with
+      | XofState_X3 st ->
+        let _:Prims.unit = Libcrux.Digest.shake128_free_x3 st in
+        ()
+      | _ ->
+        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+            <:
+            Rust_primitives.Hax.t_Never))
+  | 4uy ->
+    (match xof_state with
+      | XofState_X4 st ->
+        let _:Prims.unit = Libcrux.Digest.shake128_free_x4 st in
+        ()
+      | _ ->
+        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+            <:
+            Rust_primitives.Hax.t_Never))
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+        <:
+        Rust_primitives.Hax.t_Never)
+
 let v_XOF_squeeze_block (v_K: usize) (xof_state: t_XofState) =
   let output:t_Array (t_Array u8 (sz 168)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 168) <: t_Array u8 (sz 168)) v_K

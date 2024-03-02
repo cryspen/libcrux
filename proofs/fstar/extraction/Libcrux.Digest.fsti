@@ -27,6 +27,15 @@ val shake128_absorb_final_x3 (st: t_Shake128StateX3) (data0 data1 data2: t_Slice
 val shake128_absorb_final_x4 (st: t_Shake128StateX4) (data0 data1 data2 data3: t_Slice u8)
     : Prims.Pure t_Shake128StateX4 Prims.l_True (fun _ -> Prims.l_True)
 
+val shake128_free_x2 (st: t_Shake128StateX2)
+    : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
+
+val shake128_free_x3 (st: t_Shake128StateX3)
+    : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
+
+val shake128_free_x4 (st: t_Shake128StateX4)
+    : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
+
 val shake128_init_x2: Prims.unit
   -> Prims.Pure t_Shake128StateX2 Prims.l_True (fun _ -> Prims.l_True)
 

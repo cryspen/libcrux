@@ -373,5 +373,6 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
             t_Array usize v_K &
             Libcrux.Kem.Kyber.Hash_functions.t_XofState))
   in
+  let _:Prims.unit = Libcrux.Kem.Kyber.Hash_functions.v_XOF_free v_K xof_state in
   let _:Prims.unit = () <: Prims.unit in
   out

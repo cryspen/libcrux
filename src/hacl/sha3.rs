@@ -255,6 +255,10 @@ pub mod incremental {
             state
         }
 
+        pub fn free(&mut self) {
+            unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
+        }
+
         pub fn absorb_nblocks(&mut self, input: &[u8]) {
             unsafe {
                 Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks(
@@ -287,12 +291,15 @@ pub mod incremental {
 
             output
         }
+
     }
-    impl Drop for Shake128State {
-        fn drop(&mut self) {
-            unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
-        }
-    }
+
+    // For now, we are explicitly using "free" to work around a memory leak in the generated C code
+    // impl Drop for Shake128State {
+    //     fn drop(&mut self) {
+    //         unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
+    //     }
+    // }
 }
 
 #[cfg(simd256)]
@@ -319,6 +326,10 @@ pub mod incremental_x4 {
             };
 
             state
+        }
+
+        pub fn free(&mut self) {
+            unsafe { Hacl_Hash_SHA3_Simd256_state_free(self.state) }
         }
 
         pub fn absorb_nblocks(
@@ -383,9 +394,11 @@ pub mod incremental_x4 {
             output
         }
     }
-    impl Drop for Shake128StateX4 {
-        fn drop(&mut self) {
-            unsafe { Hacl_Hash_SHA3_Simd256_state_free(self.state) }
-        }
-    }
+    
+    // For now, we are explicitly using "free" to work around a memory leak in the generated C code
+    // impl Drop for Shake128StateX4 {
+    //     fn drop(&mut self) {
+    //         unsafe { Hacl_Hash_SHA3_Simd256_state_free(self.state) }
+    //     }
+    // }
 }
