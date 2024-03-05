@@ -20,41 +20,29 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 }
 
 #[inline(always)]
-pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> [Shake128State; K] {
-    let mut state: [Shake128State; K] = core::array::from_fn(|_| shake128_init());
-    // [(); K].map(|_| shake128_init());
-    for i in 0..K {
-        shake128_absorb_final(&mut state[i], &input[i]);
-    }
+pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128State<K> {
+    let mut state = shake128_init();
+    shake128_absorb_final(&mut state, input);
     state
 }
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
-    mut xof_state: [Shake128State; K],
-) -> ([[u8; 168 * 3]; K], [Shake128State; K]) {
-    let mut output = [[0; 168 * 3]; K];
-    for i in 0..K {
-        output[i] = shake128_squeeze_nblocks(&mut xof_state[i]);
-    }
+    mut xof_state: Shake128State<K>,
+) -> ([[u8; 168 * 3]; K], Shake128State<K>) {
+    let output = shake128_squeeze_nblocks(&mut xof_state);
     (output, xof_state)
 }
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_block<const K: usize>(
-    mut xof_state: [Shake128State; K],
-) -> ([[u8; 168]; K], [Shake128State; K]) {
-    let mut output = [[0u8; 168]; K];
-    for i in 0..K {
-        output[i] = shake128_squeeze_nblocks(&mut xof_state[i]);
-    }
-
+    mut xof_state: Shake128State<K>,
+) -> ([[u8; 168]; K], Shake128State<K>) {
+    let output = shake128_squeeze_nblocks(&mut xof_state);
     (output, xof_state)
 }
 
 #[inline(always)]
-pub(crate) fn XOF_free<const K: usize>(mut xof_state: [Shake128State; K]) {
-    for i in 0..K {
-        xof_state[i].free()
-    }
+pub(crate) fn XOF_free<const K: usize>(mut xof_state: Shake128State<K>) {
+    xof_state.free();
 }
