@@ -95,7 +95,8 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
         done =
             sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
     }
-    XOF_free::<K>(xof_state);
+    // XXX: We have to manually free the state here due to a Eurydice issue.
+    XOF_free(xof_state);
 
     hax_debug_assert!(out[0]
         .coefficients

@@ -64,7 +64,7 @@ rm src/kyber512.rs
 rm src/kyber1024.rs
 
 # Build & test
-cargo build
+# cargo test
 
 # Extract
 if [[ -z "$CHARON_HOME" ]]; then

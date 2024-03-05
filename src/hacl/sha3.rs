@@ -247,6 +247,9 @@ pub mod incremental {
     }
 
     impl Shake128State {
+        /// Create a new state.
+        ///
+        /// This allocates the necessary memory.
         pub fn new() -> Self {
             let state = Self {
                 state: unsafe { Hacl_Hash_SHA3_Scalar_state_malloc() },
@@ -255,6 +258,9 @@ pub mod incremental {
             state
         }
 
+        /// Free and consume the state.
+        ///
+        /// **NOTE:** This consumed the value. It is not usable after this call!
         pub fn free(&mut self) {
             unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
         }
@@ -293,12 +299,17 @@ pub mod incremental {
         }
     }
 
-    // For now, we are explicitly using "free" to work around a memory leak in the generated C code
-    // impl Drop for Shake128State {
-    //     fn drop(&mut self) {
-    //         unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
-    //     }
-    // }
+    /// **NOTE:** When generating C code with Eurydice, the state needs to be freed
+    ///           manually for now due to a bug in Eurydice.
+    impl Drop for Shake128State {
+        fn drop(&mut self) {
+            // unsafe {
+            //     if !self.state.is_null() {
+            //         Hacl_Hash_SHA3_Scalar_state_free(self.state)
+            //     }
+            // }
+        }
+    }
 }
 
 #[cfg(simd256)]
