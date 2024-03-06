@@ -178,7 +178,7 @@ let compress_then_serialize_u #p v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN 
           assert (v_OUT_LEN /! v_K == Spec.Kyber.v_C1_BLOCK_SIZE p);
           assert (range (v i * v (Spec.Kyber.v_C1_BLOCK_SIZE p)) usize_inttype);
           assert (range ((v i + 1) * v (Spec.Kyber.v_C1_BLOCK_SIZE p)) usize_inttype);
-          assert ((Core.Ops.Range.impl_index_range_slice u8 usize_inttype).in_range out 
+          assert ((Core.Ops.Range.impl_index_range_slice u8 usize_inttype).f_index_pre out 
                     {
                       Core.Ops.Range.f_start = i *! Spec.Kyber.v_C1_BLOCK_SIZE p <: usize;
                       Core.Ops.Range.f_end

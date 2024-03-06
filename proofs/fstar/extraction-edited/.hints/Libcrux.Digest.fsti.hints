@@ -38,7 +38,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "f26a2e49f56d40250df1e2f9476b7b48"
+      "5c85bc5c86350a5e6a085e0f6ff58b40"
     ],
     [
       "Libcrux.Digest.sha3_512_",
@@ -77,7 +77,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a0647846f179226d784258d07151d326"
+      "c3871bd00ceea5c0b701bc94d5d3fcc5"
     ]
   ]
 ]
