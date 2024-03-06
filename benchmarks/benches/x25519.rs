@@ -2,6 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use libcrux::ecdh;
 
 mod util;
+use rand::RngCore;
 use util::*;
 
 fn derive(c: &mut Criterion) {
@@ -49,15 +50,15 @@ fn derive(c: &mut Criterion) {
         )
     });
 
-    group.bench_function("RustCrypto", |b| {
+    group.bench_function("Dalek", |b| {
         use rand_core::OsRng;
-        use x25519_dalek_ng::{EphemeralSecret, PublicKey};
+        use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
             || {
-                let sk1 = EphemeralSecret::new(OsRng);
+                let sk1 = EphemeralSecret::random_from_rng(OsRng);
                 let pk1 = PublicKey::from(&sk1);
-                let sk2 = EphemeralSecret::new(OsRng);
+                let sk2 = EphemeralSecret::random_from_rng(OsRng);
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
@@ -65,7 +66,30 @@ fn derive(c: &mut Criterion) {
             },
             BatchSize::SmallInput,
         )
-    });
+    }); 
+
+    group.bench_function("Dalek Ristretto", |b| {
+        use rand_core::OsRng;
+        use curve25519_dalek::ristretto::RistrettoPoint;
+        use curve25519_dalek::scalar::Scalar;
+
+        b.iter_batched(
+            || {
+                let mut sk1_b = [0u8; 32];
+                OsRng.fill_bytes(&mut sk1_b);
+                let sk1 = Scalar::from_bytes_mod_order(sk1_b);
+                let pk1 = RistrettoPoint::mul_base(&sk1);
+                let mut sk2_b = [0u8; 32];
+                OsRng.fill_bytes(&mut sk2_b);
+                let sk2 = Scalar::from_bytes_mod_order(sk2_b);
+                (pk1, sk2)
+            },
+            |(pk1, sk2)| {
+                let _zz = pk1 * sk2;
+            },
+            BatchSize::SmallInput,
+        )
+    }); 
 
     #[cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))]
     group.bench_function("OpenSSL", |b| {
@@ -126,17 +150,37 @@ fn secret_to_public(c: &mut Criterion) {
         )
     });
 
-    group.bench_function("RustCrypto", |b| {
+    group.bench_function("Dalek", |b| {
         use rand_core::OsRng;
-        use x25519_dalek_ng::{EphemeralSecret, PublicKey};
+        use x25519_dalek::{EphemeralSecret, PublicKey};
 
         b.iter_batched(
             || {
-                let sk = EphemeralSecret::new(OsRng);
+                let sk = EphemeralSecret::random_from_rng(OsRng);
                 sk
             },
             |sk| {
                 let _pk = PublicKey::from(&sk);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("Dalek Ristretto", |b| {
+        use rand_core::OsRng;
+        use curve25519_dalek::ristretto::RistrettoPoint;
+        use curve25519_dalek::scalar::Scalar;
+
+
+        b.iter_batched(
+            || {
+                let mut sk_b = [0u8; 32];
+                OsRng.fill_bytes(&mut sk_b);
+                let sk = Scalar::from_bytes_mod_order(sk_b);
+                sk
+            },
+            |sk| {
+                let _pk = RistrettoPoint::mul_base(&sk);
             },
             BatchSize::SmallInput,
         )
