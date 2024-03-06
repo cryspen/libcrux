@@ -32,36 +32,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/v2024.01.13
-
-      - name: ⤵ Clone HACL-star repository
-        uses: actions/checkout@v4
-        with:
-          repository: hacl-star/hacl-star
-          path: hacl-star
-
-      - name: ⤵ Clone hax repository
-        uses: actions/checkout@v4
-        with:
-          repository: hacspec/hacspec-v2
-          path: hax
-
-      - name: ⤵ Install & confiure Cachix
-        run: |
-          nix profile install nixpkgs#cachix
-          cachix use hax
-
-      - name: ⤵ Install hax
-        run: |
-          nix profile install ./hax
+      - name: ⤵ Install and configure hax
+        uses: hacspec/hax-actions@main
 
       - name: 🏃 Extract the Kyber reference code
         run: |
-          eval $(opam env)
           (cd proofs/fstar/extraction/ && ./clean.sh)
           rm -f sys/platform/proofs/fstar/extraction/*.fst*
           ./hax-driver.py --kyber-reference
@@ -73,34 +48,18 @@ jobs:
         run: git diff --exit-code
 
       - name: 🏃 Verify the Kyber reference code
-        run: |
-          env FSTAR_HOME=${{ github.workspace }}/fstar \
-              HACL_HOME=${{ github.workspace }}/hacl-star \
-              HAX_HOME=${{ github.workspace }}/hax \
-              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
-              ./hax-driver.py --verify-extraction
+        run: ./hax-driver.py --verify-extraction
 
       - name: 🏃 Verify Kyber `extraction-edited` F* code
-        run: |
-          env FSTAR_HOME=${{ github.workspace }}/fstar \
-              HACL_HOME=${{ github.workspace }}/hacl-star \
-              HAX_HOME=${{ github.workspace }}/hax \
-              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
-              make -C proofs/fstar/extraction-edited
+        run: make -C proofs/fstar/extraction-edited
 
       - name: 🏃 Verify Kyber `extraction-secret-independent` F* code
-        run: |
-          env FSTAR_HOME=${{ github.workspace }}/fstar \
-              HACL_HOME=${{ github.workspace }}/hacl-star \
-              HAX_HOME=${{ github.workspace }}/hax \
-              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
-              make -C proofs/fstar/extraction-secret-independent
+        run: make -C proofs/fstar/extraction-secret-independent
 
       - name: 🏃 Extract the Kyber specification
         run: |
-          eval $(opam env)
           # Extract the functions in the compress module individually to test
-            # the function-extraction code.
+          # the function-extraction code.
           # Extract functions from the remaining modules to test the
           # module-extraction code.
           ./hax-driver.py --crate-path specs/kyber \
