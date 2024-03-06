@@ -1,5 +1,5 @@
 [
-  "≈q¿\u0012vD∑c\u0018qæÎ≤ëÏH",
+  "∏M’z‘ô‚K∆øçÿ0é?π",
   [
     [
       "Core.Ops.op_String_Access",
@@ -7,15 +7,17 @@
       2,
       1,
       [
-        "@MaxIFuel_assumption", "@query", "equation_Core.Ops.Index.in_range",
+        "@MaxIFuel_assumption", "@query",
+        "equation_Core.Ops.Index.f_index_pre",
         "fuel_guarded_inversion_Core.Ops.Index.t_Index",
-        "interpretation_Tm_abs_bc0ae3740b8cfb7a7b7143f61a432dbc",
-        "proj_equation_Core.Ops.Index.Mkt_Index_in_range",
-        "token_correspondence_Core.Ops.Index.__proj__Mkt_Index__item__in_range",
-        "token_correspondence_Core.Ops.Index.in_range"
+        "interpretation_Tm_abs_ae384ecb62a1a7af83816ab6e17e2667",
+        "proj_equation_Core.Ops.Index.Mkt_Index_f_index_pre",
+        "refinement_interpretation_Tm_refine_30cb2c09b0b12f688a5d22de2c638642",
+        "token_correspondence_Core.Ops.Index.__proj__Mkt_Index__item__f_index_pre",
+        "token_correspondence_Core.Ops.Index.f_index_pre"
       ],
       0,
-      "37bba1d678031983b3fa984afca61e02"
+      "ba5c78d8151012f0fd0b25c02315546c"
     ]
   ]
 ]
