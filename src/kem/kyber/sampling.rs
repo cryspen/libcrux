@@ -1,7 +1,7 @@
 use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    hash_functions::{XOF_absorb, XOF_free, XOF_squeeze_block, XOF_squeeze_three_blocks},
+    hash_functions::{XOF_absorb, XOF_free, XOF_init, XOF_squeeze_block, XOF_squeeze_three_blocks},
 };
 use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
@@ -79,7 +79,8 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
     let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [PolynomialRingElement; K] = [PolynomialRingElement::ZERO; K];
 
-    let mut xof_state = XOF_absorb::<K>(seeds);
+    let mut xof_state = XOF_init();
+    XOF_absorb(&mut xof_state, seeds);
     let (randomness, new_state) = XOF_squeeze_three_blocks(xof_state);
     xof_state = new_state;
 

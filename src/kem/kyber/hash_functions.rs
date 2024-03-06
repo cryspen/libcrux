@@ -1,7 +1,8 @@
 #![allow(non_snake_case)]
 
 use crate::digest::{
-    self, digest_size, shake128_absorb_final, shake128_squeeze_nblocks, Algorithm, Shake128State,
+    self, digest_size, shake128_absorb_final, shake128_free, shake128_init,
+    shake128_squeeze_nblocks, Algorithm, Shake128State,
 };
 
 use super::constants::H_DIGEST_SIZE;
@@ -18,38 +19,33 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     digest::shake256::<LEN>(input)
 }
 
-// Warning 4: in the arguments to libcrux.digest.shake128_init 😱 [[@7]], in the sequence statement at index 0, after the definition of uu____236, in top-level declaration libcrux_kyber.hash_functions.XOF_absorb, in file libcrux_kyber: Malformed input:
-// subtype mismatch,
-// size_t -> libcrux_digest_Shake128State[[0]]
-// (a.k.a. size_t -> libcrux_digest_Shake128State[[0]])
-// vs
-// size_t -> () -> libcrux_digest_Shake128State[[0]]
-// (a.k.a. size_t -> () -> libcrux_digest_Shake128State[[0]])
+#[inline(always)]
+pub(crate) fn XOF_init<const K: usize>() -> [Shake128State; K] {
+    shake128_init().map(|state| Shake128State { state })
+}
 
 #[inline(always)]
-pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128State<K> {
-    let mut state = Shake128State::new();
-    shake128_absorb_final(&mut state, input);
-    state
+pub(crate) fn XOF_absorb<const K: usize>(state: &mut [Shake128State; K], input: [[u8; 34]; K]) {
+    shake128_absorb_final(state, input);
 }
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_three_blocks<const K: usize>(
-    mut xof_state: Shake128State<K>,
-) -> ([[u8; 168 * 3]; K], Shake128State<K>) {
+    mut xof_state: [Shake128State; K],
+) -> ([[u8; 168 * 3]; K], [Shake128State; K]) {
     let output = shake128_squeeze_nblocks(&mut xof_state);
     (output, xof_state)
 }
 
 #[inline(always)]
 pub(crate) fn XOF_squeeze_block<const K: usize>(
-    mut xof_state: Shake128State<K>,
-) -> ([[u8; 168]; K], Shake128State<K>) {
+    mut xof_state: [Shake128State; K],
+) -> ([[u8; 168]; K], [Shake128State; K]) {
     let output = shake128_squeeze_nblocks(&mut xof_state);
     (output, xof_state)
 }
 
 #[inline(always)]
-pub(crate) fn XOF_free<const K: usize>(mut xof_state: Shake128State<K>) {
-    xof_state.free();
+pub(crate) fn XOF_free<const K: usize>(xof_state: [Shake128State; K]) {
+    shake128_free(xof_state);
 }
