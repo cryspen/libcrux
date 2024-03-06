@@ -395,18 +395,15 @@ pub struct Shake128State {
 
 #[inline(always)]
 #[cfg(not(simd256))]
-pub fn shake128_init<const K: usize>() -> [sha3::incremental::Shake128State; K] {
+pub fn shake128_init_absorb<const K: usize>(input: [[u8; 34]; K]) -> [Shake128State; K] {
     debug_assert!(K == 2 || K == 3 || K == 4);
 
-    // let states: [sha3::incremental::Shake128State; K] =
-        core::array::from_fn(|_i| sha3::incremental::Shake128State::new())
+    let mut state: [Shake128State; K] = core::array::from_fn(|_| Shake128State {
+        state: sha3::incremental::Shake128State::new(),
+    });
+    shake128_absorb_final(&mut state, input);
 
-    // let states: [Shake128State; K] = states.map(|state| Shake128State { state });
-    // core::array::from_fn(|_| Shake128State {
-    //     state: sha3::incremental::Shake128State::new(),
-    // });
-
-    // states
+    state
 }
 
 /// Free the memory of the state.

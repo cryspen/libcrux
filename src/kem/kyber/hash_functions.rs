@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
 use crate::digest::{
-    self, digest_size, shake128_absorb_final, shake128_free, shake128_init,
-    shake128_squeeze_nblocks, Algorithm, Shake128State,
+    self, digest_size, shake128_free, shake128_init_absorb, shake128_squeeze_nblocks, Algorithm,
+    Shake128State,
 };
 
 use super::constants::H_DIGEST_SIZE;
@@ -20,13 +20,8 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 }
 
 #[inline(always)]
-pub(crate) fn XOF_init<const K: usize>() -> [Shake128State; K] {
-    shake128_init().map(|state| Shake128State { state })
-}
-
-#[inline(always)]
-pub(crate) fn XOF_absorb<const K: usize>(state: &mut [Shake128State; K], input: [[u8; 34]; K]) {
-    shake128_absorb_final(state, input);
+pub(crate) fn XOF_absorb<const K: usize>(input: [[u8; 34]; K]) -> [Shake128State; K] {
+    shake128_init_absorb(input)
 }
 
 #[inline(always)]
