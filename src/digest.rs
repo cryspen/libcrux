@@ -367,7 +367,9 @@ pub fn shake128<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
 /// SHAKE 128 Incremental API (Scalar)
 #[cfg(not(simd256))]
 #[cfg_attr(hax, hax_lib_macros::opaque_type)]
-pub struct Shake128State<const K: usize>([sha3::incremental::Shake128State; K]);
+pub struct Shake128State<const K: usize> {
+    state: [sha3::incremental::Shake128State; K],
+}
 
 #[cfg(not(simd256))]
 impl<const K: usize> Shake128State<K> {
@@ -376,34 +378,47 @@ impl<const K: usize> Shake128State<K> {
     /// **NOTE:** That this needs to be done manually for now.
     pub fn free(&mut self) {
         for i in 0..K {
-            self.0[i].free()
+            self.state[i].free()
         }
+    }
+
+    #[inline(always)]
+    #[cfg(not(simd256))]
+    pub fn new() -> Self {
+        let state: [sha3::incremental::Shake128State; K] =
+            core::array::from_fn(|_| sha3::incremental::Shake128State::new());
+        Shake128State::<K> { state }
     }
 }
 
-#[cfg(not(simd256))]
-pub fn shake128_init<const K: usize>() -> Shake128State<K> {
-    let state: [sha3::incremental::Shake128State; K] =
-        core::array::from_fn(|_| sha3::incremental::Shake128State::new());
-    Shake128State(state)
-}
-
+#[inline(always)]
 #[cfg(not(simd256))]
 pub fn shake128_absorb_nblocks<const K: usize>(st: &mut Shake128State<K>, data: &[u8]) {
     for i in 0..K {
-        st.0[i].absorb_nblocks(data);
+        st.state[i].absorb_nblocks(data);
     }
 }
 
+#[inline(always)]
 #[cfg(not(simd256))]
 pub fn shake128_squeeze_nblocks<const OUTPUT_BYTES: usize, const K: usize>(
     st: &mut Shake128State<K>,
 ) -> [[u8; OUTPUT_BYTES]; K] {
     let mut out = [[0u8; OUTPUT_BYTES]; K];
     for i in 0..K {
-        out[i] = st.0[i].squeeze_nblocks();
+        out[i] = st.state[i].squeeze_nblocks();
     }
     out
+}
+
+#[inline(always)]
+#[cfg(not(simd256))]
+pub fn shake128_absorb_final<const K: usize>(st: &mut Shake128State<K>, data: [[u8; 34]; K]) {
+    debug_assert!(K == 2 || K == 3 || K == 4);
+
+    for i in 0..K {
+        st.state[i].absorb_final(&data[i]);
+    }
 }
 
 /// SHAKE 128 Incremental API (SIMD)
@@ -417,12 +432,14 @@ impl<const K: usize> Shake128State<K> {
     pub fn free(&mut self) {
         self.0.free()
     }
-}
 
-#[inline(always)]
-#[cfg(simd256)]
-pub fn shake128_init<const K: usize>() -> Shake128State<K> {
-    Shake128State(sha3::incremental_x4::Shake128StateX4::new())
+    #[inline(always)]
+    #[cfg(simd256)]
+    pub fn new<const K: usize>() -> Shake128State<K> {
+        Shake128State {
+            field1: sha3::incremental_x4::Shake128StateX4::new(),
+        }
+    }
 }
 
 #[inline(always)]
@@ -435,16 +452,6 @@ pub fn shake128_absorb_nblocks<const K: usize>(
     data3: &[u8],
 ) {
     st.0.absorb_nblocks(data0, data1, data2, data3);
-}
-
-#[inline(always)]
-#[cfg(not(simd256))]
-pub fn shake128_absorb_final<const K: usize>(st: &mut Shake128State<K>, data: [[u8; 34]; K]) {
-    debug_assert!(K == 2 || K == 3 || K == 4);
-
-    for i in 0..K {
-        st.0[i].absorb_final(&data[i]);
-    }
 }
 
 #[inline(always)]
