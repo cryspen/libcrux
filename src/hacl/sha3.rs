@@ -359,9 +359,11 @@ pub mod incremental_x4 {
             if cfg!(simd256) && simd256_support() {
                 Self {
                     statex4: unsafe { Hacl_Hash_SHA3_Simd256_state_malloc() },
+                    state: [null_mut(), null_mut(), null_mut(), null_mut()],
                 }
             } else {
                 Self {
+                    statex4: null_mut(),
                     state: unsafe {
                         [
                             Hacl_Hash_SHA3_Scalar_state_malloc(),
