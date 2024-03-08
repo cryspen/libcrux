@@ -232,6 +232,8 @@ pub mod x4 {
 /// bytes in increments.
 /// TODO: This module should not be public, see: https://github.com/cryspen/libcrux/issues/157
 pub mod incremental {
+    use std::ptr::null_mut;
+
     use libcrux_hacl::{
         Hacl_Hash_SHA3_Scalar_shake128_absorb_final, Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks,
         Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks, Hacl_Hash_SHA3_Scalar_state_free,
@@ -260,9 +262,14 @@ pub mod incremental {
 
         /// Free and consume the state.
         ///
-        /// **NOTE:** This consumed the value. It is not usable after this call!
+        /// **NOTE:** This consumes the value. It is not usable after this call!
         pub fn free(&mut self) {
-            unsafe { Hacl_Hash_SHA3_Scalar_state_free(self.state) }
+            unsafe {
+                Hacl_Hash_SHA3_Scalar_state_free(self.state);
+                // null the pointer (hacl isn't doing that unfortunately)
+                // This way we can check whether the memory was freed already or not.
+                self.state = null_mut();
+            }
         }
 
         pub fn absorb_nblocks(&mut self, input: &[u8]) {
@@ -303,17 +310,27 @@ pub mod incremental {
     ///           manually for now due to a bug in Eurydice.
     impl Drop for Shake128State {
         fn drop(&mut self) {
-            // unsafe {
-            //     if !self.state.is_null() {
-            //         Hacl_Hash_SHA3_Scalar_state_free(self.state)
-            //     }
-            // }
+            unsafe {
+                // A manual free may have occurred already.
+                // Avoid double free.
+                if !self.state.is_null() {
+                    Hacl_Hash_SHA3_Scalar_state_free(self.state)
+                }
+            }
         }
     }
 }
 
+/// Fallback to the portable implementation.
+#[cfg(not(simd256))]
+pub mod incremental_x4 {
+    pub use super::incremental::Shake128State;
+}
+
 #[cfg(simd256)]
 pub mod incremental_x4 {
+    use std::ptr::null_mut;
+
     use libcrux_hacl::{
         Hacl_Hash_SHA3_Simd256_shake128_absorb_final,
         Hacl_Hash_SHA3_Simd256_shake128_absorb_nblocks,
@@ -339,7 +356,10 @@ pub mod incremental_x4 {
         }
 
         pub fn free(&mut self) {
-            unsafe { Hacl_Hash_SHA3_Simd256_state_free(self.state) }
+            unsafe {
+                Hacl_Hash_SHA3_Simd256_state_free(self.state);
+                self.state = null_mut();
+            }
         }
 
         pub fn absorb_nblocks(
@@ -406,9 +426,15 @@ pub mod incremental_x4 {
     }
 
     // For now, we are explicitly using "free" to work around a memory leak in the generated C code
-    // impl Drop for Shake128StateX4 {
-    //     fn drop(&mut self) {
-    //         unsafe { Hacl_Hash_SHA3_Simd256_state_free(self.state) }
-    //     }
-    // }
+    impl Drop for Shake128StateX4 {
+        fn drop(&mut self) {
+            unsafe {
+                // A manual free may have occurred already.
+                // Avoid double free.
+                if !self.state.is_null() {
+                    Hacl_Hash_SHA3_Simd256_state_free(self.state);
+                }
+            }
+        }
+    }
 }

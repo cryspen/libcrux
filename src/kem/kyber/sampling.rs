@@ -1,7 +1,7 @@
 use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    hash_functions::{XOF_absorb, XOF_free, XOF_squeeze_block, XOF_squeeze_three_blocks},
+    hash_functions::*,
 };
 use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
@@ -75,13 +75,12 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     done
 }
 
-pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
+pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
     let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [PolynomialRingElement; K] = [PolynomialRingElement::ZERO; K];
 
-    let mut xof_state = XOF_absorb(seeds);
-    let (randomness, new_state) = XOF_squeeze_three_blocks(xof_state);
-    xof_state = new_state;
+    let mut xof_state = absorb(seeds);
+    let randomness = squeeze_three_blocks(&mut xof_state);
 
     let mut done =
         sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
@@ -89,14 +88,15 @@ pub fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingE
     // Requiring more than 5 blocks to sample a ring element should be very
     // unlikely according to:
     // https://eprint.iacr.org/2023/708.pdf
+    // To avoid failing here, we squeeze more blocks out of the state until
+    // we have enough.
     while !done {
-        let (randomness, new_state) = XOF_squeeze_block(xof_state);
-        xof_state = new_state;
+        let randomness = squeeze_block(&mut xof_state);
         done =
             sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
     }
     // XXX: We have to manually free the state here due to a Eurydice issue.
-    XOF_free(xof_state);
+    free(xof_state);
 
     hax_debug_assert!(out[0]
         .coefficients

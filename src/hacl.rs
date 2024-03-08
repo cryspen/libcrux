@@ -20,7 +20,8 @@ pub(crate) mod hkdf;
 pub(crate) mod hmac;
 pub(crate) mod p256;
 pub(crate) mod sha2;
-pub(crate) mod sha3;
+// XXX: Don't make this public when eurydice has improved.
+pub mod sha3;
 
 /// Unified error type.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
