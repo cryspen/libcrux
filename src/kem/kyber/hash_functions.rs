@@ -3,7 +3,7 @@
 use super::constants::H_DIGEST_SIZE;
 use crate::{
     digest::{self, digest_size, Algorithm},
-    sha3,
+    hacl::sha3::incremental_x4::Shake128StateX4,
 };
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
@@ -18,41 +18,19 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     digest::shake256::<LEN>(input)
 }
 
-pub(crate) struct Shake128State<const K: usize> {
-    #[cfg(not(simd256))]
-    state: [sha3::incremental::Shake128State; K],
-    #[cfg(simd256)]
-    state: [sha3::incremental_x4::Shake128State; K],
-}
-
-impl<const K: usize> Shake128State<K> {
-    fn new() -> Self {
-        #[cfg(simd256)]
-        if simd256_support() {
-            Self {
-                state: core::array::from_fn(|_| sha3::incremental_x4::Shake128State::new()),
-            }
-        } else {
-            Self {
-                state: core::array::from_fn(|_| sha3::incremental::Shake128State::new()),
-            }
-        }
-        #[cfg(not(simd256))]
-        Self {
-            state: core::array::from_fn(|_| sha3::incremental::Shake128State::new()),
-        }
-    }
-}
-
 #[inline(always)]
-pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128State<K> {
+pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128StateX4 {
     debug_assert!(K == 2 || K == 3 || K == 4);
 
-    let mut states = Shake128State::new();
-    for i in 0..K {
-        states.state[i].absorb_final(&input[i]);
-    }
-    states
+    let mut state = Shake128StateX4::new();
+    let data = [
+        &input[0] as &[u8],
+        &input[1] as &[u8],
+        if K > 2 { &input[2] as &[u8] } else { &[] },
+        if K > 3 { &input[3] as &[u8] } else { &[] },
+    ];
+    state.absorb_final(data);
+    state
 }
 
 const BLOCK_SIZE: usize = 168;
@@ -60,22 +38,24 @@ const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 
 #[inline(always)]
 pub(crate) fn squeeze_three_blocks<const K: usize>(
-    xof_state: &mut Shake128State<K>,
+    xof_state: &mut Shake128StateX4,
 ) -> [[u8; THREE_BLOCKS]; K] {
+    let output: [[u8; THREE_BLOCKS]; 4] = xof_state.squeeze_nblocks();
     let mut out = [[0u8; THREE_BLOCKS]; K];
     for i in 0..K {
-        out[i] = xof_state.state[i].squeeze_nblocks();
+        out[i] = output[i];
     }
     out
 }
 
 #[inline(always)]
 pub(crate) fn squeeze_block<const K: usize>(
-    xof_state: &mut Shake128State<K>,
+    xof_state: &mut Shake128StateX4,
 ) -> [[u8; BLOCK_SIZE]; K] {
+    let output: [[u8; BLOCK_SIZE]; 4] = xof_state.squeeze_nblocks();
     let mut out = [[0u8; BLOCK_SIZE]; K];
     for i in 0..K {
-        out[i] = xof_state.state[i].squeeze_nblocks();
+        out[i] = output[i];
     }
     out
 }
@@ -84,8 +64,6 @@ pub(crate) fn squeeze_block<const K: usize>(
 ///
 /// **NOTE:** That this needs to be done manually for now.
 #[inline(always)]
-pub(crate) fn free<const K: usize>(mut xof_state: Shake128State<K>) {
-    for i in 0..K {
-        xof_state.state[i].free();
-    }
+pub(crate) fn free(xof_state: Shake128StateX4) {
+    xof_state.free();
 }
