@@ -314,14 +314,14 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
     Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
-  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K =
+  let xof_state:Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4 =
     Libcrux.Kem.Kyber.Hash_functions.absorb v_K seeds
   in
-  let tmp0, out1:(Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K &
+  let tmp0, out1:(Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4 &
     t_Array (t_Array u8 (sz 504)) v_K) =
     Libcrux.Kem.Kyber.Hash_functions.squeeze_three_blocks v_K xof_state
   in
-  let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K = tmp0 in
+  let xof_state:Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4 = tmp0 in
   let randomness:t_Array (t_Array u8 (sz 504)) v_K = out1 in
   let tmp0, tmp1, out1:(t_Array usize v_K &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
@@ -334,31 +334,31 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
   let done, out, sampled_coefficients, xof_state:(bool &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     t_Array usize v_K &
-    Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K) =
+    Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4) =
     Rust_primitives.f_while_loop (fun temp_0_ ->
           let done, out, sampled_coefficients, xof_state:(bool &
             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K &
-            Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K) =
+            Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4) =
             temp_0_
           in
           ~.done <: bool)
       (done, out, sampled_coefficients, xof_state
         <:
         (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & t_Array usize v_K &
-          Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K))
+          Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4))
       (fun temp_0_ ->
           let done, out, sampled_coefficients, xof_state:(bool &
             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K &
-            Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K) =
+            Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4) =
             temp_0_
           in
-          let tmp0, out1:(Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K &
+          let tmp0, out1:(Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4 &
             t_Array (t_Array u8 (sz 168)) v_K) =
             Libcrux.Kem.Kyber.Hash_functions.squeeze_block v_K xof_state
           in
-          let xof_state:Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K = tmp0 in
+          let xof_state:Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4 = tmp0 in
           let randomness:t_Array (t_Array u8 (sz 168)) v_K = out1 in
           let tmp0, tmp1, out1:(t_Array usize v_K &
             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
@@ -367,14 +367,14 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
           in
           let sampled_coefficients:t_Array usize v_K = tmp0 in
           let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K = tmp1 in
-          let hoist25:bool = out1 in
-          let done:bool = hoist25 in
+          let hoist21:bool = out1 in
+          let done:bool = hoist21 in
           done, out, sampled_coefficients, xof_state
           <:
           (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K &
-            Libcrux.Kem.Kyber.Hash_functions.t_Shake128State v_K))
+            Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4))
   in
-  let _:Prims.unit = Libcrux.Kem.Kyber.Hash_functions.free v_K xof_state in
+  let _:Prims.unit = Libcrux.Kem.Kyber.Hash_functions.free xof_state in
   let _:Prims.unit = () <: Prims.unit in
   out

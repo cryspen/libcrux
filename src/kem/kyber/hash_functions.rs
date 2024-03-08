@@ -1,10 +1,8 @@
 #![allow(non_snake_case)]
 
 use super::constants::H_DIGEST_SIZE;
-use crate::{
-    digest::{self, digest_size, Algorithm},
-    hacl::sha3::incremental_x4::Shake128StateX4,
-};
+use crate::digest::{self, digest_size, Algorithm};
+use crate::sha3::incremental_x4::Shake128StateX4;
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
     digest::sha3_512(input)
