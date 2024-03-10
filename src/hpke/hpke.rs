@@ -1,6 +1,10 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
-use crate::kem::{X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey};
+use crate::ecdh::{self, x25519};
+use crate::kem::{
+    kyber::kyber768, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey,
+    X25519MlKem768Draft00PublicKey, XWingKemDraft01PrivateKey, XWingKemDraft01PublicKey,
+};
 
 use super::aead::*;
 use super::kdf::*;
@@ -425,6 +429,29 @@ pub fn SetupBaseS(
             );
             (ss.encode(), ct.encode())
         }
+        KEM::XWingDraft01 => {
+            // TODO: This should re-use PublicKey::encapsulate but we need
+            // CryptoRng + Rng for that, not just a slice of randomness
+            let XWingKemDraft01PublicKey { pk_m, pk_x } =
+                XWingKemDraft01PublicKey::decode(pkR).unwrap();
+
+            let (ct_m, ss_m) = kyber768::encapsulate(&pk_m, randomness[0..32].try_into().unwrap());
+            let ek_x = x25519::PrivateKey(randomness[..32].try_into().unwrap());
+            let ct_x = x25519::secret_to_public(&ek_x).unwrap();
+            let ss_x = x25519::derive(&pk_x, &ek_x).unwrap();
+
+            let ct = Ct::XWingKemDraft01(
+                ct_m.as_slice().try_into().unwrap(),
+                ct_x.0.as_slice().try_into().unwrap(),
+            );
+            let ss = Ss::XWingKemDraft01(
+                ss_m.as_slice().try_into().unwrap(),
+                ss_x.0.as_slice().try_into().unwrap(),
+                ct_x,
+                pk_x,
+            );
+            (ss.encode(), ct.encode())
+        }
     };
 
     let key_schedule = KeySchedule(
@@ -472,6 +499,14 @@ pub fn SetupBaseR(
                 ss2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
             );
+            ss.encode()
+        }
+        KEM::XWingDraft01 => {
+            let ct = crate::kem::Ct::decode(crate::kem::Algorithm::XWingKemDraft01, enc).unwrap();
+            let sk = crate::kem::XWingKemDraft01PrivateKey::decode(skR).unwrap();
+            let sk = &crate::kem::PrivateKey::XWingKemDraft01(sk);
+            let ss = ct.decapsulate(sk).unwrap();
+
             ss.encode()
         }
     };
