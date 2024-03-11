@@ -146,8 +146,10 @@ pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
-    hax_debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
-    (fe + (FIELD_MODULUS & (fe >> 31))) as u16
+    // hax_debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
+    let result = (fe + (FIELD_MODULUS & (fe >> 31))) as u16;
+    hax_debug_assert!(result < FIELD_MODULUS as u16);
+    result
 }
 
 #[derive(Clone, Copy)]
