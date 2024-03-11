@@ -1,6 +1,7 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
 use crate::ecdh::{self, x25519};
+use crate::kem;
 use crate::kem::{
     kyber::kyber768, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey,
     X25519MlKem768Draft00PublicKey, XWingKemDraft01PrivateKey, XWingKemDraft01PublicKey,
@@ -502,10 +503,12 @@ pub fn SetupBaseR(
             ss.encode()
         }
         KEM::XWingDraft01 => {
-            let ct = crate::kem::Ct::decode(crate::kem::Algorithm::XWingKemDraft01, enc).unwrap();
-            let sk = crate::kem::XWingKemDraft01PrivateKey::decode(skR).unwrap();
-            let sk = &crate::kem::PrivateKey::XWingKemDraft01(sk);
-            let ss = ct.decapsulate(sk).unwrap();
+            let ct = kem::Ct::decode(crate::kem::Algorithm::XWingKemDraft01, enc)
+                .map_err(|_| HpkeError::DecapError)?;
+            let sk = crate::kem::XWingKemDraft01PrivateKey::decode(skR)
+                .map_err(|_| HpkeError::DecapError)?;
+            let sk = &kem::PrivateKey::XWingKemDraft01(sk);
+            let ss = ct.decapsulate(sk).map_err(|_| HpkeError::DecapError)?;
 
             ss.encode()
         }
