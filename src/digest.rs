@@ -370,3 +370,52 @@ pub fn shake128<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
 pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
     sha3::shake256(data)
 }
+
+/// An incremental eXtendable Output Function API for SHA3 (shake).
+///
+/// This x4 variant of the incremental API always processes 4 inputs at a time.
+/// This uses AVX2 when available to run the 4 operations in parallel.
+///
+/// More generic APIs will be added later.
+pub mod incremental_x4 {
+
+    /// Incremental state
+    pub struct Shake128StateX4 {
+        state: crate::hacl::sha3::incremental_x4::Shake128StateX4,
+    }
+
+    impl Shake128StateX4 {
+        /// Create a new Shake128 x4 state.
+        pub fn new() -> Self {
+            Self {
+                state: crate::hacl::sha3::incremental_x4::Shake128StateX4::new(),
+            }
+        }
+
+        /// This is only used internally to work around Eurydice bugs.
+        pub fn free(self) {
+            self.state.free();
+        }
+
+        /// Absorb 4 blocks.
+        ///
+        /// A blocks MUST all be the same length.
+        /// Each slice MUST be a multiple of the block length 168.
+        pub fn absorb_4blocks(&mut self, input: [&[u8]; 4]) {
+            self.state.absorb_blocks(input)
+        }
+
+        /// Absorb 4 blocks.
+        ///
+        /// A blocks MUST all be the same length.
+        /// Each slice MUST be a multiple of the block length 168.
+        pub fn absorb_final(&mut self, input: [&[u8]; 4]) {
+            self.state.absorb_final(input);
+        }
+
+        /// Squeeze `M` blocks of length `N`
+        pub fn squeeze_blocks<const N: usize, const M: usize>(&mut self) -> [[u8; N]; M] {
+            self.state.squeeze_blocks()
+        }
+    }
+}

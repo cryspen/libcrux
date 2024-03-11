@@ -18,11 +18,6 @@ pub(crate) mod jasmin;
 
 // HACL
 pub(crate) mod hacl;
-// XXX: Make private again when eurydice has improved
-/// HACL Sha3.
-///
-/// **NOTE:** This is a pretty low level API. Please use [`digest`] whenever possible.
-pub use hacl::sha3;
 
 // libcrux
 pub mod aead;

@@ -272,7 +272,7 @@ pub mod incremental {
             }
         }
 
-        pub fn absorb_nblocks(&mut self, input: &[u8]) {
+        pub fn absorb_blocks(&mut self, input: &[u8]) {
             unsafe {
                 Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks(
                     self.state,
@@ -291,7 +291,7 @@ pub mod incremental {
                 )
             };
         }
-        pub fn squeeze_nblocks<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
+        pub fn squeeze_blocks<const OUTPUT_BYTES: usize>(&mut self) -> [u8; OUTPUT_BYTES] {
             debug_assert!(OUTPUT_BYTES % 168 == 0);
             let mut output = [0u8; OUTPUT_BYTES];
             unsafe {
@@ -564,11 +564,14 @@ pub mod incremental_x4 {
         }
 
         #[cfg(simd256)]
-        pub fn squeeze_nblocks<const OUTPUT_BYTES: usize>(&mut self) -> [[u8; OUTPUT_BYTES]; 4] {
+        pub fn squeeze_blocks<const OUTPUT_BYTES: usize, const M: usize>(
+            &mut self,
+        ) -> [[u8; OUTPUT_BYTES]; M] {
             debug_assert!(OUTPUT_BYTES % 168 == 0);
-            let mut output = [[0u8; OUTPUT_BYTES]; 4];
+            debug_assert!(M <= self.state.len() && (M == 2 || M == 3 || M == 4));
 
             if cfg!(simd256) && simd256_support() {
+                let mut output = [[0u8; OUTPUT_BYTES]; 4];
                 unsafe {
                     Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(
                         self.statex4,
@@ -579,8 +582,10 @@ pub mod incremental_x4 {
                         OUTPUT_BYTES as u32,
                     );
                 };
+                core::array::from_fn(|i| output[i])
             } else {
-                for i in 0..4 {
+                let mut output = [[0u8; OUTPUT_BYTES]; M];
+                for i in 0..M {
                     unsafe {
                         Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
                             self.state[i],
@@ -589,17 +594,20 @@ pub mod incremental_x4 {
                         );
                     };
                 }
+                output
             }
-
-            output
         }
 
         #[cfg(not(simd256))]
-        pub fn squeeze_nblocks<const OUTPUT_BYTES: usize>(&mut self) -> [[u8; OUTPUT_BYTES]; 4] {
+        pub fn squeeze_blocks<const OUTPUT_BYTES: usize, const M: usize>(
+            &mut self,
+        ) -> [[u8; OUTPUT_BYTES]; M] {
             debug_assert!(OUTPUT_BYTES % 168 == 0);
-            let mut output = [[0u8; OUTPUT_BYTES]; 4];
+            debug_assert!(M <= self.state.len());
 
-            for i in 0..4 {
+            let mut output = [[0u8; OUTPUT_BYTES]; M];
+
+            for i in 0..M {
                 unsafe {
                     Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
                         self.state[i],

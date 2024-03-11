@@ -14,24 +14,22 @@ val v_PRF (v_LEN: usize) (input: t_Slice u8)
 
 let v_THREE_BLOCKS: usize = v_BLOCK_SIZE *! sz 3
 
-val free (xof_state: Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4)
+val absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
+    : Prims.Pure Libcrux.Digest.Incremental_x4.t_Shake128StateX4
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val free (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4)
     : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
 
-val squeeze_block (v_K: usize) (xof_state: Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4)
+val squeeze_block (v_K: usize) (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4)
     : Prims.Pure
-      (Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4 & t_Array (t_Array u8 (sz 168)) v_K)
+      (Libcrux.Digest.Incremental_x4.t_Shake128StateX4 & t_Array (t_Array u8 (sz 168)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val squeeze_three_blocks
-      (v_K: usize)
-      (xof_state: Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4)
+val squeeze_three_blocks (v_K: usize) (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4)
     : Prims.Pure
-      (Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4 & t_Array (t_Array u8 (sz 504)) v_K)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
-    : Prims.Pure Libcrux.Hacl.Sha3.Incremental_x4.t_Shake128StateX4
+      (Libcrux.Digest.Incremental_x4.t_Shake128StateX4 & t_Array (t_Array u8 (sz 504)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)

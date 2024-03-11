@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
 
 use super::constants::H_DIGEST_SIZE;
-use crate::digest::{self, digest_size, Algorithm};
-use crate::sha3::incremental_x4::Shake128StateX4;
+use crate::digest::{self, digest_size, incremental_x4::Shake128StateX4, Algorithm};
+// use crate::sha3::incremental_x4::Shake128StateX4;
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
     digest::sha3_512(input)
@@ -38,7 +38,7 @@ const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 pub(crate) fn squeeze_three_blocks<const K: usize>(
     xof_state: &mut Shake128StateX4,
 ) -> [[u8; THREE_BLOCKS]; K] {
-    let output: [[u8; THREE_BLOCKS]; 4] = xof_state.squeeze_nblocks();
+    let output: [[u8; THREE_BLOCKS]; K] = xof_state.squeeze_blocks();
     let mut out = [[0u8; THREE_BLOCKS]; K];
     for i in 0..K {
         out[i] = output[i];
@@ -50,7 +50,7 @@ pub(crate) fn squeeze_three_blocks<const K: usize>(
 pub(crate) fn squeeze_block<const K: usize>(
     xof_state: &mut Shake128StateX4,
 ) -> [[u8; BLOCK_SIZE]; K] {
-    let output: [[u8; BLOCK_SIZE]; 4] = xof_state.squeeze_nblocks();
+    let output: [[u8; BLOCK_SIZE]; K] = xof_state.squeeze_blocks();
     let mut out = [[0u8; BLOCK_SIZE]; K];
     for i in 0..K {
         out[i] = output[i];
