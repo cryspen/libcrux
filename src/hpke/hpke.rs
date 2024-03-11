@@ -434,20 +434,39 @@ pub fn SetupBaseS(
             // TODO: This should re-use PublicKey::encapsulate but we need
             // CryptoRng + Rng for that, not just a slice of randomness
             let XWingKemDraft01PublicKey { pk_m, pk_x } =
-                XWingKemDraft01PublicKey::decode(pkR).unwrap();
+                XWingKemDraft01PublicKey::decode(pkR).map_err(|_| HpkeError::EncapError)?;
 
-            let (ct_m, ss_m) = kyber768::encapsulate(&pk_m, randomness[0..32].try_into().unwrap());
-            let ek_x = x25519::PrivateKey(randomness[..32].try_into().unwrap());
-            let ct_x = x25519::secret_to_public(&ek_x).unwrap();
-            let ss_x = x25519::derive(&pk_x, &ek_x).unwrap();
+            let (ct_m, ss_m) = kyber768::encapsulate(
+                &pk_m,
+                randomness[0..32]
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ek_x = x25519::PrivateKey(
+                randomness[..32]
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ct_x = x25519::secret_to_public(&ek_x).map_err(|_| HpkeError::EncapError)?;
+            let ss_x = x25519::derive(&pk_x, &ek_x).map_err(|_| HpkeError::EncapError)?;
 
             let ct = Ct::XWingKemDraft01(
-                ct_m.as_slice().try_into().unwrap(),
-                ct_x.0.as_slice().try_into().unwrap(),
+                ct_m.as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ct_x.0
+                    .as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
             );
             let ss = Ss::XWingKemDraft01(
-                ss_m.as_slice().try_into().unwrap(),
-                ss_x.0.as_slice().try_into().unwrap(),
+                ss_m.as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ss_x.0
+                    .as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
                 ct_x,
                 pk_x,
             );
