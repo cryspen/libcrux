@@ -377,6 +377,7 @@ pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
 /// This uses AVX2 when available to run the 4 operations in parallel.
 ///
 /// More generic APIs will be added later.
+// #[cfg(feature = "experimental")]
 pub mod incremental_x4 {
 
     /// Incremental state
