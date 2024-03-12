@@ -54,15 +54,19 @@ fn derive(c: &mut Criterion) {
     group.bench_function("OpenSSL", |b| {
         use openssl::derive::Deriver;
         use openssl::pkey::{Id, PKey};
+        use openssl::pkey_ctx::{PkeyCtx};
 
         b.iter_batched(
             || {
-                let pk1 = randombytes(32);
-                let pk1 = PKey::public_key_from_raw_bytes(&pk1, Id::X25519).unwrap();
+	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk1 = ctx.keygen().unwrap();
+	       let pk1 = sk1.raw_public_key().unwrap();
 
-                let sk2 = PKey::generate_x25519().unwrap();
-
-                (pk1, sk2)
+	       ctx.keygen_init().unwrap();
+	       let sk2 = ctx.keygen().unwrap();
+               let pk1 = PKey::public_key_from_raw_bytes(&pk1,Id::X25519).unwrap();
+               (pk1, sk2)
             },
             |(pk1, sk2)| {
                 let mut deriver = Deriver::new(&sk2).unwrap();
@@ -175,12 +179,16 @@ fn secret_to_public(c: &mut Criterion) {
 
     #[cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))]
     group.bench_function("OpenSSL", |b| {
-        use openssl::pkey::PKey;
+        use openssl::pkey::{Id,PKey};
+        use openssl::pkey_ctx::{PkeyCtx};
 
         b.iter_batched(
             || {},
             |()| {
-                let _pk = PKey::generate_x25519().unwrap();
+	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk1 = ctx.keygen().unwrap();
+	       let _pk1 = sk1.raw_public_key().unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -331,24 +339,33 @@ fn nym_outfox_create(c: &mut Criterion) {
     group.bench_function("OpenSSL", |b| {
         use openssl::derive::Deriver;
         use openssl::pkey::{Id, PKey};
+        use openssl::pkey_ctx::{PkeyCtx};
 
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 = PKey::public_key_from_raw_bytes(&sk1, Id::X25519).unwrap();
+	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let pkey = ctx.keygen().unwrap();
+	       let pk1 = pkey.raw_public_key().unwrap();
+	       let pk1 = PKey::public_key_from_raw_bytes(&pk1,Id::X25519).unwrap();
 
-                let sk2a = PKey::generate_x25519().unwrap();
-                let sk2b = PKey::generate_x25519().unwrap();
-                let sk2c = PKey::generate_x25519().unwrap();
-                let sk2d = PKey::generate_x25519().unwrap();
-
-                (pk1, sk2a, sk2b, sk2c, sk2d)
+               (pk1)
             },
-            |(pk1, sk2a, sk2b, sk2c, sk2d)| {
-                let pk2a = PKey::public_key_from_raw_bytes(&sk2a.raw_private_key().unwrap(), Id::X25519).unwrap();
-                let pk2b = PKey::public_key_from_raw_bytes(&sk2b.raw_private_key().unwrap(), Id::X25519).unwrap();
-                let pk2c = PKey::public_key_from_raw_bytes(&sk2c.raw_private_key().unwrap(), Id::X25519).unwrap();
-                let pk2d = PKey::public_key_from_raw_bytes(&sk2d.raw_private_key().unwrap(), Id::X25519).unwrap();
+            |(pk1)| {
+
+	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk2a = ctx.keygen().unwrap();
+
+	       ctx.keygen_init().unwrap();
+	       let sk2b = ctx.keygen().unwrap();
+
+	       ctx.keygen_init().unwrap();
+	       let sk2c = ctx.keygen().unwrap();
+
+	       ctx.keygen_init().unwrap();
+	       let sk2d = ctx.keygen().unwrap();
+
                 let mut deriver1 = Deriver::new(&sk2a).unwrap();
                 deriver1.set_peer(&pk1).unwrap();
                 let _zz1 = deriver1.derive_to_vec().unwrap();
@@ -520,13 +537,17 @@ fn nym_outfox_process(c: &mut Criterion) {
     group.bench_function("OpenSSL", |b| {
         use openssl::derive::Deriver;
         use openssl::pkey::{Id, PKey};
+        use openssl::pkey_ctx::{PkeyCtx};
 
         b.iter_batched(
             || {
-                let pk1 = randombytes(32);
-                let pk1 = PKey::public_key_from_raw_bytes(&pk1, Id::X25519).unwrap();
+	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk1 = ctx.keygen().unwrap();
+	       let pk1 = sk1.raw_public_key().unwrap();
+	       let pk1 = PKey::public_key_from_raw_bytes(&pk1,Id::X25519).unwrap();
 
-                let sk2 = PKey::generate_x25519().unwrap();
+               let sk2 = PKey::generate_x25519().unwrap();
 
                 (pk1, sk2)
             },
@@ -692,36 +713,44 @@ fn nym_sphinx_create(c: &mut Criterion) {
     group.bench_function("OpenSSL", |b| {
         use openssl::derive::Deriver;
         use openssl::pkey::{Id, PKey};
+        use openssl::pkey_ctx::{PkeyCtx};
 
         b.iter_batched(
             || {
-                let sk1 = randombytes(32);
-                let pk1 = PKey::public_key_from_raw_bytes(&sk1, Id::X25519).unwrap();
+	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk1 = ctx.keygen().unwrap();
+	       let pk1 = sk1.raw_public_key().unwrap();
+	       let pk1 = PKey::public_key_from_raw_bytes(&pk1,Id::X25519).unwrap();
 
-                let sk2a = PKey::generate_x25519().unwrap();
-                let sk2b = PKey::generate_x25519().unwrap();
-                let sk2c = PKey::generate_x25519().unwrap();
-                let sk2d = PKey::generate_x25519().unwrap();
-
-                (pk1, sk2a, sk2b, sk2c, sk2d)
+               (pk1)
             },
-            |(pk1, sk2a, sk2b, sk2c, sk2d)| {
-                let pk2a = PKey::public_key_from_raw_bytes(&sk2a.raw_private_key().unwrap(), Id::X25519).unwrap();
-                let mut deriver1 = Deriver::new(&sk2a).unwrap();
+            |(pk1)| {
+	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk2a = ctx.keygen().unwrap();
+
+	       let mut deriver1 = Deriver::new(&sk2a).unwrap();
                 deriver1.set_peer(&pk1).unwrap();
                 let _zz1 = deriver1.derive_to_vec().unwrap();
 
-		let pk2b = PKey::public_key_from_raw_bytes(&sk2b.raw_private_key().unwrap(), Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk2b = ctx.keygen().unwrap();
+
                 let mut deriver2 = Deriver::new(&sk2b).unwrap();
                 deriver2.set_peer(&pk1).unwrap();
                 let _zz2 = deriver2.derive_to_vec().unwrap();
-		
-                let pk2c = PKey::public_key_from_raw_bytes(&sk2c.raw_private_key().unwrap(), Id::X25519).unwrap();
+
+		ctx.keygen_init().unwrap();
+	        let sk2c = ctx.keygen().unwrap();
+
                 let mut deriver3 = Deriver::new(&sk2c).unwrap();
                 deriver3.set_peer(&pk1).unwrap();
                 let _zz3 = deriver3.derive_to_vec().unwrap();
 
-		let pk2d = PKey::public_key_from_raw_bytes(&sk2d.raw_private_key().unwrap(), Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk2d = ctx.keygen().unwrap();
+
                 let mut deriver4 = Deriver::new(&sk2d).unwrap();
                 deriver4.set_peer(&pk1).unwrap();
                 let _zz4 = deriver4.derive_to_vec().unwrap();
@@ -849,8 +878,8 @@ fn nym_sphinx_process(c: &mut Criterion) {
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-                let _zz = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
-                let _pk2 = ecdh::secret_to_public(ecdh::Algorithm::X25519, &sk2).unwrap();
+                let _zz1 = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
+                let _zz2 = ecdh::derive(ecdh::Algorithm::X25519, &pk1, &sk2).unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -867,14 +896,24 @@ fn nym_sphinx_process(c: &mut Criterion) {
                 let pk1 = sk1.compute_public_key().unwrap();
                 let sk2 =
                     agreement::EphemeralPrivateKey::generate(&agreement::X25519, &rng).unwrap();
-
-                (pk1, sk2)
-            },
-            |(pk1, sk2)| {
                 let pk2 = sk2.compute_public_key().unwrap();
+
+                let sk3 =
+                    agreement::EphemeralPrivateKey::generate(&agreement::X25519, &rng).unwrap();
+
+                (pk1, pk2, sk2, sk3)
+            },
+            |(pk1, pk2, sk2, sk3)| {
                 let _zz: Result<Vec<u8>, ring::error::Unspecified> = agreement::agree_ephemeral(
                     sk2,
                     &agreement::UnparsedPublicKey::new(&agreement::X25519, pk1),
+                    |k| Ok(k.to_vec()),
+                )
+                .unwrap();
+
+                let _zz2: Result<Vec<u8>, ring::error::Unspecified> = agreement::agree_ephemeral(
+                    sk3,
+                    &agreement::UnparsedPublicKey::new(&agreement::X25519, pk2),
                     |k| Ok(k.to_vec()),
                 )
                 .unwrap();
@@ -887,21 +926,30 @@ fn nym_sphinx_process(c: &mut Criterion) {
     group.bench_function("OpenSSL", |b| {
         use openssl::derive::Deriver;
         use openssl::pkey::{Id, PKey};
+        use openssl::pkey_ctx::{PkeyCtx};
 
         b.iter_batched(
             || {
-                let pk1 = randombytes(32);
-                let pk1 = PKey::public_key_from_raw_bytes(&pk1, Id::X25519).unwrap();
+    	       let mut ctx = PkeyCtx::new_id(Id::X25519).unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk1 = ctx.keygen().unwrap();
+	       let pk1 = sk1.raw_public_key().unwrap();
+	       let pk1 = PKey::public_key_from_raw_bytes(&pk1,Id::X25519).unwrap();
 
-                let sk2 = PKey::generate_x25519().unwrap();
+	       ctx.keygen_init().unwrap();
+	       let sk2 = ctx.keygen().unwrap();
+	       let pk2 = sk2.raw_public_key().unwrap();
+	       let pk2 = PKey::public_key_from_raw_bytes(&pk2,Id::X25519).unwrap();
 
-                (pk1, sk2)
+                (sk1,pk1,sk2,pk2)
             },
-            |(pk1, sk2)| {
-                let pk2 = PKey::public_key_from_raw_bytes(&sk2.raw_private_key().unwrap(), Id::X25519).unwrap();
+            |(sk1, pk1, sk2, pk2)| {
                 let mut deriver = Deriver::new(&sk2).unwrap();
                 deriver.set_peer(&pk1).unwrap();
-                let _zz = deriver.derive_to_vec().unwrap();
+                let _zz1 = deriver.derive_to_vec().unwrap();
+                let mut deriver = Deriver::new(&sk1).unwrap();
+                deriver.set_peer(&pk2).unwrap();
+                let _zz2 = deriver.derive_to_vec().unwrap();
             },
             BatchSize::SmallInput,
         )
@@ -916,11 +964,12 @@ fn nym_sphinx_process(c: &mut Criterion) {
                 let sk1 = EphemeralSecret::random_from_rng(OsRng);
                 let pk1 = PublicKey::from(&sk1);
                 let sk2 = EphemeralSecret::random_from_rng(OsRng);
-                (pk1, sk2)
+                let pk2 = PublicKey::from(&sk2);
+                (sk1, pk1, sk2, pk2)
             },
-            |(pk1, sk2)| {
-                let _pk2 = PublicKey::from(&sk2);
+            |(sk1, pk1, sk2, pk2)| {
                 let _zz = sk2.diffie_hellman(&pk1);
+                let _zz2 = sk1.diffie_hellman(&pk2);
             },
             BatchSize::SmallInput,
         )
@@ -940,11 +989,12 @@ fn nym_sphinx_process(c: &mut Criterion) {
                 let mut sk2_b = [0u8; 32];
                 OsRng.fill_bytes(&mut sk2_b);
                 let sk2 = Scalar::from_bytes_mod_order(sk2_b);
-                (pk1, sk2)
+                let pk2 = RistrettoPoint::mul_base(&sk2);
+                (sk1, pk1, sk2, pk2)
             },
-            |(pk1, sk2)| {
-                let _pk2 = RistrettoPoint::mul_base(&sk2);
+            |(sk1, pk1, sk2, pk2)| {
                 let _zz = pk1 * sk2;
+                let _zz2 = pk2 * sk1;
             },
             BatchSize::SmallInput,
         )
@@ -962,11 +1012,11 @@ fn nym_sphinx_process(c: &mut Criterion) {
                 (pk1, sk2)
             },
             |(pk1, sk2)| {
-	        let mut pk2 = [0u8;32];
 	        let mut zz = [0u8;32];
+	        let mut zz2 = [0u8;32];
 		unsafe {
-		  lib25519::lib25519_nG_montgomery25519(pk2.as_mut_ptr(),sk2.as_ptr());
 		  lib25519::lib25519_dh_x25519(zz.as_mut_ptr(),pk1.as_ptr(),sk2.as_ptr());
+		  lib25519::lib25519_dh_x25519(zz2.as_mut_ptr(),pk1.as_ptr(),sk2.as_ptr());
 		}
             },
             BatchSize::SmallInput,
