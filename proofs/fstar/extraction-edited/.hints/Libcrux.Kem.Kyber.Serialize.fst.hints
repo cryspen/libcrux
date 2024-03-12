@@ -37,7 +37,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "1402323d26e76507d8c2cee48c2b1c91"
+      "2583a0111f554a3da5b768a897b64977"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -78,7 +78,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "1d1bd8f6bd63fe5326bb43f67b233772"
+      "872de86f3fae7c5b1938916680672b24"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -92,7 +92,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "355271c6090580ff131426c102a71cd2"
+      "fd9e65d73678e64fd6440e09d74e92a0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -106,7 +106,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "5f7ae90e620b960e79d99901af4b1da0"
+      "8f2c8408c3f77387e2faa1ac58f9566e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -119,7 +119,7 @@
         "equation_Rust_primitives.Integers.bits"
       ],
       0,
-      "3133a255d849806014791364c8ae3e91"
+      "c400ad7716d8c76a1d9e8dea5222807e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -132,7 +132,7 @@
         "equation_Rust_primitives.Integers.bits"
       ],
       0,
-      "b9686e79554480fbee3971e4669d8fbe"
+      "d1f34f807bca7c8aeabdfc99fc3ad417"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -152,7 +152,7 @@
         "refinement_interpretation_Tm_refine_fd0534dae74a1a03c82c48538de4b46a"
       ],
       0,
-      "b684d86a8240fd4b9ba809c67c127ecf"
+      "816bf272a8b3383309df1ee891ef0b55"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -203,7 +203,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "4e6d1fc070689a9c2d058daf847a5669"
+      "5244bb705c25e8805ec3a2c8336d03b1"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -256,7 +256,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "f51c0e52a3339a67c3903ea06cb162d0"
+      "0d1533598a9b858d2ef2a9c69ab0fc66"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -311,7 +311,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "110bce1c4ee7166c79a7393171649d2a"
+      "f91a977003e22dd5a13139efc7b51430"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -366,7 +366,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "2c609daf549f06d9886158408974f746"
+      "0739e6a2d8d28a330531b02dda073e5b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -420,7 +420,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b233970f0eee253c9a7bc1e2091f686d"
+      "5c4f904d0b19d3dce6112bb60f5c1022"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -474,7 +474,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b6afb8378dddbcfd0a0e0ba00d395898"
+      "c30e16b8e3b4d658936f7ccb7d8fa149"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -528,7 +528,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "a961c41245724c11d770849a141351ab"
+      "6c1de580c0267892f6cc9dc9b9ac8d57"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -582,7 +582,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "9a422b099037b1d6ba9b0a3f936ad5b3"
+      "048873e6b1a0f403aba83316ef980730"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -595,7 +595,7 @@
         "refinement_interpretation_Tm_refine_b7df399fd91a8773e998b4f6c4d95540"
       ],
       0,
-      "41926f4933a2c9dcb8001cbdc0912406"
+      "6a68a7633d7e82d4679ada49e293cd8d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -639,7 +639,7 @@
         "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "666387d6a6440994a26b97060a25034e"
+      "6c74121498d95330c213948df0140a3a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -652,7 +652,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "eeced23728a8dc459eeb79caa3a986ba"
+      "ef87715e12d6225d75f12fa186bcbfd7"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -671,7 +671,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "8d0579ffb9a754b55a370d4e80069fd2"
+      "c0661e08ee540670c85134fa8d6d3cc5"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -684,7 +684,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "5663fdf0a9456fbc982da84713696cf7"
+      "19dd70354d6793727a584e336b1a2317"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -703,7 +703,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "150f0a3d9d1a4a694bdf1dd12b222dec"
+      "105e2955512cee5124496ac7092537e4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_10_",
@@ -913,7 +913,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "1b0c3f555599c8ec99cf9ea389f4f730"
+      "bade9265edb6c7286e68127ce846c02d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -928,7 +928,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "0c9c1a7c61f327c7b0d27dc8d4f93e6f"
+      "59406e8f1e44bd8bd96a496314488aa5"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -943,7 +943,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "04b9bcf6068a99949dcef5be1ab69a1c"
+      "4c9bc6e28a93f01bffa3bbb68803477d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -958,7 +958,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "6aa9986e15140e79484f18a59ce2c44e"
+      "d3d8214ee3151ffc363e6c9ce9886cf9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -973,7 +973,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "3bd27146f720887cecd47c866038c1ad"
+      "23beb966de4ecf162929c0fa24a010a9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -988,7 +988,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "8524fb404516565b3747bb22086b6e3a"
+      "3168331f8825d216830436af93e8e61e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1003,7 +1003,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "7fe53b2745ed333f0d26567ab88ae9fb"
+      "94f72cce06e709787e09e94f84cd323f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1018,7 +1018,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "b51d2e8cc9d8791fbee5fdfc2f06c7e3"
+      "2878662351b9dc88343057ca908c06b9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1033,7 +1033,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "b299ac3106be4c6136a414db6da42aff"
+      "2a8fae239f1c8a0085c08ee837b2b82b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1048,7 +1048,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "d2ca0c5920aae3443852ce2aaf75bf87"
+      "103c2acaeef4fab7229e690c042cc277"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1063,7 +1063,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "9ebf5b8e2eb2a27dd3d0676645aaadc7"
+      "f61628670488f9a39cacd281a4c79bce"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1078,7 +1078,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "2d0ee2bca976c949232b5bfef89360e3"
+      "45ff81b6f952142d19645c6a57a75c25"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1093,7 +1093,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1c51ae7232379fd8044141c4cad0d09c"
+      "76947c104e4412d7c73a6b64b329d726"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1108,7 +1108,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "38714d1d02d0feded43548005b12f0e3"
+      "a90ab6d4addef4bce6aa90e099a00dbb"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1123,7 +1123,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "942a42a06abedc1d16aa58b1b307fb2b"
+      "742468f4328eb1ab4581daa38218f909"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1138,7 +1138,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "56e896889c5785549c75da9016985cf4"
+      "cebe38ecf9edc2ca23715c2db6b61e6a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1153,7 +1153,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "b7f6bac1bedc35d3f39b82d3760f4623"
+      "8b9feb9589124c4afe2bb7df56c36964"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1191,7 +1191,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "3e516483cfcbf21ed330b1253d3311a3"
+      "5695a67a7718970f543ce69fa434aea9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1232,7 +1232,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "4b02911865ea8e06268d2b4802b6c8d0"
+      "ef20d8e48ee4e5d576fda174063bb76c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1247,7 +1247,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "aa323fb36c927bd0c897efae460c7942"
+      "26b9601d74a74559d7676ba79c549b82"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1262,7 +1262,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "796e57ad5abbe1e06115d3c89013f748"
+      "f61405d63111784fa41fb42f5903e5b0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1275,7 +1275,7 @@
         "equation_Rust_primitives.Integers.bits"
       ],
       0,
-      "cd6a7c07d23dc977d14b081f2e0b68c4"
+      "0aa845e554defc2a8fd0996698ce6e85"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1288,7 +1288,7 @@
         "equation_Rust_primitives.Integers.bits"
       ],
       0,
-      "0bfc8f82969ec0625f444ae4e5a99be8"
+      "7e626889557d50624819c031f1d6bdc3"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1309,7 +1309,7 @@
         "refinement_interpretation_Tm_refine_a17f0f6ecfa442a79ff1a1721abb0913"
       ],
       0,
-      "6939cd2db1730263bc6accf9388e8b91"
+      "a6b4c219169c0cbbb2058bf8f4ff1e14"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1325,7 +1325,7 @@
         "refinement_interpretation_Tm_refine_96eaf149ca660c51799b17b0997d1167"
       ],
       0,
-      "4b18bcd091bcdb99305117def7c4ba6f"
+      "bdeb76e703567420b0eb4ecf406afa7e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1380,7 +1380,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "58599b8a0f80b4c738b779ff155ef7a9"
+      "06bd0dc604099077f2f61f2dd5923342"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1436,7 +1436,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "8cecdb67b1480581509033d0f6f74a7b"
+      "2055f77328f9a420ca48615847ae8ac2"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1489,7 +1489,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "48a04230e0497cfa96037d5dfc7b3964"
+      "1e05d694fe2667390208b290ccd29ff4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1546,7 +1546,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "e25a71e11809c7a8ca12cc1b0a302c7a"
+      "582f2eb1e8c9597970b01899e53248d0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1601,7 +1601,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "507355474b23a0c405067f891c58191a"
+      "554d84cbd835296663ee75dd71190020"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1656,7 +1656,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "72d8b56483c974b2d523eec8c1640a38"
+      "5286bf11d533363ce2c7064be601bc44"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1711,7 +1711,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "45374d146b75b39d5a8dc69d59270294"
+      "2c08177cd2849ee7db3e99694a3de22d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1763,7 +1763,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "74769f318dea105f1283fe0d6d014969"
+      "d6a0aba1131bab7bece55006a8507413"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1818,7 +1818,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "78c5371988b4b45b2f9909d20756cbd5"
+      "5b6cfddefbeb4df7d9aa92745305df34"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1873,7 +1873,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "3366dba02064a835aa17ef5ed752dd84"
+      "e4d854a0702425e3f2de98f17b85154b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1928,7 +1928,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "6280ba8e17b949d630094e4a1513cde9"
+      "ec66ce73ef043b4908415b49d049009f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -1983,7 +1983,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "5d56c213a00ebc698a93faefaba19406"
+      "c2d3036f4f6a67a49cb2659d76af32c7"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2038,7 +2038,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "26bc1f90fd9f69f6e16cf06b7f0d3cd0"
+      "7955e3b6a7c14aa7f84d302c4b8f6efa"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2093,7 +2093,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "faea6a8558e833bc0cd2727aa581a7e1"
+      "f6f1440f6455c6083853fb52ee54dfe4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2148,7 +2148,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "c07d8939ce3f311a8354359a930da20e"
+      "898d884a3b4247b74fcc1d6a4a5ad1b1"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2203,7 +2203,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "0115a1fd548b77ee941ab9d1c83d9895"
+      "d723caa3982f7364cef2c0446c0247df"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2255,7 +2255,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "5c883de46fb037491dc2177a244307ee"
+      "d0904760728e7f93691aff12a13e11a9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2310,7 +2310,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "bc907374d9230c0c0ad4f3e21e1192e5"
+      "3e4fd9cfe206fbca00df12a1ffd1c353"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2323,7 +2323,7 @@
         "refinement_interpretation_Tm_refine_87abc91468d73e26e0a719524f400cdf"
       ],
       0,
-      "9ab838571c38d6a38b3e010657d7a20c"
+      "0bd47dd3302d53534ead98629d92c9f4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2372,7 +2372,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "de2cdd98b88274542ffd496086b2054a"
+      "6bbe3cafb6e2d07dd94dbb6a8fa40426"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2385,7 +2385,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "e0d12a476041b15ac3fa90e9fb571c87"
+      "a4d3ea17e61a3ef8cde7a307cee5d697"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2405,7 +2405,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "c4dfd51a8127bbd530250a75e284cab2"
+      "90a4d9ca0f087b2db4bdb94e30a3b40c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2418,7 +2418,7 @@
         "refinement_interpretation_Tm_refine_a5dbf40b319f5394aeaa892d914adf92"
       ],
       0,
-      "5cc63f496350cd711e8598996593c654"
+      "57fc88ef66be7a27085be0adb4776ebc"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2438,7 +2438,7 @@
         "refinement_interpretation_Tm_refine_a5dbf40b319f5394aeaa892d914adf92"
       ],
       0,
-      "8d80ea9cf2d0d942aa0557cdb48725b0"
+      "e6687c61a58cec6245ac1f66df6a135c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2451,7 +2451,7 @@
         "refinement_interpretation_Tm_refine_565dea648c13f0b691a90a9878e327b2"
       ],
       0,
-      "7e1066ba079fff0b80102fe6f795d6e8"
+      "37a251793e334070afcf29d18e19e26e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2500,7 +2500,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "bffc64afba208e4ca8f040b969bc481a"
+      "78c8309e700902ae4ede557fc099d50e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2555,7 +2555,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b54739c92619473ce3e77a80e2e87c59"
+      "1618478b790672ef32cbf333fa942531"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2610,7 +2610,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "af57bbbdeb9abe0c2db980c9f71893a5"
+      "cde89e965698b0dc189a75cd5d3e1040"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2623,7 +2623,7 @@
         "refinement_interpretation_Tm_refine_565dea648c13f0b691a90a9878e327b2"
       ],
       0,
-      "740c0717df6f192507d1dbe4da86387c"
+      "975e01f22667c8025e7c60d04009a002"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2672,7 +2672,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "caadde97d198ede4cf7743c874ceb47b"
+      "e8ade8ca40ce9c2353b64623d65f44a0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2685,7 +2685,7 @@
         "refinement_interpretation_Tm_refine_b7df399fd91a8773e998b4f6c4d95540"
       ],
       0,
-      "c9f502900396601034939b7e4df3d964"
+      "68becbbaa3dd3d0183d2058e0308a049"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2705,7 +2705,7 @@
         "refinement_interpretation_Tm_refine_b7df399fd91a8773e998b4f6c4d95540"
       ],
       0,
-      "865e968125a07fb10fed83ca2b733c07"
+      "cf5533bd6bbb3534d64b25feb4831230"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2718,7 +2718,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "70fac182b2dfe3e84594d8d5d9f1c8f1"
+      "c2a24887f46dd0a1a1a1b3cc7e34283a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -2738,7 +2738,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "4c92fe7cda3c80abf99b8ce7179797d3"
+      "eefeb20d95c59a45f84eb2f3f5ce2073"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3005,7 +3005,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "12a302be4383f37d6248fcee2b2894bb"
+      "fbc89da0b56a2a518449c38d9ee9d71c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3020,7 +3020,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1b2a01ba32f85ec317f5565d4ef72a3c"
+      "037dc99f5e46d4b9ddee998351cbe291"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3035,7 +3035,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "d559addf080a6cb4a0384629cbbeef6f"
+      "c0a455ad50f4603d45f411bf9e56e52b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3050,7 +3050,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "9bf03dd0c1061bfebff3fab5920ba301"
+      "b949f300e033ad91d25243f913479a66"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3065,7 +3065,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "521a6391f9b071a9152fc31860e3eea1"
+      "30fdba175e3cc2137636d56b4e770de0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3080,7 +3080,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "fb231e6e811badec04d76d6069df5644"
+      "ae293277172ab266f9e7b207ba634ff6"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3095,7 +3095,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "8ce573a69f1a9a7ecc8ec118af2288ae"
+      "11f391450cc73d6fea255a656d056d5f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3110,7 +3110,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1bf322c1f21a827a3c66d65629626f64"
+      "d7e86a3beceec45b77f5d23538f34228"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3125,7 +3125,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "cf7d874dbdbe17a1ef4249c8814502d5"
+      "08b59f98bc9ab5e2f744c07711a52fb4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3140,7 +3140,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "18b8407def944b8708d8c78cf35df896"
+      "2bff2debdf5dccca2b59a24c771a0020"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3155,7 +3155,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "f7bbe00c763d529a62541cdec98f0a70"
+      "3b2c7322e5be38d7a994e412b0b6ef8c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3170,7 +3170,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "04546f8bf0c901b69ade8b053b6565d3"
+      "47a17ddec524f60c0552b7a27bea583b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3185,7 +3185,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "d9b36a4e786a50943a0bc215719f44eb"
+      "4b78ef45ccbb2c477c78f7123f380080"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3200,7 +3200,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "ce1b051677d7b767cdf8632e1b9dd228"
+      "267975f104ee0b84ce8bb2120efc6404"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3215,7 +3215,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "94cac1f1110b4f6d1fa61711ee3a755b"
+      "024e63617a0411966c585bdba9620c9f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3230,7 +3230,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "e3a4208b2da638529bfdba855ae06e2b"
+      "56fd0310435a28964543415b649e3b8c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_11_",
@@ -3245,7 +3245,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "e3c647a640a67d4c9c0227c174df9b65"
+      "2902c7cdef3d101a8866495aabe1b931"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_3_",
@@ -3306,7 +3306,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e0320f0a1f7d0c6fc41e922ceb1be39e"
+      "3c50d604919f4253ec7c4d6e40599cd4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_3_",
@@ -3481,7 +3481,7 @@
         "typing_tok_Lib.IntTypes.U64@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "fc840ca0c0f1978677429b89a8ee027a"
+      "7004199698ad9780e62decadd1d5592f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_3_",
@@ -3497,7 +3497,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "96fd546eecb343f5e0df462674b59a60"
+      "6261b95d595e34b646bb9cd2f5e65eba"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3512,7 +3512,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "9efba804f3e68e878c8f6c1aec3dff99"
+      "f78005dbf2d6bfcce3dd4b9b7b74e392"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3527,7 +3527,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "917d6d28e6fe824d4f0cd5a25ee1e6b3"
+      "2db3ad0a1f31d083d72d76d2fa3f4967"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3542,7 +3542,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1149af1c377d8ba5e8da1273b8c56a4e"
+      "10ccc999b1ad2c5ad031cfdd65714732"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3557,7 +3557,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "639871b2a879b0b7b6649e5835b219fb"
+      "8122ee5077567714e8e6d5113510a534"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3572,7 +3572,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "83c8a0afa9abcce69a51700eda9c696f"
+      "2a0f90cf70de237bfc30761326b8e6de"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3587,7 +3587,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "04473a1ae2c109ffbdb1c7a1015ca015"
+      "cd0e9ab1295b8328dea35e8339584969"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3602,7 +3602,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "d8cf5f22d84c91cd53aa93caa4cc31cc"
+      "134a6ad2c064dcb3999dec5e1d6d56e8"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3617,7 +3617,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "0cd4fb445a8685d2f00ae9e2f6f29e74"
+      "76705bd8c6501405ec2a67c6434e26e9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3632,7 +3632,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "9f399323bde86ba2734e6c270ba2ea5d"
+      "99fdaa5844d9046d988f9b9c96691beb"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3647,7 +3647,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "503398cfb1b32d3a8d8a9659729240a3"
+      "c85fc74e6b3d6171b13363048af40968"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3662,7 +3662,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "e7a385ecbca41033d1d79b3564ae6268"
+      "4dcc74ed9436e67597d07e21ea9eba5f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3677,7 +3677,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "49e838e0e5d26e0da59abaab36eab75e"
+      "637ed5d753947cdd06eff7b858b0758a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3692,7 +3692,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1ed43c212434e195820679ee7dd13869"
+      "2784cdd2d1a264b67314493dfdc965a4"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3707,7 +3707,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "2362f5d13ab77b1f4a51a94576753b7d"
+      "3930036206c67889349444eabaf11ed3"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3722,7 +3722,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "5fb5333dc985f9888df15427fa34cc7e"
+      "7dc50faa5f9a95b310676003c5889012"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3737,7 +3737,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "788dc8e8a996f11ed60253a863223cf1"
+      "99c7b339ddd7df1ffcf903de252ba238"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3775,7 +3775,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "898ab5bfaacd806ff4496c0869a1e1de"
+      "9eccc55c58b6990bdb3191d42508068e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3800,7 +3800,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "ba4cc24c6983d5537c34d8d7cc58cf4f"
+      "a1286a116e1e7f83f28b90ca0437d6e2"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3815,7 +3815,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "10410b19690f1bc7b798328a04b172f5"
+      "c66f290117e97a0225e3c8abf34d3a48"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3830,7 +3830,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "4729ac700cb24cf3ff8e6a08fadbf57e"
+      "5efd87e63b562303a081a02f54e3f726"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3843,7 +3843,7 @@
         "equation_Rust_primitives.Integers.bits"
       ],
       0,
-      "97c251b093344106475f6c642dd95613"
+      "63d348a43c9943e0c201f7c4e7a44b1e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3856,7 +3856,7 @@
         "equation_Rust_primitives.Integers.bits"
       ],
       0,
-      "b68985b3dc56ff938d8295000a650cff"
+      "9fec59cacb91e2db335d14e97622981a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3877,7 +3877,7 @@
         "refinement_interpretation_Tm_refine_fd0534dae74a1a03c82c48538de4b46a"
       ],
       0,
-      "6d49dcd1a509b521fa454d5dd33dd0ce"
+      "f28e224b2c0c5d9d77f228e6472603c6"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3929,7 +3929,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "355ba8a70641d72ca3b08bafe6e7f8b4"
+      "f9442e33fe7bad4015e1e9be4b987200"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -3982,7 +3982,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "9588b76938682270afb357707dd05846"
+      "4d9fbd5491ee2f14ba2ce9c4ee9052af"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4035,7 +4035,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "aa1c8e4310a8fd091ea9a81ad68c5581"
+      "6b704eb7dc7633629f7c526f1a0b6b2b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4088,7 +4088,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "8f9d2b809a0b84d20bc10545db8c5ebb"
+      "f762df14c6a3d6683d6f8cbb5d0a9df3"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4143,7 +4143,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "70f842ea436306873dc7e628b2e8b58b"
+      "b42c20f8ef1e4f8855fdce58a31b3825"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4199,7 +4199,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "3201bdb3efd78b353cb373ebf1b826d1"
+      "e32e5f9228901d69a56c11e81eda5780"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4254,7 +4254,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "f594d5b7f9bae0e91d0f3d1e428873be"
+      "6e6039cf1cf45a5193db05fee6966319"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4310,7 +4310,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "ba8769ca4b23280f663c527e9252e837"
+      "3289bcde472527e4229c5c0ac9741373"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4365,7 +4365,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "9865c8af59d520388194fe2bc79b13ef"
+      "4de46572cc8ceedbd6dd9a788837ebb9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4420,7 +4420,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "30e4c2a2c1dd72dd17059e3f0ce0df8f"
+      "e94a97d03cb96f75c32e0d5dfd10180a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4475,7 +4475,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "7a98f5ff8f521a6b56368bc50da26289"
+      "4f820637fae59f5d98bac7533ccf6ebc"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4531,7 +4531,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e5a944f19b307b961f39d719a7d1315b"
+      "59b76307dbdb9ab16f849ddc4796f836"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4586,7 +4586,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "32a32d6844fd2b03ba826d0383f6fd3c"
+      "28eaec3ba7cd707ace777ee159c0575a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4641,7 +4641,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "e8aa7bb20b14eef9b50ce3f43a3bb2cf"
+      "474de99b13bf571f38ec36d7153f3d7b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4654,7 +4654,7 @@
         "refinement_interpretation_Tm_refine_a5dbf40b319f5394aeaa892d914adf92"
       ],
       0,
-      "04fa376bc61a87af037c9ccb9f2afad2"
+      "942238eb57fdba379b5d4dd5223707a5"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4667,7 +4667,7 @@
         "refinement_interpretation_Tm_refine_a5dbf40b319f5394aeaa892d914adf92"
       ],
       0,
-      "b772dc5b8643a659522b14ea5dd35e36"
+      "e7125539d85ed271ec71f64df8b5248f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4680,7 +4680,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "6ec1d6c90f04f43ff2697ceaf7e05cdd"
+      "383dca66da3229a7ace6fbf35ba02d31"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4694,7 +4694,7 @@
         "refinement_interpretation_Tm_refine_8806d22c5428ef45066c60c7edd7684e"
       ],
       0,
-      "2f9b040193bd1fb577676ded83fc4e82"
+      "9cb8e0b3ac699704fe9ab1b2d6611607"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4707,7 +4707,7 @@
         "refinement_interpretation_Tm_refine_4ba98237d50cf0c214103cdb69cef042"
       ],
       0,
-      "d67acf9d9b19f21a7e3a52319b5891c9"
+      "733e8130a6281feb29fa1aab149e93f1"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4720,7 +4720,7 @@
         "refinement_interpretation_Tm_refine_4ba98237d50cf0c214103cdb69cef042"
       ],
       0,
-      "ee68d224e31baba7713792bc9c494afa"
+      "04a341f49c28240f11bc0f43df964393"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4733,7 +4733,7 @@
         "refinement_interpretation_Tm_refine_4ba98237d50cf0c214103cdb69cef042"
       ],
       0,
-      "0b74ad2db1362523e7054f6a744bcd6d"
+      "e189b719f38ba5aaa17eecf946548c23"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4746,7 +4746,7 @@
         "refinement_interpretation_Tm_refine_4ba98237d50cf0c214103cdb69cef042"
       ],
       0,
-      "81605f643a1d26a873dd964cf5eebf1b"
+      "f041341c0a10ffe8d5ddc656578ffbe2"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4964,7 +4964,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "60a61197695394700161deb689373afb"
+      "bae33c9285f7cd2280124c87af23fbdb"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4979,7 +4979,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "b3d6d8304ee69d4fcc43ef26ecc3998a"
+      "1cc2b5d7b053f687494a80f7123a9b33"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -4994,7 +4994,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "7423adbd7d84f60d74b53f133d0c3241"
+      "2c5b8cb138dd77432a58b0483dd4f2c2"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5009,7 +5009,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "c98e6db5ff133a02597373eb6c42ecb2"
+      "688c32a53cedf531add50c0ad1a5c3b6"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5024,7 +5024,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "c6aedfcf9d1116938e0fde298d8f0c27"
+      "9472a7c81c277257a139223bcf1f89be"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5039,7 +5039,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1b282d2c08bfc5a59e318715a23d5b27"
+      "d14294970e7458eed6cb9546353c8991"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5054,7 +5054,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "b822130c3725de4ecfb1a75e77d344a6"
+      "bcf3f610a0016913ae71abd03085eac7"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5069,7 +5069,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "5648121b3f6cf003c90e9cd65a06036e"
+      "0da7be6297138aa107052e3660cdc373"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5084,7 +5084,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "a1b78d37bf2046fcc35dd7eb61158c84"
+      "08d73904414a61a185be1c80008cffc3"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5099,7 +5099,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "3d15b6b77af8f5d92fee7651c354ba0e"
+      "6a3080b2773fde261d6122780e50ca10"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5114,7 +5114,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "6581c53d915e89c7dc9ff58d91b98df2"
+      "101e70d8a5388cf6b472165472e6069f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5129,7 +5129,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "fa313c979435d2b309b115b1f18669a5"
+      "a5db716de74cb6dfd3327954aad411e9"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5144,7 +5144,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "db25cf5ce0ea0c947e8a5f6a27f0a0b1"
+      "af650822348f47eb6d4680179b1ce5fd"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5159,7 +5159,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "02509c69e40053069d4dc0a07ab24111"
+      "5a37ba337aa3ee882397436bad6e3e91"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5174,7 +5174,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "b2847fe1fd3e9f500008777380fdc613"
+      "5e81416c397c2353d2313817bafa5945"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5189,7 +5189,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1104a159d3f51e6a5c0791a5947a84b4"
+      "8087734873b552f048f07e3b8d9e72ce"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_coefficients_5_",
@@ -5204,7 +5204,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "9e6b7fb2768249db0df8168a71d7a338"
+      "be157783f6fed4960c2e3b15578dab12"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_10_",
@@ -5262,7 +5262,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "47590c0062cfd7871cdf17512d88c487"
+      "f8dae2354fee337af9895c5440126832"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_10_",
@@ -5434,7 +5434,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "7aab16939dbe679998224b87ae71afb5"
+      "c1d0326a1caef18a71228343308cd4e5"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_10_",
@@ -5449,7 +5449,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "74c13f738c7126a6963ff91813b385cb"
+      "599448aeff846f6d22cb52b9038cb748"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_11_",
@@ -5507,7 +5507,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "195ad3eff731a51bec867e5a16bbee90"
+      "cd5b645996e65c8e8e5baa1d4fe4335c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_11_",
@@ -5699,7 +5699,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "f1bfefedfb5acbc3e37e463ee8c4d9c7"
+      "aa31f9b0d0401acd06de1fff05c97134"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_11_",
@@ -5714,7 +5714,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "5f06eedfdffaddb5a10c655306b28024"
+      "d35cf0750fb29818a00eaa1e74771db0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_4_",
@@ -5775,7 +5775,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "2a34e141ab83c91adda624c96dc93969"
+      "e8c5a913f5955197ea629b42691f05ab"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_4_",
@@ -5945,7 +5945,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "18c053530347191b31a0695b51b58f39"
+      "050ddbc7cf4fc2145f1edfec8c617b4a"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_5_",
@@ -6003,7 +6003,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "6ad544248339a7e94bd9368881cbc47b"
+      "442657ced0fccac7004ea573d7d84676"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_5_",
@@ -6183,7 +6183,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "333a7e01ffb02be3bd68d7a722c73540"
+      "da64c89a9ac4e5729471533d5f336eea"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.decompress_coefficients_5_",
@@ -6198,7 +6198,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "7c4ff4ed14054f1b789777f01115c9ea"
+      "cfbbccda60a94d33ac78426a9b181c79"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.cast_bound_lemma",
@@ -6260,7 +6260,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "7cba1e326b1512fa96fec5148ef0e14d"
+      "8a568b24c2dc47a92183efded62b5c63"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.int_t_d_cast_lemma",
@@ -6338,7 +6338,7 @@
         "typing_tok_Lib.IntTypes.S64@tok"
       ],
       0,
-      "96a96cf745d09c252e2133b76d9dc1a0"
+      "4ef8acaf46d20f58f667f3ebb03adbdd"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.mul_in_range",
@@ -6376,7 +6376,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e455d6c7e37497cdcf42e2cbf07cf0dd"
+      "ba1b1f2f2f38391e7984337bee374c70"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_10_",
@@ -6490,7 +6490,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "1a77ead49607b69be09058015b90c414"
+      "b2296abe0cf962a571a4e493658dd01c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.update5",
@@ -6546,7 +6546,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "5bb46a1eddfe68b258509a7b774b404b"
+      "846ef21279bb9104496630cf37f9f8f8"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_11_",
@@ -6657,7 +6657,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b44607948305b8233a9085c594793902"
+      "d78b5ca685e3a609fc21001137e7d1ec"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_11_",
@@ -6669,7 +6669,7 @@
         "primitive_Prims.op_Multiply", "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "bc17d5f39124086b7a8dbf43b42606cb"
+      "32b59285f90ace0b25da9396df9d4d75"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_11_",
@@ -6717,7 +6717,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "46626c4e5fccf14a5b6daee7b9be6780"
+      "4829c7b883455154918cd9428174addf"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_4_",
@@ -6824,7 +6824,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "2c18a7f71f8a9371321b25d5984a6cab"
+      "6db2b97530fbb988f174b1be19a4bfbc"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_5_",
@@ -6939,7 +6939,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "9e61c7dfa014e1dfdef45fb6e81da5e3"
+      "7f9b8825979cc31520bacdad58e770e6"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_5_",
@@ -6951,7 +6951,7 @@
         "primitive_Prims.op_Multiply", "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "386b75e2c04fe8fafc06ce16c499742a"
+      "6ab8d417ec4244be90a7fb4a510d72c3"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_5_",
@@ -7000,7 +7000,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "cfd0281c2b4983f797d2c24ae71722cb"
+      "5d3e1b7ae43d05c96954a0d3ff1c581d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message",
@@ -7061,7 +7061,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "263c273767a8bc503be96b1a17571e6b"
+      "6c94606a59d41ea7f72a9cd66d8d8e46"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_message",
@@ -7155,7 +7155,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "462f73da8ba9f6deb5db7510bccd0a71"
+      "cea1f9db3d632093da21603f352a3b70"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_u",
@@ -7214,7 +7214,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "e05787e8740aab4e57a6dd39f1fe4c6d"
+      "28f6d9f01bef6f22297f3fd5de8157df"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_v",
@@ -7280,7 +7280,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "4485b30675aa0307365a74fb0ac36251"
+      "f36e61a2635059c93b2587c5c238d697"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_v",
@@ -7364,7 +7364,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "ea47c43c65702e51e1a1aaf6fe48f584"
+      "c89087a57df7153ce9c73fac2c33dfeb"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.compress_then_serialize_ring_element_v",
@@ -7413,7 +7413,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "ed21f6ddfe59274df19fbc4304d524f3"
+      "91ae1c01970c7be141737cb7cf4344bf"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_10_",
@@ -7519,7 +7519,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "c03c0a481c02c724d2a093f319e207f7"
+      "0449a27b4adfb2b6ae7aee339a8cfad5"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_10_",
@@ -7531,7 +7531,7 @@
         "primitive_Prims.op_Multiply", "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "1be6f9bf53a6bf558b2cef4b0e83494c"
+      "4475b1dc01c35619f2bdfe42d2ec10d1"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_10_",
@@ -7580,7 +7580,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "b354035ef9e1bfcbd21b5400bb8d6ffb"
+      "768a4ffcf65a3b978dd9b0bd7ae01ca0"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_11_",
@@ -7683,7 +7683,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "6b103c0915a517de160264d69eb254d7"
+      "8d54d166906ca2d1e16b5fd0ff249b52"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_11_",
@@ -7697,7 +7697,7 @@
         "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "c9b5a3a9a5da99789f1c33249b5110a3"
+      "aa2e666e952a9bf00a2818eb48d21623"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_11_",
@@ -7740,7 +7740,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "208bb866a78d1d390d255bf899b80101"
+      "1a5ff1fc80eb9b7f7f16da0ac30c7d5d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_4_",
@@ -7842,7 +7842,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "69a3886a7f01eab17be0582aec9c8997"
+      "6e879fee0b00b5254455018e2b0abe60"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_4_",
@@ -7854,7 +7854,7 @@
         "primitive_Prims.op_Multiply", "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "890138e8328e7dfd54c1973d3670fc5c"
+      "b95079e1fd2f010a015d2854ed6b2813"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_4_",
@@ -7933,7 +7933,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "334abd96756541aae6b64293b0153a80"
+      "2c9b8896c07c343e3986849a26fd0af6"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_5_",
@@ -8069,7 +8069,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "1876b55b1b631f5ff3eb31889adbb645"
+      "a41aa91d6bc9aa38915749f03fe7f63c"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_5_",
@@ -8081,7 +8081,7 @@
         "primitive_Prims.op_Multiply", "projection_inverse_BoxInt_proj_0"
       ],
       0,
-      "96def4a947cca094aa88456541d184a4"
+      "45e16b4e8d3264568d2af0b08b31815d"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_5_",
@@ -8116,7 +8116,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e538cc6c98f41c18a06c8ad881283745"
+      "504bd76eb77523ffdd87ea0ac394cf43"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message",
@@ -8177,7 +8177,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "f93934b614ab0c30b5c2ca7f2ead40d2"
+      "6616a6f4e87fa3b3cfbb87d2e6e2d40b"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message",
@@ -8330,7 +8330,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "2025b3654783ebf2ba85b4787acd215d"
+      "5872218d61d91bd1aafd3fe41e8f30ea"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_message",
@@ -8368,7 +8368,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "83c96a1cd7915a53b5fdd2a5c264b005"
+      "78f486a7750c4210cfbee8f307e11bdf"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_u",
@@ -8415,7 +8415,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "cb78adfef4795435c369e0c1cd694eb7"
+      "00abd895fba5cbc63f59cc18206e96f1"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_u",
@@ -8483,7 +8483,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "78d7949ccfe5646aedb5300ae770a7c5"
+      "449754587e9c027bcadd5a2446d1a104"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_v",
@@ -8541,7 +8541,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "0cc8452d4a4eeb5b77cc6b59c817346d"
+      "65baec0da7d3aec9b9e515d540df9343"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_then_decompress_ring_element_v",
@@ -8638,7 +8638,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "1849552afedf21826b851cdd81d3a8d4"
+      "9eabaf10bd2a3b82314d9a416c4b6f2e"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.deserialize_to_uncompressed_ring_element",
@@ -8768,7 +8768,7 @@
         "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "ee4ef75c7a35274982c94637a4707bbc"
+      "f5a0dc78ec40de41233aa62df050d231"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.update3",
@@ -8824,7 +8824,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "2fd87cb114ca4ee036449dc5652704df"
+      "c4f18b7614e43b4a2ce8ef24dac66ba6"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.slice_map_lemma",
@@ -8899,7 +8899,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "278fb6febf1dbc3d9fe0cbe2e6265c6f"
+      "4dd9a1262101fc85ddc08c150da9c9d1"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element",
@@ -8981,7 +8981,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "3d7daa1f241c7ce09a8f1711170ef5cf"
+      "459ae7a04aa67b551c390785c0ded79f"
     ],
     [
       "Libcrux.Kem.Kyber.Serialize.serialize_uncompressed_ring_element",
@@ -8990,8 +8990,8 @@
       0,
       [
         "@MaxFuel_assumption", "@MaxIFuel_assumption",
-        "@fuel_correspondence_FStar.List.Tot.Base.length.fuel_instrumented",
         "@fuel_correspondence_Prims.pow2.fuel_instrumented", "@query",
+        "BitVecEq_interpretation_Tm_arrow_038971496b87aa94d2741aba5402e6bd",
         "BitVecEq_interpretation_Tm_arrow_b4ead33e06e21b401ac39ed9ccd66716",
         "FStar.FunctionalExtensionality_interpretation_Tm_arrow_a7d5cc170be69663c495e8582d2bc62a",
         "MkSeq_interpretation_Tm_arrow_14835084a7628a594896379e5ea411ad",
@@ -9032,7 +9032,6 @@
         "equation_FStar.Int.fits", "equation_FStar.Int.int_t",
         "equation_FStar.Int.max_int", "equation_FStar.Int.min_int",
         "equation_FStar.Int.size", "equation_FStar.Pervasives.Native.fst",
-        "equation_FStar.Seq.Properties.createL",
         "equation_FStar.UInt.max_int", "equation_FStar.UInt.min_int",
         "equation_Lib.IntTypes.bits", "equation_Lib.IntTypes.byte_t",
         "equation_Lib.IntTypes.int_t", "equation_Lib.IntTypes.minint",
@@ -9046,6 +9045,7 @@
         "equation_MkSeq.create2", "equation_MkSeq.create3",
         "equation_Prims.nat", "equation_Rust_primitives.Arrays.length",
         "equation_Rust_primitives.Arrays.t_Array",
+        "equation_Rust_primitives.Arrays.t_Slice",
         "equation_Rust_primitives.BitVectors.bit_vec_of_int_t_array",
         "equation_Rust_primitives.BitVectors.int_t_d",
         "equation_Rust_primitives.BitVectors.num_bits",
@@ -9085,22 +9085,22 @@
         "interpretation_Tm_abs_0ce045133c37014f50d62d7dc349251d",
         "interpretation_Tm_abs_24b32bebd3485ad76e228d3f32e635f7",
         "interpretation_Tm_abs_352966ba8c3fcfe6f9dc92662e02fbff",
-        "interpretation_Tm_abs_728d89c88efb5ca300c33d72c2fc2b54",
         "interpretation_Tm_abs_78dc169a59feec7cb469cb14355db3c4",
         "interpretation_Tm_abs_7e380eba0c9ae2d800a389eb46d8c442",
+        "interpretation_Tm_abs_cd372a2e06fcc1d437c9ea6dbf646da9",
         "interpretation_Tm_abs_eb4b4f6028ac67b168b96720ea22e2fc",
         "interpretation_Tm_abs_eb643fbfbab7ef908ba32052bb948a4f",
-        "interpretation_Tm_abs_efab849ed2b09d0ecb6a8d3f4d35f6d2",
+        "interpretation_Tm_abs_f6907bfc4fd800370c57588bd4d61497",
         "lemma_BitVecEq.bit_vec_equal_elim",
         "lemma_BitVecEq.bit_vec_equal_trivial_sub_smtpat",
         "lemma_BitVecEq.bit_vec_sub_all_lemma",
         "lemma_BitVecEq.int_t_seq_slice_to_bv_sub_lemma",
         "lemma_FStar.FunctionalExtensionality.feq_on_domain",
         "lemma_FStar.Int32.vu_inv", "lemma_FStar.Seq.Base.lemma_eq_elim",
-        "lemma_FStar.Seq.Base.lemma_eq_intro",
         "lemma_FStar.Seq.Base.lemma_index_slice",
         "lemma_FStar.Seq.Base.lemma_len_slice",
         "lemma_FStar.Seq.Properties.slice_length",
+        "lemma_Rust_primitives.Arrays.eq_intro",
         "lemma_Rust_primitives.Integers.pow2_values",
         "lemma_Rust_primitives.Integers.v_mk_int_lemma",
         "primitive_Prims.op_Addition", "primitive_Prims.op_AmpAmp",
@@ -9120,6 +9120,7 @@
         "projection_inverse_FStar.Pervasives.Native.Mktuple3__1",
         "projection_inverse_FStar.Pervasives.Native.Mktuple3__2",
         "projection_inverse_FStar.Pervasives.Native.Mktuple3__3",
+        "refinement_interpretation_Tm_refine_079adb77fdd07c88556550f7147f31e6",
         "refinement_interpretation_Tm_refine_080226ea2c812d8749d89e551288b8c5",
         "refinement_interpretation_Tm_refine_0a5f448c5b6bc437e6cb3cedf234862e",
         "refinement_interpretation_Tm_refine_0eeab4d5f73e78a17240ba8a60788298",
@@ -9127,9 +9128,11 @@
         "refinement_interpretation_Tm_refine_29f54a8a92d732b7f4111928d707db68",
         "refinement_interpretation_Tm_refine_2b93cc0d2fb3530ccc9d725f3cc7d456",
         "refinement_interpretation_Tm_refine_32e93499afd73d81ad9a03adc385e67f",
+        "refinement_interpretation_Tm_refine_331c14d442c5ee89a4fce6ea305c920f",
         "refinement_interpretation_Tm_refine_35a0739c434508f48d0bb1d5cd5df9e8",
         "refinement_interpretation_Tm_refine_3ad47bca3cc317d7f084ff997a19398d",
         "refinement_interpretation_Tm_refine_3ef81bda7f60e225cb4e26bd4be4cac3",
+        "refinement_interpretation_Tm_refine_4639d389381bee5cf8cf77b7a6585074",
         "refinement_interpretation_Tm_refine_4c9fc7a376083f6cefabf973925fed40",
         "refinement_interpretation_Tm_refine_53d7089a905511e9e713c7dbc2f68178",
         "refinement_interpretation_Tm_refine_542f9d4f129664613f2483a6c88bc7c2",
@@ -9148,30 +9151,25 @@
         "refinement_interpretation_Tm_refine_bacb80e693f1faab8ffabcbb77914bec",
         "refinement_interpretation_Tm_refine_c1424615841f28cac7fc34e92b7ff33c",
         "refinement_interpretation_Tm_refine_c156ecc6eab05d1687a383ef171435eb",
-        "refinement_interpretation_Tm_refine_d2d1ea66f2b3a92c2deb42edcbb784ce",
         "refinement_interpretation_Tm_refine_d3d07693cd71377864ef84dc97d10ec1",
-        "refinement_interpretation_Tm_refine_d83f8da8ef6c1cb9f71d1465c1bb1c55",
         "refinement_interpretation_Tm_refine_f745638d27656256eab52e67ec987e5a",
         "refinement_interpretation_Tm_refine_fa352a9b1b496f80110c6342c48c06bd",
         "refinement_kinding_Tm_refine_32e93499afd73d81ad9a03adc385e67f",
         "refinement_kinding_Tm_refine_c1424615841f28cac7fc34e92b7ff33c",
         "refinement_kinding_Tm_refine_f745638d27656256eab52e67ec987e5a",
         "token_correspondence_Core.Ops.Index.f_index",
-        "token_correspondence_Core.Ops.op_String_Access",
         "token_correspondence_MkSeq.create2",
         "token_correspondence_MkSeq.create3", "typing_BitVecEq.bit_vec_sub",
         "typing_FStar.Pervasives.Native.__proj__Mktuple2__item___1",
-        "typing_FStar.Pervasives.Native.__proj__Mktuple3__item___1",
-        "typing_FStar.Pervasives.Native.__proj__Mktuple3__item___2",
-        "typing_FStar.Pervasives.Native.__proj__Mktuple3__item___3",
-        "typing_FStar.Seq.Properties.createL",
-        "typing_FStar.Seq.Properties.seq_of_list",
-        "typing_Lib.IntTypes.pub_int_v", "typing_Lib.IntTypes.v",
+        "typing_FStar.Pervasives.Native.fst", "typing_FStar.Seq.Base.slice",
+        "typing_FStar.Seq.Properties.createL", "typing_Lib.IntTypes.v",
         "typing_Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS",
         "typing_Rust_primitives.Arrays.createi",
+        "typing_Rust_primitives.Arrays.length",
         "typing_Rust_primitives.Arrays.t_Array",
         "typing_Rust_primitives.BitVectors.bit_vec_of_int_t_array",
         "typing_Rust_primitives.Integers.bits",
+        "typing_Rust_primitives.Integers.lt",
         "typing_Rust_primitives.Integers.minint",
         "typing_Rust_primitives.Integers.range",
         "typing_Rust_primitives.Integers.sz",
@@ -9184,10 +9182,11 @@
         "typing_Tm_abs_eb4b4f6028ac67b168b96720ea22e2fc",
         "typing_Tm_abs_eb643fbfbab7ef908ba32052bb948a4f",
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok",
-        "typing_tok_Lib.IntTypes.U16@tok", "typing_tok_Lib.IntTypes.U8@tok"
+        "typing_tok_Lib.IntTypes.U16@tok", "typing_tok_Lib.IntTypes.U32@tok",
+        "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "23041e34ca8c2586ef8c96f635acd513"
+      "bb5600224e8a2a83c836d5b0577bbaec"
     ]
   ]
 ]

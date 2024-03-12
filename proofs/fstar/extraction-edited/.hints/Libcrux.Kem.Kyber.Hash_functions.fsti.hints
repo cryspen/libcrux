@@ -38,7 +38,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "54fa6d553c47b94081b9ba22a4aa3a0c"
+      "4c93677e08b4859a676f93e2de0e236e"
     ],
     [
       "Libcrux.Kem.Kyber.Hash_functions.v_H",
@@ -77,7 +77,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "1454a4c360a82ba2990c64fe2c727d06"
+      "f9823b00f805d76f269fe0743890a824"
     ],
     [
       "Libcrux.Kem.Kyber.Hash_functions.v_XOFx4",
@@ -135,7 +135,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "dcb8c5a113fa7cdf0a31321f02eaee0d"
+      "08628b8698c9c4859914ea9c7249cfb6"
     ]
   ]
 ]

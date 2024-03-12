@@ -9,11 +9,13 @@ let map' #a #b
   (s: t_Slice a): t_Slice b
   = createi (length s) (fun i -> f (Seq.index s (v i)))
 
+#push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 let flatten #t #n
   (#m: usize {range (v n * v m) usize_inttype})
   (x: t_Array (t_Array t m) n)
   : t_Array t (m *! n)
   = createi (m *! n) (fun i -> Seq.index (Seq.index x (v i / v m)) (v i % v m))
+#pop-options
 
 (** Constants *)
 let v_BITS_PER_COEFFICIENT: usize = sz 12

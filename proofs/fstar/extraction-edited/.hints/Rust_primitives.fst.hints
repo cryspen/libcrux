@@ -1,5 +1,5 @@
 [
-  "ÓµàÃæ}\u0002öÒ\u0019OádÏ=×",
+  ">\u0013ÀšÌ°\u001dœc\"ÇûÚ\u0005Ch",
   [
     [
       "Rust_primitives.op_let_Question",
@@ -51,6 +51,21 @@
       ],
       0,
       "3c999fac174a72f151f6232802a38818"
+    ],
+    [
+      "Rust_primitives.f_while_loop",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "Rust_primitives_interpretation_Tm_arrow_5c1be2468c88ab449f2e160daecd3a9e",
+        "binder_x_55c1cc59452d6017360ecea99dbe1614_4",
+        "binder_x_e09860b75d8922ab497a3e5bc9347578_3",
+        "refinement_interpretation_Tm_refine_f56b13129d087202dc228b075fc06aec"
+      ],
+      0,
+      "9fd6344f749b36312343e29c5c380d06"
     ]
   ]
 ]
