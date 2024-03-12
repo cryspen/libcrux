@@ -58,8 +58,8 @@ let absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K) =
   in
   state
 
-let free (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4) =
-  let _:Prims.unit = Libcrux.Digest.Incremental_x4.impl__Shake128StateX4__free xof_state in
+let free_state (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4) =
+  let _:Prims.unit = Libcrux.Digest.Incremental_x4.impl__Shake128StateX4__free_memory xof_state in
   ()
 
 let squeeze_block (v_K: usize) (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4) =

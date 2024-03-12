@@ -11,7 +11,7 @@ val impl__Shake128StateX4__absorb_final
       (input: t_Array (t_Slice u8) v_N)
     : Prims.Pure t_Shake128StateX4 Prims.l_True (fun _ -> Prims.l_True)
 
-val impl__Shake128StateX4__free (self: t_Shake128StateX4)
+val impl__Shake128StateX4__free_memory (self: t_Shake128StateX4)
     : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
 
 val impl__Shake128StateX4__new: Prims.unit

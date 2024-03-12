@@ -19,7 +19,7 @@ val absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val free (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4)
+val free_state (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4)
     : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
 
 val squeeze_block (v_K: usize) (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4)
