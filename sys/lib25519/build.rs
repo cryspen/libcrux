@@ -1,3 +1,3 @@
 fn main() {
-   println!("cargo:rustc-link-lib=25519");
+    println!("cargo:rustc-link-lib=25519");
 }
