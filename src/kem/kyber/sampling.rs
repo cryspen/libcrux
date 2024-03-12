@@ -96,7 +96,7 @@ pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
             sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
     }
     // XXX: We have to manually free the state here due to a Eurydice issue.
-    free(xof_state);
+    free_state(xof_state);
 
     hax_debug_assert!(out[0]
         .coefficients
