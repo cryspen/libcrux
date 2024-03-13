@@ -47,6 +47,7 @@ for file in src/*; do
         $SED -i 's/pub mod kyber1024;//g' $file
     fi
 done
+$SED -i 's/\#\[cfg(feature = \"experimental\")\]//g' ../src/digest.rs
 
 cat >src/hax_utils.rs <<EOF
 macro_rules! hax_debug_assert {
