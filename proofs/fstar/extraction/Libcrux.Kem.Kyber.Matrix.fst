@@ -482,8 +482,8 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
                   in
                   seeds)
           in
-          let xof_bytes:t_Array (t_Array u8 (sz 840)) v_K =
-            Libcrux.Kem.Kyber.Hash_functions.v_XOFx4 v_K seeds
+          let sampled:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+            Libcrux.Kem.Kyber.Sampling.sample_from_xof v_K seeds
           in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                     Core.Ops.Range.f_start = sz 0;
@@ -500,11 +500,6 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
                   v_A_transpose
                 in
                 let j:usize = j in
-                let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-                  Libcrux.Kem.Kyber.Sampling.sample_from_uniform_distribution (xof_bytes.[ j ]
-                      <:
-                      t_Array u8 (sz 840))
-                in
                 if transpose
                 then
                   let v_A_transpose:t_Array
@@ -516,7 +511,7 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
                             <:
                             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
                           i
-                          sampled
+                          (sampled.[ j ] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
                         <:
                         t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
                   in
@@ -531,7 +526,7 @@ let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
                             <:
                             t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
                           j
-                          sampled
+                          (sampled.[ j ] <: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
                         <:
                         t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
                   in
