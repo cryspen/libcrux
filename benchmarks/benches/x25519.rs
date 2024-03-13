@@ -118,7 +118,7 @@ fn derive(c: &mut Criterion) {
         )
     });
 
-    #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+    #[cfg(all(target_arch = "x86_64", target_os = "linux", lib25519))]
     group.bench_function("lib25519", |b| {
         b.iter_batched(
             || {
@@ -228,7 +228,7 @@ fn secret_to_public(c: &mut Criterion) {
         )
     });
 
-    #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+    #[cfg(all(target_arch = "x86_64", target_os = "linux", lib25519))]
     group.bench_function("lib25519", |b| {
         b.iter_batched(
             || {
@@ -441,7 +441,7 @@ fn nym_outfox_create(c: &mut Criterion) {
         )
     });
 
-    #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+    #[cfg(all(target_arch = "x86_64", target_os = "linux", lib25519))]
     group.bench_function("lib25519", |b| {
         b.iter_batched(
             || {
@@ -603,7 +603,7 @@ fn nym_outfox_process(c: &mut Criterion) {
         )
     });
 
-    #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+    #[cfg(all(target_arch = "x86_64", target_os = "linux", lib25519))]
     group.bench_function("lib25519", |b| {
         b.iter_batched(
             || {
@@ -820,7 +820,7 @@ fn nym_sphinx_create(c: &mut Criterion) {
         )
     });
 
-    #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+    #[cfg(all(target_arch = "x86_64", target_os = "linux", lib25519))]
     group.bench_function("lib25519", |b| {
         b.iter_batched(
             || {
@@ -998,7 +998,7 @@ fn nym_sphinx_process(c: &mut Criterion) {
         )
     });
 
-    #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+    #[cfg(all(target_arch = "x86_64", target_os = "linux", lib25519))]
     group.bench_function("lib25519", |b| {
         b.iter_batched(
             || {
