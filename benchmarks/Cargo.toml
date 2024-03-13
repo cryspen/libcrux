@@ -28,9 +28,10 @@ x25519-dalek = "2.0.1"
 # Benchmarking "Dalek Ristretto"
 curve25519-dalek = "4.1.2"
 
-[target.'cfg(all(target_arch = "x86_64", target_os = "linux", lib25519))']
+# We always link this on linux, even if it may not be built.
+# We check that in the build instead.
+[target.'cfg(all(target_arch = "x86_64", target_os = "linux"))'.dev-dependencies]
 lib25519 = { path = "../sys/lib25519" }
-
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = "0.5"
@@ -42,9 +43,6 @@ pqcrypto-kyber = { version = "0.8.0", default-features = false }
 #      x86 is usally a cross compilation where this won't work either.
 [target.'cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))'.dev-dependencies]
 openssl = "0.10"
-
-[build-dependencies]
-pkg-config = "0.3"
 
 [[bench]]
 name = "sha2"
