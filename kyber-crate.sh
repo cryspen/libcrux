@@ -90,5 +90,6 @@ if [[ -n "$HACL_PACKAGES_HOME" ]]; then
     cp internal/*.h $HACL_PACKAGES_HOME/libcrux/include/internal/
     cp *.h $HACL_PACKAGES_HOME/libcrux/include
     cp *.c $HACL_PACKAGES_HOME/libcrux/src
+else
+    echo "Please set HACL_PACKAGES_HOME to the hacl-packages directory to copy the code over" 1>&2
 fi
-echo "Please set HACL_PACKAGES_HOME to the hacl-packages directory to copy the code over" 1>&2

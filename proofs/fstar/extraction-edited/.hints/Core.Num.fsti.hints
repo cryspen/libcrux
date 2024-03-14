@@ -1,5 +1,5 @@
 [
-  "_È/Ò‘Ñ÷Ñ—2ë¾'µâˆ",
+  "j\u0011’–‹Ý×¦0Aéª\u0001ÚÂ¬",
   [
     [
       "Core.Num.impl__i32__abs",
@@ -8,7 +8,7 @@
       1,
       [ "@query", "equation_Rust_primitives.Integers.i32_inttype" ],
       0,
-      "1a6141588a98f6a13327acb76aefcdf7"
+      "d35de00e60bbef37953babbc7e0eab38"
     ],
     [
       "Core.Num.impl__u32__from_le_bytes",
@@ -47,7 +47,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "b90a3012ce103b8f88b68a00a16caca3"
+      "aab05adde36603ab9f517f358b670df4"
     ],
     [
       "Core.Num.impl__u32__from_be_bytes",
@@ -86,7 +86,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "55f8274f6b74b3aa0127595734423f8f"
+      "73be3ccb60cd0412dc9337209482cc98"
     ],
     [
       "Core.Num.impl__u32__to_le_bytes",
@@ -125,7 +125,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "5fe96e8ef6e2a1d99064e86fd374fdfe"
+      "7f590059178246e6facb3ec56f7a010f"
     ],
     [
       "Core.Num.impl__u32__to_be_bytes",
@@ -164,7 +164,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "259ad4b001842d020242998aaac5d6d7"
+      "1730b66d396002d7c5f6b39a06bcfa22"
     ],
     [
       "Core.Num.impl__u64__from_le_bytes",
@@ -203,7 +203,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e08e2ac36362ada4f519d369291b14c7"
+      "a42dc5f40b0224a92bdb018d17e632ec"
     ],
     [
       "Core.Num.impl__u64__from_be_bytes",
@@ -242,7 +242,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "182240cd37bb5ddba594ab5dcfe7f385"
+      "954c1923c54c298b11465dec10b6d40e"
     ],
     [
       "Core.Num.impl__u64__to_le_bytes",
@@ -281,7 +281,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "f8492a1bfc04f6abac0940aab21fde92"
+      "913157de3e7241f50ddcbe700a326af2"
     ],
     [
       "Core.Num.impl__u64__to_be_bytes",
@@ -320,7 +320,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "88c2d9763fd89800abe716f80102f178"
+      "03028c52991f786e53c46f4f53338d61"
     ],
     [
       "Core.Num.impl__u128__from_le_bytes",
@@ -359,7 +359,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "887b154a5d2cae46f088e6a6d6b5eb42"
+      "8cdf00759fdf0d01f98a5a1cec7b5fc5"
     ],
     [
       "Core.Num.impl__u128__from_be_bytes",
@@ -398,7 +398,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "083e5e94e244f346dd1119176f10360f"
+      "798edceed4fef7925b80d4c861a1ccff"
     ],
     [
       "Core.Num.impl__u128__to_le_bytes",
@@ -437,7 +437,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "0bd722eb7ee7a8f48106504fe46393ca"
+      "cbd69c5d6badd2fa8b2d40d73f28bb34"
     ],
     [
       "Core.Num.impl__u128__to_be_bytes",
@@ -476,7 +476,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "9ad536f1aa71edd5edf1fc9d4c865041"
+      "17523859ed299a3d1bf8754b8fc37379"
     ],
     [
       "Core.Num.impl__u16__pow",
@@ -530,7 +530,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "f0d9ee449fb2d70bd4c2ef2a69699e89"
+      "5bdbc108b1951830393697886815efb0"
     ],
     [
       "Core.Num.impl__u32__pow",
@@ -579,7 +579,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "188ce25bae866baa7924954c732c7e30"
+      "3d79facc32720479f1bb75e9b999cde8"
     ],
     [
       "Core.Num.impl__i32__pow",
@@ -631,7 +631,7 @@
         "typing_tok_Lib.IntTypes.U32@tok"
       ],
       0,
-      "f7921d8f289ecc4a100c8c4d629bc166"
+      "c39b4e9684415a50486a1cf636889cf1"
     ]
   ]
 ]

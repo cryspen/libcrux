@@ -2,6 +2,8 @@ files:
   - name: libcrux_digest
     api:
       - [libcrux, digest]
+    include_in_h:
+      - '"libcrux_hacl_glue.h"'
   - name: libcrux_platform
     api:
       - [libcrux_platform]

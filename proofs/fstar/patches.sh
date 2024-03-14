@@ -25,7 +25,16 @@ patch_folder() {
     prepare_folder $original "$TEMPDIR"
     
     original_basename=$(basename "$original")
-    patch --directory="$TEMPDIR/$original_basename" -s -p1 < "$patch"
+    patch --directory="$TEMPDIR/$original_basename" -s -p1 < "$patch" || {
+        cd "$TEMPDIR/$original_basename"
+        echo '::error::Patches don'"'"'t apply. Keep in mind the CI regenerates `extraction` using the latest hax on `main`.'
+        for rejection in *.rej; do
+            echo "::group::cat $rejection"
+            cat "$rejection"
+            echo '::endgroup::'
+        done
+        exit 1
+    }
     
     DIR="$TEMPDIR/$original_basename"
     cp -rfT "$DIR" "$destination"

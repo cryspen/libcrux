@@ -127,7 +127,7 @@ elif options.kyber_reference:
             f"-** +libcrux::kem::kyber::** +!libcrux_platform::platform::* {exclude_sha3_implementations} -libcrux::**::types::index_impls::**",
             "fstar",
             "--interfaces",
-            "+* -libcrux::kem::kyber::types +!libcrux_platform::**",
+            "+* -libcrux::kem::kyber::types +!libcrux_platform::** +!libcrux::digest::**",
         ],
         cwd=".",
         env=hax_env,
@@ -136,6 +136,7 @@ elif options.kyber_reference:
     # remove this when https://github.com/hacspec/hax/issues/465 is
     # closed)
     shell(["rm", "-f", "./sys/platform/proofs/fstar/extraction/*.fst"])
+
 elif options.kyber_specification:
     shell(
         cargo_hax_into
