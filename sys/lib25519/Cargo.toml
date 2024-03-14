@@ -1,0 +1,18 @@
+[package]
+name = "lib25519"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+description = "sys crate for lib25519 on linux."
+
+[dependencies]
+libc = "0.2"
+
+[build-dependencies]
+cc = { version = "1.0", features = ["parallel"] }
+bindgen = { version = "0.69", optional = true }
+pkg-config = "0.3"
