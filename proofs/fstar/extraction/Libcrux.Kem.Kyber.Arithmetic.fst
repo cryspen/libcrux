@@ -39,13 +39,10 @@ let to_standard_domain (mfe: i32) =
   montgomery_reduce (mfe *! v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS <: i32)
 
 let to_unsigned_representative (fe: i32) =
-  let result:u16 =
-    cast (fe +! (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) <: i32)
-    <:
-    u16
-  in
   let _:Prims.unit = () <: Prims.unit in
-  result
+  cast (fe +! (Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS &. (fe >>! 31l <: i32) <: i32) <: i32)
+  <:
+  u16
 
 let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
   let _:Prims.unit = () <: Prims.unit in

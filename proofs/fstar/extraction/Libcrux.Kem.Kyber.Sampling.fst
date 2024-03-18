@@ -375,5 +375,4 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
             Libcrux.Digest.Incremental_x4.t_Shake128StateX4))
   in
   let _:Prims.unit = Libcrux.Kem.Kyber.Hash_functions.free_state xof_state in
-  let _:Prims.unit = () <: Prims.unit in
   out
