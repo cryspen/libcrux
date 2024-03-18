@@ -367,14 +367,13 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
           in
           let sampled_coefficients:t_Array usize v_K = tmp0 in
           let out:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K = tmp1 in
-          let hoist21:bool = out1 in
-          let done:bool = hoist21 in
+          let done:bool = out1 in
           done, out, sampled_coefficients, xof_state
           <:
           (bool & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K &
             Libcrux.Digest.Incremental_x4.t_Shake128StateX4))
   in
-  let _:Prims.unit = Libcrux.Kem.Kyber.Hash_functions.free xof_state in
+  let _:Prims.unit = Libcrux.Kem.Kyber.Hash_functions.free_state xof_state in
   let _:Prims.unit = () <: Prims.unit in
   out

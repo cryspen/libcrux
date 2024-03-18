@@ -264,70 +264,26 @@ let validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
-  Rust_primitives.Hax.Control_flow_monad.Mexception.run (let pk:t_Array
-        Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-        Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key v_K
-          (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
-              <:
-              Core.Ops.Range.t_RangeTo usize ]
-            <:
-            t_Slice u8)
-      in
-      let _, out:(Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & bool
-      ) =
-        Core.Iter.Traits.Iterator.f_any (Core.Slice.impl__iter (Rust_primitives.unsize pk
-                <:
-                t_Slice Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-            <:
-            Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
-          (fun f ->
-              let f:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = f in
-              let _, out:(Core.Slice.Iter.t_Iter i32 & bool) =
-                Core.Iter.Traits.Iterator.f_any (Core.Slice.impl__iter (Rust_primitives.unsize f
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                        <:
-                        t_Slice i32)
-                    <:
-                    Core.Slice.Iter.t_Iter i32)
-                  (fun fe ->
-                      let fe:i32 = fe in
-                      (fe <.
-                        (Core.Ops.Arith.Neg.neg Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: i32)
-                        <:
-                        bool) ||
-                      (fe >=. Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS <: bool))
-              in
-              out)
-      in
-      let! _:Prims.unit =
-        if out
-        then
-          let! hoist22:Rust_primitives.Hax.t_Never =
-            Core.Ops.Control_flow.ControlFlow.v_Break false
-          in
-          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist22)
+  let pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+    Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key v_K
+      (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
           <:
-          Core.Ops.Control_flow.t_ControlFlow bool Prims.unit
-        else
-          Core.Ops.Control_flow.ControlFlow_Continue ()
+          Core.Ops.Range.t_RangeTo usize ]
+        <:
+        t_Slice u8)
+  in
+  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key v_K
+      v_RANKED_BYTES_PER_RING_ELEMENT
+      v_PUBLIC_KEY_SIZE
+      pk
+      (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
           <:
-          Core.Ops.Control_flow.t_ControlFlow bool Prims.unit
-      in
-      Core.Ops.Control_flow.ControlFlow_Continue
-      (let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
-          Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key v_K
-            v_RANKED_BYTES_PER_RING_ELEMENT
-            v_PUBLIC_KEY_SIZE
-            pk
-            (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
-                <:
-                Core.Ops.Range.t_RangeFrom usize ]
-              <:
-              t_Slice u8)
-        in
-        public_key =. public_key_serialized)
-      <:
-      Core.Ops.Control_flow.t_ControlFlow bool bool)
+          Core.Ops.Range.t_RangeFrom usize ]
+        <:
+        t_Slice u8)
+  in
+  public_key =. public_key_serialized
 
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:

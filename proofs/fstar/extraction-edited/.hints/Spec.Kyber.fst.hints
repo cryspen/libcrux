@@ -1,5 +1,5 @@
 [
-  "v˛~≥˝¸\u0005_«\u0017û@è4\u001eQ",
+  "{B+F∑B“Ÿ\u0004ü*™r\u0002≤é",
   [
     [
       "Spec.Kyber.map'",
@@ -37,7 +37,7 @@
         "typing_Rust_primitives.Integers.v"
       ],
       0,
-      "df81d656f624f4cf4fc78d0b6363ae6e"
+      "bbe7a511dbc5211d8d784674d53c9a17"
     ],
     [
       "Spec.Kyber.flatten",
@@ -97,7 +97,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "9a57777f0eed8a57f39c6d47501b270f"
+      "ba75fe58b543fc790db3da65ae473b23"
     ],
     [
       "Spec.Kyber.v_BITS_PER_COEFFICIENT",
@@ -135,7 +135,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "92f546847199e0420d56355e4546a562"
+      "0747304197c896fd7e9c5b88e0a56356"
     ],
     [
       "Spec.Kyber.v_COEFFICIENTS_IN_RING_ELEMENT",
@@ -173,7 +173,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "eb84766b8fbf903bb3beed181d723a22"
+      "f0795670fad93b8b7324bc829e4204ca"
     ],
     [
       "Spec.Kyber.v_BITS_PER_RING_ELEMENT",
@@ -211,7 +211,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "468cac3d637cd7943c5da5d8a3ab5e1e"
+      "7074b43c2af2b7d529a3bfbdb93da84b"
     ],
     [
       "Spec.Kyber.v_BYTES_PER_RING_ELEMENT",
@@ -249,7 +249,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "d64be3fe9a9ad362c7a0512644dcfeb4"
+      "bbcbabed636b46cce6a6f78468b231d3"
     ],
     [
       "Spec.Kyber.v_CPA_PKE_KEY_GENERATION_SEED_SIZE",
@@ -287,7 +287,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e526595604b7597ee0b256e1b1a2679a"
+      "2d07696930fbbc1e3ae5cf0e12434232"
     ],
     [
       "Spec.Kyber.v_H_DIGEST_SIZE",
@@ -325,7 +325,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "ede69865a543f80bae8f5ada29a4d140"
+      "d2bd317a252219524cd117cc71a57f32"
     ],
     [
       "Spec.Kyber.v_REJECTION_SAMPLING_SEED_SIZE",
@@ -363,7 +363,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "ac4ef9f7849a2dc914c9fd57b5441e82"
+      "98b998b2f00d333014c9ed2cae90c3ac"
     ],
     [
       "Spec.Kyber.params_",
@@ -387,7 +387,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "73743d1096e464252420d26fe324b4b7"
+      "c3fce9eb7a2537106ac9e234b0b727df"
     ],
     [
       "Spec.Kyber.valid_params",
@@ -435,7 +435,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "7a5790801c77586900063483b6fa9700"
+      "305624f439c31840036c7f2ae9c91bb5"
     ],
     [
       "Spec.Kyber.v_ETA1_RANDOMNESS_SIZE",
@@ -473,7 +473,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "1a43f3daf8d0a00b7112041f79565e46"
+      "dc699953e976c5bce42e2c97ad7e02dd"
     ],
     [
       "Spec.Kyber.v_ETA1_RANDOMNESS_SIZE",
@@ -527,7 +527,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "7fa850412548ead264faba44fef69de6"
+      "0ad4b7d7d5edf587ab92588760ce8325"
     ],
     [
       "Spec.Kyber.v_ETA2_RANDOMNESS_SIZE",
@@ -565,7 +565,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "2957fabe2705d28d34425b7a9badb20b"
+      "65656f784d9810fc0997a53ab7689b1f"
     ],
     [
       "Spec.Kyber.v_ETA2_RANDOMNESS_SIZE",
@@ -617,7 +617,7 @@
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "495f5aae5165d86afb8f312b08e367b7"
+      "d2e590147fb8f190c70c5ad1485670a1"
     ],
     [
       "Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT",
@@ -667,7 +667,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "392b93fb7c88d51b449648e75a80c652"
+      "661378f297d23c3b082d529c4f7cfcbb"
     ],
     [
       "Spec.Kyber.v_RANKED_BYTES_PER_RING_ELEMENT",
@@ -723,7 +723,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "d7359ac271ea1e78faaf05fc80b0be48"
+      "7a9d4afb745defbbcea9437e0dd5d160"
     ],
     [
       "Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE",
@@ -773,7 +773,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e47d3618ad966658302d005ad53e9993"
+      "4efb39c6a6a58f3394f732dfad219e45"
     ],
     [
       "Spec.Kyber.v_CPA_PKE_PUBLIC_KEY_SIZE",
@@ -832,7 +832,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "9cd048640821c785acdedba9bdcffc35"
+      "33a0a00e6b262cf54cc717d850f3a385"
     ],
     [
       "Spec.Kyber.v_SECRET_KEY_SIZE",
@@ -882,7 +882,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "fffb9ac59cc741652e2fa3781e5b7d2b"
+      "2ae85b29b8d5e8de2b73a89f6e2faf0e"
     ],
     [
       "Spec.Kyber.v_SECRET_KEY_SIZE",
@@ -950,7 +950,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "2d035a7ea37350bd73f30c59ffb7b9c3"
+      "96815e9120b6cced204faca813ec5ea3"
     ],
     [
       "Spec.Kyber.v_C1_BLOCK_SIZE",
@@ -996,7 +996,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "265b889440c0bde3aebad9f6463738bc"
+      "bcfcd7e41137cdab3a7377d2037f141c"
     ],
     [
       "Spec.Kyber.v_C1_BLOCK_SIZE",
@@ -1050,7 +1050,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "635792c60961aa84a700e83e33be3f99"
+      "5084dc44e0dd92761d6a04fd71220bfa"
     ],
     [
       "Spec.Kyber.v_C1_SIZE",
@@ -1088,7 +1088,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "6e20e5f8575e42792a998baa2772df83"
+      "cf9a285a767a5042d35a1f4a0591e3a1"
     ],
     [
       "Spec.Kyber.v_C1_SIZE",
@@ -1150,7 +1150,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "276c8b5aed2b961430b7b377a30137d2"
+      "67db339b85628c90fa203d00b4dff027"
     ],
     [
       "Spec.Kyber.v_C2_SIZE",
@@ -1196,7 +1196,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "c2dd7230c097659ef36a6af0e30b28c3"
+      "6f41c64211180c20e46e0840880a0a0d"
     ],
     [
       "Spec.Kyber.v_C2_SIZE",
@@ -1249,7 +1249,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "485ec6811b6038bc0e06f00140a180fb"
+      "d3d691e3225d1da777428b05bc4df605"
     ],
     [
       "Spec.Kyber.v_CPA_PKE_CIPHERTEXT_SIZE",
@@ -1319,7 +1319,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "89cd5e8164da5a0cfaae1ce0ea7a1584"
+      "9f3288725572ea2ba1282aa344a0eeba"
     ],
     [
       "Spec.Kyber.v_IMPLICIT_REJECTION_HASH_INPUT_SIZE",
@@ -1393,7 +1393,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "9228ccdda2ba7bf2dc65895fdd7b8fee"
+      "9277d449e9b7c0e4f021cee46d60b490"
     ],
     [
       "Spec.Kyber.v_KEY_GENERATION_SEED_SIZE",
@@ -1439,7 +1439,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a09365a800869c8f28f11efa7b6e4cc2"
+      "08c9a80460166b6c36c2cc0877cfa681"
     ],
     [
       "Spec.Kyber.v_KEY_GENERATION_SEED_SIZE",
@@ -1498,7 +1498,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "5e923667b7bf3e0c51286fb8c2932665"
+      "b916f6e72402a0249db885772fa6e441"
     ],
     [
       "Spec.Kyber.t_Result",
@@ -1507,7 +1507,7 @@
       1,
       [ "@query" ],
       0,
-      "d06c0265229d0d8cc06e7bc038f621ad"
+      "8e23012845d244f94ea97557a770a05b"
     ],
     [
       "Spec.Kyber.__proj__Ok__item___0",
@@ -1519,7 +1519,7 @@
         "refinement_interpretation_Tm_refine_1b102a22f9e78dd36ce7df9b9f30d4ae"
       ],
       0,
-      "99f6d4cfee25fca14f86b90087809b82"
+      "0f71ec431ae926a3c543ba6371c15309"
     ],
     [
       "Spec.Kyber.__proj__Err__item___0",
@@ -1531,7 +1531,7 @@
         "refinement_interpretation_Tm_refine_dec1a26e2d89f644ded10c99d120cfd7"
       ],
       0,
-      "02422d3ad65ba31be974b3e56567ad0e"
+      "d7171cfab6ea11e7df015dc130330fe8"
     ],
     [
       "Spec.Kyber.v_G",
@@ -1569,7 +1569,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "da59a6215d85e4ee56209a7811ea7e10"
+      "8c37da5b294c708188e7a2bce578fa2e"
     ],
     [
       "Spec.Kyber.v_H",
@@ -1607,7 +1607,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "5681486829dc1d30e8f8bf359ee6beb4"
+      "4da5dde34568ce7b7e1a35e34358e7ac"
     ],
     [
       "Spec.Kyber.v_J",
@@ -1646,7 +1646,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "d8c4957417609178d936eac669cf8176"
+      "c4fd7ddb9933113ae6f283e6f1b89e25"
     ],
     [
       "Spec.Kyber.polynomial",
@@ -1684,7 +1684,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "07f4f0d9226460d4dc7ac08ac9eac14f"
+      "43c059d5b954f5e6566b7d3d920bbd62"
     ],
     [
       "Spec.Kyber.sample_matrix_A",
@@ -1722,7 +1722,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "5d73a62033bc674f32e14c19cb28f404"
+      "79c0d43e5c095804ac8e3bc049a9575e"
     ],
     [
       "Spec.Kyber.sample_vector_cbd",
@@ -1760,7 +1760,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "2a3702b1c67744f60c8fa26f4a4ddd89"
+      "9b7f4b786d046618cf1f8155b24a20db"
     ],
     [
       "Spec.Kyber.sample_poly_binomial",
@@ -1814,7 +1814,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "ca71c4223dc045f838c42144f3d04952"
+      "747f87bdbcb627551249ea6e80e4e06b"
     ],
     [
       "Spec.Kyber.sample_poly_cbd",
@@ -1852,7 +1852,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "45fff6cafe31b3581f9614f46361a93d"
+      "6e12550f1844b368e712e94da09dafce"
     ],
     [
       "Spec.Kyber.sample_poly_cbd",
@@ -1916,7 +1916,7 @@
         "typing_Spec.Kyber.valid_params", "typing_tok_Lib.IntTypes.U8@tok"
       ],
       0,
-      "a4ed64c0b315fabbd4a989d9a9c5f7d0"
+      "6d95ccc9382643d0d71451944d6023db"
     ],
     [
       "Spec.Kyber.sample_poly_cbd",
@@ -1954,7 +1954,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "3af5da12f62188319e44cf69064e7a92"
+      "138fee8d601fb2215de05527bf6efbd1"
     ],
     [
       "Spec.Kyber.sample_vector_cbd_then_ntt",
@@ -1992,7 +1992,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a72231be8c1a20af2be2427c433bc166"
+      "8664458310da16e30e3c13a0b21a47b9"
     ],
     [
       "Spec.Kyber.compress_d",
@@ -2051,7 +2051,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "18c240005cba523622ee159f1121aae7"
+      "2aadd99b6d7ee2b5935e1b1dba4eafbe"
     ],
     [
       "Spec.Kyber.bits_to_bytes",
@@ -2065,7 +2065,7 @@
         "equation_Rust_primitives.Integers.u8"
       ],
       0,
-      "ac3fb4455e99abc071a23f3f2b4ccd3f"
+      "29644f645893d7217b226166442a9d31"
     ],
     [
       "Spec.Kyber.bits_to_bytes",
@@ -2090,7 +2090,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "78f8e7e83d8518a50819de420a6559d8"
+      "8dc39244b65ea9e2f2c22712543f2bb2"
     ],
     [
       "Spec.Kyber.bytes_to_bits",
@@ -2114,7 +2114,7 @@
         "typing_FStar.Seq.Base.length"
       ],
       0,
-      "f3e88c35fb58a640e9ed3c18ee9f1125"
+      "4ebf86fa671cf9b7fd2e55e9430fb8b4"
     ],
     [
       "Spec.Kyber.retype_bit_vector",
@@ -2126,7 +2126,7 @@
         "refinement_interpretation_Tm_refine_0dee8cb03258a67c2f7ec66427696212"
       ],
       0,
-      "c9647045d922e2b2b85dee88e6b1b2b0"
+      "859f05ca8c6efab7b8e7e2182b5b8ef6"
     ],
     [
       "Spec.Kyber.byte_encode",
@@ -2170,7 +2170,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "bde9a14a163667a9c79ea0944764fe8d"
+      "079721bb30607279a49dc448528d800c"
     ],
     [
       "Spec.Kyber.byte_decode",
@@ -2259,7 +2259,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok", "typing_tok_Lib.IntTypes.S32@tok"
       ],
       0,
-      "df140d4263aaa6f063c7be41ef015c33"
+      "56202e3e30937bb453cf0d7438d501d5"
     ],
     [
       "Spec.Kyber.byte_decode",
@@ -2299,7 +2299,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a44dfc7ee4a6120316fa936b2e7d8e2a"
+      "68682c2a7d6f002b174ddf0f724350c4"
     ],
     [
       "Spec.Kyber.vector_encode_12",
@@ -2378,7 +2378,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "600f161f7aa234b463c648eb7c504607"
+      "64592c82750e202c55eec415116072c1"
     ],
     [
       "Spec.Kyber.vector_decode_12",
@@ -2451,7 +2451,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "23d346bbbd39281a88bf1611412c21ca"
+      "6910511d5a5587227b0f90685046769e"
     ],
     [
       "Spec.Kyber.compress_then_byte_encode",
@@ -2519,7 +2519,7 @@
         "typing_tok_Lib.IntTypes.PUB@tok"
       ],
       0,
-      "03fa6b05c72bf3b0ecd112381788d399"
+      "d6cb4fc295ccdc865ac8251939111aa2"
     ],
     [
       "Spec.Kyber.compress_then_encode_u",
@@ -2602,7 +2602,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "bf8367a58ac0d3690f446211d2789d1c"
+      "428cf9631ceaa5ac30815c291140dbaa"
     ],
     [
       "Spec.Kyber.decode_then_decompress_u",
@@ -2689,7 +2689,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "0c7bb57f706177ca6c8c2de2b2649759"
+      "8fc8270f30c91014ed919781087a4a44"
     ],
     [
       "Spec.Kyber.compress_then_encode_v",
@@ -2743,7 +2743,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "6c900a45ef3546bfca23c0e3a7a72101"
+      "6eb7eb1e7fa0c27a31ff4ca6ba05e22a"
     ],
     [
       "Spec.Kyber.decode_then_decompress_v",
@@ -2797,7 +2797,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "996a6ab59b2b7532b3e48318e10a7a6d"
+      "77c67e492d216fad82006eb8ff4b31fc"
     ],
     [
       "Spec.Kyber.ind_cpa_generate_keypair",
@@ -2887,7 +2887,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "60fdfd3b9583b54020d2c2dfd145d491"
+      "dc85a0bdd7953884c516c37b0b7a2e16"
     ],
     [
       "Spec.Kyber.ind_cpa_encrypt",
@@ -2988,7 +2988,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "2864af9b95673879904cb85a19c956da"
+      "1d9b809e03a43456a6336f96715ca8ab"
     ],
     [
       "Spec.Kyber.ind_cpa_decrypt",
@@ -3061,7 +3061,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "b1ee3f800e3c71fcc355ce7a869e5574"
+      "3120a787f6c9e86dbc85c829e9953418"
     ],
     [
       "Spec.Kyber.ind_cca_generate_keypair",
@@ -3182,7 +3182,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "4be66860616db38ecfd5e932f9820777"
+      "7c60a49dbb24cdf69c2ad0c51f9a8e5f"
     ],
     [
       "Spec.Kyber.ind_cca_encapsulate",
@@ -3259,7 +3259,7 @@
         "typing_Spec.Kyber.valid_params"
       ],
       0,
-      "8b8f217ccf19b5970d729ea2b5be0601"
+      "1c4b72400dfb19a166fedfdefa5b1afb"
     ],
     [
       "Spec.Kyber.ind_cca_decapsulate",
@@ -3385,7 +3385,7 @@
         "typing_tok_Lib.IntTypes.U32@tok", "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "ea11d68ee787b8cd881efca8b5b71894"
+      "5a5effcfc3afee2288389164bb76eb4f"
     ],
     [
       "Spec.Kyber.kyber768_params",
@@ -3438,7 +3438,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "5e0d949c721ff65b4df2321f4cd0f1cf"
+      "d087a331ecf9ec1cab7a6c4604b6c656"
     ],
     [
       "Spec.Kyber.kyber768_generate_keypair",
@@ -3563,7 +3563,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "9f2337eabc8e0a758e7e40e0ebd58a59"
+      "5909a7021f5ec273144eb9655ee5ee50"
     ],
     [
       "Spec.Kyber.kyber768_generate_keypair",
@@ -3601,7 +3601,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "2fedaf938ffb99dbc6ed7524e4464655"
+      "4a73c24b4e20a59c8151c27824d2348a"
     ],
     [
       "Spec.Kyber.kyber768_encapsulate",
@@ -3747,7 +3747,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "df2b0f319973a62ca504360c9b99d4da"
+      "fdae0d6a1c1af22e60563321a112ed77"
     ],
     [
       "Spec.Kyber.kyber768_encapsulate",
@@ -3785,7 +3785,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "e22180df6bc78b65718a0896e6bb9bfb"
+      "805935b28ebcd320aed07b69022e9ed9"
     ],
     [
       "Spec.Kyber.kyber768_decapsulate",
@@ -3882,7 +3882,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "7fd21be7691985f0f3cecf402e017337"
+      "1c1bbfade60763fd48c8287cba6c8d47"
     ],
     [
       "Spec.Kyber.kyber768_decapsulate",
@@ -3920,7 +3920,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a13d7f24560b740aef9eb5468da64151"
+      "c8f148015222735142e19f9f9973dffe"
     ],
     [
       "Spec.Kyber.kyber1024_params",
@@ -3973,7 +3973,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "9b060224294cc3007d7dc5332e763237"
+      "6d0d8459d1bd2809f60f7f39a94cd4f8"
     ],
     [
       "Spec.Kyber.kyber1024_generate_keypair",
@@ -4097,7 +4097,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "7fabb64f693ce7735ff2fa2807643ac6"
+      "0568b393f98a1cd2e0a88acceb6f1276"
     ],
     [
       "Spec.Kyber.kyber1024_generate_keypair",
@@ -4135,7 +4135,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "5133057ff40378a2c1f8bda6aa258fa5"
+      "6cbdedc5bd280968124cc25daa44485b"
     ],
     [
       "Spec.Kyber.kyber1024_encapsulate",
@@ -4289,7 +4289,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "b36f21ef4f2a3c7ab5a4da70964e9de9"
+      "14bac6af38d55d8ff62281590e8d0289"
     ],
     [
       "Spec.Kyber.kyber1024_encapsulate",
@@ -4327,7 +4327,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "a35b8305333972e476af4e8fb14b7fb4"
+      "c21c08cb1689921ff3841058151f4648"
     ],
     [
       "Spec.Kyber.kyber1024_decapsulate",
@@ -4422,7 +4422,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "0fb372f27f9e1c62e56fe65720474348"
+      "377377b7cbc790c16130c0dfdddec39a"
     ],
     [
       "Spec.Kyber.kyber1024_decapsulate",
@@ -4460,7 +4460,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "ba990492bd91c6b7fb4d75ec5826cbff"
+      "26145fc809bc7fa25837ea2904e34628"
     ],
     [
       "Spec.Kyber.kyber512_params",
@@ -4513,7 +4513,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "644a2962a3ca0b4a65526e51315786b2"
+      "900229f630cbe23827890369446afa38"
     ],
     [
       "Spec.Kyber.kyber512_generate_keypair",
@@ -4632,7 +4632,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "8d4315fe1df52e9862a993cf767bfb88"
+      "e3ce63039f15db6c7a6b3d8edbf15cfc"
     ],
     [
       "Spec.Kyber.kyber512_generate_keypair",
@@ -4670,7 +4670,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "36d3d6ec475a15ec849ad22c62b924c3"
+      "de9fd2a2923b3637eaf6454d2f659c3f"
     ],
     [
       "Spec.Kyber.kyber512_encapsulate",
@@ -4774,7 +4774,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "05ce2b30cdd55fc55ba5f2047795ec85"
+      "86762cbe1c2e72af17560f93df7a702d"
     ],
     [
       "Spec.Kyber.kyber512_encapsulate",
@@ -4812,7 +4812,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "62602d7a2d2ba7a1ec33aa40c6162d45"
+      "de407be2d853ecebc7b19e75e38d51ce"
     ],
     [
       "Spec.Kyber.kyber512_decapsulate",
@@ -4908,7 +4908,7 @@
         "typing_tok_Lib.IntTypes.U64@tok"
       ],
       0,
-      "eeeda0d80731c4ffa900bcf9eea0af63"
+      "4cf6c547bfdd5eca694236a6e449b7fa"
     ],
     [
       "Spec.Kyber.kyber512_decapsulate",
@@ -4946,7 +4946,7 @@
         "typing_Rust_primitives.Integers.usize_inttype"
       ],
       0,
-      "42f270fb628c21ea4899dd7e2779ec53"
+      "811be5c35be932ac77d2f860862cb1ea"
     ]
   ]
 ]

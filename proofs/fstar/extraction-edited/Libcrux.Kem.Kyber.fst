@@ -5,7 +5,7 @@ open FStar.Mul
 
 let update_at_range_lemma #n
   (s: t_Slice 't)
-  (i: Core.Ops.Range.t_Range (int_t n) {(Core.Ops.Range.impl_index_range_slice 't n).in_range s i}) 
+  (i: Core.Ops.Range.t_Range (int_t n) {(Core.Ops.Range.impl_index_range_slice 't n).f_index_pre s i}) 
   (x: t_Slice 't)
   : Lemma
     (requires (Seq.length x == v i.f_end - v i.f_start))

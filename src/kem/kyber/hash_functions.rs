@@ -2,7 +2,6 @@
 
 use super::constants::H_DIGEST_SIZE;
 use crate::digest::{self, digest_size, incremental_x4::Shake128StateX4, Algorithm};
-// use crate::sha3::incremental_x4::Shake128StateX4;
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
     digest::sha3_512(input)
@@ -21,12 +20,11 @@ pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128StateX4 {
     debug_assert!(K == 2 || K == 3 || K == 4);
 
     let mut state = Shake128StateX4::new();
-    let data = [
-        &input[0] as &[u8],
-        &input[1] as &[u8],
-        if K > 2 { &input[2] as &[u8] } else { &[] },
-        if K > 3 { &input[3] as &[u8] } else { &[] },
-    ];
+    // XXX: We need to do this dance to get it through hax and eurydice for now.
+    let mut data: [&[u8]; K] = [&[0u8]; K];
+    for i in 0..K {
+        data[i] = &input[i] as &[u8];
+    }
     state.absorb_final(data);
     state
 }
@@ -62,6 +60,6 @@ pub(crate) fn squeeze_block<const K: usize>(
 ///
 /// **NOTE:** That this needs to be done manually for now.
 #[inline(always)]
-pub(crate) fn free(xof_state: Shake128StateX4) {
-    xof_state.free();
+pub(crate) fn free_state(xof_state: Shake128StateX4) {
+    xof_state.free_memory();
 }
