@@ -143,4 +143,14 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     pub fn sk(&self) -> &[u8; PRIVATE_KEY_SIZE] {
         self.sk.as_slice()
     }
+
+    #[cfg(feature = "tests")]
+    pub fn into_parts(
+        self,
+    ) -> (
+        MlKemPrivateKey<PRIVATE_KEY_SIZE>,
+        MlKemPublicKey<PUBLIC_KEY_SIZE>,
+    ) {
+        (self.sk, self.pk)
+    }
 }

@@ -65,6 +65,13 @@ use self::kyber::{
 };
 pub use kyber::{MlKemCiphertext, MlKemKeyPair};
 
+#[cfg(feature = "tests")]
+pub use kyber::{
+    kyber1024::validate_public_key as ml_kem1024_validate_public_key,
+    kyber512::validate_public_key as ml_kem512_validate_public_key,
+    kyber768::validate_public_key as ml_kem768_validate_public_key,
+};
+
 /// KEM Algorithms
 ///
 /// This includes named elliptic curves or dedicated KEM algorithms like Kyber.
