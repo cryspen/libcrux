@@ -666,83 +666,6 @@ let compress_then_serialize_ring_element_v
         <:
         Rust_primitives.Hax.t_Never)
 
-let deserialize_ring_elementes_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8) =
-  let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
-  in
-  let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact public_key
-                  Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
-                <:
-                Core.Slice.Iter.t_ChunksExact u8)
-            <:
-            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
-        <:
-        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
-      deserialized_pk
-      (fun deserialized_pk temp_1_ ->
-          let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-            deserialized_pk
-          in
-          let i, ring_element:(usize & t_Slice u8) = temp_1_ in
-          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-            Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
-          in
-          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-                      (Core.Slice.impl__chunks_exact ring_element (sz 3)
-                        <:
-                        Core.Slice.Iter.t_ChunksExact u8)
-                    <:
-                    Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
-                <:
-                Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
-              re
-              (fun re temp_1_ ->
-                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
-                  let i, bytes:(usize & t_Slice u8) = temp_1_ in
-                  let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
-                  let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
-                  let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
-                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-                    {
-                      re with
-                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                      =
-                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                        (sz 2 *! i <: usize)
-                        ((((byte2 &. 15l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) <: i32) %!
-                          Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                          <:
-                          i32)
-                    }
-                    <:
-                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-                  in
-                  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-                    {
-                      re with
-                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                      =
-                      Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
-                          .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-                        ((sz 2 *! i <: usize) +! sz 1 <: usize)
-                        (((byte3 <<! 4l <: i32) |. ((byte2 >>! 4l <: i32) &. 15l <: i32) <: i32) %!
-                          Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
-                          <:
-                          i32)
-                    }
-                    <:
-                    Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-                  in
-                  re)
-          in
-          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize deserialized_pk i re)
-  in
-  deserialized_pk
-
 let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
@@ -1280,6 +1203,122 @@ let deserialize_then_decompress_ring_element_v
 
         <:
         Rust_primitives.Hax.t_Never)
+
+let deserialize_to_reduced_ring_element (ring_element: t_Slice u8) =
+  let _:Prims.unit = () <: Prims.unit in
+  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+  in
+  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+              (Core.Slice.impl__chunks_exact ring_element (sz 3) <: Core.Slice.Iter.t_ChunksExact u8
+              )
+            <:
+            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+        <:
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+      re
+      (fun re temp_1_ ->
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
+          let i, bytes:(usize & t_Slice u8) = temp_1_ in
+          let byte1:i32 = cast (bytes.[ sz 0 ] <: u8) <: i32 in
+          let byte2:i32 = cast (bytes.[ sz 1 ] <: u8) <: i32 in
+          let byte3:i32 = cast (bytes.[ sz 2 ] <: u8) <: i32 in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            {
+              re with
+              Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                (sz 2 *! i <: usize)
+                (((byte2 &. 15l <: i32) <<! 8l <: i32) |. (byte1 &. 255l <: i32) <: i32)
+            }
+            <:
+            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+          in
+          let tmp:i32 =
+            (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ sz 2 *! i <: usize ] <: i32) %! 3329l
+          in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            {
+              re with
+              Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                (sz 2 *! i <: usize)
+                tmp
+            }
+            <:
+            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+          in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            {
+              re with
+              Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                ((sz 2 *! i <: usize) +! sz 1 <: usize)
+                ((byte3 <<! 4l <: i32) |. ((byte2 >>! 4l <: i32) &. 15l <: i32) <: i32)
+            }
+            <:
+            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+          in
+          let tmp:i32 =
+            (re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ (sz 2 *! i <: usize) +! sz 1 <: usize
+              ]
+              <:
+              i32) %!
+            3329l
+          in
+          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+            {
+              re with
+              Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
+                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                ((sz 2 *! i <: usize) +! sz 1 <: usize)
+                tmp
+            }
+            <:
+            Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+          in
+          re)
+  in
+  re
+
+let deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8) =
+  let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
+  in
+  let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
+              (Core.Slice.impl__chunks_exact public_key
+                  Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
+            <:
+            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+        <:
+        Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
+      deserialized_pk
+      (fun deserialized_pk temp_1_ ->
+          let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+            deserialized_pk
+          in
+          let i, ring_element:(usize & t_Slice u8) = temp_1_ in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize deserialized_pk
+            i
+            (deserialize_to_reduced_ring_element ring_element
+              <:
+              Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+          <:
+          t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+  in
+  deserialized_pk
 
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
   let _:Prims.unit = () <: Prims.unit in

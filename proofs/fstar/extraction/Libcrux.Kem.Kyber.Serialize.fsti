@@ -71,11 +71,6 @@ val compress_then_serialize_ring_element_v
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
-val deserialize_ring_elementes_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8)
-    : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val deserialize_then_decompress_10_ (serialized: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       Prims.l_True
@@ -112,6 +107,16 @@ val deserialize_then_decompress_ring_element_v
       (v_COMPRESSION_FACTOR: usize)
       (serialized: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_to_reduced_ring_element (ring_element: t_Slice u8)
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8)
+    : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 

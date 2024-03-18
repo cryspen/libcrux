@@ -6,8 +6,8 @@ use super::{
     },
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
+use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
-use crate::{cloop, kem::kyber::constants::FIELD_MODULUS};
 
 #[cfg(not(hax))]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
@@ -101,12 +101,39 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
     re
 }
 
+#[inline(always)]
+fn deserialize_to_reduced_ring_element(ring_element: &[u8]) -> PolynomialRingElement {
+    hax_debug_assert!(ring_element.len() == BYTES_PER_RING_ELEMENT);
+
+    let mut re = PolynomialRingElement::ZERO;
+
+    cloop! {
+        for (i, bytes) in ring_element.chunks_exact(3).enumerate() {
+            let byte1 = bytes[0] as FieldElement;
+            let byte2 = bytes[1] as FieldElement;
+            let byte3 = bytes[2] as FieldElement;
+
+            // The modulus here is ok because the input must be public.
+            // XXX: The awkward code here is necessary to work around Charon shortcomings.
+            re.coefficients[2 * i] = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
+            let tmp = re.coefficients[2 * i] % 3329; // FIELD_MODULUS
+            re.coefficients[2 * i] = tmp;
+
+            re.coefficients[2 * i + 1] = (byte3 << 4) | ((byte2 >> 4) & 0x0F);
+            let tmp = re.coefficients[2 * i + 1] % 3329; // FIELD_MODULUS
+            re.coefficients[2 * i + 1] = tmp;
+        }
+    }
+
+    re
+}
+
 /// This function deserializes ring elements and reduces the result by the field
 /// modulus.
 ///
 /// This function MUST NOT be used on secret inputs.
 #[inline(always)]
-pub(super) fn deserialize_ring_elementes_reduced<const PUBLIC_KEY_SIZE: usize, const K: usize>(
+pub(super) fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, const K: usize>(
     public_key: &[u8],
 ) -> [PolynomialRingElement; K] {
     let mut deserialized_pk = [PolynomialRingElement::ZERO; K];
@@ -115,22 +142,7 @@ pub(super) fn deserialize_ring_elementes_reduced<const PUBLIC_KEY_SIZE: usize, c
             .chunks_exact(BYTES_PER_RING_ELEMENT)
             .enumerate()
         {
-            deserialized_pk[i] = {
-                let mut re = PolynomialRingElement::ZERO;
-                cloop! {
-                    for (i, bytes) in ring_element.chunks_exact(3).enumerate() {
-                        let byte1 = bytes[0] as FieldElement;
-                        let byte2 = bytes[1] as FieldElement;
-                        let byte3 = bytes[2] as FieldElement;
-
-                        // The modulus here is ok because the input must be public.
-                        re.coefficients[2 * i] = ((byte2 & 0x0F) << 8 | (byte1 & 0xFF)) % FIELD_MODULUS;
-                        re.coefficients[2 * i + 1] = ((byte3 << 4) | ((byte2 >> 4) & 0x0F)) % FIELD_MODULUS;
-                    }
-                }
-
-                re
-            }
+            deserialized_pk[i] =deserialize_to_reduced_ring_element(ring_element);
         }
     }
     deserialized_pk

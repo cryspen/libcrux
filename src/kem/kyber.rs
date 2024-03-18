@@ -40,7 +40,7 @@ use self::{
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::{G, H, PRF},
     ind_cpa::{into_padded_array, serialize_public_key},
-    serialize::deserialize_ring_elementes_reduced,
+    serialize::deserialize_ring_elements_reduced,
 };
 
 /// Seed size for key generation
@@ -74,7 +74,7 @@ pub(super) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    let deserialized_pk = deserialize_ring_elementes_reduced::<PUBLIC_KEY_SIZE, K>(
+    let deserialized_pk = deserialize_ring_elements_reduced::<PUBLIC_KEY_SIZE, K>(
         &public_key[..RANKED_BYTES_PER_RING_ELEMENT],
     );
 
