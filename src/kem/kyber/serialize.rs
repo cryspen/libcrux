@@ -101,6 +101,9 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
     re
 }
 
+/// Only use with public values.
+///
+/// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
 #[inline(always)]
 fn deserialize_to_reduced_ring_element(ring_element: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(ring_element.len() == BYTES_PER_RING_ELEMENT);
