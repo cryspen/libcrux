@@ -39,7 +39,7 @@ pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
 /// Validate a public key.
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
-pub(crate) fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512PublicKey> {
+pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512PublicKey> {
     if super::validate_public_key::<
         RANK_512,
         RANKED_BYTES_PER_RING_ELEMENT_512,
