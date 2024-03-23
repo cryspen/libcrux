@@ -28,7 +28,7 @@ def add_libcrux_kyber_h(c_extraction_root, freebl_verified_root):
     destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.h")
     shutil.copyfile(path_to_header, destination)
 
-    shell(["clang-format", "-i", "-style=Google", destination])
+    shell(["clang-format", "-i", "-style=Mozilla", destination])
 
     with open(destination, "r") as f:
         original = f.read()
@@ -45,7 +45,7 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.c")
     shutil.copyfile(path_to_c_file, destination)
 
-    shell(["clang-format", "-i", "-style=Google", destination])
+    shell(["clang-format", "-i", "-style=Mozilla", destination])
 
     sed_cmd = shutil.which("gsed")
     if sed_cmd is None:
@@ -55,8 +55,8 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     sed_input = ""
     for line in ctags.splitlines():
         if (
-            "libcrux_kyber_serialize_compress_then_serialize_11___320size_t" in line
-            or "libcrux_kyber_serialize_compress_then_serialize_5___128size_t" in line
+            "compress_then_serialize_11___320size_t" in line
+            or "compress_then_serialize_5___128size_t" in line
         ):
             line_start = re.findall(r"line:(\d+)", line)[0]
             line_end = re.findall(r"end:(\d+)", line)[0]
