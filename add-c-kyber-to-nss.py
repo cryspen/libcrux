@@ -66,16 +66,16 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
 
     with open(destination, "r") as f:
         original = f.read()
-        replaced = re.sub(
-            '#include "libcrux_kyber.h"',
-            '#include "Libcrux_ML_KEM_768.h"',
-            original,
-        )
-        replaced = re.sub(
-            '#include "libcrux_hacl_glue.h"',
-            '#include "../Libcrux_ML_KEM_Hash_Functions.h"',
-            replaced,
-        )
+        # replaced = re.sub(
+        #     '#include "libcrux_kyber.h"',
+        #     '#include "Libcrux_ML_KEM_768.h"',
+        #     original,
+        # )
+        # replaced = re.sub(
+        #     '#include "libcrux_hacl_glue.h"',
+        #     '#include "../Libcrux_ML_KEM_Hash_Functions.h"',
+        #     replaced,
+        # )
         replaced = re.sub("uu____0 = !false", "uu____0 = false", replaced)
     with open(destination, "w") as f:
         f.write(replaced)
@@ -84,7 +84,7 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
 
 
 def add_internal_core_h(c_extraction_root, freebl_verified_root):
-    src_file = os.path.join(c_extraction_root, "internal", "core.h")
+    src_file = os.path.join(c_extraction_root, "core.h")
     destination = os.path.join(freebl_verified_root, "internal", "core.h")
 
     shutil.copyfile(src_file, destination)
@@ -105,6 +105,24 @@ def add_eurydice_glue_h(c_extraction_root, freebl_verified_root):
 
     shutil.copyfile(src_file, destination)
     shell(["clang-format", "-i", "-style=Mozilla", destination])
+
+
+def join_path(root, unix_path):
+    for p in unix_path.split("/"):
+        root = os.path.join(root, p)
+    return root
+
+
+def add_glue(c_extraction_root, freebl_verified_root):
+    def copy(file):
+        src_file = join_path(c_extraction_root, file[0])
+        destination = join_path(freebl_verified_root, file[1])
+        shutil.copyfile(src_file, destination)
+        shell(["clang-format", "-i", "-style=Mozilla", destination])
+
+    files = [("libcrux_digest.h", "internal/libcrux_digest.h")]
+    for file in files:
+        copy(file)
 
 
 parser = argparse.ArgumentParser()
@@ -132,3 +150,4 @@ add_libcrux_kyber_c(c_extraction_root, freebl_verified_root)
 add_internal_core_h(c_extraction_root, freebl_verified_root)
 add_Eurydice_h(c_extraction_root, freebl_verified_root)
 add_eurydice_glue_h(c_extraction_root, freebl_verified_root)
+add_glue(c_extraction_root, freebl_verified_root)
