@@ -45,6 +45,7 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.c")
     shutil.copyfile(path_to_c_file, destination)
 
+    # Formatting for easier modification. Mozilla is applied later.
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
     sed_cmd = shutil.which("gsed")
@@ -55,22 +56,28 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     sed_input = ""
     for line in ctags.splitlines():
         if (
-            "compress_then_serialize_11___320size_t" in line
+            "compress_then_serialize_11" in line
+            or "sample_from_binomial_distribution_3" in line
             or "compress_then_serialize_5___128size_t" in line
+            or "decompress_coefficients_5" in line
+            or "compress_coefficients_5" in line
+            or "deserialize_then_decompress_5" in line
+            or "deserialize_then_decompress_11" in line
+            or "compress_coefficients_11" in line
         ):
             line_start = re.findall(r"line:(\d+)", line)[0]
             line_end = re.findall(r"end:(\d+)", line)[0]
-            sed_input = "{},{}d;{}".format(line_start, line_end, sed_input)
+            sed_input = "{},{}d;{}".format(int(line_start) - 1, line_end, sed_input)
 
     shell([sed_cmd, "-i", sed_input, destination])
 
     with open(destination, "r") as f:
         original = f.read()
-        # replaced = re.sub(
-        #     '#include "libcrux_kyber.h"',
-        #     '#include "Libcrux_ML_KEM_768.h"',
-        #     original,
-        # )
+        replaced = re.sub(
+            '#include "internal/libcrux_kyber.h"',
+            '#include "internal/Libcrux_ML_KEM_768.h"',
+            original,
+        )
         # replaced = re.sub(
         #     '#include "libcrux_hacl_glue.h"',
         #     '#include "../Libcrux_ML_KEM_Hash_Functions.h"',
@@ -120,7 +127,12 @@ def add_glue(c_extraction_root, freebl_verified_root):
         shutil.copyfile(src_file, destination)
         shell(["clang-format", "-i", "-style=Mozilla", destination])
 
-    files = [("libcrux_digest.h", "internal/libcrux_digest.h")]
+    files = [
+        ("libcrux_digest.h", "internal/libcrux_digest.h"),
+        ("core.h", "core.h"),
+        ("internal/core.h", "internal/core.h"),
+        # ("libcrux_hacl_glue.c")
+    ]
     for file in files:
         copy(file)
 
