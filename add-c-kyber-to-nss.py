@@ -45,7 +45,6 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.c")
     shutil.copyfile(path_to_c_file, destination)
 
-    # Formatting for easier modification. Mozilla is applied later.
     shell(["clang-format", "-i", "-style=Mozilla", destination])
 
     sed_cmd = shutil.which("gsed")
