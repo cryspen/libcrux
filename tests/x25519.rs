@@ -129,7 +129,7 @@ fn wycheproof() {
                 }
                 Err(e) => {
                     assert!(!valid);
-                    assert!(matches!(e, Error::Custom(_)));
+                    assert!(matches!(e, Error::Custom(_) | Error::InvalidPoint));
                 }
             }
             tests_run += 1;

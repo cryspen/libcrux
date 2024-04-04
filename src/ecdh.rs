@@ -177,9 +177,12 @@ pub(crate) mod x25519 {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
-        curve25519::ecdh(s, p)
+        #[cfg(not(feature = "pure"))]
+        return curve25519::ecdh(s, p)
             .map_err(|e| Error::Custom(format!("HACL Error {:?}", e)))
-            .map(PublicKey)
+            .map(PublicKey);
+        #[cfg(feature = "pure")]
+        crate::hacl_rs::x25519(s, p).map(PublicKey)
     }
 
     // XXX: libjade's secret to public is broken on Windows (overflows the stack).
@@ -193,7 +196,10 @@ pub(crate) mod x25519 {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
-        Ok(PublicKey(curve25519::secret_to_public(s)))
+        #[cfg(not(feature = "pure"))]
+        return Ok(PublicKey(curve25519::secret_to_public(s)));
+        #[cfg(feature = "pure")]
+        Ok(PublicKey(crate::hacl_rs::x25519_secret_to_public(s)))
     }
 
     /// Generate a new x25519 secret.

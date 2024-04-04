@@ -44,6 +44,9 @@ pqcrypto-kyber = { version = "0.8.0", default-features = false }
 [target.'cfg(all(not(windows), not(target_arch = "wasm32"), not(target_arch = "x86")))'.dev-dependencies]
 openssl = "0.10"
 
+[features]
+pure = ["libcrux/pure"] # Only use pure Rust code in libcrux
+
 [[bench]]
 name = "sha2"
 harness = false

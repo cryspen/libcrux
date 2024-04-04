@@ -21,6 +21,7 @@ pub(crate) mod hacl;
 
 // HACL Rust
 // A Rust export from hacl-star
+#[cfg(feature = "pure")]
 pub(crate) mod hacl_rs;
 
 // libcrux
