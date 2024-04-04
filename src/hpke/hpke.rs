@@ -1,6 +1,11 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
-use crate::kem::{X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey};
+use crate::ecdh::{self, x25519};
+use crate::kem;
+use crate::kem::{
+    kyber::kyber768, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey,
+    X25519MlKem768Draft00PublicKey, XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
+};
 
 use super::aead::*;
 use super::kdf::*;
@@ -428,6 +433,48 @@ pub fn SetupBaseS(
             );
             (ss.encode(), ct.encode())
         }
+        KEM::XWingDraft02 => {
+            // TODO: This should re-use PublicKey::encapsulate but we need
+            // CryptoRng + Rng for that, not just a slice of randomness
+            let XWingKemDraft02PublicKey { pk_m, pk_x } =
+                XWingKemDraft02PublicKey::decode(pkR).map_err(|_| HpkeError::EncapError)?;
+
+            let (ct_m, ss_m) = kyber768::encapsulate(
+                &pk_m,
+                randomness[0..32]
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ek_x = x25519::PrivateKey(
+                randomness[..32]
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ct_x = x25519::secret_to_public(&ek_x).map_err(|_| HpkeError::EncapError)?;
+            let ss_x = x25519::derive(&pk_x, &ek_x).map_err(|_| HpkeError::EncapError)?;
+
+            let ct = Ct::XWingKemDraft02(
+                ct_m.as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ct_x.0
+                    .as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ss = Ss::XWingKemDraft02(
+                ss_m.as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ss_x.0
+                    .as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ct_x,
+                pk_x,
+            );
+            (ss.encode(), ct.encode())
+        }
     };
 
     let key_schedule = KeySchedule(
@@ -475,6 +522,16 @@ pub fn SetupBaseR(
                 ss2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
             );
+            ss.encode()
+        }
+        KEM::XWingDraft02 => {
+            let ct = kem::Ct::decode(crate::kem::Algorithm::XWingKemDraft02, enc)
+                .map_err(|_| HpkeError::DecapError)?;
+            let sk = crate::kem::XWingKemDraft02PrivateKey::decode(skR)
+                .map_err(|_| HpkeError::DecapError)?;
+            let sk = &kem::PrivateKey::XWingKemDraft02(sk);
+            let ss = ct.decapsulate(sk).map_err(|_| HpkeError::DecapError)?;
+
             ss.encode()
         }
     };
