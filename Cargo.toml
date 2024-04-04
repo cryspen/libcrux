@@ -4,6 +4,7 @@ members = [
     "sys/libjade",
     "sys/platform",
     "sys/pqclean",
+    "sys/lib25519",
     "benchmarks",
     "fuzz",
     "hacl_rs",
