@@ -9,9 +9,10 @@ use super::{
     sampling::sample_from_binomial_distribution,
     serialize::{
         compress_then_serialize_message, compress_then_serialize_ring_element_u,
-        compress_then_serialize_ring_element_v, deserialize_then_decompress_message,
-        deserialize_then_decompress_ring_element_u, deserialize_then_decompress_ring_element_v,
-        deserialize_to_uncompressed_ring_element, serialize_uncompressed_ring_element,
+        compress_then_serialize_ring_element_v, deserialize_ring_elements_reduced,
+        deserialize_then_decompress_message, deserialize_then_decompress_ring_element_u,
+        deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
+        serialize_uncompressed_ring_element,
     },
 };
 use crate::cloop;
@@ -41,23 +42,6 @@ pub(super) fn serialize_public_key<
     );
     public_key_serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
     public_key_serialized
-}
-
-/// Call [`deserialize_to_uncompressed_ring_element`] on each ring element.
-#[inline(always)]
-pub(super) fn deserialize_public_key<const K: usize>(
-    public_key: &[u8],
-) -> [PolynomialRingElement; K] {
-    let mut t_as_ntt = [PolynomialRingElement::ZERO; K];
-    cloop! {
-        for (i, t_as_ntt_bytes) in public_key
-            .chunks_exact(BYTES_PER_RING_ELEMENT)
-            .enumerate()
-        {
-            t_as_ntt[i] = deserialize_to_uncompressed_ring_element(t_as_ntt_bytes);
-        }
-    }
-    t_as_ntt
 }
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
@@ -274,7 +258,9 @@ pub(crate) fn encrypt<
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_public_key::<K>(&public_key[..T_AS_NTT_ENCODED_SIZE]);
+    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K>(
+        &public_key[..T_AS_NTT_ENCODED_SIZE],
+    );
 
     // ρ := pk + 12·k·n / 8
     // for i from 0 to k−1 do
