@@ -82,8 +82,8 @@ macro_rules! impl_hkdf {
             /// length is not const.
             pub mod vec {
                 use super::super::Error;
-                use alloc::vec::Vec;
                 use alloc::vec;
+                use alloc::vec::Vec;
 
                 /// HKDF expand using the pre-key material `prk` and `info`. The output length
                 /// is defined through the result type.

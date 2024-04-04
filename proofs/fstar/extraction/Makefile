@@ -49,10 +49,7 @@ all:
 
 
 VERIFIED = \
-	Libcrux_platform.fsti \
-	Libcrux.Kem.fst \
 	Libcrux.Kem.Kyber.Constants.fsti \
-	Libcrux.Digest.fsti \
 	Libcrux.Kem.Kyber.Kyber768.fst \
 	Libcrux.Kem.Kyber.Kyber1024.fst \
 	Libcrux.Kem.Kyber.Kyber512.fst
@@ -63,8 +60,11 @@ UNVERIFIED = \
 	Libcrux.Kem.Kyber.fst \
 	Libcrux.Kem.Kyber.Ind_cpa.fst \
 	Libcrux.Kem.Kyber.Arithmetic.fst \
+	Libcrux.Kem.Kyber.Arithmetic.fsti \
 	Libcrux.Kem.Kyber.Compress.fst \
 	Libcrux.Kem.Kyber.Constant_time_ops.fst \
+	Libcrux.Digest.fsti \
+	Libcrux.Digest.Incremental_x4.fsti \
 	Libcrux.Kem.Kyber.Hash_functions.fst \
 	Libcrux.Kem.Kyber.Matrix.fst \
 	Libcrux.Kem.Kyber.Ntt.fst \
@@ -78,10 +78,10 @@ UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIE
 # *extend* the set of relevant files with the tests.
 ROOTS = $(UNVERIFIED) $(VERIFIED)
 
-FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME)
+FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives $(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) ../../../sys/platform/proofs/fstar/extraction/
 
 FSTAR_FLAGS = --cmi \
-  --warn_error -331 \
+  --warn_error -331-321-274 \
   --cache_checked_modules --cache_dir $(CACHE_DIR) \
   --already_cached "+Prims+FStar+LowStar+C+Spec.Loops+TestLib" \
   $(addprefix --include ,$(FSTAR_INCLUDE_DIRS))

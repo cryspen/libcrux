@@ -8,8 +8,8 @@ use crate::{
     ecdh,
     hacl::{self, ed25519, p256},
 };
-use rand::{CryptoRng, Rng, RngCore};
 use alloc::vec::Vec;
+use rand::{CryptoRng, Rng, RngCore};
 
 use self::rsa_pss::RsaPssSignature;
 
@@ -86,10 +86,10 @@ pub mod rsa_pss {
     };
 
     use super::{DigestAlgorithm, Error};
-    use alloc::vec::Vec;
     use alloc::vec;
+    use alloc::vec::Vec;
 
-    /// A [`Algorithm::RsaPss`] Signature
+    /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) Signature
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct RsaPssSignature {
         pub(super) value: Vec<u8>,
@@ -124,7 +124,7 @@ pub mod rsa_pss {
         }
     }
 
-    /// A [`Algorithm::RsaPss`] public key.
+    /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) public key.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct RsaPssPublicKey {
         n: Vec<u8>,
@@ -160,7 +160,7 @@ pub mod rsa_pss {
     }
 
     // Size of e.
-    const E_BITS: u32 = 24;
+    const E_BITS: u32 = 17;
 
     // We only support this e.
     const E: [u8; 3] = [0x01, 0x00, 0x01];
@@ -214,7 +214,7 @@ pub mod rsa_pss {
 
     /// An RSA-PSS private key.
     /// The private key holds a [`RsaPssPublicKey`] with the public modulus.
-    /// A [`Algorithm::RsaPss`] private key.
+    /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) private key.
     pub struct RsaPssPrivateKey<'a> {
         pk: &'a RsaPssPublicKey,
         d: Vec<u8>,
@@ -494,9 +494,9 @@ pub fn key_gen(
                 }
 
                 // We clamp the key already to make sure it can't be misused.
-                sk[0] = sk[0] & 248u8;
-                sk[31] = sk[31] & 127u8;
-                sk[31] = sk[31] | 64u8;
+                sk[0] &= 248u8;
+                sk[31] &= 127u8;
+                sk[31] |= 64u8;
 
                 break;
             }

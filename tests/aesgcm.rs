@@ -7,7 +7,7 @@ use libcrux::{
     aead::{
         decrypt, encrypt, Aes128Key, Aes256Key,
         Algorithm::{Aes128Gcm, Aes256Gcm},
-        Error, Iv, Key,
+        EncryptError, InvalidArgumentError, Iv, Key,
     },
     aes_ni_support,
 };
@@ -34,7 +34,10 @@ fn aesgcm_self_test() {
     let tag = match encrypt(&key, &mut msg, iv, aad) {
         Ok(t) => t,
         Err(e) => {
-            if matches!(e, Error::UnsupportedAlgorithm) {
+            if matches!(
+                e,
+                EncryptError::InvalidArgument(InvalidArgumentError::UnsupportedAlgorithm)
+            ) {
                 eprintln!("AES not supported on this architecture.");
                 return;
             } else {
@@ -83,7 +86,10 @@ fn aesgcm_self_test_rand() {
     let tag = match encrypt(&key, &mut msg, iv, aad) {
         Ok(t) => t,
         Err(e) => {
-            if matches!(e, Error::UnsupportedAlgorithm) {
+            if matches!(
+                e,
+                EncryptError::InvalidArgument(InvalidArgumentError::UnsupportedAlgorithm)
+            ) {
                 eprintln!("AES not supported on this architecture.");
                 return;
             } else {

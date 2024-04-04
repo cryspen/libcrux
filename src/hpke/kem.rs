@@ -2,13 +2,16 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use crate::kem::{kyber::KyberKeyPair, kyber768_generate_keypair_derand, *};
+use crate::kem::{
+    kyber::{kyber768, MlKemKeyPair},
+    *,
+};
 
 use super::errors::*;
 use super::kdf::*;
 
-use alloc::vec::Vec;
 use alloc::vec;
+use alloc::vec::Vec;
 
 /// ## Key Encapsulation Mechanisms (KEMs)
 ///
@@ -310,7 +313,7 @@ pub fn SerializePublicKey(alg: KEM, pk: PublicKey) -> PublicKey {
 
 /// Remove the leading 0x04 from the public key.
 fn nist_curve_from_uncompressed(pk: &PublicKeyIn) -> Vec<u8> {
-    if pk[0] == 0x04 {
+    if pk[0] == 0x04 && pk.len() > 64 {
         pk[1..].to_vec()
     } else {
         pk.to_vec()
@@ -515,15 +518,15 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
                     32 + 64,
                 )?;
                 let (xsk, xpk) = DeriveKeyPair(alg, &seed[..32])?;
-                let KyberKeyPair { sk, pk } =
-                    kyber768_generate_keypair_derand(seed[32..].try_into().unwrap());
+                let MlKemKeyPair { sk, pk } =
+                    kyber768::generate_key_pair(seed[32..].try_into().unwrap());
 
-                let private = Kyber768X25519PrivateKey {
-                    kyber: sk,
+                let private = X25519MlKem768Draft00PrivateKey {
+                    mlkem: sk,
                     x25519: crate::ecdh::x25519::PrivateKey(xsk.try_into().unwrap()),
                 };
-                let public = Kyber768X25519PublicKey {
-                    kyber: pk,
+                let public = X25519MlKem768Draft00PublicKey {
+                    mlkem: pk,
                     x25519: crate::ecdh::x25519::PublicKey(xpk.try_into().unwrap()),
                 };
                 Ok((private.encode(), public.encode()))
@@ -560,10 +563,7 @@ pub fn Encap(alg: KEM, pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult
 ///
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> EncapResult {
-    let (ct, ss) = crate::kem::kyber768_encapsulate_derand(
-        &pkR.try_into().unwrap(),
-        randomness.try_into().unwrap(),
-    );
+    let (ct, ss) = kyber768::encapsulate(&pkR.try_into().unwrap(), randomness.try_into().unwrap());
 
     EncapResult::Ok((ss.as_ref().to_vec(), ct.as_ref().to_vec()))
 }
@@ -572,10 +572,7 @@ pub fn Kyber768Draft00_Encap(pkR: &PublicKeyIn, randomness: Randomness) -> Encap
 ///
 /// FIXME: vec conversions and unwraps
 pub fn Kyber768Draft00_Decap(skR: &PrivateKeyIn, enc: &[u8]) -> Result<SharedSecret, HpkeError> {
-    Ok(
-        crate::kem::kyber768_decapsulate_derand(&skR.try_into().unwrap(), &enc.try_into().unwrap())
-            .to_vec(),
-    )
+    Ok(kyber768::decapsulate(&skR.try_into().unwrap(), &enc.try_into().unwrap()).to_vec())
 }
 
 /// ```text

@@ -178,7 +178,7 @@ let compress_then_serialize_u #p v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN 
           assert (v_OUT_LEN /! v_K == Spec.Kyber.v_C1_BLOCK_SIZE p);
           assert (range (v i * v (Spec.Kyber.v_C1_BLOCK_SIZE p)) usize_inttype);
           assert (range ((v i + 1) * v (Spec.Kyber.v_C1_BLOCK_SIZE p)) usize_inttype);
-          assert ((Core.Ops.Range.impl_index_range_slice u8 usize_inttype).in_range out 
+          assert ((Core.Ops.Range.impl_index_range_slice u8 usize_inttype).f_index_pre out 
                     {
                       Core.Ops.Range.f_start = i *! Spec.Kyber.v_C1_BLOCK_SIZE p <: usize;
                       Core.Ops.Range.f_end
@@ -272,19 +272,17 @@ let deserialize_then_decompress_u (#p:Spec.Kyber.params)
 
 #push-options "--z3rlimit 200"
 let deserialize_public_key (#p:Spec.Kyber.params) 
-    (v_K v_T_AS_NTT_ENCODED_SIZE: usize) (public_key: t_Slice u8) =
+    (v_K: usize) (public_key: t_Slice u8) =
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
     Rust_primitives.Hax.repeat wfZero v_K
   in
   let acc_t = t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K in
   [@ inline_let]
   let inv = fun (acc:acc_t) (i:usize) -> True in
-  let sl : t_Slice u8 = public_key.[ 
-                      { Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE } <: Core.Ops.Range.t_RangeTo usize ] in
   let chunk_len = Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT in
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
    Rust_primitives.Iterators.foldi_chunks_exact #u8 #acc_t #inv
-      sl
+      public_key
       chunk_len
       tt_as_ntt
       (fun tt_as_ntt temp_1_ ->
@@ -373,11 +371,16 @@ let decrypt #p
 #push-options "--z3rlimit 200"
 let encrypt #p
       v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE
-      (public_key: t_Slice u8)
+      public_key
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8) =
   let tt_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
-    deserialize_public_key #p v_K v_T_AS_NTT_ENCODED_SIZE public_key
+    deserialize_public_key #p v_K
+      (public_key.[ { Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE }
+          <:
+          Core.Ops.Range.t_RangeTo usize ]
+        <:
+        t_Slice u8)
   in
   let seed:t_Slice u8 =
     public_key.[ { Core.Ops.Range.f_start = v_T_AS_NTT_ENCODED_SIZE }

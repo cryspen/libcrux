@@ -35,6 +35,8 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
 
+#include "libintvector.h"
+
 typedef struct K____uint8_t___uint8_t__s
 {
   uint8_t *fst;
@@ -58,82 +60,162 @@ K____uint8_t___uint8_t____K____uint8_t___uint8_t_;
 
 void
 Hacl_Hash_SHA3_Simd256_shake128(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
+  uint32_t outputByteLen,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint32_t outputByteLen,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_shake256(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
+  uint32_t outputByteLen,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint32_t outputByteLen,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_224(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_256(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_384(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
-  uint8_t *output0,
-  uint8_t *output1,
-  uint8_t *output2,
-  uint8_t *output3
+  uint32_t inputByteLen
 );
 
 void
 Hacl_Hash_SHA3_Simd256_sha3_512(
-  uint32_t inputByteLen,
+  uint8_t *output0,
+  uint8_t *output1,
+  uint8_t *output2,
+  uint8_t *output3,
   uint8_t *input0,
   uint8_t *input1,
   uint8_t *input2,
   uint8_t *input3,
+  uint32_t inputByteLen
+);
+
+/**
+Allocate quadruple state buffer (200-bytes for each)
+*/
+uint64_t *Hacl_Hash_SHA3_Simd256_state_malloc(void);
+
+/**
+Free quadruple state buffer
+*/
+void Hacl_Hash_SHA3_Simd256_state_free(uint64_t *s);
+
+/**
+Absorb number of blocks of 4 input buffers and write the output states
+
+  This function is intended to receive a quadruple hash state and 4 input buffers.
+  It prcoesses an inputs of multiple of 168-bytes (SHAKE128 block size),
+  any additional bytes of final partial block for each buffer are ignored.
+
+  The argument `state` (IN/OUT) points to quadruple hash state,
+  i.e., Lib_IntVector_Intrinsics_vec256[25]
+  The arguments `input0/input1/input2/input3` (IN) point to `inputByteLen` bytes 
+  of valid memory for each buffer, i.e., uint8_t[inputByteLen]
+*/
+void
+Hacl_Hash_SHA3_Simd256_shake128_absorb_nblocks(
+  Lib_IntVector_Intrinsics_vec256 *state,
+  uint8_t *input0,
+  uint8_t *input1,
+  uint8_t *input2,
+  uint8_t *input3,
+  uint32_t inputByteLen
+);
+
+/**
+Absorb a final partial blocks of 4 input buffers and write the output states
+
+  This function is intended to receive a quadruple hash state and 4 input buffers.
+  It prcoesses a sequence of bytes at end of each input buffer that is less 
+  than 168-bytes (SHAKE128 block size),
+  any bytes of full blocks at start of input buffers are ignored.
+
+  The argument `state` (IN/OUT) points to quadruple hash state,
+  i.e., Lib_IntVector_Intrinsics_vec256[25]
+  The arguments `input0/input1/input2/input3` (IN) point to `inputByteLen` bytes 
+  of valid memory for each buffer, i.e., uint8_t[inputByteLen]
+  
+  Note: Full size of input buffers must be passed to `inputByteLen` including
+  the number of full-block bytes at start of each input buffer that are ignored
+*/
+void
+Hacl_Hash_SHA3_Simd256_shake128_absorb_final(
+  Lib_IntVector_Intrinsics_vec256 *state,
+  uint8_t *input0,
+  uint8_t *input1,
+  uint8_t *input2,
+  uint8_t *input3,
+  uint32_t inputByteLen
+);
+
+/**
+Squeeze a quadruple hash state to 4 output buffers
+
+  This function is intended to receive a quadruple hash state and 4 output buffers.
+  It produces 4 outputs, each is multiple of 168-bytes (SHAKE128 block size),
+  any additional bytes of final partial block for each buffer are ignored.
+
+  The argument `state` (IN) points to quadruple hash state,
+  i.e., Lib_IntVector_Intrinsics_vec256[25]
+  The arguments `output0/output1/output2/output3` (OUT) point to `outputByteLen` bytes 
+  of valid memory for each buffer, i.e., uint8_t[inputByteLen]
+*/
+void
+Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(
+  Lib_IntVector_Intrinsics_vec256 *state,
   uint8_t *output0,
   uint8_t *output1,
   uint8_t *output2,
-  uint8_t *output3
+  uint8_t *output3,
+  uint32_t outputByteLen
 );
 
 #if defined(__cplusplus)

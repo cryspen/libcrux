@@ -3,7 +3,7 @@ use libcrux::{digest::Algorithm, drbg::*};
 use ring::rand::Random;
 
 fn init(c: &mut Criterion) {
-    let mut group = c.benchmark_group("x25519 derive");
+    let mut group = c.benchmark_group("Drbg");
 
     group.bench_function("libcrux Sha256", |b| {
         b.iter(|| {
@@ -37,7 +37,7 @@ fn init(c: &mut Criterion) {
 }
 
 fn generate(c: &mut Criterion) {
-    let mut group = c.benchmark_group("x25519 secret to public");
+    let mut group = c.benchmark_group("Drbg");
 
     group.bench_function("libcrux Sha256", |b| {
         b.iter_batched(
