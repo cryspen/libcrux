@@ -60,14 +60,21 @@ pub mod deterministic {
     pub use super::kyber::kyber768::generate_key_pair as kyber768_generate_keypair_derand;
 }
 
+use self::kyber::MlKemSharedSecret;
 use self::kyber::{kyber1024, kyber512, kyber768};
-use self::kyber::{
+pub use kyber::{
     kyber1024::{MlKem1024Ciphertext, MlKem1024PrivateKey, MlKem1024PublicKey},
     kyber512::{MlKem512Ciphertext, MlKem512PrivateKey, MlKem512PublicKey},
     kyber768::{MlKem768Ciphertext, MlKem768PrivateKey, MlKem768PublicKey},
-    MlKemSharedSecret,
+    MlKemCiphertext, MlKemKeyPair,
 };
-pub use kyber::{MlKemCiphertext, MlKemKeyPair};
+
+#[cfg(feature = "tests")]
+pub use kyber::{
+    kyber1024::validate_public_key as ml_kem1024_validate_public_key,
+    kyber512::validate_public_key as ml_kem512_validate_public_key,
+    kyber768::validate_public_key as ml_kem768_validate_public_key,
+};
 
 /// KEM Algorithms
 ///

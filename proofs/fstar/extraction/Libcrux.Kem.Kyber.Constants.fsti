@@ -17,6 +17,4 @@ let v_FIELD_MODULUS: i32 = 3329l
 
 let v_H_DIGEST_SIZE: usize = sz 32
 
-let v_REJECTION_SAMPLING_SEED_SIZE: usize = sz 168 *! sz 5
-
 let v_SHARED_SECRET_SIZE: usize = sz 32

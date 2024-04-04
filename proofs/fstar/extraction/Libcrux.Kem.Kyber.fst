@@ -264,8 +264,9 @@ let validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
-  let pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    Libcrux.Kem.Kyber.Ind_cpa.deserialize_public_key v_K
+  let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
+    Libcrux.Kem.Kyber.Serialize.deserialize_ring_elements_reduced v_PUBLIC_KEY_SIZE
+      v_K
       (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
           <:
           Core.Ops.Range.t_RangeTo usize ]
@@ -276,7 +277,7 @@ let validate_public_key
     Libcrux.Kem.Kyber.Ind_cpa.serialize_public_key v_K
       v_RANKED_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
-      pk
+      deserialized_pk
       (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
           <:
           Core.Ops.Range.t_RangeFrom usize ]
