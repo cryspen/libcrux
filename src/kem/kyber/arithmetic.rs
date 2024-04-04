@@ -67,6 +67,8 @@ pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
     result
 }
 
+const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+
 /// Signed Montgomery Reduction
 ///
 /// Given an input `value`, `montgomery_reduce` outputs a representative `o`
@@ -78,9 +80,6 @@ pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
 /// `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
 ///
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
-
-const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
-
 #[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce(value: FieldElement) -> MontgomeryFieldElement {

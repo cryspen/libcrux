@@ -322,6 +322,71 @@ extern "C" {
     pub fn Hacl_Hash_SHA3_sha3_512(output: *mut u8, input: *mut u8, input_len: u32);
 }
 extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_state_malloc() -> *mut u64;
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_state_free(s: *mut u64);
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks(
+        state: *mut u64,
+        input: *mut u8,
+        inputByteLen: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_shake128_absorb_final(
+        state: *mut u64,
+        input: *mut u8,
+        inputByteLen: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
+        state: *mut u64,
+        output: *mut u8,
+        outputByteLen: u32,
+    );
+}
+
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Simd256_state_malloc() -> *mut Lib_IntVector_Intrinsics_vec256;
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Simd256_state_free(s: *mut Lib_IntVector_Intrinsics_vec256);
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Simd256_shake128_absorb_nblocks(
+        state: *mut Lib_IntVector_Intrinsics_vec256,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Simd256_shake128_absorb_final(
+        state: *mut Lib_IntVector_Intrinsics_vec256,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(
+        state: *mut Lib_IntVector_Intrinsics_vec256,
+        output0: *mut u8,
+        output1: *mut u8,
+        output2: *mut u8,
+        output3: *mut u8,
+        outputByteLen: u32,
+    );
+}
+
+extern "C" {
     pub fn Hacl_Hash_SHA3_absorb_inner(rateInBytes: u32, block: *mut u8, s: *mut u64);
 }
 extern "C" {
