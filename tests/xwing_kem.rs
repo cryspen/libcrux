@@ -32,7 +32,7 @@ fn xwing_selftest() {
     #[cfg(target_arch = "wasm32")]
     let mut rng = OsRng;
 
-    let (skr, pkr) = kem::key_gen(Algorithm::XWingKemDraft01, &mut rng).unwrap();
+    let (skr, pkr) = kem::key_gen(Algorithm::XWingKemDraft02, &mut rng).unwrap();
 
     let (ss, ct) = pkr.encapsulate(&mut rng).unwrap();
     let rss = ct.decapsulate(&skr).unwrap();
@@ -52,14 +52,14 @@ fn xwing_hpke_selftest() {
 
     let config = HPKEConfig(
         hpke::Mode::mode_base,
-        KEM::XWingDraft01,
+        KEM::XWingDraft02,
         KDF::HKDF_SHA256,
         AEAD::ChaCha20Poly1305,
     );
 
     let mut randomness = vec![0u8; 32];
     rng.fill_bytes(&mut randomness);
-    let (sk_r, pk_r) = GenerateKeyPair(KEM::XWingDraft01, randomness).unwrap();
+    let (sk_r, pk_r) = GenerateKeyPair(KEM::XWingDraft02, randomness).unwrap();
 
     let info = b"xwing hpke selftest info";
     let aad = b"xwing hpke selftest aad";
@@ -97,7 +97,7 @@ fn xwing_test_vectors() {
     #[cfg(target_arch = "wasm32")]
     let mut rng = OsRng;
 
-    let (skr, pkr) = kem::key_gen(Algorithm::XWingKemDraft01, &mut rng).unwrap();
+    let (skr, pkr) = kem::key_gen(Algorithm::XWingKemDraft02, &mut rng).unwrap();
 
     let (ss, ct) = pkr.encapsulate(&mut rng).unwrap();
     let rss = ct.decapsulate(&skr).unwrap();
@@ -150,7 +150,7 @@ fn kat(tests: Vec<XWingTestVector>) {
         );
 
         // Generate the key pair
-        let (skr, pkr) = kem::key_gen(Algorithm::XWingKemDraft01, &mut rng).unwrap();
+        let (skr, pkr) = kem::key_gen(Algorithm::XWingKemDraft02, &mut rng).unwrap();
 
         // Compare the public key
         assert_eq!(kat_pk, pkr.encode());
@@ -160,7 +160,7 @@ fn kat(tests: Vec<XWingTestVector>) {
 
         // Because of the missing clamping we use the kat version of the public
         // key for the rest of the tests
-        let pkr = PublicKey::decode(Algorithm::XWingKemDraft01, &kat_pk).unwrap();
+        let pkr = PublicKey::decode(Algorithm::XWingKemDraft02, &kat_pk).unwrap();
 
         // Encapsulate and compare the ciphertext and shared secret
         let (ss_computed, ct_computed) = pkr.encapsulate(&mut rng).unwrap();
