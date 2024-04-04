@@ -11,9 +11,14 @@
 //! 128-bit SIMD implementation is used.
 //! In any other case the portable implementation is used.
 
+use std::mem;
+
 #[cfg(aes_ni)]
 use crate::hacl::aesgcm;
+#[cfg(not(feature = "pure"))]
 use crate::hacl::chacha20_poly1305;
+#[cfg(feature = "pure")]
+use hacl_rs::hacl::aead_chacha20poly1305;
 
 use libcrux_platform::{aes_ni_support, simd128_support, simd256_support};
 
@@ -327,7 +332,44 @@ fn encrypt_256(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 
 #[cfg(simd128)]
 fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
-    chacha20_poly1305::simd128::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
+    #[cfg(not(feature = "pure"))]
+    return chacha20_poly1305::simd128::encrypt(&key.0, msg_ctxt, iv.0, aad).into();
+    #[cfg(feature = "pure")]
+    hacl_rs_encrypt(key, msg_ctxt, iv, aad)
+}
+
+/// Encrypt Chacha20Poly1305 hacl rs.
+#[cfg(feature = "pure")]
+fn hacl_rs_encrypt(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
+    let mut tag = [0u8; 16];
+    let mut output = vec![0u8; msg_ctxt.len()];
+    let input = msg_ctxt;
+    let data =
+        unsafe { &mut *(core::ptr::slice_from_raw_parts_mut(aad.as_ptr() as *mut u8, aad.len())) };
+    let nonce = unsafe {
+        &mut *(core::ptr::slice_from_raw_parts_mut(iv.0.as_ptr() as *mut u8, iv.0.len()))
+    };
+    let key = unsafe {
+        &mut *(core::ptr::slice_from_raw_parts_mut(key.0.as_ptr() as *mut u8, key.0.len()))
+    };
+    let input_len = input.len().try_into().unwrap();
+    // XXX: handle
+    let data_len = aad.len().try_into().unwrap();
+    // XXX: handle
+    aead_chacha20poly1305::encrypt(
+        &mut output,
+        &mut tag,
+        input,
+        input_len,
+        data,
+        data_len,
+        key,
+        nonce,
+    );
+    for (dst, src) in input.iter_mut().zip(output) {
+        *dst = src;
+    }
+    tag.into()
 }
 
 /// Fallback when simd128 is detected at runtime but it wasn't compiled.
@@ -338,7 +380,10 @@ fn encrypt_128(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Ta
 }
 
 fn encrypt_32(key: &Chacha20Key, msg_ctxt: &mut [u8], iv: Iv, aad: &[u8]) -> Tag {
-    chacha20_poly1305::encrypt(&key.0, msg_ctxt, iv.0, aad).into()
+    #[cfg(not(feature = "pure"))]
+    return chacha20_poly1305::encrypt(&key.0, msg_ctxt, iv.0, aad).into();
+    #[cfg(feature = "pure")]
+    hacl_rs_encrypt(key, msg_ctxt, iv, aad)
 }
 
 #[cfg(simd256)]
@@ -366,6 +411,52 @@ fn decrypt_256(
     decrypt_128(key, ctxt_msg, iv, aad, tag)
 }
 
+/// Dencrypt Chacha20Poly1305 hacl rs.
+#[cfg(feature = "pure")]
+fn hacl_rs_decrypt(
+    key: &Chacha20Key,
+    ctxt_msg: &mut [u8],
+    iv: Iv,
+    aad: &[u8],
+    tag: &Tag,
+) -> Result<(), DecryptError> {
+    let mut output = vec![0u8; ctxt_msg.len()];
+    let input = ctxt_msg;
+    let data =
+        unsafe { &mut *(core::ptr::slice_from_raw_parts_mut(aad.as_ptr() as *mut u8, aad.len())) };
+    let nonce = unsafe {
+        &mut *(core::ptr::slice_from_raw_parts_mut(iv.0.as_ptr() as *mut u8, iv.0.len()))
+    };
+    let key = unsafe {
+        &mut *(core::ptr::slice_from_raw_parts_mut(key.0.as_ptr() as *mut u8, key.0.len()))
+    };
+    let tag = unsafe {
+        &mut *(core::ptr::slice_from_raw_parts_mut(tag.0.as_ptr() as *mut u8, tag.0.len()))
+    };
+    let input_len = input.len().try_into().unwrap();
+    // XXX: handle
+    let data_len = aad.len().try_into().unwrap();
+    // XXX: handle
+    let r = aead_chacha20poly1305::decrypt(
+        &mut output,
+        input,
+        input_len,
+        data,
+        data_len,
+        key,
+        nonce,
+        tag,
+    );
+    if r == 0 {
+        for (dst, src) in input.iter_mut().zip(output) {
+            *dst = src;
+        }
+        Ok(())
+    } else {
+        Err(DecryptError::DecryptionFailed)
+    }
+}
+
 #[cfg(simd128)]
 fn decrypt_128(
     key: &Chacha20Key,
@@ -374,8 +465,11 @@ fn decrypt_128(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), DecryptError> {
-    chacha20_poly1305::simd128::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
-        .map_err(|_| DecryptError::DecryptionFailed)
+    #[cfg(not(feature = "pure"))]
+    return chacha20_poly1305::simd128::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
+        .map_err(|_| DecryptError::DecryptionFailed);
+    #[cfg(feature = "pure")]
+    hacl_rs_decrypt(key, ctxt_msg, iv, aad, tag)
 }
 
 /// Fallback when simd128 is detected at runtime but it wasn't compiled.
@@ -398,8 +492,11 @@ fn decrypt_32(
     aad: &[u8],
     tag: &Tag,
 ) -> Result<(), DecryptError> {
-    chacha20_poly1305::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
-        .map_err(|_| DecryptError::DecryptionFailed)
+    #[cfg(not(feature = "pure"))]
+    return chacha20_poly1305::decrypt(&key.0, ctxt_msg, iv.0, aad, &tag.0)
+        .map_err(|_| DecryptError::DecryptionFailed);
+    #[cfg(feature = "pure")]
+    hacl_rs_decrypt(key, ctxt_msg, iv, aad, tag)
 }
 
 #[cfg(aes_ni)]

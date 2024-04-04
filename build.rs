@@ -15,7 +15,7 @@ fn main() {
         && target_arch != "x86"
         && !target_arch.contains("wasm")
     {
-        println!("cargo:rustc-cfg=simd128");
+        // println!("cargo:rustc-cfg=simd128");
     }
     if !cross
         && libcrux_platform::simd256_support()

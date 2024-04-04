@@ -19,6 +19,10 @@ pub(crate) mod jasmin;
 // HACL
 pub(crate) mod hacl;
 
+// HACL Rust
+// A Rust export from hacl-star
+pub(crate) mod hacl_rs;
+
 // libcrux
 pub mod aead;
 // The BLS code requires a 64 bit system.

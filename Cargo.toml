@@ -6,6 +6,7 @@ members = [
     "sys/pqclean",
     "benchmarks",
     "fuzz",
+    "hacl_rs",
 ]
 
 [workspace.package]
@@ -41,6 +42,7 @@ libcrux-hacl = { version = "=0.0.2-pre.2", path = "sys/hacl" }
 libcrux-platform = { version = "=0.0.2-pre.2", path = "sys/platform" }
 rand = { version = "0.8" }
 log = { version = "0.4", optional = true }
+hacl-rs = { path = "./hacl_rs", optional = true }
 # WASM API
 wasm-bindgen = { version = "0.2.87", optional = true }
 
@@ -75,3 +77,5 @@ wasm = ["wasm-bindgen"]
 log = ["dep:log"]
 tests = []              # Expose functions for testing.
 experimental = []       # Expose experimental APIs.
+pure = ["hacl-rs"]      # Pure Rust, no C bindings
+default = []
