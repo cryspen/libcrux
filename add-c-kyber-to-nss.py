@@ -28,7 +28,7 @@ def add_libcrux_kyber_h(c_extraction_root, freebl_verified_root):
     destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.h")
     shutil.copyfile(path_to_header, destination)
 
-    shell(["clang-format", "-i", "-style=Google", destination])
+    shell(["clang-format", "-i", "-style=Mozilla", destination])
 
     with open(destination, "r") as f:
         original = f.read()
@@ -45,7 +45,7 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     destination = os.path.join(freebl_verified_root, "Libcrux_ML_KEM_768.c")
     shutil.copyfile(path_to_c_file, destination)
 
-    shell(["clang-format", "-i", "-style=Google", destination])
+    shell(["clang-format", "-i", "-style=Mozilla", destination])
 
     sed_cmd = shutil.which("gsed")
     if sed_cmd is None:
@@ -55,27 +55,33 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
     sed_input = ""
     for line in ctags.splitlines():
         if (
-            "libcrux_kyber_serialize_compress_then_serialize_11___320size_t" in line
-            or "libcrux_kyber_serialize_compress_then_serialize_5___128size_t" in line
+            "compress_then_serialize_11" in line
+            or "sample_from_binomial_distribution_3" in line
+            or "compress_then_serialize_5___128size_t" in line
+            or "decompress_coefficients_5" in line
+            or "compress_coefficients_5" in line
+            or "deserialize_then_decompress_5" in line
+            or "deserialize_then_decompress_11" in line
+            or "compress_coefficients_11" in line
         ):
             line_start = re.findall(r"line:(\d+)", line)[0]
             line_end = re.findall(r"end:(\d+)", line)[0]
-            sed_input = "{},{}d;{}".format(line_start, line_end, sed_input)
+            sed_input = "{},{}d;{}".format(int(line_start) - 1, line_end, sed_input)
 
     shell([sed_cmd, "-i", sed_input, destination])
 
     with open(destination, "r") as f:
         original = f.read()
         replaced = re.sub(
-            '#include "libcrux_kyber.h"',
-            '#include "Libcrux_ML_KEM_768.h"',
+            '#include "internal/libcrux_kyber.h"',
+            '#include "internal/Libcrux_ML_KEM_768.h"',
             original,
         )
-        replaced = re.sub(
-            '#include "libcrux_hacl_glue.h"',
-            '#include "../Libcrux_ML_KEM_Hash_Functions.h"',
-            replaced,
-        )
+        # replaced = re.sub(
+        #     '#include "libcrux_hacl_glue.h"',
+        #     '#include "../Libcrux_ML_KEM_Hash_Functions.h"',
+        #     replaced,
+        # )
         replaced = re.sub("uu____0 = !false", "uu____0 = false", replaced)
     with open(destination, "w") as f:
         f.write(replaced)
@@ -84,7 +90,7 @@ def add_libcrux_kyber_c(c_extraction_root, freebl_verified_root):
 
 
 def add_internal_core_h(c_extraction_root, freebl_verified_root):
-    src_file = os.path.join(c_extraction_root, "internal", "core.h")
+    src_file = os.path.join(c_extraction_root, "core.h")
     destination = os.path.join(freebl_verified_root, "internal", "core.h")
 
     shutil.copyfile(src_file, destination)
@@ -105,6 +111,29 @@ def add_eurydice_glue_h(c_extraction_root, freebl_verified_root):
 
     shutil.copyfile(src_file, destination)
     shell(["clang-format", "-i", "-style=Mozilla", destination])
+
+
+def join_path(root, unix_path):
+    for p in unix_path.split("/"):
+        root = os.path.join(root, p)
+    return root
+
+
+def add_glue(c_extraction_root, freebl_verified_root):
+    def copy(file):
+        src_file = join_path(c_extraction_root, file[0])
+        destination = join_path(freebl_verified_root, file[1])
+        shutil.copyfile(src_file, destination)
+        shell(["clang-format", "-i", "-style=Mozilla", destination])
+
+    files = [
+        ("libcrux_digest.h", "internal/libcrux_digest.h"),
+        ("core.h", "core.h"),
+        ("internal/core.h", "internal/core.h"),
+        # ("libcrux_hacl_glue.c")
+    ]
+    for file in files:
+        copy(file)
 
 
 parser = argparse.ArgumentParser()
@@ -132,3 +161,4 @@ add_libcrux_kyber_c(c_extraction_root, freebl_verified_root)
 add_internal_core_h(c_extraction_root, freebl_verified_root)
 add_Eurydice_h(c_extraction_root, freebl_verified_root)
 add_eurydice_glue_h(c_extraction_root, freebl_verified_root)
+add_glue(c_extraction_root, freebl_verified_root)
