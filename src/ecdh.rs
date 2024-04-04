@@ -51,6 +51,8 @@ pub(crate) mod x25519 {
     use super::Error;
 
     pub struct PrivateKey(pub [u8; 32]);
+
+    #[derive(Debug)]
     pub struct PublicKey(pub [u8; 32]);
 
     impl From<&[u8; 32]> for PublicKey {
@@ -238,6 +240,8 @@ pub(crate) mod p256 {
     use super::Error;
 
     pub struct PrivateKey(pub [u8; 32]);
+
+    #[derive(Debug)]
     pub struct PublicKey(pub [u8; 64]);
 
     impl From<&[u8; 64]> for PublicKey {

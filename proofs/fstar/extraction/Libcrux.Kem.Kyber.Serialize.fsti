@@ -110,6 +110,16 @@ val deserialize_then_decompress_ring_element_v
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+val deserialize_to_reduced_ring_element (ring_element: t_Slice u8)
+    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8)
+    : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       Prims.l_True

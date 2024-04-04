@@ -43,6 +43,24 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     });
 }
 
+pub fn comparisons_pk_validation(c: &mut Criterion) {
+    let mut rng = OsRng;
+    let mut group = c.benchmark_group("Kyber768 PK Validation");
+    group.measurement_time(Duration::from_secs(10));
+
+    group.bench_function("libcrux portable", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter_batched(
+            || libcrux::kem::deterministic::kyber768_generate_keypair_derand(seed),
+            |key_pair| {
+                let _valid = libcrux::kem::ml_kem768_validate_public_key(key_pair.into_parts().1);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+}
+
 pub fn comparisons_encapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Encapsulation");
     group.measurement_time(Duration::from_secs(10));
@@ -152,6 +170,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
 }
 
 pub fn comparisons(c: &mut Criterion) {
+    comparisons_pk_validation(c);
     comparisons_key_generation(c);
     comparisons_encapsulation(c);
     comparisons_decapsulation(c);
