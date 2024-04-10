@@ -1,6 +1,7 @@
 pub mod fstar;
 pub mod lowstar;
 pub mod lib {
+    pub mod intvector_intrinsics;
     pub mod inttypes_intrinsics;
     pub mod memzero0;
 }
