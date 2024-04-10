@@ -1,11 +1,10 @@
-use crate::hax_utils::hax_debug_assert;
-
-use super::{
+use crate::{
     arithmetic::{
         barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
     constants::COEFFICIENTS_IN_RING_ELEMENT,
+    hax_utils::hax_debug_assert,
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -80,14 +79,14 @@ fn ntt_at_layer_3328(
 /// This function operates only on those which were produced by binomial
 /// sampling, and thus those which have small coefficients. The small
 /// coefficients let us skip the first round of Montgomery reductions.
-#[cfg_attr(hax, hax_lib_macros::requires(
+#[cfg_attr(hax, hax_lib::requires(
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3
 ))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), ||
-            result.coefficients[i].abs() < FIELD_MODULUS
+            result.coefficients[i].abs() < crate::constants::FIELD_MODULUS
 ))))]
 #[inline(always)]
 pub(crate) fn ntt_binomially_sampled_ring_element(
@@ -134,14 +133,14 @@ pub(crate) fn ntt_binomially_sampled_ring_element(
 ///
 /// This function operates on the ring element that partly constitutes
 /// the ciphertext.
-#[cfg_attr(hax, hax_lib_macros::requires(
+#[cfg_attr(hax, hax_lib::requires(
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3328
 ))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), ||
-            result.coefficients[i].abs() < FIELD_MODULUS
+            result.coefficients[i].abs() < crate::constants::FIELD_MODULUS
 ))))]
 #[inline(always)]
 pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
@@ -293,17 +292,17 @@ fn ntt_multiply_binomials(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib_macros::requires(
+#[cfg_attr(hax, hax_lib::requires(
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
             (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
-            (rhs.coefficients[i].abs() <= FIELD_MODULUS)
+            (rhs.coefficients[i].abs() <= crate::constants::FIELD_MODULUS)
 
 ))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), ||
-                result.coefficients[i].abs() <= FIELD_MODULUS
+                result.coefficients[i].abs() <= crate::constants::FIELD_MODULUS
 ))))]
 #[inline(always)]
 pub(crate) fn ntt_multiply(

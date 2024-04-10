@@ -149,8 +149,8 @@ pub(crate) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 2 * 64))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::requires(randomness.len() == 2 * 64))]
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 ))))]
@@ -188,8 +188,8 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
     sampled
 }
 
-#[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 3 * 64))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::requires(randomness.len() == 3 * 64))]
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 ))))]

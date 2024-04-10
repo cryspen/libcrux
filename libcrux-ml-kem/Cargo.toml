@@ -11,9 +11,13 @@ exclude = ["/tests", "/implementation_notes.pdf"]
 
 [dependencies]
 rand = { version = "0.8" }
-hax-lib = { git = "https://github.com/hacspec/hax/", branch = "main" }
 libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
+
+# This is only required for verification.
+# The hax config is set by the hax toolchain.
+[target.'cfg(hax)'.dependencies]
+hax-lib = { git = "https://github.com/hacspec/hax/" }
 
 [dev-dependencies]
 serde_json = { version = "1.0" }

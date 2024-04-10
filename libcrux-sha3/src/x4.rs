@@ -7,7 +7,7 @@
 mod internal;
 
 /// Incremental state
-#[cfg_attr(hax, hax_lib_macros::opaque_type)]
+#[cfg_attr(hax, hax_lib::opaque_type)]
 pub struct Shake128StateX4 {
     state: internal::Shake128StateX4,
 }
