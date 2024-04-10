@@ -5,7 +5,7 @@ members = [
     "sys/platform",
     "sys/pqclean",
     "benchmarks",
-    "fuzz",
+    "fuzz", "proofs/fstar/nttrange",
 ]
 
 [workspace.package]

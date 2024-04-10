@@ -9,6 +9,11 @@ let map' #a #b
   (s: t_Slice a): t_Slice b
   = createi (length s) (fun i -> f (Seq.index s (v i)))
 
+let map2 #a #b #c (#len:usize{v len < pow2 32})
+  (f:a -> b -> c)
+  (x: t_Array a len) (y: t_Array b len): t_Array c len
+  = Lib.Sequence.map2 #a #b #c #(v len) f x y
+
 #push-options "--fuel 0 --ifuel 0 --z3rlimit 500"
 let flatten #t #n
   (#m: usize {range (v n * v m) usize_inttype})
@@ -17,7 +22,21 @@ let flatten #t #n
   = createi (m *! n) (fun i -> Seq.index (Seq.index x (v i / v m)) (v i % v m))
 #pop-options
 
-(** Constants *)
+type t_Error = | Error_RejectionSampling : t_Error
+
+type t_Result a b = 
+  | Ok: a -> t_Result a b
+  | Err: b -> t_Result a b
+
+
+(** Hash Function *)
+assume val v_G (input: t_Slice u8) : t_Array u8 (sz 64)
+assume val v_H (input: t_Slice u8) : t_Array u8 (sz 32)
+assume val v_PRF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
+let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = v_PRF (sz 32) input
+assume val v_XOF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
+
+(** ML-KEM Constants *)
 let v_BITS_PER_COEFFICIENT: usize = sz 12
 
 let v_COEFFICIENTS_IN_RING_ELEMENT: usize = sz 256
@@ -31,7 +50,7 @@ let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = sz 32
 let v_FIELD_MODULUS: i32 = 3329l
 
 let v_H_DIGEST_SIZE: usize = sz 32 
-//  Libcrux.Digest.digest_size (Libcrux.Digest.Algorithm_Sha3_256_ <: Libcrux.Digest.t_Algorithm)
+// same as  Libcrux.Digest.digest_size (Libcrux.Digest.Algorithm_Sha3_256_ <: Libcrux.Digest.t_Algorithm)
 
 let v_REJECTION_SAMPLING_SEED_SIZE: usize =  sz 840 // sz 168 *! sz 5
 
@@ -96,13 +115,7 @@ let v_KEY_GENERATION_SEED_SIZE: usize =
   v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
   v_SHARED_SECRET_SIZE
 
-(** Types *)
-
-type t_Error = | Error_RejectionSampling : t_Error
-
-type t_Result a b = 
-  | Ok: a -> t_Result a b
-  | Err: b -> t_Result a b
+(** ML-KEM Types *)
 
 type t_KyberPublicKey (p:params) = t_Array u8 (v_CPA_PKE_PUBLIC_KEY_SIZE p)
 type t_KyberPrivateKey (p:params) = t_Array u8 (v_SECRET_KEY_SIZE p)
@@ -114,27 +127,56 @@ type t_KyberCPAKeyPair (p:params) = t_KyberCPAPrivateKey p & t_KyberPublicKey p
 type t_KyberCiphertext (p:params) = t_Array u8 (v_CPA_PKE_CIPHERTEXT_SIZE p)
 type t_KyberSharedSecret = t_Array u8 (v_SHARED_SECRET_SIZE)
 
-(** Utility and Hash Function *)
-assume val v_G (input: t_Slice u8) : t_Array u8 (sz 64)
-assume val v_H (input: t_Slice u8) : t_Array u8 (sz 32)
-assume val v_PRF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
-let v_J (input: t_Slice u8) : t_Array u8 (sz 32) = v_PRF (sz 32) input
-assume val v_XOF (v_LEN: usize) (input: t_Slice u8) : t_Array u8 v_LEN
-
 (** Kyber Math and Sampling *)
 
 type field_element = n:nat{n < v v_FIELD_MODULUS}
-type polynomial = arr: t_Array nat (sz 256) {forall i. Seq.index arr i < v v_FIELD_MODULUS}
+type polynomial = arr: t_Array field_element (sz 256)
 type vector (p:params) = t_Array polynomial p.v_RANK
 type matrix (p:params) = t_Array (vector p) p.v_RANK
 
-assume val poly_add: polynomial -> polynomial -> polynomial
-assume val poly_sub: polynomial -> polynomial -> polynomial
-assume val vector_add: #p:params -> vector p -> vector p -> vector p
-assume val vector_dot_product: #p:params -> vector p -> vector p -> polynomial
+val field_add: field_element -> field_element -> field_element
+let field_add a b = (a + b) % v v_FIELD_MODULUS
 
-assume val matrix_transpose: #p:params -> matrix p -> matrix p
-assume val matrix_vector_mul: #p:params -> matrix p -> vector p -> vector p
+val field_sub: field_element -> field_element -> field_element
+let field_sub a b = (a - b) % v v_FIELD_MODULUS
+
+val field_mul: field_element -> field_element -> field_element
+let field_mul a b = (a * b) % v v_FIELD_MODULUS
+
+
+val poly_add: polynomial -> polynomial -> polynomial
+let poly_add a b = map2 field_add a b
+
+val poly_sub: polynomial -> polynomial -> polynomial
+let poly_sub a b = map2 field_sub a b
+
+val poly_mul: polynomial -> polynomial -> polynomial
+let poly_mul a b = map2 field_mul a b
+
+val vector_add: #p:params -> vector p -> vector p -> vector p
+let vector_add #p a b = map2 poly_add a b
+
+val vector_mul: #p:params -> vector p -> vector p -> vector p
+let vector_mul #p a b = map2 poly_mul a b
+
+val vector_sum: #p:params -> vector p -> polynomial
+let vector_sum #p a = Lib.LoopCombinators.repeati (v p.v_RANK - 1)
+     (fun i x -> poly_add x (Lib.Sequence.index #_ #(v p.v_RANK) a (i+1))) (Lib.Sequence.index #_ #(v p.v_RANK) a 0)
+
+val vector_dot_product: #p:params -> vector p -> vector p -> polynomial
+let vector_dot_product a b = vector_sum (vector_mul a b)
+
+val matrix_transpose: #p:params -> matrix p -> matrix p
+let matrix_transpose #p m =
+  createi p.v_RANK (fun i -> 
+    createi p.v_RANK (fun j ->
+      m.[j].[i]))
+
+val matrix_vector_mul: #p:params -> matrix p -> vector p -> vector p
+let matrix_vector_mul #p m v =
+  createi p.v_RANK (fun i -> vector_dot_product m.[i] v)
+
+
 val compute_As_plus_e: #p:params -> a:matrix p -> s:vector p -> e:vector p -> vector p
 let compute_As_plus_e #p a s e = vector_add (matrix_vector_mul a s) e
 
