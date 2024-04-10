@@ -8,6 +8,7 @@ members = [
     "benchmarks",
     "fuzz",
     "hacl_rs",
+    "libcrux-sha3",
 ]
 
 [workspace.package]
