@@ -1,0 +1,217 @@
+use libcrux_ml_kem::{kyber1024, kyber512, kyber768};
+use rand::{rngs::OsRng, RngCore};
+
+const SHARED_SECRET_SIZE: usize = 32;
+
+fn random_array<const L: usize>() -> [u8; L] {
+    let mut rng = OsRng;
+    let mut seed = [0; L];
+    rng.try_fill_bytes(&mut seed).unwrap();
+    seed
+}
+
+macro_rules! impl_consistency {
+    ($name:ident, $key_gen:expr, $encaps:expr, $decaps:expr) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            let randomness = random_array();
+            if let key_pair = $key_gen(randomness) {
+                let randomness = random_array();
+                if let (ciphertext, shared_secret) = $encaps(key_pair.public_key(), randomness) {
+                    let shared_secret_decapsulated = $decaps(key_pair.private_key(), &ciphertext);
+                    assert_eq!(shared_secret, shared_secret_decapsulated);
+                }
+            }
+
+            // If the randomness was not enough for the rejection sampling step
+            // in key-generation and encapsulation, simply return without
+            // failing.
+        }
+    };
+}
+
+// fn modify_ciphertext(alg: Algorithm, rng: &mut (impl CryptoRng + Rng), ciphertext: Ct) -> Ct {
+//     let mut raw_ciphertext = ciphertext.encode();
+
+//     let mut random_u32: usize = rng.next_u32().try_into().unwrap();
+
+//     let mut random_byte: u8 = (random_u32 & 0xFF) as u8;
+//     if random_byte == 0 {
+//         random_byte += 1;
+//     }
+//     random_u32 >>= 8;
+
+//     let position = random_u32 % raw_ciphertext.len();
+//     raw_ciphertext[position] ^= random_byte;
+
+//     Ct::decode(alg, &raw_ciphertext).unwrap()
+// }
+
+// macro_rules! impl_modified_ciphertext {
+//     ($name:ident, $alg:expr) => {
+//         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+//         #[test]
+//         fn $name() {
+//             let mut rng = OsRng;
+
+//             if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
+//                 if let Ok((shared_secret, ciphertext)) = public_key.encapsulate(&mut rng) {
+//                     let ciphertext = modify_ciphertext($alg, &mut rng, ciphertext);
+//                     let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
+
+//                     assert_ne!(shared_secret.encode(), shared_secret_decapsulated.encode());
+//                 }
+//             }
+//             // if the randomness was not enough for the rejection sampling step
+//             // in key-generation and encapsulation, simply return without
+//             // failing.
+//         }
+//     };
+// }
+
+// fn modify_secret_key(
+//     alg: Algorithm,
+//     rng: &mut (impl CryptoRng + Rng),
+//     secret_key: PrivateKey,
+//     modify_implicit_rejection_value: bool,
+// ) -> PrivateKey {
+//     let mut raw_secret_key = secret_key.encode();
+
+//     let mut random_u32: usize = rng.next_u32().try_into().unwrap();
+
+//     let mut random_byte: u8 = (random_u32 & 0xFF) as u8;
+//     if random_byte == 0 {
+//         random_byte += 1;
+//     }
+//     random_u32 >>= 8;
+
+//     let position = if modify_implicit_rejection_value {
+//         (raw_secret_key.len() - SHARED_SECRET_SIZE) + (random_u32 % SHARED_SECRET_SIZE)
+//     } else {
+//         random_u32 % (raw_secret_key.len() - SHARED_SECRET_SIZE)
+//     };
+
+//     raw_secret_key[position] ^= random_byte;
+
+//     PrivateKey::decode(alg, &raw_secret_key).unwrap()
+// }
+
+// fn compute_implicit_rejection_shared_secret(
+//     ciphertext: Ct,
+//     secret_key: PrivateKey,
+// ) -> [u8; SHARED_SECRET_SIZE] {
+//     let raw_secret_key = secret_key.encode();
+
+//     let mut to_hash = raw_secret_key[raw_secret_key.len() - SHARED_SECRET_SIZE..].to_vec();
+//     to_hash.extend_from_slice(&ciphertext.encode());
+
+//     shake256(&to_hash)
+// }
+
+// macro_rules! impl_modified_secret_key {
+//     ($name:ident, $alg:expr) => {
+//         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+//         #[test]
+//         fn $name() {
+//             #[cfg(not(target_arch = "wasm32"))]
+//             let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+//             #[cfg(target_arch = "wasm32")]
+//             let mut rng = OsRng;
+
+//             if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
+//                 if let Ok((shared_secret, ciphertext)) = public_key.encapsulate(&mut rng) {
+//                     let secret_key = modify_secret_key($alg, &mut rng, secret_key, false);
+//                     let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
+//                     assert_ne!(shared_secret.encode(), shared_secret_decapsulated.encode());
+
+//                     let secret_key = modify_secret_key($alg, &mut rng, secret_key, true);
+//                     let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
+
+//                     assert_eq!(
+//                         shared_secret_decapsulated.encode(),
+//                         compute_implicit_rejection_shared_secret(ciphertext, secret_key)
+//                     );
+//                 }
+//             }
+
+//             // if the randomness was not enough for the rejection sampling step
+//             // in key-generation and encapsulation, simply return without
+//             // failing.
+//         }
+//     };
+// }
+
+// macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
+//     ($name:ident, $alg:expr) => {
+//         #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+//         #[test]
+//         fn $name() {
+//             let mut rng = OsRng;
+
+//             if let Ok((secret_key, public_key)) = kem::key_gen($alg, &mut rng) {
+//                 if let Ok((_, ciphertext)) = public_key.encapsulate(&mut rng) {
+//                     let ciphertext = modify_ciphertext($alg, &mut rng, ciphertext);
+//                     let shared_secret_decapsulated = ciphertext.decapsulate(&secret_key).unwrap();
+
+//                     let secret_key = modify_secret_key($alg, &mut rng, secret_key, true);
+//                     let shared_secret_decapsulated_1 = ciphertext.decapsulate(&secret_key).unwrap();
+
+//                     assert_ne!(
+//                         shared_secret_decapsulated.encode(),
+//                         shared_secret_decapsulated_1.encode()
+//                     );
+
+//                     assert_eq!(
+//                         shared_secret_decapsulated_1.encode(),
+//                         compute_implicit_rejection_shared_secret(ciphertext, secret_key)
+//                     );
+//                 }
+//             }
+
+//             // if the randomness was not enough for the rejection sampling step
+//             // in key-generation and encapsulation, simply return without
+//             // failing.
+//         }
+//     };
+// }
+
+impl_consistency!(
+    consistency_512,
+    kyber512::generate_key_pair,
+    kyber512::encapsulate,
+    kyber512::decapsulate
+);
+impl_consistency!(
+    consistency_768,
+    kyber768::generate_key_pair,
+    kyber768::encapsulate,
+    kyber768::decapsulate
+);
+impl_consistency!(
+    consistency_1024,
+    kyber1024::generate_key_pair,
+    kyber1024::encapsulate,
+    kyber1024::decapsulate
+);
+
+// impl_modified_ciphertext!(modified_ciphertext_512, Algorithm::MlKem512);
+// impl_modified_ciphertext!(modified_ciphertext_768, Algorithm::MlKem768);
+// impl_modified_ciphertext!(modified_ciphertext_1024, Algorithm::MlKem1024);
+
+// impl_modified_secret_key!(modified_secret_key_512, Algorithm::MlKem512);
+// impl_modified_secret_key!(modified_secret_key_768, Algorithm::MlKem768);
+// impl_modified_secret_key!(modified_secret_key_1024, Algorithm::MlKem1024);
+
+// impl_modified_ciphertext_and_implicit_rejection_value!(
+//     modified_ciphertext_and_implicit_rejection_value_512,
+//     Algorithm::MlKem512
+// );
+// impl_modified_ciphertext_and_implicit_rejection_value!(
+//     modified_ciphertext_and_implicit_rejection_value_768,
+//     Algorithm::MlKem768
+// );
+// impl_modified_ciphertext_and_implicit_rejection_value!(
+//     modified_ciphertext_and_implicit_rejection_value_1024,
+//     Algorithm::MlKem1024
+// );
