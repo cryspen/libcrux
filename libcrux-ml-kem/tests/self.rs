@@ -1,6 +1,6 @@
 use libcrux_ml_kem::{kyber1024, kyber512, kyber768, MlKemCiphertext, MlKemPrivateKey};
 use libcrux_sha3::shake256;
-use rand::{rngs::OsRng, thread_rng, Rng, RngCore};
+use rand::{rngs::OsRng, thread_rng, RngCore};
 
 const SHARED_SECRET_SIZE: usize = 32;
 
