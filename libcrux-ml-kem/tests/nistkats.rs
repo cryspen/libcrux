@@ -31,7 +31,7 @@ macro_rules! impl_nist_known_answer_tests {
         #[test]
         fn $name() {
             let katfile_path = Path::new("tests")
-                .join("kyber_kats")
+                .join("kats")
                 .join(format!("nistkats_{}.json", $parameter_set));
             let katfile = File::open(katfile_path).expect("Could not open KAT file.");
             let reader = BufReader::new(katfile);
