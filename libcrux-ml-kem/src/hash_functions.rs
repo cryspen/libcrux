@@ -4,11 +4,11 @@ use super::constants::H_DIGEST_SIZE;
 use libcrux_sha3::{x4::Shake128StateX4, *};
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
-    sha3_512(input)
+    sha512(input)
 }
 
 pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-    sha3_256(input)
+    sha256(input)
 }
 
 pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {

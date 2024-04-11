@@ -42,15 +42,15 @@ macro_rules! impl_nist_known_answer_tests {
             for kat in nist_kats {
                 let key_pair = $key_gen_derand(kat.key_generation_seed);
 
-                let public_key_hash = sha3_256(key_pair.pk());
-                let secret_key_hash = sha3_256(key_pair.sk());
+                let public_key_hash = sha256(key_pair.pk());
+                let secret_key_hash = sha256(key_pair.sk());
 
                 assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key, "public keys don't match");
                 assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key, "secret keys don't match");
 
                 let (ciphertext, shared_secret) =
                     $encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed);
-                let ciphertext_hash = sha3_256(ciphertext.as_ref());
+                let ciphertext_hash = sha256(ciphertext.as_ref());
 
                 assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "ciphertexts don't match");
                 assert_eq!(shared_secret.as_ref(), kat.shared_secret, "shared secret produced by encapsulate does not match");

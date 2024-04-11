@@ -21,6 +21,8 @@ bindgen = { version = "0.69", optional = true }
 
 [features]
 bindings = ["bindgen"] # generate fresh bindings
+sha3 = []
+default = []
 
 [dev-dependencies]
 hex = "0.4.3"

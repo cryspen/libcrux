@@ -9,7 +9,9 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-libcrux-hacl = { version = "0.0.2-pre.2", path = "../sys/hacl" }
+libcrux-hacl = { version = "0.0.2-pre.2", path = "../sys/hacl", features = [
+    "sha3",
+] }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
