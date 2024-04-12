@@ -452,9 +452,8 @@ const keccak_rotc: [u32; 24] = [
     56u32, 8u32, 25u32, 43u32, 62u32, 18u32, 39u32, 61u32, 20u32, 44u32,
 ];
 
-const keccak_piln: [u32; 24] = [
-    10u32, 7u32, 11u32, 17u32, 18u32, 3u32, 5u32, 16u32, 8u32, 21u32, 24u32, 4u32, 15u32, 23u32,
-    19u32, 13u32, 12u32, 2u32, 20u32, 14u32, 22u32, 9u32, 6u32, 1u32,
+const keccak_piln: [usize; 24] = [
+    10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4, 15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1,
 ];
 
 const keccak_rndc: [u64; 24] = [
@@ -486,59 +485,162 @@ const keccak_rndc: [u64; 24] = [
 
 #[inline(always)]
 pub fn state_permute(s: &mut [u64]) -> () {
-    for i in 0u32..24u32 {
-        let mut _C: [u64; 5] = [0u64; 5usize];
-        for i0 in 0u32..5u32 {
-            (&mut _C)[i0 as usize] = s[i0.wrapping_add(0u32) as usize]
-                ^ (s[i0.wrapping_add(5u32) as usize]
-                    ^ (s[i0.wrapping_add(10u32) as usize]
-                        ^ (s[i0.wrapping_add(15u32) as usize]
-                            ^ s[i0.wrapping_add(20u32) as usize])))
+    let mut _C: [u64; 5] = [0u64; 5usize];
+    for i in 0usize..24 {
+        for i0 in 0..5 {
+            _C[i0] = s[0 + 0] ^ (s[0 + 5] ^ (s[0 + 10] ^ (s[0 + 15] ^ s[0 + 20])))
         }
-        for i0 in 0u32..5u32 {
-            let uu____0: u64 = (&mut _C)[i0.wrapping_add(1u32).wrapping_rem(5u32) as usize];
-            let _D: u64 = (&mut _C)[i0.wrapping_add(4u32).wrapping_rem(5u32) as usize]
-                ^ (uu____0.wrapping_shl(1u32) | uu____0.wrapping_shr(63u32));
-            for i1 in 0u32..5u32 {
-                s[i0.wrapping_add(5u32.wrapping_mul(i1)) as usize] =
-                    s[i0.wrapping_add(5u32.wrapping_mul(i1)) as usize] ^ _D
+        for i0 in 0usize..5 {
+            let uu____0: u64 = _C[(i0 + 1) % (5)];
+            let _D: u64 = _C[(i0 + 4) % (5)] ^ (uu____0 << 1u32 | uu____0 >> 63);
+            for i1 in 0..5 {
+                s[i0 + 5 * i1] = s[i0 + 5 * i1] ^ _D
             }
         }
-        let x: u64 = s[1usize];
-        let mut current: [u64; 1] = [x; 1usize];
-        for i0 in 0u32..24u32 {
-            let _Y: u32 = (&keccak_piln)[i0 as usize];
-            let r: u32 = (&keccak_rotc)[i0 as usize];
-            let temp: u64 = s[_Y as usize];
-            let uu____1: u64 = (&mut current)[0usize];
-            s[_Y as usize] = uu____1.wrapping_shl(r) | uu____1.wrapping_shr(64u32.wrapping_sub(r));
-            (&mut current)[0usize] = temp
+        // let x: u64 = s[1usize];
+        unrolled_loop(s);
+        for i0 in 0..5 {
+            let v0: u64 = s[0 + (5 * (i0))] ^ !s[1 + (5 * (i0))] & s[2 + (5 * (i0))];
+            let v1: u64 = s[1 + (5 * (i0))] ^ !s[2 + (5 * (i0))] & s[3 + (5 * (i0))];
+            let v2: u64 = s[2 + (5 * (i0))] ^ !s[3 + (5 * (i0))] & s[4 + (5 * (i0))];
+            let v3: u64 = s[3 + (5 * (i0))] ^ !s[4 + (5 * (i0))] & s[0 + (5 * (i0))];
+            let v4: u64 = s[4 + (5 * (i0))] ^ !s[0 + (5 * (i0))] & s[1 + (5 * (i0))];
+            s[0 + (5 * (i0))] = v0;
+            s[1 + (5 * (i0))] = v1;
+            s[2 + (5 * (i0))] = v2;
+            s[3 + (5 * (i0))] = v3;
+            s[4 + (5 * (i0))] = v4
         }
-        for i0 in 0u32..5u32 {
-            let v0: u64 = s[0u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                ^ !s[1u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                    & s[2u32.wrapping_add(5u32.wrapping_mul(i0)) as usize];
-            let v1: u64 = s[1u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                ^ !s[2u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                    & s[3u32.wrapping_add(5u32.wrapping_mul(i0)) as usize];
-            let v2: u64 = s[2u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                ^ !s[3u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                    & s[4u32.wrapping_add(5u32.wrapping_mul(i0)) as usize];
-            let v3: u64 = s[3u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                ^ !s[4u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                    & s[0u32.wrapping_add(5u32.wrapping_mul(i0)) as usize];
-            let v4: u64 = s[4u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                ^ !s[0u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
-                    & s[1u32.wrapping_add(5u32.wrapping_mul(i0)) as usize];
-            s[0u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v0;
-            s[1u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v1;
-            s[2u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v2;
-            s[3u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v3;
-            s[4u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v4
-        }
-        let c: u64 = (&keccak_rndc)[i as usize];
+        let c: u64 = keccak_rndc[i];
         s[0usize] = s[0usize] ^ c
     }
+}
+
+#[inline(always)]
+#[inline(always)]
+fn unrolled_loop(s: &mut [u64]) {
+    let mut current = s[1];
+    // for i0 in 0..24 {
+    let r = keccak_rotc[0];
+    let temp: u64 = s[keccak_piln[0]];
+    s[keccak_piln[0]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[1];
+    let temp: u64 = s[keccak_piln[1]];
+    s[keccak_piln[1]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[2];
+    let temp: u64 = s[keccak_piln[2]];
+    s[keccak_piln[2]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[3];
+    let temp: u64 = s[keccak_piln[3]];
+    s[keccak_piln[3]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[4];
+    let temp: u64 = s[keccak_piln[4]];
+    s[keccak_piln[4]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[5];
+    let temp: u64 = s[keccak_piln[5]];
+    s[keccak_piln[5]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[6];
+    let temp: u64 = s[keccak_piln[6]];
+    s[keccak_piln[6]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[7];
+    let temp: u64 = s[keccak_piln[7]];
+    s[keccak_piln[7]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[8];
+    let temp: u64 = s[keccak_piln[8]];
+    s[keccak_piln[8]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[9];
+    let temp: u64 = s[keccak_piln[9]];
+    s[keccak_piln[9]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[10];
+    let temp: u64 = s[keccak_piln[10]];
+    s[keccak_piln[10]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[11];
+    let temp: u64 = s[keccak_piln[11]];
+    s[keccak_piln[11]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[12];
+    let temp: u64 = s[keccak_piln[12]];
+    s[keccak_piln[12]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[13];
+    let temp: u64 = s[keccak_piln[13]];
+    s[keccak_piln[13]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[14];
+    let temp: u64 = s[keccak_piln[14]];
+    s[keccak_piln[14]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[15];
+    let temp: u64 = s[keccak_piln[15]];
+    s[keccak_piln[15]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[16];
+    let temp: u64 = s[keccak_piln[16]];
+    s[keccak_piln[16]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[17];
+    let temp: u64 = s[keccak_piln[17]];
+    s[keccak_piln[17]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[18];
+    let temp: u64 = s[keccak_piln[18]];
+    s[keccak_piln[18]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[19];
+    let temp: u64 = s[keccak_piln[19]];
+    s[keccak_piln[19]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[20];
+    let temp: u64 = s[keccak_piln[20]];
+    s[keccak_piln[20]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[21];
+    let temp: u64 = s[keccak_piln[21]];
+    s[keccak_piln[21]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[22];
+    let temp: u64 = s[keccak_piln[22]];
+    s[keccak_piln[22]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+
+    let r = keccak_rotc[23];
+    let temp: u64 = s[keccak_piln[23]];
+    s[keccak_piln[23]] = current << (r) | current >> (64u32 - r);
+    current = temp;
+    // }
 }
 
 #[inline(always)]
