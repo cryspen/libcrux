@@ -19,6 +19,10 @@ libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
 [target.'cfg(hax)'.dependencies]
 hax-lib = { git = "https://github.com/hacspec/hax/" }
 
+[features]
+simd128 = []
+simd256 = []
+
 [dev-dependencies]
 rand = { version = "0.8" }
 serde_json = { version = "1.0" }

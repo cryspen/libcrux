@@ -8,6 +8,8 @@ members = [
     "benchmarks",
     "fuzz",
     "libcrux-ml-kem",
+    "libcrux-simd",
+    "libcrux-sha3",
 ]
 
 [workspace.package]
