@@ -6,7 +6,6 @@
 #![allow(unreachable_patterns)]
 #![allow(const_item_mutation)]
 
-#[inline(always)]
 fn block_len(a: crate::hacl::streaming_types::hash_alg) -> u32 {
     match a {
         crate::hacl::streaming_types::hash_alg::SHA3_224 => 144u32,
@@ -19,7 +18,6 @@ fn block_len(a: crate::hacl::streaming_types::hash_alg) -> u32 {
     }
 }
 
-#[inline(always)]
 fn hash_len(a: crate::hacl::streaming_types::hash_alg) -> u32 {
     match a {
         crate::hacl::streaming_types::hash_alg::SHA3_224 => 28u32,
@@ -30,7 +28,6 @@ fn hash_len(a: crate::hacl::streaming_types::hash_alg) -> u32 {
     }
 }
 
-#[inline(always)]
 pub fn update_multi_sha3(
     a: crate::hacl::streaming_types::hash_alg,
     s: &mut [u64],
@@ -44,7 +41,6 @@ pub fn update_multi_sha3(
     }
 }
 
-#[inline(always)]
 pub fn update_last_sha3(
     a: crate::hacl::streaming_types::hash_alg,
     s: &mut [u64],
@@ -104,13 +100,11 @@ pub struct state_t {
     pub total_len: u64,
 }
 
-#[inline(always)]
 pub fn get_alg(s: &mut [state_t]) -> crate::hacl::streaming_types::hash_alg {
     let mut block_state: &mut hash_buf = &mut (s[0usize]).block_state;
     (*block_state).fst
 }
 
-#[inline(always)]
 pub fn malloc(a: crate::hacl::streaming_types::hash_alg) -> Vec<state_t> {
     let mut buf: Vec<u8> = vec![0u8; block_len(a) as usize];
     let mut buf0: Vec<u64> = vec![0u64; 25usize];
@@ -130,7 +124,6 @@ pub fn malloc(a: crate::hacl::streaming_types::hash_alg) -> Vec<state_t> {
     p
 }
 
-#[inline(always)]
 pub fn copy(state: &mut [state_t]) -> Vec<state_t> {
     let mut block_state0: &mut hash_buf = &mut (state[0usize]).block_state;
     let buf0: &mut [u8] = &mut (state[0usize]).buf;
@@ -157,7 +150,6 @@ pub fn copy(state: &mut [state_t]) -> Vec<state_t> {
     p
 }
 
-#[inline(always)]
 pub fn reset(state: &mut [state_t]) -> () {
     let mut block_state: &mut hash_buf = &mut (state[0usize]).block_state;
     let i: crate::hacl::streaming_types::hash_alg = (*block_state).fst;
@@ -167,7 +159,6 @@ pub fn reset(state: &mut [state_t]) -> () {
     (state[0usize]).total_len = 0u32 as u64
 }
 
-#[inline(always)]
 pub fn update(
     state: &mut [state_t],
     chunk: &mut [u8],
@@ -289,7 +280,6 @@ pub fn update(
     }
 }
 
-#[inline(always)]
 fn digest_(
     a: crate::hacl::streaming_types::hash_alg,
     state: &mut [state_t],
@@ -337,7 +327,6 @@ fn digest_(
     }
 }
 
-#[inline(always)]
 pub fn digest(
     state: &mut [state_t],
     output: &mut [u8],
@@ -353,7 +342,6 @@ pub fn digest(
     }
 }
 
-#[inline(always)]
 pub fn squeeze(
     s: &mut [state_t],
     dst: &mut [u8],
@@ -372,26 +360,22 @@ pub fn squeeze(
     }
 }
 
-#[inline(always)]
 pub fn block_len0(s: &mut [state_t]) -> u32 {
     let a1: crate::hacl::streaming_types::hash_alg = get_alg(s);
     block_len(a1)
 }
 
-#[inline(always)]
 pub fn hash_len0(s: &mut [state_t]) -> u32 {
     let a1: crate::hacl::streaming_types::hash_alg = get_alg(s);
     hash_len(a1)
 }
 
-#[inline(always)]
 pub fn is_shake(s: &mut [state_t]) -> bool {
     let uu____0: crate::hacl::streaming_types::hash_alg = get_alg(s);
     uu____0 == crate::hacl::streaming_types::hash_alg::Shake128
         || uu____0 == crate::hacl::streaming_types::hash_alg::Shake256
 }
 
-#[inline(always)]
 pub fn shake128_hacl(
     inputByteLen: u32,
     input: &mut [u8],
@@ -409,7 +393,6 @@ pub fn shake128_hacl(
     )
 }
 
-#[inline(always)]
 pub fn shake256_hacl(
     inputByteLen: u32,
     input: &mut [u8],
@@ -427,22 +410,18 @@ pub fn shake256_hacl(
     )
 }
 
-#[inline(always)]
 pub fn sha3_224(output: &mut [u8], input: &mut [u8], input_len: u32) -> () {
     keccak(1152u32, 448u32, input_len, input, 0x06u8, 28u32, output)
 }
 
-#[inline(always)]
 pub fn sha3_256(output: &mut [u8], input: &mut [u8], input_len: u32) -> () {
     keccak(1088u32, 512u32, input_len, input, 0x06u8, 32u32, output)
 }
 
-#[inline(always)]
 pub fn sha3_384(output: &mut [u8], input: &mut [u8], input_len: u32) -> () {
     keccak(832u32, 768u32, input_len, input, 0x06u8, 48u32, output)
 }
 
-#[inline(always)]
 pub fn sha3_512(output: &mut [u8], input: &mut [u8], input_len: u32) -> () {
     keccak(576u32, 1024u32, input_len, input, 0x06u8, 64u32, output)
 }
@@ -484,26 +463,33 @@ const keccak_rndc: [u64; 24] = [
     0x8000000080008008u64,
 ];
 
-#[inline(always)]
 pub fn state_permute(s: &mut [u64]) -> () {
     for i in 0u32..24u32 {
         let mut _C: [u64; 5] = [0u64; 5usize];
-        for i0 in 0u32..5u32 {
+        krml::unroll_for!(
+            5,
+            "i0",
+            0u32,
+            1u32,
             (&mut _C)[i0 as usize] = s[i0.wrapping_add(0u32) as usize]
                 ^ (s[i0.wrapping_add(5u32) as usize]
                     ^ (s[i0.wrapping_add(10u32) as usize]
                         ^ (s[i0.wrapping_add(15u32) as usize]
                             ^ s[i0.wrapping_add(20u32) as usize])))
-        }
-        for i0 in 0u32..5u32 {
+        );
+        krml::unroll_for!(5, "i0", 0u32, 1u32, {
             let uu____0: u64 = (&mut _C)[i0.wrapping_add(1u32).wrapping_rem(5u32) as usize];
             let _D: u64 = (&mut _C)[i0.wrapping_add(4u32).wrapping_rem(5u32) as usize]
                 ^ (uu____0.wrapping_shl(1u32) | uu____0.wrapping_shr(63u32));
-            for i1 in 0u32..5u32 {
+            krml::unroll_for!(
+                5,
+                "i1",
+                0u32,
+                1u32,
                 s[i0.wrapping_add(5u32.wrapping_mul(i1)) as usize] =
                     s[i0.wrapping_add(5u32.wrapping_mul(i1)) as usize] ^ _D
-            }
-        }
+            )
+        });
         let x: u64 = s[1usize];
         let mut current: [u64; 1] = [x; 1usize];
         for i0 in 0u32..24u32 {
@@ -514,7 +500,7 @@ pub fn state_permute(s: &mut [u64]) -> () {
             s[_Y as usize] = uu____1.wrapping_shl(r) | uu____1.wrapping_shr(64u32.wrapping_sub(r));
             (&mut current)[0usize] = temp
         }
-        for i0 in 0u32..5u32 {
+        krml::unroll_for!(5, "i0", 0u32, 1u32, {
             let v0: u64 = s[0u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
                 ^ !s[1u32.wrapping_add(5u32.wrapping_mul(i0)) as usize]
                     & s[2u32.wrapping_add(5u32.wrapping_mul(i0)) as usize];
@@ -535,13 +521,12 @@ pub fn state_permute(s: &mut [u64]) -> () {
             s[2u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v2;
             s[3u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v3;
             s[4u32.wrapping_add(5u32.wrapping_mul(i0)) as usize] = v4
-        }
+        });
         let c: u64 = (&keccak_rndc)[i as usize];
         s[0usize] = s[0usize] ^ c
     }
 }
 
-#[inline(always)]
 pub fn loadState(rateInBytes: u32, input: &mut [u8], s: &mut [u64]) -> () {
     let mut block: [u8; 200] = [0u8; 200usize];
     ((&mut block)[0usize..rateInBytes as usize])
@@ -555,7 +540,6 @@ pub fn loadState(rateInBytes: u32, input: &mut [u8], s: &mut [u64]) -> () {
     }
 }
 
-#[inline(always)]
 fn storeState(rateInBytes: u32, s: &mut [u64], res: &mut [u8]) -> () {
     let mut block: [u8; 200] = [0u8; 200usize];
     for i in 0u32..25u32 {
@@ -569,13 +553,11 @@ fn storeState(rateInBytes: u32, s: &mut [u64], res: &mut [u8]) -> () {
         .copy_from_slice(&(&mut (&mut block)[0usize..])[0usize..rateInBytes as usize])
 }
 
-#[inline(always)]
 pub fn absorb_inner(rateInBytes: u32, block: &mut [u8], s: &mut [u64]) -> () {
     loadState(rateInBytes, block, s);
     state_permute(s)
 }
 
-#[inline(always)]
 fn absorb(
     s: &mut [u64],
     rateInBytes: u32,
@@ -607,7 +589,6 @@ fn absorb(
     state_permute(s)
 }
 
-#[inline(always)]
 pub fn squeeze0(s: &mut [u64], rateInBytes: u32, outputByteLen: u32, output: &mut [u8]) -> () {
     let outBlocks: u32 = outputByteLen.wrapping_div(rateInBytes);
     let remOut: u32 = outputByteLen.wrapping_rem(rateInBytes);
@@ -626,7 +607,6 @@ pub fn squeeze0(s: &mut [u64], rateInBytes: u32, outputByteLen: u32, output: &mu
     storeState(remOut, s, last.1)
 }
 
-#[inline(always)]
 pub fn keccak(
     rate: u32,
     capacity: u32,

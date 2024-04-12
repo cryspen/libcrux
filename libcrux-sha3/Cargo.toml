@@ -1,15 +1,21 @@
 [package]
 name = "libcrux-sha3"
-version.workspace = true
-authors.workspace = true
-license.workspace = true
-homepage.workspace = true
-edition.workspace = true
-repository.workspace = true
-readme.workspace = true
+version = "0.1.0"
+edition = "2021"
+# version.workspace = true
+# authors.workspace = true
+# license.workspace = true
+# homepage.workspace = true
+# edition.workspace = true
+# repository.workspace = true
+# readme.workspace = true
 
 [dependencies]
+krml = { path = "krml" }
 
+[workspace]
+
+members=["krml"]
 
 [[bench]]
 name = "sha3"

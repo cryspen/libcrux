@@ -7,8 +7,7 @@
 #![allow(const_item_mutation)]
 
 #[derive(PartialEq, Clone, Copy)]
-pub enum hash_alg
-{
+pub enum hash_alg {
     SHA2_224,
     SHA2_256,
     SHA2_384,
@@ -22,18 +21,25 @@ pub enum hash_alg
     SHA3_384,
     SHA3_512,
     Shake128,
-    Shake256
+    Shake256,
 }
 
 #[derive(PartialEq, Clone, Copy)]
-pub enum error_code
-{
+pub enum error_code {
     Success,
     InvalidAlgorithm,
     InvalidLength,
-    MaximumLengthExceeded
+    MaximumLengthExceeded,
 }
 
-pub struct state_32 { pub block_state: Vec<u32>, pub buf: Vec<u8>, pub total_len: u64 }
+pub struct state_32 {
+    pub block_state: Vec<u32>,
+    pub buf: Vec<u8>,
+    pub total_len: u64,
+}
 
-pub struct state_64 { pub block_state: Vec<u64>, pub buf: Vec<u8>, pub total_len: u64 }
+pub struct state_64 {
+    pub block_state: Vec<u64>,
+    pub buf: Vec<u8>,
+    pub total_len: u64,
+}
