@@ -1,10 +1,7 @@
 #![allow(non_snake_case)]
 
-use libcrux_platform::simd256_support;
-
-use crate::digest::{self, digest_size, Algorithm};
-
-use super::constants::{H_DIGEST_SIZE, REJECTION_SAMPLING_SEED_SIZE};
+use super::constants::H_DIGEST_SIZE;
+use crate::digest::{self, digest_size, incremental_x4::Shake128StateX4, Algorithm};
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {
     digest::sha3_512(input)
@@ -19,49 +16,50 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 }
 
 #[inline(always)]
-pub(crate) fn XOFx4<const K: usize>(
-    input: [[u8; 34]; K],
-) -> [[u8; REJECTION_SAMPLING_SEED_SIZE]; K] {
-    let mut out = [[0u8; REJECTION_SAMPLING_SEED_SIZE]; K];
+pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128StateX4 {
+    debug_assert!(K == 2 || K == 3 || K == 4);
 
-    if !simd256_support() || !cfg!(simd256) {
-        // Without SIMD256 support we fake it and call shak128 4 times.
-        // While shak128x4 does this too, this is faster because we only do the
-        // required number of invocations (K).
-        for i in 0..K {
-            out[i] = digest::shake128::<REJECTION_SAMPLING_SEED_SIZE>(&input[i]);
-        }
-    } else {
-        // Always do 4 SHA3 at a time even if we need less.
-        // XXX: Cast for hax extraction
-        match K as u8 {
-            2 => {
-                let (d0, d1, _, _) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
-                    &input[0], &input[1], &input[0], &input[1],
-                );
-                out[0] = d0;
-                out[1] = d1;
-            }
-            3 => {
-                let (d0, d1, d2, _) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
-                    &input[0], &input[1], &input[2], &input[0],
-                );
-                out[0] = d0;
-                out[1] = d1;
-                out[2] = d2;
-            }
-            4 => {
-                let (d0, d1, d2, d3) = digest::shake128x4::<REJECTION_SAMPLING_SEED_SIZE>(
-                    &input[0], &input[1], &input[2], &input[3],
-                );
-                out[0] = d0;
-                out[1] = d1;
-                out[2] = d2;
-                out[3] = d3;
-            }
-            _ => unreachable!(),
-        };
+    let mut state = Shake128StateX4::new();
+    // XXX: We need to do this dance to get it through hax and eurydice for now.
+    let mut data: [&[u8]; K] = [&[0u8]; K];
+    for i in 0..K {
+        data[i] = &input[i] as &[u8];
     }
+    state.absorb_final(data);
+    state
+}
 
+const BLOCK_SIZE: usize = 168;
+const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
+
+#[inline(always)]
+pub(crate) fn squeeze_three_blocks<const K: usize>(
+    xof_state: &mut Shake128StateX4,
+) -> [[u8; THREE_BLOCKS]; K] {
+    let output: [[u8; THREE_BLOCKS]; K] = xof_state.squeeze_blocks();
+    let mut out = [[0u8; THREE_BLOCKS]; K];
+    for i in 0..K {
+        out[i] = output[i];
+    }
     out
+}
+
+#[inline(always)]
+pub(crate) fn squeeze_block<const K: usize>(
+    xof_state: &mut Shake128StateX4,
+) -> [[u8; BLOCK_SIZE]; K] {
+    let output: [[u8; BLOCK_SIZE]; K] = xof_state.squeeze_blocks();
+    let mut out = [[0u8; BLOCK_SIZE]; K];
+    for i in 0..K {
+        out[i] = output[i];
+    }
+    out
+}
+
+/// Free the memory of the state.
+///
+/// **NOTE:** That this needs to be done manually for now.
+#[inline(always)]
+pub(crate) fn free_state(xof_state: Shake128StateX4) {
+    xof_state.free_memory();
 }

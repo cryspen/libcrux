@@ -57,6 +57,10 @@ let int_to_spec_fe (m:int) : Spec.Kyber.field_element =
       m_v + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
     else m_v
 
+let wf_fe_to_spec_fe (m: wfFieldElement): Spec.Kyber.field_element =
+  if v m < 0
+  then v m + v Libcrux.Kem.Kyber.Constants.v_FIELD_MODULUS
+  else v m
 
 let to_spec_fe (m:i32) : Spec.Kyber.field_element = 
     int_to_spec_fe (v m)
@@ -73,7 +77,6 @@ val get_n_least_significant_bits (n: u8 {v n > 0 /\ v n < 32}) (value: u32)
         fun result ->
           let result:u32 = result in
           v result = v value % pow2 (v n))
-
 
 //let barrett_pre (value:i32) = 
 //    v value <= v v_BARRETT_R /\ v value >= - v v_BARRETT_R
@@ -183,6 +186,12 @@ val down_cast_vector_b (#v_K:usize) (#b1:nat) (#b2:nat{b2 <= b1 /\ b1 < pow2_31}
   (ensures fun r ->  derefine_vector_b x == derefine_vector_b r) 
 
 let op_String_Access #t #l (a:t_Array t l) (i:usize{v i < v l}) : t = a.[i]
+
+let wf_poly_to_spec_poly (re: wfPolynomialRingElement): Spec.Kyber.polynomial =
+    let p = Spec.Kyber.map' (fun x -> wf_fe_to_spec_fe x <: nat) re.f_coefficients in
+    introduce forall i. Seq.index p i < v Spec.Kyber.v_FIELD_MODULUS
+    with assert (Seq.index p i == Seq.index p (v (sz i)));
+    p
 
 let to_spec_poly (m:t_PolynomialRingElement) : (Spec.Kyber.polynomial) =
     let p = createi #nat (sz 256) (fun i -> to_spec_fe (m.f_coefficients.[i])) in

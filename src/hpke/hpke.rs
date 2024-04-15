@@ -1,7 +1,11 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
-use crate::kem::Kyber768X25519PrivateKey;
-use crate::kem::Kyber768X25519PublicKey;
+use crate::ecdh::{self, x25519};
+use crate::kem;
+use crate::kem::{
+    kyber::kyber768, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey,
+    X25519MlKem768Draft00PublicKey, XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
+};
 
 use super::aead::*;
 use super::kdf::*;
@@ -406,21 +410,65 @@ pub fn SetupBaseS(
         KEM::X25519Kyber768Draft00 => {
             // FIXME: clean up
             // Decode the public key
-            let Kyber768X25519PublicKey { kyber, x25519 } =
-                crate::kem::Kyber768X25519PublicKey::decode(pkR).unwrap();
+            let X25519MlKem768Draft00PublicKey {
+                mlkem: kyber,
+                x25519,
+            } = X25519MlKem768Draft00PublicKey::decode(pkR).unwrap();
             let (ss1, enc1) = Encap(
                 KEM::DHKEM_X25519_HKDF_SHA256,
                 &x25519.0,
                 randomness[0..32].to_vec(),
             )?;
             let (ss2, enc2) = Kyber768Draft00_Encap(kyber.as_ref(), randomness[32..64].to_vec())?;
-            let ct = crate::kem::Ct::Kyber768X25519(
+            let ct = crate::kem::Ct::X25519MlKem768Draft00(
                 enc2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(enc1.try_into().unwrap()),
             );
-            let ss = crate::kem::Ss::Kyber768X25519(
+            let ss = crate::kem::Ss::X25519MlKem768Draft00(
                 ss2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
+            );
+            (ss.encode(), ct.encode())
+        }
+        KEM::XWingDraft02 => {
+            // TODO: This should re-use PublicKey::encapsulate but we need
+            // CryptoRng + Rng for that, not just a slice of randomness
+            let XWingKemDraft02PublicKey { pk_m, pk_x } =
+                XWingKemDraft02PublicKey::decode(pkR).map_err(|_| HpkeError::EncapError)?;
+
+            let (ct_m, ss_m) = kyber768::encapsulate(
+                &pk_m,
+                randomness[0..32]
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ek_x = x25519::PrivateKey(
+                randomness[..32]
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ct_x = x25519::secret_to_public(&ek_x).map_err(|_| HpkeError::EncapError)?;
+            let ss_x = x25519::derive(&pk_x, &ek_x).map_err(|_| HpkeError::EncapError)?;
+
+            let ct = Ct::XWingKemDraft02(
+                ct_m.as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ct_x.0
+                    .as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+            );
+            let ss = Ss::XWingKemDraft02(
+                ss_m.as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ss_x.0
+                    .as_slice()
+                    .try_into()
+                    .map_err(|_| HpkeError::EncapError)?,
+                ct_x,
+                pk_x,
             );
             (ss.encode(), ct.encode())
         }
@@ -461,14 +509,26 @@ pub fn SetupBaseR(
         KEM::X25519Kyber768Draft00 => {
             // FIXME: clean up
             // Decode the public key
-            let Kyber768X25519PrivateKey { kyber, x25519 } =
-                Kyber768X25519PrivateKey::decode(skR).unwrap();
+            let X25519MlKem768Draft00PrivateKey {
+                mlkem: kyber,
+                x25519,
+            } = X25519MlKem768Draft00PrivateKey::decode(skR).unwrap();
             let ss1 = Decap(KEM::DHKEM_X25519_HKDF_SHA256, &enc[0..32], &x25519.0)?;
             let ss2 = Kyber768Draft00_Decap(kyber.as_ref(), &enc[32..])?;
-            let ss = crate::kem::Ss::Kyber768X25519(
+            let ss = crate::kem::Ss::X25519MlKem768Draft00(
                 ss2.as_slice().try_into().unwrap(),
                 crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
             );
+            ss.encode()
+        }
+        KEM::XWingDraft02 => {
+            let ct = kem::Ct::decode(crate::kem::Algorithm::XWingKemDraft02, enc)
+                .map_err(|_| HpkeError::DecapError)?;
+            let sk = crate::kem::XWingKemDraft02PrivateKey::decode(skR)
+                .map_err(|_| HpkeError::DecapError)?;
+            let sk = &kem::PrivateKey::XWingKemDraft02(sk);
+            let ss = ct.decapsulate(sk).map_err(|_| HpkeError::DecapError)?;
+
             ss.encode()
         }
     };

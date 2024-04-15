@@ -7,6 +7,7 @@ use super::{
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
 };
 use crate::cloop;
+use crate::hax_utils::hax_debug_assert;
 
 #[cfg(not(hax))]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
@@ -82,7 +83,7 @@ fn compress_coefficients_3(coefficient1: u16, coefficient2: u16) -> (u8, u8, u8)
 
 #[inline(always)]
 pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> PolynomialRingElement {
-    hax_lib::debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
+    hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
     let mut re = PolynomialRingElement::ZERO;
 
@@ -98,6 +99,56 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
     }
 
     re
+}
+
+/// Only use with public values.
+///
+/// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
+#[inline(always)]
+fn deserialize_to_reduced_ring_element(ring_element: &[u8]) -> PolynomialRingElement {
+    hax_debug_assert!(ring_element.len() == BYTES_PER_RING_ELEMENT);
+
+    let mut re = PolynomialRingElement::ZERO;
+
+    cloop! {
+        for (i, bytes) in ring_element.chunks_exact(3).enumerate() {
+            let byte1 = bytes[0] as FieldElement;
+            let byte2 = bytes[1] as FieldElement;
+            let byte3 = bytes[2] as FieldElement;
+
+            // The modulus here is ok because the input must be public.
+            // XXX: The awkward code here is necessary to work around Charon shortcomings.
+            re.coefficients[2 * i] = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
+            let tmp = re.coefficients[2 * i] % 3329; // FIELD_MODULUS
+            re.coefficients[2 * i] = tmp;
+
+            re.coefficients[2 * i + 1] = (byte3 << 4) | ((byte2 >> 4) & 0x0F);
+            let tmp = re.coefficients[2 * i + 1] % 3329; // FIELD_MODULUS
+            re.coefficients[2 * i + 1] = tmp;
+        }
+    }
+
+    re
+}
+
+/// This function deserializes ring elements and reduces the result by the field
+/// modulus.
+///
+/// This function MUST NOT be used on secret inputs.
+#[inline(always)]
+pub(super) fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, const K: usize>(
+    public_key: &[u8],
+) -> [PolynomialRingElement; K] {
+    let mut deserialized_pk = [PolynomialRingElement::ZERO; K];
+    cloop! {
+        for (i, ring_element) in public_key
+            .chunks_exact(BYTES_PER_RING_ELEMENT)
+            .enumerate()
+        {
+            deserialized_pk[i] =deserialize_to_reduced_ring_element(ring_element);
+        }
+    }
+    deserialized_pk
 }
 
 #[inline(always)]
@@ -227,7 +278,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
 >(
     re: PolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    hax_lib::debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
+    hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
@@ -324,7 +375,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 >(
     re: PolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    hax_lib::debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
+    hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re),
@@ -335,7 +386,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 
 #[inline(always)]
 fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
-    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
+    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
     let mut re = PolynomialRingElement::ZERO;
 
@@ -377,7 +428,7 @@ fn decompress_coefficients_10(
 
 #[inline(always)]
 fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
-    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
+    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
 
     let mut re = PolynomialRingElement::ZERO;
 
@@ -460,9 +511,7 @@ fn decompress_coefficients_11(
 pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(
-        serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
-    );
+    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
 
     match COMPRESSION_FACTOR as u32 {
         10 => deserialize_then_decompress_10(serialized),
@@ -473,7 +522,7 @@ pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTO
 
 #[inline(always)]
 fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
-    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
+    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
     let mut re = PolynomialRingElement::ZERO;
 
@@ -498,7 +547,7 @@ fn decompress_coefficients_4(byte: &u8) -> (i32, i32) {
 
 #[inline(always)]
 fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
-    hax_lib::debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
+    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
     let mut re = PolynomialRingElement::ZERO;
 
@@ -567,9 +616,7 @@ fn decompress_coefficients_5(
 pub(super) fn deserialize_then_decompress_ring_element_v<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> PolynomialRingElement {
-    hax_lib::debug_assert!(
-        serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8
-    );
+    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
 
     match COMPRESSION_FACTOR as u32 {
         4 => deserialize_then_decompress_4(serialized),

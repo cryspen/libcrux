@@ -7,11 +7,12 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme.workspace = true
+publish = false
 
 [dependencies]
 
 [dev-dependencies]
-libcrux = { path = "../", features = ["rand"] }
+libcrux = { path = "../", features = ["rand", "tests"] }
 rand = { version = "0.8" }
 rand_core = { version = "0.6" }
 # Benchmarking "RustCrypto"
@@ -22,11 +23,20 @@ sha3 = "0.10"
 p256 = { version = "0.13", features = ["ecdh"] }
 # Benchmarking "Ring"
 ring = "0.17"
+# Benchmarking "Dalek X25519"
+x25519-dalek = "2.0.1"
+# Benchmarking "Dalek Ristretto"
+curve25519-dalek = "4.1.2"
+
+# We always link this on linux, even if it may not be built.
+# We check that in the build instead.
+[target.'cfg(all(target_arch = "x86_64", target_os = "linux", crypto_lib25519))'.dev-dependencies]
+lib25519 = { path = "../sys/lib25519" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = "0.5"
 # libcrux-pqclean = { version = "0.0.2-pre.1", path = "sys/pqclean" }
-pqcrypto-kyber = { version = "0.7.6", default-features = false }
+pqcrypto-kyber = { version = "0.8.0", default-features = false }
 
 # Benchmarking "OpenSSL"
 # XXX: We don't do this for Windows or wasm right now.

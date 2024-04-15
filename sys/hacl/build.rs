@@ -73,29 +73,31 @@ fn create_bindings(platform: &Platform, home_dir: &Path) {
     bindings = bindings
         // Header to wrap HACL headers
         .header("c/config/hacl.h");
+
     if platform.simd128 {
         append_simd128_flags(platform, &mut clang_args, true);
-        clang_args.push("-DSIMD128".to_string());
+        clang_args.push("-DHACL_CAN_COMPILE_VEC128".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 128 headers
             .header("c/config/hacl128.h");
     }
+
     if platform.simd256 {
         append_simd256_flags(platform, &mut clang_args, true);
-        clang_args.push("-DSIMD256".to_string());
+        clang_args.push("-DHACL_CAN_COMPILE_VEC256".to_string());
         bindings = bindings
             // Header to wrap HACL SIMD 256 headers
             .header("c/config/hacl256.h");
     }
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-        )
-    ))]
-    if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
+
+    if (platform.target_arch == "x86" || platform.target_arch == "x86_64")
+        && (platform.target_os == "linux"
+            || platform.target_os == "macos"
+            || (platform.target_os == "windows"
+                && (platform.target_env == "msvc" || platform.target_env == "gnu")))
+        && (platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull)
+    {
+        clang_args.push("-DHACL_CAN_COMPILE_INLINE_ASM".to_string());
         bindings = bindings
             // Header to wrap EverCrypt_AutoConfig2
             .header("c/config/vale-aes.h");
@@ -238,6 +240,17 @@ fn build(platform: &Platform, home_path: &Path) {
     let mut defines = vec![];
     defines.push(("RELOCATABLE", "1"));
 
+    if platform.int128 {
+        defines.push(("HACL_CAN_COMPILE_UINT128", "1"));
+    }
+    if platform.target_arch == "x86_64" {
+        defines.push(("HACL_CAN_COMPILE_VALE", "1"));
+        defines.push(("HACL_CAN_COMPILE_INTRINSICS", "1"));
+    }
+    let hacl_target_arch = platform.hacl_target_arch.to_string();
+    defines.push(("TARGET_ARCHITECTURE", hacl_target_arch.as_str()));
+    defines.push(("LINUX_NO_EXPLICIT_BZERO", "1")); // We disable this to avoid running into issues.
+
     // Platform detection
     if platform.simd128 {
         let files128 = svec![
@@ -292,87 +305,82 @@ fn build(platform: &Platform, home_path: &Path) {
         );
     }
 
-    // FIXME: this doesn't work on cross compilation.
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_env = "gnu",
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", target_env = "msvc")
-        )
-    ))]
-    if platform.x25519 {
-        let files_curve25519_64 = svec!["Hacl_Curve25519_64.c",];
-        let mut files_curve25519 = vec![];
-        if cfg!(target_os = "linux") {
-            files_curve25519.push("curve25519-x86_64-linux.S".to_string());
-        } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
-            files_curve25519.push("curve25519-x86_64-msvc.asm".to_string());
-        } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
-            files_curve25519.push("curve25519-x86_64-mingw.S".to_string());
-        } else if cfg!(target_os = "macos") {
-            files_curve25519.push("curve25519-x86_64-darwin.S".to_string());
-        }
-        if cfg!(all(target_arch = "x86_64", target_env = "gnu")) {
-            defines.append(&mut vec![("HACL_CAN_COMPILE_INLINE_ASM", "1")]);
-        }
+    if (platform.target_arch == "x86" || platform.target_arch == "x86_64")
+        && (platform.target_env == "gnu"
+            || platform.target_os == "linx"
+            || platform.target_os == "macos"
+            || (platform.target_os == "windows" && platform.target_env == "msvc"))
+    {
+        if platform.x25519 {
+            let files_curve25519_64 = svec!["Hacl_Curve25519_64.c",];
+            let mut files_curve25519 = vec![];
+            if cfg!(target_os = "linux") {
+                files_curve25519.push("curve25519-x86_64-linux.S".to_string());
+            } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
+                files_curve25519.push("curve25519-x86_64-msvc.asm".to_string());
+            } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
+                files_curve25519.push("curve25519-x86_64-mingw.S".to_string());
+            } else if cfg!(target_os = "macos") {
+                files_curve25519.push("curve25519-x86_64-darwin.S".to_string());
+            }
+            if cfg!(all(target_arch = "x86_64", target_env = "gnu")) {
+                defines.append(&mut vec![("HACL_CAN_COMPILE_INLINE_ASM", "1")]);
+            }
 
-        compile_files(
-            platform,
-            LIB_25519_NAME,
-            &files_curve25519_64,
-            &files_curve25519,
-            home_path,
-            &[],
-            &defines,
-        );
+            compile_files(
+                platform,
+                LIB_25519_NAME,
+                &files_curve25519_64,
+                &files_curve25519,
+                home_path,
+                &[],
+                &defines,
+            );
+        }
     }
 
-    // FIXME: this doesn't work on cross compilation.
-    #[cfg(all(
-        any(target_arch = "x86", target_arch = "x86_64"),
-        any(
-            target_os = "linux",
-            target_os = "macos",
-            all(target_os = "windows", any(target_env = "msvc", target_env = "gnu"))
-        )
-    ))]
-    if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
-        let files_evercrypt = svec![
-            "EverCrypt_AutoConfig2.c",
-            "EverCrypt_Chacha20Poly1305.c",
-            "EverCrypt_AEAD.c",
-        ];
-        let mut files_aesgcm = vec![];
-        if cfg!(target_os = "linux") {
-            files_aesgcm.push("cpuid-x86_64-linux.S".to_string());
-            files_aesgcm.push("aesgcm-x86_64-linux.S".to_string());
-        } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
-            files_aesgcm.push("cpuid-x86_64-msvc.asm".to_string());
-            files_aesgcm.push("aesgcm-x86_64-msvc.asm".to_string());
-        } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
-            files_aesgcm.push("cpuid-x86_64-mingw.S".to_string());
-            files_aesgcm.push("aesgcm-x86_64-mingw.S".to_string());
-        } else if cfg!(target_os = "macos") {
-            files_aesgcm.push("cpuid-x86_64-darwin.S".to_string());
-            files_aesgcm.push("aesgcm-x86_64-darwin.S".to_string());
-        }
-        defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
+    if (platform.target_arch == "x86" || platform.target_arch == "x86_64")
+        && (platform.target_os == "linux"
+            || platform.target_os == "macos"
+            || (platform.target_os == "windows"
+                || (platform.target_env == "msvc" || platform.target_env == "gnu")))
+    {
+        if platform.simd128 && platform.simd256 && platform.aes_ni && platform.pmull {
+            let files_evercrypt = svec![
+                "EverCrypt_AutoConfig2.c",
+                "EverCrypt_Chacha20Poly1305.c",
+                "EverCrypt_AEAD.c",
+            ];
+            let mut files_aesgcm = vec![];
+            if cfg!(target_os = "linux") {
+                files_aesgcm.push("cpuid-x86_64-linux.S".to_string());
+                files_aesgcm.push("aesgcm-x86_64-linux.S".to_string());
+            } else if cfg!(all(target_os = "windows", target_env = "msvc")) {
+                files_aesgcm.push("cpuid-x86_64-msvc.asm".to_string());
+                files_aesgcm.push("aesgcm-x86_64-msvc.asm".to_string());
+            } else if cfg!(all(target_os = "windows", target_env = "gnu")) {
+                files_aesgcm.push("cpuid-x86_64-mingw.S".to_string());
+                files_aesgcm.push("aesgcm-x86_64-mingw.S".to_string());
+            } else if cfg!(target_os = "macos") {
+                files_aesgcm.push("cpuid-x86_64-darwin.S".to_string());
+                files_aesgcm.push("aesgcm-x86_64-darwin.S".to_string());
+            }
+            defines.append(&mut vec![("HACL_CAN_COMPILE_VALE", "1")]);
 
-        let mut aesgcm_flags = vec![];
-        append_simd128_flags(platform, &mut aesgcm_flags, false);
-        append_simd256_flags(platform, &mut aesgcm_flags, false);
-        append_aesgcm_flags(platform, &mut aesgcm_flags);
-        compile_files(
-            platform,
-            LIB_VALE_AESGCM_NAME,
-            &files_evercrypt,
-            &files_aesgcm,
-            home_path,
-            &aesgcm_flags,
-            &defines,
-        );
+            let mut aesgcm_flags = vec![];
+            append_simd128_flags(platform, &mut aesgcm_flags, false);
+            append_simd256_flags(platform, &mut aesgcm_flags, false);
+            append_aesgcm_flags(platform, &mut aesgcm_flags);
+            compile_files(
+                platform,
+                LIB_VALE_AESGCM_NAME,
+                &files_evercrypt,
+                &files_aesgcm,
+                home_path,
+                &aesgcm_flags,
+                &defines,
+            );
+        }
     }
 
     compile_files(platform, LIB_NAME, &files, &[], home_path, &[], &defines);
@@ -389,9 +397,11 @@ struct Platform {
     pmull: bool,
     adv_simd: bool,
     sha256: bool,
+    int128: bool,
     target_arch: String,
     target_env: String,
     target_os: String,
+    hacl_target_arch: u8,
 }
 
 fn main() {
@@ -402,24 +412,38 @@ fn main() {
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
 
+    let target = env::var("TARGET").unwrap();
+    let host = env::var("HOST").unwrap();
+
     // Check platform support
-    let platform = if target_arch != "wasm32" {
+    let platform = if target_arch != "wasm32" && host == target {
         let x86 = target_arch == "x86";
-        let aarch64 = target_arch == "aarch64";
+        let hacl_target_arch = match target.as_str() {
+            "x86" => 1,
+            "x86_64" => 2,
+            "arm" | "armv7" => 3,
+            "aarch64" => 4,
+            // 5: not sure what systemz is.
+            "powerpc64" => 6,
+            _ => 0, //unknown
+        };
         Platform {
             simd128: !x86 && libcrux_platform::simd128_support(),
-            simd256: !x86 && !aarch64 && libcrux_platform::simd256_support(),
-            aes_ni: !aarch64 && libcrux_platform::aes_ni_support(),
-            x25519: !x86 && !aarch64 && libcrux_platform::x25519_support(),
-            bmi2_adx_support: !aarch64 && libcrux_platform::bmi2_adx_support(),
+            simd256: !x86 && libcrux_platform::simd256_support(),
+            aes_ni: libcrux_platform::aes_ni_support(),
+            x25519: !x86 && libcrux_platform::x25519_support(),
+            bmi2_adx_support: libcrux_platform::bmi2_adx_support(),
             pmull: libcrux_platform::pmull_support(),
             adv_simd: libcrux_platform::adv_simd_support(),
             sha256: libcrux_platform::sha256_support(),
             target_arch: target_arch.clone(),
             target_env: target_env.clone(),
             target_os: target_os.clone(),
+            int128: target_arch == "x86_64" || target_arch == "aarch64",
+            hacl_target_arch,
         }
     } else {
+        // On wasm or cross compilation we don't enable any specific features.
         Platform {
             target_arch: target_arch.clone(),
             target_env: target_env.clone(),

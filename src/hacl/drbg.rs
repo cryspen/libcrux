@@ -106,3 +106,5 @@ impl Drop for Drbg {
         unsafe { Hacl_HMAC_DRBG_free(self.alg as u8, self.state) };
     }
 }
+
+unsafe impl Send for Drbg {}

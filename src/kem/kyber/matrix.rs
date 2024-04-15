@@ -4,9 +4,8 @@ use super::{
         PolynomialRingElement,
     },
     constants::COEFFICIENTS_IN_RING_ELEMENT,
-    hash_functions::XOFx4,
     ntt::{invert_ntt_montgomery, ntt_multiply},
-    sampling::sample_from_uniform_distribution,
+    sampling::sample_from_xof,
 };
 use crate::cloop;
 
@@ -24,16 +23,13 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
-        let xof_bytes = XOFx4::<K>(seeds);
-
+        let sampled = sample_from_xof(seeds);
         for j in 0..K {
-            let sampled = sample_from_uniform_distribution(xof_bytes[j]);
-
             // A[i][j] = A_transpose[j][i]
             if transpose {
-                A_transpose[j][i] = sampled;
+                A_transpose[j][i] = sampled[j];
             } else {
-                A_transpose[i][j] = sampled;
+                A_transpose[i][j] = sampled[j];
             }
         }
     }
@@ -45,7 +41,7 @@ pub(in crate::kem::kyber) fn sample_matrix_A<const K: usize>(
 /// vectors and matrices. The computation of these expressions has been
 /// abstracted away into these functions in order to save on loop iterations.
 
-/// Compute v − NTT^{−1}(sˆT ◦ NTT(u))
+/// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     v: &PolynomialRingElement,
@@ -69,7 +65,7 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     result
 }
 
-/// Compute NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
+/// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     t_as_ntt: &[PolynomialRingElement; K],
@@ -96,7 +92,7 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     result
 }
 
-/// Compute u := NTT^{-1}(AˆT ◦ rˆ) + e_1
+/// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
 pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     a_as_ntt: &[[PolynomialRingElement; K]; K],
@@ -128,7 +124,7 @@ pub(in crate::kem::kyber) fn compute_vector_u<const K: usize>(
     result
 }
 
-/// compute Aˆ ◦ sˆ + eˆ
+/// Compute Â ◦ ŝ + ê
 #[inline(always)]
 #[allow(non_snake_case)]
 pub(in crate::kem::kyber) fn compute_As_plus_e<const K: usize>(

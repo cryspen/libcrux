@@ -2,13 +2,13 @@ name: hax
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev", "main"]
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'
 
   pull_request:
-    branches: ["dev"]
+    branches: ["dev", "main"]
     paths:
       - 'specs/kyber/src/**'
       - 'src/kem/kyber/**'
@@ -35,13 +35,8 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: 🔨 OCaml Setup
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: 4.14.1
-
       - name: ⤵ Install FStar
-        run: nix profile install github:FStarLang/FStar/bc622701c668f6b4092760879372968265d4a4e1
+        run: nix profile install github:FStarLang/FStar/v2024.01.13
 
       - name: ⤵ Clone HACL-star repository
         uses: actions/checkout@v4
@@ -55,17 +50,30 @@ jobs:
           repository: hacspec/hacspec-v2
           path: hax
 
-      - name: 🔨 Setup hax
-        working-directory: hax
+      - name: ⤵ Install & confiure Cachix
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes nodejs
-          ./setup.sh
+          nix profile install nixpkgs#cachix
+          cachix use hax
 
-      - name: 🏃 Extract and verify the Kyber reference code
+      - name: ⤵ Install hax
+        run: |
+          nix profile install ./hax
+
+      - name: 🏃 Extract the Kyber reference code
         run: |
           eval $(opam env)
+          (cd proofs/fstar/extraction/ && ./clean.sh)
+          rm -f sys/platform/proofs/fstar/extraction/*.fst*
           ./hax-driver.py --kyber-reference
+
+      - name: 🏃 Regenerate `extraction-*` folders
+        run: ./proofs/fstar/patches.sh apply
+
+      - name: 🏃 Make sure snapshots are up-to-date
+        run: git diff --exit-code
+
+      - name: 🏃 Verify the Kyber reference code
+        run: |
           env FSTAR_HOME=${{ github.workspace }}/fstar \
               HACL_HOME=${{ github.workspace }}/hacl-star \
               HAX_HOME=${{ github.workspace }}/hax \
