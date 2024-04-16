@@ -68,10 +68,10 @@ pub fn generate_key_pair(
     >(randomness)
 }
 
-pub fn generate_key_pair_deserialized(
+pub fn generate_key_pair_unpacked(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> (([PolynomialRingElement;3],[PolynomialRingElement;3],[[PolynomialRingElement;3];3],[u8;32],[u8;32]),MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>)  {
-    generate_keypair_deserialized::<
+    generate_keypair_unpacked::<
         RANK_768,
         CPA_PKE_SECRET_KEY_SIZE_768,
         SECRET_KEY_SIZE_768,
@@ -132,7 +132,7 @@ pub fn decapsulate(
     >(secret_key, ciphertext)
 }
 
-pub fn decapsulate_deserialized(
+pub fn decapsulate_unpacked(
     secret_as_ntt: &[PolynomialRingElement;3],
     t_as_ntt: &[PolynomialRingElement;3],
     A_transpose: &[[PolynomialRingElement;3];3],
@@ -140,7 +140,7 @@ pub fn decapsulate_deserialized(
     ind_cpa_public_key_hash: &[u8],
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    super::decapsulate_deserialized::<
+    super::decapsulate_unpacked::<
         RANK_768,
         SECRET_KEY_SIZE_768,
         CPA_PKE_SECRET_KEY_SIZE_768,

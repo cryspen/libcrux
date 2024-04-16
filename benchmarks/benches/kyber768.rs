@@ -22,12 +22,12 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("libcrux portable deserialized (external random)", |b| {
+    group.bench_function("libcrux portable unpacked (external random)", |b| {
         b.iter(|| {
             let mut seed = [0; 64];
             rng.fill_bytes(&mut seed);
             let _tuple =
-                libcrux::kem::kyber::kyber768::generate_key_pair_deserialized(seed);
+                libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
         })
     });
 
@@ -161,13 +161,13 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
         )
     });
 
-    group.bench_function("libcrux portable deserialized", |b| {
+    group.bench_function("libcrux portable unpacked", |b| {
         b.iter_batched(
             || {
                 let mut seed = [0; 64];
                 OsRng.fill_bytes(&mut seed);
                 let ((sk,pk,a,rej,pkh),_pk) =
-                     libcrux::kem::kyber::kyber768::generate_key_pair_deserialized(seed);
+                     libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
                 
                 let mut rand = [0; 32];
                 let mut seed2 = [0; 64];
@@ -181,7 +181,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             },
             |((sk,pk,a,rej,pkh),ciphertext)| {
                 let _shared_secret = 
-                    libcrux::kem::kyber::kyber768::decapsulate_deserialized(&sk,&pk,&a,&rej,&pkh,&ciphertext);
+                    libcrux::kem::kyber::kyber768::decapsulate_unpacked(&sk,&pk,&a,&rej,&pkh,&ciphertext);
             },
             BatchSize::SmallInput,
         )

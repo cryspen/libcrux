@@ -141,7 +141,7 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-pub(super) fn generate_keypair_deserialized<
+pub(super) fn generate_keypair_unpacked<
     const K: usize,
     const PUBLIC_KEY_SIZE: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -186,7 +186,7 @@ pub(super) fn generate_keypair<
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     let ((secret_as_ntt,_t_as_ntt,_A_transpose),public_key_serialized) = 
-        generate_keypair_deserialized::<K,PUBLIC_KEY_SIZE,RANKED_BYTES_PER_RING_ELEMENT,ETA1,ETA1_RANDOMNESS_SIZE>(key_generation_seed);
+        generate_keypair_unpacked::<K,PUBLIC_KEY_SIZE,RANKED_BYTES_PER_RING_ELEMENT,ETA1,ETA1_RANDOMNESS_SIZE>(key_generation_seed);
     
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = serialize_secret_key(secret_as_ntt);
@@ -257,7 +257,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-pub(crate) fn encrypt_deserialized<
+pub(crate) fn encrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -358,7 +358,7 @@ pub(crate) fn encrypt<
     // end for
     let A_transpose = sample_matrix_A(into_padded_array(seed), false);
     
-    encrypt_deserialized::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE>(&t_as_ntt, &A_transpose, message, randomness)
+    encrypt_unpacked::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE>(&t_as_ntt, &A_transpose, message, randomness)
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -419,7 +419,7 @@ fn deserialize_secret_key<const K: usize>(secret_key: &[u8]) -> [PolynomialRingE
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-pub(super) fn decrypt_deserialized<
+pub(super) fn decrypt_unpacked<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const VECTOR_U_ENCODED_SIZE: usize,
@@ -457,5 +457,5 @@ pub(super) fn decrypt<
     // sˆ := Decode_12(sk)
     let secret_as_ntt = deserialize_secret_key::<K>(secret_key);
 
-    decrypt_deserialized::<K,CIPHERTEXT_SIZE,VECTOR_U_ENCODED_SIZE,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR>(&secret_as_ntt, ciphertext)
+ decrypt_unpacked::<K,CIPHERTEXT_SIZE,VECTOR_U_ENCODED_SIZE,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR>(&secret_as_ntt, ciphertext)
 }

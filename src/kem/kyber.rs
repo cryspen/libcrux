@@ -83,7 +83,7 @@ pub(super) fn validate_public_key<
     *public_key == public_key_serialized
 }
 
-pub(super) fn generate_keypair_deserialized<
+pub(super) fn generate_keypair_unpacked<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
     const PRIVATE_KEY_SIZE: usize,
@@ -98,7 +98,7 @@ pub(super) fn generate_keypair_deserialized<
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let ((s_as_ntt,t_as_ntt,A_transpose),ind_cpa_public_key) = ind_cpa::generate_keypair_deserialized::<
+    let ((s_as_ntt,t_as_ntt,A_transpose),ind_cpa_public_key) = ind_cpa::generate_keypair_unpacked::<
         K,
         PUBLIC_KEY_SIZE,
         BYTES_PER_RING_ELEMENT,
@@ -188,7 +188,7 @@ pub(super) fn encapsulate<
     (ciphertext.into(), shared_secret_array)
 }
 
-pub(super) fn decapsulate_deserialized<
+pub(super) fn decapsulate_unpacked<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
@@ -214,7 +214,7 @@ pub(super) fn decapsulate_deserialized<
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
 
-    let decrypted = ind_cpa::decrypt_deserialized::<
+    let decrypted = ind_cpa::decrypt_unpacked::<
         K,
         CIPHERTEXT_SIZE,
         C1_SIZE,
@@ -233,7 +233,7 @@ pub(super) fn decapsulate_deserialized<
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = PRF(&to_hash);
 
-    let expected_ciphertext = ind_cpa::encrypt_deserialized::<
+    let expected_ciphertext = ind_cpa::encrypt_unpacked::<
         K,
         CIPHERTEXT_SIZE,
         T_AS_NTT_ENCODED_SIZE,
