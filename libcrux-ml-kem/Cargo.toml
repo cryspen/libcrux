@@ -1,0 +1,35 @@
+[package]
+name = "libcrux-ml-kem"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+exclude = ["/tests", "/implementation_notes.pdf"]
+
+[dependencies]
+rand_core = { version = "0.6" }
+libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
+libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
+
+# This is only required for verification.
+# The hax config is set by the hax toolchain.
+[target.'cfg(hax)'.dependencies]
+hax-lib = { git = "https://github.com/hacspec/hax/" }
+
+[features]
+simd128 = []
+simd256 = []
+
+[dev-dependencies]
+rand = { version = "0.8" }
+serde_json = { version = "1.0" }
+serde = { version = "1.0", features = ["derive"] }
+hex = { version = "0.4.3", features = ["serde"] }
+criterion = "0.5"
+
+[[bench]]
+name = "ml-kem"
+harness = false

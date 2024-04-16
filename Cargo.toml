@@ -7,6 +7,9 @@ members = [
     "sys/lib25519",
     "benchmarks",
     "fuzz",
+    "libcrux-ml-kem",
+    "libcrux-simd",
+    "libcrux-sha3",
 ]
 
 [workspace.package]
