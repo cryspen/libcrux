@@ -34,13 +34,9 @@ pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 pub type MlKemSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
 use self::{
-    constant_time_ops::{
+    arithmetic::PolynomialRingElement, constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
-    },
-    constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
-    hash_functions::{G, H, PRF},
-    ind_cpa::{into_padded_array, serialize_public_key},
-    serialize::deserialize_ring_elements_reduced,
+    }, constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE}, hash_functions::{G, H, PRF}, ind_cpa::{into_padded_array, serialize_public_key}, serialize::deserialize_ring_elements_reduced
 };
 
 /// Seed size for key generation
@@ -85,6 +81,30 @@ pub(super) fn validate_public_key<
         );
 
     *public_key == public_key_serialized
+}
+
+pub(super) fn generate_keypair_deserialized<
+    const K: usize,
+    const CPA_PRIVATE_KEY_SIZE: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+>(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> ([PolynomialRingElement;K],[PolynomialRingElement;K],[[PolynomialRingElement;K];K],[u8;32]) {
+    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
+    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+
+    let (_seed_for_A,A_transpose,ind_cpa_private_key,ind_cpa_public_key) = ind_cpa::generate_keypair_deserialized::<
+        K,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+    >(ind_cpa_keypair_randomness);
+
+    let rej:[u8;32] = implicit_rejection_value.try_into().unwrap();
+    (ind_cpa_private_key,ind_cpa_public_key,A_transpose,rej)
 }
 
 pub(super) fn generate_keypair<
@@ -163,6 +183,78 @@ pub(super) fn encapsulate<
 }
 
 pub(super) fn decapsulate<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    const CPA_SECRET_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const C1_SIZE: usize,
+    const C2_SIZE: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const C1_BLOCK_SIZE: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+    const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+>(
+    secret_as_ntt: &[PolynomialRingElement;K],
+    t_as_ntt: &[PolynomialRingElement;K],
+    A_transpose: &[[PolynomialRingElement;K];K],
+    implicit_rejection_value: &[u8],
+    ind_cpa_public_key_hash: &[u8],
+    ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+) -> MlKemSharedSecret {
+
+    let decrypted = ind_cpa::decrypt_deserialized::<
+        K,
+        CIPHERTEXT_SIZE,
+        C1_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+    >(secret_as_ntt, &ciphertext.value);
+
+    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
+
+    let hashed = G(&to_hash);
+    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
+
+    let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
+        into_padded_array(&implicit_rejection_value);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
+    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = PRF(&to_hash);
+
+    let expected_ciphertext = ind_cpa::encrypt_deserialized::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_SIZE,
+        C2_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+        C1_BLOCK_SIZE,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+    >(t_as_ntt, A_transpose, decrypted, pseudorandomness);
+
+    let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
+        ciphertext.as_ref(),
+        &expected_ciphertext,
+    );
+
+    select_shared_secret_in_constant_time(
+        shared_secret,
+        &implicit_rejection_shared_secret,
+        selector,
+    )
+}
+
+pub(super) fn decapsulate_deserialized<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,

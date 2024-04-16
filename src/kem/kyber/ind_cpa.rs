@@ -141,16 +141,13 @@ fn sample_vector_cbd_then_ntt<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-pub(super) fn generate_keypair<
+pub(super) fn generate_keypair_deserialized<
     const K: usize,
-    const PRIVATE_KEY_SIZE: usize,
-    const PUBLIC_KEY_SIZE: usize,
-    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     key_generation_seed: &[u8],
-) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
+) -> ([u8;32],[[PolynomialRingElement; K]; K],[PolynomialRingElement; K], [PolynomialRingElement; K]) {
     // (ρ,σ) := G(d)
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
@@ -166,10 +163,27 @@ pub(super) fn generate_keypair<
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
+    let seed_for_A:[u8;32] = seed_for_A.try_into().unwrap();
+    (seed_for_A,A_transpose,secret_as_ntt,t_as_ntt)
+}
+
+#[allow(non_snake_case)]
+pub(super) fn generate_keypair<
+    const K: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+>(
+    key_generation_seed: &[u8],
+) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
+    let (seed_for_A,A_transpose,secret_as_ntt,t_as_ntt) = generate_keypair_deserialized::<K,ETA1,ETA1_RANDOMNESS_SIZE>(key_generation_seed);
+
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
-            t_as_ntt, seed_for_A,
+            t_as_ntt, &seed_for_A,
         );
 
     // sk := Encode_12(sˆ mod^{+}q)
@@ -198,6 +212,8 @@ fn compress_then_serialize_u<
 
     out
 }
+
+
 
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
@@ -239,7 +255,7 @@ fn compress_then_serialize_u<
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-pub(crate) fn encrypt<
+pub(crate) fn encrypt_deserialized<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const T_AS_NTT_ENCODED_SIZE: usize,
@@ -253,23 +269,11 @@ pub(crate) fn encrypt<
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
-    public_key: &[u8],
+    t_as_ntt: &[PolynomialRingElement; K],
+    A_transpose: &[[PolynomialRingElement;K];K],
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
-    // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K>(
-        &public_key[..T_AS_NTT_ENCODED_SIZE],
-    );
-
-    // ρ := pk + 12·k·n / 8
-    // for i from 0 to k−1 do
-    //     for j from 0 to k − 1 do
-    //         AˆT[i][j] := Parse(XOF(ρ, i, j))
-    //     end for
-    // end for
-    let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A_transpose = sample_matrix_A(into_padded_array(seed), false);
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
@@ -311,6 +315,48 @@ pub(crate) fn encrypt<
     ciphertext[C1_LEN..].copy_from_slice(c2.as_slice());
 
     ciphertext
+}
+
+#[allow(non_snake_case)]
+pub(crate) fn encrypt<
+    const K: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const C1_LEN: usize,
+    const C2_LEN: usize,
+    const U_COMPRESSION_FACTOR: usize,
+    const V_COMPRESSION_FACTOR: usize,
+    const BLOCK_LEN: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+>(
+    public_key: &[u8],
+    message: [u8; SHARED_SECRET_SIZE],
+    randomness: &[u8],
+) -> [u8; CIPHERTEXT_SIZE] {
+    // tˆ := Decode_12(pk)
+    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K>(
+        &public_key[..T_AS_NTT_ENCODED_SIZE],
+    );
+
+    // ρ := pk + 12·k·n / 8
+    // for i from 0 to k−1 do
+    //     for j from 0 to k − 1 do
+    //         AˆT[i][j] := Parse(XOF(ρ, i, j))
+    //     end for
+    // end for
+    let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
+    // ρ := pk + 12·k·n / 8
+    // for i from 0 to k−1 do
+    //     for j from 0 to k − 1 do
+    //         AˆT[i][j] := Parse(XOF(ρ, i, j))
+    //     end for
+    // end for
+    let A_transpose = sample_matrix_A(into_padded_array(seed), false);
+    
+    encrypt_deserialized::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE>(&t_as_ntt, &A_transpose, message, randomness)
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -371,14 +417,14 @@ fn deserialize_secret_key<const K: usize>(secret_key: &[u8]) -> [PolynomialRingE
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[allow(non_snake_case)]
-pub(super) fn decrypt<
+pub(super) fn decrypt_deserialized<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const VECTOR_U_ENCODED_SIZE: usize,
     const U_COMPRESSION_FACTOR: usize,
     const V_COMPRESSION_FACTOR: usize,
 >(
-    secret_key: &[u8],
+    secret_as_ntt: &[PolynomialRingElement; K],
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [u8; SHARED_SECRET_SIZE] {
     // u := Decompress_q(Decode_{d_u}(c), d_u)
@@ -390,10 +436,24 @@ pub(super) fn decrypt<
         &ciphertext[VECTOR_U_ENCODED_SIZE..],
     );
 
-    // sˆ := Decode_12(sk)
-    let secret_as_ntt = deserialize_secret_key(secret_key);
-
     // m := Encode_1(Compress_q(v − NTT^{−1}(sˆT ◦ NTT(u)) , 1))
     let message = compute_message(&v, &secret_as_ntt, &u_as_ntt);
     compress_then_serialize_message(message)
+}
+
+#[allow(non_snake_case)]
+pub(super) fn decrypt<
+    const K: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const VECTOR_U_ENCODED_SIZE: usize,
+    const U_COMPRESSION_FACTOR: usize,
+    const V_COMPRESSION_FACTOR: usize,
+>(
+    secret_key: &[u8],
+    ciphertext: &[u8; CIPHERTEXT_SIZE],
+) -> [u8; SHARED_SECRET_SIZE] {
+    // sˆ := Decode_12(sk)
+    let secret_as_ntt = deserialize_secret_key::<K>(secret_key);
+
+    decrypt_deserialized::<K,CIPHERTEXT_SIZE,VECTOR_U_ENCODED_SIZE,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR>(&secret_as_ntt, ciphertext)
 }
