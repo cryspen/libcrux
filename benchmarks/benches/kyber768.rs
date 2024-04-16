@@ -166,17 +166,12 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             || {
                 let mut seed = [0; 64];
                 OsRng.fill_bytes(&mut seed);
-                let ((sk,pk,a,rej,pkh),_pk) =
+                let ((sk,pk,a,rej,pkh),pubkey) =
                      libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
                 
                 let mut rand = [0; 32];
-                let mut seed2 = [0; 64];
                 OsRng.fill_bytes(&mut rand);
-                OsRng.fill_bytes(&mut seed2);
-                let kp =
-                    libcrux::kem::kyber::kyber768::generate_key_pair(seed2);
-                let (ciphertext,_) = libcrux::kem::kyber::kyber768::encapsulate(&kp.public_key(),rand);
-                
+                let (ciphertext,_) = libcrux::kem::kyber::kyber768::encapsulate(&pubkey,rand);
                 ((sk,pk,a,rej,pkh),ciphertext)
             },
             |((sk,pk,a,rej,pkh),ciphertext)| {
