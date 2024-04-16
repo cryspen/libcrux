@@ -143,11 +143,13 @@ fn sample_vector_cbd_then_ntt<
 #[allow(non_snake_case)]
 pub(super) fn generate_keypair_deserialized<
     const K: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     key_generation_seed: &[u8],
-) -> ([u8;32],[[PolynomialRingElement; K]; K],[PolynomialRingElement; K], [PolynomialRingElement; K]) {
+) -> (([PolynomialRingElement; K], [PolynomialRingElement; K], [[PolynomialRingElement; K]; K]), [u8; PUBLIC_KEY_SIZE]) {
     // (ρ,σ) := G(d)
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
@@ -163,8 +165,13 @@ pub(super) fn generate_keypair_deserialized<
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
-    let seed_for_A:[u8;32] = seed_for_A.try_into().unwrap();
-    (seed_for_A,A_transpose,secret_as_ntt,t_as_ntt)
+    // pk := (Encode_12(tˆ mod^{+}q) || ρ)
+    let public_key_serialized =
+        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+            t_as_ntt, &seed_for_A,
+        );
+
+    ((secret_as_ntt,t_as_ntt,A_transpose),public_key_serialized)
 }
 
 #[allow(non_snake_case)]
@@ -178,14 +185,9 @@ pub(super) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
-    let (seed_for_A,A_transpose,secret_as_ntt,t_as_ntt) = generate_keypair_deserialized::<K,ETA1,ETA1_RANDOMNESS_SIZE>(key_generation_seed);
-
-    // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized =
-        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
-            t_as_ntt, &seed_for_A,
-        );
-
+    let ((secret_as_ntt,_t_as_ntt,_A_transpose),public_key_serialized) = 
+        generate_keypair_deserialized::<K,PUBLIC_KEY_SIZE,RANKED_BYTES_PER_RING_ELEMENT,ETA1,ETA1_RANDOMNESS_SIZE>(key_generation_seed);
+    
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = serialize_secret_key(secret_as_ntt);
 

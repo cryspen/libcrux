@@ -93,18 +93,24 @@ pub(super) fn generate_keypair_deserialized<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> ([PolynomialRingElement;K],[PolynomialRingElement;K],[[PolynomialRingElement;K];K],[u8;32]) {
+) -> (([PolynomialRingElement;K],[PolynomialRingElement;K],[[PolynomialRingElement;K];K],[u8;32],[u8;32]),
+      MlKemPublicKey<PUBLIC_KEY_SIZE>) {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let (_seed_for_A,A_transpose,ind_cpa_private_key,ind_cpa_public_key) = ind_cpa::generate_keypair_deserialized::<
+    let ((s_as_ntt,t_as_ntt,A_transpose),ind_cpa_public_key) = ind_cpa::generate_keypair_deserialized::<
         K,
+        PUBLIC_KEY_SIZE,
+        BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
     >(ind_cpa_keypair_randomness);
 
+    let public_key_hash = H(&ind_cpa_public_key);
+
     let rej:[u8;32] = implicit_rejection_value.try_into().unwrap();
-    (ind_cpa_private_key,ind_cpa_public_key,A_transpose,rej)
+    let pubkey : MlKemPublicKey<PUBLIC_KEY_SIZE> = MlKemPublicKey::from(ind_cpa_public_key);
+    ((s_as_ntt,t_as_ntt,A_transpose,rej,public_key_hash),pubkey)
 }
 
 pub(super) fn generate_keypair<
@@ -182,7 +188,7 @@ pub(super) fn encapsulate<
     (ciphertext.into(), shared_secret_array)
 }
 
-pub(super) fn decapsulate<
+pub(super) fn decapsulate_deserialized<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,
@@ -254,7 +260,7 @@ pub(super) fn decapsulate<
     )
 }
 
-pub(super) fn decapsulate_deserialized<
+pub(super) fn decapsulate<
     const K: usize,
     const SECRET_KEY_SIZE: usize,
     const CPA_SECRET_KEY_SIZE: usize,

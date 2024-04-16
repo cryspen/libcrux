@@ -68,6 +68,20 @@ pub fn generate_key_pair(
     >(randomness)
 }
 
+pub fn generate_key_pair_deserialized(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> (([PolynomialRingElement;3],[PolynomialRingElement;3],[[PolynomialRingElement;3];3],[u8;32],[u8;32]),MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>)  {
+    generate_keypair_deserialized::<
+        RANK_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        RANKED_BYTES_PER_RING_ELEMENT_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+    >(randomness)
+}
+
 /// Encapsulate ML-KEM 768
 pub fn encapsulate(
     public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>,
@@ -116,6 +130,34 @@ pub fn decapsulate(
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(secret_key, ciphertext)
+}
+
+pub fn decapsulate_deserialized(
+    secret_as_ntt: &[PolynomialRingElement;3],
+    t_as_ntt: &[PolynomialRingElement;3],
+    A_transpose: &[[PolynomialRingElement;3];3],
+    implicit_rejection_value: &[u8],
+    ind_cpa_public_key_hash: &[u8],
+    ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
+) -> [u8; SHARED_SECRET_SIZE] {
+    super::decapsulate_deserialized::<
+        RANK_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+    >(secret_as_ntt,t_as_ntt,A_transpose,implicit_rejection_value,ind_cpa_public_key_hash,ciphertext)
 }
 
 #[cfg(test)]

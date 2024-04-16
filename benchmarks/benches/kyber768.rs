@@ -22,6 +22,15 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
+    group.bench_function("libcrux portable deserialized (external random)", |b| {
+        b.iter(|| {
+            let mut seed = [0; 64];
+            rng.fill_bytes(&mut seed);
+            let _tuple =
+                libcrux::kem::kyber::kyber768::generate_key_pair_deserialized(seed);
+        })
+    });
+
     group.bench_function("libcrux portable (HACL-DRBG)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
@@ -35,6 +44,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
                 libcrux::kem::key_gen(Algorithm::MlKem768, &mut rng).unwrap();
         })
     });
+
 
     group.bench_function("pqclean reference implementation", |b| {
         b.iter(|| {
@@ -146,6 +156,32 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             },
             |(secret_key, ciphertext)| {
                 let _shared_secret = ciphertext.decapsulate(&secret_key);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("libcrux portable deserialized", |b| {
+        b.iter_batched(
+            || {
+                let mut seed = [0; 64];
+                OsRng.fill_bytes(&mut seed);
+                let ((sk,pk,a,rej,pkh),_pk) =
+                     libcrux::kem::kyber::kyber768::generate_key_pair_deserialized(seed);
+                
+                let mut rand = [0; 32];
+                let mut seed2 = [0; 64];
+                OsRng.fill_bytes(&mut rand);
+                OsRng.fill_bytes(&mut seed2);
+                let kp =
+                    libcrux::kem::kyber::kyber768::generate_key_pair(seed2);
+                let (ciphertext,_) = libcrux::kem::kyber::kyber768::encapsulate(&kp.public_key(),rand);
+                
+                ((sk,pk,a,rej,pkh),ciphertext)
+            },
+            |((sk,pk,a,rej,pkh),ciphertext)| {
+                let _shared_secret = 
+                    libcrux::kem::kyber::kyber768::decapsulate_deserialized(&sk,&pk,&a,&rej,&pkh,&ciphertext);
             },
             BatchSize::SmallInput,
         )
