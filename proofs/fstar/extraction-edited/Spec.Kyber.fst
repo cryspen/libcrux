@@ -4,9 +4,14 @@ open Core
 open FStar.Mul
 
 (** Utils *)
-let map' #a #b
+let map_slice #a #b
   (f:(x:a -> b))
   (s: t_Slice a): t_Slice b
+  = createi (length s) (fun i -> f (Seq.index s (v i)))
+
+let map_array #a #b #len
+  (f:(x:a -> b))
+  (s: t_Array a len): t_Array b len
   = createi (length s) (fun i -> f (Seq.index s (v i)))
 
 let map2 #a #b #c (#len:usize{v len < pow2 32})
@@ -130,9 +135,10 @@ type t_KyberSharedSecret = t_Array u8 (v_SHARED_SECRET_SIZE)
 (** Kyber Math and Sampling *)
 
 type field_element = n:nat{n < v v_FIELD_MODULUS}
-type polynomial = arr: t_Array field_element (sz 256)
+type polynomial = t_Array field_element (sz 256)
 type vector (p:params) = t_Array polynomial p.v_RANK
 type matrix (p:params) = t_Array (vector p) p.v_RANK
+
 
 val field_add: field_element -> field_element -> field_element
 let field_add a b = (a + b) % v v_FIELD_MODULUS
@@ -204,9 +210,24 @@ let sample_vector_cbd_then_ntt (#p:params) (seed:t_Array u8 (sz 32)) (domain_sep
   vector_ntt (sample_vector_cbd #p seed domain_sep)
 
 type dT = d: nat {d = 1 \/ d = 4 \/ d = 5 \/ d = 10 \/ d = 11 \/ d = 12}
+let max_d (d:dT) = if d < 12 then pow2 d else v v_FIELD_MODULUS
+type field_element_d (d:dT) = n:nat{n < max_d d}
+type polynomial_d (d:dT) = t_Array (field_element_d d) (sz 256)
+type vector_d (p:params) (d:dT) = t_Array (polynomial_d d) p.v_RANK
 
-let compress_d (d: dT {d <> 12}) (x: field_element): field_element
-  = (pow2 d * x + 1664) / v v_FIELD_MODULUS
+
+let compress_d (d: dT {d <> 12}) (x: field_element): field_element_d d
+  = let r = (pow2 d * x + 1664) / v v_FIELD_MODULUS in
+    assume (r * v v_FIELD_MODULUS < pow2 d * x + 1664);
+    assume (pow2 d * x + 1664 < pow2 d * v_FIELD_MODULUS + 1664);
+    assume (r < pow2 d);
+    r
+
+let decompress_d (d: dT {d <> 12}) (x: field_element_d d): field_element
+  = let r = (x * v v_FIELD_MODULUS + 1664) / pow2 d in
+    assume (r < v v_FIELD_MODULUS);
+    r
+    
 
 let bits_to_bytes (#bytes: usize) (bv: bit_vec (v bytes * 8))
   : Pure (t_Array u8 bytes)
@@ -222,20 +243,28 @@ let bytes_to_bits (#bytes: usize) (r: t_Array u8 bytes)
 
 unfold let retype_bit_vector #a #b (#_:unit{a == b}) (x: a): b = x
 
-let byte_encode (d: dT) (coefficients: polynomial): t_Array u8 (sz (32 * d))
-  = bits_to_bytes #(sz (32 * d))
-       (retype_bit_vector (bit_vec_of_nat_array coefficients d))
+let byte_encode (d: dT) (coefficients: polynomial_d d): t_Array u8 (sz (32 * d))
+  =  let coefficients' : t_Array nat (sz 256) = map_array #(field_element_d d) (fun x -> x <: nat) coefficients in
+     bits_to_bytes #(sz (32 * d))
+       (retype_bit_vector (bit_vec_of_nat_array coefficients' d))
 
-let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial
-  = let bv = bit_vec_of_int_t_array coefficients 8 in
+let byte_decode (d: dT) (coefficients: t_Array u8 (sz (32 * d))): polynomial_d d
+  = let bv = bytes_to_bits coefficients in
     let arr: t_Array nat (sz 256) = bit_vec_to_nat_array d (retype_bit_vector bv) in
-    let p = map' (fun (x: nat) -> x % v v_FIELD_MODULUS <: nat) arr in
-    introduce forall i. Seq.index p i < v v_FIELD_MODULUS
+    let p = map_array (fun (x: nat) -> x % v v_FIELD_MODULUS <: nat) arr in
+    introduce forall i. (d < 12 ==> Seq.index p i < pow2 d)
     with assert (Seq.index p i == Seq.index p (v (sz i)));
+    introduce forall i. (d == 12 ==> Seq.index p i < v v_FIELD_MODULUS)
+    with assert (Seq.index p i == Seq.index p (v (sz i)));
+    assert (forall i. (d < 12 ==> Seq.index p i < pow2 d) /\ (d == 12 ==> Seq.index p i < v v_FIELD_MODULUS));
+    admit();
     p
 
+let coerce_polynomial_12 (p:polynomial): polynomial_d 12 = p
+let coerce_vector_12 (#p:params) (v:vector p): vector_d p 12 = v
+
 let vector_encode_12 (#p:params) (v: vector p): t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p)
-  = let s: t_Array (t_Array _ (sz 384)) p.v_RANK = map' (byte_encode 12) v in
+  = let s: t_Array (t_Array _ (sz 384)) p.v_RANK = map_array (byte_encode 12) (coerce_vector_12 v) in
     flatten s
 
 let vector_decode_12 (#p:params) (arr: t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p)): vector p
@@ -247,21 +276,22 @@ let vector_decode_12 (#p:params) (arr: t_Array u8 (v_T_AS_NTT_ENCODED_SIZE p)): 
     )
 
 let compress_then_byte_encode (d: dT {d <> 12}) (coefficients: polynomial): t_Array u8 (sz (32 * d))
-  = let coefs: t_Array nat (sz 256) = map (fun (f: nat {f < v v_FIELD_MODULUS}) ->
-           compress_d d f <: nat
-         ) coefficients
+  = let coefs: t_Array (field_element_d d) (sz 256) = map_array (compress_d d) coefficients
     in
-    byte_encode d coefficients
+    byte_encode d coefs
 
-let compress_then_encode_message: polynomial -> t_Array u8 v_SHARED_SECRET_SIZE
-  = byte_encode 1
+let byte_decode_then_decompress (d: dT {d <> 12}) (b:t_Array u8 (sz (32 * d))): polynomial
+  = map_array (decompress_d d) (byte_decode d b)
 
-let decode_then_decompress_message: t_Array u8 v_SHARED_SECRET_SIZE -> polynomial
-  = byte_decode 1
+let compress_then_encode_message (p:polynomial) : t_Array u8 v_SHARED_SECRET_SIZE
+  = compress_then_byte_encode 1 p
+
+let decode_then_decompress_message (b:t_Array u8 v_SHARED_SECRET_SIZE): polynomial
+  = byte_decode_then_decompress 1 b
 
 let compress_then_encode_u (p:params) (vec: vector p): t_Array u8 (v_C1_SIZE p)
-  = let d = p.v_VECTOR_U_COMPRESSION_FACTOR in
-    flatten (map #_ #_ #(fun _ -> True) (byte_encode (v d)) vec)
+  = let d = v p.v_VECTOR_U_COMPRESSION_FACTOR in
+    flatten (map_array (compress_then_byte_encode d) vec)
 
 let decode_then_decompress_u (p:params) (arr: t_Array u8 (v_C1_SIZE p)): vector p
   = let d = p.v_VECTOR_U_COMPRESSION_FACTOR in
@@ -269,14 +299,14 @@ let decode_then_decompress_u (p:params) (arr: t_Array u8 (v_C1_SIZE p)): vector 
       let block_size = v_C1_BLOCK_SIZE p in
       let slice = Seq.slice arr (v block * v block_size) 
                                 (v block * v block_size + v block_size) in
-      byte_decode (v d) slice
+      byte_decode_then_decompress (v d) slice
     )
 
 let compress_then_encode_v (p:params): polynomial -> t_Array u8 (v_C2_SIZE p)
-  = byte_encode (v p.v_VECTOR_V_COMPRESSION_FACTOR)
+  = compress_then_byte_encode (v p.v_VECTOR_V_COMPRESSION_FACTOR)
 
 let decode_then_decompress_v (p:params): t_Array u8 (v_C2_SIZE p) -> polynomial
-  = byte_decode (v p.v_VECTOR_V_COMPRESSION_FACTOR)
+  = byte_decode_then_decompress (v p.v_VECTOR_V_COMPRESSION_FACTOR)
 
 (** IND-CPA Functions *)
 
