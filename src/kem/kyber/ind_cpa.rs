@@ -179,8 +179,16 @@ pub(super) fn generate_keypair_unpacked<
             t_as_ntt[i].coefficients[j] = to_unsigned_representative(t_as_ntt[i].coefficients[j]) as i32;
         }
     }
+
+    // KB: We also need to transpose the A array.
+    let mut a_matrix = a_transpose;
+    for i in 0..K {
+        for j in 0..K {
+            a_matrix[i][j] = a_transpose[j][i];
+        }
+    }
     
-    ((secret_as_ntt,t_as_ntt,a_transpose),public_key_serialized)
+    ((secret_as_ntt,t_as_ntt,a_matrix),public_key_serialized)
 }
 
 #[allow(non_snake_case)]
@@ -365,9 +373,9 @@ pub(crate) fn encrypt<
     //         AˆT[i][j] := Parse(XOF(ρ, i, j))
     //     end for
     // end for
-    let A_transpose = sample_matrix_A(into_padded_array(seed), false);
+    let a_transpose = sample_matrix_A(into_padded_array(seed), false);
     
-    encrypt_unpacked::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE>(&t_as_ntt, &A_transpose, message, randomness)
+    encrypt_unpacked::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE>(&t_as_ntt, &a_transpose, message, randomness)
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element

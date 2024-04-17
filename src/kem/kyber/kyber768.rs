@@ -135,7 +135,7 @@ pub fn decapsulate(
 pub fn decapsulate_unpacked(
     secret_as_ntt: &[PolynomialRingElement;3],
     t_as_ntt: &[PolynomialRingElement;3],
-    A_transpose: &[[PolynomialRingElement;3];3],
+    a_transpose: &[[PolynomialRingElement;3];3],
     implicit_rejection_value: &[u8],
     ind_cpa_public_key_hash: &[u8],
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
@@ -157,7 +157,7 @@ pub fn decapsulate_unpacked(
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(secret_as_ntt,t_as_ntt,A_transpose,implicit_rejection_value,ind_cpa_public_key_hash,ciphertext)
+    >(secret_as_ntt,t_as_ntt,a_transpose,implicit_rejection_value,ind_cpa_public_key_hash,ciphertext)
 }
 
 #[cfg(test)]

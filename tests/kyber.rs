@@ -48,14 +48,24 @@ macro_rules! impl_consistency_unpacked {
             let mut seed = [0; 64];
             rng.fill_bytes(&mut seed);
             let (sku,pubkey) =
-                     libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
+                     libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed.clone());
+
+            let kp =
+                libcrux::kem::kyber::kyber768::generate_key_pair(seed);
+            assert_eq!(pubkey.as_slice(),kp.public_key().as_slice());
 
             let mut rand = [0; 32];
             rng.fill_bytes(&mut rand);
             let (ciphertext,shared_secret) = libcrux::kem::kyber::kyber768::encapsulate(&pubkey,rand);
             let shared_secret_decapsulated = 
                     libcrux::kem::kyber::kyber768::decapsulate_unpacked(&sku.0,&sku.1,&sku.2,&sku.3,&sku.4,&ciphertext);
+
+            let shared_secret_decapsulated2 = 
+                    libcrux::kem::kyber::kyber768::decapsulate(&kp.private_key(),&ciphertext);
+            assert_eq!(shared_secret, shared_secret_decapsulated2);
+
             assert_eq!(shared_secret, shared_secret_decapsulated);
+            
         }
     };
 }
