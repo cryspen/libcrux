@@ -1,7 +1,7 @@
 use std::usize;
 
 use super::{
-    arithmetic::PolynomialRingElement,
+    arithmetic::{to_unsigned_representative, PolynomialRingElement},
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::{G, PRF},
     matrix::*,
@@ -154,24 +154,33 @@ pub(super) fn generate_keypair_unpacked<
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = sample_matrix_A(into_padded_array(seed_for_A), true);
+    let a_transpose = sample_matrix_A(into_padded_array(seed_for_A), true);
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
-    let (secret_as_ntt, domain_separator) =
+    let (mut secret_as_ntt, domain_separator) =
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
     let (error_as_ntt, _) =
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, domain_separator);
 
     // tˆ := Aˆ ◦ sˆ + eˆ
-    let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
+    let mut t_as_ntt = compute_As_plus_e(&a_transpose, &secret_as_ntt, &error_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
             t_as_ntt, &seed_for_A,
         );
-
-    ((secret_as_ntt,t_as_ntt,A_transpose),public_key_serialized)
+    
+    // KB: Need to do the following otherwise it violates invariants in NTT (the values are expected to be >=0 and <4096).
+    // Maybe we can remove these reductions later if we make those constraints looser
+    for i in 0..K {
+        for j in 0..256 {
+            secret_as_ntt[i].coefficients[j] = to_unsigned_representative(secret_as_ntt[i].coefficients[j]) as i32;
+            t_as_ntt[i].coefficients[j] = to_unsigned_representative(t_as_ntt[i].coefficients[j]) as i32;
+        }
+    }
+    
+    ((secret_as_ntt,t_as_ntt,a_transpose),public_key_serialized)
 }
 
 #[allow(non_snake_case)]
@@ -185,7 +194,7 @@ pub(super) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
-    let ((secret_as_ntt,_t_as_ntt,_A_transpose),public_key_serialized) = 
+    let ((secret_as_ntt,_t_as_ntt,_a_transpose),public_key_serialized) = 
         generate_keypair_unpacked::<K,PUBLIC_KEY_SIZE,RANKED_BYTES_PER_RING_ELEMENT,ETA1,ETA1_RANDOMNESS_SIZE>(key_generation_seed);
     
     // sk := Encode_12(sˆ mod^{+}q)
@@ -272,7 +281,7 @@ pub(crate) fn encrypt_unpacked<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     t_as_ntt: &[PolynomialRingElement; K],
-    A_transpose: &[[PolynomialRingElement;K];K],
+    a_transpose: &[[PolynomialRingElement;K];K],
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
@@ -301,7 +310,7 @@ pub(crate) fn encrypt_unpacked<
     let error_2 = sample_from_binomial_distribution::<ETA2>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
-    let u = compute_vector_u(&A_transpose, &r_as_ntt, &error_1);
+    let u = compute_vector_u(&a_transpose, &r_as_ntt, &error_1);
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let message_as_ring_element = deserialize_then_decompress_message(message);

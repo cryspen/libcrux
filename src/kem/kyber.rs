@@ -98,7 +98,7 @@ pub(super) fn generate_keypair_unpacked<
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let ((s_as_ntt,t_as_ntt,A_transpose),ind_cpa_public_key) = ind_cpa::generate_keypair_unpacked::<
+    let ((s_as_ntt,t_as_ntt,a_transpose),ind_cpa_public_key) = ind_cpa::generate_keypair_unpacked::<
         K,
         PUBLIC_KEY_SIZE,
         BYTES_PER_RING_ELEMENT,
@@ -110,7 +110,7 @@ pub(super) fn generate_keypair_unpacked<
 
     let rej:[u8;32] = implicit_rejection_value.try_into().unwrap();
     let pubkey : MlKemPublicKey<PUBLIC_KEY_SIZE> = MlKemPublicKey::from(ind_cpa_public_key);
-    ((s_as_ntt,t_as_ntt,A_transpose,rej,public_key_hash),pubkey)
+    ((s_as_ntt,t_as_ntt,a_transpose,rej,public_key_hash),pubkey)
 }
 
 pub(super) fn generate_keypair<
@@ -208,7 +208,7 @@ pub(super) fn decapsulate_unpacked<
 >(
     secret_as_ntt: &[PolynomialRingElement;K],
     t_as_ntt: &[PolynomialRingElement;K],
-    A_transpose: &[[PolynomialRingElement;K];K],
+    a_transpose: &[[PolynomialRingElement;K];K],
     implicit_rejection_value: &[u8],
     ind_cpa_public_key_hash: &[u8],
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
@@ -246,7 +246,7 @@ pub(super) fn decapsulate_unpacked<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
-    >(t_as_ntt, A_transpose, decrypted, pseudorandomness);
+    >(t_as_ntt, a_transpose, decrypted, pseudorandomness);
 
     let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
         ciphertext.as_ref(),
