@@ -1,5 +1,6 @@
 use super::{
-    arithmetic::{to_unsigned_representative, FieldElement, PolynomialRingElement},
+    arithmetic::{to_unsigned_representative, FieldElement},
+    polynomial::{PolynomialRingElement, to_i32_array, from_i32_array},
     compress::{
         compress_ciphertext_coefficient, compress_message_coefficient,
         decompress_ciphertext_coefficient, decompress_message_coefficient,
@@ -17,9 +18,10 @@ pub(super) fn compress_then_serialize_message(
     re: PolynomialRingElement,
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
+    let re = to_i32_array(re);
 
     cloop! {
-        for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        for (i, coefficients) in re.chunks_exact(8).enumerate() {
             cloop! {
                 for (j, coefficient) in coefficients.iter().enumerate() {
                     let coefficient = to_unsigned_representative(*coefficient);
@@ -38,18 +40,17 @@ pub(super) fn compress_then_serialize_message(
 pub(super) fn deserialize_then_decompress_message(
     serialized: [u8; SHARED_SECRET_SIZE],
 ) -> PolynomialRingElement {
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = [0i32;256];
 
     cloop! {
         for (i, byte) in serialized.into_iter().enumerate() {
             for j in 0..8 {
                 let coefficient_compressed = ((byte >> j) & 0x1) as FieldElement;
-                re.coefficients[8 * i + j] = decompress_message_coefficient(coefficient_compressed);
+                re[8 * i + j] = decompress_message_coefficient(coefficient_compressed);
             }
         }
     }
-
-    re
+    from_i32_array(re)
 }
 
 #[inline(always)]
@@ -57,9 +58,9 @@ pub(super) fn serialize_uncompressed_ring_element(
     re: PolynomialRingElement,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
-
+    let re = to_i32_array(re);
     cloop! {
-        for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
+        for (i, coefficients) in re.chunks_exact(2).enumerate() {
             let coefficient1 = to_unsigned_representative(coefficients[0]);
             let coefficient2 = to_unsigned_representative(coefficients[1]);
 
@@ -85,7 +86,7 @@ fn compress_coefficients_3(coefficient1: u16, coefficient2: u16) -> (u8, u8, u8)
 pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = [0i32;256];
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(3).enumerate() {
@@ -93,12 +94,12 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
             let byte2 = bytes[1] as FieldElement;
             let byte3 = bytes[2] as FieldElement;
 
-            re.coefficients[2 * i] = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
-            re.coefficients[2 * i + 1] = (byte3 << 4) | ((byte2 >> 4) & 0x0F);
+            re[2 * i] = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
+            re[2 * i + 1] = (byte3 << 4) | ((byte2 >> 4) & 0x0F);
         }
     }
 
-    re
+    from_i32_array(re)
 }
 
 /// Only use with public values.
@@ -108,7 +109,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
 fn deserialize_to_reduced_ring_element(ring_element: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(ring_element.len() == BYTES_PER_RING_ELEMENT);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = [0i32;256];
 
     cloop! {
         for (i, bytes) in ring_element.chunks_exact(3).enumerate() {
@@ -118,17 +119,17 @@ fn deserialize_to_reduced_ring_element(ring_element: &[u8]) -> PolynomialRingEle
 
             // The modulus here is ok because the input must be public.
             // XXX: The awkward code here is necessary to work around Charon shortcomings.
-            re.coefficients[2 * i] = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
-            let tmp = re.coefficients[2 * i] % 3329; // FIELD_MODULUS
-            re.coefficients[2 * i] = tmp;
+            re[2 * i] = (byte2 & 0x0F) << 8 | (byte1 & 0xFF);
+            let tmp = re[2 * i] % 3329; // FIELD_MODULUS
+            re[2 * i] = tmp;
 
-            re.coefficients[2 * i + 1] = (byte3 << 4) | ((byte2 >> 4) & 0x0F);
-            let tmp = re.coefficients[2 * i + 1] % 3329; // FIELD_MODULUS
-            re.coefficients[2 * i + 1] = tmp;
+            re[2 * i + 1] = (byte3 << 4) | ((byte2 >> 4) & 0x0F);
+            let tmp = re[2 * i + 1] % 3329; // FIELD_MODULUS
+            re[2 * i + 1] = tmp;
         }
     }
 
-    re
+    from_i32_array(re)
 }
 
 /// This function deserializes ring elements and reduces the result by the field
@@ -154,9 +155,9 @@ pub(super) fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, co
 #[inline(always)]
 fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
-
+    let re = to_i32_array(re);
     cloop! {
-        for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
+        for (i, coefficients) in re.chunks_exact(4).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(10, to_unsigned_representative(coefficients[0]));
             let coefficient2 =
@@ -197,9 +198,9 @@ fn compress_coefficients_10(
 #[inline(always)]
 fn compress_then_serialize_11<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
-
+    let re = to_i32_array(re);
     cloop! {
-        for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        for (i, coefficients) in re.chunks_exact(8).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(11, to_unsigned_representative(coefficients[0]));
             let coefficient2 =
@@ -290,9 +291,9 @@ pub(super) fn compress_then_serialize_ring_element_u<
 #[inline(always)]
 fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
-
+    let re = to_i32_array(re);
     cloop! {
-        for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
+        for (i, coefficients) in re.chunks_exact(2).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(4, to_unsigned_representative(coefficients[0])) as u8;
             let coefficient2 =
@@ -308,9 +309,9 @@ fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) ->
 #[inline(always)]
 fn compress_then_serialize_5<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
-
+    let re = to_i32_array(re);
     cloop! {
-        for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        for (i, coefficients) in re.chunks_exact(8).enumerate() {
             let coefficient1 =
                 compress_ciphertext_coefficient(5, to_unsigned_representative(coefficients[0])) as u8;
             let coefficient2 =
@@ -388,7 +389,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = [0i32;256];
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(5).enumerate() {
@@ -401,14 +402,14 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
             let (coefficient1, coefficient2, coefficient3, coefficient4) =
                 decompress_coefficients_10(byte2, byte1, byte3, byte4, byte5);
 
-            re.coefficients[4 * i] = decompress_ciphertext_coefficient(10, coefficient1);
-            re.coefficients[4 * i + 1] = decompress_ciphertext_coefficient(10, coefficient2);
-            re.coefficients[4 * i + 2] = decompress_ciphertext_coefficient(10, coefficient3);
-            re.coefficients[4 * i + 3] = decompress_ciphertext_coefficient(10, coefficient4);
+            re[4 * i] = decompress_ciphertext_coefficient(10, coefficient1);
+            re[4 * i + 1] = decompress_ciphertext_coefficient(10, coefficient2);
+            re[4 * i + 2] = decompress_ciphertext_coefficient(10, coefficient3);
+            re[4 * i + 3] = decompress_ciphertext_coefficient(10, coefficient4);
         }
     }
 
-    re
+    from_i32_array(re)
 }
 
 #[inline(always)]
@@ -430,7 +431,7 @@ fn decompress_coefficients_10(
 fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = [0i32;256];
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(11).enumerate() {
@@ -459,18 +460,18 @@ fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
                 byte2, byte1, byte3, byte5, byte4, byte6, byte7, byte9, byte8, byte10, byte11,
             );
 
-            re.coefficients[8 * i] = decompress_ciphertext_coefficient(11, coefficient1);
-            re.coefficients[8 * i + 1] = decompress_ciphertext_coefficient(11, coefficient2);
-            re.coefficients[8 * i + 2] = decompress_ciphertext_coefficient(11, coefficient3);
-            re.coefficients[8 * i + 3] = decompress_ciphertext_coefficient(11, coefficient4);
-            re.coefficients[8 * i + 4] = decompress_ciphertext_coefficient(11, coefficient5);
-            re.coefficients[8 * i + 5] = decompress_ciphertext_coefficient(11, coefficient6);
-            re.coefficients[8 * i + 6] = decompress_ciphertext_coefficient(11, coefficient7);
-            re.coefficients[8 * i + 7] = decompress_ciphertext_coefficient(11, coefficient8);
+            re[8 * i] = decompress_ciphertext_coefficient(11, coefficient1);
+            re[8 * i + 1] = decompress_ciphertext_coefficient(11, coefficient2);
+            re[8 * i + 2] = decompress_ciphertext_coefficient(11, coefficient3);
+            re[8 * i + 3] = decompress_ciphertext_coefficient(11, coefficient4);
+            re[8 * i + 4] = decompress_ciphertext_coefficient(11, coefficient5);
+            re[8 * i + 5] = decompress_ciphertext_coefficient(11, coefficient6);
+            re[8 * i + 6] = decompress_ciphertext_coefficient(11, coefficient7);
+            re[8 * i + 7] = decompress_ciphertext_coefficient(11, coefficient8);
         }
     }
 
-    re
+    from_i32_array(re)
 }
 
 #[inline(always)]
@@ -524,18 +525,18 @@ pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTO
 fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = [0i32;256];
 
     cloop! {
         for (i, byte) in serialized.iter().enumerate() {
             let (coefficient1, coefficient2) = decompress_coefficients_4(byte);
 
-            re.coefficients[2 * i] = decompress_ciphertext_coefficient(4, coefficient1);
-            re.coefficients[2 * i + 1] = decompress_ciphertext_coefficient(4, coefficient2);
+            re[2 * i] = decompress_ciphertext_coefficient(4, coefficient1);
+            re[2 * i + 1] = decompress_ciphertext_coefficient(4, coefficient2);
         }
     }
 
-    re
+    from_i32_array(re)
 }
 
 #[inline(always)]
@@ -549,7 +550,7 @@ fn decompress_coefficients_4(byte: &u8) -> (i32, i32) {
 fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = [0i32;256];
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(5).enumerate() {
@@ -570,18 +571,17 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
                 coefficient8,
             ) = decompress_coefficients_5(byte1, byte2, byte3, byte4, byte5);
 
-            re.coefficients[8 * i] = decompress_ciphertext_coefficient(5, coefficient1);
-            re.coefficients[8 * i + 1] = decompress_ciphertext_coefficient(5, coefficient2);
-            re.coefficients[8 * i + 2] = decompress_ciphertext_coefficient(5, coefficient3);
-            re.coefficients[8 * i + 3] = decompress_ciphertext_coefficient(5, coefficient4);
-            re.coefficients[8 * i + 4] = decompress_ciphertext_coefficient(5, coefficient5);
-            re.coefficients[8 * i + 5] = decompress_ciphertext_coefficient(5, coefficient6);
-            re.coefficients[8 * i + 6] = decompress_ciphertext_coefficient(5, coefficient7);
-            re.coefficients[8 * i + 7] = decompress_ciphertext_coefficient(5, coefficient8);
+            re[8 * i] = decompress_ciphertext_coefficient(5, coefficient1);
+            re[8 * i + 1] = decompress_ciphertext_coefficient(5, coefficient2);
+            re[8 * i + 2] = decompress_ciphertext_coefficient(5, coefficient3);
+            re[8 * i + 3] = decompress_ciphertext_coefficient(5, coefficient4);
+            re[8 * i + 4] = decompress_ciphertext_coefficient(5, coefficient5);
+            re[8 * i + 5] = decompress_ciphertext_coefficient(5, coefficient6);
+            re[8 * i + 6] = decompress_ciphertext_coefficient(5, coefficient7);
+            re[8 * i + 7] = decompress_ciphertext_coefficient(5, coefficient8);
         }
     }
-
-    re
+    from_i32_array(re)
 }
 
 #[inline(always)]

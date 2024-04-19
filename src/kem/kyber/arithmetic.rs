@@ -1,6 +1,6 @@
 use crate::hax_utils::hax_debug_assert;
 
-use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
+use super::constants::{FIELD_MODULUS};
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
@@ -150,52 +150,35 @@ pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
-#[derive(Clone, Copy)]
-pub struct PolynomialRingElement {
-    pub(crate) coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT],
-}
 
-impl PolynomialRingElement {
-    pub const ZERO: Self = Self {
-        coefficients: [0i32; 256], // FIXME: hax issue, this is COEFFICIENTS_IN_RING_ELEMENT
-    };
-}
-
-/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
-/// sum of their constituent coefficients.
-#[cfg_attr(hax, hax_lib_macros::requires(
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
-            (lhs.coefficients[i].abs() <= ((K as i32) - 1) * FIELD_MODULUS) &&
-            (rhs.coefficients[i].abs() <= FIELD_MODULUS)
-
-))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < result.coefficients.len(), ||
-                result.coefficients[i].abs() <= (K as i32) * FIELD_MODULUS
-))))]
-pub(crate) fn add_to_ring_element<const K: usize>(
-    mut lhs: PolynomialRingElement,
-    rhs: &PolynomialRingElement,
-) -> PolynomialRingElement {
-    hax_debug_assert!(lhs
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient.abs() <= ((K as i32) - 1) * FIELD_MODULUS));
-    hax_debug_assert!(rhs
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient.abs() < FIELD_MODULUS));
-
-    for i in 0..lhs.coefficients.len() {
-        lhs.coefficients[i] += rhs.coefficients[i];
-    }
-
-    hax_debug_assert!(lhs
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient.abs() <= (K as i32) * FIELD_MODULUS));
-
-    lhs
+/// Compute the product of two Kyber binomials with respect to the
+/// modulus `X² - zeta`.
+///
+/// This function almost implements <strong>Algorithm 11</strong> of the
+/// NIST FIPS 203 standard, which is reproduced below:
+///
+/// ```plaintext
+/// Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+/// Input: γ ∈ ℤq.
+/// Output: c₀, c₁ ∈ ℤq.
+///
+/// c₀ ← a₀·b₀ + a₁·b₁·γ
+/// c₁ ← a₀·b₁ + a₁·b₀
+/// return c₀, c₁
+/// ```
+/// We say "almost" because the coefficients output by this function are in
+/// the Montgomery domain (unlike in the specification).
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+#[inline(always)]
+pub(crate) fn ntt_multiply_binomials(
+    (a0, a1): (FieldElement, FieldElement),
+    (b0, b1): (FieldElement, FieldElement),
+    zeta: FieldElementTimesMontgomeryR,
+) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
+    (
+        montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
+        montgomery_reduce(a0 * b1 + a1 * b0),
+    )
 }

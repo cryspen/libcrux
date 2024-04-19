@@ -1,7 +1,7 @@
 use std::usize;
 
 use super::{
-    arithmetic::PolynomialRingElement,
+    polynomial::PolynomialRingElement,
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::{G, PRF},
     matrix::*,
