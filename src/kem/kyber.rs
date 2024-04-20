@@ -11,11 +11,12 @@ pub(crate) mod constants;
 mod helper;
 
 mod arithmetic;
+mod intvec;
+mod polynomial;
 mod compress;
 mod constant_time_ops;
 mod hash_functions;
 mod ind_cpa;
-mod polynomial;
 mod matrix;
 mod ntt;
 mod sampling;

@@ -8,8 +8,7 @@ use super::{
         ntt_multiply,
         PolynomialRingElement,
     },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
-    ntt::{invert_ntt_montgomery},
+    ntt::invert_ntt_montgomery,
     sampling::sample_from_xof,
 };
 use crate::cloop;

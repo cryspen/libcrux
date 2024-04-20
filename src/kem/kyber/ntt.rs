@@ -46,10 +46,10 @@ fn ntt_at_layer_3328(
 pub(in crate::kem::kyber) fn ntt_binomially_sampled_ring_element(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    let mut zeta_i = 1;
     // Due to the small coefficient bound, we can skip the first round of
     // Montgomery reductions.
-    re = ntt_at_layer_7(&mut zeta_i, re);
+    re = ntt_at_layer_7(re);
+    let mut zeta_i = 1;
     re = ntt_at_layer_3(&mut zeta_i, re, 6);
     re = ntt_at_layer_3(&mut zeta_i, re, 5);
     re = ntt_at_layer_3(&mut zeta_i, re, 4);
