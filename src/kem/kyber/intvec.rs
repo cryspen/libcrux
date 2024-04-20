@@ -1,5 +1,8 @@
 //use crate::hax_utils::hax_debug_assert;
-use super::arithmetic::*;
+use super::{arithmetic::*, 
+            compress::{compress_message_coefficient,decompress_message_coefficient,
+                       compress_ciphertext_coefficient, decompress_ciphertext_coefficient}
+};
 use crate::cloop;
 
 pub(crate) const SIZE_VEC : usize = 8;
@@ -66,7 +69,8 @@ pub(crate) fn mul_int_vec_constant(
 //     lhs
 // }
 
-
+/// Pointwise Operations: should be generic
+/// 
 #[inline(always)]
 pub(crate) fn barrett_reduce_int_vec(mut a:IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
@@ -92,6 +96,14 @@ pub(crate) fn to_standard_domain_int_vec(mut a:IntVec) -> IntVec {
 }
 
 #[inline(always)]
+pub(crate) fn to_unsigned_representative_int_vec(mut a:IntVec) -> IntVec {
+    for i in 0..SIZE_VEC {
+        a.elements[i] = to_unsigned_representative(a.elements[i]) as i32;
+    }
+    a
+}
+
+#[inline(always)]
 pub(crate) fn montgomery_multiply_fe_by_fer_int_vec(mut a:IntVec, b:i32) -> IntVec {
     for i in 0..SIZE_VEC {
         a.elements[i] = montgomery_multiply_fe_by_fer(a.elements[i],b);
@@ -99,6 +111,41 @@ pub(crate) fn montgomery_multiply_fe_by_fer_int_vec(mut a:IntVec, b:i32) -> IntV
     a
 }
 
+#[inline(always)]
+pub(crate) fn compress_1_int_vec(mut a:IntVec) -> IntVec {
+    for i in 0..SIZE_VEC{
+        a.elements[i] = compress_message_coefficient(a.elements[i] as u16) as i32;
+    }
+    a
+}
+
+#[inline(always)]
+pub(crate) fn decompress_1_int_vec(mut a:IntVec) -> IntVec {
+    for i in 0..SIZE_VEC{
+        a.elements[i] = decompress_message_coefficient(a.elements[i]);
+    }
+    a
+}
+
+#[inline(always)]
+pub(crate) fn compress_int_vec(coefficient_bits: u8, mut a:IntVec,) -> IntVec {
+    for i in 0..SIZE_VEC{
+        a.elements[i] = compress_ciphertext_coefficient(coefficient_bits,a.elements[i] as u16) as i32;
+    }
+    a
+}
+
+#[inline(always)]
+pub(crate) fn decompress_int_vec(coefficient_bits: u8, mut a:IntVec,) -> IntVec {
+    for i in 0..SIZE_VEC{
+        a.elements[i] = decompress_ciphertext_coefficient(coefficient_bits,a.elements[i]);
+    }
+    a
+}
+
+
+/// Cross-lane Operations: need specialized implementations
+/// 
 #[inline(always)]
 pub(crate) fn ntt_layer_1_int_vec_step(mut a:IntVec, zeta1:i32, zeta2:i32) -> IntVec {    
     let t = montgomery_multiply_fe_by_fer(
@@ -305,4 +352,44 @@ pub(crate) fn sample_binomial_3_int_vec(coin_toss_outcomes1:u32,coin_toss_outcom
         }
     }
     sampled
+}
+
+
+#[inline(always)]
+pub(crate) fn serialize_1_int_vec(a:IntVec) -> u8 {
+    let mut result = 0u8;
+    for i in 0..SIZE_VEC{
+        result |= (a.elements[i] as u8) << i;
+    }
+    result
+}
+
+#[inline(always)]
+pub(crate) fn deserialize_1_int_vec(a:u8) -> IntVec {
+    let mut result = ZERO_VEC;
+    for i in 0..SIZE_VEC{
+        result.elements[i] = ((a >> i) & 0x1) as i32;
+    }
+    result
+}
+
+
+#[inline(always)]
+pub(crate) fn deserialize_5_int_vec(
+    byte1: u8,
+    byte2: u8,
+    byte3: u8,
+    byte4: u8,
+    byte5: u8,
+) -> IntVec {
+    let mut a = ZERO_VEC;
+    a.elements[0] = (byte1 & 0x1F) as i32;
+    a.elements[1] = ((byte2 & 0x3) << 3 | (byte1 >> 5)) as i32;
+    a.elements[2] = ((byte2 >> 2) & 0x1F) as i32;
+    a.elements[3] = (((byte3 & 0xF) << 1) | (byte2 >> 7)) as i32;
+    a.elements[4] = (((byte4 & 1) << 4) | (byte3 >> 4)) as i32;
+    a.elements[5] = ((byte4 >> 1) & 0x1F) as i32;
+    a.elements[6] = (((byte5 & 0x7) << 2) | (byte4 >> 6)) as i32;
+    a.elements[7] = (byte5 >> 3) as i32;
+    a
 }
