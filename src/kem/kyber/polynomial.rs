@@ -1,7 +1,6 @@
 use crate::hax_utils::hax_debug_assert;
 use super::arithmetic::*;
 use super::intvec::*;
-//use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) const VECS_IN_RING_ELEMENT: usize = super::constants::COEFFICIENTS_IN_RING_ELEMENT / SIZE_VEC;
 
@@ -117,12 +116,51 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
 /// resulting coefficients are in the normal domain since the zetas have been
 /// multiplied by MONTGOMERY_R.
 #[inline(always)]
-pub(crate) fn ntt_at_layer(
+pub(crate) fn ntt_at_layer_1(
+    zeta_i: &mut usize,
+    mut re: PolynomialRingElement,
+    _layer: usize,
+    _initial_coefficient_bound: usize,
+) -> PolynomialRingElement {
+    *zeta_i += 1;
+    for round in 0..32 { 
+        re.coefficients[round] = ntt_layer_1_int_vec_step(re.coefficients[round],ZETAS_TIMES_MONTGOMERY_R[*zeta_i],ZETAS_TIMES_MONTGOMERY_R[*zeta_i+1]);
+        *zeta_i += 2;       
+    }
+    *zeta_i -= 1;   
+    re
+}
+
+#[inline(always)]
+pub(crate) fn ntt_at_layer_2(
+    zeta_i: &mut usize,
+    mut re: PolynomialRingElement,
+    _layer: usize,
+    _initial_coefficient_bound: usize,
+) -> PolynomialRingElement {
+    for round in 0..32 {
+        *zeta_i += 1;
+        re.coefficients[round] = ntt_layer_2_int_vec_step(re.coefficients[round],ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+    }
+    re
+}
+
+#[inline(always)]
+pub(crate) fn ntt_layer_int_vec_step(mut a:IntVec, mut b:IntVec, zeta_r:i32) -> (IntVec,IntVec) {
+    let t = montgomery_multiply_fe_by_fer_int_vec(b, zeta_r);
+    b = sub_int_vec(a, &t);
+    a = add_int_vec(a, &t);
+    (a,b)
+}
+
+#[inline(always)]
+pub(crate) fn ntt_at_layer_3_plus(
     zeta_i: &mut usize,
     mut re: PolynomialRingElement,
     layer: usize,
     _initial_coefficient_bound: usize,
 ) -> PolynomialRingElement {
+    debug_assert!(layer >= 3);
     let step = 1 << layer;
 
     for round in 0..(128 >> layer) {
@@ -133,48 +171,74 @@ pub(crate) fn ntt_at_layer(
         let step_vec = step / SIZE_VEC;
         
         for j in offset_vec..offset_vec + step_vec {
-            let (x,y) = ntt_layer_int_vec_step(re.coefficients[j],re.coefficients[j+step_vec],step%SIZE_VEC,ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+            let (x,y) = ntt_layer_int_vec_step(re.coefficients[j],re.coefficients[j+step_vec],ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
             re.coefficients[j] = x;
             re.coefficients[j + step_vec] = y;
         }
     }
-    // pub(crate) fn montgomery_reduce_int_vec(mut a:IntVec) -> IntVec {
-    //     for i in 0..SIZE_VEC {
-    //         a.elements[i] = montgomery_reduce(a.elements[i]);
-    //     }
-    //     a
-    // }
     re
+}
+
+#[inline(always)]
+pub(crate) fn ntt_layer_7_int_vec_step(mut a:IntVec, mut b:IntVec) -> (IntVec,IntVec) {
+    let t = mul_int_vec_constant(b, -1600);
+    b = sub_int_vec(a, &t);
+    a = add_int_vec(a, &t);
+    (a,b)
 }
 
 #[inline(always)]
 pub(crate) fn ntt_at_layer_7(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    // hax_debug_assert!(re
-    //     .coefficients
-    //     .into_iter()
-    //     .all(|coefficient| coefficient.abs() <= 3));
 
     let step = VECS_IN_RING_ELEMENT/2;
     for j in 0..step {
-        // Multiply by the appropriate zeta in the normal domain.
-        let t = mul_int_vec_constant(re.coefficients[j + step], -1600);
-
-        re.coefficients[j + step] = sub_int_vec(re.coefficients[j], &t);
-        re.coefficients[j] = add_int_vec(re.coefficients[j], &t);
+        let (x,y) = ntt_layer_7_int_vec_step(re.coefficients[j],re.coefficients[j+step]);
+        re.coefficients[j] = x;
+        re.coefficients[j + step] = y;
     }
-
-    // hax_debug_assert!(re
-    //     .coefficients
-    //     .into_iter()
-    //     .all(|coefficient| { coefficient.abs() < 3 + ((3 * FIELD_MODULUS) / 2) }));
-
     re
 }
 
 #[inline(always)]
-pub(crate) fn invert_ntt_at_layer(
+pub(crate) fn invert_ntt_at_layer_1(
+    zeta_i: &mut usize,
+    mut re: PolynomialRingElement,
+    layer: usize,
+) -> PolynomialRingElement {
+    *zeta_i -= 1;
+    for round in 0..32 {
+        re.coefficients[round] = inv_ntt_layer_1_int_vec_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i], ZETAS_TIMES_MONTGOMERY_R[*zeta_i-1]);
+        *zeta_i -= 2;
+    }
+    *zeta_i += 1;
+    re
+}
+
+#[inline(always)]
+pub(crate) fn invert_ntt_at_layer_2(
+    zeta_i: &mut usize,
+    mut re: PolynomialRingElement,
+    layer: usize,
+) -> PolynomialRingElement {
+    for round in 0..32 {
+        *zeta_i -= 1;
+        re.coefficients[round] = inv_ntt_layer_2_int_vec_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+    }
+    re
+}
+
+#[inline(always)]
+pub(crate) fn inv_ntt_layer_int_vec_step(mut a:IntVec, mut b:IntVec, zeta_r:i32) -> (IntVec,IntVec) {
+    let a_minus_b = sub_int_vec(b, &a);
+    a = add_int_vec(a, &b);
+    b = montgomery_multiply_fe_by_fer_int_vec(a_minus_b, zeta_r);
+    (a,b)
+}
+
+#[inline(always)]
+pub(crate) fn invert_ntt_at_layer_3_plus(
     zeta_i: &mut usize,
     mut re: PolynomialRingElement,
     layer: usize,
@@ -189,14 +253,14 @@ pub(crate) fn invert_ntt_at_layer(
         let step_vec = step / SIZE_VEC;
 
         for j in offset_vec..offset_vec + step_vec {
-            let (x,y) = inv_ntt_layer_int_vec_step(re.coefficients[j],re.coefficients[j+step_vec],step%SIZE_VEC,ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+            let (x,y) = inv_ntt_layer_int_vec_step(re.coefficients[j],re.coefficients[j+step_vec],ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
             re.coefficients[j] = x;
             re.coefficients[j+step_vec] = y;
         }
     }
-
     re
 }
+
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,
 /// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
@@ -240,7 +304,7 @@ pub(crate) fn ntt_multiply(
     lhs: &PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    // hax_debug_assert!(lhs
+    // hax_debug_debug_assert!(lhs
     //     .coefficients
     //     .into_iter()
     //     .all(|coefficient| coefficient >= 0 && coefficient < 4096));

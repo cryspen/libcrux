@@ -90,60 +90,140 @@ pub(crate) fn to_standard_domain_int_vec(mut a:IntVec) -> IntVec {
     a
 }
 
-//#[inline(always)]
-// pub(crate) fn montgomery_multiply_fe_by_fer_int_vec(mut a:IntVec, b:i32) -> IntVec {
+#[inline(always)]
+pub(crate) fn montgomery_multiply_fe_by_fer_int_vec(mut a:IntVec, b:i32) -> IntVec {
+    for i in 0..SIZE_VEC {
+        a.elements[i] = montgomery_multiply_fe_by_fer(a.elements[i],b);
+    }
+    a
+}
+
+#[inline(always)]
+pub(crate) fn ntt_layer_1_int_vec_step(mut a:IntVec, zeta1:i32, zeta2:i32) -> IntVec {    
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[2],
+                zeta1);
+    a.elements[2] = a.elements[0] - t;
+    a.elements[0] = a.elements[0] + t;
+
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[3],
+                zeta1);
+    a.elements[3] = a.elements[1] - t;
+    a.elements[1] = a.elements[1] + t;
+    
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[6],
+                zeta2);
+    a.elements[6] = a.elements[4] - t;
+    a.elements[4] = a.elements[4] + t;
+
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[7],
+                zeta2);
+    a.elements[7] = a.elements[5] - t;
+    a.elements[5] = a.elements[5] + t;
+
+    a
+}
+
+#[inline(always)]
+pub(crate) fn ntt_layer_2_int_vec_step(mut a:IntVec, zeta:i32) -> IntVec {    
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[4],
+                zeta);
+    a.elements[4] = a.elements[0] - t;
+    a.elements[0] = a.elements[0] + t;
+
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[5],
+                zeta);
+    a.elements[5] = a.elements[1] - t;
+    a.elements[1] = a.elements[1] + t;
+    
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[6],
+                zeta);
+    a.elements[6] = a.elements[2] - t;
+    a.elements[2] = a.elements[2] + t;
+
+    let t = montgomery_multiply_fe_by_fer(
+                a.elements[7],
+                zeta);
+    a.elements[7] = a.elements[3] - t;
+    a.elements[3] = a.elements[3] + t;
+
+    a
+}
+
+// #[inline(always)]
+// pub(crate) fn ntt_layer_3_plus_int_vec_step(mut a:IntVec, mut b:IntVec, zeta_r:i32) -> (IntVec,IntVec) {
 //     for i in 0..SIZE_VEC {
-//         a.elements[i] = montgomery_multiply_fe_by_fer(a.elements[i],b);
+//         let t = montgomery_multiply_fe_by_fer(b.elements[i], zeta_r);
+//         b.elements[i] = a.elements[i] - t;
+//         a.elements[i] = a.elements[i] + t;
 //     }
-//     a
+//     (a,b)
 // }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_int_vec_step(mut a:IntVec, mut b:IntVec, step:usize, zeta_r:i32) -> (IntVec,IntVec) {
-    if step < 8 {
-        //hax_debug_assert!(a == b);
-        for i in 0..SIZE_VEC {
-            let t = montgomery_multiply_fe_by_fer(
-                    a.elements[i + step],
-                    zeta_r);
-            a.elements[i + step] = a.elements[i] - t;
-            a.elements[i] = a.elements[i] + t;
-        }
-        (a,a)
-    } else {
-        for i in 0..SIZE_VEC {
-            let t = montgomery_multiply_fe_by_fer(
-                    b.elements[i + step],
-                    zeta_r);
-            b.elements[i + step] = a.elements[i] - t;
-            a.elements[i] = a.elements[i] + t;
-        }
-        (a,b)
-    }
+pub(crate) fn inv_ntt_layer_1_int_vec_step(mut a:IntVec, zeta1:i32, zeta2:i32) -> IntVec {
+    let a_minus_b = a.elements[2] - a.elements[0];
+    a.elements[0] = a.elements[0] + a.elements[2];
+    a.elements[2] =
+        montgomery_multiply_fe_by_fer(a_minus_b,zeta1);
 
+    let a_minus_b = a.elements[3] - a.elements[1];
+    a.elements[1] = a.elements[1] + a.elements[3];
+    a.elements[3] =
+         montgomery_multiply_fe_by_fer(a_minus_b,zeta1);
+
+    let a_minus_b = a.elements[6] - a.elements[4];
+    a.elements[4] = a.elements[4] + a.elements[6];
+    a.elements[6] =
+        montgomery_multiply_fe_by_fer(a_minus_b,zeta2);
+
+    let a_minus_b = a.elements[7] - a.elements[5];
+    a.elements[5] = a.elements[5] + a.elements[7];
+    a.elements[7] =
+        montgomery_multiply_fe_by_fer(a_minus_b,zeta2);
+    a
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_int_vec_step(mut a:IntVec, mut b:IntVec, step:usize, zeta_r:i32) -> (IntVec,IntVec) {
-    if step < 8 {
-        //hax_debug_assert!(a == b);
-        for i in 0..SIZE_VEC {
-            let a_minus_b = a.elements[i + step] - a.elements[i];
-            a.elements[i] = a.elements[i] + a.elements[i + step];
-            a.elements[i + step] =
-                montgomery_reduce(a_minus_b * zeta_r);
-         }
-         (a,a)
-    } else {
-        for i in 0..SIZE_VEC {
-            let a_minus_b = b.elements[i + step] - a.elements[i];
-            a.elements[i] = a.elements[i] + b.elements[i + step];
-            b.elements[i + step] =
-                montgomery_reduce(a_minus_b * zeta_r);
-         }
-         (a,b)
-    }
+pub(crate) fn inv_ntt_layer_2_int_vec_step(mut a:IntVec, zeta:i32) -> IntVec {
+    let a_minus_b = a.elements[4] - a.elements[0];
+    a.elements[0] = a.elements[0] + a.elements[4];
+    a.elements[4] =
+        montgomery_multiply_fe_by_fer(a_minus_b,zeta);
+
+    let a_minus_b = a.elements[5] - a.elements[1];
+    a.elements[1] = a.elements[1] + a.elements[5];
+    a.elements[5] =
+        montgomery_multiply_fe_by_fer(a_minus_b,zeta);
+
+    let a_minus_b = a.elements[6] - a.elements[2];
+    a.elements[2] = a.elements[2] + a.elements[6];
+    a.elements[6] =
+        montgomery_multiply_fe_by_fer(a_minus_b,zeta);
+
+    let a_minus_b = a.elements[7] - a.elements[3];
+    a.elements[3] = a.elements[3] + a.elements[7];
+    a.elements[7] =
+        montgomery_multiply_fe_by_fer(a_minus_b,zeta);
+    a
 }
+
+
+// #[inline(always)]
+// pub(crate) fn inv_ntt_layer_3_plus_int_vec_step(mut a:IntVec, mut b:IntVec, zeta_r:i32) -> (IntVec,IntVec) {
+//     for i in 0..SIZE_VEC {
+//         let a_minus_b = b.elements[i] - a.elements[i];
+//         a.elements[i] = a.elements[i] + b.elements[i];
+//         b.elements[i] = montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
+//     }
+//     (a,b)
+// }
 
 #[inline(always)]
 pub(crate) fn ntt_multiply_int_vec(
