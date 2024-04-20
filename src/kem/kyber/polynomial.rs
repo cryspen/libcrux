@@ -1,4 +1,4 @@
-use crate::hax_utils::hax_debug_assert;
+//use crate::hax_utils::hax_debug_assert;
 use super::arithmetic::*;
 use super::intvec::*;
 
@@ -6,7 +6,7 @@ pub(crate) const VECS_IN_RING_ELEMENT: usize = super::constants::COEFFICIENTS_IN
 
 #[derive(Clone, Copy)]
 pub struct PolynomialRingElement {
-    coefficients: [IntVec; VECS_IN_RING_ELEMENT], 
+    pub(crate) coefficients: [IntVec; VECS_IN_RING_ELEMENT], 
 }
 
 impl PolynomialRingElement {
@@ -205,7 +205,7 @@ pub(crate) fn ntt_at_layer_7(
 pub(crate) fn invert_ntt_at_layer_1(
     zeta_i: &mut usize,
     mut re: PolynomialRingElement,
-    layer: usize,
+    _layer: usize,
 ) -> PolynomialRingElement {
     *zeta_i -= 1;
     for round in 0..32 {
@@ -220,7 +220,7 @@ pub(crate) fn invert_ntt_at_layer_1(
 pub(crate) fn invert_ntt_at_layer_2(
     zeta_i: &mut usize,
     mut re: PolynomialRingElement,
-    layer: usize,
+    _layer: usize,
 ) -> PolynomialRingElement {
     for round in 0..32 {
         *zeta_i -= 1;

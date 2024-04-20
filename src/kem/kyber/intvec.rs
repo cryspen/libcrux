@@ -1,5 +1,6 @@
-use crate::hax_utils::hax_debug_assert;
+//use crate::hax_utils::hax_debug_assert;
 use super::arithmetic::*;
+use crate::cloop;
 
 pub(crate) const SIZE_VEC : usize = 8;
 
@@ -265,4 +266,43 @@ pub(crate) fn ntt_multiply_int_vec(
     out.elements[6] = product.0;
     out.elements[7] = product.1; 
     out
+}
+
+#[inline(always)]
+pub(crate) fn sample_binomial_2_int_vec(coin_toss_outcomes:u32) -> IntVec {
+    let mut sampled = ZERO_VEC;
+    cloop! {
+        for outcome_set in (0..u32::BITS).step_by(4) {
+            let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i32;
+            let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i32;
+
+            let offset = (outcome_set >> 2) as usize;
+            sampled.elements[offset] = outcome_1 - outcome_2;
+        }
+    }
+    sampled
+}
+
+#[inline(always)]
+pub(crate) fn sample_binomial_3_int_vec(coin_toss_outcomes1:u32,coin_toss_outcomes2:u32) -> IntVec {
+    let mut sampled = ZERO_VEC;
+    cloop! {
+        for outcome_set in (0..24).step_by(6) {
+            let outcome_1 = ((coin_toss_outcomes1 >> outcome_set) & 0x7) as i32;
+            let outcome_2 = ((coin_toss_outcomes1 >> (outcome_set + 3)) & 0x7) as i32;
+
+            let offset = (outcome_set / 6) as usize;
+            sampled.elements[offset] = outcome_1 - outcome_2;
+        }
+    }
+    cloop! {
+        for outcome_set in (0..24).step_by(6) {
+            let outcome_1 = ((coin_toss_outcomes2 >> outcome_set) & 0x7) as i32;
+            let outcome_2 = ((coin_toss_outcomes2 >> (outcome_set + 3)) & 0x7) as i32;
+
+            let offset = (outcome_set / 6) as usize;
+            sampled.elements[4+offset] = outcome_1 - outcome_2;
+        }
+    }
+    sampled
 }
