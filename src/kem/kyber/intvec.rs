@@ -58,6 +58,18 @@ pub(crate) fn mul_int_vec_constant(
     lhs
 }
 
+#[inline(always)]
+pub(crate) fn modulus_int_vec_constant_var_time(
+    mut lhs: IntVec,
+    rhs: i32,
+) -> IntVec {
+    for i in 0..SIZE_VEC {
+        lhs.elements[i] = lhs.elements[i] % rhs;
+    }
+    lhs
+}
+
+
 //#[inline(always)]
 // pub(crate) fn mul_int_vec(
 //     mut lhs: IntVec,
@@ -373,23 +385,193 @@ pub(crate) fn deserialize_1_int_vec(a:u8) -> IntVec {
     result
 }
 
+#[inline(always)]
+pub(crate) fn serialize_5_int_vec(a:IntVec) -> [u8;5] {
+    let mut result = [0u8;5];
+    result[0] = ((a.elements[1]  & 0x7) << 5 | a.elements[0]) as u8 ;
+    result[1] = (((a.elements[3]  & 1) << 7) | (a.elements[2]  << 2) | (a.elements[1]  >> 3)) as u8;
+    result[2] = (((a.elements[4]  & 0xF) << 4) | (a.elements[3]  >> 1)) as u8;
+    result[3] = (((a.elements[6]  & 0x3) << 6) | (a.elements[5]  << 1) | (a.elements[4]  >> 4)) as u8;
+    result[4] = ((a.elements[7]  << 3) | (a.elements[6]  >> 2)) as u8;
+    result
+}
+
 
 #[inline(always)]
 pub(crate) fn deserialize_5_int_vec(
-    byte1: u8,
-    byte2: u8,
-    byte3: u8,
-    byte4: u8,
-    byte5: u8,
+    bytes: &[u8],
 ) -> IntVec {
     let mut a = ZERO_VEC;
-    a.elements[0] = (byte1 & 0x1F) as i32;
-    a.elements[1] = ((byte2 & 0x3) << 3 | (byte1 >> 5)) as i32;
-    a.elements[2] = ((byte2 >> 2) & 0x1F) as i32;
-    a.elements[3] = (((byte3 & 0xF) << 1) | (byte2 >> 7)) as i32;
-    a.elements[4] = (((byte4 & 1) << 4) | (byte3 >> 4)) as i32;
-    a.elements[5] = ((byte4 >> 1) & 0x1F) as i32;
-    a.elements[6] = (((byte5 & 0x7) << 2) | (byte4 >> 6)) as i32;
-    a.elements[7] = (byte5 >> 3) as i32;
+    a.elements[0] = (bytes[0] & 0x1F) as i32;
+    a.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
+    a.elements[2] = ((bytes[1] >> 2) & 0x1F) as i32;
+    a.elements[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i32;
+    a.elements[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i32;
+    a.elements[5] = ((bytes[3] >> 1) & 0x1F) as i32;
+    a.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i32;
+    a.elements[7] = (bytes[4] >> 3) as i32;
     a
+}
+
+#[inline(always)]
+pub(crate) fn serialize_4_int_vec(a:IntVec) -> [u8;4] {
+    let mut result = [0u8;4];
+
+    result[0] = ((a.elements[1] as u8) << 4) | (a.elements[0] as u8);
+    result[1] = ((a.elements[3] as u8) << 4) | (a.elements[2] as u8);
+    result[2] = ((a.elements[5] as u8) << 4) | (a.elements[4] as u8);
+    result[3] = ((a.elements[7] as u8) << 4) | (a.elements[6] as u8);
+
+    result
+}
+
+
+#[inline(always)]
+pub(crate) fn deserialize_4_int_vec(
+    bytes: &[u8],
+) -> IntVec {
+    let mut a = ZERO_VEC;
+    a.elements[0] = (bytes[0] & 0x0F) as i32;
+    a.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
+
+    a.elements[2] = (bytes[1] & 0x0F) as i32;
+    a.elements[3] = ((bytes[1] >> 4) & 0x0F) as i32;
+
+    a.elements[4] = (bytes[2] & 0x0F) as i32;
+    a.elements[5] = ((bytes[2] >> 4) & 0x0F) as i32;
+
+    a.elements[6] = (bytes[3] & 0x0F) as i32;
+    a.elements[7] = ((bytes[3] >> 4) & 0x0F) as i32;
+
+    a
+}
+
+#[inline(always)]
+pub(crate) fn serialize_10_int_vec(a:IntVec) -> [u8;10] {
+    let mut result = [0u8;10];
+
+    result[0] = (a.elements[0] & 0xFF) as u8;
+    result[1] = ((a.elements[1] & 0x3F) as u8) << 2 | ((a.elements[0] >> 8) & 0x03) as u8;
+    result[2] = ((a.elements[2] & 0x0F) as u8) << 4 | ((a.elements[1] >> 6) & 0x0F) as u8;
+    result[3] = ((a.elements[3] & 0x03) as u8) << 6 | ((a.elements[2] >> 4) & 0x3F) as u8;
+    result[4] = ((a.elements[3] >> 2) & 0xFF) as u8;
+
+    result[5] = (a.elements[4] & 0xFF) as u8;
+    result[6] = ((a.elements[5] & 0x3F) as u8) << 2 | ((a.elements[4] >> 8) & 0x03) as u8;
+    result[7] = ((a.elements[6] & 0x0F) as u8) << 4 | ((a.elements[5] >> 6) & 0x0F) as u8;
+    result[8] = ((a.elements[7] & 0x03) as u8) << 6 | ((a.elements[6] >> 4) & 0x3F) as u8;
+    result[9] = ((a.elements[7] >> 2) & 0xFF) as u8;
+   
+    result
+}
+
+#[inline(always)]
+pub(crate) fn deserialize_10_int_vec(
+    bytes: &[u8]
+) -> IntVec {
+    let mut result = ZERO_VEC;
+
+    result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
+    result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
+    result.elements[2] = ((bytes[3] as i32 & 0x3F) << 4 | (bytes[2] as i32 >> 4)) as i32;
+    result.elements[3] = (((bytes[4] as i32) << 2) | (bytes[3] as i32 >> 6)) as i32;
+
+    result.elements[4] = ((bytes[6] as i32 & 0x03) << 8 | (bytes[5] as i32 & 0xFF)) as i32;
+    result.elements[5] = ((bytes[7] as i32 & 0x0F) << 6 | (bytes[6] as i32 >> 2)) as i32;
+    result.elements[6] = ((bytes[8] as i32 & 0x3F) << 4 | (bytes[7] as i32 >> 4)) as i32;
+    result.elements[7] = (((bytes[9] as i32) << 2) | (bytes[8] as i32 >> 6)) as i32;
+
+    result
+}
+
+#[inline(always)]
+pub(crate) fn serialize_11_int_vec(
+    a:IntVec
+) -> [u8;11] {
+    let mut result = [0u8;11];
+    result[0 ] = a.elements[0] as u8;
+    result[1 ] = ((a.elements[1] & 0x1F) as u8) << 3 | ((a.elements[0] >> 8) as u8);
+    result[2 ] = ((a.elements[2] & 0x3) as u8) << 6 | ((a.elements[1] >> 5) as u8);
+    result[3 ] = ((a.elements[2] >> 2) & 0xFF) as u8;
+    result[4 ] = ((a.elements[3] & 0x7F) as u8) << 1 | (a.elements[2] >> 10) as u8;
+    result[5 ] = ((a.elements[4] & 0xF) as u8) << 4 | (a.elements[3] >> 7) as u8;
+    result[6 ] = ((a.elements[5] & 0x1) as u8) << 7 | (a.elements[4] >> 4) as u8;
+    result[7 ] = ((a.elements[5] >> 1) & 0xFF) as u8;
+    result[8 ] = ((a.elements[6] & 0x3F) as u8) << 2 | (a.elements[5] >> 9) as u8;
+    result[9]  = ((a.elements[7] & 0x7) as u8) << 5 | (a.elements[6] >> 6) as u8;
+    result[10]  = (a.elements[7] >> 3) as u8;
+    result
+}
+
+#[inline(always)]
+pub(crate) fn deserialize_11_int_vec(
+    bytes: &[u8],
+) -> IntVec {
+    let mut result = ZERO_VEC;
+    result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
+    result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
+    result.elements[2] = ((bytes[4] as i32 & 0x1) << 10 | ((bytes[3] as i32) << 2) | ((bytes[2] as i32) >> 6)) as i32;
+    result.elements[3] = ((bytes[5] as i32 & 0xF) << 7 | (bytes[4] as i32 >> 1)) as i32;
+    result.elements[4] = ((bytes[6] as i32 & 0x7F) << 4 | (bytes[5] as i32 >> 4)) as i32;
+    result.elements[5] = ((bytes[8] as i32 & 0x3) << 9 | ((bytes[7] as i32) << 1) | ((bytes[6] as i32) >> 7)) as i32;
+    result.elements[6] = ((bytes[9] as i32 & 0x1F) << 6 | (bytes[8] as i32>> 2)) as i32;
+    result.elements[7] = (((bytes[10] as i32) << 3) | (bytes[9] as i32 >> 5)) as i32;
+    result
+}
+
+
+#[inline(always)]
+pub(crate) fn serialize_12_int_vec(a:IntVec) -> [u8;12] {
+    let mut result = [0u8;12];
+
+    result[0] = (a.elements[0] & 0xFF) as u8;
+    result[1] = ((a.elements[0] >> 8) | ((a.elements[1] & 0x0F) << 4)) as u8;
+    result[2] = ((a.elements[1] >> 4) & 0xFF) as u8;
+
+    result[3] = (a.elements[2] & 0xFF) as u8;
+    result[4] = ((a.elements[2] >> 8) | ((a.elements[3] & 0x0F) << 4)) as u8;
+    result[5] = ((a.elements[3] >> 4) & 0xFF) as u8;
+
+    result[6] = (a.elements[4] & 0xFF) as u8;
+    result[7] = ((a.elements[4] >> 8) | ((a.elements[5] & 0x0F) << 4)) as u8;
+    result[8] = ((a.elements[5] >> 4) & 0xFF) as u8;
+
+    result[9] = (a.elements[6] & 0xFF) as u8;
+    result[10] = ((a.elements[6] >> 8) | ((a.elements[7] & 0x0F) << 4)) as u8;
+    result[11] = ((a.elements[7] >> 4) & 0xFF) as u8;
+
+    result
+}
+
+#[inline(always)]
+pub(crate) fn deserialize_12_int_vec(
+    bytes: &[u8],
+) -> IntVec {
+    let mut re = ZERO_VEC;
+    let byte0 = bytes[0] as i32;
+    let byte1 = bytes[1] as i32;
+    let byte2 = bytes[2] as i32;
+    let byte3 = bytes[3] as i32;
+    let byte4 = bytes[4] as i32;
+    let byte5 = bytes[5] as i32;
+    let byte6 = bytes[6] as i32;
+    let byte7 = bytes[7] as i32;
+    let byte8 = bytes[8] as i32;
+    let byte9 = bytes[9] as i32;
+    let byte10 = bytes[10] as i32;
+    let byte11 = bytes[11] as i32;
+
+    re.elements[0] = (byte1 & 0x0F) << 8 | (byte0 & 0xFF);
+    re.elements[1] = (byte2 << 4) | ((byte1 >> 4) & 0x0F);
+
+    re.elements[2] = (byte4 & 0x0F) << 8 | (byte3 & 0xFF);
+    re.elements[3] = (byte5 << 4) | ((byte4 >> 4) & 0x0F);
+
+    re.elements[4] = (byte7 & 0x0F) << 8 | (byte6 & 0xFF);
+    re.elements[5] = (byte8 << 4) | ((byte7 >> 4) & 0x0F);
+
+    re.elements[6] = (byte10 & 0x0F) << 8 | (byte9 & 0xFF);
+    re.elements[7] = (byte11 << 4) | ((byte10 >> 4) & 0x0F);
+
+    re
 }
