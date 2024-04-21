@@ -11,6 +11,7 @@ pub(crate) mod constants;
 mod helper;
 
 mod arithmetic;
+mod intvec32;
 mod intvec;
 mod polynomial;
 mod compress;
