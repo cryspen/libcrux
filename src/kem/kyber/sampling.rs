@@ -1,10 +1,9 @@
 use super::{
-    polynomial::{from_i32_array, to_i32_array, PolynomialRingElement},
-    intvec::{sample_binomial_2_int_vec, sample_binomial_3_int_vec},
+    polynomial::{from_i32_array, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     hash_functions::*,
 };
-//use crate::cloop;
+use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -156,7 +155,7 @@ pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 ))))]
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
-    let mut sampled_i32s = [0u32; 256];
+    let mut sampled_i32s = [0i32; 256];
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
         let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
@@ -166,20 +165,19 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
 
         let even_bits = random_bits_as_u32 & 0x55555555;
         let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
+        let coin_toss_outcomes = even_bits + odd_bits;
 
-        sampled_i32s[chunk_number] = even_bits + odd_bits;
-
+        cloop! {
+            for outcome_set in (0..u32::BITS).step_by(4) {
+                let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i32;
+                let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i32;
+    
+                let offset = (outcome_set >> 2) as usize;
+                sampled_i32s[8 * chunk_number + offset] = outcome_1 - outcome_2;
+            }
+        }
     }
-
-
-    let mut sampled = PolynomialRingElement::ZERO;
-    for i in 0..32 {
-        sampled.coefficients[i] = sample_binomial_2_int_vec(sampled_i32s[i]);
-    }
-    hax_debug_assert!(to_i32_array(sampled)
-        .into_iter()
-        .all(|coefficient| coefficient >= -2 && coefficient <= 2));
-    sampled
+    from_i32_array(sampled_i32s)
 }
 
 #[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 3 * 64))]
@@ -188,42 +186,31 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 ))))]
 fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
-    let mut sampled_i32s = [0u32; 512];
+    let mut sampled_i32s = [0i32; 256];
 
-    for (chunk_number, byte_chunk) in randomness.chunks_exact(6).enumerate() {
-        let random_bits_as_u24: u32 =
-            (byte_chunk[0] as u32) | (byte_chunk[1] as u32) << 8 | (byte_chunk[2] as u32) << 16;
+    cloop! {
+        for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
+            let random_bits_as_u24: u32 =
+                (byte_chunk[0] as u32) | (byte_chunk[1] as u32) << 8 | (byte_chunk[2] as u32) << 16;
 
-        let first_bits = random_bits_as_u24 & 0x00249249;
-        let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
-        let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
+            let first_bits = random_bits_as_u24 & 0x00249249;
+            let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
+            let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
 
-        let coin_toss_outcomes1 = first_bits + second_bits + third_bits;
+            let coin_toss_outcomes = first_bits + second_bits + third_bits;
 
-        let random_bits_as_u24: u32 =
-            (byte_chunk[3] as u32) | (byte_chunk[4] as u32) << 8 | (byte_chunk[5] as u32) << 16;
+            cloop! {
+                for outcome_set in (0..24).step_by(6) {
+                    let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as i32;
+                    let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as i32;
 
-        let first_bits = random_bits_as_u24 & 0x00249249;
-        let second_bits = (random_bits_as_u24 >> 1) & 0x00249249;
-        let third_bits = (random_bits_as_u24 >> 2) & 0x00249249;
-
-        let coin_toss_outcomes2 = first_bits + second_bits + third_bits;
-
-        sampled_i32s[2*chunk_number] = coin_toss_outcomes1;
-        sampled_i32s[2*chunk_number+1] = coin_toss_outcomes2;
+                    let offset = (outcome_set / 6) as usize;
+                    sampled_i32s[4 * chunk_number + offset] = outcome_1 - outcome_2;
+                }
+            }
+        }
     }
-    
-
-    let mut sampled = PolynomialRingElement::ZERO;
-
-    for i in 0..32 {
-        sampled.coefficients[i] = sample_binomial_3_int_vec(sampled_i32s[2*i], sampled_i32s[2*i+1]);
-    }
-    
-    hax_debug_assert!(to_i32_array(sampled)
-        .into_iter()
-        .all(|coefficient| coefficient >= -3 && coefficient <= 3));
-    sampled
+    from_i32_array(sampled_i32s)
 }
 
 #[inline(always)]
