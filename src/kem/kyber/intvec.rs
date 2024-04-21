@@ -1,7 +1,8 @@
 //use crate::hax_utils::hax_debug_assert;
 use super::{arithmetic::*, 
-            compress::{compress_message_coefficient,decompress_message_coefficient,
-                       compress_ciphertext_coefficient, decompress_ciphertext_coefficient}
+            compress::{compress_ciphertext_coefficient, compress_message_coefficient, decompress_ciphertext_coefficient, decompress_message_coefficient}, 
+            constants::{FIELD_MODULUS},
+            arithmetic::{INVERSE_OF_MODULUS_MOD_MONTGOMERY_R}
 };
 //use crate::cloop;
 
@@ -31,6 +32,18 @@ pub(crate) fn int_vec_from_i32_array(a:[i32;8]) -> IntVec {
 
 pub(crate) const ZERO_VEC : IntVec = 
     IntVec {elements: [0i32; 8]};
+
+// Basic addition with a constant
+#[inline(always)]
+pub(crate) fn add_int_vec_constant(
+    mut lhs: IntVec,
+    rhs: i32,
+) -> IntVec {
+    for i in 0..SIZE_VEC {
+        lhs.elements[i] += rhs;
+    }
+    lhs
+}
 
 // Basic addition
 #[inline(always)]
@@ -68,6 +81,42 @@ pub(crate) fn mul_int_vec_constant(
     lhs
 }
 
+// Basic multiplication with constant
+#[inline(always)]
+pub(crate) fn bit_and_int_vec_constant(
+    mut lhs: IntVec,
+    rhs: i32,
+) -> IntVec {
+    for i in 0..SIZE_VEC {
+        lhs.elements[i] &= rhs;
+    }
+    lhs
+}
+
+// Basic arithmetic shift right
+#[inline(always)]
+pub(crate) fn right_shift_int_vec(
+    mut lhs: IntVec,
+    rhs: u8,
+) -> IntVec {
+    for i in 0..SIZE_VEC {
+        lhs.elements[i] = lhs.elements[i] >> rhs;
+    }
+    lhs
+}
+
+// Basic shift left
+#[inline(always)]
+pub(crate) fn left_shift_int_vec(
+    mut lhs: IntVec,
+    rhs: u8,
+) -> IntVec {
+    for i in 0..SIZE_VEC {
+        lhs.elements[i] = lhs.elements[i] << rhs;
+    }
+    lhs
+}
+
 // Basic modulus
 #[inline(always)]
 pub(crate) fn modulus_int_vec_constant_var_time(
@@ -87,6 +136,33 @@ pub(crate) fn modulus_int_vec_constant_var_time(
 pub(crate) fn barrett_reduce_int_vec(mut a:IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
         a.elements[i] = barrett_reduce(a.elements[i]);
+    }
+    a
+}
+
+// Montgomery: mostly generic but uses a u32->i16->i32 conversion that may need specialized treatment
+#[inline(always)]
+pub(crate) fn montgomery_reduce_int_vec(mut a:IntVec) -> IntVec {
+    for i in 0..SIZE_VEC {
+        a.elements[i] = montgomery_reduce(a.elements[i]);
+    }
+    a
+}
+
+// Compress Message Coefficient: mostly generic but uses some i16 arithmetic
+#[inline(always)]
+pub(crate) fn compress_1_int_vec(mut a:IntVec) -> IntVec {
+    for i in 0..SIZE_VEC{
+        a.elements[i] = compress_message_coefficient(a.elements[i] as u16) as i32;
+    }
+    a
+}
+
+// Compress Ciphertext Coefficient: mostly generic but uses some i64 arithmetic
+#[inline(always)]
+pub(crate) fn compress_int_vec(coefficient_bits: u8, mut a:IntVec,) -> IntVec {
+    for i in 0..SIZE_VEC{
+        a.elements[i] = compress_ciphertext_coefficient(coefficient_bits,a.elements[i] as u16) as i32;
     }
     a
 }
@@ -457,65 +533,33 @@ pub(crate) fn deserialize_12_int_vec(
 /// 
 
 #[inline(always)]
-pub(crate) fn montgomery_reduce_int_vec(mut a:IntVec) -> IntVec {
-    for i in 0..SIZE_VEC {
-        a.elements[i] = montgomery_reduce(a.elements[i]);
-    }
-    a
+pub(crate) fn to_standard_domain_int_vec(a:IntVec) -> IntVec {
+    let t = mul_int_vec_constant(a, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
+    montgomery_reduce_int_vec(t)
 }
 
 #[inline(always)]
-pub(crate) fn to_standard_domain_int_vec(mut a:IntVec) -> IntVec {
-    for i in 0..SIZE_VEC {
-        a.elements[i] = to_standard_domain(a.elements[i]);
-    }
-    a
+pub(crate) fn to_unsigned_representative_int_vec(a:IntVec) -> IntVec {
+    let t = right_shift_int_vec(a,31);
+    let fm = bit_and_int_vec_constant(t,FIELD_MODULUS);
+    add_int_vec(a,&fm)
 }
 
 #[inline(always)]
-pub(crate) fn to_unsigned_representative_int_vec(mut a:IntVec) -> IntVec {
-    for i in 0..SIZE_VEC {
-        a.elements[i] = to_unsigned_representative(a.elements[i]) as i32;
-    }
-    a
+pub(crate) fn montgomery_multiply_fe_by_fer_int_vec(a:IntVec, b:i32) -> IntVec {
+    let t = mul_int_vec_constant(a, b);
+    montgomery_reduce_int_vec(t)
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply_fe_by_fer_int_vec(mut a:IntVec, b:i32) -> IntVec {
-    for i in 0..SIZE_VEC {
-        a.elements[i] = montgomery_multiply_fe_by_fer(a.elements[i],b);
-    }
-    a
+pub(crate) fn decompress_1_int_vec(a:IntVec) -> IntVec {
+    bit_and_int_vec_constant(sub_int_vec(ZERO_VEC, &a),1665)
 }
 
 #[inline(always)]
-pub(crate) fn compress_1_int_vec(mut a:IntVec) -> IntVec {
-    for i in 0..SIZE_VEC{
-        a.elements[i] = compress_message_coefficient(a.elements[i] as u16) as i32;
-    }
-    a
-}
-
-#[inline(always)]
-pub(crate) fn decompress_1_int_vec(mut a:IntVec) -> IntVec {
-    for i in 0..SIZE_VEC{
-        a.elements[i] = decompress_message_coefficient(a.elements[i]);
-    }
-    a
-}
-
-#[inline(always)]
-pub(crate) fn compress_int_vec(coefficient_bits: u8, mut a:IntVec,) -> IntVec {
-    for i in 0..SIZE_VEC{
-        a.elements[i] = compress_ciphertext_coefficient(coefficient_bits,a.elements[i] as u16) as i32;
-    }
-    a
-}
-
-#[inline(always)]
-pub(crate) fn decompress_int_vec(coefficient_bits: u8, mut a:IntVec,) -> IntVec {
-    for i in 0..SIZE_VEC{
-        a.elements[i] = decompress_ciphertext_coefficient(coefficient_bits,a.elements[i]);
-    }
-    a
+pub(crate) fn decompress_int_vec(coefficient_bits: u8, a:IntVec,) -> IntVec {
+    let mut decompressed = mul_int_vec_constant(a,FIELD_MODULUS);
+    decompressed = add_int_vec_constant(left_shift_int_vec(decompressed, 1), 1i32 << coefficient_bits);
+    decompressed = right_shift_int_vec(decompressed,coefficient_bits + 1);
+    decompressed
 }

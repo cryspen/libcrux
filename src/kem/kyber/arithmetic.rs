@@ -1,13 +1,13 @@
 use crate::hax_utils::hax_debug_assert;
 
-use super::constants::{FIELD_MODULUS};
+use super::constants::FIELD_MODULUS;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
 pub(crate) type FieldElement = i32;
 
-const MONTGOMERY_SHIFT: u8 = 16;
-const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
+pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
+pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -28,11 +28,11 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     value & ((1 << n) - 1)
 }
 
-const BARRETT_SHIFT: i64 = 26;
-const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
+pub(crate) const BARRETT_SHIFT: i64 = 26;
+pub(crate) const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
 
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
-const BARRETT_MULTIPLIER: i64 = 20159;
+pub(crate) const BARRETT_MULTIPLIER: i64 = 20159;
 
 /// Signed Barrett Reduction
 ///
@@ -67,7 +67,7 @@ pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
     result
 }
 
-const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 /// Signed Montgomery Reduction
 ///
@@ -122,7 +122,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 }
 
 /// This is calculated as (MONTGOMERY_R)^2 mod FIELD_MODULUS
-const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
+pub(crate) const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
 
 /// If x is some field element of the Kyber field and `mfe` is congruent to
 /// x · MONTGOMERY_R^{-1}, this procedure outputs a value that is congruent to
