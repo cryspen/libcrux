@@ -134,7 +134,7 @@ pub(crate) const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
 /// `montgomery_reduce` takes the value `x · MONTGOMERY_R` and outputs a representative
 /// `x · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x (mod FIELD_MODULUS)`
 #[inline(always)]
-pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
+pub(crate) fn _to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
     montgomery_reduce(mfe * MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS)
 }
 
@@ -145,7 +145,7 @@ pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
 #[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
-pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
+pub(crate) fn _to_unsigned_representative(fe: FieldElement) -> u16 {
     hax_debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }

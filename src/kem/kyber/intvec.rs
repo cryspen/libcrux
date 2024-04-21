@@ -1,8 +1,7 @@
 //use crate::hax_utils::hax_debug_assert;
 use super::{arithmetic::*, 
-            compress::{compress_ciphertext_coefficient, compress_message_coefficient, decompress_ciphertext_coefficient, decompress_message_coefficient}, 
-            constants::{FIELD_MODULUS},
-            arithmetic::{INVERSE_OF_MODULUS_MOD_MONTGOMERY_R}
+            compress::{compress_ciphertext_coefficient, compress_message_coefficient}, 
+            constants::FIELD_MODULUS,
 };
 //use crate::cloop;
 

@@ -109,13 +109,13 @@ pub(super) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
 
 #[cfg_attr(hax, hax_lib_macros::requires((fe == 0) || (fe == 1)))]
 #[inline(always)]
-pub(super) fn decompress_message_coefficient(fe: FieldElement) -> FieldElement {
+pub(super) fn _decompress_message_coefficient(fe: FieldElement) -> FieldElement {
     -fe & ((FIELD_MODULUS + 1) / 2)
 }
 
 #[cfg_attr(hax, hax_lib_macros::requires((coefficient_bits == 4 || coefficient_bits == 5 || coefficient_bits == 10 || coefficient_bits == 11) && (fe >= 0) && (fe < 2i32.pow(coefficient_bits as u32))))]
 #[cfg_attr(hax, hax_lib_macros::ensures(|result| result < FIELD_MODULUS))]
-pub(super) fn decompress_ciphertext_coefficient(
+pub(super) fn _decompress_ciphertext_coefficient(
     coefficient_bits: u8,
     fe: FieldElement,
 ) -> FieldElement {
