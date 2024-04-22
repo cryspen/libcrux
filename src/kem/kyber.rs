@@ -83,6 +83,14 @@ pub(super) fn validate_public_key<
     *public_key == public_key_serialized
 }
 
+pub struct MlKemState<const K: usize> {
+    secret_as_ntt: [PolynomialRingElement; K],
+    t_as_ntt: [PolynomialRingElement; K],
+    a_transpose: [[PolynomialRingElement; K]; K],
+    rej: [u8; 32],
+    ind_cpa_public_key_hash: [u8; 32]
+}
+
 pub(super) fn generate_keypair_unpacked<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -93,12 +101,11 @@ pub(super) fn generate_keypair_unpacked<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> (([PolynomialRingElement;K],[PolynomialRingElement;K],[[PolynomialRingElement;K];K],[u8;32],[u8;32]),
-      MlKemPublicKey<PUBLIC_KEY_SIZE>) {
+) -> (MlKemState<K>, MlKemPublicKey<PUBLIC_KEY_SIZE>) {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
-    let ((s_as_ntt,t_as_ntt,a_transpose),ind_cpa_public_key) = ind_cpa::generate_keypair_unpacked::<
+    let ((secret_as_ntt,t_as_ntt,a_transpose),ind_cpa_public_key) = ind_cpa::generate_keypair_unpacked::<
         K,
         PUBLIC_KEY_SIZE,
         BYTES_PER_RING_ELEMENT,
@@ -106,11 +113,11 @@ pub(super) fn generate_keypair_unpacked<
         ETA1_RANDOMNESS_SIZE,
     >(ind_cpa_keypair_randomness);
 
-    let public_key_hash = H(&ind_cpa_public_key);
+    let ind_cpa_public_key_hash = H(&ind_cpa_public_key);
 
     let rej:[u8;32] = implicit_rejection_value.try_into().unwrap();
     let pubkey : MlKemPublicKey<PUBLIC_KEY_SIZE> = MlKemPublicKey::from(ind_cpa_public_key);
-    ((s_as_ntt,t_as_ntt,a_transpose,rej,public_key_hash),pubkey)
+    (MlKemState {secret_as_ntt, t_as_ntt, a_transpose, rej, ind_cpa_public_key_hash},pubkey)
 }
 
 pub(super) fn generate_keypair<
@@ -206,13 +213,16 @@ pub(super) fn decapsulate_unpacked<
     const ETA2_RANDOMNESS_SIZE: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
-    secret_as_ntt: &[PolynomialRingElement;K],
-    t_as_ntt: &[PolynomialRingElement;K],
-    a_transpose: &[[PolynomialRingElement;K];K],
-    implicit_rejection_value: &[u8],
-    ind_cpa_public_key_hash: &[u8],
+    state: &MlKemState<K>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
+
+    let secret_as_ntt: &[PolynomialRingElement;K] = &state.secret_as_ntt;
+    let t_as_ntt: &[PolynomialRingElement;K] = &state.t_as_ntt;
+    let a_transpose: &[[PolynomialRingElement;K];K] = &state.a_transpose;
+    let implicit_rejection_value: &[u8] = &state.rej;
+    let ind_cpa_public_key_hash: &[u8] = &state.ind_cpa_public_key_hash;
+
 
     let decrypted = ind_cpa::decrypt_unpacked::<
         K,

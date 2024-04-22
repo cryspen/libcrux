@@ -68,9 +68,11 @@ pub fn generate_key_pair(
     >(randomness)
 }
 
+pub type MlKem768State = MlKemState<RANK_768>;
+
 pub fn generate_key_pair_unpacked(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> (([PolynomialRingElement;3],[PolynomialRingElement;3],[[PolynomialRingElement;3];3],[u8;32],[u8;32]),MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>)  {
+) -> (MlKem768State, MlKem768PublicKey)  {
     generate_keypair_unpacked::<
         RANK_768,
         CPA_PKE_SECRET_KEY_SIZE_768,
@@ -133,11 +135,7 @@ pub fn decapsulate(
 }
 
 pub fn decapsulate_unpacked(
-    secret_as_ntt: &[PolynomialRingElement;3],
-    t_as_ntt: &[PolynomialRingElement;3],
-    a_transpose: &[[PolynomialRingElement;3];3],
-    implicit_rejection_value: &[u8],
-    ind_cpa_public_key_hash: &[u8],
+    state: &MlKem768State,
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
 ) -> [u8; SHARED_SECRET_SIZE] {
     super::decapsulate_unpacked::<
@@ -157,7 +155,7 @@ pub fn decapsulate_unpacked(
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(secret_as_ntt,t_as_ntt,a_transpose,implicit_rejection_value,ind_cpa_public_key_hash,ciphertext)
+    >(state,ciphertext)
 }
 
 #[cfg(test)]

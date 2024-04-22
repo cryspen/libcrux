@@ -9,7 +9,9 @@ files:
       - [libcrux_platform]
   - name: libcrux_kyber
     api:
+      - [libcrux_kyber, kyber512]
       - [libcrux_kyber, kyber768]
+      - [libcrux_kyber, kyber1024]
     private:
       - [libcrux_kyber, "*"]
     include_in_c:
@@ -17,3 +19,13 @@ files:
   - name: core
     private:
       - [core, "*"]
+    # NOTE: putting Eurydice in core prevent eurydice from detecting spurious calls
+    # across C translation units from Eurydice to core (notably related to the
+    # result type), and thus prevents eurydice from flipping some result types
+    # being public, which pollutes the header.
+    # NOTE: putting Eurydice as public (api) is required, since some compilation
+    # passes produce calls to Eurydice.slice_to_array2 *after* reachability
+    # analysis, meaning that we cannot let reachability analysis eliminate
+    # Eurydice definitions on an as-needed basis
+    api:
+      - [Eurydice, "*"]
