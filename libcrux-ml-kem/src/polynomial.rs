@@ -12,7 +12,8 @@ pub struct PolynomialRingElement {
 
 impl PolynomialRingElement {
     pub(crate) const ZERO: Self = Self {
-        coefficients: [ZERO_VEC; VECS_IN_RING_ELEMENT],
+        // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
+        coefficients: [ZERO_VEC; 32],
     };
 }
 
@@ -21,6 +22,7 @@ pub(crate) fn to_i32_array(a: PolynomialRingElement) -> [i32; 256] {
     let mut result = [0i32; 256];
     for i in 0..VECS_IN_RING_ELEMENT {
         let result_i = int_vec_to_i32_array(a.coefficients[i]);
+        // XXX: this should be `copy_from_slice`
         for j in 0..SIZE_VEC {
             result[i * SIZE_VEC + j] = result_i[j];
         }
@@ -45,7 +47,7 @@ pub(crate) fn add_to_ring_element<const K: usize>(
     mut lhs: PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    for i in 0..lhs.coefficients.len() {
+    for i in 0..VECS_IN_RING_ELEMENT {
         lhs.coefficients[i] = add_int_vec(lhs.coefficients[i], &rhs.coefficients[i]);
     }
     lhs
@@ -53,6 +55,7 @@ pub(crate) fn add_to_ring_element<const K: usize>(
 
 #[inline(always)]
 pub(crate) fn poly_barrett_reduce(mut a: PolynomialRingElement) -> PolynomialRingElement {
+    // XXX: Use `map` when extraction is happy with that.
     for i in 0..VECS_IN_RING_ELEMENT {
         a.coefficients[i] = barrett_reduce_int_vec(a.coefficients[i]);
     }
@@ -329,18 +332,19 @@ pub(crate) fn invert_ntt_at_layer_3_plus(
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib_macros::requires(
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
-            (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
-            (rhs.coefficients[i].abs() <= FIELD_MODULUS)
+// TODO: Remove or replace with something that works and is useful for the proof.
+// #[cfg_attr(hax, hax_lib::requires(
+//     hax_lib::forall(|i:usize|
+//         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
+//             (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
+//             (rhs.coefficients[i].abs() <= FIELD_MODULUS)
 
-))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < result.coefficients.len(), ||
-                result.coefficients[i].abs() <= FIELD_MODULUS
-))))]
+// ))))]
+// #[cfg_attr(hax, hax_lib::ensures(|result|
+//     hax_lib::forall(|i:usize|
+//         hax_lib::implies(i < result.coefficients.len(), ||
+//                 result.coefficients[i].abs() <= FIELD_MODULUS
+// ))))]
 #[inline(always)]
 pub(crate) fn ntt_multiply(
     lhs: &PolynomialRingElement,

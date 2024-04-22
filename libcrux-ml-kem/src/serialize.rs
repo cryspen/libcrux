@@ -124,6 +124,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -
         let coefficient =
             compress_int_vec(10, to_unsigned_representative_int_vec(re.coefficients[i]));
         let bytes = serialize_10_int_vec(coefficient);
+        // XXX: This should be a copy_from_slice
         serialized[10 * i] = bytes[0];
         serialized[10 * i + 1] = bytes[1];
         serialized[10 * i + 2] = bytes[2];

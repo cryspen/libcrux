@@ -15,15 +15,16 @@ use super::{
 /// This function operates only on those which were produced by binomial
 /// sampling, and thus those which have small coefficients. The small
 /// coefficients let us skip the first round of Montgomery reductions.
-#[cfg_attr(hax, hax_lib_macros::requires(
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3
-))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < result.coefficients.len(), ||
-            result.coefficients[i].abs() < FIELD_MODULUS
-))))]
+// TODO: Remove or replace with something that works and is useful for the proof.
+// #[cfg_attr(hax, hax_lib::requires(
+//     hax_lib::forall(|i:usize|
+//         hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3
+// ))))]
+// #[cfg_attr(hax, hax_lib::ensures(|result|
+//     hax_lib::forall(|i:usize|
+//         hax_lib::implies(i < result.coefficients.len(), ||
+//             result.coefficients[i].abs() < FIELD_MODULUS
+// ))))]
 #[inline(always)]
 pub(crate) fn ntt_binomially_sampled_ring_element(
     mut re: PolynomialRingElement,
@@ -49,15 +50,16 @@ pub(crate) fn ntt_binomially_sampled_ring_element(
 ///
 /// This function operates on the ring element that partly constitutes
 /// the ciphertext.
-#[cfg_attr(hax, hax_lib_macros::requires(
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3328
-))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
-    hax_lib::forall(|i:usize|
-        hax_lib::implies(i < result.coefficients.len(), ||
-            result.coefficients[i].abs() < FIELD_MODULUS
-))))]
+// TODO: Remove or replace with something that works and is useful for the proof.
+// #[cfg_attr(hax, hax_lib::requires(
+//     hax_lib::forall(|i:usize|
+//         hax_lib::implies(i < re.coefficients.len(), || re.coefficients[i].abs() <= 3328
+// ))))]
+// #[cfg_attr(hax, hax_lib::ensures(|result|
+//     hax_lib::forall(|i:usize|
+//         hax_lib::implies(i < result.coefficients.len(), ||
+//             result.coefficients[i].abs() < FIELD_MODULUS
+// ))))]
 #[inline(always)]
 pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: PolynomialRingElement,

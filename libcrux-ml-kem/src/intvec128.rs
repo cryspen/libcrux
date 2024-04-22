@@ -1,3 +1,6 @@
+// FIXME: remove when using things
+#![allow(dead_code)]
+
 use super::{
     intvec32,
     polynomial::{from_i32_array, to_i32_array},
