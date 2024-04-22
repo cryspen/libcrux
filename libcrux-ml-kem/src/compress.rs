@@ -86,50 +86,23 @@ pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
     get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 }
 
-/// The `decompress_*` functions implement the `Decompress` function specified in the NIST FIPS
-/// 203 standard (Page 18, Expression 4.6), which is defined as:
-///
-/// ```plaintext
-/// Decompress_d: ℤ_{2ᵈ} -> ℤq
-/// Decompress_d(y) = ⌈(q/2ᵈ)·y⌋
-/// ```
-///
-/// Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
-///
-/// ```plaintext
-/// Decompress_d(y) = ⌊(q/2ᵈ)·y + 1/2⌋
-///                 = ⌊(2·y·q + 2ᵈ) / 2^{d+1})⌋
-/// ```
-///
-/// For further information about the function implementations, consult the
-/// `implementation_notes.pdf` document in this directory.
-///
-/// The NIST FIPS 203 standard can be found at
-/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-
-#[cfg_attr(hax, hax_lib::requires((fe == 0) || (fe == 1)))]
-#[inline(always)]
-pub(crate) fn decompress_message_coefficient(fe: FieldElement) -> FieldElement {
-    -fe & ((FIELD_MODULUS + 1) / 2)
-}
-
-#[cfg_attr(hax, hax_lib::requires((coefficient_bits == 4 || coefficient_bits == 5 || coefficient_bits == 10 || coefficient_bits == 11) && (fe >= 0) && (fe < 2i32.pow(coefficient_bits as u32))))]
-#[cfg_attr(hax, hax_lib::ensures(|result| result < FIELD_MODULUS))]
-pub(crate) fn decompress_ciphertext_coefficient(
-    coefficient_bits: u8,
-    fe: FieldElement,
-) -> FieldElement {
-    hax_debug_assert!(
-        coefficient_bits == 4
-            || coefficient_bits == 5
-            || coefficient_bits == 10
-            || coefficient_bits == 11
-    );
-    hax_debug_assert!(fe >= 0 && fe <= 2i32.pow(coefficient_bits as u32));
-
-    let mut decompressed = (fe as u32) * (FIELD_MODULUS as u32);
-    decompressed = (decompressed << 1) + (1 << coefficient_bits);
-    decompressed >>= coefficient_bits + 1;
-
-    decompressed as FieldElement
-}
+// The `decompress_*` functions implement the `Decompress` function specified in the NIST FIPS
+// 203 standard (Page 18, Expression 4.6), which is defined as:
+//
+// ```plaintext
+// Decompress_d: ℤ_{2ᵈ} -> ℤq
+// Decompress_d(y) = ⌈(q/2ᵈ)·y⌋
+// ```
+//
+// Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+//
+// ```plaintext
+// Decompress_d(y) = ⌊(q/2ᵈ)·y + 1/2⌋
+//                 = ⌊(2·y·q + 2ᵈ) / 2^{d+1})⌋
+// ```
+//
+// For further information about the function implementations, consult the
+// `implementation_notes.pdf` document in this directory.
+//
+// The NIST FIPS 203 standard can be found at
+// <https://csrc.nist.gov/pubs/fips/203/ipd>.

@@ -1,11 +1,10 @@
 use crate::{
-    arithmetic::{
-        add_to_ring_element, barrett_reduce, montgomery_reduce, to_standard_domain,
-        PolynomialRingElement,
-    },
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
     helper::cloop,
-    ntt::{invert_ntt_montgomery, ntt_multiply},
+    ntt::invert_ntt_montgomery,
+    polynomial::{
+        add_error_reduce, add_message_error_reduce, add_standard_error_reduce, add_to_ring_element,
+        ntt_multiply, subtract_reduce, PolynomialRingElement,
+    },
     sampling::sample_from_xof,
 };
 
@@ -56,11 +55,7 @@ pub(crate) fn compute_message<const K: usize>(
     }
 
     result = invert_ntt_montgomery::<K>(result);
-
-    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
-        result.coefficients[i] = barrett_reduce(v.coefficients[i] - coefficient_normal_form);
-    }
+    result = subtract_reduce(v, result);
 
     result
 }
@@ -81,13 +76,7 @@ pub(crate) fn compute_ring_element_v<const K: usize>(
     }
 
     result = invert_ntt_montgomery::<K>(result);
-
-    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        let coefficient_normal_form = montgomery_reduce(result.coefficients[i] * 1441);
-        result.coefficients[i] = barrett_reduce(
-            coefficient_normal_form + error_2.coefficients[i] + message.coefficients[i],
-        );
-    }
+    result = add_message_error_reduce(error_2, message, result);
 
     result
 }
@@ -111,13 +100,7 @@ pub(crate) fn compute_vector_u<const K: usize>(
             }
 
             result[i] = invert_ntt_montgomery::<K>(result[i]);
-
-            for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-                let coefficient_normal_form = montgomery_reduce(result[i].coefficients[j] * 1441);
-
-                result[i].coefficients[j] =
-                    barrett_reduce(coefficient_normal_form + error_1[i].coefficients[j]);
-            }
+            result[i] = add_error_reduce(&error_1[i],result[i]);
         }
     }
 
@@ -142,15 +125,7 @@ pub(crate) fn compute_As_plus_e<const K: usize>(
                     result[i] = add_to_ring_element::<K>(result[i], &product);
                 }
             }
-
-            for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-                // The coefficients are of the form aR^{-1} mod q, which means
-                // calling to_montgomery_domain() on them should return a mod q.
-                let coefficient_normal_form = to_standard_domain(result[i].coefficients[j]);
-
-                result[i].coefficients[j] =
-                    barrett_reduce(coefficient_normal_form + error_as_ntt[i].coefficients[j])
-            }
+            result[i] = add_standard_error_reduce(&error_as_ntt[i], result[i]);
         }
     }
 

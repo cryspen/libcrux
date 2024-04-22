@@ -1,9 +1,9 @@
 use crate::{
-    arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     hash_functions::*,
     hax_utils::hax_debug_assert,
     helper::cloop,
+    polynomial::{from_i32_array, PolynomialRingElement},
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -47,7 +47,7 @@ use crate::{
 fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     randomness: [[u8; N]; K],
     sampled_coefficients: &mut [usize; K],
-    out: &mut [PolynomialRingElement; K],
+    out: &mut [[i32; 256]; K],
 ) -> bool {
     let mut done = true;
     for i in 0..K {
@@ -60,11 +60,11 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
             let d2 = (b3 << 4) | (b2 >> 4);
 
             if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i].coefficients[sampled_coefficients[i]] = d1;
+                out[i][sampled_coefficients[i]] = d1;
                 sampled_coefficients[i] += 1
             }
             if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i].coefficients[sampled_coefficients[i]] = d2;
+                out[i][sampled_coefficients[i]] = d2;
                 sampled_coefficients[i] += 1;
             }
         }
@@ -75,9 +75,9 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     done
 }
 
-pub(crate) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
+pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
     let mut sampled_coefficients: [usize; K] = [0; K];
-    let mut out: [PolynomialRingElement; K] = [PolynomialRingElement::ZERO; K];
+    let mut out: [[i32; 256]; K] = [[0; 256]; K];
 
     let mut xof_state = absorb(seeds);
     let randomness = squeeze_three_blocks(&mut xof_state);
@@ -98,7 +98,7 @@ pub(crate) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
     // XXX: We have to manually free the state here due to a Eurydice issue.
     free_state(xof_state);
 
-    out
+    out.map(from_i32_array)
 }
 
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
@@ -149,52 +149,44 @@ pub(crate) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib::requires(randomness.len() == 2 * 64))]
-#[cfg_attr(hax, hax_lib::ensures(|result|
+#[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 2 * 64))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 ))))]
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
-    let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
+    let mut sampled_i32s = [0i32; 256];
 
-    cloop! {
-        for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
-            let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
-                | (byte_chunk[1] as u32) << 8
-                | (byte_chunk[2] as u32) << 16
-                | (byte_chunk[3] as u32) << 24;
+    for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
+        let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
+            | (byte_chunk[1] as u32) << 8
+            | (byte_chunk[2] as u32) << 16
+            | (byte_chunk[3] as u32) << 24;
 
-            let even_bits = random_bits_as_u32 & 0x55555555;
-            let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
+        let even_bits = random_bits_as_u32 & 0x55555555;
+        let odd_bits = (random_bits_as_u32 >> 1) & 0x55555555;
+        let coin_toss_outcomes = even_bits + odd_bits;
 
-            let coin_toss_outcomes = even_bits + odd_bits;
+        cloop! {
+            for outcome_set in (0..u32::BITS).step_by(4) {
+                let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i32;
+                let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i32;
 
-            cloop! {
-                for outcome_set in (0..u32::BITS).step_by(4) {
-                    let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as FieldElement;
-                    let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as FieldElement;
-
-                    let offset = (outcome_set >> 2) as usize;
-                    sampled.coefficients[8 * chunk_number + offset] = outcome_1 - outcome_2;
-                }
+                let offset = (outcome_set >> 2) as usize;
+                sampled_i32s[8 * chunk_number + offset] = outcome_1 - outcome_2;
             }
         }
     }
-
-    hax_debug_assert!(sampled
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= -2 && coefficient <= 2));
-    sampled
+    from_i32_array(sampled_i32s)
 }
 
-#[cfg_attr(hax, hax_lib::requires(randomness.len() == 3 * 64))]
-#[cfg_attr(hax, hax_lib::ensures(|result|
+#[cfg_attr(hax, hax_lib_macros::requires(randomness.len() == 3 * 64))]
+#[cfg_attr(hax, hax_lib_macros::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 ))))]
 fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
-    let mut sampled: PolynomialRingElement = PolynomialRingElement::ZERO;
+    let mut sampled_i32s = [0i32; 256];
 
     cloop! {
         for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
@@ -209,25 +201,20 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
 
             cloop! {
                 for outcome_set in (0..24).step_by(6) {
-                    let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as FieldElement;
-                    let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as FieldElement;
+                    let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x7) as i32;
+                    let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as i32;
 
                     let offset = (outcome_set / 6) as usize;
-                    sampled.coefficients[4 * chunk_number + offset] = outcome_1 - outcome_2;
+                    sampled_i32s[4 * chunk_number + offset] = outcome_1 - outcome_2;
                 }
             }
         }
     }
-
-    hax_debug_assert!(sampled
-        .coefficients
-        .into_iter()
-        .all(|coefficient| coefficient >= -3 && coefficient <= 3));
-    sampled
+    from_i32_array(sampled_i32s)
 }
 
 #[inline(always)]
-pub(crate) fn sample_from_binomial_distribution<const ETA: usize>(
+pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
     randomness: &[u8],
 ) -> PolynomialRingElement {
     hax_debug_assert!(randomness.len() == ETA * 64);

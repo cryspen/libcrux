@@ -1,8 +1,9 @@
 pub(crate) mod hax_utils;
+
 // This module is declared here since otherwise, hax reports the following error:
 //
 // The THIR body of item
-// DefId(0:986 ~ libcrux[92b3]::crate768::parameters::COEFFICIENTS_IN_RING_ELEMENT)
+// DefId(0:986 ~ libcrux[92b3]::kem::kyber768::parameters::COEFFICIENTS_IN_RING_ELEMENT)
 // was stolen.
 //
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
@@ -11,91 +12,29 @@ pub(crate) mod constants;
 /// Helpers for verification and extraction
 mod helper;
 
+#[cfg(all(target_arch = "aarch64"))]
+mod intvec128;
+
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
 mod hash_functions;
 mod ind_cpa;
+mod intvec;
+mod intvec32;
 mod matrix;
 mod ntt;
+mod polynomial;
 mod sampling;
 mod serialize;
 mod types;
 
-// Public API
+// Variants
 pub mod kyber1024;
 pub mod kyber512;
 pub mod kyber768;
+
 pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
-
-// use rand::{CryptoRng, Rng};
-
-// /// ML-KEM Variants
-// #[derive(Clone, Copy, PartialEq, Debug)]
-// pub enum Algorithm {
-//     MlKem512,
-//     MlKem768,
-//     MlKem1024,
-// }
-
-// /// ML-KEM Errors
-// #[derive(Debug, PartialEq, Eq)]
-// pub enum Error {
-//     KeyGen,
-//     Encapsulate,
-//     Decapsulate,
-//     InvalidPrivateKey,
-//     InvalidPublicKey,
-//     InvalidCiphertext,
-// }
-
-// fn random_array<const L: usize>(rng: &mut (impl CryptoRng + Rng)) -> Result<[u8; L], Error> {
-//     let mut seed = [0; L];
-//     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
-//     Ok(seed)
-// }
-
-// /// Generate a key pair for the [`Algorithm`] using the provided rng.
-// ///
-// /// The function returns a fresh key or a [`Error::KeyGen`] error if
-// /// * not enough entropy was available
-// /// * it was not possible to generate a valid key within a reasonable amount of iterations.
-// pub fn key_gen<const PrivateKeySize: usize, const PublicKeySize: usize>(
-//     alg: Algorithm,
-//     rng: &mut (impl CryptoRng + Rng),
-// ) -> Result<
-//     (
-//         MlKemPrivateKey<PrivateKeySize>,
-//         MlKemPublicKey<PublicKeySize>,
-//     ),
-//     Error,
-// > {
-//     match alg {
-//         Algorithm::MlKem512 => {
-//             generate_keypair::<
-//                 RANK_512,
-//                 CPA_PKE_SECRET_KEY_SIZE_512,
-//                 PrivateKeySize,
-//                 PublicKeySize,
-//                 RANKED_BYTES_PER_RING_ELEMENT_512,
-//                 ETA1,
-//                 ETA1_RANDOMNESS_SIZE,
-//             >(randomness)
-//             // kyber512::generate_key_pair(random_array(rng)?)
-//         }
-//         Algorithm::MlKem768 => kyber768::generate_key_pair(random_array(rng)?),
-//         Algorithm::MlKem1024 => kyber1024::generate_key_pair(random_array(rng)?),
-//     }
-//     todo!()
-// }
-
-// fn kyber_rand(
-//     rng: &mut (impl CryptoRng + Rng),
-// ) -> Result<[u8; kyber::constants::SHARED_SECRET_SIZE], Error> {
-//     let mut seed = [0; kyber::constants::SHARED_SECRET_SIZE];
-//     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
-//     Ok(seed)
-// }
 
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
