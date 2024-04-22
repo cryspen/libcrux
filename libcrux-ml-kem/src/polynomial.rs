@@ -1,6 +1,6 @@
 //use crate::hax_utils::hax_debug_assert;
-use super::arithmetic::*;
-use super::intvec::*;
+use crate::arithmetic::*;
+use crate::simd::*;
 
 pub(crate) const VECS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / SIZE_VEC;

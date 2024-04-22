@@ -1,6 +1,8 @@
 use crate::hax_utils::hax_debug_assert;
 
-use super::arithmetic::{get_n_least_significant_bits, FieldElement};
+use crate::{
+    arithmetic::{get_n_least_significant_bits, FieldElement},
+};
 
 /// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
 /// 203 standard (Page 18, Expression 4.5), which is defined as:

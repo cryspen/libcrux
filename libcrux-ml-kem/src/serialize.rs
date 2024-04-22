@@ -2,7 +2,8 @@ use crate::{
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
     hax_utils::hax_debug_assert,
     helper::cloop,
-    intvec::{
+    polynomial::{PolynomialRingElement, VECS_IN_RING_ELEMENT},
+    simd::{
         compress_1_int_vec, compress_int_vec, decompress_1_int_vec, decompress_int_vec,
         deserialize_10_int_vec, deserialize_11_int_vec, deserialize_12_int_vec,
         deserialize_1_int_vec, deserialize_4_int_vec, deserialize_5_int_vec,
@@ -10,7 +11,6 @@ use crate::{
         serialize_12_int_vec, serialize_1_int_vec, serialize_4_int_vec, serialize_5_int_vec,
         to_unsigned_representative_int_vec,
     },
-    polynomial::{PolynomialRingElement, VECS_IN_RING_ELEMENT},
 };
 
 #[cfg(hax)]

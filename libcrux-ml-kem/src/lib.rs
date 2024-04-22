@@ -12,21 +12,17 @@ pub(crate) mod constants;
 /// Helpers for verification and extraction
 mod helper;
 
-#[cfg(all(target_arch = "aarch64"))]
-mod intvec128;
-
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
 mod hash_functions;
 mod ind_cpa;
-mod intvec;
-mod intvec32;
 mod matrix;
 mod ntt;
 mod polynomial;
 mod sampling;
 mod serialize;
+mod simd;
 mod types;
 
 // Variants

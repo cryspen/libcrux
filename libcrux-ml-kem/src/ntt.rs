@@ -1,6 +1,6 @@
 use crate::hax_utils::hax_debug_assert;
 
-use super::{
+use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     polynomial::{
         invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus, ntt_at_layer_1,

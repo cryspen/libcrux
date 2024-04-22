@@ -1,5 +1,5 @@
 //use crate::hax_utils::hax_debug_assert;
-use super::{
+use crate::{
     arithmetic::*,
     compress::{compress_ciphertext_coefficient, compress_message_coefficient},
 };

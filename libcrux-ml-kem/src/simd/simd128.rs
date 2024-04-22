@@ -1,9 +1,7 @@
-// FIXME: remove when using things
 #![allow(dead_code)]
-
-use super::{
-    intvec32,
+use crate::{
     polynomial::{from_i32_array, to_i32_array},
+    simd::fallback,
 };
 use core::arch::aarch64::*;
 
@@ -120,143 +118,143 @@ pub(crate) fn modulus_int_vec_constant_var_time(lhs: IntVec, rhs: i32) -> IntVec
 // Barrett: needs specialized implementation since i32 gets multiplied to obtain intermediate i64
 #[inline(always)]
 pub(crate) fn barrett_reduce_int_vec(a: IntVec) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::barrett_reduce_int_vec(input);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::barrett_reduce_int_vec(input);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 // Montgomery: mostly generic but uses a u32->i16->i32 conversion that may need specialized treatment
 #[inline(always)]
 pub(crate) fn montgomery_reduce_int_vec(a: IntVec) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::montgomery_reduce_int_vec(input);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::montgomery_reduce_int_vec(input);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 // Compress Message Coefficient: mostly generic but uses some i16 arithmetic
 #[inline(always)]
 pub(crate) fn compress_1_int_vec(a: IntVec) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::compress_1_int_vec(input);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::compress_1_int_vec(input);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 // Compress Ciphertext Coefficient: mostly generic but uses some i64 arithmetic
 #[inline(always)]
 pub(crate) fn compress_int_vec(coefficient_bits: u8, a: IntVec) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::compress_int_vec(coefficient_bits, input);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::compress_int_vec(coefficient_bits, input);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 /// NTT
 ///
 #[inline(always)]
 pub(crate) fn ntt_layer_1_int_vec_step(a: IntVec, zeta1: i32, zeta2: i32) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::ntt_layer_1_int_vec_step(input, zeta1, zeta2);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::ntt_layer_1_int_vec_step(input, zeta1, zeta2);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn ntt_layer_2_int_vec_step(a: IntVec, zeta: i32) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::ntt_layer_2_int_vec_step(input, zeta);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::ntt_layer_2_int_vec_step(input, zeta);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn inv_ntt_layer_1_int_vec_step(a: IntVec, zeta1: i32, zeta2: i32) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::inv_ntt_layer_1_int_vec_step(input, zeta1, zeta2);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::inv_ntt_layer_1_int_vec_step(input, zeta1, zeta2);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn inv_ntt_layer_2_int_vec_step(a: IntVec, zeta: i32) -> IntVec {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    let output = intvec32::inv_ntt_layer_2_int_vec_step(input, zeta);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    let output = fallback::inv_ntt_layer_2_int_vec_step(input, zeta);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn ntt_multiply_int_vec(lhs: &IntVec, rhs: &IntVec, zeta0: i32, zeta1: i32) -> IntVec {
-    let input1 = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(lhs));
-    let input2 = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(rhs));
-    let output = intvec32::ntt_multiply_int_vec(&input1, &input2, zeta0, zeta1);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let input1 = fallback::int_vec_from_i32_array(int_vec_to_i32_array(lhs));
+    let input2 = fallback::int_vec_from_i32_array(int_vec_to_i32_array(rhs));
+    let output = fallback::ntt_multiply_int_vec(&input1, &input2, zeta0, zeta1);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 /// SERIALIZE - DESERIALIZE
 ///
 #[inline(always)]
 pub(crate) fn serialize_1_int_vec(a: IntVec) -> u8 {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    intvec32::serialize_1_int_vec(input)
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    fallback::serialize_1_int_vec(input)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_1_int_vec(a: u8) -> IntVec {
-    let output = intvec32::deserialize_1_int_vec(a);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let output = fallback::deserialize_1_int_vec(a);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn serialize_5_int_vec(a: IntVec) -> [u8; 5] {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    intvec32::serialize_5_int_vec(input)
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    fallback::serialize_5_int_vec(input)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_5_int_vec(a: &[u8]) -> IntVec {
-    let output = intvec32::deserialize_5_int_vec(a);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let output = fallback::deserialize_5_int_vec(a);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn serialize_4_int_vec(a: IntVec) -> [u8; 4] {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    intvec32::serialize_4_int_vec(input)
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    fallback::serialize_4_int_vec(input)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_4_int_vec(a: &[u8]) -> IntVec {
-    let output = intvec32::deserialize_4_int_vec(a);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let output = fallback::deserialize_4_int_vec(a);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn serialize_10_int_vec(a: IntVec) -> [u8; 10] {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    intvec32::serialize_10_int_vec(input)
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    fallback::serialize_10_int_vec(input)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_10_int_vec(a: &[u8]) -> IntVec {
-    let output = intvec32::deserialize_10_int_vec(a);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let output = fallback::deserialize_10_int_vec(a);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn serialize_11_int_vec(a: IntVec) -> [u8; 11] {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    intvec32::serialize_11_int_vec(input)
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    fallback::serialize_11_int_vec(input)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_11_int_vec(a: &[u8]) -> IntVec {
-    let output = intvec32::deserialize_11_int_vec(a);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let output = fallback::deserialize_11_int_vec(a);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
 
 #[inline(always)]
 pub(crate) fn serialize_12_int_vec(a: IntVec) -> [u8; 12] {
-    let input = intvec32::int_vec_from_i32_array(int_vec_to_i32_array(&a));
-    intvec32::serialize_12_int_vec(input)
+    let input = fallback::int_vec_from_i32_array(int_vec_to_i32_array(&a));
+    fallback::serialize_12_int_vec(input)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_12_int_vec(a: &[u8]) -> IntVec {
-    let output = intvec32::deserialize_12_int_vec(a);
-    int_vec_from_i32_array(intvec32::int_vec_to_i32_array(output))
+    let output = fallback::deserialize_12_int_vec(a);
+    int_vec_from_i32_array(fallback::int_vec_to_i32_array(output))
 }
