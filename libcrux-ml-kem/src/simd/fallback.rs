@@ -17,7 +17,7 @@ pub(crate) struct IntVec {
 // Eventually, this should only be used for debugging
 // In the meantime, it allows us to convert between different vector representations
 #[inline(always)]
-pub(crate) fn int_vec_to_i32_array(a: IntVec) -> [i32; 8] {
+pub(crate) fn to_i32_array(a: IntVec) -> [i32; 8] {
     a.elements
 }
 
@@ -25,7 +25,7 @@ pub(crate) fn int_vec_to_i32_array(a: IntVec) -> [i32; 8] {
 // Eventually, this should only be used for debugging
 // In the meantime, it allows us to convert between different vector representations
 #[inline(always)]
-pub(crate) fn int_vec_from_i32_array(a: [i32; 8]) -> IntVec {
+pub(crate) fn from_i32_array(a: [i32; 8]) -> IntVec {
     IntVec { elements: a }
 }
 
@@ -37,7 +37,7 @@ pub(crate) const fn ZERO_VEC() -> IntVec {
 
 // Basic addition with a constant
 #[inline(always)]
-pub(crate) fn add_int_vec_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
+pub(crate) fn add_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] += rhs;
     }
@@ -46,7 +46,7 @@ pub(crate) fn add_int_vec_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
 
 // Basic addition
 #[inline(always)]
-pub(crate) fn add_int_vec(mut lhs: IntVec, rhs: &IntVec) -> IntVec {
+pub(crate) fn add(mut lhs: IntVec, rhs: &IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] += rhs.elements[i];
     }
@@ -55,7 +55,7 @@ pub(crate) fn add_int_vec(mut lhs: IntVec, rhs: &IntVec) -> IntVec {
 
 // Basic subtraction
 #[inline(always)]
-pub(crate) fn sub_int_vec(mut lhs: IntVec, rhs: &IntVec) -> IntVec {
+pub(crate) fn sub(mut lhs: IntVec, rhs: &IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] -= rhs.elements[i];
     }
@@ -64,7 +64,7 @@ pub(crate) fn sub_int_vec(mut lhs: IntVec, rhs: &IntVec) -> IntVec {
 
 // Basic multiplication with constant
 #[inline(always)]
-pub(crate) fn mul_int_vec_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
+pub(crate) fn mul_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] *= rhs;
     }
@@ -73,7 +73,7 @@ pub(crate) fn mul_int_vec_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
 
 // Basic multiplication with constant
 #[inline(always)]
-pub(crate) fn bit_and_int_vec_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
+pub(crate) fn bit_and_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] &= rhs;
     }
@@ -82,7 +82,7 @@ pub(crate) fn bit_and_int_vec_constant(mut lhs: IntVec, rhs: i32) -> IntVec {
 
 // Basic arithmetic shift right
 #[inline(always)]
-pub(crate) fn right_shift_int_vec(mut lhs: IntVec, rhs: u8) -> IntVec {
+pub(crate) fn right_shift(mut lhs: IntVec, rhs: u8) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] = lhs.elements[i] >> rhs;
     }
@@ -91,7 +91,7 @@ pub(crate) fn right_shift_int_vec(mut lhs: IntVec, rhs: u8) -> IntVec {
 
 // Basic shift left
 #[inline(always)]
-pub(crate) fn left_shift_int_vec(mut lhs: IntVec, rhs: u8) -> IntVec {
+pub(crate) fn left_shift(mut lhs: IntVec, rhs: u8) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] = lhs.elements[i] << rhs;
     }
@@ -100,7 +100,7 @@ pub(crate) fn left_shift_int_vec(mut lhs: IntVec, rhs: u8) -> IntVec {
 
 // Basic modulus
 #[inline(always)]
-pub(crate) fn modulus_int_vec_constant_var_time(mut lhs: IntVec, rhs: i32) -> IntVec {
+pub(crate) fn modulus_constant_var_time(mut lhs: IntVec, rhs: i32) -> IntVec {
     for i in 0..SIZE_VEC {
         lhs.elements[i] = lhs.elements[i] % rhs;
     }
@@ -111,25 +111,25 @@ pub(crate) fn modulus_int_vec_constant_var_time(mut lhs: IntVec, rhs: i32) -> In
 
 // Barrett: needs specialized implementation since i32 gets multiplied to obtain intermediate i64
 #[inline(always)]
-pub(crate) fn barrett_reduce_int_vec(mut a: IntVec) -> IntVec {
+pub(crate) fn barrett_reduce(mut a: IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
-        a.elements[i] = barrett_reduce(a.elements[i]);
+        a.elements[i] = crate::arithmetic::barrett_reduce(a.elements[i]);
     }
     a
 }
 
 // Montgomery: mostly generic but uses a u32->i16->i32 conversion that may need specialized treatment
 #[inline(always)]
-pub(crate) fn montgomery_reduce_int_vec(mut a: IntVec) -> IntVec {
+pub(crate) fn montgomery_reduce(mut a: IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
-        a.elements[i] = montgomery_reduce(a.elements[i]);
+        a.elements[i] = crate::arithmetic::montgomery_reduce(a.elements[i]);
     }
     a
 }
 
 // Compress Message Coefficient: mostly generic but uses some i16 arithmetic
 #[inline(always)]
-pub(crate) fn compress_1_int_vec(mut a: IntVec) -> IntVec {
+pub(crate) fn compress_1(mut a: IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
         a.elements[i] = compress_message_coefficient(a.elements[i] as u16) as i32;
     }
@@ -138,7 +138,7 @@ pub(crate) fn compress_1_int_vec(mut a: IntVec) -> IntVec {
 
 // Compress Ciphertext Coefficient: mostly generic but uses some i64 arithmetic
 #[inline(always)]
-pub(crate) fn compress_int_vec(coefficient_bits: u8, mut a: IntVec) -> IntVec {
+pub(crate) fn compress(coefficient_bits: u8, mut a: IntVec) -> IntVec {
     for i in 0..SIZE_VEC {
         a.elements[i] =
             compress_ciphertext_coefficient(coefficient_bits, a.elements[i] as u16) as i32;
@@ -149,7 +149,7 @@ pub(crate) fn compress_int_vec(coefficient_bits: u8, mut a: IntVec) -> IntVec {
 /// NTT
 ///
 #[inline(always)]
-pub(crate) fn ntt_layer_1_int_vec_step(mut a: IntVec, zeta1: i32, zeta2: i32) -> IntVec {
+pub(crate) fn ntt_layer_1_step(mut a: IntVec, zeta1: i32, zeta2: i32) -> IntVec {
     let t = montgomery_multiply_fe_by_fer(a.elements[2], zeta1);
     a.elements[2] = a.elements[0] - t;
     a.elements[0] = a.elements[0] + t;
@@ -170,7 +170,7 @@ pub(crate) fn ntt_layer_1_int_vec_step(mut a: IntVec, zeta1: i32, zeta2: i32) ->
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_2_int_vec_step(mut a: IntVec, zeta: i32) -> IntVec {
+pub(crate) fn ntt_layer_2_step(mut a: IntVec, zeta: i32) -> IntVec {
     let t = montgomery_multiply_fe_by_fer(a.elements[4], zeta);
     a.elements[4] = a.elements[0] - t;
     a.elements[0] = a.elements[0] + t;
@@ -191,7 +191,7 @@ pub(crate) fn ntt_layer_2_int_vec_step(mut a: IntVec, zeta: i32) -> IntVec {
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_1_int_vec_step(mut a: IntVec, zeta1: i32, zeta2: i32) -> IntVec {
+pub(crate) fn inv_ntt_layer_1_step(mut a: IntVec, zeta1: i32, zeta2: i32) -> IntVec {
     let a_minus_b = a.elements[2] - a.elements[0];
     a.elements[0] = a.elements[0] + a.elements[2];
     a.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
@@ -211,7 +211,7 @@ pub(crate) fn inv_ntt_layer_1_int_vec_step(mut a: IntVec, zeta1: i32, zeta2: i32
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_2_int_vec_step(mut a: IntVec, zeta: i32) -> IntVec {
+pub(crate) fn inv_ntt_layer_2_step(mut a: IntVec, zeta: i32) -> IntVec {
     let a_minus_b = a.elements[4] - a.elements[0];
     a.elements[0] = a.elements[0] + a.elements[4];
     a.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
@@ -231,8 +231,8 @@ pub(crate) fn inv_ntt_layer_2_int_vec_step(mut a: IntVec, zeta: i32) -> IntVec {
 }
 
 #[inline(always)]
-pub(crate) fn ntt_multiply_int_vec(lhs: &IntVec, rhs: &IntVec, zeta0: i32, zeta1: i32) -> IntVec {
-    let mut out = ZERO_VEC();
+pub(crate) fn ntt_multiply(lhs: &IntVec, rhs: &IntVec, zeta0: i32, zeta1: i32) -> IntVec {
+    let mut out = ZERO_VEC;
     let product = ntt_multiply_binomials(
         (lhs.elements[0], lhs.elements[1]),
         (rhs.elements[0], rhs.elements[1]),
@@ -270,7 +270,7 @@ pub(crate) fn ntt_multiply_int_vec(lhs: &IntVec, rhs: &IntVec, zeta0: i32, zeta1
 /// SERIALIZE - DESERIALIZE
 ///
 #[inline(always)]
-pub(crate) fn serialize_1_int_vec(a: IntVec) -> u8 {
+pub(crate) fn serialize_1(a: IntVec) -> u8 {
     let mut result = 0u8;
     for i in 0..SIZE_VEC {
         result |= (a.elements[i] as u8) << i;
@@ -279,8 +279,8 @@ pub(crate) fn serialize_1_int_vec(a: IntVec) -> u8 {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_1_int_vec(a: u8) -> IntVec {
-    let mut result = ZERO_VEC();
+pub(crate) fn deserialize_1(a: u8) -> IntVec {
+    let mut result = ZERO_VEC;
     for i in 0..SIZE_VEC {
         result.elements[i] = ((a >> i) & 0x1) as i32;
     }
@@ -288,7 +288,7 @@ pub(crate) fn deserialize_1_int_vec(a: u8) -> IntVec {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_5_int_vec(a: IntVec) -> [u8; 5] {
+pub(crate) fn serialize_5(a: IntVec) -> [u8; 5] {
     let mut result = [0u8; 5];
     result[0] = ((a.elements[1] & 0x7) << 5 | a.elements[0]) as u8;
     result[1] = (((a.elements[3] & 1) << 7) | (a.elements[2] << 2) | (a.elements[1] >> 3)) as u8;
@@ -299,8 +299,8 @@ pub(crate) fn serialize_5_int_vec(a: IntVec) -> [u8; 5] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_5_int_vec(bytes: &[u8]) -> IntVec {
-    let mut a = ZERO_VEC();
+pub(crate) fn deserialize_5(bytes: &[u8]) -> IntVec {
+    let mut a = ZERO_VEC;
     a.elements[0] = (bytes[0] & 0x1F) as i32;
     a.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
     a.elements[2] = ((bytes[1] >> 2) & 0x1F) as i32;
@@ -313,7 +313,7 @@ pub(crate) fn deserialize_5_int_vec(bytes: &[u8]) -> IntVec {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_4_int_vec(a: IntVec) -> [u8; 4] {
+pub(crate) fn serialize_4(a: IntVec) -> [u8; 4] {
     let mut result = [0u8; 4];
 
     result[0] = ((a.elements[1] as u8) << 4) | (a.elements[0] as u8);
@@ -325,8 +325,8 @@ pub(crate) fn serialize_4_int_vec(a: IntVec) -> [u8; 4] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_4_int_vec(bytes: &[u8]) -> IntVec {
-    let mut a = ZERO_VEC();
+pub(crate) fn deserialize_4(bytes: &[u8]) -> IntVec {
+    let mut a = ZERO_VEC;
     a.elements[0] = (bytes[0] & 0x0F) as i32;
     a.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
 
@@ -343,7 +343,7 @@ pub(crate) fn deserialize_4_int_vec(bytes: &[u8]) -> IntVec {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_10_int_vec(a: IntVec) -> [u8; 10] {
+pub(crate) fn serialize_10(a: IntVec) -> [u8; 10] {
     let mut result = [0u8; 10];
 
     result[0] = (a.elements[0] & 0xFF) as u8;
@@ -362,8 +362,8 @@ pub(crate) fn serialize_10_int_vec(a: IntVec) -> [u8; 10] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_10_int_vec(bytes: &[u8]) -> IntVec {
-    let mut result = ZERO_VEC();
+pub(crate) fn deserialize_10(bytes: &[u8]) -> IntVec {
+    let mut result = ZERO_VEC;
 
     result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
@@ -379,7 +379,7 @@ pub(crate) fn deserialize_10_int_vec(bytes: &[u8]) -> IntVec {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_11_int_vec(a: IntVec) -> [u8; 11] {
+pub(crate) fn serialize_11(a: IntVec) -> [u8; 11] {
     let mut result = [0u8; 11];
     result[0] = a.elements[0] as u8;
     result[1] = ((a.elements[1] & 0x1F) as u8) << 3 | ((a.elements[0] >> 8) as u8);
@@ -396,8 +396,8 @@ pub(crate) fn serialize_11_int_vec(a: IntVec) -> [u8; 11] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_11_int_vec(bytes: &[u8]) -> IntVec {
-    let mut result = ZERO_VEC();
+pub(crate) fn deserialize_11(bytes: &[u8]) -> IntVec {
+    let mut result = ZERO_VEC;
     result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
     result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
@@ -413,7 +413,7 @@ pub(crate) fn deserialize_11_int_vec(bytes: &[u8]) -> IntVec {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_12_int_vec(a: IntVec) -> [u8; 12] {
+pub(crate) fn serialize_12(a: IntVec) -> [u8; 12] {
     let mut result = [0u8; 12];
 
     result[0] = (a.elements[0] & 0xFF) as u8;
@@ -436,8 +436,8 @@ pub(crate) fn serialize_12_int_vec(a: IntVec) -> [u8; 12] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_12_int_vec(bytes: &[u8]) -> IntVec {
-    let mut re = ZERO_VEC();
+pub(crate) fn deserialize_12(bytes: &[u8]) -> IntVec {
+    let mut re = ZERO_VEC;
     let byte0 = bytes[0] as i32;
     let byte1 = bytes[1] as i32;
     let byte2 = bytes[2] as i32;
