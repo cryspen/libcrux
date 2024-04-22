@@ -2,24 +2,42 @@ use super::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS;
 use super::constants::FIELD_MODULUS;
 use super::intvec32;
 
+#[cfg(all(target_arch = "aarch64", feature = "simd128"))]
+use super::intvec128;
+
+#[cfg(all(target_arch = "aarch64", feature = "simd128"))]
+pub(crate) type IntVec = intvec128::IntVec;
+
+#[cfg(any(not(target_arch = "aarch64"), not(feature = "simd128")))]
 pub(crate) type IntVec = intvec32::IntVec;
+
 pub(crate) const SIZE_VEC: usize = 8;
 
 // Eventually, this should only be used for debugging
 // In the meantime, it allows us to convert between different vector representations
 #[inline(always)]
 pub(crate) fn int_vec_to_i32_array(a: IntVec) -> [i32; 8] {
-    intvec32::int_vec_to_i32_array(a)
+    #[cfg(all(target_arch = "aarch64", feature = "simd128"))]
+    let res = intvec128::int_vec_to_i32_array(&a);
+    #[cfg(any(not(target_arch = "aarch64"), not(feature = "simd128")))]
+    let res = intvec32::int_vec_to_i32_array(a);
+    res
 }
 
-// This function is used in sampling (until we figure out how to vectorize it)
+// This function is currently used in sampling (until we figure out how to vectorize sampling)
 // Eventually, this should only be used for debugging
 // In the meantime, it allows us to convert between different vector representations
 #[inline(always)]
 pub(crate) fn int_vec_from_i32_array(a: [i32; 8]) -> IntVec {
-    intvec32::int_vec_from_i32_array(a)
+    #[cfg(all(target_arch = "aarch64", feature = "simd128"))]
+    let res = intvec128::int_vec_from_i32_array(a);
+    #[cfg(any(not(target_arch = "aarch64"), not(feature = "simd128")))]
+    let res = intvec32::int_vec_from_i32_array(a);
+    res
 }
 
+// This is used to initialize polynomials, but is actually tricky for vector representations
+// Replace with a function
 pub(crate) const ZERO_VEC: IntVec = intvec32::ZERO_VEC;
 
 // Basic addition with a constant
