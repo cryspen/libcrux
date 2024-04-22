@@ -1,12 +1,12 @@
 use std::usize;
 
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::{G, PRF},
     helper::cloop,
     matrix::*,
     ntt::*,
+    polynomial::PolynomialRingElement,
     sampling::sample_from_binomial_distribution,
     serialize::{
         compress_then_serialize_message, compress_then_serialize_ring_element_u,
