@@ -1,16 +1,14 @@
 use super::{
-    constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE}, 
-    intvec::{compress_1_int_vec, compress_int_vec, 
-             decompress_1_int_vec, decompress_int_vec, 
-             deserialize_1_int_vec, deserialize_5_int_vec, 
-             serialize_1_int_vec, serialize_5_int_vec,
-             deserialize_4_int_vec, deserialize_11_int_vec,
-             serialize_11_int_vec, deserialize_10_int_vec,
-             serialize_12_int_vec, deserialize_12_int_vec,
-             serialize_10_int_vec, serialize_4_int_vec,
-             to_unsigned_representative_int_vec,
-             modulus_int_vec_constant_var_time}, 
-    polynomial::{PolynomialRingElement, VECS_IN_RING_ELEMENT}
+    constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
+    intvec::{
+        compress_1_int_vec, compress_int_vec, decompress_1_int_vec, decompress_int_vec,
+        deserialize_10_int_vec, deserialize_11_int_vec, deserialize_12_int_vec,
+        deserialize_1_int_vec, deserialize_4_int_vec, deserialize_5_int_vec,
+        modulus_int_vec_constant_var_time, serialize_10_int_vec, serialize_11_int_vec,
+        serialize_12_int_vec, serialize_1_int_vec, serialize_4_int_vec, serialize_5_int_vec,
+        to_unsigned_representative_int_vec,
+    },
+    polynomial::{PolynomialRingElement, VECS_IN_RING_ELEMENT},
 };
 use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
@@ -27,7 +25,6 @@ pub(super) fn compress_then_serialize_message(
         let coefficient = to_unsigned_representative_int_vec(re.coefficients[i]);
         let coefficient_compressed = compress_1_int_vec(coefficient);
         serialized[i] = serialize_1_int_vec(coefficient_compressed);
-        
     }
     serialized
 }
@@ -66,7 +63,6 @@ pub(super) fn serialize_uncompressed_ring_element(
     }
     serialized
 }
-
 
 #[inline(always)]
 pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> PolynomialRingElement {
@@ -125,9 +121,10 @@ pub(super) fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, co
 fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECS_IN_RING_ELEMENT {
-        let coefficient = compress_int_vec(10, to_unsigned_representative_int_vec(re.coefficients[i]));
+        let coefficient =
+            compress_int_vec(10, to_unsigned_representative_int_vec(re.coefficients[i]));
         let bytes = serialize_10_int_vec(coefficient);
-        serialized[10 * i] =     bytes[0];
+        serialized[10 * i] = bytes[0];
         serialized[10 * i + 1] = bytes[1];
         serialized[10 * i + 2] = bytes[2];
         serialized[10 * i + 3] = bytes[3];
@@ -141,12 +138,12 @@ fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -
     serialized
 }
 
-
 #[inline(always)]
 fn compress_then_serialize_11<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECS_IN_RING_ELEMENT {
-        let coefficient = compress_int_vec(11, to_unsigned_representative_int_vec(re.coefficients[i]));
+        let coefficient =
+            compress_int_vec(11, to_unsigned_representative_int_vec(re.coefficients[i]));
         let bytes = serialize_11_int_vec(coefficient);
         serialized[11 * i] = bytes[0];
         serialized[11 * i + 1] = bytes[1];
@@ -183,12 +180,13 @@ pub(super) fn compress_then_serialize_ring_element_u<
 fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECS_IN_RING_ELEMENT {
-        let coefficient = compress_int_vec(4, to_unsigned_representative_int_vec(re.coefficients[i]));
+        let coefficient =
+            compress_int_vec(4, to_unsigned_representative_int_vec(re.coefficients[i]));
         let bytes = serialize_4_int_vec(coefficient);
-        serialized[4*i] = bytes[0];
-        serialized[4*i + 1] = bytes[1];
-        serialized[4*i + 2] = bytes[2];
-        serialized[4*i + 3] = bytes[3];
+        serialized[4 * i] = bytes[0];
+        serialized[4 * i + 1] = bytes[1];
+        serialized[4 * i + 2] = bytes[2];
+        serialized[4 * i + 3] = bytes[3];
     }
     serialized
 }
@@ -196,9 +194,10 @@ fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) ->
 #[inline(always)]
 fn compress_then_serialize_5<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
-    
+
     for i in 0..VECS_IN_RING_ELEMENT {
-        let coefficients = compress_int_vec(5,to_unsigned_representative_int_vec(re.coefficients[i]));
+        let coefficients =
+            compress_int_vec(5, to_unsigned_representative_int_vec(re.coefficients[i]));
         let bytes5 = serialize_5_int_vec(coefficients);
         serialized[5 * i] = bytes5[0];
         serialized[5 * i + 1] = bytes5[1];
@@ -282,7 +281,6 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
     re
 }
 
-
 #[inline(always)]
 fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
@@ -297,7 +295,6 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
     }
     re
 }
-
 
 #[inline(always)]
 pub(super) fn deserialize_then_decompress_ring_element_v<const COMPRESSION_FACTOR: usize>(

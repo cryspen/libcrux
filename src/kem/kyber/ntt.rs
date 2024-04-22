@@ -1,13 +1,12 @@
 use crate::hax_utils::hax_debug_assert;
 
 use super::{
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     polynomial::{
-        poly_barrett_reduce, to_i32_array, 
-        ntt_at_layer_2, ntt_at_layer_1, ntt_at_layer_3_plus, ntt_at_layer_7, 
-        invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus,
+        invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus, ntt_at_layer_1,
+        ntt_at_layer_2, ntt_at_layer_3_plus, ntt_at_layer_7, poly_barrett_reduce, to_i32_array,
         PolynomialRingElement,
     },
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
 
 /// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
@@ -80,8 +79,6 @@ pub(in crate::kem::kyber) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usi
     re = poly_barrett_reduce(re);
     re
 }
-
-
 
 /// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
 /// of a `KyberPolynomialRingElement`. The coefficients of the output

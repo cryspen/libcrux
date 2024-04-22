@@ -150,7 +150,6 @@ pub(crate) fn _to_unsigned_representative(fe: FieldElement) -> u16 {
     (fe + (FIELD_MODULUS & (fe >> 31))) as u16
 }
 
-
 /// Compute the product of two Kyber binomials with respect to the
 /// modulus `X² - zeta`.
 ///

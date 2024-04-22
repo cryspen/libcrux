@@ -1,7 +1,7 @@
 use super::{
-    polynomial::{from_i32_array, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     hash_functions::*,
+    polynomial::{from_i32_array, PolynomialRingElement},
 };
 use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
@@ -77,7 +77,7 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
 
 pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
     let mut sampled_coefficients: [usize; K] = [0; K];
-    let mut out: [[i32;256]; K] = [[0;256]; K];
+    let mut out: [[i32; 256]; K] = [[0; 256]; K];
 
     let mut xof_state = absorb(seeds);
     let randomness = squeeze_three_blocks(&mut xof_state);
@@ -171,7 +171,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
             for outcome_set in (0..u32::BITS).step_by(4) {
                 let outcome_1 = ((coin_toss_outcomes >> outcome_set) & 0x3) as i32;
                 let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i32;
-    
+
                 let offset = (outcome_set >> 2) as usize;
                 sampled_i32s[8 * chunk_number + offset] = outcome_1 - outcome_2;
             }

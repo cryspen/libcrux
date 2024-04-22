@@ -1,14 +1,9 @@
 use super::{
-    polynomial::{
-        add_to_ring_element, 
-        subtract_reduce,
-        add_error_reduce,
-        add_message_error_reduce,
-        add_standard_error_reduce,
-        ntt_multiply,
-        PolynomialRingElement,
-    },
     ntt::invert_ntt_montgomery,
+    polynomial::{
+        add_error_reduce, add_message_error_reduce, add_standard_error_reduce, add_to_ring_element,
+        ntt_multiply, subtract_reduce, PolynomialRingElement,
+    },
     sampling::sample_from_xof,
 };
 use crate::cloop;
@@ -60,7 +55,7 @@ pub(in crate::kem::kyber) fn compute_message<const K: usize>(
     }
 
     result = invert_ntt_montgomery::<K>(result);
-    result = subtract_reduce(v,result);
+    result = subtract_reduce(v, result);
 
     result
 }
@@ -81,10 +76,10 @@ pub(in crate::kem::kyber) fn compute_ring_element_v<const K: usize>(
     }
 
     result = invert_ntt_montgomery::<K>(result);
-    result = add_message_error_reduce(error_2,message,result);
-    
+    result = add_message_error_reduce(error_2, message, result);
+
     result
-} 
+}
 
 /// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 #[inline(always)]
