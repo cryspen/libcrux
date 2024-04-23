@@ -10,7 +10,7 @@ pub(crate) struct FallbackVector {
     elements: [FieldElement; 8],
 }
 
-impl crate::simd::Operations for FallbackVector {
+impl crate::simd::simd_trait::Operations for FallbackVector {
     type Vector = FallbackVector;
 
     const FIELD_ELEMENTS_IN_VECTOR: usize = 8;

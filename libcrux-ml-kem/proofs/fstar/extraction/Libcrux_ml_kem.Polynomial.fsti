@@ -3,9 +3,6 @@ module Libcrux_ml_kem.Polynomial
 open Core
 open FStar.Mul
 
-let v_VECS_IN_RING_ELEMENT: usize =
-  Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! Libcrux_ml_kem.Intvec.v_SIZE_VEC
-
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   let list =
     [
@@ -25,27 +22,16 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list 128 list
 
-val inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Intvec32.t_IntVec) (zeta_r: i32)
-    : Prims.Pure (Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+let v_VECTORS_IN_RING_ELEMENT: usize =
+  Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
+  Libcrux_ml_kem.Simd.Simd_trait.f_FIELD_ELEMENTS_IN_VECTOR
 
-val ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Intvec32.t_IntVec)
-    : Prims.Pure (Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
+type t_PolynomialRingElement = {
+  f_coefficients:t_Array Libcrux_ml_kem.Simd.Fallback.t_FallbackVector (sz 32)
+}
 
-val ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Intvec32.t_IntVec) (zeta_r: i32)
-    : Prims.Pure (Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-type t_PolynomialRingElement = { f_coefficients:t_Array Libcrux_ml_kem.Intvec32.t_IntVec (sz 32) }
-
-let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement =
-  { f_coefficients = Rust_primitives.Hax.repeat Libcrux_ml_kem.Intvec.v_ZERO_VEC (sz 32) }
-  <:
-  t_PolynomialRingElement
+val impl__PolynomialRingElement__ZERO: Prims.unit
+  -> Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
 val add_error_reduce (err result: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
@@ -61,6 +47,11 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
 
 val from_i32_array (a: t_Array i32 (sz 256))
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+
+val inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) (zeta_r: i32)
+    : Prims.Pure
+      (Libcrux_ml_kem.Simd.Fallback.t_FallbackVector & Libcrux_ml_kem.Simd.Fallback.t_FallbackVector
+      ) Prims.l_True (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_1_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__layer: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
@@ -83,14 +74,24 @@ val ntt_at_layer_2_
       (v__layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
 
+val ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Simd.Fallback.t_FallbackVector & Libcrux_ml_kem.Simd.Fallback.t_FallbackVector
+      ) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_7_ (re: t_PolynomialRingElement)
+    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) (zeta_r: i32)
+    : Prims.Pure
+      (Libcrux_ml_kem.Simd.Fallback.t_FallbackVector & Libcrux_ml_kem.Simd.Fallback.t_FallbackVector
+      ) Prims.l_True (fun _ -> Prims.l_True)
+
 val ntt_at_layer_3_plus
       (zeta_i: usize)
       (re: t_PolynomialRingElement)
       (layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_at_layer_7_ (re: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
 val ntt_multiply (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
@@ -100,6 +101,3 @@ val poly_barrett_reduce (a: t_PolynomialRingElement)
 
 val subtract_reduce (a b: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
-
-val to_i32_array (a: t_PolynomialRingElement)
-    : Prims.Pure (t_Array i32 (sz 256)) Prims.l_True (fun _ -> Prims.l_True)

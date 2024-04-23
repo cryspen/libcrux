@@ -9,7 +9,10 @@ let compute_As_plus_e
       (s_as_ntt error_as_ntt: t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K)
      =
   let result:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      v_K
   in
   let result:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -89,7 +92,7 @@ let compute_ring_element_v
       (error_2_ message: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
      =
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -129,7 +132,10 @@ let compute_vector_u
       (r_as_ntt error_1_: t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K)
      =
   let result:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      v_K
   in
   let result:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -216,7 +222,7 @@ let compute_message
       (secret_as_ntt u_as_ntt: t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K)
      =
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -252,7 +258,10 @@ let compute_message
 
 let sample_matrix_A (v_K: usize) (seed: t_Array u8 (sz 34)) (transpose: bool) =
   let v_A_transpose:t_Array (t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K) v_K =
-    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+              ()
+            <:
+            Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
           v_K
         <:
         t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K)

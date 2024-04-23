@@ -8,7 +8,7 @@ pub(crate) struct SIMD128Vector {
     high: int32x4_t,
 }
 
-impl crate::simd::Operations for SIMD128Vector {
+impl crate::simd::simd_trait::Operations for SIMD128Vector {
     type Vector = SIMD128Vector;
 
     const FIELD_ELEMENTS_IN_VECTOR: usize = 8;

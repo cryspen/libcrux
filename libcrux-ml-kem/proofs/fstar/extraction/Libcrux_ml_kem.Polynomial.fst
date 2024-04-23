@@ -3,33 +3,23 @@ module Libcrux_ml_kem.Polynomial
 open Core
 open FStar.Mul
 
-let inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Intvec32.t_IntVec) (zeta_r: i32) =
-  let a_minus_b:Libcrux_ml_kem.Intvec32.t_IntVec = Libcrux_ml_kem.Intvec.sub_int_vec b a in
-  let a:Libcrux_ml_kem.Intvec32.t_IntVec = Libcrux_ml_kem.Intvec.add_int_vec a b in
-  let b:Libcrux_ml_kem.Intvec32.t_IntVec =
-    Libcrux_ml_kem.Intvec.montgomery_multiply_fe_by_fer_int_vec a_minus_b zeta_r
-  in
-  a, b <: (Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec)
-
-let ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Intvec32.t_IntVec) =
-  let t:Libcrux_ml_kem.Intvec32.t_IntVec = Libcrux_ml_kem.Intvec.mul_int_vec_constant b (-1600l) in
-  let b:Libcrux_ml_kem.Intvec32.t_IntVec = Libcrux_ml_kem.Intvec.sub_int_vec a t in
-  let a:Libcrux_ml_kem.Intvec32.t_IntVec = Libcrux_ml_kem.Intvec.add_int_vec a t in
-  a, b <: (Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec)
-
-let ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Intvec32.t_IntVec) (zeta_r: i32) =
-  let t:Libcrux_ml_kem.Intvec32.t_IntVec =
-    Libcrux_ml_kem.Intvec.montgomery_multiply_fe_by_fer_int_vec b zeta_r
-  in
-  let b:Libcrux_ml_kem.Intvec32.t_IntVec = Libcrux_ml_kem.Intvec.sub_int_vec a t in
-  let a:Libcrux_ml_kem.Intvec32.t_IntVec = Libcrux_ml_kem.Intvec.add_int_vec a t in
-  a, b <: (Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec)
+let impl__PolynomialRingElement__ZERO (_: Prims.unit) =
+  {
+    f_coefficients
+    =
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Simd.Simd_trait.f_ZERO ()
+        <:
+        Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+      (sz 32)
+  }
+  <:
+  t_PolynomialRingElement
 
 let add_error_reduce (err result: t_PolynomialRingElement) =
   let result:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -39,12 +29,12 @@ let add_error_reduce (err result: t_PolynomialRingElement) =
       (fun result j ->
           let result:t_PolynomialRingElement = result in
           let j:usize = j in
-          let coefficient_normal_form:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.montgomery_reduce_int_vec (Libcrux_ml_kem.Intvec.mul_int_vec_constant
-                  (result.f_coefficients.[ j ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant
+                  (result.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   1441l
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
           in
           let result:t_PolynomialRingElement =
             {
@@ -53,12 +43,13 @@ let add_error_reduce (err result: t_PolynomialRingElement) =
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result.f_coefficients
                 j
-                (Libcrux_ml_kem.Intvec.barrett_reduce_int_vec (Libcrux_ml_kem.Intvec.add_int_vec coefficient_normal_form
-                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+                (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_add
+                        coefficient_normal_form
+                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -71,7 +62,7 @@ let add_message_error_reduce (err message result: t_PolynomialRingElement) =
   let result:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -81,12 +72,12 @@ let add_message_error_reduce (err message result: t_PolynomialRingElement) =
       (fun result i ->
           let result:t_PolynomialRingElement = result in
           let i:usize = i in
-          let coefficient_normal_form:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.montgomery_reduce_int_vec (Libcrux_ml_kem.Intvec.mul_int_vec_constant
-                  (result.f_coefficients.[ i ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant
+                  (result.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   1441l
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
           in
           let result:t_PolynomialRingElement =
             {
@@ -95,17 +86,20 @@ let add_message_error_reduce (err message result: t_PolynomialRingElement) =
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.barrett_reduce_int_vec (Libcrux_ml_kem.Intvec.add_int_vec coefficient_normal_form
-                        (Libcrux_ml_kem.Intvec.add_int_vec (err.f_coefficients.[ i ]
+                (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_add
+                        coefficient_normal_form
+                        (Libcrux_ml_kem.Simd.Simd_trait.f_add (err.f_coefficients.[ i ]
                               <:
-                              Libcrux_ml_kem.Intvec32.t_IntVec)
-                            (message.f_coefficients.[ i ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+                              Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+                            (message.f_coefficients.[ i ]
+                              <:
+                              Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                           <:
-                          Libcrux_ml_kem.Intvec32.t_IntVec)
+                          Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -118,7 +112,7 @@ let add_standard_error_reduce (err result: t_PolynomialRingElement) =
   let result:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -128,10 +122,10 @@ let add_standard_error_reduce (err result: t_PolynomialRingElement) =
       (fun result j ->
           let result:t_PolynomialRingElement = result in
           let j:usize = j in
-          let coefficient_normal_form:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.to_standard_domain_int_vec (result.f_coefficients.[ j ]
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_to_standard_domain (result.f_coefficients.[ j ]
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
           in
           let result:t_PolynomialRingElement =
             {
@@ -140,12 +134,13 @@ let add_standard_error_reduce (err result: t_PolynomialRingElement) =
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result.f_coefficients
                 j
-                (Libcrux_ml_kem.Intvec.barrett_reduce_int_vec (Libcrux_ml_kem.Intvec.add_int_vec coefficient_normal_form
-                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+                (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_add
+                        coefficient_normal_form
+                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -158,7 +153,13 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
   let lhs:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end
+              =
+              Core.Slice.impl__len (Rust_primitives.unsize lhs.f_coefficients
+                  <:
+                  t_Slice Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+              <:
+              usize
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -174,14 +175,14 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
             =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize lhs.f_coefficients
               i
-              (Libcrux_ml_kem.Intvec.add_int_vec (lhs.f_coefficients.[ i ]
+              (Libcrux_ml_kem.Simd.Simd_trait.f_add (lhs.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Intvec32.t_IntVec)
-                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+                    Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             <:
-            t_Array Libcrux_ml_kem.Intvec32.t_IntVec (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Fallback.t_FallbackVector (sz 32)
           }
           <:
           t_PolynomialRingElement)
@@ -189,11 +190,11 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
   lhs
 
 let from_i32_array (a: t_Array i32 (sz 256)) =
-  let result:t_PolynomialRingElement = impl__PolynomialRingElement__ZERO in
+  let result:t_PolynomialRingElement = impl__PolynomialRingElement__ZERO () in
   let result:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -209,14 +210,19 @@ let from_i32_array (a: t_Array i32 (sz 256)) =
             =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result.f_coefficients
               i
-              (Libcrux_ml_kem.Intvec.int_vec_from_i32_array (Core.Result.impl__unwrap (Core.Convert.f_try_into
+              (Libcrux_ml_kem.Simd.Simd_trait.f_from_i32_array (Core.Result.impl__unwrap (Core.Convert.f_try_into
                           (a.[ {
                                 Core.Ops.Range.f_start
                                 =
-                                i *! Libcrux_ml_kem.Intvec.v_SIZE_VEC <: usize;
+                                i *! Libcrux_ml_kem.Simd.Simd_trait.f_FIELD_ELEMENTS_IN_VECTOR
+                                <:
+                                usize;
                                 Core.Ops.Range.f_end
                                 =
-                                (i +! sz 1 <: usize) *! Libcrux_ml_kem.Intvec.v_SIZE_VEC <: usize
+                                (i +! sz 1 <: usize) *!
+                                Libcrux_ml_kem.Simd.Simd_trait.f_FIELD_ELEMENTS_IN_VECTOR
+                                <:
+                                usize
                               }
                               <:
                               Core.Ops.Range.t_Range usize ]
@@ -227,14 +233,26 @@ let from_i32_array (a: t_Array i32 (sz 256)) =
                     <:
                     t_Array i32 (sz 8))
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             <:
-            t_Array Libcrux_ml_kem.Intvec32.t_IntVec (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Fallback.t_FallbackVector (sz 32)
           }
           <:
           t_PolynomialRingElement)
   in
   result
+
+let inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) (zeta_r: i32) =
+  let a_minus_b:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+    Libcrux_ml_kem.Simd.Simd_trait.f_sub b a
+  in
+  let a:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector = Libcrux_ml_kem.Simd.Simd_trait.f_add a b in
+  let b:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+    Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_multiply_fe_by_fer a_minus_b zeta_r
+  in
+  a, b
+  <:
+  (Libcrux_ml_kem.Simd.Fallback.t_FallbackVector & Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
 
 let invert_ntt_at_layer_1_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__layer: usize) =
   let zeta_i:usize = zeta_i -! sz 1 in
@@ -258,13 +276,13 @@ let invert_ntt_at_layer_1_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__lay
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients
                 round
-                (Libcrux_ml_kem.Intvec.inv_ntt_layer_1_int_vec_step (re.f_coefficients.[ round ]
+                (Libcrux_ml_kem.Simd.Simd_trait.f_inv_ntt_layer_1_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 1 <: usize ] <: i32)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -298,12 +316,12 @@ let invert_ntt_at_layer_2_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__lay
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients
                 round
-                (Libcrux_ml_kem.Intvec.inv_ntt_layer_2_int_vec_step (re.f_coefficients.[ round ]
+                (Libcrux_ml_kem.Simd.Simd_trait.f_inv_ntt_layer_2_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -330,8 +348,10 @@ let invert_ntt_at_layer_3_plus (zeta_i: usize) (re: t_PolynomialRingElement) (la
           let round:usize = round in
           let zeta_i:usize = zeta_i -! sz 1 in
           let offset:usize = (round *! step <: usize) *! sz 2 in
-          let offset_vec:usize = offset /! Libcrux_ml_kem.Intvec.v_SIZE_VEC in
-          let step_vec:usize = step /! Libcrux_ml_kem.Intvec.v_SIZE_VEC in
+          let offset_vec:usize =
+            offset /! Libcrux_ml_kem.Simd.Simd_trait.f_FIELD_ELEMENTS_IN_VECTOR
+          in
+          let step_vec:usize = step /! Libcrux_ml_kem.Simd.Simd_trait.f_FIELD_ELEMENTS_IN_VECTOR in
           let re:t_PolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset_vec;
@@ -345,13 +365,14 @@ let invert_ntt_at_layer_3_plus (zeta_i: usize) (re: t_PolynomialRingElement) (la
               (fun re j ->
                   let re:t_PolynomialRingElement = re in
                   let j:usize = j in
-                  let x, y:(Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec) =
+                  let x, y:(Libcrux_ml_kem.Simd.Fallback.t_FallbackVector &
+                    Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) =
                     inv_ntt_layer_int_vec_step (re.f_coefficients.[ j ]
                         <:
-                        Libcrux_ml_kem.Intvec32.t_IntVec)
+                        Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                       (re.f_coefficients.[ j +! step_vec <: usize ]
                         <:
-                        Libcrux_ml_kem.Intvec32.t_IntVec)
+                        Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                       (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   in
                   let re:t_PolynomialRingElement =
@@ -411,13 +432,13 @@ let ntt_at_layer_1_
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients
                 round
-                (Libcrux_ml_kem.Intvec.ntt_layer_1_int_vec_step (re.f_coefficients.[ round ]
+                (Libcrux_ml_kem.Simd.Simd_trait.f_ntt_layer_1_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 1 <: usize ] <: i32)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -455,12 +476,12 @@ let ntt_at_layer_2_
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients
                 round
-                (Libcrux_ml_kem.Intvec.ntt_layer_2_int_vec_step (re.f_coefficients.[ round ]
+                (Libcrux_ml_kem.Simd.Simd_trait.f_ntt_layer_2_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -469,6 +490,76 @@ let ntt_at_layer_2_
   in
   let hax_temp_output:t_PolynomialRingElement = re in
   zeta_i, hax_temp_output <: (usize & t_PolynomialRingElement)
+
+let ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) =
+  let t:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+    Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant b (-1600l)
+  in
+  let b:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector = Libcrux_ml_kem.Simd.Simd_trait.f_sub a t in
+  let a:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector = Libcrux_ml_kem.Simd.Simd_trait.f_add a t in
+  a, b
+  <:
+  (Libcrux_ml_kem.Simd.Fallback.t_FallbackVector & Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+
+let ntt_at_layer_7_ (re: t_PolynomialRingElement) =
+  let step:usize = v_VECTORS_IN_RING_ELEMENT /! sz 2 in
+  let re:t_PolynomialRingElement =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = step
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      re
+      (fun re j ->
+          let re:t_PolynomialRingElement = re in
+          let j:usize = j in
+          let x, y:(Libcrux_ml_kem.Simd.Fallback.t_FallbackVector &
+            Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) =
+            ntt_layer_7_int_vec_step (re.f_coefficients.[ j ]
+                <:
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+              (re.f_coefficients.[ j +! step <: usize ]
+                <:
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+          in
+          let re:t_PolynomialRingElement =
+            {
+              re with
+              f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients j x
+            }
+            <:
+            t_PolynomialRingElement
+          in
+          let re:t_PolynomialRingElement =
+            {
+              re with
+              f_coefficients
+              =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients
+                (j +! step <: usize)
+                y
+            }
+            <:
+            t_PolynomialRingElement
+          in
+          re)
+  in
+  re
+
+let ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) (zeta_r: i32) =
+  let t:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+    Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_multiply_fe_by_fer b zeta_r
+  in
+  let b:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector = Libcrux_ml_kem.Simd.Simd_trait.f_sub a t in
+  let a:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector = Libcrux_ml_kem.Simd.Simd_trait.f_add a t in
+  a, b
+  <:
+  (Libcrux_ml_kem.Simd.Fallback.t_FallbackVector & Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
 
 let ntt_at_layer_3_plus
       (zeta_i: usize)
@@ -503,8 +594,10 @@ let ntt_at_layer_3_plus
           let round:usize = round in
           let zeta_i:usize = zeta_i +! sz 1 in
           let offset:usize = (round *! step <: usize) *! sz 2 in
-          let offset_vec:usize = offset /! Libcrux_ml_kem.Intvec.v_SIZE_VEC in
-          let step_vec:usize = step /! Libcrux_ml_kem.Intvec.v_SIZE_VEC in
+          let offset_vec:usize =
+            offset /! Libcrux_ml_kem.Simd.Simd_trait.f_FIELD_ELEMENTS_IN_VECTOR
+          in
+          let step_vec:usize = step /! Libcrux_ml_kem.Simd.Simd_trait.f_FIELD_ELEMENTS_IN_VECTOR in
           let re:t_PolynomialRingElement =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                       Core.Ops.Range.f_start = offset_vec;
@@ -518,13 +611,14 @@ let ntt_at_layer_3_plus
               (fun re j ->
                   let re:t_PolynomialRingElement = re in
                   let j:usize = j in
-                  let x, y:(Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec) =
+                  let x, y:(Libcrux_ml_kem.Simd.Fallback.t_FallbackVector &
+                    Libcrux_ml_kem.Simd.Fallback.t_FallbackVector) =
                     ntt_layer_int_vec_step (re.f_coefficients.[ j ]
                         <:
-                        Libcrux_ml_kem.Intvec32.t_IntVec)
+                        Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                       (re.f_coefficients.[ j +! step_vec <: usize ]
                         <:
-                        Libcrux_ml_kem.Intvec32.t_IntVec)
+                        Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                       (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   in
                   let re:t_PolynomialRingElement =
@@ -558,57 +652,12 @@ let ntt_at_layer_3_plus
   let hax_temp_output:t_PolynomialRingElement = re in
   zeta_i, hax_temp_output <: (usize & t_PolynomialRingElement)
 
-let ntt_at_layer_7_ (re: t_PolynomialRingElement) =
-  let step:usize = v_VECS_IN_RING_ELEMENT /! sz 2 in
-  let re:t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = step
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
-      re
-      (fun re j ->
-          let re:t_PolynomialRingElement = re in
-          let j:usize = j in
-          let x, y:(Libcrux_ml_kem.Intvec32.t_IntVec & Libcrux_ml_kem.Intvec32.t_IntVec) =
-            ntt_layer_7_int_vec_step (re.f_coefficients.[ j ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
-              (re.f_coefficients.[ j +! step <: usize ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
-          in
-          let re:t_PolynomialRingElement =
-            {
-              re with
-              f_coefficients
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients j x
-            }
-            <:
-            t_PolynomialRingElement
-          in
-          let re:t_PolynomialRingElement =
-            {
-              re with
-              f_coefficients
-              =
-              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re.f_coefficients
-                (j +! step <: usize)
-                y
-            }
-            <:
-            t_PolynomialRingElement
-          in
-          re)
-  in
-  re
-
 let ntt_multiply (lhs rhs: t_PolynomialRingElement) =
-  let out:t_PolynomialRingElement = impl__PolynomialRingElement__ZERO in
+  let out:t_PolynomialRingElement = impl__PolynomialRingElement__ZERO () in
   let out:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -624,10 +673,10 @@ let ntt_multiply (lhs rhs: t_PolynomialRingElement) =
             =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out.f_coefficients
               i
-              (Libcrux_ml_kem.Intvec.ntt_multiply_int_vec (lhs.f_coefficients.[ i ]
+              (Libcrux_ml_kem.Simd.Simd_trait.f_ntt_multiply (lhs.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Intvec32.t_IntVec)
-                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+                    Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
+                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   (v_ZETAS_TIMES_MONTGOMERY_R.[ sz 64 +! (sz 2 *! i <: usize) <: usize ] <: i32)
                   (v_ZETAS_TIMES_MONTGOMERY_R.[ (sz 64 +! (sz 2 *! i <: usize) <: usize) +! sz 1
                       <:
@@ -635,9 +684,9 @@ let ntt_multiply (lhs rhs: t_PolynomialRingElement) =
                     <:
                     i32)
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             <:
-            t_Array Libcrux_ml_kem.Intvec32.t_IntVec (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Fallback.t_FallbackVector (sz 32)
           }
           <:
           t_PolynomialRingElement)
@@ -648,7 +697,7 @@ let poly_barrett_reduce (a: t_PolynomialRingElement) =
   let a:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -664,13 +713,13 @@ let poly_barrett_reduce (a: t_PolynomialRingElement) =
             =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize a.f_coefficients
               i
-              (Libcrux_ml_kem.Intvec.barrett_reduce_int_vec (a.f_coefficients.[ i ]
+              (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (a.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Intvec32.t_IntVec)
+                    Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             <:
-            t_Array Libcrux_ml_kem.Intvec32.t_IntVec (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Fallback.t_FallbackVector (sz 32)
           }
           <:
           t_PolynomialRingElement)
@@ -681,7 +730,7 @@ let subtract_reduce (a b: t_PolynomialRingElement) =
   let b:t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -691,12 +740,12 @@ let subtract_reduce (a b: t_PolynomialRingElement) =
       (fun b i ->
           let b:t_PolynomialRingElement = b in
           let i:usize = i in
-          let coefficient_normal_form:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.montgomery_reduce_int_vec (Libcrux_ml_kem.Intvec.mul_int_vec_constant
-                  (b.f_coefficients.[ i ] <: Libcrux_ml_kem.Intvec32.t_IntVec)
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Fallback.t_FallbackVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant
+                  (b.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   1441l
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
           in
           let b:t_PolynomialRingElement =
             {
@@ -705,15 +754,13 @@ let subtract_reduce (a b: t_PolynomialRingElement) =
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize b.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.barrett_reduce_int_vec (Libcrux_ml_kem.Intvec.sub_int_vec (a
-                            .f_coefficients.[ i ]
-                          <:
-                          Libcrux_ml_kem.Intvec32.t_IntVec)
+                (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_sub
+                        (a.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                         coefficient_normal_form
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Fallback.t_FallbackVector)
             }
             <:
             t_PolynomialRingElement
@@ -721,43 +768,3 @@ let subtract_reduce (a b: t_PolynomialRingElement) =
           b)
   in
   b
-
-let to_i32_array (a: t_PolynomialRingElement) =
-  let result:t_Array i32 (sz 256) = Rust_primitives.Hax.repeat 0l (sz 256) in
-  let result:t_Array i32 (sz 256) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_VECS_IN_RING_ELEMENT
-            }
-            <:
-            Core.Ops.Range.t_Range usize)
-        <:
-        Core.Ops.Range.t_Range usize)
-      result
-      (fun result i ->
-          let result:t_Array i32 (sz 256) = result in
-          let i:usize = i in
-          let result_i:t_Array i32 (sz 8) =
-            Libcrux_ml_kem.Intvec.int_vec_to_i32_array (a.f_coefficients.[ i ]
-                <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
-          in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                    Core.Ops.Range.f_start = sz 0;
-                    Core.Ops.Range.f_end = Libcrux_ml_kem.Intvec.v_SIZE_VEC
-                  }
-                  <:
-                  Core.Ops.Range.t_Range usize)
-              <:
-              Core.Ops.Range.t_Range usize)
-            result
-            (fun result j ->
-                let result:t_Array i32 (sz 256) = result in
-                let j:usize = j in
-                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-                  ((i *! Libcrux_ml_kem.Intvec.v_SIZE_VEC <: usize) +! j <: usize)
-                  (result_i.[ j ] <: i32)
-                <:
-                t_Array i32 (sz 256)))
-  in
-  result
