@@ -13,12 +13,13 @@ pub(crate) struct FallbackVector {
 impl crate::simd::Operations for FallbackVector {
     type Vector = FallbackVector;
 
+    const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
+
     fn ZERO() -> Self::Vector {
         Self {
             elements: [0i32; Self::FIELD_ELEMENTS_IN_VECTOR],
         }
     }
-    const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
 
     fn to_i32_array(v: Self::Vector) -> [i32; 8] {
         v.elements
@@ -74,9 +75,9 @@ impl crate::simd::Operations for FallbackVector {
         v
     }
 
-    fn shift_left(mut lhs: Self::Vector, rhs: u8) -> Self::Vector {
+    fn shift_left(mut lhs: Self::Vector, shift_amount: u8) -> Self::Vector {
         for i in 0..Self::FIELD_ELEMENTS_IN_VECTOR {
-            lhs.elements[i] = lhs.elements[i] << rhs;
+            lhs.elements[i] = lhs.elements[i] << shift_amount;
         }
 
         lhs
@@ -123,83 +124,84 @@ impl crate::simd::Operations for FallbackVector {
         v
     }
 
-    fn ntt_layer_1_step(mut a: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
-        let t = montgomery_multiply_fe_by_fer(a.elements[2], zeta1);
-        a.elements[2] = a.elements[0] - t;
-        a.elements[0] = a.elements[0] + t;
+    fn ntt_layer_1_step(mut v: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
+        let t = montgomery_multiply_fe_by_fer(v.elements[2], zeta1);
+        v.elements[2] = v.elements[0] - t;
+        v.elements[0] = v.elements[0] + t;
 
-        let t = montgomery_multiply_fe_by_fer(a.elements[3], zeta1);
-        a.elements[3] = a.elements[1] - t;
-        a.elements[1] = a.elements[1] + t;
+        let t = montgomery_multiply_fe_by_fer(v.elements[3], zeta1);
+        v.elements[3] = v.elements[1] - t;
+        v.elements[1] = v.elements[1] + t;
 
-        let t = montgomery_multiply_fe_by_fer(a.elements[6], zeta2);
-        a.elements[6] = a.elements[4] - t;
-        a.elements[4] = a.elements[4] + t;
+        let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta2);
+        v.elements[6] = v.elements[4] - t;
+        v.elements[4] = v.elements[4] + t;
 
-        let t = montgomery_multiply_fe_by_fer(a.elements[7], zeta2);
-        a.elements[7] = a.elements[5] - t;
-        a.elements[5] = a.elements[5] + t;
+        let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta2);
+        v.elements[7] = v.elements[5] - t;
+        v.elements[5] = v.elements[5] + t;
 
-        a
+        v
     }
 
-    fn ntt_layer_2_step(mut a: Self::Vector, zeta: i32) -> Self::Vector {
-        let t = montgomery_multiply_fe_by_fer(a.elements[4], zeta);
-        a.elements[4] = a.elements[0] - t;
-        a.elements[0] = a.elements[0] + t;
+    fn ntt_layer_2_step(mut v: Self::Vector, zeta: i32) -> Self::Vector {
+        let t = montgomery_multiply_fe_by_fer(v.elements[4], zeta);
+        v.elements[4] = v.elements[0] - t;
+        v.elements[0] = v.elements[0] + t;
 
-        let t = montgomery_multiply_fe_by_fer(a.elements[5], zeta);
-        a.elements[5] = a.elements[1] - t;
-        a.elements[1] = a.elements[1] + t;
+        let t = montgomery_multiply_fe_by_fer(v.elements[5], zeta);
+        v.elements[5] = v.elements[1] - t;
+        v.elements[1] = v.elements[1] + t;
 
-        let t = montgomery_multiply_fe_by_fer(a.elements[6], zeta);
-        a.elements[6] = a.elements[2] - t;
-        a.elements[2] = a.elements[2] + t;
+        let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta);
+        v.elements[6] = v.elements[2] - t;
+        v.elements[2] = v.elements[2] + t;
 
-        let t = montgomery_multiply_fe_by_fer(a.elements[7], zeta);
-        a.elements[7] = a.elements[3] - t;
-        a.elements[3] = a.elements[3] + t;
+        let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta);
+        v.elements[7] = v.elements[3] - t;
+        v.elements[3] = v.elements[3] + t;
 
-        a
+        v
     }
 
-    fn inv_ntt_layer_1_step(mut a: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
-        let a_minus_b = a.elements[2] - a.elements[0];
-        a.elements[0] = a.elements[0] + a.elements[2];
-        a.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    fn inv_ntt_layer_1_step(mut v: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
+        let a_minus_b = v.elements[2] - v.elements[0];
+        v.elements[0] = v.elements[0] + v.elements[2];
+        v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-        let a_minus_b = a.elements[3] - a.elements[1];
-        a.elements[1] = a.elements[1] + a.elements[3];
-        a.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+        let a_minus_b = v.elements[3] - v.elements[1];
+        v.elements[1] = v.elements[1] + v.elements[3];
+        v.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-        let a_minus_b = a.elements[6] - a.elements[4];
-        a.elements[4] = a.elements[4] + a.elements[6];
-        a.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+        let a_minus_b = v.elements[6] - v.elements[4];
+        v.elements[4] = v.elements[4] + v.elements[6];
+        v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
-        let a_minus_b = a.elements[7] - a.elements[5];
-        a.elements[5] = a.elements[5] + a.elements[7];
-        a.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+        let a_minus_b = v.elements[7] - v.elements[5];
+        v.elements[5] = v.elements[5] + v.elements[7];
+        v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
-        a
+        v
     }
 
-    fn inv_ntt_layer_2_step(mut a: Self::Vector, zeta: i32) -> Self::Vector {
-        let a_minus_b = a.elements[4] - a.elements[0];
-        a.elements[0] = a.elements[0] + a.elements[4];
-        a.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    fn inv_ntt_layer_2_step(mut v: Self::Vector, zeta: i32) -> Self::Vector {
+        let a_minus_b = v.elements[4] - v.elements[0];
+        v.elements[0] = v.elements[0] + v.elements[4];
+        v.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-        let a_minus_b = a.elements[5] - a.elements[1];
-        a.elements[1] = a.elements[1] + a.elements[5];
-        a.elements[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+        let a_minus_b = v.elements[5] - v.elements[1];
+        v.elements[1] = v.elements[1] + v.elements[5];
+        v.elements[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-        let a_minus_b = a.elements[6] - a.elements[2];
-        a.elements[2] = a.elements[2] + a.elements[6];
-        a.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+        let a_minus_b = v.elements[6] - v.elements[2];
+        v.elements[2] = v.elements[2] + v.elements[6];
+        v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-        let a_minus_b = a.elements[7] - a.elements[3];
-        a.elements[3] = a.elements[3] + a.elements[7];
-        a.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-        a
+        let a_minus_b = v.elements[7] - v.elements[3];
+        v.elements[3] = v.elements[3] + v.elements[7];
+        v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+        v
     }
 
     fn ntt_multiply(
@@ -243,93 +245,93 @@ impl crate::simd::Operations for FallbackVector {
         out
     }
 
-    fn serialize_1(a: Self::Vector) -> u8 {
+    fn serialize_1(v: Self::Vector) -> u8 {
         let mut result = 0u8;
         for i in 0..Self::FIELD_ELEMENTS_IN_VECTOR {
-            result |= (a.elements[i] as u8) << i;
+            result |= (v.elements[i] as u8) << i;
         }
 
         result
     }
-    fn deserialize_1(a: u8) -> Self::Vector {
+    fn deserialize_1(v: u8) -> Self::Vector {
         let mut result = Self::ZERO();
         for i in 0..Self::FIELD_ELEMENTS_IN_VECTOR {
-            result.elements[i] = ((a >> i) & 0x1) as i32;
+            result.elements[i] = ((v >> i) & 0x1) as i32;
         }
 
         result
     }
 
-    fn serialize_4(a: Self::Vector) -> [u8; 4] {
+    fn serialize_4(v: Self::Vector) -> [u8; 4] {
         let mut result = [0u8; 4];
 
-        result[0] = ((a.elements[1] as u8) << 4) | (a.elements[0] as u8);
-        result[1] = ((a.elements[3] as u8) << 4) | (a.elements[2] as u8);
-        result[2] = ((a.elements[5] as u8) << 4) | (a.elements[4] as u8);
-        result[3] = ((a.elements[7] as u8) << 4) | (a.elements[6] as u8);
+        result[0] = ((v.elements[1] as u8) << 4) | (v.elements[0] as u8);
+        result[1] = ((v.elements[3] as u8) << 4) | (v.elements[2] as u8);
+        result[2] = ((v.elements[5] as u8) << 4) | (v.elements[4] as u8);
+        result[3] = ((v.elements[7] as u8) << 4) | (v.elements[6] as u8);
 
         result
     }
     fn deserialize_4(bytes: &[u8]) -> Self::Vector {
-        let mut a = Self::ZERO();
+        let mut v = Self::ZERO();
 
-        a.elements[0] = (bytes[0] & 0x0F) as i32;
-        a.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
+        v.elements[0] = (bytes[0] & 0x0F) as i32;
+        v.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
 
-        a.elements[2] = (bytes[1] & 0x0F) as i32;
-        a.elements[3] = ((bytes[1] >> 4) & 0x0F) as i32;
+        v.elements[2] = (bytes[1] & 0x0F) as i32;
+        v.elements[3] = ((bytes[1] >> 4) & 0x0F) as i32;
 
-        a.elements[4] = (bytes[2] & 0x0F) as i32;
-        a.elements[5] = ((bytes[2] >> 4) & 0x0F) as i32;
+        v.elements[4] = (bytes[2] & 0x0F) as i32;
+        v.elements[5] = ((bytes[2] >> 4) & 0x0F) as i32;
 
-        a.elements[6] = (bytes[3] & 0x0F) as i32;
-        a.elements[7] = ((bytes[3] >> 4) & 0x0F) as i32;
+        v.elements[6] = (bytes[3] & 0x0F) as i32;
+        v.elements[7] = ((bytes[3] >> 4) & 0x0F) as i32;
 
-        a
+        v
     }
 
-    fn serialize_5(a: Self::Vector) -> [u8; 5] {
+    fn serialize_5(v: Self::Vector) -> [u8; 5] {
         let mut result = [0u8; 5];
 
-        result[0] = ((a.elements[1] & 0x7) << 5 | a.elements[0]) as u8;
+        result[0] = ((v.elements[1] & 0x7) << 5 | v.elements[0]) as u8;
         result[1] =
-            (((a.elements[3] & 1) << 7) | (a.elements[2] << 2) | (a.elements[1] >> 3)) as u8;
-        result[2] = (((a.elements[4] & 0xF) << 4) | (a.elements[3] >> 1)) as u8;
+            (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
+        result[2] = (((v.elements[4] & 0xF) << 4) | (v.elements[3] >> 1)) as u8;
         result[3] =
-            (((a.elements[6] & 0x3) << 6) | (a.elements[5] << 1) | (a.elements[4] >> 4)) as u8;
-        result[4] = ((a.elements[7] << 3) | (a.elements[6] >> 2)) as u8;
+            (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
+        result[4] = ((v.elements[7] << 3) | (v.elements[6] >> 2)) as u8;
 
         result
     }
     fn deserialize_5(bytes: &[u8]) -> Self::Vector {
-        let mut a = Self::ZERO();
+        let mut v = Self::ZERO();
 
-        a.elements[0] = (bytes[0] & 0x1F) as i32;
-        a.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
-        a.elements[2] = ((bytes[1] >> 2) & 0x1F) as i32;
-        a.elements[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i32;
-        a.elements[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i32;
-        a.elements[5] = ((bytes[3] >> 1) & 0x1F) as i32;
-        a.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i32;
-        a.elements[7] = (bytes[4] >> 3) as i32;
+        v.elements[0] = (bytes[0] & 0x1F) as i32;
+        v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
+        v.elements[2] = ((bytes[1] >> 2) & 0x1F) as i32;
+        v.elements[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i32;
+        v.elements[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i32;
+        v.elements[5] = ((bytes[3] >> 1) & 0x1F) as i32;
+        v.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i32;
+        v.elements[7] = (bytes[4] >> 3) as i32;
 
-        a
+        v
     }
 
-    fn serialize_10(a: Self::Vector) -> [u8; 10] {
+    fn serialize_10(v: Self::Vector) -> [u8; 10] {
         let mut result = [0u8; 10];
 
-        result[0] = (a.elements[0] & 0xFF) as u8;
-        result[1] = ((a.elements[1] & 0x3F) as u8) << 2 | ((a.elements[0] >> 8) & 0x03) as u8;
-        result[2] = ((a.elements[2] & 0x0F) as u8) << 4 | ((a.elements[1] >> 6) & 0x0F) as u8;
-        result[3] = ((a.elements[3] & 0x03) as u8) << 6 | ((a.elements[2] >> 4) & 0x3F) as u8;
-        result[4] = ((a.elements[3] >> 2) & 0xFF) as u8;
+        result[0] = (v.elements[0] & 0xFF) as u8;
+        result[1] = ((v.elements[1] & 0x3F) as u8) << 2 | ((v.elements[0] >> 8) & 0x03) as u8;
+        result[2] = ((v.elements[2] & 0x0F) as u8) << 4 | ((v.elements[1] >> 6) & 0x0F) as u8;
+        result[3] = ((v.elements[3] & 0x03) as u8) << 6 | ((v.elements[2] >> 4) & 0x3F) as u8;
+        result[4] = ((v.elements[3] >> 2) & 0xFF) as u8;
 
-        result[5] = (a.elements[4] & 0xFF) as u8;
-        result[6] = ((a.elements[5] & 0x3F) as u8) << 2 | ((a.elements[4] >> 8) & 0x03) as u8;
-        result[7] = ((a.elements[6] & 0x0F) as u8) << 4 | ((a.elements[5] >> 6) & 0x0F) as u8;
-        result[8] = ((a.elements[7] & 0x03) as u8) << 6 | ((a.elements[6] >> 4) & 0x3F) as u8;
-        result[9] = ((a.elements[7] >> 2) & 0xFF) as u8;
+        result[5] = (v.elements[4] & 0xFF) as u8;
+        result[6] = ((v.elements[5] & 0x3F) as u8) << 2 | ((v.elements[4] >> 8) & 0x03) as u8;
+        result[7] = ((v.elements[6] & 0x0F) as u8) << 4 | ((v.elements[5] >> 6) & 0x0F) as u8;
+        result[8] = ((v.elements[7] & 0x03) as u8) << 6 | ((v.elements[6] >> 4) & 0x3F) as u8;
+        result[9] = ((v.elements[7] >> 2) & 0xFF) as u8;
 
         result
     }
@@ -349,19 +351,19 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
 
-    fn serialize_11(a: Self::Vector) -> [u8; 11] {
+    fn serialize_11(v: Self::Vector) -> [u8; 11] {
         let mut result = [0u8; 11];
-        result[0] = a.elements[0] as u8;
-        result[1] = ((a.elements[1] & 0x1F) as u8) << 3 | ((a.elements[0] >> 8) as u8);
-        result[2] = ((a.elements[2] & 0x3) as u8) << 6 | ((a.elements[1] >> 5) as u8);
-        result[3] = ((a.elements[2] >> 2) & 0xFF) as u8;
-        result[4] = ((a.elements[3] & 0x7F) as u8) << 1 | (a.elements[2] >> 10) as u8;
-        result[5] = ((a.elements[4] & 0xF) as u8) << 4 | (a.elements[3] >> 7) as u8;
-        result[6] = ((a.elements[5] & 0x1) as u8) << 7 | (a.elements[4] >> 4) as u8;
-        result[7] = ((a.elements[5] >> 1) & 0xFF) as u8;
-        result[8] = ((a.elements[6] & 0x3F) as u8) << 2 | (a.elements[5] >> 9) as u8;
-        result[9] = ((a.elements[7] & 0x7) as u8) << 5 | (a.elements[6] >> 6) as u8;
-        result[10] = (a.elements[7] >> 3) as u8;
+        result[0] = v.elements[0] as u8;
+        result[1] = ((v.elements[1] & 0x1F) as u8) << 3 | ((v.elements[0] >> 8) as u8);
+        result[2] = ((v.elements[2] & 0x3) as u8) << 6 | ((v.elements[1] >> 5) as u8);
+        result[3] = ((v.elements[2] >> 2) & 0xFF) as u8;
+        result[4] = ((v.elements[3] & 0x7F) as u8) << 1 | (v.elements[2] >> 10) as u8;
+        result[5] = ((v.elements[4] & 0xF) as u8) << 4 | (v.elements[3] >> 7) as u8;
+        result[6] = ((v.elements[5] & 0x1) as u8) << 7 | (v.elements[4] >> 4) as u8;
+        result[7] = ((v.elements[5] >> 1) & 0xFF) as u8;
+        result[8] = ((v.elements[6] & 0x3F) as u8) << 2 | (v.elements[5] >> 9) as u8;
+        result[9] = ((v.elements[7] & 0x7) as u8) << 5 | (v.elements[6] >> 6) as u8;
+        result[10] = (v.elements[7] >> 3) as u8;
         result
     }
     fn deserialize_11(bytes: &[u8]) -> Self::Vector {
@@ -381,24 +383,24 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
 
-    fn serialize_12(a: Self::Vector) -> [u8; 12] {
+    fn serialize_12(v: Self::Vector) -> [u8; 12] {
         let mut result = [0u8; 12];
 
-        result[0] = (a.elements[0] & 0xFF) as u8;
-        result[1] = ((a.elements[0] >> 8) | ((a.elements[1] & 0x0F) << 4)) as u8;
-        result[2] = ((a.elements[1] >> 4) & 0xFF) as u8;
+        result[0] = (v.elements[0] & 0xFF) as u8;
+        result[1] = ((v.elements[0] >> 8) | ((v.elements[1] & 0x0F) << 4)) as u8;
+        result[2] = ((v.elements[1] >> 4) & 0xFF) as u8;
 
-        result[3] = (a.elements[2] & 0xFF) as u8;
-        result[4] = ((a.elements[2] >> 8) | ((a.elements[3] & 0x0F) << 4)) as u8;
-        result[5] = ((a.elements[3] >> 4) & 0xFF) as u8;
+        result[3] = (v.elements[2] & 0xFF) as u8;
+        result[4] = ((v.elements[2] >> 8) | ((v.elements[3] & 0x0F) << 4)) as u8;
+        result[5] = ((v.elements[3] >> 4) & 0xFF) as u8;
 
-        result[6] = (a.elements[4] & 0xFF) as u8;
-        result[7] = ((a.elements[4] >> 8) | ((a.elements[5] & 0x0F) << 4)) as u8;
-        result[8] = ((a.elements[5] >> 4) & 0xFF) as u8;
+        result[6] = (v.elements[4] & 0xFF) as u8;
+        result[7] = ((v.elements[4] >> 8) | ((v.elements[5] & 0x0F) << 4)) as u8;
+        result[8] = ((v.elements[5] >> 4) & 0xFF) as u8;
 
-        result[9] = (a.elements[6] & 0xFF) as u8;
-        result[10] = ((a.elements[6] >> 8) | ((a.elements[7] & 0x0F) << 4)) as u8;
-        result[11] = ((a.elements[7] >> 4) & 0xFF) as u8;
+        result[9] = (v.elements[6] & 0xFF) as u8;
+        result[10] = ((v.elements[6] >> 8) | ((v.elements[7] & 0x0F) << 4)) as u8;
+        result[11] = ((v.elements[7] >> 4) & 0xFF) as u8;
 
         result
     }

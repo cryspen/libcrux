@@ -1,8 +1,5 @@
 #![allow(dead_code)]
-use crate::{
-    polynomial::{from_i32_array, to_i32_array},
-    simd::fallback,
-};
+use crate::simd::fallback;
 use core::arch::aarch64::*;
 
 #[derive(Clone, Copy)]
@@ -11,250 +8,232 @@ pub(crate) struct SIMD128Vector {
     high: int32x4_t,
 }
 
-pub(crate) const SIZE_VEC: usize = 8;
+impl crate::simd::Operations for SIMD128Vector {
+    type Vector = SIMD128Vector;
 
-pub(crate) fn ZERO_VEC() -> SIMD128Vector {
-    SIMD128Vector {
-        low: unsafe { vdupq_n_s32(0) },
-        high: unsafe { vdupq_n_s32(0) },
+    const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
+
+    fn ZERO() -> Self::Vector {
+        SIMD128Vector {
+            low: unsafe { vdupq_n_s32(0) },
+            high: unsafe { vdupq_n_s32(0) },
+        }
     }
-}
 
-// Eventually, this should only be used for debugging
-// In the meantime, it allows us to convert between different vector representations
-#[inline(always)]
-pub(crate) fn to_i32_array(a: &SIMD128Vector) -> [i32; 8] {
-    let mut out = [0i32; 8];
-    unsafe { vst1q_s32(out[0..4].as_mut_ptr() as *mut i32, a.low) }
-    unsafe { vst1q_s32(out[4..8].as_mut_ptr() as *mut i32, a.high) }
-    out
-}
+    fn to_i32_array(v: Self::Vector) -> [i32; 8] {
+        let mut out = [0i32; 8];
 
-// This function is used in sampling (until we figure out how to vectorize it)
-// Eventually, this should only be used for debugging
-// In the meantime, it allows us to convert between different vector representations
-#[inline(always)]
-pub(crate) fn from_i32_array(a: [i32; 8]) -> SIMD128Vector {
-    SIMD128Vector {
-        low: unsafe { vld1q_s32(a[0..4].as_ptr() as *const i32) },
-        high: unsafe { vld1q_s32(a[4..8].as_ptr() as *const i32) },
+        unsafe { vst1q_s32(out[0..4].as_mut_ptr() as *mut i32, v.low) }
+        unsafe { vst1q_s32(out[4..8].as_mut_ptr() as *mut i32, v.high) }
+
+        out
     }
-}
 
-// Basic addition with a constant
-#[inline(always)]
-pub(crate) fn add_constant(mut lhs: SIMD128Vector, rhs: i32) -> SIMD128Vector {
-    let rhs = unsafe { vdupq_n_s32(rhs) };
-    lhs.low = unsafe { vaddq_s32(lhs.low, rhs) };
-    lhs.high = unsafe { vaddq_s32(lhs.high, rhs) };
-    lhs
-}
-
-// Basic addition
-#[inline(always)]
-pub(crate) fn add(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
-    lhs.low = unsafe { vaddq_s32(lhs.low, rhs.low) };
-    lhs.high = unsafe { vaddq_s32(lhs.high, rhs.high) };
-    lhs
-}
-
-// Basic subtraction
-#[inline(always)]
-pub(crate) fn sub(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
-    lhs.low = unsafe { vsubq_s32(lhs.low, rhs.low) };
-    lhs.high = unsafe { vsubq_s32(lhs.high, rhs.high) };
-    lhs
-}
-
-// Basic multiplication with constant
-#[inline(always)]
-pub(crate) fn mul_constant(mut lhs: SIMD128Vector, rhs: i32) -> SIMD128Vector {
-    lhs.low = unsafe { vmulq_n_s32(lhs.low, rhs) };
-    lhs.high = unsafe { vmulq_n_s32(lhs.high, rhs) };
-    lhs
-}
-
-// Basic multiplication with constant
-#[inline(always)]
-pub(crate) fn bit_and_constant(mut lhs: SIMD128Vector, rhs: i32) -> SIMD128Vector {
-    let rhs = unsafe { vdupq_n_s32(rhs) };
-    lhs.low = unsafe { vandq_s32(lhs.low, rhs) };
-    lhs.high = unsafe { vandq_s32(lhs.high, rhs) };
-    lhs
-}
-
-// Basic arithmetic shift right
-#[inline(always)]
-pub(crate) fn right_shift(mut lhs: SIMD128Vector, rhs: u8) -> SIMD128Vector {
-    // Should find special cases of this
-    // e.g when doing a right shift just to propagate signed bits, use vclezq_s32 instead
-    let rhs = unsafe { vdupq_n_s32(-(rhs as i32)) };
-    lhs.low = unsafe { vshlq_s32(lhs.low, rhs) };
-    lhs.high = unsafe { vshlq_s32(lhs.high, rhs) };
-    lhs
-}
-
-// Basic shift left
-#[inline(always)]
-pub(crate) fn left_shift(mut lhs: SIMD128Vector, rhs: u8) -> SIMD128Vector {
-    let rhs = unsafe { vdupq_n_s32(rhs as i32) };
-    lhs.low = unsafe { vshlq_s32(lhs.low, rhs) };
-    lhs.high = unsafe { vshlq_s32(lhs.high, rhs) };
-    lhs
-}
-
-// Basic modulus
-#[inline(always)]
-pub(crate) fn modulus_constant_var_time(lhs: SIMD128Vector, rhs: i32) -> SIMD128Vector {
-    let mut i32s = to_i32_array(&lhs);
-    for i in 0..SIZE_VEC {
-        i32s[i] = i32s[i] % rhs;
+    fn from_i32_array(array: [i32; 8]) -> Self::Vector {
+        SIMD128Vector {
+            low: unsafe { vld1q_s32(array[0..4].as_ptr() as *const i32) },
+            high: unsafe { vld1q_s32(array[4..8].as_ptr() as *const i32) },
+        }
     }
-    from_i32_array(i32s)
-}
 
-/// Arithmetic and serialization unctions that need specialized implementations
+    fn add_constant(mut v: Self::Vector, c: i32) -> Self::Vector {
+        let c = unsafe { vdupq_n_s32(c) };
 
-// Barrett: needs specialized implementation since i32 gets multiplied to obtain intermediate i64
-#[inline(always)]
-pub(crate) fn barrett_reduce(a: SIMD128Vector) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::barrett_reduce(input);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        v.low = unsafe { vaddq_s32(v.low, c) };
+        v.high = unsafe { vaddq_s32(v.high, c) };
 
-// Montgomery: mostly generic but uses a u32->i16->i32 conversion that may need specialized treatment
-#[inline(always)]
-pub(crate) fn montgomery_reduce(a: SIMD128Vector) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::montgomery_reduce(input);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        v
+    }
 
-// Compress Message Coefficient: mostly generic but uses some i16 arithmetic
-#[inline(always)]
-pub(crate) fn compress_1(a: SIMD128Vector) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::compress_1(input);
-    from_i32_array(fallback::to_i32_array(output))
-}
+    fn add(mut lhs: Self::Vector, rhs: &Self::Vector) -> Self::Vector {
+        lhs.low = unsafe { vaddq_s32(lhs.low, rhs.low) };
+        lhs.high = unsafe { vaddq_s32(lhs.high, rhs.high) };
+        lhs
+    }
 
-// Compress Ciphertext Coefficient: mostly generic but uses some i64 arithmetic
-#[inline(always)]
-pub(crate) fn compress(coefficient_bits: u8, a: SIMD128Vector) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::compress(coefficient_bits, input);
-    from_i32_array(fallback::to_i32_array(output))
-}
+    fn sub(mut lhs: Self::Vector, rhs: &Self::Vector) -> Self::Vector {
+        lhs.low = unsafe { vsubq_s32(lhs.low, rhs.low) };
+        lhs.high = unsafe { vsubq_s32(lhs.high, rhs.high) };
+        lhs
+    }
 
-/// NTT
-///
-#[inline(always)]
-pub(crate) fn ntt_layer_1_step(a: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::ntt_layer_1_step(input, zeta1, zeta2);
-    from_i32_array(fallback::to_i32_array(output))
-}
+    fn multiply_by_constant(mut v: Self::Vector, c: i32) -> Self::Vector {
+        v.low = unsafe { vmulq_n_s32(v.low, c) };
+        v.high = unsafe { vmulq_n_s32(v.high, c) };
 
-#[inline(always)]
-pub(crate) fn ntt_layer_2_step(a: SIMD128Vector, zeta: i32) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::ntt_layer_2_step(input, zeta);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        v
+    }
 
-#[inline(always)]
-pub(crate) fn inv_ntt_layer_1_step(a: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::inv_ntt_layer_1_step(input, zeta1, zeta2);
-    from_i32_array(fallback::to_i32_array(output))
-}
+    fn bitwise_and_with_constant(mut v: Self::Vector, c: i32) -> Self::Vector {
+        let c = unsafe { vdupq_n_s32(c) };
 
-#[inline(always)]
-pub(crate) fn inv_ntt_layer_2_step(a: SIMD128Vector, zeta: i32) -> SIMD128Vector {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    let output = fallback::inv_ntt_layer_2_step(input, zeta);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        v.low = unsafe { vandq_s32(v.low, c) };
+        v.high = unsafe { vandq_s32(v.high, c) };
 
-#[inline(always)]
-pub(crate) fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i32, zeta1: i32) -> SIMD128Vector {
-    let input1 = fallback::from_i32_array(to_i32_array(lhs));
-    let input2 = fallback::from_i32_array(to_i32_array(rhs));
-    let output = fallback::ntt_multiply(&input1, &input2, zeta0, zeta1);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        v
+    }
 
-/// SERIALIZE - DESERIALIZE
-///
-#[inline(always)]
-pub(crate) fn serialize_1(a: SIMD128Vector) -> u8 {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    fallback::serialize_1(input)
-}
+    fn shift_right(mut v: Self::Vector, shift_amount: u8) -> Self::Vector {
+        // Should find special cases of this
+        // e.g when doing a right shift just to propagate signed bits, use vclezq_s32 instead
+        let shift_amount = unsafe { vdupq_n_s32(-(shift_amount as i32)) };
 
-#[inline(always)]
-pub(crate) fn deserialize_1(a: u8) -> SIMD128Vector {
-    let output = fallback::deserialize_1(a);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        v.low = unsafe { vshlq_s32(v.low, shift_amount) };
+        v.high = unsafe { vshlq_s32(v.high, shift_amount) };
 
-#[inline(always)]
-pub(crate) fn serialize_5(a: SIMD128Vector) -> [u8; 5] {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    fallback::serialize_5(input)
-}
+        v
+    }
 
-#[inline(always)]
-pub(crate) fn deserialize_5(a: &[u8]) -> SIMD128Vector {
-    let output = fallback::deserialize_5(a);
-    from_i32_array(fallback::to_i32_array(output))
-}
+    fn shift_left(mut lhs: Self::Vector, shift_amount: u8) -> Self::Vector {
+        let shift_amount = unsafe { vdupq_n_s32(shift_amount as i32) };
 
-#[inline(always)]
-pub(crate) fn serialize_4(a: SIMD128Vector) -> [u8; 4] {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    fallback::serialize_4(input)
-}
+        lhs.low = unsafe { vshlq_s32(lhs.low, shift_amount) };
+        lhs.high = unsafe { vshlq_s32(lhs.high, shift_amount) };
 
-#[inline(always)]
-pub(crate) fn deserialize_4(a: &[u8]) -> SIMD128Vector {
-    let output = fallback::deserialize_4(a);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        lhs
+    }
 
-#[inline(always)]
-pub(crate) fn serialize_10(a: SIMD128Vector) -> [u8; 10] {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    fallback::serialize_10(input)
-}
+    fn modulo_a_constant(v: Self::Vector, modulus: i32) -> Self::Vector {
+        let mut i32s = Self::to_i32_array(v);
 
-#[inline(always)]
-pub(crate) fn deserialize_10(a: &[u8]) -> SIMD128Vector {
-    let output = fallback::deserialize_10(a);
-    from_i32_array(fallback::to_i32_array(output))
-}
+        for i in 0..Self::FIELD_ELEMENTS_IN_VECTOR {
+            i32s[i] = i32s[i] % modulus;
+        }
 
-#[inline(always)]
-pub(crate) fn serialize_11(a: SIMD128Vector) -> [u8; 11] {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    fallback::serialize_11(input)
-}
+        Self::from_i32_array(i32s)
+    }
 
-#[inline(always)]
-pub(crate) fn deserialize_11(a: &[u8]) -> SIMD128Vector {
-    let output = fallback::deserialize_11(a);
-    from_i32_array(fallback::to_i32_array(output))
-}
+    fn barrett_reduce(v: Self::Vector) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::barrett_reduce(input);
 
-#[inline(always)]
-pub(crate) fn serialize_12(a: SIMD128Vector) -> [u8; 12] {
-    let input = fallback::from_i32_array(to_i32_array(&a));
-    fallback::serialize_12(input)
-}
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
 
-#[inline(always)]
-pub(crate) fn deserialize_12(a: &[u8]) -> SIMD128Vector {
-    let output = fallback::deserialize_12(a);
-    from_i32_array(fallback::to_i32_array(output))
+    fn montgomery_reduce(v: Self::Vector) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::montgomery_reduce(input);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn compress_1(v: Self::Vector) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::compress_1(input);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn compress(coefficient_bits: u8, v: Self::Vector) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::compress(coefficient_bits, input);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn ntt_layer_1_step(v: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::ntt_layer_1_step(input, zeta1, zeta2);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn ntt_layer_2_step(v: Self::Vector, zeta: i32) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::ntt_layer_2_step(input, zeta);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn inv_ntt_layer_1_step(v: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::inv_ntt_layer_1_step(input, zeta1, zeta2);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn inv_ntt_layer_2_step(v: Self::Vector, zeta: i32) -> Self::Vector {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let output = fallback::FallbackVector::inv_ntt_layer_2_step(input, zeta);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn ntt_multiply(
+        lhs: &Self::Vector,
+        rhs: &Self::Vector,
+        zeta0: i32,
+        zeta1: i32,
+    ) -> Self::Vector {
+        let input1 = fallback::FallbackVector::from_i32_array(Self::to_i32_array(*lhs));
+        let input2 = fallback::FallbackVector::from_i32_array(Self::to_i32_array(*rhs));
+
+        let output = fallback::FallbackVector::ntt_multiply(&input1, &input2, zeta0, zeta1);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn serialize_1(a: Self::Vector) -> u8 {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(a));
+
+        fallback::FallbackVector::serialize_1(input)
+    }
+    fn deserialize_1(a: u8) -> Self::Vector {
+        let output = fallback::FallbackVector::deserialize_1(a);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn serialize_4(v: Self::Vector) -> [u8; 4] {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        fallback::FallbackVector::serialize_4(input)
+    }
+    fn deserialize_4(v: &[u8]) -> Self::Vector {
+        let output = fallback::FallbackVector::deserialize_4(v);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn serialize_5(v: Self::Vector) -> [u8; 5] {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+
+        fallback::FallbackVector::serialize_5(input)
+    }
+    fn deserialize_5(v: &[u8]) -> Self::Vector {
+        let output = fallback::FallbackVector::deserialize_5(v);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn serialize_10(v: Self::Vector) -> [u8; 10] {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        fallback::FallbackVector::serialize_10(input)
+    }
+    fn deserialize_10(v: &[u8]) -> Self::Vector {
+        let output = fallback::FallbackVector::deserialize_10(v);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn serialize_11(v: Self::Vector) -> [u8; 11] {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        fallback::FallbackVector::serialize_11(input)
+    }
+    fn deserialize_11(v: &[u8]) -> Self::Vector {
+        let output = fallback::FallbackVector::deserialize_11(v);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
+
+    fn serialize_12(v: Self::Vector) -> [u8; 12] {
+        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+
+        fallback::FallbackVector::serialize_12(input)
+    }
+
+    fn deserialize_12(v: &[u8]) -> Self::Vector {
+        let output = fallback::FallbackVector::deserialize_12(v);
+
+        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+    }
 }
