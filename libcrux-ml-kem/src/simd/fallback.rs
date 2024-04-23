@@ -13,9 +13,11 @@ pub(crate) struct FallbackVector {
 impl crate::simd::Operations for FallbackVector {
     type Vector = FallbackVector;
 
-    const ZERO: Self::Vector = FallbackVector {
-        elements: [0i32; Self::FIELD_ELEMENTS_IN_VECTOR],
-    };
+    fn ZERO() -> Self::Vector {
+        Self {
+            elements: [0i32; Self::FIELD_ELEMENTS_IN_VECTOR],
+        }
+    }
     const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
 
     fn to_i32_array(v: Self::Vector) -> [i32; 8] {
@@ -206,7 +208,7 @@ impl crate::simd::Operations for FallbackVector {
         zeta0: i32,
         zeta1: i32,
     ) -> Self::Vector {
-        let mut out = Self::ZERO;
+        let mut out = Self::ZERO();
         let product = ntt_multiply_binomials(
             (lhs.elements[0], lhs.elements[1]),
             (rhs.elements[0], rhs.elements[1]),
@@ -250,7 +252,7 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
     fn deserialize_1(a: u8) -> Self::Vector {
-        let mut result = Self::ZERO;
+        let mut result = Self::ZERO();
         for i in 0..Self::FIELD_ELEMENTS_IN_VECTOR {
             result.elements[i] = ((a >> i) & 0x1) as i32;
         }
@@ -269,7 +271,7 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
     fn deserialize_4(bytes: &[u8]) -> Self::Vector {
-        let mut a = Self::ZERO;
+        let mut a = Self::ZERO();
 
         a.elements[0] = (bytes[0] & 0x0F) as i32;
         a.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
@@ -300,7 +302,7 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
     fn deserialize_5(bytes: &[u8]) -> Self::Vector {
-        let mut a = Self::ZERO;
+        let mut a = Self::ZERO();
 
         a.elements[0] = (bytes[0] & 0x1F) as i32;
         a.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
@@ -332,7 +334,7 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
     fn deserialize_10(bytes: &[u8]) -> Self::Vector {
-        let mut result = Self::ZERO;
+        let mut result = Self::ZERO();
 
         result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
         result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
@@ -363,7 +365,7 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
     fn deserialize_11(bytes: &[u8]) -> Self::Vector {
-        let mut result = Self::ZERO;
+        let mut result = Self::ZERO();
         result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
         result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
         result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
@@ -401,7 +403,7 @@ impl crate::simd::Operations for FallbackVector {
         result
     }
     fn deserialize_12(bytes: &[u8]) -> Self::Vector {
-        let mut re = Self::ZERO;
+        let mut re = Self::ZERO();
 
         let byte0 = bytes[0] as i32;
         let byte1 = bytes[1] as i32;

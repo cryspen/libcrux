@@ -11,10 +11,11 @@ pub struct PolynomialRingElement {
 }
 
 impl PolynomialRingElement {
+    #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
             // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
-            coefficients: [intvec::ZERO_VEC(); 32],
+            coefficients: [simd::Vector::ZERO(); 32],
         }
     }
 }

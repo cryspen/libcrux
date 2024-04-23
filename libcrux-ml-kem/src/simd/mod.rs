@@ -4,8 +4,10 @@ use crate::constants::FIELD_MODULUS;
 pub(crate) trait Operations {
     type Vector: Copy;
 
-    const ZERO: Self::Vector;
     const FIELD_ELEMENTS_IN_VECTOR: usize;
+
+    #[allow(non_snake_case)]
+    fn ZERO() -> Self::Vector;
 
     fn to_i32_array(v: Self::Vector) -> [i32; 8];
     fn from_i32_array(array: [i32; 8]) -> Self::Vector;
@@ -81,7 +83,7 @@ pub(crate) trait Operations {
     }
 
     fn decompress_1(v: Self::Vector) -> Self::Vector {
-        Self::bitwise_and_with_constant(Self::sub(Self::ZERO, &v), 1665)
+        Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
     }
     fn decompress(coefficient_bits: u8, v: Self::Vector) -> Self::Vector {
         let mut decompressed = Self::multiply_by_constant(v, FIELD_MODULUS);
