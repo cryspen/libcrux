@@ -32,7 +32,7 @@ pub(super) fn compress_then_serialize_message(
 pub(super) fn deserialize_then_decompress_message(
     serialized: [u8; SHARED_SECRET_SIZE],
 ) -> PolynomialRingElement {
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO();
     for i in 0..32 {
         let coefficient_compressed = deserialize_1_int_vec(serialized[i]);
         re.coefficients[i] = decompress_1_int_vec(coefficient_compressed);
@@ -68,7 +68,7 @@ pub(super) fn serialize_uncompressed_ring_element(
 pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO();
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(12).enumerate() {
@@ -86,7 +86,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
 fn deserialize_to_reduced_ring_element(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO();
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(12).enumerate() {
@@ -105,7 +105,7 @@ fn deserialize_to_reduced_ring_element(serialized: &[u8]) -> PolynomialRingEleme
 pub(super) fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, const K: usize>(
     public_key: &[u8],
 ) -> [PolynomialRingElement; K] {
-    let mut deserialized_pk = [PolynomialRingElement::ZERO; K];
+    let mut deserialized_pk = [PolynomialRingElement::ZERO(); K];
     cloop! {
         for (i, ring_element) in public_key
             .chunks_exact(BYTES_PER_RING_ELEMENT)
@@ -124,6 +124,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -
         let coefficient =
             compress_int_vec(10, to_unsigned_representative_int_vec(re.coefficients[i]));
         let bytes = serialize_10_int_vec(coefficient);
+        // XXX: This should be a copy_from_slice
         serialized[10 * i] = bytes[0];
         serialized[10 * i + 1] = bytes[1];
         serialized[10 * i + 2] = bytes[2];
@@ -228,7 +229,7 @@ pub(super) fn compress_then_serialize_ring_element_v<
 fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO();
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(10).enumerate() {
@@ -243,7 +244,7 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
 fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO();
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(11).enumerate() {
@@ -271,7 +272,7 @@ pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTO
 #[inline(always)]
 fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO();
     cloop! {
         for (i, bytes) in serialized.chunks_exact(4).enumerate() {
             let coefficient = deserialize_4_int_vec(&bytes);
@@ -285,7 +286,7 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
 fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
-    let mut re = PolynomialRingElement::ZERO;
+    let mut re = PolynomialRingElement::ZERO();
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(5).enumerate() {

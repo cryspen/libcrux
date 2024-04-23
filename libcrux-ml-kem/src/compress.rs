@@ -1,9 +1,6 @@
 use crate::hax_utils::hax_debug_assert;
 
-use super::{
-    arithmetic::{get_n_least_significant_bits, FieldElement},
-    constants::FIELD_MODULUS,
-};
+use super::arithmetic::{get_n_least_significant_bits, FieldElement};
 
 /// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
 /// 203 standard (Page 18, Expression 4.5), which is defined as:
@@ -26,7 +23,7 @@ use super::{
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 
-#[cfg_attr(hax, hax_lib::requires(fe < (FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib::requires(fe < (crate::constants::FIELD_MODULUS as u16)))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
         hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
         hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
@@ -62,7 +59,7 @@ pub(crate) fn compress_message_coefficient(fe: u16) -> u8 {
          coefficient_bits == 5 ||
          coefficient_bits == 10 ||
          coefficient_bits == 11) &&
-         fe < (FIELD_MODULUS as u16)))]
+         fe < (crate::constants::FIELD_MODULUS as u16)))]
 #[cfg_attr(hax,
      hax_lib::ensures(
      |result| result >= 0 && result < 2i32.pow(coefficient_bits as u32)))]

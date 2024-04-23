@@ -3,19 +3,12 @@ name: hax
 on:
   push:
     branches: ["dev", "main"]
-    paths:
-      - 'specs/kyber/src/**'
-      - 'src/kem/kyber/**'
 
   pull_request:
     branches: ["dev", "main"]
-    paths:
-      - 'specs/kyber/src/**'
-      - 'src/kem/kyber/**'
-      - 'proofs/fstar/**'
 
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
 
   workflow_dispatch:
 
@@ -95,6 +88,16 @@ jobs:
               HAX_HOME=${{ github.workspace }}/hax \
               PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
               make -C proofs/fstar/extraction-secret-independent
+
+      - name: 🏃 Extract & Verify ML-KEM crate (lax)
+        run: |
+          cd libcrux-ml-kem
+          ./hax.py extract
+          env FSTAR_HOME=${{ github.workspace }}/fstar \
+              HACL_HOME=${{ github.workspace }}/hacl-star \
+              HAX_HOME=${{ github.workspace }}/hax \
+              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+              ./hax.py prove --admit
 
       - name: 🏃 Extract the Kyber specification
         run: |

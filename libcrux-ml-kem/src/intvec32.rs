@@ -29,9 +29,11 @@ pub(crate) fn int_vec_from_i32_array(a: [i32; 8]) -> IntVec {
     IntVec { elements: a }
 }
 
-pub(crate) const ZERO_VEC: IntVec = IntVec {
-    elements: [0i32; 8],
-};
+pub(crate) const fn ZERO_VEC() -> IntVec {
+    IntVec {
+        elements: [0i32; 8],
+    }
+}
 
 // Basic addition with a constant
 #[inline(always)]
@@ -230,7 +232,7 @@ pub(crate) fn inv_ntt_layer_2_int_vec_step(mut a: IntVec, zeta: i32) -> IntVec {
 
 #[inline(always)]
 pub(crate) fn ntt_multiply_int_vec(lhs: &IntVec, rhs: &IntVec, zeta0: i32, zeta1: i32) -> IntVec {
-    let mut out = ZERO_VEC;
+    let mut out = ZERO_VEC();
     let product = ntt_multiply_binomials(
         (lhs.elements[0], lhs.elements[1]),
         (rhs.elements[0], rhs.elements[1]),
@@ -278,7 +280,7 @@ pub(crate) fn serialize_1_int_vec(a: IntVec) -> u8 {
 
 #[inline(always)]
 pub(crate) fn deserialize_1_int_vec(a: u8) -> IntVec {
-    let mut result = ZERO_VEC;
+    let mut result = ZERO_VEC();
     for i in 0..SIZE_VEC {
         result.elements[i] = ((a >> i) & 0x1) as i32;
     }
@@ -298,7 +300,7 @@ pub(crate) fn serialize_5_int_vec(a: IntVec) -> [u8; 5] {
 
 #[inline(always)]
 pub(crate) fn deserialize_5_int_vec(bytes: &[u8]) -> IntVec {
-    let mut a = ZERO_VEC;
+    let mut a = ZERO_VEC();
     a.elements[0] = (bytes[0] & 0x1F) as i32;
     a.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
     a.elements[2] = ((bytes[1] >> 2) & 0x1F) as i32;
@@ -324,7 +326,7 @@ pub(crate) fn serialize_4_int_vec(a: IntVec) -> [u8; 4] {
 
 #[inline(always)]
 pub(crate) fn deserialize_4_int_vec(bytes: &[u8]) -> IntVec {
-    let mut a = ZERO_VEC;
+    let mut a = ZERO_VEC();
     a.elements[0] = (bytes[0] & 0x0F) as i32;
     a.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
 
@@ -361,7 +363,7 @@ pub(crate) fn serialize_10_int_vec(a: IntVec) -> [u8; 10] {
 
 #[inline(always)]
 pub(crate) fn deserialize_10_int_vec(bytes: &[u8]) -> IntVec {
-    let mut result = ZERO_VEC;
+    let mut result = ZERO_VEC();
 
     result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
@@ -395,7 +397,7 @@ pub(crate) fn serialize_11_int_vec(a: IntVec) -> [u8; 11] {
 
 #[inline(always)]
 pub(crate) fn deserialize_11_int_vec(bytes: &[u8]) -> IntVec {
-    let mut result = ZERO_VEC;
+    let mut result = ZERO_VEC();
     result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
     result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
@@ -435,7 +437,7 @@ pub(crate) fn serialize_12_int_vec(a: IntVec) -> [u8; 12] {
 
 #[inline(always)]
 pub(crate) fn deserialize_12_int_vec(bytes: &[u8]) -> IntVec {
-    let mut re = ZERO_VEC;
+    let mut re = ZERO_VEC();
     let byte0 = bytes[0] as i32;
     let byte1 = bytes[1] as i32;
     let byte2 = bytes[2] as i32;

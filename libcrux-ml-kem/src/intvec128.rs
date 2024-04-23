@@ -1,9 +1,13 @@
+// FIXME: remove when using things
+#![allow(dead_code)]
+
 use super::{
     intvec32,
     polynomial::{from_i32_array, to_i32_array},
 };
 use core::arch::aarch64::*;
 
+#[derive(Clone, Copy)]
 pub(crate) struct IntVec {
     low: int32x4_t,
     high: int32x4_t,

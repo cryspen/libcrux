@@ -31,9 +31,8 @@ class extractAction(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None) -> None:
         # Extract platform and sha3 interfaces
-        # XXX: This currently is impossible.
-        include_str = "-* +!* -libcrux_sha3::* -libcrux_sha3::x4::internal::*"
-        interface_include = "+* -libcrux_sha3::x4::internal::**"
+        include_str = "+:libcrux_sha3::** -libcrux_sha3::x4::internal::**"
+        interface_include = "+!**"
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -52,7 +51,7 @@ class extractAction(argparse.Action):
         )
 
         # Extract ml-kem
-        include_str = "-libcrux_platform::macos_arm::* +!libcrux_platform::platform::* -libcrux_ml_kem::types::index_impls::**"
+        include_str = "-libcrux_platform::macos_arm::* +!libcrux_platform::platform::* -libcrux_ml_kem::types::index_impls::** -libcrux_ml_kem::intvec128::**"
         interface_include = "+* -libcrux::kem::kyber::types +!libcrux_platform::** +!libcrux::digest::**"
         cargo_hax_into = [
             "cargo",
@@ -115,10 +114,16 @@ def parse_arguments():
         action=proveAction,
     )
 
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     return parser.parse_args()
 
 
 def main():
+    # Don't print unnecessary Python stack traces.
+    sys.tracebacklimit = 0
     parse_arguments()
 
 
