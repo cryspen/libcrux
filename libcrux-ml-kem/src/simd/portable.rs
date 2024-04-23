@@ -1,17 +1,15 @@
-//use crate::hax_utils::hax_debug_assert;
 use crate::{
     arithmetic::*,
     compress::{compress_ciphertext_coefficient, compress_message_coefficient},
 };
-//use crate::cloop;
 
 #[derive(Clone, Copy)]
-pub(crate) struct FallbackVector {
+pub(crate) struct PortableVector {
     elements: [FieldElement; 8],
 }
 
-impl crate::simd::simd_trait::Operations for FallbackVector {
-    type Vector = FallbackVector;
+impl crate::simd::simd_trait::Operations for PortableVector {
+    type Vector = PortableVector;
 
     const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
 
@@ -26,7 +24,7 @@ impl crate::simd::simd_trait::Operations for FallbackVector {
     }
 
     fn from_i32_array(array: [i32; 8]) -> Self::Vector {
-        FallbackVector { elements: array }
+        PortableVector { elements: array }
     }
 
     fn add_constant(mut v: Self::Vector, c: i32) -> Self::Vector {

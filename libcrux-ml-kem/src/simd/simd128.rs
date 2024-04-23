@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::simd::fallback;
+use crate::simd::portable;
 use core::arch::aarch64::*;
 
 #[derive(Clone, Copy)]
@@ -104,59 +104,59 @@ impl crate::simd::simd_trait::Operations for SIMD128Vector {
     }
 
     fn barrett_reduce(v: Self::Vector) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::barrett_reduce(input);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::barrett_reduce(input);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn montgomery_reduce(v: Self::Vector) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::montgomery_reduce(input);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::montgomery_reduce(input);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn compress_1(v: Self::Vector) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::compress_1(input);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::compress_1(input);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn compress(coefficient_bits: u8, v: Self::Vector) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::compress(coefficient_bits, input);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::compress(coefficient_bits, input);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn ntt_layer_1_step(v: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::ntt_layer_1_step(input, zeta1, zeta2);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::ntt_layer_1_step(input, zeta1, zeta2);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn ntt_layer_2_step(v: Self::Vector, zeta: i32) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::ntt_layer_2_step(input, zeta);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::ntt_layer_2_step(input, zeta);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn inv_ntt_layer_1_step(v: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::inv_ntt_layer_1_step(input, zeta1, zeta2);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::inv_ntt_layer_1_step(input, zeta1, zeta2);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn inv_ntt_layer_2_step(v: Self::Vector, zeta: i32) -> Self::Vector {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        let output = fallback::FallbackVector::inv_ntt_layer_2_step(input, zeta);
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        let output = portable::PortableVector::inv_ntt_layer_2_step(input, zeta);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn ntt_multiply(
@@ -165,75 +165,75 @@ impl crate::simd::simd_trait::Operations for SIMD128Vector {
         zeta0: i32,
         zeta1: i32,
     ) -> Self::Vector {
-        let input1 = fallback::FallbackVector::from_i32_array(Self::to_i32_array(*lhs));
-        let input2 = fallback::FallbackVector::from_i32_array(Self::to_i32_array(*rhs));
+        let input1 = portable::PortableVector::from_i32_array(Self::to_i32_array(*lhs));
+        let input2 = portable::PortableVector::from_i32_array(Self::to_i32_array(*rhs));
 
-        let output = fallback::FallbackVector::ntt_multiply(&input1, &input2, zeta0, zeta1);
+        let output = portable::PortableVector::ntt_multiply(&input1, &input2, zeta0, zeta1);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn serialize_1(a: Self::Vector) -> u8 {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(a));
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(a));
 
-        fallback::FallbackVector::serialize_1(input)
+        portable::PortableVector::serialize_1(input)
     }
     fn deserialize_1(a: u8) -> Self::Vector {
-        let output = fallback::FallbackVector::deserialize_1(a);
+        let output = portable::PortableVector::deserialize_1(a);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn serialize_4(v: Self::Vector) -> [u8; 4] {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        fallback::FallbackVector::serialize_4(input)
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        portable::PortableVector::serialize_4(input)
     }
     fn deserialize_4(v: &[u8]) -> Self::Vector {
-        let output = fallback::FallbackVector::deserialize_4(v);
+        let output = portable::PortableVector::deserialize_4(v);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn serialize_5(v: Self::Vector) -> [u8; 5] {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
 
-        fallback::FallbackVector::serialize_5(input)
+        portable::PortableVector::serialize_5(input)
     }
     fn deserialize_5(v: &[u8]) -> Self::Vector {
-        let output = fallback::FallbackVector::deserialize_5(v);
+        let output = portable::PortableVector::deserialize_5(v);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn serialize_10(v: Self::Vector) -> [u8; 10] {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        fallback::FallbackVector::serialize_10(input)
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        portable::PortableVector::serialize_10(input)
     }
     fn deserialize_10(v: &[u8]) -> Self::Vector {
-        let output = fallback::FallbackVector::deserialize_10(v);
+        let output = portable::PortableVector::deserialize_10(v);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn serialize_11(v: Self::Vector) -> [u8; 11] {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
-        fallback::FallbackVector::serialize_11(input)
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
+        portable::PortableVector::serialize_11(input)
     }
     fn deserialize_11(v: &[u8]) -> Self::Vector {
-        let output = fallback::FallbackVector::deserialize_11(v);
+        let output = portable::PortableVector::deserialize_11(v);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
     fn serialize_12(v: Self::Vector) -> [u8; 12] {
-        let input = fallback::FallbackVector::from_i32_array(Self::to_i32_array(v));
+        let input = portable::PortableVector::from_i32_array(Self::to_i32_array(v));
 
-        fallback::FallbackVector::serialize_12(input)
+        portable::PortableVector::serialize_12(input)
     }
 
     fn deserialize_12(v: &[u8]) -> Self::Vector {
-        let output = fallback::FallbackVector::deserialize_12(v);
+        let output = portable::PortableVector::deserialize_12(v);
 
-        Self::from_i32_array(fallback::FallbackVector::to_i32_array(output))
+        Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 }
