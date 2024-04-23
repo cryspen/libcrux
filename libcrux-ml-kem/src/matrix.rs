@@ -14,7 +14,7 @@ pub(crate) fn sample_matrix_A<const K: usize>(
     seed: [u8; 34],
     transpose: bool,
 ) -> [[PolynomialRingElement; K]; K] {
-    let mut A_transpose = [[PolynomialRingElement::ZERO; K]; K];
+    let mut A_transpose = [[PolynomialRingElement::ZERO(); K]; K];
 
     for i in 0..K {
         let mut seeds = [seed; K];
@@ -47,7 +47,7 @@ pub(crate) fn compute_message<const K: usize>(
     secret_as_ntt: &[PolynomialRingElement; K],
     u_as_ntt: &[PolynomialRingElement; K],
 ) -> PolynomialRingElement {
-    let mut result = PolynomialRingElement::ZERO;
+    let mut result = PolynomialRingElement::ZERO();
 
     for i in 0..K {
         let product = ntt_multiply(&secret_as_ntt[i], &u_as_ntt[i]);
@@ -68,7 +68,7 @@ pub(crate) fn compute_ring_element_v<const K: usize>(
     error_2: &PolynomialRingElement,
     message: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    let mut result = PolynomialRingElement::ZERO;
+    let mut result = PolynomialRingElement::ZERO();
 
     for i in 0..K {
         let product = ntt_multiply(&t_as_ntt[i], &r_as_ntt[i]);
@@ -88,7 +88,7 @@ pub(crate) fn compute_vector_u<const K: usize>(
     r_as_ntt: &[PolynomialRingElement; K],
     error_1: &[PolynomialRingElement; K],
 ) -> [PolynomialRingElement; K] {
-    let mut result = [PolynomialRingElement::ZERO; K];
+    let mut result = [PolynomialRingElement::ZERO(); K];
 
     cloop! {
         for (i, row) in a_as_ntt.iter().enumerate() {
@@ -115,7 +115,7 @@ pub(crate) fn compute_As_plus_e<const K: usize>(
     s_as_ntt: &[PolynomialRingElement; K],
     error_as_ntt: &[PolynomialRingElement; K],
 ) -> [PolynomialRingElement; K] {
-    let mut result = [PolynomialRingElement::ZERO; K];
+    let mut result = [PolynomialRingElement::ZERO(); K];
 
     cloop! {
         for (i, row) in matrix_A.iter().enumerate() {

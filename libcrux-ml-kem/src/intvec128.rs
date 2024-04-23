@@ -7,6 +7,7 @@ use super::{
 };
 use core::arch::aarch64::*;
 
+#[derive(Clone, Copy)]
 pub(crate) struct IntVec {
     low: int32x4_t,
     high: int32x4_t,

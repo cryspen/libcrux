@@ -11,10 +11,12 @@ pub struct PolynomialRingElement {
 }
 
 impl PolynomialRingElement {
-    pub(crate) const ZERO: Self = Self {
-        // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
-        coefficients: [ZERO_VEC; 32],
-    };
+    pub(crate) fn ZERO() -> Self {
+        Self {
+            // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
+            coefficients: [intvec::ZERO_VEC(); 32],
+        }
+    }
 }
 
 #[inline(always)]
@@ -32,7 +34,7 @@ pub(crate) fn to_i32_array(a: PolynomialRingElement) -> [i32; 256] {
 
 #[inline(always)]
 pub(crate) fn from_i32_array(a: [i32; 256]) -> PolynomialRingElement {
-    let mut result = PolynomialRingElement::ZERO;
+    let mut result = PolynomialRingElement::ZERO();
     for i in 0..VECS_IN_RING_ELEMENT {
         result.coefficients[i] =
             int_vec_from_i32_array(a[i * SIZE_VEC..(i + 1) * SIZE_VEC].try_into().unwrap());
@@ -355,7 +357,7 @@ pub(crate) fn ntt_multiply(
     //     .into_iter()
     //     .all(|coefficient| coefficient >= 0 && coefficient < 4096));
 
-    let mut out = PolynomialRingElement::ZERO;
+    let mut out = PolynomialRingElement::ZERO();
 
     for i in 0..VECS_IN_RING_ELEMENT {
         out.coefficients[i] = ntt_multiply_int_vec(

@@ -67,7 +67,7 @@ fn sample_ring_element_cbd<const K: usize, const ETA2_RANDOMNESS_SIZE: usize, co
     prf_input: &mut [u8; 33],
     domain_separator: &mut u8,
 ) -> [PolynomialRingElement; K] {
-    let mut error_1 = [PolynomialRingElement::ZERO; K];
+    let mut error_1 = [PolynomialRingElement::ZERO(); K];
     for i in 0..K {
         prf_input[32] = *domain_separator;
         *domain_separator += 1;
@@ -89,7 +89,7 @@ fn sample_vector_cbd_then_ntt<
     mut prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement; K], u8) {
-    let mut re_as_ntt = [PolynomialRingElement::ZERO; K];
+    let mut re_as_ntt = [PolynomialRingElement::ZERO(); K];
     for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
@@ -323,7 +323,7 @@ fn deserialize_then_decompress_u<
 >(
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [PolynomialRingElement; K] {
-    let mut u_as_ntt = [PolynomialRingElement::ZERO; K];
+    let mut u_as_ntt = [PolynomialRingElement::ZERO(); K];
     cloop! {
         for (i, u_bytes) in ciphertext
             .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
@@ -339,7 +339,7 @@ fn deserialize_then_decompress_u<
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
 fn deserialize_secret_key<const K: usize>(secret_key: &[u8]) -> [PolynomialRingElement; K] {
-    let mut secret_as_ntt = [PolynomialRingElement::ZERO; K];
+    let mut secret_as_ntt = [PolynomialRingElement::ZERO(); K];
     cloop! {
         for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
             secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
