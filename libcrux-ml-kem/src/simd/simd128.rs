@@ -84,12 +84,12 @@ fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
 
 fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
     let c = unsafe { vdupq_n_s32(3329) };
-    let m0 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.low,c)) };
-    let m1 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.high,c)) };
-    let rhs0 = unsafe { vandq_s32(m0,c) };
-    let rhs1 = unsafe { vandq_s32(m1,c) };
-    v.low = unsafe { vsubq_s32(v.low,rhs0) };
-    v.high = unsafe { vsubq_s32(v.high,rhs1) };
+    let m0 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.low, c)) };
+    let m1 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.high, c)) };
+    let rhs0 = unsafe { vandq_s32(m0, c) };
+    let rhs1 = unsafe { vandq_s32(m1, c) };
+    v.low = unsafe { vsubq_s32(v.low, rhs0) };
+    v.high = unsafe { vsubq_s32(v.high, rhs1) };
     v
 }
 

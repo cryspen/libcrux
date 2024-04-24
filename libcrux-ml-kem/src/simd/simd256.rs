@@ -1,4 +1,7 @@
-use crate::simd::{portable, simd_trait::*};
+use crate::{
+    constants::FIELD_MODULUS,
+    simd::{portable, simd_trait::*},
+};
 use core::arch::x86_64::*;
 
 #[derive(Clone, Copy)]
@@ -105,11 +108,21 @@ fn montgomery_reduce(v: SIMD256Vector) -> SIMD256Vector {
     from_i32_array(portable::PortableVector::to_i32_array(output))
 }
 
-fn compress_1(v: SIMD256Vector) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::compress_1(input);
+fn compress_1(mut v: SIMD256Vector) -> SIMD256Vector {
+    unsafe {
+        let field_modulus_halved = _mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
+        let field_modulus_quartered = _mm256_set1_epi32((FIELD_MODULUS - 1) / 4);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        v.elements = _mm256_sub_epi32(field_modulus_halved, v.elements);
+        let mask = _mm256_srai_epi32(v.elements, 31);
+
+        v.elements = _mm256_xor_si256(mask, v.elements);
+        v.elements = _mm256_sub_epi32(v.elements, field_modulus_quartered);
+
+        v.elements = _mm256_srli_epi32(v.elements, 31);
+    }
+
+    v
 }
 
 fn compress(coefficient_bits: u8, v: SIMD256Vector) -> SIMD256Vector {
@@ -156,8 +169,8 @@ fn ntt_multiply(lhs: &SIMD256Vector, rhs: &SIMD256Vector, zeta0: i32, zeta1: i32
     from_i32_array(portable::PortableVector::to_i32_array(output))
 }
 
-fn serialize_1(a: SIMD256Vector) -> u8 {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(a));
+fn serialize_1(v: SIMD256Vector) -> u8 {
+    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
 
     portable::PortableVector::serialize_1(input)
 }
@@ -261,8 +274,8 @@ impl Operations for SIMD256Vector {
         shift_left::<{ SHIFT_BY }>(v)
     }
 
-    fn modulo_a_constant(v: Self, modulus: i32) -> Self {
-        modulo_a_constant(v, modulus)
+    fn cond_subtract_3329(v: Self) -> Self {
+        cond_subtract_3329(v)
     }
 
     fn barrett_reduce(v: Self) -> Self {
