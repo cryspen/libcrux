@@ -3,7 +3,7 @@ use crate::{
     hax_utils::hax_debug_assert,
     helper::cloop,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
-    simd::{self, simd_trait::Operations},
+    simd::{self, simd_trait::Operations, simd_trait::GenericOperations},
 };
 
 #[cfg(hax)]

@@ -2,6 +2,7 @@ module Libcrux_ml_kem.Simd.Portable
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
+open Libcrux_ml_kem.Simd.Simd_trait
 
 type t_PortableVector = { f_elements:t_Array i32 (sz 8) }
 
@@ -9,9 +10,15 @@ type t_PortableVector = { f_elements:t_Array i32 (sz 8) }
 let impl: Libcrux_ml_kem.Simd.Simd_trait.t_Operations t_PortableVector =
   {
     f_Vector = t_PortableVector;
-    f_Vector_15713626723705489010 = FStar.Tactics.Typeclasses.solve ();
+    f_Vector_15713626723705489010 = FStar.Tactics.Typeclasses.solve;
+    f_Vector_8701872305793597044 = FStar.Tactics.Typeclasses.solve;
     f_FIELD_ELEMENTS_IN_VECTOR = sz 8;
-    f_ZERO = { f_elements = Rust_primitives.Hax.repeat 0l (sz 8) } <: t_PortableVector;
+    f_ZERO_pre = (fun (_: Prims.unit) -> true);
+    f_ZERO_post = (fun (_: Prims.unit) (out: t_PortableVector) -> true);
+    f_ZERO
+    =
+    (fun (_: Prims.unit) ->
+        { f_elements = Rust_primitives.Hax.repeat 0l (sz 8) } <: t_PortableVector);
     f_to_i32_array_pre = (fun (v: t_PortableVector) -> true);
     f_to_i32_array_post = (fun (v: t_PortableVector) (out: t_Array i32 (sz 8)) -> true);
     f_to_i32_array = (fun (v: t_PortableVector) -> v.f_elements);

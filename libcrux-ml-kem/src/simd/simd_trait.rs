@@ -2,7 +2,7 @@ use crate::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS;
 use crate::constants::FIELD_MODULUS;
 
 pub(crate) trait Operations {
-    type Vector: Copy;
+    type Vector: Copy+Clone;
 
     const FIELD_ELEMENTS_IN_VECTOR: usize;
 
@@ -62,7 +62,17 @@ pub(crate) trait Operations {
 
     fn serialize_12(a: Self::Vector) -> [u8; 12];
     fn deserialize_12(a: &[u8]) -> Self::Vector;
+}
 
+pub(crate) trait GenericOperations : Operations {
+    fn montgomery_multiply_fe_by_fer(v: Self::Vector, fer: i32) -> Self::Vector;
+    fn to_standard_domain(v: Self::Vector) -> Self::Vector;
+    fn to_unsigned_representative(a: Self::Vector) -> Self::Vector;
+    fn decompress_1(v: Self::Vector) -> Self::Vector;
+    fn decompress(coefficient_bits: u8, v: Self::Vector) -> Self::Vector;
+}
+
+impl<T:Operations> GenericOperations for T { 
     // Default implementations
     fn montgomery_multiply_fe_by_fer(v: Self::Vector, fer: i32) -> Self::Vector {
         let t = Self::multiply_by_constant(v, fer);

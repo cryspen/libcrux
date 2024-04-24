@@ -1,6 +1,6 @@
 //use crate::hax_utils::hax_debug_assert;
 use crate::arithmetic::*;
-use crate::simd::{self, simd_trait::Operations};
+use crate::simd::{self, simd_trait::Operations, simd_trait::GenericOperations};
 
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / simd::Vector::FIELD_ELEMENTS_IN_VECTOR;
