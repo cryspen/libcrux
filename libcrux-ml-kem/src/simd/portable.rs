@@ -458,11 +458,11 @@ impl Operations for PortableVector {
     }
 
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_right::<{SHIFT_BY}>(v)
+        shift_right::<{ SHIFT_BY }>(v)
     }
 
     fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_left::<{SHIFT_BY}>(v)
+        shift_left::<{ SHIFT_BY }>(v)
     }
 
     fn modulo_a_constant(v: Self, modulus: i32) -> Self {

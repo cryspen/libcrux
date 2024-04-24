@@ -30,7 +30,7 @@ fn from_i32_array(array: [i32; 8]) -> SIMD256Vector {
 }
 
 fn add_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
-    let c = unsafe { _mm256_set_epi32(c, c, c, c, c, c, c, c) };
+    let c = unsafe { _mm256_set1_epi32(c) };
 
     v.elements = unsafe { _mm256_add_epi32(v.elements, c) };
 
@@ -49,7 +49,7 @@ fn sub(mut lhs: SIMD256Vector, rhs: &SIMD256Vector) -> SIMD256Vector {
 }
 
 fn multiply_by_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
-    let c = unsafe { _mm256_set_epi32(c, c, c, c, c, c, c, c) };
+    let c = unsafe { _mm256_set1_epi32(c) };
 
     // In theory, we could get the wrong answer if the product occupies
     // more than 32 bits, but so far in the Kyber code that doesn't seem
@@ -60,7 +60,7 @@ fn multiply_by_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
 }
 
 fn bitwise_and_with_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
-    let c = unsafe { _mm256_set_epi32(c, c, c, c, c, c, c, c) };
+    let c = unsafe { _mm256_set1_epi32(c) };
 
     v.elements = unsafe { _mm256_and_si256(v.elements, c) };
 
@@ -68,10 +68,9 @@ fn bitwise_and_with_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
 }
 
 fn shift_right<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::shift_right::<{SHIFT_BY}>(input);
+    v.elements = unsafe { _mm256_srai_epi32(v.elements, SHIFT_BY) };
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    v
 }
 
 fn shift_left<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
@@ -253,11 +252,11 @@ impl Operations for SIMD256Vector {
     }
 
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_right::<{SHIFT_BY}>(v)
+        shift_right::<{ SHIFT_BY }>(v)
     }
 
     fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_left::<{SHIFT_BY}>(v)
+        shift_left::<{ SHIFT_BY }>(v)
     }
 
     fn modulo_a_constant(v: Self, modulus: i32) -> Self {

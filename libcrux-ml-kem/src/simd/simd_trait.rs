@@ -92,10 +92,12 @@ impl<T: Operations + Clone + Copy> GenericOperations for T {
     }
     fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         let mut decompressed = Self::multiply_by_constant(v, FIELD_MODULUS);
-        decompressed =
-            Self::add_constant(Self::shift_left::<1>(decompressed), 1i32 << COEFFICIENT_BITS);
+        decompressed = Self::add_constant(
+            Self::shift_left::<1>(decompressed),
+            1i32 << COEFFICIENT_BITS,
+        );
 
-        let decompressed_1 = Self::shift_right::<{COEFFICIENT_BITS}>(decompressed);
+        let decompressed_1 = Self::shift_right::<{ COEFFICIENT_BITS }>(decompressed);
         let decompressed_2 = Self::shift_right::<1>(decompressed_1);
 
         decompressed_2
