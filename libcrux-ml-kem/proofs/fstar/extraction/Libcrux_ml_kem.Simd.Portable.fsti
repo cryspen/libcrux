@@ -25,6 +25,9 @@ val compress (coefficient_bits: u8) (v: t_PortableVector)
 val compress_1_ (v: t_PortableVector)
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
+val cond_subtract_3329_ (v: t_PortableVector)
+    : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
+
 val from_i32_array (array: t_Array i32 (sz 8))
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
@@ -32,9 +35,6 @@ val inv_ntt_layer_1_step (v: t_PortableVector) (zeta1 zeta2: i32)
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
 val inv_ntt_layer_2_step (v: t_PortableVector) (zeta: i32)
-    : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
-
-val modulo_a_constant (v: t_PortableVector) (modulus: i32)
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
 val montgomery_reduce (v: t_PortableVector)
@@ -66,10 +66,10 @@ val serialize_4_ (v: t_PortableVector)
 val serialize_5_ (v: t_PortableVector)
     : Prims.Pure (t_Array u8 (sz 5)) Prims.l_True (fun _ -> Prims.l_True)
 
-val shift_left (lhs: t_PortableVector) (shift_amount: u8)
+val shift_left (v_SHIFT_BY: i32) (lhs: t_PortableVector)
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
-val shift_right (v: t_PortableVector) (shift_amount: u8)
+val shift_right (v_SHIFT_BY: i32) (v: t_PortableVector)
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
 val sub (lhs rhs: t_PortableVector)
@@ -101,9 +101,7 @@ val ntt_multiply (lhs rhs: t_PortableVector) (zeta0 zeta1: i32)
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Simd.Simd_trait.t_Operations t_PortableVector =
   {
-    f_ZERO_pre = (fun (_: Prims.unit) -> true);
-    f_ZERO_post = (fun (_: Prims.unit) (out: t_PortableVector) -> true);
-    f_ZERO = (fun (_: Prims.unit) -> v_ZERO ());
+    f_ZERO = v_ZERO ();
     f_to_i32_array_pre = (fun (v: t_PortableVector) -> true);
     f_to_i32_array_post = (fun (v: t_PortableVector) (out: t_Array i32 (sz 8)) -> true);
     f_to_i32_array = (fun (v: t_PortableVector) -> to_i32_array v);
@@ -135,21 +133,19 @@ let impl: Libcrux_ml_kem.Simd.Simd_trait.t_Operations t_PortableVector =
     f_bitwise_and_with_constant
     =
     (fun (v: t_PortableVector) (c: i32) -> bitwise_and_with_constant v c);
-    f_shift_right_pre = (fun (v: t_PortableVector) (shift_amount: u8) -> true);
+    f_shift_right_pre = (fun (v_SHIFT_BY: i32) (v: t_PortableVector) -> true);
     f_shift_right_post
     =
-    (fun (v: t_PortableVector) (shift_amount: u8) (out: t_PortableVector) -> true);
-    f_shift_right = (fun (v: t_PortableVector) (shift_amount: u8) -> shift_right v shift_amount);
-    f_shift_left_pre = (fun (v: t_PortableVector) (shift_amount: u8) -> true);
+    (fun (v_SHIFT_BY: i32) (v: t_PortableVector) (out: t_PortableVector) -> true);
+    f_shift_right = (fun (v_SHIFT_BY: i32) (v: t_PortableVector) -> shift_right v_SHIFT_BY v);
+    f_shift_left_pre = (fun (v_SHIFT_BY: i32) (v: t_PortableVector) -> true);
     f_shift_left_post
     =
-    (fun (v: t_PortableVector) (shift_amount: u8) (out: t_PortableVector) -> true);
-    f_shift_left = (fun (v: t_PortableVector) (shift_amount: u8) -> shift_left v shift_amount);
-    f_modulo_a_constant_pre = (fun (v: t_PortableVector) (modulus: i32) -> true);
-    f_modulo_a_constant_post
-    =
-    (fun (v: t_PortableVector) (modulus: i32) (out: t_PortableVector) -> true);
-    f_modulo_a_constant = (fun (v: t_PortableVector) (modulus: i32) -> modulo_a_constant v modulus);
+    (fun (v_SHIFT_BY: i32) (v: t_PortableVector) (out: t_PortableVector) -> true);
+    f_shift_left = (fun (v_SHIFT_BY: i32) (v: t_PortableVector) -> shift_left v_SHIFT_BY v);
+    f_cond_subtract_3329_pre = (fun (v: t_PortableVector) -> true);
+    f_cond_subtract_3329_post = (fun (v: t_PortableVector) (out: t_PortableVector) -> true);
+    f_cond_subtract_3329_ = (fun (v: t_PortableVector) -> cond_subtract_3329_ v);
     f_barrett_reduce_pre = (fun (v: t_PortableVector) -> true);
     f_barrett_reduce_post = (fun (v: t_PortableVector) (out: t_PortableVector) -> true);
     f_barrett_reduce = (fun (v: t_PortableVector) -> barrett_reduce v);

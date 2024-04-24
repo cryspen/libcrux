@@ -372,7 +372,7 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 10uy coefficient
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 10l coefficient
                   <:
                   Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
@@ -409,7 +409,7 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 11uy coefficient
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 11l coefficient
                   <:
                   Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
@@ -446,7 +446,7 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 4uy coefficient
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 4l coefficient
                   <:
                   Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
@@ -495,7 +495,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 5uy
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 5l
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                       <:
                       Libcrux_ml_kem.Simd.Portable.t_PortableVector)
@@ -600,7 +600,7 @@ let deserialize_to_reduced_ring_element (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Simd.Simd_trait.f_modulo_a_constant coefficient 3329l
+                (Libcrux_ml_kem.Simd.Simd_trait.f_cond_subtract_3329_ coefficient
                   <:
                   Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }

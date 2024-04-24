@@ -25,11 +25,13 @@ class t_GenericOperations (v_Self: Type) = {
   f_decompress_1_pre:v_Self -> bool;
   f_decompress_1_post:v_Self -> v_Self -> bool;
   f_decompress_1_:x0: v_Self
-    -> Prims.Pure v_Self (f_decompress_1_pre x0) (fun result -> f_decompress_1_post x0 result);
-  f_decompress_pre:u8 -> v_Self -> bool;
-  f_decompress_post:u8 -> v_Self -> v_Self -> bool;
-  f_decompress:x0: u8 -> x1: v_Self
-    -> Prims.Pure v_Self (f_decompress_pre x0 x1) (fun result -> f_decompress_post x0 x1 result)
+    -> Prims.Pure v_Self (f_decompress_1__pre x0) (fun result -> f_decompress_1__post x0 result);
+  f_decompress_pre:v_COEFFICIENT_BITS: i32 -> v_Self -> bool;
+  f_decompress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> bool;
+  f_decompress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
+    -> Prims.Pure v_Self
+        (f_decompress_pre v_COEFFICIENT_BITS x0)
+        (fun result -> f_decompress_post v_COEFFICIENT_BITS x0 result)
 }
 
 class t_Operations (v_Self: Type) = {
@@ -70,20 +72,24 @@ class t_Operations (v_Self: Type) = {
     -> Prims.Pure v_Self
         (f_bitwise_and_with_constant_pre x0 x1)
         (fun result -> f_bitwise_and_with_constant_post x0 x1 result);
-  f_shift_right_pre:v_Self -> u8 -> bool;
-  f_shift_right_post:v_Self -> u8 -> v_Self -> bool;
-  f_shift_right:x0: v_Self -> x1: u8
-    -> Prims.Pure v_Self (f_shift_right_pre x0 x1) (fun result -> f_shift_right_post x0 x1 result);
-  f_shift_left_pre:v_Self -> u8 -> bool;
-  f_shift_left_post:v_Self -> u8 -> v_Self -> bool;
-  f_shift_left:x0: v_Self -> x1: u8
-    -> Prims.Pure v_Self (f_shift_left_pre x0 x1) (fun result -> f_shift_left_post x0 x1 result);
-  f_modulo_a_constant_pre:v_Self -> i32 -> bool;
-  f_modulo_a_constant_post:v_Self -> i32 -> v_Self -> bool;
-  f_modulo_a_constant:x0: v_Self -> x1: i32
+  f_shift_right_pre:v_SHIFT_BY: i32 -> v_Self -> bool;
+  f_shift_right_post:v_SHIFT_BY: i32 -> v_Self -> v_Self -> bool;
+  f_shift_right:v_SHIFT_BY: i32 -> x0: v_Self
     -> Prims.Pure v_Self
-        (f_modulo_a_constant_pre x0 x1)
-        (fun result -> f_modulo_a_constant_post x0 x1 result);
+        (f_shift_right_pre v_SHIFT_BY x0)
+        (fun result -> f_shift_right_post v_SHIFT_BY x0 result);
+  f_shift_left_pre:v_SHIFT_BY: i32 -> v_Self -> bool;
+  f_shift_left_post:v_SHIFT_BY: i32 -> v_Self -> v_Self -> bool;
+  f_shift_left:v_SHIFT_BY: i32 -> x0: v_Self
+    -> Prims.Pure v_Self
+        (f_shift_left_pre v_SHIFT_BY x0)
+        (fun result -> f_shift_left_post v_SHIFT_BY x0 result);
+  f_cond_subtract_3329_pre:v_Self -> bool;
+  f_cond_subtract_3329_post:v_Self -> v_Self -> bool;
+  f_cond_subtract_3329_:x0: v_Self
+    -> Prims.Pure v_Self
+        (f_cond_subtract_3329__pre x0)
+        (fun result -> f_cond_subtract_3329__post x0 result);
   f_barrett_reduce_pre:v_Self -> bool;
   f_barrett_reduce_post:v_Self -> v_Self -> bool;
   f_barrett_reduce:x0: v_Self
@@ -97,7 +103,7 @@ class t_Operations (v_Self: Type) = {
   f_compress_1_pre:v_Self -> bool;
   f_compress_1_post:v_Self -> v_Self -> bool;
   f_compress_1_:x0: v_Self
-    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
+    -> Prims.Pure v_Self (f_compress_1__pre x0) (fun result -> f_compress_1__post x0 result);
   f_compress_pre:u8 -> v_Self -> bool;
   f_compress_post:u8 -> v_Self -> v_Self -> bool;
   f_compress:x0: u8 -> x1: v_Self
@@ -135,61 +141,61 @@ class t_Operations (v_Self: Type) = {
   f_serialize_1_pre:v_Self -> bool;
   f_serialize_1_post:v_Self -> u8 -> bool;
   f_serialize_1_:x0: v_Self
-    -> Prims.Pure u8 (f_serialize_1_pre x0) (fun result -> f_serialize_1_post x0 result);
+    -> Prims.Pure u8 (f_serialize_1__pre x0) (fun result -> f_serialize_1__post x0 result);
   f_deserialize_1_pre:u8 -> bool;
   f_deserialize_1_post:u8 -> v_Self -> bool;
   f_deserialize_1_:x0: u8
-    -> Prims.Pure v_Self (f_deserialize_1_pre x0) (fun result -> f_deserialize_1_post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_1__pre x0) (fun result -> f_deserialize_1__post x0 result);
   f_serialize_4_pre:v_Self -> bool;
   f_serialize_4_post:v_Self -> t_Array u8 (sz 4) -> bool;
   f_serialize_4_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 4))
-        (f_serialize_4_pre x0)
-        (fun result -> f_serialize_4_post x0 result);
+        (f_serialize_4__pre x0)
+        (fun result -> f_serialize_4__post x0 result);
   f_deserialize_4_pre:t_Slice u8 -> bool;
   f_deserialize_4_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_4_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_4_pre x0) (fun result -> f_deserialize_4_post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_4__pre x0) (fun result -> f_deserialize_4__post x0 result);
   f_serialize_5_pre:v_Self -> bool;
   f_serialize_5_post:v_Self -> t_Array u8 (sz 5) -> bool;
   f_serialize_5_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 5))
-        (f_serialize_5_pre x0)
-        (fun result -> f_serialize_5_post x0 result);
+        (f_serialize_5__pre x0)
+        (fun result -> f_serialize_5__post x0 result);
   f_deserialize_5_pre:t_Slice u8 -> bool;
   f_deserialize_5_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_5_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_5_pre x0) (fun result -> f_deserialize_5_post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_5__pre x0) (fun result -> f_deserialize_5__post x0 result);
   f_serialize_10_pre:v_Self -> bool;
   f_serialize_10_post:v_Self -> t_Array u8 (sz 10) -> bool;
   f_serialize_10_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 10))
-        (f_serialize_10_pre x0)
-        (fun result -> f_serialize_10_post x0 result);
+        (f_serialize_10__pre x0)
+        (fun result -> f_serialize_10__post x0 result);
   f_deserialize_10_pre:t_Slice u8 -> bool;
   f_deserialize_10_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_10_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_10_pre x0) (fun result -> f_deserialize_10_post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_10__pre x0) (fun result -> f_deserialize_10__post x0 result);
   f_serialize_11_pre:v_Self -> bool;
   f_serialize_11_post:v_Self -> t_Array u8 (sz 11) -> bool;
   f_serialize_11_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 11))
-        (f_serialize_11_pre x0)
-        (fun result -> f_serialize_11_post x0 result);
+        (f_serialize_11__pre x0)
+        (fun result -> f_serialize_11__post x0 result);
   f_deserialize_11_pre:t_Slice u8 -> bool;
   f_deserialize_11_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_11_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_11_pre x0) (fun result -> f_deserialize_11_post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_11__pre x0) (fun result -> f_deserialize_11__post x0 result);
   f_serialize_12_pre:v_Self -> bool;
   f_serialize_12_post:v_Self -> t_Array u8 (sz 12) -> bool;
   f_serialize_12_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 12))
-        (f_serialize_12_pre x0)
-        (fun result -> f_serialize_12_post x0 result);
+        (f_serialize_12__pre x0)
+        (fun result -> f_serialize_12__post x0 result);
   f_deserialize_12_pre:t_Slice u8 -> bool;
   f_deserialize_12_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_12_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_12_pre x0) (fun result -> f_deserialize_12_post x0 result)
+    -> Prims.Pure v_Self (f_deserialize_12__pre x0) (fun result -> f_deserialize_12__post x0 result)
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -222,7 +228,7 @@ let impl
     f_to_unsigned_representative
     =
     (fun (a: v_T) ->
-        let t:v_T = f_shift_right a 31uy in
+        let t:v_T = f_shift_right 31l a in
         let fm:v_T = f_bitwise_and_with_constant t Libcrux_ml_kem.Constants.v_FIELD_MODULUS in
         f_add a fm);
     f_decompress_1_pre = (fun (v: v_T) -> true);
@@ -230,17 +236,17 @@ let impl
     f_decompress_1_
     =
     (fun (v: v_T) -> f_bitwise_and_with_constant (f_sub (f_ZERO () <: v_T) v <: v_T) 1665l);
-    f_decompress_pre = (fun (coefficient_bits: u8) (v: v_T) -> true);
-    f_decompress_post = (fun (coefficient_bits: u8) (v: v_T) (out: v_T) -> true);
+    f_decompress_pre = (fun (v_COEFFICIENT_BITS: i32) (v: v_T) -> true);
+    f_decompress_post = (fun (v_COEFFICIENT_BITS: i32) (v: v_T) (out: v_T) -> true);
     f_decompress
     =
-    fun (coefficient_bits: u8) (v: v_T) ->
+    fun (v_COEFFICIENT_BITS: i32) (v: v_T) ->
       let decompressed:v_T = f_multiply_by_constant v Libcrux_ml_kem.Constants.v_FIELD_MODULUS in
       let decompressed:v_T =
-        f_add_constant (f_shift_left decompressed 1uy <: v_T) (1l <<! coefficient_bits <: i32)
+        f_add_constant (f_shift_left 1l decompressed <: v_T) (1l <<! v_COEFFICIENT_BITS <: i32)
       in
-      let decompressed:v_T = f_shift_right decompressed (coefficient_bits +! 1uy <: u8) in
-      decompressed
+      let decompressed_1_:v_T = f_shift_right v_COEFFICIENT_BITS decompressed in
+      f_shift_right 1l decompressed_1_
   }
 
 let v_FIELD_ELEMENTS_IN_VECTOR: usize = sz 8
