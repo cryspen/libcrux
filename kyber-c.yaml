@@ -31,8 +31,9 @@ files:
   - name: libcrux_kyber_common
     private:
       - [libcrux_kyber, "*"]
-    include_in_c:
+    include_in_h:
       - '"libcrux_hacl_glue.h"'
+    inline_static: true
 
   - name: core
     private:
