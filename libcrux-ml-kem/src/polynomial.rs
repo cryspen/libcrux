@@ -1,9 +1,9 @@
 //use crate::hax_utils::hax_debug_assert;
 use crate::arithmetic::*;
-use crate::simd::{self, simd_trait::Operations, simd_trait::GenericOperations};
+use crate::simd::{self, simd_trait::*};
 
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
-    super::constants::COEFFICIENTS_IN_RING_ELEMENT / simd::Vector::FIELD_ELEMENTS_IN_VECTOR;
+    super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
 #[derive(Clone, Copy)]
 pub struct PolynomialRingElement {
@@ -25,8 +25,8 @@ pub(crate) fn from_i32_array(a: [i32; 256]) -> PolynomialRingElement {
     let mut result = PolynomialRingElement::ZERO();
     for i in 0..VECTORS_IN_RING_ELEMENT {
         result.coefficients[i] = simd::Vector::from_i32_array(
-            a[i * simd::Vector::FIELD_ELEMENTS_IN_VECTOR
-                ..(i + 1) * simd::Vector::FIELD_ELEMENTS_IN_VECTOR]
+            a[i * FIELD_ELEMENTS_IN_VECTOR
+                ..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
                 .try_into()
                 .unwrap(),
         );
@@ -203,8 +203,8 @@ pub(crate) fn ntt_at_layer_3_plus(
         *zeta_i += 1;
 
         let offset = round * step * 2;
-        let offset_vec = offset / simd::Vector::FIELD_ELEMENTS_IN_VECTOR;
-        let step_vec = step / simd::Vector::FIELD_ELEMENTS_IN_VECTOR;
+        let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
+        let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
             let (x, y) = ntt_layer_int_vec_step(
@@ -300,8 +300,8 @@ pub(crate) fn invert_ntt_at_layer_3_plus(
         *zeta_i -= 1;
 
         let offset = round * step * 2;
-        let offset_vec = offset / simd::Vector::FIELD_ELEMENTS_IN_VECTOR;
-        let step_vec = step / simd::Vector::FIELD_ELEMENTS_IN_VECTOR;
+        let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
+        let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
             let (x, y) = inv_ntt_layer_int_vec_step(

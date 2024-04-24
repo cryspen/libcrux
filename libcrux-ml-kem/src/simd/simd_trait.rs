@@ -1,101 +1,116 @@
 use crate::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS;
 use crate::constants::FIELD_MODULUS;
 
-pub(crate) trait Operations {
-    type Vector: Copy+Clone;
+pub(crate) const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
 
-    const FIELD_ELEMENTS_IN_VECTOR: usize;
-
+pub(crate) trait ArrayOperations {
     #[allow(non_snake_case)]
-    fn ZERO() -> Self::Vector;
+    fn ZERO() -> Self;
 
-    fn to_i32_array(v: Self::Vector) -> [i32; 8];
-    fn from_i32_array(array: [i32; 8]) -> Self::Vector;
-
-    // Basic arithmetic
-    fn add_constant(v: Self::Vector, c: i32) -> Self::Vector;
-    fn add(lhs: Self::Vector, rhs: &Self::Vector) -> Self::Vector;
-    fn sub(lhs: Self::Vector, rhs: &Self::Vector) -> Self::Vector;
-
-    fn multiply_by_constant(v: Self::Vector, c: i32) -> Self::Vector;
-
-    // Bitwise operations
-    fn bitwise_and_with_constant(v: Self::Vector, c: i32) -> Self::Vector;
-    fn shift_right(v: Self::Vector, shift_amount: u8) -> Self::Vector;
-    fn shift_left(v: Self::Vector, shift_amount: u8) -> Self::Vector;
-
-    // Modular operations
-    fn modulo_a_constant(v: Self::Vector, modulus: i32) -> Self::Vector;
-    fn barrett_reduce(v: Self::Vector) -> Self::Vector;
-
-    fn montgomery_reduce(v: Self::Vector) -> Self::Vector;
-
-    // Compression
-    fn compress_1(v: Self::Vector) -> Self::Vector;
-    fn compress(coefficient_bits: u8, v: Self::Vector) -> Self::Vector;
-
-    // NTT
-    fn ntt_layer_1_step(a: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector;
-    fn ntt_layer_2_step(a: Self::Vector, zeta: i32) -> Self::Vector;
-
-    fn inv_ntt_layer_1_step(a: Self::Vector, zeta1: i32, zeta2: i32) -> Self::Vector;
-    fn inv_ntt_layer_2_step(a: Self::Vector, zeta: i32) -> Self::Vector;
-
-    fn ntt_multiply(lhs: &Self::Vector, rhs: &Self::Vector, zeta0: i32, zeta1: i32)
-        -> Self::Vector;
-
-    // Serialization and deserialization
-    fn serialize_1(a: Self::Vector) -> u8;
-    fn deserialize_1(a: u8) -> Self::Vector;
-
-    fn serialize_4(a: Self::Vector) -> [u8; 4];
-    fn deserialize_4(a: &[u8]) -> Self::Vector;
-
-    fn serialize_5(a: Self::Vector) -> [u8; 5];
-    fn deserialize_5(a: &[u8]) -> Self::Vector;
-
-    fn serialize_10(a: Self::Vector) -> [u8; 10];
-    fn deserialize_10(a: &[u8]) -> Self::Vector;
-
-    fn serialize_11(a: Self::Vector) -> [u8; 11];
-    fn deserialize_11(a: &[u8]) -> Self::Vector;
-
-    fn serialize_12(a: Self::Vector) -> [u8; 12];
-    fn deserialize_12(a: &[u8]) -> Self::Vector;
+    fn to_i32_array(v: Self) -> [i32; 8];
+    fn from_i32_array(array: [i32; 8]) -> Self;
 }
 
-pub(crate) trait GenericOperations : Operations {
-    fn montgomery_multiply_fe_by_fer(v: Self::Vector, fer: i32) -> Self::Vector;
-    fn to_standard_domain(v: Self::Vector) -> Self::Vector;
-    fn to_unsigned_representative(a: Self::Vector) -> Self::Vector;
-    fn decompress_1(v: Self::Vector) -> Self::Vector;
-    fn decompress(coefficient_bits: u8, v: Self::Vector) -> Self::Vector;
+pub(crate) trait ArithmeticOperations {
+    // Basic arithmetic
+    fn add_constant(v: Self, c: i32) -> Self;
+    fn add(lhs: Self, rhs: &Self) -> Self;
+    fn sub(lhs: Self, rhs: &Self) -> Self;
+    fn multiply_by_constant(v: Self, c: i32) -> Self;
+}
+
+pub(crate) trait BitwiseOperations {
+    // Bitwise operations
+    fn bitwise_and_with_constant(v: Self, c: i32) -> Self;
+    fn shift_right(v: Self, shift_amount: u8) -> Self;
+    fn shift_left(v: Self, shift_amount: u8) -> Self;
+}
+
+pub(crate) trait ModularOperations {
+    // Modular operations
+    fn modulo_a_constant(v: Self, modulus: i32) -> Self;
+    fn barrett_reduce(v: Self) -> Self;
+    fn montgomery_reduce(v: Self) -> Self;
+}
+
+pub(crate) trait CompressionOperations {
+    // Compression
+    fn compress_1(v: Self) -> Self;
+    fn compress(coefficient_bits: u8, v: Self) -> Self;
+}
+
+pub(crate) trait NTTOperations {
+    // NTT
+    fn ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self;
+    fn ntt_layer_2_step(a: Self, zeta: i32) -> Self;
+
+    fn inv_ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self;
+    fn inv_ntt_layer_2_step(a: Self, zeta: i32) -> Self;
+
+    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32)
+        -> Self;
+}
+
+pub(crate) trait SerializeOperations {
+    // Serialization and deserialization
+    fn serialize_1(a: Self) -> u8;
+    fn deserialize_1(a: u8) -> Self;
+
+    fn serialize_4(a: Self) -> [u8; 4];
+    fn deserialize_4(a: &[u8]) -> Self;
+
+    fn serialize_5(a: Self) -> [u8; 5];
+    fn deserialize_5(a: &[u8]) -> Self;
+
+    fn serialize_10(a: Self) -> [u8; 10];
+    fn deserialize_10(a: &[u8]) -> Self;
+
+    fn serialize_11(a: Self) -> [u8; 11];
+    fn deserialize_11(a: &[u8]) -> Self;
+
+    fn serialize_12(a: Self) -> [u8; 12];
+    fn deserialize_12(a: &[u8]) -> Self;
+}
+
+pub(crate) trait Operations : ArrayOperations + ArithmeticOperations + ModularOperations + 
+                              BitwiseOperations + CompressionOperations + 
+                              NTTOperations + SerializeOperations + 
+                              Copy + Clone {
+
+}
+
+pub(crate) trait GenericOperations {
+    fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self;
+    fn to_standard_domain(v: Self) -> Self;
+    fn to_unsigned_representative(a: Self) -> Self;
+    fn decompress_1(v: Self) -> Self;
+    fn decompress(coefficient_bits: u8, v: Self) -> Self;
 }
 
 impl<T:Operations> GenericOperations for T { 
     // Default implementations
-    fn montgomery_multiply_fe_by_fer(v: Self::Vector, fer: i32) -> Self::Vector {
+    fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self {
         let t = Self::multiply_by_constant(v, fer);
 
         Self::montgomery_reduce(t)
     }
-    fn to_standard_domain(v: Self::Vector) -> Self::Vector {
+    fn to_standard_domain(v: Self) -> Self {
         let t = Self::multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
 
         Self::montgomery_reduce(t)
     }
 
-    fn to_unsigned_representative(a: Self::Vector) -> Self::Vector {
+    fn to_unsigned_representative(a: Self) -> Self {
         let t = Self::shift_right(a, 31);
         let fm = Self::bitwise_and_with_constant(t, FIELD_MODULUS);
 
         Self::add(a, &fm)
     }
 
-    fn decompress_1(v: Self::Vector) -> Self::Vector {
+    fn decompress_1(v: Self) -> Self {
         Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
     }
-    fn decompress(coefficient_bits: u8, v: Self::Vector) -> Self::Vector {
+    fn decompress(coefficient_bits: u8, v: Self) -> Self {
         let mut decompressed = Self::multiply_by_constant(v, FIELD_MODULUS);
         decompressed =
             Self::add_constant(Self::shift_left(decompressed, 1), 1i32 << coefficient_bits);
