@@ -22,7 +22,7 @@ pub(crate) trait Operations {
     fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
-    fn modulo_a_constant(v: Self, modulus: i32) -> Self;
+    fn cond_subtract_3329(v: Self) -> Self;
     fn barrett_reduce(v: Self) -> Self;
     fn montgomery_reduce(v: Self) -> Self;
 

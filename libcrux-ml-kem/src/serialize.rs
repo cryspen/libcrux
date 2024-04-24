@@ -84,7 +84,7 @@ fn deserialize_to_reduced_ring_element(serialized: &[u8]) -> PolynomialRingEleme
     cloop! {
         for (i, bytes) in serialized.chunks_exact(12).enumerate() {
             let coefficient = simd::Vector::deserialize_12(&bytes);
-            re.coefficients[i] = simd::Vector::modulo_a_constant(coefficient, 3329);
+            re.coefficients[i] = simd::Vector::cond_subtract_3329(coefficient);
         }
     }
     re

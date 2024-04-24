@@ -79,11 +79,13 @@ fn shift_left<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
     v
 }
 
-fn modulo_a_constant(v: SIMD256Vector, modulus: i32) -> SIMD256Vector {
+fn cond_subtract_3329(v: SIMD256Vector) -> SIMD256Vector {
     let mut i32s = to_i32_array(v);
 
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        i32s[i] = i32s[i] % modulus;
+        if i32s[i] >= 3329 {
+            i32s[i] -= 3329;
+        }
     }
 
     from_i32_array(i32s)

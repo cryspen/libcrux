@@ -68,34 +68,29 @@ fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
     v
 }
 
-fn shift_right(mut v: SIMD128Vector, shift_amount: u8) -> SIMD128Vector {
+fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
     // Should find special cases of this
     // e.g when doing a right shift just to propagate signed bits, use vclezq_s32 instead
-    let shift_amount = unsafe { vdupq_n_s32(-(shift_amount as i32)) };
-
-    v.low = unsafe { vshlq_s32(v.low, shift_amount) };
-    v.high = unsafe { vshlq_s32(v.high, shift_amount) };
-
+    v.low = unsafe { vshrq_n_s32(v.low, SHIFT_BY) };
+    v.high = unsafe { vshrq_n_s32(v.high, SHIFT_BY) };
     v
 }
 
 fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
-    let shift_amount = unsafe { vdupq_n_s32(SHIFT_BY) };
-
-    lhs.low = unsafe { vshlq_s32(lhs.low, shift_amount) };
-    lhs.high = unsafe { vshlq_s32(lhs.high, shift_amount) };
-
+    lhs.low = unsafe { vshlq_n_s32(lhs.low, SHIFT_BY) };
+    lhs.high = unsafe { vshlq_n_s32(lhs.high, SHIFT_BY) };
     lhs
 }
 
-fn modulo_a_constant(v: SIMD128Vector, modulus: i32) -> SIMD128Vector {
-    let mut i32s = SIMD128Vector::to_i32_array(v);
-
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        i32s[i] = i32s[i] % modulus;
-    }
-
-    SIMD128Vector::from_i32_array(i32s)
+fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
+    let c = unsafe { vdupq_n_s32(3329) };
+    let m0 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.low,c)) };
+    let m1 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.high,c)) };
+    let rhs0 = unsafe { vandq_s32(m0,c) };
+    let rhs1 = unsafe { vandq_s32(m1,c) };
+    v.low = unsafe { vsubq_s32(v.low,rhs0) };
+    v.high = unsafe { vsubq_s32(v.high,rhs1) };
+    v
 }
 
 fn barrett_reduce(v: SIMD128Vector) -> SIMD128Vector {
@@ -260,16 +255,16 @@ impl Operations for SIMD128Vector {
         bitwise_and_with_constant(v, c)
     }
 
-    fn shift_right(v: Self, shift_amount: u8) -> Self {
-        shift_right(v, shift_amount)
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_right::<SHIFT_BY>(v)
     }
 
-    fn shift_left(v: Self, shift_amount: u8) -> Self {
-        shift_left(v, shift_amount)
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_left::<SHIFT_BY>(v)
     }
 
-    fn modulo_a_constant(v: Self, modulus: i32) -> Self {
-        modulo_a_constant(v, modulus)
+    fn cond_subtract_3329(v: Self) -> Self {
+        cond_subtract_3329(v)
     }
 
     fn barrett_reduce(v: Self) -> Self {

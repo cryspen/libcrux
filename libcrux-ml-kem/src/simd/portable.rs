@@ -77,11 +77,14 @@ fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
 
     lhs
 }
-fn modulo_a_constant(mut v: PortableVector, modulus: i32) -> PortableVector {
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = v.elements[i] % modulus;
-    }
 
+fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
+        if v.elements[i] >= 3329 {
+            v.elements[i] -= 3329
+        }
+    }
     v
 }
 
@@ -465,8 +468,8 @@ impl Operations for PortableVector {
         shift_left::<{ SHIFT_BY }>(v)
     }
 
-    fn modulo_a_constant(v: Self, modulus: i32) -> Self {
-        modulo_a_constant(v, modulus)
+    fn cond_subtract_3329(v: Self) -> Self {
+        cond_subtract_3329(v)
     }
 
     fn barrett_reduce(v: Self) -> Self {
