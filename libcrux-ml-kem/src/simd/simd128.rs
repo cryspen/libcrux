@@ -157,12 +157,7 @@ impl crate::simd::simd_trait::Operations for SIMD128Vector {
         Self::from_i32_array(portable::PortableVector::to_i32_array(output))
     }
 
-    fn ntt_multiply(
-        lhs: &Self,
-        rhs: &Self,
-        zeta0: i32,
-        zeta1: i32,
-    ) -> Self {
+    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32) -> Self {
         let input1 = portable::PortableVector::from_i32_array(Self::to_i32_array(*lhs));
         let input2 = portable::PortableVector::from_i32_array(Self::to_i32_array(*rhs));
 

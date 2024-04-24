@@ -25,8 +25,7 @@ pub(crate) fn from_i32_array(a: [i32; 256]) -> PolynomialRingElement {
     let mut result = PolynomialRingElement::ZERO();
     for i in 0..VECTORS_IN_RING_ELEMENT {
         result.coefficients[i] = simd::Vector::from_i32_array(
-            a[i * FIELD_ELEMENTS_IN_VECTOR
-                ..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
+            a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
                 .try_into()
                 .unwrap(),
         );

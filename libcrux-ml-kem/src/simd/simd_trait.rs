@@ -37,8 +37,7 @@ pub(crate) trait Operations {
     fn inv_ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self;
     fn inv_ntt_layer_2_step(a: Self, zeta: i32) -> Self;
 
-    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32)
-        -> Self;
+    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32) -> Self;
 
     // Serialization and deserialization
     fn serialize_1(a: Self) -> u8;
@@ -60,7 +59,6 @@ pub(crate) trait Operations {
     fn deserialize_12(a: &[u8]) -> Self;
 }
 
-
 pub(crate) trait GenericOperations {
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self;
     fn to_standard_domain(v: Self) -> Self;
@@ -69,7 +67,7 @@ pub(crate) trait GenericOperations {
     fn decompress(coefficient_bits: u8, v: Self) -> Self;
 }
 
-impl<T:Operations+Clone+Copy> GenericOperations for T { 
+impl<T: Operations + Clone + Copy> GenericOperations for T {
     // Default implementations
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self {
         let t = Self::multiply_by_constant(v, fer);

@@ -1,7 +1,7 @@
 use crate::{
     arithmetic::*,
     compress::{compress_ciphertext_coefficient, compress_message_coefficient},
-    simd::simd_trait::*
+    simd::simd_trait::*,
 };
 
 #[derive(Clone, Copy)]
@@ -10,233 +10,232 @@ pub(crate) struct PortableVector {
 }
 
 #[allow(non_snake_case)]
-    fn ZERO() -> PortableVector {
-        PortableVector {
-            elements: [0i32; FIELD_ELEMENTS_IN_VECTOR],
-        }
+fn ZERO() -> PortableVector {
+    PortableVector {
+        elements: [0i32; FIELD_ELEMENTS_IN_VECTOR],
+    }
+}
+
+fn to_i32_array(v: PortableVector) -> [i32; 8] {
+    v.elements
+}
+
+fn from_i32_array(array: [i32; 8]) -> PortableVector {
+    PortableVector { elements: array }
+}
+
+fn add_constant(mut v: PortableVector, c: i32) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] += c;
     }
 
-    fn to_i32_array(v: PortableVector) -> [i32; 8] {
-        v.elements
+    v
+}
+fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        lhs.elements[i] += rhs.elements[i];
     }
 
-    fn from_i32_array(array: [i32; 8]) -> PortableVector {
-        PortableVector { elements: array }
+    lhs
+}
+fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        lhs.elements[i] -= rhs.elements[i];
     }
 
-   fn add_constant(mut v: PortableVector, c: i32) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] += c;
-        }
+    lhs
+}
 
-        v
-    }
-    fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            lhs.elements[i] += rhs.elements[i];
-        }
-
-        lhs
-    }
-    fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            lhs.elements[i] -= rhs.elements[i];
-        }
-
-        lhs
+fn multiply_by_constant(mut v: PortableVector, c: i32) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] *= c;
     }
 
-    fn multiply_by_constant(mut v: PortableVector, c: i32) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] *= c;
-        }
+    v
+}
 
-        v
+fn bitwise_and_with_constant(mut v: PortableVector, c: i32) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] &= c;
     }
 
+    v
+}
 
-    fn bitwise_and_with_constant(mut v: PortableVector, c: i32) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] &= c;
-        }
-
-        v
+fn shift_right(mut v: PortableVector, shift_amount: u8) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] = v.elements[i] >> shift_amount;
     }
 
-    fn shift_right(mut v: PortableVector, shift_amount: u8) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] = v.elements[i] >> shift_amount;
-        }
+    v
+}
 
-        v
+fn shift_left(mut lhs: PortableVector, shift_amount: u8) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        lhs.elements[i] = lhs.elements[i] << shift_amount;
     }
 
-    fn shift_left(mut lhs: PortableVector, shift_amount: u8) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            lhs.elements[i] = lhs.elements[i] << shift_amount;
-        }
-
-        lhs
-    }
-   fn modulo_a_constant(mut v: PortableVector, modulus: i32) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] = v.elements[i] % modulus;
-        }
-
-        v
+    lhs
+}
+fn modulo_a_constant(mut v: PortableVector, modulus: i32) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] = v.elements[i] % modulus;
     }
 
-    fn barrett_reduce(mut v: PortableVector) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] = crate::arithmetic::barrett_reduce(v.elements[i]);
-        }
+    v
+}
 
-        v
+fn barrett_reduce(mut v: PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] = crate::arithmetic::barrett_reduce(v.elements[i]);
     }
 
-    fn montgomery_reduce(mut v: PortableVector) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] = crate::arithmetic::montgomery_reduce(v.elements[i]);
-        }
+    v
+}
 
-        v
-    }
-    fn compress_1(mut v: PortableVector) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] = compress_message_coefficient(v.elements[i] as u16) as i32;
-        }
-
-        v
+fn montgomery_reduce(mut v: PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] = crate::arithmetic::montgomery_reduce(v.elements[i]);
     }
 
-    fn compress(coefficient_bits: u8, mut v: PortableVector) -> PortableVector {
-        for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-            v.elements[i] =
-                compress_ciphertext_coefficient(coefficient_bits, v.elements[i] as u16) as i32;
-        }
-
-        v
-    }
-    fn ntt_layer_1_step(mut v: PortableVector, zeta1: i32, zeta2: i32) -> PortableVector {
-        let t = montgomery_multiply_fe_by_fer(v.elements[2], zeta1);
-        v.elements[2] = v.elements[0] - t;
-        v.elements[0] = v.elements[0] + t;
-
-        let t = montgomery_multiply_fe_by_fer(v.elements[3], zeta1);
-        v.elements[3] = v.elements[1] - t;
-        v.elements[1] = v.elements[1] + t;
-
-        let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta2);
-        v.elements[6] = v.elements[4] - t;
-        v.elements[4] = v.elements[4] + t;
-
-        let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta2);
-        v.elements[7] = v.elements[5] - t;
-        v.elements[5] = v.elements[5] + t;
-
-        v
+    v
+}
+fn compress_1(mut v: PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] = compress_message_coefficient(v.elements[i] as u16) as i32;
     }
 
-    fn ntt_layer_2_step(mut v: PortableVector, zeta: i32) -> PortableVector {
-        let t = montgomery_multiply_fe_by_fer(v.elements[4], zeta);
-        v.elements[4] = v.elements[0] - t;
-        v.elements[0] = v.elements[0] + t;
+    v
+}
 
-        let t = montgomery_multiply_fe_by_fer(v.elements[5], zeta);
-        v.elements[5] = v.elements[1] - t;
-        v.elements[1] = v.elements[1] + t;
-
-        let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta);
-        v.elements[6] = v.elements[2] - t;
-        v.elements[2] = v.elements[2] + t;
-
-        let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta);
-        v.elements[7] = v.elements[3] - t;
-        v.elements[3] = v.elements[3] + t;
-
-        v
+fn compress(coefficient_bits: u8, mut v: PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] =
+            compress_ciphertext_coefficient(coefficient_bits, v.elements[i] as u16) as i32;
     }
 
-    fn inv_ntt_layer_1_step(mut v: PortableVector, zeta1: i32, zeta2: i32) -> PortableVector {
-        let a_minus_b = v.elements[2] - v.elements[0];
-        v.elements[0] = v.elements[0] + v.elements[2];
-        v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    v
+}
+fn ntt_layer_1_step(mut v: PortableVector, zeta1: i32, zeta2: i32) -> PortableVector {
+    let t = montgomery_multiply_fe_by_fer(v.elements[2], zeta1);
+    v.elements[2] = v.elements[0] - t;
+    v.elements[0] = v.elements[0] + t;
 
-        let a_minus_b = v.elements[3] - v.elements[1];
-        v.elements[1] = v.elements[1] + v.elements[3];
-        v.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let t = montgomery_multiply_fe_by_fer(v.elements[3], zeta1);
+    v.elements[3] = v.elements[1] - t;
+    v.elements[1] = v.elements[1] + t;
 
-        let a_minus_b = v.elements[6] - v.elements[4];
-        v.elements[4] = v.elements[4] + v.elements[6];
-        v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+    let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta2);
+    v.elements[6] = v.elements[4] - t;
+    v.elements[4] = v.elements[4] + t;
 
-        let a_minus_b = v.elements[7] - v.elements[5];
-        v.elements[5] = v.elements[5] + v.elements[7];
-        v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta2);
+    v.elements[7] = v.elements[5] - t;
+    v.elements[5] = v.elements[5] + t;
 
-        v
-    }
+    v
+}
 
-    fn inv_ntt_layer_2_step(mut v: PortableVector, zeta: i32) -> PortableVector {
-        let a_minus_b = v.elements[4] - v.elements[0];
-        v.elements[0] = v.elements[0] + v.elements[4];
-        v.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+fn ntt_layer_2_step(mut v: PortableVector, zeta: i32) -> PortableVector {
+    let t = montgomery_multiply_fe_by_fer(v.elements[4], zeta);
+    v.elements[4] = v.elements[0] - t;
+    v.elements[0] = v.elements[0] + t;
 
-        let a_minus_b = v.elements[5] - v.elements[1];
-        v.elements[1] = v.elements[1] + v.elements[5];
-        v.elements[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let t = montgomery_multiply_fe_by_fer(v.elements[5], zeta);
+    v.elements[5] = v.elements[1] - t;
+    v.elements[1] = v.elements[1] + t;
 
-        let a_minus_b = v.elements[6] - v.elements[2];
-        v.elements[2] = v.elements[2] + v.elements[6];
-        v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta);
+    v.elements[6] = v.elements[2] - t;
+    v.elements[2] = v.elements[2] + t;
 
-        let a_minus_b = v.elements[7] - v.elements[3];
-        v.elements[3] = v.elements[3] + v.elements[7];
-        v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta);
+    v.elements[7] = v.elements[3] - t;
+    v.elements[3] = v.elements[3] + t;
 
-        v
-    }
+    v
+}
 
-    fn ntt_multiply(
-        lhs: &PortableVector,
-        rhs: &PortableVector,
-        zeta0: i32,
-        zeta1: i32,
-    ) -> PortableVector {
-        let mut out = PortableVector::ZERO();
-        let product = ntt_multiply_binomials(
-            (lhs.elements[0], lhs.elements[1]),
-            (rhs.elements[0], rhs.elements[1]),
-            zeta0,
-        );
-        out.elements[0] = product.0;
-        out.elements[1] = product.1;
+fn inv_ntt_layer_1_step(mut v: PortableVector, zeta1: i32, zeta2: i32) -> PortableVector {
+    let a_minus_b = v.elements[2] - v.elements[0];
+    v.elements[0] = v.elements[0] + v.elements[2];
+    v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-        let product = ntt_multiply_binomials(
-            (lhs.elements[2], lhs.elements[3]),
-            (rhs.elements[2], rhs.elements[3]),
-            -zeta0,
-        );
-        out.elements[2] = product.0;
-        out.elements[3] = product.1;
+    let a_minus_b = v.elements[3] - v.elements[1];
+    v.elements[1] = v.elements[1] + v.elements[3];
+    v.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-        let product = ntt_multiply_binomials(
-            (lhs.elements[4], lhs.elements[5]),
-            (rhs.elements[4], rhs.elements[5]),
-            zeta1,
-        );
-        out.elements[4] = product.0;
-        out.elements[5] = product.1;
+    let a_minus_b = v.elements[6] - v.elements[4];
+    v.elements[4] = v.elements[4] + v.elements[6];
+    v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
-        let product = ntt_multiply_binomials(
-            (lhs.elements[6], lhs.elements[7]),
-            (rhs.elements[6], rhs.elements[7]),
-            -zeta1,
-        );
-        out.elements[6] = product.0;
-        out.elements[7] = product.1;
-        out
-    }
+    let a_minus_b = v.elements[7] - v.elements[5];
+    v.elements[5] = v.elements[5] + v.elements[7];
+    v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+
+    v
+}
+
+fn inv_ntt_layer_2_step(mut v: PortableVector, zeta: i32) -> PortableVector {
+    let a_minus_b = v.elements[4] - v.elements[0];
+    v.elements[0] = v.elements[0] + v.elements[4];
+    v.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[5] - v.elements[1];
+    v.elements[1] = v.elements[1] + v.elements[5];
+    v.elements[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[6] - v.elements[2];
+    v.elements[2] = v.elements[2] + v.elements[6];
+    v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[7] - v.elements[3];
+    v.elements[3] = v.elements[3] + v.elements[7];
+    v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    v
+}
+
+fn ntt_multiply(
+    lhs: &PortableVector,
+    rhs: &PortableVector,
+    zeta0: i32,
+    zeta1: i32,
+) -> PortableVector {
+    let mut out = PortableVector::ZERO();
+    let product = ntt_multiply_binomials(
+        (lhs.elements[0], lhs.elements[1]),
+        (rhs.elements[0], rhs.elements[1]),
+        zeta0,
+    );
+    out.elements[0] = product.0;
+    out.elements[1] = product.1;
+
+    let product = ntt_multiply_binomials(
+        (lhs.elements[2], lhs.elements[3]),
+        (rhs.elements[2], rhs.elements[3]),
+        -zeta0,
+    );
+    out.elements[2] = product.0;
+    out.elements[3] = product.1;
+
+    let product = ntt_multiply_binomials(
+        (lhs.elements[4], lhs.elements[5]),
+        (rhs.elements[4], rhs.elements[5]),
+        zeta1,
+    );
+    out.elements[4] = product.0;
+    out.elements[5] = product.1;
+
+    let product = ntt_multiply_binomials(
+        (lhs.elements[6], lhs.elements[7]),
+        (rhs.elements[6], rhs.elements[7]),
+        -zeta1,
+    );
+    out.elements[6] = product.0;
+    out.elements[7] = product.1;
+    out
+}
 
 fn serialize_1(v: PortableVector) -> u8 {
     let mut result = 0u8;
@@ -287,11 +286,9 @@ fn serialize_5(v: PortableVector) -> [u8; 5] {
     let mut result = [0u8; 5];
 
     result[0] = ((v.elements[1] & 0x7) << 5 | v.elements[0]) as u8;
-    result[1] =
-        (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
+    result[1] = (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
     result[2] = (((v.elements[4] & 0xF) << 4) | (v.elements[3] >> 1)) as u8;
-    result[3] =
-        (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
+    result[3] = (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
     result[4] = ((v.elements[7] << 3) | (v.elements[6] >> 2)) as u8;
 
     result
@@ -368,9 +365,8 @@ fn deserialize_11(bytes: &[u8]) -> PortableVector {
         | ((bytes[2] as i32) >> 6)) as i32;
     result.elements[3] = ((bytes[5] as i32 & 0xF) << 7 | (bytes[4] as i32 >> 1)) as i32;
     result.elements[4] = ((bytes[6] as i32 & 0x7F) << 4 | (bytes[5] as i32 >> 4)) as i32;
-    result.elements[5] = ((bytes[8] as i32 & 0x3) << 9
-        | ((bytes[7] as i32) << 1)
-        | ((bytes[6] as i32) >> 7)) as i32;
+    result.elements[5] =
+        ((bytes[8] as i32 & 0x3) << 9 | ((bytes[7] as i32) << 1) | ((bytes[6] as i32) >> 7)) as i32;
     result.elements[6] = ((bytes[9] as i32 & 0x1F) << 6 | (bytes[8] as i32 >> 2)) as i32;
     result.elements[7] = (((bytes[10] as i32) << 3) | (bytes[9] as i32 >> 5)) as i32;
     result
@@ -427,7 +423,6 @@ fn deserialize_12(bytes: &[u8]) -> PortableVector {
 
     re
 }
-
 
 impl Operations for PortableVector {
     fn ZERO() -> Self {
@@ -506,8 +501,7 @@ impl Operations for PortableVector {
         inv_ntt_layer_2_step(a, zeta)
     }
 
-    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32)
-        -> Self {
+    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32) -> Self {
         ntt_multiply(lhs, rhs, zeta0, zeta1)
     }
 
@@ -559,4 +553,3 @@ impl Operations for PortableVector {
         deserialize_12(a)
     }
 }
-
