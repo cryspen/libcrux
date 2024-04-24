@@ -26,21 +26,6 @@ let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
   Libcrux_ml_kem.Simd.Simd_trait.v_FIELD_ELEMENTS_IN_VECTOR
 
-val ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector)
-    : Prims.Pure
-      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
-      ) Prims.l_True (fun _ -> Prims.l_True)
-
-val inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector) (zeta_r: i32)
-    : Prims.Pure
-      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
-      ) Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector) (zeta_r: i32)
-    : Prims.Pure
-      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
-      ) Prims.l_True (fun _ -> Prims.l_True)
-
 type t_PolynomialRingElement = {
   f_coefficients:t_Array Libcrux_ml_kem.Simd.Portable.t_PortableVector (sz 32)
 }
@@ -63,6 +48,11 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
 val from_i32_array (a: t_Array i32 (sz 256))
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
+val inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector) (zeta_r: i32)
+    : Prims.Pure
+      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
+      ) Prims.l_True (fun _ -> Prims.l_True)
+
 val invert_ntt_at_layer_1_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__layer: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -84,14 +74,24 @@ val ntt_at_layer_2_
       (v__layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
 
+val ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+    : Prims.Pure
+      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
+      ) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_7_ (re: t_PolynomialRingElement)
+    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector) (zeta_r: i32)
+    : Prims.Pure
+      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
+      ) Prims.l_True (fun _ -> Prims.l_True)
+
 val ntt_at_layer_3_plus
       (zeta_i: usize)
       (re: t_PolynomialRingElement)
       (layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_at_layer_7_ (re: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
 val ntt_multiply (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)

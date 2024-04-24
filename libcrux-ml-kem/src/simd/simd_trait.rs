@@ -3,43 +3,33 @@ use crate::constants::FIELD_MODULUS;
 
 pub(crate) const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
 
-pub(crate) trait ArrayOperations {
+pub(crate) trait Operations {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
     fn to_i32_array(v: Self) -> [i32; 8];
     fn from_i32_array(array: [i32; 8]) -> Self;
-}
 
-pub(crate) trait ArithmeticOperations {
     // Basic arithmetic
     fn add_constant(v: Self, c: i32) -> Self;
     fn add(lhs: Self, rhs: &Self) -> Self;
     fn sub(lhs: Self, rhs: &Self) -> Self;
     fn multiply_by_constant(v: Self, c: i32) -> Self;
-}
 
-pub(crate) trait BitwiseOperations {
     // Bitwise operations
     fn bitwise_and_with_constant(v: Self, c: i32) -> Self;
     fn shift_right(v: Self, shift_amount: u8) -> Self;
     fn shift_left(v: Self, shift_amount: u8) -> Self;
-}
 
-pub(crate) trait ModularOperations {
     // Modular operations
     fn modulo_a_constant(v: Self, modulus: i32) -> Self;
     fn barrett_reduce(v: Self) -> Self;
     fn montgomery_reduce(v: Self) -> Self;
-}
 
-pub(crate) trait CompressionOperations {
     // Compression
     fn compress_1(v: Self) -> Self;
     fn compress(coefficient_bits: u8, v: Self) -> Self;
-}
 
-pub(crate) trait NTTOperations {
     // NTT
     fn ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self;
     fn ntt_layer_2_step(a: Self, zeta: i32) -> Self;
@@ -49,9 +39,7 @@ pub(crate) trait NTTOperations {
 
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32)
         -> Self;
-}
 
-pub(crate) trait SerializeOperations {
     // Serialization and deserialization
     fn serialize_1(a: Self) -> u8;
     fn deserialize_1(a: u8) -> Self;
@@ -72,12 +60,6 @@ pub(crate) trait SerializeOperations {
     fn deserialize_12(a: &[u8]) -> Self;
 }
 
-pub(crate) trait Operations : ArrayOperations + ArithmeticOperations + ModularOperations + 
-                              BitwiseOperations + CompressionOperations + 
-                              NTTOperations + SerializeOperations + 
-                              Copy + Clone {
-
-}
 
 pub(crate) trait GenericOperations {
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self;
@@ -87,7 +69,7 @@ pub(crate) trait GenericOperations {
     fn decompress(coefficient_bits: u8, v: Self) -> Self;
 }
 
-impl<T:Operations> GenericOperations for T { 
+impl<T:Operations+Clone+Copy> GenericOperations for T { 
     // Default implementations
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self {
         let t = Self::multiply_by_constant(v, fer);
