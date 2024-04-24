@@ -234,7 +234,7 @@ fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(10).enumerate() {
             let coefficient = simd::Vector::deserialize_10(&bytes);
-            re.coefficients[i] = simd::Vector::decompress(10, coefficient);
+            re.coefficients[i] = simd::Vector::decompress::<10>(coefficient);
         }
     }
     re
@@ -249,7 +249,7 @@ fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(11).enumerate() {
             let coefficient = simd::Vector::deserialize_11(&bytes);
-            re.coefficients[i] = simd::Vector::decompress(11, coefficient);
+            re.coefficients[i] = simd::Vector::decompress::<11>(coefficient);
         }
     }
 
@@ -276,7 +276,7 @@ fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(4).enumerate() {
             let coefficient = simd::Vector::deserialize_4(&bytes);
-            re.coefficients[i] = simd::Vector::decompress(4, coefficient);
+            re.coefficients[i] = simd::Vector::decompress::<4>(coefficient);
         }
     }
     re
@@ -291,7 +291,7 @@ fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
     cloop! {
         for (i, bytes) in serialized.chunks_exact(5).enumerate() {
             re.coefficients[i] = simd::Vector::deserialize_5(&bytes);
-            re.coefficients[i] = simd::Vector::decompress(5, re.coefficients[i]);
+            re.coefficients[i] = simd::Vector::decompress::<5>(re.coefficients[i]);
         }
     }
     re

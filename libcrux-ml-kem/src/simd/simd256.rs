@@ -48,11 +48,15 @@ fn sub(mut lhs: SIMD256Vector, rhs: &SIMD256Vector) -> SIMD256Vector {
     lhs
 }
 
-fn multiply_by_constant(v: SIMD256Vector, c: i32) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::multiply_by_constant(input, c);
+fn multiply_by_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
+    let c = unsafe { _mm256_set_epi32(c, c, c, c, c, c, c, c) };
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    // In theory, we could get the wrong answer if the product occupies
+    // more than 32 bits, but so far in the Kyber code that doesn't seem
+    // to be the case.
+    v.elements = unsafe { _mm256_mullo_epi32(v.elements, c) };
+
+    v
 }
 
 fn bitwise_and_with_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
@@ -63,18 +67,17 @@ fn bitwise_and_with_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
     v
 }
 
-fn shift_right(v: SIMD256Vector, shift_by: u8) -> SIMD256Vector {
+fn shift_right<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
     let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::shift_right(input, shift_by);
+    let output = portable::PortableVector::shift_right::<{SHIFT_BY}>(input);
 
     from_i32_array(portable::PortableVector::to_i32_array(output))
 }
 
-fn shift_left(v: SIMD256Vector, shift_by: u8) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::shift_left(input, shift_by);
+fn shift_left<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
+    v.elements = unsafe { _mm256_slli_epi32(v.elements, SHIFT_BY) };
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    v
 }
 
 fn modulo_a_constant(v: SIMD256Vector, modulus: i32) -> SIMD256Vector {
@@ -249,12 +252,12 @@ impl Operations for SIMD256Vector {
         bitwise_and_with_constant(v, c)
     }
 
-    fn shift_right(v: Self, shift_amount: u8) -> Self {
-        shift_right(v, shift_amount)
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_right::<{SHIFT_BY}>(v)
     }
 
-    fn shift_left(v: Self, shift_amount: u8) -> Self {
-        shift_left(v, shift_amount)
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_left::<{SHIFT_BY}>(v)
     }
 
     fn modulo_a_constant(v: Self, modulus: i32) -> Self {

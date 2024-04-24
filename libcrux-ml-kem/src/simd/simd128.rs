@@ -79,8 +79,8 @@ fn shift_right(mut v: SIMD128Vector, shift_amount: u8) -> SIMD128Vector {
     v
 }
 
-fn shift_left(mut lhs: SIMD128Vector, shift_amount: u8) -> SIMD128Vector {
-    let shift_amount = unsafe { vdupq_n_s32(shift_amount as i32) };
+fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
+    let shift_amount = unsafe { vdupq_n_s32(SHIFT_BY) };
 
     lhs.low = unsafe { vshlq_s32(lhs.low, shift_amount) };
     lhs.high = unsafe { vshlq_s32(lhs.high, shift_amount) };

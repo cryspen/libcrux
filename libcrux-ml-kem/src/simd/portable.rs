@@ -62,17 +62,17 @@ fn bitwise_and_with_constant(mut v: PortableVector, c: i32) -> PortableVector {
     v
 }
 
-fn shift_right(mut v: PortableVector, shift_amount: u8) -> PortableVector {
+fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = v.elements[i] >> shift_amount;
+        v.elements[i] = v.elements[i] >> SHIFT_BY;
     }
 
     v
 }
 
-fn shift_left(mut lhs: PortableVector, shift_amount: u8) -> PortableVector {
+fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] = lhs.elements[i] << shift_amount;
+        lhs.elements[i] = lhs.elements[i] << SHIFT_BY;
     }
 
     lhs
@@ -457,12 +457,12 @@ impl Operations for PortableVector {
         bitwise_and_with_constant(v, c)
     }
 
-    fn shift_right(v: Self, shift_amount: u8) -> Self {
-        shift_right(v, shift_amount)
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_right::<{SHIFT_BY}>(v)
     }
 
-    fn shift_left(v: Self, shift_amount: u8) -> Self {
-        shift_left(v, shift_amount)
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_left::<{SHIFT_BY}>(v)
     }
 
     fn modulo_a_constant(v: Self, modulus: i32) -> Self {

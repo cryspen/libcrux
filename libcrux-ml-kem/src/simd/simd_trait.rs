@@ -18,8 +18,8 @@ pub(crate) trait Operations {
 
     // Bitwise operations
     fn bitwise_and_with_constant(v: Self, c: i32) -> Self;
-    fn shift_right(v: Self, shift_amount: u8) -> Self;
-    fn shift_left(v: Self, shift_amount: u8) -> Self;
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     fn modulo_a_constant(v: Self, modulus: i32) -> Self;
@@ -64,7 +64,7 @@ pub(crate) trait GenericOperations {
     fn to_standard_domain(v: Self) -> Self;
     fn to_unsigned_representative(a: Self) -> Self;
     fn decompress_1(v: Self) -> Self;
-    fn decompress(coefficient_bits: u8, v: Self) -> Self;
+    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 }
 
 impl<T: Operations + Clone + Copy> GenericOperations for T {
@@ -81,7 +81,7 @@ impl<T: Operations + Clone + Copy> GenericOperations for T {
     }
 
     fn to_unsigned_representative(a: Self) -> Self {
-        let t = Self::shift_right(a, 31);
+        let t = Self::shift_right::<31>(a);
         let fm = Self::bitwise_and_with_constant(t, FIELD_MODULUS);
 
         Self::add(a, &fm)
@@ -90,12 +90,14 @@ impl<T: Operations + Clone + Copy> GenericOperations for T {
     fn decompress_1(v: Self) -> Self {
         Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
     }
-    fn decompress(coefficient_bits: u8, v: Self) -> Self {
+    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         let mut decompressed = Self::multiply_by_constant(v, FIELD_MODULUS);
         decompressed =
-            Self::add_constant(Self::shift_left(decompressed, 1), 1i32 << coefficient_bits);
-        decompressed = Self::shift_right(decompressed, coefficient_bits + 1);
+            Self::add_constant(Self::shift_left::<1>(decompressed), 1i32 << COEFFICIENT_BITS);
 
-        decompressed
+        let decompressed_1 = Self::shift_right::<{COEFFICIENT_BITS}>(decompressed);
+        let decompressed_2 = Self::shift_right::<1>(decompressed_1);
+
+        decompressed_2
     }
 }
