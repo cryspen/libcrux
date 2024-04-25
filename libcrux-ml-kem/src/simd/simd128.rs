@@ -1,4 +1,4 @@
-use crate::simd::{portable, simd_trait::*};
+use crate::{constants::FIELD_MODULUS, simd::{portable, simd_trait::*}};
 use core::arch::aarch64::*;
 
 #[derive(Clone, Copy)]
@@ -111,12 +111,11 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     // let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     // let quotient = (t >> BARRETT_SHIFT) as i32;
     // let result = value - (quotient * FIELD_MODULUS);
-
     let adder = unsafe { vdupq_n_s64(33554432) };
     let low0 = unsafe { vmull_n_s32(vget_low_s32(v.low), BARRETT_MULTIPLIER) };
-    let low1 = unsafe { vmull_n_s32(vget_high_s32(v.low), BARRETT_MULTIPLIER) };
     let high0 = unsafe { vmull_n_s32(vget_low_s32(v.high), BARRETT_MULTIPLIER) };
-    let high1 = unsafe { vmull_n_s32(vget_high_s32(v.high), BARRETT_MULTIPLIER) };
+    let low1 = unsafe { vmull_high_n_s32(v.low, BARRETT_MULTIPLIER) };
+    let high1 = unsafe { vmull_high_n_s32(v.high, BARRETT_MULTIPLIER) };
     let low0 = unsafe { vshrq_n_s64(vaddq_s64(low0,adder),26) };
     let low1 = unsafe { vshrq_n_s64(vaddq_s64(low1,adder),26) };
     let high0 = unsafe { vshrq_n_s64(vaddq_s64(high0,adder),26) };
@@ -130,12 +129,34 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     v
 }
 
-#[inline(always)]
-fn montgomery_reduce(v: SIMD128Vector) -> SIMD128Vector {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(v));
-    let output = portable::PortableVector::montgomery_reduce(input);
+const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: i32 = 62209;
 
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+#[inline(always)]
+fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+    // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
+    //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
+    // let k_times_modulus = (k as i32) * FIELD_MODULUS;
+    // let c = k_times_modulus >> MONTGOMERY_SHIFT;
+    // let value_high = value >> MONTGOMERY_SHIFT;
+    //value_high - c
+
+    let m = unsafe { vdupq_n_s32(0x0000ffff) };
+    let t0 = unsafe{ vandq_s32(v.low,m) }; 
+    let t1 = unsafe{ vandq_s32(v.high,m) };
+    let t0 = unsafe{ vmulq_n_s32(t0,INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
+    let t1 = unsafe{ vmulq_n_s32(t1,INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
+    let t0 = unsafe{ vmovl_s16(vmovn_s32(t0)) };
+    let t1 = unsafe{ vmovl_s16(vmovn_s32(t1)) };
+    let t0 = unsafe{ vmulq_n_s32(t0, FIELD_MODULUS) };
+    let t1 = unsafe{ vmulq_n_s32(t1, FIELD_MODULUS) };
+    let c0 = unsafe{ vshrq_n_s32::<16>(t0) };
+    let c1 = unsafe{ vshrq_n_s32::<16>(t1) };
+    let v0 = unsafe{ vshrq_n_s32::<16>(v.low) };
+    let v1 = unsafe{ vshrq_n_s32::<16>(v.high) };
+    v.low = unsafe{ vsubq_s32(v0,c0) };
+    v.high = unsafe{ vsubq_s32(v1,c1) };
+    v
 }
 
 #[inline(always)]
