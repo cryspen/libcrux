@@ -24,12 +24,12 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-pub struct Drbg {
+pub struct Drag {
     state: drbg::Drbg,
     ctr: u32, // automatic reseed after 512 invocations. It has to happen at least every 1024 times.
 }
 
-impl Drbg {
+impl Drag {
     /// Create a new DRBG state with the given hash function.
     ///
     /// The DRBG state is initialized with 128 bit entropy from the OS.
@@ -169,7 +169,7 @@ impl Drbg {
 }
 
 /// Implementation of the [`RngCore`] trait for the [`Drbg`].
-impl RngCore for Drbg {
+impl RngCore for Drag {
     fn next_u32(&mut self) -> u32 {
         let mut bytes: [u8; 4] = [0; 4];
         self.generate(&mut bytes).unwrap();
@@ -193,4 +193,4 @@ impl RngCore for Drbg {
     }
 }
 
-impl CryptoRng for Drbg {}
+impl CryptoRng for Drag {}
