@@ -82,16 +82,19 @@ fn shift_left<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
     v
 }
 
-fn cond_subtract_3329(v: SIMD256Vector) -> SIMD256Vector {
-    let mut i32s = to_i32_array(v);
+fn cond_subtract_3329(mut v: SIMD256Vector) -> SIMD256Vector {
+    unsafe {
+        let field_modulus = _mm256_set1_epi32(FIELD_MODULUS);
 
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        if i32s[i] >= 3329 {
-            i32s[i] -= 3329;
-        }
+        v.elements = _mm256_sub_epi32(v.elements, field_modulus);
+
+        let mut mask = _mm256_srai_epi32(v.elements, 31);
+        mask = _mm256_and_si256(mask, field_modulus);
+
+        v.elements = _mm256_add_epi32(v.elements, mask);
     }
 
-    from_i32_array(i32s)
+    v
 }
 
 fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
@@ -169,11 +172,27 @@ fn ntt_multiply(lhs: &SIMD256Vector, rhs: &SIMD256Vector, zeta0: i32, zeta1: i32
     from_i32_array(portable::PortableVector::to_i32_array(output))
 }
 
-fn serialize_1(v: SIMD256Vector) -> u8 {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
+fn serialize_1(mut v: SIMD256Vector) -> u8 {
+    let mut shifted_bytes = [0i32; 8];
 
-    portable::PortableVector::serialize_1(input)
+    unsafe {
+        let shifts = _mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0);
+
+        v.elements = _mm256_sllv_epi32(v.elements, shifts);
+
+        _mm256_store_si256(shifted_bytes.as_mut_ptr() as *mut __m256i, v.elements);
+    }
+
+    (shifted_bytes[0]
+        | shifted_bytes[1]
+        | shifted_bytes[2]
+        | shifted_bytes[3]
+        | shifted_bytes[4]
+        | shifted_bytes[5]
+        | shifted_bytes[6]
+        | shifted_bytes[7]) as u8
 }
+
 fn deserialize_1(a: u8) -> SIMD256Vector {
     let output = portable::PortableVector::deserialize_1(a);
 
