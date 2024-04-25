@@ -1,4 +1,7 @@
-use crate::{constants::FIELD_MODULUS, simd::{portable, simd_trait::*}};
+use crate::{
+    constants::FIELD_MODULUS,
+    simd::{portable, simd_trait::*},
+};
 use core::arch::aarch64::*;
 
 #[derive(Clone, Copy)]
@@ -116,16 +119,16 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     let high0 = unsafe { vmull_n_s32(vget_low_s32(v.high), BARRETT_MULTIPLIER) };
     let low1 = unsafe { vmull_high_n_s32(v.low, BARRETT_MULTIPLIER) };
     let high1 = unsafe { vmull_high_n_s32(v.high, BARRETT_MULTIPLIER) };
-    let low0 = unsafe { vshrq_n_s64(vaddq_s64(low0,adder),26) };
-    let low1 = unsafe { vshrq_n_s64(vaddq_s64(low1,adder),26) };
-    let high0 = unsafe { vshrq_n_s64(vaddq_s64(high0,adder),26) };
-    let high1 = unsafe { vshrq_n_s64(vaddq_s64(high1,adder),26) };
-    let low = unsafe { vcombine_s32(vmovn_s64(low0),vmovn_s64(low1)) };
-    let high = unsafe { vcombine_s32(vmovn_s64(high0),vmovn_s64(high1)) };
-    let low = unsafe { vmulq_n_s32(low,3329) };
-    let high = unsafe { vmulq_n_s32(high,3329) };
-    v.low = unsafe { vsubq_s32(v.low,low) };
-    v.high = unsafe { vsubq_s32(v.high,high) };
+    let low0 = unsafe { vshrq_n_s64(vaddq_s64(low0, adder), 26) };
+    let low1 = unsafe { vshrq_n_s64(vaddq_s64(low1, adder), 26) };
+    let high0 = unsafe { vshrq_n_s64(vaddq_s64(high0, adder), 26) };
+    let high1 = unsafe { vshrq_n_s64(vaddq_s64(high1, adder), 26) };
+    let low = unsafe { vcombine_s32(vmovn_s64(low0), vmovn_s64(low1)) };
+    let high = unsafe { vcombine_s32(vmovn_s64(high0), vmovn_s64(high1)) };
+    let low = unsafe { vmulq_n_s32(low, 3329) };
+    let high = unsafe { vmulq_n_s32(high, 3329) };
+    v.low = unsafe { vsubq_s32(v.low, low) };
+    v.high = unsafe { vsubq_s32(v.high, high) };
     v
 }
 
@@ -142,20 +145,20 @@ fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     //value_high - c
 
     let m = unsafe { vdupq_n_s32(0x0000ffff) };
-    let t0 = unsafe{ vandq_s32(v.low,m) }; 
-    let t1 = unsafe{ vandq_s32(v.high,m) };
-    let t0 = unsafe{ vmulq_n_s32(t0,INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
-    let t1 = unsafe{ vmulq_n_s32(t1,INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
-    let t0 = unsafe{ vmovl_s16(vmovn_s32(t0)) };
-    let t1 = unsafe{ vmovl_s16(vmovn_s32(t1)) };
-    let t0 = unsafe{ vmulq_n_s32(t0, FIELD_MODULUS) };
-    let t1 = unsafe{ vmulq_n_s32(t1, FIELD_MODULUS) };
-    let c0 = unsafe{ vshrq_n_s32::<16>(t0) };
-    let c1 = unsafe{ vshrq_n_s32::<16>(t1) };
-    let v0 = unsafe{ vshrq_n_s32::<16>(v.low) };
-    let v1 = unsafe{ vshrq_n_s32::<16>(v.high) };
-    v.low = unsafe{ vsubq_s32(v0,c0) };
-    v.high = unsafe{ vsubq_s32(v1,c1) };
+    let t0 = unsafe { vandq_s32(v.low, m) };
+    let t1 = unsafe { vandq_s32(v.high, m) };
+    let t0 = unsafe { vmulq_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
+    let t1 = unsafe { vmulq_n_s32(t1, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
+    let t0 = unsafe { vmovl_s16(vmovn_s32(t0)) };
+    let t1 = unsafe { vmovl_s16(vmovn_s32(t1)) };
+    let t0 = unsafe { vmulq_n_s32(t0, FIELD_MODULUS) };
+    let t1 = unsafe { vmulq_n_s32(t1, FIELD_MODULUS) };
+    let c0 = unsafe { vshrq_n_s32::<16>(t0) };
+    let c1 = unsafe { vshrq_n_s32::<16>(t1) };
+    let v0 = unsafe { vshrq_n_s32::<16>(v.low) };
+    let v1 = unsafe { vshrq_n_s32::<16>(v.high) };
+    v.low = unsafe { vsubq_s32(v0, c0) };
+    v.high = unsafe { vsubq_s32(v1, c1) };
     v
 }
 
