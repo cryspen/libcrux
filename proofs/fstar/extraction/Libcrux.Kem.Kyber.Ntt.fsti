@@ -22,6 +22,22 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list 128 list
 
+/// Compute the product of two Kyber binomials with respect to the
+/// modulus `X² - zeta`.
+/// This function almost implements <strong>Algorithm 11</strong> of the
+/// NIST FIPS 203 standard, which is reproduced below:
+/// ```plaintext
+/// Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+/// Input: γ ∈ ℤq.
+/// Output: c₀, c₁ ∈ ℤq.
+/// c₀ ← a₀·b₀ + a₁·b₁·γ
+/// c₁ ← a₀·b₁ + a₁·b₀
+/// return c₀, c₁
+/// ```
+/// We say "almost" because the coefficients output by this function are in
+/// the Montgomery domain (unlike in the specification).
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val ntt_multiply_binomials: (i32 & i32) -> (i32 & i32) -> zeta: i32
   -> Prims.Pure (i32 & i32) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -33,11 +49,17 @@ val invert_ntt_at_layer
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
+/// of a `KyberPolynomialRingElement`. The coefficients of the output
+/// ring element are in the Montgomery domain.
 val invert_ntt_montgomery (v_K: usize) (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Represents an intermediate polynomial splitting step in the NTT. All
+/// resulting coefficients are in the normal domain since the zetas have been
+/// multiplied by MONTGOMERY_R.
 val ntt_at_layer
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
@@ -46,6 +68,7 @@ val ntt_at_layer
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// See [`ntt_at_layer`].
 val ntt_at_layer_3_
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
@@ -54,6 +77,7 @@ val ntt_at_layer_3_
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// See [`ntt_at_layer`].
 val ntt_at_layer_3328_
       (zeta_i: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
@@ -62,6 +86,11 @@ val ntt_at_layer_3328_
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
+/// of a `KyberPolynomialRingElement`.
+/// This function operates only on those which were produced by binomial
+/// sampling, and thus those which have small coefficients. The small
+/// coefficients let us skip the first round of Montgomery reductions.
 val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires
@@ -116,6 +145,26 @@ val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
                 <:
                 bool))
 
+/// Given two `KyberPolynomialRingElement`s in their NTT representations,
+/// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
+/// the `iᵗʰ` coefficient of the product `k\u{302}` is determined by the calculation:
+/// ```plaintext
+/// ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X² - ζ^(2·BitRev₇(i) + 1))
+/// ```
+/// This function almost implements <strong>Algorithm 10</strong> of the
+/// NIST FIPS 203 standard, which is reproduced below:
+/// ```plaintext
+/// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
+/// Output: An array ĥ ∈ ℤq.
+/// for(i ← 0; i < 128; i++)
+///     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1], ζ^(2·BitRev₇(i) + 1))
+/// end for
+/// return ĥ
+/// ```
+/// We say \"almost\" because the coefficients of the ring element output by
+/// this function are in the Montgomery domain.
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires
@@ -167,6 +216,10 @@ val ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
                 <:
                 bool))
 
+/// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
+/// of a `KyberPolynomialRingElement`.
+/// This function operates on the ring element that partly constitutes
+/// the ciphertext.
 val ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
