@@ -11,7 +11,7 @@ use util::*;
 fn comparisons_encrypt(c: &mut Criterion) {
     const PAYLOAD_SIZES: [usize; 1] = [1024 * 1024 * 10];
 
-    let mut drbg = drbg::Drag::new(digest::Algorithm::Sha256).unwrap();
+    let mut drbg = drbg::Drbg::new(digest::Algorithm::Sha256).unwrap();
     let mut group = c.benchmark_group("ChaCha20Poly1305 Encrypt");
 
     for payload_size in PAYLOAD_SIZES.iter() {
@@ -118,7 +118,7 @@ fn comparisons_encrypt(c: &mut Criterion) {
 fn comparisons_decrypt(c: &mut Criterion) {
     const PAYLOAD_SIZES: [usize; 1] = [1024 * 1024 * 10];
 
-    let mut drbg = drbg::Drag::new(digest::Algorithm::Sha256).unwrap();
+    let mut drbg = drbg::Drbg::new(digest::Algorithm::Sha256).unwrap();
     let mut group = c.benchmark_group("ChaCha20Poly1305 Decrypt");
 
     for payload_size in PAYLOAD_SIZES.iter() {

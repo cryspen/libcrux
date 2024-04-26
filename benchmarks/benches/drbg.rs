@@ -7,7 +7,7 @@ fn init(c: &mut Criterion) {
 
     group.bench_function("libcrux Sha256", |b| {
         b.iter(|| {
-            let _drbg = Drag::new(Algorithm::Sha256).unwrap();
+            let _drbg = Drbg::new(Algorithm::Sha256).unwrap();
         })
     });
 
@@ -42,7 +42,7 @@ fn generate(c: &mut Criterion) {
     group.bench_function("libcrux Sha256", |b| {
         b.iter_batched(
             || {
-                let drbg = Drag::new(Algorithm::Sha256).unwrap();
+                let drbg = Drbg::new(Algorithm::Sha256).unwrap();
                 drbg
             },
             |mut drbg| {

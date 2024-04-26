@@ -16,7 +16,7 @@ fn derive() {
     let _ = pretty_env_logger::try_init();
 
     #[cfg(not(target_arch = "wasm32"))]
-    let mut rng = drbg::Drag::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
     #[cfg(target_arch = "wasm32")]
     let mut rng = OsRng;
 
