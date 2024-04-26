@@ -48,8 +48,10 @@ use self::{
 };
 
 /// Seed size for key generation
-pub(crate) const KEY_GENERATION_SEED_SIZE: usize =
-    CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
+pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
+
+/// Seed size for encapsulation
+pub const ENCAPS_SEED_SIZE: usize = constants::SHARED_SECRET_SIZE;
 
 /// Serialize the secret key.
 #[inline(always)]
