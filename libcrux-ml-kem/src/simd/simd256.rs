@@ -208,8 +208,7 @@ fn serialize_1(v: SIMD256Vector) -> u8 {
         | (v_bytes[4] << 4)
         | (v_bytes[5] << 5)
         | (v_bytes[6] << 6)
-        | (v_bytes[7] << 7)
-    ) as u8
+        | (v_bytes[7] << 7)) as u8
 }
 
 #[inline(always)]
@@ -217,32 +216,72 @@ fn deserialize_1(a: u8) -> SIMD256Vector {
     let deserialized = unsafe {
         let a = a as i32;
 
-        _mm256_set_epi32((a >> 7) & 1,
-                         (a >> 6) & 1,
-                         (a >> 5) & 1,
-                         (a >> 4) & 1,
-                         (a >> 3) & 1,
-                         (a >> 2) & 1,
-                         (a >> 1) & 1,
-                         a & 1)
+        _mm256_set_epi32(
+            (a >> 7) & 1,
+            (a >> 6) & 1,
+            (a >> 5) & 1,
+            (a >> 4) & 1,
+            (a >> 3) & 1,
+            (a >> 2) & 1,
+            (a >> 1) & 1,
+            a & 1,
+        )
     };
 
     SIMD256Vector {
-        elements: deserialized
+        elements: deserialized,
     }
 }
 
 #[inline(always)]
-fn serialize_4(v: SIMD256Vector) -> [u8; 4] {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    portable::PortableVector::serialize_4(input)
+fn serialize_4(mut v: SIMD256Vector) -> [u8; 4] {
+    let mut out = [0u8; 4];
+
+    unsafe {
+        let shifts = _mm256_set_epi32(0, 4, 0, 4, 0, 4, 0, 4);
+        let shuffle_to = _mm256_set_epi8(
+            31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 12, 8, 4, 0, 15, 14, 13, 12, 11, 10, 9,
+            8, 7, 6, 5, 4, 12, 8, 4, 0,
+        );
+
+        v.elements = _mm256_sllv_epi32(v.elements, shifts);
+        v.elements = _mm256_shuffle_epi8(v.elements, shuffle_to);
+        v.elements = _mm256_srli_epi16(v.elements, 4);
+
+        out[0] = _mm256_extract_epi16(v.elements, 0) as u8;
+        out[1] = _mm256_extract_epi16(v.elements, 1) as u8;
+        out[2] = _mm256_extract_epi16(v.elements, 8) as u8;
+        out[3] = _mm256_extract_epi16(v.elements, 9) as u8;
+    }
+
+    out
 }
 
 #[inline(always)]
 fn deserialize_4(v: &[u8]) -> SIMD256Vector {
-    let output = portable::PortableVector::deserialize_4(v);
+    let deserialized = unsafe {
+        let mut deserialized = _mm256_set_epi32(
+            v[3] as i32,
+            v[3] as i32,
+            v[2] as i32,
+            v[2] as i32,
+            v[1] as i32,
+            v[1] as i32,
+            v[0] as i32,
+            v[0] as i32,
+        );
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        let shifts = _mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0);
+        let last_4_bits_mask = _mm256_set1_epi32(0xF);
+        deserialized = _mm256_srlv_epi32(deserialized, shifts);
+        deserialized = _mm256_and_si256(deserialized, last_4_bits_mask);
+
+        deserialized
+    };
+
+    SIMD256Vector {
+        elements: deserialized,
+    }
 }
 
 #[inline(always)]
