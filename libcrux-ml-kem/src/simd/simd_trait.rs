@@ -28,7 +28,7 @@ pub(crate) trait Operations {
 
     // Compression
     fn compress_1(v: Self) -> Self;
-    fn compress(coefficient_bits: u8, v: Self) -> Self;
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
     fn ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self;
@@ -59,6 +59,7 @@ pub(crate) trait Operations {
     fn deserialize_12(a: &[u8]) -> Self;
 }
 
+// hax does not support trait with default implementations, so we use the following patter
 pub(crate) trait GenericOperations {
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self;
     fn to_standard_domain(v: Self) -> Self;
@@ -68,15 +69,12 @@ pub(crate) trait GenericOperations {
 }
 
 impl<T: Operations + Clone + Copy> GenericOperations for T {
-    // Default implementations
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self {
         let t = Self::multiply_by_constant(v, fer);
-
         Self::montgomery_reduce(t)
     }
     fn to_standard_domain(v: Self) -> Self {
         let t = Self::multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
-
         Self::montgomery_reduce(t)
     }
 

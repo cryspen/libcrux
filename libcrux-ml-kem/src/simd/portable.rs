@@ -129,12 +129,11 @@ fn compress_1(mut v: PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-fn compress(coefficient_bits: u8, mut v: PortableVector) -> PortableVector {
+fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] =
-            compress_ciphertext_coefficient(coefficient_bits, v.elements[i] as u16) as i32;
+            compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, v.elements[i] as u16) as i32;
     }
-
     v
 }
 
@@ -526,8 +525,8 @@ impl Operations for PortableVector {
         compress_1(v)
     }
 
-    fn compress(coefficient_bits: u8, v: Self) -> Self {
-        compress(coefficient_bits, v)
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
+        compress::<COEFFICIENT_BITS>(v)
     }
 
     fn ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self {

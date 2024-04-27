@@ -114,10 +114,9 @@ pub(super) fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, co
 fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient = simd::Vector::compress(
-            10,
-            simd::Vector::to_unsigned_representative(re.coefficients[i]),
-        );
+        let coefficient = simd::Vector::compress::<10>(simd::Vector::to_unsigned_representative(
+            re.coefficients[i],
+        ));
         let bytes = simd::Vector::serialize_10(coefficient);
         serialized[10 * i] = bytes[0];
         serialized[10 * i + 1] = bytes[1];
@@ -137,10 +136,9 @@ fn compress_then_serialize_10<const OUT_LEN: usize>(re: PolynomialRingElement) -
 fn compress_then_serialize_11<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient = simd::Vector::compress(
-            11,
-            simd::Vector::to_unsigned_representative(re.coefficients[i]),
-        );
+        let coefficient = simd::Vector::compress::<11>(simd::Vector::to_unsigned_representative(
+            re.coefficients[i],
+        ));
         let bytes = simd::Vector::serialize_11(coefficient);
         serialized[11 * i] = bytes[0];
         serialized[11 * i + 1] = bytes[1];
@@ -177,10 +175,9 @@ pub(super) fn compress_then_serialize_ring_element_u<
 fn compress_then_serialize_4<const OUT_LEN: usize>(re: PolynomialRingElement) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient = simd::Vector::compress(
-            4,
-            simd::Vector::to_unsigned_representative(re.coefficients[i]),
-        );
+        let coefficient = simd::Vector::compress::<4>(simd::Vector::to_unsigned_representative(
+            re.coefficients[i],
+        ));
         let bytes = simd::Vector::serialize_4(coefficient);
         serialized[4 * i] = bytes[0];
         serialized[4 * i + 1] = bytes[1];
@@ -195,10 +192,9 @@ fn compress_then_serialize_5<const OUT_LEN: usize>(re: PolynomialRingElement) ->
     let mut serialized = [0u8; OUT_LEN];
 
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficients = simd::Vector::compress(
-            5,
-            simd::Vector::to_unsigned_representative(re.coefficients[i]),
-        );
+        let coefficients = simd::Vector::compress::<5>(simd::Vector::to_unsigned_representative(
+            re.coefficients[i],
+        ));
         let bytes5 = simd::Vector::serialize_5(coefficients);
         serialized[5 * i] = bytes5[0];
         serialized[5 * i + 1] = bytes5[1];
