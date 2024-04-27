@@ -194,32 +194,42 @@ fn ntt_multiply(lhs: &SIMD256Vector, rhs: &SIMD256Vector, zeta0: i32, zeta1: i32
 }
 
 #[inline(always)]
-fn serialize_1(mut v: SIMD256Vector) -> u8 {
-    let mut shifted_bytes = [0i32; 8];
+fn serialize_1(v: SIMD256Vector) -> u8 {
+    let mut v_bytes = [0i32; 8];
 
     unsafe {
-        let shifts = _mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0);
-
-        v.elements = _mm256_sllv_epi32(v.elements, shifts);
-
-        _mm256_store_si256(shifted_bytes.as_mut_ptr() as *mut __m256i, v.elements);
+        _mm256_store_si256(v_bytes.as_mut_ptr() as *mut __m256i, v.elements);
     }
 
-    (shifted_bytes[0]
-        | shifted_bytes[1]
-        | shifted_bytes[2]
-        | shifted_bytes[3]
-        | shifted_bytes[4]
-        | shifted_bytes[5]
-        | shifted_bytes[6]
-        | shifted_bytes[7]) as u8
+    (v_bytes[0]
+        | (v_bytes[1] << 1)
+        | (v_bytes[2] << 2)
+        | (v_bytes[3] << 3)
+        | (v_bytes[4] << 4)
+        | (v_bytes[5] << 5)
+        | (v_bytes[6] << 6)
+        | (v_bytes[7] << 7)
+    ) as u8
 }
 
 #[inline(always)]
 fn deserialize_1(a: u8) -> SIMD256Vector {
-    let output = portable::PortableVector::deserialize_1(a);
+    let deserialized = unsafe {
+        let a = a as i32;
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        _mm256_set_epi32((a >> 7) & 1,
+                         (a >> 6) & 1,
+                         (a >> 5) & 1,
+                         (a >> 4) & 1,
+                         (a >> 3) & 1,
+                         (a >> 2) & 1,
+                         (a >> 1) & 1,
+                         a & 1)
+    };
+
+    SIMD256Vector {
+        elements: deserialized
+    }
 }
 
 #[inline(always)]
