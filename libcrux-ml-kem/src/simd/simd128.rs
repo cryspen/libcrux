@@ -40,10 +40,8 @@ fn from_i32_array(array: [i32; 8]) -> SIMD128Vector {
 #[inline(always)]
 fn add_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
     let c = unsafe { vdupq_n_s32(c) };
-
     v.low = unsafe { vaddq_s32(v.low, c) };
     v.high = unsafe { vaddq_s32(v.high, c) };
-
     v
 }
 
@@ -65,17 +63,14 @@ fn sub(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
 fn multiply_by_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
     v.low = unsafe { vmulq_n_s32(v.low, c) };
     v.high = unsafe { vmulq_n_s32(v.high, c) };
-
     v
 }
 
 #[inline(always)]
 fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
     let c = unsafe { vdupq_n_s32(c) };
-
     v.low = unsafe { vandq_s32(v.low, c) };
     v.high = unsafe { vandq_s32(v.high, c) };
-
     v
 }
 
@@ -143,7 +138,6 @@ fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     // let c = k_times_modulus >> MONTGOMERY_SHIFT;
     // let value_high = value >> MONTGOMERY_SHIFT;
     //value_high - c
-
     let m = unsafe { vdupq_n_s32(0x0000ffff) };
     let t0 = unsafe { vandq_s32(v.low, m) };
     let t1 = unsafe { vandq_s32(v.high, m) };
@@ -163,11 +157,26 @@ fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
 }
 
 #[inline(always)]
-fn compress_1(v: SIMD128Vector) -> SIMD128Vector {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(v));
-    let output = portable::PortableVector::compress_1(input);
+fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
+    // let shifted: i16 = 1664 - (fe as i16);
+    // let mask = shifted >> 15;
+    // let shifted_to_positive = mask ^ shifted;
+    // let shifted_positive_in_range = shifted_to_positive - 832;
+    // ((shifted_positive_in_range >> 15) & 1) as u8
 
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let half = unsafe { vdupq_n_s32(1664) };
+    let quarter = unsafe { vdupq_n_s32(832) };
+    let shifted0 = unsafe{ vsubq_s32(half,v.low) }; 
+    let shifted1 = unsafe{ vsubq_s32(half,v.high) }; 
+    let mask0 = unsafe{ vshrq_n_s32::<31>(shifted0) };
+    let mask1 = unsafe{ vshrq_n_s32::<31>(shifted1) };
+    let shifted_to_positive0 = unsafe{ veorq_s32(mask0,shifted0) };
+    let shifted_to_positive1 = unsafe{ veorq_s32(mask1,shifted1) };
+    let shifted_positive_in_range0 = unsafe{ vsubq_s32(shifted_to_positive0,quarter) };
+    let shifted_positive_in_range1 = unsafe{ vsubq_s32(shifted_to_positive1,quarter) };
+    v.low = unsafe{ vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(shifted_positive_in_range0))) };
+    v.high = unsafe{ vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(shifted_positive_in_range1))) };
+    v
 }
 
 #[inline(always)]

@@ -83,23 +83,21 @@ impl<T: Operations + Clone + Copy> GenericOperations for T {
     fn to_unsigned_representative(a: Self) -> Self {
         let t = Self::shift_right::<31>(a);
         let fm = Self::bitwise_and_with_constant(t, FIELD_MODULUS);
-
         Self::add(a, &fm)
     }
 
     fn decompress_1(v: Self) -> Self {
         Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
     }
+
     fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         let mut decompressed = Self::multiply_by_constant(v, FIELD_MODULUS);
         decompressed = Self::add_constant(
             Self::shift_left::<1>(decompressed),
             1i32 << COEFFICIENT_BITS,
         );
-
         let decompressed_1 = Self::shift_right::<{ COEFFICIENT_BITS }>(decompressed);
         let decompressed_2 = Self::shift_right::<1>(decompressed_1);
-
         decompressed_2
     }
 }

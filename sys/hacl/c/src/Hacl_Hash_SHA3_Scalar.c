@@ -25,7 +25,7 @@
 
 #include "internal/Hacl_Hash_SHA3_Scalar.h"
 
-const
+static const
 uint32_t
 Hacl_Impl_SHA3_Vec_keccak_rotc[24U] =
   {
@@ -33,7 +33,7 @@ Hacl_Impl_SHA3_Vec_keccak_rotc[24U] =
     39U, 61U, 20U, 44U
   };
 
-const
+static const
 uint32_t
 Hacl_Impl_SHA3_Vec_keccak_piln[24U] =
   {
@@ -41,7 +41,7 @@ Hacl_Impl_SHA3_Vec_keccak_piln[24U] =
     22U, 9U, 6U, 1U
   };
 
-const
+static const
 uint64_t
 Hacl_Impl_SHA3_Vec_keccak_rndc[24U] =
   {

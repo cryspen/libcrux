@@ -36,7 +36,7 @@ lib25519 = { path = "../sys/lib25519" }
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion = "0.5"
 # libcrux-pqclean = { version = "0.0.2-pre.1", path = "sys/pqclean" }
-pqcrypto-kyber = { version = "0.8.0", default-features = false }
+pqcrypto-kyber = { version = "0.8.0" }
 
 # Benchmarking "OpenSSL"
 # XXX: We don't do this for Windows or wasm right now.

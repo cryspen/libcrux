@@ -37,11 +37,11 @@ extern "C" {
 
 #include "../Hacl_Hash_SHA3_Scalar.h"
 
-extern const uint32_t Hacl_Impl_SHA3_Vec_keccak_rotc[24U];
+//extern const uint32_t Hacl_Impl_SHA3_Vec_keccak_rotc[24U];
 
-extern const uint32_t Hacl_Impl_SHA3_Vec_keccak_piln[24U];
+//extern const uint32_t Hacl_Impl_SHA3_Vec_keccak_piln[24U];
 
-extern const uint64_t Hacl_Impl_SHA3_Vec_keccak_rndc[24U];
+//extern const uint64_t Hacl_Impl_SHA3_Vec_keccak_rndc[24U];
 
 #if defined(__cplusplus)
 }
