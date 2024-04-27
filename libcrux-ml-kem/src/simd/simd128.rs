@@ -347,12 +347,34 @@ fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta: i32) -> SIMD128Vector {
 
 #[inline(always)]
 fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i32, zeta1: i32) -> SIMD128Vector {
-    let input1 = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(*lhs));
-    let input2 = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(*rhs));
+    // montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
+    // montgomery_reduce(a0 * b1 + a1 * b0)
 
-    let output = portable::PortableVector::ntt_multiply(&input1, &input2, zeta0, zeta1);
+    let a0 = unsafe { vtrn1q_s32(lhs.low, lhs.high) }; // a0, a4, a2, a6
+    let a1 = unsafe { vtrn2q_s32(lhs.low, lhs.high) }; // a1, a5, a3, a7
+    let b0 = unsafe { vtrn1q_s32(rhs.low, rhs.high) }; // b0, b4, b2, b6
+    let b1 = unsafe { vtrn2q_s32(rhs.low, rhs.high) }; // b1, b5, b3, b7
 
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let zetas: [i32; 4] = [zeta0, zeta1, -zeta0, -zeta1];
+    let zeta = unsafe { vld1q_s32(zetas.as_ptr() as *const i32) };
+
+    let a0b0 = unsafe { vmulq_s32(a0, b0) };
+    let a1b1 = unsafe { vmulq_s32(a1, b1) };
+
+    let a1b1 = montgomery_reduce_i32x4_t(a1b1);
+    let a1b1_zeta = unsafe { vmulq_s32(a1b1, zeta) };
+    let fst = unsafe { vaddq_s32(a0b0, a1b1_zeta) };
+    let fst = montgomery_reduce_i32x4_t(fst);
+
+    let a0b1 = unsafe { vmulq_s32(a0, b1) };
+    let a1b0 = unsafe { vmulq_s32(a1, b0) };
+    let snd = unsafe { vaddq_s32(a0b1, a1b0) };
+    let snd = montgomery_reduce_i32x4_t(snd);
+
+    SIMD128Vector {
+        low: unsafe { vtrn1q_s32(fst, snd) },
+        high: unsafe { vtrn2q_s32(fst, snd) },
+    }
 }
 
 #[inline(always)]
