@@ -1,43 +1,34 @@
 //use crate::hax_utils::hax_debug_assert;
-use super::arithmetic::*;
-use super::intvec::*;
+use crate::arithmetic::*;
+use crate::simd::{self, simd_trait::*};
 
-pub(crate) const VECS_IN_RING_ELEMENT: usize =
-    super::constants::COEFFICIENTS_IN_RING_ELEMENT / SIZE_VEC;
+pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
+    super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
 #[derive(Clone, Copy)]
 pub struct PolynomialRingElement {
-    pub(crate) coefficients: [IntVec; VECS_IN_RING_ELEMENT],
+    pub(crate) coefficients: [simd::Vector; VECTORS_IN_RING_ELEMENT],
 }
 
 impl PolynomialRingElement {
+    #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
             // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
-            coefficients: [intvec::ZERO_VEC(); 32],
+            coefficients: [simd::Vector::ZERO(); 32],
         }
     }
-}
-
-#[inline(always)]
-pub(crate) fn to_i32_array(a: PolynomialRingElement) -> [i32; 256] {
-    let mut result = [0i32; 256];
-    for i in 0..VECS_IN_RING_ELEMENT {
-        let result_i = int_vec_to_i32_array(a.coefficients[i]);
-        // XXX: this should be `copy_from_slice`
-        for j in 0..SIZE_VEC {
-            result[i * SIZE_VEC + j] = result_i[j];
-        }
-    }
-    result
 }
 
 #[inline(always)]
 pub(crate) fn from_i32_array(a: [i32; 256]) -> PolynomialRingElement {
     let mut result = PolynomialRingElement::ZERO();
-    for i in 0..VECS_IN_RING_ELEMENT {
-        result.coefficients[i] =
-            int_vec_from_i32_array(a[i * SIZE_VEC..(i + 1) * SIZE_VEC].try_into().unwrap());
+    for i in 0..VECTORS_IN_RING_ELEMENT {
+        result.coefficients[i] = simd::Vector::from_i32_array(
+            a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
+                .try_into()
+                .unwrap(),
+        );
     }
     result
 }
@@ -49,17 +40,16 @@ pub(crate) fn add_to_ring_element<const K: usize>(
     mut lhs: PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    for i in 0..VECS_IN_RING_ELEMENT {
-        lhs.coefficients[i] = add_int_vec(lhs.coefficients[i], &rhs.coefficients[i]);
+    for i in 0..lhs.coefficients.len() {
+        lhs.coefficients[i] = simd::Vector::add(lhs.coefficients[i], &rhs.coefficients[i]);
     }
     lhs
 }
 
 #[inline(always)]
 pub(crate) fn poly_barrett_reduce(mut a: PolynomialRingElement) -> PolynomialRingElement {
-    // XXX: Use `map` when extraction is happy with that.
-    for i in 0..VECS_IN_RING_ELEMENT {
-        a.coefficients[i] = barrett_reduce_int_vec(a.coefficients[i]);
+    for i in 0..VECTORS_IN_RING_ELEMENT {
+        a.coefficients[i] = simd::Vector::barrett_reduce(a.coefficients[i]);
     }
     a
 }
@@ -69,11 +59,14 @@ pub(crate) fn subtract_reduce(
     a: &PolynomialRingElement,
     mut b: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    for i in 0..VECS_IN_RING_ELEMENT {
-        let coefficient_normal_form =
-            montgomery_reduce_int_vec(mul_int_vec_constant(b.coefficients[i], 1441));
-        b.coefficients[i] =
-            barrett_reduce_int_vec(sub_int_vec(a.coefficients[i], &coefficient_normal_form));
+    for i in 0..VECTORS_IN_RING_ELEMENT {
+        let coefficient_normal_form = simd::Vector::montgomery_reduce(
+            simd::Vector::multiply_by_constant(b.coefficients[i], 1441),
+        );
+        b.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::sub(
+            a.coefficients[i],
+            &coefficient_normal_form,
+        ));
     }
     b
 }
@@ -84,12 +77,13 @@ pub(crate) fn add_message_error_reduce(
     message: &PolynomialRingElement,
     mut result: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    for i in 0..VECS_IN_RING_ELEMENT {
-        let coefficient_normal_form =
-            montgomery_reduce_int_vec(mul_int_vec_constant(result.coefficients[i], 1441));
-        result.coefficients[i] = barrett_reduce_int_vec(add_int_vec(
+    for i in 0..VECTORS_IN_RING_ELEMENT {
+        let coefficient_normal_form = simd::Vector::montgomery_reduce(
+            simd::Vector::multiply_by_constant(result.coefficients[i], 1441),
+        );
+        result.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::add(
             coefficient_normal_form,
-            &add_int_vec(err.coefficients[i], &message.coefficients[i]),
+            &simd::Vector::add(err.coefficients[i], &message.coefficients[i]),
         ));
     }
     result
@@ -100,12 +94,15 @@ pub(crate) fn add_error_reduce(
     err: &PolynomialRingElement,
     mut result: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    for j in 0..VECS_IN_RING_ELEMENT {
-        let coefficient_normal_form =
-            montgomery_reduce_int_vec(mul_int_vec_constant(result.coefficients[j], 1441));
+    for j in 0..VECTORS_IN_RING_ELEMENT {
+        let coefficient_normal_form = simd::Vector::montgomery_reduce(
+            simd::Vector::multiply_by_constant(result.coefficients[j], 1441),
+        );
 
-        result.coefficients[j] =
-            barrett_reduce_int_vec(add_int_vec(coefficient_normal_form, &err.coefficients[j]));
+        result.coefficients[j] = simd::Vector::barrett_reduce(simd::Vector::add(
+            coefficient_normal_form,
+            &err.coefficients[j],
+        ));
     }
     result
 }
@@ -115,13 +112,15 @@ pub(crate) fn add_standard_error_reduce(
     err: &PolynomialRingElement,
     mut result: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    for j in 0..VECS_IN_RING_ELEMENT {
+    for j in 0..VECTORS_IN_RING_ELEMENT {
         // The coefficients are of the form aR^{-1} mod q, which means
         // calling to_montgomery_domain() on them should return a mod q.
-        let coefficient_normal_form = to_standard_domain_int_vec(result.coefficients[j]);
+        let coefficient_normal_form = simd::Vector::to_standard_domain(result.coefficients[j]);
 
-        result.coefficients[j] =
-            barrett_reduce_int_vec(add_int_vec(coefficient_normal_form, &err.coefficients[j]));
+        result.coefficients[j] = simd::Vector::barrett_reduce(simd::Vector::add(
+            coefficient_normal_form,
+            &err.coefficients[j],
+        ));
     }
     result
 }
@@ -149,7 +148,7 @@ pub(crate) fn ntt_at_layer_1(
 ) -> PolynomialRingElement {
     *zeta_i += 1;
     for round in 0..32 {
-        re.coefficients[round] = ntt_layer_1_int_vec_step(
+        re.coefficients[round] = simd::Vector::ntt_layer_1_step(
             re.coefficients[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
@@ -169,21 +168,23 @@ pub(crate) fn ntt_at_layer_2(
 ) -> PolynomialRingElement {
     for round in 0..32 {
         *zeta_i += 1;
-        re.coefficients[round] =
-            ntt_layer_2_int_vec_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+        re.coefficients[round] = simd::Vector::ntt_layer_2_step(
+            re.coefficients[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+        );
     }
     re
 }
 
 #[inline(always)]
 pub(crate) fn ntt_layer_int_vec_step(
-    mut a: IntVec,
-    mut b: IntVec,
+    mut a: simd::Vector,
+    mut b: simd::Vector,
     zeta_r: i32,
-) -> (IntVec, IntVec) {
-    let t = montgomery_multiply_fe_by_fer_int_vec(b, zeta_r);
-    b = sub_int_vec(a, &t);
-    a = add_int_vec(a, &t);
+) -> (simd::Vector, simd::Vector) {
+    let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
+    b = simd::Vector::sub(a, &t);
+    a = simd::Vector::add(a, &t);
     (a, b)
 }
 
@@ -201,8 +202,8 @@ pub(crate) fn ntt_at_layer_3_plus(
         *zeta_i += 1;
 
         let offset = round * step * 2;
-        let offset_vec = offset / SIZE_VEC;
-        let step_vec = step / SIZE_VEC;
+        let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
+        let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
             let (x, y) = ntt_layer_int_vec_step(
@@ -218,16 +219,19 @@ pub(crate) fn ntt_at_layer_3_plus(
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_7_int_vec_step(mut a: IntVec, mut b: IntVec) -> (IntVec, IntVec) {
-    let t = mul_int_vec_constant(b, -1600);
-    b = sub_int_vec(a, &t);
-    a = add_int_vec(a, &t);
+pub(crate) fn ntt_layer_7_int_vec_step(
+    mut a: simd::Vector,
+    mut b: simd::Vector,
+) -> (simd::Vector, simd::Vector) {
+    let t = simd::Vector::multiply_by_constant(b, -1600);
+    b = simd::Vector::sub(a, &t);
+    a = simd::Vector::add(a, &t);
     (a, b)
 }
 
 #[inline(always)]
 pub(crate) fn ntt_at_layer_7(mut re: PolynomialRingElement) -> PolynomialRingElement {
-    let step = VECS_IN_RING_ELEMENT / 2;
+    let step = VECTORS_IN_RING_ELEMENT / 2;
     for j in 0..step {
         let (x, y) = ntt_layer_7_int_vec_step(re.coefficients[j], re.coefficients[j + step]);
         re.coefficients[j] = x;
@@ -244,7 +248,7 @@ pub(crate) fn invert_ntt_at_layer_1(
 ) -> PolynomialRingElement {
     *zeta_i -= 1;
     for round in 0..32 {
-        re.coefficients[round] = inv_ntt_layer_1_int_vec_step(
+        re.coefficients[round] = simd::Vector::inv_ntt_layer_1_step(
             re.coefficients[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
@@ -263,21 +267,23 @@ pub(crate) fn invert_ntt_at_layer_2(
 ) -> PolynomialRingElement {
     for round in 0..32 {
         *zeta_i -= 1;
-        re.coefficients[round] =
-            inv_ntt_layer_2_int_vec_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+        re.coefficients[round] = simd::Vector::inv_ntt_layer_2_step(
+            re.coefficients[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+        );
     }
     re
 }
 
 #[inline(always)]
 pub(crate) fn inv_ntt_layer_int_vec_step(
-    mut a: IntVec,
-    mut b: IntVec,
+    mut a: simd::Vector,
+    mut b: simd::Vector,
     zeta_r: i32,
-) -> (IntVec, IntVec) {
-    let a_minus_b = sub_int_vec(b, &a);
-    a = add_int_vec(a, &b);
-    b = montgomery_multiply_fe_by_fer_int_vec(a_minus_b, zeta_r);
+) -> (simd::Vector, simd::Vector) {
+    let a_minus_b = simd::Vector::sub(b, &a);
+    a = simd::Vector::add(a, &b);
+    b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     (a, b)
 }
 
@@ -293,8 +299,8 @@ pub(crate) fn invert_ntt_at_layer_3_plus(
         *zeta_i -= 1;
 
         let offset = round * step * 2;
-        let offset_vec = offset / SIZE_VEC;
-        let step_vec = step / SIZE_VEC;
+        let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
+        let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
             let (x, y) = inv_ntt_layer_int_vec_step(
@@ -359,8 +365,8 @@ pub(crate) fn ntt_multiply(
 
     let mut out = PolynomialRingElement::ZERO();
 
-    for i in 0..VECS_IN_RING_ELEMENT {
-        out.coefficients[i] = ntt_multiply_int_vec(
+    for i in 0..VECTORS_IN_RING_ELEMENT {
+        out.coefficients[i] = simd::Vector::ntt_multiply(
             &lhs.coefficients[i],
             &rhs.coefficients[i],
             ZETAS_TIMES_MONTGOMERY_R[64 + 2 * i],

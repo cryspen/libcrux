@@ -1,4 +1,4 @@
-use super::constants::SHARED_SECRET_SIZE;
+use crate::constants::SHARED_SECRET_SIZE;
 use crate::hax_utils::hax_debug_assert;
 
 // Examine the output that LLVM produces for this code from time to time to ensure

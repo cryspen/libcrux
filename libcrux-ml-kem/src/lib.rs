@@ -12,21 +12,17 @@ pub(crate) mod constants;
 /// Helpers for verification and extraction
 mod helper;
 
-#[cfg(all(target_arch = "aarch64"))]
-mod intvec128;
-
 mod arithmetic;
 mod compress;
 mod constant_time_ops;
 mod hash_functions;
 mod ind_cpa;
-mod intvec;
-mod intvec32;
 mod matrix;
 mod ntt;
 mod polynomial;
 mod sampling;
 mod serialize;
+mod simd;
 mod types;
 
 // Variants
@@ -52,8 +48,10 @@ use self::{
 };
 
 /// Seed size for key generation
-pub(crate) const KEY_GENERATION_SEED_SIZE: usize =
-    CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
+pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
+
+/// Seed size for encapsulation
+pub const ENCAPS_SEED_SIZE: usize = constants::SHARED_SECRET_SIZE;
 
 /// Serialize the secret key.
 #[inline(always)]

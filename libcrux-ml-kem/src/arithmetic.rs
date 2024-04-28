@@ -1,4 +1,4 @@
-use super::constants::FIELD_MODULUS;
+use crate::constants::FIELD_MODULUS;
 use crate::hax_utils::hax_debug_assert;
 
 /// Values having this type hold a representative 'x' of the Kyber field.

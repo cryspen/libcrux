@@ -21,7 +21,10 @@ macro_rules! impl_consistency {
             let randomness = random_array();
             let (ciphertext, shared_secret) = $encaps(key_pair.public_key(), randomness);
             let shared_secret_decapsulated = $decaps(key_pair.private_key(), &ciphertext);
-            assert_eq!(shared_secret, shared_secret_decapsulated);
+            assert_eq!(
+                shared_secret, shared_secret_decapsulated,
+                "lhs: shared_secret, rhs: shared_secret_decapsulated"
+            );
 
             // If the randomness was not enough for the rejection sampling step
             // in key-generation and encapsulation, simply return without

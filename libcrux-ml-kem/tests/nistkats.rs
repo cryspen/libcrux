@@ -45,19 +45,19 @@ macro_rules! impl_nist_known_answer_tests {
                 let public_key_hash = sha256(key_pair.pk());
                 let secret_key_hash = sha256(key_pair.sk());
 
-                assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key, "public keys don't match");
-                assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key, "secret keys don't match");
+                assert_eq!(public_key_hash, kat.sha3_256_hash_of_public_key, "lhs: computed public key hash, rhs: hash from kat");
+                assert_eq!(secret_key_hash, kat.sha3_256_hash_of_secret_key, "lhs: computed secret key hash, rhs: hash from kat");
 
                 let (ciphertext, shared_secret) =
                     $encapsulate_derand(key_pair.public_key(), kat.encapsulation_seed);
                 let ciphertext_hash = sha256(ciphertext.as_ref());
 
-                assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "ciphertexts don't match");
-                assert_eq!(shared_secret.as_ref(), kat.shared_secret, "shared secret produced by encapsulate does not match");
+                assert_eq!(ciphertext_hash, kat.sha3_256_hash_of_ciphertext, "lhs: computed ciphertext hash, rhs: hash from akt");
+                assert_eq!(shared_secret.as_ref(), kat.shared_secret, "lhs: computed shared secret from encapsulate, rhs: shared secret from kat");
 
                 let shared_secret_from_decapsulate =
                     $decapsulate_derand(key_pair.private_key(), &ciphertext);
-                assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref(), "shared secret produced by decapsulate doesn't match the one produced by encapsulate");
+                assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref(), "lhs: shared secret computed via decapsulation, rhs: shared secret computed via encapsulation");
             }
         }
     };

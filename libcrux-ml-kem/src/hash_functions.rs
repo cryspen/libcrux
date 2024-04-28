@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use super::constants::H_DIGEST_SIZE;
+use crate::constants::H_DIGEST_SIZE;
 use libcrux_sha3::{x4::Shake128StateX4, *};
 
 pub(crate) fn G(input: &[u8]) -> [u8; digest_size(Algorithm::Sha3_512)] {

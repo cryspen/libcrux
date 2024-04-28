@@ -3,6 +3,7 @@ module Libcrux.Kem.Kyber.Matrix
 open Core
 open FStar.Mul
 
+/// Compute Â ◦ ŝ + ê
 val compute_As_plus_e
       (v_K: usize)
       (matrix_A: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K)
@@ -11,6 +12,10 @@ val compute_As_plus_e
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// The following functions compute various expressions involving
+/// vectors and matrices. The computation of these expressions has been
+/// abstracted away into these functions in order to save on loop iterations.
+/// Compute v − InverseNTT(sᵀ ◦ NTT(u))
 val compute_message
       (v_K: usize)
       (v: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
@@ -19,6 +24,7 @@ val compute_message
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 val compute_ring_element_v
       (v_K: usize)
       (tt_as_ntt r_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
@@ -27,6 +33,7 @@ val compute_ring_element_v
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Compute u := InvertNTT(Aᵀ ◦ r̂) + e₁
 val compute_vector_u
       (v_K: usize)
       (a_as_ntt: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K)

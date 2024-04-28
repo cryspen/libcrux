@@ -11,7 +11,7 @@ let compress_then_serialize_10_
   let serialized:t_Array u8 v_OUT_LEN =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -21,16 +21,18 @@ let compress_then_serialize_10_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.compress_int_vec 10uy
-              (Libcrux_ml_kem.Intvec.to_unsigned_representative_int_vec (re
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 10l
+              (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Intvec32.t_IntVec)
+                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
           in
-          let bytes:t_Array u8 (sz 10) = Libcrux_ml_kem.Intvec.serialize_10_int_vec coefficient in
+          let bytes:t_Array u8 (sz 10) =
+            Libcrux_ml_kem.Simd.Simd_trait.f_serialize_10_ coefficient
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 10 *! i <: usize)
@@ -93,7 +95,7 @@ let compress_then_serialize_11_
   let serialized:t_Array u8 v_OUT_LEN =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -103,16 +105,18 @@ let compress_then_serialize_11_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.compress_int_vec 11uy
-              (Libcrux_ml_kem.Intvec.to_unsigned_representative_int_vec (re
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 11l
+              (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Intvec32.t_IntVec)
+                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
           in
-          let bytes:t_Array u8 (sz 11) = Libcrux_ml_kem.Intvec.serialize_11_int_vec coefficient in
+          let bytes:t_Array u8 (sz 11) =
+            Libcrux_ml_kem.Simd.Simd_trait.f_serialize_11_ coefficient
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 11 *! i <: usize)
@@ -180,7 +184,7 @@ let compress_then_serialize_4_
   let serialized:t_Array u8 v_OUT_LEN =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -190,16 +194,16 @@ let compress_then_serialize_4_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.compress_int_vec 4uy
-              (Libcrux_ml_kem.Intvec.to_unsigned_representative_int_vec (re
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 4l
+              (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Intvec32.t_IntVec)
+                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
           in
-          let bytes:t_Array u8 (sz 4) = Libcrux_ml_kem.Intvec.serialize_4_int_vec coefficient in
+          let bytes:t_Array u8 (sz 4) = Libcrux_ml_kem.Simd.Simd_trait.f_serialize_4_ coefficient in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 4 *! i <: usize)
@@ -232,7 +236,7 @@ let compress_then_serialize_5_
   let serialized:t_Array u8 v_OUT_LEN =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -242,16 +246,18 @@ let compress_then_serialize_5_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficients:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.compress_int_vec 5uy
-              (Libcrux_ml_kem.Intvec.to_unsigned_representative_int_vec (re
+          let coefficients:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 5l
+              (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Intvec32.t_IntVec)
+                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
           in
-          let bytes5:t_Array u8 (sz 5) = Libcrux_ml_kem.Intvec.serialize_5_int_vec coefficients in
+          let bytes5:t_Array u8 (sz 5) =
+            Libcrux_ml_kem.Simd.Simd_trait.f_serialize_5_ coefficients
+          in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 5 *! i <: usize)
@@ -296,19 +302,19 @@ let compress_then_serialize_message (re: Libcrux_ml_kem.Polynomial.t_PolynomialR
       (fun serialized i ->
           let serialized:t_Array u8 (sz 32) = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.to_unsigned_representative_int_vec (re
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                   .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
           in
-          let coefficient_compressed:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.compress_1_int_vec coefficient
+          let coefficient_compressed:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress_1_ coefficient
           in
           let serialized:t_Array u8 (sz 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               i
-              (Libcrux_ml_kem.Intvec.serialize_1_int_vec coefficient_compressed <: u8)
+              (Libcrux_ml_kem.Simd.Simd_trait.f_serialize_1_ coefficient_compressed <: u8)
           in
           serialized)
   in
@@ -342,7 +348,7 @@ let compress_then_serialize_ring_element_v
 
 let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -355,8 +361,8 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.deserialize_10_int_vec bytes
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_10_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
             {
@@ -366,9 +372,9 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.decompress_int_vec 10uy coefficient
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 10l coefficient
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -379,7 +385,7 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
 
 let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -392,8 +398,8 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.deserialize_11_int_vec bytes
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_11_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
             {
@@ -403,9 +409,9 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.decompress_int_vec 11uy coefficient
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 11l coefficient
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -416,7 +422,7 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
 
 let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -429,8 +435,8 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.deserialize_4_int_vec bytes
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_4_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
             {
@@ -440,9 +446,9 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.decompress_int_vec 4uy coefficient
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 4l coefficient
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -453,7 +459,7 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
 
 let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -474,9 +480,9 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.deserialize_5_int_vec bytes
+                (Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_5_ bytes
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -489,12 +495,12 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.decompress_int_vec 5uy
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 5l
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                       <:
-                      Libcrux_ml_kem.Intvec32.t_IntVec)
+                      Libcrux_ml_kem.Simd.Portable.t_PortableVector)
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -505,7 +511,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
 
 let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
@@ -520,8 +526,8 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
       (fun re i ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i:usize = i in
-          let coefficient_compressed:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.deserialize_1_int_vec (serialized.[ i ] <: u8)
+          let coefficient_compressed:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_1_ (serialized.[ i ] <: u8)
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
             {
@@ -531,9 +537,9 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.decompress_1_int_vec coefficient_compressed
+                (Libcrux_ml_kem.Simd.Simd_trait.f_decompress_1_ coefficient_compressed
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -570,7 +576,7 @@ let deserialize_then_decompress_ring_element_v
 
 let deserialize_to_reduced_ring_element (serialized: t_Slice u8) =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -583,8 +589,8 @@ let deserialize_to_reduced_ring_element (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.deserialize_12_int_vec bytes
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_12_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
             {
@@ -594,9 +600,9 @@ let deserialize_to_reduced_ring_element (serialized: t_Slice u8) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Intvec.modulus_int_vec_constant_var_time coefficient 3329l
+                (Libcrux_ml_kem.Simd.Simd_trait.f_cond_subtract_3329_ coefficient
                   <:
-                  Libcrux_ml_kem.Intvec32.t_IntVec)
+                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -607,7 +613,10 @@ let deserialize_to_reduced_ring_element (serialized: t_Slice u8) =
 
 let deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8) =
   let deserialized_pk:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      v_K
   in
   let deserialized_pk:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -637,7 +646,7 @@ let deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key
 
 let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
-    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO
+    Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -657,11 +666,11 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                 .Libcrux_ml_kem.Polynomial.f_coefficients
               i
-              (Libcrux_ml_kem.Intvec.deserialize_12_int_vec bytes
+              (Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_12_ bytes
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
             <:
-            t_Array Libcrux_ml_kem.Intvec32.t_IntVec (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Portable.t_PortableVector (sz 32)
           }
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
@@ -673,7 +682,7 @@ let serialize_uncompressed_ring_element (re: Libcrux_ml_kem.Polynomial.t_Polynom
   let serialized:t_Array u8 (sz 384) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECS_IN_RING_ELEMENT
+              Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -683,13 +692,15 @@ let serialize_uncompressed_ring_element (re: Libcrux_ml_kem.Polynomial.t_Polynom
       (fun serialized i ->
           let serialized:t_Array u8 (sz 384) = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Intvec32.t_IntVec =
-            Libcrux_ml_kem.Intvec.to_unsigned_representative_int_vec (re
+          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+            Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                   .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                 <:
-                Libcrux_ml_kem.Intvec32.t_IntVec)
+                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
           in
-          let bytes:t_Array u8 (sz 12) = Libcrux_ml_kem.Intvec.serialize_12_int_vec coefficient in
+          let bytes:t_Array u8 (sz 12) =
+            Libcrux_ml_kem.Simd.Simd_trait.f_serialize_12_ coefficient
+          in
           let serialized:t_Array u8 (sz 384) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
               (sz 12 *! i <: usize)

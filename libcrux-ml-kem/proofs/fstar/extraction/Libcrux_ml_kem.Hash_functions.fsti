@@ -7,6 +7,8 @@ let v_BLOCK_SIZE: usize = sz 168
 
 let v_THREE_BLOCKS: usize = v_BLOCK_SIZE *! sz 3
 
+/// Free the memory of the state.
+/// **NOTE:** That this needs to be done manually for now.
 val free_state (xof_state: Libcrux_sha3.X4.t_Shake128StateX4)
     : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
 

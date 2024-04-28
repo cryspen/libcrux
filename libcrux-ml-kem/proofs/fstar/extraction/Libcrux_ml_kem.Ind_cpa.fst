@@ -43,7 +43,10 @@ let sample_ring_element_cbd
       (domain_separator: u8)
      =
   let error_1_:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      v_K
   in
   let domain_separator, error_1_, prf_input:(u8 &
     t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K &
@@ -99,7 +102,10 @@ let sample_vector_cbd_then_ntt
       (domain_separator: u8)
      =
   let re_as_ntt:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      v_K
   in
   let domain_separator, prf_input, re_as_ntt:(u8 & t_Array u8 (sz 33) &
     t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K) =
@@ -206,7 +212,10 @@ let deserialize_then_decompress_u
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
      =
   let u_as_ntt:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      v_K
   in
   let u_as_ntt:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -332,7 +341,10 @@ let encrypt
 
 let deserialize_secret_key (v_K: usize) (secret_key: t_Slice u8) =
   let secret_as_ntt:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Rust_primitives.Hax.repeat Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO v_K
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__PolynomialRingElement__ZERO ()
+        <:
+        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      v_K
   in
   let secret_as_ntt:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
