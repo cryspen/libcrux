@@ -219,6 +219,7 @@ let impl_17 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_MlKemPublicKey v_SIZE) (
         Core.Result.t_Result (t_MlKemPublicKey v_SIZE) Core.Array.t_TryFromSliceError
   }
 
+/// An ML-KEM key pair
 type t_MlKemKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {
   f_sk:t_MlKemPrivateKey v_PRIVATE_KEY_SIZE;
   f_pk:t_MlKemPublicKey v_PUBLIC_KEY_SIZE
@@ -232,6 +233,7 @@ val impl__from
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Creates a new [`MlKemKeyPair`].
 val impl__new
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (sk: t_Array u8 v_PRIVATE_KEY_SIZE)

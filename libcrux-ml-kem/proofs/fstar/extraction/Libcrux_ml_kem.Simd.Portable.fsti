@@ -19,7 +19,7 @@ val barrett_reduce (v: t_PortableVector)
 val bitwise_and_with_constant (v: t_PortableVector) (c: i32)
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
-val compress (coefficient_bits: u8) (v: t_PortableVector)
+val compress (v_COEFFICIENT_BITS: i32) (v: t_PortableVector)
     : Prims.Pure t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_1_ (v: t_PortableVector)
@@ -101,7 +101,9 @@ val ntt_multiply (lhs rhs: t_PortableVector) (zeta0 zeta1: i32)
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Simd.Simd_trait.t_Operations t_PortableVector =
   {
-    f_ZERO = v_ZERO ();
+    f_ZERO_pre = (fun (_: Prims.unit) -> true);
+    f_ZERO_post = (fun (_: Prims.unit) (out: t_PortableVector) -> true);
+    f_ZERO = (fun (_: Prims.unit) -> v_ZERO ());
     f_to_i32_array_pre = (fun (v: t_PortableVector) -> true);
     f_to_i32_array_post = (fun (v: t_PortableVector) (out: t_Array i32 (sz 8)) -> true);
     f_to_i32_array = (fun (v: t_PortableVector) -> to_i32_array v);
@@ -155,11 +157,13 @@ let impl: Libcrux_ml_kem.Simd.Simd_trait.t_Operations t_PortableVector =
     f_compress_1_pre = (fun (v: t_PortableVector) -> true);
     f_compress_1_post = (fun (v: t_PortableVector) (out: t_PortableVector) -> true);
     f_compress_1_ = (fun (v: t_PortableVector) -> compress_1_ v);
-    f_compress_pre = (fun (coefficient_bits: u8) (v: t_PortableVector) -> true);
+    f_compress_pre = (fun (v_COEFFICIENT_BITS: i32) (v: t_PortableVector) -> true);
     f_compress_post
     =
-    (fun (coefficient_bits: u8) (v: t_PortableVector) (out: t_PortableVector) -> true);
-    f_compress = (fun (coefficient_bits: u8) (v: t_PortableVector) -> compress coefficient_bits v);
+    (fun (v_COEFFICIENT_BITS: i32) (v: t_PortableVector) (out: t_PortableVector) -> true);
+    f_compress
+    =
+    (fun (v_COEFFICIENT_BITS: i32) (v: t_PortableVector) -> compress v_COEFFICIENT_BITS v);
     f_ntt_layer_1_step_pre = (fun (a: t_PortableVector) (zeta1: i32) (zeta2: i32) -> true);
     f_ntt_layer_1_step_post
     =

@@ -22,7 +22,7 @@ let compress_then_serialize_10_
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
           let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
-            Libcrux_ml_kem.Simd.Simd_trait.f_compress 10uy
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 10l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
@@ -106,7 +106,7 @@ let compress_then_serialize_11_
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
           let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
-            Libcrux_ml_kem.Simd.Simd_trait.f_compress 11uy
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 11l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
@@ -195,7 +195,7 @@ let compress_then_serialize_4_
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
           let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
-            Libcrux_ml_kem.Simd.Simd_trait.f_compress 4uy
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 4l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
@@ -247,7 +247,7 @@ let compress_then_serialize_5_
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
           let coefficients:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
-            Libcrux_ml_kem.Simd.Simd_trait.f_compress 5uy
+            Libcrux_ml_kem.Simd.Simd_trait.f_compress 5l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:

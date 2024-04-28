@@ -122,7 +122,7 @@ let bitwise_and_with_constant (v: t_PortableVector) (c: i32) =
   in
   v
 
-let compress (coefficient_bits: u8) (v: t_PortableVector) =
+let compress (v_COEFFICIENT_BITS: i32) (v: t_PortableVector) =
   let v:t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
@@ -142,7 +142,11 @@ let compress (coefficient_bits: u8) (v: t_PortableVector) =
             =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v.f_elements
               i
-              (Libcrux_ml_kem.Compress.compress_ciphertext_coefficient coefficient_bits
+              (Libcrux_ml_kem.Compress.compress_ciphertext_coefficient (cast (v_COEFFICIENT_BITS
+                        <:
+                        i32)
+                    <:
+                    u8)
                   (cast (v.f_elements.[ i ] <: i32) <: u16)
                 <:
                 i32)

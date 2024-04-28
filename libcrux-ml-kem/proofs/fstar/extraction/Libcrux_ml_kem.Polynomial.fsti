@@ -42,6 +42,8 @@ val add_message_error_reduce (err message result: t_PolynomialRingElement)
 val add_standard_error_reduce (err result: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
+/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+/// sum of their constituent coefficients.
 val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
@@ -62,6 +64,9 @@ val invert_ntt_at_layer_2_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__lay
 val invert_ntt_at_layer_3_plus (zeta_i: usize) (re: t_PolynomialRingElement) (layer: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Represents an intermediate polynomial splitting step in the NTT. All
+/// resulting coefficients are in the normal domain since the zetas have been
+/// multiplied by MONTGOMERY_R.
 val ntt_at_layer_1_
       (zeta_i: usize)
       (re: t_PolynomialRingElement)
@@ -93,6 +98,26 @@ val ntt_at_layer_3_plus
       (layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Given two `KyberPolynomialRingElement`s in their NTT representations,
+/// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
+/// the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
+/// ```plaintext
+/// ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X² - ζ^(2·BitRev₇(i) + 1))
+/// ```
+/// This function almost implements <strong>Algorithm 10</strong> of the
+/// NIST FIPS 203 standard, which is reproduced below:
+/// ```plaintext
+/// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
+/// Output: An array ĥ ∈ ℤq.
+/// for(i ← 0; i < 128; i++)
+///     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1], ζ^(2·BitRev₇(i) + 1))
+/// end for
+/// return ĥ
+/// ```
+/// We say "almost" because the coefficients of the ring element output by
+/// this function are in the Montgomery domain.
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val ntt_multiply (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 

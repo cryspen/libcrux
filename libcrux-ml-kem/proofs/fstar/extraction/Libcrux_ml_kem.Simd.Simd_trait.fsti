@@ -25,7 +25,7 @@ class t_GenericOperations (v_Self: Type) = {
   f_decompress_1_pre:v_Self -> bool;
   f_decompress_1_post:v_Self -> v_Self -> bool;
   f_decompress_1_:x0: v_Self
-    -> Prims.Pure v_Self (f_decompress_1__pre x0) (fun result -> f_decompress_1__post x0 result);
+    -> Prims.Pure v_Self (f_decompress_1_pre x0) (fun result -> f_decompress_1_post x0 result);
   f_decompress_pre:v_COEFFICIENT_BITS: i32 -> v_Self -> bool;
   f_decompress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> bool;
   f_decompress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
@@ -88,8 +88,8 @@ class t_Operations (v_Self: Type) = {
   f_cond_subtract_3329_post:v_Self -> v_Self -> bool;
   f_cond_subtract_3329_:x0: v_Self
     -> Prims.Pure v_Self
-        (f_cond_subtract_3329__pre x0)
-        (fun result -> f_cond_subtract_3329__post x0 result);
+        (f_cond_subtract_3329_pre x0)
+        (fun result -> f_cond_subtract_3329_post x0 result);
   f_barrett_reduce_pre:v_Self -> bool;
   f_barrett_reduce_post:v_Self -> v_Self -> bool;
   f_barrett_reduce:x0: v_Self
@@ -103,11 +103,13 @@ class t_Operations (v_Self: Type) = {
   f_compress_1_pre:v_Self -> bool;
   f_compress_1_post:v_Self -> v_Self -> bool;
   f_compress_1_:x0: v_Self
-    -> Prims.Pure v_Self (f_compress_1__pre x0) (fun result -> f_compress_1__post x0 result);
-  f_compress_pre:u8 -> v_Self -> bool;
-  f_compress_post:u8 -> v_Self -> v_Self -> bool;
-  f_compress:x0: u8 -> x1: v_Self
-    -> Prims.Pure v_Self (f_compress_pre x0 x1) (fun result -> f_compress_post x0 x1 result);
+    -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
+  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v_Self -> bool;
+  f_compress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> bool;
+  f_compress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
+    -> Prims.Pure v_Self
+        (f_compress_pre v_COEFFICIENT_BITS x0)
+        (fun result -> f_compress_post v_COEFFICIENT_BITS x0 result);
   f_ntt_layer_1_step_pre:v_Self -> i32 -> i32 -> bool;
   f_ntt_layer_1_step_post:v_Self -> i32 -> i32 -> v_Self -> bool;
   f_ntt_layer_1_step:x0: v_Self -> x1: i32 -> x2: i32
@@ -141,61 +143,61 @@ class t_Operations (v_Self: Type) = {
   f_serialize_1_pre:v_Self -> bool;
   f_serialize_1_post:v_Self -> u8 -> bool;
   f_serialize_1_:x0: v_Self
-    -> Prims.Pure u8 (f_serialize_1__pre x0) (fun result -> f_serialize_1__post x0 result);
+    -> Prims.Pure u8 (f_serialize_1_pre x0) (fun result -> f_serialize_1_post x0 result);
   f_deserialize_1_pre:u8 -> bool;
   f_deserialize_1_post:u8 -> v_Self -> bool;
   f_deserialize_1_:x0: u8
-    -> Prims.Pure v_Self (f_deserialize_1__pre x0) (fun result -> f_deserialize_1__post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_1_pre x0) (fun result -> f_deserialize_1_post x0 result);
   f_serialize_4_pre:v_Self -> bool;
   f_serialize_4_post:v_Self -> t_Array u8 (sz 4) -> bool;
   f_serialize_4_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 4))
-        (f_serialize_4__pre x0)
-        (fun result -> f_serialize_4__post x0 result);
+        (f_serialize_4_pre x0)
+        (fun result -> f_serialize_4_post x0 result);
   f_deserialize_4_pre:t_Slice u8 -> bool;
   f_deserialize_4_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_4_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_4__pre x0) (fun result -> f_deserialize_4__post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_4_pre x0) (fun result -> f_deserialize_4_post x0 result);
   f_serialize_5_pre:v_Self -> bool;
   f_serialize_5_post:v_Self -> t_Array u8 (sz 5) -> bool;
   f_serialize_5_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 5))
-        (f_serialize_5__pre x0)
-        (fun result -> f_serialize_5__post x0 result);
+        (f_serialize_5_pre x0)
+        (fun result -> f_serialize_5_post x0 result);
   f_deserialize_5_pre:t_Slice u8 -> bool;
   f_deserialize_5_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_5_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_5__pre x0) (fun result -> f_deserialize_5__post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_5_pre x0) (fun result -> f_deserialize_5_post x0 result);
   f_serialize_10_pre:v_Self -> bool;
   f_serialize_10_post:v_Self -> t_Array u8 (sz 10) -> bool;
   f_serialize_10_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 10))
-        (f_serialize_10__pre x0)
-        (fun result -> f_serialize_10__post x0 result);
+        (f_serialize_10_pre x0)
+        (fun result -> f_serialize_10_post x0 result);
   f_deserialize_10_pre:t_Slice u8 -> bool;
   f_deserialize_10_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_10_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_10__pre x0) (fun result -> f_deserialize_10__post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_10_pre x0) (fun result -> f_deserialize_10_post x0 result);
   f_serialize_11_pre:v_Self -> bool;
   f_serialize_11_post:v_Self -> t_Array u8 (sz 11) -> bool;
   f_serialize_11_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 11))
-        (f_serialize_11__pre x0)
-        (fun result -> f_serialize_11__post x0 result);
+        (f_serialize_11_pre x0)
+        (fun result -> f_serialize_11_post x0 result);
   f_deserialize_11_pre:t_Slice u8 -> bool;
   f_deserialize_11_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_11_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_11__pre x0) (fun result -> f_deserialize_11__post x0 result);
+    -> Prims.Pure v_Self (f_deserialize_11_pre x0) (fun result -> f_deserialize_11_post x0 result);
   f_serialize_12_pre:v_Self -> bool;
   f_serialize_12_post:v_Self -> t_Array u8 (sz 12) -> bool;
   f_serialize_12_:x0: v_Self
     -> Prims.Pure (t_Array u8 (sz 12))
-        (f_serialize_12__pre x0)
-        (fun result -> f_serialize_12__post x0 result);
+        (f_serialize_12_pre x0)
+        (fun result -> f_serialize_12_post x0 result);
   f_deserialize_12_pre:t_Slice u8 -> bool;
   f_deserialize_12_post:t_Slice u8 -> v_Self -> bool;
   f_deserialize_12_:x0: t_Slice u8
-    -> Prims.Pure v_Self (f_deserialize_12__pre x0) (fun result -> f_deserialize_12__post x0 result)
+    -> Prims.Pure v_Self (f_deserialize_12_pre x0) (fun result -> f_deserialize_12_post x0 result)
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
