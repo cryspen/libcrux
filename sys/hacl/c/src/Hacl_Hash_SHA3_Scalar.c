@@ -1158,14 +1158,12 @@ void Hacl_Hash_SHA3_Scalar_sha3_224(uint8_t *output, uint8_t *input, uint32_t in
     uint64_t c = Hacl_Impl_SHA3_Vec_keccak_rndc[i0];
     s[0U] = s[0U] ^ c;
   }
+  uint8_t hbuf[200U] = { 0U };
   for (uint32_t i0 = 0U; i0 < 28U / rateInBytes; i0++)
   {
-    uint8_t hbuf[256U] = { 0U };
-    uint64_t ws[32U] = { 0U };
-    memcpy(ws, s, 25U * sizeof (uint64_t));
-    for (uint32_t i = 0U; i < 32U; i++)
+    for (uint32_t i = 0U; i < 25U; i++)
     {
-      store64_le(hbuf + i * 8U, ws[i]);
+      store64_le(hbuf + i * 8U, s[i]);
     }
     memcpy(output + i0 * rateInBytes, hbuf, rateInBytes * sizeof (uint8_t));
     for (uint32_t i1 = 0U; i1 < 24U; i1++)
@@ -1213,12 +1211,9 @@ void Hacl_Hash_SHA3_Scalar_sha3_224(uint8_t *output, uint8_t *input, uint32_t in
     }
   }
   uint32_t remOut = 28U % rateInBytes;
-  uint8_t hbuf[256U] = { 0U };
-  uint64_t ws[32U] = { 0U };
-  memcpy(ws, s, 25U * sizeof (uint64_t));
-  for (uint32_t i = 0U; i < 32U; i++)
+  for (uint32_t i = 0U; i < 25U; i++)
   {
-    store64_le(hbuf + i * 8U, ws[i]);
+    store64_le(hbuf + i * 8U, s[i]);
   }
   memcpy(output + 28U - remOut, hbuf, remOut * sizeof (uint8_t));
 }
@@ -2737,14 +2732,12 @@ Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(
   uint32_t outputByteLen
 )
 {
+  uint8_t hbuf[200U] = { 0U };
   for (uint32_t i0 = 0U; i0 < outputByteLen / 168U; i0++)
   {
-    uint8_t hbuf[256U] = { 0U };
-    uint64_t ws[32U] = { 0U };
-    memcpy(ws, state, 25U * sizeof (uint64_t));
-    for (uint32_t i = 0U; i < 32U; i++)
+    for (uint32_t i = 0U; i < 25U; i++)
     {
-      store64_le(hbuf + i * 8U, ws[i]);
+      store64_le(hbuf + i * 8U, state[i]);
     }
     memcpy(output + i0 * 168U, hbuf, 168U * sizeof (uint8_t));
     for (uint32_t i1 = 0U; i1 < 24U; i1++)

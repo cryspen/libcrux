@@ -187,10 +187,14 @@ fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     let t1 = unsafe { vandq_s32(v.high, m) };
     let t0 = unsafe { vmulq_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
     let t1 = unsafe { vmulq_n_s32(t1, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
-    let t0 = unsafe { vmovl_s16(vmovn_s32(t0)) };
-    let t1 = unsafe { vmovl_s16(vmovn_s32(t1)) };
-    let t0 = unsafe { vmulq_n_s32(t0, FIELD_MODULUS) };
-    let t1 = unsafe { vmulq_n_s32(t1, FIELD_MODULUS) };
+    let t0 = unsafe { vmovn_s32(t0) };
+    let t0 = unsafe { vmull_n_s16(t0, FIELD_MODULUS as i16) };
+    let t1 = unsafe { vmovn_s32(t1) };
+    let t1 = unsafe { vmull_n_s16(t1, FIELD_MODULUS as i16) };
+    // let t0 = unsafe { vmovl_s16(vmovn_s32(t0)) };
+    // let t1 = unsafe { vmovl_s16(vmovn_s32(t1)) };
+    // let t0 = unsafe { vmulq_n_s32(t0, FIELD_MODULUS) };
+    // let t1 = unsafe { vmulq_n_s32(t1, FIELD_MODULUS) };
     let c0 = unsafe { vshrq_n_s32::<16>(t0) };
     let c1 = unsafe { vshrq_n_s32::<16>(t1) };
     let v0 = unsafe { vshrq_n_s32::<16>(v.low) };
@@ -378,23 +382,44 @@ fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i32, zeta1: i32
 }
 
 #[inline(always)]
-fn serialize_1(a: SIMD128Vector) -> u8 {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(a));
-
-    portable::PortableVector::serialize_1(input)
+fn serialize_1(v: SIMD128Vector) -> u8 {
+    let shifter0:[u32;4] = [0,1,2,3];
+    let shifter1:[u32;4] = [4,5,6,7];
+    let shift0 = unsafe { vld1q_s32(shifter0.as_ptr() as *const i32) };
+    let shift1 = unsafe { vld1q_s32(shifter1.as_ptr() as *const i32) };
+    let low = unsafe { vshlq_s32(v.low,shift0) };
+    let high = unsafe { vshlq_s32(v.high,shift1) };
+    let low = unsafe { vaddvq_s32(low) };
+    let high = unsafe { vaddvq_s32(high) };
+    (low | high) as u8
 }
 
 #[inline(always)]
 fn deserialize_1(a: u8) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_1(a);
-
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let dup = unsafe { vdupq_n_s32(a as i32) };
+    let shifter0:[i32;4] = [0,-1,-2,-3];
+    let shifter1:[i32;4] = [-4,-5,-6,-7];
+    let shift0 = unsafe { vld1q_s32(shifter0.as_ptr() as *const i32) };
+    let shift1 = unsafe { vld1q_s32(shifter1.as_ptr() as *const i32) };
+    let low = unsafe { vshlq_s32(dup,shift0) };
+    let high = unsafe { vshlq_s32(dup,shift1) };
+    SIMD128Vector {
+        low: unsafe { vandq_s32(low, vdupq_n_s32(1)) },
+        high: unsafe { vandq_s32(high, vdupq_n_s32(1)) },
+    }
 }
 
 #[inline(always)]
 fn serialize_4(v: SIMD128Vector) -> [u8; 4] {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(v));
-    portable::PortableVector::serialize_4(input)
+    let shifter0:[i32;4] = [0,4,8,12];
+    let shifter1:[i32;4] = [16,20,24,28];
+    let shift0 = unsafe { vld1q_s32(shifter0.as_ptr() as *const i32) };
+    let shift1 = unsafe { vld1q_s32(shifter1.as_ptr() as *const i32) };
+    let lowt = unsafe { vshlq_s32(v.low, shift0) }; 
+    let hight = unsafe { vshlq_s32(v.high, shift1) }; 
+    let low = unsafe { vaddvq_s32(lowt) }; 
+    let high = unsafe { vaddvq_s32(hight) }; 
+    (low|high).to_le_bytes()
 }
 
 #[inline(always)]
@@ -406,9 +431,20 @@ fn deserialize_4(v: &[u8]) -> SIMD128Vector {
 
 #[inline(always)]
 fn serialize_5(v: SIMD128Vector) -> [u8; 5] {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(v));
+    let lowt = unsafe { vtrn1q_s32(v.low, v.high) }; // a0, a4, a2, a6
+    let hight = unsafe { vtrn2q_s32(v.low, v.high) }; // a1, a5, a3, a7
+    let mixt = unsafe { vsliq_n_s32::<5>(lowt,hight) }; // a1a0, a5a4, a3a2, a7a6
 
-    portable::PortableVector::serialize_5(input)
+    let lowt = unsafe { vmovl_s32(vget_low_s32(mixt)) }; // a1a0, a5a4
+    let hight = unsafe { vmovl_s32(vget_high_s32(mixt)) }; // a3a2, a7a6
+    let mixt = unsafe { vsliq_n_s64::<10>(lowt,hight) }; // a3a2a1a0, a7a6a5a4
+    let mut result2 = [0i64;2];
+    unsafe { vst1q_s64(result2.as_mut_ptr() as *mut i64, mixt) };
+
+    let result_i64 = result2[0] | (result2[1] << 20);
+    let mut result = [0u8;5];
+    result.copy_from_slice(&result_i64.to_le_bytes()[0..5]);
+    result
 }
 
 #[inline(always)]
@@ -420,8 +456,23 @@ fn deserialize_5(v: &[u8]) -> SIMD128Vector {
 
 #[inline(always)]
 fn serialize_10(v: SIMD128Vector) -> [u8; 10] {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(v));
-    portable::PortableVector::serialize_10(input)
+    let lowt = unsafe { vtrn1q_s32(v.low, v.high) }; // a0, a4, a2, a6
+    let hight = unsafe { vtrn2q_s32(v.low, v.high) }; // a1, a5, a3, a7
+    let mixt = unsafe { vsliq_n_s32::<10>(lowt,hight) }; // a1a0, a5a4, a3a2, a7a6
+
+    let lowt = unsafe { vmovl_s32(vget_low_s32(mixt)) }; // a1a0, a5a4
+    let hight = unsafe { vmovl_s32(vget_high_s32(mixt)) }; // a3a2, a7a6
+    let mixt = unsafe { vsliq_n_s64::<20>(lowt,hight) }; 
+
+    let index_arr:[u8;16] = [0,1,2,3,4,8,9,10,11,12,10,11,12,13,14,15];
+    let index = unsafe { vld1q_u8(index_arr.as_ptr() as *const u8) };
+    let mixt = unsafe { vqtbl1q_u8(vreinterpretq_u8_s64(mixt),index)};
+
+    let mut result16 = [0u8;16];
+    unsafe { vst1q_u8(result16.as_mut_ptr() as *mut u8, mixt) };
+    let mut result10 = [0u8;10];
+    result10.copy_from_slice(&result16[0..10]);
+    result10
 }
 
 #[inline(always)]
@@ -446,9 +497,19 @@ fn deserialize_11(v: &[u8]) -> SIMD128Vector {
 
 #[inline(always)]
 fn serialize_12(v: SIMD128Vector) -> [u8; 12] {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(v));
+    let lowt = unsafe { vtrn1q_s32(v.low, v.high) }; // a0, a4, a2, a6
+    let hight = unsafe { vtrn2q_s32(v.low, v.high) }; // a1, a5, a3, a7
+    let mixt = unsafe { vsliq_n_s32::<12>(lowt,hight) }; // a1a0, a5a4, a3a2, a7a6
 
-    portable::PortableVector::serialize_12(input)
+    let index_arr:[u8;16] = [0,1,2,8,9,10,4,5,6,12,13,14,12,13,14,15];
+    let index = unsafe { vld1q_u8(index_arr.as_ptr() as *const u8) };
+    let mixt = unsafe { vqtbl1q_u8(vreinterpretq_u8_s32(mixt),index)};
+
+    let mut result16 = [0u8;16];
+    unsafe { vst1q_u8(result16.as_mut_ptr() as *mut u8, mixt) };
+    let mut result12 = [0u8;12];
+    result12.copy_from_slice(&result16[0..12]);
+    result12
 }
 
 #[inline(always)]
