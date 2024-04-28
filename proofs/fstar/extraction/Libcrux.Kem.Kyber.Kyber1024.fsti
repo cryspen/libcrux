@@ -71,11 +71,13 @@ let t_MlKem1024PrivateKey = Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168)
 unfold
 let t_MlKem1024PublicKey = Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)
 
+/// Decapsulate ML-KEM 1024
 val decapsulate
       (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168))
       (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568))
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Encapsulate ML-KEM 1024
 val encapsulate
       (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568))
       (randomness: t_Array u8 (sz 32))
@@ -83,11 +85,14 @@ val encapsulate
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Validate a public key.
+/// Returns `Some(public_key)` if valid, and `None` otherwise.
 val validate_public_key (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568))
     : Prims.Pure (Core.Option.t_Option (Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Generate ML-KEM 1024 Key Pair
 val generate_key_pair (randomness: t_Array u8 (sz 64))
     : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemKeyPair (sz 3168) (sz 1568))
       Prims.l_True

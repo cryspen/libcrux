@@ -19,6 +19,8 @@ val absorb (v_K: usize) (input: t_Array (t_Array u8 (sz 34)) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Free the memory of the state.
+/// **NOTE:** That this needs to be done manually for now.
 val free_state (xof_state: Libcrux.Digest.Incremental_x4.t_Shake128StateX4)
     : Prims.Pure Prims.unit Prims.l_True (fun _ -> Prims.l_True)
 
