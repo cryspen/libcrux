@@ -21,7 +21,7 @@ hax-lib = { git = "https://github.com/hacspec/hax/" }
 
 [features]
 default = []
-simd128 = ["libcrux-sha3/simd256"]
+simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
 
 [dev-dependencies]
