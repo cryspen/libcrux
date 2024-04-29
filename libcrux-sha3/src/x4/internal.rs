@@ -3,18 +3,130 @@ use core::ptr::null_mut;
 use libcrux_hacl::{
     Hacl_Hash_SHA3_Scalar_shake128_absorb_final, Hacl_Hash_SHA3_Scalar_shake128_absorb_nblocks,
     Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks, Hacl_Hash_SHA3_Scalar_state_free,
-    Hacl_Hash_SHA3_Scalar_state_malloc,
+    Hacl_Hash_SHA3_Scalar_state_malloc, 
+    Hacl_Hash_SHA3_shake256_hacl
 };
+
 #[cfg(feature = "simd256")]
 use libcrux_hacl::{
     Hacl_Hash_SHA3_Simd256_shake128_absorb_final, Hacl_Hash_SHA3_Simd256_shake128_absorb_nblocks,
     Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks, Hacl_Hash_SHA3_Simd256_state_free,
-    Hacl_Hash_SHA3_Simd256_state_malloc, Lib_IntVector_Intrinsics_vec256,
+    Hacl_Hash_SHA3_Simd256_state_malloc, Lib_IntVector_Intrinsics_vec256, 
+    Hacl_Hash_SHA3_Simd256_shake256
 };
 #[cfg(feature = "simd256")]
 use libcrux_platform::simd256_support;
 
-/// SHAKE 128
+/// SHAKE 256
+///
+/// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
+/// the output will only return `u32::MAX` bytes.
+#[inline(always)]
+#[cfg(feature = "simd256")]
+pub(crate) fn shake256<const BYTES: usize>(
+    payload: [&[u8];4],
+) -> [[u8; BYTES];4] {
+    let input_len = payload[0].len();
+    debug_assert!(
+        input_len == payload[1].len()
+            && input_len == payload[2].len()
+            && input_len == payload[3].len()
+            && input_len <= u32::MAX as usize
+            && BYTES <= u32::MAX as usize
+    );
+    let mut digest = [[0u8; BYTES];4];
+    if simd256_support() {
+        unsafe {
+            Hacl_Hash_SHA3_Simd256_shake256(
+                input_len as u32,
+                payload[0].as_ptr() as _,
+                payload[1].as_ptr() as _,
+                payload[2].as_ptr() as _,
+                payload[3].as_ptr() as _,
+                BYTES as u32,
+                digest[0].as_mut_ptr(),
+                digest[1].as_mut_ptr(),
+                digest[2].as_mut_ptr(),
+                digest[3].as_mut_ptr(),
+            );
+        }
+    } else {
+        unsafe {
+            Hacl_Hash_SHA3_shake256_hacl(
+                input_len as u32,
+                payload[0].as_ptr() as _,
+                BYTES as u32,
+                digest[0].as_mut_ptr(),
+            );
+            Hacl_Hash_SHA3_shake256_hacl(
+                input_len as u32,
+                payload[1].as_ptr() as _,
+                BYTES as u32,
+                digest[1].as_mut_ptr(),
+            );
+            Hacl_Hash_SHA3_shake256_hacl(
+                input_len as u32,
+                payload[2].as_ptr() as _,
+                BYTES as u32,
+                digest[2].as_mut_ptr(),
+            );
+            Hacl_Hash_SHA3_shake256_hacl(
+                input_len as u32,
+                payload[3].as_ptr() as _,
+                BYTES as u32,
+                digest[3].as_mut_ptr(),
+            );
+        }
+    }
+    digest
+}
+
+#[inline(always)]
+#[cfg(not(feature = "simd256"))]
+pub(crate) fn shake256<const BYTES: usize>(
+    payload: [&[u8];4],
+) -> [[u8; BYTES];4] {
+    let input_len = payload[0].len();
+    debug_assert!(
+        input_len == payload[1].len()
+            && input_len == payload[2].len()
+            && input_len == payload[3].len()
+            && input_len <= u32::MAX as usize
+            && BYTES <= u32::MAX as usize
+    );
+    let mut digest = [[0u8; BYTES];4];
+    
+    unsafe {
+        Hacl_Hash_SHA3_shake256_hacl(
+            input_len as u32,
+            payload[0].as_ptr() as _,
+            BYTES as u32,
+            digest[0].as_mut_ptr(),
+        );
+        Hacl_Hash_SHA3_shake256_hacl(
+            input_len as u32,
+            payload[1].as_ptr() as _,
+            BYTES as u32,
+            digest[1].as_mut_ptr(),
+        );
+        Hacl_Hash_SHA3_shake256_hacl(
+            input_len as u32,
+            payload[2].as_ptr() as _,
+            BYTES as u32,
+            digest[2].as_mut_ptr(),
+        );
+        Hacl_Hash_SHA3_shake256_hacl(
+            input_len as u32,
+            payload[3].as_ptr() as _,
+            BYTES as u32,
+            digest[3].as_mut_ptr(),
+        );
+    }
+    digest
+}
+
+
+/// Incremental SHAKE 128
 ///
 /// Handle to internal SHAKE 128 state
 #[cfg(feature = "simd256")]

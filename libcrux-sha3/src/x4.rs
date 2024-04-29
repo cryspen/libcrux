@@ -6,6 +6,10 @@
 /// More generic APIs will be added later.
 mod internal;
 
+pub fn shake256<const BYTES: usize>(input: [&[u8];4]) -> [[u8; BYTES]; 4] {
+    internal::shake256(input)
+}
+
 /// Incremental state
 #[cfg_attr(hax, hax_lib::opaque_type)]
 pub struct Shake128StateX4 {
