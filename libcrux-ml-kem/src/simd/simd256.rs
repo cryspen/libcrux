@@ -2,81 +2,71 @@ use crate::{
     constants::FIELD_MODULUS,
     simd::{portable, simd_trait::*},
 };
-use core::arch::x86_64::*;
+
+mod x64_avx2;
+use x64_avx2::*;
 
 #[derive(Clone, Copy)]
 pub(crate) struct SIMD256Vector {
-    elements: __m256i,
+    elements: Vec,
 }
 
-#[allow(non_snake_case)]
-#[inline(always)]
-fn ZERO() -> SIMD256Vector {
-    SIMD256Vector {
-        elements: unsafe { _mm256_setzero_si256() },
+impl SIMD256Vector {
+    #[allow(non_snake_case)]
+    #[inline(always)]
+    fn ZERO() -> Self {
+        Self { elements: zero() }
+    }
+
+    #[inline(always)]
+    fn add_constant(v: Self, c: i32) -> Self {
+        Self {
+            elements: add(v.elements, load(c)),
+        }
+    }
+
+    #[inline(always)]
+    fn add(lhs: Self, rhs: &Self) -> Self {
+        Self {
+            elements: add(lhs.elements, rhs.elements),
+        }
+    }
+
+    #[inline(always)]
+    fn sub(mut lhs: Self, rhs: &Self) -> Self {
+        Self {
+            elements: sub(lhs.elements, rhs.elements),
+        }
     }
 }
 
 #[inline(always)]
 fn to_i32_array(v: SIMD256Vector) -> [i32; 8] {
-    let mut out = [0i32; 8];
-
-    unsafe {
-        _mm256_storeu_si256(out.as_mut_ptr() as *mut __m256i, v.elements);
-    }
-
-    out
+    store(v.elements)
 }
 
 #[inline(always)]
 fn from_i32_array(array: [i32; 8]) -> SIMD256Vector {
     SIMD256Vector {
-        elements: unsafe { _mm256_loadu_si256(array.as_ptr() as *const __m256i) },
+        elements: load_vec(array),
     }
 }
 
 #[inline(always)]
-fn add_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
-    let c = unsafe { _mm256_set1_epi32(c) };
-
-    v.elements = unsafe { _mm256_add_epi32(v.elements, c) };
-
-    v
-}
-
-#[inline(always)]
-fn add(mut lhs: SIMD256Vector, rhs: &SIMD256Vector) -> SIMD256Vector {
-    lhs.elements = unsafe { _mm256_add_epi32(lhs.elements, rhs.elements) };
-
-    lhs
-}
-
-#[inline(always)]
-fn sub(mut lhs: SIMD256Vector, rhs: &SIMD256Vector) -> SIMD256Vector {
-    lhs.elements = unsafe { _mm256_sub_epi32(lhs.elements, rhs.elements) };
-
-    lhs
-}
-
-#[inline(always)]
-fn multiply_by_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
-    let c = unsafe { _mm256_set1_epi32(c) };
-
+fn multiply_by_constant(v: SIMD256Vector, c: i32) -> SIMD256Vector {
     // In theory, we could get the wrong answer if the product occupies
     // more than 32 bits, but so far in the Kyber code that doesn't seem
     // to be the case.
-    v.elements = unsafe { _mm256_mullo_epi32(v.elements, c) };
-
-    v
+    SIMD256Vector {
+        elements: mul(v.elements, load(c)),
+    }
 }
 
 #[inline(always)]
-fn bitwise_and_with_constant(mut v: SIMD256Vector, c: i32) -> SIMD256Vector {
-    let c = unsafe { _mm256_set1_epi32(c) };
-
-    v.elements = unsafe { _mm256_and_si256(v.elements, c) };
-
-    v
+fn bitwise_and_with_constant(v: SIMD256Vector, c: i32) -> SIMD256Vector {
+    SIMD256Vector {
+        elements: and(v.elements, load(c)),
+    }
 }
 
 #[inline(always)]
@@ -195,11 +185,7 @@ fn ntt_multiply(lhs: &SIMD256Vector, rhs: &SIMD256Vector, zeta0: i32, zeta1: i32
 
 #[inline(always)]
 fn serialize_1(v: SIMD256Vector) -> u8 {
-    let mut v_bytes = [0i32; 8];
-
-    unsafe {
-        _mm256_store_si256(v_bytes.as_mut_ptr() as *mut __m256i, v.elements);
-    }
+    let v_bytes = store(v.elements);
 
     (v_bytes[0]
         | (v_bytes[1] << 1)
