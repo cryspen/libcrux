@@ -295,6 +295,8 @@ fn deserialize_12(v: &[u8]) -> SIMD256Vector {
     from_i32_array(portable::PortableVector::to_i32_array(output))
 }
 
+// FIXME: Due to hacspec/hax#638 we can not have nice code here and manually pull
+//        out the functions for now.
 impl Operations for SIMD256Vector {
     fn ZERO() -> Self {
         Self { elements: zero() }

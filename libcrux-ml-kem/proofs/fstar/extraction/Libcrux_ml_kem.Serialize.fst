@@ -21,14 +21,14 @@ let compress_then_serialize_10_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_compress 10l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
                 <:
-                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
           in
           let bytes:t_Array u8 (sz 10) =
             Libcrux_ml_kem.Simd.Simd_trait.f_serialize_10_ coefficient
@@ -105,14 +105,14 @@ let compress_then_serialize_11_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_compress 11l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
                 <:
-                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
           in
           let bytes:t_Array u8 (sz 11) =
             Libcrux_ml_kem.Simd.Simd_trait.f_serialize_11_ coefficient
@@ -194,14 +194,14 @@ let compress_then_serialize_4_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_compress 4l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
                 <:
-                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
           in
           let bytes:t_Array u8 (sz 4) = Libcrux_ml_kem.Simd.Simd_trait.f_serialize_4_ coefficient in
           let serialized:t_Array u8 v_OUT_LEN =
@@ -246,14 +246,14 @@ let compress_then_serialize_5_
       (fun serialized i ->
           let serialized:t_Array u8 v_OUT_LEN = serialized in
           let i:usize = i in
-          let coefficients:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficients:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_compress 5l
               (Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                       .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
                 <:
-                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
           in
           let bytes5:t_Array u8 (sz 5) =
             Libcrux_ml_kem.Simd.Simd_trait.f_serialize_5_ coefficients
@@ -302,13 +302,13 @@ let compress_then_serialize_message (re: Libcrux_ml_kem.Polynomial.t_PolynomialR
       (fun serialized i ->
           let serialized:t_Array u8 (sz 32) = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                   .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                 <:
-                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
           in
-          let coefficient_compressed:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient_compressed:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_compress_1_ coefficient
           in
           let serialized:t_Array u8 (sz 32) =
@@ -361,7 +361,7 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_10_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
@@ -374,7 +374,7 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
                 i
                 (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 10l coefficient
                   <:
-                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -398,7 +398,7 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_11_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
@@ -411,7 +411,7 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
                 i
                 (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 11l coefficient
                   <:
-                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -435,7 +435,7 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_4_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
@@ -448,7 +448,7 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
                 i
                 (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 4l coefficient
                   <:
-                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -482,7 +482,7 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
                 i
                 (Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_5_ bytes
                   <:
-                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -498,9 +498,9 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
                 (Libcrux_ml_kem.Simd.Simd_trait.f_decompress 5l
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                       <:
-                      Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
                   <:
-                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -526,7 +526,7 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
       (fun re i ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i:usize = i in
-          let coefficient_compressed:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient_compressed:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_1_ (serialized.[ i ] <: u8)
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
@@ -539,7 +539,7 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
                 i
                 (Libcrux_ml_kem.Simd.Simd_trait.f_decompress_1_ coefficient_compressed
                   <:
-                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -589,7 +589,7 @@ let deserialize_to_reduced_ring_element (serialized: t_Slice u8) =
       (fun re temp_1_ ->
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_12_ bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement =
@@ -602,7 +602,7 @@ let deserialize_to_reduced_ring_element (serialized: t_Slice u8) =
                 i
                 (Libcrux_ml_kem.Simd.Simd_trait.f_cond_subtract_3329_ coefficient
                   <:
-                  Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
@@ -668,9 +668,9 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
               i
               (Libcrux_ml_kem.Simd.Simd_trait.f_deserialize_12_ bytes
                 <:
-                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
             <:
-            t_Array Libcrux_ml_kem.Simd.Portable.t_PortableVector (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector (sz 32)
           }
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
@@ -692,11 +692,11 @@ let serialize_uncompressed_ring_element (re: Libcrux_ml_kem.Polynomial.t_Polynom
       (fun serialized i ->
           let serialized:t_Array u8 (sz 384) = serialized in
           let i:usize = i in
-          let coefficient:Libcrux_ml_kem.Simd.Portable.t_PortableVector =
+          let coefficient:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_to_unsigned_representative (re
                   .Libcrux_ml_kem.Polynomial.f_coefficients.[ i ]
                 <:
-                Libcrux_ml_kem.Simd.Portable.t_PortableVector)
+                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
           in
           let bytes:t_Array u8 (sz 12) =
             Libcrux_ml_kem.Simd.Simd_trait.f_serialize_12_ coefficient

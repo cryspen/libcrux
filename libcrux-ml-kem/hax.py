@@ -51,8 +51,20 @@ class extractAction(argparse.Action):
         )
 
         # Extract ml-kem
-        include_str = "-libcrux_platform::macos_arm::* +!libcrux_platform::platform::* -libcrux_ml_kem::types::index_impls::** -libcrux_ml_kem::intvec128::**"
-        interface_include = "+* -libcrux::kem::kyber::types +!libcrux_platform::** +!libcrux::digest::**"
+        includes = [
+            "-libcrux_platform::macos_arm::*",
+            "+!libcrux_platform::platform::*",
+            "-libcrux_ml_kem::types::index_impls::**",
+            "-libcrux_ml_kem::simd::simd256::x64_avx2::**",
+            "-libcrux_ml_kem::simd::simd128::**",
+        ]
+        include_str = " ".join(includes)
+        interfaces = [
+            "+* -libcrux::kem::kyber::types",
+            "+!libcrux_platform::**",
+            "+!libcrux::digest::**",
+        ]
+        interface_include = " ".join(interfaces)
         cargo_hax_into = [
             "cargo",
             "hax",
