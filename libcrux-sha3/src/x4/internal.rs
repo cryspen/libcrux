@@ -5,33 +5,33 @@ use libcrux_hacl::{
     Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks, Hacl_Hash_SHA3_Scalar_state_free,
     Hacl_Hash_SHA3_Scalar_state_malloc,
 };
-#[cfg(simd256)]
+#[cfg(feature = "simd256")]
 use libcrux_hacl::{
     Hacl_Hash_SHA3_Simd256_shake128_absorb_final, Hacl_Hash_SHA3_Simd256_shake128_absorb_nblocks,
     Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks, Hacl_Hash_SHA3_Simd256_state_free,
     Hacl_Hash_SHA3_Simd256_state_malloc, Lib_IntVector_Intrinsics_vec256,
 };
-#[cfg(simd256)]
+#[cfg(feature = "simd256")]
 use libcrux_platform::simd256_support;
 
 /// SHAKE 128
 ///
 /// Handle to internal SHAKE 128 state
-#[cfg(simd256)]
+#[cfg(feature = "simd256")]
 pub struct Shake128StateX4 {
     statex4: *mut Lib_IntVector_Intrinsics_vec256,
     state: [*mut u64; 4],
 }
 
-#[cfg(not(simd256))]
+#[cfg(not(feature = "simd256"))]
 pub struct Shake128StateX4 {
     state: [*mut u64; 4],
 }
 
 impl Shake128StateX4 {
-    #[cfg(simd256)]
+    #[cfg(feature = "simd256")]
     pub fn new() -> Self {
-        if cfg!(simd256) && simd256_support() {
+        if simd256_support() {
             Self {
                 statex4: unsafe { Hacl_Hash_SHA3_Simd256_state_malloc() },
                 state: [null_mut(), null_mut(), null_mut(), null_mut()],
@@ -51,7 +51,7 @@ impl Shake128StateX4 {
         }
     }
 
-    #[cfg(not(simd256))]
+    #[cfg(not(feature = "simd256"))]
     pub fn new() -> Self {
         Self {
             state: unsafe {
@@ -68,9 +68,9 @@ impl Shake128StateX4 {
     /// Free and consume the state.
     ///
     /// **NOTE:** This consumes the value. It is not usable after this call!
-    #[cfg(simd256)]
+    #[cfg(feature = "simd256")]
     pub fn free(mut self) {
-        if cfg!(simd256) && simd256_support() {
+        if simd256_support() {
             unsafe {
                 Hacl_Hash_SHA3_Simd256_state_free(self.statex4);
                 // null the pointer (hacl isn't doing that unfortunately)
@@ -92,7 +92,7 @@ impl Shake128StateX4 {
     /// Free and consume the state.
     ///
     /// **NOTE:** This consumes the value. It is not usable after this call!
-    #[cfg(not(simd256))]
+    #[cfg(not(feature = "simd256"))]
     pub fn free(mut self) {
         for i in 0..4 {
             unsafe {
@@ -109,7 +109,7 @@ impl Shake128StateX4 {
     /// The input length must be a multiple of the SHA3 block length of 168.
     ///
     /// The input is truncated at `u32::MAX`.
-    #[cfg(simd256)]
+    #[cfg(feature = "simd256")]
     pub fn absorb_blocks(&mut self, input: [&[u8]; 4]) {
         debug_assert!(
             (input[0].len() == input[1].len() || input[1].len() == 0)
@@ -149,7 +149,7 @@ impl Shake128StateX4 {
     /// The input length must be a multiple of the SHA3 block length of 168.
     ///
     /// The input is truncated at `u32::MAX`.
-    #[cfg(not(simd256))]
+    #[cfg(not(feature = "simd256"))]
     pub fn absorb_blocks(&mut self, input: [&[u8]; 4]) {
         debug_assert!(
             (input[0].len() == input[1].len() || input[1].len() == 0)
@@ -176,7 +176,7 @@ impl Shake128StateX4 {
     /// The input length must be a multiple of the SHA3 block length of 168.
     ///
     /// The input is truncated at `u32::MAX`.
-    #[cfg(simd256)]
+    #[cfg(feature = "simd256")]
     pub fn absorb_final(&mut self, input: [&[u8]; 4]) {
         debug_assert!(
             (input[0].len() == input[1].len() || input[1].len() == 0)
@@ -185,7 +185,7 @@ impl Shake128StateX4 {
         );
         debug_assert!(input[0].len() < 168);
 
-        if cfg!(simd256) && simd256_support() {
+        if simd256_support() {
             unsafe {
                 Hacl_Hash_SHA3_Simd256_shake128_absorb_final(
                     self.statex4,
@@ -216,7 +216,7 @@ impl Shake128StateX4 {
     /// The input length must be a multiple of the SHA3 block length of 168.
     ///
     /// The input is truncated at `u32::MAX`.
-    #[cfg(not(simd256))]
+    #[cfg(not(feature = "simd256"))]
     pub fn absorb_final(&mut self, input: [&[u8]; 4]) {
         debug_assert!(
             (input[0].len() == input[1].len() || input[1].len() == 0)
@@ -238,14 +238,14 @@ impl Shake128StateX4 {
         }
     }
 
-    #[cfg(simd256)]
+    #[cfg(feature = "simd256")]
     pub fn squeeze_blocks<const OUTPUT_BYTES: usize, const M: usize>(
         &mut self,
     ) -> [[u8; OUTPUT_BYTES]; M] {
         debug_assert!(OUTPUT_BYTES % 168 == 0);
         debug_assert!(M <= self.state.len() && (M == 2 || M == 3 || M == 4));
 
-        if cfg!(simd256) && simd256_support() {
+        if simd256_support() {
             let mut output = [[0u8; OUTPUT_BYTES]; 4];
             unsafe {
                 Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(
@@ -273,7 +273,7 @@ impl Shake128StateX4 {
         }
     }
 
-    #[cfg(not(simd256))]
+    #[cfg(not(feature = "simd256"))]
     pub fn squeeze_blocks<const OUTPUT_BYTES: usize, const M: usize>(
         &mut self,
     ) -> [[u8; OUTPUT_BYTES]; M] {
@@ -299,9 +299,9 @@ impl Shake128StateX4 {
 /// **NOTE:** When generating C code with Eurydice, the state needs to be freed
 ///           manually for now due to a bug in Eurydice.
 impl Drop for Shake128StateX4 {
-    #[cfg(simd256)]
+    #[cfg(feature = "simd256")]
     fn drop(&mut self) {
-        if cfg!(simd256) && simd256_support() {
+        if simd256_support() {
             // A manual free may have occurred already.
             // Avoid double free.
             unsafe {
@@ -322,7 +322,7 @@ impl Drop for Shake128StateX4 {
         }
     }
 
-    #[cfg(not(simd256))]
+    #[cfg(not(feature = "simd256"))]
     fn drop(&mut self) {
         // A manual free may have occurred already.
         // Avoid double free.
