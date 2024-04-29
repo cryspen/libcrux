@@ -117,19 +117,17 @@ fn cond_subtract_3329(mut v: SIMD256Vector) -> SIMD256Vector {
 fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
     let reduced = unsafe {
         let barrett_multiplier = _mm256_set1_epi32(BARRETT_MULTIPLIER as i32);
-        let barrett_r_halved = _mm256_set1_epi32((BARRETT_R as i32) >> 1);
-        let field_modulus = _mm256_set1_epi32(FIELD_MODULUS as i32);
+        let barrett_r_halved = _mm256_set1_epi64x(BARRETT_R >> 1);
+        let field_modulus = _mm256_set1_epi32(FIELD_MODULUS);
 
         let mut t_low = _mm256_mul_epi32(v.elements, barrett_multiplier);
-        t_low = _mm256_add_epi32(t_low, barrett_r_halved);
-        let quotient_low = _mm256_srai_epi32(t_low, BARRETT_SHIFT as i32);
+        t_low = _mm256_add_epi64(t_low, barrett_r_halved);
+        let quotient_low = _mm256_srli_epi64(t_low, BARRETT_SHIFT as i32);
 
         let mut t_high = _mm256_shuffle_epi32(v.elements, 0b00_11_00_01);
         t_high = _mm256_mul_epi32(t_high, barrett_multiplier);
-        t_high = _mm256_add_epi32(t_high, barrett_r_halved);
-        let mut quotient_high = _mm256_srai_epi32(t_high, BARRETT_SHIFT as i32);
-
-        quotient_high = _mm256_slli_epi64(quotient_high, 32);
+        t_high = _mm256_add_epi64(t_high, barrett_r_halved);
+        let quotient_high = _mm256_slli_epi64(t_high, 6);
 
         let quotient = _mm256_blend_epi32(quotient_low, quotient_high, 0b1_0_1_0_1_0_1_0);
         let quotient = _mm256_mullo_epi32(quotient, field_modulus);
