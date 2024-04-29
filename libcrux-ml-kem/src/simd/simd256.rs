@@ -3,6 +3,7 @@ use crate::{
     simd::{portable, simd_trait::*},
 };
 
+// TODO: Add target cfg guard here.
 mod x64_avx2;
 use x64_avx2::*;
 
@@ -12,30 +13,24 @@ pub(crate) struct SIMD256Vector {
 }
 
 impl SIMD256Vector {
-    #[allow(non_snake_case)]
     #[inline(always)]
-    fn ZERO() -> Self {
-        Self { elements: zero() }
-    }
-
-    #[inline(always)]
-    fn add_constant(v: Self, c: i32) -> Self {
+    fn add_constant(self, c: i32) -> Self {
         Self {
-            elements: add(v.elements, load(c)),
+            elements: add(self.elements, load(c)),
         }
     }
 
     #[inline(always)]
-    fn add(lhs: Self, rhs: &Self) -> Self {
+    fn add(self, rhs: &Self) -> Self {
         Self {
-            elements: add(lhs.elements, rhs.elements),
+            elements: add(self.elements, rhs.elements),
         }
     }
 
     #[inline(always)]
-    fn sub(mut lhs: Self, rhs: &Self) -> Self {
+    fn sub(self, rhs: &Self) -> Self {
         Self {
-            elements: sub(lhs.elements, rhs.elements),
+            elements: sub(self.elements, rhs.elements),
         }
     }
 }
@@ -70,33 +65,28 @@ fn bitwise_and_with_constant(v: SIMD256Vector, c: i32) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn shift_right<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
-    v.elements = unsafe { _mm256_srai_epi32(v.elements, SHIFT_BY) };
-
-    v
-}
-
-#[inline(always)]
-fn shift_left<const SHIFT_BY: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
-    v.elements = unsafe { _mm256_slli_epi32(v.elements, SHIFT_BY) };
-
-    v
-}
-
-#[inline(always)]
-fn cond_subtract_3329(mut v: SIMD256Vector) -> SIMD256Vector {
-    unsafe {
-        let field_modulus = _mm256_set1_epi32(FIELD_MODULUS);
-
-        v.elements = _mm256_sub_epi32(v.elements, field_modulus);
-
-        let mut mask = _mm256_srai_epi32(v.elements, 31);
-        mask = _mm256_and_si256(mask, field_modulus);
-
-        v.elements = _mm256_add_epi32(v.elements, mask);
+fn shift_right<const SHIFT_BY: i32>(v: SIMD256Vector) -> SIMD256Vector {
+    SIMD256Vector {
+        elements: shr::<SHIFT_BY>(v.elements),
     }
+}
 
-    v
+#[inline(always)]
+fn shift_left<const SHIFT_BY: i32>(v: SIMD256Vector) -> SIMD256Vector {
+    SIMD256Vector {
+        elements: shlli::<SHIFT_BY>(v.elements),
+    }
+}
+
+#[inline(always)]
+fn cond_subtract_3329(v: SIMD256Vector) -> SIMD256Vector {
+    let field_modulus = load(FIELD_MODULUS);
+    let subtracted = sub(v.elements, field_modulus);
+    let mask = and(shr::<31>(subtracted), field_modulus);
+
+    SIMD256Vector {
+        elements: add(subtracted, mask),
+    }
 }
 
 #[inline(always)]
@@ -116,21 +106,17 @@ fn montgomery_reduce(v: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn compress_1(mut v: SIMD256Vector) -> SIMD256Vector {
-    unsafe {
-        let field_modulus_halved = _mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
-        let field_modulus_quartered = _mm256_set1_epi32((FIELD_MODULUS - 1) / 4);
+fn compress_1(v: SIMD256Vector) -> SIMD256Vector {
+    const FIELD_MODULUS_HAVLED: i32 = (FIELD_MODULUS - 1) / 2;
+    const FIELD_MODULUS_QUARTERED: i32 = (FIELD_MODULUS - 1) / 4;
 
-        v.elements = _mm256_sub_epi32(field_modulus_halved, v.elements);
-        let mask = _mm256_srai_epi32(v.elements, 31);
+    let field_modulus_halved = load(FIELD_MODULUS_HAVLED);
+    let field_modulus_quartered = load(FIELD_MODULUS_QUARTERED);
 
-        v.elements = _mm256_xor_si256(mask, v.elements);
-        v.elements = _mm256_sub_epi32(v.elements, field_modulus_quartered);
-
-        v.elements = _mm256_srli_epi32(v.elements, 31);
-    }
-
-    v
+    let subtracted = sub(field_modulus_halved, v.elements);
+    let mask = shr::<31>(subtracted);
+    let value = shrli::<31>(sub(xor(mask, subtracted), field_modulus_quartered));
+    SIMD256Vector { elements: value }
 }
 
 #[inline(always)]
@@ -199,20 +185,17 @@ fn serialize_1(v: SIMD256Vector) -> u8 {
 
 #[inline(always)]
 fn deserialize_1(a: u8) -> SIMD256Vector {
-    let deserialized = unsafe {
-        let a = a as i32;
-
-        _mm256_set_epi32(
-            (a >> 7) & 1,
-            (a >> 6) & 1,
-            (a >> 5) & 1,
-            (a >> 4) & 1,
-            (a >> 3) & 1,
-            (a >> 2) & 1,
-            (a >> 1) & 1,
-            a & 1,
-        )
-    };
+    let a = a as i32;
+    let deserialized = load_i32s(
+        (a >> 7) & 1,
+        (a >> 6) & 1,
+        (a >> 5) & 1,
+        (a >> 4) & 1,
+        (a >> 3) & 1,
+        (a >> 2) & 1,
+        (a >> 1) & 1,
+        a & 1,
+    );
 
     SIMD256Vector {
         elements: deserialized,
@@ -220,50 +203,38 @@ fn deserialize_1(a: u8) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn serialize_4(mut v: SIMD256Vector) -> [u8; 4] {
-    let mut out = [0u8; 4];
+fn serialize_4(v: SIMD256Vector) -> [u8; 4] {
+    let shifts = load_i32s(0, 4, 0, 4, 0, 4, 0, 4);
+    let shuffle_to = load_i8s(
+        31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 12, 8, 4, 0, 15, 14, 13, 12, 11, 10, 9, 8,
+        7, 6, 5, 4, 12, 8, 4, 0,
+    );
+    let value = shrli16::<4>(shuffle(shllv(v.elements, shifts), shuffle_to));
 
-    unsafe {
-        let shifts = _mm256_set_epi32(0, 4, 0, 4, 0, 4, 0, 4);
-        let shuffle_to = _mm256_set_epi8(
-            31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 12, 8, 4, 0, 15, 14, 13, 12, 11, 10, 9,
-            8, 7, 6, 5, 4, 12, 8, 4, 0,
-        );
-
-        v.elements = _mm256_sllv_epi32(v.elements, shifts);
-        v.elements = _mm256_shuffle_epi8(v.elements, shuffle_to);
-        v.elements = _mm256_srli_epi16(v.elements, 4);
-
-        out[0] = _mm256_extract_epi16(v.elements, 0) as u8;
-        out[1] = _mm256_extract_epi16(v.elements, 1) as u8;
-        out[2] = _mm256_extract_epi16(v.elements, 8) as u8;
-        out[3] = _mm256_extract_epi16(v.elements, 9) as u8;
-    }
-
-    out
+    [
+        storei16::<0>(value) as u8,
+        storei16::<1>(value) as u8,
+        storei16::<8>(value) as u8,
+        storei16::<9>(value) as u8,
+    ]
 }
 
 #[inline(always)]
 fn deserialize_4(v: &[u8]) -> SIMD256Vector {
-    let deserialized = unsafe {
-        let mut deserialized = _mm256_set_epi32(
-            v[3] as i32,
-            v[3] as i32,
-            v[2] as i32,
-            v[2] as i32,
-            v[1] as i32,
-            v[1] as i32,
-            v[0] as i32,
-            v[0] as i32,
-        );
+    let shifts = load_i32s(4, 0, 4, 0, 4, 0, 4, 0);
+    let last_4_bits_mask = load(0xF);
 
-        let shifts = _mm256_set_epi32(4, 0, 4, 0, 4, 0, 4, 0);
-        let last_4_bits_mask = _mm256_set1_epi32(0xF);
-        deserialized = _mm256_srlv_epi32(deserialized, shifts);
-        deserialized = _mm256_and_si256(deserialized, last_4_bits_mask);
-
-        deserialized
-    };
+    let deserialized = load_i32s(
+        v[3] as i32,
+        v[3] as i32,
+        v[2] as i32,
+        v[2] as i32,
+        v[1] as i32,
+        v[1] as i32,
+        v[0] as i32,
+        v[0] as i32,
+    );
+    let deserialized = and(shrllv(deserialized, shifts), last_4_bits_mask);
 
     SIMD256Vector {
         elements: deserialized,
@@ -326,7 +297,7 @@ fn deserialize_12(v: &[u8]) -> SIMD256Vector {
 
 impl Operations for SIMD256Vector {
     fn ZERO() -> Self {
-        ZERO()
+        Self { elements: zero() }
     }
 
     fn to_i32_array(v: Self) -> [i32; 8] {
@@ -338,15 +309,15 @@ impl Operations for SIMD256Vector {
     }
 
     fn add_constant(v: Self, c: i32) -> Self {
-        add_constant(v, c)
+        v.add_constant(c)
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
-        add(lhs, rhs)
+        lhs.add(rhs)
     }
 
     fn sub(lhs: Self, rhs: &Self) -> Self {
-        sub(lhs, rhs)
+        lhs.sub(rhs)
     }
 
     fn multiply_by_constant(v: Self, c: i32) -> Self {
