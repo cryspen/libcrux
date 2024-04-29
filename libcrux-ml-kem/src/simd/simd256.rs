@@ -1,7 +1,10 @@
 use crate::{
+    arithmetic::{
+        BARRETT_MULTIPLIER, BARRETT_R, BARRETT_SHIFT, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
+        MONTGOMERY_SHIFT,
+    },
     constants::FIELD_MODULUS,
     simd::{portable, simd_trait::*},
-    arithmetic::{BARRETT_MULTIPLIER, BARRETT_R, BARRETT_SHIFT},
 };
 use core::arch::x86_64::*;
 
@@ -121,34 +124,45 @@ fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
         t_low = _mm256_add_epi32(t_low, barrett_r_halved);
         let quotient_low = _mm256_srai_epi32(t_low, BARRETT_SHIFT as i32);
 
-        let mut t_high = _mm256_permute4x64_epi64(v.elements, 0b00001110);
+        let mut t_high = _mm256_shuffle_epi32(v.elements, 0b00_11_00_01);
         t_high = _mm256_mul_epi32(t_high, barrett_multiplier);
         t_high = _mm256_add_epi32(t_high, barrett_r_halved);
         let mut quotient_high = _mm256_srai_epi32(t_high, BARRETT_SHIFT as i32);
 
         quotient_high = _mm256_slli_epi64(quotient_high, 32);
 
-        let quotient = _mm256_blend_epi32(quotient_low, quotient_high, 0b10101010);
+        let quotient = _mm256_blend_epi32(quotient_low, quotient_high, 0b1_0_1_0_1_0_1_0);
         let quotient = _mm256_mullo_epi32(quotient, field_modulus);
 
-        let reduced = _mm256_sub_epi32(v.elements, quotient);
-
-        let shuffle_with = _mm256_set_epi32(7, 5, 3, 1, 6, 4, 2, 0);
-
-        _mm256_permutevar8x32_epi32(reduced, shuffle_with)
+        _mm256_sub_epi32(v.elements, quotient)
     };
 
-    SIMD256Vector {
-        elements: reduced
-    }
+    SIMD256Vector { elements: reduced }
 }
 
 #[inline(always)]
 fn montgomery_reduce(v: SIMD256Vector) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::montgomery_reduce(input);
+    let reduced = unsafe {
+        let montgomery_shift_mask = _mm256_set1_epi32((1 << MONTGOMERY_SHIFT) - 1);
+        let field_modulus = _mm256_set1_epi32(FIELD_MODULUS);
+        let inverse_of_modulus_mod_montgomery_r =
+            _mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        let t = _mm256_and_si256(v.elements, montgomery_shift_mask);
+        let t = _mm256_mullo_epi32(t, inverse_of_modulus_mod_montgomery_r);
+
+        let k = _mm256_and_si256(t, montgomery_shift_mask);
+        let k = _mm256_slli_epi32(k, 16);
+        let k = _mm256_srai_epi32(k, 16);
+
+        let k_times_modulus = _mm256_mullo_epi32(k, field_modulus);
+        let c = _mm256_srai_epi32(k_times_modulus, MONTGOMERY_SHIFT as i32);
+        let value_high = _mm256_srai_epi32(v.elements, MONTGOMERY_SHIFT as i32);
+
+        _mm256_sub_epi32(value_high, c)
+    };
+
+    SIMD256Vector { elements: reduced }
 }
 
 #[inline(always)]
