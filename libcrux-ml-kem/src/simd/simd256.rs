@@ -1,6 +1,7 @@
 use crate::{
     constants::FIELD_MODULUS,
     simd::{portable, simd_trait::*},
+    arithmetic::{BARRETT_MULTIPLIER, BARRETT_R, BARRETT_SHIFT},
 };
 use core::arch::x86_64::*;
 
@@ -111,10 +112,35 @@ fn cond_subtract_3329(mut v: SIMD256Vector) -> SIMD256Vector {
 
 #[inline(always)]
 fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::barrett_reduce(input);
+    let reduced = unsafe {
+        let barrett_multiplier = _mm256_set1_epi32(BARRETT_MULTIPLIER as i32);
+        let barrett_r_halved = _mm256_set1_epi32((BARRETT_R as i32) >> 1);
+        let field_modulus = _mm256_set1_epi32(FIELD_MODULUS as i32);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        let mut t_low = _mm256_mul_epi32(v.elements, barrett_multiplier);
+        t_low = _mm256_add_epi32(t_low, barrett_r_halved);
+        let quotient_low = _mm256_srai_epi32(t_low, BARRETT_SHIFT as i32);
+
+        let mut t_high = _mm256_permute4x64_epi64(v.elements, 0b00001110);
+        t_high = _mm256_mul_epi32(t_high, barrett_multiplier);
+        t_high = _mm256_add_epi32(t_high, barrett_r_halved);
+        let mut quotient_high = _mm256_srai_epi32(t_high, BARRETT_SHIFT as i32);
+
+        quotient_high = _mm256_slli_epi64(quotient_high, 32);
+
+        let quotient = _mm256_blend_epi32(quotient_low, quotient_high, 0b10101010);
+        let quotient = _mm256_mullo_epi32(quotient, field_modulus);
+
+        let reduced = _mm256_sub_epi32(v.elements, quotient);
+
+        let shuffle_with = _mm256_set_epi32(7, 5, 3, 1, 6, 4, 2, 0);
+
+        _mm256_permutevar8x32_epi32(reduced, shuffle_with)
+    };
+
+    SIMD256Vector {
+        elements: reduced
+    }
 }
 
 #[inline(always)]
