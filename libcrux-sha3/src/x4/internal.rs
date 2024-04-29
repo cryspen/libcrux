@@ -23,106 +23,89 @@ use libcrux_platform::simd256_support;
 /// the output will only return `u32::MAX` bytes.
 #[inline(always)]
 #[cfg(feature = "simd256")]
-pub(crate) fn shake256<const BYTES: usize>(
-    payload: [&[u8];4],
-) -> [[u8; BYTES];4] {
-    let input_len = payload[0].len();
+pub(crate) fn shake256<const OUTPUT_BYTES: usize, const M: usize>(
+    input: [&[u8];M],
+) -> [[u8; OUTPUT_BYTES];M] {
+    let input_len = input[0].len();
+
+    debug_assert!(M <= 4);
     debug_assert!(
-        input_len == payload[1].len()
-            && input_len == payload[2].len()
-            && input_len == payload[3].len()
-            && input_len <= u32::MAX as usize
-            && BYTES <= u32::MAX as usize
+        (input_len == input[1].len() || input[1].len() == 0)
+     && (M < 3 || input_len == input[2].len() || input[2].len() == 0)
+     && (M < 4 || input_len == input[3].len() || input[3].len() == 0)
     );
-    let mut digest = [[0u8; BYTES];4];
+
     if simd256_support() {
+        let inputs = [[0u8; input_len]; 4];
+        inputs[0] = input[0];
+        inputs[1] = input[1];
+        if M > 2 {input[2] = input[2]}
+        if M > 3 {input[3] = input[3]}
+        let mut output = [[0u8; OUTPUT_BYTES]; 4];
         unsafe {
             Hacl_Hash_SHA3_Simd256_shake256(
                 input_len as u32,
-                payload[0].as_ptr() as _,
-                payload[1].as_ptr() as _,
-                payload[2].as_ptr() as _,
-                payload[3].as_ptr() as _,
+                inputs[0].as_ptr() as _,
+                inputs[1].as_ptr() as _,
+                inputs[2].as_ptr() as _,
+                inputs[3].as_ptr() as _,
                 BYTES as u32,
-                digest[0].as_mut_ptr(),
-                digest[1].as_mut_ptr(),
-                digest[2].as_mut_ptr(),
-                digest[3].as_mut_ptr(),
+                output[0].as_mut_ptr(),
+                output[1].as_mut_ptr(),
+                output[2].as_mut_ptr(),
+                output[3].as_mut_ptr(),
             );
         }
+        core::array::from_fn(|i| output[i])
+
     } else {
-        unsafe {
-            Hacl_Hash_SHA3_shake256_hacl(
-                input_len as u32,
-                payload[0].as_ptr() as _,
-                BYTES as u32,
-                digest[0].as_mut_ptr(),
-            );
-            Hacl_Hash_SHA3_shake256_hacl(
-                input_len as u32,
-                payload[1].as_ptr() as _,
-                BYTES as u32,
-                digest[1].as_mut_ptr(),
-            );
-            Hacl_Hash_SHA3_shake256_hacl(
-                input_len as u32,
-                payload[2].as_ptr() as _,
-                BYTES as u32,
-                digest[2].as_mut_ptr(),
-            );
-            Hacl_Hash_SHA3_shake256_hacl(
-                input_len as u32,
-                payload[3].as_ptr() as _,
-                BYTES as u32,
-                digest[3].as_mut_ptr(),
-            );
+        let mut output = [[0u8; OUTPUT_BYTES]; M];
+
+        for i in 0..M {
+            if !input[i].is_empty() {
+                unsafe {
+                    Hacl_Hash_SHA3_shake256_hacl(
+                        input_len as u32,
+                        input[i].as_ptr() as _,
+                        OUTPUT_BYTES as u32,
+                        output[i].as_mut_ptr(),
+                    );
+                };
+            }
         }
+        output
     }
-    digest
 }
 
 #[inline(always)]
 #[cfg(not(feature = "simd256"))]
-pub(crate) fn shake256<const BYTES: usize>(
-    payload: [&[u8];4],
-) -> [[u8; BYTES];4] {
-    let input_len = payload[0].len();
+pub(crate) fn shake256<const OUTPUT_BYTES: usize, const M: usize>(
+    input: [&[u8];M],
+) -> [[u8; OUTPUT_BYTES];M] {
+    let input_len = input[0].len();
+
+    debug_assert!(M <= 4);
     debug_assert!(
-        input_len == payload[1].len()
-            && input_len == payload[2].len()
-            && input_len == payload[3].len()
-            && input_len <= u32::MAX as usize
-            && BYTES <= u32::MAX as usize
+        (input_len == input[1].len() || input[1].len() == 0)
+     && (M < 3 || input_len == input[2].len() || input[2].len() == 0)
+     && (M < 4 || input_len == input[3].len() || input[3].len() == 0)
     );
-    let mut digest = [[0u8; BYTES];4];
-    
-    unsafe {
-        Hacl_Hash_SHA3_shake256_hacl(
-            input_len as u32,
-            payload[0].as_ptr() as _,
-            BYTES as u32,
-            digest[0].as_mut_ptr(),
-        );
-        Hacl_Hash_SHA3_shake256_hacl(
-            input_len as u32,
-            payload[1].as_ptr() as _,
-            BYTES as u32,
-            digest[1].as_mut_ptr(),
-        );
-        Hacl_Hash_SHA3_shake256_hacl(
-            input_len as u32,
-            payload[2].as_ptr() as _,
-            BYTES as u32,
-            digest[2].as_mut_ptr(),
-        );
-        Hacl_Hash_SHA3_shake256_hacl(
-            input_len as u32,
-            payload[3].as_ptr() as _,
-            BYTES as u32,
-            digest[3].as_mut_ptr(),
-        );
+
+    let mut output = [[0u8; OUTPUT_BYTES]; M];
+
+    for i in 0..M {
+        if !input[i].is_empty() {
+            unsafe {
+                Hacl_Hash_SHA3_shake256_hacl(
+                    input_len as u32,
+                    input[i].as_ptr() as _,
+                    OUTPUT_BYTES as u32,
+                    output[i].as_mut_ptr(),
+                );
+            };
+        }
     }
-    digest
+    output
 }
 
 

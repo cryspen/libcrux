@@ -6,7 +6,7 @@
 /// More generic APIs will be added later.
 mod internal;
 
-pub fn shake256<const BYTES: usize>(input: [&[u8];4]) -> [[u8; BYTES]; 4] {
+pub fn shake256<const BYTES: usize, const K:usize>(input: [&[u8];K]) -> [[u8; BYTES];K] {
     internal::shake256(input)
 }
 

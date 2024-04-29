@@ -15,6 +15,10 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     shake256::<LEN>(input)
 }
 
+pub(crate) fn PRFx4<const LEN: usize, const K:usize>(input: [&[u8];K]) -> [[u8; LEN];K] {
+    libcrux_sha3::x4::shake256::<LEN,K>(input)
+}
+
 #[inline(always)]
 pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128StateX4 {
     debug_assert!(K == 2 || K == 3 || K == 4);

@@ -2,7 +2,7 @@ use std::usize;
 
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
-    hash_functions::{G, PRF},
+    hash_functions::{G, PRF, PRFx4},
     helper::cloop,
     matrix::*,
     ntt::*,
@@ -65,17 +65,23 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize>(
 #[inline(always)]
 fn sample_ring_element_cbd<const K: usize, const ETA2_RANDOMNESS_SIZE: usize, const ETA2: usize>(
     prf_input: &mut [u8; 33],
-    domain_separator: &mut u8,
-) -> [PolynomialRingElement; K] {
+    mut domain_separator: u8,
+) -> ([PolynomialRingElement; K],u8) {
     let mut error_1 = [PolynomialRingElement::ZERO(); K];
+    let mut inputs = [prf_input.clone();K];
     for i in 0..K {
-        prf_input[32] = *domain_separator;
-        *domain_separator += 1;
-
-        let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(prf_input);
-        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
+        inputs[i][32] = domain_separator;
+        domain_separator += 1;
     }
-    error_1
+    let mut data: [&[u8];K] = [&[0u8];K];
+    for i in 0..K {
+        data[i] = &inputs[i] as &[u8];
+    }
+    let prf_outputs = PRFx4::<ETA2_RANDOMNESS_SIZE, K>(data);
+    for i in 0..K {
+        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_outputs[i]);
+    }
+    (error_1, domain_separator)
 }
 
 /// Sample a vector of ring elements from a centered binomial distribution and
@@ -90,13 +96,18 @@ fn sample_vector_cbd_then_ntt<
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement; K], u8) {
     let mut re_as_ntt = [PolynomialRingElement::ZERO(); K];
+    let mut inputs = [prf_input;K];
     for i in 0..K {
-        prf_input[32] = domain_separator;
+        inputs[i][32] = domain_separator;
         domain_separator += 1;
-
-        let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
-
-        let r = sample_from_binomial_distribution::<ETA>(&prf_output);
+    }
+    let mut data: [&[u8];K] = [&[0u8];K];
+    for i in 0..K {
+        data[i] = &inputs[i] as &[u8];
+    }
+    let prf_outputs = PRFx4::<ETA_RANDOMNESS_SIZE, K>(data);
+    for i in 0..K {
+        let r = sample_from_binomial_distribution::<ETA>(&prf_outputs[i]);
         re_as_ntt[i] = ntt_binomially_sampled_ring_element(r);
     }
     (re_as_ntt, domain_separator)
@@ -284,9 +295,9 @@ pub(crate) fn encrypt<
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let error_1 = sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2>(
+    let (error_1,domain_separator) = sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2>(
         &mut prf_input,
-        &mut domain_separator,
+        domain_separator,
     );
 
     // e_2 := CBD{η2}(PRF(r, N))
