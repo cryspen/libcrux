@@ -3,6 +3,7 @@ use crate::{
         BARRETT_MULTIPLIER, BARRETT_R, BARRETT_SHIFT, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
         MONTGOMERY_SHIFT,
     },
+    compress::CIPHERTEXT_COMPRESSION_MULTIPLIER,
     constants::FIELD_MODULUS,
     simd::{portable, simd_trait::*},
 };
@@ -189,11 +190,32 @@ fn compress_1(mut v: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn compress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::compress::<COEFFICIENT_BITS>(input);
+fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD256Vector) -> SIMD256Vector {
+    let compressed = unsafe {
+        let field_modulus_halved = _mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
+        let coefficient_bits_mask = _mm256_set1_epi32((1 << COEFFICIENT_BITS) - 1);
+        let multiplier = _mm256_set1_epi32(CIPHERTEXT_COMPRESSION_MULTIPLIER);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        v.elements = _mm256_slli_epi32(v.elements, COEFFICIENT_BITS);
+        v.elements = _mm256_add_epi32(v.elements, field_modulus_halved);
+
+        let compressed_half_1 = _mm256_mul_epu32(v.elements, multiplier);
+        let compressed_half_1 = _mm256_srli_epi64(compressed_half_1, 35);
+
+        let compressed_half_2 = _mm256_shuffle_epi32(v.elements, 0b00_11_00_01);
+        let compressed_half_2 = _mm256_mul_epu32(compressed_half_2, multiplier);
+        // Right shift by 35, and then left shift by 32
+        let compressed_half_2 = _mm256_srli_epi64(compressed_half_2, 3);
+
+        let compressed =
+            _mm256_blend_epi32(compressed_half_1, compressed_half_2, 0b1_0_1_0_1_0_1_0);
+
+        _mm256_and_si256(compressed, coefficient_bits_mask)
+    };
+
+    SIMD256Vector {
+        elements: compressed,
+    }
 }
 
 #[inline(always)]
