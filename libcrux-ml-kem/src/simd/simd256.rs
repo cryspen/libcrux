@@ -227,16 +227,14 @@ fn ntt_layer_1_step(v: SIMD256Vector, zeta1: i32, zeta2: i32) -> SIMD256Vector {
         let zeta_multipliers = _mm256_shuffle_epi32(v.elements, 0b11_10_11_10);
 
         let rhs = _mm256_mullo_epi32(zeta_multipliers, zetas);
-        let rhs = montgomery_reduce(SIMD256Vector { elements: rhs}).elements;
+        let rhs = montgomery_reduce(SIMD256Vector { elements: rhs }).elements;
 
         let lhs = _mm256_shuffle_epi32(v.elements, 0b01_00_01_00);
 
         _mm256_add_epi32(rhs, lhs)
     };
 
-    SIMD256Vector {
-        elements: result
-    }
+    SIMD256Vector { elements: result }
 }
 
 #[inline(always)]
@@ -246,16 +244,14 @@ fn ntt_layer_2_step(v: SIMD256Vector, zeta: i32) -> SIMD256Vector {
         let zeta_multipliers = _mm256_permute4x64_epi64(v.elements, 0b11_10_11_10);
 
         let rhs = _mm256_mullo_epi32(zeta_multipliers, zetas);
-        let rhs = montgomery_reduce(SIMD256Vector { elements: rhs}).elements;
+        let rhs = montgomery_reduce(SIMD256Vector { elements: rhs }).elements;
 
         let lhs = _mm256_permute4x64_epi64(v.elements, 0b01_00_01_00);
 
         _mm256_add_epi32(rhs, lhs)
     };
 
-    SIMD256Vector {
-        elements: result
-    }
+    SIMD256Vector { elements: result }
 }
 
 #[inline(always)]
@@ -275,9 +271,7 @@ fn inv_ntt_layer_1_step(v: SIMD256Vector, zeta1: i32, zeta2: i32) -> SIMD256Vect
         _mm256_blend_epi32(sums, products_reduced, 0b1_1_0_0_1_1_0_0)
     };
 
-    SIMD256Vector {
-        elements: result
-    }
+    SIMD256Vector { elements: result }
 }
 
 #[inline(always)]
@@ -297,9 +291,7 @@ fn inv_ntt_layer_2_step(v: SIMD256Vector, zeta: i32) -> SIMD256Vector {
         _mm256_blend_epi32(sums, products_reduced, 0b1_1_1_1_0_0_0_0)
     };
 
-    SIMD256Vector {
-        elements: result
-    }
+    SIMD256Vector { elements: result }
 }
 
 #[inline(always)]
