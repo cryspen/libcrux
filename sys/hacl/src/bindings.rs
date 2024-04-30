@@ -321,6 +321,40 @@ extern "C" {
 extern "C" {
     pub fn Hacl_Hash_SHA3_sha3_512(output: *mut u8, input: *mut u8, input_len: u32);
 }
+
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_shake128(
+        output: *mut u8,
+        outputByteLen: u32,
+        input: *mut u8,
+        inputByteLen: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_shake256(
+        output: *mut u8,
+        outputByteLen: u32,
+        input: *mut u8,
+        inputByteLen: u32,
+    );
+}
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_sha3_224(output: *mut u8, input: *mut u8, input_len: u32);
+}
+
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_sha3_256(output: *mut u8, input: *mut u8, input_len: u32);
+}
+
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_sha3_384(output: *mut u8, input: *mut u8, input_len: u32);
+}
+
+extern "C" {
+    pub fn Hacl_Hash_SHA3_Scalar_sha3_512(output: *mut u8, input: *mut u8, input_len: u32);
+}
+
+
 extern "C" {
     pub fn Hacl_Hash_SHA3_Scalar_state_malloc() -> *mut u64;
 }
