@@ -12,7 +12,7 @@ enum GenerateCli {
     GenerateKey {
         /// Optionally, a file name to store the keys into.
         ///
-        /// The keys will be store into `$out.pub` and `$out` when this is used.
+        /// The keys will be store into `$out.pub` and `$out.priv` when this is used.
         #[arg(short, long)]
         out: Option<String>,
     },
@@ -29,7 +29,7 @@ enum GenerateCli {
 
         /// Optionally, a file name to store the shared secret output.
         ///
-        /// This defaults to `mlkem.ss`.
+        /// This defaults to `mlkem-encapsulated.ss`.
         #[arg(short, long)]
         ss: Option<String>,
     },
@@ -44,7 +44,7 @@ enum GenerateCli {
 
         /// Optionally, a file name to store the shared secret.
         ///
-        /// This defaults to `mlkem.ss``.
+        /// This defaults to `mlkem-decapsulated.ss``.
         #[arg(short, long)]
         ss: Option<String>,
     },
@@ -90,16 +90,18 @@ fn main() {
         GenerateCli::GenerateKey { out: file } => {
             // Generate a key pair and write it out.
             let (sk_name, pk_name) = match file {
-                Some(n) => (n.clone(), format!("{n}.pub")),
-                None => ("mlkem".to_owned(), "mlkem.pub".to_owned()),
+                Some(n) => (format!("{n}.priv"), format!("{n}.pub")),
+                None => ("mlkem.priv".to_owned(), "mlkem.pub".to_owned()),
             };
 
             let (secret_key, public_key) = kem::key_gen(alg, &mut rng).unwrap();
 
+            println!("Writing private key to {sk_name}");
             File::create(sk_name.clone())
                 .expect(&format!("Can not create file {sk_name}"))
                 .write_all(&secret_key.encode())
                 .expect("Error writing private key");
+            println!("Writing public key to {pk_name}");
             File::create(pk_name.clone())
                 .expect(&format!("Can not create file {pk_name}"))
                 .write_all(&public_key.encode())
@@ -119,15 +121,17 @@ fn main() {
             };
             let ss_out = match ss {
                 Some(n) => n,
-                None => "mlkem.ss".to_owned(),
+                None => "mlkem-encapsulated.ss".to_owned(),
             };
 
+            println!("Writing ciphertext to {ct_out}");
             let mut out_file =
                 File::create(ct_out.clone()).expect(&format!("Can not create file {ct_out}"));
             out_file
                 .write_all(&ciphertext.encode())
                 .expect("Error writing public key");
 
+            println!("Writing shared secret to {ss_out}");
             let mut out_file =
                 File::create(ss_out.clone()).expect(&format!("Can not create file {ss_out}"));
             out_file
@@ -145,9 +149,10 @@ fn main() {
 
             let out = match out {
                 Some(n) => n,
-                None => "mlkem.ss".to_owned(),
+                None => "mlkem-decapsulated.ss".to_owned(),
             };
 
+            println!("Writing shared secret to {out}");
             let mut out_file =
                 File::create(out.clone()).expect(&format!("Can not create file {out}"));
             out_file
@@ -158,6 +163,7 @@ fn main() {
 }
 
 fn bytes_from_file(file: String) -> Vec<u8> {
+    println!("Reading file {file}");
     let mut bytes = Vec::new();
     File::open(file.clone())
         .expect(&format!("Error opening file {file}"))
