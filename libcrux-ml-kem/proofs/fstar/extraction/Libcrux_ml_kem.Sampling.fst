@@ -125,7 +125,13 @@ let sample_from_uniform_distribution_next
   <:
   (t_Array usize v_K & t_Array (t_Array i32 (sz 256)) v_K & bool)
 
-let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
+let sample_from_binomial_distribution_2_
+      (#v_Vector: Type)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Simd.Simd_trait.t_Operations v_Vector)
+      (randomness: t_Slice u8)
+     =
   let sampled_i32s:t_Array i32 (sz 256) = Rust_primitives.Hax.repeat 0l (sz 256) in
   let sampled_i32s:t_Array i32 (sz 256) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -183,9 +189,15 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
                 in
                 sampled_i32s))
   in
-  Libcrux_ml_kem.Polynomial.from_i32_array sampled_i32s
+  Libcrux_ml_kem.Polynomial.impl__from_i32_array sampled_i32s
 
-let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
+let sample_from_binomial_distribution_3_
+      (#v_Vector: Type)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Simd.Simd_trait.t_Operations v_Vector)
+      (randomness: t_Slice u8)
+     =
   let sampled_i32s:t_Array i32 (sz 256) = Rust_primitives.Hax.repeat 0l (sz 256) in
   let sampled_i32s:t_Array i32 (sz 256) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -238,9 +250,16 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
                 in
                 sampled_i32s))
   in
-  Libcrux_ml_kem.Polynomial.from_i32_array sampled_i32s
+  Libcrux_ml_kem.Polynomial.impl__from_i32_array sampled_i32s
 
-let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
+let sample_from_binomial_distribution
+      (v_ETA: usize)
+      (#v_Vector: Type)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Simd.Simd_trait.t_Operations v_Vector)
+      (randomness: t_Slice u8)
+     =
   match cast (v_ETA <: usize) <: u32 with
   | 2ul -> sample_from_binomial_distribution_2_ randomness
   | 3ul -> sample_from_binomial_distribution_3_ randomness
@@ -250,7 +269,14 @@ let sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8) =
         <:
         Rust_primitives.Hax.t_Never)
 
-let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
+let sample_from_xof
+      (v_K: usize)
+      (#v_Vector: Type)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_ml_kem.Simd.Simd_trait.t_Operations v_Vector)
+      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
+     =
   let (sampled_coefficients: t_Array usize v_K):t_Array usize v_K =
     Rust_primitives.Hax.repeat (sz 0) v_K
   in
@@ -308,4 +334,4 @@ let sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K) =
             Libcrux_sha3.X4.t_Shake128StateX4))
   in
   let _:Prims.unit = Libcrux_ml_kem.Hash_functions.free_state xof_state in
-  Core.Array.impl_23__map v_K out Libcrux_ml_kem.Polynomial.from_i32_array
+  Core.Array.impl_23__map v_K out Libcrux_ml_kem.Polynomial.impl__from_i32_array

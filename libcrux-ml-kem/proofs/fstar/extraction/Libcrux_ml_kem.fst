@@ -257,6 +257,34 @@ let encapsulate
   <:
   (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
+let validate_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
+     =
+  let deserialized_pk:t_Array
+    (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
+    v_K =
+    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_PUBLIC_KEY_SIZE
+      v_K
+      (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
+          <:
+          Core.Ops.Range.t_RangeTo usize ]
+        <:
+        t_Slice u8)
+  in
+  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
+    Libcrux_ml_kem.Ind_cpa.serialize_public_key v_K
+      v_RANKED_BYTES_PER_RING_ELEMENT
+      v_PUBLIC_KEY_SIZE
+      deserialized_pk
+      (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+          <:
+          Core.Ops.Range.t_RangeFrom usize ]
+        <:
+        t_Slice u8)
+  in
+  public_key =. public_key_serialized
+
 let generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
@@ -301,29 +329,3 @@ let generate_keypair
     v_PUBLIC_KEY_SIZE
     private_key
     (Core.Convert.f_into public_key <: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
-
-let validate_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
-     =
-  let deserialized_pk:t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K =
-    Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_PUBLIC_KEY_SIZE
-      v_K
-      (public_key.[ { Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
-          <:
-          Core.Ops.Range.t_RangeTo usize ]
-        <:
-        t_Slice u8)
-  in
-  let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
-    Libcrux_ml_kem.Ind_cpa.serialize_public_key v_K
-      v_RANKED_BYTES_PER_RING_ELEMENT
-      v_PUBLIC_KEY_SIZE
-      deserialized_pk
-      (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
-          <:
-          Core.Ops.Range.t_RangeFrom usize ]
-        <:
-        t_Slice u8)
-  in
-  public_key =. public_key_serialized

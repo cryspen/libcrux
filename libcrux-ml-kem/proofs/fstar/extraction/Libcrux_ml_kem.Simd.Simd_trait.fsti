@@ -35,6 +35,8 @@ class t_GenericOperations (v_Self: Type) = {
 }
 
 class t_Operations (v_Self: Type) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_2101570567305961368:Core.Clone.t_Clone v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_957087622381469234:Core.Marker.t_Copy v_Self;
   f_ZERO_pre:Prims.unit -> bool;
   f_ZERO_post:Prims.unit -> v_Self -> bool;
   f_ZERO:x0: Prims.unit -> Prims.Pure v_Self (f_ZERO_pre x0) (fun result -> f_ZERO_post x0 result);
