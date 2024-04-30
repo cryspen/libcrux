@@ -23,24 +23,19 @@ use libcrux_platform::simd256_support;
 /// the output will only return `u32::MAX` bytes.
 #[inline(always)]
 #[cfg(feature = "simd256")]
-pub(crate) fn shake256<const OUTPUT_BYTES: usize, const M: usize>(
-    input: [&[u8];M],
-) -> [[u8; OUTPUT_BYTES];M] {
+pub(crate) fn shake256<const OUTPUT_BYTES: usize>(
+    mut input: [&[u8];4],
+) -> [[u8; OUTPUT_BYTES];4] {
     let input_len = input[0].len();
-
-    debug_assert!(M <= 4);
     debug_assert!(
-        (input_len == input[1].len() || input[1].len() == 0)
-     && (M < 3 || input_len == input[2].len() || input[2].len() == 0)
-     && (M < 4 || input_len == input[3].len() || input[3].len() == 0)
+        (input_len == input[1].len())
+     && (input_len == input[2].len() || input[2].len() == 0)
+     && (input_len == input[3].len() || input[3].len() == 0)
     );
 
     if simd256_support() {
-        let inputs = [[0u8; input_len]; 4];
-        inputs[0] = input[0];
-        inputs[1] = input[1];
-        if M > 2 {input[2] = input[2]}
-        if M > 3 {input[3] = input[3]}
+        if input[2].is_empty() {input[2] = &input[0]}
+        if input[3].is_empty() {input[3] = &input[0]}
         let mut output = [[0u8; OUTPUT_BYTES]; 4];
         unsafe {
             Hacl_Hash_SHA3_Simd256_shake256(
@@ -59,9 +54,9 @@ pub(crate) fn shake256<const OUTPUT_BYTES: usize, const M: usize>(
         core::array::from_fn(|i| output[i])
 
     } else {
-        let mut output = [[0u8; OUTPUT_BYTES]; M];
+        let mut output = [[0u8; OUTPUT_BYTES]; 4];
 
-        for i in 0..M {
+        for i in 0..4 {
             if !input[i].is_empty() {
                 unsafe {
                     Hacl_Hash_SHA3_shake256_hacl(
@@ -79,21 +74,20 @@ pub(crate) fn shake256<const OUTPUT_BYTES: usize, const M: usize>(
 
 #[inline(always)]
 #[cfg(not(feature = "simd256"))]
-pub(crate) fn shake256<const OUTPUT_BYTES: usize, const M: usize>(
-    input: [&[u8];M],
-) -> [[u8; OUTPUT_BYTES];M] {
+pub(crate) fn shake256<const OUTPUT_BYTES: usize>(
+    input: [&[u8];4],
+) -> [[u8; OUTPUT_BYTES];4] {
     let input_len = input[0].len();
 
-    debug_assert!(M <= 4);
     debug_assert!(
-        (input_len == input[1].len() || input[1].len() == 0)
-     && (M < 3 || input_len == input[2].len() || input[2].len() == 0)
-     && (M < 4 || input_len == input[3].len() || input[3].len() == 0)
+        (input_len == input[1].len())
+     && (input_len == input[2].len() || input[2].len() == 0)
+     && (input_len == input[3].len() || input[3].len() == 0)
     );
 
-    let mut output = [[0u8; OUTPUT_BYTES]; M];
+    let mut output = [[0u8; OUTPUT_BYTES]; 4];
 
-    for i in 0..M {
+    for i in 0..4 {
         if !input[i].is_empty() {
             unsafe {
                 Hacl_Hash_SHA3_shake256_hacl(

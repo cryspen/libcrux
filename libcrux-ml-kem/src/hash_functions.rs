@@ -15,8 +15,12 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     shake256::<LEN>(input)
 }
 
-pub(crate) fn PRFx4<const LEN: usize, const K:usize>(input: [&[u8];K]) -> [[u8; LEN];K] {
-    libcrux_sha3::x4::shake256::<LEN,K>(input)
+pub(crate) fn PRFx4<const LEN: usize, const K:usize>(input: [[u8;33];K]) -> [[u8; LEN];K] {
+    let mut data: [&[u8];K] = [&[];K];
+    for i in 0..K {
+        data[i] = &input[i] as &[u8];
+    }
+    libcrux_sha3::x4::shake256::<LEN,K>(data)
 }
 
 #[inline(always)]

@@ -64,20 +64,16 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize>(
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
 fn sample_ring_element_cbd<const K: usize, const ETA2_RANDOMNESS_SIZE: usize, const ETA2: usize>(
-    prf_input: &mut [u8; 33],
+    prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement; K],u8) {
     let mut error_1 = [PolynomialRingElement::ZERO(); K];
-    let mut inputs = [prf_input.clone();K];
+    let mut inputs = [prf_input;K];
     for i in 0..K {
         inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let mut data: [&[u8];K] = [&[0u8];K];
-    for i in 0..K {
-        data[i] = &inputs[i] as &[u8];
-    }
-    let prf_outputs = PRFx4::<ETA2_RANDOMNESS_SIZE, K>(data);
+    let prf_outputs = PRFx4::<ETA2_RANDOMNESS_SIZE, K>(inputs);
     for i in 0..K {
         error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_outputs[i]);
     }
@@ -92,7 +88,7 @@ fn sample_vector_cbd_then_ntt<
     const ETA: usize,
     const ETA_RANDOMNESS_SIZE: usize,
 >(
-    mut prf_input: [u8; 33],
+    prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement; K], u8) {
     let mut re_as_ntt = [PolynomialRingElement::ZERO(); K];
@@ -101,11 +97,7 @@ fn sample_vector_cbd_then_ntt<
         inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let mut data: [&[u8];K] = [&[0u8];K];
-    for i in 0..K {
-        data[i] = &inputs[i] as &[u8];
-    }
-    let prf_outputs = PRFx4::<ETA_RANDOMNESS_SIZE, K>(data);
+    let prf_outputs = PRFx4::<ETA_RANDOMNESS_SIZE, K>(inputs);
     for i in 0..K {
         let r = sample_from_binomial_distribution::<ETA>(&prf_outputs[i]);
         re_as_ntt[i] = ntt_binomially_sampled_ring_element(r);
@@ -288,7 +280,7 @@ pub(crate) fn encrypt<
     // end for
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
-    let (r_as_ntt, mut domain_separator) =
+    let (r_as_ntt, domain_separator) =
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
 
     // for i from 0 to k−1 do
@@ -296,7 +288,7 @@ pub(crate) fn encrypt<
     //     N := N + 1
     // end for
     let (error_1,domain_separator) = sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2>(
-        &mut prf_input,
+        prf_input,
         domain_separator,
     );
 

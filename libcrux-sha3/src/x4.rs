@@ -7,7 +7,14 @@
 mod internal;
 
 pub fn shake256<const BYTES: usize, const K:usize>(input: [&[u8];K]) -> [[u8; BYTES];K] {
-    internal::shake256(input)
+    let data = [
+            input[0],
+            if K > 1 { input[1] } else { &[] },
+            if K > 2 { input[2] } else { &[] },
+            if K > 3 { input[3] } else { &[] },
+        ];
+    let output = internal::shake256(data);
+    output[0..K].try_into().unwrap()
 }
 
 /// Incremental state
