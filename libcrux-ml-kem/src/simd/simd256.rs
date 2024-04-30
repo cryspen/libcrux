@@ -264,10 +264,7 @@ fn inv_ntt_layer_1_step(v: SIMD256Vector, zeta1: i32, zeta2: i32) -> SIMD256Vect
         let zetas = _mm256_set_epi32(zeta2, zeta2, 0, 0, zeta1, zeta1, 0, 0);
 
         let add_by_signs = _mm256_set_epi32(-1, -1, 1, 1, -1, -1, 1, 1);
-
-        //print_m256i_as_i32s(v.elements, String::from("Before shuffle."));
         let add_by = _mm256_shuffle_epi32(v.elements, 0b01_00_11_10);
-
         let add_by = _mm256_mullo_epi32(add_by, add_by_signs);
 
         let sums = _mm256_add_epi32(v.elements, add_by);
