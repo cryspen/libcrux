@@ -241,10 +241,21 @@ fn ntt_layer_1_step(v: SIMD256Vector, zeta1: i32, zeta2: i32) -> SIMD256Vector {
 
 #[inline(always)]
 fn ntt_layer_2_step(v: SIMD256Vector, zeta: i32) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::ntt_layer_2_step(input, zeta);
+    let result = unsafe {
+        let zetas = _mm256_set_epi32(-zeta, -zeta, -zeta, -zeta, zeta, zeta, zeta, zeta);
+        let zeta_multipliers = _mm256_permute4x64_epi64(v.elements, 0b11_10_11_10);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        let rhs = _mm256_mullo_epi32(zeta_multipliers, zetas);
+        let rhs = montgomery_reduce(SIMD256Vector { elements: rhs}).elements;
+
+        let lhs = _mm256_permute4x64_epi64(v.elements, 0b01_00_01_00);
+
+        _mm256_add_epi32(rhs, lhs)
+    };
+
+    SIMD256Vector {
+        elements: result
+    }
 }
 
 #[inline(always)]
