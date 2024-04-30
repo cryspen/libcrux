@@ -6,123 +6,102 @@ pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
 #[derive(Clone, Copy)]
-pub struct PolynomialRingElement {
-    pub(crate) coefficients: [simd::Vector; VECTORS_IN_RING_ELEMENT],
+pub struct PolynomialRingElement<Vector: Operations> {
+    pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
-impl PolynomialRingElement {
+impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
             // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
-            coefficients: [simd::Vector::ZERO(); 32],
+            coefficients: [Vector::ZERO(); 32],
         }
     }
-}
 
-#[inline(always)]
-pub(crate) fn from_i32_array(a: [i32; 256]) -> PolynomialRingElement {
-    let mut result = PolynomialRingElement::ZERO();
-    for i in 0..VECTORS_IN_RING_ELEMENT {
-        result.coefficients[i] = simd::Vector::from_i32_array(
-            a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
-                .try_into()
-                .unwrap(),
-        );
+    #[inline(always)]
+    pub(crate) fn from_i32_array(a: [i32; 256]) -> Self {
+        let mut result = PolynomialRingElement::ZERO();
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            result.coefficients[i] = Vector::from_i32_array(
+                a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
+                    .try_into()
+                    .unwrap(),
+            );
+        }
+        result
     }
-    result
-}
 
-/// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
-/// sum of their constituent coefficients.
-#[inline(always)]
-pub(crate) fn add_to_ring_element<const K: usize>(
-    mut lhs: PolynomialRingElement,
-    rhs: &PolynomialRingElement,
-) -> PolynomialRingElement {
-    for i in 0..lhs.coefficients.len() {
-        lhs.coefficients[i] = simd::Vector::add(lhs.coefficients[i], &rhs.coefficients[i]);
+    /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+    /// sum of their constituent coefficients.
+    #[inline(always)]
+    pub(crate) fn add_to_ring_element<const K: usize>(mut self, rhs: &Self) -> Self {
+        for i in 0..self.coefficients.len() {
+            self.coefficients[i] = Vector::add(self.coefficients[i], &rhs.coefficients[i]);
+        }
+        self
     }
-    lhs
-}
 
-#[inline(always)]
-pub(crate) fn poly_barrett_reduce(mut a: PolynomialRingElement) -> PolynomialRingElement {
-    for i in 0..VECTORS_IN_RING_ELEMENT {
-        a.coefficients[i] = simd::Vector::barrett_reduce(a.coefficients[i]);
+    #[inline(always)]
+    pub(crate) fn poly_barrett_reduce(mut self) -> Self {
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            self.coefficients[i] = Vector::barrett_reduce(self.coefficients[i]);
+        }
+        self
     }
-    a
-}
 
-#[inline(always)]
-pub(crate) fn subtract_reduce(
-    a: &PolynomialRingElement,
-    mut b: PolynomialRingElement,
-) -> PolynomialRingElement {
-    for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_reduce(
-            simd::Vector::multiply_by_constant(b.coefficients[i], 1441),
-        );
-        b.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::sub(
-            a.coefficients[i],
-            &coefficient_normal_form,
-        ));
+    #[inline(always)]
+    pub(crate) fn subtract_reduce(&self, mut b: Self) -> Self {
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            let coefficient_normal_form =
+                Vector::montgomery_reduce(Vector::multiply_by_constant(b.coefficients[i], 1441));
+            b.coefficients[i] =
+                Vector::barrett_reduce(Vector::sub(self.coefficients[i], &coefficient_normal_form));
+        }
+        b
     }
-    b
-}
 
-#[inline(always)]
-pub(crate) fn add_message_error_reduce(
-    err: &PolynomialRingElement,
-    message: &PolynomialRingElement,
-    mut result: PolynomialRingElement,
-) -> PolynomialRingElement {
-    for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_reduce(
-            simd::Vector::multiply_by_constant(result.coefficients[i], 1441),
-        );
-        result.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::add(
-            coefficient_normal_form,
-            &simd::Vector::add(err.coefficients[i], &message.coefficients[i]),
-        ));
+    #[inline(always)]
+    pub(crate) fn add_message_error_reduce(&self, message: &Self, mut result: Self) -> Self {
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            let coefficient_normal_form = Vector::montgomery_reduce(Vector::multiply_by_constant(
+                result.coefficients[i],
+                1441,
+            ));
+            result.coefficients[i] = Vector::barrett_reduce(Vector::add(
+                coefficient_normal_form,
+                &Vector::add(self.coefficients[i], &message.coefficients[i]),
+            ));
+        }
+        result
     }
-    result
-}
 
-#[inline(always)]
-pub(crate) fn add_error_reduce(
-    err: &PolynomialRingElement,
-    mut result: PolynomialRingElement,
-) -> PolynomialRingElement {
-    for j in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_reduce(
-            simd::Vector::multiply_by_constant(result.coefficients[j], 1441),
-        );
+    #[inline(always)]
+    pub(crate) fn add_error_reduce(&self, mut result: Self) -> Self {
+        for j in 0..VECTORS_IN_RING_ELEMENT {
+            let coefficient_normal_form = Vector::montgomery_reduce(Vector::multiply_by_constant(
+                result.coefficients[j],
+                1441,
+            ));
 
-        result.coefficients[j] = simd::Vector::barrett_reduce(simd::Vector::add(
-            coefficient_normal_form,
-            &err.coefficients[j],
-        ));
+            result.coefficients[j] =
+                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &self.coefficients[j]));
+        }
+        result
     }
-    result
-}
 
-#[inline(always)]
-pub(crate) fn add_standard_error_reduce(
-    err: &PolynomialRingElement,
-    mut result: PolynomialRingElement,
-) -> PolynomialRingElement {
-    for j in 0..VECTORS_IN_RING_ELEMENT {
-        // The coefficients are of the form aR^{-1} mod q, which means
-        // calling to_montgomery_domain() on them should return a mod q.
-        let coefficient_normal_form = simd::Vector::to_standard_domain(result.coefficients[j]);
+    #[inline(always)]
+    pub(crate) fn add_standard_error_reduce(&self, mut result: Self) -> Self {
+        for j in 0..VECTORS_IN_RING_ELEMENT {
+            // The coefficients are of the form aR^{-1} mod q, which means
+            // calling to_montgomery_domain() on them should return a mod q.
+            let coefficient_normal_form = Vector::to_standard_domain(result.coefficients[j]);
 
-        result.coefficients[j] = simd::Vector::barrett_reduce(simd::Vector::add(
-            coefficient_normal_form,
-            &err.coefficients[j],
-        ));
+            result.coefficients[j] =
+                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &self.coefficients[j]));
+        }
+        result
     }
-    result
 }
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
