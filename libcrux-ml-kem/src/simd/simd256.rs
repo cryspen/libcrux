@@ -13,6 +13,13 @@ pub(crate) struct SIMD256Vector {
     elements: __m256i,
 }
 
+#[allow(dead_code)]
+fn print_m256i_as_i32s(a: __m256i, prefix: String) {
+    let mut a_bytes = [0i32; 8];
+    unsafe { _mm256_store_si256(a_bytes.as_mut_ptr() as *mut __m256i, a) };
+    println!("{}: {:?}", prefix, a_bytes);
+}
+
 #[allow(non_snake_case)]
 #[inline(always)]
 fn ZERO() -> SIMD256Vector {
@@ -223,15 +230,13 @@ fn inv_ntt_layer_2_step(v: SIMD256Vector, zeta: i32) -> SIMD256Vector {
 
 #[inline(always)]
 fn ntt_multiply(lhs: &SIMD256Vector, rhs: &SIMD256Vector, zeta0: i32, zeta1: i32) -> SIMD256Vector {
-   /* let result = unsafe {
+    let result = unsafe {
         // Calculate the first element of the output binomial
         let zetas = _mm256_set_epi32(-zeta1, 0, zeta1, 0, -zeta0, 0, zeta0, 0);
 
         let left = _mm256_mullo_epi32(lhs.elements, rhs.elements);
-        let right = montgomery_reduce(SIMD256Vector {elements : left});
+        let right = montgomery_reduce(SIMD256Vector { elements: left });
 
-        // This multiplication is probably wrong, we might have to use
-        // _mm256_mul_epu32
         let right = _mm256_mullo_epi32(right.elements, zetas);
 
         let right = _mm256_shuffle_epi32(right, 0b00_11_00_01);
@@ -241,20 +246,15 @@ fn ntt_multiply(lhs: &SIMD256Vector, rhs: &SIMD256Vector, zeta0: i32, zeta1: i32
         // Calculate the second element in the output binomial
         let rhs_adjacent_swapped = _mm256_shuffle_epi32(rhs.elements, 0b10_11_00_01);
         let result_1 = _mm256_mullo_epi32(lhs.elements, rhs_adjacent_swapped);
-        let result_1 = _mm256_hadd_epi32(result_1, result_1);
-        let result_1 = _mm256_shuffle_epi32(result_1, 0b00_00_00_00);
+
+        let swapped = _mm256_shuffle_epi32(result_1, 0b10_00_00_00);
+        let result_1 = _mm256_add_epi32(result_1, swapped);
 
         // Put them together
         _mm256_blend_epi32(result_0, result_1, 0b1_0_1_0_1_0_1_0)
     };
 
-    montgomery_reduce(SIMD256Vector { elements: result })*/
-    let input1 = portable::PortableVector::from_i32_array(to_i32_array(*lhs));
-    let input2 = portable::PortableVector::from_i32_array(to_i32_array(*rhs));
-
-    let output = portable::PortableVector::ntt_multiply(&input1, &input2, zeta0, zeta1);
-
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    montgomery_reduce(SIMD256Vector { elements: result })
 }
 
 #[inline(always)]
