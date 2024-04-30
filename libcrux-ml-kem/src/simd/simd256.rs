@@ -135,6 +135,8 @@ fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
         let mut t_high = _mm256_shuffle_epi32(v.elements, 0b00_11_00_01);
         t_high = _mm256_mul_epi32(t_high, barrett_multiplier);
         t_high = _mm256_add_epi64(t_high, barrett_r_halved);
+
+        // Right shift by 26, then left shift by 32
         let quotient_high = _mm256_slli_epi64(t_high, 6);
 
         let quotient = _mm256_blend_epi32(quotient_low, quotient_high, 0b1_0_1_0_1_0_1_0);
@@ -220,10 +222,21 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD256Vector) -> SIMD256Vector 
 
 #[inline(always)]
 fn ntt_layer_1_step(v: SIMD256Vector, zeta1: i32, zeta2: i32) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::ntt_layer_1_step(input, zeta1, zeta2);
+    let result = unsafe {
+        let zetas = _mm256_set_epi32(-zeta2, -zeta2, zeta2, zeta2, -zeta1, -zeta1, zeta1, zeta1);
+        let zeta_multipliers = _mm256_shuffle_epi32(v.elements, 0b11_10_11_10);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        let rhs = _mm256_mullo_epi32(zeta_multipliers, zetas);
+        let rhs = montgomery_reduce(SIMD256Vector { elements: rhs}).elements;
+
+        let lhs = _mm256_shuffle_epi32(v.elements, 0b01_00_01_00);
+
+        _mm256_add_epi32(rhs, lhs)
+    };
+
+    SIMD256Vector {
+        elements: result
+    }
 }
 
 #[inline(always)]
