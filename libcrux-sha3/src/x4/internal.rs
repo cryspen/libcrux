@@ -39,16 +39,16 @@ pub(crate) fn shake256<const OUTPUT_BYTES: usize>(
         let mut output = [[0u8; OUTPUT_BYTES]; 4];
         unsafe {
             Hacl_Hash_SHA3_Simd256_shake256(
-                input_len as u32,
-                inputs[0].as_ptr() as _,
-                inputs[1].as_ptr() as _,
-                inputs[2].as_ptr() as _,
-                inputs[3].as_ptr() as _,
-                BYTES as u32,
                 output[0].as_mut_ptr(),
                 output[1].as_mut_ptr(),
                 output[2].as_mut_ptr(),
                 output[3].as_mut_ptr(),
+                OUTPUT_BYTES as u32,
+                input[0].as_ptr() as _,
+                input[1].as_ptr() as _,
+                input[2].as_ptr() as _,
+                input[3].as_ptr() as _,
+                input_len as u32,
             );
         }
         core::array::from_fn(|i| output[i])

@@ -1138,82 +1138,82 @@ extern "C" {
 }
 extern "C" {
     pub fn Hacl_Hash_SHA3_Simd256_shake128(
-        inputByteLen: u32,
-        input0: *mut u8,
-        input1: *mut u8,
-        input2: *mut u8,
-        input3: *mut u8,
-        outputByteLen: u32,
         output0: *mut u8,
         output1: *mut u8,
         output2: *mut u8,
         output3: *mut u8,
+        outputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
     );
 }
 extern "C" {
     pub fn Hacl_Hash_SHA3_Simd256_shake256(
-        inputByteLen: u32,
-        input0: *mut u8,
-        input1: *mut u8,
-        input2: *mut u8,
-        input3: *mut u8,
-        outputByteLen: u32,
         output0: *mut u8,
         output1: *mut u8,
         output2: *mut u8,
         output3: *mut u8,
+        outputByteLen: u32,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
     );
 }
 extern "C" {
     pub fn Hacl_Hash_SHA3_Simd256_sha3_224(
-        inputByteLen: u32,
-        input0: *mut u8,
-        input1: *mut u8,
-        input2: *mut u8,
-        input3: *mut u8,
         output0: *mut u8,
         output1: *mut u8,
         output2: *mut u8,
         output3: *mut u8,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
     );
 }
 extern "C" {
     pub fn Hacl_Hash_SHA3_Simd256_sha3_256(
-        inputByteLen: u32,
-        input0: *mut u8,
-        input1: *mut u8,
-        input2: *mut u8,
-        input3: *mut u8,
         output0: *mut u8,
         output1: *mut u8,
         output2: *mut u8,
         output3: *mut u8,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
     );
 }
 extern "C" {
     pub fn Hacl_Hash_SHA3_Simd256_sha3_384(
-        inputByteLen: u32,
-        input0: *mut u8,
-        input1: *mut u8,
-        input2: *mut u8,
-        input3: *mut u8,
         output0: *mut u8,
         output1: *mut u8,
         output2: *mut u8,
         output3: *mut u8,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
     );
 }
 extern "C" {
     pub fn Hacl_Hash_SHA3_Simd256_sha3_512(
-        inputByteLen: u32,
-        input0: *mut u8,
-        input1: *mut u8,
-        input2: *mut u8,
-        input3: *mut u8,
         output0: *mut u8,
         output1: *mut u8,
         output2: *mut u8,
         output3: *mut u8,
+        input0: *mut u8,
+        input1: *mut u8,
+        input2: *mut u8,
+        input3: *mut u8,
+        inputByteLen: u32,
     );
 }
 extern "C" {
