@@ -55,14 +55,16 @@ class extractAction(argparse.Action):
             "-libcrux_platform::macos_arm::*",
             "+!libcrux_platform::platform::*",
             "-libcrux_ml_kem::types::index_impls::**",
-            "-libcrux_ml_kem::simd::simd256::x64_avx2::**",
+            "+:libcrux_ml_kem::simd::simd256::x64_avx2::**",
             "-libcrux_ml_kem::simd::simd128::**",
         ]
         include_str = " ".join(includes)
         interfaces = [
-            "+* -libcrux::kem::kyber::types",
+            "+*",
+            "-libcrux::kem::kyber::types",
             "+!libcrux_platform::**",
             "+!libcrux::digest::**",
+            "+libcrux_ml_kem::simd::simd256::x64_avx2::**",
         ]
         interface_include = " ".join(interfaces)
         cargo_hax_into = [
