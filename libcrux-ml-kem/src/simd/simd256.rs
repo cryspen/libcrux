@@ -260,10 +260,27 @@ fn ntt_layer_2_step(v: SIMD256Vector, zeta: i32) -> SIMD256Vector {
 
 #[inline(always)]
 fn inv_ntt_layer_1_step(v: SIMD256Vector, zeta1: i32, zeta2: i32) -> SIMD256Vector {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    let output = portable::PortableVector::inv_ntt_layer_1_step(input, zeta1, zeta2);
+    let result = unsafe {
+        let zetas = _mm256_set_epi32(zeta2, zeta2, 0, 0, zeta1, zeta1, 0, 0);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+        let add_by_signs = _mm256_set_epi32(-1, -1, 1, 1, -1, -1, 1, 1);
+
+        //print_m256i_as_i32s(v.elements, String::from("Before shuffle."));
+        let add_by = _mm256_shuffle_epi32(v.elements, 0b01_00_11_10);
+
+        let add_by = _mm256_mullo_epi32(add_by, add_by_signs);
+
+        let sums = _mm256_add_epi32(v.elements, add_by);
+
+        let products = _mm256_mullo_epi32(sums, zetas);
+        let products_reduced = montgomery_reduce(SIMD256Vector { elements: products }).elements;
+
+        _mm256_blend_epi32(sums, products_reduced, 0b1_1_0_0_1_1_0_0)
+    };
+
+    SIMD256Vector {
+        elements: result
+    }
 }
 
 #[inline(always)]
