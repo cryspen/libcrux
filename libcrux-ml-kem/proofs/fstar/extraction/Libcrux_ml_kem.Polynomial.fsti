@@ -27,7 +27,7 @@ let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Simd.Simd_trait.v_FIELD_ELEMENTS_IN_VECTOR
 
 type t_PolynomialRingElement = {
-  f_coefficients:t_Array Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector (sz 32)
+  f_coefficients:t_Array Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector (sz 32)
 }
 
 val impl__PolynomialRingElement__ZERO: Prims.unit
@@ -50,9 +50,9 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
 val from_i32_array (a: t_Array i32 (sz 256))
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
-val inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) (zeta_r: i32)
+val inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) (zeta_r: i32)
     : Prims.Pure
-      (Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector & Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+      (Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector & Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -80,18 +80,18 @@ val ntt_at_layer_2_
       (v__layer v__initial_coefficient_bound: usize)
     : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
 
-val ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+val ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
     : Prims.Pure
-      (Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector & Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+      (Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector & Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 val ntt_at_layer_7_ (re: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
 
-val ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) (zeta_r: i32)
+val ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) (zeta_r: i32)
     : Prims.Pure
-      (Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector & Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+      (Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector & Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 

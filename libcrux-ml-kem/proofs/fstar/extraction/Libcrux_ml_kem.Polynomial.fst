@@ -9,7 +9,7 @@ let impl__PolynomialRingElement__ZERO (_: Prims.unit) =
     =
     Rust_primitives.Hax.repeat (Libcrux_ml_kem.Simd.Simd_trait.f_ZERO ()
         <:
-        Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+        Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
       (sz 32)
   }
   <:
@@ -29,12 +29,12 @@ let add_error_reduce (err result: t_PolynomialRingElement) =
       (fun result j ->
           let result:t_PolynomialRingElement = result in
           let j:usize = j in
-          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant
-                  (result.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  (result.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   1441l
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
           in
           let result:t_PolynomialRingElement =
             {
@@ -45,11 +45,11 @@ let add_error_reduce (err result: t_PolynomialRingElement) =
                 j
                 (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_add
                         coefficient_normal_form
-                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement
@@ -72,12 +72,12 @@ let add_message_error_reduce (err message result: t_PolynomialRingElement) =
       (fun result i ->
           let result:t_PolynomialRingElement = result in
           let i:usize = i in
-          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant
-                  (result.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  (result.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   1441l
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
           in
           let result:t_PolynomialRingElement =
             {
@@ -90,16 +90,16 @@ let add_message_error_reduce (err message result: t_PolynomialRingElement) =
                         coefficient_normal_form
                         (Libcrux_ml_kem.Simd.Simd_trait.f_add (err.f_coefficients.[ i ]
                               <:
-                              Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                              Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                             (message.f_coefficients.[ i ]
                               <:
-                              Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                              Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                           <:
-                          Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                          Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement
@@ -122,10 +122,10 @@ let add_standard_error_reduce (err result: t_PolynomialRingElement) =
       (fun result j ->
           let result:t_PolynomialRingElement = result in
           let j:usize = j in
-          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_to_standard_domain (result.f_coefficients.[ j ]
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
           in
           let result:t_PolynomialRingElement =
             {
@@ -136,11 +136,11 @@ let add_standard_error_reduce (err result: t_PolynomialRingElement) =
                 j
                 (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_add
                         coefficient_normal_form
-                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                        (err.f_coefficients.[ j ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement
@@ -157,7 +157,7 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
               =
               Core.Slice.impl__len (Rust_primitives.unsize lhs.f_coefficients
                   <:
-                  t_Slice Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  t_Slice Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
               <:
               usize
             }
@@ -177,12 +177,12 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
               i
               (Libcrux_ml_kem.Simd.Simd_trait.f_add (lhs.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
-                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                    Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
+                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             <:
-            t_Array Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector (sz 32)
           }
           <:
           t_PolynomialRingElement)
@@ -233,26 +233,26 @@ let from_i32_array (a: t_Array i32 (sz 256)) =
                     <:
                     t_Array i32 (sz 8))
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             <:
-            t_Array Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector (sz 32)
           }
           <:
           t_PolynomialRingElement)
   in
   result
 
-let inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) (zeta_r: i32) =
-  let a_minus_b:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+let inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) (zeta_r: i32) =
+  let a_minus_b:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
     Libcrux_ml_kem.Simd.Simd_trait.f_sub b a
   in
-  let a:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector = Libcrux_ml_kem.Simd.Simd_trait.f_add a b in
-  let b:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+  let a:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector = Libcrux_ml_kem.Simd.Simd_trait.f_add a b in
+  let b:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
     Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_multiply_fe_by_fer a_minus_b zeta_r
   in
   a, b
   <:
-  (Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector & Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+  (Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector & Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
 
 let invert_ntt_at_layer_1_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__layer: usize) =
   let zeta_i:usize = zeta_i -! sz 1 in
@@ -278,11 +278,11 @@ let invert_ntt_at_layer_1_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__lay
                 round
                 (Libcrux_ml_kem.Simd.Simd_trait.f_inv_ntt_layer_1_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i -! sz 1 <: usize ] <: i32)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement
@@ -318,10 +318,10 @@ let invert_ntt_at_layer_2_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__lay
                 round
                 (Libcrux_ml_kem.Simd.Simd_trait.f_inv_ntt_layer_2_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement
@@ -365,14 +365,14 @@ let invert_ntt_at_layer_3_plus (zeta_i: usize) (re: t_PolynomialRingElement) (la
               (fun re j ->
                   let re:t_PolynomialRingElement = re in
                   let j:usize = j in
-                  let x, y:(Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector &
-                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) =
+                  let x, y:(Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector &
+                    Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) =
                     inv_ntt_layer_int_vec_step (re.f_coefficients.[ j ]
                         <:
-                        Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                        Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                       (re.f_coefficients.[ j +! step_vec <: usize ]
                         <:
-                        Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                        Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                       (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   in
                   let re:t_PolynomialRingElement =
@@ -434,11 +434,11 @@ let ntt_at_layer_1_
                 round
                 (Libcrux_ml_kem.Simd.Simd_trait.f_ntt_layer_1_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 1 <: usize ] <: i32)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement
@@ -478,10 +478,10 @@ let ntt_at_layer_2_
                 round
                 (Libcrux_ml_kem.Simd.Simd_trait.f_ntt_layer_2_step (re.f_coefficients.[ round ]
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                     (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement
@@ -491,15 +491,15 @@ let ntt_at_layer_2_
   let hax_temp_output:t_PolynomialRingElement = re in
   zeta_i, hax_temp_output <: (usize & t_PolynomialRingElement)
 
-let ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) =
-  let t:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+let ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) =
+  let t:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
     Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant b (-1600l)
   in
-  let b:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector = Libcrux_ml_kem.Simd.Simd_trait.f_sub a t in
-  let a:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector = Libcrux_ml_kem.Simd.Simd_trait.f_add a t in
+  let b:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector = Libcrux_ml_kem.Simd.Simd_trait.f_sub a t in
+  let a:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector = Libcrux_ml_kem.Simd.Simd_trait.f_add a t in
   a, b
   <:
-  (Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector & Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+  (Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector & Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
 
 let ntt_at_layer_7_ (re: t_PolynomialRingElement) =
   let step:usize = v_VECTORS_IN_RING_ELEMENT /! sz 2 in
@@ -516,14 +516,14 @@ let ntt_at_layer_7_ (re: t_PolynomialRingElement) =
       (fun re j ->
           let re:t_PolynomialRingElement = re in
           let j:usize = j in
-          let x, y:(Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector &
-            Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) =
+          let x, y:(Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector &
+            Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) =
             ntt_layer_7_int_vec_step (re.f_coefficients.[ j ]
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
               (re.f_coefficients.[ j +! step <: usize ]
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
           in
           let re:t_PolynomialRingElement =
             {
@@ -551,15 +551,15 @@ let ntt_at_layer_7_ (re: t_PolynomialRingElement) =
   in
   re
 
-let ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) (zeta_r: i32) =
-  let t:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+let ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) (zeta_r: i32) =
+  let t:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
     Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_multiply_fe_by_fer b zeta_r
   in
-  let b:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector = Libcrux_ml_kem.Simd.Simd_trait.f_sub a t in
-  let a:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector = Libcrux_ml_kem.Simd.Simd_trait.f_add a t in
+  let b:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector = Libcrux_ml_kem.Simd.Simd_trait.f_sub a t in
+  let a:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector = Libcrux_ml_kem.Simd.Simd_trait.f_add a t in
   a, b
   <:
-  (Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector & Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+  (Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector & Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
 
 let ntt_at_layer_3_plus
       (zeta_i: usize)
@@ -611,14 +611,14 @@ let ntt_at_layer_3_plus
               (fun re j ->
                   let re:t_PolynomialRingElement = re in
                   let j:usize = j in
-                  let x, y:(Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector &
-                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector) =
+                  let x, y:(Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector &
+                    Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector) =
                     ntt_layer_int_vec_step (re.f_coefficients.[ j ]
                         <:
-                        Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                        Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                       (re.f_coefficients.[ j +! step_vec <: usize ]
                         <:
-                        Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                        Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                       (v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i32)
                   in
                   let re:t_PolynomialRingElement =
@@ -675,8 +675,8 @@ let ntt_multiply (lhs rhs: t_PolynomialRingElement) =
               i
               (Libcrux_ml_kem.Simd.Simd_trait.f_ntt_multiply (lhs.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
-                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                    Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
+                  (rhs.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   (v_ZETAS_TIMES_MONTGOMERY_R.[ sz 64 +! (sz 2 *! i <: usize) <: usize ] <: i32)
                   (v_ZETAS_TIMES_MONTGOMERY_R.[ (sz 64 +! (sz 2 *! i <: usize) <: usize) +! sz 1
                       <:
@@ -684,9 +684,9 @@ let ntt_multiply (lhs rhs: t_PolynomialRingElement) =
                     <:
                     i32)
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             <:
-            t_Array Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector (sz 32)
           }
           <:
           t_PolynomialRingElement)
@@ -715,11 +715,11 @@ let poly_barrett_reduce (a: t_PolynomialRingElement) =
               i
               (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (a.f_coefficients.[ i ]
                     <:
-                    Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                    Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             <:
-            t_Array Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector (sz 32)
+            t_Array Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector (sz 32)
           }
           <:
           t_PolynomialRingElement)
@@ -740,12 +740,12 @@ let subtract_reduce (a b: t_PolynomialRingElement) =
       (fun b i ->
           let b:t_PolynomialRingElement = b in
           let i:usize = i in
-          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector =
+          let coefficient_normal_form:Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector =
             Libcrux_ml_kem.Simd.Simd_trait.f_montgomery_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_multiply_by_constant
-                  (b.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  (b.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   1441l
                 <:
-                Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
           in
           let b:t_PolynomialRingElement =
             {
@@ -755,12 +755,12 @@ let subtract_reduce (a b: t_PolynomialRingElement) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize b.f_coefficients
                 i
                 (Libcrux_ml_kem.Simd.Simd_trait.f_barrett_reduce (Libcrux_ml_kem.Simd.Simd_trait.f_sub
-                        (a.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                        (a.f_coefficients.[ i ] <: Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                         coefficient_normal_form
                       <:
-                      Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                      Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
                   <:
-                  Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector)
+                  Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector)
             }
             <:
             t_PolynomialRingElement

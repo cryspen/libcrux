@@ -23,11 +23,6 @@ pub(super) fn storei16<const INDEX: i32>(v: Vec) -> i32 {
     unsafe { _mm256_extract_epi16::<INDEX>(v) }
 }
 
-// #[inline(always)]
-// pub(super) fn storei8<const INDEX: i32>(v: Vec) -> i32 {
-//     unsafe { _mm256_extract_epi8::<INDEX>(v) }
-// }
-
 #[inline(always)]
 pub(super) fn load_vec(array: [i32; 8]) -> Vec {
     unsafe { _mm256_loadu_si256(array.as_ptr() as *const __m256i) }

@@ -59,7 +59,7 @@ pub(crate) trait Operations {
     fn deserialize_12(a: &[u8]) -> Self;
 }
 
-// hax does not support trait with default implementations, so we use the following patter
+// XXX: hax does not support trait with default implementations, so we use the following patter
 pub(crate) trait GenericOperations {
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self;
     fn to_standard_domain(v: Self) -> Self;
@@ -69,25 +69,31 @@ pub(crate) trait GenericOperations {
 }
 
 impl<T: Operations + Clone + Copy> GenericOperations for T {
+    #[inline(always)]
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self {
         let t = Self::multiply_by_constant(v, fer);
         Self::montgomery_reduce(t)
     }
+
+    #[inline(always)]
     fn to_standard_domain(v: Self) -> Self {
         let t = Self::multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
         Self::montgomery_reduce(t)
     }
 
+    #[inline(always)]
     fn to_unsigned_representative(a: Self) -> Self {
         let t = Self::shift_right::<31>(a);
         let fm = Self::bitwise_and_with_constant(t, FIELD_MODULUS);
         Self::add(a, &fm)
     }
 
+    #[inline(always)]
     fn decompress_1(v: Self) -> Self {
         Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
     }
 
+    #[inline(always)]
     fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         let mut decompressed = Self::multiply_by_constant(v, FIELD_MODULUS);
         decompressed = Self::add_constant(

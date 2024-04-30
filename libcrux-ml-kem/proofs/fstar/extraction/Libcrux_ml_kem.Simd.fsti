@@ -4,4 +4,4 @@ open Core
 open FStar.Mul
 
 unfold
-let t_Vector = Libcrux_ml_kem.Simd.Simd256.t_SIMD256Vector
+let t_Vector = Libcrux_ml_kem.Simd.Simd128.t_SIMD128Vector

@@ -56,7 +56,7 @@ class extractAction(argparse.Action):
             "+!libcrux_platform::platform::*",
             "-libcrux_ml_kem::types::index_impls::**",
             "+:libcrux_ml_kem::simd::simd256::x64_avx2::**",
-            "-libcrux_ml_kem::simd::simd128::**",
+            "+:libcrux_ml_kem::simd::simd128::neon::**",
         ]
         include_str = " ".join(includes)
         interfaces = [
@@ -65,6 +65,7 @@ class extractAction(argparse.Action):
             "+!libcrux_platform::**",
             "+!libcrux::digest::**",
             "+libcrux_ml_kem::simd::simd256::x64_avx2::**",
+            "+libcrux_ml_kem::simd::simd128::neon::**",
         ]
         interface_include = " ".join(interfaces)
         cargo_hax_into = [
