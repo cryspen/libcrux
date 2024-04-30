@@ -3,7 +3,7 @@ use crate::constants::FIELD_MODULUS;
 
 pub(crate) const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
 
-pub(crate) trait Operations {
+pub(crate) trait Operations: Clone + Copy {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 

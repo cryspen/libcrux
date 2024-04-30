@@ -1,12 +1,12 @@
 //use crate::hax_utils::hax_debug_assert;
 use crate::arithmetic::*;
-use crate::simd::{self, simd_trait::*};
+use crate::simd::simd_trait::*;
 
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
 #[derive(Clone, Copy)]
-pub struct PolynomialRingElement<Vector: Operations> {
+pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
 
@@ -102,6 +102,65 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         }
         result
     }
+
+    /// Given two `KyberPolynomialRingElement`s in their NTT representations,
+    /// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
+    /// the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
+    ///
+    /// ```plaintext
+    /// ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X² - ζ^(2·BitRev₇(i) + 1))
+    /// ```
+    ///
+    /// This function almost implements <strong>Algorithm 10</strong> of the
+    /// NIST FIPS 203 standard, which is reproduced below:
+    ///
+    /// ```plaintext
+    /// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
+    /// Output: An array ĥ ∈ ℤq.
+    ///
+    /// for(i ← 0; i < 128; i++)
+    ///     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1], ζ^(2·BitRev₇(i) + 1))
+    /// end for
+    /// return ĥ
+    /// ```
+    /// We say "almost" because the coefficients of the ring element output by
+    /// this function are in the Montgomery domain.
+    ///
+    /// The NIST FIPS 203 standard can be found at
+    /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+    // TODO: Remove or replace with something that works and is useful for the proof.
+    // #[cfg_attr(hax, hax_lib::requires(
+    //     hax_lib::forall(|i:usize|
+    //         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
+    //             (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
+    //             (rhs.coefficients[i].abs() <= FIELD_MODULUS)
+
+    // ))))]
+    // #[cfg_attr(hax, hax_lib::ensures(|result|
+    //     hax_lib::forall(|i:usize|
+    //         hax_lib::implies(i < result.coefficients.len(), ||
+    //                 result.coefficients[i].abs() <= FIELD_MODULUS
+    // ))))]
+    #[inline(always)]
+    pub(crate) fn ntt_multiply(&self, rhs: &Self) -> Self {
+        // hax_debug_debug_assert!(lhs
+        //     .coefficients
+        //     .into_iter()
+        //     .all(|coefficient| coefficient >= 0 && coefficient < 4096));
+
+        let mut out = PolynomialRingElement::ZERO();
+
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            out.coefficients[i] = Vector::ntt_multiply(
+                &self.coefficients[i],
+                &rhs.coefficients[i],
+                ZETAS_TIMES_MONTGOMERY_R[64 + 2 * i],
+                ZETAS_TIMES_MONTGOMERY_R[64 + 2 * i + 1],
+            );
+        }
+
+        out
+    }
 }
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -119,15 +178,15 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
 /// resulting coefficients are in the normal domain since the zetas have been
 /// multiplied by MONTGOMERY_R.
 #[inline(always)]
-pub(crate) fn ntt_at_layer_1(
+pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
+    mut re: PolynomialRingElement<Vector>,
     _layer: usize,
     _initial_coefficient_bound: usize,
-) -> PolynomialRingElement {
+) -> PolynomialRingElement<Vector> {
     *zeta_i += 1;
     for round in 0..32 {
-        re.coefficients[round] = simd::Vector::ntt_layer_1_step(
+        re.coefficients[round] = Vector::ntt_layer_1_step(
             re.coefficients[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
@@ -139,41 +198,39 @@ pub(crate) fn ntt_at_layer_1(
 }
 
 #[inline(always)]
-pub(crate) fn ntt_at_layer_2(
+pub(crate) fn ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
+    mut re: PolynomialRingElement<Vector>,
     _layer: usize,
     _initial_coefficient_bound: usize,
-) -> PolynomialRingElement {
+) -> PolynomialRingElement<Vector> {
     for round in 0..32 {
         *zeta_i += 1;
-        re.coefficients[round] = simd::Vector::ntt_layer_2_step(
-            re.coefficients[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-        );
+        re.coefficients[round] =
+            Vector::ntt_layer_2_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
     }
     re
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_int_vec_step(
-    mut a: simd::Vector,
-    mut b: simd::Vector,
+pub(crate) fn ntt_layer_int_vec_step<Vector: Operations>(
+    mut a: Vector,
+    mut b: Vector,
     zeta_r: i32,
-) -> (simd::Vector, simd::Vector) {
-    let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
-    b = simd::Vector::sub(a, &t);
-    a = simd::Vector::add(a, &t);
+) -> (Vector, Vector) {
+    let t = Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
+    b = Vector::sub(a, &t);
+    a = Vector::add(a, &t);
     (a, b)
 }
 
 #[inline(always)]
-pub(crate) fn ntt_at_layer_3_plus(
+pub(crate) fn ntt_at_layer_3_plus<Vector: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
+    mut re: PolynomialRingElement<Vector>,
     layer: usize,
     _initial_coefficient_bound: usize,
-) -> PolynomialRingElement {
+) -> PolynomialRingElement<Vector> {
     debug_assert!(layer >= 3);
     let step = 1 << layer;
 
@@ -198,18 +255,20 @@ pub(crate) fn ntt_at_layer_3_plus(
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_7_int_vec_step(
-    mut a: simd::Vector,
-    mut b: simd::Vector,
-) -> (simd::Vector, simd::Vector) {
-    let t = simd::Vector::multiply_by_constant(b, -1600);
-    b = simd::Vector::sub(a, &t);
-    a = simd::Vector::add(a, &t);
+pub(crate) fn ntt_layer_7_int_vec_step<Vector: Operations>(
+    mut a: Vector,
+    mut b: Vector,
+) -> (Vector, Vector) {
+    let t = Vector::multiply_by_constant(b, -1600);
+    b = Vector::sub(a, &t);
+    a = Vector::add(a, &t);
     (a, b)
 }
 
 #[inline(always)]
-pub(crate) fn ntt_at_layer_7(mut re: PolynomialRingElement) -> PolynomialRingElement {
+pub(crate) fn ntt_at_layer_7<Vector: Operations>(
+    mut re: PolynomialRingElement<Vector>,
+) -> PolynomialRingElement<Vector> {
     let step = VECTORS_IN_RING_ELEMENT / 2;
     for j in 0..step {
         let (x, y) = ntt_layer_7_int_vec_step(re.coefficients[j], re.coefficients[j + step]);
@@ -220,14 +279,14 @@ pub(crate) fn ntt_at_layer_7(mut re: PolynomialRingElement) -> PolynomialRingEle
 }
 
 #[inline(always)]
-pub(crate) fn invert_ntt_at_layer_1(
+pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
+    mut re: PolynomialRingElement<Vector>,
     _layer: usize,
-) -> PolynomialRingElement {
+) -> PolynomialRingElement<Vector> {
     *zeta_i -= 1;
     for round in 0..32 {
-        re.coefficients[round] = simd::Vector::inv_ntt_layer_1_step(
+        re.coefficients[round] = Vector::inv_ntt_layer_1_step(
             re.coefficients[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
@@ -239,39 +298,37 @@ pub(crate) fn invert_ntt_at_layer_1(
 }
 
 #[inline(always)]
-pub(crate) fn invert_ntt_at_layer_2(
+pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
+    mut re: PolynomialRingElement<Vector>,
     _layer: usize,
-) -> PolynomialRingElement {
+) -> PolynomialRingElement<Vector> {
     for round in 0..32 {
         *zeta_i -= 1;
-        re.coefficients[round] = simd::Vector::inv_ntt_layer_2_step(
-            re.coefficients[round],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-        );
+        re.coefficients[round] =
+            Vector::inv_ntt_layer_2_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
     }
     re
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_int_vec_step(
-    mut a: simd::Vector,
-    mut b: simd::Vector,
+pub(crate) fn inv_ntt_layer_int_vec_step<Vector: Operations>(
+    mut a: Vector,
+    mut b: Vector,
     zeta_r: i32,
-) -> (simd::Vector, simd::Vector) {
-    let a_minus_b = simd::Vector::sub(b, &a);
-    a = simd::Vector::add(a, &b);
-    b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
+) -> (Vector, Vector) {
+    let a_minus_b = Vector::sub(b, &a);
+    a = Vector::add(a, &b);
+    b = Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     (a, b)
 }
 
 #[inline(always)]
-pub(crate) fn invert_ntt_at_layer_3_plus(
+pub(crate) fn invert_ntt_at_layer_3_plus<Vector: Operations>(
     zeta_i: &mut usize,
-    mut re: PolynomialRingElement,
+    mut re: PolynomialRingElement<Vector>,
     layer: usize,
-) -> PolynomialRingElement {
+) -> PolynomialRingElement<Vector> {
     let step = 1 << layer;
 
     for round in 0..(128 >> layer) {
@@ -292,66 +349,4 @@ pub(crate) fn invert_ntt_at_layer_3_plus(
         }
     }
     re
-}
-
-/// Given two `KyberPolynomialRingElement`s in their NTT representations,
-/// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
-/// the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
-///
-/// ```plaintext
-/// ĥ[2·i] + ĥ[2·i + 1]X = (f^[2·i] + f^[2·i + 1]X)·(ĝ[2·i] + ĝ[2·i + 1]X) mod (X² - ζ^(2·BitRev₇(i) + 1))
-/// ```
-///
-/// This function almost implements <strong>Algorithm 10</strong> of the
-/// NIST FIPS 203 standard, which is reproduced below:
-///
-/// ```plaintext
-/// Input: Two arrays fˆ ∈ ℤ₂₅₆ and ĝ ∈ ℤ₂₅₆.
-/// Output: An array ĥ ∈ ℤq.
-///
-/// for(i ← 0; i < 128; i++)
-///     (ĥ[2i], ĥ[2i+1]) ← BaseCaseMultiply(fˆ[2i], fˆ[2i+1], ĝ[2i], ĝ[2i+1], ζ^(2·BitRev₇(i) + 1))
-/// end for
-/// return ĥ
-/// ```
-/// We say "almost" because the coefficients of the ring element output by
-/// this function are in the Montgomery domain.
-///
-/// The NIST FIPS 203 standard can be found at
-/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-// TODO: Remove or replace with something that works and is useful for the proof.
-// #[cfg_attr(hax, hax_lib::requires(
-//     hax_lib::forall(|i:usize|
-//         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
-//             (lhs.coefficients[i] >= 0 && lhs.coefficients[i] < 4096) &&
-//             (rhs.coefficients[i].abs() <= FIELD_MODULUS)
-
-// ))))]
-// #[cfg_attr(hax, hax_lib::ensures(|result|
-//     hax_lib::forall(|i:usize|
-//         hax_lib::implies(i < result.coefficients.len(), ||
-//                 result.coefficients[i].abs() <= FIELD_MODULUS
-// ))))]
-#[inline(always)]
-pub(crate) fn ntt_multiply(
-    lhs: &PolynomialRingElement,
-    rhs: &PolynomialRingElement,
-) -> PolynomialRingElement {
-    // hax_debug_debug_assert!(lhs
-    //     .coefficients
-    //     .into_iter()
-    //     .all(|coefficient| coefficient >= 0 && coefficient < 4096));
-
-    let mut out = PolynomialRingElement::ZERO();
-
-    for i in 0..VECTORS_IN_RING_ELEMENT {
-        out.coefficients[i] = simd::Vector::ntt_multiply(
-            &lhs.coefficients[i],
-            &rhs.coefficients[i],
-            ZETAS_TIMES_MONTGOMERY_R[64 + 2 * i],
-            ZETAS_TIMES_MONTGOMERY_R[64 + 2 * i + 1],
-        );
-    }
-
-    out
 }

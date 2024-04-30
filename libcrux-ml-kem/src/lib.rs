@@ -53,6 +53,13 @@ pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + S
 /// Seed size for encapsulation
 pub const ENCAPS_SEED_SIZE: usize = constants::SHARED_SECRET_SIZE;
 
+#[cfg(not(any(feature = "simd128", feature = "simd256")))]
+type Vector = simd::portable::PortableVector;
+#[cfg(feature = "simd128")]
+type Vector = simd::simd128::SIMD128Vector;
+#[cfg(feature = "simd256")]
+type Vector = simd::simd256::SIMD256Vector;
+
 /// Serialize the secret key.
 #[inline(always)]
 fn serialize_kem_secret_key<const SERIALIZED_KEY_LEN: usize>(
@@ -80,12 +87,12 @@ pub(crate) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    let deserialized_pk = deserialize_ring_elements_reduced::<PUBLIC_KEY_SIZE, K>(
+    let deserialized_pk = deserialize_ring_elements_reduced::<PUBLIC_KEY_SIZE, K, Vector>(
         &public_key[..RANKED_BYTES_PER_RING_ELEMENT],
     );
 
     let public_key_serialized =
-        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
             deserialized_pk,
             &public_key[RANKED_BYTES_PER_RING_ELEMENT..],
         );
@@ -114,6 +121,7 @@ pub(crate) fn generate_keypair<
         BYTES_PER_RING_ELEMENT,
         ETA1,
         ETA1_RANDOMNESS_SIZE,
+        Vector,
     >(ind_cpa_keypair_randomness);
 
     let secret_key_serialized =
@@ -161,6 +169,7 @@ pub(crate) fn encapsulate<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        Vector,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
     let mut shared_secret_array = [0u8; constants::SHARED_SECRET_SIZE];
@@ -199,6 +208,7 @@ pub(crate) fn decapsulate<
         C1_SIZE,
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
+        Vector,
     >(ind_cpa_secret_key, &ciphertext.value);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
@@ -225,6 +235,7 @@ pub(crate) fn decapsulate<
         ETA1_RANDOMNESS_SIZE,
         ETA2,
         ETA2_RANDOMNESS_SIZE,
+        Vector,
     >(ind_cpa_public_key, decrypted, pseudorandomness);
 
     let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(

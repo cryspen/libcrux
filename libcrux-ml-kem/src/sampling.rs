@@ -3,7 +3,8 @@ use crate::{
     hash_functions::*,
     hax_utils::hax_debug_assert,
     helper::cloop,
-    polynomial::{from_i32_array, PolynomialRingElement},
+    polynomial::PolynomialRingElement,
+    simd::simd_trait::Operations,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -75,7 +76,9 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     done
 }
 
-pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
+pub(super) fn sample_from_xof<const K: usize, Vector: Operations>(
+    seeds: [[u8; 34]; K],
+) -> [PolynomialRingElement<Vector>; K] {
     let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [[i32; 256]; K] = [[0; 256]; K];
 
@@ -98,7 +101,7 @@ pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
     // XXX: We have to manually free the state here due to a Eurydice issue.
     free_state(xof_state);
 
-    out.map(from_i32_array)
+    out.map(PolynomialRingElement::<Vector>::from_i32_array)
 }
 
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
@@ -155,7 +158,9 @@ pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
 //     hax_lib::forall(|i:usize|
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 // ))))]
-fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
+fn sample_from_binomial_distribution_2<Vector: Operations>(
+    randomness: &[u8],
+) -> PolynomialRingElement<Vector> {
     let mut sampled_i32s = [0i32; 256];
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
@@ -178,7 +183,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
             }
         }
     }
-    from_i32_array(sampled_i32s)
+    PolynomialRingElement::from_i32_array(sampled_i32s)
 }
 
 #[cfg_attr(hax, hax_lib::requires(randomness.len() == 3 * 64))]
@@ -187,7 +192,9 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
 //     hax_lib::forall(|i:usize|
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 // ))))]
-fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
+fn sample_from_binomial_distribution_3<Vector: Operations>(
+    randomness: &[u8],
+) -> PolynomialRingElement<Vector> {
     let mut sampled_i32s = [0i32; 256];
 
     cloop! {
@@ -212,13 +219,13 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
             }
         }
     }
-    from_i32_array(sampled_i32s)
+    PolynomialRingElement::from_i32_array(sampled_i32s)
 }
 
 #[inline(always)]
-pub(super) fn sample_from_binomial_distribution<const ETA: usize>(
+pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
-) -> PolynomialRingElement {
+) -> PolynomialRingElement<Vector> {
     hax_debug_assert!(randomness.len() == ETA * 64);
 
     match ETA as u32 {
