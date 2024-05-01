@@ -47,7 +47,7 @@ use crate::{
 fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     randomness: [[u8; N]; K],
     sampled_coefficients: &mut [usize; K],
-    out: &mut [[i32; 256]; K],
+    out: &mut [[[i32; 8]; 32]; K],
 ) -> bool {
     let mut done = true;
     for i in 0..K {
@@ -59,12 +59,18 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
             let d1 = ((b2 & 0xF) << 8) | b1;
             let d2 = (b3 << 4) | (b2 >> 4);
 
+            let sampled_i = sampled_coefficients[i]/8;
+            let sampled_j = sampled_coefficients[i]%8;
+
             if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d1;
+                out[i][sampled_i][sampled_j] = d1;
                 sampled_coefficients[i] += 1
             }
+
+            let sampled_i = sampled_coefficients[i]/8;
+            let sampled_j = sampled_coefficients[i]%8;
             if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d2;
+                out[i][sampled_i][sampled_j] = d2;
                 sampled_coefficients[i] += 1;
             }
         }
@@ -77,7 +83,7 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
 
 pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
     let mut sampled_coefficients: [usize; K] = [0; K];
-    let mut out: [[i32; 256]; K] = [[0; 256]; K];
+    let mut out: [[[i32; 8]; 32]; K] = [[[0; 8]; 32]; K];
 
     let mut xof_state = absorb(seeds);
     let randomness = squeeze_three_blocks(&mut xof_state);
@@ -156,7 +162,7 @@ pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [Polynomi
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 // ))))]
 fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingElement {
-    let mut sampled_i32s = [0i32; 256];
+    let mut sampled_i32s = [[0i32; 8]; 32];
 
     for (chunk_number, byte_chunk) in randomness.chunks_exact(4).enumerate() {
         let random_bits_as_u32: u32 = (byte_chunk[0] as u32)
@@ -174,7 +180,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
                 let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 2)) & 0x3) as i32;
 
                 let offset = (outcome_set >> 2) as usize;
-                sampled_i32s[8 * chunk_number + offset] = outcome_1 - outcome_2;
+                sampled_i32s[chunk_number][offset] = outcome_1 - outcome_2;
             }
         }
     }
@@ -188,7 +194,7 @@ fn sample_from_binomial_distribution_2(randomness: &[u8]) -> PolynomialRingEleme
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 // ))))]
 fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingElement {
-    let mut sampled_i32s = [0i32; 256];
+    let mut sampled_i32s = [[0i32; 8]; 32];
 
     cloop! {
         for (chunk_number, byte_chunk) in randomness.chunks_exact(3).enumerate() {
@@ -207,7 +213,9 @@ fn sample_from_binomial_distribution_3(randomness: &[u8]) -> PolynomialRingEleme
                     let outcome_2 = ((coin_toss_outcomes >> (outcome_set + 3)) & 0x7) as i32;
 
                     let offset = (outcome_set / 6) as usize;
-                    sampled_i32s[4 * chunk_number + offset] = outcome_1 - outcome_2;
+                    let index_i = (4 * chunk_number + offset) / 8;
+                    let index_j = (4 * chunk_number + offset) % 8;
+                    sampled_i32s[index_i][index_j] = outcome_1 - outcome_2;
                 }
             }
         }

@@ -4,33 +4,33 @@ use crate::{
     simd::simd_trait::*,
 };
 
-#[derive(Clone, Copy)]
-pub(crate) struct PortableVector {
-    elements: [FieldElement; 8],
-}
+// #[derive(Clone, Copy)]
+// pub(crate) struct PortableVector {
+//     elements: [FieldElement; 8],
+// }
+
+pub(crate) type PortableVector = [FieldElement; 8];
 
 #[allow(non_snake_case)]
 #[inline(always)]
 fn ZERO() -> PortableVector {
-    PortableVector {
-        elements: [0i32; FIELD_ELEMENTS_IN_VECTOR],
-    }
+   [0i32; FIELD_ELEMENTS_IN_VECTOR]
 }
 
 #[inline(always)]
 fn to_i32_array(v: PortableVector) -> [i32; 8] {
-    v.elements
+    v
 }
 
 #[inline(always)]
 fn from_i32_array(array: [i32; 8]) -> PortableVector {
-    PortableVector { elements: array }
+    array
 }
 
 #[inline(always)]
 fn add_constant(mut v: PortableVector, c: i32) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] += c;
+        v[i] += c;
     }
 
     v
@@ -39,7 +39,7 @@ fn add_constant(mut v: PortableVector, c: i32) -> PortableVector {
 #[inline(always)]
 fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] += rhs.elements[i];
+        lhs[i] += rhs[i];
     }
 
     lhs
@@ -48,7 +48,7 @@ fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 #[inline(always)]
 fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] -= rhs.elements[i];
+        lhs[i] -= rhs[i];
     }
 
     lhs
@@ -57,7 +57,7 @@ fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 #[inline(always)]
 fn multiply_by_constant(mut v: PortableVector, c: i32) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] *= c;
+        v[i] *= c;
     }
 
     v
@@ -66,7 +66,7 @@ fn multiply_by_constant(mut v: PortableVector, c: i32) -> PortableVector {
 #[inline(always)]
 fn bitwise_and_with_constant(mut v: PortableVector, c: i32) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] &= c;
+        v[i] &= c;
     }
 
     v
@@ -75,7 +75,7 @@ fn bitwise_and_with_constant(mut v: PortableVector, c: i32) -> PortableVector {
 #[inline(always)]
 fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = v.elements[i] >> SHIFT_BY;
+        v[i] = v[i] >> SHIFT_BY;
     }
 
     v
@@ -84,7 +84,7 @@ fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
 #[inline(always)]
 fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] = lhs.elements[i] << SHIFT_BY;
+        lhs[i] = lhs[i] << SHIFT_BY;
     }
 
     lhs
@@ -93,9 +93,9 @@ fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
 #[inline(always)]
 fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
-        if v.elements[i] >= 3329 {
-            v.elements[i] -= 3329
+        debug_assert!(v[i] >= 0 && v[i] < 4096);
+        if v[i] >= 3329 {
+            v[i] -= 3329
         }
     }
     v
@@ -104,7 +104,7 @@ fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
 #[inline(always)]
 fn barrett_reduce(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = crate::arithmetic::barrett_reduce(v.elements[i]);
+        v[i] = crate::arithmetic::barrett_reduce(v[i]);
     }
 
     v
@@ -113,7 +113,7 @@ fn barrett_reduce(mut v: PortableVector) -> PortableVector {
 #[inline(always)]
 fn montgomery_reduce(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = crate::arithmetic::montgomery_reduce(v.elements[i]);
+        v[i] = crate::arithmetic::montgomery_reduce(v[i]);
     }
 
     v
@@ -122,7 +122,7 @@ fn montgomery_reduce(mut v: PortableVector) -> PortableVector {
 #[inline(always)]
 fn compress_1(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = compress_message_coefficient(v.elements[i] as u16) as i32;
+        v[i] = compress_message_coefficient(v[i] as u16) as i32;
     }
 
     v
@@ -131,92 +131,92 @@ fn compress_1(mut v: PortableVector) -> PortableVector {
 #[inline(always)]
 fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] =
-            compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, v.elements[i] as u16) as i32;
+        v[i] =
+            compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, v[i] as u16) as i32;
     }
     v
 }
 
 #[inline(always)]
 fn ntt_layer_1_step(mut v: PortableVector, zeta1: i32, zeta2: i32) -> PortableVector {
-    let t = montgomery_multiply_fe_by_fer(v.elements[2], zeta1);
-    v.elements[2] = v.elements[0] - t;
-    v.elements[0] = v.elements[0] + t;
+    let t = montgomery_multiply_fe_by_fer(v[2], zeta1);
+    v[2] = v[0] - t;
+    v[0] = v[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(v.elements[3], zeta1);
-    v.elements[3] = v.elements[1] - t;
-    v.elements[1] = v.elements[1] + t;
+    let t = montgomery_multiply_fe_by_fer(v[3], zeta1);
+    v[3] = v[1] - t;
+    v[1] = v[1] + t;
 
-    let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta2);
-    v.elements[6] = v.elements[4] - t;
-    v.elements[4] = v.elements[4] + t;
+    let t = montgomery_multiply_fe_by_fer(v[6], zeta2);
+    v[6] = v[4] - t;
+    v[4] = v[4] + t;
 
-    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta2);
-    v.elements[7] = v.elements[5] - t;
-    v.elements[5] = v.elements[5] + t;
+    let t = montgomery_multiply_fe_by_fer(v[7], zeta2);
+    v[7] = v[5] - t;
+    v[5] = v[5] + t;
 
     v
 }
 
 #[inline(always)]
 fn ntt_layer_2_step(mut v: PortableVector, zeta: i32) -> PortableVector {
-    let t = montgomery_multiply_fe_by_fer(v.elements[4], zeta);
-    v.elements[4] = v.elements[0] - t;
-    v.elements[0] = v.elements[0] + t;
+    let t = montgomery_multiply_fe_by_fer(v[4], zeta);
+    v[4] = v[0] - t;
+    v[0] = v[0] + t;
 
-    let t = montgomery_multiply_fe_by_fer(v.elements[5], zeta);
-    v.elements[5] = v.elements[1] - t;
-    v.elements[1] = v.elements[1] + t;
+    let t = montgomery_multiply_fe_by_fer(v[5], zeta);
+    v[5] = v[1] - t;
+    v[1] = v[1] + t;
 
-    let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta);
-    v.elements[6] = v.elements[2] - t;
-    v.elements[2] = v.elements[2] + t;
+    let t = montgomery_multiply_fe_by_fer(v[6], zeta);
+    v[6] = v[2] - t;
+    v[2] = v[2] + t;
 
-    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta);
-    v.elements[7] = v.elements[3] - t;
-    v.elements[3] = v.elements[3] + t;
+    let t = montgomery_multiply_fe_by_fer(v[7], zeta);
+    v[7] = v[3] - t;
+    v[3] = v[3] + t;
 
     v
 }
 
 #[inline(always)]
 fn inv_ntt_layer_1_step(mut v: PortableVector, zeta1: i32, zeta2: i32) -> PortableVector {
-    let a_minus_b = v.elements[2] - v.elements[0];
-    v.elements[0] = v.elements[0] + v.elements[2];
-    v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let a_minus_b = v[2] - v[0];
+    v[0] = v[0] + v[2];
+    v[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-    let a_minus_b = v.elements[3] - v.elements[1];
-    v.elements[1] = v.elements[1] + v.elements[3];
-    v.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+    let a_minus_b = v[3] - v[1];
+    v[1] = v[1] + v[3];
+    v[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
-    let a_minus_b = v.elements[6] - v.elements[4];
-    v.elements[4] = v.elements[4] + v.elements[6];
-    v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+    let a_minus_b = v[6] - v[4];
+    v[4] = v[4] + v[6];
+    v[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
-    let a_minus_b = v.elements[7] - v.elements[5];
-    v.elements[5] = v.elements[5] + v.elements[7];
-    v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+    let a_minus_b = v[7] - v[5];
+    v[5] = v[5] + v[7];
+    v[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
     v
 }
 
 #[inline(always)]
 fn inv_ntt_layer_2_step(mut v: PortableVector, zeta: i32) -> PortableVector {
-    let a_minus_b = v.elements[4] - v.elements[0];
-    v.elements[0] = v.elements[0] + v.elements[4];
-    v.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = v[4] - v[0];
+    v[0] = v[0] + v[4];
+    v[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = v.elements[5] - v.elements[1];
-    v.elements[1] = v.elements[1] + v.elements[5];
-    v.elements[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = v[5] - v[1];
+    v[1] = v[1] + v[5];
+    v[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = v.elements[6] - v.elements[2];
-    v.elements[2] = v.elements[2] + v.elements[6];
-    v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = v[6] - v[2];
+    v[2] = v[2] + v[6];
+    v[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = v.elements[7] - v.elements[3];
-    v.elements[3] = v.elements[3] + v.elements[7];
-    v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+    let a_minus_b = v[7] - v[3];
+    v[3] = v[3] + v[7];
+    v[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     v
 }
@@ -230,36 +230,36 @@ fn ntt_multiply(
 ) -> PortableVector {
     let mut out = PortableVector::ZERO();
     let product = ntt_multiply_binomials(
-        (lhs.elements[0], lhs.elements[1]),
-        (rhs.elements[0], rhs.elements[1]),
+        (lhs[0], lhs[1]),
+        (rhs[0], rhs[1]),
         zeta0,
     );
-    out.elements[0] = product.0;
-    out.elements[1] = product.1;
+    out[0] = product.0;
+    out[1] = product.1;
 
     let product = ntt_multiply_binomials(
-        (lhs.elements[2], lhs.elements[3]),
-        (rhs.elements[2], rhs.elements[3]),
+        (lhs[2], lhs[3]),
+        (rhs[2], rhs[3]),
         -zeta0,
     );
-    out.elements[2] = product.0;
-    out.elements[3] = product.1;
+    out[2] = product.0;
+    out[3] = product.1;
 
     let product = ntt_multiply_binomials(
-        (lhs.elements[4], lhs.elements[5]),
-        (rhs.elements[4], rhs.elements[5]),
+        (lhs[4], lhs[5]),
+        (rhs[4], rhs[5]),
         zeta1,
     );
-    out.elements[4] = product.0;
-    out.elements[5] = product.1;
+    out[4] = product.0;
+    out[5] = product.1;
 
     let product = ntt_multiply_binomials(
-        (lhs.elements[6], lhs.elements[7]),
-        (rhs.elements[6], rhs.elements[7]),
+        (lhs[6], lhs[7]),
+        (rhs[6], rhs[7]),
         -zeta1,
     );
-    out.elements[6] = product.0;
-    out.elements[7] = product.1;
+    out[6] = product.0;
+    out[7] = product.1;
     out
 }
 
@@ -267,7 +267,7 @@ fn ntt_multiply(
 fn serialize_1(v: PortableVector) -> u8 {
     let mut result = 0u8;
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        result |= (v.elements[i] as u8) << i;
+        result |= (v[i] as u8) << i;
     }
 
     result
@@ -277,7 +277,7 @@ fn serialize_1(v: PortableVector) -> u8 {
 fn deserialize_1(v: u8) -> PortableVector {
     let mut result = PortableVector::ZERO();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        result.elements[i] = ((v >> i) & 0x1) as i32;
+        result[i] = ((v >> i) & 0x1) as i32;
     }
 
     result
@@ -287,10 +287,10 @@ fn deserialize_1(v: u8) -> PortableVector {
 fn serialize_4(v: PortableVector) -> [u8; 4] {
     let mut result = [0u8; 4];
 
-    result[0] = ((v.elements[1] as u8) << 4) | (v.elements[0] as u8);
-    result[1] = ((v.elements[3] as u8) << 4) | (v.elements[2] as u8);
-    result[2] = ((v.elements[5] as u8) << 4) | (v.elements[4] as u8);
-    result[3] = ((v.elements[7] as u8) << 4) | (v.elements[6] as u8);
+    result[0] = ((v[1] as u8) << 4) | (v[0] as u8);
+    result[1] = ((v[3] as u8) << 4) | (v[2] as u8);
+    result[2] = ((v[5] as u8) << 4) | (v[4] as u8);
+    result[3] = ((v[7] as u8) << 4) | (v[6] as u8);
 
     result
 }
@@ -299,17 +299,17 @@ fn serialize_4(v: PortableVector) -> [u8; 4] {
 fn deserialize_4(bytes: &[u8]) -> PortableVector {
     let mut v = PortableVector::ZERO();
 
-    v.elements[0] = (bytes[0] & 0x0F) as i32;
-    v.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
+    v[0] = (bytes[0] & 0x0F) as i32;
+    v[1] = ((bytes[0] >> 4) & 0x0F) as i32;
 
-    v.elements[2] = (bytes[1] & 0x0F) as i32;
-    v.elements[3] = ((bytes[1] >> 4) & 0x0F) as i32;
+    v[2] = (bytes[1] & 0x0F) as i32;
+    v[3] = ((bytes[1] >> 4) & 0x0F) as i32;
 
-    v.elements[4] = (bytes[2] & 0x0F) as i32;
-    v.elements[5] = ((bytes[2] >> 4) & 0x0F) as i32;
+    v[4] = (bytes[2] & 0x0F) as i32;
+    v[5] = ((bytes[2] >> 4) & 0x0F) as i32;
 
-    v.elements[6] = (bytes[3] & 0x0F) as i32;
-    v.elements[7] = ((bytes[3] >> 4) & 0x0F) as i32;
+    v[6] = (bytes[3] & 0x0F) as i32;
+    v[7] = ((bytes[3] >> 4) & 0x0F) as i32;
 
     v
 }
@@ -318,11 +318,11 @@ fn deserialize_4(bytes: &[u8]) -> PortableVector {
 fn serialize_5(v: PortableVector) -> [u8; 5] {
     let mut result = [0u8; 5];
 
-    result[0] = ((v.elements[1] & 0x7) << 5 | v.elements[0]) as u8;
-    result[1] = (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
-    result[2] = (((v.elements[4] & 0xF) << 4) | (v.elements[3] >> 1)) as u8;
-    result[3] = (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
-    result[4] = ((v.elements[7] << 3) | (v.elements[6] >> 2)) as u8;
+    result[0] = ((v[1] & 0x7) << 5 | v[0]) as u8;
+    result[1] = (((v[3] & 1) << 7) | (v[2] << 2) | (v[1] >> 3)) as u8;
+    result[2] = (((v[4] & 0xF) << 4) | (v[3] >> 1)) as u8;
+    result[3] = (((v[6] & 0x3) << 6) | (v[5] << 1) | (v[4] >> 4)) as u8;
+    result[4] = ((v[7] << 3) | (v[6] >> 2)) as u8;
 
     result
 }
@@ -331,14 +331,14 @@ fn serialize_5(v: PortableVector) -> [u8; 5] {
 fn deserialize_5(bytes: &[u8]) -> PortableVector {
     let mut v = PortableVector::ZERO();
 
-    v.elements[0] = (bytes[0] & 0x1F) as i32;
-    v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
-    v.elements[2] = ((bytes[1] >> 2) & 0x1F) as i32;
-    v.elements[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i32;
-    v.elements[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i32;
-    v.elements[5] = ((bytes[3] >> 1) & 0x1F) as i32;
-    v.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i32;
-    v.elements[7] = (bytes[4] >> 3) as i32;
+    v[0] = (bytes[0] & 0x1F) as i32;
+    v[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
+    v[2] = ((bytes[1] >> 2) & 0x1F) as i32;
+    v[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i32;
+    v[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i32;
+    v[5] = ((bytes[3] >> 1) & 0x1F) as i32;
+    v[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i32;
+    v[7] = (bytes[4] >> 3) as i32;
 
     v
 }
@@ -347,17 +347,17 @@ fn deserialize_5(bytes: &[u8]) -> PortableVector {
 fn serialize_10(v: PortableVector) -> [u8; 10] {
     let mut result = [0u8; 10];
 
-    result[0] = (v.elements[0] & 0xFF) as u8;
-    result[1] = ((v.elements[1] & 0x3F) as u8) << 2 | ((v.elements[0] >> 8) & 0x03) as u8;
-    result[2] = ((v.elements[2] & 0x0F) as u8) << 4 | ((v.elements[1] >> 6) & 0x0F) as u8;
-    result[3] = ((v.elements[3] & 0x03) as u8) << 6 | ((v.elements[2] >> 4) & 0x3F) as u8;
-    result[4] = ((v.elements[3] >> 2) & 0xFF) as u8;
+    result[0] = (v[0] & 0xFF) as u8;
+    result[1] = ((v[1] & 0x3F) as u8) << 2 | ((v[0] >> 8) & 0x03) as u8;
+    result[2] = ((v[2] & 0x0F) as u8) << 4 | ((v[1] >> 6) & 0x0F) as u8;
+    result[3] = ((v[3] & 0x03) as u8) << 6 | ((v[2] >> 4) & 0x3F) as u8;
+    result[4] = ((v[3] >> 2) & 0xFF) as u8;
 
-    result[5] = (v.elements[4] & 0xFF) as u8;
-    result[6] = ((v.elements[5] & 0x3F) as u8) << 2 | ((v.elements[4] >> 8) & 0x03) as u8;
-    result[7] = ((v.elements[6] & 0x0F) as u8) << 4 | ((v.elements[5] >> 6) & 0x0F) as u8;
-    result[8] = ((v.elements[7] & 0x03) as u8) << 6 | ((v.elements[6] >> 4) & 0x3F) as u8;
-    result[9] = ((v.elements[7] >> 2) & 0xFF) as u8;
+    result[5] = (v[4] & 0xFF) as u8;
+    result[6] = ((v[5] & 0x3F) as u8) << 2 | ((v[4] >> 8) & 0x03) as u8;
+    result[7] = ((v[6] & 0x0F) as u8) << 4 | ((v[5] >> 6) & 0x0F) as u8;
+    result[8] = ((v[7] & 0x03) as u8) << 6 | ((v[6] >> 4) & 0x3F) as u8;
+    result[9] = ((v[7] >> 2) & 0xFF) as u8;
 
     result
 }
@@ -366,15 +366,15 @@ fn serialize_10(v: PortableVector) -> [u8; 10] {
 fn deserialize_10(bytes: &[u8]) -> PortableVector {
     let mut result = PortableVector::ZERO();
 
-    result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
-    result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
-    result.elements[2] = ((bytes[3] as i32 & 0x3F) << 4 | (bytes[2] as i32 >> 4)) as i32;
-    result.elements[3] = (((bytes[4] as i32) << 2) | (bytes[3] as i32 >> 6)) as i32;
+    result[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
+    result[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
+    result[2] = ((bytes[3] as i32 & 0x3F) << 4 | (bytes[2] as i32 >> 4)) as i32;
+    result[3] = (((bytes[4] as i32) << 2) | (bytes[3] as i32 >> 6)) as i32;
 
-    result.elements[4] = ((bytes[6] as i32 & 0x03) << 8 | (bytes[5] as i32 & 0xFF)) as i32;
-    result.elements[5] = ((bytes[7] as i32 & 0x0F) << 6 | (bytes[6] as i32 >> 2)) as i32;
-    result.elements[6] = ((bytes[8] as i32 & 0x3F) << 4 | (bytes[7] as i32 >> 4)) as i32;
-    result.elements[7] = (((bytes[9] as i32) << 2) | (bytes[8] as i32 >> 6)) as i32;
+    result[4] = ((bytes[6] as i32 & 0x03) << 8 | (bytes[5] as i32 & 0xFF)) as i32;
+    result[5] = ((bytes[7] as i32 & 0x0F) << 6 | (bytes[6] as i32 >> 2)) as i32;
+    result[6] = ((bytes[8] as i32 & 0x3F) << 4 | (bytes[7] as i32 >> 4)) as i32;
+    result[7] = (((bytes[9] as i32) << 2) | (bytes[8] as i32 >> 6)) as i32;
 
     result
 }
@@ -382,34 +382,34 @@ fn deserialize_10(bytes: &[u8]) -> PortableVector {
 #[inline(always)]
 fn serialize_11(v: PortableVector) -> [u8; 11] {
     let mut result = [0u8; 11];
-    result[0] = v.elements[0] as u8;
-    result[1] = ((v.elements[1] & 0x1F) as u8) << 3 | ((v.elements[0] >> 8) as u8);
-    result[2] = ((v.elements[2] & 0x3) as u8) << 6 | ((v.elements[1] >> 5) as u8);
-    result[3] = ((v.elements[2] >> 2) & 0xFF) as u8;
-    result[4] = ((v.elements[3] & 0x7F) as u8) << 1 | (v.elements[2] >> 10) as u8;
-    result[5] = ((v.elements[4] & 0xF) as u8) << 4 | (v.elements[3] >> 7) as u8;
-    result[6] = ((v.elements[5] & 0x1) as u8) << 7 | (v.elements[4] >> 4) as u8;
-    result[7] = ((v.elements[5] >> 1) & 0xFF) as u8;
-    result[8] = ((v.elements[6] & 0x3F) as u8) << 2 | (v.elements[5] >> 9) as u8;
-    result[9] = ((v.elements[7] & 0x7) as u8) << 5 | (v.elements[6] >> 6) as u8;
-    result[10] = (v.elements[7] >> 3) as u8;
+    result[0] = v[0] as u8;
+    result[1] = ((v[1] & 0x1F) as u8) << 3 | ((v[0] >> 8) as u8);
+    result[2] = ((v[2] & 0x3) as u8) << 6 | ((v[1] >> 5) as u8);
+    result[3] = ((v[2] >> 2) & 0xFF) as u8;
+    result[4] = ((v[3] & 0x7F) as u8) << 1 | (v[2] >> 10) as u8;
+    result[5] = ((v[4] & 0xF) as u8) << 4 | (v[3] >> 7) as u8;
+    result[6] = ((v[5] & 0x1) as u8) << 7 | (v[4] >> 4) as u8;
+    result[7] = ((v[5] >> 1) & 0xFF) as u8;
+    result[8] = ((v[6] & 0x3F) as u8) << 2 | (v[5] >> 9) as u8;
+    result[9] = ((v[7] & 0x7) as u8) << 5 | (v[6] >> 6) as u8;
+    result[10] = (v[7] >> 3) as u8;
     result
 }
 
 #[inline(always)]
 fn deserialize_11(bytes: &[u8]) -> PortableVector {
     let mut result = PortableVector::ZERO();
-    result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
-    result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
-    result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
+    result[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
+    result[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
+    result[2] = ((bytes[4] as i32 & 0x1) << 10
         | ((bytes[3] as i32) << 2)
         | ((bytes[2] as i32) >> 6)) as i32;
-    result.elements[3] = ((bytes[5] as i32 & 0xF) << 7 | (bytes[4] as i32 >> 1)) as i32;
-    result.elements[4] = ((bytes[6] as i32 & 0x7F) << 4 | (bytes[5] as i32 >> 4)) as i32;
-    result.elements[5] =
+    result[3] = ((bytes[5] as i32 & 0xF) << 7 | (bytes[4] as i32 >> 1)) as i32;
+    result[4] = ((bytes[6] as i32 & 0x7F) << 4 | (bytes[5] as i32 >> 4)) as i32;
+    result[5] =
         ((bytes[8] as i32 & 0x3) << 9 | ((bytes[7] as i32) << 1) | ((bytes[6] as i32) >> 7)) as i32;
-    result.elements[6] = ((bytes[9] as i32 & 0x1F) << 6 | (bytes[8] as i32 >> 2)) as i32;
-    result.elements[7] = (((bytes[10] as i32) << 3) | (bytes[9] as i32 >> 5)) as i32;
+    result[6] = ((bytes[9] as i32 & 0x1F) << 6 | (bytes[8] as i32 >> 2)) as i32;
+    result[7] = (((bytes[10] as i32) << 3) | (bytes[9] as i32 >> 5)) as i32;
     result
 }
 
@@ -417,21 +417,21 @@ fn deserialize_11(bytes: &[u8]) -> PortableVector {
 fn serialize_12(v: PortableVector) -> [u8; 12] {
     let mut result = [0u8; 12];
 
-    result[0] = (v.elements[0] & 0xFF) as u8;
-    result[1] = ((v.elements[0] >> 8) | ((v.elements[1] & 0x0F) << 4)) as u8;
-    result[2] = ((v.elements[1] >> 4) & 0xFF) as u8;
+    result[0] = (v[0] & 0xFF) as u8;
+    result[1] = ((v[0] >> 8) | ((v[1] & 0x0F) << 4)) as u8;
+    result[2] = ((v[1] >> 4) & 0xFF) as u8;
 
-    result[3] = (v.elements[2] & 0xFF) as u8;
-    result[4] = ((v.elements[2] >> 8) | ((v.elements[3] & 0x0F) << 4)) as u8;
-    result[5] = ((v.elements[3] >> 4) & 0xFF) as u8;
+    result[3] = (v[2] & 0xFF) as u8;
+    result[4] = ((v[2] >> 8) | ((v[3] & 0x0F) << 4)) as u8;
+    result[5] = ((v[3] >> 4) & 0xFF) as u8;
 
-    result[6] = (v.elements[4] & 0xFF) as u8;
-    result[7] = ((v.elements[4] >> 8) | ((v.elements[5] & 0x0F) << 4)) as u8;
-    result[8] = ((v.elements[5] >> 4) & 0xFF) as u8;
+    result[6] = (v[4] & 0xFF) as u8;
+    result[7] = ((v[4] >> 8) | ((v[5] & 0x0F) << 4)) as u8;
+    result[8] = ((v[5] >> 4) & 0xFF) as u8;
 
-    result[9] = (v.elements[6] & 0xFF) as u8;
-    result[10] = ((v.elements[6] >> 8) | ((v.elements[7] & 0x0F) << 4)) as u8;
-    result[11] = ((v.elements[7] >> 4) & 0xFF) as u8;
+    result[9] = (v[6] & 0xFF) as u8;
+    result[10] = ((v[6] >> 8) | ((v[7] & 0x0F) << 4)) as u8;
+    result[11] = ((v[7] >> 4) & 0xFF) as u8;
 
     result
 }
@@ -453,17 +453,17 @@ fn deserialize_12(bytes: &[u8]) -> PortableVector {
     let byte10 = bytes[10] as i32;
     let byte11 = bytes[11] as i32;
 
-    re.elements[0] = (byte1 & 0x0F) << 8 | (byte0 & 0xFF);
-    re.elements[1] = (byte2 << 4) | ((byte1 >> 4) & 0x0F);
+    re[0] = (byte1 & 0x0F) << 8 | (byte0 & 0xFF);
+    re[1] = (byte2 << 4) | ((byte1 >> 4) & 0x0F);
 
-    re.elements[2] = (byte4 & 0x0F) << 8 | (byte3 & 0xFF);
-    re.elements[3] = (byte5 << 4) | ((byte4 >> 4) & 0x0F);
+    re[2] = (byte4 & 0x0F) << 8 | (byte3 & 0xFF);
+    re[3] = (byte5 << 4) | ((byte4 >> 4) & 0x0F);
 
-    re.elements[4] = (byte7 & 0x0F) << 8 | (byte6 & 0xFF);
-    re.elements[5] = (byte8 << 4) | ((byte7 >> 4) & 0x0F);
+    re[4] = (byte7 & 0x0F) << 8 | (byte6 & 0xFF);
+    re[5] = (byte8 << 4) | ((byte7 >> 4) & 0x0F);
 
-    re.elements[6] = (byte10 & 0x0F) << 8 | (byte9 & 0xFF);
-    re.elements[7] = (byte11 << 4) | ((byte10 >> 4) & 0x0F);
+    re[6] = (byte10 & 0x0F) << 8 | (byte9 & 0xFF);
+    re[7] = (byte11 << 4) | ((byte10 >> 4) & 0x0F);
 
     re
 }
