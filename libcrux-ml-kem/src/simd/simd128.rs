@@ -415,9 +415,21 @@ fn serialize_4(v: SIMD128Vector) -> [u8; 4] {
 
 #[inline(always)]
 fn deserialize_4(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_4(v);
-
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let input = u32::from_le_bytes(v.try_into().unwrap());
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+    low[0] = (input & 0x0f) as i32;
+    low[1] = ((input >> 4)  & 0x0f) as i32;
+    low[2] = ((input >> 8)  & 0x0f) as i32;
+    low[3] = ((input >> 12) & 0x0f) as i32;
+    high[0] = ((input >> 16) & 0x0f) as i32;
+    high[1] = ((input >> 20) & 0x0f) as i32;
+    high[2] = ((input >> 24) & 0x0f) as i32;
+    high[3] = ((input >> 28) & 0x0f) as i32;
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
+        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+    }
 }
 
 #[inline(always)]
@@ -468,9 +480,26 @@ fn serialize_10(v: SIMD128Vector) -> [u8; 10] {
 
 #[inline(always)]
 fn deserialize_10(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_10(v);
-
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let mut input0 = [0u8;8];
+    let mut input1 = [0u8;8];
+    input0[0..5].copy_from_slice(&v[0..5]);
+    input1[0..5].copy_from_slice(&v[5..10]);
+    let input0 = u64::from_le_bytes(input0);
+    let input1 = u64::from_le_bytes(input1);
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+    low[0] = (input0 & 0x3ff) as i32;
+    low[1] = ((input0 & 0xffc00) >> 10) as i32;
+    low[2] = ((input0 & 0x3ff00000) >> 20) as i32;
+    low[3] = ((input0 & 0xffc0000000) >> 30) as i32;
+    high[0] = (input1 & 0x3ff) as i32;
+    high[1] = ((input1 & 0xffc00) >> 10) as i32;
+    high[2] = ((input1 & 0x3ff00000) >> 20) as i32;
+    high[3] = ((input1 & 0xffc0000000) >> 30) as i32;
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
+        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+    }
 }
 
 #[inline(always)]
@@ -505,9 +534,26 @@ fn serialize_12(v: SIMD128Vector) -> [u8; 12] {
 
 #[inline(always)]
 fn deserialize_12(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_12(v);
-
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let mut input0 = [0u8;8];
+    let mut input1 = [0u8;8];
+    input0[0..6].copy_from_slice(&v[0..6]);
+    input1[0..6].copy_from_slice(&v[6..12]);
+    let input0 = u64::from_le_bytes(input0);
+    let input1 = u64::from_le_bytes(input1);
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+    low[0] = (input0 & 0xfff) as i32;
+    low[1] = ((input0 & 0xfff000) >> 12) as i32;
+    low[2] = ((input0 & 0xfff000000) >> 24) as i32;
+    low[3] = ((input0 & 0xfff000000000) >> 36) as i32;
+    high[0] = (input1 & 0xfff) as i32;
+    high[1] = ((input1 & 0xfff000) >> 12) as i32;
+    high[2] = ((input1 & 0xfff000000) >> 24) as i32;
+    high[3] = ((input1 & 0xfff000000000) >> 36) as i32;
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_mut_ptr() as *mut i32) },
+        high: unsafe { vld1q_s32(high.as_mut_ptr() as *mut i32) },
+    }
 }
 
 impl Operations for SIMD128Vector {

@@ -5,6 +5,10 @@ use crate::simd::{self, simd_trait::*};
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
+#[derive(Clone, Copy)]    
+#[repr(align(32))]
+pub struct I32Poly(pub [[i32; 8]; 32]);
+
 #[derive(Clone, Copy)]
 pub struct PolynomialRingElement {
     pub(crate) coefficients: [simd::Vector; VECTORS_IN_RING_ELEMENT],
@@ -21,10 +25,10 @@ impl PolynomialRingElement {
 }
 
 #[inline(always)]
-pub(crate) fn from_i32_array(a: [[i32; 8]; 32]) -> PolynomialRingElement {
+pub(crate) fn from_i32_array(a: I32Poly) -> PolynomialRingElement {
     let mut result = PolynomialRingElement::ZERO();
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        result.coefficients[i] = simd::Vector::from_i32_array(a[i]);
+        result.coefficients[i] = simd::Vector::from_i32_array(a.0[i]);
     }
     result
 }
