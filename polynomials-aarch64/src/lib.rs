@@ -10,7 +10,7 @@ mod matrix;
 mod ntt;
 mod sampling;
 mod serialize;
-mod vector;
+pub mod vector;
 
 use libcrux_polynomials::traits::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR};
 pub use matrix::{

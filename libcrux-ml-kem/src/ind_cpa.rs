@@ -4,15 +4,17 @@ use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::{G, PRF},
     helper::cloop,
-};
-use libcrux_polynomials_aarch64::{
-    compress_then_serialize_message, compress_then_serialize_ring_element_u,
-    compress_then_serialize_ring_element_v, compute_As_plus_e, compute_message,
-    compute_ring_element_v, compute_vector_u, deserialize_ring_elements_reduced,
-    deserialize_then_decompress_message, deserialize_then_decompress_ring_element_u,
-    deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
-    ntt_binomially_sampled_ring_element, ntt_vector_u, sample_from_binomial_distribution,
-    sample_matrix_A, serialize_uncompressed_ring_element, PolynomialRingElement,
+    matrix::*,
+    ntt::*,
+    polynomial::PolynomialRingElement,
+    sampling::sample_from_binomial_distribution,
+    serialize::{
+        compress_then_serialize_message, compress_then_serialize_ring_element_u,
+        compress_then_serialize_ring_element_v, deserialize_ring_elements_reduced,
+        deserialize_then_decompress_message, deserialize_then_decompress_ring_element_u,
+        deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
+        serialize_uncompressed_ring_element,
+    },
 };
 
 /// Pad the `slice` with `0`s at the end.
