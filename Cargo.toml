@@ -10,6 +10,8 @@ members = [
     "libcrux-ml-kem",
     "libcrux-simd",
     "libcrux-sha3",
+    "polynomials",
+    "polynomials-aarch64",
 ]
 
 [workspace.package]

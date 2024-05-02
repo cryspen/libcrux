@@ -3,8 +3,9 @@ use crate::{
     hax_utils::hax_debug_assert,
     helper::cloop,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
-    simd::{self, simd_trait::*},
+    simd::{self},
 };
+use libcrux_polynomials_aarch64::traits::{GenericOperations, Operations};
 
 #[cfg(hax)]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;

@@ -13,6 +13,7 @@ exclude = ["/tests", "/implementation_notes.pdf"]
 rand_core = { version = "0.6" }
 libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
+libcrux-polynomials-aarch64 = { path = "../polynomials-aarch64/" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
@@ -20,7 +21,7 @@ libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
 hax-lib = { git = "https://github.com/hacspec/hax/" }
 
 [features]
-default = []
+default = ["simd128"]
 simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
 

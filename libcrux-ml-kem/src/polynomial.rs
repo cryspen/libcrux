@@ -1,6 +1,10 @@
 //use crate::hax_utils::hax_debug_assert;
 use crate::arithmetic::*;
-use crate::simd::{self, simd_trait::*};
+use crate::simd;
+
+use libcrux_polynomials_aarch64::traits::{
+    GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR,
+};
 
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
