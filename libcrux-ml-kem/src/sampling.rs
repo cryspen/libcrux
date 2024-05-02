@@ -1,105 +1,106 @@
+// use libcrux_polynomials_aarch64::{from_i32_array, PolynomialRingElement};
+
 use crate::{
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     hash_functions::*,
     hax_utils::hax_debug_assert,
     helper::cloop,
-    polynomial::{from_i32_array, PolynomialRingElement},
 };
 
-/// If `bytes` contains a set of uniformly random bytes, this function
-/// uniformly samples a ring element `â` that is treated as being the NTT representation
-/// of the corresponding polynomial `a`.
-///
-/// Since rejection sampling is used, it is possible the supplied bytes are
-/// not enough to sample the element, in which case an `Err` is returned and the
-/// caller must try again with a fresh set of bytes.
-///
-/// This function <strong>partially</strong> implements <strong>Algorithm 6</strong> of the NIST FIPS 203 standard,
-/// We say "partially" because this implementation only accepts a finite set of
-/// bytes as input and returns an error if the set is not enough; Algorithm 6 of
-/// the FIPS 203 standard on the other hand samples from an infinite stream of bytes
-/// until the ring element is filled. Algorithm 6 is reproduced below:
-///
-/// ```plaintext
-/// Input: byte stream B ∈ 𝔹*.
-/// Output: array â ∈ ℤ₂₅₆.
-///
-/// i ← 0
-/// j ← 0
-/// while j < 256 do
-///     d₁ ← B[i] + 256·(B[i+1] mod 16)
-///     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
-///     if d₁ < q then
-///         â[j] ← d₁
-///         j ← j + 1
-///     end if
-///     if d₂ < q and j < 256 then
-///         â[j] ← d₂
-///         j ← j + 1
-///     end if
-///     i ← i + 3
-/// end while
-/// return â
-/// ```
-///
-/// The NIST FIPS 203 standard can be found at
-/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
-    randomness: [[u8; N]; K],
-    sampled_coefficients: &mut [usize; K],
-    out: &mut [[i32; 256]; K],
-) -> bool {
-    let mut done = true;
-    for i in 0..K {
-        for bytes in randomness[i].chunks(3) {
-            let b1 = bytes[0] as i32;
-            let b2 = bytes[1] as i32;
-            let b3 = bytes[2] as i32;
+// /// If `bytes` contains a set of uniformly random bytes, this function
+// /// uniformly samples a ring element `â` that is treated as being the NTT representation
+// /// of the corresponding polynomial `a`.
+// ///
+// /// Since rejection sampling is used, it is possible the supplied bytes are
+// /// not enough to sample the element, in which case an `Err` is returned and the
+// /// caller must try again with a fresh set of bytes.
+// ///
+// /// This function <strong>partially</strong> implements <strong>Algorithm 6</strong> of the NIST FIPS 203 standard,
+// /// We say "partially" because this implementation only accepts a finite set of
+// /// bytes as input and returns an error if the set is not enough; Algorithm 6 of
+// /// the FIPS 203 standard on the other hand samples from an infinite stream of bytes
+// /// until the ring element is filled. Algorithm 6 is reproduced below:
+// ///
+// /// ```plaintext
+// /// Input: byte stream B ∈ 𝔹*.
+// /// Output: array â ∈ ℤ₂₅₆.
+// ///
+// /// i ← 0
+// /// j ← 0
+// /// while j < 256 do
+// ///     d₁ ← B[i] + 256·(B[i+1] mod 16)
+// ///     d₂ ← ⌊B[i+1]/16⌋ + 16·B[i+2]
+// ///     if d₁ < q then
+// ///         â[j] ← d₁
+// ///         j ← j + 1
+// ///     end if
+// ///     if d₂ < q and j < 256 then
+// ///         â[j] ← d₂
+// ///         j ← j + 1
+// ///     end if
+// ///     i ← i + 3
+// /// end while
+// /// return â
+// /// ```
+// ///
+// /// The NIST FIPS 203 standard can be found at
+// /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+// fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
+//     randomness: [[u8; N]; K],
+//     sampled_coefficients: &mut [usize; K],
+//     out: &mut [[i32; 256]; K],
+// ) -> bool {
+//     let mut done = true;
+//     for i in 0..K {
+//         for bytes in randomness[i].chunks(3) {
+//             let b1 = bytes[0] as i32;
+//             let b2 = bytes[1] as i32;
+//             let b3 = bytes[2] as i32;
 
-            let d1 = ((b2 & 0xF) << 8) | b1;
-            let d2 = (b3 << 4) | (b2 >> 4);
+//             let d1 = ((b2 & 0xF) << 8) | b1;
+//             let d2 = (b3 << 4) | (b2 >> 4);
 
-            if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d1;
-                sampled_coefficients[i] += 1
-            }
-            if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d2;
-                sampled_coefficients[i] += 1;
-            }
-        }
-        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-            done = false
-        }
-    }
-    done
-}
+//             if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+//                 out[i][sampled_coefficients[i]] = d1;
+//                 sampled_coefficients[i] += 1
+//             }
+//             if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+//                 out[i][sampled_coefficients[i]] = d2;
+//                 sampled_coefficients[i] += 1;
+//             }
+//         }
+//         if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+//             done = false
+//         }
+//     }
+//     done
+// }
 
-pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
-    let mut sampled_coefficients: [usize; K] = [0; K];
-    let mut out: [[i32; 256]; K] = [[0; 256]; K];
+// pub(super) fn sample_from_xof<const K: usize>(seeds: [[u8; 34]; K]) -> [PolynomialRingElement; K] {
+//     let mut sampled_coefficients: [usize; K] = [0; K];
+//     let mut out: [[i32; 256]; K] = [[0; 256]; K];
 
-    let mut xof_state = absorb(seeds);
-    let randomness = squeeze_three_blocks(&mut xof_state);
+//     let mut xof_state = absorb(seeds);
+//     let randomness = squeeze_three_blocks(&mut xof_state);
 
-    let mut done =
-        sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+//     let mut done =
+//         sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
 
-    // Requiring more than 5 blocks to sample a ring element should be very
-    // unlikely according to:
-    // https://eprint.iacr.org/2023/708.pdf
-    // To avoid failing here, we squeeze more blocks out of the state until
-    // we have enough.
-    while !done {
-        let randomness = squeeze_block(&mut xof_state);
-        done =
-            sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
-    }
-    // XXX: We have to manually free the state here due to a Eurydice issue.
-    free_state(xof_state);
+//     // Requiring more than 5 blocks to sample a ring element should be very
+//     // unlikely according to:
+//     // https://eprint.iacr.org/2023/708.pdf
+//     // To avoid failing here, we squeeze more blocks out of the state until
+//     // we have enough.
+//     while !done {
+//         let randomness = squeeze_block(&mut xof_state);
+//         done =
+//             sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+//     }
+//     // XXX: We have to manually free the state here due to a Eurydice issue.
+//     free_state(xof_state);
 
-    out.map(from_i32_array)
-}
+//     out.map(from_i32_array)
+// }
 
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
 /// the `sample_from_binomial_distribution_{eta}` functions sample

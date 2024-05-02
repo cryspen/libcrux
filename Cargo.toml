@@ -81,3 +81,8 @@ wasm = ["wasm-bindgen"]
 log = ["dep:log"]
 tests = []              # Expose functions for testing.
 experimental = []       # Expose experimental APIs.
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"

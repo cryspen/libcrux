@@ -1,17 +1,21 @@
-use crate::{
-    constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
-    hax_utils::hax_debug_assert,
-    helper::cloop,
-};
-use libcrux_polynomials_aarch64::traits::{GenericOperations, Operations};
+use libcrux_polynomials::traits::{GenericOperations, Operations};
 
-#[cfg(hax)]
-use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
+use crate::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT};
+
+/// PKE message size
+pub const SHARED_SECRET_SIZE: usize = 32;
+
+/// Coefficients per ring element
+pub(crate) const COEFFICIENTS_IN_RING_ELEMENT: usize = 256;
+
+/// Bits required per (uncompressed) ring element
+pub(crate) const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 12;
+
+/// Bytes required per (uncompressed) ring element
+pub(crate) const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
 
 #[inline(always)]
-pub(super) fn compress_then_serialize_message(
-    re: PolynomialRingElement,
-) -> [u8; SHARED_SECRET_SIZE] {
+pub fn compress_then_serialize_message(re: PolynomialRingElement) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
     for i in 0..32 {
         let coefficient = crate::Vector::to_unsigned_representative(re.coefficients[i]);
@@ -21,7 +25,7 @@ pub(super) fn compress_then_serialize_message(
     serialized
 }
 #[inline(always)]
-pub(super) fn deserialize_then_decompress_message(
+pub fn deserialize_then_decompress_message(
     serialized: [u8; SHARED_SECRET_SIZE],
 ) -> PolynomialRingElement {
     let mut re = PolynomialRingElement::ZERO();
@@ -33,7 +37,7 @@ pub(super) fn deserialize_then_decompress_message(
 }
 
 #[inline(always)]
-pub(super) fn serialize_uncompressed_ring_element(
+pub fn serialize_uncompressed_ring_element(
     re: PolynomialRingElement,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
@@ -57,16 +61,16 @@ pub(super) fn serialize_uncompressed_ring_element(
 }
 
 #[inline(always)]
-pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
+pub fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> PolynomialRingElement {
+    // hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
     let mut re = PolynomialRingElement::ZERO();
 
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(12).enumerate() {
-            re.coefficients[i] = crate::Vector::deserialize_12(&bytes);
-        }
+    // cloop! {
+    for (i, bytes) in serialized.chunks_exact(12).enumerate() {
+        re.coefficients[i] = crate::Vector::deserialize_12(&bytes);
     }
+    // }
 
     re
 }
@@ -76,16 +80,16 @@ pub(super) fn deserialize_to_uncompressed_ring_element(serialized: &[u8]) -> Pol
 /// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
 #[inline(always)]
 fn deserialize_to_reduced_ring_element(serialized: &[u8]) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
+    // hax_debug_assert!(serialized.len() == BYTES_PER_RING_ELEMENT);
 
     let mut re = PolynomialRingElement::ZERO();
 
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(12).enumerate() {
-            let coefficient = crate::Vector::deserialize_12(&bytes);
-            re.coefficients[i] = crate::Vector::cond_subtract_3329(coefficient);
-        }
+    // cloop! {
+    for (i, bytes) in serialized.chunks_exact(12).enumerate() {
+        let coefficient = crate::Vector::deserialize_12(&bytes);
+        re.coefficients[i] = crate::Vector::cond_subtract_3329(coefficient);
     }
+    // }
     re
 }
 
@@ -94,18 +98,15 @@ fn deserialize_to_reduced_ring_element(serialized: &[u8]) -> PolynomialRingEleme
 ///
 /// This function MUST NOT be used on secret inputs.
 #[inline(always)]
-pub(super) fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, const K: usize>(
+pub fn deserialize_ring_elements_reduced<const PUBLIC_KEY_SIZE: usize, const K: usize>(
     public_key: &[u8],
 ) -> [PolynomialRingElement; K] {
     let mut deserialized_pk = [PolynomialRingElement::ZERO(); K];
-    cloop! {
-        for (i, ring_element) in public_key
-            .chunks_exact(BYTES_PER_RING_ELEMENT)
-            .enumerate()
-        {
-            deserialized_pk[i] = deserialize_to_reduced_ring_element(ring_element);
-        }
+    // cloop! {
+    for (i, ring_element) in public_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
+        deserialized_pk[i] = deserialize_to_reduced_ring_element(ring_element);
     }
+    // }
     deserialized_pk
 }
 
@@ -155,13 +156,13 @@ fn compress_then_serialize_11<const OUT_LEN: usize>(re: PolynomialRingElement) -
 }
 
 #[inline(always)]
-pub(super) fn compress_then_serialize_ring_element_u<
+pub fn compress_then_serialize_ring_element_u<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
 >(
     re: PolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
+    // hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
@@ -205,13 +206,13 @@ fn compress_then_serialize_5<const OUT_LEN: usize>(re: PolynomialRingElement) ->
 }
 
 #[inline(always)]
-pub(super) fn compress_then_serialize_ring_element_v<
+pub fn compress_then_serialize_ring_element_v<
     const COMPRESSION_FACTOR: usize,
     const OUT_LEN: usize,
 >(
     re: PolynomialRingElement,
 ) -> [u8; OUT_LEN] {
-    hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
+    // hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re),
@@ -222,40 +223,40 @@ pub(super) fn compress_then_serialize_ring_element_v<
 
 #[inline(always)]
 fn deserialize_then_decompress_10(serialized: &[u8]) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
+    // hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 10) / 8);
 
     let mut re = PolynomialRingElement::ZERO();
 
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(10).enumerate() {
-            let coefficient = crate::Vector::deserialize_10(&bytes);
-            re.coefficients[i] = crate::Vector::decompress::<10>(coefficient);
-        }
+    // cloop! {
+    for (i, bytes) in serialized.chunks_exact(10).enumerate() {
+        let coefficient = crate::Vector::deserialize_10(&bytes);
+        re.coefficients[i] = crate::Vector::decompress::<10>(coefficient);
     }
+    // }
     re
 }
 
 #[inline(always)]
 fn deserialize_then_decompress_11(serialized: &[u8]) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
+    // hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 11) / 8);
 
     let mut re = PolynomialRingElement::ZERO();
 
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(11).enumerate() {
-            let coefficient = crate::Vector::deserialize_11(&bytes);
-            re.coefficients[i] = crate::Vector::decompress::<11>(coefficient);
-        }
+    // cloop! {
+    for (i, bytes) in serialized.chunks_exact(11).enumerate() {
+        let coefficient = crate::Vector::deserialize_11(&bytes);
+        re.coefficients[i] = crate::Vector::decompress::<11>(coefficient);
     }
+    // }
 
     re
 }
 
 #[inline(always)]
-pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTOR: usize>(
+pub fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
+    // hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
 
     match COMPRESSION_FACTOR as u32 {
         10 => deserialize_then_decompress_10(serialized),
@@ -266,37 +267,37 @@ pub(super) fn deserialize_then_decompress_ring_element_u<const COMPRESSION_FACTO
 
 #[inline(always)]
 fn deserialize_then_decompress_4(serialized: &[u8]) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
+    // hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
     let mut re = PolynomialRingElement::ZERO();
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(4).enumerate() {
-            let coefficient = crate::Vector::deserialize_4(&bytes);
-            re.coefficients[i] = crate::Vector::decompress::<4>(coefficient);
-        }
+    // cloop! {
+    for (i, bytes) in serialized.chunks_exact(4).enumerate() {
+        let coefficient = crate::Vector::deserialize_4(&bytes);
+        re.coefficients[i] = crate::Vector::decompress::<4>(coefficient);
     }
+    // }
     re
 }
 
 #[inline(always)]
 fn deserialize_then_decompress_5(serialized: &[u8]) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
+    // hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 5) / 8);
 
     let mut re = PolynomialRingElement::ZERO();
 
-    cloop! {
-        for (i, bytes) in serialized.chunks_exact(5).enumerate() {
-            re.coefficients[i] = crate::Vector::deserialize_5(&bytes);
-            re.coefficients[i] = crate::Vector::decompress::<5>(re.coefficients[i]);
-        }
+    // cloop! {
+    for (i, bytes) in serialized.chunks_exact(5).enumerate() {
+        re.coefficients[i] = crate::Vector::deserialize_5(&bytes);
+        re.coefficients[i] = crate::Vector::decompress::<5>(re.coefficients[i]);
     }
+    // }
     re
 }
 
 #[inline(always)]
-pub(super) fn deserialize_then_decompress_ring_element_v<const COMPRESSION_FACTOR: usize>(
+pub fn deserialize_then_decompress_ring_element_v<const COMPRESSION_FACTOR: usize>(
     serialized: &[u8],
 ) -> PolynomialRingElement {
-    hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
+    // hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8);
 
     match COMPRESSION_FACTOR as u32 {
         4 => deserialize_then_decompress_4(serialized),

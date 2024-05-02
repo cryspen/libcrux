@@ -1,10 +1,4 @@
-use crate::{constants::COEFFICIENTS_IN_RING_ELEMENT, hax_utils::hax_debug_assert};
-
-use libcrux_polynomials_aarch64::{
-    invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus, ntt_at_layer_1,
-    ntt_at_layer_2, ntt_at_layer_3_plus, ntt_at_layer_7, poly_barrett_reduce,
-    PolynomialRingElement,
-};
+use crate::*;
 
 /// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
 /// of a `KyberPolynomialRingElement`.
@@ -23,9 +17,7 @@ use libcrux_polynomials_aarch64::{
 //             result.coefficients[i].abs() < FIELD_MODULUS
 // ))))]
 #[inline(always)]
-pub(crate) fn ntt_binomially_sampled_ring_element(
-    mut re: PolynomialRingElement,
-) -> PolynomialRingElement {
+pub fn ntt_binomially_sampled_ring_element(mut re: PolynomialRingElement) -> PolynomialRingElement {
     // Due to the small coefficient bound, we can skip the first round of
     // Montgomery reductions.
     re = ntt_at_layer_7(re);
@@ -58,13 +50,9 @@ pub(crate) fn ntt_binomially_sampled_ring_element(
 //             result.coefficients[i].abs() < FIELD_MODULUS
 // ))))]
 #[inline(always)]
-pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
+pub fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
-    hax_debug_assert!(to_i32_array(re)
-        .into_iter()
-        .all(|coefficient| coefficient.abs() <= 3328));
-
     let mut zeta_i = 0;
 
     re = ntt_at_layer_3_plus(&mut zeta_i, re, 7, 3328);
@@ -83,13 +71,10 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
 /// of a `KyberPolynomialRingElement`. The coefficients of the output
 /// ring element are in the Montgomery domain.
 #[inline(always)]
-pub(crate) fn invert_ntt_montgomery<const K: usize>(
+pub fn invert_ntt_montgomery<const K: usize>(
     mut re: PolynomialRingElement,
 ) -> PolynomialRingElement {
     // We only ever call this function after matrix/vector multiplication
-    hax_debug_assert!(to_i32_array(re)
-        .into_iter()
-        .all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
 
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
@@ -100,16 +85,6 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 5);
     re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 6);
     re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 7);
-
-    hax_debug_assert!(
-        to_i32_array(re)[0].abs() < 128 * (K as i32) * FIELD_MODULUS
-            && to_i32_array(re)[1].abs() < 128 * (K as i32) * FIELD_MODULUS
-    );
-    hax_debug_assert!(to_i32_array(re)
-        .into_iter()
-        .enumerate()
-        .skip(2)
-        .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
     re = poly_barrett_reduce(re);
     re
