@@ -1,6 +1,4 @@
-use libcrux_polynomials_aarch64::traits::{
-    GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR,
-};
+use libcrux_polynomials_avx2::traits::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR};
 
 //use crate::hax_utils::hax_debug_assert;
 use crate::arithmetic::*;

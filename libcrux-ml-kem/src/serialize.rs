@@ -5,7 +5,7 @@ use crate::{
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
     simd,
 };
-use libcrux_polynomials_aarch64::traits::{GenericOperations, Operations};
+use libcrux_polynomials_avx2::traits::{GenericOperations, Operations};
 
 #[cfg(hax)]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;

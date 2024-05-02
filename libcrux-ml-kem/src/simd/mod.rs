@@ -13,9 +13,10 @@
 pub(crate) type Vector = libcrux_polynomials_aarch64::vector::Vector;
 // pub(crate) type Vector = simd128::SIMD128Vector;
 
+// #[cfg(feature = "simd256")]
+// mod portable;
+// #[cfg(feature = "simd256")]
+// mod simd256;
 #[cfg(feature = "simd256")]
-mod portable;
-#[cfg(feature = "simd256")]
-mod simd256;
-#[cfg(feature = "simd256")]
-pub(crate) type Vector = simd256::SIMD256Vector;
+// pub(crate) type Vector = simd256::SIMD256Vector;
+pub(crate) type Vector = libcrux_polynomials_avx2::SIMD256Vector;

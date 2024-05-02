@@ -11,7 +11,8 @@ members = [
     "libcrux-simd",
     "libcrux-sha3",
     "polynomials",
-    "polynomials-aarch64",
+    "polynomials-avx2",
+    # "polynomials-aarch64",
 ]
 
 [workspace.package]
