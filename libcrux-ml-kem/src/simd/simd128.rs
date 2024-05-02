@@ -1,6 +1,5 @@
 use crate::{
-    constants::FIELD_MODULUS,
-    simd::{portable, simd_trait::*},
+    arithmetic::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, constants::FIELD_MODULUS, simd::{portable, simd_trait::*}
 };
 use core::arch::aarch64::*;
 
@@ -127,7 +126,6 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     v
 }
 
-const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: i32 = 62209;
 
 #[inline(always)]
 fn montgomery_reduce_i32x2_t(v: int32x2_t) -> int32x2_t {
@@ -141,7 +139,7 @@ fn montgomery_reduce_i32x2_t(v: int32x2_t) -> int32x2_t {
 
     let m = unsafe { vdup_n_s32(0x0000ffff) };
     let t0 = unsafe { vand_s32(v, m) };
-    let t0 = unsafe { vmul_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
+    let t0 = unsafe { vmul_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32) };
     let t0 = unsafe { vreinterpret_s16_s32(t0) };
     let t0 = unsafe { vmull_n_s16(t0, FIELD_MODULUS as i16) };
     let c0 = unsafe { vshrq_n_s32::<16>(t0) };
@@ -161,15 +159,32 @@ fn montgomery_reduce_i32x4_t(v: int32x4_t) -> int32x4_t {
     // let value_high = value >> MONTGOMERY_SHIFT;
     //value_high - c
 
-    let m = unsafe { vdupq_n_s32(0x0000ffff) };
-    let t0 = unsafe { vandq_s32(v, m) };
-    let t0 = unsafe { vmulq_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
-    let t0 = unsafe { vmovl_s16(vmovn_s32(t0)) };
-    let t0 = unsafe { vmulq_n_s32(t0, FIELD_MODULUS) };
-    let c0 = unsafe { vshrq_n_s32::<16>(t0) };
-    let v0 = unsafe { vshrq_n_s32::<16>(v) };
-    let v = unsafe { vsubq_s32(v0, c0) };
+    //let m = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u32)) };
+    //let f = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(FIELD_MODULUS as u32)) };
+
+    let t = unsafe { vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32)) };
+    let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(t, FIELD_MODULUS as i16)) };
+    let c = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
+    let v = unsafe { vshrq_n_s32::<16>(v) };
+    let v = unsafe { vsubq_s32(v, c) };
+    // let t1 = unsafe { vqdmulhq_s16(t1, f) };
+    // let t0 = unsafe { vshrq_n_s16(t0, 1) };
+    // let t1 = unsafe { vshrq_n_s16(t1, 1) };
+    // let v0 = unsafe { vshrq_n_s32::<16>(v.low) };
+    // let v1 = unsafe { vshrq_n_s32::<16>(v.high) };
+    // v.low = unsafe { vsubq_s16(v0, vreinterpretq_s32_s16(t0)) };
+    // v.high = unsafe { vsubq_s16(v1, vreinterpretq_s32_s16(t1)) };
     v
+
+    // let m = unsafe { vdupq_n_s32(0x0000ffff) };
+    // let t0 = unsafe { vandq_s32(v, m) };
+    // let t0 = unsafe { vmulq_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32) };
+    // let t0 = unsafe { vmovl_s16(vmovn_s32(t0)) };
+    // let t0 = unsafe { vmulq_n_s32(t0, FIELD_MODULUS) };
+    // let c0 = unsafe { vshrq_n_s32::<16>(t0) };
+    // let v0 = unsafe { vshrq_n_s32::<16>(v) };
+    // let v = unsafe { vsubq_s32(v0, c0) };
+    // v
 }
 
 #[inline(always)]
@@ -182,25 +197,31 @@ fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     // let value_high = value >> MONTGOMERY_SHIFT;
     //value_high - c
 
-    let m = unsafe { vdupq_n_s32(0x0000ffff) };
-    let t0 = unsafe { vandq_s32(v.low, m) };
-    let t1 = unsafe { vandq_s32(v.high, m) };
-    let t0 = unsafe { vmulq_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
-    let t1 = unsafe { vmulq_n_s32(t1, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R) };
-    let t0 = unsafe { vmovn_s32(t0) };
-    let t0 = unsafe { vmull_n_s16(t0, FIELD_MODULUS as i16) };
-    let t1 = unsafe { vmovn_s32(t1) };
-    let t1 = unsafe { vmull_n_s16(t1, FIELD_MODULUS as i16) };
-    // let t0 = unsafe { vmovl_s16(vmovn_s32(t0)) };
-    // let t1 = unsafe { vmovl_s16(vmovn_s32(t1)) };
-    // let t0 = unsafe { vmulq_n_s32(t0, FIELD_MODULUS) };
-    // let t1 = unsafe { vmulq_n_s32(t1, FIELD_MODULUS) };
-    let c0 = unsafe { vshrq_n_s32::<16>(t0) };
-    let c1 = unsafe { vshrq_n_s32::<16>(t1) };
-    let v0 = unsafe { vshrq_n_s32::<16>(v.low) };
-    let v1 = unsafe { vshrq_n_s32::<16>(v.high) };
-    v.low = unsafe { vsubq_s32(v0, c0) };
-    v.high = unsafe { vsubq_s32(v1, c1) };
+    //let mask = unsafe { vdupq_n_s32(0xffff) };
+    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) }; 
+    let k = unsafe { vmulq_n_s16(mixed,INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16) };
+    let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(k,FIELD_MODULUS as i16)) };
+
+    let c_low = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
+    let c_high = unsafe { vshrq_n_s32::<17>(c) };
+    let v_low = unsafe { vshrq_n_s32::<16>(v.low) };
+    let v_high = unsafe { vshrq_n_s32::<16>(v.high) };
+
+    v.low = unsafe { vsubq_s32(v_low, c_low) };
+    v.high = unsafe { vsubq_s32(v_high, c_high) };
+    // let m = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u32)) };
+    // let f = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(FIELD_MODULUS as u32)) };
+   
+    // let t0 = unsafe { vmulq_s16(vreinterpretq_s16_s32(v.low), m) };
+    // let t1 = unsafe { vmulq_s16(vreinterpretq_s16_s32(v.high), m) };
+    // let t0 = unsafe { vqdmulhq_s16(t0, f) };
+    // let t1 = unsafe { vqdmulhq_s16(t1, f) };
+    // let t0 = unsafe { vshrq_n_s16(t0, 1) };
+    // let t1 = unsafe { vshrq_n_s16(t1, 1) };
+    // let v0 = unsafe { vshrq_n_s32::<16>(v.low) };
+    // let v1 = unsafe { vshrq_n_s32::<16>(v.high) };
+    // v.low = unsafe { vsubq_s16(v0, vreinterpretq_s32_s16(t0)) };
+    // v.high = unsafe { vsubq_s16(v1, vreinterpretq_s32_s16(t1)) };
     v
 }
 
@@ -212,27 +233,39 @@ fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
     // let shifted_positive_in_range = shifted_to_positive - 832;
     // ((shifted_positive_in_range >> 15) & 1) as u8
 
-    let half = unsafe { vdupq_n_s32(1664) };
-    let quarter = unsafe { vdupq_n_s32(832) };
-    let shifted0 = unsafe { vsubq_s32(half, v.low) };
-    let shifted1 = unsafe { vsubq_s32(half, v.high) };
-    let mask0 = unsafe { vshrq_n_s32::<31>(shifted0) };
-    let mask1 = unsafe { vshrq_n_s32::<31>(shifted1) };
-    let shifted_to_positive0 = unsafe { veorq_s32(mask0, shifted0) };
-    let shifted_to_positive1 = unsafe { veorq_s32(mask1, shifted1) };
-    let shifted_positive_in_range0 = unsafe { vsubq_s32(shifted_to_positive0, quarter) };
-    let shifted_positive_in_range1 = unsafe { vsubq_s32(shifted_to_positive1, quarter) };
-    v.low = unsafe {
-        vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(
-            shifted_positive_in_range0,
-        )))
-    };
-    v.high = unsafe {
-        vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(
-            shifted_positive_in_range1,
-        )))
-    };
+    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) }; 
+    let half = unsafe { vdupq_n_s16(1664) };
+    let quarter = unsafe { vdupq_n_s16(832) };
+    let shifted = unsafe { vsubq_s16(half, mixed) };
+    let mask = unsafe { vshrq_n_s16::<15>(shifted) };
+    let shifted_to_positive = unsafe { veorq_s16(mask, shifted) };
+    let shifted_positive_in_range = unsafe { vsubq_s16(shifted_to_positive, quarter) };
+    let res = unsafe{ vreinterpretq_s32_u16(vshrq_n_u16::<15>(vreinterpretq_u16_s16(shifted_positive_in_range))) };
+    let mask = unsafe { vdupq_n_s32(0xffff) };
+    v.low = unsafe { vandq_s32(res,mask) };
+    v.high = unsafe { vshrq_n_s32::<16>(res) };
     v
+
+    // let quarter = unsafe { vdupq_n_s32(832) };
+    // let shifted0 = unsafe { vsubq_s32(half, v.low) };
+    // let shifted1 = unsafe { vsubq_s32(half, v.high) };
+    // let mask0 = unsafe { vshrq_n_s32::<31>(shifted0) };
+    // let mask1 = unsafe { vshrq_n_s32::<31>(shifted1) };
+    // let shifted_to_positive0 = unsafe { veorq_s32(mask0, shifted0) };
+    // let shifted_to_positive1 = unsafe { veorq_s32(mask1, shifted1) };
+    // let shifted_positive_in_range0 = unsafe { vsubq_s32(shifted_to_positive0, quarter) };
+    // let shifted_positive_in_range1 = unsafe { vsubq_s32(shifted_to_positive1, quarter) };
+    // v.low = unsafe {
+    //     vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(
+    //         shifted_positive_in_range0,
+    //     )))
+    // };
+    // v.high = unsafe {
+    //     vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(
+    //         shifted_positive_in_range1,
+    //     )))
+    // };
+    // v
 }
 
 #[inline(always)]
@@ -361,19 +394,17 @@ fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i32, zeta1: i32
 
     let zetas: [i32; 4] = [zeta0, zeta1, -zeta0, -zeta1];
     let zeta = unsafe { vld1q_s32(zetas.as_ptr() as *const i32) };
-
-    let a0b0 = unsafe { vmulq_s32(a0, b0) };
     let a1b1 = unsafe { vmulq_s32(a1, b1) };
-
-    let a1b1 = montgomery_reduce_i32x4_t(a1b1);
-    let a1b1_zeta = unsafe { vmulq_s32(a1b1, zeta) };
-    let fst = unsafe { vaddq_s32(a0b0, a1b1_zeta) };
-    let fst = montgomery_reduce_i32x4_t(fst);
-
+    let a0b0 = unsafe { vmulq_s32(a0, b0) };
     let a0b1 = unsafe { vmulq_s32(a0, b1) };
-    let a1b0 = unsafe { vmulq_s32(a1, b0) };
-    let snd = unsafe { vaddq_s32(a0b1, a1b0) };
+
+    let snd = unsafe { vmlaq_s32(a0b1, a1, b0) };
+    let a1b1 = montgomery_reduce_i32x4_t(a1b1);
+ 
+    let fst = unsafe { vmlaq_s32(a0b0, a1b1, zeta) };
+    let fst = montgomery_reduce_i32x4_t(fst);
     let snd = montgomery_reduce_i32x4_t(snd);
+ 
 
     SIMD128Vector {
         low: unsafe { vtrn1q_s32(fst, snd) },
