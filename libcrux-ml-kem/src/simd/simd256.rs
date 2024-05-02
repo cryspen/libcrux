@@ -151,23 +151,16 @@ fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
 #[inline(always)]
 fn montgomery_reduce(v: SIMD256Vector) -> SIMD256Vector {
     let reduced = unsafe {
-        let montgomery_shift_mask = _mm256_set1_epi32((1 << MONTGOMERY_SHIFT) - 1);
         let field_modulus = _mm256_set1_epi32(FIELD_MODULUS);
         let inverse_of_modulus_mod_montgomery_r =
             _mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
 
-        let t = _mm256_and_si256(v.elements, montgomery_shift_mask);
-        let t = _mm256_mullo_epi32(t, inverse_of_modulus_mod_montgomery_r);
-
-        let k = _mm256_and_si256(t, montgomery_shift_mask);
-        let k = _mm256_slli_epi32(k, 16);
-        let k = _mm256_srai_epi32(k, 16);
-
-        let k_times_modulus = _mm256_mullo_epi32(k, field_modulus);
-        let c = _mm256_srai_epi32(k_times_modulus, MONTGOMERY_SHIFT as i32);
-        let value_high = _mm256_srai_epi32(v.elements, MONTGOMERY_SHIFT as i32);
-
-        _mm256_sub_epi32(value_high, c)
+        let t = _mm256_mullo_epi16(v.elements, inverse_of_modulus_mod_montgomery_r);
+        let k_times_modulus = _mm256_mulhi_epi16(t, field_modulus);
+        let value_high = _mm256_srli_epi32(v.elements, MONTGOMERY_SHIFT as i32);
+        let res =_mm256_sub_epi16(value_high, k_times_modulus);
+        let res = _mm256_slli_epi32(res, 16);
+        _mm256_srai_epi32(res, 16)
     };
 
     SIMD256Vector { elements: reduced }
