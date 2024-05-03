@@ -9,4 +9,4 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-libcrux-polynomials = { path = "../polynomials" }
+libcrux-traits = { path = "../traits" }

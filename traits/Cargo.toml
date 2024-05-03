@@ -1,5 +1,5 @@
 [package]
-name = "libcrux-polynomials-aarch64"
+name = "libcrux-traits"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -9,5 +9,3 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-libcrux-traits = { path = "../traits" }
-libcrux-sha3 = { path = "../libcrux-sha3" }

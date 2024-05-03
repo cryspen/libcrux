@@ -1,10 +1,12 @@
+use libcrux_polynomials::Operations;
+
 use crate::hax_utils::hax_debug_assert;
 
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     polynomial::{
         invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus, ntt_at_layer_1,
-        ntt_at_layer_2, ntt_at_layer_3_plus, ntt_at_layer_7, poly_barrett_reduce,
+        ntt_at_layer_2, ntt_at_layer_3_plus, ntt_at_layer_7, 
         PolynomialRingElement,
     },
 };
@@ -26,9 +28,9 @@ use crate::{
 //             result.coefficients[i].abs() < FIELD_MODULUS
 // ))))]
 #[inline(always)]
-pub(crate) fn ntt_binomially_sampled_ring_element(
-    mut re: PolynomialRingElement,
-) -> PolynomialRingElement {
+pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
+    mut re: PolynomialRingElement<Vector>,
+) -> PolynomialRingElement<Vector> {
     // Due to the small coefficient bound, we can skip the first round of
     // Montgomery reductions.
     re = ntt_at_layer_7(re);
@@ -40,9 +42,7 @@ pub(crate) fn ntt_binomially_sampled_ring_element(
     re = ntt_at_layer_2(&mut zeta_i, re, 2, 3);
     re = ntt_at_layer_1(&mut zeta_i, re, 1, 3);
 
-    re = poly_barrett_reduce(re);
-
-    re
+    re.poly_barrett_reduce()
 }
 
 /// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
@@ -61,9 +61,9 @@ pub(crate) fn ntt_binomially_sampled_ring_element(
 //             result.coefficients[i].abs() < FIELD_MODULUS
 // ))))]
 #[inline(always)]
-pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
-    mut re: PolynomialRingElement,
-) -> PolynomialRingElement {
+pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Operations>(
+    mut re: PolynomialRingElement<Vector>,
+) -> PolynomialRingElement<Vector> {
     hax_debug_assert!(to_i32_array(re)
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3328));
@@ -78,17 +78,16 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
     re = ntt_at_layer_2(&mut zeta_i, re, 2, 3328);
     re = ntt_at_layer_1(&mut zeta_i, re, 1, 3328);
 
-    re = poly_barrett_reduce(re);
-    re
+    re.poly_barrett_reduce()
 }
 
 /// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
 /// of a `KyberPolynomialRingElement`. The coefficients of the output
 /// ring element are in the Montgomery domain.
 #[inline(always)]
-pub(crate) fn invert_ntt_montgomery<const K: usize>(
-    mut re: PolynomialRingElement,
-) -> PolynomialRingElement {
+pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
+    mut re: PolynomialRingElement<Vector>,
+) -> PolynomialRingElement<Vector> {
     // We only ever call this function after matrix/vector multiplication
     hax_debug_assert!(to_i32_array(re)
         .into_iter()
@@ -114,6 +113,5 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
         .skip(2)
         .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
 
-    re = poly_barrett_reduce(re);
-    re
+    re.poly_barrett_reduce()
 }

@@ -1,11 +1,9 @@
-pub use libcrux_polynomials::traits;
-use libcrux_polynomials::traits::{Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
+use libcrux_traits::{Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
 
 pub(crate) const BARRETT_MULTIPLIER: i64 = 20159;
 pub(crate) const BARRETT_SHIFT: i64 = 26;
 pub(crate) const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
 pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
-pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 use core::arch::x86_64::*;
@@ -646,25 +644,6 @@ impl PortableVector {
     #[inline(always)]
     pub(crate) fn from_i32_array(array: [i32; 8]) -> PortableVector {
         PortableVector { elements: array }
-    }
-
-    #[inline(always)]
-    pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
-        let mut v = PortableVector::ZERO();
-
-        v.elements[0] = (bytes[0] & 0x0F) as i32;
-        v.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
-
-        v.elements[2] = (bytes[1] & 0x0F) as i32;
-        v.elements[3] = ((bytes[1] >> 4) & 0x0F) as i32;
-
-        v.elements[4] = (bytes[2] & 0x0F) as i32;
-        v.elements[5] = ((bytes[2] >> 4) & 0x0F) as i32;
-
-        v.elements[6] = (bytes[3] & 0x0F) as i32;
-        v.elements[7] = ((bytes[3] >> 4) & 0x0F) as i32;
-
-        v
     }
 
     #[inline(always)]

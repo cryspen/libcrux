@@ -2,7 +2,7 @@ pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
 pub const FIELD_MODULUS: i32 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
 
-pub trait Operations {
+pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 

@@ -1,5 +1,7 @@
 use std::usize;
 
+use libcrux_polynomials::Operations;
+
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::{G, PRF},
@@ -32,13 +34,14 @@ pub(crate) fn serialize_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const PUBLIC_KEY_SIZE: usize,
+    Vector: Operations,
 >(
-    t_as_ntt: [PolynomialRingElement; K],
+    t_as_ntt: [PolynomialRingElement<Vector>; K],
     seed_for_a: &[u8],
 ) -> [u8; PUBLIC_KEY_SIZE] {
     let mut public_key_serialized = [0u8; PUBLIC_KEY_SIZE];
     public_key_serialized[0..RANKED_BYTES_PER_RING_ELEMENT].copy_from_slice(
-        &serialize_secret_key::<K, RANKED_BYTES_PER_RING_ELEMENT>(t_as_ntt),
+        &serialize_secret_key::<K, RANKED_BYTES_PER_RING_ELEMENT, Vector>(t_as_ntt),
     );
     public_key_serialized[RANKED_BYTES_PER_RING_ELEMENT..].copy_from_slice(seed_for_a);
     public_key_serialized
@@ -46,8 +49,8 @@ pub(crate) fn serialize_public_key<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-fn serialize_secret_key<const K: usize, const OUT_LEN: usize>(
-    key: [PolynomialRingElement; K],
+fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
+    key: [PolynomialRingElement<Vector>; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
 
@@ -63,17 +66,22 @@ fn serialize_secret_key<const K: usize, const OUT_LEN: usize>(
 
 /// Sample a vector of ring elements from a centered binomial distribution.
 #[inline(always)]
-fn sample_ring_element_cbd<const K: usize, const ETA2_RANDOMNESS_SIZE: usize, const ETA2: usize>(
+fn sample_ring_element_cbd<
+    const K: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    Vector: Operations,
+>(
     prf_input: &mut [u8; 33],
     domain_separator: &mut u8,
-) -> [PolynomialRingElement; K] {
-    let mut error_1 = [PolynomialRingElement::ZERO(); K];
+) -> [PolynomialRingElement<Vector>; K] {
+    let mut error_1 = [PolynomialRingElement::<Vector>::ZERO(); K];
     for i in 0..K {
         prf_input[32] = *domain_separator;
         *domain_separator += 1;
 
         let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(prf_input);
-        error_1[i] = sample_from_binomial_distribution::<ETA2>(&prf_output);
+        error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
     }
     error_1
 }
@@ -85,18 +93,19 @@ fn sample_vector_cbd_then_ntt<
     const K: usize,
     const ETA: usize,
     const ETA_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
 >(
     mut prf_input: [u8; 33],
     mut domain_separator: u8,
-) -> ([PolynomialRingElement; K], u8) {
-    let mut re_as_ntt = [PolynomialRingElement::ZERO(); K];
+) -> ([PolynomialRingElement<Vector>; K], u8) {
+    let mut re_as_ntt = [PolynomialRingElement::<Vector>::ZERO(); K];
     for i in 0..K {
         prf_input[32] = domain_separator;
         domain_separator += 1;
 
         let prf_output: [u8; ETA_RANDOMNESS_SIZE] = PRF(&prf_input);
 
-        let r = sample_from_binomial_distribution::<ETA>(&prf_output);
+        let r = sample_from_binomial_distribution::<ETA, Vector>(&prf_output);
         re_as_ntt[i] = ntt_binomially_sampled_ring_element(r);
     }
     (re_as_ntt, domain_separator)
@@ -148,6 +157,7 @@ pub(crate) fn generate_keypair<
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
@@ -159,16 +169,18 @@ pub(crate) fn generate_keypair<
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
     let (secret_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
-    let (error_as_ntt, _) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, domain_separator);
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector>(prf_input, 0);
+    let (error_as_ntt, _) = sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector>(
+        prf_input,
+        domain_separator,
+    );
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
-        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
             t_as_ntt, seed_for_A,
         );
 
@@ -184,14 +196,15 @@ fn compress_then_serialize_u<
     const OUT_LEN: usize,
     const COMPRESSION_FACTOR: usize,
     const BLOCK_LEN: usize,
+    Vector: Operations,
 >(
-    input: [PolynomialRingElement; K],
+    input: [PolynomialRingElement<Vector>; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
             out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
-                &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN>(re),
+                &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN, Vector>(re),
             );
         }
     }
@@ -252,13 +265,14 @@ pub(crate) fn encrypt<
     const ETA1_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
 >(
     public_key: &[u8],
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
-    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K>(
+    let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
         &public_key[..T_AS_NTT_ENCODED_SIZE],
     );
 
@@ -278,13 +292,13 @@ pub(crate) fn encrypt<
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
     let (r_as_ntt, mut domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE>(prf_input, 0);
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector>(prf_input, 0);
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let error_1 = sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2>(
+    let error_1 = sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, Vector>(
         &mut prf_input,
         &mut domain_separator,
     );
@@ -292,7 +306,7 @@ pub(crate) fn encrypt<
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
     let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
-    let error_2 = sample_from_binomial_distribution::<ETA2>(&prf_output);
+    let error_2 = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
     let u = compute_vector_u(&A_transpose, &r_as_ntt, &error_1);
@@ -302,10 +316,10 @@ pub(crate) fn encrypt<
     let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
-    let c1 = compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN>(u);
+    let c1 = compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(u);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN>(v);
+    let c2 = compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN, Vector>(v);
 
     let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
     ciphertext[C1_LEN..].copy_from_slice(c2.as_slice());
@@ -320,17 +334,18 @@ fn deserialize_then_decompress_u<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const U_COMPRESSION_FACTOR: usize,
+    Vector: Operations,
 >(
     ciphertext: &[u8; CIPHERTEXT_SIZE],
-) -> [PolynomialRingElement; K] {
-    let mut u_as_ntt = [PolynomialRingElement::ZERO(); K];
+) -> [PolynomialRingElement<Vector>; K] {
+    let mut u_as_ntt = [PolynomialRingElement::<Vector>::ZERO(); K];
     cloop! {
         for (i, u_bytes) in ciphertext
             .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
             .enumerate()
         {
-            let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR>(u_bytes);
-            u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR>(u);
+            let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR, Vector>(u_bytes);
+            u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR, Vector>(u);
         }
     }
     u_as_ntt
@@ -338,8 +353,10 @@ fn deserialize_then_decompress_u<
 
 /// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-fn deserialize_secret_key<const K: usize>(secret_key: &[u8]) -> [PolynomialRingElement; K] {
-    let mut secret_as_ntt = [PolynomialRingElement::ZERO(); K];
+fn deserialize_secret_key<const K: usize, Vector: Operations>(
+    secret_key: &[u8],
+) -> [PolynomialRingElement<Vector>; K] {
+    let mut secret_as_ntt = [PolynomialRingElement::<Vector>::ZERO(); K];
     cloop! {
         for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
             secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);
@@ -377,16 +394,18 @@ pub(crate) fn decrypt<
     const VECTOR_U_ENCODED_SIZE: usize,
     const U_COMPRESSION_FACTOR: usize,
     const V_COMPRESSION_FACTOR: usize,
+    Vector: Operations,
 >(
     secret_key: &[u8],
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [u8; SHARED_SECRET_SIZE] {
     // u := Decompress_q(Decode_{d_u}(c), d_u)
-    let u_as_ntt =
-        deserialize_then_decompress_u::<K, CIPHERTEXT_SIZE, U_COMPRESSION_FACTOR>(ciphertext);
+    let u_as_ntt = deserialize_then_decompress_u::<K, CIPHERTEXT_SIZE, U_COMPRESSION_FACTOR, Vector>(
+        ciphertext,
+    );
 
     // v := Decompress_q(Decode_{d_v}(c + d_u·k·n / 8), d_v)
-    let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR>(
+    let v = deserialize_then_decompress_ring_element_v::<V_COMPRESSION_FACTOR, Vector>(
         &ciphertext[VECTOR_U_ENCODED_SIZE..],
     );
 

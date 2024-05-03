@@ -12,6 +12,7 @@ members = [
     "libcrux-sha3",
     "polynomials",
     "polynomials-avx2",
+    "traits",
     # "polynomials-aarch64",
 ]
 

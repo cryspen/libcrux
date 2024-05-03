@@ -8,6 +8,11 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = []
+simd128 = []
+simd256 = ["libcrux-polynomials-avx2"]
 
 [dependencies]
+libcrux-traits = { path = "../traits" }
+libcrux-polynomials-avx2 = { path = "../polynomials-avx2", optional = true}
