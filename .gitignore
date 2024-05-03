@@ -11,3 +11,4 @@ fuzz/artifacts
 proofs/fstar/extraction/.cache
 __pycache__
 kyber-crate/
+*.llbc

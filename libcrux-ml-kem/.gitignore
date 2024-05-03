@@ -1,3 +1,4 @@
 Cargo.lock
 proofs/fstar/extraction/.cache/
 proofs/fstar/extraction/.depend
+c

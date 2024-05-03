@@ -477,7 +477,7 @@ fn ntt_multiply(
     zeta0: i32,
     zeta1: i32,
 ) -> PortableVector {
-    let mut out = PortableVector::ZERO();
+    let mut out = ZERO();
     let product = ntt_multiply_binomials(
         (lhs.elements[0], lhs.elements[1]),
         (rhs.elements[0], rhs.elements[1]),
@@ -524,7 +524,7 @@ fn serialize_1(v: PortableVector) -> u8 {
 
 #[inline(always)]
 fn deserialize_1(v: u8) -> PortableVector {
-    let mut result = PortableVector::ZERO();
+    let mut result = ZERO();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         result.elements[i] = ((v >> i) & 0x1) as i32;
     }
@@ -546,7 +546,7 @@ fn serialize_4(v: PortableVector) -> [u8; 4] {
 
 #[inline(always)]
 fn deserialize_4(bytes: &[u8]) -> PortableVector {
-    let mut v = PortableVector::ZERO();
+    let mut v = ZERO();
 
     v.elements[0] = (bytes[0] & 0x0F) as i32;
     v.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
@@ -578,7 +578,7 @@ fn serialize_5(v: PortableVector) -> [u8; 5] {
 
 #[inline(always)]
 fn deserialize_5(bytes: &[u8]) -> PortableVector {
-    let mut v = PortableVector::ZERO();
+    let mut v = ZERO();
 
     v.elements[0] = (bytes[0] & 0x1F) as i32;
     v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
@@ -613,7 +613,7 @@ fn serialize_10(v: PortableVector) -> [u8; 10] {
 
 #[inline(always)]
 fn deserialize_10(bytes: &[u8]) -> PortableVector {
-    let mut result = PortableVector::ZERO();
+    let mut result = ZERO();
 
     result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
@@ -647,7 +647,7 @@ fn serialize_11(v: PortableVector) -> [u8; 11] {
 
 #[inline(always)]
 fn deserialize_11(bytes: &[u8]) -> PortableVector {
-    let mut result = PortableVector::ZERO();
+    let mut result = ZERO();
     result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
     result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
@@ -687,7 +687,7 @@ fn serialize_12(v: PortableVector) -> [u8; 12] {
 
 #[inline(always)]
 fn deserialize_12(bytes: &[u8]) -> PortableVector {
-    let mut re = PortableVector::ZERO();
+    let mut re = ZERO();
 
     let byte0 = bytes[0] as i32;
     let byte1 = bytes[1] as i32;
