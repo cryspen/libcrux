@@ -10,9 +10,10 @@ readme.workspace = true
 
 [features]
 default = []
-simd128 = []
+simd128 = ["libcrux-polynomials-aarch64"]
 simd256 = ["libcrux-polynomials-avx2"]
 
 [dependencies]
 libcrux-traits = { path = "../traits" }
-libcrux-polynomials-avx2 = { path = "../polynomials-avx2", optional = true}
+libcrux-polynomials-avx2 = { path = "../polynomials-avx2", optional = true }
+libcrux-polynomials-aarch64 = { path = "../polynomials-aarch64", optional = true }

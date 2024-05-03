@@ -27,7 +27,7 @@ pub mod kyber1024;
 pub mod kyber512;
 pub mod kyber768;
 
-use libcrux_polynomials::{Operations, PortableVector, SIMD256Vector};
+use libcrux_polynomials::{Operations, PortableVector, SIMD128Vector, SIMD256Vector};
 pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 
 // TODO: We should make this an actual type as opposed to alias so we can enforce
@@ -143,6 +143,17 @@ pub(crate) fn generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             SIMD256Vector,
+        >(ind_cpa_keypair_randomness, implicit_rejection_value)
+    } else if libcrux_platform::simd128_support() {
+        generate_keypair_generic::<
+            K,
+            CPA_PRIVATE_KEY_SIZE,
+            PRIVATE_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            SIMD128Vector,
         >(ind_cpa_keypair_randomness, implicit_rejection_value)
     } else {
         generate_keypair_generic::<
@@ -269,6 +280,23 @@ pub(crate) fn encapsulate<
             ETA2_RANDOMNESS_SIZE,
             SIMD256Vector,
         >(public_key, randomness)
+    } else if libcrux_platform::simd128_support() {
+        encapsulate_generic::<
+            K,
+            CIPHERTEXT_SIZE,
+            PUBLIC_KEY_SIZE,
+            T_AS_NTT_ENCODED_SIZE,
+            C1_SIZE,
+            C2_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+            VECTOR_U_BLOCK_LEN,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            SIMD128Vector,
+        >(public_key, randomness)
     } else {
         encapsulate_generic::<
             K,
@@ -329,6 +357,26 @@ pub(crate) fn decapsulate<
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             SIMD256Vector,
+        >(secret_key, ciphertext)
+    } else if libcrux_platform::simd128_support() {
+        decapsulate_generic::<
+            K,
+            SECRET_KEY_SIZE,
+            CPA_SECRET_KEY_SIZE,
+            PUBLIC_KEY_SIZE,
+            CIPHERTEXT_SIZE,
+            T_AS_NTT_ENCODED_SIZE,
+            C1_SIZE,
+            C2_SIZE,
+            VECTOR_U_COMPRESSION_FACTOR,
+            VECTOR_V_COMPRESSION_FACTOR,
+            C1_BLOCK_SIZE,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+            SIMD128Vector,
         >(secret_key, ciphertext)
     } else {
         decapsulate_generic::<

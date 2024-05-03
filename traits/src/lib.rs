@@ -1,6 +1,7 @@
 pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
 pub const FIELD_MODULUS: i32 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
+pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]

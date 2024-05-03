@@ -10,4 +10,3 @@ readme.workspace = true
 
 [dependencies]
 libcrux-traits = { path = "../traits" }
-libcrux-sha3 = { path = "../libcrux-sha3" }
