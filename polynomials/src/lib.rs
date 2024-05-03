@@ -11,8 +11,15 @@
 
 pub use libcrux_traits::{Operations, GenericOperations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
 
+// There's no runtime detection here. This either exposes the real SIMD vector,
+// or the portable when the feature is not set.
+//
+// The consumer needs to use runtime feature detection and the appropriate vector
+// in each case.
 #[cfg(feature = "simd256")]
 pub use libcrux_polynomials_avx2::SIMD256Vector;
+#[cfg(not(feature = "simd256"))]
+pub type SIMD256Vector = PortableVector;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
@@ -185,7 +192,7 @@ pub struct PortableVector {
 
 #[allow(non_snake_case)]
 #[inline(always)]
-fn ZERO() -> PortableVector {
+fn zero() -> PortableVector {
     PortableVector {
         elements: [0i32; FIELD_ELEMENTS_IN_VECTOR],
     }
@@ -708,7 +715,7 @@ fn deserialize_12(bytes: &[u8]) -> PortableVector {
 
 impl Operations for PortableVector {
     fn ZERO() -> Self {
-        ZERO()
+        zero()
     }
 
     fn to_i32_array(v: Self) -> [i32; 8] {

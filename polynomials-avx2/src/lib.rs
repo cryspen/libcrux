@@ -598,7 +598,7 @@ pub(crate) struct PortableVector {
 }
 impl PortableVector {
     #[inline(always)]
-    pub(crate) fn ZERO() -> PortableVector {
+    pub(crate) fn zero() -> PortableVector {
         PortableVector {
             elements: [0i32; FIELD_ELEMENTS_IN_VECTOR],
         }
@@ -606,7 +606,7 @@ impl PortableVector {
 
     #[inline(always)]
     pub(crate) fn deserialize_12(bytes: &[u8]) -> PortableVector {
-        let mut re = PortableVector::ZERO();
+        let mut re = PortableVector::zero();
 
         let byte0 = bytes[0] as i32;
         let byte1 = bytes[1] as i32;
@@ -648,7 +648,7 @@ impl PortableVector {
 
     #[inline(always)]
     pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
-        let mut v = PortableVector::ZERO();
+        let mut v = PortableVector::zero();
 
         v.elements[0] = (bytes[0] & 0x1F) as i32;
         v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
@@ -664,7 +664,7 @@ impl PortableVector {
 
     #[inline(always)]
     pub(crate) fn deserialize_10(bytes: &[u8]) -> PortableVector {
-        let mut result = PortableVector::ZERO();
+        let mut result = PortableVector::zero();
 
         result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
         result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
@@ -681,7 +681,7 @@ impl PortableVector {
 
     #[inline(always)]
     pub(crate) fn deserialize_11(bytes: &[u8]) -> PortableVector {
-        let mut result = PortableVector::ZERO();
+        let mut result = PortableVector::zero();
         result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
         result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
         result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
