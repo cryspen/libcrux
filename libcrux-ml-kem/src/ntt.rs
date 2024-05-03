@@ -6,8 +6,7 @@ use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     polynomial::{
         invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus, ntt_at_layer_1,
-        ntt_at_layer_2, ntt_at_layer_3_plus, ntt_at_layer_7, 
-        PolynomialRingElement,
+        ntt_at_layer_2, ntt_at_layer_3_plus, ntt_at_layer_7, PolynomialRingElement,
     },
 };
 

@@ -1,7 +1,8 @@
 use libcrux_polynomials::Operations;
 
 use crate::{
-    helper::cloop, ntt::invert_ntt_montgomery, polynomial::PolynomialRingElement, sampling::sample_from_xof
+    helper::cloop, ntt::invert_ntt_montgomery, polynomial::PolynomialRingElement,
+    sampling::sample_from_xof,
 };
 
 #[inline(always)]
@@ -50,7 +51,7 @@ pub(crate) fn compute_message<const K: usize, Vector: Operations>(
         result = result.add_to_ring_element::<K>(&product);
     }
 
-    result = invert_ntt_montgomery::<K ,Vector>(result);
+    result = invert_ntt_montgomery::<K, Vector>(result);
     result = v.subtract_reduce(result);
 
     result
