@@ -1,5 +1,5 @@
 use crate::{
-    arithmetic::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, constants::FIELD_MODULUS, simd::{simd_trait::*}
+    arithmetic::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, constants::FIELD_MODULUS, simd::simd_trait::*,
 };
 use core::arch::aarch64::*;
 
@@ -105,6 +105,7 @@ const BARRETT_MULTIPLIER: i32 = 20159;
 
 #[inline(always)]
 fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+    // This is what we are trying to do in portable:
     // let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     // let quotient = (t >> BARRETT_SHIFT) as i32;
     // let result = value - (quotient * FIELD_MODULUS);
@@ -126,9 +127,9 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     v
 }
 
-
 #[inline(always)]
 fn montgomery_reduce_i32x2_t(v: int32x2_t) -> int32x2_t {
+    // This is what we are trying to do in portable:
     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
@@ -151,6 +152,7 @@ fn montgomery_reduce_i32x2_t(v: int32x2_t) -> int32x2_t {
 
 #[inline(always)]
 fn montgomery_reduce_i32x4_t(v: int32x4_t) -> int32x4_t {
+    // This is what we are trying to do in portable:
     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
@@ -159,36 +161,19 @@ fn montgomery_reduce_i32x4_t(v: int32x4_t) -> int32x4_t {
     // let value_high = value >> MONTGOMERY_SHIFT;
     //value_high - c
 
-    //let m = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u32)) };
-    //let f = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(FIELD_MODULUS as u32)) };
-
-    let t = unsafe { vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32)) };
+    let t = unsafe {
+        vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
+    };
     let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(t, FIELD_MODULUS as i16)) };
     let c = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
     let v = unsafe { vshrq_n_s32::<16>(v) };
     let v = unsafe { vsubq_s32(v, c) };
-    // let t1 = unsafe { vqdmulhq_s16(t1, f) };
-    // let t0 = unsafe { vshrq_n_s16(t0, 1) };
-    // let t1 = unsafe { vshrq_n_s16(t1, 1) };
-    // let v0 = unsafe { vshrq_n_s32::<16>(v.low) };
-    // let v1 = unsafe { vshrq_n_s32::<16>(v.high) };
-    // v.low = unsafe { vsubq_s16(v0, vreinterpretq_s32_s16(t0)) };
-    // v.high = unsafe { vsubq_s16(v1, vreinterpretq_s32_s16(t1)) };
     v
-
-    // let m = unsafe { vdupq_n_s32(0x0000ffff) };
-    // let t0 = unsafe { vandq_s32(v, m) };
-    // let t0 = unsafe { vmulq_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32) };
-    // let t0 = unsafe { vmovl_s16(vmovn_s32(t0)) };
-    // let t0 = unsafe { vmulq_n_s32(t0, FIELD_MODULUS) };
-    // let c0 = unsafe { vshrq_n_s32::<16>(t0) };
-    // let v0 = unsafe { vshrq_n_s32::<16>(v) };
-    // let v = unsafe { vsubq_s32(v0, c0) };
-    // v
 }
 
 #[inline(always)]
 fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+    // This is what we are trying to do in portable:
     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
@@ -197,10 +182,9 @@ fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     // let value_high = value >> MONTGOMERY_SHIFT;
     //value_high - c
 
-    //let mask = unsafe { vdupq_n_s32(0xffff) };
-    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) }; 
-    let k = unsafe { vmulq_n_s16(mixed,INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16) };
-    let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(k,FIELD_MODULUS as i16)) };
+    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) };
+    let k = unsafe { vmulq_n_s16(mixed, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16) };
+    let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(k, FIELD_MODULUS as i16)) };
 
     let c_low = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
     let c_high = unsafe { vshrq_n_s32::<17>(c) };
@@ -209,63 +193,34 @@ fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
 
     v.low = unsafe { vsubq_s32(v_low, c_low) };
     v.high = unsafe { vsubq_s32(v_high, c_high) };
-    // let m = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u32)) };
-    // let f = unsafe { vreinterpretq_s16_u32(vdupq_n_u32(FIELD_MODULUS as u32)) };
-   
-    // let t0 = unsafe { vmulq_s16(vreinterpretq_s16_s32(v.low), m) };
-    // let t1 = unsafe { vmulq_s16(vreinterpretq_s16_s32(v.high), m) };
-    // let t0 = unsafe { vqdmulhq_s16(t0, f) };
-    // let t1 = unsafe { vqdmulhq_s16(t1, f) };
-    // let t0 = unsafe { vshrq_n_s16(t0, 1) };
-    // let t1 = unsafe { vshrq_n_s16(t1, 1) };
-    // let v0 = unsafe { vshrq_n_s32::<16>(v.low) };
-    // let v1 = unsafe { vshrq_n_s32::<16>(v.high) };
-    // v.low = unsafe { vsubq_s16(v0, vreinterpretq_s32_s16(t0)) };
-    // v.high = unsafe { vsubq_s16(v1, vreinterpretq_s32_s16(t1)) };
     v
 }
 
 #[inline(always)]
 fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
+    // This is what we are trying to do in portable:
     // let shifted: i16 = 1664 - (fe as i16);
     // let mask = shifted >> 15;
     // let shifted_to_positive = mask ^ shifted;
     // let shifted_positive_in_range = shifted_to_positive - 832;
     // ((shifted_positive_in_range >> 15) & 1) as u8
 
-    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) }; 
+    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) };
     let half = unsafe { vdupq_n_s16(1664) };
     let quarter = unsafe { vdupq_n_s16(832) };
     let shifted = unsafe { vsubq_s16(half, mixed) };
     let mask = unsafe { vshrq_n_s16::<15>(shifted) };
     let shifted_to_positive = unsafe { veorq_s16(mask, shifted) };
     let shifted_positive_in_range = unsafe { vsubq_s16(shifted_to_positive, quarter) };
-    let res = unsafe{ vreinterpretq_s32_u16(vshrq_n_u16::<15>(vreinterpretq_u16_s16(shifted_positive_in_range))) };
+    let res = unsafe {
+        vreinterpretq_s32_u16(vshrq_n_u16::<15>(vreinterpretq_u16_s16(
+            shifted_positive_in_range,
+        )))
+    };
     let mask = unsafe { vdupq_n_s32(0xffff) };
-    v.low = unsafe { vandq_s32(res,mask) };
+    v.low = unsafe { vandq_s32(res, mask) };
     v.high = unsafe { vshrq_n_s32::<16>(res) };
     v
-
-    // let quarter = unsafe { vdupq_n_s32(832) };
-    // let shifted0 = unsafe { vsubq_s32(half, v.low) };
-    // let shifted1 = unsafe { vsubq_s32(half, v.high) };
-    // let mask0 = unsafe { vshrq_n_s32::<31>(shifted0) };
-    // let mask1 = unsafe { vshrq_n_s32::<31>(shifted1) };
-    // let shifted_to_positive0 = unsafe { veorq_s32(mask0, shifted0) };
-    // let shifted_to_positive1 = unsafe { veorq_s32(mask1, shifted1) };
-    // let shifted_positive_in_range0 = unsafe { vsubq_s32(shifted_to_positive0, quarter) };
-    // let shifted_positive_in_range1 = unsafe { vsubq_s32(shifted_to_positive1, quarter) };
-    // v.low = unsafe {
-    //     vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(
-    //         shifted_positive_in_range0,
-    //     )))
-    // };
-    // v.high = unsafe {
-    //     vreinterpretq_s32_u32(vshrq_n_u32::<31>(vreinterpretq_u32_s32(
-    //         shifted_positive_in_range1,
-    //     )))
-    // };
-    // v
 }
 
 #[inline(always)]
@@ -281,6 +236,7 @@ fn mask_n_least_significant_bits(coefficient_bits: i32) -> i32 {
 
 #[inline(always)]
 fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
+    // This is what we are trying to do in portable:
     // let mut compressed = (fe as u64) << coefficient_bits;
     // compressed += 1664 as u64;
     // compressed *= 10_321_340;
@@ -296,17 +252,6 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector 
     let high = unsafe { vqdmulhq_n_s32(high, 10_321_340) };
     let low = unsafe { vshrq_n_s32::<4>(low) };
     let high = unsafe { vshrq_n_s32::<4>(high) };
-
-    // let low0 = unsafe { vmull_n_s32(vget_low_s32(low), 10_321_340) };
-    // let high0 = unsafe { vmull_n_s32(vget_low_s32(high), 10_321_340) };
-    // let low1 = unsafe { vmull_high_n_s32(low, 10_321_340) };
-    // let high1 = unsafe { vmull_high_n_s32(high, 10_321_340) };
-    // let low0 = unsafe { vshrq_n_s64::<35>(low0) };
-    // let high0 = unsafe { vshrq_n_s64::<35>(high0) };
-    // let low1 = unsafe { vshrq_n_s64::<35>(low1) };
-    // let high1 = unsafe { vshrq_n_s64::<35>(high1) };
-    // let low = unsafe { vcombine_s32(vmovn_s64(low0), vmovn_s64(low1)) };
-    // let high = unsafe { vcombine_s32(vmovn_s64(high0), vmovn_s64(high1)) };
     let mask = unsafe { vdupq_n_s32(mask_n_least_significant_bits(COEFFICIENT_BITS)) };
     v.low = unsafe { vandq_s32(low, mask) };
     v.high = unsafe { vandq_s32(high, mask) };
@@ -315,6 +260,7 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector 
 
 #[inline(always)]
 fn ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128Vector {
+    // This is what we are trying to do, pointwise for every pair of elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
     // a = simd::Vector::add(a, &t);
@@ -338,6 +284,7 @@ fn ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128Vect
 
 #[inline(always)]
 fn ntt_layer_2_step(mut v: SIMD128Vector, zeta: i32) -> SIMD128Vector {
+    // This is what we are trying to do for every four elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
     // a = simd::Vector::add(a, &t);
@@ -351,6 +298,7 @@ fn ntt_layer_2_step(mut v: SIMD128Vector, zeta: i32) -> SIMD128Vector {
 
 #[inline(always)]
 fn inv_ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128Vector {
+    // This is what we are trying to do for every two elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
     //b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
@@ -375,6 +323,7 @@ fn inv_ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128
 
 #[inline(always)]
 fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta: i32) -> SIMD128Vector {
+    // This is what we are trying to do for every four elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
     //b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
@@ -389,6 +338,7 @@ fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta: i32) -> SIMD128Vector {
 
 #[inline(always)]
 fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i32, zeta1: i32) -> SIMD128Vector {
+    // This is what we are trying to do for pairs of two elements:
     // montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
     // montgomery_reduce(a0 * b1 + a1 * b0)
 
@@ -405,11 +355,10 @@ fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i32, zeta1: i32
 
     let snd = unsafe { vmlaq_s32(a0b1, a1, b0) };
     let a1b1 = montgomery_reduce_i32x4_t(a1b1);
- 
+
     let fst = unsafe { vmlaq_s32(a0b0, a1b1, zeta) };
     let fst = montgomery_reduce_i32x4_t(fst);
     let snd = montgomery_reduce_i32x4_t(snd);
- 
 
     SIMD128Vector {
         low: unsafe { vtrn1q_s32(fst, snd) },
@@ -461,11 +410,11 @@ fn serialize_4(v: SIMD128Vector) -> [u8; 4] {
 #[inline(always)]
 fn deserialize_4(v: &[u8]) -> SIMD128Vector {
     let input = u32::from_le_bytes(v.try_into().unwrap());
-    let mut low = [0i32;4];
-    let mut high = [0i32;4];
+    let mut low = [0i32; 4];
+    let mut high = [0i32; 4];
     low[0] = (input & 0x0f) as i32;
-    low[1] = ((input >> 4)  & 0x0f) as i32;
-    low[2] = ((input >> 8)  & 0x0f) as i32;
+    low[1] = ((input >> 4) & 0x0f) as i32;
+    low[2] = ((input >> 8) & 0x0f) as i32;
     low[3] = ((input >> 12) & 0x0f) as i32;
     high[0] = ((input >> 16) & 0x0f) as i32;
     high[1] = ((input >> 20) & 0x0f) as i32;
@@ -497,12 +446,12 @@ fn serialize_5(v: SIMD128Vector) -> [u8; 5] {
 
 #[inline(always)]
 fn deserialize_5(v: &[u8]) -> SIMD128Vector {
-    let mut input = [0u8;8];
+    let mut input = [0u8; 8];
     input[0..5].copy_from_slice(&v[0..5]);
     let input = u64::from_le_bytes(input);
 
-    let mut low = [0i32;4];
-    let mut high = [0i32;4];
+    let mut low = [0i32; 4];
+    let mut high = [0i32; 4];
 
     low[0] = (input & 0x1F) as i32;
     low[1] = ((input >> 5) & 0x1F) as i32;
@@ -542,14 +491,14 @@ fn serialize_10(v: SIMD128Vector) -> [u8; 10] {
 
 #[inline(always)]
 fn deserialize_10(v: &[u8]) -> SIMD128Vector {
-    let mut input0 = [0u8;8];
-    let mut input1 = [0u8;8];
+    let mut input0 = [0u8; 8];
+    let mut input1 = [0u8; 8];
     input0[0..5].copy_from_slice(&v[0..5]);
     input1[0..5].copy_from_slice(&v[5..10]);
     let input0 = u64::from_le_bytes(input0);
     let input1 = u64::from_le_bytes(input1);
-    let mut low = [0i32;4];
-    let mut high = [0i32;4];
+    let mut low = [0i32; 4];
+    let mut high = [0i32; 4];
     low[0] = (input0 & 0x3ff) as i32;
     low[1] = ((input0 & 0xffc00) >> 10) as i32;
     low[2] = ((input0 & 0x3ff00000) >> 20) as i32;
@@ -568,14 +517,14 @@ fn deserialize_10(v: &[u8]) -> SIMD128Vector {
 fn serialize_11(v: SIMD128Vector) -> [u8; 11] {
     let input = to_i32_array(v);
     let mut result = [0u8; 11];
-    result[0] = input[0] as u8; // 3 left in 0 
+    result[0] = input[0] as u8; // 3 left in 0
     result[1] = ((input[0] >> 8) | (input[1] << 3)) as u8; // 6 left in 1
     result[2] = ((input[1] >> 5) | (input[2] << 6)) as u8; // 9 left in 2
     result[3] = (input[2] >> 2) as u8; // 1 left in 2
     result[4] = ((input[2] >> 10) | (input[3] << 1)) as u8; // 4 left in 3
-    result[5] = ((input[3] >> 7) | (input[4] << 4)) as u8;  // 7 left in 4
-    result[6] = ((input[4] >> 4) | (input[5] << 7)) as u8;  // 10 left in 5
-    result[7] = (input[5] >> 1)  as u8;  // 2 left in 5
+    result[5] = ((input[3] >> 7) | (input[4] << 4)) as u8; // 7 left in 4
+    result[6] = ((input[4] >> 4) | (input[5] << 7)) as u8; // 10 left in 5
+    result[7] = (input[5] >> 1) as u8; // 2 left in 5
     result[8] = ((input[5] >> 9) | (input[6] << 2)) as u8; // 5 left in 6
     result[9] = ((input[6] >> 6) | (input[7] << 5)) as u8; // 8 left in 7
     result[10] = (input[7] >> 3) as u8;
@@ -584,15 +533,15 @@ fn serialize_11(v: SIMD128Vector) -> [u8; 11] {
 
 #[inline(always)]
 fn deserialize_11(v: &[u8]) -> SIMD128Vector {
-    let mut input0 = [0u8;8];
-    let mut input1 = [0u8;8];
+    let mut input0 = [0u8; 8];
+    let mut input1 = [0u8; 8];
     input0[0..6].copy_from_slice(&v[0..6]);
     input1[0..6].copy_from_slice(&v[5..11]);
     let input0 = u64::from_le_bytes(input0);
     let input1 = u64::from_le_bytes(input1);
 
-    let mut low = [0i32;4];
-    let mut high = [0i32;4];
+    let mut low = [0i32; 4];
+    let mut high = [0i32; 4];
 
     low[0] = (input0 & 0x7FF) as i32;
     low[1] = ((input0 >> 11) & 0x7FF) as i32;
@@ -628,14 +577,14 @@ fn serialize_12(v: SIMD128Vector) -> [u8; 12] {
 
 #[inline(always)]
 fn deserialize_12(v: &[u8]) -> SIMD128Vector {
-    let mut input0 = [0u8;8];
-    let mut input1 = [0u8;8];
+    let mut input0 = [0u8; 8];
+    let mut input1 = [0u8; 8];
     input0[0..6].copy_from_slice(&v[0..6]);
     input1[0..6].copy_from_slice(&v[6..12]);
     let input0 = u64::from_le_bytes(input0);
     let input1 = u64::from_le_bytes(input1);
-    let mut low = [0i32;4];
-    let mut high = [0i32;4];
+    let mut low = [0i32; 4];
+    let mut high = [0i32; 4];
     low[0] = (input0 & 0xfff) as i32;
     low[1] = ((input0 & 0xfff000) >> 12) as i32;
     low[2] = ((input0 & 0xfff000000) >> 24) as i32;
@@ -656,156 +605,126 @@ impl Operations for SIMD128Vector {
         ZERO()
     }
 
-    
     fn to_i32_array(v: Self) -> [i32; 8] {
         to_i32_array(v)
     }
 
-    
     fn from_i32_array(array: [i32; 8]) -> Self {
         from_i32_array(array)
     }
 
-    
     fn add_constant(v: Self, c: i32) -> Self {
         add_constant(v, c)
     }
 
-    
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }
 
-    
     fn sub(lhs: Self, rhs: &Self) -> Self {
         sub(lhs, rhs)
     }
 
-    
     fn multiply_by_constant(v: Self, c: i32) -> Self {
         multiply_by_constant(v, c)
     }
 
-    
     fn bitwise_and_with_constant(v: Self, c: i32) -> Self {
         bitwise_and_with_constant(v, c)
     }
 
-    
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<SHIFT_BY>(v)
     }
 
-    
     fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_left::<SHIFT_BY>(v)
     }
 
-    
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)
     }
 
-    
     fn barrett_reduce(v: Self) -> Self {
         barrett_reduce(v)
     }
-    
+
     fn montgomery_reduce(v: Self) -> Self {
         montgomery_reduce(v)
     }
 
-    
     fn compress_1(v: Self) -> Self {
         compress_1(v)
     }
 
-    
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         compress::<COEFFICIENT_BITS>(v)
     }
 
-    
     fn ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self {
         ntt_layer_1_step(a, zeta1, zeta2)
     }
 
-    
     fn ntt_layer_2_step(a: Self, zeta: i32) -> Self {
         ntt_layer_2_step(a, zeta)
     }
 
-    
     fn inv_ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self {
         inv_ntt_layer_1_step(a, zeta1, zeta2)
     }
 
-    
     fn inv_ntt_layer_2_step(a: Self, zeta: i32) -> Self {
         inv_ntt_layer_2_step(a, zeta)
     }
 
-    
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32) -> Self {
         ntt_multiply(lhs, rhs, zeta0, zeta1)
     }
 
-    
     fn serialize_1(a: Self) -> u8 {
         serialize_1(a)
     }
 
-    
     fn deserialize_1(a: u8) -> Self {
         deserialize_1(a)
     }
 
-    
     fn serialize_4(a: Self) -> [u8; 4] {
         serialize_4(a)
     }
 
-    
     fn deserialize_4(a: &[u8]) -> Self {
         deserialize_4(a)
     }
 
-    
     fn serialize_5(a: Self) -> [u8; 5] {
         serialize_5(a)
     }
 
-    
     fn deserialize_5(a: &[u8]) -> Self {
         deserialize_5(a)
     }
 
-    
     fn serialize_10(a: Self) -> [u8; 10] {
         serialize_10(a)
     }
 
-    
     fn deserialize_10(a: &[u8]) -> Self {
         deserialize_10(a)
     }
 
-    
     fn serialize_11(a: Self) -> [u8; 11] {
         serialize_11(a)
     }
 
-    
     fn deserialize_11(a: &[u8]) -> Self {
         deserialize_11(a)
     }
 
-    
     fn serialize_12(a: Self) -> [u8; 12] {
         serialize_12(a)
     }
 
-    
     fn deserialize_12(a: &[u8]) -> Self {
         deserialize_12(a)
     }
