@@ -3,8 +3,8 @@ use crate::{
     hash_functions::*,
     hax_utils::hax_debug_assert,
     helper::cloop,
+    polynomial::{from_i32_array, PolynomialRingElement},
 };
-use libcrux_polynomials_avx2::{from_i32_array, PolynomialRingElement};
 
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation
