@@ -1,5 +1,5 @@
 use crate::{
-    arithmetic::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, constants::FIELD_MODULUS, simd::{portable, simd_trait::*}
+    arithmetic::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, constants::FIELD_MODULUS, simd::{simd_trait::*}
 };
 use core::arch::aarch64::*;
 
@@ -460,9 +460,21 @@ fn serialize_4(v: SIMD128Vector) -> [u8; 4] {
 
 #[inline(always)]
 fn deserialize_4(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_4(v);
-
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let input = u32::from_le_bytes(v.try_into().unwrap());
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+    low[0] = (input & 0x0f) as i32;
+    low[1] = ((input >> 4)  & 0x0f) as i32;
+    low[2] = ((input >> 8)  & 0x0f) as i32;
+    low[3] = ((input >> 12) & 0x0f) as i32;
+    high[0] = ((input >> 16) & 0x0f) as i32;
+    high[1] = ((input >> 20) & 0x0f) as i32;
+    high[2] = ((input >> 24) & 0x0f) as i32;
+    high[3] = ((input >> 28) & 0x0f) as i32;
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
+        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+    }
 }
 
 #[inline(always)]
@@ -485,9 +497,26 @@ fn serialize_5(v: SIMD128Vector) -> [u8; 5] {
 
 #[inline(always)]
 fn deserialize_5(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_5(v);
+    let mut input = [0u8;8];
+    input[0..5].copy_from_slice(&v[0..5]);
+    let input = u64::from_le_bytes(input);
 
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+
+    low[0] = (input & 0x1F) as i32;
+    low[1] = ((input >> 5) & 0x1F) as i32;
+    low[2] = ((input >> 10) & 0x1F) as i32;
+    low[3] = ((input >> 15) & 0x1F) as i32;
+    high[0] = ((input >> 20) & 0x1F) as i32;
+    high[1] = ((input >> 25) & 0x1F) as i32;
+    high[2] = ((input >> 30) & 0x1F) as i32;
+    high[3] = ((input >> 35) & 0x1F) as i32;
+
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
+        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+    }
 }
 
 #[inline(always)]
@@ -513,22 +542,71 @@ fn serialize_10(v: SIMD128Vector) -> [u8; 10] {
 
 #[inline(always)]
 fn deserialize_10(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_10(v);
-
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let mut input0 = [0u8;8];
+    let mut input1 = [0u8;8];
+    input0[0..5].copy_from_slice(&v[0..5]);
+    input1[0..5].copy_from_slice(&v[5..10]);
+    let input0 = u64::from_le_bytes(input0);
+    let input1 = u64::from_le_bytes(input1);
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+    low[0] = (input0 & 0x3ff) as i32;
+    low[1] = ((input0 & 0xffc00) >> 10) as i32;
+    low[2] = ((input0 & 0x3ff00000) >> 20) as i32;
+    low[3] = ((input0 & 0xffc0000000) >> 30) as i32;
+    high[0] = (input1 & 0x3ff) as i32;
+    high[1] = ((input1 & 0xffc00) >> 10) as i32;
+    high[2] = ((input1 & 0x3ff00000) >> 20) as i32;
+    high[3] = ((input1 & 0xffc0000000) >> 30) as i32;
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
+        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+    }
 }
 
 #[inline(always)]
 fn serialize_11(v: SIMD128Vector) -> [u8; 11] {
-    let input = portable::PortableVector::from_i32_array(SIMD128Vector::to_i32_array(v));
-    portable::PortableVector::serialize_11(input)
+    let input = to_i32_array(v);
+    let mut result = [0u8; 11];
+    result[0] = input[0] as u8; // 3 left in 0 
+    result[1] = ((input[0] >> 8) | (input[1] << 3)) as u8; // 6 left in 1
+    result[2] = ((input[1] >> 5) | (input[2] << 6)) as u8; // 9 left in 2
+    result[3] = (input[2] >> 2) as u8; // 1 left in 2
+    result[4] = ((input[2] >> 10) | (input[3] << 1)) as u8; // 4 left in 3
+    result[5] = ((input[3] >> 7) | (input[4] << 4)) as u8;  // 7 left in 4
+    result[6] = ((input[4] >> 4) | (input[5] << 7)) as u8;  // 10 left in 5
+    result[7] = (input[5] >> 1)  as u8;  // 2 left in 5
+    result[8] = ((input[5] >> 9) | (input[6] << 2)) as u8; // 5 left in 6
+    result[9] = ((input[6] >> 6) | (input[7] << 5)) as u8; // 8 left in 7
+    result[10] = (input[7] >> 3) as u8;
+    result
 }
 
 #[inline(always)]
 fn deserialize_11(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_11(v);
+    let mut input0 = [0u8;8];
+    let mut input1 = [0u8;8];
+    input0[0..6].copy_from_slice(&v[0..6]);
+    input1[0..6].copy_from_slice(&v[5..11]);
+    let input0 = u64::from_le_bytes(input0);
+    let input1 = u64::from_le_bytes(input1);
 
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+
+    low[0] = (input0 & 0x7FF) as i32;
+    low[1] = ((input0 >> 11) & 0x7FF) as i32;
+    low[2] = ((input0 >> 22) & 0x7FF) as i32;
+    low[3] = ((input0 >> 33) & 0x7FF) as i32;
+    high[0] = ((input1 >> 4) & 0x7FF) as i32;
+    high[1] = ((input1 >> 15) & 0x7FF) as i32;
+    high[2] = ((input1 >> 26) & 0x7FF) as i32;
+    high[3] = ((input1 >> 37) & 0x7FF) as i32;
+
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
+        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+    }
 }
 
 #[inline(always)]
@@ -550,136 +628,184 @@ fn serialize_12(v: SIMD128Vector) -> [u8; 12] {
 
 #[inline(always)]
 fn deserialize_12(v: &[u8]) -> SIMD128Vector {
-    let output = portable::PortableVector::deserialize_12(v);
-
-    SIMD128Vector::from_i32_array(portable::PortableVector::to_i32_array(output))
+    let mut input0 = [0u8;8];
+    let mut input1 = [0u8;8];
+    input0[0..6].copy_from_slice(&v[0..6]);
+    input1[0..6].copy_from_slice(&v[6..12]);
+    let input0 = u64::from_le_bytes(input0);
+    let input1 = u64::from_le_bytes(input1);
+    let mut low = [0i32;4];
+    let mut high = [0i32;4];
+    low[0] = (input0 & 0xfff) as i32;
+    low[1] = ((input0 & 0xfff000) >> 12) as i32;
+    low[2] = ((input0 & 0xfff000000) >> 24) as i32;
+    low[3] = ((input0 & 0xfff000000000) >> 36) as i32;
+    high[0] = (input1 & 0xfff) as i32;
+    high[1] = ((input1 & 0xfff000) >> 12) as i32;
+    high[2] = ((input1 & 0xfff000000) >> 24) as i32;
+    high[3] = ((input1 & 0xfff000000000) >> 36) as i32;
+    SIMD128Vector {
+        low: unsafe { vld1q_s32(low.as_mut_ptr() as *mut i32) },
+        high: unsafe { vld1q_s32(high.as_mut_ptr() as *mut i32) },
+    }
 }
 
 impl Operations for SIMD128Vector {
+    #[inline(always)]
     fn ZERO() -> Self {
         ZERO()
     }
 
+    
     fn to_i32_array(v: Self) -> [i32; 8] {
         to_i32_array(v)
     }
 
+    
     fn from_i32_array(array: [i32; 8]) -> Self {
         from_i32_array(array)
     }
 
+    
     fn add_constant(v: Self, c: i32) -> Self {
         add_constant(v, c)
     }
 
+    
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }
 
+    
     fn sub(lhs: Self, rhs: &Self) -> Self {
         sub(lhs, rhs)
     }
 
+    
     fn multiply_by_constant(v: Self, c: i32) -> Self {
         multiply_by_constant(v, c)
     }
 
+    
     fn bitwise_and_with_constant(v: Self, c: i32) -> Self {
         bitwise_and_with_constant(v, c)
     }
 
+    
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<SHIFT_BY>(v)
     }
 
+    
     fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_left::<SHIFT_BY>(v)
     }
 
+    
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)
     }
 
+    
     fn barrett_reduce(v: Self) -> Self {
         barrett_reduce(v)
     }
-
+    
     fn montgomery_reduce(v: Self) -> Self {
         montgomery_reduce(v)
     }
 
+    
     fn compress_1(v: Self) -> Self {
         compress_1(v)
     }
 
+    
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         compress::<COEFFICIENT_BITS>(v)
     }
 
+    
     fn ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self {
         ntt_layer_1_step(a, zeta1, zeta2)
     }
 
+    
     fn ntt_layer_2_step(a: Self, zeta: i32) -> Self {
         ntt_layer_2_step(a, zeta)
     }
 
+    
     fn inv_ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self {
         inv_ntt_layer_1_step(a, zeta1, zeta2)
     }
 
+    
     fn inv_ntt_layer_2_step(a: Self, zeta: i32) -> Self {
         inv_ntt_layer_2_step(a, zeta)
     }
 
+    
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32) -> Self {
         ntt_multiply(lhs, rhs, zeta0, zeta1)
     }
 
+    
     fn serialize_1(a: Self) -> u8 {
         serialize_1(a)
     }
 
+    
     fn deserialize_1(a: u8) -> Self {
         deserialize_1(a)
     }
 
+    
     fn serialize_4(a: Self) -> [u8; 4] {
         serialize_4(a)
     }
 
+    
     fn deserialize_4(a: &[u8]) -> Self {
         deserialize_4(a)
     }
 
+    
     fn serialize_5(a: Self) -> [u8; 5] {
         serialize_5(a)
     }
 
+    
     fn deserialize_5(a: &[u8]) -> Self {
         deserialize_5(a)
     }
 
+    
     fn serialize_10(a: Self) -> [u8; 10] {
         serialize_10(a)
     }
 
+    
     fn deserialize_10(a: &[u8]) -> Self {
         deserialize_10(a)
     }
 
+    
     fn serialize_11(a: Self) -> [u8; 11] {
         serialize_11(a)
     }
 
+    
     fn deserialize_11(a: &[u8]) -> Self {
         deserialize_11(a)
     }
 
+    
     fn serialize_12(a: Self) -> [u8; 12] {
         serialize_12(a)
     }
 
+    
     fn deserialize_12(a: &[u8]) -> Self {
         deserialize_12(a)
     }
