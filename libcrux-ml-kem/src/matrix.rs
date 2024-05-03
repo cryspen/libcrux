@@ -1,11 +1,7 @@
-use crate::{
-    helper::cloop,
-    ntt::invert_ntt_montgomery,
-    polynomial::{
-        add_error_reduce, add_message_error_reduce, add_standard_error_reduce, add_to_ring_element,
-        ntt_multiply, subtract_reduce, PolynomialRingElement,
-    },
-    sampling::sample_from_xof,
+use crate::{helper::cloop, ntt::invert_ntt_montgomery, sampling::sample_from_xof};
+use libcrux_polynomials_avx2::{
+    add_error_reduce, add_message_error_reduce, add_standard_error_reduce, add_to_ring_element,
+    ntt_multiply, subtract_reduce, PolynomialRingElement,
 };
 
 #[inline(always)]

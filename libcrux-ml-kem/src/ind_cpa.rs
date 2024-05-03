@@ -6,7 +6,6 @@ use crate::{
     helper::cloop,
     matrix::*,
     ntt::*,
-    polynomial::PolynomialRingElement,
     sampling::sample_from_binomial_distribution,
     serialize::{
         compress_then_serialize_message, compress_then_serialize_ring_element_u,
@@ -16,6 +15,7 @@ use crate::{
         serialize_uncompressed_ring_element,
     },
 };
+use libcrux_polynomials_avx2::PolynomialRingElement;
 
 /// Pad the `slice` with `0`s at the end.
 #[inline(always)]
