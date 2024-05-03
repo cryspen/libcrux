@@ -52,6 +52,8 @@ pub(crate) fn compress_message_coefficient(fe: u16) -> u8 {
     ((shifted_positive_in_range >> 15) & 1) as u8
 }
 
+pub(crate) const CIPHERTEXT_COMPRESSION_MULTIPLIER: i32 = 10_321_340;
+
 #[cfg_attr(hax,
     hax_lib::requires(
         (coefficient_bits == 4 ||
@@ -76,7 +78,7 @@ pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
     let mut compressed = (fe as u64) << coefficient_bits;
     compressed += 1664 as u64;
 
-    compressed *= 10_321_340;
+    compressed *= CIPHERTEXT_COMPRESSION_MULTIPLIER as u64;
     compressed >>= 35;
 
     get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
