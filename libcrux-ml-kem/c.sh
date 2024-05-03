@@ -15,7 +15,7 @@ mkdir -p c
 cd c
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../c.yaml ../libcrux_kyber.llbc
+$EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc
 cp $EURYDICE_HOME/include/eurydice_glue.h .
 
 if [[ -n "$HACL_PACKAGES_HOME" ]]; then
