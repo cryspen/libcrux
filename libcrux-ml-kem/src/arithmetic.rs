@@ -3,7 +3,7 @@ use crate::hax_utils::hax_debug_assert;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
-pub(crate) type FieldElement = i32;
+pub(crate) type FieldElement = i16;
 
 pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
 pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
@@ -11,12 +11,12 @@ pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
 /// We use 'mfe' as a shorthand for this type
-pub(crate) type MontgomeryFieldElement = i32;
+pub(crate) type MontgomeryFieldElement = i16;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
 /// We use 'fer' as a shorthand for this type.
-pub(crate) type FieldElementTimesMontgomeryR = i32;
+pub(crate) type FieldElementTimesMontgomeryR = i16;
 
 #[cfg_attr(hax, hax_lib::requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
 #[cfg_attr(hax, hax_lib::ensures(|result| result < 2u32.pow(n.into())))]
@@ -27,11 +27,11 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     value & ((1 << n) - 1)
 }
 
-pub(crate) const BARRETT_SHIFT: i64 = 26;
-pub(crate) const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
+pub(crate) const BARRETT_SHIFT: i32 = 26;
+pub(crate) const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
 
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
-pub(crate) const BARRETT_MULTIPLIER: i64 = 20159;
+pub(crate) const BARRETT_MULTIPLIER: i32 = 20159;
 
 /// Signed Barrett Reduction
 ///
@@ -45,16 +45,10 @@ pub(crate) const BARRETT_MULTIPLIER: i64 = 20159;
 ///
 /// In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
 
-#[cfg_attr(hax, hax_lib::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
 #[cfg_attr(hax, hax_lib::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
-pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
-    hax_debug_assert!(
-        i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R,
-        "value is {value}"
-    );
-
-    let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
-    let quotient = (t >> BARRETT_SHIFT) as i32;
+pub(crate) fn barrett_reduce(value: i16) -> FieldElement {
+    let t = (value as i32 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    let quotient = (t >> BARRETT_SHIFT) as i16;
 
     let result = value - (quotient * FIELD_MODULUS);
 
@@ -66,7 +60,7 @@ pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
     result
 }
 
-pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: i32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 /// Signed Montgomery Reduction
 ///
@@ -81,7 +75,7 @@ pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODU
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
 #[cfg_attr(hax, hax_lib::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
-pub(crate) fn montgomery_reduce(value: FieldElement) -> MontgomeryFieldElement {
+pub(crate) fn montgomery_reduce(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
     // for this function. The removal of this line is being tracked in:
     // https://github.com/cryspen/libcrux/issues/134
@@ -92,14 +86,11 @@ pub(crate) fn montgomery_reduce(value: FieldElement) -> MontgomeryFieldElement {
         "value is {value}"
     );
 
-    let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
-        * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
+    let k = (value as i16) as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    let k_times_modulus = (k as i32) * (FIELD_MODULUS as i32);
 
-    let k_times_modulus = (k as i32) * FIELD_MODULUS;
-
-    let c = k_times_modulus >> MONTGOMERY_SHIFT;
-    let value_high = value >> MONTGOMERY_SHIFT;
+    let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
+    let value_high = (value >> MONTGOMERY_SHIFT) as i16;
 
     value_high - c
 }
@@ -117,11 +108,11 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     fe: FieldElement,
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
-    montgomery_reduce(fe * fer)
+    montgomery_reduce(fe as i32 * (fer as i32))
 }
 
 /// This is calculated as (MONTGOMERY_R)^2 mod FIELD_MODULUS
-pub(crate) const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
+pub(crate) const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353;
 
 /// If x is some field element of the Kyber field and `mfe` is congruent to
 /// x · MONTGOMERY_R^{-1}, this procedure outputs a value that is congruent to
@@ -134,7 +125,7 @@ pub(crate) const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
 /// `x · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x (mod FIELD_MODULUS)`
 #[inline(always)]
 pub(crate) fn _to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
-    montgomery_reduce(mfe * MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS)
+    montgomery_reduce(mfe as i32 * (MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i32))
 }
 
 /// Given a field element `fe` such that -FIELD_MODULUS ≤ fe < FIELD_MODULUS,
@@ -146,7 +137,7 @@ pub(crate) fn _to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
 #[inline(always)]
 pub(crate) fn _to_unsigned_representative(fe: FieldElement) -> u16 {
     hax_debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
-    (fe + (FIELD_MODULUS & (fe >> 31))) as u16
+    (fe + (FIELD_MODULUS & (fe >> 15))) as u16
 }
 
 /// Compute the product of two Kyber binomials with respect to the
@@ -176,7 +167,7 @@ pub(crate) fn ntt_multiply_binomials(
     zeta: FieldElementTimesMontgomeryR,
 ) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
     (
-        montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
-        montgomery_reduce(a0 * b1 + a1 * b0),
+        montgomery_reduce(a0 as i32 * b0 as i32 + montgomery_reduce(a1 as i32 * b1 as i32) as i32 * zeta as i32),
+        montgomery_reduce(a0 as i32 * b1 as i32 + a1 as i32 * b0 as i32),
     )
 }

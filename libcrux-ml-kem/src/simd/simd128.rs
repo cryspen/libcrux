@@ -5,49 +5,41 @@ use core::arch::aarch64::*;
 
 #[derive(Clone, Copy)]
 pub(crate) struct SIMD128Vector {
-    low: int32x4_t,
-    high: int32x4_t,
+    vec: int16x8_t
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
 fn ZERO() -> SIMD128Vector {
     SIMD128Vector {
-        low: unsafe { vdupq_n_s32(0) },
-        high: unsafe { vdupq_n_s32(0) },
+        vec: unsafe { vdupq_n_s16(0) },
     }
 }
 
 #[inline(always)]
-fn to_i32_array(v: SIMD128Vector) -> [i32; 8] {
-    let mut out = [0i32; 8];
-
-    unsafe { vst1q_s32(out[0..4].as_mut_ptr() as *mut i32, v.low) }
-    unsafe { vst1q_s32(out[4..8].as_mut_ptr() as *mut i32, v.high) }
-
+fn to_i16_array(v: SIMD128Vector) -> [i16; 8] {
+    let mut out = [0i16; 8];
+    unsafe { vst1q_s32(out.as_mut_ptr() as *mut i16, v.vec) }
     out
 }
 
 #[inline(always)]
-fn from_i32_array(array: [i32; 8]) -> SIMD128Vector {
+fn from_i16_array(array: [i16; 8]) -> SIMD128Vector {
     SIMD128Vector {
-        low: unsafe { vld1q_s32(array[0..4].as_ptr() as *const i32) },
-        high: unsafe { vld1q_s32(array[4..8].as_ptr() as *const i32) },
+        vec: unsafe { vld1q_s32(array.as_ptr() as *const i32) },
     }
 }
 
 #[inline(always)]
-fn add_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
-    let c = unsafe { vdupq_n_s32(c) };
-    v.low = unsafe { vaddq_s32(v.low, c) };
-    v.high = unsafe { vaddq_s32(v.high, c) };
+fn add_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+    let c = unsafe { vdupq_n_s16(c) };
+    v.vec = unsafe { vaddq_s16(v.low, c) };
     v
 }
 
 #[inline(always)]
 fn add(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
-    lhs.low = unsafe { vaddq_s32(lhs.low, rhs.low) };
-    lhs.high = unsafe { vaddq_s32(lhs.high, rhs.high) };
+    lhs.vec = unsafe { vaddq_s16(lhs.vec, rhs.vec) };
     lhs
 }
 
@@ -605,12 +597,12 @@ impl Operations for SIMD128Vector {
         ZERO()
     }
 
-    fn to_i32_array(v: Self) -> [i32; 8] {
-        to_i32_array(v)
+    fn to_i16_array(v: Self) -> [i16; 8] {
+        to_i16_array(v)
     }
 
-    fn from_i32_array(array: [i32; 8]) -> Self {
-        from_i32_array(array)
+    fn from_i16_array(array: [i32; 8]) -> Self {
+        from_i16_array(array)
     }
 
     fn add_constant(v: Self, c: i32) -> Self {
@@ -649,8 +641,8 @@ impl Operations for SIMD128Vector {
         barrett_reduce(v)
     }
 
-    fn montgomery_reduce(v: Self) -> Self {
-        montgomery_reduce(v)
+    fn montgomery_multiply_with_constant(v: Self, c: i16) -> Self {
+        montgomery_multiply_with_constant(v, c)
     }
 
     fn compress_1(v: Self) -> Self {

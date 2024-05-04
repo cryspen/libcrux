@@ -21,10 +21,10 @@ impl PolynomialRingElement {
 }
 
 #[inline(always)]
-pub(crate) fn from_i32_array(a: [i32; 256]) -> PolynomialRingElement {
+pub(crate) fn from_i16_array(a: [i16; 256]) -> PolynomialRingElement {
     let mut result = PolynomialRingElement::ZERO();
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        result.coefficients[i] = simd::Vector::from_i32_array(
+        result.coefficients[i] = simd::Vector::from_i16_array(
             a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
                 .try_into()
                 .unwrap(),
@@ -60,9 +60,9 @@ pub(crate) fn subtract_reduce(
     mut b: PolynomialRingElement,
 ) -> PolynomialRingElement {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_reduce(
-            simd::Vector::multiply_by_constant(b.coefficients[i], 1441),
-        );
+        let coefficient_normal_form = simd::Vector::montgomery_multiply_by_constant(
+            b.coefficients[i], 1441);
+        
         b.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::sub(
             a.coefficients[i],
             &coefficient_normal_form,
@@ -78,9 +78,9 @@ pub(crate) fn add_message_error_reduce(
     mut result: PolynomialRingElement,
 ) -> PolynomialRingElement {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_reduce(
-            simd::Vector::multiply_by_constant(result.coefficients[i], 1441),
-        );
+        let coefficient_normal_form = simd::Vector::montgomery_multiply_by_constant(
+            result.coefficients[i], 1441);
+        
         result.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::add(
             coefficient_normal_form,
             &simd::Vector::add(err.coefficients[i], &message.coefficients[i]),
@@ -95,9 +95,8 @@ pub(crate) fn add_error_reduce(
     mut result: PolynomialRingElement,
 ) -> PolynomialRingElement {
     for j in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_reduce(
-            simd::Vector::multiply_by_constant(result.coefficients[j], 1441),
-        );
+        let coefficient_normal_form = simd::Vector::montgomery_multiply_by_constant(
+            result.coefficients[j], 1441);
 
         result.coefficients[j] = simd::Vector::barrett_reduce(simd::Vector::add(
             coefficient_normal_form,
@@ -180,7 +179,7 @@ pub(crate) fn ntt_at_layer_2(
 pub(crate) fn ntt_layer_int_vec_step(
     mut a: simd::Vector,
     mut b: simd::Vector,
-    zeta_r: i32,
+    zeta_r: i16,
 ) -> (simd::Vector, simd::Vector) {
     let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     b = simd::Vector::sub(a, &t);
@@ -279,10 +278,10 @@ pub(crate) fn invert_ntt_at_layer_2(
 pub(crate) fn inv_ntt_layer_int_vec_step(
     mut a: simd::Vector,
     mut b: simd::Vector,
-    zeta_r: i32,
+    zeta_r: i16,
 ) -> (simd::Vector, simd::Vector) {
     let a_minus_b = simd::Vector::sub(b, &a);
-    a = simd::Vector::add(a, &b);
+    a = simd::Vector::barrett_reduce(simd::Vector::add(a, &b));
     b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     (a, b)
 }
