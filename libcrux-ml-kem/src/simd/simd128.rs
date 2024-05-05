@@ -89,6 +89,9 @@ const BARRETT_MULTIPLIER: i16 = 20159;
 
 #[inline(always)]
 fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+    //let pv = crate::simd::portable::from_i16_array(to_i16_array(v));
+    //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
+
     // This is what we are trying to do in portable:
     // let t = (value as i32 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     // let quotient = (t >> BARRETT_SHIFT) as i16;
@@ -357,7 +360,10 @@ fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i16, zeta1: i16
     // This is what we are trying to do for pairs of two elements:
     // montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
     // montgomery_reduce(a0 * b1 + a1 * b0)
-    let mask = unsafe { vdupq_n_s32(0xffff) };
+    //let lhsp = crate::simd::portable::from_i16_array(to_i16_array(lhs.clone()));
+    //let rhsp = crate::simd::portable::from_i16_array(to_i16_array(rhs.clone()));
+    //let mulp = crate::simd::portable::ntt_multiply(&lhsp,&rhsp,zeta0,zeta1);
+    //from_i16_array(crate::simd::portable::to_i16_array(mulp))
 
     let a0 = unsafe { vshrq_n_s32::<16>(vreinterpretq_s32_u32(vshlq_n_u32::<16>(vreinterpretq_u32_s16(lhs.vec)))) };
     let a1 = unsafe { vshrq_n_s32::<16>(vreinterpretq_s32_s16(lhs.vec)) };
@@ -369,7 +375,8 @@ fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i16, zeta1: i16
 
     let a0b0 = unsafe { vmulq_s32(a0, b0) };
     
-    let a1b1 = unsafe { vreinterpretq_s32_s16(montgomery_multiply_int16x8_t(vreinterpretq_s16_s32(a1), vreinterpretq_s16_s32(b1))) };
+    let a1b1 = unsafe { montgomery_multiply_int16x8_t(vreinterpretq_s16_s32(a1), vreinterpretq_s16_s32(b1)) };
+    let a1b1 = unsafe { vshrq_n_s32::<16>(vreinterpretq_s32_u32(vshlq_n_u32::<16>(vreinterpretq_u32_s16(a1b1)))) };
     let fst = unsafe { vreinterpretq_s16_s32(vmlaq_s32(a0b0, a1b1, zeta)) };
     
     let a0b1 = unsafe { vmulq_s32(a0, b1) };
@@ -404,13 +411,12 @@ fn deserialize_1(a: u8) -> SIMD128Vector {
 
 #[inline(always)]
 fn serialize_4(v: SIMD128Vector) -> [u8; 4] {
-    let shifter0: [i16; 8] = [0, 4, 8, 12, 0, 4, 8, 12];
-    let shift0 = unsafe { vld1q_s16(shifter0.as_ptr() as *const i16) };
-    let shifter1: [i32; 4] = [0, 0, 16, 16];
-    let shift1 = unsafe { vld1q_s32(shifter1.as_ptr() as *const i32) };
-    let vect = unsafe { vshlq_s32(vreinterpretq_s32_s16(vshlq_s16(v.vec, shift0)), shift1) };
-    let sum = unsafe { vaddvq_s32(vect) };
-    sum.to_be_bytes()
+    let shifter: [i16; 8] = [0, 4, 8, 12, 0, 4, 8, 12];
+    let shift = unsafe { vld1q_s16(shifter.as_ptr() as *const i16) };
+    let vect = unsafe { vshlq_u16(vreinterpretq_u16_s16(v.vec), shift) };
+    let sum0 = unsafe { vaddv_u16(vget_low_u16(vect)) };
+    let sum1 = unsafe { vaddv_u16(vget_high_u16(vect)) };
+    (((sum1 as u32) << 16) + (sum0 as u32)).to_le_bytes()
 }
 
 #[inline(always)]
@@ -549,6 +555,8 @@ fn deserialize_11(v: &[u8]) -> SIMD128Vector {
 
 #[inline(always)]
 fn serialize_12(v: SIMD128Vector) -> [u8; 12] {
+//    println!("serialize 12 (simd128): {:?}", to_i16_array(v));
+
     let lowt = unsafe { vreinterpretq_s32_s16(vtrn1q_s16(v.vec, v.vec)) }; // a0, a0, a2, a2, a4, a4, a6, a6
     let hight = unsafe { vreinterpretq_s32_s16(vtrn2q_s16(v.vec, v.vec)) }; // a1, a1, a3, a3, a5, a5, a7, a7
     let mixt = unsafe { vsliq_n_s32::<12>(lowt, hight) }; // a1a0, a3a2, a5a4, a7a6
