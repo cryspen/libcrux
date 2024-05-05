@@ -1,4 +1,4 @@
-//use crate::hax_utils::hax_debug_assert;
+//use crate::hax_utils::debug_assert;
 use crate::arithmetic::*;
 use crate::simd::{self, simd_trait::*};
 
@@ -32,6 +32,16 @@ pub(crate) fn from_i16_array(a: [i16; 256]) -> PolynomialRingElement {
     }
     result
 }
+
+#[inline(always)]
+pub(crate) fn to_i16_array(a: PolynomialRingElement) -> [i16; 256] {
+    let mut result = [0i16; 256];
+    for i in 0..VECTORS_IN_RING_ELEMENT {
+        result[i*8..(i+1)*8].copy_from_slice(&simd::Vector::to_i16_array(a.coefficients[i]));
+    }
+    result
+}
+
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
@@ -357,7 +367,7 @@ pub(crate) fn ntt_multiply(
     lhs: &PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    // hax_debug_debug_assert!(lhs
+    // debug_debug_assert!(lhs
     //     .coefficients
     //     .into_iter()
     //     .all(|coefficient| coefficient >= 0 && coefficient < 4096));

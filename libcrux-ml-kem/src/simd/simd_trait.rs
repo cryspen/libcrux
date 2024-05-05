@@ -31,6 +31,7 @@ pub(crate) trait Operations {
     // Compression
     fn compress_1(v: Self) -> Self;
     fn compress<const COEFFICIENT_BITS: i16>(v: Self) -> Self;
+    fn decompress<const COEFFICIENT_BITS: i16>(v: Self) -> Self;
 
     // NTT
     fn ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self;
@@ -67,7 +68,6 @@ pub(crate) trait GenericOperations {
     fn to_standard_domain(v: Self) -> Self;
     fn to_unsigned_representative(a: Self) -> Self;
     fn decompress_1(v: Self) -> Self;
-    fn decompress<const COEFFICIENT_BITS: i16>(v: Self) -> Self;
 }
 
 impl<T: Operations + Clone + Copy> GenericOperations for T {
@@ -79,7 +79,7 @@ impl<T: Operations + Clone + Copy> GenericOperations for T {
     }
 
     fn to_unsigned_representative(a: Self) -> Self {
-        let t = Self::shift_right::<31>(a);
+        let t = Self::shift_right::<15>(a);
         let fm = Self::bitwise_and_with_constant(t, FIELD_MODULUS as i16);
         Self::add(a, &fm)
     }
@@ -88,14 +88,4 @@ impl<T: Operations + Clone + Copy> GenericOperations for T {
         Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
     }
 
-    fn decompress<const COEFFICIENT_BITS: i16>(v: Self) -> Self {
-        let mut decompressed = Self::multiply_by_constant(v, FIELD_MODULUS as i16);
-        decompressed = Self::add_constant(
-            Self::shift_left::<1>(decompressed),
-            1i16 << COEFFICIENT_BITS,
-        );
-        let decompressed_1 = Self::shift_right::<{ COEFFICIENT_BITS }>(decompressed);
-        let decompressed_2 = Self::shift_right::<1>(decompressed_1);
-        decompressed_2
-    }
 }

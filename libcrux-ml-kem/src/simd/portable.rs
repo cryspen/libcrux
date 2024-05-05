@@ -1,7 +1,5 @@
 use crate::{
-    arithmetic::*,
-    compress::{compress_ciphertext_coefficient, compress_message_coefficient},
-    simd::simd_trait::*,
+    arithmetic::*, compress::{compress_ciphertext_coefficient, compress_message_coefficient}, constants::FIELD_MODULUS, simd::simd_trait::*
 };
 
 #[derive(Clone, Copy)]
@@ -142,6 +140,25 @@ fn compress<const COEFFICIENT_BITS: i16>(mut v: PortableVector) -> PortableVecto
         v.elements[i] =
             compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, v.elements[i] as u16) as i16;
     }
+    v
+}
+
+fn decompress<const COEFFICIENT_BITS: i16>(mut v: PortableVector) -> PortableVector {
+    debug_assert!(to_i16_array(v)
+        .into_iter()
+        .all(|coefficient| coefficient.abs() < 1 << COEFFICIENT_BITS));
+
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        let mut decompressed = v.elements[i] as i32 * FIELD_MODULUS as i32;
+        decompressed = (decompressed << 1) + (1i32 << COEFFICIENT_BITS);
+        decompressed = decompressed >> (COEFFICIENT_BITS + 1);
+        v.elements[i] = decompressed as i16;
+    }
+
+    debug_assert!(to_i16_array(v)
+        .into_iter()
+        .all(|coefficient| coefficient.abs() as u16 <= 1 << 12));
+
     v
 }
 
@@ -531,6 +548,10 @@ impl Operations for PortableVector {
 
     fn compress_1(v: Self) -> Self {
         compress_1(v)
+    }
+
+    fn decompress<const COEFFICIENT_BITS: i16>(v: Self) -> Self {
+        decompress::<COEFFICIENT_BITS>(v)
     }
 
     fn compress<const COEFFICIENT_BITS: i16>(v: Self) -> Self {

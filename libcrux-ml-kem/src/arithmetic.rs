@@ -87,7 +87,7 @@ pub(crate) fn montgomery_reduce(value: i32) -> MontgomeryFieldElement {
     );
 
     let k = (value as i16) as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    let k_times_modulus = (k as i32) * (FIELD_MODULUS as i32);
+    let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
 
     let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
     let value_high = (value >> MONTGOMERY_SHIFT) as i16;
