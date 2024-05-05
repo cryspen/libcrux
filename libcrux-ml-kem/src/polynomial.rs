@@ -197,6 +197,7 @@ pub(crate) fn ntt_layer_int_vec_step(
     (a, b)
 }
 
+
 #[inline(always)]
 pub(crate) fn ntt_at_layer_3_plus(
     zeta_i: &mut usize,
@@ -285,7 +286,7 @@ pub(crate) fn invert_ntt_at_layer_2(
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_int_vec_step(
+pub(crate) fn inv_ntt_layer_int_vec_step_reduce(
     mut a: simd::Vector,
     mut b: simd::Vector,
     zeta_r: i16,
@@ -294,6 +295,46 @@ pub(crate) fn inv_ntt_layer_int_vec_step(
     a = simd::Vector::barrett_reduce(simd::Vector::add(a, &b));
     b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     (a, b)
+}
+
+#[inline(always)]
+pub(crate) fn inv_ntt_layer_int_vec_step(
+    mut a: simd::Vector,
+    mut b: simd::Vector,
+    zeta_r: i16,
+) -> (simd::Vector, simd::Vector) {
+    let a_minus_b = simd::Vector::sub(b, &a);
+    a = simd::Vector::add(a, &b);
+    b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
+    (a, b)
+}
+
+#[inline(always)]
+pub(crate) fn invert_ntt_at_layer_3_plus_reduce(
+    zeta_i: &mut usize,
+    mut re: PolynomialRingElement,
+    layer: usize,
+) -> PolynomialRingElement {
+    let step = 1 << layer;
+
+    for round in 0..(128 >> layer) {
+        *zeta_i -= 1;
+
+        let offset = round * step * 2;
+        let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
+        let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
+
+        for j in offset_vec..offset_vec + step_vec {
+            let (x, y) = inv_ntt_layer_int_vec_step_reduce(
+                re.coefficients[j],
+                re.coefficients[j + step_vec],
+                ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            );
+            re.coefficients[j] = x;
+            re.coefficients[j + step_vec] = y;
+        }
+    }
+    re
 }
 
 #[inline(always)]

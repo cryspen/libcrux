@@ -228,19 +228,19 @@ fn inv_ntt_layer_1_step(mut v: PortableVector, zeta1: i16, zeta2: i16) -> Portab
 #[inline(always)]
 fn inv_ntt_layer_2_step(mut v: PortableVector, zeta: i16) -> PortableVector {
     let a_minus_b = v.elements[4] - v.elements[0];
-    v.elements[0] = crate::arithmetic::barrett_reduce(v.elements[0] + v.elements[4]);
+    v.elements[0] = v.elements[0] + v.elements[4];
     v.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     let a_minus_b = v.elements[5] - v.elements[1];
-    v.elements[1] = crate::arithmetic::barrett_reduce(v.elements[1] + v.elements[5]);
+    v.elements[1] = v.elements[1] + v.elements[5];
     v.elements[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     let a_minus_b = v.elements[6] - v.elements[2];
-    v.elements[2] = crate::arithmetic::barrett_reduce(v.elements[2] + v.elements[6]);
+    v.elements[2] = v.elements[2] + v.elements[6];
     v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     let a_minus_b = v.elements[7] - v.elements[3];
-    v.elements[3] = crate::arithmetic::barrett_reduce(v.elements[3] + v.elements[7]);
+    v.elements[3] = v.elements[3] + v.elements[7];
     v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     v

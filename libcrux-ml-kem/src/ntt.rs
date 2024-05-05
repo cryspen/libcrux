@@ -1,9 +1,9 @@
 //use crate::hax_utils::debug_assert;
 
 use crate::{
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS}    ,
     polynomial::{
-        invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus, ntt_at_layer_1,
+        invert_ntt_at_layer_1, invert_ntt_at_layer_2, invert_ntt_at_layer_3_plus, invert_ntt_at_layer_3_plus_reduce, ntt_at_layer_1,
         ntt_at_layer_2, ntt_at_layer_3_plus, ntt_at_layer_7, poly_barrett_reduce, to_i16_array,
         PolynomialRingElement,
     },
@@ -96,13 +96,14 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
 
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
-    re = invert_ntt_at_layer_1(&mut zeta_i, re, 1);
-    re = invert_ntt_at_layer_2(&mut zeta_i, re, 2);
-    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 3);
-    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 4);
-    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 5);
-    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 6);
-    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 7);
+    // re <= K * 3328
+    re = invert_ntt_at_layer_1(&mut zeta_i, re, 1); // re <= 3328 
+    re = invert_ntt_at_layer_2(&mut zeta_i, re, 2); // re <= 2 * 3328
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 3); // re <= 4 * 3328
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 4); // re <= 3328 
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 5); // re <= 2*3328 
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 6); // re <= 4*3328 
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 7); // re <= 8*3328 
 
     // debug_assert!(
     //     to_i16_array(re)[0].abs() < 128 * K * FIELD_MODULUS
