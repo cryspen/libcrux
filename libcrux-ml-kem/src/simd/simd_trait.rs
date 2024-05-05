@@ -18,8 +18,8 @@ pub(crate) trait Operations {
 
     // Bitwise operations
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
-    fn shift_right<const SHIFT_BY: i16>(v: Self) -> Self;
-    fn shift_left<const SHIFT_BY: i16>(v: Self) -> Self;
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     fn cond_subtract_3329(v: Self) -> Self;
@@ -30,8 +30,8 @@ pub(crate) trait Operations {
 
     // Compression
     fn compress_1(v: Self) -> Self;
-    fn compress<const COEFFICIENT_BITS: i16>(v: Self) -> Self;
-    fn decompress<const COEFFICIENT_BITS: i16>(v: Self) -> Self;
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
     fn ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self;
@@ -71,13 +71,16 @@ pub(crate) trait GenericOperations {
 }
 
 impl<T: Operations + Clone + Copy> GenericOperations for T {
+    #[inline(always)]
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i16) -> Self {
         Self::montgomery_multiply_by_constant(v, fer)
     }
+
+    #[inline(always)]
     fn to_standard_domain(v: Self) -> Self {
         Self::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
     }
-
+     
     fn to_unsigned_representative(a: Self) -> Self {
         let t = Self::shift_right::<15>(a);
         let fm = Self::bitwise_and_with_constant(t, FIELD_MODULUS as i16);
@@ -87,5 +90,4 @@ impl<T: Operations + Clone + Copy> GenericOperations for T {
     fn decompress_1(v: Self) -> Self {
         Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
     }
-
 }
