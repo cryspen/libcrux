@@ -356,27 +356,25 @@ fn deserialize_1(a: u8) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn serialize_4(mut v: SIMD256Vector) -> [u8; 4] {
-    let mut out = [0u8; 4];
+fn serialize_4(v: SIMD256Vector) -> [u8; 4] {
+    let mut out = [0u8; 16];
 
     unsafe {
-        let shifts = _mm256_set_epi32(0, 4, 0, 4, 0, 4, 0, 4);
-        let shuffle_to = _mm256_set_epi8(
-            31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 12, 8, 4, 0, 15, 14, 13, 12, 11, 10, 9,
-            8, 7, 6, 5, 4, 12, 8, 4, 0,
+        let bits = _mm256_sllv_epi32(v.elements, _mm256_set_epi32(0, 28, 0, 28, 0, 28, 0, 28));
+        let bits = _mm256_srli_epi64(bits, 28);
+        let bits = _mm256_permutevar8x32_epi32(bits, _mm256_set_epi32(0, 0, 0, 0, 6, 2, 4, 0));
+
+        let bits = _mm256_castsi256_si128(bits);
+
+        let bits = _mm_shuffle_epi8(
+            bits,
+            _mm_set_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 4, 8, 0),
         );
 
-        v.elements = _mm256_sllv_epi32(v.elements, shifts);
-        v.elements = _mm256_shuffle_epi8(v.elements, shuffle_to);
-        v.elements = _mm256_srli_epi16(v.elements, 4);
-
-        out[0] = _mm256_extract_epi16(v.elements, 0) as u8;
-        out[1] = _mm256_extract_epi16(v.elements, 1) as u8;
-        out[2] = _mm256_extract_epi16(v.elements, 8) as u8;
-        out[3] = _mm256_extract_epi16(v.elements, 9) as u8;
+        _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, bits);
     }
 
-    out
+    out[0..4].try_into().unwrap()
 }
 
 #[inline(always)]
@@ -408,9 +406,29 @@ fn deserialize_4(v: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_5(v: SIMD256Vector) -> [u8; 5] {
-    let input = PortableVector::from_i32_array(to_i32_array(v));
+    let mut out = [0u8; 16];
 
-    PortableVector::serialize_5(input)
+    unsafe {
+        let shifted = _mm256_sllv_epi32(v.elements, _mm256_set_epi32(5, 0, 5, 0, 5, 0, 5, 0));
+        let shifted = _mm256_shuffle_epi32(shifted, 0b_00_11_00_01);
+        let bits = _mm256_add_epi32(v.elements, shifted);
+        let bits = _mm256_shuffle_epi32(bits, 0b_00_00_10_00);
+
+        let bits = _mm256_sllv_epi32(bits, _mm256_set_epi32(0, 0, 0, 22, 0, 0, 0, 22));
+        let bits = _mm256_srli_epi64(bits, 22);
+
+        let bits = _mm256_permute4x64_epi64(bits, 0b00_00_10_00);
+        let bits = _mm256_castsi256_si128(bits);
+
+        let bits = _mm_shuffle_epi32(bits, 0b00_00_10_00);
+        let bits = _mm_sllv_epi32(bits, _mm_set_epi32(0, 0, 0, 12));
+
+        let bits_sequential = _mm_srli_epi64(bits, 12);
+
+        _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, bits_sequential);
+    };
+
+    out[0..5].try_into().unwrap()
 }
 
 #[inline(always)]
@@ -448,9 +466,30 @@ fn deserialize_11(v: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_12(v: SIMD256Vector) -> [u8; 12] {
-    let input = PortableVector::from_i32_array(to_i32_array(v));
+    let mut out = [0u8; 16];
 
-    PortableVector::serialize_12(input)
+    unsafe {
+        let shifted = _mm256_sllv_epi32(v.elements, _mm256_set_epi32(12, 0, 12, 0, 12, 0, 12, 0));
+        let shifted = _mm256_shuffle_epi32(shifted, 0b_00_11_00_01);
+
+        let bits = _mm256_add_epi32(v.elements, shifted);
+
+        let bits = _mm256_shuffle_epi32(bits, 0b_00_00_10_00);
+        let bits = _mm256_sllv_epi32(bits, _mm256_set_epi32(0, 0, 0, 8, 0, 0, 0, 8));
+        let bits = _mm256_srli_epi64(bits, 8);
+
+        let bits = _mm256_permute4x64_epi64(bits, 0b00_00_10_00);
+        let shuffle_by = _mm256_set_epi8(
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13, 12,
+            11, 10, 9, 8, 5, 4, 3, 2, 1, 0,
+        );
+
+        let bits_sequential = _mm256_shuffle_epi8(bits, shuffle_by);
+        let bits_sequential = _mm256_castsi256_si128(bits_sequential);
+        _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, bits_sequential);
+    };
+
+    out[0..12].try_into().unwrap()
 }
 
 #[inline(always)]
@@ -715,29 +754,6 @@ impl PortableVector {
     }
 
     #[inline(always)]
-    fn serialize_12(v: PortableVector) -> [u8; 12] {
-        let mut result = [0u8; 12];
-
-        result[0] = (v.elements[0] & 0xFF) as u8;
-        result[1] = ((v.elements[0] >> 8) | ((v.elements[1] & 0x0F) << 4)) as u8;
-        result[2] = ((v.elements[1] >> 4) & 0xFF) as u8;
-
-        result[3] = (v.elements[2] & 0xFF) as u8;
-        result[4] = ((v.elements[2] >> 8) | ((v.elements[3] & 0x0F) << 4)) as u8;
-        result[5] = ((v.elements[3] >> 4) & 0xFF) as u8;
-
-        result[6] = (v.elements[4] & 0xFF) as u8;
-        result[7] = ((v.elements[4] >> 8) | ((v.elements[5] & 0x0F) << 4)) as u8;
-        result[8] = ((v.elements[5] >> 4) & 0xFF) as u8;
-
-        result[9] = (v.elements[6] & 0xFF) as u8;
-        result[10] = ((v.elements[6] >> 8) | ((v.elements[7] & 0x0F) << 4)) as u8;
-        result[11] = ((v.elements[7] >> 4) & 0xFF) as u8;
-
-        result
-    }
-
-    #[inline(always)]
     fn serialize_10(v: PortableVector) -> [u8; 10] {
         let mut result = [0u8; 10];
 
@@ -752,21 +768,6 @@ impl PortableVector {
         result[7] = ((v.elements[6] & 0x0F) as u8) << 4 | ((v.elements[5] >> 6) & 0x0F) as u8;
         result[8] = ((v.elements[7] & 0x03) as u8) << 6 | ((v.elements[6] >> 4) & 0x3F) as u8;
         result[9] = ((v.elements[7] >> 2) & 0xFF) as u8;
-
-        result
-    }
-
-    #[inline(always)]
-    fn serialize_5(v: PortableVector) -> [u8; 5] {
-        let mut result = [0u8; 5];
-
-        result[0] = ((v.elements[1] & 0x7) << 5 | v.elements[0]) as u8;
-        result[1] =
-            (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
-        result[2] = (((v.elements[4] & 0xF) << 4) | (v.elements[3] >> 1)) as u8;
-        result[3] =
-            (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
-        result[4] = ((v.elements[7] << 3) | (v.elements[6] >> 2)) as u8;
 
         result
     }
