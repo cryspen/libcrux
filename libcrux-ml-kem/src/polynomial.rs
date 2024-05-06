@@ -37,11 +37,10 @@ pub(crate) fn from_i16_array(a: [i16; 256]) -> PolynomialRingElement {
 pub(crate) fn to_i16_array(a: PolynomialRingElement) -> [i16; 256] {
     let mut result = [0i16; 256];
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        result[i*8..(i+1)*8].copy_from_slice(&simd::Vector::to_i16_array(a.coefficients[i]));
+        result[i * 8..(i + 1) * 8].copy_from_slice(&simd::Vector::to_i16_array(a.coefficients[i]));
     }
     result
 }
-
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
@@ -70,9 +69,9 @@ pub(crate) fn subtract_reduce(
     mut b: PolynomialRingElement,
 ) -> PolynomialRingElement {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_multiply_by_constant(
-            b.coefficients[i], 1441);
-        
+        let coefficient_normal_form =
+            simd::Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
+
         b.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::sub(
             a.coefficients[i],
             &coefficient_normal_form,
@@ -88,9 +87,9 @@ pub(crate) fn add_message_error_reduce(
     mut result: PolynomialRingElement,
 ) -> PolynomialRingElement {
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_multiply_by_constant(
-            result.coefficients[i], 1441);
-        
+        let coefficient_normal_form =
+            simd::Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
+
         result.coefficients[i] = simd::Vector::barrett_reduce(simd::Vector::add(
             coefficient_normal_form,
             &simd::Vector::add(err.coefficients[i], &message.coefficients[i]),
@@ -105,8 +104,8 @@ pub(crate) fn add_error_reduce(
     mut result: PolynomialRingElement,
 ) -> PolynomialRingElement {
     for j in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient_normal_form = simd::Vector::montgomery_multiply_by_constant(
-            result.coefficients[j], 1441);
+        let coefficient_normal_form =
+            simd::Vector::montgomery_multiply_by_constant(result.coefficients[j], 1441);
 
         result.coefficients[j] = simd::Vector::barrett_reduce(simd::Vector::add(
             coefficient_normal_form,
@@ -196,7 +195,6 @@ pub(crate) fn ntt_layer_int_vec_step(
     a = simd::Vector::add(a, &t);
     (a, b)
 }
-
 
 #[inline(always)]
 pub(crate) fn ntt_at_layer_3_plus(

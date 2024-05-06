@@ -1,5 +1,8 @@
 use crate::{
-    arithmetic::*, compress::{compress_ciphertext_coefficient, compress_message_coefficient}, constants::FIELD_MODULUS, simd::simd_trait::*
+    arithmetic::*,
+    compress::{compress_ciphertext_coefficient, compress_message_coefficient},
+    constants::FIELD_MODULUS,
+    simd::simd_trait::*,
 };
 
 #[derive(Clone, Copy)]
@@ -514,9 +517,8 @@ fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
             sampled += 1
         }
     }
-    (sampled,result)
+    (sampled, result)
 }
-
 
 impl Operations for PortableVector {
     fn ZERO() -> Self {
@@ -567,8 +569,8 @@ impl Operations for PortableVector {
         barrett_reduce(v)
     }
 
-    fn montgomery_multiply_by_constant(v: Self, r:i16) -> Self {
-        montgomery_multiply_by_constant(v,r)
+    fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
+        montgomery_multiply_by_constant(v, r)
     }
 
     fn compress_1(v: Self) -> Self {

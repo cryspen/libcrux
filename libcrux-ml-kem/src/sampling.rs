@@ -4,7 +4,7 @@ use crate::{
     hax_utils::hax_debug_assert,
     helper::cloop,
     polynomial::{from_i16_array, PolynomialRingElement},
-    simd::{simd_trait::*,Vector}
+    simd::{simd_trait::*, Vector},
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -50,19 +50,25 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     sampled_coefficients: &mut [usize; K],
     out: &mut [[i16; 256]; K],
 ) -> bool {
-    for r in 0..N/12 {
+    for r in 0..N / 12 {
         for i in 0..K {
             if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                let (sampled,vec) = Vector::rej_sample(&randomness[i][r*12..r*12+12]);
-                let pick = core::cmp::min(COEFFICIENTS_IN_RING_ELEMENT-sampled_coefficients[i],sampled);
-                out[i][sampled_coefficients[i]..sampled_coefficients[i]+pick].copy_from_slice(&vec[0..pick]);
+                let (sampled, vec) = Vector::rej_sample(&randomness[i][r * 12..r * 12 + 12]);
+                let pick = core::cmp::min(
+                    COEFFICIENTS_IN_RING_ELEMENT - sampled_coefficients[i],
+                    sampled,
+                );
+                out[i][sampled_coefficients[i]..sampled_coefficients[i] + pick]
+                    .copy_from_slice(&vec[0..pick]);
                 sampled_coefficients[i] += pick;
             }
         }
     }
     let mut done = true;
     for i in 0..K {
-        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {done = false}
+        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+            done = false
+        }
     }
     done
 }

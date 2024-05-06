@@ -167,7 +167,9 @@ pub(crate) fn ntt_multiply_binomials(
     zeta: FieldElementTimesMontgomeryR,
 ) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
     (
-        montgomery_reduce(a0 as i32 * b0 as i32 + montgomery_reduce(a1 as i32 * b1 as i32) as i32 * zeta as i32),
+        montgomery_reduce(
+            a0 as i32 * b0 as i32 + montgomery_reduce(a1 as i32 * b1 as i32) as i32 * zeta as i32,
+        ),
         montgomery_reduce(a0 as i32 * b1 as i32 + a1 as i32 * b0 as i32),
     )
 }
