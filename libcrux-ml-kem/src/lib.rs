@@ -29,4 +29,4 @@ pub mod kyber768;
 
 pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 
-pub use ind_cca::{MlKemSharedSecret, KEY_GENERATION_SEED_SIZE, ENCAPS_SEED_SIZE};
+pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE};
