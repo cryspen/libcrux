@@ -22,10 +22,10 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    pub(crate) fn from_i32_array(a: [i32; 256]) -> Self {
+    pub(crate) fn from_i16_array(a: [i16; 256]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
-            result.coefficients[i] = Vector::from_i32_array(
+            result.coefficients[i] = Vector::from_i16_array(
                 a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
                     .try_into()
                     .unwrap(),
@@ -56,7 +56,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     pub(crate) fn subtract_reduce(&self, mut b: Self) -> Self {
         for i in 0..VECTORS_IN_RING_ELEMENT {
             let coefficient_normal_form =
-                Vector::montgomery_reduce(Vector::multiply_by_constant(b.coefficients[i], 1441));
+                Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
             b.coefficients[i] =
                 Vector::barrett_reduce(Vector::sub(self.coefficients[i], &coefficient_normal_form));
         }
@@ -66,10 +66,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, mut result: Self) -> Self {
         for i in 0..VECTORS_IN_RING_ELEMENT {
-            let coefficient_normal_form = Vector::montgomery_reduce(Vector::multiply_by_constant(
-                result.coefficients[i],
-                1441,
-            ));
+            let coefficient_normal_form =
+                Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
             result.coefficients[i] = Vector::barrett_reduce(Vector::add(
                 coefficient_normal_form,
                 &Vector::add(self.coefficients[i], &message.coefficients[i]),
@@ -81,10 +79,8 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     pub(crate) fn add_error_reduce(&self, mut result: Self) -> Self {
         for j in 0..VECTORS_IN_RING_ELEMENT {
-            let coefficient_normal_form = Vector::montgomery_reduce(Vector::multiply_by_constant(
-                result.coefficients[j],
-                1441,
-            ));
+            let coefficient_normal_form =
+                Vector::montgomery_multiply_by_constant(result.coefficients[j], 1441);
 
             result.coefficients[j] =
                 Vector::barrett_reduce(Vector::add(coefficient_normal_form, &self.coefficients[j]));
@@ -218,7 +214,7 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
 pub(crate) fn ntt_layer_int_vec_step<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
-    zeta_r: i32,
+    zeta_r: i16,
 ) -> (Vector, Vector) {
     let t = Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     b = Vector::sub(a, &t);
@@ -317,7 +313,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 pub(crate) fn inv_ntt_layer_int_vec_step<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
-    zeta_r: i32,
+    zeta_r: i16,
 ) -> (Vector, Vector) {
     let a_minus_b = Vector::sub(b, &a);
     a = Vector::add(a, &b);
@@ -406,7 +402,7 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
 pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Operations>(
     mut re: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
-    hax_debug_assert!(to_i32_array(re)
+    hax_debug_assert!(to_i16_array(re)
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3328));
 
@@ -431,9 +427,9 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     mut re: PolynomialRingElement<Vector>,
 ) -> PolynomialRingElement<Vector> {
     // We only ever call this function after matrix/vector multiplication
-    hax_debug_assert!(to_i32_array(re)
+    hax_debug_assert!(to_i16_array(re)
         .into_iter()
-        .all(|coefficient| coefficient.abs() < (K as i32) * FIELD_MODULUS));
+        .all(|coefficient| coefficient.abs() < (K as i16) * FIELD_MODULUS));
 
     let mut zeta_i = super::constants::COEFFICIENTS_IN_RING_ELEMENT / 2;
 
@@ -446,10 +442,10 @@ pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 7);
 
     hax_debug_assert!(
-        to_i32_array(re)[0].abs() < 128 * (K as i32) * FIELD_MODULUS
-            && to_i32_array(re)[1].abs() < 128 * (K as i32) * FIELD_MODULUS
+        to_i16_array(re)[0].abs() < 128 * (K as i16) * FIELD_MODULUS
+            && to_i16_array(re)[1].abs() < 128 * (K as i16) * FIELD_MODULUS
     );
-    hax_debug_assert!(to_i32_array(re)
+    hax_debug_assert!(to_i16_array(re)
         .into_iter()
         .enumerate()
         .skip(2)

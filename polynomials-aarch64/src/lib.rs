@@ -1,78 +1,62 @@
-//! # Libcrux aarch64 optimized polynomials
-//!
-//! FIXME: This is kyber specific for now.
-
 use core::arch::aarch64::*;
-
 use libcrux_traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 #[derive(Clone, Copy)]
-pub struct SIMD128Vector {
-    low: int32x4_t,
-    high: int32x4_t,
+pub(crate) struct SIMD128Vector {
+    vec: int16x8_t,
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
 fn ZERO() -> SIMD128Vector {
     SIMD128Vector {
-        low: unsafe { vdupq_n_s32(0) },
-        high: unsafe { vdupq_n_s32(0) },
+        vec: unsafe { vdupq_n_s16(0) },
     }
 }
 
 #[inline(always)]
-fn to_i32_array(v: SIMD128Vector) -> [i32; 8] {
-    let mut out = [0i32; 8];
-
-    unsafe { vst1q_s32(out[0..4].as_mut_ptr() as *mut i32, v.low) }
-    unsafe { vst1q_s32(out[4..8].as_mut_ptr() as *mut i32, v.high) }
-
+fn to_i16_array(v: SIMD128Vector) -> [i16; 8] {
+    let mut out = [0i16; 8];
+    unsafe { vst1q_s16(out.as_mut_ptr() as *mut i16, v.vec) }
     out
 }
 
 #[inline(always)]
-fn from_i32_array(array: [i32; 8]) -> SIMD128Vector {
+fn from_i16_array(array: [i16; 8]) -> SIMD128Vector {
     SIMD128Vector {
-        low: unsafe { vld1q_s32(array[0..4].as_ptr() as *const i32) },
-        high: unsafe { vld1q_s32(array[4..8].as_ptr() as *const i32) },
+        vec: unsafe { vld1q_s16(array.as_ptr() as *const i16) },
     }
 }
 
 #[inline(always)]
-fn add_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
-    let c = unsafe { vdupq_n_s32(c) };
-    v.low = unsafe { vaddq_s32(v.low, c) };
-    v.high = unsafe { vaddq_s32(v.high, c) };
+fn _add_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+    let c = unsafe { vdupq_n_s16(c) };
+    v.vec = unsafe { vaddq_s16(v.vec, c) };
     v
 }
 
 #[inline(always)]
 fn add(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
-    lhs.low = unsafe { vaddq_s32(lhs.low, rhs.low) };
-    lhs.high = unsafe { vaddq_s32(lhs.high, rhs.high) };
+    lhs.vec = unsafe { vaddq_s16(lhs.vec, rhs.vec) };
     lhs
 }
 
 #[inline(always)]
 fn sub(mut lhs: SIMD128Vector, rhs: &SIMD128Vector) -> SIMD128Vector {
-    lhs.low = unsafe { vsubq_s32(lhs.low, rhs.low) };
-    lhs.high = unsafe { vsubq_s32(lhs.high, rhs.high) };
+    lhs.vec = unsafe { vsubq_s16(lhs.vec, rhs.vec) };
     lhs
 }
 
 #[inline(always)]
-fn multiply_by_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
-    v.low = unsafe { vmulq_n_s32(v.low, c) };
-    v.high = unsafe { vmulq_n_s32(v.high, c) };
+fn multiply_by_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+    v.vec = unsafe { vmulq_n_s16(v.vec, c) };
     v
 }
 
 #[inline(always)]
-fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
-    let c = unsafe { vdupq_n_s32(c) };
-    v.low = unsafe { vandq_s32(v.low, c) };
-    v.high = unsafe { vandq_s32(v.high, c) };
+fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+    let c = unsafe { vdupq_n_s16(c) };
+    v.vec = unsafe { vandq_s16(v.vec, c) };
     v
 }
 
@@ -80,122 +64,141 @@ fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i32) -> SIMD128Vector {
 fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
     // Should find special cases of this
     // e.g when doing a right shift just to propagate signed bits, use vclezq_s32 instead
-    v.low = unsafe { vshrq_n_s32(v.low, SHIFT_BY) };
-    v.high = unsafe { vshrq_n_s32(v.high, SHIFT_BY) };
+    v.vec = unsafe { vshrq_n_s16::<SHIFT_BY>(v.vec) };
     v
 }
 
 #[inline(always)]
-fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
-    lhs.low = unsafe { vshlq_n_s32(lhs.low, SHIFT_BY) };
-    lhs.high = unsafe { vshlq_n_s32(lhs.high, SHIFT_BY) };
+fn _shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
+    lhs.vec = unsafe { vshlq_n_s16::<SHIFT_BY>(lhs.vec) };
     lhs
 }
 
 #[inline(always)]
 fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
-    let c = unsafe { vdupq_n_s32(3329) };
-    let m0 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.low, c)) };
-    let m1 = unsafe { vreinterpretq_s32_u32(vcgeq_s32(v.high, c)) };
-    let rhs0 = unsafe { vandq_s32(m0, c) };
-    let rhs1 = unsafe { vandq_s32(m1, c) };
-    v.low = unsafe { vsubq_s32(v.low, rhs0) };
-    v.high = unsafe { vsubq_s32(v.high, rhs1) };
+    let c = unsafe { vdupq_n_s16(3329) };
+    let m = unsafe { vcgeq_s16(v.vec, c) };
+    let c = unsafe { vandq_s16(c, vreinterpretq_s16_u16(m)) };
+    v.vec = unsafe { vsubq_s16(v.vec, c) };
     v
 }
 
-const BARRETT_MULTIPLIER: i32 = 20159;
+const BARRETT_MULTIPLIER: i16 = 20159;
 
 #[inline(always)]
 fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+    //let pv = crate::simd::portable::from_i16_array(to_i16_array(v));
+    //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
+
     // This is what we are trying to do in portable:
-    // let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
-    // let quotient = (t >> BARRETT_SHIFT) as i32;
+    // let t = (value as i32 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    // let quotient = (t >> BARRETT_SHIFT) as i16;
     // let result = value - (quotient * FIELD_MODULUS);
-    let adder = unsafe { vdupq_n_s64(33554432) };
-    let low0 = unsafe { vmull_n_s32(vget_low_s32(v.low), BARRETT_MULTIPLIER) };
-    let high0 = unsafe { vmull_n_s32(vget_low_s32(v.high), BARRETT_MULTIPLIER) };
-    let low1 = unsafe { vmull_high_n_s32(v.low, BARRETT_MULTIPLIER) };
-    let high1 = unsafe { vmull_high_n_s32(v.high, BARRETT_MULTIPLIER) };
-    let low0 = unsafe { vshrq_n_s64(vaddq_s64(low0, adder), 26) };
-    let low1 = unsafe { vshrq_n_s64(vaddq_s64(low1, adder), 26) };
-    let high0 = unsafe { vshrq_n_s64(vaddq_s64(high0, adder), 26) };
-    let high1 = unsafe { vshrq_n_s64(vaddq_s64(high1, adder), 26) };
-    let low = unsafe { vcombine_s32(vmovn_s64(low0), vmovn_s64(low1)) };
-    let high = unsafe { vcombine_s32(vmovn_s64(high0), vmovn_s64(high1)) };
-    let low = unsafe { vmulq_n_s32(low, 3329) };
-    let high = unsafe { vmulq_n_s32(high, 3329) };
-    v.low = unsafe { vsubq_s32(v.low, low) };
-    v.high = unsafe { vsubq_s32(v.high, high) };
+
+    let adder = unsafe { vdupq_n_s16(1 << 10) };
+    let vec = unsafe { vqdmulhq_n_s16(v.vec, BARRETT_MULTIPLIER as i16) };
+    let vec = unsafe { vaddq_s16(vec, adder) };
+    let quotient = unsafe { vshrq_n_s16::<11>(vec) };
+    let sub = unsafe { vmulq_n_s16(quotient, FIELD_MODULUS) };
+    v.vec = unsafe { vsubq_s16(v.vec, sub) };
     v
 }
 
+// #[inline(always)]
+// fn montgomery_reduce_i32x2_t(v: int32x2_t) -> int32x2_t {
+//     // This is what we are trying to do in portable:
+//     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
+//     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+//     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
+//     // let k_times_modulus = (k as i32) * FIELD_MODULUS;
+//     // let c = k_times_modulus >> MONTGOMERY_SHIFT;
+//     // let value_high = value >> MONTGOMERY_SHIFT;
+//     // value_high - c
+
+//     let m = unsafe { vdup_n_s32(0x0000ffff) };
+//     let t0 = unsafe { vand_s32(v, m) };
+//     let t0 = unsafe { vmul_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32) };
+//     let t0 = unsafe { vreinterpret_s16_s32(t0) };
+//     let t0 = unsafe { vmull_n_s16(t0, FIELD_MODULUS as i16) };
+//     let c0 = unsafe { vshrq_n_s32::<16>(t0) };
+//     let c0 = unsafe { vmovn_s64(vreinterpretq_s64_s32(c0)) };
+//     let v0 = unsafe { vshr_n_s32::<16>(v) };
+//     let v = unsafe { vsub_s32(v0, c0) };
+//     v
+// }
+
+// #[inline(always)]
+// fn montgomery_reduce_i32x4_t(v: int32x4_t) -> int32x4_t {
+//     // This is what we are trying to do in portable:
+//     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
+//     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+//     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
+//     // let k_times_modulus = (k as i32) * FIELD_MODULUS;
+//     // let c = k_times_modulus >> MONTGOMERY_SHIFT;
+//     // let value_high = value >> MONTGOMERY_SHIFT;
+//     //value_high - c
+
+//     let t = unsafe {
+//         vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
+//     };
+//     let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(t, FIELD_MODULUS as i16)) };
+//     let c = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
+//     let v = unsafe { vshrq_n_s32::<16>(v) };
+//     let v = unsafe { vsubq_s32(v, c) };
+//     v
+// }
+
 #[inline(always)]
-fn montgomery_reduce_i32x2_t(v: int32x2_t) -> int32x2_t {
+fn montgomery_reduce_int16x8_t(low: int16x8_t, high: int16x8_t) -> int16x8_t {
     // This is what we are trying to do in portable:
-    // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
-    //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
-    // let k_times_modulus = (k as i32) * FIELD_MODULUS;
-    // let c = k_times_modulus >> MONTGOMERY_SHIFT;
-    // let value_high = value >> MONTGOMERY_SHIFT;
+    // let k = low as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    // let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
+    // let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
+    // high - c
+
+    let k = unsafe {
+        vreinterpretq_s16_u16(vmulq_n_u16(
+            vreinterpretq_u16_s16(low),
+            INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as u16,
+        ))
+    };
+    let c = unsafe { vshrq_n_s16::<1>(vqdmulhq_n_s16(k, FIELD_MODULUS as i16)) };
+    unsafe { vsubq_s16(high, c) }
+}
+
+#[inline(always)]
+fn montgomery_multiply_by_constant_int16x8_t(v: int16x8_t, c: i16) -> int16x8_t {
+    // This is what we are trying to do in portable:
+    // let value = v as i32 * c
+    // let k = (value as i16) as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    // let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
+    // let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
+    // let value_high = (value >> MONTGOMERY_SHIFT) as i16;
     // value_high - c
 
-    let m = unsafe { vdup_n_s32(0x0000ffff) };
-    let t0 = unsafe { vand_s32(v, m) };
-    let t0 = unsafe { vmul_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32) };
-    let t0 = unsafe { vreinterpret_s16_s32(t0) };
-    let t0 = unsafe { vmull_n_s16(t0, FIELD_MODULUS as i16) };
-    let c0 = unsafe { vshrq_n_s32::<16>(t0) };
-    let c0 = unsafe { vmovn_s64(vreinterpretq_s64_s32(c0)) };
-    let v0 = unsafe { vshr_n_s32::<16>(v) };
-    let v = unsafe { vsub_s32(v0, c0) };
-    v
+    let v_low = unsafe { vmulq_n_s16(v, c) };
+    let v_high = unsafe { vshrq_n_s16::<1>(vqdmulhq_n_s16(v, c)) };
+    montgomery_reduce_int16x8_t(v_low, v_high)
 }
 
 #[inline(always)]
-fn montgomery_reduce_i32x4_t(v: int32x4_t) -> int32x4_t {
+fn montgomery_multiply_int16x8_t(v: int16x8_t, c: int16x8_t) -> int16x8_t {
     // This is what we are trying to do in portable:
-    // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
-    //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
-    // let k_times_modulus = (k as i32) * FIELD_MODULUS;
-    // let c = k_times_modulus >> MONTGOMERY_SHIFT;
-    // let value_high = value >> MONTGOMERY_SHIFT;
-    //value_high - c
+    // let value = v as i32 * c
+    // let k = (value as i16) as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    // let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
+    // let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
+    // let value_high = (value >> MONTGOMERY_SHIFT) as i16;
+    // value_high - c
 
-    let t = unsafe {
-        vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
-    };
-    let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(t, FIELD_MODULUS as i16)) };
-    let c = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
-    let v = unsafe { vshrq_n_s32::<16>(v) };
-    let v = unsafe { vsubq_s32(v, c) };
-    v
+    let v_low = unsafe { vmulq_s16(v, c) };
+    let v_high = unsafe { vshrq_n_s16::<1>(vqdmulhq_s16(v, c)) };
+    montgomery_reduce_int16x8_t(v_low, v_high)
 }
 
 #[inline(always)]
-fn montgomery_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
-    // This is what we are trying to do in portable:
-    // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
-    //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
-    // let k_times_modulus = (k as i32) * FIELD_MODULUS;
-    // let c = k_times_modulus >> MONTGOMERY_SHIFT;
-    // let value_high = value >> MONTGOMERY_SHIFT;
-    //value_high - c
-
-    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) };
-    let k = unsafe { vmulq_n_s16(mixed, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16) };
-    let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(k, FIELD_MODULUS as i16)) };
-
-    let c_low = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
-    let c_high = unsafe { vshrq_n_s32::<17>(c) };
-    let v_low = unsafe { vshrq_n_s32::<16>(v.low) };
-    let v_high = unsafe { vshrq_n_s32::<16>(v.high) };
-
-    v.low = unsafe { vsubq_s32(v_low, c_low) };
-    v.high = unsafe { vsubq_s32(v_high, c_high) };
+fn montgomery_multiply_by_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+    v.vec = montgomery_multiply_by_constant_int16x8_t(v.vec, c);
     v
 }
 
@@ -208,26 +211,22 @@ fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
     // let shifted_positive_in_range = shifted_to_positive - 832;
     // ((shifted_positive_in_range >> 15) & 1) as u8
 
-    let mixed = unsafe { vtrn1q_s16(vreinterpretq_s16_s32(v.low), vreinterpretq_s16_s32(v.high)) };
     let half = unsafe { vdupq_n_s16(1664) };
     let quarter = unsafe { vdupq_n_s16(832) };
-    let shifted = unsafe { vsubq_s16(half, mixed) };
+    let shifted = unsafe { vsubq_s16(half, v.vec) };
     let mask = unsafe { vshrq_n_s16::<15>(shifted) };
     let shifted_to_positive = unsafe { veorq_s16(mask, shifted) };
     let shifted_positive_in_range = unsafe { vsubq_s16(shifted_to_positive, quarter) };
-    let res = unsafe {
-        vreinterpretq_s32_u16(vshrq_n_u16::<15>(vreinterpretq_u16_s16(
+    v.vec = unsafe {
+        vreinterpretq_s16_u16(vshrq_n_u16::<15>(vreinterpretq_u16_s16(
             shifted_positive_in_range,
         )))
     };
-    let mask = unsafe { vdupq_n_s32(0xffff) };
-    v.low = unsafe { vandq_s32(res, mask) };
-    v.high = unsafe { vshrq_n_s32::<16>(res) };
     v
 }
 
 #[inline(always)]
-fn mask_n_least_significant_bits(coefficient_bits: i32) -> i32 {
+fn mask_n_least_significant_bits(coefficient_bits: i32) -> i16 {
     match coefficient_bits {
         4 => 0x0f,
         5 => 0x1f,
@@ -246,205 +245,282 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector 
     // compressed >>= 35;
     // get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 
-    let half = unsafe { vdupq_n_s32(1664) };
-    let low = unsafe { vshlq_n_s32::<COEFFICIENT_BITS>(v.low) };
-    let high = unsafe { vshlq_n_s32::<COEFFICIENT_BITS>(v.high) };
-    let low = unsafe { vaddq_s32(low, half) };
-    let high = unsafe { vaddq_s32(high, half) };
-    let low = unsafe { vqdmulhq_n_s32(low, 10_321_340) };
-    let high = unsafe { vqdmulhq_n_s32(high, 10_321_340) };
-    let low = unsafe { vshrq_n_s32::<4>(low) };
-    let high = unsafe { vshrq_n_s32::<4>(high) };
-    let mask = unsafe { vdupq_n_s32(mask_n_least_significant_bits(COEFFICIENT_BITS)) };
-    v.low = unsafe { vandq_s32(low, mask) };
-    v.high = unsafe { vandq_s32(high, mask) };
+    let half = unsafe { vdupq_n_u32(1664) };
+    let mask = unsafe { vdupq_n_s16(mask_n_least_significant_bits(COEFFICIENT_BITS)) };
+
+    let mask16 = unsafe { vdupq_n_u32(0xffff) };
+    let v_low = unsafe { vandq_u32(vreinterpretq_u32_s16(v.vec), mask16) }; //a0, a2, a4, a6
+    let v_high = unsafe { vshrq_n_u32::<16>(vreinterpretq_u32_s16(v.vec)) }; //a1, a3, a5, a7
+
+    let compressed_low = unsafe { vshlq_n_u32::<COEFFICIENT_BITS>(v_low) };
+    let compressed_low = unsafe { vaddq_u32(compressed_low, half) };
+    let compressed_low = unsafe {
+        vreinterpretq_u32_s32(vqdmulhq_n_s32(
+            vreinterpretq_s32_u32(compressed_low),
+            10_321_340,
+        ))
+    };
+    let compressed_low = unsafe { vshrq_n_u32::<4>(compressed_low) };
+
+    let compressed_high = unsafe { vshlq_n_u32::<COEFFICIENT_BITS>(v_high) };
+    let compressed_high = unsafe { vaddq_u32(compressed_high, half) };
+    let compressed_high = unsafe {
+        vreinterpretq_u32_s32(vqdmulhq_n_s32(
+            vreinterpretq_s32_u32(compressed_high),
+            10_321_340,
+        ))
+    };
+    let compressed_high = unsafe { vshrq_n_u32::<4>(compressed_high) };
+
+    let compressed = unsafe {
+        vtrn1q_s16(
+            vreinterpretq_s16_u32(compressed_low),
+            vreinterpretq_s16_u32(compressed_high),
+        )
+    };
+    v.vec = unsafe { vandq_s16(compressed, mask) };
+    v
+}
+
+fn decompress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
+    let coeff = unsafe { vdupq_n_u32(1 << (COEFFICIENT_BITS - 1)) };
+
+    let mask16 = unsafe { vdupq_n_u32(0xffff) };
+    let v_low = unsafe { vandq_u32(vreinterpretq_u32_s16(v.vec), mask16) };
+    let v_high = unsafe { vshrq_n_u32::<16>(vreinterpretq_u32_s16(v.vec)) };
+
+    let compressed_low = unsafe { vmulq_n_u32(v_low, FIELD_MODULUS as u32) };
+    let compressed_low = unsafe { vaddq_u32(compressed_low, coeff) };
+    let compressed_low = unsafe { vshrq_n_u32::<COEFFICIENT_BITS>(compressed_low) };
+
+    let compressed_high = unsafe { vmulq_n_u32(v_high, FIELD_MODULUS as u32) };
+    let compressed_high = unsafe { vaddq_u32(compressed_high, coeff) };
+    let compressed_high = unsafe { vshrq_n_u32::<COEFFICIENT_BITS>(compressed_high) };
+
+    v.vec = unsafe {
+        vtrn1q_s16(
+            vreinterpretq_s16_u32(compressed_low),
+            vreinterpretq_s16_u32(compressed_high),
+        )
+    };
     v
 }
 
 #[inline(always)]
-fn ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128Vector {
+fn ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> SIMD128Vector {
     // This is what we are trying to do, pointwise for every pair of elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
     // a = simd::Vector::add(a, &t);
 
-    let low0 = unsafe { vget_low_s32(v.low) };
-    let low1 = unsafe { vget_high_s32(v.low) };
-    let high0 = unsafe { vget_low_s32(v.high) };
-    let high1 = unsafe { vget_high_s32(v.high) };
-    let low_tmp = unsafe { vmul_n_s32(low1, zeta1) };
-    let high_tmp = unsafe { vmul_n_s32(high1, zeta2) };
-    let low_tmp = montgomery_reduce_i32x2_t(low_tmp);
-    let high_tmp = montgomery_reduce_i32x2_t(high_tmp);
-    let low1 = unsafe { vsub_s32(low0, low_tmp) };
-    let high1 = unsafe { vsub_s32(high0, high_tmp) };
-    let low0 = unsafe { vadd_s32(low0, low_tmp) };
-    let high0 = unsafe { vadd_s32(high0, high_tmp) };
-    v.low = unsafe { vcombine_s32(low0, low1) };
-    v.high = unsafe { vcombine_s32(high0, high1) };
+    let zetas = [zeta1, zeta1, -zeta1, -zeta1, zeta2, zeta2, -zeta2, -zeta2];
+    let zeta = unsafe { vld1q_s16(zetas.as_ptr() as *const i16) };
+    let dup_a = unsafe {
+        vreinterpretq_s16_s32(vtrn1q_s32(
+            vreinterpretq_s32_s16(v.vec),
+            vreinterpretq_s32_s16(v.vec),
+        ))
+    };
+    let dup_b = unsafe {
+        vreinterpretq_s16_s32(vtrn2q_s32(
+            vreinterpretq_s32_s16(v.vec),
+            vreinterpretq_s32_s16(v.vec),
+        ))
+    };
+    let t = montgomery_multiply_int16x8_t(dup_b, zeta);
+    v.vec = unsafe { vaddq_s16(dup_a, t) };
     v
 }
 
 #[inline(always)]
-fn ntt_layer_2_step(mut v: SIMD128Vector, zeta: i32) -> SIMD128Vector {
+fn ntt_layer_2_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector {
     // This is what we are trying to do for every four elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
     // a = simd::Vector::add(a, &t);
 
-    let tmp = unsafe { vmulq_n_s32(v.high, zeta) };
-    let tmp = montgomery_reduce_i32x4_t(tmp);
-    v.high = unsafe { vsubq_s32(v.low, tmp) };
-    v.low = unsafe { vaddq_s32(v.low, tmp) };
+    let zetas = [zeta, zeta, zeta, zeta, -zeta, -zeta, -zeta, -zeta];
+    let zeta = unsafe { vld1q_s16(zetas.as_ptr() as *const i16) };
+    let dup_a = unsafe {
+        vreinterpretq_s16_s64(vtrn1q_s64(
+            vreinterpretq_s64_s16(v.vec),
+            vreinterpretq_s64_s16(v.vec),
+        ))
+    };
+    let dup_b = unsafe {
+        vreinterpretq_s16_s64(vtrn2q_s64(
+            vreinterpretq_s64_s16(v.vec),
+            vreinterpretq_s64_s16(v.vec),
+        ))
+    };
+    let t = montgomery_multiply_int16x8_t(dup_b, zeta);
+    v.vec = unsafe { vaddq_s16(dup_a, t) };
     v
 }
 
 #[inline(always)]
-fn inv_ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i32, zeta2: i32) -> SIMD128Vector {
+fn inv_ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> SIMD128Vector {
     // This is what we are trying to do for every two elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
     //b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     //(a, b)
 
-    let low0 = unsafe { vget_low_s32(v.low) };
-    let low1 = unsafe { vget_high_s32(v.low) };
-    let high0 = unsafe { vget_low_s32(v.high) };
-    let high1 = unsafe { vget_high_s32(v.high) };
-    let low_a_minus_b = unsafe { vsub_s32(low1, low0) };
-    let high_a_minus_b = unsafe { vsub_s32(high1, high0) };
-    let low0 = unsafe { vadd_s32(low0, low1) };
-    let high0 = unsafe { vadd_s32(high0, high1) };
-    let low_tmp = unsafe { vmul_n_s32(low_a_minus_b, zeta1) };
-    let high_tmp = unsafe { vmul_n_s32(high_a_minus_b, zeta2) };
-    let low1 = montgomery_reduce_i32x2_t(low_tmp);
-    let high1 = montgomery_reduce_i32x2_t(high_tmp);
-    v.low = unsafe { vcombine_s32(low0, low1) };
-    v.high = unsafe { vcombine_s32(high0, high1) };
+    let dup_b = unsafe {
+        vreinterpretq_s16_s32(vtrn2q_s32(
+            vreinterpretq_s32_s16(v.vec),
+            vreinterpretq_s32_s16(v.vec),
+        ))
+    };
+    let a = unsafe { vaddq_s16(v.vec, dup_b) };
+    let b_minus_a = unsafe { vsubq_s16(dup_b, v.vec) };
+
+    let zetas = [zeta1, zeta1, 0, 0, zeta2, zeta2, 0, 0];
+    let zeta = unsafe { vld1q_s16(zetas.as_ptr() as *const i16) };
+    let b = montgomery_multiply_int16x8_t(b_minus_a, zeta);
+    v.vec = unsafe {
+        vreinterpretq_s16_s32(vtrn1q_s32(
+            vreinterpretq_s32_s16(a),
+            vreinterpretq_s32_s16(b),
+        ))
+    };
     v
 }
 
 #[inline(always)]
-fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta: i32) -> SIMD128Vector {
+fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector {
     // This is what we are trying to do for every four elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
     //b = simd::Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     //(a, b)
 
-    let tmp = unsafe { vsubq_s32(v.high, v.low) };
-    v.low = unsafe { vaddq_s32(v.low, v.high) };
-    let tmp = unsafe { vmulq_n_s32(tmp, zeta) };
-    v.high = montgomery_reduce_i32x4_t(tmp);
+    let dup_b = unsafe {
+        vreinterpretq_s16_s64(vtrn2q_s64(
+            vreinterpretq_s64_s16(v.vec),
+            vreinterpretq_s64_s16(v.vec),
+        ))
+    };
+    let a = unsafe { vaddq_s16(v.vec, dup_b) };
+    let b_minus_a = unsafe { vsubq_s16(dup_b, v.vec) };
+
+    let zetas = [zeta, zeta, zeta, zeta, 0, 0, 0, 0];
+    let zeta = unsafe { vld1q_s16(zetas.as_ptr() as *const i16) };
+    let b = montgomery_multiply_int16x8_t(b_minus_a, zeta);
+    v.vec = unsafe {
+        vreinterpretq_s16_s64(vtrn1q_s64(
+            vreinterpretq_s64_s16(a),
+            vreinterpretq_s64_s16(b),
+        ))
+    };
     v
 }
 
 #[inline(always)]
-fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i32, zeta1: i32) -> SIMD128Vector {
+fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta0: i16, zeta1: i16) -> SIMD128Vector {
     // This is what we are trying to do for pairs of two elements:
     // montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
     // montgomery_reduce(a0 * b1 + a1 * b0)
+    //let lhsp = crate::simd::portable::from_i16_array(to_i16_array(lhs.clone()));
+    //let rhsp = crate::simd::portable::from_i16_array(to_i16_array(rhs.clone()));
+    //let mulp = crate::simd::portable::ntt_multiply(&lhsp,&rhsp,zeta0,zeta1);
+    //from_i16_array(crate::simd::portable::to_i16_array(mulp))
 
-    let a0 = unsafe { vtrn1q_s32(lhs.low, lhs.high) }; // a0, a4, a2, a6
-    let a1 = unsafe { vtrn2q_s32(lhs.low, lhs.high) }; // a1, a5, a3, a7
-    let b0 = unsafe { vtrn1q_s32(rhs.low, rhs.high) }; // b0, b4, b2, b6
-    let b1 = unsafe { vtrn2q_s32(rhs.low, rhs.high) }; // b1, b5, b3, b7
+    let a0 = unsafe {
+        vshrq_n_s32::<16>(vreinterpretq_s32_u32(vshlq_n_u32::<16>(
+            vreinterpretq_u32_s16(lhs.vec),
+        )))
+    };
+    let a1 = unsafe { vshrq_n_s32::<16>(vreinterpretq_s32_s16(lhs.vec)) };
+    let b0 = unsafe {
+        vshrq_n_s32::<16>(vreinterpretq_s32_u32(vshlq_n_u32::<16>(
+            vreinterpretq_u32_s16(rhs.vec),
+        )))
+    };
+    let b1 = unsafe { vshrq_n_s32::<16>(vreinterpretq_s32_s16(rhs.vec)) };
 
-    let zetas: [i32; 4] = [zeta0, zeta1, -zeta0, -zeta1];
+    let zetas: [i32; 4] = [zeta0 as i32, -zeta0 as i32, zeta1 as i32, -zeta1 as i32];
     let zeta = unsafe { vld1q_s32(zetas.as_ptr() as *const i32) };
-    let a1b1 = unsafe { vmulq_s32(a1, b1) };
+
     let a0b0 = unsafe { vmulq_s32(a0, b0) };
+
+    let a1b1 = unsafe {
+        montgomery_multiply_int16x8_t(vreinterpretq_s16_s32(a1), vreinterpretq_s16_s32(b1))
+    };
+    let a1b1 = unsafe {
+        vshrq_n_s32::<16>(vreinterpretq_s32_u32(vshlq_n_u32::<16>(
+            vreinterpretq_u32_s16(a1b1),
+        )))
+    };
+    let fst = unsafe { vreinterpretq_s16_s32(vmlaq_s32(a0b0, a1b1, zeta)) };
+
     let a0b1 = unsafe { vmulq_s32(a0, b1) };
+    let snd = unsafe { vreinterpretq_s16_s32(vmlaq_s32(a0b1, a1, b0)) };
 
-    let snd = unsafe { vmlaq_s32(a0b1, a1, b0) };
-    let a1b1 = montgomery_reduce_i32x4_t(a1b1);
-
-    let fst = unsafe { vmlaq_s32(a0b0, a1b1, zeta) };
-    let fst = montgomery_reduce_i32x4_t(fst);
-    let snd = montgomery_reduce_i32x4_t(snd);
-
+    let v_low = unsafe { vtrn1q_s16(fst, snd) };
+    let v_high = unsafe { vtrn2q_s16(fst, snd) };
     SIMD128Vector {
-        low: unsafe { vtrn1q_s32(fst, snd) },
-        high: unsafe { vtrn2q_s32(fst, snd) },
+        vec: montgomery_reduce_int16x8_t(v_low, v_high),
     }
 }
 
 #[inline(always)]
 fn serialize_1(v: SIMD128Vector) -> u8 {
-    let shifter0: [u32; 4] = [0, 1, 2, 3];
-    let shifter1: [u32; 4] = [4, 5, 6, 7];
-    let shift0 = unsafe { vld1q_s32(shifter0.as_ptr() as *const i32) };
-    let shift1 = unsafe { vld1q_s32(shifter1.as_ptr() as *const i32) };
-    let low = unsafe { vshlq_s32(v.low, shift0) };
-    let high = unsafe { vshlq_s32(v.high, shift1) };
-    let low = unsafe { vaddvq_s32(low) };
-    let high = unsafe { vaddvq_s32(high) };
-    (low | high) as u8
+    let shifter: [i16; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
+    let shift = unsafe { vld1q_s16(shifter.as_ptr() as *const i16) };
+    let vec = unsafe { vshlq_s16(v.vec, shift) };
+    let vec = unsafe { vaddvq_s16(vec) };
+    vec as u8
 }
 
 #[inline(always)]
 fn deserialize_1(a: u8) -> SIMD128Vector {
-    let dup = unsafe { vdupq_n_s32(a as i32) };
-    let shifter0: [i32; 4] = [0, -1, -2, -3];
-    let shifter1: [i32; 4] = [-4, -5, -6, -7];
-    let shift0 = unsafe { vld1q_s32(shifter0.as_ptr() as *const i32) };
-    let shift1 = unsafe { vld1q_s32(shifter1.as_ptr() as *const i32) };
-    let low = unsafe { vshlq_s32(dup, shift0) };
-    let high = unsafe { vshlq_s32(dup, shift1) };
+    let dup = unsafe { vdupq_n_s16(a as i16) };
+    let shifter: [i16; 8] = [0, 0xff, -2, -3, -4, -5, -6, -7];
+    let shift = unsafe { vld1q_s16(shifter.as_ptr() as *const i16) };
+    let vec = unsafe { vshlq_s16(dup, shift) };
     SIMD128Vector {
-        low: unsafe { vandq_s32(low, vdupq_n_s32(1)) },
-        high: unsafe { vandq_s32(high, vdupq_n_s32(1)) },
+        vec: unsafe { vandq_s16(vec, vdupq_n_s16(1)) },
     }
 }
 
 #[inline(always)]
 fn serialize_4(v: SIMD128Vector) -> [u8; 4] {
-    let shifter0: [i32; 4] = [0, 4, 8, 12];
-    let shifter1: [i32; 4] = [16, 20, 24, 28];
-    let shift0 = unsafe { vld1q_s32(shifter0.as_ptr() as *const i32) };
-    let shift1 = unsafe { vld1q_s32(shifter1.as_ptr() as *const i32) };
-    let lowt = unsafe { vshlq_s32(v.low, shift0) };
-    let hight = unsafe { vshlq_s32(v.high, shift1) };
-    let low = unsafe { vaddvq_s32(lowt) };
-    let high = unsafe { vaddvq_s32(hight) };
-    (low | high).to_le_bytes()
+    let shifter: [i16; 8] = [0, 4, 8, 12, 0, 4, 8, 12];
+    let shift = unsafe { vld1q_s16(shifter.as_ptr() as *const i16) };
+    let vect = unsafe { vshlq_u16(vreinterpretq_u16_s16(v.vec), shift) };
+    let sum0 = unsafe { vaddv_u16(vget_low_u16(vect)) };
+    let sum1 = unsafe { vaddv_u16(vget_high_u16(vect)) };
+    (((sum1 as u32) << 16) + (sum0 as u32)).to_le_bytes()
 }
 
 #[inline(always)]
 fn deserialize_4(v: &[u8]) -> SIMD128Vector {
     let input = u32::from_le_bytes(v.try_into().unwrap());
-    let mut low = [0i32; 4];
-    let mut high = [0i32; 4];
-    low[0] = (input & 0x0f) as i32;
-    low[1] = ((input >> 4) & 0x0f) as i32;
-    low[2] = ((input >> 8) & 0x0f) as i32;
-    low[3] = ((input >> 12) & 0x0f) as i32;
-    high[0] = ((input >> 16) & 0x0f) as i32;
-    high[1] = ((input >> 20) & 0x0f) as i32;
-    high[2] = ((input >> 24) & 0x0f) as i32;
-    high[3] = ((input >> 28) & 0x0f) as i32;
+    let mut vec = [0i16; 8];
+    vec[0] = (input & 0x0f) as i16;
+    vec[1] = ((input >> 4) & 0x0f) as i16;
+    vec[2] = ((input >> 8) & 0x0f) as i16;
+    vec[3] = ((input >> 12) & 0x0f) as i16;
+    vec[4] = ((input >> 16) & 0x0f) as i16;
+    vec[5] = ((input >> 20) & 0x0f) as i16;
+    vec[6] = ((input >> 24) & 0x0f) as i16;
+    vec[7] = ((input >> 28) & 0x0f) as i16;
     SIMD128Vector {
-        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
-        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+        vec: unsafe { vld1q_s16(vec.as_ptr() as *const i16) },
     }
 }
 
 #[inline(always)]
 fn serialize_5(v: SIMD128Vector) -> [u8; 5] {
-    let lowt = unsafe { vtrn1q_s32(v.low, v.high) }; // a0, a4, a2, a6
-    let hight = unsafe { vtrn2q_s32(v.low, v.high) }; // a1, a5, a3, a7
-    let mixt = unsafe { vsliq_n_s32::<5>(lowt, hight) }; // a1a0, a5a4, a3a2, a7a6
-
-    let lowt = unsafe { vmovl_s32(vget_low_s32(mixt)) }; // a1a0, a5a4
-    let hight = unsafe { vmovl_s32(vget_high_s32(mixt)) }; // a3a2, a7a6
-    let mixt = unsafe { vsliq_n_s64::<10>(lowt, hight) }; // a3a2a1a0, a7a6a5a4
-    let mut result2 = [0i64; 2];
-    unsafe { vst1q_s64(result2.as_mut_ptr() as *mut i64, mixt) };
-
-    let result_i64 = result2[0] | (result2[1] << 20);
-    let mut result = [0u8; 5];
-    result.copy_from_slice(&result_i64.to_le_bytes()[0..5]);
-    result
+    let mut res = [0u8; 5];
+    let out = to_i16_array(v);
+    res[0] = (out[0] | out[1] << 5) as u8;
+    res[1] = (out[1] >> 3 | out[2] << 2 | out[3] << 7) as u8;
+    res[2] = (out[3] >> 1 | out[4] << 4) as u8;
+    res[3] = (out[4] >> 4 | out[5] << 1 | out[6] << 6) as u8;
+    res[4] = (out[6] >> 2 | out[7] << 3) as u8;
+    res
 }
 
 #[inline(always)]
@@ -453,42 +529,37 @@ fn deserialize_5(v: &[u8]) -> SIMD128Vector {
     input[0..5].copy_from_slice(&v[0..5]);
     let input = u64::from_le_bytes(input);
 
-    let mut low = [0i32; 4];
-    let mut high = [0i32; 4];
+    let mut vec = [0i16; 8];
 
-    low[0] = (input & 0x1F) as i32;
-    low[1] = ((input >> 5) & 0x1F) as i32;
-    low[2] = ((input >> 10) & 0x1F) as i32;
-    low[3] = ((input >> 15) & 0x1F) as i32;
-    high[0] = ((input >> 20) & 0x1F) as i32;
-    high[1] = ((input >> 25) & 0x1F) as i32;
-    high[2] = ((input >> 30) & 0x1F) as i32;
-    high[3] = ((input >> 35) & 0x1F) as i32;
+    vec[0] = (input & 0x1F) as i16;
+    vec[1] = ((input >> 5) & 0x1F) as i16;
+    vec[2] = ((input >> 10) & 0x1F) as i16;
+    vec[3] = ((input >> 15) & 0x1F) as i16;
+    vec[4] = ((input >> 20) & 0x1F) as i16;
+    vec[5] = ((input >> 25) & 0x1F) as i16;
+    vec[6] = ((input >> 30) & 0x1F) as i16;
+    vec[7] = ((input >> 35) & 0x1F) as i16;
 
     SIMD128Vector {
-        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
-        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+        vec: unsafe { vld1q_s16(vec.as_ptr() as *const i16) },
     }
 }
 
 #[inline(always)]
 fn serialize_10(v: SIMD128Vector) -> [u8; 10] {
-    let lowt = unsafe { vtrn1q_s32(v.low, v.high) }; // a0, a4, a2, a6
-    let hight = unsafe { vtrn2q_s32(v.low, v.high) }; // a1, a5, a3, a7
-    let mixt = unsafe { vsliq_n_s32::<10>(lowt, hight) }; // a1a0, a5a4, a3a2, a7a6
+    let lowt = unsafe { vreinterpretq_s32_s16(vtrn1q_s16(v.vec, v.vec)) }; // a0, a0, a2, a2, a4, a4, a6, a6
+    let hight = unsafe { vreinterpretq_s32_s16(vtrn2q_s16(v.vec, v.vec)) }; // a1, a1, a3, a3, a5, a5, a7, a7
+    let mixt = unsafe { vsliq_n_s32::<10>(lowt, hight) }; // a1a0, a3a2, a5a4, a7a6
 
-    let lowt = unsafe { vmovl_s32(vget_low_s32(mixt)) }; // a1a0, a5a4
-    let hight = unsafe { vmovl_s32(vget_high_s32(mixt)) }; // a3a2, a7a6
-    let mixt = unsafe { vsliq_n_s64::<20>(lowt, hight) };
-
-    let index_arr: [u8; 16] = [0, 1, 2, 3, 4, 8, 9, 10, 11, 12, 10, 11, 12, 13, 14, 15];
-    let index = unsafe { vld1q_u8(index_arr.as_ptr() as *const u8) };
-    let mixt = unsafe { vqtbl1q_u8(vreinterpretq_u8_s64(mixt), index) };
+    let lowt = unsafe { vreinterpretq_s64_s32(vtrn1q_s32(mixt, mixt)) }; // a1a0, a1a0, a5a4, a5a4
+    let hight = unsafe { vreinterpretq_s64_s32(vtrn2q_s32(mixt, mixt)) }; // a3a2, a3a2, a7a6, a7a6
+    let mixt = unsafe { vsliq_n_s64::<20>(lowt, hight) }; // a3a2a1a0, a7a6a5a4
 
     let mut result16 = [0u8; 16];
-    unsafe { vst1q_u8(result16.as_mut_ptr() as *mut u8, mixt) };
+    unsafe { vst1q_u8(result16.as_mut_ptr() as *mut u8, vreinterpretq_u8_s64(mixt)) };
     let mut result10 = [0u8; 10];
-    result10.copy_from_slice(&result16[0..10]);
+    result10[0..5].copy_from_slice(&result16[0..5]);
+    result10[5..10].copy_from_slice(&result16[8..13]);
     result10
 }
 
@@ -500,25 +571,23 @@ fn deserialize_10(v: &[u8]) -> SIMD128Vector {
     input1[0..5].copy_from_slice(&v[5..10]);
     let input0 = u64::from_le_bytes(input0);
     let input1 = u64::from_le_bytes(input1);
-    let mut low = [0i32; 4];
-    let mut high = [0i32; 4];
-    low[0] = (input0 & 0x3ff) as i32;
-    low[1] = ((input0 & 0xffc00) >> 10) as i32;
-    low[2] = ((input0 & 0x3ff00000) >> 20) as i32;
-    low[3] = ((input0 & 0xffc0000000) >> 30) as i32;
-    high[0] = (input1 & 0x3ff) as i32;
-    high[1] = ((input1 & 0xffc00) >> 10) as i32;
-    high[2] = ((input1 & 0x3ff00000) >> 20) as i32;
-    high[3] = ((input1 & 0xffc0000000) >> 30) as i32;
+    let mut vec = [0i16; 8];
+    vec[0] = (input0 & 0x3ff) as i16;
+    vec[1] = ((input0 & 0xffc00) >> 10) as i16;
+    vec[2] = ((input0 & 0x3ff00000) >> 20) as i16;
+    vec[3] = ((input0 & 0xffc0000000) >> 30) as i16;
+    vec[4] = (input1 & 0x3ff) as i16;
+    vec[5] = ((input1 & 0xffc00) >> 10) as i16;
+    vec[6] = ((input1 & 0x3ff00000) >> 20) as i16;
+    vec[7] = ((input1 & 0xffc0000000) >> 30) as i16;
     SIMD128Vector {
-        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
-        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+        vec: unsafe { vld1q_s16(vec.as_ptr() as *const i16) },
     }
 }
 
 #[inline(always)]
 fn serialize_11(v: SIMD128Vector) -> [u8; 11] {
-    let input = to_i32_array(v);
+    let input = to_i16_array(v);
     let mut result = [0u8; 11];
     result[0] = input[0] as u8; // 3 left in 0
     result[1] = ((input[0] >> 8) | (input[1] << 3)) as u8; // 6 left in 1
@@ -543,63 +612,843 @@ fn deserialize_11(v: &[u8]) -> SIMD128Vector {
     let input0 = u64::from_le_bytes(input0);
     let input1 = u64::from_le_bytes(input1);
 
-    let mut low = [0i32; 4];
-    let mut high = [0i32; 4];
+    let mut vec = [0i16; 8];
 
-    low[0] = (input0 & 0x7FF) as i32;
-    low[1] = ((input0 >> 11) & 0x7FF) as i32;
-    low[2] = ((input0 >> 22) & 0x7FF) as i32;
-    low[3] = ((input0 >> 33) & 0x7FF) as i32;
-    high[0] = ((input1 >> 4) & 0x7FF) as i32;
-    high[1] = ((input1 >> 15) & 0x7FF) as i32;
-    high[2] = ((input1 >> 26) & 0x7FF) as i32;
-    high[3] = ((input1 >> 37) & 0x7FF) as i32;
+    vec[0] = (input0 & 0x7FF) as i16;
+    vec[1] = ((input0 >> 11) & 0x7FF) as i16;
+    vec[2] = ((input0 >> 22) & 0x7FF) as i16;
+    vec[3] = ((input0 >> 33) & 0x7FF) as i16;
+    vec[4] = ((input1 >> 4) & 0x7FF) as i16;
+    vec[5] = ((input1 >> 15) & 0x7FF) as i16;
+    vec[6] = ((input1 >> 26) & 0x7FF) as i16;
+    vec[7] = ((input1 >> 37) & 0x7FF) as i16;
 
     SIMD128Vector {
-        low: unsafe { vld1q_s32(low.as_ptr() as *const i32) },
-        high: unsafe { vld1q_s32(high.as_ptr() as *const i32) },
+        vec: unsafe { vld1q_s16(vec.as_ptr() as *const i16) },
     }
 }
 
 #[inline(always)]
 fn serialize_12(v: SIMD128Vector) -> [u8; 12] {
-    let lowt = unsafe { vtrn1q_s32(v.low, v.high) }; // a0, a4, a2, a6
-    let hight = unsafe { vtrn2q_s32(v.low, v.high) }; // a1, a5, a3, a7
-    let mixt = unsafe { vsliq_n_s32::<12>(lowt, hight) }; // a1a0, a5a4, a3a2, a7a6
+    //    println!("serialize 12 (simd128): {:?}", to_i16_array(v));
 
-    let index_arr: [u8; 16] = [0, 1, 2, 8, 9, 10, 4, 5, 6, 12, 13, 14, 12, 13, 14, 15];
-    let index = unsafe { vld1q_u8(index_arr.as_ptr() as *const u8) };
-    let mixt = unsafe { vqtbl1q_u8(vreinterpretq_u8_s32(mixt), index) };
+    let lowt = unsafe { vreinterpretq_s32_s16(vtrn1q_s16(v.vec, v.vec)) }; // a0, a0, a2, a2, a4, a4, a6, a6
+    let hight = unsafe { vreinterpretq_s32_s16(vtrn2q_s16(v.vec, v.vec)) }; // a1, a1, a3, a3, a5, a5, a7, a7
+    let mixt = unsafe { vsliq_n_s32::<12>(lowt, hight) }; // a1a0, a3a2, a5a4, a7a6
+
+    let lowt = unsafe { vreinterpretq_s64_s32(vtrn1q_s32(mixt, mixt)) }; // a1a0, a1a0, a5a4, a5a4
+    let hight = unsafe { vreinterpretq_s64_s32(vtrn2q_s32(mixt, mixt)) }; // a3a2, a3a2, a7a6, a7a6
+    let mixt = unsafe { vsliq_n_s64::<24>(lowt, hight) }; // a3a2a1a0, a7a6a5a4
 
     let mut result16 = [0u8; 16];
-    unsafe { vst1q_u8(result16.as_mut_ptr() as *mut u8, mixt) };
-    let mut result12 = [0u8; 12];
-    result12.copy_from_slice(&result16[0..12]);
-    result12
+    unsafe { vst1q_u8(result16.as_mut_ptr() as *mut u8, vreinterpretq_u8_s64(mixt)) };
+    let mut result = [0u8; 12];
+    result[0..6].copy_from_slice(&result16[0..6]);
+    result[6..12].copy_from_slice(&result16[8..14]);
+    result
 }
 
 #[inline(always)]
 fn deserialize_12(v: &[u8]) -> SIMD128Vector {
-    let mut input0 = [0u8; 8];
-    let mut input1 = [0u8; 8];
-    input0[0..6].copy_from_slice(&v[0..6]);
-    input1[0..6].copy_from_slice(&v[6..12]);
-    let input0 = u64::from_le_bytes(input0);
-    let input1 = u64::from_le_bytes(input1);
-    let mut low = [0i32; 4];
-    let mut high = [0i32; 4];
-    low[0] = (input0 & 0xfff) as i32;
-    low[1] = ((input0 & 0xfff000) >> 12) as i32;
-    low[2] = ((input0 & 0xfff000000) >> 24) as i32;
-    low[3] = ((input0 & 0xfff000000000) >> 36) as i32;
-    high[0] = (input1 & 0xfff) as i32;
-    high[1] = ((input1 & 0xfff000) >> 12) as i32;
-    high[2] = ((input1 & 0xfff000000) >> 24) as i32;
-    high[3] = ((input1 & 0xfff000000000) >> 36) as i32;
-    SIMD128Vector {
-        low: unsafe { vld1q_s32(low.as_mut_ptr() as *mut i32) },
-        high: unsafe { vld1q_s32(high.as_mut_ptr() as *mut i32) },
-    }
+    let indexes: [u8; 16] = [0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 7, 8, 9, 10, 10, 11];
+    let index_vec = unsafe { vld1q_u8(indexes.as_ptr() as *const u8) };
+    let shifts: [i16; 8] = [0, -4, 0, -4, 0, -4, 0, -4];
+    let shift_vec = unsafe { vld1q_s16(shifts.as_ptr() as *const i16) };
+    let mask12 = unsafe { vdupq_n_u16(0xfff) };
+
+    let mut input = [0u8; 16];
+    input[0..12].copy_from_slice(v);
+    let input_vec = unsafe { vld1q_u8(input.as_ptr() as *const u8) };
+
+    let moved = unsafe { vreinterpretq_u16_u8(vqtbl1q_u8(input_vec, index_vec)) };
+    let shifted = unsafe { vshlq_u16(moved, shift_vec) };
+    let vec = unsafe { vreinterpretq_s16_u16(vandq_u16(shifted, mask12)) };
+    SIMD128Vector { vec: vec }
+}
+
+const IDX_TABLE: [[u8; 16]; 256] = [
+    [
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff,
+    ], // 0
+    [
+        0, 1, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 1
+    [
+        2, 3, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 2
+    [
+        0, 1, 2, 3, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 3
+    [
+        4, 5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 4
+    [
+        0, 1, 4, 5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 5
+    [
+        2, 3, 4, 5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 6
+    [
+        0, 1, 2, 3, 4, 5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 7
+    [
+        6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 8
+    [
+        0, 1, 6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 9
+    [
+        2, 3, 6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 10
+    [
+        0, 1, 2, 3, 6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 11
+    [
+        4, 5, 6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 12
+    [
+        0, 1, 4, 5, 6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 13
+    [
+        2, 3, 4, 5, 6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 14
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 15
+    [
+        8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 16
+    [
+        0, 1, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 17
+    [
+        2, 3, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 18
+    [
+        0, 1, 2, 3, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 19
+    [
+        4, 5, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 20
+    [
+        0, 1, 4, 5, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 21
+    [
+        2, 3, 4, 5, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 22
+    [
+        0, 1, 2, 3, 4, 5, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 23
+    [
+        6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 24
+    [
+        0, 1, 6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 25
+    [
+        2, 3, 6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 26
+    [
+        0, 1, 2, 3, 6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 27
+    [
+        4, 5, 6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 28
+    [
+        0, 1, 4, 5, 6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 29
+    [
+        2, 3, 4, 5, 6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 30
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 31
+    [
+        10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 32
+    [
+        0, 1, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 33
+    [
+        2, 3, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 34
+    [
+        0, 1, 2, 3, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 35
+    [
+        4, 5, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 36
+    [
+        0, 1, 4, 5, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 37
+    [
+        2, 3, 4, 5, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 38
+    [
+        0, 1, 2, 3, 4, 5, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 39
+    [
+        6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 40
+    [
+        0, 1, 6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 41
+    [
+        2, 3, 6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 42
+    [
+        0, 1, 2, 3, 6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 43
+    [
+        4, 5, 6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 44
+    [
+        0, 1, 4, 5, 6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 45
+    [
+        2, 3, 4, 5, 6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 46
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 47
+    [
+        8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 48
+    [
+        0, 1, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 49
+    [
+        2, 3, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 50
+    [
+        0, 1, 2, 3, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 51
+    [
+        4, 5, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 52
+    [
+        0, 1, 4, 5, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 53
+    [
+        2, 3, 4, 5, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 54
+    [
+        0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 55
+    [
+        6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 56
+    [
+        0, 1, 6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 57
+    [
+        2, 3, 6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 58
+    [
+        0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 59
+    [
+        4, 5, 6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 60
+    [
+        0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 61
+    [
+        2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 62
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0xff, 0xff, 0xff, 0xff], // 63
+    [
+        12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 64
+    [
+        0, 1, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 65
+    [
+        2, 3, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 66
+    [
+        0, 1, 2, 3, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 67
+    [
+        4, 5, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 68
+    [
+        0, 1, 4, 5, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 69
+    [
+        2, 3, 4, 5, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 70
+    [
+        0, 1, 2, 3, 4, 5, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 71
+    [
+        6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 72
+    [
+        0, 1, 6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 73
+    [
+        2, 3, 6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 74
+    [
+        0, 1, 2, 3, 6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 75
+    [
+        4, 5, 6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 76
+    [
+        0, 1, 4, 5, 6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 77
+    [
+        2, 3, 4, 5, 6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 78
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 79
+    [
+        8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 80
+    [
+        0, 1, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 81
+    [
+        2, 3, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 82
+    [
+        0, 1, 2, 3, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 83
+    [
+        4, 5, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 84
+    [
+        0, 1, 4, 5, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 85
+    [
+        2, 3, 4, 5, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 86
+    [
+        0, 1, 2, 3, 4, 5, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 87
+    [
+        6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 88
+    [
+        0, 1, 6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 89
+    [
+        2, 3, 6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 90
+    [
+        0, 1, 2, 3, 6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 91
+    [
+        4, 5, 6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 92
+    [
+        0, 1, 4, 5, 6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 93
+    [
+        2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 94
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 0xff, 0xff, 0xff, 0xff], // 95
+    [
+        10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 96
+    [
+        0, 1, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 97
+    [
+        2, 3, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 98
+    [
+        0, 1, 2, 3, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 99
+    [
+        4, 5, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 100
+    [
+        0, 1, 4, 5, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 101
+    [
+        2, 3, 4, 5, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 102
+    [
+        0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 103
+    [
+        6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 104
+    [
+        0, 1, 6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 105
+    [
+        2, 3, 6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 106
+    [
+        0, 1, 2, 3, 6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 107
+    [
+        4, 5, 6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 108
+    [
+        0, 1, 4, 5, 6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 109
+    [
+        2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 110
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff,
+    ], // 111
+    [
+        8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 112
+    [
+        0, 1, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 113
+    [
+        2, 3, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 114
+    [
+        0, 1, 2, 3, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 115
+    [
+        4, 5, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 116
+    [
+        0, 1, 4, 5, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 117
+    [
+        2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 118
+    [
+        0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff,
+    ], // 119
+    [
+        6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 120
+    [
+        0, 1, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 121
+    [
+        2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 122
+    [
+        0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff,
+    ], // 123
+    [
+        4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 124
+    [
+        0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff,
+    ], // 125
+    [
+        2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff, 0xff, 0xff,
+    ], // 126
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff],     // 127
+    [
+        14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff,
+    ], // 128
+    [
+        0, 1, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 129
+    [
+        2, 3, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 130
+    [
+        0, 1, 2, 3, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 131
+    [
+        4, 5, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 132
+    [
+        0, 1, 4, 5, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 133
+    [
+        2, 3, 4, 5, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 134
+    [
+        0, 1, 2, 3, 4, 5, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 135
+    [
+        6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 136
+    [
+        0, 1, 6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 137
+    [
+        2, 3, 6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 138
+    [
+        0, 1, 2, 3, 6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 139
+    [
+        4, 5, 6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 140
+    [
+        0, 1, 4, 5, 6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 141
+    [
+        2, 3, 4, 5, 6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 142
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 143
+    [
+        8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 144
+    [
+        0, 1, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 145
+    [
+        2, 3, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 146
+    [
+        0, 1, 2, 3, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 147
+    [
+        4, 5, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 148
+    [
+        0, 1, 4, 5, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 149
+    [
+        2, 3, 4, 5, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 150
+    [
+        0, 1, 2, 3, 4, 5, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 151
+    [
+        6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 152
+    [
+        0, 1, 6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 153
+    [
+        2, 3, 6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 154
+    [
+        0, 1, 2, 3, 6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 155
+    [
+        4, 5, 6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 156
+    [
+        0, 1, 4, 5, 6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 157
+    [
+        2, 3, 4, 5, 6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 158
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 159
+    [
+        10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 160
+    [
+        0, 1, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 161
+    [
+        2, 3, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 162
+    [
+        0, 1, 2, 3, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 163
+    [
+        4, 5, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 164
+    [
+        0, 1, 4, 5, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 165
+    [
+        2, 3, 4, 5, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 166
+    [
+        0, 1, 2, 3, 4, 5, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 167
+    [
+        6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 168
+    [
+        0, 1, 6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 169
+    [
+        2, 3, 6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 170
+    [
+        0, 1, 2, 3, 6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 171
+    [
+        4, 5, 6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 172
+    [
+        0, 1, 4, 5, 6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 173
+    [
+        2, 3, 4, 5, 6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 174
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 175
+    [
+        8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 176
+    [
+        0, 1, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 177
+    [
+        2, 3, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 178
+    [
+        0, 1, 2, 3, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 179
+    [
+        4, 5, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 180
+    [
+        0, 1, 4, 5, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 181
+    [
+        2, 3, 4, 5, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 182
+    [
+        0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 183
+    [
+        6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 184
+    [
+        0, 1, 6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 185
+    [
+        2, 3, 6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 186
+    [
+        0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 187
+    [
+        4, 5, 6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 188
+    [
+        0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 189
+    [
+        2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 190
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 0xff, 0xff, 0xff],   // 191
+    [
+        12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 192
+    [
+        0, 1, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 193
+    [
+        2, 3, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 194
+    [
+        0, 1, 2, 3, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 195
+    [
+        4, 5, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 196
+    [
+        0, 1, 4, 5, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 197
+    [
+        2, 3, 4, 5, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 198
+    [
+        0, 1, 2, 3, 4, 5, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 199
+    [
+        6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 200
+    [
+        0, 1, 6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 201
+    [
+        2, 3, 6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 202
+    [
+        0, 1, 2, 3, 6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 203
+    [
+        4, 5, 6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 204
+    [
+        0, 1, 4, 5, 6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 205
+    [
+        2, 3, 4, 5, 6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 206
+    [
+        0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 207
+    [
+        8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 208
+    [
+        0, 1, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 209
+    [
+        2, 3, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 210
+    [
+        0, 1, 2, 3, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 211
+    [
+        4, 5, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 212
+    [
+        0, 1, 4, 5, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 213
+    [
+        2, 3, 4, 5, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 214
+    [
+        0, 1, 2, 3, 4, 5, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 215
+    [
+        6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 216
+    [
+        0, 1, 6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 217
+    [
+        2, 3, 6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 218
+    [
+        0, 1, 2, 3, 6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 219
+    [
+        4, 5, 6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 220
+    [
+        0, 1, 4, 5, 6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 221
+    [
+        2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 222
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 0xff, 0xff, 0xff],   // 223
+    [
+        10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 224
+    [
+        0, 1, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 225
+    [
+        2, 3, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 226
+    [
+        0, 1, 2, 3, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 227
+    [
+        4, 5, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 228
+    [
+        0, 1, 4, 5, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 229
+    [
+        2, 3, 4, 5, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 230
+    [
+        0, 1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 231
+    [
+        6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 232
+    [
+        0, 1, 6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 233
+    [
+        2, 3, 6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 234
+    [
+        0, 1, 2, 3, 6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 235
+    [
+        4, 5, 6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 236
+    [
+        0, 1, 4, 5, 6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 237
+    [
+        2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 238
+    [0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff], // 239
+    [
+        8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 240
+    [
+        0, 1, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 241
+    [
+        2, 3, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 242
+    [
+        0, 1, 2, 3, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 243
+    [
+        4, 5, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 244
+    [
+        0, 1, 4, 5, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 245
+    [
+        2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 246
+    [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff], // 247
+    [
+        6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 248
+    [
+        0, 1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 249
+    [
+        2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 250
+    [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff], // 251
+    [
+        4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff, 0xff, 0xff,
+    ], // 252
+    [0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff], // 253
+    [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff, 0xff, 0xff], // 254
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0xff],       // 255
+];
+
+#[inline(always)]
+fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
+    let neon_bits: [u16; 8] = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
+    let bits = unsafe { vld1q_u16(neon_bits.as_ptr() as *const u16) };
+    let fm = unsafe { vdupq_n_s16(3328) };
+
+    let input = deserialize_12(a);
+    let mask = unsafe { vcleq_s16(input.vec, fm) };
+    let used = unsafe { vaddvq_u16(vandq_u16(mask, bits)) };
+    let pick = used.count_ones();
+
+    // The following indexing is implemented by a large index table in PQClean
+    // let mut index : [u8;16] = [0u8; 16];
+    // let mut idx = 0;
+    // for i in 0..8 {
+    //     if used > 0 {
+    //         let next = used.trailing_zeros();
+    //         idx = idx + next;
+    //         index[i*2] = (idx*2) as u8;
+    //         index[i*2+1] = (idx*2 + 1) as u8;
+    //         idx = idx + 1;
+    //         used = used >> (next+1);
+    //     }
+    // }
+    // let index_vec = unsafe { vld1q_u8(index.as_ptr() as *const u8) };
+    // End of index table lookup calculation
+
+    let index_vec = unsafe { vld1q_u8(IDX_TABLE[used as usize].as_ptr() as *const u8) };
+    let shifted = unsafe { vqtbl1q_u8(vreinterpretq_u8_s16(input.vec), index_vec) };
+    let mut out: [i16; 8] = [0i16; 8];
+    unsafe { vst1q_s16(out.as_mut_ptr() as *mut i16, vreinterpretq_s16_u8(shifted)) };
+    (pick as usize, out)
 }
 
 impl Operations for SIMD128Vector {
@@ -608,17 +1457,17 @@ impl Operations for SIMD128Vector {
         ZERO()
     }
 
-    fn to_i32_array(v: Self) -> [i32; 8] {
-        to_i32_array(v)
+    fn to_i16_array(v: Self) -> [i16; 8] {
+        to_i16_array(v)
     }
 
-    fn from_i32_array(array: [i32; 8]) -> Self {
-        from_i32_array(array)
+    fn from_i16_array(array: [i16; 8]) -> Self {
+        from_i16_array(array)
     }
 
-    fn add_constant(v: Self, c: i32) -> Self {
-        add_constant(v, c)
-    }
+    // fn add_constant(v: Self, c: i16) -> Self {
+    //     add_constant(v, c)
+    // }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
@@ -628,11 +1477,11 @@ impl Operations for SIMD128Vector {
         sub(lhs, rhs)
     }
 
-    fn multiply_by_constant(v: Self, c: i32) -> Self {
+    fn multiply_by_constant(v: Self, c: i16) -> Self {
         multiply_by_constant(v, c)
     }
 
-    fn bitwise_and_with_constant(v: Self, c: i32) -> Self {
+    fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
         bitwise_and_with_constant(v, c)
     }
 
@@ -640,9 +1489,9 @@ impl Operations for SIMD128Vector {
         shift_right::<SHIFT_BY>(v)
     }
 
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_left::<SHIFT_BY>(v)
-    }
+    // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
+    //     shift_left::<SHIFT_BY>(v)
+    // }
 
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)
@@ -652,8 +1501,8 @@ impl Operations for SIMD128Vector {
         barrett_reduce(v)
     }
 
-    fn montgomery_reduce(v: Self) -> Self {
-        montgomery_reduce(v)
+    fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self {
+        montgomery_multiply_by_constant(v, c)
     }
 
     fn compress_1(v: Self) -> Self {
@@ -664,23 +1513,27 @@ impl Operations for SIMD128Vector {
         compress::<COEFFICIENT_BITS>(v)
     }
 
-    fn ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self {
+    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
+        decompress::<COEFFICIENT_BITS>(v)
+    }
+
+    fn ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self {
         ntt_layer_1_step(a, zeta1, zeta2)
     }
 
-    fn ntt_layer_2_step(a: Self, zeta: i32) -> Self {
+    fn ntt_layer_2_step(a: Self, zeta: i16) -> Self {
         ntt_layer_2_step(a, zeta)
     }
 
-    fn inv_ntt_layer_1_step(a: Self, zeta1: i32, zeta2: i32) -> Self {
+    fn inv_ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self {
         inv_ntt_layer_1_step(a, zeta1, zeta2)
     }
 
-    fn inv_ntt_layer_2_step(a: Self, zeta: i32) -> Self {
+    fn inv_ntt_layer_2_step(a: Self, zeta: i16) -> Self {
         inv_ntt_layer_2_step(a, zeta)
     }
 
-    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i32, zeta1: i32) -> Self {
+    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16) -> Self {
         ntt_multiply(lhs, rhs, zeta0, zeta1)
     }
 
@@ -730,5 +1583,9 @@ impl Operations for SIMD128Vector {
 
     fn deserialize_12(a: &[u8]) -> Self {
         deserialize_12(a)
+    }
+
+    fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
+        rej_sample(a)
     }
 }
