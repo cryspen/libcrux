@@ -5,95 +5,142 @@ open FStar.Mul
 
 val compress_then_serialize_10_
       (v_OUT_LEN: usize)
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_11_
       (v_OUT_LEN: usize)
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_4_
       (v_OUT_LEN: usize)
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_5_
       (v_OUT_LEN: usize)
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
-val compress_then_serialize_message (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+val compress_then_serialize_message
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_ring_element_u
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
-val deserialize_then_decompress_10_ (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val deserialize_then_decompress_10_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (serialized: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_then_decompress_11_ (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val deserialize_then_decompress_11_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (serialized: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_then_decompress_4_ (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val deserialize_then_decompress_4_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (serialized: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_then_decompress_5_ (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val deserialize_then_decompress_5_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (serialized: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_then_decompress_message (serialized: t_Array u8 (sz 32))
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val deserialize_then_decompress_message
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (serialized: t_Array u8 (sz 32))
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_ring_element_u
       (v_COMPRESSION_FACTOR: usize)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 val deserialize_then_decompress_ring_element_v
       (v_COMPRESSION_FACTOR: usize)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
       (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// Only use with public values.
 /// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
-val deserialize_to_reduced_ring_element (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val deserialize_to_reduced_ring_element
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (serialized: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
 /// This function deserializes ring elements and reduces the result by the field
 /// modulus.
 /// This function MUST NOT be used on secret inputs.
-val deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8)
-    : Prims.Pure (t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K)
+val deserialize_ring_elements_reduced
+      (v_PUBLIC_KEY_SIZE v_K: usize)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (public_key: t_Slice u8)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_to_uncompressed_ring_element (serialized: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val deserialize_to_uncompressed_ring_element
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (serialized: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val serialize_uncompressed_ring_element (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement)
+val serialize_uncompressed_ring_element
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_Array u8 (sz 384)) Prims.l_True (fun _ -> Prims.l_True)

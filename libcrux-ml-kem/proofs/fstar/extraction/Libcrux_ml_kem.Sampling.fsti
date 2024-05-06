@@ -83,22 +83,36 @@ val sample_from_uniform_distribution_next
 /// ```
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val sample_from_binomial_distribution_2_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (randomness: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
       (fun _ -> Prims.l_True)
 
-val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val sample_from_binomial_distribution_3_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (randomness: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
       (fun _ -> Prims.l_True)
 
-val sample_from_binomial_distribution (v_ETA: usize) (randomness: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
+val sample_from_binomial_distribution
+      (v_ETA: usize)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (randomness: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val sample_from_xof (v_K: usize) (seeds: t_Array (t_Array u8 (sz 34)) v_K)
-    : Prims.Pure (t_Array Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_K)
+val sample_from_xof
+      (v_K: usize)
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (seeds: t_Array (t_Array u8 (sz 34)) v_K)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)

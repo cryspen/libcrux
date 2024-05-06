@@ -22,81 +22,69 @@ let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i32 (sz 128) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 128);
   Rust_primitives.Hax.array_of_list 128 list
 
+val inv_ntt_layer_int_vec_step
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (a b: v_Vector)
+      (zeta_r: i32)
+    : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_layer_7_int_vec_step
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (a b: v_Vector)
+    : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_layer_int_vec_step
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (a b: v_Vector)
+      (zeta_r: i32)
+    : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
 let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /!
-  Libcrux_ml_kem.Simd.Simd_trait.v_FIELD_ELEMENTS_IN_VECTOR
+  Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
 
-type t_PolynomialRingElement = {
-  f_coefficients:t_Array Libcrux_ml_kem.Simd.Portable.t_PortableVector (sz 32)
+type t_PolynomialRingElement (v_Vector: Type) {| i1: Libcrux_traits.t_Operations v_Vector |} = {
+  f_coefficients:t_Array v_Vector (sz 32)
 }
 
-val impl__PolynomialRingElement__ZERO: Prims.unit
-  -> Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__ZERO: #v_Vector: Type -> {| i1: Libcrux_traits.t_Operations v_Vector |} -> Prims.unit
+  -> Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val add_error_reduce (err result: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__add_error_reduce
+      (#v_Vector: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (self result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val add_message_error_reduce (err message result: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__add_message_error_reduce
+      (#v_Vector: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (self message result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val add_standard_error_reduce (err result: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__add_standard_error_reduce
+      (#v_Vector: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (self result: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
-val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__add_to_ring_element
+      (#v_Vector: Type)
+      (v_K: usize)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (self rhs: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val from_i32_array (a: t_Array i32 (sz 256))
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
-
-val inv_ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector) (zeta_r: i32)
-    : Prims.Pure
-      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
-      ) Prims.l_True (fun _ -> Prims.l_True)
-
-val invert_ntt_at_layer_1_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__layer: usize)
-    : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
-
-val invert_ntt_at_layer_2_ (zeta_i: usize) (re: t_PolynomialRingElement) (v__layer: usize)
-    : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
-
-val invert_ntt_at_layer_3_plus (zeta_i: usize) (re: t_PolynomialRingElement) (layer: usize)
-    : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Represents an intermediate polynomial splitting step in the NTT. All
-/// resulting coefficients are in the normal domain since the zetas have been
-/// multiplied by MONTGOMERY_R.
-val ntt_at_layer_1_
-      (zeta_i: usize)
-      (re: t_PolynomialRingElement)
-      (v__layer v__initial_coefficient_bound: usize)
-    : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_at_layer_2_
-      (zeta_i: usize)
-      (re: t_PolynomialRingElement)
-      (v__layer v__initial_coefficient_bound: usize)
-    : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_layer_7_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector)
-    : Prims.Pure
-      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
-      ) Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_at_layer_7_ (re: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_layer_int_vec_step (a b: Libcrux_ml_kem.Simd.Portable.t_PortableVector) (zeta_r: i32)
-    : Prims.Pure
-      (Libcrux_ml_kem.Simd.Portable.t_PortableVector & Libcrux_ml_kem.Simd.Portable.t_PortableVector
-      ) Prims.l_True (fun _ -> Prims.l_True)
-
-val ntt_at_layer_3_plus
-      (zeta_i: usize)
-      (re: t_PolynomialRingElement)
-      (layer v__initial_coefficient_bound: usize)
-    : Prims.Pure (usize & t_PolynomialRingElement) Prims.l_True (fun _ -> Prims.l_True)
+val impl__from_i32_array
+      (#v_Vector: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (a: t_Array i32 (sz 256))
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 /// Given two `KyberPolynomialRingElement`s in their NTT representations,
 /// compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
@@ -118,11 +106,77 @@ val ntt_at_layer_3_plus
 /// this function are in the Montgomery domain.
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val ntt_multiply (lhs rhs: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__ntt_multiply
+      (#v_Vector: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (self rhs: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val poly_barrett_reduce (a: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__poly_barrett_reduce
+      (#v_Vector: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (self: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
-val subtract_reduce (a b: t_PolynomialRingElement)
-    : Prims.Pure t_PolynomialRingElement Prims.l_True (fun _ -> Prims.l_True)
+val impl__subtract_reduce
+      (#v_Vector: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (self b: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val invert_ntt_at_layer_1_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: t_PolynomialRingElement v_Vector)
+      (v__layer: usize)
+    : Prims.Pure (usize & t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val invert_ntt_at_layer_2_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: t_PolynomialRingElement v_Vector)
+      (v__layer: usize)
+    : Prims.Pure (usize & t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val invert_ntt_at_layer_3_plus
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: t_PolynomialRingElement v_Vector)
+      (layer: usize)
+    : Prims.Pure (usize & t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Represents an intermediate polynomial splitting step in the NTT. All
+/// resulting coefficients are in the normal domain since the zetas have been
+/// multiplied by MONTGOMERY_R.
+val ntt_at_layer_1_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: t_PolynomialRingElement v_Vector)
+      (v__layer v__initial_coefficient_bound: usize)
+    : Prims.Pure (usize & t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_2_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: t_PolynomialRingElement v_Vector)
+      (v__layer v__initial_coefficient_bound: usize)
+    : Prims.Pure (usize & t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_3_plus
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: t_PolynomialRingElement v_Vector)
+      (layer v__initial_coefficient_bound: usize)
+    : Prims.Pure (usize & t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_7_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: t_PolynomialRingElement v_Vector)
+    : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)

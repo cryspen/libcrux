@@ -59,9 +59,6 @@ UNVERIFIED = \
 	Libcrux_ml_kem.Types.fst \
 	Libcrux_ml_kem.fst \
 	Libcrux_ml_kem.Ind_cpa.fst \
-	Libcrux_ml_kem.Arithmetic.fst \
-	Libcrux_ml_kem.Arithmetic.fsti \
-	Libcrux_ml_kem.Compress.fst \
 	Libcrux_ml_kem.Constant_time_ops.fst \
 	Libcrux_ml_kem.Hash_functions.fst \
 	Libcrux_ml_kem.Matrix.fst \
