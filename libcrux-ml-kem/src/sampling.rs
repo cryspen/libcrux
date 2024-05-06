@@ -51,13 +51,12 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     out: &mut [[i16; 256]; K],
 ) -> bool {
     for r in 0..N / 12 {
+        // Would be great to trigger auto-vectorization or at least loop unrolling here
         for i in 0..K {
-            if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+            let remaining = COEFFICIENTS_IN_RING_ELEMENT - sampled_coefficients[i];
+            if remaining > 0 {
                 let (sampled, vec) = Vector::rej_sample(&randomness[i][r * 12..r * 12 + 12]);
-                let pick = core::cmp::min(
-                    COEFFICIENTS_IN_RING_ELEMENT - sampled_coefficients[i],
-                    sampled,
-                );
+                let pick = if sampled <= remaining {sampled} else {remaining};
                 out[i][sampled_coefficients[i]..sampled_coefficients[i] + pick]
                     .copy_from_slice(&vec[0..pick]);
                 sampled_coefficients[i] += pick;
