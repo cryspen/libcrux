@@ -7,8 +7,7 @@ use crate::{
     hash_functions::{G, PRF},
     helper::cloop,
     matrix::*,
-    ntt::*,
-    polynomial::PolynomialRingElement,
+    polynomial::{PolynomialRingElement, ntt_binomially_sampled_ring_element, ntt_vector_u},
     sampling::sample_from_binomial_distribution,
     serialize::{
         compress_then_serialize_message, compress_then_serialize_ring_element_u,
