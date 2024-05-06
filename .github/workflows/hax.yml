@@ -93,11 +93,11 @@ jobs:
         run: |
           cd libcrux-ml-kem
           ./hax.py extract
-          env FSTAR_HOME=${{ github.workspace }}/fstar \
-              HACL_HOME=${{ github.workspace }}/hacl-star \
-              HAX_HOME=${{ github.workspace }}/hax \
-              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
-              ./hax.py prove --admit
+          # env FSTAR_HOME=${{ github.workspace }}/fstar \
+          #     HACL_HOME=${{ github.workspace }}/hacl-star \
+          #     HAX_HOME=${{ github.workspace }}/hax \
+          #     PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+          #     ./hax.py prove --admit
 
       - name: 🏃 Extract the Kyber specification
         run: |

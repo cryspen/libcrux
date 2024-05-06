@@ -1,0 +1,24 @@
+[package]
+name = "libcrux-polynomials"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[features]
+default = []
+simd128 = ["libcrux-polynomials-aarch64"]
+simd256 = ["libcrux-polynomials-avx2"]
+
+[dependencies]
+libcrux-traits = { path = "../traits" }
+libcrux-polynomials-avx2 = { path = "../polynomials-avx2", optional = true }
+libcrux-polynomials-aarch64 = { path = "../polynomials-aarch64", optional = true }
+
+# When using the hax toolchain, we have more dependencies.
+# This is only required when doing proofs.
+[target.'cfg(hax)'.dependencies]
+hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/", branch = "main" }

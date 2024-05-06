@@ -10,6 +10,10 @@ members = [
     "libcrux-ml-kem",
     "libcrux-simd",
     "libcrux-sha3",
+    "polynomials",
+    "polynomials-avx2",
+    "traits",
+    "polynomials-aarch64",
 ]
 
 [workspace.package]
@@ -79,3 +83,8 @@ wasm = ["wasm-bindgen"]
 log = ["dep:log"]
 tests = []              # Expose functions for testing.
 experimental = []       # Expose experimental APIs.
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"

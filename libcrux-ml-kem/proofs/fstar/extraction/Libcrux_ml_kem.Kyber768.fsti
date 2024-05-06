@@ -85,15 +85,15 @@ val encapsulate
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-/// Generate ML-KEM 768 Key Pair
-val generate_key_pair (randomness: t_Array u8 (sz 64))
-    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemKeyPair (sz 2400) (sz 1184))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 /// Validate a public key.
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
 val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
     : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Generate ML-KEM 768 Key Pair
+val generate_key_pair (randomness: t_Array u8 (sz 64))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemKeyPair (sz 2400) (sz 1184))
       Prims.l_True
       (fun _ -> Prims.l_True)

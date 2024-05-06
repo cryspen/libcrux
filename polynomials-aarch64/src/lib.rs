@@ -1,10 +1,13 @@
-use crate::{
-    arithmetic::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, constants::FIELD_MODULUS, simd::simd_trait::*,
-};
+//! # Libcrux aarch64 optimized polynomials
+//!
+//! FIXME: This is kyber specific for now.
+
 use core::arch::aarch64::*;
 
+use libcrux_traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
+
 #[derive(Clone, Copy)]
-pub(crate) struct SIMD128Vector {
+pub struct SIMD128Vector {
     low: int32x4_t,
     high: int32x4_t,
 }

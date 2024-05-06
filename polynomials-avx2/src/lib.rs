@@ -1,31 +1,23 @@
-use crate::{
-    arithmetic::{
-        BARRETT_MULTIPLIER, BARRETT_R, BARRETT_SHIFT, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
-        MONTGOMERY_SHIFT,
-    },
-    compress::CIPHERTEXT_COMPRESSION_MULTIPLIER,
-    constants::FIELD_MODULUS,
-    simd::{portable, simd_trait::*},
-};
+use libcrux_traits::{Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
+
+pub(crate) const BARRETT_MULTIPLIER: i64 = 20159;
+pub(crate) const BARRETT_SHIFT: i64 = 26;
+pub(crate) const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
+pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
+pub(crate) const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
+
 use core::arch::x86_64::*;
 
 #[derive(Clone, Copy)]
-pub(crate) struct SIMD256Vector {
+pub struct SIMD256Vector {
     elements: __m256i,
 }
 
 #[allow(dead_code)]
 fn print_m256i_as_i32s(a: __m256i, prefix: String) {
     let mut a_bytes = [0i32; 8];
-    unsafe { _mm256_storeu_si256(a_bytes.as_mut_ptr() as *mut __m256i, a) };
+    unsafe { _mm256_store_si256(a_bytes.as_mut_ptr() as *mut __m256i, a) };
     println!("{}: {:?}", prefix, a_bytes);
-}
-
-#[allow(dead_code)]
-fn print_m256i_as_i64s(a: __m256i, prefix: String) {
-    let mut a_bytes = [0i64; 4];
-    unsafe { _mm256_storeu_si256(a_bytes.as_mut_ptr() as *mut __m256i, a) };
-    println!("{}: {:x?}", prefix, a_bytes);
 }
 
 #[allow(non_snake_case)]
@@ -196,7 +188,7 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD256Vector) -> SIMD256Vector 
     let compressed = unsafe {
         let field_modulus_halved = _mm256_set1_epi32((FIELD_MODULUS - 1) / 2);
         let coefficient_bits_mask = _mm256_set1_epi32((1 << COEFFICIENT_BITS) - 1);
-        let multiplier = _mm256_set1_epi32(CIPHERTEXT_COMPRESSION_MULTIPLIER);
+        let multiplier = _mm256_set1_epi32(10_321_340);
 
         v.elements = _mm256_slli_epi32(v.elements, COEFFICIENT_BITS);
         v.elements = _mm256_add_epi32(v.elements, field_modulus_halved);
@@ -441,57 +433,35 @@ fn serialize_5(v: SIMD256Vector) -> [u8; 5] {
 
 #[inline(always)]
 fn deserialize_5(v: &[u8]) -> SIMD256Vector {
-    let output = portable::PortableVector::deserialize_5(v);
+    let output = PortableVector::deserialize_5(v);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    from_i32_array(PortableVector::to_i32_array(output))
 }
 
 #[inline(always)]
 fn serialize_10(v: SIMD256Vector) -> [u8; 10] {
-    let mut out = [0u8; 16];
-
-    unsafe {
-        let shifted = _mm256_sllv_epi32(v.elements, _mm256_set_epi32(10, 0, 10, 0, 10, 0, 10, 0));
-        let shifted = _mm256_shuffle_epi32(shifted, 0b_00_11_00_01);
-
-        let bits = _mm256_add_epi32(v.elements, shifted);
-
-        let bits = _mm256_shuffle_epi32(bits, 0b_00_00_10_00);
-        let bits = _mm256_sllv_epi32(bits, _mm256_set_epi32(0, 0, 0, 12, 0, 0, 0, 12));
-        let bits = _mm256_srli_epi64(bits, 12);
-
-        let bits = _mm256_permute4x64_epi64(bits, 0b00_00_10_00);
-        let shuffle_by = _mm256_set_epi8(
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-            12, 11, 10, 9, 8, 4, 3, 2, 1, 0,
-        );
-
-        let bits_sequential = _mm256_shuffle_epi8(bits, shuffle_by);
-        let bits_sequential = _mm256_castsi256_si128(bits_sequential);
-        _mm_storeu_si128(out.as_mut_ptr() as *mut __m128i, bits_sequential);
-    };
-
-    out[0..10].try_into().unwrap()
+    let input = PortableVector::from_i32_array(to_i32_array(v));
+    PortableVector::serialize_10(input)
 }
 
 #[inline(always)]
 fn deserialize_10(v: &[u8]) -> SIMD256Vector {
-    let output = portable::PortableVector::deserialize_10(v);
+    let output = PortableVector::deserialize_10(v);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    from_i32_array(PortableVector::to_i32_array(output))
 }
 
 #[inline(always)]
 fn serialize_11(v: SIMD256Vector) -> [u8; 11] {
-    let input = portable::PortableVector::from_i32_array(to_i32_array(v));
-    portable::PortableVector::serialize_11(input)
+    let input = PortableVector::from_i32_array(to_i32_array(v));
+    PortableVector::serialize_11(input)
 }
 
 #[inline(always)]
 fn deserialize_11(v: &[u8]) -> SIMD256Vector {
-    let output = portable::PortableVector::deserialize_11(v);
+    let output = PortableVector::deserialize_11(v);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    from_i32_array(PortableVector::to_i32_array(output))
 }
 
 #[inline(always)]
@@ -524,9 +494,9 @@ fn serialize_12(v: SIMD256Vector) -> [u8; 12] {
 
 #[inline(always)]
 fn deserialize_12(v: &[u8]) -> SIMD256Vector {
-    let output = portable::PortableVector::deserialize_12(v);
+    let output = PortableVector::deserialize_12(v);
 
-    from_i32_array(portable::PortableVector::to_i32_array(output))
+    from_i32_array(PortableVector::to_i32_array(output))
 }
 
 impl Operations for SIMD256Vector {
@@ -656,5 +626,149 @@ impl Operations for SIMD256Vector {
 
     fn deserialize_12(a: &[u8]) -> Self {
         deserialize_12(a)
+    }
+}
+
+// --- XXX: DELETE
+
+#[derive(Clone, Copy)]
+pub(crate) struct PortableVector {
+    pub(crate) elements: [i32; 8],
+}
+impl PortableVector {
+    #[inline(always)]
+    pub(crate) fn zero() -> PortableVector {
+        PortableVector {
+            elements: [0i32; FIELD_ELEMENTS_IN_VECTOR],
+        }
+    }
+
+    #[inline(always)]
+    pub(crate) fn deserialize_12(bytes: &[u8]) -> PortableVector {
+        let mut re = PortableVector::zero();
+
+        let byte0 = bytes[0] as i32;
+        let byte1 = bytes[1] as i32;
+        let byte2 = bytes[2] as i32;
+        let byte3 = bytes[3] as i32;
+        let byte4 = bytes[4] as i32;
+        let byte5 = bytes[5] as i32;
+        let byte6 = bytes[6] as i32;
+        let byte7 = bytes[7] as i32;
+        let byte8 = bytes[8] as i32;
+        let byte9 = bytes[9] as i32;
+        let byte10 = bytes[10] as i32;
+        let byte11 = bytes[11] as i32;
+
+        re.elements[0] = (byte1 & 0x0F) << 8 | (byte0 & 0xFF);
+        re.elements[1] = (byte2 << 4) | ((byte1 >> 4) & 0x0F);
+
+        re.elements[2] = (byte4 & 0x0F) << 8 | (byte3 & 0xFF);
+        re.elements[3] = (byte5 << 4) | ((byte4 >> 4) & 0x0F);
+
+        re.elements[4] = (byte7 & 0x0F) << 8 | (byte6 & 0xFF);
+        re.elements[5] = (byte8 << 4) | ((byte7 >> 4) & 0x0F);
+
+        re.elements[6] = (byte10 & 0x0F) << 8 | (byte9 & 0xFF);
+        re.elements[7] = (byte11 << 4) | ((byte10 >> 4) & 0x0F);
+
+        re
+    }
+
+    #[inline(always)]
+    pub(crate) fn to_i32_array(v: PortableVector) -> [i32; 8] {
+        v.elements
+    }
+
+    #[inline(always)]
+    pub(crate) fn from_i32_array(array: [i32; 8]) -> PortableVector {
+        PortableVector { elements: array }
+    }
+
+    #[inline(always)]
+    pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
+        let mut v = PortableVector::zero();
+
+        v.elements[0] = (bytes[0] & 0x1F) as i32;
+        v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
+        v.elements[2] = ((bytes[1] >> 2) & 0x1F) as i32;
+        v.elements[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i32;
+        v.elements[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i32;
+        v.elements[5] = ((bytes[3] >> 1) & 0x1F) as i32;
+        v.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i32;
+        v.elements[7] = (bytes[4] >> 3) as i32;
+
+        v
+    }
+
+    #[inline(always)]
+    pub(crate) fn deserialize_10(bytes: &[u8]) -> PortableVector {
+        let mut result = PortableVector::zero();
+
+        result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
+        result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
+        result.elements[2] = ((bytes[3] as i32 & 0x3F) << 4 | (bytes[2] as i32 >> 4)) as i32;
+        result.elements[3] = (((bytes[4] as i32) << 2) | (bytes[3] as i32 >> 6)) as i32;
+
+        result.elements[4] = ((bytes[6] as i32 & 0x03) << 8 | (bytes[5] as i32 & 0xFF)) as i32;
+        result.elements[5] = ((bytes[7] as i32 & 0x0F) << 6 | (bytes[6] as i32 >> 2)) as i32;
+        result.elements[6] = ((bytes[8] as i32 & 0x3F) << 4 | (bytes[7] as i32 >> 4)) as i32;
+        result.elements[7] = (((bytes[9] as i32) << 2) | (bytes[8] as i32 >> 6)) as i32;
+
+        result
+    }
+
+    #[inline(always)]
+    pub(crate) fn deserialize_11(bytes: &[u8]) -> PortableVector {
+        let mut result = PortableVector::zero();
+        result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
+        result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
+        result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
+            | ((bytes[3] as i32) << 2)
+            | ((bytes[2] as i32) >> 6)) as i32;
+        result.elements[3] = ((bytes[5] as i32 & 0xF) << 7 | (bytes[4] as i32 >> 1)) as i32;
+        result.elements[4] = ((bytes[6] as i32 & 0x7F) << 4 | (bytes[5] as i32 >> 4)) as i32;
+        result.elements[5] = ((bytes[8] as i32 & 0x3) << 9
+            | ((bytes[7] as i32) << 1)
+            | ((bytes[6] as i32) >> 7)) as i32;
+        result.elements[6] = ((bytes[9] as i32 & 0x1F) << 6 | (bytes[8] as i32 >> 2)) as i32;
+        result.elements[7] = (((bytes[10] as i32) << 3) | (bytes[9] as i32 >> 5)) as i32;
+        result
+    }
+
+    #[inline(always)]
+    pub(crate) fn serialize_11(v: PortableVector) -> [u8; 11] {
+        let mut result = [0u8; 11];
+        result[0] = v.elements[0] as u8;
+        result[1] = ((v.elements[1] & 0x1F) as u8) << 3 | ((v.elements[0] >> 8) as u8);
+        result[2] = ((v.elements[2] & 0x3) as u8) << 6 | ((v.elements[1] >> 5) as u8);
+        result[3] = ((v.elements[2] >> 2) & 0xFF) as u8;
+        result[4] = ((v.elements[3] & 0x7F) as u8) << 1 | (v.elements[2] >> 10) as u8;
+        result[5] = ((v.elements[4] & 0xF) as u8) << 4 | (v.elements[3] >> 7) as u8;
+        result[6] = ((v.elements[5] & 0x1) as u8) << 7 | (v.elements[4] >> 4) as u8;
+        result[7] = ((v.elements[5] >> 1) & 0xFF) as u8;
+        result[8] = ((v.elements[6] & 0x3F) as u8) << 2 | (v.elements[5] >> 9) as u8;
+        result[9] = ((v.elements[7] & 0x7) as u8) << 5 | (v.elements[6] >> 6) as u8;
+        result[10] = (v.elements[7] >> 3) as u8;
+        result
+    }
+
+    #[inline(always)]
+    fn serialize_10(v: PortableVector) -> [u8; 10] {
+        let mut result = [0u8; 10];
+
+        result[0] = (v.elements[0] & 0xFF) as u8;
+        result[1] = ((v.elements[1] & 0x3F) as u8) << 2 | ((v.elements[0] >> 8) & 0x03) as u8;
+        result[2] = ((v.elements[2] & 0x0F) as u8) << 4 | ((v.elements[1] >> 6) & 0x0F) as u8;
+        result[3] = ((v.elements[3] & 0x03) as u8) << 6 | ((v.elements[2] >> 4) & 0x3F) as u8;
+        result[4] = ((v.elements[3] >> 2) & 0xFF) as u8;
+
+        result[5] = (v.elements[4] & 0xFF) as u8;
+        result[6] = ((v.elements[5] & 0x3F) as u8) << 2 | ((v.elements[4] >> 8) & 0x03) as u8;
+        result[7] = ((v.elements[6] & 0x0F) as u8) << 4 | ((v.elements[5] >> 6) & 0x0F) as u8;
+        result[8] = ((v.elements[7] & 0x03) as u8) << 6 | ((v.elements[6] >> 4) & 0x3F) as u8;
+        result[9] = ((v.elements[7] >> 2) & 0xFF) as u8;
+
+        result
     }
 }

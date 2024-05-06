@@ -1,9 +1,9 @@
-use crate::arithmetic::MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS;
-use crate::constants::FIELD_MODULUS;
+pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 1353;
+pub const FIELD_MODULUS: i32 = 3329;
+pub const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
+pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
-pub(crate) const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
-
-pub(crate) trait Operations {
+pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
@@ -60,7 +60,7 @@ pub(crate) trait Operations {
 }
 
 // hax does not support trait with default implementations, so we use the following patter
-pub(crate) trait GenericOperations {
+pub trait GenericOperations {
     fn montgomery_multiply_fe_by_fer(v: Self, fer: i32) -> Self;
     fn to_standard_domain(v: Self) -> Self;
     fn to_unsigned_representative(a: Self) -> Self;

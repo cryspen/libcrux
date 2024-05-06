@@ -1,17 +1,202 @@
-use crate::{
-    arithmetic::*,
-    compress::{compress_ciphertext_coefficient, compress_message_coefficient},
-    simd::simd_trait::*,
-};
+//! # Polynomials for libcrux
+//!
+//! This crate abstracts efficient implementations of polynomials for algorithms
+//! such as ML-KEM and ML-DSA.
+//!
+//! The crate only defines a common API.
+//! The actual implementations are in separate crates for different platforms for
+//! performance reasons.
+//!
+//! FIXME: This is kyber specific for now.
+
+use libcrux_traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+pub use libcrux_traits::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
+
+// There's no runtime detection here. This either exposes the real SIMD vector,
+// or the portable when the feature is not set.
+//
+// The consumer needs to use runtime feature detection and the appropriate vector
+// in each case.
+#[cfg(feature = "simd128")]
+pub use libcrux_polynomials_aarch64::SIMD128Vector;
+#[cfg(feature = "simd256")]
+pub use libcrux_polynomials_avx2::SIMD256Vector;
+#[cfg(not(feature = "simd256"))]
+pub type SIMD256Vector = PortableVector;
+#[cfg(not(feature = "simd128"))]
+pub type SIMD128Vector = PortableVector;
+
+/// Values having this type hold a representative 'x' of the Kyber field.
+/// We use 'fe' as a shorthand for this type.
+type FieldElement = i32;
+
+/// If 'x' denotes a value of type `fe`, values having this type hold a
+/// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
+/// We use 'mfe' as a shorthand for this type
+pub type MontgomeryFieldElement = i32;
+
+/// If 'x' denotes a value of type `fe`, values having this type hold a
+/// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
+/// We use 'fer' as a shorthand for this type.
+pub type FieldElementTimesMontgomeryR = i32;
+
+pub(crate) const MONTGOMERY_SHIFT: u8 = 16;
+pub(crate) const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
+
+pub(crate) const BARRETT_SHIFT: i64 = 26;
+pub(crate) const BARRETT_R: i64 = 1 << BARRETT_SHIFT;
+/// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
+pub(crate) const BARRETT_MULTIPLIER: i64 = 20159;
+
+#[cfg_attr(hax, hax_lib::requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result < 2u32.pow(n.into())))]
+#[inline(always)]
+pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
+    // hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
+
+    value & ((1 << n) - 1)
+}
+
+/// Signed Montgomery Reduction
+///
+/// Given an input `value`, `montgomery_reduce` outputs a representative `o`
+/// such that:
+///
+/// - o ≡ value · MONTGOMERY_R^(-1) (mod FIELD_MODULUS)
+/// - the absolute value of `o` is bound as follows:
+///
+/// `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
+///
+/// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
+#[cfg_attr(hax, hax_lib::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
+pub(crate) fn montgomery_reduce_element(value: FieldElement) -> MontgomeryFieldElement {
+    // This forces hax to extract code for MONTGOMERY_R before it extracts code
+    // for this function. The removal of this line is being tracked in:
+    // https://github.com/cryspen/libcrux/issues/134
+    let _ = MONTGOMERY_R;
+
+    // hax_debug_assert!(
+    //     value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R,
+    //     "value is {value}"
+    // );
+
+    let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
+        * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
+
+    let k_times_modulus = (k as i32) * FIELD_MODULUS;
+
+    let c = k_times_modulus >> MONTGOMERY_SHIFT;
+    let value_high = value >> MONTGOMERY_SHIFT;
+
+    value_high - c
+}
+
+/// If `fe` is some field element 'x' of the Kyber field and `fer` is congruent to
+/// `y · MONTGOMERY_R`, this procedure outputs a value that is congruent to
+/// `x · y`, as follows:
+///
+///    `fe · fer ≡ x · y · MONTGOMERY_R (mod FIELD_MODULUS)`
+///
+/// `montgomery_reduce` takes the value `x · y · MONTGOMERY_R` and outputs a representative
+/// `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod FIELD_MODULUS)`.
+#[inline(always)]
+pub(crate) fn montgomery_multiply_fe_by_fer(
+    fe: FieldElement,
+    fer: FieldElementTimesMontgomeryR,
+) -> FieldElement {
+    montgomery_reduce_element(fe * fer)
+}
+
+/// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
+/// 203 standard (Page 18, Expression 4.5), which is defined as:
+///
+/// ```plaintext
+/// Compress_d: ℤq -> ℤ_{2ᵈ}
+/// Compress_d(x) = ⌈(2ᵈ/q)·x⌋
+/// ```
+///
+/// Since `⌈x⌋ = ⌊x + 1/2⌋` we have:
+///
+/// ```plaintext
+/// Compress_d(x) = ⌊(2ᵈ/q)·x + 1/2⌋
+///               = ⌊(2^{d+1}·x + q) / 2q⌋
+/// ```
+///
+/// For further information about the function implementations, consult the
+/// `implementation_notes.pdf` document in this directory.
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+#[cfg_attr(hax, hax_lib::requires(fe < (crate::constants::FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib::ensures(|result|
+        hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
+        hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
+))]
+pub(crate) fn compress_message_coefficient(fe: u16) -> u8 {
+    // The approach used here is inspired by:
+    // https://github.com/cloudflare/circl/blob/main/pke/kyber/internal/common/poly.go#L150
+
+    // If 833 <= fe <= 2496,
+    // then -832 <= shifted <= 831
+    let shifted: i16 = 1664 - (fe as i16);
+
+    // If shifted < 0, then
+    // (shifted >> 15) ^ shifted = flip_bits(shifted) = -shifted - 1, and so
+    // if -832 <= shifted < 0 then 0 < shifted_positive <= 831
+    //
+    // If shifted >= 0 then
+    // (shifted >> 15) ^ shifted = shifted, and so
+    // if 0 <= shifted <= 831 then 0 <= shifted_positive <= 831
+    let mask = shifted >> 15;
+    let shifted_to_positive = mask ^ shifted;
+
+    let shifted_positive_in_range = shifted_to_positive - 832;
+
+    // If x <= 831, then x - 832 <= -1, and so x - 832 < 0, which means
+    // the most significant bit of shifted_positive_in_range will be 1.
+    ((shifted_positive_in_range >> 15) & 1) as u8
+}
+
+#[cfg_attr(hax,
+    hax_lib::requires(
+        (coefficient_bits == 4 ||
+         coefficient_bits == 5 ||
+         coefficient_bits == 10 ||
+         coefficient_bits == 11) &&
+         fe < (crate::constants::FIELD_MODULUS as u16)))]
+#[cfg_attr(hax,
+     hax_lib::ensures(
+     |result| result >= 0 && result < 2i32.pow(coefficient_bits as u32)))]
+pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
+    // hax_debug_assert!(
+    //     coefficient_bits == 4
+    //         || coefficient_bits == 5
+    //         || coefficient_bits == 10
+    //         || coefficient_bits == 11
+    // );
+    // hax_debug_assert!(fe <= (FIELD_MODULUS as u16));
+
+    // This has to be constant time due to:
+    // https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/ldX0ThYJuBo/m/ovODsdY7AwAJ
+    let mut compressed = (fe as u64) << coefficient_bits;
+    compressed += 1664 as u64;
+
+    compressed *= 10_321_340;
+    compressed >>= 35;
+
+    get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
+}
 
 #[derive(Clone, Copy)]
-pub(crate) struct PortableVector {
+pub struct PortableVector {
     elements: [FieldElement; 8],
 }
 
 #[allow(non_snake_case)]
 #[inline(always)]
-fn ZERO() -> PortableVector {
+fn zero() -> PortableVector {
     PortableVector {
         elements: [0i32; FIELD_ELEMENTS_IN_VECTOR],
     }
@@ -101,10 +286,42 @@ fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
     v
 }
 
+/// Signed Barrett Reduction
+///
+/// Given an input `value`, `barrett_reduce` outputs a representative `result`
+/// such that:
+///
+/// - result ≡ value (mod FIELD_MODULUS)
+/// - the absolute value of `result` is bound as follows:
+///
+/// `|result| ≤ FIELD_MODULUS / 2 · (|value|/BARRETT_R + 1)
+///
+/// In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
+#[cfg_attr(hax, hax_lib::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
+pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
+    // hax_debug_assert!(
+    //     i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R,
+    //     "value is {value}"
+    // );
+
+    let t = (i64::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    let quotient = (t >> BARRETT_SHIFT) as i32;
+
+    let result = value - (quotient * FIELD_MODULUS);
+
+    // hax_debug_assert!(
+    //     result > -FIELD_MODULUS && result < FIELD_MODULUS,
+    //     "value is {value}"
+    // );
+
+    result
+}
+
 #[inline(always)]
 fn barrett_reduce(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = crate::arithmetic::barrett_reduce(v.elements[i]);
+        v.elements[i] = barrett_reduce_element(v.elements[i]);
     }
 
     v
@@ -113,7 +330,7 @@ fn barrett_reduce(mut v: PortableVector) -> PortableVector {
 #[inline(always)]
 fn montgomery_reduce(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = crate::arithmetic::montgomery_reduce(v.elements[i]);
+        v.elements[i] = montgomery_reduce_element(v.elements[i]);
     }
 
     v
@@ -221,6 +438,38 @@ fn inv_ntt_layer_2_step(mut v: PortableVector, zeta: i32) -> PortableVector {
     v
 }
 
+/// Compute the product of two Kyber binomials with respect to the
+/// modulus `X² - zeta`.
+///
+/// This function almost implements <strong>Algorithm 11</strong> of the
+/// NIST FIPS 203 standard, which is reproduced below:
+///
+/// ```plaintext
+/// Input:  a₀, a₁, b₀, b₁ ∈ ℤq.
+/// Input: γ ∈ ℤq.
+/// Output: c₀, c₁ ∈ ℤq.
+///
+/// c₀ ← a₀·b₀ + a₁·b₁·γ
+/// c₁ ← a₀·b₁ + a₁·b₀
+/// return c₀, c₁
+/// ```
+/// We say "almost" because the coefficients output by this function are in
+/// the Montgomery domain (unlike in the specification).
+///
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+#[inline(always)]
+pub(crate) fn ntt_multiply_binomials(
+    (a0, a1): (FieldElement, FieldElement),
+    (b0, b1): (FieldElement, FieldElement),
+    zeta: FieldElementTimesMontgomeryR,
+) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
+    (
+        montgomery_reduce_element(a0 * b0 + montgomery_reduce_element(a1 * b1) * zeta),
+        montgomery_reduce_element(a0 * b1 + a1 * b0),
+    )
+}
+
 #[inline(always)]
 fn ntt_multiply(
     lhs: &PortableVector,
@@ -228,7 +477,7 @@ fn ntt_multiply(
     zeta0: i32,
     zeta1: i32,
 ) -> PortableVector {
-    let mut out = ZERO();
+    let mut out = zero();
     let product = ntt_multiply_binomials(
         (lhs.elements[0], lhs.elements[1]),
         (rhs.elements[0], rhs.elements[1]),
@@ -275,7 +524,7 @@ fn serialize_1(v: PortableVector) -> u8 {
 
 #[inline(always)]
 fn deserialize_1(v: u8) -> PortableVector {
-    let mut result = ZERO();
+    let mut result = zero();
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         result.elements[i] = ((v >> i) & 0x1) as i32;
     }
@@ -297,7 +546,7 @@ fn serialize_4(v: PortableVector) -> [u8; 4] {
 
 #[inline(always)]
 fn deserialize_4(bytes: &[u8]) -> PortableVector {
-    let mut v = ZERO();
+    let mut v = zero();
 
     v.elements[0] = (bytes[0] & 0x0F) as i32;
     v.elements[1] = ((bytes[0] >> 4) & 0x0F) as i32;
@@ -329,7 +578,7 @@ fn serialize_5(v: PortableVector) -> [u8; 5] {
 
 #[inline(always)]
 fn deserialize_5(bytes: &[u8]) -> PortableVector {
-    let mut v = ZERO();
+    let mut v = zero();
 
     v.elements[0] = (bytes[0] & 0x1F) as i32;
     v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i32;
@@ -364,7 +613,7 @@ fn serialize_10(v: PortableVector) -> [u8; 10] {
 
 #[inline(always)]
 fn deserialize_10(bytes: &[u8]) -> PortableVector {
-    let mut result = ZERO();
+    let mut result = zero();
 
     result.elements[0] = ((bytes[1] as i32 & 0x03) << 8 | (bytes[0] as i32 & 0xFF)) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x0F) << 6 | (bytes[1] as i32 >> 2)) as i32;
@@ -398,7 +647,7 @@ fn serialize_11(v: PortableVector) -> [u8; 11] {
 
 #[inline(always)]
 fn deserialize_11(bytes: &[u8]) -> PortableVector {
-    let mut result = ZERO();
+    let mut result = zero();
     result.elements[0] = ((bytes[1] as i32 & 0x7) << 8 | bytes[0] as i32) as i32;
     result.elements[1] = ((bytes[2] as i32 & 0x3F) << 5 | (bytes[1] as i32 >> 3)) as i32;
     result.elements[2] = ((bytes[4] as i32 & 0x1) << 10
@@ -438,7 +687,7 @@ fn serialize_12(v: PortableVector) -> [u8; 12] {
 
 #[inline(always)]
 fn deserialize_12(bytes: &[u8]) -> PortableVector {
-    let mut re = ZERO();
+    let mut re = zero();
 
     let byte0 = bytes[0] as i32;
     let byte1 = bytes[1] as i32;
@@ -470,7 +719,7 @@ fn deserialize_12(bytes: &[u8]) -> PortableVector {
 
 impl Operations for PortableVector {
     fn ZERO() -> Self {
-        ZERO()
+        zero()
     }
 
     fn to_i32_array(v: Self) -> [i32; 8] {

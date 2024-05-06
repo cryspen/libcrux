@@ -17,16 +17,6 @@ let encapsulate
   Libcrux_ml_kem.encapsulate (sz 3) (sz 1088) (sz 1184) (sz 1152) (sz 960) (sz 128) (sz 10) (sz 4)
     (sz 320) (sz 2) (sz 128) (sz 2) (sz 128) public_key randomness
 
-let generate_key_pair (randomness: t_Array u8 (sz 64)) =
-  Libcrux_ml_kem.generate_keypair (sz 3)
-    (sz 1152)
-    (sz 2400)
-    (sz 1184)
-    (sz 1152)
-    (sz 2)
-    (sz 128)
-    randomness
-
 let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)) =
   if
     Libcrux_ml_kem.validate_public_key (sz 3)
@@ -41,3 +31,13 @@ let validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1
     Core.Option.Option_None
     <:
     Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+
+let generate_key_pair (randomness: t_Array u8 (sz 64)) =
+  Libcrux_ml_kem.generate_keypair (sz 3)
+    (sz 1152)
+    (sz 2400)
+    (sz 1184)
+    (sz 1152)
+    (sz 2)
+    (sz 128)
+    randomness
