@@ -7,6 +7,16 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     let host = env::var("HOST").unwrap();
 
+    let disable_simd128 = match env::var("LIBCRUX_DISABLE_SIMD128") {
+        Ok(s) => s == "1" || s == "y" || s == "Y",
+        Err(_) => false,
+    };
+
+    let disable_simd256 = match env::var("LIBCRUX_DISABLE_SIMD256") {
+        Ok(s) => s == "1" || s == "y" || s == "Y",
+        Err(_) => false,
+    };
+
     // We don't enable any features when cross compiling for now.
     let cross = target != host;
 
@@ -14,6 +24,7 @@ fn main() {
         && libcrux_platform::simd128_support()
         && target_arch != "x86"
         && !target_arch.contains("wasm")
+        && !disable_simd128
     {
         println!("cargo:rustc-cfg=simd128");
     }
@@ -21,6 +32,7 @@ fn main() {
         && libcrux_platform::simd256_support()
         && target_arch != "x86"
         && !target_arch.contains("wasm")
+        && !disable_simd256
     {
         println!("cargo:rustc-cfg=simd256");
     }
