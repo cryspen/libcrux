@@ -310,13 +310,13 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_int_vec_step<Vector: Operations>(
+pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
     zeta_r: i16,
 ) -> (Vector, Vector) {
     let a_minus_b = Vector::sub(b, &a);
-    a = Vector::add(a, &b);
+    a = Vector::barrett_reduce(Vector::add(a, &b));
     b = Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     (a, b)
 }
@@ -337,7 +337,7 @@ pub(crate) fn invert_ntt_at_layer_3_plus<Vector: Operations>(
         let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
-            let (x, y) = inv_ntt_layer_int_vec_step(
+            let (x, y) = inv_ntt_layer_int_vec_step_reduce(
                 re.coefficients[j],
                 re.coefficients[j + step_vec],
                 ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
