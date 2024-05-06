@@ -353,7 +353,6 @@ pub(crate) fn invert_ntt_at_layer_3_plus<Vector: Operations>(
     re
 }
 
-
 // Use the Cooley–Tukey butterfly to compute an in-place NTT representation
 /// of a `KyberPolynomialRingElement`.
 ///
