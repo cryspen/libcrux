@@ -104,9 +104,9 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     re = invert_ntt_at_layer_2(&mut zeta_i, re, 2); // re <= 2 * 3328 (does not reduce)
     re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 3); // re <= 4 * 3328 (need not reduce)
     re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 4); // re <= 3328 (should reduce)
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 5); // re <= 2*3328 (need not reduce)
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 6); // re <= 4*3328 (need not reduce)
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 7); // re <= 8*3328 (need not reduce)
+    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 5); // re <= 2*3328 (need not reduce)
+    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 6); // re <= 4*3328 (need not reduce)
+    re = invert_ntt_at_layer_3_plus(&mut zeta_i, re, 7); // re <= 8*3328 (need not reduce)
 
     re = poly_barrett_reduce(re); // re <= 3328 (reduces)
     re
