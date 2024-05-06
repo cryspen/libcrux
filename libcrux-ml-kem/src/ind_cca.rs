@@ -8,7 +8,7 @@ use crate::{
     hash_functions::{G, H, PRF},
     ind_cpa::{into_padded_array, serialize_public_key},
     serialize::deserialize_ring_elements_reduced,
-    types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey}
+    types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey},
 };
 
 /// Seed size for key generation
@@ -21,7 +21,6 @@ pub const ENCAPS_SEED_SIZE: usize = SHARED_SECRET_SIZE;
 // some checks at the type level. This is being tracked in:
 // https://github.com/cryspen/libcrux/issues/123
 pub type MlKemSharedSecret = [u8; SHARED_SECRET_SIZE];
-
 
 /// Serialize the secret key.
 #[inline(always)]

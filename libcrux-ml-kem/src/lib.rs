@@ -14,8 +14,8 @@ mod helper;
 
 mod constant_time_ops;
 mod hash_functions;
-mod ind_cpa;
 mod ind_cca;
+mod ind_cpa;
 mod matrix;
 mod polynomial;
 mod sampling;
