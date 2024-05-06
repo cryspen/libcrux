@@ -575,25 +575,56 @@ fn serialize_12(v: SIMD128Vector) -> [u8; 12] {
 
 #[inline(always)]
 fn deserialize_12(v: &[u8]) -> SIMD128Vector {
-    let mut input0 = [0u8; 8];
-    let mut input1 = [0u8; 8];
-    input0[0..6].copy_from_slice(&v[0..6]);
-    input1[0..6].copy_from_slice(&v[6..12]);
-    let input0 = u64::from_le_bytes(input0);
-    let input1 = u64::from_le_bytes(input1);
-    let mut vec = [0i16; 8];
-    vec[0] = (input0 & 0xfff) as i16;
-    vec[1] = ((input0 & 0xfff000) >> 12) as i16;
-    vec[2] = ((input0 & 0xfff000000) >> 24) as i16;
-    vec[3] = ((input0 & 0xfff000000000) >> 36) as i16;
-    vec[4] = (input1 & 0xfff) as i16;
-    vec[5] = ((input1 & 0xfff000) >> 12) as i16;
-    vec[6] = ((input1 & 0xfff000000) >> 24) as i16;
-    vec[7] = ((input1 & 0xfff000000000) >> 36) as i16;
+    let indexes : [u8; 16] = [0, 1, 1, 2, 3, 4, 4, 5, 6, 7, 7, 8, 9, 10, 10, 11];
+    let shifts : [i16; 8] = [0, -4, 0, -4, 0, -4, 0, -4];
+    let mut input = [0u8; 16];
+    input[0..12].copy_from_slice(v);
+
+    let input_vec = unsafe { vld1q_u8(input.as_ptr() as *const u8) };
+    let index_vec = unsafe { vld1q_u8(indexes.as_ptr() as *const u8) };
+    let moved = unsafe { vreinterpretq_u16_u8(vqtbl1q_u8(input_vec, index_vec)) };
+    let shift_vec = unsafe { vld1q_s16(shifts.as_ptr() as *const i16) };
+    let shifted = unsafe { vshlq_u16(moved, shift_vec) };
+    let mask12 = unsafe { vdupq_n_u16(0xfff) };
+    let vec = unsafe { vreinterpretq_s16_u16(vandq_u16(shifted, mask12)) };
     SIMD128Vector {
-        vec: unsafe { vld1q_s16(vec.as_ptr() as *const i16) },
+        vec: vec
     }
 }
+
+#[inline(always)]
+fn _rej_sample_simd(a: &[u8]) -> (usize, [i16; 8]) {
+    let neon_bits : [u16; 8] = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
+    let bits = unsafe { vld1q_u16(neon_bits.as_ptr() as *const u16) };
+    let input = deserialize_12(a);
+    let fm = unsafe { vdupq_n_s16(FIELD_MODULUS) };
+    let mask = unsafe { vcltq_s16(input.vec,fm) };
+
+    let mut used = unsafe { vaddvq_u16(vandq_u16(mask, bits)) };
+    let pick = used.count_ones();
+
+    // The following indexing is implemented by a large index table in PQClean
+    let mut index : [u8;16] = [0u8; 16];
+    let mut idx = 0;
+    for i in 0..8 {
+        if used > 0 {
+            let next = used.trailing_zeros();
+            idx = idx + next;
+            index[i*2] = (idx*2) as u8;
+            index[i*2+1] = (idx*2 + 1) as u8;
+            idx = idx + 1;
+            used = used >> (next+1);
+        }
+    }
+    let index_vec = unsafe { vld1q_u8(index.as_ptr() as *const u8) };
+    // End of index table lookup calculation
+
+    let shifted = unsafe { vqtbl1q_u8(vreinterpretq_u8_s16(input.vec),index_vec) };
+    let mut out: [i16;8] = [0i16;8];
+    unsafe {vst1q_s16(out.as_mut_ptr() as *mut i16, vreinterpretq_s16_u8(shifted)) };
+    (pick as usize,out)
+}
+
 
 #[inline(always)]
 fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
