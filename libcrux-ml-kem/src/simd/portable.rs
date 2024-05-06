@@ -26,7 +26,7 @@ fn from_i16_array(array: [i16; 8]) -> PortableVector {
 }
 
 #[inline(always)]
-fn add_constant(mut v: PortableVector, c: i16) -> PortableVector {
+fn _add_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] += c;
     }
@@ -80,7 +80,7 @@ fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
+fn _shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         lhs.elements[i] = lhs.elements[i] << SHIFT_BY;
     }
@@ -506,9 +506,9 @@ impl Operations for PortableVector {
         from_i16_array(array)
     }
 
-    fn add_constant(v: Self, c: i16) -> Self {
-        add_constant(v, c)
-    }
+    // fn add_constant(v: Self, c: i16) -> Self {
+    //     add_constant(v, c)
+    // }
 
     fn multiply_by_constant(v: Self, c: i16) -> Self {
         multiply_by_constant(v, c)
@@ -530,9 +530,9 @@ impl Operations for PortableVector {
         shift_right::<{ SHIFT_BY }>(v)
     }
 
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_left::<{ SHIFT_BY }>(v)
-    }
+    // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
+    //     shift_left::<{ SHIFT_BY }>(v)
+    // }
 
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)

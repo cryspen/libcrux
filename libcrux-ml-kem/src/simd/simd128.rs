@@ -31,7 +31,7 @@ fn from_i16_array(array: [i16; 8]) -> SIMD128Vector {
 }
 
 #[inline(always)]
-fn add_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+fn _add_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
     let c = unsafe { vdupq_n_s16(c) };
     v.vec = unsafe { vaddq_s16(v.vec, c) };
     v
@@ -71,7 +71,7 @@ fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
 }
 
 #[inline(always)]
-fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
+fn _shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
     lhs.vec = unsafe { vshlq_n_s16::<SHIFT_BY>(lhs.vec) };
     lhs
 }
@@ -609,9 +609,9 @@ impl Operations for SIMD128Vector {
         from_i16_array(array)
     }
 
-    fn add_constant(v: Self, c: i16) -> Self {
-        add_constant(v, c)
-    }
+    // fn add_constant(v: Self, c: i16) -> Self {
+    //     add_constant(v, c)
+    // }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
@@ -633,9 +633,9 @@ impl Operations for SIMD128Vector {
         shift_right::<SHIFT_BY>(v)
     }
 
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_left::<SHIFT_BY>(v)
-    }
+    // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
+    //     shift_left::<SHIFT_BY>(v)
+    // }
 
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)

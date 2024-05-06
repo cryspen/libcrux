@@ -11,7 +11,7 @@ pub(crate) trait Operations {
     fn from_i16_array(array: [i16; 8]) -> Self;
 
     // Basic arithmetic
-    fn add_constant(v: Self, c: i16) -> Self;
+//    fn add_constant(v: Self, c: i16) -> Self;
     fn add(lhs: Self, rhs: &Self) -> Self;
     fn sub(lhs: Self, rhs: &Self) -> Self;
     fn multiply_by_constant(v: Self, c: i16) -> Self;
@@ -19,12 +19,12 @@ pub(crate) trait Operations {
     // Bitwise operations
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
+//    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     fn cond_subtract_3329(v: Self) -> Self;
     fn barrett_reduce(v: Self) -> Self;
-    //fn montgomery_reduce(v: Self) -> Self;
+//  fn montgomery_reduce(v: Self) -> Self;
 
     fn montgomery_multiply_by_constant(v: Self, c: i16) -> Self;
 

@@ -31,16 +31,18 @@ pub(crate) fn ntt_binomially_sampled_ring_element(
 ) -> PolynomialRingElement {
     // Due to the small coefficient bound, we can skip the first round of
     // Montgomery reductions.
-    re = ntt_at_layer_7(re);
-    let mut zeta_i = 1;
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 6, 3);
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 5, 3);
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 4, 3);
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 3, 3);
-    re = ntt_at_layer_2(&mut zeta_i, re, 2, 3);
-    re = ntt_at_layer_1(&mut zeta_i, re, 1, 3);
 
-    re = poly_barrett_reduce(re);
+    // re <= 3
+    re = ntt_at_layer_7(re);  // re <= 4803
+    let mut zeta_i = 1;
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 6, 3); // re <= 4803 + 3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 5, 3); // re <= 4803 + 2*3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 4, 3); // re <= 4803 + 3*3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 3, 3); // re <= 4803 + 4*3328
+    re = ntt_at_layer_2(&mut zeta_i, re, 2, 3); // re <= 4803 + 5*3328
+    re = ntt_at_layer_1(&mut zeta_i, re, 1, 3); // re <= 4803 + 6*3328
+
+    re = poly_barrett_reduce(re); // re <= 3328
 
     re
 }
@@ -70,15 +72,16 @@ pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize>(
 
     let mut zeta_i = 0;
 
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 7, 3328);
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 6, 3328);
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 5, 3328);
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 4, 3328);
-    re = ntt_at_layer_3_plus(&mut zeta_i, re, 3, 3328);
-    re = ntt_at_layer_2(&mut zeta_i, re, 2, 3328);
-    re = ntt_at_layer_1(&mut zeta_i, re, 1, 3328);
+    // re <= 3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 7, 3328);  // re <= 2 * 3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 6, 3328);  // re <= 3 * 3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 5, 3328);  // re <= 4 * 3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 4, 3328);  // re <= 5 * 3328
+    re = ntt_at_layer_3_plus(&mut zeta_i, re, 3, 3328);  // re <= 6 * 3328
+    re = ntt_at_layer_2(&mut zeta_i, re, 2, 3328);  // re <= 7 * 3328
+    re = ntt_at_layer_1(&mut zeta_i, re, 1, 3328);  // re <= 8 * 3328
 
-    re = poly_barrett_reduce(re);
+    re = poly_barrett_reduce(re); // re <= 3328
     re
 }
 
@@ -97,24 +100,14 @@ pub(crate) fn invert_ntt_montgomery<const K: usize>(
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT / 2;
 
     // re <= K * 3328
-    re = invert_ntt_at_layer_1(&mut zeta_i, re, 1); // re <= 3328 
-    re = invert_ntt_at_layer_2(&mut zeta_i, re, 2); // re <= 2 * 3328
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 3); // re <= 4 * 3328
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 4); // re <= 3328 
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 5); // re <= 2*3328 
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 6); // re <= 4*3328 
-    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 7); // re <= 8*3328 
+    re = invert_ntt_at_layer_1(&mut zeta_i, re, 1); // re <= 3328  (reduces)
+    re = invert_ntt_at_layer_2(&mut zeta_i, re, 2); // re <= 2 * 3328 (does not reduce)
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 3); // re <= 4 * 3328 (need not reduce)
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 4); // re <= 3328 (should reduce)
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 5); // re <= 2*3328 (need not reduce)
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 6); // re <= 4*3328 (need not reduce)
+    re = invert_ntt_at_layer_3_plus_reduce(&mut zeta_i, re, 7); // re <= 8*3328 (need not reduce)
 
-    // debug_assert!(
-    //     to_i16_array(re)[0].abs() < 128 * K * FIELD_MODULUS
-    //         && to_i16_array(re)[1].abs() < 128 * K * FIELD_MODULUS
-    // );
-    // debug_assert!(to_i16_array(re)
-    //     .into_iter()
-    //     .enumerate()
-    //     .skip(2)
-    //     .all(|(i, coefficient)| coefficient.abs() < (128 / (1 << i.ilog2())) * FIELD_MODULUS));
-
-    re = poly_barrett_reduce(re);
+    re = poly_barrett_reduce(re); // re <= 3328 (reduces)
     re
 }

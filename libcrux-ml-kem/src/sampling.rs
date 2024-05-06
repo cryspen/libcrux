@@ -49,28 +49,32 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     sampled_coefficients: &mut [usize; K],
     out: &mut [[i16; 256]; K],
 ) -> bool {
+    for r in 0..N/12 {
+        for i in 0..K {
+            if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+                for bytes in randomness[i][r*12..r*12+12].chunks(3) {
+                    let b1 = bytes[0] as i16;
+                    let b2 = bytes[1] as i16;
+                    let b3 = bytes[2] as i16;
+
+                    let d1 = ((b2 & 0xF) << 8) | b1;
+                    let d2 = (b3 << 4) | (b2 >> 4);
+
+                    if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+                        out[i][sampled_coefficients[i]] = d1;
+                        sampled_coefficients[i] += 1
+                    }
+                    if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+                        out[i][sampled_coefficients[i]] = d2;
+                        sampled_coefficients[i] += 1;
+                    }
+                }
+            }
+        }
+    }
     let mut done = true;
     for i in 0..K {
-        for bytes in randomness[i].chunks(3) {
-            let b1 = bytes[0] as i16;
-            let b2 = bytes[1] as i16;
-            let b3 = bytes[2] as i16;
-
-            let d1 = ((b2 & 0xF) << 8) | b1;
-            let d2 = (b3 << 4) | (b2 >> 4);
-
-            if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d1;
-                sampled_coefficients[i] += 1
-            }
-            if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d2;
-                sampled_coefficients[i] += 1;
-            }
-        }
-        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-            done = false
-        }
+        if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {done = false}
     }
     done
 }
