@@ -595,6 +595,30 @@ fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     }
 }
 
+#[inline(always)]
+fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
+    let mut result = [0i16; 8];
+    let mut sampled = 0;
+    for bytes in a.chunks(3) {
+        let b1 = bytes[0] as i16;
+        let b2 = bytes[1] as i16;
+        let b3 = bytes[2] as i16;
+
+        let d1 = ((b2 & 0xF) << 8) | b1;
+        let d2 = (b3 << 4) | (b2 >> 4);
+
+        if d1 < FIELD_MODULUS && sampled < 8 {
+            result[sampled] = d1;
+            sampled += 1
+        }
+        if d2 < FIELD_MODULUS && sampled < 8 {
+            result[sampled] = d2;
+            sampled += 1
+        }
+    }
+    (sampled,result)
+}
+
 impl Operations for SIMD128Vector {
     #[inline(always)]
     fn ZERO() -> Self {
@@ -727,5 +751,9 @@ impl Operations for SIMD128Vector {
 
     fn deserialize_12(a: &[u8]) -> Self {
         deserialize_12(a)
+    }
+
+    fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
+        rej_sample(a)
     }
 }

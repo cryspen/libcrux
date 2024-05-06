@@ -60,6 +60,8 @@ pub(crate) trait Operations {
 
     fn serialize_12(a: Self) -> [u8; 12];
     fn deserialize_12(a: &[u8]) -> Self;
+
+    fn rej_sample(a: &[u8]) -> (usize, [i16; 8]);
 }
 
 // hax does not support trait with default implementations, so we use the following patter
