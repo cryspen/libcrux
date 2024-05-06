@@ -263,7 +263,7 @@ fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVector {
 }
 
 #[inline(always)]
-fn shift_right<const SHIFT_BY: i16>(mut v: PortableVector) -> PortableVector {
+fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] = v.elements[i] >> SHIFT_BY;
     }
@@ -272,7 +272,7 @@ fn shift_right<const SHIFT_BY: i16>(mut v: PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-fn shift_left<const SHIFT_BY: i16>(mut lhs: PortableVector) -> PortableVector {
+fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         lhs.elements[i] = lhs.elements[i] << SHIFT_BY;
     }
@@ -342,7 +342,7 @@ fn compress_1(mut v: PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-fn compress<const COEFFICIENT_BITS: i16>(mut v: PortableVector) -> PortableVector {
+fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] =
             compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, v.elements[i] as u16) as i16;
@@ -793,11 +793,11 @@ impl Operations for PortableVector {
         bitwise_and_with_constant(v, c)
     }
 
-    fn shift_right<const SHIFT_BY: i16>(v: Self) -> Self {
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<{ SHIFT_BY }>(v)
     }
 
-    fn shift_left<const SHIFT_BY: i16>(v: Self) -> Self {
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_left::<{ SHIFT_BY }>(v)
     }
 
@@ -817,7 +817,7 @@ impl Operations for PortableVector {
         compress_1(v)
     }
 
-    fn compress<const COEFFICIENT_BITS: i16>(v: Self) -> Self {
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         compress::<COEFFICIENT_BITS>(v)
     }
 

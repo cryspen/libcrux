@@ -18,8 +18,8 @@ pub trait Operations: Copy + Clone {
 
     // Bitwise operations
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
-    fn shift_right<const SHIFT_BY: i16>(v: Self) -> Self;
-    fn shift_left<const SHIFT_BY: i16>(v: Self) -> Self;
+    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     fn cond_subtract_3329(v: Self) -> Self;
@@ -28,7 +28,7 @@ pub trait Operations: Copy + Clone {
 
     // Compression
     fn compress_1(v: Self) -> Self;
-    fn compress<const COEFFICIENT_BITS: i16>(v: Self) -> Self;
+    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
     fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT

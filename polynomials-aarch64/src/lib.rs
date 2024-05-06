@@ -2,7 +2,7 @@ use core::arch::aarch64::*;
 use libcrux_traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 #[derive(Clone, Copy)]
-pub(crate) struct SIMD128Vector {
+pub struct SIMD128Vector {
     vec: int16x8_t,
 }
 
@@ -29,7 +29,7 @@ fn from_i16_array(array: [i16; 8]) -> SIMD128Vector {
 }
 
 #[inline(always)]
-fn _add_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
+fn add_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
     let c = unsafe { vdupq_n_s16(c) };
     v.vec = unsafe { vaddq_s16(v.vec, c) };
     v
@@ -69,7 +69,7 @@ fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
 }
 
 #[inline(always)]
-fn _shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
+fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
     lhs.vec = unsafe { vshlq_n_s16::<SHIFT_BY>(lhs.vec) };
     lhs
 }
@@ -91,7 +91,7 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
 
     // This is what we are trying to do in portable:
-    // let t = (value as i32 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    // let t = (value as i16 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
     // let quotient = (t >> BARRETT_SHIFT) as i16;
     // let result = value - (quotient * FIELD_MODULUS);
 
@@ -105,19 +105,19 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
 }
 
 // #[inline(always)]
-// fn montgomery_reduce_i32x2_t(v: int32x2_t) -> int32x2_t {
+// fn montgomery_reduce_i16x2_t(v: int32x2_t) -> int32x2_t {
 //     // This is what we are trying to do in portable:
 //     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
 //     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 //     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
-//     // let k_times_modulus = (k as i32) * FIELD_MODULUS;
+//     // let k_times_modulus = (k as i16) * FIELD_MODULUS;
 //     // let c = k_times_modulus >> MONTGOMERY_SHIFT;
 //     // let value_high = value >> MONTGOMERY_SHIFT;
 //     // value_high - c
 
 //     let m = unsafe { vdup_n_s32(0x0000ffff) };
 //     let t0 = unsafe { vand_s32(v, m) };
-//     let t0 = unsafe { vmul_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32) };
+//     let t0 = unsafe { vmul_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16) };
 //     let t0 = unsafe { vreinterpret_s16_s32(t0) };
 //     let t0 = unsafe { vmull_n_s16(t0, FIELD_MODULUS as i16) };
 //     let c0 = unsafe { vshrq_n_s32::<16>(t0) };
@@ -128,18 +128,18 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
 // }
 
 // #[inline(always)]
-// fn montgomery_reduce_i32x4_t(v: int32x4_t) -> int32x4_t {
+// fn montgomery_reduce_i16x4_t(v: int32x4_t) -> int32x4_t {
 //     // This is what we are trying to do in portable:
 //     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
 //     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 //     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
-//     // let k_times_modulus = (k as i32) * FIELD_MODULUS;
+//     // let k_times_modulus = (k as i16) * FIELD_MODULUS;
 //     // let c = k_times_modulus >> MONTGOMERY_SHIFT;
 //     // let value_high = value >> MONTGOMERY_SHIFT;
 //     //value_high - c
 
 //     let t = unsafe {
-//         vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32))
+//         vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16))
 //     };
 //     let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(t, FIELD_MODULUS as i16)) };
 //     let c = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
@@ -151,8 +151,8 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
 #[inline(always)]
 fn montgomery_reduce_int16x8_t(low: int16x8_t, high: int16x8_t) -> int16x8_t {
     // This is what we are trying to do in portable:
-    // let k = low as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    // let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
+    // let k = low as i16 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    // let k_times_modulus = (k as i16 as i16) * (FIELD_MODULUS as i16);
     // let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
     // high - c
 
@@ -169,9 +169,9 @@ fn montgomery_reduce_int16x8_t(low: int16x8_t, high: int16x8_t) -> int16x8_t {
 #[inline(always)]
 fn montgomery_multiply_by_constant_int16x8_t(v: int16x8_t, c: i16) -> int16x8_t {
     // This is what we are trying to do in portable:
-    // let value = v as i32 * c
-    // let k = (value as i16) as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    // let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
+    // let value = v as i16 * c
+    // let k = (value as i16) as i16 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    // let k_times_modulus = (k as i16 as i16) * (FIELD_MODULUS as i16);
     // let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
     // let value_high = (value >> MONTGOMERY_SHIFT) as i16;
     // value_high - c
@@ -184,9 +184,9 @@ fn montgomery_multiply_by_constant_int16x8_t(v: int16x8_t, c: i16) -> int16x8_t 
 #[inline(always)]
 fn montgomery_multiply_int16x8_t(v: int16x8_t, c: int16x8_t) -> int16x8_t {
     // This is what we are trying to do in portable:
-    // let value = v as i32 * c
-    // let k = (value as i16) as i32 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    // let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
+    // let value = v as i16 * c
+    // let k = (value as i16) as i16 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+    // let k_times_modulus = (k as i16 as i16) * (FIELD_MODULUS as i16);
     // let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
     // let value_high = (value >> MONTGOMERY_SHIFT) as i16;
     // value_high - c
@@ -226,7 +226,7 @@ fn compress_1(mut v: SIMD128Vector) -> SIMD128Vector {
 }
 
 #[inline(always)]
-fn mask_n_least_significant_bits(coefficient_bits: i32) -> i16 {
+fn mask_n_least_significant_bits(coefficient_bits: i16) -> i16 {
     match coefficient_bits {
         4 => 0x0f,
         5 => 0x1f,
@@ -246,7 +246,7 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector 
     // get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 
     let half = unsafe { vdupq_n_u32(1664) };
-    let mask = unsafe { vdupq_n_s16(mask_n_least_significant_bits(COEFFICIENT_BITS)) };
+    let mask = unsafe { vdupq_n_s16(mask_n_least_significant_bits(COEFFICIENT_BITS as i16)) };
 
     let mask16 = unsafe { vdupq_n_u32(0xffff) };
     let v_low = unsafe { vandq_u32(vreinterpretq_u32_s16(v.vec), mask16) }; //a0, a2, a4, a6
@@ -1465,9 +1465,9 @@ impl Operations for SIMD128Vector {
         from_i16_array(array)
     }
 
-    // fn add_constant(v: Self, c: i16) -> Self {
-    //     add_constant(v, c)
-    // }
+    fn add_constant(v: Self, c: i16) -> Self {
+        add_constant(v, c)
+    }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
@@ -1489,9 +1489,9 @@ impl Operations for SIMD128Vector {
         shift_right::<SHIFT_BY>(v)
     }
 
-    // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-    //     shift_left::<SHIFT_BY>(v)
-    // }
+    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
+        shift_left::<SHIFT_BY>(v)
+    }
 
     fn cond_subtract_3329(v: Self) -> Self {
         cond_subtract_3329(v)
