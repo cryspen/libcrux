@@ -13,7 +13,7 @@ members = [
     "polynomials",
     "polynomials-avx2",
     "traits",
-    # "polynomials-aarch64",
+    "polynomials-aarch64",
 ]
 
 [workspace.package]
