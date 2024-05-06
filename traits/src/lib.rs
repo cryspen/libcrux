@@ -1,14 +1,14 @@
 pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353;
 pub const FIELD_MODULUS: i16 = 3329;
-pub const FIELD_ELEMENTS_IN_VECTOR: usize = 8;
+pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
-    fn to_i16_array(v: Self) -> [i16; 8];
-    fn from_i16_array(array: [i16; 8]) -> Self;
+    fn to_i16_array(v: Self) -> [i16; 16];
+    fn from_i16_array(array: [i16; 16]) -> Self;
 
     // Basic arithmetic
     fn add_constant(v: Self, c: i16) -> Self;

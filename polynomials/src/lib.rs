@@ -196,7 +196,7 @@ pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
 
 #[derive(Clone, Copy)]
 pub struct PortableVector {
-    elements: [FieldElement; 8],
+    elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
 }
 
 #[allow(non_snake_case)]
@@ -208,12 +208,12 @@ fn zero() -> PortableVector {
 }
 
 #[inline(always)]
-fn to_i16_array(v: PortableVector) -> [i16; 8] {
+fn to_i16_array(v: PortableVector) -> [i16; FIELD_ELEMENTS_IN_VECTOR] {
     v.elements
 }
 
 #[inline(always)]
-fn from_i16_array(array: [i16; 8]) -> PortableVector {
+fn from_i16_array(array: [i16; FIELD_ELEMENTS_IN_VECTOR]) -> PortableVector {
     PortableVector { elements: array }
 }
 
@@ -372,6 +372,7 @@ fn decompress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVec
 
 #[inline(always)]
 fn ntt_layer_1_step(mut v: PortableVector, zeta1: i16, zeta2: i16) -> PortableVector {
+    // First 8 elements.
     let t = montgomery_multiply_fe_by_fer(v.elements[2], zeta1);
     v.elements[2] = v.elements[0] - t;
     v.elements[0] = v.elements[0] + t;
@@ -388,11 +389,29 @@ fn ntt_layer_1_step(mut v: PortableVector, zeta1: i16, zeta2: i16) -> PortableVe
     v.elements[7] = v.elements[5] - t;
     v.elements[5] = v.elements[5] + t;
 
+    // Next 8 elements.
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 2], zeta1);
+    v.elements[8 + 2] = v.elements[8 + 0] - t;
+    v.elements[8 + 0] = v.elements[8 + 0] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 3], zeta1);
+    v.elements[8 + 3] = v.elements[8 + 1] - t;
+    v.elements[8 + 1] = v.elements[8 + 1] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 6], zeta2);
+    v.elements[8 + 6] = v.elements[8 + 4] - t;
+    v.elements[8 + 4] = v.elements[8 + 4] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta2);
+    v.elements[8 + 7] = v.elements[8 + 5] - t;
+    v.elements[8 + 5] = v.elements[8 + 5] + t;
+
     v
 }
 
 #[inline(always)]
 fn ntt_layer_2_step(mut v: PortableVector, zeta: i16) -> PortableVector {
+    // First 8 elements.
     let t = montgomery_multiply_fe_by_fer(v.elements[4], zeta);
     v.elements[4] = v.elements[0] - t;
     v.elements[0] = v.elements[0] + t;
@@ -409,11 +428,29 @@ fn ntt_layer_2_step(mut v: PortableVector, zeta: i16) -> PortableVector {
     v.elements[7] = v.elements[3] - t;
     v.elements[3] = v.elements[3] + t;
 
+    // Next 8 elements.
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 4], zeta);
+    v.elements[8 + 4] = v.elements[8 + 0] - t;
+    v.elements[8 + 0] = v.elements[8 + 0] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 5], zeta);
+    v.elements[8 + 5] = v.elements[8 + 1] - t;
+    v.elements[8 + 1] = v.elements[8 + 1] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 6], zeta);
+    v.elements[8 + 6] = v.elements[8 + 2] - t;
+    v.elements[8 + 2] = v.elements[8 + 2] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 7], zeta);
+    v.elements[8 + 7] = v.elements[8 + 3] - t;
+    v.elements[8 + 3] = v.elements[8 + 3] + t;
+
     v
 }
 
 #[inline(always)]
 fn inv_ntt_layer_1_step(mut v: PortableVector, zeta1: i16, zeta2: i16) -> PortableVector {
+    // First 8 elements.
     let a_minus_b = v.elements[2] - v.elements[0];
     v.elements[0] = v.elements[0] + v.elements[2];
     v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
@@ -430,11 +467,29 @@ fn inv_ntt_layer_1_step(mut v: PortableVector, zeta1: i16, zeta2: i16) -> Portab
     v.elements[5] = v.elements[5] + v.elements[7];
     v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
+    // Next 8 elements.
+    let a_minus_b = v.elements[8 + 2] - v.elements[8 + 0];
+    v.elements[8 + 0] = v.elements[8 + 0] + v.elements[8 + 2];
+    v.elements[8 + 2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+
+    let a_minus_b = v.elements[8 + 3] - v.elements[8 + 1];
+    v.elements[8 + 1] = v.elements[8 + 1] + v.elements[8 + 3];
+    v.elements[8 + 3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+
+    let a_minus_b = v.elements[8 + 6] - v.elements[8 + 4];
+    v.elements[8 + 4] = v.elements[8 + 4] + v.elements[8 + 6];
+    v.elements[8 + 6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+
+    let a_minus_b = v.elements[8 + 7] - v.elements[8 + 5];
+    v.elements[8 + 5] = v.elements[8 + 5] + v.elements[8 + 7];
+    v.elements[8 + 7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
+
     v
 }
 
 #[inline(always)]
 fn inv_ntt_layer_2_step(mut v: PortableVector, zeta: i16) -> PortableVector {
+    // First 8 elements.
     let a_minus_b = v.elements[4] - v.elements[0];
     v.elements[0] = v.elements[0] + v.elements[4];
     v.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
@@ -450,6 +505,23 @@ fn inv_ntt_layer_2_step(mut v: PortableVector, zeta: i16) -> PortableVector {
     let a_minus_b = v.elements[7] - v.elements[3];
     v.elements[3] = v.elements[3] + v.elements[7];
     v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    // Next 8 elements.
+    let a_minus_b = v.elements[8 + 4] - v.elements[8 + 0];
+    v.elements[8 + 0] = v.elements[8 + 0] + v.elements[8 + 4];
+    v.elements[8 + 4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[8 + 5] - v.elements[8 + 1];
+    v.elements[8 + 1] = v.elements[8 + 1] + v.elements[8 + 5];
+    v.elements[8 + 5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[8 + 6] - v.elements[8 + 2];
+    v.elements[8 + 2] = v.elements[8 + 2] + v.elements[8 + 6];
+    v.elements[8 + 6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[8 + 7] - v.elements[8 + 3];
+    v.elements[8 + 3] = v.elements[8 + 3] + v.elements[8 + 7];
+    v.elements[8 + 7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     v
 }
@@ -497,6 +569,8 @@ fn ntt_multiply(
     zeta1: i16,
 ) -> PortableVector {
     let mut out = zero();
+
+    // First 8 elements.
     let product = ntt_multiply_binomials(
         (lhs.elements[0], lhs.elements[1]),
         (rhs.elements[0], rhs.elements[1]),
@@ -528,17 +602,57 @@ fn ntt_multiply(
     );
     out.elements[6] = product.0;
     out.elements[7] = product.1;
+
+    // Next 8 elements.
+    let product = ntt_multiply_binomials(
+        (lhs.elements[8 + 0], lhs.elements[8 + 1]),
+        (rhs.elements[8 + 0], rhs.elements[8 + 1]),
+        zeta0,
+    );
+    out.elements[8 + 0] = product.0;
+    out.elements[8 + 1] = product.1;
+
+    let product = ntt_multiply_binomials(
+        (lhs.elements[8 + 2], lhs.elements[8 + 3]),
+        (rhs.elements[8 + 2], rhs.elements[8 + 3]),
+        -zeta0,
+    );
+    out.elements[8 + 2] = product.0;
+    out.elements[8 + 3] = product.1;
+
+    let product = ntt_multiply_binomials(
+        (lhs.elements[8 + 4], lhs.elements[8 + 5]),
+        (rhs.elements[8 + 4], rhs.elements[8 + 5]),
+        zeta1,
+    );
+    out.elements[8 + 4] = product.0;
+    out.elements[8 + 5] = product.1;
+
+    let product = ntt_multiply_binomials(
+        (lhs.elements[8 + 6], lhs.elements[8 + 7]),
+        (rhs.elements[8 + 6], rhs.elements[8 + 7]),
+        -zeta1,
+    );
+    out.elements[8 + 6] = product.0;
+    out.elements[8 + 7] = product.1;
+
     out
 }
 
 #[inline(always)]
-fn serialize_1(v: PortableVector) -> u8 {
-    let mut result = 0u8;
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        result |= (v.elements[i] as u8) << i;
+fn serialize_1(v: PortableVector) -> (u8, u8) {
+    let mut byte0 = 0u8;
+    let mut byte1 = 0u8;
+
+    for i in 0..8 {
+        byte |= (v.elements[i] as u8) << i;
     }
 
-    result
+    for i in 8..16 {
+        byte1 |= (v.elements[i] as u8) << i;
+    }
+
+    (byte0, byte1)
 }
 
 #[inline(always)]
@@ -765,11 +879,11 @@ impl Operations for PortableVector {
         zero()
     }
 
-    fn to_i16_array(v: Self) -> [i16; 8] {
+    fn to_i16_array(v: Self) -> [i16; FIELD_ELEMENTS_IN_VECTOR] {
         to_i16_array(v)
     }
 
-    fn from_i16_array(array: [i16; 8]) -> Self {
+    fn from_i16_array(array: [i16; FIELD_ELEMENTS_IN_VECTOR]) -> Self {
         from_i16_array(array)
     }
 

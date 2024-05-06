@@ -14,10 +14,13 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
-    for i in 0..32 {
+    for i in 0..16 {
         let coefficient = Vector::to_unsigned_representative(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
-        serialized[i] = Vector::serialize_1(coefficient_compressed);
+
+        let coefficients_serialized = Vector::serialize_1(coefficient_compressed);
+        serialized[2 * i] = coefficients_serialized.0;
+        serialized[2 * i + 1] = coefficients_serialized.1;
     }
     serialized
 }

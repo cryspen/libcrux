@@ -17,7 +17,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     pub(crate) fn ZERO() -> Self {
         Self {
             // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
-            coefficients: [Vector::ZERO(); 32],
+            coefficients: [Vector::ZERO(); 16],
         }
     }
 
