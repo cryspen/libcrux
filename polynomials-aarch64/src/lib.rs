@@ -104,50 +104,6 @@ fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     v
 }
 
-// #[inline(always)]
-// fn montgomery_reduce_i16x2_t(v: int32x2_t) -> int32x2_t {
-//     // This is what we are trying to do in portable:
-//     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
-//     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-//     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
-//     // let k_times_modulus = (k as i16) * FIELD_MODULUS;
-//     // let c = k_times_modulus >> MONTGOMERY_SHIFT;
-//     // let value_high = value >> MONTGOMERY_SHIFT;
-//     // value_high - c
-
-//     let m = unsafe { vdup_n_s32(0x0000ffff) };
-//     let t0 = unsafe { vand_s32(v, m) };
-//     let t0 = unsafe { vmul_n_s32(t0, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16) };
-//     let t0 = unsafe { vreinterpret_s16_s32(t0) };
-//     let t0 = unsafe { vmull_n_s16(t0, FIELD_MODULUS as i16) };
-//     let c0 = unsafe { vshrq_n_s32::<16>(t0) };
-//     let c0 = unsafe { vmovn_s64(vreinterpretq_s64_s32(c0)) };
-//     let v0 = unsafe { vshr_n_s32::<16>(v) };
-//     let v = unsafe { vsub_s32(v0, c0) };
-//     v
-// }
-
-// #[inline(always)]
-// fn montgomery_reduce_i16x4_t(v: int32x4_t) -> int32x4_t {
-//     // This is what we are trying to do in portable:
-//     // let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u32)
-//     //     * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-//     // let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i16;
-//     // let k_times_modulus = (k as i16) * FIELD_MODULUS;
-//     // let c = k_times_modulus >> MONTGOMERY_SHIFT;
-//     // let value_high = value >> MONTGOMERY_SHIFT;
-//     //value_high - c
-
-//     let t = unsafe {
-//         vreinterpretq_s16_s32(vmulq_n_s32(v, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16))
-//     };
-//     let c = unsafe { vreinterpretq_s32_s16(vqdmulhq_n_s16(t, FIELD_MODULUS as i16)) };
-//     let c = unsafe { vshrq_n_s32::<17>(vshlq_n_s32::<16>(c)) };
-//     let v = unsafe { vshrq_n_s32::<16>(v) };
-//     let v = unsafe { vsubq_s32(v, c) };
-//     v
-// }
-
 #[inline(always)]
 fn montgomery_reduce_int16x8_t(low: int16x8_t, high: int16x8_t) -> int16x8_t {
     // This is what we are trying to do in portable:
@@ -665,6 +621,24 @@ fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     let vec = unsafe { vreinterpretq_s16_u16(vandq_u16(shifted, mask12)) };
     SIMD128Vector { vec: vec }
 }
+
+
+/// This table is taken from PQClean. It is used in rej_sample
+// It implements the following logic:
+// let mut index : [u8;16] = [0u8; 16];
+// let mut idx = 0;
+// for i in 0..8 {
+//     if used > 0 {
+//         let next = used.trailing_zeros();
+//         idx = idx + next;
+//         index[i*2] = (idx*2) as u8;
+//         index[i*2+1] = (idx*2 + 1) as u8;
+//         idx = idx + 1;
+//         used = used >> (next+1);
+//     }
+// }
+// let index_vec = unsafe { vld1q_u8(index.as_ptr() as *const u8) };
+// End of index table lookup calculation
 
 const IDX_TABLE: [[u8; 16]; 256] = [
     [
@@ -1427,22 +1401,6 @@ fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
     let mask = unsafe { vcleq_s16(input.vec, fm) };
     let used = unsafe { vaddvq_u16(vandq_u16(mask, bits)) };
     let pick = used.count_ones();
-
-    // The following indexing is implemented by a large index table in PQClean
-    // let mut index : [u8;16] = [0u8; 16];
-    // let mut idx = 0;
-    // for i in 0..8 {
-    //     if used > 0 {
-    //         let next = used.trailing_zeros();
-    //         idx = idx + next;
-    //         index[i*2] = (idx*2) as u8;
-    //         index[i*2+1] = (idx*2 + 1) as u8;
-    //         idx = idx + 1;
-    //         used = used >> (next+1);
-    //     }
-    // }
-    // let index_vec = unsafe { vld1q_u8(index.as_ptr() as *const u8) };
-    // End of index table lookup calculation
 
     let index_vec = unsafe { vld1q_u8(IDX_TABLE[used as usize].as_ptr() as *const u8) };
     let shifted = unsafe { vqtbl1q_u8(vreinterpretq_u8_s16(input.vec), index_vec) };
