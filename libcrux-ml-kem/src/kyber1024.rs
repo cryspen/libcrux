@@ -1,4 +1,4 @@
-use super::{constants::*, *};
+use super::{constants::*, ind_cca::*, *};
 
 // Kyber 1024 parameters
 const RANK_1024: usize = 4;
@@ -42,7 +42,7 @@ pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
 pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024PublicKey> {
-    if super::validate_public_key::<
+    if super::ind_cca::validate_public_key::<
         RANK_1024,
         RANKED_BYTES_PER_RING_ELEMENT_1024,
         CPA_PKE_PUBLIC_KEY_SIZE_1024,
@@ -58,7 +58,7 @@ pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024Pu
 pub fn generate_key_pair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
-    super::generate_keypair::<
+    super::ind_cca::generate_keypair::<
         RANK_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,
         SECRET_KEY_SIZE_1024,
@@ -77,7 +77,7 @@ pub fn encapsulate(
     MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
     MlKemSharedSecret,
 ) {
-    super::encapsulate::<
+    super::ind_cca::encapsulate::<
         RANK_1024,
         CPA_PKE_CIPHERTEXT_SIZE_1024,
         CPA_PKE_PUBLIC_KEY_SIZE_1024,
@@ -99,7 +99,7 @@ pub fn decapsulate(
     secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_1024>,
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    super::decapsulate::<
+    super::ind_cca::decapsulate::<
         RANK_1024,
         SECRET_KEY_SIZE_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,
