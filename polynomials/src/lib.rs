@@ -416,6 +416,43 @@ fn ntt_layer_1_step(
 }
 
 #[inline(always)]
+fn ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVector {
+    let t = montgomery_multiply_fe_by_fer(v.elements[8], zeta);
+    v.elements[8] = v.elements[0] - t;
+    v.elements[0] = v.elements[0] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[9], zeta);
+    v.elements[9] = v.elements[1] - t;
+    v.elements[1] = v.elements[1] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[10], zeta);
+    v.elements[10] = v.elements[2] - t;
+    v.elements[2] = v.elements[2] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[11], zeta);
+    v.elements[11] = v.elements[3] - t;
+    v.elements[3] = v.elements[3] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[12], zeta);
+    v.elements[12] = v.elements[4] - t;
+    v.elements[4] = v.elements[4] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[13], zeta);
+    v.elements[13] = v.elements[5] - t;
+    v.elements[5] = v.elements[5] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[14], zeta);
+    v.elements[14] = v.elements[6] - t;
+    v.elements[6] = v.elements[6] + t;
+
+    let t = montgomery_multiply_fe_by_fer(v.elements[15], zeta);
+    v.elements[15] = v.elements[7] - t;
+    v.elements[7] = v.elements[7] + t;
+
+    v
+}
+
+#[inline(always)]
 fn ntt_layer_2_step(mut v: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
     // First 8 elements.
     let t = montgomery_multiply_fe_by_fer(v.elements[4], zeta0);
@@ -534,6 +571,43 @@ fn inv_ntt_layer_2_step(mut v: PortableVector, zeta0: i16, zeta1: i16) -> Portab
     let a_minus_b = v.elements[8 + 7] - v.elements[8 + 3];
     v.elements[8 + 3] = v.elements[8 + 3] + v.elements[8 + 7];
     v.elements[8 + 7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
+
+    v
+}
+
+#[inline(always)]
+fn inv_ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVector {
+    let a_minus_b = v.elements[8] - v.elements[0];
+    v.elements[0] = v.elements[0] + v.elements[8];
+    v.elements[8] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[9] - v.elements[1];
+    v.elements[1] = v.elements[1] + v.elements[9];
+    v.elements[9] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[10] - v.elements[2];
+    v.elements[2] = v.elements[2] + v.elements[10];
+    v.elements[10] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[11] - v.elements[3];
+    v.elements[3] = v.elements[3] + v.elements[11];
+    v.elements[11] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[12] - v.elements[0];
+    v.elements[4] = v.elements[4] + v.elements[12];
+    v.elements[12] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[13] - v.elements[1];
+    v.elements[5] = v.elements[5] + v.elements[13];
+    v.elements[13] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[14] - v.elements[2];
+    v.elements[6] = v.elements[6] + v.elements[14];
+    v.elements[14] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
+
+    let a_minus_b = v.elements[15] - v.elements[3];
+    v.elements[7] = v.elements[7] + v.elements[15];
+    v.elements[15] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
     v
 }
@@ -1072,12 +1146,20 @@ impl Operations for PortableVector {
         ntt_layer_2_step(a, zeta0, zeta1)
     }
 
+    fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
+        ntt_layer_3_step(a, zeta)
+    }
+
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
         inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
     }
 
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
         inv_ntt_layer_2_step(a, zeta0, zeta1)
+    }
+
+    fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
+        inv_ntt_layer_3_step(a, zeta)
     }
 
     fn ntt_multiply(

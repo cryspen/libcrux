@@ -184,7 +184,7 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) -> PolynomialRingElement<Vector> {
-    *zeta_i += 2;
+    //*zeta_i += 2;
     for round in 0..16 {
         re.coefficients[round] = Vector::ntt_layer_1_step(
             re.coefficients[round],
@@ -195,7 +195,7 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
         );
         *zeta_i += 4;
     }
-    *zeta_i -= 2;
+    //*zeta_i -= 2;
     re
 }
 
