@@ -622,7 +622,6 @@ fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     SIMD128Vector { vec: vec }
 }
 
-
 /// This table is taken from PQClean. It is used in rej_sample
 // It implements the following logic:
 // let mut index : [u8;16] = [0u8; 16];

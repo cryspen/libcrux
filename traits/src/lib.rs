@@ -32,13 +32,14 @@ pub trait Operations: Copy + Clone {
     fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
-    fn ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self;
-    fn ntt_layer_2_step(a: Self, zeta: i16) -> Self;
+    fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
+    fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
 
-    fn inv_ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self;
-    fn inv_ntt_layer_2_step(a: Self, zeta: i16) -> Self;
+    fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
+    fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
 
-    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16) -> Self;
+    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
+        -> Self;
 
     // Serialization and deserialization
     fn serialize_1(a: Self) -> [u8; 2];
