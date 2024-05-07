@@ -551,8 +551,8 @@ pub(crate) fn ntt_multiply(
     let a0b1_high = unsafe { vmull_high_s16(a0, b1) };
 
     let snd_low =
-        unsafe { vreinterpretq_s16_s32(vmlal_s16(a0b1_low, vget_low_s16(a0), vget_low_s16(b1))) }; // 1, 9, 3, 11
-    let snd_high = unsafe { vreinterpretq_s16_s32(vmlal_high_s16(a0b1_high, a0, b1)) }; // 5, 13, 7, 15
+        unsafe { vreinterpretq_s16_s32(vmlal_s16(a0b1_low, vget_low_s16(a1), vget_low_s16(b0))) }; // 1, 9, 3, 11
+    let snd_high = unsafe { vreinterpretq_s16_s32(vmlal_high_s16(a0b1_high, a1, b0)) }; // 5, 13, 7, 15
 
     let fst_low16 = unsafe { vtrn1q_s16(fst_low, fst_high) }; // 0,4,8,12,2,6,10,14
     let fst_high16 = unsafe { vtrn2q_s16(fst_low, fst_high) };
