@@ -501,36 +501,36 @@ fn inv_ntt_layer_1_step(
 ) -> PortableVector {
     // First 8 elements.
     let a_minus_b = v.elements[2] - v.elements[0];
-    v.elements[0] = v.elements[0] + v.elements[2];
+    v.elements[0] = barrett_reduce_element(v.elements[0] + v.elements[2]);
     v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
     let a_minus_b = v.elements[3] - v.elements[1];
-    v.elements[1] = v.elements[1] + v.elements[3];
+    v.elements[1] = barrett_reduce_element(v.elements[1] + v.elements[3]);
     v.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
 
     let a_minus_b = v.elements[6] - v.elements[4];
-    v.elements[4] = v.elements[4] + v.elements[6];
+    v.elements[4] = barrett_reduce_element(v.elements[4] + v.elements[6]);
     v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
     let a_minus_b = v.elements[7] - v.elements[5];
-    v.elements[5] = v.elements[5] + v.elements[7];
+    v.elements[5] = barrett_reduce_element(v.elements[5] + v.elements[7]);
     v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
 
     // Next 8 elements.
     let a_minus_b = v.elements[8 + 2] - v.elements[8 + 0];
-    v.elements[8 + 0] = v.elements[8 + 0] + v.elements[8 + 2];
+    v.elements[8 + 0] = barrett_reduce_element(v.elements[8 + 0] + v.elements[8 + 2]);
     v.elements[8 + 2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
     let a_minus_b = v.elements[8 + 3] - v.elements[8 + 1];
-    v.elements[8 + 1] = v.elements[8 + 1] + v.elements[8 + 3];
+    v.elements[8 + 1] = barrett_reduce_element(v.elements[8 + 1] + v.elements[8 + 3]);
     v.elements[8 + 3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
 
     let a_minus_b = v.elements[8 + 6] - v.elements[8 + 4];
-    v.elements[8 + 4] = v.elements[8 + 4] + v.elements[8 + 6];
+    v.elements[8 + 4] = barrett_reduce_element(v.elements[8 + 4] + v.elements[8 + 6]);
     v.elements[8 + 6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
 
     let a_minus_b = v.elements[8 + 7] - v.elements[8 + 5];
-    v.elements[8 + 5] = v.elements[8 + 5] + v.elements[8 + 7];
+    v.elements[8 + 5] = barrett_reduce_element(v.elements[8 + 5] + v.elements[8 + 7]);
     v.elements[8 + 7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
 
     v
