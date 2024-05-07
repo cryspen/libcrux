@@ -11,8 +11,8 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) -> PolynomialRingElement<Vector> {
-    //*zeta_i += 2;
     for round in 0..16 {
+        *zeta_i += 1;
         re.coefficients[round] = Vector::ntt_layer_1_step(
             re.coefficients[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
@@ -20,9 +20,8 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 2],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
         );
-        *zeta_i += 4;
+        *zeta_i += 3;
     }
-    //*zeta_i -= 2;
     re
 }
 
@@ -123,12 +122,19 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     // Montgomery reductions.
     re = ntt_at_layer_7(re);
     let mut zeta_i = 1;
+    println!("-----");
     re = ntt_at_layer_4_plus(&mut zeta_i, re, 6, 3);
+    println!("{}", zeta_i);
     re = ntt_at_layer_4_plus(&mut zeta_i, re, 5, 3);
+    println!("{}", zeta_i);
     re = ntt_at_layer_4_plus(&mut zeta_i, re, 4, 3);
+    println!("{}", zeta_i);
     re = ntt_at_layer_3(&mut zeta_i, re, 3, 3);
+    println!("{}", zeta_i);
     re = ntt_at_layer_2(&mut zeta_i, re, 2, 3);
+    println!("{}", zeta_i);
     re = ntt_at_layer_1(&mut zeta_i, re, 1, 3);
+    println!("{}", zeta_i);
 
     re.poly_barrett_reduce()
 }
