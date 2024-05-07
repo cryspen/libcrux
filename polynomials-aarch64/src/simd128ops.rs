@@ -65,7 +65,7 @@ pub(crate) fn multiply_by_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vecto
 pub(crate) fn bitwise_and_with_constant(mut v: SIMD128Vector, c: i16) -> SIMD128Vector {
     let c = unsafe { vdupq_n_s16(c) };
     v.low = unsafe { vandq_s16(v.low, c) };
-    v.high = unsafe { vandq_s16(v.high, c) };;
+    v.high = unsafe { vandq_s16(v.high, c) };
     v
 }
 
@@ -228,7 +228,7 @@ fn mask_n_least_significant_bits(coefficient_bits: i16) -> i16 {
 }
 
 #[inline(always)]
-fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(mut v: uint32x4_t) -> uint32x4_t {
+fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4_t {
     // This is what we are trying to do in portable:
     // let mut compressed = (fe as u64) << coefficient_bits;
     // compressed += 1664 as u64;
@@ -287,7 +287,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
 
 
 #[inline(always)]
-fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(mut v: uint32x4_t) -> uint32x4_t {
+fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4_t {
     let coeff = unsafe { vdupq_n_u32(1 << (COEFFICIENT_BITS - 1)) };
 
     let decompressed = unsafe { vmulq_n_u32(v, FIELD_MODULUS as u32) };

@@ -1,6 +1,4 @@
 use core::arch::aarch64::*;
-use libcrux_traits::FIELD_MODULUS;
-
 
 /// This table is taken from PQClean. It is used in rej_sample
 // It implements the following logic:
@@ -771,7 +769,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
 ];
 
 #[inline(always)]
-fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
+pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
     let neon_bits: [u16; 8] = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
     let bits = unsafe { vld1q_u16(neon_bits.as_ptr() as *const u16) };
     let fm = unsafe { vdupq_n_s16(3328) };

@@ -103,7 +103,7 @@ impl Operations for SIMD128Vector {
         serialize_1(a)
     }
 
-    fn deserialize_1(a: u8) -> Self {
+    fn deserialize_1(a: &[u8]) -> Self {
         deserialize_1(a)
     }
 

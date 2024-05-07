@@ -34,9 +34,11 @@ pub trait Operations: Copy + Clone {
     // NTT
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
     fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
+    fn ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
     fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;
     fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self;
+    fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self;
 
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16)
         -> Self;
