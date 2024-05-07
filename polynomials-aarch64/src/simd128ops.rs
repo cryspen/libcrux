@@ -632,14 +632,14 @@ pub(crate) fn deserialize_4(v: &[u8]) -> SIMD128Vector {
     low[5] = ((input >> 20) & 0x0f) as i16;
     low[6] = ((input >> 24) & 0x0f) as i16;
     low[7] = ((input >> 28) & 0x0f) as i16;
-    high[8] = ((input >> 32) & 0x0f) as i16;
-    high[9] = ((input >> 36) & 0x0f) as i16;
-    high[10] = ((input >> 40) & 0x0f) as i16;
-    high[11] = ((input >> 44) & 0x0f) as i16;
-    high[12] = ((input >> 48) & 0x0f) as i16;
-    high[13] = ((input >> 52) & 0x0f) as i16;
-    high[14] = ((input >> 56) & 0x0f) as i16;
-    high[15] = ((input >> 60) & 0x0f) as i16;
+    high[0] = ((input >> 32) & 0x0f) as i16;
+    high[1] = ((input >> 36) & 0x0f) as i16;
+    high[2] = ((input >> 40) & 0x0f) as i16;
+    high[3] = ((input >> 44) & 0x0f) as i16;
+    high[4] = ((input >> 48) & 0x0f) as i16;
+    high[5] = ((input >> 52) & 0x0f) as i16;
+    high[6] = ((input >> 56) & 0x0f) as i16;
+    high[7] = ((input >> 60) & 0x0f) as i16;
     SIMD128Vector {
         low: unsafe { vld1q_s16(low.as_ptr() as *const i16) },
         high: unsafe { vld1q_s16(high.as_ptr() as *const i16) },
@@ -811,7 +811,7 @@ pub(crate) fn deserialize_11(v: &[u8]) -> SIMD128Vector {
     let mut input2 = [0u8; 8];
     input0.copy_from_slice(&v[0..8]);
     input1.copy_from_slice(&v[8..16]);
-    input2.copy_from_slice(&v[16..22]);
+    input2[0..6].copy_from_slice(&v[16..22]);
     let input0 = u64::from_le_bytes(input0);
     let input1 = u64::from_le_bytes(input1);
     let input2 = u64::from_le_bytes(input2);

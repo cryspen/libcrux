@@ -3,6 +3,7 @@ mod rejsample;
 mod simd128ops;
 
 use simd128ops::*;
+pub use simd128ops::SIMD128Vector;
 
 impl Operations for SIMD128Vector {
     #[inline(always)]
