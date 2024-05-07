@@ -33,15 +33,6 @@ val compress_then_serialize_u
       (input: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
     : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
-/// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
-/// in the `ciphertext`.
-val deserialize_then_decompress_u
-      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
 /// Algorithm 13 is reproduced below:
@@ -77,16 +68,20 @@ val deserialize_then_decompress_u
 /// ```
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val encrypt
+val encrypt_unpacked
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
-      (public_key: t_Slice u8)
+      (tt_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+      (a_transpose: t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
     : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
-/// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
-val deserialize_secret_key (v_K: usize) (secret_key: t_Slice u8)
+/// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
+/// in the `ciphertext`.
+val deserialize_then_decompress_u
+      (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
       Prims.l_True
       (fun _ -> Prims.l_True)
@@ -109,6 +104,27 @@ val deserialize_secret_key (v_K: usize) (secret_key: t_Slice u8)
 /// ```
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+val decrypt_unpacked
+      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
+          usize)
+      (secret_as_ntt: t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
+val encrypt
+      (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
+          usize)
+      (public_key: t_Slice u8)
+      (message: t_Array u8 (sz 32))
+      (randomness: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
+val deserialize_secret_key (v_K: usize) (secret_key: t_Slice u8)
+    : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
@@ -162,6 +178,15 @@ val serialize_public_key
 /// ```
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+val generate_keypair_unpacked
+      (v_K v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
+      (key_generation_seed: t_Slice u8)
+    : Prims.Pure
+      ((t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+          t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
+          t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K) &
+        t_Array u8 v_PUBLIC_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+
 val generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)

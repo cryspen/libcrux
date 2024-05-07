@@ -38,10 +38,33 @@ val validate_public_key
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
+type t_MlKemState (v_K: usize) = {
+  f_secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K;
+  f_t_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K;
+  f_a_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K;
+  f_rej:t_Array u8 (sz 32);
+  f_ind_cpa_public_key_hash:t_Array u8 (sz 32)
+}
+
+val decapsulate_unpacked
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
+          usize)
+      (state: t_MlKemState v_K)
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
 val generate_keypair
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
       (randomness: t_Array u8 (sz 64))
     : Prims.Pure (Libcrux.Kem.Kyber.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val generate_keypair_unpacked
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+          usize)
+      (randomness: t_Array u8 (sz 64))
+    : Prims.Pure (t_MlKemState v_K & Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       Prims.l_True
       (fun _ -> Prims.l_True)
