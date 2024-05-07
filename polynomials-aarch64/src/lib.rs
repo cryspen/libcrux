@@ -94,12 +94,18 @@ impl Operations for SIMD128Vector {
         inv_ntt_layer_3_step(a, zeta)
     }
 
-
-    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> Self {
+    fn ntt_multiply(
+        lhs: &Self,
+        rhs: &Self,
+        zeta1: i16,
+        zeta2: i16,
+        zeta3: i16,
+        zeta4: i16,
+    ) -> Self {
         ntt_multiply(lhs, rhs, zeta1, zeta2, zeta3, zeta4)
     }
 
-    fn serialize_1(a: Self) -> [u8;2] {
+    fn serialize_1(a: Self) -> [u8; 2] {
         serialize_1(a)
     }
 

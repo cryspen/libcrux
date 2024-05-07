@@ -248,7 +248,6 @@ fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4_t 
     compressed
 }
 
-
 #[inline(always)]
 pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
     // This is what we are trying to do in portable:
@@ -271,20 +270,13 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
     let high0 = compress_int32x4_t::<COEFFICIENT_BITS>(high0);
     let high1 = compress_int32x4_t::<COEFFICIENT_BITS>(high1);
 
-    let low = unsafe { vtrn1q_s16(
-        vreinterpretq_s16_u32(low0),
-        vreinterpretq_s16_u32(low1),
-    ) };
-    let high = unsafe { vtrn1q_s16(
-        vreinterpretq_s16_u32(high0),
-        vreinterpretq_s16_u32(high1),
-    ) };
+    let low = unsafe { vtrn1q_s16(vreinterpretq_s16_u32(low0), vreinterpretq_s16_u32(low1)) };
+    let high = unsafe { vtrn1q_s16(vreinterpretq_s16_u32(high0), vreinterpretq_s16_u32(high1)) };
 
     v.low = unsafe { vandq_s16(low, mask) };
     v.high = unsafe { vandq_s16(high, mask) };
     v
 }
-
 
 #[inline(always)]
 fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4_t {
@@ -293,7 +285,7 @@ fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4
     let decompressed = unsafe { vmulq_n_u32(v, FIELD_MODULUS as u32) };
     let decompressed = unsafe { vaddq_u32(decompressed, coeff) };
     let decompressed = unsafe { vshrq_n_u32::<COEFFICIENT_BITS>(decompressed) };
-    
+
     decompressed
 }
 
@@ -305,28 +297,24 @@ pub(crate) fn decompress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> S
     let high0 = unsafe { vandq_u32(vreinterpretq_u32_s16(v.high), mask16) };
     let high1 = unsafe { vshrq_n_u32::<16>(vreinterpretq_u32_s16(v.high)) };
 
-    let low0 = decompress_uint32x4_t::<COEFFICIENT_BITS>(low0); 
+    let low0 = decompress_uint32x4_t::<COEFFICIENT_BITS>(low0);
     let low1 = decompress_uint32x4_t::<COEFFICIENT_BITS>(low1);
     let high0 = decompress_uint32x4_t::<COEFFICIENT_BITS>(high0);
     let high1 = decompress_uint32x4_t::<COEFFICIENT_BITS>(high1);
 
-    v.low = unsafe {
-        vtrn1q_s16(
-            vreinterpretq_s16_u32(low0),
-            vreinterpretq_s16_u32(low1),
-        )
-    };
-    v.high = unsafe {
-        vtrn1q_s16(
-            vreinterpretq_s16_u32(high0),
-            vreinterpretq_s16_u32(high1),
-        )
-    };
+    v.low = unsafe { vtrn1q_s16(vreinterpretq_s16_u32(low0), vreinterpretq_s16_u32(low1)) };
+    v.high = unsafe { vtrn1q_s16(vreinterpretq_s16_u32(high0), vreinterpretq_s16_u32(high1)) };
     v
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> SIMD128Vector {
+pub(crate) fn ntt_layer_1_step(
+    mut v: SIMD128Vector,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+    zeta4: i16,
+) -> SIMD128Vector {
     // This is what we are trying to do, pointwise for every pair of elements:
     // let t = simd::Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
     // b = simd::Vector::sub(a, &t);
@@ -348,16 +336,20 @@ pub(crate) fn ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16, zet
     };
     let t = montgomery_multiply_int16x8_t(dup_b, zeta);
     let b = unsafe { vsubq_s16(dup_a, t) };
-    let a = unsafe { vaddq_s16(dup_a, t) }; 
+    let a = unsafe { vaddq_s16(dup_a, t) };
 
-    v.low = unsafe { 
+    v.low = unsafe {
         vreinterpretq_s16_s32(vtrn1q_s32(
             vreinterpretq_s32_s16(a),
-            vreinterpretq_s32_s16(b))) };
-    v.high = unsafe { 
+            vreinterpretq_s32_s16(b),
+        ))
+    };
+    v.high = unsafe {
         vreinterpretq_s16_s32(vtrn2q_s32(
             vreinterpretq_s32_s16(a),
-            vreinterpretq_s32_s16(b))) };
+            vreinterpretq_s32_s16(b),
+        ))
+    };
     v
 }
 
@@ -384,7 +376,7 @@ pub(crate) fn ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> 
     };
     let t = montgomery_multiply_int16x8_t(dup_b, zeta);
     let b = unsafe { vsubq_s16(dup_a, t) };
-    let a = unsafe { vaddq_s16(dup_a, t) }; 
+    let a = unsafe { vaddq_s16(dup_a, t) };
 
     v.low = unsafe {
         vreinterpretq_s16_s64(vtrn1q_s64(
@@ -397,10 +389,9 @@ pub(crate) fn ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> 
             vreinterpretq_s64_s16(a),
             vreinterpretq_s64_s16(b),
         ))
-    }; 
+    };
     v
 }
-
 
 #[inline(always)]
 pub(crate) fn ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector {
@@ -412,12 +403,18 @@ pub(crate) fn ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Vector
     let zeta = unsafe { vdupq_n_s16(zeta) };
     let t = montgomery_multiply_int16x8_t(v.high, zeta);
     v.high = unsafe { vsubq_s16(v.low, t) };
-    v.low =  unsafe { vaddq_s16(v.low, t) }; 
+    v.low = unsafe { vaddq_s16(v.low, t) };
     v
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> SIMD128Vector {
+pub(crate) fn inv_ntt_layer_1_step(
+    mut v: SIMD128Vector,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+    zeta4: i16,
+) -> SIMD128Vector {
     // This is what we are trying to do for every two elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
@@ -442,8 +439,8 @@ pub(crate) fn inv_ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16,
 
     let b_minus_a = unsafe { vsubq_s16(b, a) };
     let a = unsafe { vaddq_s16(a, b) };
-    let b = montgomery_multiply_int16x8_t(b_minus_a,zeta);
- 
+    let b = montgomery_multiply_int16x8_t(b_minus_a, zeta);
+
     v.low = unsafe {
         vreinterpretq_s16_s32(vtrn1q_s32(
             vreinterpretq_s32_s16(a),
@@ -460,7 +457,7 @@ pub(crate) fn inv_ntt_layer_1_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16,
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2:i16) -> SIMD128Vector {
+pub(crate) fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2: i16) -> SIMD128Vector {
     // This is what we are trying to do for every four elements:
     //let a_minus_b = simd::Vector::sub(b, &a);
     //a = simd::Vector::add(a, &b);
@@ -485,8 +482,8 @@ pub(crate) fn inv_ntt_layer_2_step(mut v: SIMD128Vector, zeta1: i16, zeta2:i16) 
 
     let b_minus_a = unsafe { vsubq_s16(b, a) };
     let a = unsafe { vaddq_s16(a, b) };
-    let b = montgomery_multiply_int16x8_t(b_minus_a,zeta);
- 
+    let b = montgomery_multiply_int16x8_t(b_minus_a, zeta);
+
     v.low = unsafe {
         vreinterpretq_s16_s64(vtrn1q_s64(
             vreinterpretq_s64_s16(a),
@@ -513,13 +510,19 @@ pub(crate) fn inv_ntt_layer_3_step(mut v: SIMD128Vector, zeta: i16) -> SIMD128Ve
     let zeta = unsafe { vdupq_n_s16(zeta) };
     let b_minus_a = unsafe { vsubq_s16(v.high, v.low) };
     v.low = unsafe { vaddq_s16(v.low, v.high) };
-    v.high = montgomery_multiply_int16x8_t(b_minus_a,zeta);
+    v.high = montgomery_multiply_int16x8_t(b_minus_a, zeta);
     v
 }
 
-
 #[inline(always)]
-pub(crate) fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> SIMD128Vector {
+pub(crate) fn ntt_multiply(
+    lhs: &SIMD128Vector,
+    rhs: &SIMD128Vector,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+    zeta4: i16,
+) -> SIMD128Vector {
     // This is what we are trying to do for pairs of two elements:
     // montgomery_reduce(a0 * b0 + montgomery_reduce(a1 * b1) * zeta),
     // montgomery_reduce(a0 * b1 + a1 * b0)
@@ -528,7 +531,7 @@ pub(crate) fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta1: i16,
     //let mulp = crate::simd::portable::ntt_multiply(&lhsp,&rhsp,zeta0,zeta1);
     //from_i16_array(crate::simd::portable::to_i16_array(mulp))
 
-    let zetas: [i16; 8] = [zeta1, zeta3, -zeta1, -zeta3, zeta2, zeta4, -zeta2, -zeta4]; 
+    let zetas: [i16; 8] = [zeta1, zeta3, -zeta1, -zeta3, zeta2, zeta4, -zeta2, -zeta4];
     let zeta = unsafe { vld1q_s16(zetas.as_ptr() as *const i16) };
 
     let a0 = unsafe { vtrn1q_s16(lhs.low, lhs.high) }; // a0, a8, a2, a10, ...
@@ -536,25 +539,27 @@ pub(crate) fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta1: i16,
     let b0 = unsafe { vtrn1q_s16(rhs.low, rhs.high) }; // b0, b8, b2, b10, ...
     let b1 = unsafe { vtrn2q_s16(rhs.low, rhs.high) }; // b1, b9, b3, b11, ...
 
-    let a1b1 = montgomery_multiply_int16x8_t(a1,b1);
+    let a1b1 = montgomery_multiply_int16x8_t(a1, b1);
     let a1b1_low = unsafe { vmull_s16(vget_low_s16(a1b1), vget_low_s16(zeta)) }; // a1b1z, a9b9z, a3b3z, a11b11z
     let a1b1_high = unsafe { vmull_high_s16(a1b1, zeta) }; // a5b5z, a13b13z, a7b7z, a15b15z
 
-    let fst_low = unsafe { vreinterpretq_s16_s32(vmlal_s16(a1b1_low, vget_low_s16(a0), vget_low_s16(b0)))}; // 0, 8, 2, 10
-    let fst_high = unsafe { vreinterpretq_s16_s32(vmlal_high_s16(a1b1_high, a0, b0))}; // 4, 12, 6, 14
+    let fst_low =
+        unsafe { vreinterpretq_s16_s32(vmlal_s16(a1b1_low, vget_low_s16(a0), vget_low_s16(b0))) }; // 0, 8, 2, 10
+    let fst_high = unsafe { vreinterpretq_s16_s32(vmlal_high_s16(a1b1_high, a0, b0)) }; // 4, 12, 6, 14
 
-    let a0b1_low = unsafe { vmull_s16(vget_low_s16(a0), vget_low_s16(b1))};
-    let a0b1_high = unsafe { vmull_high_s16(a0, b1)};
+    let a0b1_low = unsafe { vmull_s16(vget_low_s16(a0), vget_low_s16(b1)) };
+    let a0b1_high = unsafe { vmull_high_s16(a0, b1) };
 
-    let snd_low = unsafe { vreinterpretq_s16_s32(vmlal_s16(a0b1_low, vget_low_s16(a0), vget_low_s16(b1))) }; // 1, 9, 3, 11
+    let snd_low =
+        unsafe { vreinterpretq_s16_s32(vmlal_s16(a0b1_low, vget_low_s16(a0), vget_low_s16(b1))) }; // 1, 9, 3, 11
     let snd_high = unsafe { vreinterpretq_s16_s32(vmlal_high_s16(a0b1_high, a0, b1)) }; // 5, 13, 7, 15
 
-    let fst_low16 = unsafe { vtrn1q_s16(fst_low, fst_high) }; // 0,4,8,12,2,6,10,14      
-    let fst_high16 = unsafe { vtrn2q_s16(fst_low, fst_high) };    
+    let fst_low16 = unsafe { vtrn1q_s16(fst_low, fst_high) }; // 0,4,8,12,2,6,10,14
+    let fst_high16 = unsafe { vtrn2q_s16(fst_low, fst_high) };
     let snd_low16 = unsafe { vtrn1q_s16(snd_low, snd_high) }; // 1,5,9,13,3,7,11,15
-    let snd_high16 = unsafe { vtrn2q_s16(snd_low, snd_high) }; 
-                                                                                           
-    let fst = montgomery_reduce_int16x8_t(fst_low16, fst_high16);// 0,4,8,12,2,6,10,14 
+    let snd_high16 = unsafe { vtrn2q_s16(snd_low, snd_high) };
+
+    let fst = montgomery_reduce_int16x8_t(fst_low16, fst_high16); // 0,4,8,12,2,6,10,14
     let snd = montgomery_reduce_int16x8_t(snd_low16, snd_high16); // 1,5,9,13,3,7,11,15
 
     let low0 = unsafe { vreinterpretq_s32_s16(vtrn1q_s16(fst, snd)) }; // 0,1,8,9,2,3,10,11
@@ -563,16 +568,19 @@ pub(crate) fn ntt_multiply(lhs: &SIMD128Vector, rhs: &SIMD128Vector, zeta1: i16,
     let low1 = unsafe { vreinterpretq_s16_s32(vtrn1q_s32(low0, high0)) }; // 0,1,4,5,2,3,6,7
     let high1 = unsafe { vreinterpretq_s16_s32(vtrn2q_s32(low0, high0)) }; // 8,9,12,13,10,11,14,15
 
-    let indexes : [u8;16] = [0,1,2,3,8,9,10,11,4,5,6,7,12,13,14,15];
+    let indexes: [u8; 16] = [0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7, 12, 13, 14, 15];
     let index = unsafe { vld1q_u8(indexes.as_ptr() as *const u8) };
-    let low2 = unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(low1),index)) };
-    let high2 = unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(high1),index)) };
+    let low2 = unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(low1), index)) };
+    let high2 = unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(high1), index)) };
 
-    SIMD128Vector { low:low2, high:high2 }
+    SIMD128Vector {
+        low: low2,
+        high: high2,
+    }
 }
 
 #[inline(always)]
-pub(crate) fn serialize_1(v: SIMD128Vector) -> [u8;2] {
+pub(crate) fn serialize_1(v: SIMD128Vector) -> [u8; 2] {
     let shifter: [i16; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
     let shift = unsafe { vld1q_s16(shifter.as_ptr() as *const i16) };
     let low = unsafe { vshlq_s16(v.low, shift) };
@@ -607,7 +615,7 @@ pub(crate) fn serialize_4(v: SIMD128Vector) -> [u8; 8] {
     let sum1 = unsafe { vaddv_u16(vget_high_u16(lowt)) } as u64;
     let sum2 = unsafe { vaddv_u16(vget_low_u16(hight)) } as u64;
     let sum3 = unsafe { vaddv_u16(vget_high_u16(hight)) } as u64;
-    let sum  = sum0 | (sum1 << 16) | (sum2 << 32) | (sum3 << 48);
+    let sum = sum0 | (sum1 << 16) | (sum2 << 32) | (sum3 << 48);
     sum.to_le_bytes()
 }
 
@@ -647,11 +655,11 @@ pub(crate) fn serialize_5(v: SIMD128Vector) -> [u8; 10] {
     res[2] = (out[3] >> 1 | out[4] << 4) as u8;
     res[3] = (out[4] >> 4 | out[5] << 1 | out[6] << 6) as u8;
     res[4] = (out[6] >> 2 | out[7] << 3) as u8;
-    res[5] = (out[8+0] | out[8+1] << 5) as u8;
-    res[6] = (out[8+1] >> 3 | out[8+2] << 2 | out[8+3] << 7) as u8;
-    res[7] = (out[8+3] >> 1 | out[8+4] << 4) as u8;
-    res[8] = (out[8+4] >> 4 | out[8+5] << 1 | out[8+6] << 6) as u8;
-    res[9] = (out[8+6] >> 2 | out[8+7] << 3) as u8;
+    res[5] = (out[8 + 0] | out[8 + 1] << 5) as u8;
+    res[6] = (out[8 + 1] >> 3 | out[8 + 2] << 2 | out[8 + 3] << 7) as u8;
+    res[7] = (out[8 + 3] >> 1 | out[8 + 4] << 4) as u8;
+    res[8] = (out[8 + 4] >> 4 | out[8 + 5] << 1 | out[8 + 6] << 6) as u8;
+    res[9] = (out[8 + 6] >> 2 | out[8 + 7] << 3) as u8;
     res
 }
 
@@ -663,7 +671,6 @@ pub(crate) fn deserialize_5(v: &[u8]) -> SIMD128Vector {
     let mut input1 = [0u8; 8];
     input1[0..5].copy_from_slice(&v[5..10]);
     let high64 = u64::from_le_bytes(input1);
-
 
     let mut low = [0i16; 8];
     let mut high = [0i16; 8];
@@ -685,7 +692,6 @@ pub(crate) fn deserialize_5(v: &[u8]) -> SIMD128Vector {
     high[5] = ((high64 >> 25) & 0x1F) as i16;
     high[6] = ((high64 >> 30) & 0x1F) as i16;
     high[7] = ((high64 >> 35) & 0x1F) as i16;
-
 
     SIMD128Vector {
         low: unsafe { vld1q_s16(low.as_ptr() as *const i16) },
@@ -712,8 +718,18 @@ pub(crate) fn serialize_10(v: SIMD128Vector) -> [u8; 20] {
     let high_mix = unsafe { vsliq_n_s64::<20>(high0, high1) }; // a3a2a1a0, a7a6a5a4
 
     let mut result32 = [0u8; 32];
-    unsafe { vst1q_u8(result32[0..16].as_mut_ptr() as *mut u8, vreinterpretq_u8_s64(low_mix)) };
-    unsafe { vst1q_u8(result32[16..32].as_mut_ptr() as *mut u8, vreinterpretq_u8_s64(high_mix)) };
+    unsafe {
+        vst1q_u8(
+            result32[0..16].as_mut_ptr() as *mut u8,
+            vreinterpretq_u8_s64(low_mix),
+        )
+    };
+    unsafe {
+        vst1q_u8(
+            result32[16..32].as_mut_ptr() as *mut u8,
+            vreinterpretq_u8_s64(high_mix),
+        )
+    };
     let mut result = [0u8; 20];
     result[0..5].copy_from_slice(&result32[0..5]);
     result[5..10].copy_from_slice(&result32[8..13]);
@@ -774,17 +790,17 @@ pub(crate) fn serialize_11(v: SIMD128Vector) -> [u8; 22] {
     result[9] = ((input[6] >> 6) | (input[7] << 5)) as u8; // 8 left in 7
     result[10] = (input[7] >> 3) as u8;
 
-    result[11+0] = input[8+0] as u8; // 3 left in 0
-    result[11+1] = ((input[8+0] >> 8) | (input[8+1] << 3)) as u8; // 6 left in 1
-    result[11+2] = ((input[8+1] >> 5) | (input[8+2] << 6)) as u8; // 9 left in 2
-    result[11+3] = (input[8+2] >> 2) as u8; // 1 left in 2
-    result[11+4] = ((input[8+2] >> 10) | (input[8+3] << 1)) as u8; // 4 left in 3
-    result[11+5] = ((input[8+3] >> 7) | (input[8+4] << 4)) as u8; // 7 left in 4
-    result[11+6] = ((input[8+4] >> 4) | (input[8+5] << 7)) as u8; // 10 left in 5
-    result[11+7] = (input[8+5] >> 1) as u8; // 2 left in 5
-    result[11+8] = ((input[8+5] >> 9) | (input[8+6] << 2)) as u8; // 5 left in 6
-    result[11+9] = ((input[8+6] >> 6) | (input[8+7] << 5)) as u8; // 8 left in 7
-    result[11+10] = (input[8+7] >> 3) as u8;
+    result[11 + 0] = input[8 + 0] as u8; // 3 left in 0
+    result[11 + 1] = ((input[8 + 0] >> 8) | (input[8 + 1] << 3)) as u8; // 6 left in 1
+    result[11 + 2] = ((input[8 + 1] >> 5) | (input[8 + 2] << 6)) as u8; // 9 left in 2
+    result[11 + 3] = (input[8 + 2] >> 2) as u8; // 1 left in 2
+    result[11 + 4] = ((input[8 + 2] >> 10) | (input[8 + 3] << 1)) as u8; // 4 left in 3
+    result[11 + 5] = ((input[8 + 3] >> 7) | (input[8 + 4] << 4)) as u8; // 7 left in 4
+    result[11 + 6] = ((input[8 + 4] >> 4) | (input[8 + 5] << 7)) as u8; // 10 left in 5
+    result[11 + 7] = (input[8 + 5] >> 1) as u8; // 2 left in 5
+    result[11 + 8] = ((input[8 + 5] >> 9) | (input[8 + 6] << 2)) as u8; // 5 left in 6
+    result[11 + 9] = ((input[8 + 6] >> 6) | (input[8 + 7] << 5)) as u8; // 8 left in 7
+    result[11 + 10] = (input[8 + 7] >> 3) as u8;
     result
 }
 
@@ -848,8 +864,18 @@ pub(crate) fn serialize_12(v: SIMD128Vector) -> [u8; 24] {
     let high_mix = unsafe { vsliq_n_s64::<24>(high0, high1) }; // a3a2a1a0, a7a6a5a4
 
     let mut result32 = [0u8; 32];
-    unsafe { vst1q_u8(result32[0..16].as_mut_ptr() as *mut u8, vreinterpretq_u8_s64(low_mix)) };
-    unsafe { vst1q_u8(result32[16..32].as_mut_ptr() as *mut u8, vreinterpretq_u8_s64(high_mix)) };
+    unsafe {
+        vst1q_u8(
+            result32[0..16].as_mut_ptr() as *mut u8,
+            vreinterpretq_u8_s64(low_mix),
+        )
+    };
+    unsafe {
+        vst1q_u8(
+            result32[16..32].as_mut_ptr() as *mut u8,
+            vreinterpretq_u8_s64(high_mix),
+        )
+    };
     let mut result = [0u8; 24];
     result[0..6].copy_from_slice(&result32[0..6]);
     result[6..12].copy_from_slice(&result32[8..14]);
@@ -882,6 +908,8 @@ pub(crate) fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     let shifted1 = unsafe { vshlq_u16(moved1, shift_vec) };
     let high = unsafe { vreinterpretq_s16_u16(vandq_u16(shifted1, mask12)) };
 
-    SIMD128Vector { low: low, high: high }
+    SIMD128Vector {
+        low: low,
+        high: high,
+    }
 }
-

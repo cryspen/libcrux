@@ -781,7 +781,7 @@ pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
     let used1 = unsafe { vaddvq_u16(vandq_u16(mask1, bits)) };
     let pick0 = used0.count_ones();
     let pick1 = used1.count_ones();
-    
+
     let index_vec0 = unsafe { vld1q_u8(IDX_TABLE[used0 as usize].as_ptr() as *const u8) };
     let shifted0 = unsafe { vqtbl1q_u8(vreinterpretq_u8_s16(input.low), index_vec0) };
     let index_vec1 = unsafe { vld1q_u8(IDX_TABLE[used1 as usize].as_ptr() as *const u8) };
@@ -789,7 +789,17 @@ pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
 
     let mut out: [i16; 16] = [0i16; 16];
     let idx0 = pick0 as usize;
-    unsafe { vst1q_s16(out[0..8].as_mut_ptr() as *mut i16, vreinterpretq_s16_u8(shifted0)) };
-    unsafe { vst1q_s16(out[idx0..idx0+8].as_mut_ptr() as *mut i16, vreinterpretq_s16_u8(shifted1)) };
+    unsafe {
+        vst1q_s16(
+            out[0..8].as_mut_ptr() as *mut i16,
+            vreinterpretq_s16_u8(shifted0),
+        )
+    };
+    unsafe {
+        vst1q_s16(
+            out[idx0..idx0 + 8].as_mut_ptr() as *mut i16,
+            vreinterpretq_s16_u8(shifted1),
+        )
+    };
     ((pick0 + pick1) as usize, out)
 }
