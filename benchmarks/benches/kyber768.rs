@@ -26,8 +26,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         b.iter(|| {
             let mut seed = [0; 64];
             rng.fill_bytes(&mut seed);
-            let _tuple =
-                libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
+            let _tuple = libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
         })
     });
 
@@ -44,7 +43,6 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
                 libcrux::kem::key_gen(Algorithm::MlKem768, &mut rng).unwrap();
         })
     });
-
 
     group.bench_function("pqclean reference implementation", |b| {
         b.iter(|| {
@@ -166,17 +164,17 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             || {
                 let mut seed = [0; 64];
                 OsRng.fill_bytes(&mut seed);
-                let ((sk,pk,a,rej,pkh),pubkey) =
-                     libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
-                
+                let (sk_state, pubkey) =
+                    libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
+
                 let mut rand = [0; 32];
                 OsRng.fill_bytes(&mut rand);
-                let (ciphertext,_) = libcrux::kem::kyber::kyber768::encapsulate(&pubkey,rand);
-                ((sk,pk,a,rej,pkh),ciphertext)
+                let (ciphertext, _) = libcrux::kem::kyber::kyber768::encapsulate(&pubkey, rand);
+                (sk_state, ciphertext)
             },
-            |((sk,pk,a,rej,pkh),ciphertext)| {
-                let _shared_secret = 
-                    libcrux::kem::kyber::kyber768::decapsulate_unpacked(&sk,&pk,&a,&rej,&pkh,&ciphertext);
+            |(sk_state, ciphertext)| {
+                let _shared_secret =
+                    libcrux::kem::kyber::kyber768::decapsulate_unpacked(&sk_state, &ciphertext);
             },
             BatchSize::SmallInput,
         )

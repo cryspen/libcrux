@@ -149,7 +149,14 @@ pub(super) fn generate_keypair_unpacked<
     const ETA1_RANDOMNESS_SIZE: usize,
 >(
     key_generation_seed: &[u8],
-) -> (([PolynomialRingElement; K], [PolynomialRingElement; K], [[PolynomialRingElement; K]; K]), [u8; PUBLIC_KEY_SIZE]) {
+) -> (
+    (
+        [PolynomialRingElement; K],
+        [PolynomialRingElement; K],
+        [[PolynomialRingElement; K]; K],
+    ),
+    [u8; PUBLIC_KEY_SIZE],
+) {
     // (ρ,σ) := G(d)
     let hashed = G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
@@ -166,29 +173,32 @@ pub(super) fn generate_keypair_unpacked<
     let mut t_as_ntt = compute_As_plus_e(&a_transpose, &secret_as_ntt, &error_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
-    let public_key_serialized =
-        serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
-            t_as_ntt, &seed_for_A,
-        );
-    
-    // KB: Need to do the following otherwise it violates invariants in NTT (the values are expected to be >=0 and <4096).
+    let public_key_serialized = serialize_public_key::<
+        K,
+        RANKED_BYTES_PER_RING_ELEMENT,
+        PUBLIC_KEY_SIZE,
+    >(t_as_ntt, &seed_for_A);
+
+    // Need to do the following otherwise it violates invariants in NTT (the values are expected to be >=0 and <4096).
     // Maybe we can remove these reductions later if we make those constraints looser
     for i in 0..K {
-        for j in 0..256 {
-            secret_as_ntt[i].coefficients[j] = to_unsigned_representative(secret_as_ntt[i].coefficients[j]) as i32;
-            t_as_ntt[i].coefficients[j] = to_unsigned_representative(t_as_ntt[i].coefficients[j]) as i32;
+        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            secret_as_ntt[i].coefficients[j] =
+                to_unsigned_representative(secret_as_ntt[i].coefficients[j]) as i32;
+            t_as_ntt[i].coefficients[j] =
+                to_unsigned_representative(t_as_ntt[i].coefficients[j]) as i32;
         }
     }
 
-    // KB: We also need to transpose the A array.
+    // We also need to transpose the A array.
     let mut a_matrix = a_transpose;
     for i in 0..K {
         for j in 0..K {
             a_matrix[i][j] = a_transpose[j][i];
         }
     }
-    
-    ((secret_as_ntt,t_as_ntt,a_matrix),public_key_serialized)
+
+    ((secret_as_ntt, t_as_ntt, a_matrix), public_key_serialized)
 }
 
 #[allow(non_snake_case)]
@@ -202,9 +212,15 @@ pub(super) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
-    let ((secret_as_ntt,_t_as_ntt,_a_transpose),public_key_serialized) = 
-        generate_keypair_unpacked::<K,PUBLIC_KEY_SIZE,RANKED_BYTES_PER_RING_ELEMENT,ETA1,ETA1_RANDOMNESS_SIZE>(key_generation_seed);
-    
+    let ((secret_as_ntt, _t_as_ntt, _a_transpose), public_key_serialized) =
+        generate_keypair_unpacked::<
+            K,
+            PUBLIC_KEY_SIZE,
+            RANKED_BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(key_generation_seed);
+
     // sk := Encode_12(sˆ mod^{+}q)
     let secret_key_serialized = serialize_secret_key(secret_as_ntt);
 
@@ -231,8 +247,6 @@ fn compress_then_serialize_u<
 
     out
 }
-
-
 
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
@@ -289,11 +303,10 @@ pub(crate) fn encrypt_unpacked<
     const ETA2_RANDOMNESS_SIZE: usize,
 >(
     t_as_ntt: &[PolynomialRingElement; K],
-    a_transpose: &[[PolynomialRingElement;K];K],
+    a_transpose: &[[PolynomialRingElement; K]; K],
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
-
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
     //     N := N + 1
@@ -374,8 +387,21 @@ pub(crate) fn encrypt<
     //     end for
     // end for
     let a_transpose = sample_matrix_A(into_padded_array(seed), false);
-    
-    encrypt_unpacked::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE>(&t_as_ntt, &a_transpose, message, randomness)
+
+    encrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_LEN,
+        C2_LEN,
+        U_COMPRESSION_FACTOR,
+        V_COMPRESSION_FACTOR,
+        BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+    >(&t_as_ntt, &a_transpose, message, randomness)
 }
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
@@ -474,5 +500,11 @@ pub(super) fn decrypt<
     // sˆ := Decode_12(sk)
     let secret_as_ntt = deserialize_secret_key::<K>(secret_key);
 
- decrypt_unpacked::<K,CIPHERTEXT_SIZE,VECTOR_U_ENCODED_SIZE,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR>(&secret_as_ntt, ciphertext)
+    decrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        VECTOR_U_ENCODED_SIZE,
+        U_COMPRESSION_FACTOR,
+        V_COMPRESSION_FACTOR,
+    >(&secret_as_ntt, ciphertext)
 }

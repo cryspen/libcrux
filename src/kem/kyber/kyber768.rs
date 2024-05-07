@@ -72,7 +72,7 @@ pub type MlKem768State = MlKemState<RANK_768>;
 
 pub fn generate_key_pair_unpacked(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> (MlKem768State, MlKem768PublicKey)  {
+) -> (MlKem768State, MlKem768PublicKey) {
     generate_keypair_unpacked::<
         RANK_768,
         CPA_PKE_SECRET_KEY_SIZE_768,
@@ -155,7 +155,7 @@ pub fn decapsulate_unpacked(
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(state,ciphertext)
+    >(state, ciphertext)
 }
 
 #[cfg(test)]

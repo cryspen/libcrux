@@ -73,7 +73,7 @@ pub type MlKem1024State = MlKemState<RANK_1024>;
 
 pub fn generate_key_pair_unpacked(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> (MlKem1024State, MlKem1024PublicKey)  {
+) -> (MlKem1024State, MlKem1024PublicKey) {
     generate_keypair_unpacked::<
         RANK_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,
@@ -156,6 +156,5 @@ pub fn decapsulate_unpacked(
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(state,ciphertext)
+    >(state, ciphertext)
 }
-
