@@ -764,9 +764,9 @@ pub(crate) fn deserialize_10(v: &[u8]) -> SIMD128Vector {
     high[2] = ((input1 >> 36) & 0x3ff) as i16;
     high[3] = ((input1 >> 46) & 0x3ff) as i16;
     high[4] = ((((input1 >> 56) as u32) | (input2 << 8)) & 0x3ff) as i16;
-    high[5] = ((input2 >> 2) * 0x3ff) as i16;
-    high[6] = ((input2 >> 12) * 0x3ff) as i16;
-    high[7] = ((input2 >> 22) * 0x3ff) as i16;
+    high[5] = ((input2 >> 2) & 0x3ff) as i16;
+    high[6] = ((input2 >> 12) & 0x3ff) as i16;
+    high[7] = ((input2 >> 22) & 0x3ff) as i16;
 
     SIMD128Vector {
         low: unsafe { vld1q_s16(low.as_ptr() as *const i16) },
