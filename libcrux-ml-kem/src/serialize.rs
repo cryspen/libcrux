@@ -30,7 +30,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 ) -> PolynomialRingElement<Vector> {
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     for i in 0..16 {
-        let coefficient_compressed = Vector::deserialize_1(&serialized[2 * i..2 * i + 1]);
+        let coefficient_compressed = Vector::deserialize_1(&serialized[2 * i..2 * i + 2]);
         re.coefficients[i] = Vector::decompress_1(coefficient_compressed);
     }
     re
