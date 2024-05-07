@@ -41,25 +41,25 @@ pub trait Operations: Copy + Clone {
     fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16) -> Self;
 
     // Serialization and deserialization
-    fn serialize_1(a: Self) -> u8;
-    fn deserialize_1(a: u8) -> Self;
+    fn serialize_1(a: Self) -> [u8; 2];
+    fn deserialize_1(a: &[u8]) -> Self;
 
-    fn serialize_4(a: Self) -> [u8; 4];
+    fn serialize_4(a: Self) -> [u8; 8];
     fn deserialize_4(a: &[u8]) -> Self;
 
-    fn serialize_5(a: Self) -> [u8; 5];
+    fn serialize_5(a: Self) -> [u8; 10];
     fn deserialize_5(a: &[u8]) -> Self;
 
-    fn serialize_10(a: Self) -> [u8; 10];
+    fn serialize_10(a: Self) -> [u8; 20];
     fn deserialize_10(a: &[u8]) -> Self;
 
-    fn serialize_11(a: Self) -> [u8; 11];
+    fn serialize_11(a: Self) -> [u8; 22];
     fn deserialize_11(a: &[u8]) -> Self;
 
-    fn serialize_12(a: Self) -> [u8; 12];
+    fn serialize_12(a: Self) -> [u8; 24];
     fn deserialize_12(a: &[u8]) -> Self;
 
-    fn rej_sample(a: &[u8]) -> (usize, [i16; 8]);
+    fn rej_sample(a: &[u8]) -> (usize, [i16; 16]);
 }
 
 // hax does not support trait with default implementations, so we use the following patter
