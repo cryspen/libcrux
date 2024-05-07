@@ -110,11 +110,16 @@ val deserialize_then_decompress_ring_element_v
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Only use with public values.
+/// This MUST NOT be used with secret inputs, like its caller `deserialize_ring_elements_reduced`.
 val deserialize_to_reduced_ring_element (ring_element: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// This function deserializes ring elements and reduces the result by the field
+/// modulus.
+/// This function MUST NOT be used on secret inputs.
 val deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key: t_Slice u8)
     : Prims.Pure (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
       Prims.l_True

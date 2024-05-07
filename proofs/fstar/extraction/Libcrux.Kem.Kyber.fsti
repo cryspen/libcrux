@@ -6,10 +6,12 @@ open FStar.Mul
 unfold
 let t_MlKemSharedSecret = t_Array u8 (sz 32)
 
+/// Seed size for key generation
 let v_KEY_GENERATION_SEED_SIZE: usize =
   Libcrux.Kem.Kyber.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
   Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
 
+/// Serialize the secret key.
 val serialize_kem_secret_key
       (v_SERIALIZED_KEY_LEN: usize)
       (private_key public_key implicit_rejection_value: t_Slice u8)
