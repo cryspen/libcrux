@@ -1685,11 +1685,11 @@ impl Operations for SIMD128Vector {
         ZERO()
     }
 
-    fn to_i16_array(v: Self) -> [i16; 8] {
+    fn to_i16_array(v: Self) -> [i16; 16] {
         to_i16_array(v)
     }
 
-    fn from_i16_array(array: [i16; 8]) -> Self {
+    fn from_i16_array(array: [i16; 16]) -> Self {
         from_i16_array(array)
     }
 
@@ -1745,27 +1745,27 @@ impl Operations for SIMD128Vector {
         decompress::<COEFFICIENT_BITS>(v)
     }
 
-    fn ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self {
-        ntt_layer_1_step(a, zeta1, zeta2)
+    fn ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> Self {
+        ntt_layer_1_step(a, zeta1, zeta2, zeta3, zeta4)
     }
 
-    fn ntt_layer_2_step(a: Self, zeta: i16) -> Self {
-        ntt_layer_2_step(a, zeta)
+    fn ntt_layer_2_step(a: Self, zeta1: i16, zeta2: i16) -> Self {
+        ntt_layer_2_step(a, zeta1, zeta2)
     }
 
-    fn inv_ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16) -> Self {
-        inv_ntt_layer_1_step(a, zeta1, zeta2)
+    fn inv_ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> Self {
+        inv_ntt_layer_1_step(a, zeta1, zeta2, zeta3, zeta4)
     }
 
-    fn inv_ntt_layer_2_step(a: Self, zeta: i16) -> Self {
-        inv_ntt_layer_2_step(a, zeta)
+    fn inv_ntt_layer_2_step(a: Self, zeta1: i16, zeta2: i16) -> Self {
+        inv_ntt_layer_2_step(a, zeta1, zeta2)
     }
 
-    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta0: i16, zeta1: i16) -> Self {
-        ntt_multiply(lhs, rhs, zeta0, zeta1)
+    fn ntt_multiply(lhs: &Self, rhs: &Self, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> Self {
+        ntt_multiply(lhs, rhs, zeta1, zeta2, zeta3, zeta4)
     }
 
-    fn serialize_1(a: Self) -> u8 {
+    fn serialize_1(a: Self) -> [u8;2] {
         serialize_1(a)
     }
 
@@ -1773,7 +1773,7 @@ impl Operations for SIMD128Vector {
         deserialize_1(a)
     }
 
-    fn serialize_4(a: Self) -> [u8; 4] {
+    fn serialize_4(a: Self) -> [u8; 8] {
         serialize_4(a)
     }
 
@@ -1781,7 +1781,7 @@ impl Operations for SIMD128Vector {
         deserialize_4(a)
     }
 
-    fn serialize_5(a: Self) -> [u8; 5] {
+    fn serialize_5(a: Self) -> [u8; 10] {
         serialize_5(a)
     }
 
@@ -1789,7 +1789,7 @@ impl Operations for SIMD128Vector {
         deserialize_5(a)
     }
 
-    fn serialize_10(a: Self) -> [u8; 10] {
+    fn serialize_10(a: Self) -> [u8; 20] {
         serialize_10(a)
     }
 
@@ -1797,7 +1797,7 @@ impl Operations for SIMD128Vector {
         deserialize_10(a)
     }
 
-    fn serialize_11(a: Self) -> [u8; 11] {
+    fn serialize_11(a: Self) -> [u8; 22] {
         serialize_11(a)
     }
 
@@ -1805,7 +1805,7 @@ impl Operations for SIMD128Vector {
         deserialize_11(a)
     }
 
-    fn serialize_12(a: Self) -> [u8; 12] {
+    fn serialize_12(a: Self) -> [u8; 24] {
         serialize_12(a)
     }
 
@@ -1813,7 +1813,7 @@ impl Operations for SIMD128Vector {
         deserialize_12(a)
     }
 
-    fn rej_sample(a: &[u8]) -> (usize, [i16; 8]) {
+    fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
         rej_sample(a)
     }
 }
