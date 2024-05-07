@@ -10,8 +10,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
     mut re: PolynomialRingElement<Vector>,
     _layer: usize,
 ) -> PolynomialRingElement<Vector> {
-    *zeta_i -= 2;
     for round in 0..16 {
+        *zeta_i -= 1;
         re.coefficients[round] = Vector::inv_ntt_layer_1_step(
             re.coefficients[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
@@ -19,9 +19,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 2],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 3],
         );
-        *zeta_i -= 4;
+        *zeta_i -= 3;
     }
-    *zeta_i += 2;
     re
 }
 
@@ -32,12 +31,13 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     _layer: usize,
 ) -> PolynomialRingElement<Vector> {
     for round in 0..16 {
-        *zeta_i -= 2;
+        *zeta_i -= 1;
         re.coefficients[round] = Vector::inv_ntt_layer_2_step(
             re.coefficients[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
-            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
         );
+        *zeta_i -= 1;
     }
     re
 }

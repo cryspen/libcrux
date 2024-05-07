@@ -170,4 +170,12 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
         out
     }
+
+    pub(crate) fn print_debug(&self) {
+        println!("Start");
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            println!("{:?}", Vector::to_i16_array(self.coefficients[i]));
+        }
+        println!("End");
+    }
 }
