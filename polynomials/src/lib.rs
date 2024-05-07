@@ -408,7 +408,7 @@ fn ntt_layer_1_step(
     v.elements[8 + 6] = v.elements[8 + 4] - t;
     v.elements[8 + 4] = v.elements[8 + 4] + t;
 
-    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta3);
+    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 7], zeta3);
     v.elements[8 + 7] = v.elements[8 + 5] - t;
     v.elements[8 + 5] = v.elements[8 + 5] + t;
 
@@ -593,19 +593,19 @@ fn inv_ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVector {
     v.elements[3] = v.elements[3] + v.elements[11];
     v.elements[11] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = v.elements[12] - v.elements[0];
+    let a_minus_b = v.elements[12] - v.elements[4];
     v.elements[4] = v.elements[4] + v.elements[12];
     v.elements[12] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = v.elements[13] - v.elements[1];
+    let a_minus_b = v.elements[13] - v.elements[5];
     v.elements[5] = v.elements[5] + v.elements[13];
     v.elements[13] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = v.elements[14] - v.elements[2];
+    let a_minus_b = v.elements[14] - v.elements[6];
     v.elements[6] = v.elements[6] + v.elements[14];
     v.elements[14] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
-    let a_minus_b = v.elements[15] - v.elements[3];
+    let a_minus_b = v.elements[15] - v.elements[7];
     v.elements[7] = v.elements[7] + v.elements[15];
     v.elements[15] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 
@@ -736,7 +736,7 @@ fn serialize_1(v: PortableVector) -> [u8; 2] {
     }
 
     for i in 8..16 {
-        result[1] |= (v.elements[i] as u8) << i;
+        result[1] |= (v.elements[i] as u8) << (i - 8);
     }
 
     result
@@ -746,7 +746,7 @@ fn serialize_1(v: PortableVector) -> [u8; 2] {
 fn deserialize_1(v: &[u8]) -> PortableVector {
     let mut result = zero();
 
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+    for i in 0..8 {
         result.elements[i] = ((v[0] >> i) & 0x1) as i16;
     }
     for i in 8..FIELD_ELEMENTS_IN_VECTOR {
@@ -834,14 +834,14 @@ fn deserialize_5(bytes: &[u8]) -> PortableVector {
     v.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i16;
     v.elements[7] = (bytes[4] >> 3) as i16;
 
-    v.elements[8] = (bytes[4 + 0] & 0x1F) as i16;
-    v.elements[9] = ((bytes[4 + 1] & 0x3) << 3 | (bytes[4 + 0] >> 5)) as i16;
-    v.elements[10] = ((bytes[4 + 1] >> 2) & 0x1F) as i16;
-    v.elements[11] = (((bytes[4 + 2] & 0xF) << 1) | (bytes[4 + 1] >> 7)) as i16;
-    v.elements[12] = (((bytes[4 + 3] & 1) << 4) | (bytes[4 + 2] >> 4)) as i16;
-    v.elements[13] = ((bytes[4 + 3] >> 1) & 0x1F) as i16;
-    v.elements[14] = (((bytes[4 + 4] & 0x7) << 2) | (bytes[4 + 3] >> 6)) as i16;
-    v.elements[15] = (bytes[4 + 4] >> 3) as i16;
+    v.elements[8] = (bytes[5 + 0] & 0x1F) as i16;
+    v.elements[9] = ((bytes[5 + 1] & 0x3) << 3 | (bytes[5 + 0] >> 5)) as i16;
+    v.elements[10] = ((bytes[5 + 1] >> 2) & 0x1F) as i16;
+    v.elements[11] = (((bytes[5 + 2] & 0xF) << 1) | (bytes[5 + 1] >> 7)) as i16;
+    v.elements[12] = (((bytes[5 + 3] & 1) << 4) | (bytes[5 + 2] >> 4)) as i16;
+    v.elements[13] = ((bytes[5 + 3] >> 1) & 0x1F) as i16;
+    v.elements[14] = (((bytes[5 + 4] & 0x7) << 2) | (bytes[5 + 3] >> 6)) as i16;
+    v.elements[15] = (bytes[5 + 4] >> 3) as i16;
 
     v
 }
@@ -1061,11 +1061,11 @@ fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
         let d1 = ((b2 & 0xF) << 8) | b1;
         let d2 = (b3 << 4) | (b2 >> 4);
 
-        if d1 < FIELD_MODULUS && sampled < 8 {
+        if d1 < FIELD_MODULUS && sampled < 16 {
             result[sampled] = d1;
             sampled += 1
         }
-        if d2 < FIELD_MODULUS && sampled < 8 {
+        if d2 < FIELD_MODULUS && sampled < 16 {
             result[sampled] = d2;
             sampled += 1
         }

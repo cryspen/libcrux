@@ -61,7 +61,7 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_int_vec_step<Vector: Operations>(
+fn ntt_layer_int_vec_step<Vector: Operations>(
     mut a: Vector,
     mut b: Vector,
     zeta_r: i16,

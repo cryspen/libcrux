@@ -18,11 +18,10 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
         let coefficient = Vector::to_unsigned_representative(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
 
-        let coefficients_serialized = Vector::serialize_1(coefficient_compressed);
-
-        serialized[2 * i] = coefficients_serialized[0];
-        serialized[2 * i + 1] = coefficients_serialized[1];
+        let bytes = Vector::serialize_1(coefficient_compressed);
+        serialized[2 * i..2 * i + 2].copy_from_slice(&bytes);
     }
+
     serialized
 }
 #[inline(always)]
@@ -46,32 +45,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
         let coefficient = Vector::to_unsigned_representative(re.coefficients[i]);
 
         let bytes = Vector::serialize_12(coefficient);
-
-        serialized[12 * i] = bytes[0];
-        serialized[12 * i + 1] = bytes[1];
-        serialized[12 * i + 2] = bytes[2];
-        serialized[12 * i + 3] = bytes[3];
-        serialized[12 * i + 4] = bytes[4];
-        serialized[12 * i + 5] = bytes[5];
-        serialized[12 * i + 6] = bytes[6];
-        serialized[12 * i + 7] = bytes[7];
-        serialized[12 * i + 8] = bytes[8];
-        serialized[12 * i + 9] = bytes[9];
-        serialized[12 * i + 10] = bytes[10];
-        serialized[12 * i + 11] = bytes[11];
-
-        serialized[12 * i + 12] = bytes[12];
-        serialized[12 * i + 13] = bytes[13];
-        serialized[12 * i + 14] = bytes[14];
-        serialized[12 * i + 15] = bytes[15];
-        serialized[12 * i + 16] = bytes[16];
-        serialized[12 * i + 17] = bytes[17];
-        serialized[12 * i + 18] = bytes[18];
-        serialized[12 * i + 19] = bytes[19];
-        serialized[12 * i + 20] = bytes[20];
-        serialized[12 * i + 21] = bytes[21];
-        serialized[12 * i + 22] = bytes[22];
-        serialized[12 * i + 23] = bytes[23];
+        serialized[24 * i..24 * i + 24].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -145,28 +119,9 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<10>(Vector::to_unsigned_representative(re.coefficients[i]));
-        let bytes = Vector::serialize_10(coefficient);
-        serialized[10 * i] = bytes[0];
-        serialized[10 * i + 1] = bytes[1];
-        serialized[10 * i + 2] = bytes[2];
-        serialized[10 * i + 3] = bytes[3];
-        serialized[10 * i + 4] = bytes[4];
-        serialized[10 * i + 5] = bytes[5];
-        serialized[10 * i + 6] = bytes[6];
-        serialized[10 * i + 7] = bytes[7];
-        serialized[10 * i + 8] = bytes[8];
-        serialized[10 * i + 9] = bytes[9];
 
-        serialized[10 * i + 10] = bytes[10];
-        serialized[10 * i + 11] = bytes[11];
-        serialized[10 * i + 12] = bytes[12];
-        serialized[10 * i + 13] = bytes[13];
-        serialized[10 * i + 14] = bytes[14];
-        serialized[10 * i + 15] = bytes[15];
-        serialized[10 * i + 16] = bytes[16];
-        serialized[10 * i + 17] = bytes[17];
-        serialized[10 * i + 18] = bytes[18];
-        serialized[10 * i + 19] = bytes[19];
+        let bytes = Vector::serialize_10(coefficient);
+        serialized[20 * i..20 * i + 20].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -179,30 +134,9 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<11>(Vector::to_unsigned_representative(re.coefficients[i]));
-        let bytes = Vector::serialize_11(coefficient);
-        serialized[11 * i] = bytes[0];
-        serialized[11 * i + 1] = bytes[1];
-        serialized[11 * i + 2] = bytes[2];
-        serialized[11 * i + 3] = bytes[3];
-        serialized[11 * i + 4] = bytes[4];
-        serialized[11 * i + 5] = bytes[5];
-        serialized[11 * i + 6] = bytes[6];
-        serialized[11 * i + 7] = bytes[7];
-        serialized[11 * i + 8] = bytes[8];
-        serialized[11 * i + 9] = bytes[9];
-        serialized[11 * i + 10] = bytes[10];
 
-        serialized[11 * i + 11] = bytes[11];
-        serialized[11 * i + 12] = bytes[12];
-        serialized[11 * i + 13] = bytes[13];
-        serialized[11 * i + 14] = bytes[14];
-        serialized[11 * i + 15] = bytes[15];
-        serialized[11 * i + 16] = bytes[16];
-        serialized[11 * i + 17] = bytes[17];
-        serialized[11 * i + 18] = bytes[18];
-        serialized[11 * i + 19] = bytes[19];
-        serialized[11 * i + 20] = bytes[20];
-        serialized[11 * i + 21] = bytes[21];
+        let bytes = Vector::serialize_11(coefficient);
+        serialized[22 * i..22 * i + 22].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -232,17 +166,9 @@ fn compress_then_serialize_4<const OUT_LEN: usize, Vector: Operations>(
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<4>(Vector::to_unsigned_representative(re.coefficients[i]));
+
         let bytes = Vector::serialize_4(coefficient);
-
-        serialized[4 * i] = bytes[0];
-        serialized[4 * i + 1] = bytes[1];
-        serialized[4 * i + 2] = bytes[2];
-        serialized[4 * i + 3] = bytes[3];
-
-        serialized[4 * i + 4] = bytes[4];
-        serialized[4 * i + 5] = bytes[5];
-        serialized[4 * i + 6] = bytes[6];
-        serialized[4 * i + 7] = bytes[7];
+        serialized[8 * i..8 * i + 8].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -258,18 +184,7 @@ fn compress_then_serialize_5<const OUT_LEN: usize, Vector: Operations>(
             Vector::compress::<5>(Vector::to_unsigned_representative(re.coefficients[i]));
 
         let bytes = Vector::serialize_5(coefficients);
-
-        serialized[5 * i] = bytes[0];
-        serialized[5 * i + 1] = bytes[1];
-        serialized[5 * i + 2] = bytes[2];
-        serialized[5 * i + 3] = bytes[3];
-        serialized[5 * i + 4] = bytes[4];
-
-        serialized[5 * i + 5] = bytes[5];
-        serialized[5 * i + 6] = bytes[6];
-        serialized[5 * i + 7] = bytes[7];
-        serialized[5 * i + 8] = bytes[8];
-        serialized[5 * i + 9] = bytes[9];
+        serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);
     }
     serialized
 }
