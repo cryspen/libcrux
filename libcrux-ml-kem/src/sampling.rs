@@ -1,11 +1,8 @@
 use libcrux_polynomials::Operations;
 
 use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
-    hash_functions::*,
-    hax_utils::hax_debug_assert,
-    helper::cloop,
-    polynomial::PolynomialRingElement,
+    constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, hax_utils::hax_debug_assert,
+    helper::cloop, polynomial::PolynomialRingElement,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function
@@ -54,11 +51,15 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 ) -> bool {
     // Would be great to trigger auto-vectorization or at least loop unrolling here
     for i in 0..K {
-         for r in 0..N / 24 {
+        for r in 0..N / 24 {
             let remaining = COEFFICIENTS_IN_RING_ELEMENT - sampled_coefficients[i];
             if remaining > 0 {
                 let (sampled, vec) = Vector::rej_sample(&randomness[i][r * 24..(r * 24) + 24]);
-                let pick = if sampled <= remaining {sampled} else {remaining};
+                let pick = if sampled <= remaining {
+                    sampled
+                } else {
+                    remaining
+                };
                 out[i][sampled_coefficients[i]..sampled_coefficients[i] + pick]
                     .copy_from_slice(&vec[0..pick]);
                 sampled_coefficients[i] += pick;
@@ -84,8 +85,11 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations>(
     let mut xof_state = absorb(seeds);
     let randomness = squeeze_three_blocks(&mut xof_state);
 
-    let mut done =
-        sample_from_uniform_distribution_next::<Vector,K,THREE_BLOCKS>(randomness, &mut sampled_coefficients, &mut out);
+    let mut done = sample_from_uniform_distribution_next::<Vector, K, THREE_BLOCKS>(
+        randomness,
+        &mut sampled_coefficients,
+        &mut out,
+    );
 
     // Requiring more than 5 blocks to sample a ring element should be very
     // unlikely according to:
@@ -94,8 +98,11 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations>(
     // we have enough.
     while !done {
         let randomness = squeeze_block(&mut xof_state);
-        done =
-            sample_from_uniform_distribution_next::<Vector,K,BLOCK_SIZE>(randomness, &mut sampled_coefficients, &mut out);
+        done = sample_from_uniform_distribution_next::<Vector, K, BLOCK_SIZE>(
+            randomness,
+            &mut sampled_coefficients,
+            &mut out,
+        );
     }
     // XXX: We have to manually free the state here due to a Eurydice issue.
     free_state(xof_state);
