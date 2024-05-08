@@ -46,7 +46,7 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
 pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-    if super::ind_cca::validate_public_key::<
+    if ind_cca::validate_public_key::<
         RANK_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
@@ -62,7 +62,7 @@ pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768Publ
 pub fn generate_key_pair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768> {
-    super::ind_cca::generate_keypair::<
+    generate_keypair::<
         RANK_768,
         CPA_PKE_SECRET_KEY_SIZE_768,
         SECRET_KEY_SIZE_768,
@@ -81,7 +81,7 @@ pub fn encapsulate(
     MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
     MlKemSharedSecret,
 ) {
-    super::ind_cca::encapsulate::<
+    ind_cca::encapsulate::<
         RANK_768,
         CPA_PKE_CIPHERTEXT_SIZE_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
@@ -103,7 +103,7 @@ pub fn decapsulate(
     secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_768>,
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    super::ind_cca::decapsulate::<
+    ind_cca::decapsulate::<
         RANK_768,
         SECRET_KEY_SIZE_768,
         CPA_PKE_SECRET_KEY_SIZE_768,

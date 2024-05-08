@@ -47,7 +47,7 @@ pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
 pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512PublicKey> {
-    if super::ind_cca::validate_public_key::<
+    if ind_cca::validate_public_key::<
         RANK_512,
         RANKED_BYTES_PER_RING_ELEMENT_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
@@ -85,7 +85,7 @@ pub fn encapsulate(
     MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>,
     MlKemSharedSecret,
 ) {
-    super::ind_cca::encapsulate::<
+    ind_cca::encapsulate::<
         RANK_512,
         CPA_PKE_CIPHERTEXT_SIZE_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
@@ -107,7 +107,7 @@ pub fn decapsulate(
     secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_512>,
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    super::ind_cca::decapsulate::<
+    ind_cca::decapsulate::<
         RANK_512,
         SECRET_KEY_SIZE_512,
         CPA_PKE_SECRET_KEY_SIZE_512,
