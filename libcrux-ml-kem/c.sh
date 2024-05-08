@@ -10,7 +10,15 @@ if [[ -z "$EURYDICE_HOME" ]]; then
 fi
 
 echo "Running charon ..."
+echo "  ml-kem"
 $CHARON_HOME/bin/charon --errors-as-warnings
+echo "  polynomials"
+cd ../polynomials
+$CHARON_HOME/bin/charon --errors-as-warnings
+# echo "  polynomials-aarch64"
+# cd ../polynomials-aarch64
+# $CHARON_HOME/bin/charon --errors-as-warnings
+# cd -
 mkdir -p c
 cd c
 
