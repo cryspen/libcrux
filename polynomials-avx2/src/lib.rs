@@ -512,10 +512,6 @@ impl Operations for SIMD256Vector {
         from_i32_array(array)
     }
 
-    fn add_constant(v: Self, c: i32) -> Self {
-        add_constant(v, c)
-    }
-
     fn add(lhs: Self, rhs: &Self) -> Self {
         add(lhs, rhs)
     }

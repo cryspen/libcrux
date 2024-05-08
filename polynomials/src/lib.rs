@@ -218,15 +218,6 @@ fn from_i16_array(array: [i16; FIELD_ELEMENTS_IN_VECTOR]) -> PortableVector {
 }
 
 #[inline(always)]
-fn add_constant(mut v: PortableVector, c: i16) -> PortableVector {
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] += c;
-    }
-
-    v
-}
-
-#[inline(always)]
 fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         lhs.elements[i] += rhs.elements[i];
@@ -1084,10 +1075,6 @@ impl Operations for PortableVector {
 
     fn from_i16_array(array: [i16; FIELD_ELEMENTS_IN_VECTOR]) -> Self {
         from_i16_array(array)
-    }
-
-    fn add_constant(v: Self, c: i16) -> Self {
-        add_constant(v, c)
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
