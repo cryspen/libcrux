@@ -2,18 +2,49 @@ files:
   - name: libcrux_digest
     api:
       - [libcrux, digest]
+      - [libcrux, digest, "*"]
     include_in_h:
       - '"libcrux_hacl_glue.h"'
+
   - name: libcrux_platform
     api:
       - [libcrux_platform]
-  - name: libcrux_kyber
+
+  - name: libcrux_kyber512
     api:
-      - [libcrux_kyber, kyber768]
-    private:
-      - [libcrux_kyber, "*"]
+      - [libcrux_kyber, kyber512]
     include_in_c:
       - '"libcrux_hacl_glue.h"'
+
+  - name: libcrux_kyber768
+    api:
+      - [libcrux_kyber, kyber768]
+    include_in_c:
+      - '"libcrux_hacl_glue.h"'
+
+  - name: libcrux_kyber1024
+    api:
+      - [libcrux_kyber, kyber1024]
+    include_in_c:
+      - '"libcrux_hacl_glue.h"'
+
+  - name: libcrux_kyber_common
+    private:
+      - [libcrux_kyber, "*"]
+    include_in_h:
+      - '"libcrux_hacl_glue.h"'
+    inline_static: true
+
   - name: core
     private:
       - [core, "*"]
+    # NOTE: putting Eurydice in core prevent eurydice from detecting spurious calls
+    # across C translation units from Eurydice to core (notably related to the
+    # result type), and thus prevents eurydice from flipping some result types
+    # being public, which pollutes the header.
+    # NOTE: putting Eurydice as public (api) is required, since some compilation
+    # passes produce calls to Eurydice.slice_to_array2 *after* reachability
+    # analysis, meaning that we cannot let reachability analysis eliminate
+    # Eurydice definitions on an as-needed basis
+    api:
+      - [Eurydice, "*"]

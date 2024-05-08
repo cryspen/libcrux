@@ -34,6 +34,7 @@ pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 pub type MlKemSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
 
 use self::{
+    arithmetic::PolynomialRingElement,
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
     },
@@ -85,6 +86,53 @@ pub(super) fn validate_public_key<
         );
 
     *public_key == public_key_serialized
+}
+
+pub struct MlKemState<const K: usize> {
+    secret_as_ntt: [PolynomialRingElement; K],
+    t_as_ntt: [PolynomialRingElement; K],
+    a_transpose: [[PolynomialRingElement; K]; K],
+    rej: [u8; 32],
+    ind_cpa_public_key_hash: [u8; 32],
+}
+
+pub(super) fn generate_keypair_unpacked<
+    const K: usize,
+    const CPA_PRIVATE_KEY_SIZE: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+>(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> (MlKemState<K>, MlKemPublicKey<PUBLIC_KEY_SIZE>) {
+    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
+    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+
+    let ((secret_as_ntt, t_as_ntt, a_transpose), ind_cpa_public_key) =
+        ind_cpa::generate_keypair_unpacked::<
+            K,
+            PUBLIC_KEY_SIZE,
+            BYTES_PER_RING_ELEMENT,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+        >(ind_cpa_keypair_randomness);
+
+    let ind_cpa_public_key_hash = H(&ind_cpa_public_key);
+
+    let rej: [u8; 32] = implicit_rejection_value.try_into().unwrap();
+    let pubkey: MlKemPublicKey<PUBLIC_KEY_SIZE> = MlKemPublicKey::from(ind_cpa_public_key);
+    (
+        MlKemState {
+            secret_as_ntt,
+            t_as_ntt,
+            a_transpose,
+            rej,
+            ind_cpa_public_key_hash,
+        },
+        pubkey,
+    )
 }
 
 pub(super) fn generate_keypair<
@@ -160,6 +208,79 @@ pub(super) fn encapsulate<
     let mut shared_secret_array = [0u8; constants::SHARED_SECRET_SIZE];
     shared_secret_array.copy_from_slice(shared_secret);
     (ciphertext.into(), shared_secret_array)
+}
+
+pub(super) fn decapsulate_unpacked<
+    const K: usize,
+    const SECRET_KEY_SIZE: usize,
+    const CPA_SECRET_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const C1_SIZE: usize,
+    const C2_SIZE: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const C1_BLOCK_SIZE: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+    const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+>(
+    state: &MlKemState<K>,
+    ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+) -> MlKemSharedSecret {
+    let secret_as_ntt: &[PolynomialRingElement; K] = &state.secret_as_ntt;
+    let t_as_ntt: &[PolynomialRingElement; K] = &state.t_as_ntt;
+    let a_transpose: &[[PolynomialRingElement; K]; K] = &state.a_transpose;
+    let implicit_rejection_value: &[u8] = &state.rej;
+    let ind_cpa_public_key_hash: &[u8] = &state.ind_cpa_public_key_hash;
+
+    let decrypted = ind_cpa::decrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        C1_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+    >(secret_as_ntt, &ciphertext.value);
+
+    let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ind_cpa_public_key_hash);
+
+    let hashed = G(&to_hash);
+    let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
+
+    let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
+        into_padded_array(&implicit_rejection_value);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
+    let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = PRF(&to_hash);
+
+    let expected_ciphertext = ind_cpa::encrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_SIZE,
+        C2_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+        C1_BLOCK_SIZE,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+    >(t_as_ntt, a_transpose, decrypted, pseudorandomness);
+
+    let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
+        ciphertext.as_ref(),
+        &expected_ciphertext,
+    );
+
+    select_shared_secret_in_constant_time(
+        shared_secret,
+        &implicit_rejection_shared_secret,
+        selector,
+    )
 }
 
 pub(super) fn decapsulate<

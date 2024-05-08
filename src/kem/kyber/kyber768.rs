@@ -68,6 +68,22 @@ pub fn generate_key_pair(
     >(randomness)
 }
 
+pub type MlKem768State = MlKemState<RANK_768>;
+
+pub fn generate_key_pair_unpacked(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> (MlKem768State, MlKem768PublicKey) {
+    generate_keypair_unpacked::<
+        RANK_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        RANKED_BYTES_PER_RING_ELEMENT_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+    >(randomness)
+}
+
 /// Encapsulate ML-KEM 768
 pub fn encapsulate(
     public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>,
@@ -116,6 +132,30 @@ pub fn decapsulate(
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(secret_key, ciphertext)
+}
+
+pub fn decapsulate_unpacked(
+    state: &MlKem768State,
+    ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
+) -> [u8; SHARED_SECRET_SIZE] {
+    super::decapsulate_unpacked::<
+        RANK_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+    >(state, ciphertext)
 }
 
 #[cfg(test)]
