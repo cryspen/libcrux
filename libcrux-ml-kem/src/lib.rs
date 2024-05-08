@@ -9,6 +9,7 @@
 #![no_std]
 #![forbid(unsafe_code, missing_docs)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
+#![allow(clippy::needless_range_loop)]
 
 pub(crate) mod hax_utils;
 
