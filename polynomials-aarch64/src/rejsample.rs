@@ -398,8 +398,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
     ], // 126
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0xff, 0xff],     // 127
     [
-        14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff,
+        14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     ], // 128
     [
         0, 1, 14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -491,9 +490,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
     [
         2, 3, 4, 5, 6, 7, 8, 9, 14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     ], // 158
-    [
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 15, 0xff, 0xff, 0xff, 0xff,
-    ], // 159
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 15, 0xff, 0xff, 0xff, 0xff], // 159
     [
         10, 11, 14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     ], // 160
@@ -587,7 +584,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
     [
         2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 0xff, 0xff, 0xff, 0xff,
     ], // 190
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 0xff, 0xff],   // 191
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 0xff, 0xff],     // 191
     [
         12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     ], // 192
@@ -681,7 +678,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
     [
         2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff,
     ], // 222
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 0xff, 0xff],   // 223
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 0xff, 0xff],     // 223
     [
         10, 11, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     ], // 224
@@ -727,7 +724,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
     [
         2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff,
     ], // 238
-    [0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 0xff, 0xff], // 239
+    [0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 0xff, 0xff],   // 239
     [
         8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     ], // 240
@@ -749,7 +746,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
     [
         2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff,
     ], // 246
-    [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff], // 247
+    [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff],   // 247
     [
         6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     ], // 248
@@ -759,13 +756,13 @@ const IDX_TABLE: [[u8; 16]; 256] = [
     [
         2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff,
     ], // 250
-    [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff], // 251
+    [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff],   // 251
     [
         4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff, 0xff, 0xff,
     ], // 252
-    [0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff], // 253
-    [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff], // 254
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],       // 255
+    [0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff],   // 253
+    [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0xff, 0xff],   // 254
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],         // 255
 ];
 
 #[inline(always)]
@@ -783,23 +780,15 @@ pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
     let pick1 = used1.count_ones();
 
     let index_vec0 = unsafe { vld1q_u8(IDX_TABLE[used0 as usize].as_ptr() as *const u8) };
-    let shifted0 = unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(input.low), index_vec0)) };
+    let shifted0 =
+        unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(input.low), index_vec0)) };
     let index_vec1 = unsafe { vld1q_u8(IDX_TABLE[used1 as usize].as_ptr() as *const u8) };
-    let shifted1 = unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(input.high), index_vec1)) };
+    let shifted1 =
+        unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(input.high), index_vec1)) };
 
     let mut out: [i16; 16] = [0i16; 16];
     let idx0 = pick0 as usize;
-    unsafe {
-        vst1q_s16(
-            out[0..8].as_mut_ptr() as *mut i16,
-            shifted0
-        )
-    };
-    unsafe {
-        vst1q_s16(
-            out[idx0..idx0 + 8].as_mut_ptr() as *mut i16,
-            shifted1,
-        )
-    };
+    unsafe { vst1q_s16(out[0..8].as_mut_ptr() as *mut i16, shifted0) };
+    unsafe { vst1q_s16(out[idx0..idx0 + 8].as_mut_ptr() as *mut i16, shifted1) };
     ((pick0 + pick1) as usize, out)
 }
