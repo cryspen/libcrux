@@ -100,7 +100,7 @@ pub(crate) fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
 const BARRETT_MULTIPLIER: i16 = 20159;
 
 #[inline(always)]
-pub(crate) fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+fn barrett_reduce_int16x8_t(v: int16x8_t) -> int16x8_t {
     //let pv = crate::simd::portable::from_i16_array(to_i16_array(v));
     //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
 
@@ -110,19 +110,25 @@ pub(crate) fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
     // let result = value - (quotient * FIELD_MODULUS);
 
     let adder = unsafe { vdupq_n_s16(1024) };
-
-    let vec = unsafe { vqdmulhq_n_s16(v.low, BARRETT_MULTIPLIER as i16) };
+    let vec = unsafe { vqdmulhq_n_s16(v, BARRETT_MULTIPLIER as i16) };
     let vec = unsafe { vaddq_s16(vec, adder) };
     let quotient = unsafe { vshrq_n_s16::<11>(vec) };
     let sub = unsafe { vmulq_n_s16(quotient, FIELD_MODULUS) };
-    v.low = unsafe { vsubq_s16(v.low, sub) };
+    unsafe { vsubq_s16(v, sub) }
+}
 
-    let vec = unsafe { vqdmulhq_n_s16(v.high, BARRETT_MULTIPLIER as i16) };
-    let vec = unsafe { vaddq_s16(vec, adder) };
-    let quotient = unsafe { vshrq_n_s16::<11>(vec) };
-    let sub = unsafe { vmulq_n_s16(quotient, FIELD_MODULUS) };
-    v.high = unsafe { vsubq_s16(v.high, sub) };
+#[inline(always)]
+pub(crate) fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
+    //let pv = crate::simd::portable::from_i16_array(to_i16_array(v));
+    //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
 
+    // This is what we are trying to do in portable:
+    // let t = (value as i16 * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
+    // let quotient = (t >> BARRETT_SHIFT) as i16;
+    // let result = value - (quotient * FIELD_MODULUS);
+
+    v.low = barrett_reduce_int16x8_t(v.low);
+    v.high = barrett_reduce_int16x8_t(v.high);
     v
 }
 
@@ -439,6 +445,7 @@ pub(crate) fn inv_ntt_layer_1_step(
 
     let b_minus_a = unsafe { vsubq_s16(b, a) };
     let a = unsafe { vaddq_s16(a, b) };
+    let a = barrett_reduce_int16x8_t(a);
     let b = montgomery_multiply_int16x8_t(b_minus_a, zeta);
 
     v.low = unsafe {
