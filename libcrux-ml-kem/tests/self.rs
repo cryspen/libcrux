@@ -1,4 +1,4 @@
-use libcrux_ml_kem::{kyber1024, kyber512, kyber768, MlKemCiphertext, MlKemPrivateKey};
+use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768, MlKemCiphertext, MlKemPrivateKey};
 use libcrux_sha3::shake256;
 use rand::{rngs::OsRng, thread_rng, RngCore};
 
@@ -164,76 +164,76 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
 
 impl_consistency!(
     consistency_512,
-    kyber512::generate_key_pair,
-    kyber512::encapsulate,
-    kyber512::decapsulate
+    mlkem512::generate_key_pair,
+    mlkem512::encapsulate,
+    mlkem512::decapsulate
 );
 impl_consistency!(
     consistency_768,
-    kyber768::generate_key_pair,
-    kyber768::encapsulate,
-    kyber768::decapsulate
+    mlkem768::generate_key_pair,
+    mlkem768::encapsulate,
+    mlkem768::decapsulate
 );
 impl_consistency!(
     consistency_1024,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 
 impl_modified_ciphertext!(
     modified_ciphertext_512,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 impl_modified_ciphertext!(
     modified_ciphertext_768,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 impl_modified_ciphertext!(
     modified_ciphertext_1024,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 
 impl_modified_secret_key!(
     modified_secret_key_512,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 impl_modified_secret_key!(
     modified_secret_key_768,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 impl_modified_secret_key!(
     modified_secret_key_1024,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_512,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_768,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_1024,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );

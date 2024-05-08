@@ -6,7 +6,7 @@ use std::{
     path::Path,
 };
 
-use libcrux_ml_kem::{kyber1024, kyber512, kyber768};
+use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
 /// These tests are from https://github.com/C2SP/CCTV/
 fn test_invalid_modulus(p: &str) {
@@ -18,9 +18,9 @@ fn test_invalid_modulus(p: &str) {
         let pk = hex::decode(line).unwrap();
         let pk = pk.as_slice();
         match p {
-            "512" => assert!(kyber512::validate_public_key(pk.try_into().unwrap()).is_none()),
-            "768" => assert!(kyber768::validate_public_key(pk.try_into().unwrap()).is_none()),
-            "1024" => assert!(kyber1024::validate_public_key(pk.try_into().unwrap()).is_none()),
+            "512" => assert!(mlkem512::validate_public_key(pk.try_into().unwrap()).is_none()),
+            "768" => assert!(mlkem768::validate_public_key(pk.try_into().unwrap()).is_none()),
+            "1024" => assert!(mlkem1024::validate_public_key(pk.try_into().unwrap()).is_none()),
             _ => unreachable!(),
         };
     }
