@@ -1,6 +1,4 @@
-use libcrux_polynomials::{
-    FieldElementTimesMontgomeryR, GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR,
-};
+use libcrux_polynomials::{FieldElementTimesMontgomeryR, GenericOperations, Operations};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
@@ -13,8 +11,9 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] =
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
-pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
-    super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
+// FIXME: Charon can't handle this right now.
+// super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
+pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
 
 #[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
@@ -34,11 +33,10 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     pub(crate) fn from_i16_array(a: [i16; 256]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
-            result.coefficients[i] = Vector::from_i16_array(
-                a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
-                    .try_into()
-                    .unwrap(),
-            );
+            // FIXME: Charon can't handle constants apparently.
+            // The 16s here should be FIELD_ELEMENTS_IN_VECTOR
+            result.coefficients[i] =
+                Vector::from_i16_array(a[i * 16..(i + 1) * 16].try_into().unwrap());
         }
         result
     }

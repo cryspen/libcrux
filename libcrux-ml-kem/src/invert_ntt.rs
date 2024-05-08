@@ -2,7 +2,7 @@ use crate::{
     hax_utils::hax_debug_assert,
     polynomial::{PolynomialRingElement, ZETAS_TIMES_MONTGOMERY_R},
 };
-use libcrux_polynomials::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR};
+use libcrux_polynomials::{GenericOperations, Operations};
 
 #[inline(always)]
 pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
@@ -67,6 +67,7 @@ pub(crate) fn inv_ntt_layer_int_vec_step_reduce<Vector: Operations>(
     b = Vector::montgomery_multiply_fe_by_fer(a_minus_b, zeta_r);
     (a, b)
 }
+
 #[inline(always)]
 pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     zeta_i: &mut usize,
@@ -78,9 +79,10 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
     for round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
+        // FIXME: Charon can't handle constants apparently.
         let offset = round * step * 2;
-        let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
-        let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
+        let offset_vec = offset / 16; //FIELD_ELEMENTS_IN_VECTOR;
+        let step_vec = step / 16; //FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
             let (x, y) = inv_ntt_layer_int_vec_step_reduce(
