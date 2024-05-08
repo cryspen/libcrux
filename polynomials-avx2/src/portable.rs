@@ -307,7 +307,11 @@ pub(crate) fn inv_ntt_layer_1_step(
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_2_step(mut v: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
+pub(crate) fn inv_ntt_layer_2_step(
+    mut v: PortableVector,
+    zeta0: i16,
+    zeta1: i16,
+) -> PortableVector {
     // First 8 elements.
     let a_minus_b = v.elements[4] - v.elements[0];
     v.elements[0] = v.elements[0] + v.elements[4];
@@ -487,23 +491,6 @@ pub(crate) fn deserialize_1(v: &[u8]) -> PortableVector {
     for i in 8..FIELD_ELEMENTS_IN_VECTOR {
         result.elements[i] = ((v[1] >> (i - 8)) & 0x1) as i16;
     }
-
-    result
-}
-
-#[inline(always)]
-pub(crate) fn serialize_4(v: PortableVector) -> [u8; 8] {
-    let mut result = [0u8; 8];
-
-    result[0] = ((v.elements[1] as u8) << 4) | (v.elements[0] as u8);
-    result[1] = ((v.elements[3] as u8) << 4) | (v.elements[2] as u8);
-    result[2] = ((v.elements[5] as u8) << 4) | (v.elements[4] as u8);
-    result[3] = ((v.elements[7] as u8) << 4) | (v.elements[6] as u8);
-
-    result[4] = ((v.elements[8 + 1] as u8) << 4) | (v.elements[8 + 0] as u8);
-    result[5] = ((v.elements[8 + 3] as u8) << 4) | (v.elements[8 + 2] as u8);
-    result[6] = ((v.elements[8 + 5] as u8) << 4) | (v.elements[8 + 4] as u8);
-    result[7] = ((v.elements[8 + 7] as u8) << 4) | (v.elements[8 + 6] as u8);
 
     result
 }

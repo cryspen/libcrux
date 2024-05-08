@@ -1,30 +1,12 @@
-use libcrux_traits::{Operations, FIELD_MODULUS};
 use core::arch::x86_64::*;
+use libcrux_traits::{Operations, FIELD_MODULUS};
 
+mod debug;
 mod portable;
 
 #[derive(Clone, Copy)]
 pub struct SIMD256Vector {
     elements: __m256i,
-}
-
-#[allow(dead_code)]
-fn print_m256i_as_i16s(a: __m256i, prefix: &'static str) {
-    let mut a_bytes = [0i16; 16];
-    unsafe { _mm256_store_si256(a_bytes.as_mut_ptr() as *mut __m256i, a) };
-    println!("{}: {:?}", prefix, a_bytes);
-}
-#[allow(dead_code)]
-fn print_m128i_as_i16s(a: __m128i, prefix: &'static str) {
-    let mut a_bytes = [0i16; 8];
-    unsafe { _mm_store_si128(a_bytes.as_mut_ptr() as *mut __m128i, a) };
-    println!("{}: {:?}", prefix, a_bytes);
-}
-#[allow(dead_code)]
-fn print_m128i_as_i8s(a: __m128i, prefix: &'static str) {
-    let mut a_bytes = [0i8; 16];
-    unsafe { _mm_store_si128(a_bytes.as_mut_ptr() as *mut __m128i, a) };
-    println!("{}: {:?}", prefix, a_bytes);
 }
 
 #[inline(always)]
@@ -154,7 +136,8 @@ fn compress_1(mut v: SIMD256Vector) -> SIMD256Vector {
         let mask = _mm256_srai_epi16(shifted, 15);
 
         let shifted_to_positive = _mm256_xor_si256(mask, shifted);
-        let shifted_to_positive_in_range = _mm256_sub_epi16(shifted_to_positive, field_modulus_quartered);
+        let shifted_to_positive_in_range =
+            _mm256_sub_epi16(shifted_to_positive, field_modulus_quartered);
 
         _mm256_srli_epi16(shifted_to_positive_in_range, 15)
     };
@@ -165,7 +148,7 @@ fn compress_1(mut v: SIMD256Vector) -> SIMD256Vector {
 #[inline(always)]
 fn compress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
     let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::compress::<{COEFFICIENT_BITS}>(input);
+    let output = portable::compress::<{ COEFFICIENT_BITS }>(input);
 
     from_i16_array(portable::to_i16_array(output))
 }
@@ -173,13 +156,19 @@ fn compress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
 #[inline(always)]
 fn decompress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
     let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::decompress::<{COEFFICIENT_BITS}>(input);
+    let output = portable::decompress::<{ COEFFICIENT_BITS }>(input);
 
     from_i16_array(portable::to_i16_array(output))
 }
 
 #[inline(always)]
-fn ntt_layer_1_step(v: SIMD256Vector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> SIMD256Vector {
+fn ntt_layer_1_step(
+    v: SIMD256Vector,
+    zeta0: i16,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+) -> SIMD256Vector {
     let input = portable::from_i16_array(to_i16_array(v));
     let output = portable::ntt_layer_1_step(input, zeta0, zeta1, zeta2, zeta3);
 
@@ -203,7 +192,13 @@ fn ntt_layer_3_step(v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn inv_ntt_layer_1_step(v: SIMD256Vector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> SIMD256Vector {
+fn inv_ntt_layer_1_step(
+    v: SIMD256Vector,
+    zeta0: i16,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+) -> SIMD256Vector {
     let input = portable::from_i16_array(to_i16_array(v));
     let output = portable::inv_ntt_layer_1_step(input, zeta0, zeta1, zeta2, zeta3);
 
@@ -227,7 +222,14 @@ fn inv_ntt_layer_3_step(v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn ntt_multiply(lhs: &SIMD256Vector, rhs: &SIMD256Vector, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> SIMD256Vector {
+fn ntt_multiply(
+    lhs: &SIMD256Vector,
+    rhs: &SIMD256Vector,
+    zeta0: i16,
+    zeta1: i16,
+    zeta2: i16,
+    zeta3: i16,
+) -> SIMD256Vector {
     let input0 = portable::from_i16_array(to_i16_array(*lhs));
     let input1 = portable::from_i16_array(to_i16_array(*rhs));
 
@@ -266,9 +268,32 @@ fn deserialize_1(a: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_4(v: SIMD256Vector) -> [u8; 8] {
-    let input = portable::from_i16_array(to_i16_array(v));
+    let mut serialized = [0u8; 16];
 
-    portable::serialize_4(input)
+    unsafe {
+        let adjacent_2_combined = _mm256_madd_epi16(
+            v.elements,
+            _mm256_set_epi16(16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1),
+        );
+
+        let adjacent_8_combined = _mm256_shuffle_epi8(
+            adjacent_2_combined,
+            _mm256_set_epi8(
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0,
+            ),
+        );
+
+        let combined = _mm256_permutevar8x32_epi32(
+            adjacent_8_combined,
+            _mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0),
+        );
+        let combined = _mm256_castsi256_si128(combined);
+
+        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, combined);
+    }
+
+    serialized[0..8].try_into().unwrap()
 }
 
 #[inline(always)]
