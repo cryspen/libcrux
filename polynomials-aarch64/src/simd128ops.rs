@@ -839,7 +839,7 @@ pub(crate) fn deserialize_11(v: &[u8]) -> SIMD128Vector {
 
     SIMD128Vector {
         low: unsafe { vld1q_s16(low.as_ptr() as *const i16) },
-        high: unsafe { vld1q_s16(low.as_ptr() as *const i16) },
+        high: unsafe { vld1q_s16(high.as_ptr() as *const i16) },
     }
 }
 
