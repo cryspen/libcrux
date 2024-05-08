@@ -20,6 +20,9 @@ pub const ENCAPS_SEED_SIZE: usize = SHARED_SECRET_SIZE;
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
 // https://github.com/cryspen/libcrux/issues/123
+/// An ML-KEM shared secret.
+///
+/// A byte array of size [`SHARED_SECRET_SIZE`].
 pub type MlKemSharedSecret = [u8; SHARED_SECRET_SIZE];
 
 /// Serialize the secret key.

@@ -1,4 +1,4 @@
-use libcrux_ml_kem::{kyber1024, kyber512, kyber768};
+use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 use serde::Deserialize;
 use serde_json;
 use std::{fs::File, io::BufReader, path::Path};
@@ -66,21 +66,21 @@ macro_rules! impl_nist_known_answer_tests {
 impl_nist_known_answer_tests!(
     kyber512_nist_known_answer_tests,
     512,
-    kyber512::generate_key_pair,
-    kyber512::encapsulate,
-    kyber512::decapsulate
+    mlkem512::generate_key_pair,
+    mlkem512::encapsulate,
+    mlkem512::decapsulate
 );
 impl_nist_known_answer_tests!(
     kyber768_nist_known_answer_tests,
     768,
-    kyber768::generate_key_pair,
-    kyber768::encapsulate,
-    kyber768::decapsulate
+    mlkem768::generate_key_pair,
+    mlkem768::encapsulate,
+    mlkem768::decapsulate
 );
 impl_nist_known_answer_tests!(
     kyber1024_nist_known_answer_tests,
     1024,
-    kyber1024::generate_key_pair,
-    kyber1024::encapsulate,
-    kyber1024::decapsulate
+    mlkem1024::generate_key_pair,
+    mlkem1024::encapsulate,
+    mlkem1024::decapsulate
 );

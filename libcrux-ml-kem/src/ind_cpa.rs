@@ -1,5 +1,3 @@
-use std::usize;
-
 use libcrux_polynomials::Operations;
 
 use crate::{

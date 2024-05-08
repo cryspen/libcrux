@@ -1,3 +1,5 @@
+//! ML-KEM 512
+
 use super::{constants::*, ind_cca::*, *};
 
 // Kyber 512 parameters
@@ -32,9 +34,14 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_512;
 
 // Kyber 512 types
+/// An ML-KEM 512 Ciphertext
 pub type MlKem512Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>;
+/// An ML-KEM 512 Private key
 pub type MlKem512PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_512>;
+/// An ML-KEM 512 Public key
 pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
+/// Am ML-KEM 512 Key pair
+pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>;
 
 /// Validate a public key.
 ///
@@ -53,9 +60,12 @@ pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512Publ
 }
 
 /// Generate ML-KEM 512 Key Pair
-pub fn generate_key_pair(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512> {
+///
+/// Generate an ML-KEM key pair. The input is a byte array of size
+/// [`KEY_GENERATION_SEED_SIZE`].
+///
+/// This function returns an [`MlKem512KeyPair`].
+pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
     generate_keypair::<
         RANK_512,
         CPA_PKE_SECRET_KEY_SIZE_512,

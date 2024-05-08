@@ -1,3 +1,5 @@
+//! ML-KEM 1024
+
 use super::{constants::*, ind_cca::*, *};
 
 // Kyber 1024 parameters
@@ -34,8 +36,11 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_1024;
 
 // Kyber 1024 types
+/// An ML-KEM 1024 Ciphertext
 pub type MlKem1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
+/// An ML-KEM 1024 Private key
 pub type MlKem1024PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_1024>;
+/// An ML-KEM 1024 Public key
 pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
 /// Validate a public key.

@@ -1,3 +1,5 @@
+//! ML-KEM 512
+//!
 use super::{constants::*, ind_cca::*, *};
 
 // Kyber 768 parameters
@@ -33,8 +35,11 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_768;
 
 // Kyber 768 types
+/// An ML-KEM 768 Ciphertext
 pub type MlKem768Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
+/// An ML-KEM 768 Private key
 pub type MlKem768PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_768>;
+/// An ML-KEM 768 Public key
 pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
 /// Validate a public key.
@@ -123,7 +128,7 @@ mod tests {
     use rand::{rngs::OsRng, RngCore};
 
     use super::{
-        kyber768::{generate_key_pair, validate_public_key},
+        mlkem768::{generate_key_pair, validate_public_key},
         KEY_GENERATION_SEED_SIZE,
     };
 

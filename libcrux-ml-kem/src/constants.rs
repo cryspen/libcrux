@@ -13,7 +13,7 @@ pub(crate) const BITS_PER_RING_ELEMENT: usize = COEFFICIENTS_IN_RING_ELEMENT * 1
 /// Bytes required per (uncompressed) ring element
 pub(crate) const BYTES_PER_RING_ELEMENT: usize = BITS_PER_RING_ELEMENT / 8;
 
-/// PKE message size
+/// The size of an ML-KEM shared secret.
 pub const SHARED_SECRET_SIZE: usize = 32;
 
 pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;

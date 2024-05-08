@@ -5,7 +5,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::OsRng;
 use rand_core::RngCore;
 
-use libcrux_ml_kem::kyber768;
+use libcrux_ml_kem::mlkem768;
 
 pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut rng = OsRng;
@@ -16,7 +16,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter(|| {
-            let _kp = kyber768::generate_key_pair(seed);
+            let _kp = mlkem768::generate_key_pair(seed);
         })
     });
 
@@ -51,11 +51,11 @@ pub fn comparisons_pk_validation(c: &mut Criterion) {
         rng.fill_bytes(&mut seed);
         b.iter_batched(
             || {
-                let keypair = kyber768::generate_key_pair(seed);
+                let keypair = mlkem768::generate_key_pair(seed);
                 keypair.public_key().as_slice().into()
             },
             |public_key| {
-                let _valid = black_box(kyber768::validate_public_key(public_key));
+                let _valid = black_box(mlkem768::validate_public_key(public_key));
             },
             BatchSize::SmallInput,
         )
@@ -72,10 +72,10 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         let mut seed2 = [0; 32];
         OsRng.fill_bytes(&mut seed2);
         b.iter_batched(
-            || kyber768::generate_key_pair(seed1),
+            || mlkem768::generate_key_pair(seed1),
             |keypair| {
                 let (_shared_secret, _ciphertext) =
-                    kyber768::encapsulate(keypair.public_key(), seed2);
+                    mlkem768::encapsulate(keypair.public_key(), seed2);
             },
             BatchSize::SmallInput,
         )
@@ -124,13 +124,13 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
         OsRng.fill_bytes(&mut seed2);
         b.iter_batched(
             || {
-                let keypair = kyber768::generate_key_pair(seed1);
+                let keypair = mlkem768::generate_key_pair(seed1);
                 let (ciphertext, _shared_secret) =
-                    kyber768::encapsulate(keypair.public_key(), seed2);
+                    mlkem768::encapsulate(keypair.public_key(), seed2);
                 (keypair, ciphertext)
             },
             |(keypair, ciphertext)| {
-                let _shared_secret = kyber768::decapsulate(keypair.private_key(), &ciphertext);
+                let _shared_secret = mlkem768::decapsulate(keypair.private_key(), &ciphertext);
             },
             BatchSize::SmallInput,
         )
