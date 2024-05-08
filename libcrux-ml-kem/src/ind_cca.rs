@@ -309,7 +309,7 @@ pub(crate) fn decapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
 >(
-    secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
     if libcrux_platform::simd256_support() {
@@ -331,7 +331,7 @@ pub(crate) fn decapsulate<
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             SIMD256Vector,
-        >(secret_key, ciphertext)
+        >(private_key, ciphertext)
     } else if libcrux_platform::simd128_support() {
         decapsulate_generic::<
             K,
@@ -351,7 +351,7 @@ pub(crate) fn decapsulate<
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             SIMD128Vector,
-        >(secret_key, ciphertext)
+        >(private_key, ciphertext)
     } else {
         decapsulate_generic::<
             K,
@@ -371,7 +371,7 @@ pub(crate) fn decapsulate<
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             PortableVector,
-        >(secret_key, ciphertext)
+        >(private_key, ciphertext)
     }
 }
 
@@ -394,10 +394,10 @@ pub(crate) fn decapsulate_generic<
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     Vector: Operations,
 >(
-    secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+    private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    let (ind_cpa_secret_key, secret_key) = secret_key.split_at(CPA_SECRET_KEY_SIZE);
+    let (ind_cpa_secret_key, secret_key) = private_key.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 

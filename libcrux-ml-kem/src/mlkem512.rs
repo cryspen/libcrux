@@ -78,13 +78,14 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
 }
 
 /// Encapsulate ML-KEM 512
+///
+/// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+/// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+/// bytes of `randomness`.
 pub fn encapsulate(
-    public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>,
+    public_key: &MlKem512PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> (
-    MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>,
-    MlKemSharedSecret,
-) {
+) -> (MlKem512Ciphertext, MlKemSharedSecret) {
     ind_cca::encapsulate::<
         RANK_512,
         CPA_PKE_CIPHERTEXT_SIZE_512,
@@ -103,10 +104,13 @@ pub fn encapsulate(
 }
 
 /// Decapsulate ML-KEM 512
+///
+/// Generates an [`MlKemSharedSecret`].
+/// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
 pub fn decapsulate(
-    secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_512>,
-    ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>,
-) -> [u8; SHARED_SECRET_SIZE] {
+    private_key: &MlKem512PrivateKey,
+    ciphertext: &MlKem512Ciphertext,
+) -> MlKemSharedSecret {
     ind_cca::decapsulate::<
         RANK_512,
         SECRET_KEY_SIZE_512,
@@ -124,5 +128,5 @@ pub fn decapsulate(
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(secret_key, ciphertext)
+    >(private_key, ciphertext)
 }

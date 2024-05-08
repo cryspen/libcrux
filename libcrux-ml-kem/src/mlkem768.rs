@@ -41,6 +41,8 @@ pub type MlKem768Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
 pub type MlKem768PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_768>;
 /// An ML-KEM 768 Public key
 pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
+/// Am ML-KEM 768 Key pair
+pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
 /// Validate a public key.
 ///
@@ -59,9 +61,12 @@ pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768Publ
 }
 
 /// Generate ML-KEM 768 Key Pair
-pub fn generate_key_pair(
-    randomness: [u8; KEY_GENERATION_SEED_SIZE],
-) -> MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768> {
+///
+/// Generate an ML-KEM key pair. The input is a byte array of size
+/// [`KEY_GENERATION_SEED_SIZE`].
+///
+/// This function returns an [`MlKem768KeyPair`].
+pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
     generate_keypair::<
         RANK_768,
         CPA_PKE_SECRET_KEY_SIZE_768,
@@ -74,13 +79,14 @@ pub fn generate_key_pair(
 }
 
 /// Encapsulate ML-KEM 768
+///
+/// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+/// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
+/// bytes of `randomness`.
 pub fn encapsulate(
-    public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>,
+    public_key: &MlKem768PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> (
-    MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
-    MlKemSharedSecret,
-) {
+) -> (MlKem768Ciphertext, MlKemSharedSecret) {
     ind_cca::encapsulate::<
         RANK_768,
         CPA_PKE_CIPHERTEXT_SIZE_768,
@@ -99,10 +105,13 @@ pub fn encapsulate(
 }
 
 /// Decapsulate ML-KEM 768
+///
+/// Generates an [`MlKemSharedSecret`].
+/// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
 pub fn decapsulate(
-    secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_768>,
-    ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>,
-) -> [u8; SHARED_SECRET_SIZE] {
+    private_key: &MlKem768PrivateKey,
+    ciphertext: &MlKem768Ciphertext,
+) -> MlKemSharedSecret {
     ind_cca::decapsulate::<
         RANK_768,
         SECRET_KEY_SIZE_768,
@@ -120,7 +129,7 @@ pub fn decapsulate(
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(secret_key, ciphertext)
+    >(private_key, ciphertext)
 }
 
 #[cfg(test)]

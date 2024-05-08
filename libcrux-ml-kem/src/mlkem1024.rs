@@ -42,6 +42,8 @@ pub type MlKem1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
 pub type MlKem1024PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_1024>;
 /// An ML-KEM 1024 Public key
 pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
+/// Am ML-KEM 1024 Key pair
+pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
 /// Validate a public key.
 ///
@@ -60,6 +62,11 @@ pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024Pu
 }
 
 /// Generate ML-KEM 1024 Key Pair
+///
+/// Generate an ML-KEM key pair. The input is a byte array of size
+/// [`KEY_GENERATION_SEED_SIZE`].
+///
+/// This function returns an [`MlKem1024KeyPair`].
 pub fn generate_key_pair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
@@ -75,13 +82,14 @@ pub fn generate_key_pair(
 }
 
 /// Encapsulate ML-KEM 1024
+///
+/// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+/// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
+/// bytes of `randomness`.
 pub fn encapsulate(
-    public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>,
+    public_key: &MlKem1024PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
-) -> (
-    MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
-    MlKemSharedSecret,
-) {
+) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
     ind_cca::encapsulate::<
         RANK_1024,
         CPA_PKE_CIPHERTEXT_SIZE_1024,
@@ -100,10 +108,13 @@ pub fn encapsulate(
 }
 
 /// Decapsulate ML-KEM 1024
+///
+/// Generates an [`MlKemSharedSecret`].
+/// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
 pub fn decapsulate(
-    secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_1024>,
-    ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
-) -> [u8; SHARED_SECRET_SIZE] {
+    private_key: &MlKem1024PrivateKey,
+    ciphertext: &MlKem1024Ciphertext,
+) -> MlKemSharedSecret {
     ind_cca::decapsulate::<
         RANK_1024,
         SECRET_KEY_SIZE_1024,
@@ -121,5 +132,5 @@ pub fn decapsulate(
         ETA2,
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(secret_key, ciphertext)
+    >(private_key, ciphertext)
 }
