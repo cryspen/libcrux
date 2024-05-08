@@ -1,5 +1,6 @@
 macro_rules! impl_generic_struct {
-    ($name:ident) => {
+    ($name:ident, $doc:expr) => {
+        #[doc = $doc]
         pub struct $name<const SIZE: usize> {
             pub(crate) value: [u8; SIZE],
         }
@@ -42,14 +43,20 @@ macro_rules! impl_generic_struct {
         }
 
         impl<const SIZE: usize> $name<SIZE> {
+            /// A reference to the raw byte slice.
             pub fn as_slice(&self) -> &[u8; SIZE] {
                 &self.value
             }
 
-            pub fn split_at(&self, mid: usize) -> (&[u8], &[u8]) {
+            // This is only used for some of the macro callers.
+            #[allow(dead_code)]
+            /// Split this value and return the raw byte slices.
+            pub(crate) fn split_at(&self, mid: usize) -> (&[u8], &[u8]) {
                 self.value.split_at(mid)
             }
 
+            #[cfg(feature = "tests")]
+            /// The number of bytes.
             pub const fn len(&self) -> usize {
                 SIZE
             }
@@ -116,9 +123,9 @@ macro_rules! impl_index_impls_for_generic_struct {
     };
 }
 
-impl_generic_struct!(MlKemCiphertext);
-impl_generic_struct!(MlKemPrivateKey);
-impl_generic_struct!(MlKemPublicKey);
+impl_generic_struct!(MlKemCiphertext, "An ML-KEM Ciphertext");
+impl_generic_struct!(MlKemPrivateKey, "An ML-KEM Private key");
+impl_generic_struct!(MlKemPublicKey, "An ML-KEM Public key");
 
 // These traits are used only in `ind_cpa` for kyber cipher text.
 mod index_impls {
@@ -145,6 +152,7 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
         }
     }
 
+    /// Create a new [`MlKemKeyPair`] from the secret and public key.
     pub fn from(
         sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
         pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
@@ -152,23 +160,28 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
         Self { sk, pk }
     }
 
+    /// Get a reference to the [`MlKemPublicKey<PUBLIC_KEY_SIZE>`].
     pub fn public_key(&self) -> &MlKemPublicKey<PUBLIC_KEY_SIZE> {
         &self.pk
     }
 
+    /// Get a reference to the [`MlKemPrivateKey<PRIVATE_KEY_SIZE>`].
     pub fn private_key(&self) -> &MlKemPrivateKey<PRIVATE_KEY_SIZE> {
         &self.sk
     }
 
+    /// Get a reference to the raw public key bytes.
     pub fn pk(&self) -> &[u8; PUBLIC_KEY_SIZE] {
         self.pk.as_slice()
     }
 
+    /// Get a reference to the raw private key bytes.
     pub fn sk(&self) -> &[u8; PRIVATE_KEY_SIZE] {
         self.sk.as_slice()
     }
 
     #[cfg(feature = "tests")]
+    /// Separate this key into the public and private key.
     pub fn into_parts(
         self,
     ) -> (

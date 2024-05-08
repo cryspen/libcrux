@@ -60,7 +60,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(24).enumerate() {
-            re.coefficients[i] = Vector::deserialize_12(&bytes);
+            re.coefficients[i] = Vector::deserialize_12(bytes);
         }
     }
 
@@ -80,7 +80,7 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(24).enumerate() {
-            let coefficient = Vector::deserialize_12(&bytes);
+            let coefficient = Vector::deserialize_12(bytes);
             re.coefficients[i] = Vector::cond_subtract_3329(coefficient);
         }
     }
@@ -216,7 +216,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(20).enumerate() {
-            let coefficient = Vector::deserialize_10(&bytes);
+            let coefficient = Vector::deserialize_10(bytes);
             re.coefficients[i] = Vector::decompress::<10>(coefficient);
         }
     }
@@ -233,7 +233,7 @@ fn deserialize_then_decompress_11<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(22).enumerate() {
-            let coefficient = Vector::deserialize_11(&bytes);
+            let coefficient = Vector::deserialize_11(bytes);
             re.coefficients[i] = Vector::decompress::<11>(coefficient);
         }
     }
@@ -265,7 +265,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     cloop! {
         for (i, bytes) in serialized.chunks_exact(8).enumerate() {
-            let coefficient = Vector::deserialize_4(&bytes);
+            let coefficient = Vector::deserialize_4(bytes);
             re.coefficients[i] = Vector::decompress::<4>(coefficient);
         }
     }
@@ -282,7 +282,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
 
     cloop! {
         for (i, bytes) in serialized.chunks_exact(10).enumerate() {
-            re.coefficients[i] = Vector::deserialize_5(&bytes);
+            re.coefficients[i] = Vector::deserialize_5(bytes);
             re.coefficients[i] = Vector::decompress::<5>(re.coefficients[i]);
         }
     }

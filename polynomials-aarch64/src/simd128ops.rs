@@ -852,6 +852,7 @@ pub(crate) fn deserialize_11(v: &[u8]) -> SIMD128Vector {
 
 #[inline(always)]
 pub(crate) fn serialize_12(v: SIMD128Vector) -> [u8; 24] {
+    
     let low0 = unsafe { vreinterpretq_s32_s16(vtrn1q_s16(v.low, v.low)) }; // a0, a0, a2, a2, a4, a4, a6, a6
     let low1 = unsafe { vreinterpretq_s32_s16(vtrn2q_s16(v.low, v.low)) }; // a1, a1, a3, a3, a5, a5, a7, a7
     let mixt = unsafe { vsliq_n_s32::<12>(low0, low1) }; // a1a0, a3a2, a5a4, a7a6
