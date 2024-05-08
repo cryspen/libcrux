@@ -2,8 +2,8 @@ use libcrux_traits::Operations;
 mod rejsample;
 mod simd128ops;
 
-use simd128ops::*;
 pub use simd128ops::SIMD128Vector;
+use simd128ops::*;
 
 impl Operations for SIMD128Vector {
     #[inline(always)]
