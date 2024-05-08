@@ -14,11 +14,14 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
-    for i in 0..32 {
+    for i in 0..16 {
         let coefficient = Vector::to_unsigned_representative(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
-        serialized[i] = Vector::serialize_1(coefficient_compressed);
+
+        let bytes = Vector::serialize_1(coefficient_compressed);
+        serialized[2 * i..2 * i + 2].copy_from_slice(&bytes);
     }
+
     serialized
 }
 #[inline(always)]
@@ -26,8 +29,8 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
     serialized: [u8; SHARED_SECRET_SIZE],
 ) -> PolynomialRingElement<Vector> {
     let mut re = PolynomialRingElement::<Vector>::ZERO();
-    for i in 0..32 {
-        let coefficient_compressed = Vector::deserialize_1(serialized[i]);
+    for i in 0..16 {
+        let coefficient_compressed = Vector::deserialize_1(&serialized[2 * i..2 * i + 2]);
         re.coefficients[i] = Vector::decompress_1(coefficient_compressed);
     }
     re
@@ -40,19 +43,9 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient = Vector::to_unsigned_representative(re.coefficients[i]);
+
         let bytes = Vector::serialize_12(coefficient);
-        serialized[12 * i] = bytes[0];
-        serialized[12 * i + 1] = bytes[1];
-        serialized[12 * i + 2] = bytes[2];
-        serialized[12 * i + 3] = bytes[3];
-        serialized[12 * i + 4] = bytes[4];
-        serialized[12 * i + 5] = bytes[5];
-        serialized[12 * i + 6] = bytes[6];
-        serialized[12 * i + 7] = bytes[7];
-        serialized[12 * i + 8] = bytes[8];
-        serialized[12 * i + 9] = bytes[9];
-        serialized[12 * i + 10] = bytes[10];
-        serialized[12 * i + 11] = bytes[11];
+        serialized[24 * i..24 * i + 24].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -66,7 +59,7 @@ pub(super) fn deserialize_to_uncompressed_ring_element<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(12).enumerate() {
+        for (i, bytes) in serialized.chunks_exact(24).enumerate() {
             re.coefficients[i] = Vector::deserialize_12(bytes);
         }
     }
@@ -86,7 +79,7 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(12).enumerate() {
+        for (i, bytes) in serialized.chunks_exact(24).enumerate() {
             let coefficient = Vector::deserialize_12(bytes);
             re.coefficients[i] = Vector::cond_subtract_3329(coefficient);
         }
@@ -126,17 +119,9 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<10>(Vector::to_unsigned_representative(re.coefficients[i]));
+
         let bytes = Vector::serialize_10(coefficient);
-        serialized[10 * i] = bytes[0];
-        serialized[10 * i + 1] = bytes[1];
-        serialized[10 * i + 2] = bytes[2];
-        serialized[10 * i + 3] = bytes[3];
-        serialized[10 * i + 4] = bytes[4];
-        serialized[10 * i + 5] = bytes[5];
-        serialized[10 * i + 6] = bytes[6];
-        serialized[10 * i + 7] = bytes[7];
-        serialized[10 * i + 8] = bytes[8];
-        serialized[10 * i + 9] = bytes[9];
+        serialized[20 * i..20 * i + 20].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -149,18 +134,9 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<11>(Vector::to_unsigned_representative(re.coefficients[i]));
+
         let bytes = Vector::serialize_11(coefficient);
-        serialized[11 * i] = bytes[0];
-        serialized[11 * i + 1] = bytes[1];
-        serialized[11 * i + 2] = bytes[2];
-        serialized[11 * i + 3] = bytes[3];
-        serialized[11 * i + 4] = bytes[4];
-        serialized[11 * i + 5] = bytes[5];
-        serialized[11 * i + 6] = bytes[6];
-        serialized[11 * i + 7] = bytes[7];
-        serialized[11 * i + 8] = bytes[8];
-        serialized[11 * i + 9] = bytes[9];
-        serialized[11 * i + 10] = bytes[10];
+        serialized[22 * i..22 * i + 22].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -190,11 +166,9 @@ fn compress_then_serialize_4<const OUT_LEN: usize, Vector: Operations>(
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<4>(Vector::to_unsigned_representative(re.coefficients[i]));
+
         let bytes = Vector::serialize_4(coefficient);
-        serialized[4 * i] = bytes[0];
-        serialized[4 * i + 1] = bytes[1];
-        serialized[4 * i + 2] = bytes[2];
-        serialized[4 * i + 3] = bytes[3];
+        serialized[8 * i..8 * i + 8].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -208,12 +182,9 @@ fn compress_then_serialize_5<const OUT_LEN: usize, Vector: Operations>(
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficients =
             Vector::compress::<5>(Vector::to_unsigned_representative(re.coefficients[i]));
-        let bytes5 = Vector::serialize_5(coefficients);
-        serialized[5 * i] = bytes5[0];
-        serialized[5 * i + 1] = bytes5[1];
-        serialized[5 * i + 2] = bytes5[2];
-        serialized[5 * i + 3] = bytes5[3];
-        serialized[5 * i + 4] = bytes5[4];
+
+        let bytes = Vector::serialize_5(coefficients);
+        serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);
     }
     serialized
 }
@@ -244,7 +215,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(10).enumerate() {
+        for (i, bytes) in serialized.chunks_exact(20).enumerate() {
             let coefficient = Vector::deserialize_10(bytes);
             re.coefficients[i] = Vector::decompress::<10>(coefficient);
         }
@@ -261,7 +232,7 @@ fn deserialize_then_decompress_11<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(11).enumerate() {
+        for (i, bytes) in serialized.chunks_exact(22).enumerate() {
             let coefficient = Vector::deserialize_11(bytes);
             re.coefficients[i] = Vector::decompress::<11>(coefficient);
         }
@@ -293,7 +264,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
     hax_debug_assert!(serialized.len() == (COEFFICIENTS_IN_RING_ELEMENT * 4) / 8);
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(4).enumerate() {
+        for (i, bytes) in serialized.chunks_exact(8).enumerate() {
             let coefficient = Vector::deserialize_4(bytes);
             re.coefficients[i] = Vector::decompress::<4>(coefficient);
         }
@@ -310,7 +281,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
 
     cloop! {
-        for (i, bytes) in serialized.chunks_exact(5).enumerate() {
+        for (i, bytes) in serialized.chunks_exact(10).enumerate() {
             re.coefficients[i] = Vector::deserialize_5(bytes);
             re.coefficients[i] = Vector::decompress::<5>(re.coefficients[i]);
         }

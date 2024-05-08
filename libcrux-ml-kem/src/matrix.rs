@@ -1,7 +1,7 @@
 use libcrux_polynomials::Operations;
 
 use crate::{
-    helper::cloop, polynomial::invert_ntt_montgomery, polynomial::PolynomialRingElement,
+    helper::cloop, invert_ntt::invert_ntt_montgomery, polynomial::PolynomialRingElement,
     sampling::sample_from_xof,
 };
 
