@@ -29,8 +29,8 @@ pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128StateX4 {
     state
 }
 
-const BLOCK_SIZE: usize = 168;
-const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
+pub(crate) const BLOCK_SIZE: usize = 168;
+pub(crate) const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 
 #[inline(always)]
 pub(crate) fn squeeze_three_blocks<const K: usize>(

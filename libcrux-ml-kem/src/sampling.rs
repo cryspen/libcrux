@@ -1,7 +1,7 @@
 use libcrux_polynomials::Operations;
 
 use crate::{
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
     hash_functions::*,
     hax_utils::hax_debug_assert,
     helper::cloop,
@@ -46,30 +46,27 @@ use crate::{
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
+#[inline(always)]
+fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, const N: usize>(
     randomness: [[u8; N]; K],
     sampled_coefficients: &mut [usize; K],
     out: &mut [[i16; 256]; K],
 ) -> bool {
-    let mut done = true;
+    // Would be great to trigger auto-vectorization or at least loop unrolling here
     for i in 0..K {
-        for bytes in randomness[i].chunks(3) {
-            let b1 = bytes[0] as i16;
-            let b2 = bytes[1] as i16;
-            let b3 = bytes[2] as i16;
-
-            let d1 = ((b2 & 0xF) << 8) | b1;
-            let d2 = (b3 << 4) | (b2 >> 4);
-
-            if d1 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d1;
-                sampled_coefficients[i] += 1
-            }
-            if d2 < FIELD_MODULUS && sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                out[i][sampled_coefficients[i]] = d2;
-                sampled_coefficients[i] += 1;
+         for r in 0..N / 24 {
+            let remaining = COEFFICIENTS_IN_RING_ELEMENT - sampled_coefficients[i];
+            if remaining > 0 {
+                let (sampled, vec) = Vector::rej_sample(&randomness[i][r * 24..(r * 24) + 24]);
+                let pick = if sampled <= remaining {sampled} else {remaining};
+                out[i][sampled_coefficients[i]..sampled_coefficients[i] + pick]
+                    .copy_from_slice(&vec[0..pick]);
+                sampled_coefficients[i] += pick;
             }
         }
+    }
+    let mut done = true;
+    for i in 0..K {
         if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
             done = false
         }
@@ -77,6 +74,7 @@ fn sample_from_uniform_distribution_next<const K: usize, const N: usize>(
     done
 }
 
+#[inline(always)]
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations>(
     seeds: [[u8; 34]; K],
 ) -> [PolynomialRingElement<Vector>; K] {
@@ -87,7 +85,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations>(
     let randomness = squeeze_three_blocks(&mut xof_state);
 
     let mut done =
-        sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+        sample_from_uniform_distribution_next::<Vector,K,THREE_BLOCKS>(randomness, &mut sampled_coefficients, &mut out);
 
     // Requiring more than 5 blocks to sample a ring element should be very
     // unlikely according to:
@@ -97,7 +95,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations>(
     while !done {
         let randomness = squeeze_block(&mut xof_state);
         done =
-            sample_from_uniform_distribution_next(randomness, &mut sampled_coefficients, &mut out);
+            sample_from_uniform_distribution_next::<Vector,K,BLOCK_SIZE>(randomness, &mut sampled_coefficients, &mut out);
     }
     // XXX: We have to manually free the state here due to a Eurydice issue.
     free_state(xof_state);
@@ -159,6 +157,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations>(
 //     hax_lib::forall(|i:usize|
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 2
 // ))))]
+#[inline(always)]
 fn sample_from_binomial_distribution_2<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
@@ -195,6 +194,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
 //     hax_lib::forall(|i:usize|
 //         hax_lib::implies(i < result.coefficients.len(), || result.coefficients[i].abs() <= 3
 // ))))]
+#[inline(always)]
 fn sample_from_binomial_distribution_3<Vector: Operations>(
     randomness: &[u8],
 ) -> PolynomialRingElement<Vector> {
