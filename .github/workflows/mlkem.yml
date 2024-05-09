@@ -186,4 +186,4 @@ jobs:
       # Benchmarks ...
 
       - name: 🏃🏻‍♀️ Benchmarks
-        run: cargo bench --verbose $RUST_TARGET_FLAG
+        run: CC=clang cargo bench --verbose $RUST_TARGET_FLAG
