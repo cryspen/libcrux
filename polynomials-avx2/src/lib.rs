@@ -34,17 +34,6 @@ fn from_i16_array(array: [i16; 16]) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn add_constant(mut v: SIMD256Vector, c: i16) -> SIMD256Vector {
-    v.elements = unsafe {
-        let c = _mm256_set1_epi16(c);
-
-        _mm256_add_epi16(v.elements, c)
-    };
-
-    v
-}
-
-#[inline(always)]
 fn add(mut lhs: SIMD256Vector, rhs: &SIMD256Vector) -> SIMD256Vector {
     lhs.elements = unsafe { _mm256_add_epi16(lhs.elements, rhs.elements) };
 
