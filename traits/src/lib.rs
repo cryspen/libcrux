@@ -11,7 +11,6 @@ pub trait Operations: Copy + Clone {
     fn from_i16_array(array: [i16; 16]) -> Self;
 
     // Basic arithmetic
-    fn add_constant(v: Self, c: i16) -> Self;
     fn add(lhs: Self, rhs: &Self) -> Self;
     fn sub(lhs: Self, rhs: &Self) -> Self;
     fn multiply_by_constant(v: Self, c: i16) -> Self;
