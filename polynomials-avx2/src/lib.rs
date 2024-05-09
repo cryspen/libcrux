@@ -1,5 +1,5 @@
 use core::arch::x86_64::*;
-use libcrux_traits::{Operations, FIELD_MODULUS};
+use libcrux_traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 mod debug;
 mod portable;
@@ -108,11 +108,23 @@ fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn montgomery_multiply_by_constant(v: SIMD256Vector, c: i16) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::montgomery_multiply_by_constant(input, c);
+fn montgomery_multiply_by_constant(mut v: SIMD256Vector, c: i16) -> SIMD256Vector {
+    v.elements = unsafe {
+        let c = _mm256_set1_epi16(c);
+        let value_low = _mm256_mullo_epi16(v.elements, c);
 
-    from_i16_array(portable::to_i16_array(output))
+        let k = _mm256_mullo_epi16(
+            value_low,
+            _mm256_set1_epi16(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16),
+        );
+        let k_times_modulus = _mm256_mulhi_epi16(k, _mm256_set1_epi16(FIELD_MODULUS));
+
+        let value_high = _mm256_mulhi_epi16(v.elements, c);
+
+        _mm256_sub_epi16(value_high, k_times_modulus)
+    };
+
+    v
 }
 
 #[inline(always)]
@@ -232,10 +244,10 @@ fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
     let mut serialized = [0u8; 2];
 
     let bits_packed = unsafe {
-        let lsb_to_msb = _mm256_slli_epi16(v.elements, 7);
+        let lsb_shifted_up = _mm256_slli_epi16(v.elements, 7);
 
-        let low_lanes = _mm256_castsi256_si128(lsb_to_msb);
-        let high_lanes = _mm256_extracti128_si256(lsb_to_msb, 1);
+        let low_lanes = _mm256_castsi256_si128(lsb_shifted_up);
+        let high_lanes = _mm256_extracti128_si256(lsb_shifted_up, 1);
 
         let msbs = _mm_packus_epi16(low_lanes, high_lanes);
 
@@ -431,8 +443,8 @@ fn serialize_12(v: SIMD256Vector) -> [u8; 24] {
         let adjacent_8_combined = _mm256_shuffle_epi8(
             adjacent_4_combined,
             _mm256_set_epi8(
-                -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0,
-                -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0,
+                -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0, -1, -1, -1, -1, 13, 12, 11,
+                10, 9, 8, 5, 4, 3, 2, 1, 0,
             ),
         );
 

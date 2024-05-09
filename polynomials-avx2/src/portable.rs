@@ -40,14 +40,6 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     montgomery_reduce_element((fe as i32) * (fer as i32))
 }
 
-#[inline(always)]
-pub(crate) fn montgomery_multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] = montgomery_multiply_fe_by_fer(v.elements[i], c)
-    }
-    v
-}
-
 pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
     // This has to be constant time due to:
     // https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/ldX0ThYJuBo/m/ovODsdY7AwAJ
