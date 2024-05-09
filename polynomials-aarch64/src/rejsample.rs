@@ -1,4 +1,6 @@
-use core::arch::aarch64::*;
+#![forbid(unsafe_code)]
+
+use crate::neon::*;
 
 /// This table is taken from PQClean. It is used in rej_sample
 // It implements the following logic:
@@ -768,27 +770,26 @@ const IDX_TABLE: [[u8; 16]; 256] = [
 #[inline(always)]
 pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
     let neon_bits: [u16; 8] = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
-    let bits = unsafe { vld1q_u16(neon_bits.as_ptr() as *const u16) };
-    let fm = unsafe { vdupq_n_s16(3328) };
+    let bits = _vld1q_u16(&neon_bits);
+    let fm = _vdupq_n_s16(3328);
 
     let input = super::simd128ops::deserialize_12(a);
-    let mask0 = unsafe { vcleq_s16(input.low, fm) };
-    let mask1 = unsafe { vcleq_s16(input.high, fm) };
-    let used0 = unsafe { vaddvq_u16(vandq_u16(mask0, bits)) };
-    let used1 = unsafe { vaddvq_u16(vandq_u16(mask1, bits)) };
+    let mask0 = _vcleq_s16(input.low, fm);
+    let mask1 = _vcleq_s16(input.high, fm);
+    let used0 = _vaddvq_u16(_vandq_u16(mask0, bits));
+    let used1 = _vaddvq_u16(_vandq_u16(mask1, bits));
     let pick0 = used0.count_ones();
     let pick1 = used1.count_ones();
 
-    let index_vec0 = unsafe { vld1q_u8(IDX_TABLE[used0 as usize].as_ptr() as *const u8) };
-    let shifted0 =
-        unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(input.low), index_vec0)) };
-    let index_vec1 = unsafe { vld1q_u8(IDX_TABLE[used1 as usize].as_ptr() as *const u8) };
+    let index_vec0 = _vld1q_u8(&IDX_TABLE[used0 as usize]);
+    let shifted0 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.low), index_vec0));
+    let index_vec1 = _vld1q_u8(&IDX_TABLE[used1 as usize]);
     let shifted1 =
-        unsafe { vreinterpretq_s16_u8(vqtbl1q_u8(vreinterpretq_u8_s16(input.high), index_vec1)) };
+        _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.high), index_vec1));
 
     let mut out: [i16; 16] = [0i16; 16];
     let idx0 = pick0 as usize;
-    unsafe { vst1q_s16(out[0..8].as_mut_ptr() as *mut i16, shifted0) };
-    unsafe { vst1q_s16(out[idx0..idx0 + 8].as_mut_ptr() as *mut i16, shifted1) };
+    _vst1q_s16(&mut out[0..8], shifted0);
+    _vst1q_s16(&mut out[idx0..idx0 + 8], shifted1);
     ((pick0 + pick1) as usize, out)
 }

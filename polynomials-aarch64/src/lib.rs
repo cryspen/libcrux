@@ -1,10 +1,17 @@
+//! Vectors for libcrux using aarch64 (neon) intrinsics
+
 use libcrux_traits::Operations;
+
+mod neon;
 mod rejsample;
 mod simd128ops;
 
 pub use simd128ops::SIMD128Vector;
 use simd128ops::*;
 
+// This is an empty shell, calling into standalone functions in `simd128ops`.
+// This is due to limitations in F* and hax to deal with large trait implementations
+// See hacspec/hax#638 for more details.
 impl Operations for SIMD128Vector {
     #[inline(always)]
     fn ZERO() -> Self {
@@ -17,10 +24,6 @@ impl Operations for SIMD128Vector {
 
     fn from_i16_array(array: [i16; 16]) -> Self {
         from_i16_array(array)
-    }
-
-    fn add_constant(v: Self, c: i16) -> Self {
-        add_constant(v, c)
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
