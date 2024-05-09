@@ -1,4 +1,8 @@
+#[cfg(target_arch = "x86")]
+use core::arch::x86::*;
+#[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
+
 use libcrux_traits::{Operations, FIELD_MODULUS};
 
 mod debug;
