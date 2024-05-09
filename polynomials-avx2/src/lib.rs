@@ -323,9 +323,52 @@ fn deserialize_4(v: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_5(v: SIMD256Vector) -> [u8; 10] {
-    let input = portable::from_i16_array(to_i16_array(v));
+    let mut serialized = [0u8; 16];
 
-    portable::serialize_5(input)
+    unsafe {
+        let adjacent_2_combined = _mm256_madd_epi16(
+            v.elements,
+            _mm256_set_epi16(
+                1 << 5,
+                1,
+                1 << 5,
+                1,
+                1 << 5,
+                1,
+                1 << 5,
+                1,
+                1 << 5,
+                1,
+                1 << 5,
+                1,
+                1 << 5,
+                1,
+                1 << 5,
+                1,
+            ),
+        );
+
+        let adjacent_4_combined = _mm256_sllv_epi32(
+            adjacent_2_combined,
+            _mm256_set_epi32(0, 22, 0, 22, 0, 22, 0, 22),
+        );
+        let adjacent_4_combined = _mm256_srli_epi64(adjacent_4_combined, 22);
+
+        let adjacent_8_combined = _mm256_shuffle_epi32(adjacent_4_combined, 0b00_00_10_00);
+        let adjacent_8_combined = _mm256_sllv_epi32(
+            adjacent_8_combined,
+            _mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
+        );
+        let adjacent_8_combined = _mm256_srli_epi64(adjacent_8_combined, 12);
+
+        let lower_8 = _mm256_castsi256_si128(adjacent_8_combined);
+        let upper_8 = _mm256_extracti128_si256(adjacent_8_combined, 1);
+
+        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, lower_8);
+        _mm_storeu_si128(serialized.as_mut_ptr().offset(5) as *mut __m128i, upper_8);
+    }
+
+    serialized[0..10].try_into().unwrap()
 }
 
 #[inline(always)]

@@ -513,29 +513,6 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
-    let mut result = [0u8; 10];
-
-    result[0] = ((v.elements[1] & 0x7) << 5 | v.elements[0]) as u8;
-    result[1] = (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
-    result[2] = (((v.elements[4] & 0xF) << 4) | (v.elements[3] >> 1)) as u8;
-    result[3] = (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
-    result[4] = ((v.elements[7] << 3) | (v.elements[6] >> 2)) as u8;
-
-    result[5] = ((v.elements[8 + 1] & 0x7) << 5 | v.elements[8 + 0]) as u8;
-    result[6] = (((v.elements[8 + 3] & 1) << 7)
-        | (v.elements[8 + 2] << 2)
-        | (v.elements[8 + 1] >> 3)) as u8;
-    result[7] = (((v.elements[8 + 4] & 0xF) << 4) | (v.elements[8 + 3] >> 1)) as u8;
-    result[8] = (((v.elements[8 + 6] & 0x3) << 6)
-        | (v.elements[8 + 5] << 1)
-        | (v.elements[8 + 4] >> 4)) as u8;
-    result[9] = ((v.elements[8 + 7] << 3) | (v.elements[8 + 6] >> 2)) as u8;
-
-    result
-}
-
-#[inline(always)]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
     let mut v = zero();
 
