@@ -21,10 +21,6 @@ pub use libcrux_traits::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR
 pub use libcrux_polynomials_aarch64::SIMD128Vector;
 #[cfg(feature = "simd256")]
 pub use libcrux_polynomials_avx2::SIMD256Vector;
-#[cfg(not(feature = "simd256"))]
-pub type SIMD256Vector = PortableVector;
-#[cfg(not(feature = "simd128"))]
-pub type SIMD128Vector = PortableVector;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
