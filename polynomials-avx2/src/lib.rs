@@ -1,4 +1,8 @@
+#[cfg(target_arch = "x86")]
+use core::arch::x86::*;
+#[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
+
 use libcrux_traits::{Operations, FIELD_MODULUS};
 
 mod debug;
@@ -31,17 +35,6 @@ fn from_i16_array(array: [i16; 16]) -> SIMD256Vector {
     SIMD256Vector {
         elements: unsafe { _mm256_loadu_si256(array.as_ptr() as *const __m256i) },
     }
-}
-
-#[inline(always)]
-fn add_constant(mut v: SIMD256Vector, c: i16) -> SIMD256Vector {
-    v.elements = unsafe {
-        let c = _mm256_set1_epi16(c);
-
-        _mm256_add_epi16(v.elements, c)
-    };
-
-    v
 }
 
 #[inline(always)]
