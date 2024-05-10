@@ -59,7 +59,7 @@ fn keccak<const RATE:usize, const DELIM:u8>(data0: &[u8], data1: &[u8], out0: &m
         for i in 1..blocks {
             squeeze_next_block2::<RATE>(&mut s, &mut out0[i*RATE..(i+1)*RATE], &mut out1[i*RATE..(i+1)*RATE]);
         }
-        squeeze_last2::<RATE>(s, &mut out0[last..], &mut out1[last..])
+        if last < out0.len() {squeeze_last2::<RATE>(s, &mut out0[last..], &mut out1[last..])}
     }
 }
 
