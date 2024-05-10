@@ -19,7 +19,7 @@ pub fn fmt(x: usize) -> String {
 }
 
 macro_rules! impl_comp {
-    ($fun:ident, $libcrux:expr, $rust_crypto:ty, $openssl:expr) => {
+    ($fun:ident, $libcrux:expr, $arm64:ident, $rust_crypto:ty, $openssl:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 1] = [1024 * 1024 * 10];
@@ -37,6 +37,21 @@ macro_rules! impl_comp {
                             || randombytes(*payload_size),
                             |payload| {
                                 let _d: [u8; digest_size($libcrux)] = hash($libcrux, &payload);
+                            },
+                            BatchSize::SmallInput,
+                        )
+                    },
+                );
+
+		#[cfg(feature = "simd128")]
+                group.bench_with_input(
+                    BenchmarkId::new("arm64", fmt(*payload_size)),
+                    payload_size,
+                    |b, payload_size| {
+                        b.iter_batched(
+                            || randombytes(*payload_size),
+                            |payload| {
+                                let _d: [u8; digest_size($libcrux)] = rust_simd::$arm64(&payload);
                             },
                             BatchSize::SmallInput,
                         )
@@ -109,24 +124,28 @@ macro_rules! impl_comp {
 impl_comp!(
     Sha3_224,
     Algorithm::Sha3_224,
+    sha3_224,
     sha3::Sha3_224,
     MessageDigest::sha3_224() // libcrux_pqclean::sha3_256 // This is wrong, but it's not actually used.
 );
 impl_comp!(
     Sha3_256,
     Algorithm::Sha3_256,
+    sha3_256,
     sha3::Sha3_256,
     MessageDigest::sha3_256() // libcrux_pqclean::sha3_256
 );
 impl_comp!(
     Sha3_384,
     Algorithm::Sha3_384,
+    sha3_384,
     sha3::Sha3_384,
     MessageDigest::sha3_384() // libcrux_pqclean::sha3_384
 );
 impl_comp!(
     Sha3_512,
     Algorithm::Sha3_512,
+    sha3_512,
     sha3::Sha3_512,
     MessageDigest::sha3_512() // libcrux_pqclean::sha3_512
 );
