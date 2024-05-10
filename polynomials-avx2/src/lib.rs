@@ -7,6 +7,8 @@ use libcrux_traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMER
 mod debug;
 mod portable;
 
+const BARRETT_MULTIPLIER: i16 = 20159;
+
 #[derive(Clone, Copy)]
 pub struct SIMD256Vector {
     elements: __m256i,
@@ -103,11 +105,19 @@ fn cond_subtract_3329(mut v: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::barrett_reduce(input);
+fn barrett_reduce(mut v: SIMD256Vector) -> SIMD256Vector {
+    v.elements = unsafe {
+        let t = _mm256_mulhi_epi16(v.elements, _mm256_set1_epi16(BARRETT_MULTIPLIER));
+        let t = _mm256_add_epi16(t, _mm256_set1_epi16(512));
 
-    from_i16_array(portable::to_i16_array(output))
+        let quotient = _mm256_srai_epi16(t, 10);
+
+        let quotient_times_field_modulus = _mm256_mullo_epi16(quotient, _mm256_set1_epi16(FIELD_MODULUS));
+
+        _mm256_sub_epi16(v.elements, quotient_times_field_modulus)
+    };
+
+    v
 }
 
 #[inline(always)]
@@ -123,6 +133,25 @@ fn montgomery_multiply_by_constant(mut v: SIMD256Vector, c: i16) -> SIMD256Vecto
         let k_times_modulus = _mm256_mulhi_epi16(k, _mm256_set1_epi16(FIELD_MODULUS));
 
         let value_high = _mm256_mulhi_epi16(v.elements, c);
+
+        _mm256_sub_epi16(value_high, k_times_modulus)
+    };
+
+    v
+}
+
+#[inline(always)]
+fn montgomery_multiply_by_constants(mut v: __m256i, c: __m256i) -> __m256i {
+    v = unsafe {
+        let value_low = _mm256_mullo_epi16(v, c);
+
+        let k = _mm256_mullo_epi16(
+            value_low,
+            _mm256_set1_epi16(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16),
+        );
+        let k_times_modulus = _mm256_mulhi_epi16(k, _mm256_set1_epi16(FIELD_MODULUS));
+
+        let value_high = _mm256_mulhi_epi16(v, c);
 
         _mm256_sub_epi16(value_high, k_times_modulus)
     };
@@ -167,32 +196,64 @@ fn decompress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
 
 #[inline(always)]
 fn ntt_layer_1_step(
-    v: SIMD256Vector,
+    mut v: SIMD256Vector,
     zeta0: i16,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::ntt_layer_1_step(input, zeta0, zeta1, zeta2, zeta3);
+    v.elements = unsafe {
+        let zetas = _mm256_set_epi16(-zeta3, -zeta3, zeta3, zeta3, -zeta2, -zeta2, zeta2, zeta2,
+                                     -zeta1, -zeta1, zeta1, zeta1, -zeta0, -zeta0, zeta0, zeta0);
 
-    from_i16_array(portable::to_i16_array(output))
+        let rhs = _mm256_shuffle_epi32(v.elements, 0b11_11_01_01);
+        let rhs = montgomery_multiply_by_constants(rhs, zetas);
+
+        let lhs = _mm256_shuffle_epi32(v.elements, 0b10_10_00_00);
+
+        _mm256_add_epi16(lhs, rhs)
+    };
+
+    v
 }
 
 #[inline(always)]
-fn ntt_layer_2_step(v: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::ntt_layer_2_step(input, zeta0, zeta1);
+fn ntt_layer_2_step(mut v: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
+    v.elements = unsafe {
+        let zetas = _mm256_set_epi16(-zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1,
+                                     -zeta0, -zeta0, -zeta0, -zeta0, zeta0, zeta0, zeta0, zeta0);
 
-    from_i16_array(portable::to_i16_array(output))
+        let rhs = _mm256_shuffle_epi32(v.elements, 0b11_10_11_10);
+        let rhs = montgomery_multiply_by_constants(rhs, zetas);
+
+        let lhs = _mm256_shuffle_epi32(v.elements, 0b01_00_01_00);
+
+        _mm256_add_epi16(lhs, rhs)
+    };
+
+    v
 }
 
 #[inline(always)]
-fn ntt_layer_3_step(v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::ntt_layer_3_step(input, zeta);
+fn ntt_layer_3_step(mut v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
+    v.elements = unsafe {
+        let zetas = _mm256_set_epi16(zeta, zeta, zeta, zeta, zeta, zeta, zeta, zeta,
+                                        0,    0,    0,    0,    0,    0,    0,    0);
 
-    from_i16_array(portable::to_i16_array(output))
+        let rhs = montgomery_multiply_by_constants(v.elements, zetas);
+        let rhs = _mm256_extracti128_si256(rhs, 1);
+
+        let lhs = _mm256_castsi256_si128(v.elements);
+
+        let lower_coefficients = _mm_add_epi16(lhs, rhs);
+        let upper_coefficients = _mm_sub_epi16(lhs, rhs);
+
+        let combined = _mm256_castsi128_si256(lower_coefficients);
+
+        _mm256_inserti128_si256(combined, upper_coefficients, 1)
+    };
+
+    v
 }
 
 #[inline(always)]
