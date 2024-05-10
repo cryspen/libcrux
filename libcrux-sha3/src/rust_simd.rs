@@ -1,6 +1,7 @@
 mod sha3_arm64;
 use sha3_arm64::*;
 
+pub use sha3_arm64::KeccakStateX2;
 
 #[inline(always)]
 fn squeeze_first_block2<const RATE:usize>(s: &KeccakStateX2, out0: &mut [u8], out1: &mut [u8]) {
@@ -66,7 +67,7 @@ fn keccak<const RATE:usize, const DELIM:u8>(data0: &[u8], data1: &[u8], out0: &m
 pub fn sha3_224(data: &[u8]) -> [u8;28] {
     let mut d0 = [0u8; 28];
     let mut d1 = [0u8; 28];
-    keccak::<144,0x06u8>(data, data, &mut d0, &mut d1);
+    keccak::<144, 0x06u8>(data, data, &mut d0, &mut d1);
     d0
 }
 
@@ -98,10 +99,20 @@ pub fn shake128<const LEN:usize>(data: &[u8]) -> [u8; LEN] {
     d0
 }
 
-pub fn shake128x2_init_absorb_final(data0: &[u8], data1: &[u8]) -> KeccakStateX2 {
-    let mut s = KeccakStateX2::new();
-    absorb_final2::<168, 0x1fu8>(&mut s,data0,data1);
+pub fn shake256<const LEN:usize>(data: &[u8]) -> [u8; LEN] {
+    let mut d0 = [0u8; LEN];
+    let mut d1 = [0u8; LEN];
+    keccak::<136, 0x1fu8>(data, data, &mut d0, &mut d1);
+    d0
+}
+
+pub fn shake128x2_init() -> KeccakStateX2 {
+    let s = KeccakStateX2::new();
     s
+}
+
+pub fn shake128x2_absorb_final(s:&mut KeccakStateX2, data0: &[u8], data1: &[u8]) {
+    absorb_final2::<168, 0x1fu8>(s,data0,data1);
 }
 
 pub fn shake128x2_squeeze_first_three_blocks(s: &mut KeccakStateX2, out0:&mut [u8], out1:&mut [u8]) {

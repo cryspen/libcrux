@@ -161,8 +161,8 @@ pub(crate) fn keccakf1600(s: &mut KeccakStateX2) {
 pub(crate) fn absorb_block2<const RATE:usize>(s: &mut KeccakStateX2, block0: &[u8], block1: &[u8]) {
     debug_assert!(RATE == block0.len() && RATE == block1.len() && RATE % 8 == 0);
     for i in 0..RATE/16 {
-        let v0 = unsafe { vld1q_u64(block0[16*i..16*i+16].as_ptr() as *const u64) };
-        let v1 = unsafe { vld1q_u64(block1[16*i..16*i+16].as_ptr() as *const u64) };
+        let v0 = unsafe { vld1q_u64(block0[16*i..(16*i)+16].as_ptr() as *const u64) };
+        let v1 = unsafe { vld1q_u64(block1[16*i..(16*i)+16].as_ptr() as *const u64) };
         s.st[(2*i)/5][(2*i)%5] = unsafe { veorq_u64(s.st[(2*i)/5][(2*i)%5], vtrn1q_u64(v0,v1)) };
         s.st[(2*i+1)/5][(2*i+1)%5] = unsafe { veorq_u64(s.st[(2*i+1)/5][(2*i+1)%5], vtrn2q_u64(v0,v1)) };
     }
@@ -172,7 +172,8 @@ pub(crate) fn absorb_block2<const RATE:usize>(s: &mut KeccakStateX2, block0: &[u
         let mut u = [0u64; 2];
         u[0] = u64::from_le_bytes(block0[RATE-8..].try_into().unwrap());
         u[1] = u64::from_le_bytes(block1[RATE-8..].try_into().unwrap());
-        s.st[i][j] = unsafe { vld1q_u64(u.as_ptr() as *const u64) };
+        let uvec = unsafe { vld1q_u64(u.as_ptr() as *const u64) };
+        s.st[i][j] = unsafe { veorq_u64(s.st[i][j], uvec)};
     }
     keccakf1600(s)
 }
