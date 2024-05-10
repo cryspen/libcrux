@@ -1,5 +1,11 @@
 use core::arch::aarch64::*;
 
+// This file optimizes for the stable Rust Neon Intrinsics
+// If we want to use the unstable neon-sha3 instructions, we could use:
+// veor3q_u64, vrax1q_u64, vxarq_u64, and vbcaxq_u64
+// These instructions might speed up our code even more.
+
+
 /// Incremental state
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]
