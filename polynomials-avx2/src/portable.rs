@@ -188,20 +188,6 @@ pub(crate) fn ntt_multiply(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_1(v: &[u8]) -> PortableVector {
-    let mut result = zero();
-
-    for i in 0..8 {
-        result.elements[i] = ((v[0] >> i) & 0x1) as i16;
-    }
-    for i in 8..FIELD_ELEMENTS_IN_VECTOR {
-        result.elements[i] = ((v[1] >> (i - 8)) & 0x1) as i16;
-    }
-
-    result
-}
-
-#[inline(always)]
 pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
     let mut v = zero();
 

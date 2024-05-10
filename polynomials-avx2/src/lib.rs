@@ -379,9 +379,34 @@ fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
 
 #[inline(always)]
 fn deserialize_1(a: &[u8]) -> SIMD256Vector {
-    let output = portable::deserialize_1(a);
+    let deserialized = unsafe {
+        let shift_lsb_to_msb = _mm256_set_epi16(1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7,
+                                                1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7);
 
-    from_i16_array(portable::to_i16_array(output))
+        let coefficients = _mm256_set_epi16(a[1] as i16,
+                                            a[1] as i16,
+                                            a[1] as i16,
+                                            a[1] as i16,
+                                            a[1] as i16,
+                                            a[1] as i16,
+                                            a[1] as i16,
+                                            a[1] as i16,
+                                            a[0] as i16,
+                                            a[0] as i16,
+                                            a[0] as i16,
+                                            a[0] as i16,
+                                            a[0] as i16,
+                                            a[0] as i16,
+                                            a[0] as i16,
+                                            a[0] as i16);
+
+        let coefficients_in_msb = _mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
+        let coefficients_in_lsb = _mm256_srli_epi16(coefficients_in_msb, 7);
+
+        _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16(0x1))
+    };
+
+    SIMD256Vector { elements: deserialized }
 }
 
 #[inline(always)]
