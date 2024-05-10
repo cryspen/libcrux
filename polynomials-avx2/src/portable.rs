@@ -7,10 +7,6 @@ type FieldElementTimesMontgomeryR = i16;
 const MONTGOMERY_SHIFT: u8 = 16;
 const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
-const BARRETT_SHIFT: i32 = 26;
-const BARRETT_R: i32 = 1 << BARRETT_SHIFT;
-const BARRETT_MULTIPLIER: i32 = 20159;
-
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     // hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
 
@@ -30,14 +26,6 @@ pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     let value_high = (value >> MONTGOMERY_SHIFT) as i16;
 
     value_high - c
-}
-
-#[inline(always)]
-pub(crate) fn montgomery_multiply_fe_by_fer(
-    fe: FieldElement,
-    fer: FieldElementTimesMontgomeryR,
-) -> FieldElement {
-    montgomery_reduce_element((fe as i32) * (fer as i32))
 }
 
 pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
@@ -75,25 +63,6 @@ pub(crate) fn from_i16_array(array: [i16; FIELD_ELEMENTS_IN_VECTOR]) -> Portable
     PortableVector { elements: array }
 }
 
-pub(crate) fn barrett_reduce_element(value: FieldElement) -> FieldElement {
-    // hax_debug_assert!(
-    //     i32::from(value) > -BARRETT_R && i32::from(value) < BARRETT_R,
-    //     "value is {value}"
-    // );
-
-    let t = (i32::from(value) * BARRETT_MULTIPLIER) + (BARRETT_R >> 1);
-    let quotient = (t >> BARRETT_SHIFT) as i16;
-
-    let result = value - (quotient * FIELD_MODULUS);
-
-    // hax_debug_assert!(
-    //     result > -FIELD_MODULUS && result < FIELD_MODULUS,
-    //     "value is {value}"
-    // );
-
-    result
-}
-
 #[inline(always)]
 pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
@@ -119,51 +88,6 @@ pub(crate) fn decompress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> 
     debug_assert!(to_i16_array(v)
         .into_iter()
         .all(|coefficient| coefficient.abs() as u16 <= 1 << 12));
-
-    v
-}
-
-#[inline(always)]
-pub(crate) fn inv_ntt_layer_1_step(
-    mut v: PortableVector,
-    zeta0: i16,
-    zeta1: i16,
-    zeta2: i16,
-    zeta3: i16,
-) -> PortableVector {
-    // First 8 elements.
-    let a_minus_b = v.elements[2] - v.elements[0];
-    v.elements[0] = barrett_reduce_element(v.elements[0] + v.elements[2]);
-    v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = v.elements[3] - v.elements[1];
-    v.elements[1] = barrett_reduce_element(v.elements[1] + v.elements[3]);
-    v.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = v.elements[6] - v.elements[4];
-    v.elements[4] = barrett_reduce_element(v.elements[4] + v.elements[6]);
-    v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    let a_minus_b = v.elements[7] - v.elements[5];
-    v.elements[5] = barrett_reduce_element(v.elements[5] + v.elements[7]);
-    v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    // Next 8 elements.
-    let a_minus_b = v.elements[8 + 2] - v.elements[8 + 0];
-    v.elements[8 + 0] = barrett_reduce_element(v.elements[8 + 0] + v.elements[8 + 2]);
-    v.elements[8 + 2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
-
-    let a_minus_b = v.elements[8 + 3] - v.elements[8 + 1];
-    v.elements[8 + 1] = barrett_reduce_element(v.elements[8 + 1] + v.elements[8 + 3]);
-    v.elements[8 + 3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
-
-    let a_minus_b = v.elements[8 + 6] - v.elements[8 + 4];
-    v.elements[8 + 4] = barrett_reduce_element(v.elements[8 + 4] + v.elements[8 + 6]);
-    v.elements[8 + 6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
-
-    let a_minus_b = v.elements[8 + 7] - v.elements[8 + 5];
-    v.elements[8 + 5] = barrett_reduce_element(v.elements[8 + 5] + v.elements[8 + 7]);
-    v.elements[8 + 7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
 
     v
 }

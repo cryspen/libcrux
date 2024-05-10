@@ -275,16 +275,30 @@ fn ntt_layer_3_step(mut v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
 
 #[inline(always)]
 fn inv_ntt_layer_1_step(
-    v: SIMD256Vector,
+    mut v: SIMD256Vector,
     zeta0: i16,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::inv_ntt_layer_1_step(input, zeta0, zeta1, zeta2, zeta3);
+    v.elements = unsafe {
+        let lhs = _mm256_shuffle_epi32(v.elements, 0b11_11_01_01);
 
-    from_i16_array(portable::to_i16_array(output))
+        let rhs = _mm256_shuffle_epi32(v.elements, 0b10_10_00_00);
+        let rhs = _mm256_mullo_epi16(rhs, _mm256_set_epi16(-1, -1, 1, 1, -1, -1, 1, 1,
+                                                                  -1, -1, 1, 1, -1, -1, 1, 1));
+
+        let sum = _mm256_add_epi16(lhs, rhs);
+        let sum_times_zetas = montgomery_multiply_by_constants(sum,
+                                                    _mm256_set_epi16(zeta3, zeta3, 0, 0, zeta2, zeta2, 0, 0,
+                                                                     zeta1, zeta1, 0, 0, zeta0, zeta0, 0, 0));
+
+        let sum = barrett_reduce(SIMD256Vector { elements: sum }).elements;
+
+        _mm256_blend_epi16(sum, sum_times_zetas, 0b1_1_0_0_1_1_0_0)
+    };
+
+    v
 }
 
 #[inline(always)]
