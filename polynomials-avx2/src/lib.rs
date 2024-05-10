@@ -160,6 +160,25 @@ fn montgomery_multiply_by_constants(mut v: __m256i, c: __m256i) -> __m256i {
 }
 
 #[inline(always)]
+fn montgomery_multiply_m128i_by_constants(mut v: __m128i, c: __m128i) -> __m128i {
+    v = unsafe {
+        let value_low = _mm_mullo_epi16(v, c);
+
+        let k = _mm_mullo_epi16(
+            value_low,
+            _mm_set1_epi16(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16),
+        );
+        let k_times_modulus = _mm_mulhi_epi16(k, _mm_set1_epi16(FIELD_MODULUS));
+
+        let value_high = _mm_mulhi_epi16(v, c);
+
+        _mm_sub_epi16(value_high, k_times_modulus)
+    };
+
+    v
+}
+
+#[inline(always)]
 fn compress_1(mut v: SIMD256Vector) -> SIMD256Vector {
     v.elements = unsafe {
         let field_modulus_halved = _mm256_set1_epi16((FIELD_MODULUS - 1) / 2);
@@ -237,11 +256,8 @@ fn ntt_layer_2_step(mut v: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vect
 #[inline(always)]
 fn ntt_layer_3_step(mut v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
     v.elements = unsafe {
-        let zetas = _mm256_set_epi16(zeta, zeta, zeta, zeta, zeta, zeta, zeta, zeta,
-                                        0,    0,    0,    0,    0,    0,    0,    0);
-
-        let rhs = montgomery_multiply_by_constants(v.elements, zetas);
-        let rhs = _mm256_extracti128_si256(rhs, 1);
+        let rhs = _mm256_extracti128_si256(v.elements, 1);
+        let rhs = montgomery_multiply_m128i_by_constants(rhs, _mm_set1_epi16(zeta));
 
         let lhs = _mm256_castsi256_si128(v.elements);
 
@@ -249,8 +265,9 @@ fn ntt_layer_3_step(mut v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
         let upper_coefficients = _mm_sub_epi16(lhs, rhs);
 
         let combined = _mm256_castsi128_si256(lower_coefficients);
+        let combined = _mm256_inserti128_si256(combined, upper_coefficients, 1);
 
-        _mm256_inserti128_si256(combined, upper_coefficients, 1)
+        combined
     };
 
     v
@@ -271,19 +288,41 @@ fn inv_ntt_layer_1_step(
 }
 
 #[inline(always)]
-fn inv_ntt_layer_2_step(v: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::inv_ntt_layer_2_step(input, zeta0, zeta1);
+fn inv_ntt_layer_2_step(mut v: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
+    v.elements = unsafe {
+        let lhs = _mm256_permute4x64_epi64(v.elements, 0b11_11_01_01);
 
-    from_i16_array(portable::to_i16_array(output))
+        let rhs = _mm256_permute4x64_epi64(v.elements, 0b10_10_00_00);
+        let rhs = _mm256_mullo_epi16(rhs, _mm256_set_epi16(-1, -1, -1, -1, 1, 1, 1, 1,
+                                                           -1, -1, -1, -1, 1, 1, 1, 1));
+
+        let sum = _mm256_add_epi16(lhs, rhs);
+        let sum_times_zetas = montgomery_multiply_by_constants(sum, _mm256_set_epi16(zeta1, zeta1, zeta1, zeta1, 0, 0, 0, 0, zeta0, zeta0, zeta0, zeta0, 0, 0, 0, 0));
+
+        _mm256_blend_epi16(sum, sum_times_zetas, 0b1_1_1_1_0_0_0_0)
+    };
+
+    v
 }
 
 #[inline(always)]
-fn inv_ntt_layer_3_step(v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
-    let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::inv_ntt_layer_3_step(input, zeta);
+fn inv_ntt_layer_3_step(mut v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
+    v.elements = unsafe {
+        let lhs = _mm256_extracti128_si256(v.elements, 1);
+        let rhs = _mm256_castsi256_si128(v.elements);
 
-    from_i16_array(portable::to_i16_array(output))
+        let lower_coefficients = _mm_add_epi16(lhs, rhs);
+
+        let upper_coefficients = _mm_sub_epi16(lhs, rhs);
+        let upper_coefficients = montgomery_multiply_m128i_by_constants(upper_coefficients, _mm_set1_epi16(zeta));
+
+        let combined = _mm256_castsi128_si256(lower_coefficients);
+        let combined = _mm256_inserti128_si256(combined, upper_coefficients, 1);
+
+        combined
+    };
+
+    v
 }
 
 #[inline(always)]
