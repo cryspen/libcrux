@@ -70,7 +70,7 @@ impl Operations for SIMD128Vector {
         compress::<COEFFICIENT_BITS>(v)
     }
 
-    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
         decompress::<COEFFICIENT_BITS>(v)
     }
 

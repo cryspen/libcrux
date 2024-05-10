@@ -73,7 +73,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> Po
 }
 
 #[inline(always)]
-pub(crate) fn decompress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
+pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
     debug_assert!(to_i16_array(v)
         .into_iter()
         .all(|coefficient| coefficient.abs() < 1 << COEFFICIENT_BITS));

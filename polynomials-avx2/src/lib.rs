@@ -206,9 +206,9 @@ fn compress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn decompress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
+fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
     let input = portable::from_i16_array(to_i16_array(v));
-    let output = portable::decompress::<{ COEFFICIENT_BITS }>(input);
+    let output = portable::decompress_ciphertext_coefficient::<{ COEFFICIENT_BITS }>(input);
 
     from_i16_array(portable::to_i16_array(output))
 }
@@ -737,8 +737,8 @@ impl Operations for SIMD256Vector {
         compress::<COEFFICIENT_BITS>(v)
     }
 
-    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        decompress::<COEFFICIENT_BITS>(v)
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
+        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
     }
 
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
