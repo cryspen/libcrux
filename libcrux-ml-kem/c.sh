@@ -1,3 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
 rm -rf c
 
 if [[ -z "$CHARON_HOME" ]]; then
