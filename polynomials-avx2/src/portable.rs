@@ -40,6 +40,14 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     montgomery_reduce_element((fe as i32) * (fer as i32))
 }
 
+#[inline(always)]
+pub(crate) fn montgomery_multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        v.elements[i] = montgomery_multiply_fe_by_fer(v.elements[i], c)
+    }
+    v
+}
+
 pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
     // This has to be constant time due to:
     // https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/ldX0ThYJuBo/m/ovODsdY7AwAJ
@@ -513,6 +521,29 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
+pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
+    let mut result = [0u8; 10];
+
+    result[0] = ((v.elements[1] & 0x7) << 5 | v.elements[0]) as u8;
+    result[1] = (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
+    result[2] = (((v.elements[4] & 0xF) << 4) | (v.elements[3] >> 1)) as u8;
+    result[3] = (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
+    result[4] = ((v.elements[7] << 3) | (v.elements[6] >> 2)) as u8;
+
+    result[5] = ((v.elements[8 + 1] & 0x7) << 5 | v.elements[8 + 0]) as u8;
+    result[6] = (((v.elements[8 + 3] & 1) << 7)
+        | (v.elements[8 + 2] << 2)
+        | (v.elements[8 + 1] >> 3)) as u8;
+    result[7] = (((v.elements[8 + 4] & 0xF) << 4) | (v.elements[8 + 3] >> 1)) as u8;
+    result[8] = (((v.elements[8 + 6] & 0x3) << 6)
+        | (v.elements[8 + 5] << 1)
+        | (v.elements[8 + 4] >> 4)) as u8;
+    result[9] = ((v.elements[8 + 7] << 3) | (v.elements[8 + 6] >> 2)) as u8;
+
+    result
+}
+
+#[inline(always)]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
     let mut v = zero();
 
@@ -535,6 +566,35 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
     v.elements[15] = (bytes[5 + 4] >> 3) as i16;
 
     v
+}
+
+#[inline(always)]
+pub(crate) fn serialize_10(v: PortableVector) -> [u8; 20] {
+    let mut result = [0u8; 20];
+
+    result[0] = (v.elements[0] & 0xFF) as u8;
+    result[1] = ((v.elements[1] & 0x3F) as u8) << 2 | ((v.elements[0] >> 8) & 0x03) as u8;
+    result[2] = ((v.elements[2] & 0x0F) as u8) << 4 | ((v.elements[1] >> 6) & 0x0F) as u8;
+    result[3] = ((v.elements[3] & 0x03) as u8) << 6 | ((v.elements[2] >> 4) & 0x3F) as u8;
+    result[4] = ((v.elements[3] >> 2) & 0xFF) as u8;
+    result[5] = (v.elements[4] & 0xFF) as u8;
+    result[6] = ((v.elements[5] & 0x3F) as u8) << 2 | ((v.elements[4] >> 8) & 0x03) as u8;
+    result[7] = ((v.elements[6] & 0x0F) as u8) << 4 | ((v.elements[5] >> 6) & 0x0F) as u8;
+    result[8] = ((v.elements[7] & 0x03) as u8) << 6 | ((v.elements[6] >> 4) & 0x3F) as u8;
+    result[9] = ((v.elements[7] >> 2) & 0xFF) as u8;
+
+    result[10] = (v.elements[8 + 0] & 0xFF) as u8;
+    result[11] = ((v.elements[8 + 1] & 0x3F) as u8) << 2 | ((v.elements[8 + 0] >> 8) & 0x03) as u8;
+    result[12] = ((v.elements[8 + 2] & 0x0F) as u8) << 4 | ((v.elements[8 + 1] >> 6) & 0x0F) as u8;
+    result[13] = ((v.elements[8 + 3] & 0x03) as u8) << 6 | ((v.elements[8 + 2] >> 4) & 0x3F) as u8;
+    result[14] = ((v.elements[8 + 3] >> 2) & 0xFF) as u8;
+    result[15] = (v.elements[8 + 4] & 0xFF) as u8;
+    result[16] = ((v.elements[8 + 5] & 0x3F) as u8) << 2 | ((v.elements[8 + 4] >> 8) & 0x03) as u8;
+    result[17] = ((v.elements[8 + 6] & 0x0F) as u8) << 4 | ((v.elements[8 + 5] >> 6) & 0x0F) as u8;
+    result[18] = ((v.elements[8 + 7] & 0x03) as u8) << 6 | ((v.elements[8 + 6] >> 4) & 0x3F) as u8;
+    result[19] = ((v.elements[8 + 7] >> 2) & 0xFF) as u8;
+
+    result
 }
 
 #[inline(always)]
@@ -623,6 +683,39 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> PortableVector {
         | ((bytes[11 + 6] as i16) >> 7)) as i16;
     result.elements[14] = ((bytes[11 + 9] as i16 & 0x1F) << 6 | (bytes[11 + 8] as i16 >> 2)) as i16;
     result.elements[15] = (((bytes[11 + 10] as i16) << 3) | (bytes[11 + 9] as i16 >> 5)) as i16;
+
+    result
+}
+
+#[inline(always)]
+pub(crate) fn serialize_12(v: PortableVector) -> [u8; 24] {
+    let mut result = [0u8; 24];
+
+    result[0] = (v.elements[0] & 0xFF) as u8;
+    result[1] = ((v.elements[0] >> 8) | ((v.elements[1] & 0x0F) << 4)) as u8;
+    result[2] = ((v.elements[1] >> 4) & 0xFF) as u8;
+    result[3] = (v.elements[2] & 0xFF) as u8;
+    result[4] = ((v.elements[2] >> 8) | ((v.elements[3] & 0x0F) << 4)) as u8;
+    result[5] = ((v.elements[3] >> 4) & 0xFF) as u8;
+    result[6] = (v.elements[4] & 0xFF) as u8;
+    result[7] = ((v.elements[4] >> 8) | ((v.elements[5] & 0x0F) << 4)) as u8;
+    result[8] = ((v.elements[5] >> 4) & 0xFF) as u8;
+    result[9] = (v.elements[6] & 0xFF) as u8;
+    result[10] = ((v.elements[6] >> 8) | ((v.elements[7] & 0x0F) << 4)) as u8;
+    result[11] = ((v.elements[7] >> 4) & 0xFF) as u8;
+
+    result[12] = (v.elements[8 + 0] & 0xFF) as u8;
+    result[13] = ((v.elements[8 + 0] >> 8) | ((v.elements[8 + 1] & 0x0F) << 4)) as u8;
+    result[14] = ((v.elements[8 + 1] >> 4) & 0xFF) as u8;
+    result[15] = (v.elements[8 + 2] & 0xFF) as u8;
+    result[16] = ((v.elements[8 + 2] >> 8) | ((v.elements[8 + 3] & 0x0F) << 4)) as u8;
+    result[17] = ((v.elements[8 + 3] >> 4) & 0xFF) as u8;
+    result[18] = (v.elements[8 + 4] & 0xFF) as u8;
+    result[19] = ((v.elements[8 + 4] >> 8) | ((v.elements[8 + 5] & 0x0F) << 4)) as u8;
+    result[20] = ((v.elements[8 + 5] >> 4) & 0xFF) as u8;
+    result[21] = (v.elements[8 + 6] & 0xFF) as u8;
+    result[22] = ((v.elements[8 + 6] >> 8) | ((v.elements[8 + 7] & 0x0F) << 4)) as u8;
+    result[23] = ((v.elements[8 + 7] >> 4) & 0xFF) as u8;
 
     result
 }

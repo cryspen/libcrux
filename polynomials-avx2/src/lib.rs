@@ -1,5 +1,5 @@
 use core::arch::x86_64::*;
-use libcrux_traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
+use libcrux_traits::{Operations, FIELD_MODULUS};
 
 mod debug;
 mod portable;
@@ -31,6 +31,17 @@ fn from_i16_array(array: [i16; 16]) -> SIMD256Vector {
     SIMD256Vector {
         elements: unsafe { _mm256_loadu_si256(array.as_ptr() as *const __m256i) },
     }
+}
+
+#[inline(always)]
+fn add_constant(mut v: SIMD256Vector, c: i16) -> SIMD256Vector {
+    v.elements = unsafe {
+        let c = _mm256_set1_epi16(c);
+
+        _mm256_add_epi16(v.elements, c)
+    };
+
+    v
 }
 
 #[inline(always)]
@@ -108,23 +119,11 @@ fn barrett_reduce(v: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn montgomery_multiply_by_constant(mut v: SIMD256Vector, c: i16) -> SIMD256Vector {
-    v.elements = unsafe {
-        let c = _mm256_set1_epi16(c);
-        let value_low = _mm256_mullo_epi16(v.elements, c);
+fn montgomery_multiply_by_constant(v: SIMD256Vector, c: i16) -> SIMD256Vector {
+    let input = portable::from_i16_array(to_i16_array(v));
+    let output = portable::montgomery_multiply_by_constant(input, c);
 
-        let k = _mm256_mullo_epi16(
-            value_low,
-            _mm256_set1_epi16(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i16),
-        );
-        let k_times_modulus = _mm256_mulhi_epi16(k, _mm256_set1_epi16(FIELD_MODULUS));
-
-        let value_high = _mm256_mulhi_epi16(v.elements, c);
-
-        _mm256_sub_epi16(value_high, k_times_modulus)
-    };
-
-    v
+    from_i16_array(portable::to_i16_array(output))
 }
 
 #[inline(always)]
@@ -244,10 +243,10 @@ fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
     let mut serialized = [0u8; 2];
 
     let bits_packed = unsafe {
-        let lsb_shifted_up = _mm256_slli_epi16(v.elements, 7);
+        let lsb_to_msb = _mm256_slli_epi16(v.elements, 7);
 
-        let low_lanes = _mm256_castsi256_si128(lsb_shifted_up);
-        let high_lanes = _mm256_extracti128_si256(lsb_shifted_up, 1);
+        let low_lanes = _mm256_castsi256_si128(lsb_to_msb);
+        let high_lanes = _mm256_extracti128_si256(lsb_to_msb, 1);
 
         let msbs = _mm_packus_epi16(low_lanes, high_lanes);
 
@@ -274,24 +273,7 @@ fn serialize_4(v: SIMD256Vector) -> [u8; 8] {
     unsafe {
         let adjacent_2_combined = _mm256_madd_epi16(
             v.elements,
-            _mm256_set_epi16(
-                1 << 4,
-                1,
-                1 << 4,
-                1,
-                1 << 4,
-                1,
-                1 << 4,
-                1,
-                1 << 4,
-                1,
-                1 << 4,
-                1,
-                1 << 4,
-                1,
-                1 << 4,
-                1,
-            ),
+            _mm256_set_epi16(16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1),
         );
 
         let adjacent_8_combined = _mm256_shuffle_epi8(
@@ -323,52 +305,9 @@ fn deserialize_4(v: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_5(v: SIMD256Vector) -> [u8; 10] {
-    let mut serialized = [0u8; 16];
+    let input = portable::from_i16_array(to_i16_array(v));
 
-    unsafe {
-        let adjacent_2_combined = _mm256_madd_epi16(
-            v.elements,
-            _mm256_set_epi16(
-                1 << 5,
-                1,
-                1 << 5,
-                1,
-                1 << 5,
-                1,
-                1 << 5,
-                1,
-                1 << 5,
-                1,
-                1 << 5,
-                1,
-                1 << 5,
-                1,
-                1 << 5,
-                1,
-            ),
-        );
-
-        let adjacent_4_combined = _mm256_sllv_epi32(
-            adjacent_2_combined,
-            _mm256_set_epi32(0, 22, 0, 22, 0, 22, 0, 22),
-        );
-        let adjacent_4_combined = _mm256_srli_epi64(adjacent_4_combined, 22);
-
-        let adjacent_8_combined = _mm256_shuffle_epi32(adjacent_4_combined, 0b00_00_10_00);
-        let adjacent_8_combined = _mm256_sllv_epi32(
-            adjacent_8_combined,
-            _mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
-        );
-        let adjacent_8_combined = _mm256_srli_epi64(adjacent_8_combined, 12);
-
-        let lower_8 = _mm256_castsi256_si128(adjacent_8_combined);
-        let upper_8 = _mm256_extracti128_si256(adjacent_8_combined, 1);
-
-        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, lower_8);
-        _mm_storeu_si128(serialized.as_mut_ptr().offset(5) as *mut __m128i, upper_8);
-    }
-
-    serialized[0..10].try_into().unwrap()
+    portable::serialize_5(input)
 }
 
 #[inline(always)]
@@ -380,53 +319,9 @@ fn deserialize_5(v: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_10(v: SIMD256Vector) -> [u8; 20] {
-    let mut serialized = [0u8; 32];
+    let input = portable::from_i16_array(to_i16_array(v));
 
-    unsafe {
-        let adjacent_2_combined = _mm256_madd_epi16(
-            v.elements,
-            _mm256_set_epi16(
-                1 << 10,
-                1,
-                1 << 10,
-                1,
-                1 << 10,
-                1,
-                1 << 10,
-                1,
-                1 << 10,
-                1,
-                1 << 10,
-                1,
-                1 << 10,
-                1,
-                1 << 10,
-                1,
-            ),
-        );
-
-        let adjacent_4_combined = _mm256_sllv_epi32(
-            adjacent_2_combined,
-            _mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
-        );
-        let adjacent_4_combined = _mm256_srli_epi64(adjacent_4_combined, 12);
-
-        let adjacent_8_combined = _mm256_shuffle_epi8(
-            adjacent_4_combined,
-            _mm256_set_epi8(
-                -1, -1, -1, -1, -1, -1, 12, 11, 10, 9, 8, 4, 3, 2, 1, 0, -1, -1, -1, -1, -1, -1,
-                12, 11, 10, 9, 8, 4, 3, 2, 1, 0,
-            ),
-        );
-
-        let lower_8 = _mm256_castsi256_si128(adjacent_8_combined);
-        let upper_8 = _mm256_extracti128_si256(adjacent_8_combined, 1);
-
-        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, lower_8);
-        _mm_storeu_si128(serialized.as_mut_ptr().offset(10) as *mut __m128i, upper_8);
-    }
-
-    serialized[0..20].try_into().unwrap()
+    portable::serialize_10(input)
 }
 
 #[inline(always)]
@@ -452,53 +347,9 @@ fn deserialize_11(v: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_12(v: SIMD256Vector) -> [u8; 24] {
-    let mut serialized = [0u8; 32];
+    let input = portable::from_i16_array(to_i16_array(v));
 
-    unsafe {
-        let adjacent_2_combined = _mm256_madd_epi16(
-            v.elements,
-            _mm256_set_epi16(
-                1 << 12,
-                1,
-                1 << 12,
-                1,
-                1 << 12,
-                1,
-                1 << 12,
-                1,
-                1 << 12,
-                1,
-                1 << 12,
-                1,
-                1 << 12,
-                1,
-                1 << 12,
-                1,
-            ),
-        );
-
-        let adjacent_4_combined = _mm256_sllv_epi32(
-            adjacent_2_combined,
-            _mm256_set_epi32(0, 8, 0, 8, 0, 8, 0, 8),
-        );
-        let adjacent_4_combined = _mm256_srli_epi64(adjacent_4_combined, 8);
-
-        let adjacent_8_combined = _mm256_shuffle_epi8(
-            adjacent_4_combined,
-            _mm256_set_epi8(
-                -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0, -1, -1, -1, -1, 13, 12, 11,
-                10, 9, 8, 5, 4, 3, 2, 1, 0,
-            ),
-        );
-
-        let lower_8 = _mm256_castsi256_si128(adjacent_8_combined);
-        let upper_8 = _mm256_extracti128_si256(adjacent_8_combined, 1);
-
-        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, lower_8);
-        _mm_storeu_si128(serialized.as_mut_ptr().offset(12) as *mut __m128i, upper_8);
-    }
-
-    serialized[0..24].try_into().unwrap()
+    portable::serialize_12(input)
 }
 
 #[inline(always)]
