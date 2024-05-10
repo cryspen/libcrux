@@ -43,7 +43,7 @@ macro_rules! impl_comp {
                     },
                 );
 
-		#[cfg(feature = "simd128")]
+                #[cfg(feature = "simd128")]
                 group.bench_with_input(
                     BenchmarkId::new("arm64", fmt(*payload_size)),
                     payload_size,
