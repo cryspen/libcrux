@@ -112,7 +112,8 @@ fn barrett_reduce(mut v: SIMD256Vector) -> SIMD256Vector {
 
         let quotient = _mm256_srai_epi16(t, 10);
 
-        let quotient_times_field_modulus = _mm256_mullo_epi16(quotient, _mm256_set1_epi16(FIELD_MODULUS));
+        let quotient_times_field_modulus =
+            _mm256_mullo_epi16(quotient, _mm256_set1_epi16(FIELD_MODULUS));
 
         _mm256_sub_epi16(v.elements, quotient_times_field_modulus)
     };
@@ -206,7 +207,9 @@ fn compress<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: SIMD256Vector) -> SIMD256Vector {
+fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
+    v: SIMD256Vector,
+) -> SIMD256Vector {
     let input = portable::from_i16_array(to_i16_array(v));
     let output = portable::decompress_ciphertext_coefficient::<{ COEFFICIENT_BITS }>(input);
 
@@ -222,8 +225,10 @@ fn ntt_layer_1_step(
     zeta3: i16,
 ) -> SIMD256Vector {
     v.elements = unsafe {
-        let zetas = _mm256_set_epi16(-zeta3, -zeta3, zeta3, zeta3, -zeta2, -zeta2, zeta2, zeta2,
-                                     -zeta1, -zeta1, zeta1, zeta1, -zeta0, -zeta0, zeta0, zeta0);
+        let zetas = _mm256_set_epi16(
+            -zeta3, -zeta3, zeta3, zeta3, -zeta2, -zeta2, zeta2, zeta2, -zeta1, -zeta1, zeta1,
+            zeta1, -zeta0, -zeta0, zeta0, zeta0,
+        );
 
         let rhs = _mm256_shuffle_epi32(v.elements, 0b11_11_01_01);
         let rhs = montgomery_multiply_by_constants(rhs, zetas);
@@ -239,8 +244,10 @@ fn ntt_layer_1_step(
 #[inline(always)]
 fn ntt_layer_2_step(mut v: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256Vector {
     v.elements = unsafe {
-        let zetas = _mm256_set_epi16(-zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1,
-                                     -zeta0, -zeta0, -zeta0, -zeta0, zeta0, zeta0, zeta0, zeta0);
+        let zetas = _mm256_set_epi16(
+            -zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1, -zeta0, -zeta0, -zeta0,
+            -zeta0, zeta0, zeta0, zeta0, zeta0,
+        );
 
         let rhs = _mm256_shuffle_epi32(v.elements, 0b11_10_11_10);
         let rhs = montgomery_multiply_by_constants(rhs, zetas);
@@ -285,13 +292,18 @@ fn inv_ntt_layer_1_step(
         let lhs = _mm256_shuffle_epi32(v.elements, 0b11_11_01_01);
 
         let rhs = _mm256_shuffle_epi32(v.elements, 0b10_10_00_00);
-        let rhs = _mm256_mullo_epi16(rhs, _mm256_set_epi16(-1, -1, 1, 1, -1, -1, 1, 1,
-                                                                  -1, -1, 1, 1, -1, -1, 1, 1));
+        let rhs = _mm256_mullo_epi16(
+            rhs,
+            _mm256_set_epi16(-1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1),
+        );
 
         let sum = _mm256_add_epi16(lhs, rhs);
-        let sum_times_zetas = montgomery_multiply_by_constants(sum,
-                                                    _mm256_set_epi16(zeta3, zeta3, 0, 0, zeta2, zeta2, 0, 0,
-                                                                     zeta1, zeta1, 0, 0, zeta0, zeta0, 0, 0));
+        let sum_times_zetas = montgomery_multiply_by_constants(
+            sum,
+            _mm256_set_epi16(
+                zeta3, zeta3, 0, 0, zeta2, zeta2, 0, 0, zeta1, zeta1, 0, 0, zeta0, zeta0, 0, 0,
+            ),
+        );
 
         let sum = barrett_reduce(SIMD256Vector { elements: sum }).elements;
 
@@ -307,11 +319,18 @@ fn inv_ntt_layer_2_step(mut v: SIMD256Vector, zeta0: i16, zeta1: i16) -> SIMD256
         let lhs = _mm256_permute4x64_epi64(v.elements, 0b11_11_01_01);
 
         let rhs = _mm256_permute4x64_epi64(v.elements, 0b10_10_00_00);
-        let rhs = _mm256_mullo_epi16(rhs, _mm256_set_epi16(-1, -1, -1, -1, 1, 1, 1, 1,
-                                                           -1, -1, -1, -1, 1, 1, 1, 1));
+        let rhs = _mm256_mullo_epi16(
+            rhs,
+            _mm256_set_epi16(-1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1),
+        );
 
         let sum = _mm256_add_epi16(lhs, rhs);
-        let sum_times_zetas = montgomery_multiply_by_constants(sum, _mm256_set_epi16(zeta1, zeta1, zeta1, zeta1, 0, 0, 0, 0, zeta0, zeta0, zeta0, zeta0, 0, 0, 0, 0));
+        let sum_times_zetas = montgomery_multiply_by_constants(
+            sum,
+            _mm256_set_epi16(
+                zeta1, zeta1, zeta1, zeta1, 0, 0, 0, 0, zeta0, zeta0, zeta0, zeta0, 0, 0, 0, 0,
+            ),
+        );
 
         _mm256_blend_epi16(sum, sum_times_zetas, 0b1_1_1_1_0_0_0_0)
     };
@@ -328,7 +347,8 @@ fn inv_ntt_layer_3_step(mut v: SIMD256Vector, zeta: i16) -> SIMD256Vector {
         let lower_coefficients = _mm_add_epi16(lhs, rhs);
 
         let upper_coefficients = _mm_sub_epi16(lhs, rhs);
-        let upper_coefficients = montgomery_multiply_m128i_by_constants(upper_coefficients, _mm_set1_epi16(zeta));
+        let upper_coefficients =
+            montgomery_multiply_m128i_by_constants(upper_coefficients, _mm_set1_epi16(zeta));
 
         let combined = _mm256_castsi128_si256(lower_coefficients);
         let combined = _mm256_inserti128_si256(combined, upper_coefficients, 1);
@@ -380,25 +400,43 @@ fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
 #[inline(always)]
 fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
     let deserialized = unsafe {
-        let shift_lsb_to_msb = _mm256_set_epi16(1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7,
-                                                1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7);
+        let shift_lsb_to_msb = _mm256_set_epi16(
+            1 << 0,
+            1 << 1,
+            1 << 2,
+            1 << 3,
+            1 << 4,
+            1 << 5,
+            1 << 6,
+            1 << 7,
+            1 << 0,
+            1 << 1,
+            1 << 2,
+            1 << 3,
+            1 << 4,
+            1 << 5,
+            1 << 6,
+            1 << 7,
+        );
 
-        let coefficients = _mm256_set_epi16(bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16);
+        let coefficients = _mm256_set_epi16(
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+        );
 
         let coefficients_in_msb = _mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
         let coefficients_in_lsb = _mm256_srli_epi16(coefficients_in_msb, 7);
@@ -406,7 +444,9 @@ fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
         _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16((1 << 1) - 1))
     };
 
-    SIMD256Vector { elements: deserialized }
+    SIMD256Vector {
+        elements: deserialized,
+    }
 }
 
 #[inline(always)]
@@ -459,25 +499,43 @@ fn serialize_4(v: SIMD256Vector) -> [u8; 8] {
 #[inline(always)]
 fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
     let deserialized = unsafe {
-        let shift_lsbs_to_msbs = _mm256_set_epi16(1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4,
-                                                  1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4);
+        let shift_lsbs_to_msbs = _mm256_set_epi16(
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+        );
 
-        let coefficients = _mm256_set_epi16(bytes[7] as i16,
-                                            bytes[7] as i16,
-                                            bytes[6] as i16,
-                                            bytes[6] as i16,
-                                            bytes[5] as i16,
-                                            bytes[5] as i16,
-                                            bytes[4] as i16,
-                                            bytes[4] as i16,
-                                            bytes[3] as i16,
-                                            bytes[3] as i16,
-                                            bytes[2] as i16,
-                                            bytes[2] as i16,
-                                            bytes[1] as i16,
-                                            bytes[1] as i16,
-                                            bytes[0] as i16,
-                                            bytes[0] as i16);
+        let coefficients = _mm256_set_epi16(
+            bytes[7] as i16,
+            bytes[7] as i16,
+            bytes[6] as i16,
+            bytes[6] as i16,
+            bytes[5] as i16,
+            bytes[5] as i16,
+            bytes[4] as i16,
+            bytes[4] as i16,
+            bytes[3] as i16,
+            bytes[3] as i16,
+            bytes[2] as i16,
+            bytes[2] as i16,
+            bytes[1] as i16,
+            bytes[1] as i16,
+            bytes[0] as i16,
+            bytes[0] as i16,
+        );
 
         let coefficients_in_msb = _mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
         let coefficients_in_lsb = _mm256_srli_epi16(coefficients_in_msb, 4);
@@ -485,7 +543,9 @@ fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
         _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16((1 << 4) - 1))
     };
 
-    SIMD256Vector { elements: deserialized }
+    SIMD256Vector {
+        elements: deserialized,
+    }
 }
 
 #[inline(always)]
@@ -600,21 +660,34 @@ fn serialize_10(v: SIMD256Vector) -> [u8; 20] {
 fn deserialize_10(v: &[u8]) -> SIMD256Vector {
     let deserialized = unsafe {
         let shift_lsbs_to_msbs = _mm256_set_epi16(
-            1 << 0, 1 << 2, 1 << 4, 1 << 6, 1 << 0, 1 << 2, 1 << 4, 1 << 6,
-            1 << 0, 1 << 2, 1 << 4, 1 << 6, 1 << 0, 1 << 2, 1 << 4, 1 << 6);
+            1 << 0,
+            1 << 2,
+            1 << 4,
+            1 << 6,
+            1 << 0,
+            1 << 2,
+            1 << 4,
+            1 << 6,
+            1 << 0,
+            1 << 2,
+            1 << 4,
+            1 << 6,
+            1 << 0,
+            1 << 2,
+            1 << 4,
+            1 << 6,
+        );
 
         let lower_coefficients = _mm_loadu_si128(v.as_ptr() as *const __m128i);
-        let lower_coefficients = _mm_shuffle_epi8(lower_coefficients,
-                                                  _mm_set_epi8(9,   8,  8, 7,
-                                                               7,   6,  6, 5,
-                                                               4,   3,  3, 2,
-                                                               2,   1,  1, 0));
+        let lower_coefficients = _mm_shuffle_epi8(
+            lower_coefficients,
+            _mm_set_epi8(9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 3, 2, 2, 1, 1, 0),
+        );
         let upper_coefficients = _mm_loadu_si128(v.as_ptr().offset(4) as *const __m128i);
-        let upper_coefficients = _mm_shuffle_epi8(upper_coefficients,
-                                                  _mm_set_epi8(15, 14, 14, 13,
-                                                               13, 12, 12, 11,
-                                                               10,  9,  9, 8,
-                                                               8,   7,  7, 6));
+        let upper_coefficients = _mm_shuffle_epi8(
+            upper_coefficients,
+            _mm_set_epi8(15, 14, 14, 13, 13, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6),
+        );
 
         let coefficients = _mm256_castsi128_si256(lower_coefficients);
         let coefficients = _mm256_inserti128_si256(coefficients, upper_coefficients, 1);
@@ -626,7 +699,9 @@ fn deserialize_10(v: &[u8]) -> SIMD256Vector {
         coefficients
     };
 
-    SIMD256Vector { elements: deserialized }
+    SIMD256Vector {
+        elements: deserialized,
+    }
 }
 
 #[inline(always)]
@@ -698,21 +773,34 @@ fn serialize_12(v: SIMD256Vector) -> [u8; 24] {
 fn deserialize_12(v: &[u8]) -> SIMD256Vector {
     let deserialized = unsafe {
         let shift_lsbs_to_msbs = _mm256_set_epi16(
-            1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4,
-            1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4);
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+            1 << 0,
+            1 << 4,
+        );
 
         let lower_coefficients = _mm_loadu_si128(v.as_ptr() as *const __m128i);
-        let lower_coefficients = _mm_shuffle_epi8(lower_coefficients,
-                                                  _mm_set_epi8(11, 10, 10, 9,
-                                                               8,   7,  7, 6,
-                                                               5,   4,  4, 3,
-                                                               2,   1,  1, 0));
+        let lower_coefficients = _mm_shuffle_epi8(
+            lower_coefficients,
+            _mm_set_epi8(11, 10, 10, 9, 8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0),
+        );
         let upper_coefficients = _mm_loadu_si128(v.as_ptr().offset(8) as *const __m128i);
-        let upper_coefficients = _mm_shuffle_epi8(upper_coefficients,
-                                                  _mm_set_epi8(15, 14, 14, 13,
-                                                               12, 11, 11, 10,
-                                                               9,   8,  8, 7,
-                                                               6,   5,  5, 4));
+        let upper_coefficients = _mm_shuffle_epi8(
+            upper_coefficients,
+            _mm_set_epi8(15, 14, 14, 13, 12, 11, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4),
+        );
 
         let coefficients = _mm256_castsi128_si256(lower_coefficients);
         let coefficients = _mm256_inserti128_si256(coefficients, upper_coefficients, 1);
@@ -724,7 +812,9 @@ fn deserialize_12(v: &[u8]) -> SIMD256Vector {
         coefficients
     };
 
-    SIMD256Vector { elements: deserialized }
+    SIMD256Vector {
+        elements: deserialized,
+    }
 }
 
 #[inline(always)]
