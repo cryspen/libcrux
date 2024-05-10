@@ -188,31 +188,6 @@ pub(crate) fn ntt_multiply(
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
-    let mut v = zero();
-
-    v.elements[0] = (bytes[0] & 0x0F) as i16;
-    v.elements[1] = ((bytes[0] >> 4) & 0x0F) as i16;
-    v.elements[2] = (bytes[1] & 0x0F) as i16;
-    v.elements[3] = ((bytes[1] >> 4) & 0x0F) as i16;
-    v.elements[4] = (bytes[2] & 0x0F) as i16;
-    v.elements[5] = ((bytes[2] >> 4) & 0x0F) as i16;
-    v.elements[6] = (bytes[3] & 0x0F) as i16;
-    v.elements[7] = ((bytes[3] >> 4) & 0x0F) as i16;
-
-    v.elements[8] = (bytes[4] & 0x0F) as i16;
-    v.elements[9] = ((bytes[4] >> 4) & 0x0F) as i16;
-    v.elements[10] = (bytes[5] & 0x0F) as i16;
-    v.elements[11] = ((bytes[5] >> 4) & 0x0F) as i16;
-    v.elements[12] = (bytes[6] & 0x0F) as i16;
-    v.elements[13] = ((bytes[6] >> 4) & 0x0F) as i16;
-    v.elements[14] = (bytes[7] & 0x0F) as i16;
-    v.elements[15] = ((bytes[7] >> 4) & 0x0F) as i16;
-
-    v
-}
-
-#[inline(always)]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
     let mut v = zero();
 
