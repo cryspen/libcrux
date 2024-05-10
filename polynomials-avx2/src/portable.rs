@@ -303,57 +303,6 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_12(bytes: &[u8]) -> PortableVector {
-    let mut re = zero();
-
-    let byte0 = bytes[0] as i16;
-    let byte1 = bytes[1] as i16;
-    let byte2 = bytes[2] as i16;
-    let byte3 = bytes[3] as i16;
-    let byte4 = bytes[4] as i16;
-    let byte5 = bytes[5] as i16;
-    let byte6 = bytes[6] as i16;
-    let byte7 = bytes[7] as i16;
-    let byte8 = bytes[8] as i16;
-    let byte9 = bytes[9] as i16;
-    let byte10 = bytes[10] as i16;
-    let byte11 = bytes[11] as i16;
-
-    re.elements[0] = (byte1 & 0x0F) << 8 | (byte0 & 0xFF);
-    re.elements[1] = (byte2 << 4) | ((byte1 >> 4) & 0x0F);
-    re.elements[2] = (byte4 & 0x0F) << 8 | (byte3 & 0xFF);
-    re.elements[3] = (byte5 << 4) | ((byte4 >> 4) & 0x0F);
-    re.elements[4] = (byte7 & 0x0F) << 8 | (byte6 & 0xFF);
-    re.elements[5] = (byte8 << 4) | ((byte7 >> 4) & 0x0F);
-    re.elements[6] = (byte10 & 0x0F) << 8 | (byte9 & 0xFF);
-    re.elements[7] = (byte11 << 4) | ((byte10 >> 4) & 0x0F);
-
-    let byte12 = bytes[12] as i16;
-    let byte13 = bytes[13] as i16;
-    let byte14 = bytes[14] as i16;
-    let byte15 = bytes[15] as i16;
-    let byte16 = bytes[16] as i16;
-    let byte17 = bytes[17] as i16;
-    let byte18 = bytes[18] as i16;
-    let byte19 = bytes[19] as i16;
-    let byte20 = bytes[20] as i16;
-    let byte21 = bytes[21] as i16;
-    let byte22 = bytes[22] as i16;
-    let byte23 = bytes[23] as i16;
-
-    re.elements[8] = (byte13 & 0x0F) << 8 | (byte12 & 0xFF);
-    re.elements[9] = (byte14 << 4) | ((byte13 >> 4) & 0x0F);
-    re.elements[10] = (byte16 & 0x0F) << 8 | (byte15 & 0xFF);
-    re.elements[11] = (byte17 << 4) | ((byte16 >> 4) & 0x0F);
-    re.elements[12] = (byte19 & 0x0F) << 8 | (byte18 & 0xFF);
-    re.elements[13] = (byte20 << 4) | ((byte19 >> 4) & 0x0F);
-    re.elements[14] = (byte22 & 0x0F) << 8 | (byte21 & 0xFF);
-    re.elements[15] = (byte23 << 4) | ((byte22 >> 4) & 0x0F);
-
-    re
-}
-
-#[inline(always)]
 pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
     let mut result = [0i16; 16];
     let mut sampled = 0;

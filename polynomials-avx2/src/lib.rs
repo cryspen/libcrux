@@ -403,7 +403,7 @@ fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
         let coefficients_in_msb = _mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
         let coefficients_in_lsb = _mm256_srli_epi16(coefficients_in_msb, 7);
 
-        _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16(0x1))
+        _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16((1 << 1) - 1))
     };
 
     SIMD256Vector { elements: deserialized }
@@ -482,7 +482,7 @@ fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
         let coefficients_in_msb = _mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
         let coefficients_in_lsb = _mm256_srli_epi16(coefficients_in_msb, 4);
 
-        _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16(0xF))
+        _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16((1 << 4) - 1))
     };
 
     SIMD256Vector { elements: deserialized }
@@ -670,9 +670,35 @@ fn serialize_12(v: SIMD256Vector) -> [u8; 24] {
 
 #[inline(always)]
 fn deserialize_12(v: &[u8]) -> SIMD256Vector {
-    let output = portable::deserialize_12(v);
+    let deserialized = unsafe {
+        let shift_lsbs_to_msbs = _mm256_set_epi16(
+            1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4,
+            1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4, 1 << 0, 1 << 4);
 
-    from_i16_array(portable::to_i16_array(output))
+        let lower_coefficients = _mm_loadu_si128(v.as_ptr() as *const __m128i);
+        let lower_coefficients = _mm_shuffle_epi8(lower_coefficients,
+                                                  _mm_set_epi8(11, 10, 10, 9,
+                                                               8,   7,  7, 6,
+                                                               5,   4,  4, 3,
+                                                               2,   1,  1, 0));
+        let upper_coefficients = _mm_loadu_si128(v.as_ptr().offset(8) as *const __m128i);
+        let upper_coefficients = _mm_shuffle_epi8(upper_coefficients,
+                                                  _mm_set_epi8(15, 14, 14, 13,
+                                                               12, 11, 11, 10,
+                                                               9,   8,  8, 7,
+                                                               6,   5,  5, 4));
+
+        let coefficients = _mm256_castsi128_si256(lower_coefficients);
+        let coefficients = _mm256_inserti128_si256(coefficients, upper_coefficients, 1);
+
+        let coefficients = _mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
+        let coefficients = _mm256_srli_epi16(coefficients, 4);
+        let coefficients = _mm256_and_si256(coefficients, _mm256_set1_epi16((1 << 12) - 1));
+
+        coefficients
+    };
+
+    SIMD256Vector { elements: deserialized }
 }
 
 #[inline(always)]
