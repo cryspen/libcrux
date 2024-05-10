@@ -326,7 +326,7 @@ fn deserialize_4(v: &[u8]) -> SIMD256Vector {
 
 #[inline(always)]
 fn serialize_5(v: SIMD256Vector) -> [u8; 10] {
-    let mut serialized = [0u8; 16];
+    let mut serialized = [0u8; 32];
 
     unsafe {
         let adjacent_2_combined = _mm256_madd_epi16(
