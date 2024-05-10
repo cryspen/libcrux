@@ -4,8 +4,6 @@ use core::arch::aarch64::*;
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]
 pub struct KeccakStateX2 {
-    pub rate: usize,
-    pub p: u8,
     pub st: [[uint64x2_t; 5]; 5],
 }
 
@@ -20,10 +18,9 @@ fn rotate_left<const LEFT:i32, const RIGHT:i32>(x:uint64x2_t) -> uint64x2_t {
 impl KeccakStateX2 {
     /// Create a new Shake128 x4 state.
     #[inline(always)]
-    pub(crate)  fn new(rate:usize, p:u8) -> Self {
+    pub(crate)  fn new() -> Self {
         unsafe{
             Self {
-                p, rate,
                 st: [[vdupq_n_u64(0); 5]; 5],
             }
         }
@@ -155,54 +152,54 @@ pub(crate) fn keccakf1600(s: &mut KeccakStateX2) {
 }
 
 #[inline(always)]
-pub(crate) fn absorb_block2(s: &mut KeccakStateX2, block0: &[u8], block1: &[u8]) {
-    debug_assert!(s.rate == block0.len() && s.rate == block1.len() && s.rate % 8 == 0);
-    for i in 0..s.rate/16 {
+pub(crate) fn absorb_block2<const RATE:usize>(s: &mut KeccakStateX2, block0: &[u8], block1: &[u8]) {
+    debug_assert!(RATE == block0.len() && RATE == block1.len() && RATE % 8 == 0);
+    for i in 0..RATE/16 {
         let v0 = unsafe { vld1q_u64(block0[16*i..16*i+16].as_ptr() as *const u64) };
         let v1 = unsafe { vld1q_u64(block1[16*i..16*i+16].as_ptr() as *const u64) };
         s.st[(2*i)/5][(2*i)%5] = unsafe { veorq_u64(s.st[(2*i)/5][(2*i)%5], vtrn1q_u64(v0,v1)) };
         s.st[(2*i+1)/5][(2*i+1)%5] = unsafe { veorq_u64(s.st[(2*i+1)/5][(2*i+1)%5], vtrn2q_u64(v0,v1)) };
     }
-    if s.rate%16 != 0 {
-        let i = (s.rate/8 - 1)/5;
-        let j = (s.rate/8 - 1)%5;
+    if RATE%16 != 0 {
+        let i = (RATE/8 - 1)/5;
+        let j = (RATE/8 - 1)%5;
         let mut u = [0u64; 2];
-        u[0] = u64::from_le_bytes(block0[s.rate-8..].try_into().unwrap());
-        u[1] = u64::from_le_bytes(block1[s.rate-8..].try_into().unwrap());
+        u[0] = u64::from_le_bytes(block0[RATE-8..].try_into().unwrap());
+        u[1] = u64::from_le_bytes(block1[RATE-8..].try_into().unwrap());
         s.st[i][j] = unsafe { vld1q_u64(u.as_ptr() as *const u64) };
     }
     keccakf1600(s)
 }
 
 #[inline(always)]
-pub(crate) fn absorb_final2(s: &mut KeccakStateX2, last0: &[u8], last1: &[u8]) {
-    debug_assert!(last0.len() == last1.len() && last0.len() < s.rate);
+pub(crate) fn absorb_final2<const RATE:usize, const DELIM:u8>(s: &mut KeccakStateX2, last0: &[u8], last1: &[u8]) {
+    debug_assert!(last0.len() == last1.len() && last0.len() < RATE);
     let mut b0 = [0u8; 200];
     let mut b1 = [0u8; 200];
     b0[0..last0.len()].copy_from_slice(last0);
     b1[0..last1.len()].copy_from_slice(last1);
-    b0[last0.len()] = s.p;
-    b0[s.rate-1] = b0[s.rate-1] | 128u8;
-    b1[last1.len()] = s.p;
-    b1[s.rate-1] = b1[s.rate-1] | 128u8;
-    absorb_block2(s, &b0[0..s.rate], &b1[0..s.rate])
+    b0[last0.len()] = DELIM;
+    b0[RATE-1] = b0[RATE-1] | 128u8;
+    b1[last1.len()] = DELIM;
+    b1[RATE-1] = b1[RATE-1] | 128u8;
+    absorb_block2::<RATE>(s, &b0[0..RATE], &b1[0..RATE])
 }
 
 #[inline(always)]
-pub(crate) fn squeeze2(s: &KeccakStateX2, out0: &mut [u8], out1: &mut [u8]) {
-    for i in 0..s.rate/16 {
+pub(crate) fn squeeze2<const RATE:usize>(s: &KeccakStateX2, out0: &mut [u8], out1: &mut [u8]) {
+    for i in 0..RATE/16 {
         let v0 = unsafe { vtrn1q_u64(s.st[(2*i)/5][(2*i)%5], s.st[(2*i+1)/5][(2*i+1)%5]) };
         let v1 = unsafe { vtrn2q_u64(s.st[(2*i)/5][(2*i)%5], s.st[(2*i+1)/5][(2*i+1)%5]) };
         unsafe { vst1q_u64(out0[16*i..16*i+16].as_mut_ptr() as *mut u64, v0) };
         unsafe { vst1q_u64(out1[16*i..16*i+16].as_mut_ptr() as *mut u64, v1) };
     }
-    if s.rate%16 != 0 {
-        debug_assert!(s.rate % 8 == 0);
-        let i = (s.rate/8 - 1)/5;
-        let j = (s.rate/8 - 1)%5;
+    if RATE%16 != 0 {
+        debug_assert!(RATE % 8 == 0);
+        let i = (RATE/8 - 1)/5;
+        let j = (RATE/8 - 1)%5;
         let mut u = [0u8;16];
         unsafe { vst1q_u64(u.as_mut_ptr() as *mut u64, s.st[i][j])};
-        out0[s.rate-8..s.rate].copy_from_slice(&u[0..8]);
-        out1[s.rate-8..s.rate].copy_from_slice(&u[8..16]);
+        out0[RATE-8..RATE].copy_from_slice(&u[0..8]);
+        out1[RATE-8..RATE].copy_from_slice(&u[8..16]);
     }
 }   
