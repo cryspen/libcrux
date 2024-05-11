@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import glob
 import os
 import argparse
 import subprocess
@@ -50,6 +51,38 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "fstar",
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../polynomials",
+            env=hax_env,
+        )
+
+        include_str = "+:libcrux_polynomials_aarch64::neon::**"
+        interface_include = "+**"
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+            "--interfaces",
+            interface_include,
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../polynomials-aarch64",
+            env=hax_env,
+        )
+
         # Extract ml-kem
         includes = [
             "-libcrux_platform::macos_arm::*",
@@ -61,7 +94,6 @@ class extractAction(argparse.Action):
             "+*",
             "-libcrux::kem::kyber::types",
             "+!libcrux_platform::**",
-            "+!libcrux::digest::**",
         ]
         interface_include = " ".join(interfaces)
         cargo_hax_into = [
@@ -93,6 +125,22 @@ class proveAction(argparse.Action):
         return None
 
 
+class cleanAction(argparse.Action):
+
+    def __call__(self, parser, args, values, option_string=None) -> None:
+        # Extract platform and sha3 interfaces
+        for f in glob.glob("proofs/fstar/extraction/*.fst*"):
+            shell(["rm", f])
+        for f in glob.glob("../polynomials/proofs/fstar/extraction/*.fst*"):
+            shell(["rm", f])
+        for f in glob.glob("../polynomials-aarch64/proofs/fstar/extraction/*.fst*"):
+            shell(["rm", f])
+        for f in glob.glob("../polynomials-avx2/proofs/fstar/extraction/*.fst*"):
+            shell(["rm", f])
+        for f in glob.glob("../libcrux-sha3/proofs/fstar/extraction/*.fst*"):
+            shell(["rm", f])
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Libcrux prove script. "
@@ -104,6 +152,9 @@ def parse_arguments():
         "extract", help="Extract the F* code for the proofs."
     )
     extract_parser.add_argument("extract", nargs="*", action=extractAction)
+
+    extract_parser = subparsers.add_parser("clean", help="Remove the F* code.")
+    extract_parser.add_argument("clean", nargs="*", action=cleanAction)
 
     prover_parser = subparsers.add_parser(
         "prove",
