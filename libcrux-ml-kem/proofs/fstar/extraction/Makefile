@@ -50,15 +50,15 @@ all:
 
 VERIFIED = \
 	Libcrux_ml_kem.Constants.fsti \
-	Libcrux_ml_kem.Kyber768.fst \
-	Libcrux_ml_kem.Kyber1024.fst \
-	Libcrux_ml_kem.Kyber512.fst
+	Libcrux_ml_kem.Mlkem768.fst \
+	Libcrux_ml_kem.Mlkem1024.fst \
+	Libcrux_ml_kem.Mlkem512.fst
 
 
 UNVERIFIED = \
 	Libcrux_ml_kem.Types.fst \
-	Libcrux_ml_kem.fst \
 	Libcrux_ml_kem.Ind_cpa.fst \
+	Libcrux_ml_kem.Ind_cca.fst \
 	Libcrux_ml_kem.Constant_time_ops.fst \
 	Libcrux_ml_kem.Hash_functions.fst \
 	Libcrux_ml_kem.Matrix.fst \
@@ -78,7 +78,10 @@ ROOTS = $(UNVERIFIED) $(VERIFIED)
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives \
 	$(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) \
 	../../../../sys/platform/proofs/fstar/extraction/ \
-	../../../../libcrux-sha3/proofs/fstar/extraction/
+	../../../../libcrux-sha3/proofs/fstar/extraction/ \
+	../../../../polynomials/proofs/fstar/extraction/ \
+	../../../../traits/proofs/fstar/extraction/ \
+	../../../../polynomials-aarch64/proofs/fstar/extraction/
 
 FSTAR_FLAGS = --cmi \
   --warn_error -331-321-274 \

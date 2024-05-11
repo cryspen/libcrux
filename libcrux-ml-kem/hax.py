@@ -51,6 +51,25 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
+        include_str = "+:*"
+        interface_include = "+!**"
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+            "--interfaces",
+            interface_include,
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../traits",
+            env=hax_env,
+        )
+
         cargo_hax_into = [
             "cargo",
             "hax",
