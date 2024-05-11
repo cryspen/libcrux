@@ -64,7 +64,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 /// `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
 ///
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
-#[cfg_attr(hax, hax_lib::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
+#[cfg_attr(hax, hax_lib::requires(value >= (-FIELD_MODULUS as i32) * MONTGOMERY_R && value <= (FIELD_MODULUS as i32) * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
@@ -130,7 +130,7 @@ fn montgomery_multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVec
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib::requires(fe < (crate::constants::FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib::requires(fe < (FIELD_MODULUS as u16)))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
         hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
         hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
@@ -166,7 +166,7 @@ pub(crate) fn compress_message_coefficient(fe: u16) -> u8 {
          coefficient_bits == 5 ||
          coefficient_bits == 10 ||
          coefficient_bits == 11) &&
-         fe < (crate::constants::FIELD_MODULUS as u16)))]
+         fe < (FIELD_MODULUS as u16)))]
 #[cfg_attr(hax,
      hax_lib::ensures(
      |result| result >= 0 && result < 2i16.pow(coefficient_bits as u32)))]
