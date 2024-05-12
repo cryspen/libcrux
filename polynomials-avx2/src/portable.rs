@@ -1,31 +1,11 @@
-use libcrux_traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 pub use libcrux_traits::{FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
 
 type FieldElement = i16;
-type MontgomeryFieldElement = i16;
-type FieldElementTimesMontgomeryR = i16;
-const MONTGOMERY_SHIFT: u8 = 16;
-const MONTGOMERY_R: i32 = 1 << MONTGOMERY_SHIFT;
 
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     // hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
 
     value & ((1 << n) - 1)
-}
-
-pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
-    // This forces hax to extract code for MONTGOMERY_R before it extracts code
-    // for this function. The removal of this line is being tracked in:
-    // https://github.com/cryspen/libcrux/issues/134
-    let _ = MONTGOMERY_R;
-
-    let k = (value as i16) as i32 * (INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32);
-    let k_times_modulus = (k as i16 as i32) * (FIELD_MODULUS as i32);
-
-    let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i16;
-    let value_high = (value >> MONTGOMERY_SHIFT) as i16;
-
-    value_high - c
 }
 
 pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
@@ -92,101 +72,6 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
         .all(|coefficient| coefficient.abs() as u16 <= 1 << 12));
 
     v
-}
-
-#[inline(always)]
-pub(crate) fn ntt_multiply_binomials(
-    (a0, a1): (FieldElement, FieldElement),
-    (b0, b1): (FieldElement, FieldElement),
-    zeta: FieldElementTimesMontgomeryR,
-) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
-    (
-        montgomery_reduce_element(
-            (a0 as i32) * (b0 as i32)
-                + (montgomery_reduce_element((a1 as i32) * (b1 as i32)) as i32) * (zeta as i32),
-        ),
-        montgomery_reduce_element((a0 as i32) * (b1 as i32) + (a1 as i32) * (b0 as i32)),
-    )
-}
-
-#[inline(always)]
-pub(crate) fn ntt_multiply(
-    lhs: &PortableVector,
-    rhs: &PortableVector,
-    zeta0: i16,
-    zeta1: i16,
-    zeta2: i16,
-    zeta3: i16,
-) -> PortableVector {
-    let mut out = zero();
-
-    // First 8 elements.
-    let product = ntt_multiply_binomials(
-        (lhs.elements[0], lhs.elements[1]),
-        (rhs.elements[0], rhs.elements[1]),
-        zeta0,
-    );
-    out.elements[0] = product.0;
-    out.elements[1] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[2], lhs.elements[3]),
-        (rhs.elements[2], rhs.elements[3]),
-        -zeta0,
-    );
-    out.elements[2] = product.0;
-    out.elements[3] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[4], lhs.elements[5]),
-        (rhs.elements[4], rhs.elements[5]),
-        zeta1,
-    );
-    out.elements[4] = product.0;
-    out.elements[5] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[6], lhs.elements[7]),
-        (rhs.elements[6], rhs.elements[7]),
-        -zeta1,
-    );
-    out.elements[6] = product.0;
-    out.elements[7] = product.1;
-
-    // Next 8 elements.
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 0], lhs.elements[8 + 1]),
-        (rhs.elements[8 + 0], rhs.elements[8 + 1]),
-        zeta2,
-    );
-    out.elements[8 + 0] = product.0;
-    out.elements[8 + 1] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 2], lhs.elements[8 + 3]),
-        (rhs.elements[8 + 2], rhs.elements[8 + 3]),
-        -zeta2,
-    );
-    out.elements[8 + 2] = product.0;
-    out.elements[8 + 3] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 4], lhs.elements[8 + 5]),
-        (rhs.elements[8 + 4], rhs.elements[8 + 5]),
-        zeta3,
-    );
-    out.elements[8 + 4] = product.0;
-    out.elements[8 + 5] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 6], lhs.elements[8 + 7]),
-        (rhs.elements[8 + 6], rhs.elements[8 + 7]),
-        -zeta3,
-    );
-    out.elements[8 + 6] = product.0;
-    out.elements[8 + 7] = product.1;
-
-    out
 }
 
 #[inline(always)]

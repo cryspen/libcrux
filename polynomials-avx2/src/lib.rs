@@ -161,6 +161,26 @@ fn montgomery_multiply_by_constants(mut v: __m256i, c: __m256i) -> __m256i {
 }
 
 #[inline(always)]
+fn montgomery_reduce_i32s(mut v: __m256i) -> __m256i {
+    v = unsafe {
+        let k = _mm256_mullo_epi16(
+            v,
+            _mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32),
+        );
+        let k_times_modulus = _mm256_mulhi_epi16(k, _mm256_set1_epi32(FIELD_MODULUS as i32));
+
+        let value_high = _mm256_srli_epi32(v, 16);
+
+        let result = _mm256_sub_epi16(value_high, k_times_modulus);
+
+        let result = _mm256_slli_epi32(result, 16);
+        _mm256_srai_epi32(result, 16)
+    };
+
+    v
+}
+
+#[inline(always)]
 fn montgomery_multiply_m128i_by_constants(mut v: __m128i, c: __m128i) -> __m128i {
     v = unsafe {
         let value_low = _mm_mullo_epi16(v, c);
@@ -368,12 +388,73 @@ fn ntt_multiply(
     zeta2: i16,
     zeta3: i16,
 ) -> SIMD256Vector {
-    let input0 = portable::from_i16_array(to_i16_array(*lhs));
-    let input1 = portable::from_i16_array(to_i16_array(*rhs));
+    let products = unsafe {
+        // Compute the first term of the product
+        let shuffle_with = _mm256_set_epi8(
+            15, 14, 11, 10, 7, 6, 3, 2, 13, 12, 9, 8, 5, 4, 1, 0, 15, 14, 11, 10, 7, 6, 3, 2, 13,
+            12, 9, 8, 5, 4, 1, 0,
+        );
+        const PERMUTE_WITH: i32 = 0b11_01_10_00;
 
-    let output = portable::ntt_multiply(&input0, &input1, zeta0, zeta1, zeta2, zeta3);
+        // Prepare the left hand side
+        let lhs_shuffled = _mm256_shuffle_epi8(lhs.elements, shuffle_with);
+        let lhs_shuffled = _mm256_permute4x64_epi64(lhs_shuffled, PERMUTE_WITH);
 
-    from_i16_array(portable::to_i16_array(output))
+        let lhs_evens = _mm256_castsi256_si128(lhs_shuffled);
+        let lhs_evens = _mm256_cvtepi16_epi32(lhs_evens);
+
+        let lhs_odds = _mm256_extracti128_si256(lhs_shuffled, 1);
+        let lhs_odds = _mm256_cvtepi16_epi32(lhs_odds);
+
+        // Prepare the right hand side
+        let rhs_shuffled = _mm256_shuffle_epi8(rhs.elements, shuffle_with);
+        let rhs_shuffled = _mm256_permute4x64_epi64(rhs_shuffled, PERMUTE_WITH);
+
+        let rhs_evens = _mm256_castsi256_si128(rhs_shuffled);
+        let rhs_evens = _mm256_cvtepi16_epi32(rhs_evens);
+
+        let rhs_odds = _mm256_extracti128_si256(rhs_shuffled, 1);
+        let rhs_odds = _mm256_cvtepi16_epi32(rhs_odds);
+
+        // Start operating with them
+        let left = _mm256_mullo_epi32(lhs_evens, rhs_evens);
+
+        let right = _mm256_mullo_epi32(lhs_odds, rhs_odds);
+        let right = montgomery_reduce_i32s(right);
+        let right = _mm256_mullo_epi32(
+            right,
+            _mm256_set_epi32(
+                -(zeta3 as i32),
+                zeta3 as i32,
+                -(zeta2 as i32),
+                zeta2 as i32,
+                -(zeta1 as i32),
+                zeta1 as i32,
+                -(zeta0 as i32),
+                zeta0 as i32,
+            ),
+        );
+
+        let products_left = _mm256_add_epi32(left, right);
+        let products_left = montgomery_reduce_i32s(products_left);
+
+        // Compute the second term of the product
+        let rhs_adjacent_swapped = _mm256_shuffle_epi8(
+            rhs.elements,
+            _mm256_set_epi8(
+                13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2, 13, 12, 15, 14, 9, 8, 11, 10,
+                5, 4, 7, 6, 1, 0, 3, 2,
+            ),
+        );
+        let products_right = _mm256_madd_epi16(lhs.elements, rhs_adjacent_swapped);
+        let products_right = montgomery_reduce_i32s(products_right);
+        let products_right = _mm256_slli_epi32(products_right, 16);
+
+        // Combine them into one vector
+        _mm256_blend_epi16(products_left, products_right, 0b1_0_1_0_1_0_1_0)
+    };
+
+    SIMD256Vector { elements: products }
 }
 
 #[inline(always)]
