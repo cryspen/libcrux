@@ -768,7 +768,7 @@ const IDX_TABLE: [[u8; 16]; 256] = [
 ];
 
 #[inline(always)]
-pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
+pub(crate) fn rej_sample(a: &[u8], out:&mut [i16]) -> usize {
     let neon_bits: [u16; 8] = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
     let bits = _vld1q_u16(&neon_bits);
     let fm = _vdupq_n_s16(3328);
@@ -787,9 +787,8 @@ pub(crate) fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
     let shifted1 =
         _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.high), index_vec1));
 
-    let mut out: [i16; 16] = [0i16; 16];
     let idx0 = pick0 as usize;
     _vst1q_s16(&mut out[0..8], shifted0);
     _vst1q_s16(&mut out[idx0..idx0 + 8], shifted1);
-    ((pick0 + pick1) as usize, out)
+    (pick0 + pick1) as usize
 }

@@ -22,7 +22,7 @@ impl Operations for SIMD128Vector {
         to_i16_array(v)
     }
 
-    fn from_i16_array(array: [i16; 16]) -> Self {
+    fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
 
@@ -157,7 +157,7 @@ impl Operations for SIMD128Vector {
         deserialize_12(a)
     }
 
-    fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
-        rejsample::rej_sample(a)
+    fn rej_sample(a: &[u8], out:&mut [i16]) -> usize {
+        rejsample::rej_sample(a, out)
     }
 }

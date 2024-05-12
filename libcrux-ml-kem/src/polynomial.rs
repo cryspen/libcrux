@@ -31,13 +31,11 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    pub(crate) fn from_i16_array(a: [i16; 256]) -> Self {
+    pub(crate) fn from_i16_array(a: &[i16]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
             result.coefficients[i] = Vector::from_i16_array(
-                a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
-                    .try_into()
-                    .unwrap(),
+                &a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
             );
         }
         result
