@@ -41,6 +41,36 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 }
 
 #[cfg(feature = "simd128")]
+#[inline(always)]
+pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
+    let mut out = [[0u8; LEN]; K];
+    let mut extra = [0u8; LEN];
+
+    match K {
+        2 => { let (out0,out1) = out.split_at_mut(1);
+               rust_simd::shake256x2(&input[0], &input[1], &mut out0[0], &mut out1[0]);
+             }
+        3 => { let (out0,out12) = out.split_at_mut(1);
+               let (out1,out2) = out12.split_at_mut(1); 
+               rust_simd::shake256x2(&input[0], &input[1], &mut out0[0], &mut out1[0]);
+               rust_simd::shake256x2(&input[2], &input[2], &mut out2[0], &mut extra);
+             }
+        _ => { let (out0,out123) = out.split_at_mut(1);
+               let (out1,out23) = out123.split_at_mut(1);
+               let (out2,out3) = out23.split_at_mut(1);
+               rust_simd::shake256x2(&input[0], &input[1], &mut out0[0], &mut out1[0]);
+               rust_simd::shake256x2(&input[2], &input[3], &mut out2[0], &mut out3[0]); 
+             }      
+    }
+    out
+}
+#[cfg(not(feature = "simd128"))]
+#[inline(always)]
+pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
+    core::array::from_fn(|i| shake256::<LEN>(&input[i]))
+}
+
+#[cfg(feature = "simd128")]
 pub(crate) type Shake128x4State = [rust_simd::KeccakStateX2;2];
 
 #[cfg(not(feature = "simd128"))]
