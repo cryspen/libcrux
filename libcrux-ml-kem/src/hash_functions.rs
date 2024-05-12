@@ -91,27 +91,24 @@ pub(crate) const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 pub(crate) fn squeeze_three_blocks<const K: usize> (
     state: &mut Shake128x4State,
 ) -> [[u8; THREE_BLOCKS]; K] {
-    let mut out0 = [0u8; THREE_BLOCKS];
-    let mut out1 = [0u8; THREE_BLOCKS];
-    let mut out2 = [0u8; THREE_BLOCKS];
-    let mut out3 = [0u8; THREE_BLOCKS];
     let mut out = [[0u8; THREE_BLOCKS]; K];
+    let mut extra = [0u8; THREE_BLOCKS];
 
     match K {
-        2 => { rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0, &mut out1);
-               out[0] = out0;
-               out[1] = out1; }
-        3 => { rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0, &mut out1);
-               rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[1], &mut out2, &mut out3);
-               out[0] = out0;
-               out[1] = out1;
-               out[2] = out2; }
-        _ => { rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0, &mut out1);
-               rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[1], &mut out2, &mut out3); 
-               out[0] = out0;
-               out[1] = out1;
-               out[2] = out2;
-               out[3] = out3; }      
+        2 => { let (out0,out1) = out.split_at_mut(1);
+               rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0[0], &mut out1[0]);
+             }
+        3 => { let (out0,out12) = out.split_at_mut(1);
+               let (out1,out2) = out12.split_at_mut(1); 
+               rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0[0], &mut out1[0]);
+               rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[1], &mut out2[0], &mut extra);
+             }
+        _ => { let (out0,out123) = out.split_at_mut(1);
+               let (out1,out23) = out123.split_at_mut(1);
+               let (out2,out3) = out23.split_at_mut(1);
+               rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0[0], &mut out1[0]);
+               rust_simd::shake128x2_squeeze_first_three_blocks(&mut state[1], &mut out2[0], &mut out3[0]); 
+             }      
     }
     out
 }
