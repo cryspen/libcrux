@@ -11,7 +11,7 @@
 /// A Sha3x4 API
 pub mod x4;
 
-//#[cfg(feature = "simd128")]
+#[cfg(any(feature = "simd128", feature = "simd256"))]
 pub mod rust_simd;
 
 pub type Sha3_224Digest = [u8; 28];
