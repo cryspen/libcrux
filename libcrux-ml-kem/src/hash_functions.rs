@@ -71,7 +71,7 @@ pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> 
 }
 
 #[cfg(feature = "simd128")]
-pub(crate) type Shake128x4State = [rust_simd::KeccakStateX2;2];
+pub(crate) type Shake128x4State = [rust_simd::KeccakState<2,core::arch::aarch64::uint64x2_t>;2];
 
 #[cfg(not(feature = "simd128"))]
 pub(crate) type Shake128x4State = Shake128StateX4;
