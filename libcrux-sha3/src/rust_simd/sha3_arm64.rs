@@ -16,6 +16,7 @@ pub struct KeccakStateX2 {
 #[inline(always)]
 fn rotate_left<const LEFT:i32, const RIGHT:i32>(x:uint64x2_t) -> uint64x2_t {
     debug_assert!(LEFT+RIGHT == 64);
+    // The following looks faster but is actually significantly slower
     //unsafe { vsriq_n_u64::<RIGHT>(vshlq_n_u64::<LEFT>(x), x) }
     unsafe { veorq_u64(vshlq_n_u64::<LEFT>(x), vshrq_n_u64::<RIGHT>(x)) }
 }
@@ -32,59 +33,85 @@ impl KeccakStateX2 {
         }
     }
 }
-    
+
 #[inline(always)]
-fn theta(s: &mut KeccakStateX2) {
-    let mut c : [uint64x2_t; 5] = unsafe {[vdupq_n_u64(0); 5]};
-    for i in 0..5 {
-        c[i] = unsafe {veorq_u64(s.st[0][i],veorq_u64(s.st[1][i],
-                        veorq_u64(s.st[2][i],veorq_u64(s.st[3][i],s.st[4][i]))))};
-        // Needs nightly
-        //  c[i] = unsafe {veor3q_u64(s.st[0][i],s.st[1][i],
-        //                   veor3q_u64(s.st[2][i],s.st[3][i],s.st[4][i]))};
-    }
-    
-    for i in 0..5 {
-        let t = unsafe { veorq_u64(c[(i + 4) % 5], rotate_left::<1,63>(c[(i+1)%5])) };
-        // Needs nightly
-        // let t = unsafe { vrax1q_u64(c[(i+4)%5], c[(i+1)%5]) };
-        for j in 0..5 {
-            s.st[j][i] = unsafe {veorq_u64(s.st[j][i],t)};
-        }
-    }
+fn _veor5q_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t, d: uint64x2_t, e: uint64x2_t) -> uint64x2_t {
+    let ab = unsafe {veorq_u64(a,b)};
+    let cd = unsafe {veorq_u64(c,d)};
+    let abcd = unsafe {veorq_u64(ab,cd)};
+    unsafe {veorq_u64(abcd,e)}
+    // Needs nightly+neon-sha3
+    //unsafe {veor3q_u64(veor3q_u64(a,b,c),d,e)}
+}
+
+#[inline(always)]
+fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
+    unsafe { veorq_u64(a, rotate_left::<1,63>(b)) }
+    // Needs nightly+neon-sha3
+    //unsafe { vrax1q_u64(a, b) }
+}
+
+#[inline(always)]
+fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
+    let ab = unsafe { veorq_u64(a, b) };
+    rotate_left::<LEFT,RIGHT>(ab)
+    // Needs nightly+neon-sha3
+    // unsafe { vxarq_u64::<RIGHT>(a,b) }
+}
+
+#[inline(always)]
+fn _vbcaxq_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
+    unsafe{ veorq_u64(a, vbicq_u64(b, c)) }
+    // Needs nightly+neon-sha3
+    // unsafe{ vbcaxq_u64(a, b, c) }
+}
+
+
+
+
+#[inline(always)]
+fn theta(s: &KeccakStateX2) -> [uint64x2_t; 5] {
+    let c: [uint64x2_t;5] = core::array::from_fn(|j| _veor5q_u64(s.st[0][j],s.st[1][j],s.st[2][j],s.st[3][j],s.st[4][j]));
+    let t : [uint64x2_t; 5] = core::array::from_fn(|j| _vrax1q_u64(c[(j+4)%5], c[(j+1)%5]));
+    t
 }
 
 const _ROTC: [usize;24] = 
     [1, 62, 28, 27, 36, 44, 6, 55, 20, 3, 10, 43, 25, 39, 41, 45, 15, 21, 8, 18, 2, 61, 56, 14,];
 
 #[inline(always)]
-fn rho(s: &mut KeccakStateX2) {
-    // If combined with theta, we could use Nightly: vxarq_u64
-    s.st[0][0] = s.st[0][0];
-    s.st[0][1] = rotate_left::<1,63>(s.st[0][1]);
-    s.st[0][2] = rotate_left::<62,2>(s.st[0][2]);
-    s.st[0][3] = rotate_left::<28,36>(s.st[0][3]);
-    s.st[0][4] = rotate_left::<27,37>(s.st[0][4]);
-    s.st[1][0] = rotate_left::<36,28>(s.st[1][0]);
-    s.st[1][1] = rotate_left::<44,20>(s.st[1][1]);
-    s.st[1][2] = rotate_left::<6,58>(s.st[1][2]);
-    s.st[1][3] = rotate_left::<55,9>(s.st[1][3]);
-    s.st[1][4] = rotate_left::<20,44>(s.st[1][4]);
-    s.st[2][0] = rotate_left::<3,61>(s.st[2][0]);
-    s.st[2][1] = rotate_left::<10,54>(s.st[2][1]);
-    s.st[2][2] = rotate_left::<43,21>(s.st[2][2]);
-    s.st[2][3] = rotate_left::<25,39>(s.st[2][3]);
-    s.st[2][4] = rotate_left::<39,25>(s.st[2][4]);
-    s.st[3][0] = rotate_left::<41,23>(s.st[3][0]);
-    s.st[3][1] = rotate_left::<45,19>(s.st[3][1]);
-    s.st[3][2] = rotate_left::<15,49>(s.st[3][2]);
-    s.st[3][3] = rotate_left::<21,43>(s.st[3][3]);
-    s.st[3][4] = rotate_left::<8,56>(s.st[3][4]);
-    s.st[4][0] = rotate_left::<18,46>(s.st[4][0]);
-    s.st[4][1] = rotate_left::<2,62>(s.st[4][1]);
-    s.st[4][2] = rotate_left::<61,3>(s.st[4][2]);
-    s.st[4][3] = rotate_left::<56,8>(s.st[4][3]);
-    s.st[4][4] = rotate_left::<14,50>(s.st[4][4]);
+fn theta_rho(s: &mut KeccakStateX2, t: [uint64x2_t; 5]) {
+    // If combined with last step of theta, we could use Nightly: vxarq_u64
+
+    s.st[0][0] = unsafe { veorq_u64(s.st[0][0],t[0]) };
+    s.st[1][0] = _vxarq_u64::<36,28>(s.st[1][0],t[0]);
+    s.st[2][0] = _vxarq_u64::<3,61>(s.st[2][0],t[0]);
+    s.st[3][0] = _vxarq_u64::<41,23>(s.st[3][0],t[0]);
+    s.st[4][0] = _vxarq_u64::<18,46>(s.st[4][0],t[0]);
+
+    s.st[0][1] = _vxarq_u64::<1,63>(s.st[0][1],t[1]);
+    s.st[1][1] = _vxarq_u64::<44,20>(s.st[1][1],t[1]);
+    s.st[2][1] = _vxarq_u64::<10,54>(s.st[2][1],t[1]);
+    s.st[3][1] = _vxarq_u64::<45,19>(s.st[3][1],t[1]);
+    s.st[4][1] = _vxarq_u64::<2,62>(s.st[4][1],t[1]);
+
+    s.st[0][2] = _vxarq_u64::<62,2>(s.st[0][2],t[2]);
+    s.st[1][2] = _vxarq_u64::<6,58>(s.st[1][2],t[2]);
+    s.st[2][2] = _vxarq_u64::<43,21>(s.st[2][2],t[2]);
+    s.st[3][2] = _vxarq_u64::<15,49>(s.st[3][2],t[2]);
+    s.st[4][2] = _vxarq_u64::<61,3>(s.st[4][2],t[2]);
+    
+    s.st[0][3] = _vxarq_u64::<28,36>(s.st[0][3],t[3]);
+    s.st[1][3] = _vxarq_u64::<55,9>(s.st[1][3],t[3]);
+    s.st[2][3] = _vxarq_u64::<25,39>(s.st[2][3],t[3]);
+    s.st[3][3] = _vxarq_u64::<21,43>(s.st[3][3],t[3]);
+    s.st[4][3] = _vxarq_u64::<56,8>(s.st[4][3],t[3]);
+
+    s.st[0][4] = _vxarq_u64::<27,37>(s.st[0][4],t[4]);
+    s.st[1][4] = _vxarq_u64::<20,44>(s.st[1][4],t[4]);
+    s.st[2][4] = _vxarq_u64::<39,25>(s.st[2][4],t[4]);
+    s.st[3][4] = _vxarq_u64::<8,56>(s.st[3][4],t[4]);
+    s.st[4][4] = _vxarq_u64::<14,50>(s.st[4][4],t[4]);
 }
 
 
@@ -123,15 +150,10 @@ fn pi(s: &mut KeccakStateX2) {
 
 #[inline(always)]
 fn chi(s: &mut KeccakStateX2) {
-    let mut c : [uint64x2_t; 5] = unsafe {[vdupq_n_u64(0); 5]};
+    let old = s.st;
     for i in 0..5 {
         for j in 0..5 {
-            c[j] = s.st[i][j]
-        }
-        for j in 0..5 {
-            s.st[i][j] = unsafe{ veorq_u64(s.st[i][j], vbicq_u64(c[(j + 2) % 5], c[(j + 1) % 5])) };
-            // Needs nightly
-            //s.st[i][j] = unsafe{ vbcaxq_u64(s.st[i][j], c[(j + 2) % 5], c[(j + 1) % 5]) };
+            s.st[i][j] = _vbcaxq_u64(s.st[i][j], old[i][(j + 2) % 5], old[i][(j + 1) % 5]);
         }
     }
 }
@@ -156,8 +178,8 @@ fn iota(s: &mut KeccakStateX2, round:usize) {
 #[inline(always)]
 pub(crate) fn keccakf1600(s: &mut KeccakStateX2) {
     for i in 0..24 {
-        theta(s);
-        rho(s);
+        let t = theta(s);
+        theta_rho(s,t);
         pi(s);
         chi(s);
         iota(s, i);
