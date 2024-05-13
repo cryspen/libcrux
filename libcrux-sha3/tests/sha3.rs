@@ -9,7 +9,6 @@ fn sha3_kat_oneshot() {
     assert_eq!(hex::encode(&dshake), expectedshake);
 }
 
-#[cfg(feature = "simd128")]
 #[test]
 fn sha3_simd_kat_oneshot() {
     let d256 = libcrux_sha3::rust_simd::sha3_256(b"Hello, World!");

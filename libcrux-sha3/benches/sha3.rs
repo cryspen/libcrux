@@ -43,9 +43,9 @@ macro_rules! impl_comp {
                     },
                 );
 
-		#[cfg(feature = "simd128")]
+		
                 group.bench_with_input(
-                    BenchmarkId::new("arm64", fmt(*payload_size)),
+                    BenchmarkId::new("rust version (simd)", fmt(*payload_size)),
                     payload_size,
                     |b, payload_size| {
                         b.iter_batched(

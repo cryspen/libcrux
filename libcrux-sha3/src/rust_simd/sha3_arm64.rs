@@ -105,28 +105,14 @@ pub(crate) fn store_block_full<const RATE:usize>(s: &[[uint64x2_t;5];5]) -> [[u8
     let mut out1 = [0u8; 200];
     store_block::<RATE>(s,[&mut out0, &mut out1]);
     [out0, out1]
-
-    // for i in 0..RATE/16 {
-    //     let v0 = unsafe { vtrn1q_u64(s[(2*i)/5][(2*i)%5], s[(2*i+1)/5][(2*i+1)%5]) };
-    //     let v1 = unsafe { vtrn2q_u64(s[(2*i)/5][(2*i)%5], s[(2*i+1)/5][(2*i+1)%5]) };
-    //     unsafe { vst1q_u64(out[0][offset+16*i..offset+16*(i+1)].as_mut_ptr() as *mut u64, v0) };
-    //     unsafe { vst1q_u64(out[1][offset+16*i..offset+16*(i+1)].as_mut_ptr() as *mut u64, v1) };
-    // }
-    // if RATE%16 != 0 {
-    //     debug_assert!(RATE % 8 == 0);
-    //     let i = (RATE/8 - 1)/5;
-    //     let j = (RATE/8 - 1)%5;
-    //     let mut u = [0u8;16];
-    //     unsafe { vst1q_u64(u.as_mut_ptr() as *mut u64, s[i][j])};
-    //     out[0][offset+RATE-8..offset+RATE].copy_from_slice(&u[0..8]);
-    //     out[1][offset+RATE-8..offset+RATE].copy_from_slice(&u[8..16]);
-    // }
 }   
 
-fn slice_n(a: [&[u8];2], start:usize, len:usize) -> [&[u8];2] {
+#[inline(always)]
+fn slice_2(a: [&[u8];2], start:usize, len:usize) -> [&[u8];2] {
     [&a[0][start..start+len], &a[1][start..start+len]]
 }
 
+#[inline(always)]
 fn split_at_mut_2(out: [&mut [u8]; 2], mid:usize) -> ([&mut [u8];2],[&mut [u8];2]) {
     let [out0, out1] = out;
     let (out00,out01) = out0.split_at_mut(mid);
@@ -135,54 +121,55 @@ fn split_at_mut_2(out: [&mut [u8]; 2], mid:usize) -> ([&mut [u8];2],[&mut [u8];2
 }
 
 impl KeccakItem<2> for uint64x2_t {
+    #[inline(always)]
     fn zero() -> Self {
         unsafe {vdupq_n_u64(0)}
     }
-
+    #[inline(always)]
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self {
         _veor5q_u64(a, b, c, d, e)
     }
-
+    #[inline(always)]
     fn rotate_left1_and_xor(a: Self, b: Self) -> Self {
         _vrax1q_u64(a, b)
     }
-
+    #[inline(always)]
     fn xor_and_rotate<const LEFT: i32, const RIGHT: i32>(a: Self, b: Self) -> Self {
         _vxarq_u64::<LEFT,RIGHT>(a, b)
     }
-
+    #[inline(always)]
     fn and_not_xor(a: Self, b: Self, c: Self) -> Self {
         _vbcaxq_u64(a, b, c)
     }
-
+    #[inline(always)]
     fn xor_constant(a: Self, c: u64) -> Self {
         _veorq_n_u64(a, c)
     }
-
+    #[inline(always)]
     fn xor(a: Self, b: Self) -> Self {
         unsafe {veorq_u64(a, b)}
     }
-
+    #[inline(always)]
     fn load_block<const BLOCKSIZE:usize>(a:&mut [[Self;5];5], b:[&[u8];2]) {
         load_block::<BLOCKSIZE>(a, b)
     }
-
+    #[inline(always)]
     fn store_block<const BLOCKSIZE:usize>(a:& [[Self;5];5], b:[&mut [u8];2]) {
         store_block::<BLOCKSIZE>(a, b)
     }
-
+    #[inline(always)]
     fn load_block_full<const BLOCKSIZE:usize>(a:&mut [[Self;5];5], b:[[u8;200];2]) {
         load_block_full::<BLOCKSIZE>(a, b)
     }
-
+    #[inline(always)]
     fn store_block_full<const BLOCKSIZE:usize>(a:&[[Self;5];5]) -> [[u8;200];2] {
         store_block_full::<BLOCKSIZE>(a)
     }
-
+    #[inline(always)]
     fn slice_n(a:[&[u8];2],start:usize,len:usize) -> [&[u8];2] {
-        slice_n(a,start,len)
+        slice_2(a,start,len)
     }
-
+    #[inline(always)]
     fn split_at_mut_n(a:[&mut [u8];2],mid:usize) -> ([&mut [u8];2],[&mut [u8];2]) {
         split_at_mut_2(a, mid)
     }
