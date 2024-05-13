@@ -281,7 +281,9 @@ fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4
 }
 
 #[inline(always)]
-pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIMD128Vector {
+pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
+    mut v: SIMD128Vector,
+) -> SIMD128Vector {
     let mask16 = _vdupq_n_u32(0xffff);
     let low0 = _vandq_u32(_vreinterpretq_u32_s16(v.low), mask16);
     let low1 = _vshrq_n_u32::<16>(_vreinterpretq_u32_s16(v.low));
