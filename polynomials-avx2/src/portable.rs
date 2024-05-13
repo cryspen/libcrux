@@ -2,24 +2,6 @@ pub use libcrux_traits::{FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
 
 type FieldElement = i16;
 
-pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
-    // hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
-
-    value & ((1 << n) - 1)
-}
-
-pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
-    // This has to be constant time due to:
-    // https://groups.google.com/a/list.nist.gov/g/pqc-forum/c/ldX0ThYJuBo/m/ovODsdY7AwAJ
-    let mut compressed = (fe as u64) << coefficient_bits;
-    compressed += 1664 as u64;
-
-    compressed *= 10_321_340;
-    compressed >>= 35;
-
-    get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
-}
-
 #[derive(Clone, Copy)]
 pub(crate) struct PortableVector {
     elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
@@ -41,37 +23,6 @@ pub(crate) fn to_i16_array(v: PortableVector) -> [i16; FIELD_ELEMENTS_IN_VECTOR]
 #[inline(always)]
 pub(crate) fn from_i16_array(array: [i16; FIELD_ELEMENTS_IN_VECTOR]) -> PortableVector {
     PortableVector { elements: array }
-}
-
-#[inline(always)]
-pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        v.elements[i] =
-            compress_ciphertext_coefficient(COEFFICIENT_BITS as u8, v.elements[i] as u16) as i16;
-    }
-    v
-}
-
-#[inline(always)]
-pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    mut v: PortableVector,
-) -> PortableVector {
-    debug_assert!(to_i16_array(v)
-        .into_iter()
-        .all(|coefficient| coefficient.abs() < 1 << COEFFICIENT_BITS));
-
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        let mut decompressed = v.elements[i] as i32 * FIELD_MODULUS as i32;
-        decompressed = (decompressed << 1) + (1i32 << COEFFICIENT_BITS);
-        decompressed = decompressed >> (COEFFICIENT_BITS + 1);
-        v.elements[i] = decompressed as i16;
-    }
-
-    debug_assert!(to_i16_array(v)
-        .into_iter()
-        .all(|coefficient| coefficient.abs() as u16 <= 1 << 12));
-
-    v
 }
 
 #[inline(always)]
