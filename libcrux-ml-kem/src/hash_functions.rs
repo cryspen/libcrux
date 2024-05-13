@@ -4,22 +4,46 @@ use crate::constants::H_DIGEST_SIZE;
 
 use libcrux_sha3::rust_simd::{self, KeccakState4};
 
+#[cfg(feature = "simd128")]
 #[inline(always)]
 pub(crate) fn G(input: &[u8]) -> [u8; 64] {
-    //rust_simd::sha3_512(input)
-    libcrux_sha3::sha512(input)
+    rust_simd::sha3_512(input)
 }
 
+#[cfg(not(feature = "simd128"))]
+#[inline(always)]
+pub(crate) fn G(input: &[u8]) -> [u8; 64] {
+    libcrux_sha3::sha512(input) 
+    //some bug in scalar version of rust_simd
+    // rust_simd::sha512(input)
+}
+
+#[cfg(feature = "simd128")]
 #[inline(always)]
 pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-    //rust_simd::sha3_256(input)
-    libcrux_sha3::sha256(input)
+    rust_simd::sha3_256(input)
 }
 
+#[cfg(not(feature = "simd128"))]
+#[inline(always)]
+pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
+    libcrux_sha3::sha256(input) 
+    //some bug in scalar version of rust_simd
+    // rust_simd::sha256(input)
+}
+
+#[cfg(feature = "simd128")]
 #[inline(always)]
 pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-    //rust_simd::shake256::<LEN>(input)
+    rust_simd::shake256::<LEN>(input)
+}
+
+#[cfg(not(feature = "simd128"))]
+#[inline(always)]
+pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     libcrux_sha3::shake256::<LEN>(input)
+    //some bug in scalar version of rust_simd
+    // rust_simd::shake256::<LEN>(input)
 }
 
 #[cfg(feature = "simd128")]
