@@ -71,7 +71,7 @@ impl Operations for SIMD128Vector {
     }
 
     fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        decompress::<COEFFICIENT_BITS>(v)
+        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
     }
 
     fn ntt_layer_1_step(a: Self, zeta1: i16, zeta2: i16, zeta3: i16, zeta4: i16) -> Self {
