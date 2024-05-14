@@ -35,7 +35,7 @@ fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: __m256i, b: __m256i) -> __m2
 
 #[inline(always)]
 fn _vbcaxq_u64(a: __m256i, b: __m256i, c: __m256i) -> __m256i {
-    unsafe { _mm256_xor_si256(a, _mm256_andnot_si256(b, c)) }
+    unsafe { _mm256_xor_si256(a, _mm256_andnot_si256(c, b)) }
 }
 
 #[inline(always)]
