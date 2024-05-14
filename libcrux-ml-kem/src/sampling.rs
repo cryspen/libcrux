@@ -53,7 +53,7 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
     for i in 0..K {
         for r in 0..N / 24 {
             if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
-                let out0 = out[i][sampled_coefficients[i]..sampled_coefficients[i]+16].as_mut();
+                let out0 = out[i][sampled_coefficients[i]..sampled_coefficients[i] + 16].as_mut();
                 let sampled = Vector::rej_sample(&randomness[i][r * 24..(r * 24) + 24], out0);
                 sampled_coefficients[i] += sampled;
             }

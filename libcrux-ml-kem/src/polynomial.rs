@@ -35,7 +35,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
             result.coefficients[i] = Vector::from_i16_array(
-                &a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR]
+                &a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR],
             );
         }
         result

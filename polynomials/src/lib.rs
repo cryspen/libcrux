@@ -210,7 +210,9 @@ fn to_i16_array(v: PortableVector) -> [i16; FIELD_ELEMENTS_IN_VECTOR] {
 
 #[inline(always)]
 fn from_i16_array(array: &[i16]) -> PortableVector {
-    PortableVector { elements: array[0..16].try_into().unwrap() }
+    PortableVector {
+        elements: array[0..16].try_into().unwrap(),
+    }
 }
 
 #[inline(always)]
@@ -1039,7 +1041,7 @@ fn deserialize_12(bytes: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
-fn rej_sample(a: &[u8], result: &mut[i16]) -> usize {
+fn rej_sample(a: &[u8], result: &mut [i16]) -> usize {
     let mut sampled = 0;
     for bytes in a.chunks(3) {
         let b1 = bytes[0] as i16;
@@ -1205,7 +1207,7 @@ impl Operations for PortableVector {
         deserialize_12(a)
     }
 
-    fn rej_sample(a: &[u8], out:&mut [i16]) -> usize {
+    fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
         rej_sample(a, out)
     }
 }

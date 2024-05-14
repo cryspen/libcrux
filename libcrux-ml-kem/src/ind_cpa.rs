@@ -2,7 +2,7 @@ use libcrux_polynomials::Operations;
 
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
-    hash_functions::{G, PRF, PRFxN},
+    hash_functions::{PRFxN, G, PRF},
     helper::cloop,
     matrix::*,
     ntt::{ntt_binomially_sampled_ring_element, ntt_vector_u},
@@ -79,7 +79,7 @@ fn sample_ring_element_cbd<
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let prf_outputs : [[u8; ETA2_RANDOMNESS_SIZE]; K] = PRFxN(&prf_inputs);
+    let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = PRFxN(&prf_inputs);
     for i in 0..K {
         error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_outputs[i]);
     }
@@ -104,7 +104,7 @@ fn sample_vector_cbd_then_ntt<
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let prf_outputs : [[u8; ETA_RANDOMNESS_SIZE]; K] = PRFxN(&prf_inputs);
+    let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = PRFxN(&prf_inputs);
     for i in 0..K {
         let r = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
         re_as_ntt[i] = ntt_binomially_sampled_ring_element(r);
@@ -299,10 +299,11 @@ pub(crate) fn encrypt<
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
-    let (error_1, domain_separator) = sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, Vector>(
-        prf_input,
-        domain_separator,
-    );
+    let (error_1, domain_separator) =
+        sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, Vector>(
+            prf_input,
+            domain_separator,
+        );
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;

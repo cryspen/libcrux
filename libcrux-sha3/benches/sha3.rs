@@ -43,7 +43,6 @@ macro_rules! impl_comp {
                     },
                 );
 
-		
                 group.bench_with_input(
                     BenchmarkId::new("rust version (simd)", fmt(*payload_size)),
                     payload_size,

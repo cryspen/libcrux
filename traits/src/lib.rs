@@ -61,7 +61,7 @@ pub trait Operations: Copy + Clone {
     fn serialize_12(a: Self) -> [u8; 24];
     fn deserialize_12(a: &[u8]) -> Self;
 
-    fn rej_sample(a: &[u8], out:&mut [i16]) -> usize;
+    fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
 // hax does not support trait with default implementations, so we use the following patter

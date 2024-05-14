@@ -157,7 +157,7 @@ impl Operations for SIMD128Vector {
         deserialize_12(a)
     }
 
-    fn rej_sample(a: &[u8], out:&mut [i16]) -> usize {
+    fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
         rejsample::rej_sample(a, out)
     }
 }

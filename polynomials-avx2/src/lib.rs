@@ -32,7 +32,7 @@ fn to_i16_array(v: SIMD256Vector) -> [i16; 16] {
     out
 }
 #[inline(always)]
-fn from_i16_array(array: [i16; 16]) -> SIMD256Vector {
+fn from_i16_array(array: &[i16]) -> SIMD256Vector {
     SIMD256Vector {
         elements: unsafe { _mm256_loadu_si256(array.as_ptr() as *const __m256i) },
     }
@@ -768,7 +768,7 @@ fn serialize_5(v: SIMD256Vector) -> [u8; 10] {
 fn deserialize_5(v: &[u8]) -> SIMD256Vector {
     let output = portable::deserialize_5(v);
 
-    from_i16_array(portable::to_i16_array(output))
+    from_i16_array(&portable::to_i16_array(output))
 }
 
 #[inline(always)]
@@ -881,7 +881,7 @@ fn serialize_11(v: SIMD256Vector) -> [u8; 22] {
 fn deserialize_11(v: &[u8]) -> SIMD256Vector {
     let output = portable::deserialize_11(v);
 
-    from_i16_array(portable::to_i16_array(output))
+    from_i16_array(&portable::to_i16_array(output))
 }
 
 #[inline(always)]
@@ -984,8 +984,8 @@ fn deserialize_12(v: &[u8]) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
-    portable::rej_sample(a)
+fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
+    portable::rej_sample(a, out)
 }
 
 impl Operations for SIMD256Vector {
@@ -997,7 +997,7 @@ impl Operations for SIMD256Vector {
         to_i16_array(v)
     }
 
-    fn from_i16_array(array: [i16; 16]) -> Self {
+    fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
 
@@ -1132,7 +1132,7 @@ impl Operations for SIMD256Vector {
         deserialize_12(a)
     }
 
-    fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
-        rej_sample(a)
+    fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
+        rej_sample(a, out)
     }
 }
