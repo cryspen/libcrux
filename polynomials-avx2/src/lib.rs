@@ -984,7 +984,7 @@ fn deserialize_12(v: &[u8]) -> SIMD256Vector {
 }
 
 #[inline(always)]
-pub(crate) fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
+pub(crate) fn rej_sample(uniform_bytes: &[u8], out: &mut [i16]) -> usize {
     let count = unsafe {
         let field_modulus = _mm256_set1_epi16(FIELD_MODULUS);
         let ones = _mm_set1_epi8(1);

@@ -112,4 +112,3 @@ pub(crate) fn deserialize_11(bytes: &[u8]) -> PortableVector {
 
     result
 }
-
