@@ -547,12 +547,12 @@ fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
     let mut serialized = [0u8; 2];
 
     let bits_packed = unsafe {
-        let lsb_shifted_up = _mm256_slli_epi16(v.elements, 7);
+        let lsb_shifted_up = _mm256_slli_epi16(v.elements, 15);
 
         let low_lanes = _mm256_castsi256_si128(lsb_shifted_up);
         let high_lanes = _mm256_extracti128_si256(lsb_shifted_up, 1);
 
-        let msbs = _mm_packus_epi16(low_lanes, high_lanes);
+        let msbs = _mm_packs_epi16(low_lanes, high_lanes);
 
         _mm_movemask_epi8(msbs)
     };
@@ -984,8 +984,58 @@ fn deserialize_12(v: &[u8]) -> SIMD256Vector {
 }
 
 #[inline(always)]
-fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
-    portable::rej_sample(a)
+fn rej_sample(uniform_bytes: &[u8]) -> (usize, [i16; 16]) {
+    let mut sampled = [0i16; 16];
+
+    let count = unsafe {
+        let field_modulus = _mm256_set1_epi16(FIELD_MODULUS);
+        let ones = _mm_set1_epi8(1);
+
+        let potential_coefficients = deserialize_12(uniform_bytes).elements;
+
+        let compare_with_field_modulus = _mm256_cmpgt_epi16(field_modulus, potential_coefficients);
+        let good = serialize_1(SIMD256Vector { elements: compare_with_field_modulus });
+
+        // Write out the indices indicated by the set bits of |good| such that
+        // the "good" elements can be read in sequence from |potential_coefficients|
+
+        // Start with the first 8 bits, i.e. |good[0]|
+        let byte_start_indices = _pdep_u64(good[0] as u64, 0x0101010101010101) as u128;
+        let byte_start_indices = ((byte_start_indices << 8) - byte_start_indices) as u64;
+        let byte_start_indices = _pext_u64(0x0E0C0A0806040200, byte_start_indices);
+
+        let byte_shuffle_indices_first_byte = _mm_cvtsi64_si128(byte_start_indices as i64);
+        let byte_shuffle_indices_second_byte = _mm_add_epi8(byte_shuffle_indices_first_byte, ones);
+
+        let byte_shuffle_indices_low = _mm_unpacklo_epi8(byte_shuffle_indices_first_byte, byte_shuffle_indices_second_byte);
+
+        // Then the next 8 bits, i.e. |good[1]|
+        let byte_start_indices = _pdep_u64(good[1] as u64, 0x0101010101010101) as u128;
+        let byte_start_indices = ((byte_start_indices << 8) - byte_start_indices) as u64;
+        let byte_start_indices = _pext_u64(0x0E0C0A0806040200, byte_start_indices);
+
+        let byte_shuffle_indices_first_byte = _mm_cvtsi64_si128(byte_start_indices as i64);
+        let byte_shuffle_indices_second_byte = _mm_add_epi8(byte_shuffle_indices_first_byte, ones);
+
+        let byte_shuffle_indices_high = _mm_unpacklo_epi8(byte_shuffle_indices_first_byte, byte_shuffle_indices_second_byte);
+
+        // Write out the indices to an __m256 and then shuffle
+        let byte_shuffle_indices = _mm256_castsi128_si256(byte_shuffle_indices_low);
+        let byte_shuffle_indices = _mm256_inserti128_si256(byte_shuffle_indices, byte_shuffle_indices_high, 1);
+
+        let coefficients = _mm256_shuffle_epi8(potential_coefficients, byte_shuffle_indices);
+
+        // Write out the elements themselves
+        _mm256_storeu_si256(sampled.as_mut_ptr() as *mut __m256i, coefficients);
+
+        // Count the sampled elements
+        let count_sampled = good[0].count_ones() + good[1].count_ones();
+
+        count_sampled
+    };
+
+    (count as usize, sampled)
+    //portable::rej_sample(uniform_bytes)
 }
 
 impl Operations for SIMD256Vector {
@@ -1132,7 +1182,7 @@ impl Operations for SIMD256Vector {
         deserialize_12(a)
     }
 
-    fn rej_sample(a: &[u8]) -> (usize, [i16; 16]) {
-        rej_sample(a)
+    fn rej_sample(uniform_bytes: &[u8]) -> (usize, [i16; 16]) {
+        rej_sample(uniform_bytes)
     }
 }
