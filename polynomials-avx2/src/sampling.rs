@@ -768,7 +768,7 @@ pub(crate) fn rejection_sample(uniform_bytes: &[u8]) -> (usize, [i16; 16]) {
         });
 
         let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
-        let lower_shuffles = _mm_load_si128(lower_shuffles.as_ptr() as *const __m128i);
+        let lower_shuffles = _mm_loadu_si128(lower_shuffles.as_ptr() as *const __m128i);
         let lower_coefficients = _mm256_castsi256_si128(potential_coefficients);
         let lower_coefficients = _mm_shuffle_epi8(lower_coefficients, lower_shuffles);
 
@@ -776,7 +776,7 @@ pub(crate) fn rejection_sample(uniform_bytes: &[u8]) -> (usize, [i16; 16]) {
         let sampled_count = good[0].count_ones();
 
         let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
-        let upper_shuffles = _mm_load_si128(upper_shuffles.as_ptr() as *const __m128i);
+        let upper_shuffles = _mm_loadu_si128(upper_shuffles.as_ptr() as *const __m128i);
         let upper_coefficients = _mm256_extractf128_si256(potential_coefficients, 1);
         let upper_coefficients = _mm_shuffle_epi8(upper_coefficients, upper_shuffles);
 
