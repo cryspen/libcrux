@@ -1,17 +1,6 @@
 // XXX: Can't do no_std
 // #![no_std]
 
-// // Low* library code
-// mod lowstar;
-
-// // SHA3 plus helpers
-// mod hacl;
-// use crate::hacl::hash_sha3::{self, shake128_hacl, shake256_hacl};
-
-/// A Sha3x4 API
-pub mod x4;
-
-//#[cfg(feature = "simd128")]
 pub mod rust_simd;
 
 pub type Sha3_224Digest = [u8; 28];
@@ -205,86 +194,3 @@ pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     }
     out
 }
-
-// mod pure {
-
-//     /// SHA3 224
-//     pub fn sha3_224(payload: &[u8]) -> Sha3_224Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 28];
-
-//         hash_sha3::sha3_224(&mut out, payload, payload.len() as u32);
-
-//         out
-//     }
-
-//     /// SHA3 256
-//     pub fn sha3_256(payload: &[u8]) -> Sha3_256Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 32];
-
-//         hash_sha3::sha3_256(&mut out, payload, payload.len() as u32);
-
-//         out
-//     }
-
-//     /// SHA3 384
-//     pub fn sha3_384(payload: &[u8]) -> Sha3_384Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 48];
-
-//         hash_sha3::sha3_384(&mut out, payload, payload.len() as u32);
-
-//         out
-//     }
-
-//     /// SHA3 512
-//     pub fn sha3_512(payload: &[u8]) -> Sha3_512Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 64];
-
-//         hash_sha3::sha3_512(&mut out, payload, payload.len() as u32);
-
-//         out
-//     }
-
-//     /// SHAKE 128
-//     ///
-//     /// The caller must define the size of the output in the return type.
-//     pub fn shake128<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
-//         debug_assert!(LEN <= u32::MAX as usize && data.len() <= u32::MAX as usize);
-//         let data = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(data.as_ptr() as *mut u8, data.len()))
-//         };
-//         let mut out = [0u8; LEN];
-//         shake128_hacl(data.len() as u32, data, LEN as u32, &mut out);
-
-//         out
-//     }
-
-//     /// SHAKE 256
-//     ///
-//     /// The caller must define the size of the output in the return type.
-//     pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
-//         debug_assert!(LEN <= u32::MAX as usize && data.len() <= u32::MAX as usize);
-//         let data = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(data.as_ptr() as *mut u8, data.len()))
-//         };
-//         let mut out = [0u8; LEN];
-//         shake256_hacl(data.len() as u32, data, LEN as u32, &mut out);
-
-//         out
-//     }
-// }
