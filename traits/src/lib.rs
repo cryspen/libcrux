@@ -28,7 +28,7 @@ pub trait Operations: Copy + Clone {
     // Compression
     fn compress_1(v: Self) -> Self;
     fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
-    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self;
 
     // NTT
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self;

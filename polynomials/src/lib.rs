@@ -21,10 +21,6 @@ pub use libcrux_traits::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR
 pub use libcrux_polynomials_aarch64::SIMD128Vector;
 #[cfg(feature = "simd256")]
 pub use libcrux_polynomials_avx2::SIMD256Vector;
-#[cfg(not(feature = "simd256"))]
-pub type SIMD256Vector = PortableVector;
-#[cfg(not(feature = "simd128"))]
-pub type SIMD128Vector = PortableVector;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
@@ -342,7 +338,9 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVecto
 }
 
 #[inline(always)]
-fn decompress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVector {
+fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
+    mut v: PortableVector,
+) -> PortableVector {
     debug_assert!(to_i16_array(v)
         .into_iter()
         .all(|coefficient| coefficient.abs() < 1 << COEFFICIENT_BITS));
@@ -1120,8 +1118,8 @@ impl Operations for PortableVector {
         compress::<COEFFICIENT_BITS>(v)
     }
 
-    fn decompress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        decompress::<COEFFICIENT_BITS>(v)
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
+        decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
     }
 
     fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {

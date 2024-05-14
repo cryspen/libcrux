@@ -22,9 +22,9 @@ hax-lib = { git = "https://github.com/hacspec/hax/" }
 
 [features]
 default = []
-simd128 = ["libcrux-sha3/simd128", "libcrux-polynomials/simd128"]
-simd256 = ["libcrux-sha3/simd256", "libcrux-polynomials/simd256"]
-tests = []                                                        # Test utilities. DO NOT USE.
+simd128 = ["libcrux-sha3/simd128"]
+simd256 = ["libcrux-sha3/simd256"]
+tests = []                         # Test utilities. DO NOT USE.
 
 [dev-dependencies]
 rand = { version = "0.8" }

@@ -58,9 +58,6 @@ wasm-bindgen = { version = "0.2.87", optional = true }
 hax-lib-macros = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax", branch = "main" }
 hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/", branch = "main" }
 
-[target.'cfg(all(not(target_os = "windows"), target_arch = "x86_64", libjade))'.dependencies]
-libjade-sys = { version = "=0.0.2-pre.2", path = "sys/libjade" }
-
 [dev-dependencies]
 libcrux = { path = ".", features = ["rand", "tests"] }
 pretty_env_logger = "0.5"

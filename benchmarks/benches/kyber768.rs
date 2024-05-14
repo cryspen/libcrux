@@ -41,6 +41,23 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
             let (_public_key, _secret_key) = pqcrypto_kyber::kyber768::keypair();
         })
     });
+
+    #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+    group.bench_function("libjade kyber avx2", |b| {
+        b.iter(|| {
+            let mut seed = [0; 64];
+            rng.fill_bytes(&mut seed);
+            let mut public_key = [0u8; 1184];
+            let mut secret_key = [0u8; 2400];
+            unsafe {
+                libjade_sys::jade_kem_kyber_kyber768_amd64_avx2_keypair_derand(
+                    public_key.as_mut_ptr(),
+                    secret_key.as_mut_ptr(),
+                    seed.as_ptr(),
+                )
+            };
+        })
+    });
 }
 
 pub fn comparisons_pk_validation(c: &mut Criterion) {
@@ -129,6 +146,45 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
+
+    #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+    group.bench_function("libjade kyber avx2", |b| {
+        b.iter_batched(
+            || {
+                let mut rng = OsRng;
+                let mut seed = [0; 64];
+                rng.fill_bytes(&mut seed);
+                let mut public_key = [0u8; 1184];
+                let mut secret_key = [0u8; 2400];
+                unsafe {
+                    libjade_sys::jade_kem_kyber_kyber768_amd64_avx2_keypair_derand(
+                        public_key.as_mut_ptr(),
+                        secret_key.as_mut_ptr(),
+                        seed.as_ptr(),
+                    )
+                };
+
+                (rng, public_key)
+            },
+            |(mut rng, public_key)| {
+                let mut seed = [0; 32];
+                rng.fill_bytes(&mut seed);
+
+                let mut ciphertext = [0u8; 1088];
+                let mut shared_secret = [0u8; 32];
+
+                unsafe {
+                    libjade_sys::jade_kem_kyber_kyber768_amd64_avx2_enc_derand(
+                        ciphertext.as_mut_ptr(),
+                        shared_secret.as_mut_ptr(),
+                        public_key.as_ptr(),
+                        seed.as_ptr(),
+                    );
+                }
+            },
+            BatchSize::SmallInput,
+        )
+    });
 }
 
 pub fn comparisons_decapsulation(c: &mut Criterion) {
@@ -163,6 +219,54 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             |(ciphertext, secret_key)| {
                 let _shared_secret =
                     pqcrypto_kyber::kyber768::decapsulate(&ciphertext, &secret_key);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(all(not(target_os = "windows"), target_arch = "x86_64"))]
+    group.bench_function("libjade kyber avx2", |b| {
+        b.iter_batched(
+            || {
+                let mut rng = OsRng;
+                let mut seed = [0; 64];
+                rng.fill_bytes(&mut seed);
+                let mut public_key = [0u8; 1184];
+                let mut secret_key = [0u8; 2400];
+                unsafe {
+                    libjade_sys::jade_kem_kyber_kyber768_amd64_avx2_keypair_derand(
+                        public_key.as_mut_ptr(),
+                        secret_key.as_mut_ptr(),
+                        seed.as_ptr(),
+                    )
+                };
+
+                let mut seed = [0; 32];
+                rng.fill_bytes(&mut seed);
+
+                let mut ciphertext = [0u8; 1088];
+                let mut shared_secret = [0u8; 32];
+
+                unsafe {
+                    libjade_sys::jade_kem_kyber_kyber768_amd64_avx2_enc_derand(
+                        ciphertext.as_mut_ptr(),
+                        shared_secret.as_mut_ptr(),
+                        public_key.as_ptr(),
+                        seed.as_ptr(),
+                    );
+                }
+
+                (secret_key, ciphertext)
+            },
+            |(secret_key, ciphertext)| {
+                let mut shared_secret = [0u8; 32];
+                unsafe {
+                    libjade_sys::jade_kem_kyber_kyber768_amd64_avx2_dec(
+                        shared_secret.as_mut_ptr(),
+                        ciphertext.as_ptr(),
+                        secret_key.as_ptr(),
+                    );
+                }
             },
             BatchSize::SmallInput,
         )

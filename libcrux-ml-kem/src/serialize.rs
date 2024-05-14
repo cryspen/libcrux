@@ -217,7 +217,7 @@ fn deserialize_then_decompress_10<Vector: Operations>(
     cloop! {
         for (i, bytes) in serialized.chunks_exact(20).enumerate() {
             let coefficient = Vector::deserialize_10(bytes);
-            re.coefficients[i] = Vector::decompress::<10>(coefficient);
+            re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<10>(coefficient);
         }
     }
     re
@@ -234,7 +234,7 @@ fn deserialize_then_decompress_11<Vector: Operations>(
     cloop! {
         for (i, bytes) in serialized.chunks_exact(22).enumerate() {
             let coefficient = Vector::deserialize_11(bytes);
-            re.coefficients[i] = Vector::decompress::<11>(coefficient);
+            re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<11>(coefficient);
         }
     }
 
@@ -266,7 +266,7 @@ fn deserialize_then_decompress_4<Vector: Operations>(
     cloop! {
         for (i, bytes) in serialized.chunks_exact(8).enumerate() {
             let coefficient = Vector::deserialize_4(bytes);
-            re.coefficients[i] = Vector::decompress::<4>(coefficient);
+            re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<4>(coefficient);
         }
     }
     re
@@ -283,7 +283,7 @@ fn deserialize_then_decompress_5<Vector: Operations>(
     cloop! {
         for (i, bytes) in serialized.chunks_exact(10).enumerate() {
             re.coefficients[i] = Vector::deserialize_5(bytes);
-            re.coefficients[i] = Vector::decompress::<5>(re.coefficients[i]);
+            re.coefficients[i] = Vector::decompress_ciphertext_coefficient::<5>(re.coefficients[i]);
         }
     }
     re

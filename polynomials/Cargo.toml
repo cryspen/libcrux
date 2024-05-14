@@ -10,13 +10,17 @@ readme.workspace = true
 
 [features]
 default = []
-simd128 = ["libcrux-polynomials-aarch64"]
-simd256 = ["libcrux-polynomials-avx2"]
+simd128 = []
+simd256 = []
 
 [dependencies]
 libcrux-traits = { path = "../traits" }
-libcrux-polynomials-avx2 = { path = "../polynomials-avx2", optional = true }
-libcrux-polynomials-aarch64 = { path = "../polynomials-aarch64", optional = true }
+
+[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies]
+libcrux-polynomials-avx2 = { path = "../polynomials-avx2" }
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+libcrux-polynomials-aarch64 = { path = "../polynomials-aarch64" }
 
 # When using the hax toolchain, we have more dependencies.
 # This is only required when doing proofs.
