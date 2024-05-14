@@ -19,6 +19,33 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
     rust_simd::shake256::<LEN>(input)
 }
 
+
+#[cfg(feature = "simd256")]
+#[inline(always)]
+pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
+    let mut out = [[0u8; LEN]; K];
+    let mut dummy_out0 = [0u8; LEN];
+    let mut dummy_out1 = [0u8; LEN];
+
+    match K {
+        2 => {
+            let (out0, out1) = out.split_at_mut(1);
+            rust_simd::shake256x4(&input[0], &input[1], &input[0], &input[0], &mut out0[0], &mut out1[0], &mut dummy_out0, &mut dummy_out1);
+        }
+        3 => {
+            let (out0, out12) = out.split_at_mut(1);
+            let (out1, out2) = out12.split_at_mut(1);
+            rust_simd::shake256x4(&input[0], &input[1], &input[2], &input[0], &mut out0[0], &mut out1[0], &mut out2[0], &mut dummy_out0);
+        }
+        _ => {
+            let (out0, out123) = out.split_at_mut(1);
+            let (out1, out23) = out123.split_at_mut(1);
+            let (out2, out3) = out23.split_at_mut(1);
+            rust_simd::shake256x4(&input[0], &input[1], &input[2], &input[3], &mut out0[0], &mut out1[0], &mut out2[0], &mut out3[0]);
+        }
+    }
+    out
+}
 #[cfg(feature = "simd128")]
 #[inline(always)]
 pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
@@ -46,8 +73,8 @@ pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> 
     }
     out
 }
-#[cfg(not(feature = "simd128"))]
-#[inline(always)]
+#[cfg(not(any(feature = "simd128", feature = "simd256")))]
+//#[inline(always)]
 pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
     core::array::from_fn(|i| rust_simd::shake256::<LEN>(&input[i]))
 }

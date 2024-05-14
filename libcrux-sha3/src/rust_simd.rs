@@ -58,20 +58,7 @@ pub fn sha3_256(data: &[u8]) -> [u8; 32] {
     d0
 }
 
-#[cfg(feature = "simd256")]
-pub fn sha3_256(data: &[u8]) -> [u8; 32] {
-    let mut d0 = [0u8; 32];
-    let mut d1 = [0u8; 32];
-    let mut d2 = [0u8; 32];
-    let mut d3 = [0u8; 32];
-    keccakx4::<136, 0x06u8>(
-        [data, data, data, data],
-        [&mut d0, &mut d1, &mut d2, &mut d3],
-    );
-    d0
-}
-
-#[cfg(not(any(feature = "simd256", feature = "simd128")))]
+#[cfg(not(feature = "simd128"))]
 pub fn sha3_256(data: &[u8]) -> [u8; 32] {
     let mut d0 = [0u8; 32];
     keccakx1::<136, 0x06u8>([data], [&mut d0]);
@@ -99,21 +86,7 @@ pub fn sha3_512(data: &[u8]) -> [u8; 64] {
     keccakx2::<72, 0x06u8>([data, data], [&mut d0, &mut d1]);
     d0
 }
-
-#[cfg(feature = "simd256")]
-pub fn sha3_512(data: &[u8]) -> [u8; 64] {
-    let mut d0 = [0u8; 64];
-    let mut d1 = [0u8; 64];
-    let mut d2 = [0u8; 64];
-    let mut d3 = [0u8; 64];
-    keccakx4::<72, 0x06u8>(
-        [data, data, data, data],
-        [&mut d0, &mut d1, &mut d2, &mut d3],
-    );
-    d0
-}
-
-#[cfg(not(any(feature = "simd256", feature = "simd128")))]
+#[cfg(not(feature = "simd128"))]
 pub fn sha3_512(data: &[u8]) -> [u8; 64] {
     let mut d0 = [0u8; 64];
     keccakx1::<72, 0x06u8>([data], [&mut d0]);
@@ -141,20 +114,7 @@ pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
     keccakx2::<136, 0x1fu8>([data, data], [&mut d0, &mut d1]);
     d0
 }
-#[cfg(feature = "simd256")]
-pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
-    let mut d0 = [0u8; LEN];
-    let mut d1 = [0u8; LEN];
-    let mut d2 = [0u8; LEN];
-    let mut d3 = [0u8; LEN];
-    keccakx4::<136, 0x1fu8>(
-        [data, data, data, data],
-        [&mut d0, &mut d1, &mut d2, &mut d3],
-    );
-    d0
-}
-
-#[cfg(not(any(feature = "simd256", feature = "simd128")))]
+#[cfg(not(feature = "simd128"))]
 pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
     let mut d0 = [0u8; LEN];
     keccakx1::<136, 0x1fu8>([data], [&mut d0]);
