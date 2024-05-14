@@ -127,7 +127,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[__m256i; 5]; 5], out: [&mut [
         let v1h = unsafe {
             _mm256_permute2x128_si256(
                 s[(4 * i + 1) / 5][(4 * i + 1) % 5],
-                s[(4 * i + 3) / 5][(4 * 3 + 1) % 5],
+                s[(4 * i + 3) / 5][(4 * i + 3) % 5],
                 0x20,
             )
         }; // 1 1 3 3
@@ -141,7 +141,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[__m256i; 5]; 5], out: [&mut [
         let v3h = unsafe {
             _mm256_permute2x128_si256(
                 s[(4 * i + 1) / 5][(4 * i + 1) % 5],
-                s[(4 * i + 3) / 5][(4 * 3 + 1) % 5],
+                s[(4 * i + 3) / 5][(4 * i + 3) % 5],
                 0x31,
             )
         }; // 1 1 3 3

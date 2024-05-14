@@ -71,7 +71,8 @@ pub fn sha3_256(data: &[u8]) -> [u8; 32] {
     d0
 }
 
-pub fn sha3_256_portable(data: &[u8]) -> [u8; 32] {
+#[cfg(not(any(feature = "simd256", feature = "simd128")))]
+pub fn sha3_256(data: &[u8]) -> [u8; 32] {
     let mut d0 = [0u8; 32];
     keccakx1::<136, 0x06u8>([data], [&mut d0]);
     d0
@@ -112,7 +113,8 @@ pub fn sha3_512(data: &[u8]) -> [u8; 64] {
     d0
 }
 
-pub fn sha3_512_portable(data: &[u8]) -> [u8; 64] {
+#[cfg(not(any(feature = "simd256", feature = "simd128")))]
+pub fn sha3_512(data: &[u8]) -> [u8; 64] {
     let mut d0 = [0u8; 64];
     keccakx1::<72, 0x06u8>([data], [&mut d0]);
     d0
