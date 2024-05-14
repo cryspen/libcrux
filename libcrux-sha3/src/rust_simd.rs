@@ -374,7 +374,7 @@ pub fn shake128x4_squeeze_next_block(
     out2: &mut [u8],
     out3: &mut [u8],
 ) {
-    squeeze_next_block::<4, core::arch::x86_64::__m256i, 168>(&mut s0, [out0, out1, out2, out3]);
+    squeeze_next_block::<4, core::arch::x86_64::__m256i, 168>(s, [out0, out1, out2, out3]);
 }
 #[cfg(feature = "simd128")]
 pub fn shake128x4_squeeze_next_block(
