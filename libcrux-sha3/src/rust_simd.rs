@@ -292,7 +292,7 @@ pub fn shake128x4_init() -> KeccakState4 {
     [s0, s1, s2, s3]
 }
 
-#[cfg(feature = "simd128")]
+#[cfg(feature = "simd256")]
 pub fn shake128x4_absorb_final(
     s: &mut KeccakState4,
     data0: &[u8],
@@ -366,7 +366,7 @@ pub fn shake128x4_squeeze_first_three_blocks(
     shake128_squeeze_first_three_blocks(&mut s3, out3);
 }
 
-#[cfg(feature = "simd128")]
+#[cfg(feature = "simd256")]
 pub fn shake128x4_squeeze_next_block(
     s: &mut KeccakState4,
     out0: &mut [u8],
