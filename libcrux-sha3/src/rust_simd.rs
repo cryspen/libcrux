@@ -21,6 +21,8 @@ fn keccakx2<const RATE:usize, const DELIM:u8>(data:[&[u8];2],out:[&mut[u8];2]) {
 #[cfg(feature = "simd128")]
 pub type KeccakState4 = [KeccakState2; 2];
 
+#[cfg(feature = "simd256")]
+mod sha3_avx2;
 
 #[cfg(not(feature = "simd128"))]
 pub type KeccakState2 = [KeccakState1; 2];
