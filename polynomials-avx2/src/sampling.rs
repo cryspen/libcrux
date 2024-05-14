@@ -754,13 +754,13 @@ const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
 ];
 
 #[inline(always)]
-pub(crate) fn rejection_sample(uniform_bytes: &[u8]) -> (usize, [i16; 16]) {
+pub(crate) fn rejection_sample(input: &[u8]) -> (usize, [i16; 16]) {
     let mut sampled = [0i16; 16];
 
     let count = unsafe {
         let field_modulus = _mm256_set1_epi16(FIELD_MODULUS);
 
-        let potential_coefficients = deserialize_12(uniform_bytes).elements;
+        let potential_coefficients = deserialize_12(input).elements;
 
         let compare_with_field_modulus = _mm256_cmpgt_epi16(field_modulus, potential_coefficients);
         let good = serialize_1(SIMD256Vector {
