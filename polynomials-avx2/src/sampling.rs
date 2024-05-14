@@ -1,4 +1,3 @@
-#[inline(always)]
 #[cfg(target_arch = "x86")]
 use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
@@ -754,7 +753,7 @@ const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],         // 255
 ];
 
-
+#[inline(always)]
 pub(crate) fn rejection_sample(uniform_bytes: &[u8]) -> (usize, [i16; 16]) {
     let mut sampled = [0i16; 16];
 
