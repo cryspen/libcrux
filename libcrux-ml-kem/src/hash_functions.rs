@@ -365,13 +365,6 @@ pub(crate) fn squeeze_block<const K: usize>(state: &mut KeccakState4) -> [[u8; B
 /// Free the memory of the state.
 ///
 /// **NOTE:** That this needs to be done manually for now.
-#[cfg(feature = "simd256")]
 #[inline(always)]
 pub(crate) fn free_state(_xof_state: KeccakState4) {}
 
-/// Free the memory of the state.
-///
-/// **NOTE:** That this needs to be done manually for now.
-#[cfg(not(any(feature = "simd256", feature = "simd128")))]
-#[inline(always)]
-pub(crate) fn free_state<const K: usize>(_xof_state: [libcrux_sha3::rust_simd::KeccakState1; K]) {}
