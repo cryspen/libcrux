@@ -105,9 +105,11 @@ pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128x4State {
 
 #[cfg(not(feature = "simd128"))]
 #[inline(always)]
-pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128x4State {
+pub(crate) fn absorb<const K: usize>(
+    input: [[u8; 34]; K],
+) -> [libcrux_sha3::rust_simd::KeccakState1; K] {
     debug_assert!(K == 2 || K == 3 || K == 4);
-    let mut states = rust_simd::shake128x4_init();
+    let mut states = [rust_simd::shake128_init(); K];
     for i in 0..K {
         rust_simd::shake128_absorb_final(&mut states[i], &input[i]);
     }
@@ -170,7 +172,7 @@ pub(crate) fn squeeze_three_blocks<const K: usize>(
 #[cfg(not(feature = "simd128"))]
 #[inline(always)]
 pub(crate) fn squeeze_three_blocks<const K: usize>(
-    state: &mut Shake128x4State,
+    state: &mut [libcrux_sha3::rust_simd::KeccakState1],
 ) -> [[u8; THREE_BLOCKS]; K] {
     let mut out = [[0u8; THREE_BLOCKS]; K];
     for i in 0..K {
@@ -216,7 +218,9 @@ pub(crate) fn squeeze_block<const K: usize>(state: &mut Shake128x4State) -> [[u8
 
 #[cfg(not(feature = "simd128"))]
 #[inline(always)]
-pub(crate) fn squeeze_block<const K: usize>(state: &mut Shake128x4State) -> [[u8; BLOCK_SIZE]; K] {
+pub(crate) fn squeeze_block<const K: usize>(
+    state: &mut [libcrux_sha3::rust_simd::KeccakState1; K],
+) -> [[u8; BLOCK_SIZE]; K] {
     let mut out = [[0u8; BLOCK_SIZE]; K];
     for i in 0..K {
         rust_simd::shake128_squeeze_next_block(&mut state[i], &mut out[i]);
@@ -227,5 +231,6 @@ pub(crate) fn squeeze_block<const K: usize>(state: &mut Shake128x4State) -> [[u8
 /// Free the memory of the state.
 ///
 /// **NOTE:** That this needs to be done manually for now.
+#[cfg(not(feature = "simd128"))]
 #[inline(always)]
-pub(crate) fn free_state(_xof_state: Shake128x4State) {}
+pub(crate) fn free_state<const K: usize>(_xof_state: [libcrux_sha3::rust_simd::KeccakState1; K]) {}
