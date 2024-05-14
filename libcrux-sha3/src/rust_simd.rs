@@ -23,10 +23,12 @@ pub type KeccakState4 = [KeccakState2; 2];
 
 #[cfg(feature = "simd256")]
 mod sha3_avx2;
+#[cfg(feature = "simd256")]
+pub type KeccakState4 = KeccakState<4, core::arch::x86_64::__m256i>;
 
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128", feature = "simd256")))]
 pub type KeccakState2 = [KeccakState1; 2];
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128", feature = "simd256")))]
 pub type KeccakState4 = [KeccakState1; 4];
 
 
@@ -124,13 +126,18 @@ pub fn shake256x2(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]
     keccakx1::<136, 0x1fu8>([input1], [out1]);
 }
 
+#[cfg(feature = "simd256")]
+pub fn shake256x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8],
+                  out0: &mut [u8], out1: &mut [u8], out2: &mut [u8],  out3: &mut [u8]) {
+    keccak::<4,core::arch::x86_64::__m256i,136, 0x1fu8>([input0, input1, input2, input3], [out0, out1, out2, out3]);
+}
 #[cfg(feature = "simd128")]
 pub fn shake256x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8],
                   out0: &mut [u8], out1: &mut [u8], out2: &mut [u8],  out3: &mut [u8]) {
     keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
     keccakx2::<136, 0x1fu8>([input2, input3], [out2, out3]);
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake256x4(input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8],
                   out0: &mut [u8], out1: &mut [u8], out2: &mut [u8],  out3: &mut [u8]) {
     keccakx1::<136, 0x1fu8>([input0], [out0]);
@@ -161,7 +168,7 @@ pub fn shake128_squeeze_next_block(s: &mut KeccakState1, out0: &mut [u8]) {
 pub fn shake128x2_init() -> KeccakState2 {
     KeccakState2::new()
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x2_init() -> KeccakState2 {
     let s0 = KeccakState1::new();
     let s1 = KeccakState1::new();
@@ -172,7 +179,7 @@ pub fn shake128x2_init() -> KeccakState2 {
 pub fn shake128x2_absorb_final(s:&mut KeccakState2, data0: &[u8], data1: &[u8]) {
     absorb_final::<2,core::arch::aarch64::uint64x2_t,168, 0x1fu8>(s,[data0,data1]);
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x2_absorb_final(s:&mut KeccakState2, data0: &[u8], data1: &[u8]) {
     let [mut s0, mut s1] = s;
     shake128_absorb_final(&mut s0, data0);
@@ -183,7 +190,7 @@ pub fn shake128x2_absorb_final(s:&mut KeccakState2, data0: &[u8], data1: &[u8]) 
 pub fn shake128x2_squeeze_first_three_blocks(s: &mut KeccakState2, out0:&mut [u8], out1:&mut [u8]) {
     squeeze_first_three_blocks::<2,core::arch::aarch64::uint64x2_t,168>(s, [out0, out1])
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x2_squeeze_first_three_blocks(s: &mut KeccakState2, out0:&mut [u8], out1:&mut [u8]) {
     let [mut s0, mut s1] = s;
     shake128_squeeze_first_three_blocks(&mut s0, out0);
@@ -194,21 +201,24 @@ pub fn shake128x2_squeeze_first_three_blocks(s: &mut KeccakState2, out0:&mut [u8
 pub fn shake128x2_squeeze_next_block(s: &mut KeccakState2, out0: &mut [u8], out1: &mut [u8]) {
     squeeze_next_block::<2,core::arch::aarch64::uint64x2_t,168>(s, [out0, out1])
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x2_squeeze_next_block(s: &mut KeccakState2, out0: &mut [u8], out1: &mut [u8]) {
     let [mut s0, mut s1] = s;
     shake128_squeeze_next_block(&mut s0, out0);
     shake128_squeeze_next_block(&mut s1, out1);
 }
 
-
+#[cfg(feature = "simd256")]
+pub fn shake128x4_init() -> KeccakState4 {
+    KeccakState4::new()
+}
 #[cfg(feature = "simd128")]
 pub fn shake128x4_init() -> KeccakState4 {
     let s0 = KeccakState2::new();
     let s1 = KeccakState2::new();
     [s0,s1]
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x4_init() -> KeccakState4 {
     let s0 = KeccakState1::new();
     let s1 = KeccakState1::new();
@@ -219,11 +229,15 @@ pub fn shake128x4_init() -> KeccakState4 {
 
 #[cfg(feature = "simd128")]
 pub fn shake128x4_absorb_final(s:&mut KeccakState4, data0: &[u8], data1: &[u8], data2: &[u8], data3: &[u8]) {
+    absorb_final::<4,core::arch::x86_64::__m256i,168, 0x1fu8>(s,[data0,data1,data2,data3]);
+}
+#[cfg(feature = "simd128")]
+pub fn shake128x4_absorb_final(s:&mut KeccakState4, data0: &[u8], data1: &[u8], data2: &[u8], data3: &[u8]) {
     let [mut s0, mut s1] = s;
     absorb_final::<2,core::arch::aarch64::uint64x2_t,168, 0x1fu8>(&mut s0,[data0,data1]);
     absorb_final::<2,core::arch::aarch64::uint64x2_t,168, 0x1fu8>(&mut s1,[data2,data3]);
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x4_absorb_final(s:&mut KeccakState4, data0: &[u8], data1: &[u8], data2: &[u8], data3: &[u8]) {
     let [mut s0, mut s1, mut s2, mut s3] = s;
     shake128_absorb_final(&mut s0, data0);
@@ -232,13 +246,17 @@ pub fn shake128x4_absorb_final(s:&mut KeccakState4, data0: &[u8], data1: &[u8], 
     shake128_absorb_final(&mut s3, data3);
 }
 
+#[cfg(feature = "simd256")]
+pub fn shake128x4_squeeze_first_three_blocks(s: &mut KeccakState4, out0:&mut [u8], out1:&mut [u8], out2:&mut [u8], out3:&mut [u8]) {
+    squeeze_first_three_blocks::<4,core::arch::x86_64::__m256i,168>(s, [out0, out1, out2, out3]);
+}
 #[cfg(feature = "simd128")]
 pub fn shake128x4_squeeze_first_three_blocks(s: &mut KeccakState4, out0:&mut [u8], out1:&mut [u8], out2:&mut [u8], out3:&mut [u8]) {
     let [mut s0, mut s1] = s;
     squeeze_first_three_blocks::<2,core::arch::aarch64::uint64x2_t,168>(&mut s0, [out0, out1]);
     squeeze_first_three_blocks::<2,core::arch::aarch64::uint64x2_t,168>(&mut s1, [out2, out3]);
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x4_squeeze_first_three_blocks(s: &mut KeccakState4, out0:&mut [u8], out1:&mut [u8], out2:&mut [u8], out3:&mut [u8]) {
     let [mut s0, mut s1, mut s2, mut s3] = s;
     shake128_squeeze_first_three_blocks(&mut s0, out0);
@@ -249,11 +267,15 @@ pub fn shake128x4_squeeze_first_three_blocks(s: &mut KeccakState4, out0:&mut [u8
 
 #[cfg(feature = "simd128")]
 pub fn shake128x4_squeeze_next_block(s: &mut KeccakState4, out0:&mut [u8], out1:&mut [u8], out2:&mut [u8], out3:&mut [u8]) {
+    squeeze_next_block::<4,core::arch::x86_64::__m256i,168>(&mut s0, [out0, out1, out2, out3]);
+}
+#[cfg(feature = "simd128")]
+pub fn shake128x4_squeeze_next_block(s: &mut KeccakState4, out0:&mut [u8], out1:&mut [u8], out2:&mut [u8], out3:&mut [u8]) {
     let [mut s0, mut s1] = s;
     squeeze_next_block::<2,core::arch::aarch64::uint64x2_t,168>(&mut s0, [out0, out1]);
     squeeze_next_block::<2,core::arch::aarch64::uint64x2_t,168>(&mut s1, [out2, out3]);
 }
-#[cfg(not(feature = "simd128"))]
+#[cfg(not(any(feature = "simd128",feature = "simd256")))]
 pub fn shake128x4_squeeze_next_block(s: &mut KeccakState4, out0:&mut [u8], out1:&mut [u8], out2:&mut [u8], out3:&mut [u8]) {
     let [mut s0, mut s1, mut s2, mut s3] = s;
     shake128_squeeze_next_block(&mut s0, out0);

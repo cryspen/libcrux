@@ -1,5 +1,4 @@
 use core::arch::x86_64::*;
-use libcrux_hacl::__m256i;
 
 use crate::rust_simd::sha3_trait::*;
 
@@ -52,48 +51,48 @@ fn _veorq_n_u64(a: __m256i, c: u64) -> __m256i {
 pub(crate) fn load_block<const RATE:usize>(s: &mut [[__m256i;5];5], blocks: [&[u8];4]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
     for i in 0..RATE/32 {
-        let v0 = unsafe { _mm256_loadu_epi64(blocks[0][start..32*(i+1)].as_ptr() as *const i64)};
-        let v1 = unsafe { _mm256_loadu_epi64(blocks[1][start..32*(i+1)].as_ptr() as *const i64)};
-        let v2 = unsafe { _mm256_loadu_epi64(blocks[2][start..32*(i+1)].as_ptr() as *const i64)};
-        let v3 = unsafe { _mm256_loadu_epi64(blocks[3][start..32*(i+1)].as_ptr() as *const i64)};
+        let v0 = unsafe { _mm256_loadu_si256(blocks[0][32*i..32*(i+1)].as_ptr() as *const __m256i)};
+        let v1 = unsafe { _mm256_loadu_si256(blocks[1][32*i..32*(i+1)].as_ptr() as *const __m256i)};
+        let v2 = unsafe { _mm256_loadu_si256(blocks[2][32*i..32*(i+1)].as_ptr() as *const __m256i)};
+        let v3 = unsafe { _mm256_loadu_si256(blocks[3][32*i..32*(i+1)].as_ptr() as *const __m256i)};
 
         let v0l = unsafe { _mm256_unpacklo_epi64(v0,v1) }; // 0 0 2 2
         let v1h = unsafe { _mm256_unpackhi_epi64(v0,v1) }; // 1 1 3 3
         let v2l = unsafe { _mm256_unpacklo_epi64(v2,v3) }; // 0 0 2 2
         let v3h = unsafe { _mm256_unpackhi_epi64(v2,v3) }; // 1 1 3 3
 
-        let v0 = unsafe { _mm256_permute2x128_epi256(v0l,v2l,0x20) }; // 0 0 0 0
-        let v1 = unsafe { _mm256_permute2x128_epi256(v1h,v3h,0x20) }; // 1 1 1 1
-        let v2 = unsafe { _mm256_permute2x128_epi256(v0l,v2l,0x31) }; // 2 2 2 2
-        let v3 = unsafe { _mm256_permute2x128_epi256(v1h,v3h,0x31) }; // 3 3 3 3
+        let v0 = unsafe { _mm256_permute2x128_si256(v0l,v2l,0x20) }; // 0 0 0 0
+        let v1 = unsafe { _mm256_permute2x128_si256(v1h,v3h,0x20) }; // 1 1 1 1
+        let v2 = unsafe { _mm256_permute2x128_si256(v0l,v2l,0x31) }; // 2 2 2 2
+        let v3 = unsafe { _mm256_permute2x128_si256(v1h,v3h,0x31) }; // 3 3 3 3
         
-        s[(4*i)/5][(4*i)%5] = unsafe { veorq_u64(s[(4*i)/5][(4*i)%5], v0) };
-        s[(4*i+1)/5][(4*i+1)%5] = unsafe { veorq_u64(s[(4*i+1)/5][(4*i+1)%5], v1) };
-        s[(4*i+2)/5][(4*i+2)%5] = unsafe { veorq_u64(s[(4*i+2)/5][(4*i+2)%5], v2) };
-        s[(4*i+3)/5][(4*i+3)%5] = unsafe { veorq_u64(s[(4*i+3)/5][(4*i+3)%5], v3) };
+        s[(4*i)/5][(4*i)%5] = unsafe { _mm256_xor_si256(s[(4*i)/5][(4*i)%5], v0) };
+        s[(4*i+1)/5][(4*i+1)%5] = unsafe { _mm256_xor_si256(s[(4*i+1)/5][(4*i+1)%5], v1) };
+        s[(4*i+2)/5][(4*i+2)%5] = unsafe { _mm256_xor_si256(s[(4*i+2)/5][(4*i+2)%5], v2) };
+        s[(4*i+3)/5][(4*i+3)%5] = unsafe { _mm256_xor_si256(s[(4*i+3)/5][(4*i+3)%5], v3) };
     }
 
     let rem = RATE%32; // has to be 8 or 16
     let start = 32 * (RATE/32);
-    let u8s = [0u8;32];
+    let mut u8s = [0u8;32];
     u8s[0..8].copy_from_slice(&blocks[0][start..start+8]);
     u8s[8..16].copy_from_slice(&blocks[1][start..start+8]);
     u8s[16..24].copy_from_slice(&blocks[2][start..start+8]);
     u8s[24..32].copy_from_slice(&blocks[3][start..start+8]);
-    let u = unsafe { _mm256_loadu_epi64(u8s.as_ptr() as *const i64)};
+    let u = unsafe { _mm256_loadu_si256(u8s.as_ptr() as *const __m256i)};
     let i = (4*(RATE/32))/5;
     let j = (4*(RATE/32))%5;
-    s[i][j] = unsafe { veorq_u64(s[i][j], u)};
+    s[i][j] = unsafe { _mm256_xor_si256(s[i][j], u)};
     if rem == 16 {
-        let u8s = [0u8;32];
+        let mut u8s = [0u8;32];
         u8s[0..8].copy_from_slice(&blocks[0][start+8..start+16]);
         u8s[8..16].copy_from_slice(&blocks[1][start+8..start+16]);
         u8s[16..24].copy_from_slice(&blocks[2][start+8..start+16]);
         u8s[24..32].copy_from_slice(&blocks[3][start+8..start+16]);
-        let u = unsafe { _mm256_loadu_epi64(u8s.as_ptr() as *const i64)};
+        let u = unsafe { _mm256_loadu_si256(u8s.as_ptr() as *const __m256i)};
         let i = (4*(RATE/32) + 1)/5;
         let j = (4*(RATE/32) + 1)%5;
-        s[i][j] = unsafe { veorq_u64(s[i][j], u)};
+        s[i][j] = unsafe { _mm256_xor_si256(s[i][j], u)};
     }
 }
 
@@ -104,12 +103,12 @@ pub(crate) fn load_block_full<const RATE:usize>(s: &mut [[__m256i;5];5], blocks:
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE:usize>(s: &[[__m256i;5];5], out: [&mut [u8];2]) {
+pub(crate) fn store_block<const RATE:usize>(s: &[[__m256i;5];5], out: [&mut [u8];4]) {
     for i in 0..RATE/32 {
-        let v0l = unsafe { _mm256_permute2x128_epi256(s[(4*i)/5][(4*i)%5],s[(4*i+2)/5][(4*i+2)%5],0x20) };     // 0 0 2 2
-        let v1h = unsafe { _mm256_permute2x128_epi256(s[(4*i+1)/5][(4*i+1)%5],s[(4*i+3)/5][(4*3+1)%5],0x20) }; // 1 1 3 3
-        let v2l = unsafe { _mm256_permute2x128_epi256(s[(4*i)/5][(4*i)%5],s[(4*i+2)/5][(4*i+2)%5],0x31) };     // 0 0 2 2
-        let v3h = unsafe { _mm256_permute2x128_epi256(s[(4*i+1)/5][(4*i+1)%5],s[(4*i+3)/5][(4*3+1)%5],0x31) }; // 1 1 3 3
+        let v0l = unsafe { _mm256_permute2x128_si256(s[(4*i)/5][(4*i)%5],s[(4*i+2)/5][(4*i+2)%5],0x20) };     // 0 0 2 2
+        let v1h = unsafe { _mm256_permute2x128_si256(s[(4*i+1)/5][(4*i+1)%5],s[(4*i+3)/5][(4*3+1)%5],0x20) }; // 1 1 3 3
+        let v2l = unsafe { _mm256_permute2x128_si256(s[(4*i)/5][(4*i)%5],s[(4*i+2)/5][(4*i+2)%5],0x31) };     // 0 0 2 2
+        let v3h = unsafe { _mm256_permute2x128_si256(s[(4*i+1)/5][(4*i+1)%5],s[(4*i+3)/5][(4*3+1)%5],0x31) }; // 1 1 3 3
 
 
         let v0 = unsafe { _mm256_unpacklo_epi64(v0l, v1h) }; // 0 1 2 3
@@ -117,27 +116,27 @@ pub(crate) fn store_block<const RATE:usize>(s: &[[__m256i;5];5], out: [&mut [u8]
         let v2 = unsafe { _mm256_unpacklo_epi64(v2l, v3h) }; // 0 1 2 3
         let v3 = unsafe { _mm256_unpackhi_epi64(v2l, v3h) }; // 0 1 2 3
 
-        unsafe { _mm256_storeu_epi64(out[0][start..32*(i+1)].as_mut_ptr() as *mut i64, v0) };
-        unsafe { _mm256_storeu_epi64(out[1][start..32*(i+1)].as_mut_ptr() as *mut i64, v1) };
-        unsafe { _mm256_storeu_epi64(out[2][start..32*(i+1)].as_mut_ptr() as *mut i64, v2) };
-        unsafe { _mm256_storeu_epi64(out[3][start..32*(i+1)].as_mut_ptr() as *mut i64, v3) };
+        unsafe { _mm256_storeu_si256(out[0][32*i..32*(i+1)].as_mut_ptr() as *mut __m256i, v0) };
+        unsafe { _mm256_storeu_si256(out[1][32*i..32*(i+1)].as_mut_ptr() as *mut __m256i, v1) };
+        unsafe { _mm256_storeu_si256(out[2][32*i..32*(i+1)].as_mut_ptr() as *mut __m256i, v2) };
+        unsafe { _mm256_storeu_si256(out[3][32*i..32*(i+1)].as_mut_ptr() as *mut __m256i, v3) };
     }
 
     let rem = RATE%32; // has to be 8 or 16
     let start = 32 * (RATE/32);
-    let u8s = [0u8;32];
+    let mut u8s = [0u8;32];
     let i = (4*(RATE/32))/5;
     let j = (4*(RATE/32))%5;
-    unsafe { _mm256_storeu_epi64(u8s.as_mut_ptr() as *const i64, s[i][j])};
+    unsafe { _mm256_storeu_si256(u8s.as_mut_ptr() as *mut __m256i, s[i][j])};
     out[0][start..start+8].copy_from_slice(&u8s[0..8]);
     out[1][start..start+8].copy_from_slice(&u8s[8..16]);
     out[2][start..start+8].copy_from_slice(&u8s[16..24]);
     out[3][start..start+8].copy_from_slice(&u8s[24..32]);
     if rem == 16 {
-        let u8s = [0u8;32];
+        let mut u8s = [0u8;32];
         let i = (4*(RATE/32) + 1)/5;
         let j = (4*(RATE/32) + 1)%5;
-        unsafe { _mm256_storeu_epi64(u8s.as_mut_ptr() as *const i64, s[i][j])};
+        unsafe { _mm256_storeu_si256(u8s.as_mut_ptr() as *mut __m256i, s[i][j])};
         out[0][start+8..start+16].copy_from_slice(&u8s[0..8]);
         out[1][start+8..start+16].copy_from_slice(&u8s[8..16]);
         out[2][start+8..start+16].copy_from_slice(&u8s[16..24]);
@@ -174,7 +173,7 @@ fn split_at_mut_4(out: [&mut [u8]; 4], mid:usize) -> ([&mut [u8];4],[&mut [u8];4
 impl KeccakItem<4> for __m256i {
     #[inline(always)]
     fn zero() -> Self {
-        unsafe {vdupq_n_u64(0)}
+        unsafe { _mm256_set1_epi64x(0) }
     }
     #[inline(always)]
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self {
@@ -198,7 +197,7 @@ impl KeccakItem<4> for __m256i {
     }
     #[inline(always)]
     fn xor(a: Self, b: Self) -> Self {
-        unsafe {veorq_u64(a, b)}
+        unsafe {_mm256_xor_si256(a, b)}
     }
     #[inline(always)]
     fn load_block<const BLOCKSIZE:usize>(a:&mut [[Self;5];5], b:[&[u8];4]) {
@@ -221,7 +220,7 @@ impl KeccakItem<4> for __m256i {
         slice_4(a,start,len)
     }
     #[inline(always)]
-    fn split_at_mut_n(a:[&mut [u8];4],mid:usize) -> ([&mut [u8];2],[&mut [u8];4]) {
+    fn split_at_mut_n(a:[&mut [u8];4],mid:usize) -> ([&mut [u8];4],[&mut [u8];4]) {
         split_at_mut_4(a, mid)
     }
 }
