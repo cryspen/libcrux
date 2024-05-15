@@ -3,7 +3,11 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-use crate::{deserialize_12, serialize_1, SIMD256Vector, FIELD_MODULUS};
+use crate::{
+    serialize::{deserialize_12, serialize_1},
+    SIMD256Vector,
+};
+use libcrux_traits::FIELD_MODULUS;
 
 const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
     [
