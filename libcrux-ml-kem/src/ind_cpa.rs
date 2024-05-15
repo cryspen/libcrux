@@ -200,8 +200,8 @@ fn compress_then_serialize_u<
     Vector: Operations,
 >(
     input: [PolynomialRingElement<Vector>; K],
-) -> [u8; OUT_LEN] {
-    let mut out = [0u8; OUT_LEN];
+    out: &mut [u8]
+) {
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
             out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
@@ -209,8 +209,6 @@ fn compress_then_serialize_u<
             );
         }
     }
-
-    out
 }
 
 /// This function implements <strong>Algorithm 13</strong> of the
@@ -271,7 +269,7 @@ pub(crate) fn encrypt<
     public_key: &[u8],
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
-) -> [u8; CIPHERTEXT_SIZE] {
+)  -> [u8; CIPHERTEXT_SIZE] {
     // tˆ := Decode_12(pk)
     let t_as_ntt = deserialize_ring_elements_reduced::<T_AS_NTT_ENCODED_SIZE, K, Vector>(
         &public_key[..T_AS_NTT_ENCODED_SIZE],
@@ -317,14 +315,15 @@ pub(crate) fn encrypt<
     let message_as_ring_element = deserialize_then_decompress_message(message);
     let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
 
+    let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
+    
+    let (c1,c2) = ciphertext.split_at_mut(C1_LEN);
+
     // c_1 := Encode_{du}(Compress_q(u,d_u))
-    let c1 = compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(u);
+    compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(u, c1);
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    let c2 = compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN, Vector>(v);
-
-    let mut ciphertext: [u8; CIPHERTEXT_SIZE] = into_padded_array(&c1);
-    ciphertext[C1_LEN..].copy_from_slice(c2.as_slice());
+    compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN, Vector>(v, c2);
 
     ciphertext
 }
