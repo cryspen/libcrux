@@ -16,7 +16,7 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] =
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
-#[derive(Clone, Copy)]
+//#[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
@@ -44,19 +44,17 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
     /// sum of their constituent coefficients.
     #[inline(always)]
-    pub(crate) fn add_to_ring_element<const K: usize>(mut self, rhs: &Self) -> Self {
+    pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
         for i in 0..self.coefficients.len() {
             self.coefficients[i] = Vector::add(self.coefficients[i], &rhs.coefficients[i]);
         }
-        self
     }
 
     #[inline(always)]
-    pub fn poly_barrett_reduce(mut self) -> Self {
+    pub fn poly_barrett_reduce(&mut self) {
         for i in 0..VECTORS_IN_RING_ELEMENT {
             self.coefficients[i] = Vector::barrett_reduce(self.coefficients[i]);
         }
-        self
     }
 
     #[inline(always)]
@@ -84,28 +82,26 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     }
 
     #[inline(always)]
-    pub(crate) fn add_error_reduce(&self, mut result: Self) -> Self {
+    pub(crate) fn add_error_reduce(&mut self, error: &Self) {
         for j in 0..VECTORS_IN_RING_ELEMENT {
             let coefficient_normal_form =
-                Vector::montgomery_multiply_by_constant(result.coefficients[j], 1441);
+                Vector::montgomery_multiply_by_constant(self.coefficients[j], 1441);
 
-            result.coefficients[j] =
-                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &self.coefficients[j]));
+            self.coefficients[j] =
+                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
         }
-        result
     }
 
     #[inline(always)]
-    pub(crate) fn add_standard_error_reduce(&self, mut result: Self) -> Self {
+    pub(crate) fn add_standard_error_reduce(&mut self, error: &Self) {
         for j in 0..VECTORS_IN_RING_ELEMENT {
             // The coefficients are of the form aR^{-1} mod q, which means
             // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = Vector::to_standard_domain(result.coefficients[j]);
+            let coefficient_normal_form = Vector::to_standard_domain(self.coefficients[j]);
 
-            result.coefficients[j] =
-                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &self.coefficients[j]));
+            self.coefficients[j] =
+                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
         }
-        result
     }
 
     /// Given two `KyberPolynomialRingElement`s in their NTT representations,

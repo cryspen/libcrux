@@ -73,7 +73,7 @@ fn sample_ring_element_cbd<
     prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
-    let mut error_1 = [PolynomialRingElement::<Vector>::ZERO(); K];
+    let mut error_1 = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
         prf_inputs[i][32] = domain_separator;
@@ -98,7 +98,7 @@ fn sample_vector_cbd_then_ntt<
     prf_input: [u8; 33],
     mut domain_separator: u8,
 ) -> ([PolynomialRingElement<Vector>; K], u8) {
-    let mut re_as_ntt = [PolynomialRingElement::<Vector>::ZERO(); K];
+    let mut re_as_ntt = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     let mut prf_inputs = [prf_input; K];
     for i in 0..K {
         prf_inputs[i][32] = domain_separator;
@@ -106,8 +106,8 @@ fn sample_vector_cbd_then_ntt<
     }
     let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = PRFxN(&prf_inputs);
     for i in 0..K {
-        let r = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
-        re_as_ntt[i] = ntt_binomially_sampled_ring_element(r);
+        re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
+        ntt_binomially_sampled_ring_element(&mut re_as_ntt[i]);
     }
     (re_as_ntt, domain_separator)
 }
@@ -340,14 +340,14 @@ fn deserialize_then_decompress_u<
 >(
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut u_as_ntt = [PolynomialRingElement::<Vector>::ZERO(); K];
+    let mut u_as_ntt = core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
     cloop! {
         for (i, u_bytes) in ciphertext
             .chunks_exact((COEFFICIENTS_IN_RING_ELEMENT * U_COMPRESSION_FACTOR) / 8)
             .enumerate()
         {
-            let u = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR, Vector>(u_bytes);
-            u_as_ntt[i] = ntt_vector_u::<U_COMPRESSION_FACTOR, Vector>(u);
+            u_as_ntt[i]  = deserialize_then_decompress_ring_element_u::<U_COMPRESSION_FACTOR, Vector>(u_bytes);
+            ntt_vector_u::<U_COMPRESSION_FACTOR, Vector>(&mut u_as_ntt[i]);
         }
     }
     u_as_ntt
@@ -358,7 +358,7 @@ fn deserialize_then_decompress_u<
 fn deserialize_secret_key<const K: usize, Vector: Operations>(
     secret_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut secret_as_ntt = [PolynomialRingElement::<Vector>::ZERO(); K];
+    let mut secret_as_ntt = core::array::from_fn(|_| PolynomialRingElement::<Vector>::ZERO());
     cloop! {
         for (i, secret_bytes) in secret_key.chunks_exact(BYTES_PER_RING_ELEMENT).enumerate() {
             secret_as_ntt[i] = deserialize_to_uncompressed_ring_element(secret_bytes);

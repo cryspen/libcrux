@@ -38,7 +38,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
 
 #[inline(always)]
 pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
-    re: PolynomialRingElement<Vector>,
+    re: &PolynomialRingElement<Vector>,
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -99,7 +99,7 @@ pub(super) fn deserialize_ring_elements_reduced<
 >(
     public_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut deserialized_pk = [PolynomialRingElement::<Vector>::ZERO(); K];
+    let mut deserialized_pk = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
     cloop! {
         for (i, ring_element) in public_key
             .chunks_exact(BYTES_PER_RING_ELEMENT)
@@ -113,7 +113,7 @@ pub(super) fn deserialize_ring_elements_reduced<
 
 #[inline(always)]
 fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
-    re: PolynomialRingElement<Vector>,
+    re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -128,7 +128,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
 
 #[inline(always)]
 fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
-    re: PolynomialRingElement<Vector>,
+    re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
@@ -147,7 +147,7 @@ pub(super) fn compress_then_serialize_ring_element_u<
     const OUT_LEN: usize,
     Vector: Operations,
 >(
-    re: PolynomialRingElement<Vector>,
+    re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
     hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
