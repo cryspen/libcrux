@@ -7,11 +7,9 @@ use crate::portable;
 use crate::SIMD256Vector;
 
 #[inline(always)]
-pub(crate) fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
-    let mut serialized = [0u8; 2];
-
+pub(crate) fn serialize_1(vector: __m256i) -> [u8; 2] {
     let bits_packed = unsafe {
-        let lsb_shifted_up = _mm256_slli_epi16(v.elements, 15);
+        let lsb_shifted_up = _mm256_slli_epi16(vector, 15);
 
         let low_lanes = _mm256_castsi256_si128(lsb_shifted_up);
         let high_lanes = _mm256_extracti128_si256(lsb_shifted_up, 1);
@@ -21,6 +19,7 @@ pub(crate) fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
         _mm_movemask_epi8(msbs)
     };
 
+    let mut serialized = [0u8; 2];
     serialized[0] = bits_packed as u8;
     serialized[1] = (bits_packed >> 8) as u8;
 
@@ -28,8 +27,8 @@ pub(crate) fn serialize_1(v: SIMD256Vector) -> [u8; 2] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
-    let deserialized = unsafe {
+pub(crate) fn deserialize_1(bytes: &[u8]) -> __m256i {
+    return unsafe {
         let shift_lsb_to_msb = _mm256_set_epi16(
             1 << 0,
             1 << 1,
@@ -73,19 +72,15 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> SIMD256Vector {
 
         _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16((1 << 1) - 1))
     };
-
-    SIMD256Vector {
-        elements: deserialized,
-    }
 }
 
 #[inline(always)]
-pub(crate) fn serialize_4(v: SIMD256Vector) -> [u8; 8] {
+pub(crate) fn serialize_4(vector: __m256i) -> [u8; 8] {
     let mut serialized = [0u8; 16];
 
     unsafe {
         let adjacent_2_combined = _mm256_madd_epi16(
-            v.elements,
+            vector,
             _mm256_set_epi16(
                 1 << 4,
                 1,
@@ -127,8 +122,8 @@ pub(crate) fn serialize_4(v: SIMD256Vector) -> [u8; 8] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
-    let deserialized = unsafe {
+pub(crate) fn deserialize_4(bytes: &[u8]) -> __m256i {
+    return unsafe {
         let shift_lsbs_to_msbs = _mm256_set_epi16(
             1 << 0,
             1 << 4,
@@ -172,19 +167,15 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> SIMD256Vector {
 
         _mm256_and_si256(coefficients_in_lsb, _mm256_set1_epi16((1 << 4) - 1))
     };
-
-    SIMD256Vector {
-        elements: deserialized,
-    }
 }
 
 #[inline(always)]
-pub(crate) fn serialize_5(v: SIMD256Vector) -> [u8; 10] {
+pub(crate) fn serialize_5(vector: __m256i) -> [u8; 10] {
     let mut serialized = [0u8; 32];
 
     unsafe {
         let adjacent_2_combined = _mm256_madd_epi16(
-            v.elements,
+            vector,
             _mm256_set_epi16(
                 1 << 5,
                 1,
@@ -229,19 +220,19 @@ pub(crate) fn serialize_5(v: SIMD256Vector) -> [u8; 10] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_5(v: &[u8]) -> SIMD256Vector {
-    let output = portable::deserialize_5(v);
+pub(crate) fn deserialize_5(bytes: &[u8]) -> __m256i {
+    let output = portable::deserialize_5(bytes);
 
-    crate::from_i16_array(&portable::to_i16_array(output))
+    crate::from_i16_array(&portable::to_i16_array(output)).elements
 }
 
 #[inline(always)]
-pub(crate) fn serialize_10(v: SIMD256Vector) -> [u8; 20] {
+pub(crate) fn serialize_10(vector: __m256i) -> [u8; 20] {
     let mut serialized = [0u8; 32];
 
     unsafe {
         let adjacent_2_combined = _mm256_madd_epi16(
-            v.elements,
+            vector,
             _mm256_set_epi16(
                 1 << 10,
                 1,
@@ -287,8 +278,8 @@ pub(crate) fn serialize_10(v: SIMD256Vector) -> [u8; 20] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_10(v: &[u8]) -> SIMD256Vector {
-    let deserialized = unsafe {
+pub(crate) fn deserialize_10(bytes: &[u8]) -> __m256i {
+    return unsafe {
         let shift_lsbs_to_msbs = _mm256_set_epi16(
             1 << 0,
             1 << 2,
@@ -308,12 +299,12 @@ pub(crate) fn deserialize_10(v: &[u8]) -> SIMD256Vector {
             1 << 6,
         );
 
-        let lower_coefficients = _mm_loadu_si128(v.as_ptr() as *const __m128i);
+        let lower_coefficients = _mm_loadu_si128(bytes.as_ptr() as *const __m128i);
         let lower_coefficients = _mm_shuffle_epi8(
             lower_coefficients,
             _mm_set_epi8(9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 3, 2, 2, 1, 1, 0),
         );
-        let upper_coefficients = _mm_loadu_si128(v.as_ptr().offset(4) as *const __m128i);
+        let upper_coefficients = _mm_loadu_si128(bytes.as_ptr().offset(4) as *const __m128i);
         let upper_coefficients = _mm_shuffle_epi8(
             upper_coefficients,
             _mm_set_epi8(15, 14, 14, 13, 13, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6),
@@ -328,33 +319,29 @@ pub(crate) fn deserialize_10(v: &[u8]) -> SIMD256Vector {
 
         coefficients
     };
-
-    SIMD256Vector {
-        elements: deserialized,
-    }
 }
 
 #[inline(always)]
-pub(crate) fn serialize_11(v: SIMD256Vector) -> [u8; 22] {
-    let input = portable::from_i16_array(crate::to_i16_array(v));
+pub(crate) fn serialize_11(vector: __m256i) -> [u8; 22] {
+    let input = portable::from_i16_array(crate::to_i16_array(SIMD256Vector { elements: vector }));
 
     portable::serialize_11(input)
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_11(v: &[u8]) -> SIMD256Vector {
-    let output = portable::deserialize_11(v);
+pub(crate) fn deserialize_11(bytes: &[u8]) -> __m256i {
+    let output = portable::deserialize_11(bytes);
 
-    crate::from_i16_array(&portable::to_i16_array(output))
+    crate::from_i16_array(&portable::to_i16_array(output)).elements
 }
 
 #[inline(always)]
-pub(crate) fn serialize_12(v: SIMD256Vector) -> [u8; 24] {
+pub(crate) fn serialize_12(vector: __m256i) -> [u8; 24] {
     let mut serialized = [0u8; 32];
 
     unsafe {
         let adjacent_2_combined = _mm256_madd_epi16(
-            v.elements,
+            vector,
             _mm256_set_epi16(
                 1 << 12,
                 1,
@@ -400,8 +387,8 @@ pub(crate) fn serialize_12(v: SIMD256Vector) -> [u8; 24] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_12(v: &[u8]) -> SIMD256Vector {
-    let deserialized = unsafe {
+pub(crate) fn deserialize_12(bytes: &[u8]) -> __m256i {
+    return unsafe {
         let shift_lsbs_to_msbs = _mm256_set_epi16(
             1 << 0,
             1 << 4,
@@ -421,12 +408,12 @@ pub(crate) fn deserialize_12(v: &[u8]) -> SIMD256Vector {
             1 << 4,
         );
 
-        let lower_coefficients = _mm_loadu_si128(v.as_ptr() as *const __m128i);
+        let lower_coefficients = _mm_loadu_si128(bytes.as_ptr() as *const __m128i);
         let lower_coefficients = _mm_shuffle_epi8(
             lower_coefficients,
             _mm_set_epi8(11, 10, 10, 9, 8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0),
         );
-        let upper_coefficients = _mm_loadu_si128(v.as_ptr().offset(8) as *const __m128i);
+        let upper_coefficients = _mm_loadu_si128(bytes.as_ptr().offset(8) as *const __m128i);
         let upper_coefficients = _mm_shuffle_epi8(
             upper_coefficients,
             _mm_set_epi8(15, 14, 14, 13, 12, 11, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4),
@@ -441,8 +428,4 @@ pub(crate) fn deserialize_12(v: &[u8]) -> SIMD256Vector {
 
         coefficients
     };
-
-    SIMD256Vector {
-        elements: deserialized,
-    }
 }

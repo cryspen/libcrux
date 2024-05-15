@@ -3,10 +3,7 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-use crate::{
-    serialize::{deserialize_12, serialize_1},
-    SIMD256Vector,
-};
+use crate::serialize::{deserialize_12, serialize_1};
 use libcrux_traits::FIELD_MODULUS;
 
 const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
@@ -762,12 +759,10 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let count = unsafe {
         let field_modulus = _mm256_set1_epi16(FIELD_MODULUS);
 
-        let potential_coefficients = deserialize_12(input).elements;
+        let potential_coefficients = deserialize_12(input);
 
         let compare_with_field_modulus = _mm256_cmpgt_epi16(field_modulus, potential_coefficients);
-        let good = serialize_1(SIMD256Vector {
-            elements: compare_with_field_modulus,
-        });
+        let good = serialize_1(compare_with_field_modulus);
 
         let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
         let lower_shuffles = _mm_loadu_si128(lower_shuffles.as_ptr() as *const __m128i);

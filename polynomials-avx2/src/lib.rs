@@ -57,75 +57,115 @@ impl Operations for SIMD256Vector {
     }
 
     fn add(lhs: Self, rhs: &Self) -> Self {
-        arithmetic::add(lhs, rhs)
+        Self {
+            elements: arithmetic::add(lhs.elements, rhs.elements),
+        }
     }
 
     fn sub(lhs: Self, rhs: &Self) -> Self {
-        arithmetic::sub(lhs, rhs)
+        Self {
+            elements: arithmetic::sub(lhs.elements, rhs.elements),
+        }
     }
 
     fn multiply_by_constant(v: Self, c: i16) -> Self {
-        arithmetic::multiply_by_constant(v, c)
+        Self {
+            elements: arithmetic::multiply_by_constant(v.elements, c),
+        }
     }
 
-    fn bitwise_and_with_constant(v: Self, c: i16) -> Self {
-        arithmetic::bitwise_and_with_constant(v, c)
+    fn bitwise_and_with_constant(vector: Self, constant: i16) -> Self {
+        Self {
+            elements: arithmetic::bitwise_and_with_constant(vector.elements, constant),
+        }
     }
 
-    fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
-        arithmetic::shift_right::<{ SHIFT_BY }>(v)
+    fn shift_right<const SHIFT_BY: i32>(vector: Self) -> Self {
+        Self {
+            elements: arithmetic::shift_right::<{ SHIFT_BY }>(vector.elements),
+        }
     }
 
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        arithmetic::shift_left::<{ SHIFT_BY }>(v)
+    fn shift_left<const SHIFT_BY: i32>(vector: Self) -> Self {
+        Self {
+            elements: arithmetic::shift_left::<{ SHIFT_BY }>(vector.elements),
+        }
     }
 
-    fn cond_subtract_3329(v: Self) -> Self {
-        arithmetic::cond_subtract_3329(v)
+    fn cond_subtract_3329(vector: Self) -> Self {
+        Self {
+            elements: arithmetic::cond_subtract_3329(vector.elements),
+        }
     }
 
-    fn barrett_reduce(v: Self) -> Self {
-        arithmetic::barrett_reduce(v)
+    fn barrett_reduce(vector: Self) -> Self {
+        Self {
+            elements: arithmetic::barrett_reduce(vector.elements),
+        }
     }
 
-    fn montgomery_multiply_by_constant(v: Self, r: i16) -> Self {
-        arithmetic::montgomery_multiply_by_constant(v, r)
+    fn montgomery_multiply_by_constant(vector: Self, constant: i16) -> Self {
+        Self {
+            elements: arithmetic::montgomery_multiply_by_constant(vector.elements, constant),
+        }
     }
 
-    fn compress_1(v: Self) -> Self {
-        compress::compress_message_coefficient(v)
+    fn compress_1(vector: Self) -> Self {
+        Self {
+            elements: compress::compress_message_coefficient(vector.elements),
+        }
     }
 
-    fn compress<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
+    fn compress<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
+        Self {
+            elements: compress::compress_ciphertext_coefficient::<COEFFICIENT_BITS>(
+                vector.elements,
+            ),
+        }
     }
 
-    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(v: Self) -> Self {
-        compress::decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(v)
+    fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(vector: Self) -> Self {
+        Self {
+            elements: compress::decompress_ciphertext_coefficient::<COEFFICIENT_BITS>(
+                vector.elements,
+            ),
+        }
     }
 
-    fn ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
-        ntt::ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
+    fn ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        Self {
+            elements: ntt::ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
+        }
     }
 
-    fn ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
-        ntt::ntt_layer_2_step(a, zeta0, zeta1)
+    fn ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        Self {
+            elements: ntt::ntt_layer_2_step(vector.elements, zeta0, zeta1),
+        }
     }
 
-    fn ntt_layer_3_step(a: Self, zeta: i16) -> Self {
-        ntt::ntt_layer_3_step(a, zeta)
+    fn ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        Self {
+            elements: ntt::ntt_layer_3_step(vector.elements, zeta),
+        }
     }
 
-    fn inv_ntt_layer_1_step(a: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
-        ntt::inv_ntt_layer_1_step(a, zeta0, zeta1, zeta2, zeta3)
+    fn inv_ntt_layer_1_step(vector: Self, zeta0: i16, zeta1: i16, zeta2: i16, zeta3: i16) -> Self {
+        Self {
+            elements: ntt::inv_ntt_layer_1_step(vector.elements, zeta0, zeta1, zeta2, zeta3),
+        }
     }
 
-    fn inv_ntt_layer_2_step(a: Self, zeta0: i16, zeta1: i16) -> Self {
-        ntt::inv_ntt_layer_2_step(a, zeta0, zeta1)
+    fn inv_ntt_layer_2_step(vector: Self, zeta0: i16, zeta1: i16) -> Self {
+        Self {
+            elements: ntt::inv_ntt_layer_2_step(vector.elements, zeta0, zeta1),
+        }
     }
 
-    fn inv_ntt_layer_3_step(a: Self, zeta: i16) -> Self {
-        ntt::inv_ntt_layer_3_step(a, zeta)
+    fn inv_ntt_layer_3_step(vector: Self, zeta: i16) -> Self {
+        Self {
+            elements: ntt::inv_ntt_layer_3_step(vector.elements, zeta),
+        }
     }
 
     fn ntt_multiply(
@@ -136,55 +176,69 @@ impl Operations for SIMD256Vector {
         zeta2: i16,
         zeta3: i16,
     ) -> Self {
-        ntt::ntt_multiply(lhs, rhs, zeta0, zeta1, zeta2, zeta3)
+        Self {
+            elements: ntt::ntt_multiply(lhs.elements, rhs.elements, zeta0, zeta1, zeta2, zeta3),
+        }
     }
 
-    fn serialize_1(a: Self) -> [u8; 2] {
-        serialize::serialize_1(a)
+    fn serialize_1(vector: Self) -> [u8; 2] {
+        serialize::serialize_1(vector.elements)
     }
 
-    fn deserialize_1(a: &[u8]) -> Self {
-        serialize::deserialize_1(a)
+    fn deserialize_1(input: &[u8]) -> Self {
+        Self {
+            elements: serialize::deserialize_1(input),
+        }
     }
 
-    fn serialize_4(a: Self) -> [u8; 8] {
-        serialize::serialize_4(a)
+    fn serialize_4(vector: Self) -> [u8; 8] {
+        serialize::serialize_4(vector.elements)
     }
 
-    fn deserialize_4(a: &[u8]) -> Self {
-        serialize::deserialize_4(a)
+    fn deserialize_4(bytes: &[u8]) -> Self {
+        Self {
+            elements: serialize::deserialize_4(bytes),
+        }
     }
 
-    fn serialize_5(a: Self) -> [u8; 10] {
-        serialize::serialize_5(a)
+    fn serialize_5(vector: Self) -> [u8; 10] {
+        serialize::serialize_5(vector.elements)
     }
 
-    fn deserialize_5(a: &[u8]) -> Self {
-        serialize::deserialize_5(a)
+    fn deserialize_5(bytes: &[u8]) -> Self {
+        Self {
+            elements: serialize::deserialize_5(bytes),
+        }
     }
 
-    fn serialize_10(a: Self) -> [u8; 20] {
-        serialize::serialize_10(a)
+    fn serialize_10(vector: Self) -> [u8; 20] {
+        serialize::serialize_10(vector.elements)
     }
 
-    fn deserialize_10(a: &[u8]) -> Self {
-        serialize::deserialize_10(a)
+    fn deserialize_10(bytes: &[u8]) -> Self {
+        Self {
+            elements: serialize::deserialize_10(bytes),
+        }
     }
 
-    fn serialize_11(a: Self) -> [u8; 22] {
-        serialize::serialize_11(a)
+    fn serialize_11(vector: Self) -> [u8; 22] {
+        serialize::serialize_11(vector.elements)
     }
 
-    fn deserialize_11(a: &[u8]) -> Self {
-        serialize::deserialize_11(a)
+    fn deserialize_11(bytes: &[u8]) -> Self {
+        Self {
+            elements: serialize::deserialize_11(bytes),
+        }
     }
 
-    fn serialize_12(a: Self) -> [u8; 24] {
-        serialize::serialize_12(a)
+    fn serialize_12(vector: Self) -> [u8; 24] {
+        serialize::serialize_12(vector.elements)
     }
 
-    fn deserialize_12(a: &[u8]) -> Self {
-        serialize::deserialize_12(a)
+    fn deserialize_12(bytes: &[u8]) -> Self {
+        Self {
+            elements: serialize::deserialize_12(bytes),
+        }
     }
 
     fn rej_sample(input: &[u8], output: &mut [i16]) -> usize {

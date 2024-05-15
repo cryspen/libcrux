@@ -3,7 +3,6 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-use crate::SIMD256Vector;
 use libcrux_traits::FIELD_MODULUS;
 
 // This implementation was taken from:
@@ -29,12 +28,12 @@ fn mulhi_mm256_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn compress_message_coefficient(mut v: SIMD256Vector) -> SIMD256Vector {
-    v.elements = unsafe {
+pub(crate) fn compress_message_coefficient(mut vector: __m256i) -> __m256i {
+    vector = unsafe {
         let field_modulus_halved = _mm256_set1_epi16((FIELD_MODULUS - 1) / 2);
         let field_modulus_quartered = _mm256_set1_epi16((FIELD_MODULUS - 1) / 4);
 
-        let shifted = _mm256_sub_epi16(field_modulus_halved, v.elements);
+        let shifted = _mm256_sub_epi16(field_modulus_halved, vector);
         let mask = _mm256_srai_epi16(shifted, 15);
 
         let shifted_to_positive = _mm256_xor_si256(mask, shifted);
@@ -44,20 +43,20 @@ pub(crate) fn compress_message_coefficient(mut v: SIMD256Vector) -> SIMD256Vecto
         _mm256_srli_epi16(shifted_to_positive_in_range, 15)
     };
 
-    v
+    vector
 }
 
 #[inline(always)]
 pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    mut v: SIMD256Vector,
-) -> SIMD256Vector {
-    v.elements = unsafe {
+    mut vector: __m256i,
+) -> __m256i {
+    vector = unsafe {
         let field_modulus_halved = _mm256_set1_epi32(((FIELD_MODULUS as i32) - 1) / 2);
         let compression_factor = _mm256_set1_epi32(10_321_340);
         let coefficient_bits_mask = _mm256_set1_epi32((1 << COEFFICIENT_BITS) - 1);
 
         // Compress the first 8 coefficients
-        let coefficients_low = _mm256_castsi256_si128(v.elements);
+        let coefficients_low = _mm256_castsi256_si128(vector);
         let coefficients_low = _mm256_cvtepi16_epi32(coefficients_low);
 
         let compressed_low = _mm256_slli_epi32(coefficients_low, COEFFICIENT_BITS);
@@ -68,7 +67,7 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
         let compressed_low = _mm256_and_si256(compressed_low, coefficient_bits_mask);
 
         // Compress the next 8 coefficients
-        let coefficients_high = _mm256_extracti128_si256(v.elements, 1);
+        let coefficients_high = _mm256_extracti128_si256(vector, 1);
         let coefficients_high = _mm256_cvtepi16_epi32(coefficients_high);
 
         let compressed_high = _mm256_slli_epi32(coefficients_high, COEFFICIENT_BITS);
@@ -84,19 +83,19 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
         _mm256_permute4x64_epi64(compressed, 0b11_01_10_00)
     };
 
-    v
+    vector
 }
 
 #[inline(always)]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    mut v: SIMD256Vector,
-) -> SIMD256Vector {
-    v.elements = unsafe {
+    mut vector: __m256i,
+) -> __m256i {
+    vector = unsafe {
         let field_modulus = _mm256_set1_epi32(FIELD_MODULUS as i32);
         let two_pow_coefficient_bits = _mm256_set1_epi32(1 << COEFFICIENT_BITS);
 
         // Compress the first 8 coefficients
-        let coefficients_low = _mm256_castsi256_si128(v.elements);
+        let coefficients_low = _mm256_castsi256_si128(vector);
         let coefficients_low = _mm256_cvtepi16_epi32(coefficients_low);
 
         let decompressed_low = _mm256_mullo_epi32(coefficients_low, field_modulus);
@@ -109,7 +108,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
         let decompressed_low = _mm256_srli_epi32(decompressed_low, 1);
 
         // Compress the next 8 coefficients
-        let coefficients_high = _mm256_extracti128_si256(v.elements, 1);
+        let coefficients_high = _mm256_extracti128_si256(vector, 1);
         let coefficients_high = _mm256_cvtepi16_epi32(coefficients_high);
 
         let decompressed_high = _mm256_mullo_epi32(coefficients_high, field_modulus);
@@ -127,5 +126,5 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
         _mm256_permute4x64_epi64(compressed, 0b11_01_10_00)
     };
 
-    v
+    vector
 }
