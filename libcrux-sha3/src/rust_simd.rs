@@ -23,11 +23,12 @@ pub type KeccakState4 = [KeccakState2; 2];
 
 #[cfg(feature = "simd256")]
 mod sha3_avx2;
-#[cfg(feature = "simd256")]
-#[inline(always)]
-fn keccakx4<const RATE: usize, const DELIM: u8>(data: [&[u8]; 4], out: [&mut [u8]; 4]) {
-    keccak::<4, core::arch::x86_64::__m256i, RATE, DELIM>(data, out)
-}
+// #[cfg(feature = "simd256")]
+// #[inline(always)]
+// fn keccakx4<const RATE: usize, const DELIM: u8>(data: [&[u8]; 4], out: [&mut [u8]; 4]) {
+//     keccak::<4, core::arch::x86_64::__m256i, RATE, DELIM>(data, out)
+// }
+
 #[cfg(feature = "simd256")]
 pub type KeccakState4 = KeccakState<4, core::arch::x86_64::__m256i>;
 
@@ -43,6 +44,7 @@ pub fn sha3_224(data: &[u8]) -> [u8; 28] {
     keccakx2::<144, 0x06u8>([data, data], [&mut d0, &mut d1]);
     d0
 }
+
 #[cfg(not(feature = "simd128"))]
 pub fn sha3_224(data: &[u8]) -> [u8; 28] {
     let mut d0 = [0u8; 28];

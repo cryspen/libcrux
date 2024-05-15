@@ -86,8 +86,10 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(self.coefficients[j], 1441);
 
-            self.coefficients[j] =
-                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
+            self.coefficients[j] = Vector::barrett_reduce(Vector::add(
+                coefficient_normal_form,
+                &error.coefficients[j],
+            ));
         }
     }
 
@@ -98,8 +100,10 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
             // calling to_montgomery_domain() on them should return a mod q.
             let coefficient_normal_form = Vector::to_standard_domain(self.coefficients[j]);
 
-            self.coefficients[j] =
-                Vector::barrett_reduce(Vector::add(coefficient_normal_form, &error.coefficients[j]));
+            self.coefficients[j] = Vector::barrett_reduce(Vector::add(
+                coefficient_normal_form,
+                &error.coefficients[j],
+            ));
         }
     }
 

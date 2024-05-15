@@ -10,7 +10,7 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
     _initial_coefficient_bound: usize,
-)  {
+) {
     for round in 0..16 {
         *zeta_i += 1;
         re.coefficients[round] = Vector::ntt_layer_1_step(
@@ -73,7 +73,7 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
     layer: usize,
     _initial_coefficient_bound: usize,
-)  {
+) {
     debug_assert!(layer >= 4);
     let step = 1 << layer;
 
@@ -97,9 +97,7 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
 }
 
 #[inline(always)]
-pub(crate) fn ntt_at_layer_7<Vector: Operations>(
-    re: &mut PolynomialRingElement<Vector>,
-)  {
+pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<Vector>) {
     let step = VECTORS_IN_RING_ELEMENT / 2;
     for j in 0..step {
         let t = Vector::multiply_by_constant(re.coefficients[j + step], -1600);
@@ -111,7 +109,7 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(
 #[inline(always)]
 pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
-)  {
+) {
     // Due to the small coefficient bound, we can skip the first round of
     // Montgomery reductions.
     ntt_at_layer_7(re);
@@ -130,7 +128,7 @@ pub(crate) fn ntt_binomially_sampled_ring_element<Vector: Operations>(
 #[inline(always)]
 pub(crate) fn ntt_vector_u<const VECTOR_U_COMPRESSION_FACTOR: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
-)  {
+) {
     hax_debug_assert!(to_i16_array(re)
         .into_iter()
         .all(|coefficient| coefficient.abs() <= 3328));

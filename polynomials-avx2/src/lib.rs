@@ -4,7 +4,9 @@ use core::arch::x86::*;
 use core::arch::x86_64::*;
 use libcrux_traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
+#[cfg(test)]
 mod debug;
+
 mod portable;
 mod sampling;
 

@@ -28,7 +28,7 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
-)  {
+) {
     for round in 0..16 {
         *zeta_i -= 1;
         re.coefficients[round] = Vector::inv_ntt_layer_2_step(
@@ -45,7 +45,7 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
     zeta_i: &mut usize,
     re: &mut PolynomialRingElement<Vector>,
     _layer: usize,
-)  {
+) {
     for round in 0..16 {
         *zeta_i -= 1;
         re.coefficients[round] =
@@ -94,7 +94,7 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
 #[inline(always)]
 pub(crate) fn invert_ntt_montgomery<const K: usize, Vector: Operations>(
     re: &mut PolynomialRingElement<Vector>,
-)  {
+) {
     // We only ever call this function after matrix/vector multiplication
     hax_debug_assert!(to_i16_array(re)
         .into_iter()

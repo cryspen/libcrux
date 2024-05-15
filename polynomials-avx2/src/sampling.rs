@@ -3,7 +3,7 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-use crate::{SIMD256Vector, serialize_1, deserialize_12, FIELD_MODULUS};
+use crate::{deserialize_12, serialize_1, SIMD256Vector, FIELD_MODULUS};
 
 const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
     [
@@ -778,7 +778,10 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
         let upper_coefficients = _mm256_extractf128_si256(potential_coefficients, 1);
         let upper_coefficients = _mm_shuffle_epi8(upper_coefficients, upper_shuffles);
 
-        _mm_storeu_si128(output.as_mut_ptr().offset(sampled_count as isize) as *mut __m128i, upper_coefficients);
+        _mm_storeu_si128(
+            output.as_mut_ptr().offset(sampled_count as isize) as *mut __m128i,
+            upper_coefficients,
+        );
 
         sampled_count + good[1].count_ones()
     };

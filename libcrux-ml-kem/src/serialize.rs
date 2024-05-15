@@ -161,8 +161,8 @@ pub(super) fn compress_then_serialize_ring_element_u<
 #[inline(always)]
 fn compress_then_serialize_4<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
-    serialized: &mut [u8]
-)  {
+    serialized: &mut [u8],
+) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<4>(Vector::to_unsigned_representative(re.coefficients[i]));
@@ -175,8 +175,8 @@ fn compress_then_serialize_4<Vector: Operations>(
 #[inline(always)]
 fn compress_then_serialize_5<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
-    serialized: &mut [u8]
-)  {
+    serialized: &mut [u8],
+) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficients =
             Vector::compress::<5>(Vector::to_unsigned_representative(re.coefficients[i]));
@@ -193,8 +193,8 @@ pub(super) fn compress_then_serialize_ring_element_v<
     Vector: Operations,
 >(
     re: PolynomialRingElement<Vector>,
-    out: &mut [u8]
-)  {
+    out: &mut [u8],
+) {
     hax_debug_assert!((COEFFICIENTS_IN_RING_ELEMENT * COMPRESSION_FACTOR) / 8 == OUT_LEN);
 
     match COMPRESSION_FACTOR as u32 {

@@ -11,7 +11,9 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations>(
     seed: [u8; 34],
     transpose: bool,
 ) -> [[PolynomialRingElement<Vector>; K]; K] {
-    let mut A_transpose = core::array::from_fn(|_i| core::array::from_fn (|_j| PolynomialRingElement::<Vector>::ZERO()));
+    let mut A_transpose = core::array::from_fn(|_i| {
+        core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
+    });
 
     for i in 0..K {
         let mut seeds = [seed; K];
@@ -20,7 +22,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations>(
             seeds[j][33] = j as u8;
         }
         let sampled = sample_from_xof(seeds);
-        for (j,sample) in sampled.into_iter().enumerate() {
+        for (j, sample) in sampled.into_iter().enumerate() {
             // A[i][j] = A_transpose[j][i]
             if transpose {
                 A_transpose[j][i] = sample;
