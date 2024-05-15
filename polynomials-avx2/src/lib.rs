@@ -7,6 +7,8 @@ use libcrux_traits::Operations;
 #[cfg(test)]
 mod debug;
 
+mod intrinsics;
+
 mod arithmetic;
 mod compress;
 mod ntt;
