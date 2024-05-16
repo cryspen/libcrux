@@ -46,7 +46,7 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     let coefficients_low = mm256_castsi256_si128(vector);
     let coefficients_low = mm256_cvtepi16_epi32(coefficients_low);
 
-    let compressed_low = mm256_slli_epi32::<{COEFFICIENT_BITS}>(coefficients_low);
+    let compressed_low = mm256_slli_epi32::<{ COEFFICIENT_BITS }>(coefficients_low);
     let compressed_low = mm256_add_epi32(compressed_low, field_modulus_halved);
 
     let compressed_low = mulhi_mm256_epi32(compressed_low, compression_factor);
@@ -57,7 +57,7 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     let coefficients_high = mm256_extracti128_si256::<1>(vector);
     let coefficients_high = mm256_cvtepi16_epi32(coefficients_high);
 
-    let compressed_high = mm256_slli_epi32::<{COEFFICIENT_BITS}>(coefficients_high);
+    let compressed_high = mm256_slli_epi32::<{ COEFFICIENT_BITS }>(coefficients_high);
     let compressed_high = mm256_add_epi32(compressed_high, field_modulus_halved);
 
     let compressed_high = mulhi_mm256_epi32(compressed_high, compression_factor);
@@ -87,7 +87,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
 
     // We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack
     // of support for const generic expressions.
-    let decompressed_low = mm256_srli_epi32::<{COEFFICIENT_BITS}>(decompressed_low);
+    let decompressed_low = mm256_srli_epi32::<{ COEFFICIENT_BITS }>(decompressed_low);
     let decompressed_low = mm256_srli_epi32::<1>(decompressed_low);
 
     // Compress the next 8 coefficients
@@ -100,7 +100,7 @@ pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
 
     // We can't shift in one go by (COEFFICIENT_BITS + 1) due to the lack
     // of support for const generic expressions.
-    let decompressed_high = mm256_srli_epi32::<{COEFFICIENT_BITS}>(decompressed_high);
+    let decompressed_high = mm256_srli_epi32::<{ COEFFICIENT_BITS }>(decompressed_high);
     let decompressed_high = mm256_srli_epi32::<1>(decompressed_high);
 
     // Combine them

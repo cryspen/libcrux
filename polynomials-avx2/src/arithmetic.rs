@@ -28,7 +28,7 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
 
 #[inline(always)]
 pub(crate) fn shift_left<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
-    mm256_slli_epi16::<{SHIFT_BY}>(vector)
+    mm256_slli_epi16::<{ SHIFT_BY }>(vector)
 }
 
 #[inline(always)]
@@ -52,8 +52,7 @@ pub(crate) fn barrett_reduce(vector: __m256i) -> __m256i {
 
     let quotient = mm256_srai_epi16::<10>(t);
 
-    let quotient_times_field_modulus =
-        mm256_mullo_epi16(quotient, mm256_set1_epi16(FIELD_MODULUS));
+    let quotient_times_field_modulus = mm256_mullo_epi16(quotient, mm256_set1_epi16(FIELD_MODULUS));
 
     mm256_sub_epi16(vector, quotient_times_field_modulus)
 }
