@@ -97,7 +97,6 @@ pub(crate) fn validate_public_key<
         >(public_key)
     }
 }
-*/
 
 fn validate_public_key_generic<
     const K: usize,
