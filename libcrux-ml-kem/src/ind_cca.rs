@@ -73,6 +73,7 @@ pub(crate) fn validate_public_key<
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
         && libcrux_platform::simd128_support()
+        && false
     {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         return validate_public_key_generic::<
