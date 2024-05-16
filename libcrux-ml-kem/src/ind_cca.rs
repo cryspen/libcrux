@@ -52,8 +52,11 @@ pub(crate) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    if cfg!(feature = "simd256") && libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
+    if cfg!(feature = "simd256")
+        && cfg!(target_arch = "x86_64")
+        && libcrux_platform::simd256_support()
+    {
+        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return validate_public_key_generic::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
@@ -67,8 +70,11 @@ pub(crate) fn validate_public_key<
             PUBLIC_KEY_SIZE,
             PortableVector,
         >(public_key)
-    } else if cfg!(feature = "simd128") && libcrux_platform::simd128_support() {
-        #[cfg(feature = "simd128")]
+    } else if cfg!(feature = "simd128")
+        && cfg!(target_arch = "aarch64")
+        && libcrux_platform::simd128_support()
+    {
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         return validate_public_key_generic::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
@@ -127,8 +133,11 @@ pub(crate) fn generate_keypair<
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
 
     // Runtime feature detection.
-    if cfg!(feature = "simd256") && libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
+    if cfg!(feature = "simd256")
+        && cfg!(target_arch = "x86_64")
+        && libcrux_platform::simd256_support()
+    {
+        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
@@ -152,8 +161,11 @@ pub(crate) fn generate_keypair<
             PortableVector,
             hash_functions::portable::PortableHash<K>,
         >(ind_cpa_keypair_randomness, implicit_rejection_value)
-    } else if cfg!(feature = "simd128") && libcrux_platform::simd128_support() {
-        #[cfg(feature = "simd128")]
+    } else if cfg!(feature = "simd128")
+        && cfg!(target_arch = "aarch64")
+        && libcrux_platform::simd128_support()
+    {
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         return generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
@@ -246,8 +258,11 @@ pub(crate) fn encapsulate<
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-    if cfg!(feature = "simd256") && libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
+    if cfg!(feature = "simd256")
+        && cfg!(target_arch = "x86_64")
+        && libcrux_platform::simd256_support()
+    {
+        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
@@ -283,7 +298,10 @@ pub(crate) fn encapsulate<
             PortableVector,
             hash_functions::portable::PortableHash<K>,
         >(public_key, randomness)
-    } else if cfg!(feature = "simd128") && libcrux_platform::simd128_support() {
+    } else if cfg!(feature = "simd128")
+        && cfg!(target_arch = "aarch64")
+        && libcrux_platform::simd128_support()
+    {
         #[cfg(not(feature = "simd128"))]
         return encapsulate_generic::<
             K,
@@ -302,7 +320,7 @@ pub(crate) fn encapsulate<
             PortableVector,
             hash_functions::portable::PortableHash<K>,
         >(public_key, randomness);
-        #[cfg(feature = "simd128")]
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
@@ -409,8 +427,11 @@ pub(crate) fn decapsulate<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    if cfg!(feature = "simd256") && libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
+    if cfg!(feature = "simd256")
+        && cfg!(target_arch = "x86_64")
+        && libcrux_platform::simd256_support()
+    {
+        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
@@ -452,8 +473,11 @@ pub(crate) fn decapsulate<
             PortableVector,
             hash_functions::portable::PortableHash<K>,
         >(private_key, ciphertext);
-    } else if cfg!(feature = "simd128") && libcrux_platform::simd128_support() {
-        #[cfg(feature = "simd128")]
+    } else if cfg!(feature = "simd128")
+        && cfg!(target_arch = "aarch64")
+        && libcrux_platform::simd128_support()
+    {
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         return decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
