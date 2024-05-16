@@ -52,6 +52,11 @@ pub(crate) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
+    /* Testing CI TODO UNDO*/
+    false
+}
+
+/*
     if cfg!(feature = "simd256")
         && cfg!(target_arch = "x86_64")
         && libcrux_platform::simd256_support()
@@ -97,6 +102,7 @@ pub(crate) fn validate_public_key<
         >(public_key)
     }
 }
+*/
 
 fn validate_public_key_generic<
     const K: usize,
