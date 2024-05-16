@@ -3,27 +3,33 @@ pub(crate) use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 pub(crate) use core::arch::x86_64::*;
 
-pub(crate) fn mm256_storeu_si256(vector: __m256i) -> [i16; 16] {
-    let mut output = [0i16; 16];
-
+pub(crate) fn mm256_storeu_si256(output: &mut [i16], vector: __m256i) {
+    debug_assert_eq!(output.len(), 16);
     unsafe {
         _mm256_storeu_si256(output.as_mut_ptr() as *mut __m256i, vector);
     }
-
-    output
 }
-pub(crate) fn mm_storeu_si128(vector: __m128i, output: &mut [i16]) {
+pub(crate) fn mm_storeu_si128(output: &mut [i16], vector: __m128i) {
     debug_assert_eq!(output.len(), 8);
     unsafe {
         _mm_storeu_si128(output.as_mut_ptr() as *mut __m128i, vector);
     }
 }
 
-pub(crate) fn mm_loadu_si128(input: [u8; 16]) -> __m128i {
+pub(crate) fn mm_storeu_bytes_si128(output: &mut [u8], vector: __m128i) {
+    debug_assert_eq!(output.len(), 16);
+    unsafe {
+        _mm_storeu_si128(output.as_mut_ptr() as *mut __m128i, vector);
+    }
+}
+
+pub(crate) fn mm_loadu_si128(input: &[u8]) -> __m128i {
+    debug_assert_eq!(input.len(), 16);
     unsafe { _mm_loadu_si128(input.as_ptr() as *const __m128i) }
 }
 
-pub(crate) fn mm256_loadu_si256(input: [i16; 16]) -> __m256i {
+pub(crate) fn mm256_loadu_si256(input: &[i16]) -> __m256i {
+    debug_assert_eq!(input.len(), 16);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const __m256i) }
 }
 

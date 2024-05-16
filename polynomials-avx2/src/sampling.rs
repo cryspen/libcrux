@@ -761,21 +761,21 @@ pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
     let good = serialize_1(compare_with_field_modulus);
 
     let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
-    let lower_shuffles = mm_loadu_si128(lower_shuffles);
+    let lower_shuffles = mm_loadu_si128(&lower_shuffles);
     let lower_coefficients = mm256_castsi256_si128(potential_coefficients);
     let lower_coefficients = mm_shuffle_epi8(lower_coefficients, lower_shuffles);
 
-    mm_storeu_si128(lower_coefficients, &mut output[0..8]);
+    mm_storeu_si128(&mut output[0..8], lower_coefficients);
     let sampled_count = good[0].count_ones() as usize;
 
     let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
-    let upper_shuffles = mm_loadu_si128(upper_shuffles);
+    let upper_shuffles = mm_loadu_si128(&upper_shuffles);
     let upper_coefficients = mm256_extracti128_si256::<1>(potential_coefficients);
     let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);
 
     mm_storeu_si128(
-        upper_coefficients,
         &mut output[sampled_count..sampled_count + 8],
+        upper_coefficients,
     );
 
     sampled_count + (good[1].count_ones() as usize)

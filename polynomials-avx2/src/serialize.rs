@@ -1,8 +1,3 @@
-#[cfg(target_arch = "x86")]
-use core::arch::x86::*;
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::*;
-
 use crate::intrinsics::*;
 
 use crate::{portable, SIMD256Vector};
@@ -111,7 +106,7 @@ pub(crate) fn serialize_4(vector: __m256i) -> [u8; 8] {
     );
     let combined = mm256_castsi256_si128(combined);
 
-    unsafe { _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, combined); }
+    mm_storeu_bytes_si128(&mut serialized[..], combined);
 
     serialized[0..8].try_into().unwrap()
 }
@@ -204,10 +199,8 @@ pub(crate) fn serialize_5(vector: __m256i) -> [u8; 10] {
     let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
     let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
 
-    unsafe {
-        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, lower_8);
-        _mm_storeu_si128(serialized.as_mut_ptr().offset(5) as *mut __m128i, upper_8);
-    }
+    mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
+    mm_storeu_bytes_si128(&mut serialized[5..21], upper_8);
 
     serialized[0..10].try_into().unwrap()
 }
@@ -262,10 +255,8 @@ pub(crate) fn serialize_10(vector: __m256i) -> [u8; 20] {
     let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
     let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
 
-    unsafe {
-        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, lower_8);
-        _mm_storeu_si128(serialized.as_mut_ptr().offset(10) as *mut __m128i, upper_8);
-    }
+    mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
+    mm_storeu_bytes_si128(&mut serialized[10..26], upper_8);
 
     serialized[0..20].try_into().unwrap()
 }
@@ -291,12 +282,12 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> __m256i {
         1 << 6,
     );
 
-    let lower_coefficients = unsafe { _mm_loadu_si128(bytes.as_ptr() as *const __m128i) };
+    let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
     let lower_coefficients = mm_shuffle_epi8(
         lower_coefficients,
         mm_set_epi8(9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 3, 2, 2, 1, 1, 0),
     );
-    let upper_coefficients = unsafe { _mm_loadu_si128(bytes.as_ptr().offset(4) as *const __m128i) };
+    let upper_coefficients = mm_loadu_si128(bytes[4..20].try_into().unwrap());
     let upper_coefficients = mm_shuffle_epi8(
         upper_coefficients,
         mm_set_epi8(15, 14, 14, 13, 13, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6),
@@ -369,10 +360,8 @@ pub(crate) fn serialize_12(vector: __m256i) -> [u8; 24] {
     let lower_8 = mm256_castsi256_si128(adjacent_8_combined);
     let upper_8 = mm256_extracti128_si256::<1>(adjacent_8_combined);
 
-    unsafe {
-        _mm_storeu_si128(serialized.as_mut_ptr() as *mut __m128i, lower_8);
-        _mm_storeu_si128(serialized.as_mut_ptr().offset(12) as *mut __m128i, upper_8);
-    }
+    mm_storeu_bytes_si128(&mut serialized[0..16], lower_8);
+    mm_storeu_bytes_si128(&mut serialized[12..28], upper_8);
 
     serialized[0..24].try_into().unwrap()
 }
@@ -398,12 +387,12 @@ pub(crate) fn deserialize_12(bytes: &[u8]) -> __m256i {
         1 << 4,
     );
 
-    let lower_coefficients = unsafe { _mm_loadu_si128(bytes.as_ptr() as *const __m128i) };
+    let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
     let lower_coefficients = mm_shuffle_epi8(
         lower_coefficients,
         mm_set_epi8(11, 10, 10, 9, 8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0),
     );
-    let upper_coefficients = unsafe { _mm_loadu_si128(bytes.as_ptr().offset(8) as *const __m128i) };
+    let upper_coefficients = mm_loadu_si128(bytes[8..24].try_into().unwrap());
     let upper_coefficients = mm_shuffle_epi8(
         upper_coefficients,
         mm_set_epi8(15, 14, 14, 13, 12, 11, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4),
