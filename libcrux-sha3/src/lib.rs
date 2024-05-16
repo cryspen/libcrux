@@ -251,6 +251,7 @@ pub mod portable {
 ///
 /// Feature `simd128` enables the implementations in this module.
 pub mod neon {
+    #[cfg(feature = "simd128")]
     use crate::generic_keccak::keccak;
 
     #[cfg(feature = "simd128")]
@@ -333,6 +334,7 @@ pub mod neon {
 
     /// Performing 2 operations in parallel
     pub mod x2 {
+        #[cfg(feature = "simd128")]
         use super::*;
 
         /// Run SHAKE256 on both inputs in parallel.
@@ -349,6 +351,7 @@ pub mod neon {
 
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
+            #[cfg(feature = "simd128")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block, KeccakState,
             };
@@ -442,6 +445,8 @@ pub mod avx2 {
 
     /// Performing 4 operations in parallel
     pub mod x4 {
+        #[cfg(feature = "simd256")]
+        use crate::generic_keccak::keccak;
 
         /// Perform 4 SHAKE256 operations in parallel
         #[allow(unused_variables)] // TODO: decide if we want to fall back here
