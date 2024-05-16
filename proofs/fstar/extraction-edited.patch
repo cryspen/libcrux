@@ -1,6 +1,6 @@
 diff -ruN extraction/BitVecEq.fst extraction-edited/BitVecEq.fst
 --- extraction/BitVecEq.fst	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/BitVecEq.fst	2024-05-14 15:56:45.444356187 +0200
++++ extraction-edited/BitVecEq.fst	2024-05-16 17:05:53.763567470 +0200
 @@ -0,0 +1,12 @@
 +module BitVecEq
 +
@@ -16,7 +16,7 @@ diff -ruN extraction/BitVecEq.fst extraction-edited/BitVecEq.fst
 +
 diff -ruN extraction/BitVecEq.fsti extraction-edited/BitVecEq.fsti
 --- extraction/BitVecEq.fsti	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/BitVecEq.fsti	2024-05-14 15:56:45.440356253 +0200
++++ extraction-edited/BitVecEq.fsti	2024-05-16 17:05:53.759567604 +0200
 @@ -0,0 +1,294 @@
 +module BitVecEq
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -313,8 +313,8 @@ diff -ruN extraction/BitVecEq.fsti extraction-edited/BitVecEq.fsti
 + = admit ()
 +*)
 diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
---- extraction/Libcrux.Digest.fsti	2024-05-14 15:56:45.396356975 +0200
-+++ extraction-edited/Libcrux.Digest.fsti	2024-05-14 15:56:45.433356368 +0200
+--- extraction/Libcrux.Digest.fsti	2024-05-16 17:05:53.713569147 +0200
++++ extraction-edited/Libcrux.Digest.fsti	2024-05-16 17:05:53.752567839 +0200
 @@ -3,13 +3,29 @@
  open Core
  open FStar.Mul
@@ -348,7 +348,7 @@ diff -ruN extraction/Libcrux.Digest.fsti extraction-edited/Libcrux.Digest.fsti
 +      Prims.l_True
 +      (fun _ -> Prims.l_True)
 diff -ruN extraction/Libcrux.Digest.Incremental_x4.fsti extraction-edited/Libcrux.Digest.Incremental_x4.fsti
---- extraction/Libcrux.Digest.Incremental_x4.fsti	2024-05-14 15:56:45.385357155 +0200
+--- extraction/Libcrux.Digest.Incremental_x4.fsti	2024-05-16 17:05:53.701569550 +0200
 +++ extraction-edited/Libcrux.Digest.Incremental_x4.fsti	1970-01-01 01:00:00.000000000 +0100
 @@ -1,31 +0,0 @@
 -module Libcrux.Digest.Incremental_x4
@@ -384,7 +384,7 @@ diff -ruN extraction/Libcrux.Digest.Incremental_x4.fsti extraction-edited/Libcru
 -      (fun _ -> Prims.l_True)
 diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 --- extraction/Libcrux.Kem.fst	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/Libcrux.Kem.fst	2024-05-14 15:56:45.425356499 +0200
++++ extraction-edited/Libcrux.Kem.fst	2024-05-16 17:05:53.744568107 +0200
 @@ -0,0 +1,6 @@
 +module Libcrux.Kem
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -393,9 +393,9 @@ diff -ruN extraction/Libcrux.Kem.fst extraction-edited/Libcrux.Kem.fst
 +
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-05-14 15:56:45.390357073 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-05-14 15:56:45.434356351 +0200
-@@ -1,81 +1,364 @@
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fst	2024-05-16 17:05:53.707569349 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fst	2024-05-16 17:05:53.754567772 +0200
+@@ -1,83 +1,364 @@
  module Libcrux.Kem.Kyber.Arithmetic
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
@@ -520,7 +520,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.
    let _:Prims.unit = () <: Prims.unit in
 +  let x : i32 = value in
    let t:i64 =
--    ((Core.Convert.f_from value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
+-    ((Core.Convert.f_from #i64 #i32 value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
 +    ((Core.Convert.f_from x <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
      (v_BARRETT_R >>! 1l <: i64)
    in
@@ -743,7 +743,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.
    let _:Prims.unit = () <: Prims.unit in
    let _:Prims.unit = () <: Prims.unit in
 -  let lhs:t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({
 +  let orig_lhs = lhs in
 +  [@ inline_let]
 +  let inv = fun (acc:t_PolynomialRingElement_b (b1+b2)) (i:usize) ->
@@ -754,7 +756,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.
                Core.Ops.Range.f_start = sz 0;
 -              Core.Ops.Range.f_end
 -              =
--              Core.Slice.impl__len (Rust_primitives.unsize lhs.f_coefficients <: t_Slice i32)
+-              Core.Slice.impl__len #i32 (Rust_primitives.unsize lhs.f_coefficients <: t_Slice i32)
 -              <:
 -              usize
 +              Core.Ops.Range.f_end =
@@ -800,9 +802,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fst extraction-edited/Libcrux.
 +  
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti
---- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-05-14 15:56:45.378357270 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-05-14 15:56:45.458355957 +0200
-@@ -3,175 +3,257 @@
+--- extraction/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-05-16 17:05:53.695569751 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Arithmetic.fsti	2024-05-16 17:05:53.778566967 +0200
+@@ -3,176 +3,257 @@
  open Core
  open FStar.Mul
  
@@ -895,7 +897,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
        (ensures
          fun result ->
            let result:u32 = result in
--          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into n <: u32) <: u32))
+-          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into #u8 #u32 n <: u32) <: u32))
 +          v result = v value % pow2 (v n))
  
 -/// Signed Barrett Reduction
@@ -908,8 +910,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
 -val barrett_reduce (value: i32)
 -    : Prims.Pure i32
 -      (requires
--        (Core.Convert.f_from value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
--        (Core.Convert.f_from value <: i64) <. v_BARRETT_R)
+-        (Core.Convert.f_from #i64 #i32 value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
+-        (Core.Convert.f_from #i64 #i32 value <: i64) <. v_BARRETT_R)
 -      (ensures
 -        fun result ->
 -          let result:i32 = result in
@@ -1153,7 +1155,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
 -val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
 -    : Prims.Pure t_PolynomialRingElement
 -      (requires
--        Hax_lib.v_forall (fun i ->
+-        Hax_lib.v_forall #usize
+-          (fun i ->
 -              let i:usize = i in
 -              Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
 -                  <:
@@ -1176,12 +1179,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
 -      (ensures
 -        fun result ->
 -          let result:t_PolynomialRingElement = result in
--          Hax_lib.v_forall (fun i ->
+-          Hax_lib.v_forall #usize
+-            (fun i ->
 -                let i:usize = i in
 -                Hax_lib.implies (i <.
--                    (Core.Slice.impl__len (Rust_primitives.unsize result.f_coefficients
--                          <:
--                          t_Slice i32)
+-                    (Core.Slice.impl__len #i32
+-                        (Rust_primitives.unsize result.f_coefficients <: t_Slice i32)
 -                      <:
 -                      usize)
 -                    <:
@@ -1197,8 +1200,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Arithmetic.fsti extraction-edited/Libcrux
 -                <:
 -                bool))
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Kem.Kyber.Compress.fst
---- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-05-14 15:56:45.404356843 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-05-14 15:56:45.448356122 +0200
+--- extraction/Libcrux.Kem.Kyber.Compress.fst	2024-05-16 17:05:53.722568845 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fst	2024-05-16 17:05:53.768567302 +0200
 @@ -1,39 +1,79 @@
  module Libcrux.Kem.Kyber.Compress
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -1302,8 +1305,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fst extraction-edited/Libcrux.Ke
 +  res <: Libcrux.Kem.Kyber.Arithmetic.i32_b 3328
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.Kem.Kyber.Compress.fsti
---- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-05-14 15:56:45.408356778 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-05-14 15:56:45.427356466 +0200
+--- extraction/Libcrux.Kem.Kyber.Compress.fsti	2024-05-16 17:05:53.727568678 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Compress.fsti	2024-05-16 17:05:53.746568040 +0200
 @@ -3,8 +3,19 @@
  open Core
  open FStar.Mul
@@ -1399,8 +1402,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Compress.fsti extraction-edited/Libcrux.K
 +      (requires fe =. 0l || fe =. 1l) 
 +      (fun result -> v result >= 0 /\ v result < 3329)
 diff -ruN extraction/Libcrux.Kem.Kyber.Constants.fsti extraction-edited/Libcrux.Kem.Kyber.Constants.fsti
---- extraction/Libcrux.Kem.Kyber.Constants.fsti	2024-05-14 15:56:45.401356893 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Constants.fsti	2024-05-14 15:56:45.445356171 +0200
+--- extraction/Libcrux.Kem.Kyber.Constants.fsti	2024-05-16 17:05:53.719568946 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Constants.fsti	2024-05-16 17:05:53.765567403 +0200
 @@ -3,24 +3,20 @@
  open Core
  open FStar.Mul
@@ -1429,9 +1432,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constants.fsti extraction-edited/Libcrux.
 +
  let v_SHARED_SECRET_SIZE: usize = sz 32
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-05-14 15:56:45.410356745 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-05-14 15:56:45.441356237 +0200
-@@ -4,56 +4,163 @@
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-05-16 17:05:53.728568644 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fst	2024-05-16 17:05:53.761567537 +0200
+@@ -4,57 +4,163 @@
  open FStar.Mul
  
  let is_non_zero (value: u8) =
@@ -1486,15 +1489,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/L
 +    else ~ (acc == 0uy))
 +  in
    let r:u8 =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-+    Rust_primitives.Iterators.foldi_range #_ #u8  #inv {
-               Core.Ops.Range.f_start = sz 0;
-               Core.Ops.Range.f_end = v_CIPHERTEXT_SIZE
-             }
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_CIPHERTEXT_SIZE }
 -            <:
 -            Core.Ops.Range.t_Range usize)
 -        <:
 -        Core.Ops.Range.t_Range usize)
++    Rust_primitives.Iterators.foldi_range #_ #u8  #inv {
++              Core.Ops.Range.f_start = sz 0;
++              Core.Ops.Range.f_end = v_CIPHERTEXT_SIZE
++            }
        r
        (fun r i ->
            let r:u8 = r in
@@ -1554,7 +1559,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/L
 +   (forall j. j >= v i ==> Seq.index acc j == 0uy)
 +  in
    let out:t_Array u8 (sz 32) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({
 +    Rust_primitives.Iterators.foldi_range #_ #(t_Array u8 (sz 32))  #inv {
                Core.Ops.Range.f_start = sz 0;
                Core.Ops.Range.f_end = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
@@ -1616,8 +1623,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fst extraction-edited/L
 +  )
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti
---- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-05-14 15:56:45.411356728 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-05-14 15:56:45.447356138 +0200
+--- extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-05-16 17:05:53.730568577 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Constant_time_ops.fsti	2024-05-16 17:05:53.766567369 +0200
 @@ -3,7 +3,6 @@
  open Core
  open FStar.Mul
@@ -1665,9 +1672,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Constant_time_ops.fsti extraction-edited/
 +          Hax_lib.implies (selector =. 0uy <: bool) (fun _ -> result =. lhs <: bool) &&
 +          Hax_lib.implies (selector <>. 0uy <: bool) (fun _ -> result =. rhs <: bool))
 diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.fst
---- extraction/Libcrux.Kem.Kyber.fst	2024-05-14 15:56:45.402356876 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-05-14 15:56:45.465355843 +0200
-@@ -1,12 +1,29 @@
+--- extraction/Libcrux.Kem.Kyber.fst	2024-05-16 17:05:53.721568879 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.fst	2024-05-16 17:05:53.785566732 +0200
+@@ -1,28 +1,44 @@
  module Libcrux.Kem.Kyber
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
@@ -1701,16 +1708,72 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
    let pointer:usize = sz 0 in
    let out:t_Array u8 v_SERIALIZED_KEY_LEN =
-@@ -55,6 +72,8 @@
+     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+       ({
+           Core.Ops.Range.f_start = pointer;
+-          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len #u8 private_key <: usize) <: usize
++          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+         }
+         <:
+         Core.Ops.Range.t_Range usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (out.[ {
++      (Core.Slice.impl__copy_from_slice (out.[ {
+                 Core.Ops.Range.f_start = pointer;
+                 Core.Ops.Range.f_end
+                 =
+-                pointer +! (Core.Slice.impl__len #u8 private_key <: usize) <: usize
++                pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+               }
+               <:
+               Core.Ops.Range.t_Range usize ]
+@@ -32,21 +48,20 @@
+         <:
          t_Slice u8)
    in
-   let pointer:usize = pointer +! (Core.Slice.impl__len public_key <: usize) in
+-  let pointer:usize = pointer +! (Core.Slice.impl__len #u8 private_key <: usize) in
++  let pointer:usize = pointer +! (Core.Slice.impl__len private_key <: usize) in
+   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
+     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+       ({
+           Core.Ops.Range.f_start = pointer;
+-          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) <: usize
++          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+         }
+         <:
+         Core.Ops.Range.t_Range usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (out.[ {
++      (Core.Slice.impl__copy_from_slice (out.[ {
+                 Core.Ops.Range.f_start = pointer;
+                 Core.Ops.Range.f_end
+                 =
+-                pointer +! (Core.Slice.impl__len #u8 public_key <: usize) <: usize
++                pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+               }
+               <:
+               Core.Ops.Range.t_Range usize ]
+@@ -56,7 +71,9 @@
+         <:
+         t_Slice u8)
+   in
+-  let pointer:usize = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) in
++  let pointer:usize = pointer +! (Core.Slice.impl__len public_key <: usize) in
 +  let h_public_key = (Rust_primitives.unsize (Libcrux.Kem.Kyber.Hash_functions.v_H public_key)
 +                     <: t_Slice u8) in
    let out:t_Array u8 v_SERIALIZED_KEY_LEN =
      Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
        ({
-@@ -70,16 +89,7 @@
+@@ -65,24 +82,14 @@
+         }
+         <:
+         Core.Ops.Range.t_Range usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (out.[ {
++      (Core.Slice.impl__copy_from_slice (out.[ {
+                 Core.Ops.Range.f_start = pointer;
+                 Core.Ops.Range.f_end
+                 =
                  pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE <: usize
                }
                <:
@@ -1728,7 +1791,27 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    in
    let pointer:usize = pointer +! Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE in
    let out:t_Array u8 v_SERIALIZED_KEY_LEN =
-@@ -106,14 +116,32 @@
+@@ -91,16 +98,15 @@
+           Core.Ops.Range.f_start = pointer;
+           Core.Ops.Range.f_end
+           =
+-          pointer +! (Core.Slice.impl__len #u8 implicit_rejection_value <: usize) <: usize
++          pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+         }
+         <:
+         Core.Ops.Range.t_Range usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (out.[ {
++      (Core.Slice.impl__copy_from_slice (out.[ {
+                 Core.Ops.Range.f_start = pointer;
+                 Core.Ops.Range.f_end
+                 =
+-                pointer +! (Core.Slice.impl__len #u8 implicit_rejection_value <: usize) <: usize
++                pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+               }
+               <:
+               Core.Ops.Range.t_Range usize ]
+@@ -110,25 +116,47 @@
          <:
          t_Slice u8)
    in
@@ -1764,9 +1847,13 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    let ind_cpa_secret_key, secret_key:(t_Slice u8 & t_Slice u8) =
      Libcrux.Kem.Kyber.Types.impl_12__split_at v_SECRET_KEY_SIZE secret_key v_CPA_SECRET_KEY_SIZE
    in
-@@ -123,8 +151,12 @@
+   let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
+-    Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
++    Core.Slice.impl__split_at secret_key v_PUBLIC_KEY_SIZE
+   in
    let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
-     Core.Slice.impl__split_at secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
+-    Core.Slice.impl__split_at #u8 secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
++    Core.Slice.impl__split_at secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
    in
 +  assert (ind_cpa_secret_key == slice orig_secret_key (sz 0) v_CPA_SECRET_KEY_SIZE);
 +  assert (ind_cpa_public_key == slice orig_secret_key v_CPA_SECRET_KEY_SIZE (v_CPA_SECRET_KEY_SIZE +! v_PUBLIC_KEY_SIZE));
@@ -1778,7 +1865,19 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
        v_CIPHERTEXT_SIZE
        v_C1_SIZE
        v_VECTOR_U_COMPRESSION_FACTOR
-@@ -152,6 +184,9 @@
+@@ -145,8 +173,9 @@
+       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
+         <:
+         Core.Ops.Range.t_RangeFrom usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
++      (Core.Slice.impl__copy_from_slice (to_hash.[ {
++                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
++              }
+               <:
+               Core.Ops.Range.t_RangeFrom usize ]
+             <:
+@@ -155,14 +184,20 @@
          <:
          t_Slice u8)
    in
@@ -1788,8 +1887,10 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    let hashed:t_Array u8 (sz 64) =
      Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
    in
-@@ -159,6 +194,10 @@
-     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
+   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
+-    Core.Slice.impl__split_at #u8
+-      (Rust_primitives.unsize hashed <: t_Slice u8)
++    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
        Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
    in
 +  assert ((shared_secret,pseudorandomness) == split hashed Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE);
@@ -1799,7 +1900,25 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
      v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
      Libcrux.Kem.Kyber.Ind_cpa.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
-@@ -180,11 +219,14 @@
+@@ -173,48 +208,46 @@
+       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
+         <:
+         Core.Ops.Range.t_RangeFrom usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
++      (Core.Slice.impl__copy_from_slice (to_hash.[ {
++                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
++              }
+               <:
+               Core.Ops.Range.t_RangeFrom usize ]
+             <:
+             t_Slice u8)
+-          (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+-              #(t_Slice u8)
+-              ciphertext
+-            <:
+-            t_Slice u8)
++          (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
          <:
          t_Slice u8)
    in
@@ -1815,8 +1934,15 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
        v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1
        v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE ind_cpa_public_key decrypted
        pseudorandomness
-@@ -194,16 +236,18 @@
-       (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
+   in
+   let selector:u8 =
+     Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
+-      (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+-          #(t_Slice u8)
+-          ciphertext
+-        <:
+-        t_Slice u8)
++      (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
        (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
    in
 +  let res = 
@@ -1837,7 +1963,19 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
      Libcrux.Kem.Kyber.Ind_cpa.into_padded_array (sz 64)
        (Rust_primitives.unsize randomness <: t_Slice u8)
-@@ -234,6 +278,10 @@
+@@ -224,8 +257,9 @@
+       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE }
+         <:
+         Core.Ops.Range.t_RangeFrom usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE }
++      (Core.Slice.impl__copy_from_slice (to_hash.[ {
++                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
++              }
+               <:
+               Core.Ops.Range.t_RangeFrom usize ]
+             <:
+@@ -244,16 +278,19 @@
          <:
          t_Slice u8)
    in
@@ -1848,7 +1986,10 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    let hashed:t_Array u8 (sz 64) =
      Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
    in
-@@ -242,7 +290,7 @@
+   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
+-    Core.Slice.impl__split_at #u8
+-      (Rust_primitives.unsize hashed <: t_Slice u8)
++    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
        Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
    in
    let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
@@ -1857,15 +1998,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
        v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN
        v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE
        (Rust_primitives.unsize (Libcrux.Kem.Kyber.Types.impl_18__as_slice v_PUBLIC_KEY_SIZE
-@@ -252,32 +300,29 @@
+@@ -263,35 +300,29 @@
          <:
          t_Slice u8) randomness pseudorandomness
    in
 -  let shared_secret_array:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
 -  let shared_secret_array:t_Array u8 (sz 32) =
--    Core.Slice.impl__copy_from_slice shared_secret_array shared_secret
+-    Core.Slice.impl__copy_from_slice #u8 shared_secret_array shared_secret
 -  in
--  Core.Convert.f_into ciphertext, shared_secret_array
+-  Core.Convert.f_into #(t_Array u8 v_CIPHERTEXT_SIZE)
+-    #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+-    ciphertext,
+-  shared_secret_array
 +  Core.Convert.f_into ciphertext,
 +  Core.Result.impl__unwrap (Core.Convert.f_try_into shared_secret
 +      <:
@@ -1901,7 +2045,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
        (public_key.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
            <:
            Core.Ops.Range.t_RangeFrom usize ]
-@@ -285,109 +330,12 @@
+@@ -299,116 +330,12 @@
          t_Slice u8)
    in
    public_key =. public_key_serialized
@@ -1947,9 +2091,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
 -      ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
 -        <:
 -        Core.Ops.Range.t_RangeFrom usize)
--      (Core.Slice.impl__copy_from_slice (to_hash.[ {
--                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
--              }
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
 -              <:
 -              Core.Ops.Range.t_RangeFrom usize ]
 -            <:
@@ -1962,7 +2105,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
 -    Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
 -  in
 -  let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
--    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
+-    Core.Slice.impl__split_at #u8
+-      (Rust_primitives.unsize hashed <: t_Slice u8)
 -      Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
 -  in
 -  let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
@@ -1975,14 +2119,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
 -      ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
 -        <:
 -        Core.Ops.Range.t_RangeFrom usize)
--      (Core.Slice.impl__copy_from_slice (to_hash.[ {
--                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
--              }
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
 -              <:
 -              Core.Ops.Range.t_RangeFrom usize ]
 -            <:
 -            t_Slice u8)
--          (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
+-          (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+-              #(t_Slice u8)
+-              ciphertext
+-            <:
+-            t_Slice u8)
 -        <:
 -        t_Slice u8)
 -  in
@@ -1997,7 +2144,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
 -  in
 -  let selector:u8 =
 -    Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
--      (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
+-      (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+-          #(t_Slice u8)
+-          ciphertext
+-        <:
+-        t_Slice u8)
 -      (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
 -  in
 -  Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
@@ -2014,7 +2165,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
    let ind_cpa_keypair_randomness:t_Slice u8 =
      randomness.[ {
          Core.Ops.Range.f_start = sz 0;
-@@ -405,7 +353,7 @@
+@@ -426,7 +353,7 @@
    in
    let ind_cpa_private_key, public_key:(t_Array u8 v_CPA_PRIVATE_KEY_SIZE &
      t_Array u8 v_PUBLIC_KEY_SIZE) =
@@ -2023,7 +2174,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
        v_CPA_PRIVATE_KEY_SIZE
        v_PUBLIC_KEY_SIZE
        v_BYTES_PER_RING_ELEMENT
-@@ -414,7 +362,7 @@
+@@ -435,83 +362,17 @@
        ind_cpa_keypair_randomness
    in
    let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
@@ -2032,9 +2183,23 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
        (Rust_primitives.unsize ind_cpa_private_key <: t_Slice u8)
        (Rust_primitives.unsize public_key <: t_Slice u8)
        implicit_rejection_value
-@@ -428,59 +376,3 @@
+   in
+   let (private_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE):Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey
+   v_PRIVATE_KEY_SIZE =
+-    Core.Convert.f_from #(Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+-      #(t_Array u8 v_PRIVATE_KEY_SIZE)
+-      secret_key_serialized
++    Core.Convert.f_from secret_key_serialized
+   in
+   Libcrux.Kem.Kyber.Types.impl__from v_PRIVATE_KEY_SIZE
+     v_PUBLIC_KEY_SIZE
      private_key
-     (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+-    (Core.Convert.f_into #(t_Array u8 v_PUBLIC_KEY_SIZE)
+-        #(Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+-        public_key
+-      <:
+-      Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
++    (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
  
 -let generate_keypair_unpacked
 -      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
@@ -2072,13 +2237,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
 -    Libcrux.Kem.Kyber.Hash_functions.v_H (Rust_primitives.unsize ind_cpa_public_key <: t_Slice u8)
 -  in
 -  let (rej: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
--    Core.Result.impl__unwrap (Core.Convert.f_try_into implicit_rejection_value
+-    Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+-      #Core.Array.t_TryFromSliceError
+-      (Core.Convert.f_try_into #(t_Slice u8) #(t_Array u8 (sz 32)) implicit_rejection_value
 -        <:
 -        Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
 -  in
 -  let (pubkey: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE):Libcrux.Kem.Kyber.Types.t_MlKemPublicKey
 -  v_PUBLIC_KEY_SIZE =
--    Core.Convert.f_from ind_cpa_public_key
+-    Core.Convert.f_from #(Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+-      #(t_Array u8 v_PUBLIC_KEY_SIZE)
+-      ind_cpa_public_key
 -  in
 -  ({
 -      f_secret_as_ntt = secret_as_ntt;
@@ -2093,8 +2262,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fst extraction-edited/Libcrux.Kem.Kyber.f
 -  <:
 -  (t_MlKemState v_K & Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.fsti
---- extraction/Libcrux.Kem.Kyber.fsti	2024-05-14 15:56:45.375357319 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-05-14 15:56:45.443356204 +0200
+--- extraction/Libcrux.Kem.Kyber.fsti	2024-05-16 17:05:53.692569852 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.fsti	2024-05-16 17:05:53.762567503 +0200
 @@ -6,65 +6,88 @@
  unfold
  let t_MlKemSharedSecret = t_Array u8 (sz 32)
@@ -2224,9 +2393,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.fsti extraction-edited/Libcrux.Kem.Kyber.
 +      (ensures (fun kp -> 
 +                (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.ind_cca_generate_keypair p randomness))
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-05-14 15:56:45.405356827 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-05-14 15:56:45.450356089 +0200
-@@ -3,129 +3,114 @@
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fst	2024-05-16 17:05:53.724568778 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fst	2024-05-16 17:05:53.769567268 +0200
+@@ -3,126 +3,114 @@
  open Core
  open FStar.Mul
  
@@ -2288,10 +2457,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 -      v_K
 -  in
 -  let data:t_Array (t_Slice u8) v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
--              Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = v_K
--            }
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 -            <:
 -            Core.Ops.Range.t_Range usize)
 -        <:
@@ -2327,10 +2495,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 -    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 168) <: t_Array u8 (sz 168)) v_K
 -  in
 -  let out:t_Array (t_Array u8 (sz 168)) v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
--              Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = v_K
--            }
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 -            <:
 -            Core.Ops.Range.t_Range usize)
 -        <:
@@ -2361,10 +2528,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 -    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 504) <: t_Array u8 (sz 504)) v_K
 -  in
 -  let out:t_Array (t_Array u8 (sz 504)) v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
--              Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = v_K
--            }
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 +          Core.Ops.Range.t_Range usize)
 +        out
 +        (fun out i ->
@@ -2462,8 +2628,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fst extraction-edited/Libc
 +  admit(); // We assume that shake128x4 correctly implements XOFx4
 +  out 
 diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti
---- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-05-14 15:56:45.382357204 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-05-14 15:56:45.453356039 +0200
+--- extraction/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-05-16 17:05:53.698569651 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Hash_functions.fsti	2024-05-16 17:05:53.772567168 +0200
 @@ -3,35 +3,17 @@
  open Core
  open FStar.Mul
@@ -2512,8 +2678,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Hash_functions.fsti extraction-edited/Lib
 +          (ensures (fun res ->
 +            (forall i. i < v v_K ==> Seq.index res i == Spec.Kyber.v_XOF (sz 840) (Seq.index input i))))
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-05-14 15:56:45.388357106 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-05-14 15:56:45.460355925 +0200
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-05-16 17:05:53.704569449 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fst	2024-05-16 17:05:53.779566933 +0200
 @@ -1,5 +1,5 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -2521,7 +2687,36 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
  open Core
  open FStar.Mul
  
-@@ -37,33 +37,37 @@
+@@ -8,7 +8,7 @@
+     if true
+     then
+       let _:Prims.unit =
+-        if ~.((Core.Slice.impl__len #u8 slice <: usize) <=. v_LEN <: bool)
++        if ~.((Core.Slice.impl__len slice <: usize) <=. v_LEN <: bool)
+         then
+           Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: slice.len() <= LEN"
+ 
+@@ -20,16 +20,12 @@
+   let out:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
+   let out:t_Array u8 v_LEN =
+     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
+-      ({
+-          Core.Ops.Range.f_start = sz 0;
+-          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+-        }
++      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = Core.Slice.impl__len slice <: usize }
+         <:
+         Core.Ops.Range.t_Range usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (out.[ {
++      (Core.Slice.impl__copy_from_slice (out.[ {
+                 Core.Ops.Range.f_start = sz 0;
+-                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
++                Core.Ops.Range.f_end = Core.Slice.impl__len slice <: usize
+               }
+               <:
+               Core.Ops.Range.t_Range usize ]
+@@ -41,32 +37,37 @@
    in
    out
  
@@ -2546,7 +2741,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -  let domain_separator, error_1_, prf_input:(u8 &
 -    t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
 -    t_Array u8 (sz 33)) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
+-            <:
+-            Core.Ops.Range.t_Range usize)
+-        <:
+-        Core.Ops.Range.t_Range usize)
+-      (domain_separator, error_1_, prf_input
+-        <:
+-        (u8 & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & t_Array u8 (sz 33))
+-      )
 +      (prf_input: t_Array u8 (sz 33)) domain_separator = 
 +  let error_1_:t_Array (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (pow2 (v v_ETA2) - 1)) v_K =
 +    Rust_primitives.Hax.repeat (etaZero (sz (pow2 (v v_ETA2) - 1))) v_K
@@ -2561,17 +2766,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +    else true in
 +  let (domain_separator, prf_input, error_1_):acc_t v_K (v_ETA2) = 
 +    Rust_primitives.Iterators.foldi_range #_ #(acc_t v_K (v_ETA2)) #inv {
-               Core.Ops.Range.f_start = sz 0;
-               Core.Ops.Range.f_end = v_K
-             }
--            <:
--            Core.Ops.Range.t_Range usize)
--        <:
--        Core.Ops.Range.t_Range usize)
--      (domain_separator, error_1_, prf_input
--        <:
--        (u8 & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K & t_Array u8 (sz 33))
--      )
++              Core.Ops.Range.f_start = sz 0;
++              Core.Ops.Range.f_end = v_K
++            }
 +      (domain_separator, prf_input, error_1_)
        (fun temp_0_ i ->
 -          let domain_separator, error_1_, prf_input:(u8 &
@@ -2581,7 +2778,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
              temp_0_
            in
            let i:usize = i in
-@@ -77,49 +81,46 @@
+@@ -80,48 +81,46 @@
              Libcrux.Kem.Kyber.Hash_functions.v_PRF v_ETA2_RANDOMNESS_SIZE
                (Rust_primitives.unsize prf_input <: t_Slice u8)
            in
@@ -2622,7 +2819,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -  in
 -  let domain_separator, prf_input, re_as_ntt:(u8 & t_Array u8 (sz 33) &
 -    t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
+-            <:
+-            Core.Ops.Range.t_Range usize)
+-        <:
+-        Core.Ops.Range.t_Range usize)
+-      (domain_separator, prf_input, re_as_ntt
+-        <:
+-        (u8 & t_Array u8 (sz 33) & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-      )
 +      (prf_input: t_Array u8 (sz 33)) domain_separator =
 +  let re_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K =
 +    Rust_primitives.Hax.repeat (wfZero) v_K
@@ -2637,17 +2844,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +    else true in
 +  let (domain_separator, prf_input, re_as_ntt):(u8 & t_Array u8 (sz 33) & t_Array (Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement) v_K)= 
 +    Rust_primitives.Iterators.foldi_range #_ #_  #inv {
-               Core.Ops.Range.f_start = sz 0;
-               Core.Ops.Range.f_end = v_K
-             }
--            <:
--            Core.Ops.Range.t_Range usize)
--        <:
--        Core.Ops.Range.t_Range usize)
--      (domain_separator, prf_input, re_as_ntt
--        <:
--        (u8 & t_Array u8 (sz 33) & t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
--      )
++              Core.Ops.Range.f_start = sz 0;
++              Core.Ops.Range.f_end = v_K
++            }
 +      (domain_separator, prf_input, re_as_ntt)
        (fun temp_0_ i ->
            let domain_separator, prf_input, re_as_ntt:(u8 & t_Array u8 (sz 33) &
@@ -2656,7 +2855,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
              temp_0_
            in
            let i:usize = i in
-@@ -133,64 +134,74 @@
+@@ -135,70 +134,74 @@
              Libcrux.Kem.Kyber.Hash_functions.v_PRF v_ETA_RANDOMNESS_SIZE
                (Rust_primitives.unsize prf_input <: t_Slice u8)
            in
@@ -2701,8 +2900,13 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  [@ inline_let]
 +  let inv = fun (acc:acc_t) (i:usize) -> True in
    let out:t_Array u8 v_OUT_LEN =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Iter.Traits.Collect.f_into_iter input
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter
+-                  Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-              (Core.Iter.Traits.Collect.f_into_iter #(t_Array
+-                      Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-                  input
 -                <:
 -                Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
 -            <:
@@ -2742,8 +2946,10 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
                }
                <:
                Core.Ops.Range.t_Range usize)
-             (Core.Slice.impl__copy_from_slice (out.[ {
+-            (Core.Slice.impl__copy_from_slice #u8
+-                (out.[ {
 -                      Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
++            (Core.Slice.impl__copy_from_slice (out.[ {
 +                      Core.Ops.Range.f_start = i *! Spec.Kyber.v_C1_BLOCK_SIZE p <: usize;
                        Core.Ops.Range.f_end
                        =
@@ -2760,7 +2966,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
                          v_COMPRESSION_FACTOR
                          v_BLOCK_LEN
                          re
-@@ -203,153 +214,168 @@
+@@ -211,155 +214,168 @@
            <:
            t_Array u8 v_OUT_LEN)
    in
@@ -2825,12 +3031,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -  let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
 -    Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from ciphertext
 -      ({ Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize)
--      (Core.Slice.impl__copy_from_slice (ciphertext.[ { Core.Ops.Range.f_start = v_C1_LEN }
--              <:
--              Core.Ops.Range.t_RangeFrom usize ]
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (ciphertext.[ { Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize ]
 -            <:
 -            t_Slice u8)
--          (Core.Array.impl_23__as_slice v_C2_LEN c2 <: t_Slice u8)
+-          (Core.Array.impl_23__as_slice #u8 v_C2_LEN c2 <: t_Slice u8)
 -        <:
 -        t_Slice u8)
 -  in
@@ -2844,8 +3049,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
 -  in
 -  let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize ciphertext <: t_Slice u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8
+-                  (Rust_primitives.unsize ciphertext <: t_Slice u8)
 -                  ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
 +#push-options "--split_queries always"
 +let deserialize_then_decompress_u (#p:Spec.Kyber.params)
@@ -2911,8 +3119,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  admit(); //P-F
    u_as_ntt
 +#pop-options
- 
--let decrypt_unpacked
++
 +#push-options "--z3rlimit 200"
 +let deserialize_public_key (#p:Spec.Kyber.params) 
 +    (v_K: usize) (public_key: t_Slice u8) =
@@ -2979,7 +3186,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  admit(); //P-F
 +  secret_as_ntt
 +#pop-options
-+
+ 
+-let decrypt_unpacked
 +#push-options "--z3rlimit 400 --split_queries no"
 +let decrypt #p
        (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
@@ -3042,7 +3250,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
        (public_key.[ { Core.Ops.Range.f_end = v_T_AS_NTT_ENCODED_SIZE }
            <:
            Core.Ops.Range.t_RangeTo usize ]
-@@ -361,82 +387,98 @@
+@@ -371,90 +387,98 @@
        <:
        Core.Ops.Range.t_RangeFrom usize ]
    in
@@ -3062,8 +3270,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
 -  in
 -  let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact secret_key
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8
+-                  secret_key
 -                  Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
 -                <:
 -                Core.Slice.Iter.t_ChunksExact u8)
@@ -3184,8 +3395,13 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  [@ inline_let]
 +  let inv = fun (acc:acc_t) (i:usize) -> True in
    let out:t_Array u8 v_OUT_LEN =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Iter.Traits.Collect.f_into_iter key
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter
+-                  Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-              (Core.Iter.Traits.Collect.f_into_iter #(t_Array
+-                      Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+-                  key
 -                <:
 -                Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
 -            <:
@@ -3204,7 +3420,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
            Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
              ({
                  Core.Ops.Range.f_start
-@@ -475,13 +517,14 @@
+@@ -468,8 +492,7 @@
+               }
+               <:
+               Core.Ops.Range.t_Range usize)
+-            (Core.Slice.impl__copy_from_slice #u8
+-                (out.[ {
++            (Core.Slice.impl__copy_from_slice (out.[ {
+                       Core.Ops.Range.f_start
+                       =
+                       i *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
+@@ -494,13 +517,14 @@
            <:
            t_Array u8 v_OUT_LEN)
    in
@@ -3223,7 +3449,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
    let public_key_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
      Rust_primitives.Hax.repeat 0uy v_PUBLIC_KEY_SIZE
    in
-@@ -498,7 +541,7 @@
+@@ -509,8 +533,7 @@
+       ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
+         <:
+         Core.Ops.Range.t_Range usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (public_key_serialized.[ {
++      (Core.Slice.impl__copy_from_slice (public_key_serialized.[ {
+                 Core.Ops.Range.f_start = sz 0;
+                 Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT
+               }
+@@ -518,7 +541,7 @@
                Core.Ops.Range.t_Range usize ]
              <:
              t_Slice u8)
@@ -3232,7 +3468,19 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
                    v_RANKED_BYTES_PER_RING_ELEMENT
                    tt_as_ntt
                  <:
-@@ -524,232 +567,49 @@
+@@ -533,8 +556,9 @@
+       ({ Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
+         <:
+         Core.Ops.Range.t_RangeFrom usize)
+-      (Core.Slice.impl__copy_from_slice #u8
+-          (public_key_serialized.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
++      (Core.Slice.impl__copy_from_slice (public_key_serialized.[ {
++                Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT
++              }
+               <:
+               Core.Ops.Range.t_RangeFrom usize ]
+             <:
+@@ -543,231 +567,49 @@
          <:
          t_Slice u8)
    in
@@ -3252,7 +3500,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +      (key_generation_seed: t_Slice u8) =
    let hashed:t_Array u8 (sz 64) = Libcrux.Kem.Kyber.Hash_functions.v_G key_generation_seed in
    let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
-     Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
+-    Core.Slice.impl__split_at #u8 (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
++    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
    in
 -  let a_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
 -    Libcrux.Kem.Kyber.Matrix.sample_matrix_A v_K
@@ -3286,10 +3535,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -  in
 -  let secret_as_ntt, tt_as_ntt:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
 -    t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
--              Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = v_K
--            }
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 -            <:
 -            Core.Ops.Range.t_Range usize)
 -        <:
@@ -3305,7 +3553,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -            temp_0_
 -          in
 -          let i:usize = i in
--          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                  usize)
+-                ({
 -                    Core.Ops.Range.f_start = sz 0;
 -                    Core.Ops.Range.f_end
 -                    =
@@ -3398,10 +3648,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -    a_transpose
 -  in
 -  let a_matrix:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
--              Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = v_K
--            }
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 -            <:
 -            Core.Ops.Range.t_Range usize)
 -        <:
@@ -3413,10 +3662,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 -            a_matrix
 -          in
 -          let i:usize = i in
--          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
--                    Core.Ops.Range.f_start = sz 0;
--                    Core.Ops.Range.f_end = v_K
--                  }
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                  usize)
+-                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 -                  <:
 -                  Core.Ops.Range.t_Range usize)
 -              <:
@@ -3488,8 +3736,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fst extraction-edited/Libcrux.Kem
 +  res
 + 
 diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti
---- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-05-14 15:56:45.380357237 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-05-14 15:56:45.469355777 +0200
+--- extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-05-16 17:05:53.697569684 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Ind_cpa.fsti	2024-05-16 17:05:53.789566598 +0200
 @@ -1,196 +1,151 @@
  module Libcrux.Kem.Kyber.Ind_cpa
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -3810,8 +4058,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ind_cpa.fsti extraction-edited/Libcrux.Ke
 + 
 +    
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst
---- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-05-14 15:56:45.386357139 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-05-14 15:56:45.457355974 +0200
+--- extraction/Libcrux.Kem.Kyber.Kyber1024.fst	2024-05-16 17:05:53.703569483 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fst	2024-05-16 17:05:53.776567034 +0200
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 3168))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1568))
@@ -3864,8 +4112,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fst extraction-edited/Libcrux.K
      (sz 3168)
      (sz 1568)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fsti extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fsti
---- extraction/Libcrux.Kem.Kyber.Kyber1024.fsti	2024-05-14 15:56:45.397356958 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fsti	2024-05-14 15:56:45.437356302 +0200
+--- extraction/Libcrux.Kem.Kyber.Kyber1024.fsti	2024-05-16 17:05:53.715569080 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber1024.fsti	2024-05-16 17:05:53.756567705 +0200
 @@ -71,13 +71,11 @@
  unfold
  let t_MlKem1024PublicKey = Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1568)
@@ -3911,8 +4159,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber1024.fsti extraction-edited/Libcrux.
 -      Prims.l_True
 -      (fun _ -> Prims.l_True)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst
---- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-05-14 15:56:45.415356663 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-05-14 15:56:45.422356548 +0200
+--- extraction/Libcrux.Kem.Kyber.Kyber512.fst	2024-05-16 17:05:53.734568443 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fst	2024-05-16 17:05:53.741568208 +0200
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 1632))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 768))
@@ -3965,8 +4213,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fst extraction-edited/Libcrux.Ke
      (sz 1632)
      (sz 800)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fsti extraction-edited/Libcrux.Kem.Kyber.Kyber512.fsti
---- extraction/Libcrux.Kem.Kyber.Kyber512.fsti	2024-05-14 15:56:45.389357089 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fsti	2024-05-14 15:56:45.456355990 +0200
+--- extraction/Libcrux.Kem.Kyber.Kyber512.fsti	2024-05-16 17:05:53.706569382 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber512.fsti	2024-05-16 17:05:53.775567067 +0200
 @@ -71,13 +71,11 @@
  unfold
  let t_MlKem512PublicKey = Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 800)
@@ -4012,8 +4260,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber512.fsti extraction-edited/Libcrux.K
 -      Prims.l_True
 -      (fun _ -> Prims.l_True)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst
---- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-05-14 15:56:45.412356712 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-05-14 15:56:45.424356515 +0200
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fst	2024-05-16 17:05:53.731568543 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fst	2024-05-16 17:05:53.743568141 +0200
 @@ -7,19 +7,19 @@
        (secret_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey (sz 2400))
        (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088))
@@ -4066,8 +4314,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fst extraction-edited/Libcrux.Ke
      (sz 2400)
      (sz 1184)
 diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti
---- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-05-14 15:56:45.395356991 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-05-14 15:56:45.451356072 +0200
+--- extraction/Libcrux.Kem.Kyber.Kyber768.fsti	2024-05-16 17:05:53.712569181 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Kyber768.fsti	2024-05-16 17:05:53.771567201 +0200
 @@ -71,43 +71,25 @@
  unfold
  let t_MlKem768PublicKey = Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1184)
@@ -4117,9 +4365,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Kyber768.fsti extraction-edited/Libcrux.K
 -      (fun _ -> Prims.l_True)
 +      (ensures (fun kp -> (kp.f_sk.f_value,kp.f_pk.f_value) == Spec.Kyber.kyber768_generate_keypair randomness))
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.Kyber.Matrix.fst
---- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-05-14 15:56:45.407356794 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-05-14 15:56:45.428356450 +0200
-@@ -3,192 +3,188 @@
+--- extraction/Libcrux.Kem.Kyber.Matrix.fst	2024-05-16 17:05:53.725568745 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fst	2024-05-16 17:05:53.747568007 +0200
+@@ -3,205 +3,188 @@
  open Core
  open FStar.Mul
  
@@ -4132,8 +4380,14 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 -    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
 -  in
 -  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__iter (Rust_primitives.unsize matrix_A
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_Iter
+-              (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
+-                (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
+-              (Core.Slice.impl__iter #(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+-                      v_K)
+-                  (Rust_primitives.unsize matrix_A
 -                    <:
 -                    t_Slice (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
 -                <:
@@ -4177,8 +4431,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
              temp_1_
            in
 -          let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
--            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--                      (Core.Slice.impl__iter (Rust_primitives.unsize row
+-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-                    (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement))
+-                  (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
+-                        Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+-                      (Core.Slice.impl__iter #Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+-                          (Rust_primitives.unsize row
 -                            <:
 -                            t_Slice Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
 -                        <:
@@ -4237,7 +4495,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
                    in
                    result)
            in
--          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                  usize)
+-                ({
 -                    Core.Ops.Range.f_start = sz 0;
 -                    Core.Ops.Range.f_end
 -                    =
@@ -4352,6 +4612,16 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 -     =
 -  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
 -    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
+-  in
+-  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
+-            <:
+-            Core.Ops.Range.t_Range usize)
+-        <:
+-        Core.Ops.Range.t_Range usize)
+-      result
 +#push-options "--ifuel 0 --z3rlimit 100"
 +let compute_message #p v_K m_v secret_as_ntt u_as_ntt = 
 +  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328) =
@@ -4362,19 +4632,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +  let inv = fun (acc:acc_t) (i:usize) -> 
 +             (v i <= v v_K) /\
 +             (poly_range #(v v_K * 3328) acc (v i * 3328))
-   in
--  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++  in
 +  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328) =
 +    Rust_primitives.Iterators.foldi_range #_ #acc_t #inv {
-               Core.Ops.Range.f_start = sz 0;
-               Core.Ops.Range.f_end = v_K
-             }
--            <:
--            Core.Ops.Range.t_Range usize)
--        <:
--        Core.Ops.Range.t_Range usize)
--      result
++              Core.Ops.Range.f_start = sz 0;
++              Core.Ops.Range.f_end = v_K
++            }
 +      result 
        (fun result i ->
 -          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
@@ -4404,7 +4667,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +  let result:acc_t = Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery v_K result
    in
 -  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({
 +  [@ inline_let]
 +  let inv = fun (acc:acc_t) (i:usize) ->
 +    (v i <= 256) /\
@@ -4450,7 +4715,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ]
                          <:
                          i32) -!
-@@ -196,81 +192,77 @@
+@@ -209,82 +192,77 @@
                        <:
                        i32)
                    <:
@@ -4485,7 +4750,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 -    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
 -  in
 -  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
+-            <:
+-            Core.Ops.Range.t_Range usize)
 +#push-options "--ifuel 0 --z3rlimit 100"
 +let compute_ring_element_v v_K tt_as_ntt r_as_ntt error_2_ message =
 +  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328) =
@@ -4497,11 +4766,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +    (poly_range acc (v i * 3328)) in
 +  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (v v_K * 3328) =
 +    Rust_primitives.Iterators.foldi_range #_ #_ #inv ({
-               Core.Ops.Range.f_start = sz 0;
-               Core.Ops.Range.f_end = v_K
-             }
--            <:
--            Core.Ops.Range.t_Range usize)
++              Core.Ops.Range.f_start = sz 0;
++              Core.Ops.Range.f_end = v_K
++            }
          <:
          Core.Ops.Range.t_Range usize)
        result
@@ -4531,7 +4798,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
      Libcrux.Kem.Kyber.Ntt.invert_ntt_montgomery v_K result
    in
 -  let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({
 +  [@ inline_let]
 +  let inv = fun (acc:t_PolynomialRingElement_b (64 * v v_K * 3328)) (i:usize) -> 
 +    (v i <= 256) /\
@@ -4578,7 +4847,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
                          (error_2_.Libcrux.Kem.Kyber.Arithmetic.f_coefficients.[ i ] <: i32)
                          <:
                          i32) +!
-@@ -278,157 +270,151 @@
+@@ -292,172 +270,155 @@
                        <:
                        i32)
                    <:
@@ -4613,8 +4882,14 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 -    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
 -  in
 -  let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__iter (Rust_primitives.unsize a_as_ntt
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_Iter
+-              (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
+-                (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
+-              (Core.Slice.impl__iter #(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+-                      v_K)
+-                  (Rust_primitives.unsize a_as_ntt
 -                    <:
 -                    t_Slice (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
 -                <:
@@ -4653,8 +4928,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
              temp_1_
            in
 -          let result:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
--            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--                      (Core.Slice.impl__iter (Rust_primitives.unsize row
+-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-                    (Core.Slice.Iter.t_Iter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement))
+-                  (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
+-                        Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
+-                      (Core.Slice.impl__iter #Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+-                          (Rust_primitives.unsize row
 -                            <:
 -                            t_Slice Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
 -                        <:
@@ -4724,7 +5003,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 -                <:
 -                Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
 -          in
--          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                  usize)
+-                ({
 -                    Core.Ops.Range.f_start = sz 0;
 -                    Core.Ops.Range.f_end
 -                    =
@@ -4840,11 +5121,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +    Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat wfZero v_K) v_K
    in
 -  let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 +  let v_A_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement v_K) v_K =
-     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-               Core.Ops.Range.f_start = sz 0;
-               Core.Ops.Range.f_end = v_K
-@@ -440,7 +426,7 @@
++    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++              Core.Ops.Range.f_start = sz 0;
++              Core.Ops.Range.f_end = v_K
++            }
+             <:
+             Core.Ops.Range.t_Range usize)
+         <:
+@@ -465,15 +426,16 @@
        v_A_transpose
        (fun v_A_transpose i ->
            let v_A_transpose:t_Array
@@ -4853,7 +5141,19 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
              v_A_transpose
            in
            let i:usize = i in
-@@ -482,8 +468,8 @@
+           let seeds:t_Array (t_Array u8 (sz 34)) v_K = Rust_primitives.Hax.repeat seed v_K in
+           let seeds:t_Array (t_Array u8 (sz 34)) v_K =
+-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                    usize)
+-                  ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
++            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++                      Core.Ops.Range.f_start = sz 0;
++                      Core.Ops.Range.f_end = v_K
++                    }
+                     <:
+                     Core.Ops.Range.t_Range usize)
+                 <:
+@@ -506,12 +468,13 @@
                    in
                    seeds)
            in
@@ -4862,9 +5162,17 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +          let xof_bytes:t_Array (t_Array u8 (sz 840)) v_K =
 +            Libcrux.Kem.Kyber.Hash_functions.v_XOFx4 v_K seeds
            in
-           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                     Core.Ops.Range.f_start = sz 0;
-@@ -496,40 +482,46 @@
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                  usize)
+-                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
++          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++                    Core.Ops.Range.f_start = sz 0;
++                    Core.Ops.Range.f_end = v_K
++                  }
+                   <:
+                   Core.Ops.Range.t_Range usize)
+               <:
+@@ -519,40 +482,46 @@
              v_A_transpose
              (fun v_A_transpose j ->
                  let v_A_transpose:t_Array
@@ -4921,8 +5229,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fst extraction-edited/Libcrux.Kem.
 +  admit(); //P-F
    v_A_transpose
 diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti
---- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-05-14 15:56:45.400356909 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-05-14 15:56:45.462355892 +0200
+--- extraction/Libcrux.Kem.Kyber.Matrix.fsti	2024-05-16 17:05:53.718568979 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Matrix.fsti	2024-05-16 17:05:53.782566832 +0200
 @@ -3,46 +3,71 @@
  open Core
  open FStar.Mul
@@ -5033,9 +5341,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Matrix.fsti extraction-edited/Libcrux.Kem
 +        if transpose then Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == matrix_A
 +        else Libcrux.Kem.Kyber.Arithmetic.to_spec_matrix_b #p res == Spec.Kyber.matrix_transpose matrix_A)
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyber.Ntt.fst
---- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-05-14 15:56:45.398356942 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-05-14 15:56:45.431356400 +0200
-@@ -1,56 +1,130 @@
+--- extraction/Libcrux.Kem.Kyber.Ntt.fst	2024-05-16 17:05:53.716569047 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fst	2024-05-16 17:05:53.751567873 +0200
+@@ -1,57 +1,130 @@
  module Libcrux.Kem.Kyber.Ntt
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"
@@ -5128,7 +5436,14 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +let invert_ntt_at_layer #v_K #b zeta_i re layer =
    let step:usize = sz 1 <<! layer in
 -  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 128 >>! layer <: usize }
+-            <:
+-            Core.Ops.Range.t_Range usize)
+-        <:
+-        Core.Ops.Range.t_Range usize)
+-      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
 +  assert (v step > 0);
 +  assert (v step == pow2 (v layer));
 +  let orig_re = re in
@@ -5141,15 +5456,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +  in
 +  let re, zeta_i: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (2*b) & usize) =
 +    Rust_primitives.Iterators.foldi_range #_ #(t_PolynomialRingElement_b (2*b) & usize) #inv {
-               Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = sz 128 >>! layer <: usize
++              Core.Ops.Range.f_start = sz 0;
 +              Core.Ops.Range.f_end = sz 128 /! step
-             }
--            <:
--            Core.Ops.Range.t_Range usize)
--        <:
--        Core.Ops.Range.t_Range usize)
--      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
++            }
 +      (cast_poly_b #b #(2*b) re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (2*b) & usize))
        (fun temp_0_ round ->
 -          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
@@ -5159,7 +5468,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
            let zeta_i:usize = zeta_i -! sz 1 in
 -          let offset:usize = (round *! step <: usize) *! sz 2 in
 -          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                    usize)
+-                  ({
 +          assert(v round * v step < 128);
 +          assert(v round * v step + v step <= 128);
 +          assert(v round * v step * 2 <= 254);
@@ -5204,7 +5515,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
                      {
                        re with
                        Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -58,17 +132,13 @@
+@@ -59,17 +132,13 @@
                        Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                          j
@@ -5226,7 +5537,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
                      {
                        re with
                        Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -76,67 +146,69 @@
+@@ -77,74 +146,77 @@
                        Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                          (j +! step <: usize)
@@ -5321,16 +5632,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
    let _:Prims.unit = () <: Prims.unit in
    let _:Prims.unit = () <: Prims.unit in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 2 }
 +  admit();
 +  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (64*b) =
-     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-               Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = sz 2
++    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++              Core.Ops.Range.f_start = sz 0;
 +              Core.Ops.Range.f_end = sz 8
-             }
++            }
              <:
              Core.Ops.Range.t_Range usize)
-@@ -144,7 +216,7 @@
+         <:
          Core.Ops.Range.t_Range usize)
        re
        (fun re i ->
@@ -5339,7 +5652,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
            let i:usize = i in
            {
              re with
-@@ -163,52 +235,84 @@
+@@ -163,53 +235,84 @@
              t_Array i32 (sz 256)
            }
            <:
@@ -5357,7 +5670,14 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 -     =
 -  let step:usize = sz 1 <<! layer in
 -  let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 128 >>! layer <: usize }
+-            <:
+-            Core.Ops.Range.t_Range usize)
+-        <:
+-        Core.Ops.Range.t_Range usize)
+-      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
 +#push-options "--z3rlimit 500"
 +val mul_zeta_red2   (#b:nat{b <= 31175}) 
 +                   (zeta_i:usize{v zeta_i >= 0 /\ v zeta_i <= 63} )
@@ -5391,15 +5711,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +  in
 +  let re, zeta_i: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (3328+b) & usize) =
 +    Rust_primitives.Iterators.foldi_range #_ #(t_PolynomialRingElement_b (3328+b) & usize) #inv {
-               Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = sz 128 >>! layer <: usize
++              Core.Ops.Range.f_start = sz 0;
 +              Core.Ops.Range.f_end = loop_end
-             }
--            <:
--            Core.Ops.Range.t_Range usize)
--        <:
--        Core.Ops.Range.t_Range usize)
--      (re, zeta_i <: (Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize))
++            }
 +      (cast_poly_b #b #(3328+b) re, zeta_i)
        (fun temp_0_ round ->
 -          let re, zeta_i:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement & usize) = temp_0_ in
@@ -5408,7 +5722,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
            let zeta_i:usize = zeta_i +! sz 1 in
 -          let offset:usize = (round *! step <: usize) *! sz 2 in
 -          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                    usize)
+-                  ({
 +          assert(v round * v step < 128);
 +          assert(v round * v step + v step <= 128);
 +          assert(v round * v step * 2 <= 254);
@@ -5458,7 +5774,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
                      {
                        re with
                        Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -216,12 +320,12 @@
+@@ -217,12 +320,12 @@
                        Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                          (j +! step <: usize)
@@ -5474,7 +5790,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
                      {
                        re with
                        Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -229,64 +333,70 @@
+@@ -230,63 +333,70 @@
                        Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                          j
@@ -5541,7 +5857,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
    let _:Prims.unit = () <: Prims.unit in
    let zeta_i:usize = sz 1 in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 128 }
 +  [@ inline_let]
 +  let inv = fun (acc:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 11207)) (i:usize) -> 
 +             (v i <= 128) /\
@@ -5554,9 +5872,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +  assert (inv re (sz 0));
 +  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 11207 =
 +      Rust_primitives.Iterators.foldi_range #_ #(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 11207) #inv ({
-               Core.Ops.Range.f_start = sz 0;
-               Core.Ops.Range.f_end = sz 128
-             }
++              Core.Ops.Range.f_start = sz 0;
++              Core.Ops.Range.f_end = sz 128
++            }
              <:
              Core.Ops.Range.t_Range usize)
 -        <:
@@ -5594,7 +5912,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -307,84 +415,76 @@
+@@ -307,89 +415,77 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  j
@@ -5645,7 +5963,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 -  let zeta_i:usize = tmp0 in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = out in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({
 +  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (6*3328+11207) = re in
 +  [@ inline_let]
 +  let inv = fun (acc:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (6*3328+11207))) (i:usize) -> 
@@ -5712,11 +6032,15 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
      Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({
 +  let out:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3328 =
-     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
                Core.Ops.Range.f_start = sz 0;
                Core.Ops.Range.f_end
-@@ -395,34 +495,31 @@
+               =
+@@ -399,34 +495,31 @@
              Core.Ops.Range.t_Range usize)
          <:
          Core.Ops.Range.t_Range usize)
@@ -5761,7 +6085,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
              {
                out with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -433,9 +530,9 @@
+@@ -437,9 +530,9 @@
                  product._1
              }
              <:
@@ -5773,7 +6097,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
              {
                out with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -446,41 +543,29 @@
+@@ -450,41 +543,29 @@
                  product._2
              }
              <:
@@ -5825,7 +6149,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
              {
                out with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -491,9 +576,9 @@
+@@ -495,9 +576,9 @@
                  product._1
              }
              <:
@@ -5837,7 +6161,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
              {
                out with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -504,65 +589,55 @@
+@@ -508,67 +589,55 @@
                  product._2
              }
              <:
@@ -5900,7 +6224,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 -  let zeta_i:usize = tmp0 in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = out in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({
 +  [@ inline_let]
 +  let inv = fun (acc:(Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b (8*3328))) (i:usize) -> 
 +             (v i <= 256) /\
@@ -5924,7 +6250,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
            let i:usize = i in
            {
              re with
-@@ -572,15 +647,10 @@
+@@ -578,15 +647,10 @@
                  .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                i
                (Libcrux.Kem.Kyber.Arithmetic.barrett_reduce (re
@@ -5945,9 +6271,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fst extraction-edited/Libcrux.Kem.Kyb
 +  down_cast_poly_b #(8*3328) #3328 re 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti
---- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-05-14 15:56:45.377357286 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-05-14 15:56:45.461355908 +0200
-@@ -2,276 +2,80 @@
+--- extraction/Libcrux.Kem.Kyber.Ntt.fsti	2024-05-16 17:05:53.694569785 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Ntt.fsti	2024-05-16 17:05:53.781566866 +0200
+@@ -2,282 +2,80 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
  open FStar.Mul
@@ -6093,11 +6419,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 -val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
 -    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
 -      (requires
--        Hax_lib.v_forall (fun i ->
+-        Hax_lib.v_forall #usize
+-          (fun i ->
 -              let i:usize = i in
 -              Hax_lib.implies (i <.
--                  (Core.Slice.impl__len (Rust_primitives.unsize re
--                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                  (Core.Slice.impl__len #i32
+-                      (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                        <:
 -                        t_Slice i32)
 -                    <:
@@ -6119,11 +6446,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 -      (ensures
 -        fun result ->
 -          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
--          Hax_lib.v_forall (fun i ->
+-          Hax_lib.v_forall #usize
+-            (fun i ->
 -                let i:usize = i in
 -                Hax_lib.implies (i <.
--                    (Core.Slice.impl__len (Rust_primitives.unsize result
--                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                    (Core.Slice.impl__len #i32
+-                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                          <:
 -                          t_Slice i32)
 -                      <:
@@ -6168,7 +6496,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 -val ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
 -    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
 -      (requires
--        Hax_lib.v_forall (fun i ->
+-        Hax_lib.v_forall #usize
+-          (fun i ->
 -              let i:usize = i in
 -              Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
 -                  <:
@@ -6191,11 +6520,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 -      (ensures
 -        fun result ->
 -          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
--          Hax_lib.v_forall (fun i ->
+-          Hax_lib.v_forall #usize
+-            (fun i ->
 -                let i:usize = i in
 -                Hax_lib.implies (i <.
--                    (Core.Slice.impl__len (Rust_primitives.unsize result
--                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                    (Core.Slice.impl__len #i32
+-                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                          <:
 -                          t_Slice i32)
 -                      <:
@@ -6236,11 +6566,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 -      (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
 -    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
 -      (requires
--        Hax_lib.v_forall (fun i ->
+-        Hax_lib.v_forall #usize
+-          (fun i ->
 -              let i:usize = i in
 -              Hax_lib.implies (i <.
--                  (Core.Slice.impl__len (Rust_primitives.unsize re
--                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                  (Core.Slice.impl__len #i32
+-                      (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                        <:
 -                        t_Slice i32)
 -                    <:
@@ -6262,11 +6593,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 -      (ensures
 -        fun result ->
 -          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
--          Hax_lib.v_forall (fun i ->
+-          Hax_lib.v_forall #usize
+-            (fun i ->
 -                let i:usize = i in
 -                Hax_lib.implies (i <.
--                    (Core.Slice.impl__len (Rust_primitives.unsize result
--                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                    (Core.Slice.impl__len #i32
+-                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                          <:
 -                          t_Slice i32)
 -                      <:
@@ -6292,9 +6624,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Ntt.fsti extraction-edited/Libcrux.Kem.Ky
 +      (ensures fun _ -> True)
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Kem.Kyber.Sampling.fst
---- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-05-14 15:56:45.383357188 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-05-14 15:56:45.466355826 +0200
-@@ -3,22 +3,34 @@
+--- extraction/Libcrux.Kem.Kyber.Sampling.fst	2024-05-16 17:05:53.700569583 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fst	2024-05-16 17:05:53.786566698 +0200
+@@ -3,26 +3,34 @@
  open Core
  open FStar.Mul
  
@@ -6313,8 +6645,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +    cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact randomness (sz 4) <: Core.Slice.Iter.t_ChunksExact u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8 randomness (sz 4)
+-                <:
+-                Core.Slice.Iter.t_ChunksExact u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
 -        <:
@@ -6341,7 +6677,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
            let (random_bits_as_u32: u32):u32 =
              (((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                  ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
-@@ -30,34 +42,58 @@
+@@ -34,36 +42,58 @@
              ((cast (byte_chunk.[ sz 3 ] <: u8) <: u32) <<! 24l <: u32)
            in
            let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
@@ -6351,7 +6687,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +          logand_lemma (random_bits_as_u32 >>! 1l <: u32) 1431655765ul;
 +          assert(odd_bits <=. 1431655765ul);
            let coin_toss_outcomes:u32 = even_bits +! odd_bits in
--          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
+-                  (Core.Ops.Range.t_Range u32))
+-                (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range u32)
 -                    ({
 +          let acc_t = Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement_b 3 in
 +          [@ inline_let]
@@ -6416,7 +6754,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
                    {
                      sampled with
                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -68,29 +104,36 @@
+@@ -74,33 +104,36 @@
                        (outcome_1_ -! outcome_2_ <: i32)
                    }
                    <:
@@ -6442,8 +6780,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +    (Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO)
    in
 -  let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact randomness (sz 3) <: Core.Slice.Iter.t_ChunksExact u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8 randomness (sz 3)
+-                <:
+-                Core.Slice.Iter.t_ChunksExact u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
 -        <:
@@ -6469,7 +6811,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
            let (random_bits_as_u24: u32):u32 =
              ((cast (byte_chunk.[ sz 0 ] <: u8) <: u32) |.
                ((cast (byte_chunk.[ sz 1 ] <: u8) <: u32) <<! 8l <: u32)
-@@ -99,21 +142,28 @@
+@@ -109,23 +142,28 @@
              ((cast (byte_chunk.[ sz 2 ] <: u8) <: u32) <<! 16l <: u32)
            in
            let first_bits:u32 = random_bits_as_u24 &. 2396745ul in
@@ -6482,7 +6824,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +          logand_lemma (random_bits_as_u24 >>! 2l <: u32) 2396745ul;
 +          assert (third_bits <=. 2396745ul);
            let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
--          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
+-                  (Core.Ops.Range.t_Range i32))
+-                (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range i32)
 -                    ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
 -                      <:
 -                      Core.Ops.Range.t_Range i32)
@@ -6508,7 +6852,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
                  let outcome_set:i32 = outcome_set in
                  let outcome_1_:i32 =
                    cast ((coin_toss_outcomes >>! outcome_set <: u32) &. 7ul <: u32) <: i32
-@@ -123,8 +173,22 @@
+@@ -135,8 +173,22 @@
                    <:
                    i32
                  in
@@ -6532,7 +6876,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
                    {
                      sampled with
                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -135,15 +199,18 @@
+@@ -147,15 +199,18 @@
                        (outcome_1_ -! outcome_2_ <: i32)
                    }
                    <:
@@ -6552,7 +6896,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
    match cast (v_ETA <: usize) <: u32 with
    | 2ul -> sample_from_binomial_distribution_2_ randomness
    | 3ul -> sample_from_binomial_distribution_3_ randomness
-@@ -153,226 +220,131 @@
+@@ -165,227 +220,131 @@
          <:
          Rust_primitives.Hax.t_Never)
  
@@ -6566,10 +6910,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 -  let done, out, sampled_coefficients:(bool &
 -    t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
 -    t_Array usize v_K) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
--              Core.Ops.Range.f_start = sz 0;
--              Core.Ops.Range.f_end = v_K
--            }
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-            usize)
+-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
 -            <:
 -            Core.Ops.Range.t_Range usize)
 -        <:
@@ -6610,7 +6953,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 -          let out, sampled_coefficients:(t_Array
 -              Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
 -            t_Array usize v_K) =
--            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks
+-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
+-                    u8)
+-                  (Core.Slice.impl__chunks #u8
 -                      (Rust_primitives.unsize (randomness.[ i ] <: t_Array u8 v_N) <: t_Slice u8)
 -                      (sz 3)
 -                    <:
@@ -6896,9 +7241,9 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fst extraction-edited/Libcrux.Ke
 +  out 
 +#pop-options
 diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti
---- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-05-14 15:56:45.417356630 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-05-14 15:56:45.436356318 +0200
-@@ -3,155 +3,37 @@
+--- extraction/Libcrux.Kem.Kyber.Sampling.fsti	2024-05-16 17:05:53.735568409 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Sampling.fsti	2024-05-16 17:05:53.755567738 +0200
+@@ -3,157 +3,37 @@
  open Core
  open FStar.Mul
  
@@ -6944,16 +7289,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.K
 +
  val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
 -    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+-      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 2 *! sz 64 <: usize))
 +    : Prims.Pure (t_PolynomialRingElement_b 3)
-       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
++      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
        (ensures
          fun result ->
 -          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
--          Hax_lib.v_forall (fun i ->
+-          Hax_lib.v_forall #usize
+-            (fun i ->
 -                let i:usize = i in
 -                Hax_lib.implies (i <.
--                    (Core.Slice.impl__len (Rust_primitives.unsize result
--                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                    (Core.Slice.impl__len #i32
+-                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                          <:
 -                          t_Slice i32)
 -                      <:
@@ -6978,16 +7325,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.K
  
  val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
 -    : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
+-      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 3 *! sz 64 <: usize))
 +    : Prims.Pure (t_PolynomialRingElement_b 7)
-       (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
++      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
        (ensures
          fun result ->
 -          let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
--          Hax_lib.v_forall (fun i ->
+-          Hax_lib.v_forall #usize
+-            (fun i ->
 -                let i:usize = i in
 -                Hax_lib.implies (i <.
--                    (Core.Slice.impl__len (Rust_primitives.unsize result
--                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-                    (Core.Slice.impl__len #i32
+-                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                          <:
 -                          t_Slice i32)
 -                      <:
@@ -7078,8 +7427,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Sampling.fsti extraction-edited/Libcrux.K
 +//      (ensures fun result -> (forall i. v (result.f_coefficients.[i]) >= 0))
 +      
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.Kem.Kyber.Serialize.fst
---- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-05-14 15:56:45.392357040 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-05-14 15:56:45.454356023 +0200
+--- extraction/Libcrux.Kem.Kyber.Serialize.fst	2024-05-16 17:05:53.709569282 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fst	2024-05-16 17:05:53.774567101 +0200
 @@ -1,8 +1,15 @@
  module Libcrux.Kem.Kyber.Serialize
 -#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -7248,7 +7597,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
    coefficient1,
    coefficient2,
    coefficient3,
-@@ -142,31 +195,54 @@
+@@ -142,33 +195,54 @@
    coefficient6,
    coefficient7,
    coefficient8
@@ -7298,9 +7647,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +  in
    let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
    let serialized:t_Array u8 v_OUT_LEN =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
--                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact i32))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+-              (Core.Slice.impl__chunks_exact #i32
+-                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                    <:
 -                    t_Slice i32)
 -                  (sz 4)
@@ -7322,12 +7673,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let coefficient1:i32 =
              Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 10uy
                (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ] <: i32
-@@ -226,79 +302,96 @@
+@@ -228,81 +302,96 @@
            serialized)
    in
    serialized
 +#pop-options
- 
++
 +#push-options "--fuel 0 --ifuel 0 --z3rlimit 30"
 +[@@"opaque_to_smt"]
 +let update5
@@ -7351,7 +7702,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +    let s = update_at_usize s (offset +! sz  4) i4  in
 +    s
 +#pop-options
-+
+ 
 +#push-options "--fuel 0 --ifuel 1 --z3rlimit 100 --query_stats --split_queries no"
  let compress_then_serialize_11_
 -      (v_OUT_LEN: usize)
@@ -7362,9 +7713,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +  let inv = fun (acc: t_Array u8 v_OUT_LEN) (i: usize) -> True in
    let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
    let serialized:t_Array u8 v_OUT_LEN =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
--                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact i32))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+-              (Core.Slice.impl__chunks_exact #i32
+-                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                    <:
 -                    t_Slice i32)
 -                  (sz 8)
@@ -7443,7 +7796,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 11uy
                (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 7 ] <: i32
                    )
-@@ -324,6 +417,8 @@
+@@ -328,6 +417,8 @@
                coefficient7
                coefficient8
            in
@@ -7452,7 +7805,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let serialized:t_Array u8 v_OUT_LEN =
              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
                (sz 11 *! i <: usize)
-@@ -382,29 +477,20 @@
+@@ -386,31 +477,20 @@
            serialized)
    in
    serialized
@@ -7467,9 +7820,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +  let accT = t_Array u8 v_OUT_LEN in
 +  let inv (acc: accT) (i: usize) = True in
    let serialized:t_Array u8 v_OUT_LEN =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
--                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact i32))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+-              (Core.Slice.impl__chunks_exact #i32
+-                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                    <:
 -                    t_Slice i32)
 -                  (sz 2)
@@ -7490,7 +7845,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let coefficient1:u8 =
              cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 4uy
                    (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ]
-@@ -439,27 +525,20 @@
+@@ -445,29 +525,20 @@
    serialized
  
  let compress_then_serialize_5_
@@ -7504,9 +7859,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +  let accT = t_Array u8 v_OUT_LEN in
 +  let inv (acc: accT) (i: usize) = True in
    let serialized:t_Array u8 v_OUT_LEN =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
--                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact i32))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+-              (Core.Slice.impl__chunks_exact #i32
+-                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                    <:
 -                    t_Slice i32)
 -                  (sz 8)
@@ -7527,7 +7884,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let coefficient1:u8 =
              cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
                    (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 0 ]
-@@ -544,6 +623,14 @@
+@@ -552,6 +623,14 @@
              <:
              u8
            in
@@ -7542,7 +7899,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let coefficient8:u8 =
              cast (Libcrux.Kem.Kyber.Compress.compress_ciphertext_coefficient 5uy
                    (Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative (coefficients.[ sz 7 ]
-@@ -566,6 +653,8 @@
+@@ -574,6 +653,8 @@
                coefficient6
                coefficient8
            in
@@ -7551,7 +7908,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let serialized:t_Array u8 v_OUT_LEN =
              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
                (sz 5 *! i <: usize)
-@@ -595,35 +684,24 @@
+@@ -603,39 +684,24 @@
    in
    serialized
  
@@ -7561,9 +7918,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +  let accT = t_Array u8 (sz 32) in
 +  let inv (acc: accT) (i: usize) = True in
    let serialized:t_Array u8 (sz 32) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
--                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact i32))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+-              (Core.Slice.impl__chunks_exact #i32
+-                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                    <:
 -                    t_Slice i32)
 -                  (sz 8)
@@ -7580,8 +7939,10 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
        (fun serialized temp_1_ ->
            let serialized:t_Array u8 (sz 32) = serialized in
 -          let i, coefficients:(usize & t_Slice i32) = temp_1_ in
--          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--                    (Core.Slice.impl__iter coefficients <: Core.Slice.Iter.t_Iter i32)
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-                  (Core.Slice.Iter.t_Iter i32))
+-                (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter i32)
+-                    (Core.Slice.impl__iter #i32 coefficients <: Core.Slice.Iter.t_Iter i32)
 -                  <:
 -                  Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter i32))
 -              <:
@@ -7597,7 +7958,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
                  let coefficient:u16 =
                    Libcrux.Kem.Kyber.Arithmetic.to_unsigned_representative coefficient
                  in
-@@ -636,27 +714,35 @@
+@@ -648,27 +714,35 @@
            <:
            t_Array u8 (sz 32))
    in
@@ -7642,7 +8003,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
    | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
    | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
-@@ -665,32 +751,49 @@
+@@ -677,36 +751,49 @@
  
          <:
          Rust_primitives.Hax.t_Never)
@@ -7660,8 +8021,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact serialized (sz 5) <: Core.Slice.Iter.t_ChunksExact u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8 serialized (sz 5)
+-                <:
+-                Core.Slice.Iter.t_ChunksExact u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
 -        <:
@@ -7711,7 +8076,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -698,14 +801,12 @@
+@@ -714,14 +801,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  (sz 4 *! i <: usize)
@@ -7729,7 +8094,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -713,14 +814,12 @@
+@@ -729,14 +814,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 4 *! i <: usize) +! sz 1 <: usize)
@@ -7747,7 +8112,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -728,14 +827,12 @@
+@@ -744,14 +827,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 4 *! i <: usize) +! sz 2 <: usize)
@@ -7765,7 +8130,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -743,44 +840,43 @@
+@@ -759,48 +840,43 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 4 *! i <: usize) +! sz 3 <: usize)
@@ -7794,8 +8159,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact serialized (sz 11) <: Core.Slice.Iter.t_ChunksExact u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8 serialized (sz 11)
+-                <:
+-                Core.Slice.Iter.t_ChunksExact u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
 -        <:
@@ -7836,7 +8205,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let
            coefficient1,
            coefficient2,
-@@ -789,11 +885,21 @@
+@@ -809,11 +885,21 @@
            coefficient5,
            coefficient6,
            coefficient7,
@@ -7860,7 +8229,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -801,14 +907,12 @@
+@@ -821,14 +907,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  (sz 8 *! i <: usize)
@@ -7878,7 +8247,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -816,14 +920,12 @@
+@@ -836,14 +920,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 1 <: usize)
@@ -7896,7 +8265,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -831,14 +933,12 @@
+@@ -851,14 +933,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 2 <: usize)
@@ -7914,7 +8283,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -846,14 +946,12 @@
+@@ -866,14 +946,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 3 <: usize)
@@ -7932,7 +8301,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -861,14 +959,12 @@
+@@ -881,14 +959,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 4 <: usize)
@@ -7950,7 +8319,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -876,14 +972,12 @@
+@@ -896,14 +972,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 5 <: usize)
@@ -7968,7 +8337,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -891,14 +985,12 @@
+@@ -911,14 +985,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 6 <: usize)
@@ -7986,7 +8355,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -906,35 +998,33 @@
+@@ -926,37 +998,33 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 7 <: usize)
@@ -8014,8 +8383,10 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__iter serialized <: Core.Slice.Iter.t_Iter u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_Iter u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter u8)
+-              (Core.Slice.impl__iter #u8 serialized <: Core.Slice.Iter.t_Iter u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
 -        <:
@@ -8037,7 +8408,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -947,9 +1037,9 @@
+@@ -969,9 +1037,9 @@
                    i32)
              }
              <:
@@ -8049,7 +8420,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -962,33 +1052,32 @@
+@@ -984,37 +1052,32 @@
                    i32)
              }
              <:
@@ -8071,8 +8442,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +    Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact serialized (sz 5) <: Core.Slice.Iter.t_ChunksExact u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8 serialized (sz 5)
+-                <:
+-                Core.Slice.Iter.t_ChunksExact u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
 -        <:
@@ -8100,7 +8475,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
            let
            coefficient1,
            coefficient2,
-@@ -997,10 +1086,25 @@
+@@ -1023,10 +1086,25 @@
            coefficient5,
            coefficient6,
            coefficient7,
@@ -8128,7 +8503,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1008,14 +1112,12 @@
+@@ -1034,14 +1112,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  (sz 8 *! i <: usize)
@@ -8146,7 +8521,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1023,14 +1125,12 @@
+@@ -1049,14 +1125,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 1 <: usize)
@@ -8164,7 +8539,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1038,14 +1138,12 @@
+@@ -1064,14 +1138,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 2 <: usize)
@@ -8182,7 +8557,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1053,14 +1151,12 @@
+@@ -1079,14 +1151,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 3 <: usize)
@@ -8200,7 +8575,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1068,14 +1164,12 @@
+@@ -1094,14 +1164,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 4 <: usize)
@@ -8218,7 +8593,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1083,14 +1177,12 @@
+@@ -1109,14 +1177,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 5 <: usize)
@@ -8236,7 +8611,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1098,14 +1190,12 @@
+@@ -1124,14 +1190,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 6 <: usize)
@@ -8254,7 +8629,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1113,33 +1203,27 @@
+@@ -1139,49 +1203,43 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 8 *! i <: usize) +! sz 7 <: usize)
@@ -8280,8 +8655,10 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +   Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Iter.Traits.Collect.f_into_iter serialized
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Array.Iter.t_IntoIter u8 (sz 32)))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter u8 (sz 32))
+-              (Core.Iter.Traits.Collect.f_into_iter #(t_Array u8 (sz 32)) serialized
 -                <:
 -                Core.Array.Iter.t_IntoIter u8 (sz 32))
 -            <:
@@ -8296,9 +8673,16 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 -          let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
 +          let re:Libcrux.Kem.Kyber.Arithmetic.wfPolynomialRingElement = re in
            let i, byte:(usize & u8) = temp_1_ in
-           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                     Core.Ops.Range.f_start = sz 0;
-@@ -1151,10 +1235,11 @@
+-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+-                  usize)
+-                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
++          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
++                    Core.Ops.Range.f_start = sz 0;
++                    Core.Ops.Range.f_end = sz 8
++                  }
+                   <:
+                   Core.Ops.Range.t_Range usize)
+               <:
                Core.Ops.Range.t_Range usize)
              re
              (fun re j ->
@@ -8312,7 +8696,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
                    {
                      re with
                      Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1168,19 +1253,20 @@
+@@ -1195,19 +1253,20 @@
                          i32)
                    }
                    <:
@@ -8339,7 +8723,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
    | 10ul -> deserialize_then_decompress_10_ serialized
    | 11ul -> deserialize_then_decompress_11_ serialized
-@@ -1190,11 +1276,11 @@
+@@ -1217,11 +1276,11 @@
          <:
          Rust_primitives.Hax.t_Never)
  
@@ -8355,7 +8739,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
    | 4ul -> deserialize_then_decompress_4_ serialized
    | 5ul -> deserialize_then_decompress_5_ serialized
-@@ -1203,143 +1289,32 @@
+@@ -1230,153 +1289,32 @@
  
          <:
          Rust_primitives.Hax.t_Never)
@@ -8366,9 +8750,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 -    Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact ring_element (sz 3) <: Core.Slice.Iter.t_ChunksExact u8
--              )
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8 ring_element (sz 3)
+-                <:
+-                Core.Slice.Iter.t_ChunksExact u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
 -        <:
@@ -8451,8 +8838,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 -    Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
 -  in
 -  let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact public_key
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8
+-                  public_key
 -                  Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
 -                <:
 -                Core.Slice.Iter.t_ChunksExact u8)
@@ -8488,8 +8878,12 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +   Libcrux.Kem.Kyber.Arithmetic.cast_poly_b Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
    in
 -  let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact serialized (sz 3) <: Core.Slice.Iter.t_ChunksExact u8)
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact u8))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+-              (Core.Slice.impl__chunks_exact #u8 serialized (sz 3)
+-                <:
+-                Core.Slice.Iter.t_ChunksExact u8)
 -            <:
 -            Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
 -        <:
@@ -8519,7 +8913,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1347,12 +1322,12 @@
+@@ -1384,12 +1322,12 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  (sz 2 *! i <: usize)
@@ -8535,7 +8929,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
              {
                re with
                Libcrux.Kem.Kyber.Arithmetic.f_coefficients
-@@ -1360,58 +1335,89 @@
+@@ -1397,60 +1335,89 @@
                Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                    .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                  ((sz 2 *! i <: usize) +! sz 1 <: usize)
@@ -8554,9 +8948,11 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 -let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
 -  let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
 -  let serialized:t_Array u8 (sz 384) =
--    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
--              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
--                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+-            (Core.Slice.Iter.t_ChunksExact i32))
+-          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+-              (Core.Slice.impl__chunks_exact #i32
+-                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
 -                    <:
 -                    t_Slice i32)
 -                  (sz 2)
@@ -8671,8 +9067,8 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fst extraction-edited/Libcrux.K
 +#pop-options
 +
 diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti
---- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-05-14 15:56:45.414356679 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-05-14 15:56:45.468355794 +0200
+--- extraction/Libcrux.Kem.Kyber.Serialize.fsti	2024-05-16 17:05:53.733568476 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Serialize.fsti	2024-05-16 17:05:53.788566631 +0200
 @@ -2,133 +2,188 @@
  #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
  open Core
@@ -8945,9 +9341,18 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Serialize.fsti extraction-edited/Libcrux.
 +        int_t_array_bitwise_eq res 8 coefficients 12
 +      ))
 diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.Kyber.Types.fst
---- extraction/Libcrux.Kem.Kyber.Types.fst	2024-05-14 15:56:45.393357024 +0200
-+++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-05-14 15:56:45.464355859 +0200
-@@ -40,13 +40,41 @@
+--- extraction/Libcrux.Kem.Kyber.Types.fst	2024-05-16 17:05:53.710569248 +0200
++++ extraction-edited/Libcrux.Kem.Kyber.Types.fst	2024-05-16 17:05:53.784566765 +0200
+@@ -29,7 +29,7 @@
+     f_from
+     =
+     fun (value: t_Array u8 v_SIZE) ->
+-      { f_value = Core.Clone.f_clone #(t_Array u8 v_SIZE) value } <: t_MlKemCiphertext v_SIZE
++      { f_value = Core.Clone.f_clone value } <: t_MlKemCiphertext v_SIZE
+   }
+ 
+ [@@ FStar.Tactics.Typeclasses.tcinstance]
+@@ -40,14 +40,42 @@
      f_from = fun (value: t_MlKemCiphertext v_SIZE) -> value.f_value
    }
  
@@ -8984,13 +9389,24 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
  
  let impl_6__split_at (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) (mid: usize)
 -    : (t_Slice u8 & t_Slice u8) =
+-  Core.Slice.impl__split_at #u8 (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 +    : Pure (t_Slice u8 & t_Slice u8)
 +      (requires (mid <=. v_SIZE))
 +      (ensures (fun (x,y) -> Seq.length x == v mid /\ Seq.length y == v (v_SIZE -! mid))) =
-   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
++  Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
  
  type t_MlKemPrivateKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
-@@ -86,15 +114,53 @@
+ 
+@@ -75,7 +103,7 @@
+     f_from
+     =
+     fun (value: t_Array u8 v_SIZE) ->
+-      { f_value = Core.Clone.f_clone #(t_Array u8 v_SIZE) value } <: t_MlKemPrivateKey v_SIZE
++      { f_value = Core.Clone.f_clone value } <: t_MlKemPrivateKey v_SIZE
+   }
+ 
+ [@@ FStar.Tactics.Typeclasses.tcinstance]
+@@ -86,14 +114,52 @@
      f_from = fun (value: t_MlKemPrivateKey v_SIZE) -> value.f_value
    }
  
@@ -9027,22 +9443,31 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
  
  let impl_12__split_at (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) (mid: usize)
 -    : (t_Slice u8 & t_Slice u8) =
+-  Core.Slice.impl__split_at #u8 (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 +    : Pure (t_Slice u8 & t_Slice u8)
 +      (requires (mid <=. v_SIZE))
 +      (ensures (fun (x,y) -> Seq.length x == v mid /\ Seq.length y == v (v_SIZE -! mid))) =
-   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
++  Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
++
++
++
++
++
++
++
++
++
++
  
-+
-+
-+
-+
-+
-+
-+
-+
-+
-+
  type t_MlKemPublicKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
+ 
+@@ -121,7 +187,7 @@
+     f_from
+     =
+     fun (value: t_Array u8 v_SIZE) ->
+-      { f_value = Core.Clone.f_clone #(t_Array u8 v_SIZE) value } <: t_MlKemPublicKey v_SIZE
++      { f_value = Core.Clone.f_clone value } <: t_MlKemPublicKey v_SIZE
+   }
  
  [@@ FStar.Tactics.Typeclasses.tcinstance]
 @@ -132,67 +198,6 @@
@@ -9056,7 +9481,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
 -
 -let impl_18__split_at (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) (mid: usize)
 -    : (t_Slice u8 & t_Slice u8) =
--  Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
+-  Core.Slice.impl__split_at #u8 (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 -
 -[@@ FStar.Tactics.Typeclasses.tcinstance]
 -let impl_5 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_MlKemCiphertext v_SIZE) (t_Slice u8) =
@@ -9073,7 +9498,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
 -    f_try_from
 -    =
 -    fun (value: t_Slice u8) ->
--      match Core.Convert.f_try_into value with
+-      match Core.Convert.f_try_into #(t_Slice u8) #(t_Array u8 v_SIZE) value with
 -      | Core.Result.Result_Ok value ->
 -        Core.Result.Result_Ok ({ f_value = value } <: t_MlKemCiphertext v_SIZE)
 -        <:
@@ -9099,7 +9524,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
 -    f_try_from
 -    =
 -    fun (value: t_Slice u8) ->
--      match Core.Convert.f_try_into value with
+-      match Core.Convert.f_try_into #(t_Slice u8) #(t_Array u8 v_SIZE) value with
 -      | Core.Result.Result_Ok value ->
 -        Core.Result.Result_Ok ({ f_value = value } <: t_MlKemPrivateKey v_SIZE)
 -        <:
@@ -9113,6 +9538,15 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
  [@@ FStar.Tactics.Typeclasses.tcinstance]
  let impl_17 (v_SIZE: usize) : Core.Convert.t_TryFrom (t_MlKemPublicKey v_SIZE) (t_Slice u8) =
    {
+@@ -208,7 +213,7 @@
+     f_try_from
+     =
+     fun (value: t_Slice u8) ->
+-      match Core.Convert.f_try_into #(t_Slice u8) #(t_Array u8 v_SIZE) value with
++      match Core.Convert.f_try_into value with
+       | Core.Result.Result_Ok value ->
+         Core.Result.Result_Ok ({ f_value = value } <: t_MlKemPublicKey v_SIZE)
+         <:
 @@ -219,7 +224,17 @@
          Core.Result.t_Result (t_MlKemPublicKey v_SIZE) Core.Array.t_TryFromSliceError
    }
@@ -9132,7 +9566,7 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
  type t_MlKemKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {
    f_sk:t_MlKemPrivateKey v_PRIVATE_KEY_SIZE;
    f_pk:t_MlKemPublicKey v_PUBLIC_KEY_SIZE
-@@ -232,7 +247,6 @@
+@@ -232,20 +247,12 @@
      : t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
    { f_sk = sk; f_pk = pk } <: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
  
@@ -9140,9 +9574,23 @@ diff -ruN extraction/Libcrux.Kem.Kyber.Types.fst extraction-edited/Libcrux.Kem.K
  let impl__new
        (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
        (sk: t_Array u8 v_PRIVATE_KEY_SIZE)
+       (pk: t_Array u8 v_PUBLIC_KEY_SIZE)
+     : t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE =
+-  {
+-    f_sk
+-    =
+-    Core.Convert.f_into #(t_Array u8 v_PRIVATE_KEY_SIZE) #(t_MlKemPrivateKey v_PRIVATE_KEY_SIZE) sk;
+-    f_pk
+-    =
+-    Core.Convert.f_into #(t_Array u8 v_PUBLIC_KEY_SIZE) #(t_MlKemPublicKey v_PUBLIC_KEY_SIZE) pk
+-  }
++  { f_sk = Core.Convert.f_into sk; f_pk = Core.Convert.f_into pk }
+   <:
+   t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
+ 
 diff -ruN extraction/Libcrux_platform.Platform.fsti extraction-edited/Libcrux_platform.Platform.fsti
 --- extraction/Libcrux_platform.Platform.fsti	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/Libcrux_platform.Platform.fsti	2024-05-14 15:56:45.421356565 +0200
++++ extraction-edited/Libcrux_platform.Platform.fsti	2024-05-16 17:05:53.740568242 +0200
 @@ -0,0 +1,20 @@
 +module Libcrux_platform.Platform
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
@@ -9166,7 +9614,7 @@ diff -ruN extraction/Libcrux_platform.Platform.fsti extraction-edited/Libcrux_pl
 +val simd128_support: Prims.unit -> Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 --- extraction/MkSeq.fst	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/MkSeq.fst	2024-05-14 15:56:45.438356286 +0200
++++ extraction-edited/MkSeq.fst	2024-05-16 17:05:53.758567637 +0200
 @@ -0,0 +1,91 @@
 +module MkSeq
 +open Core
@@ -9261,7 +9709,7 @@ diff -ruN extraction/MkSeq.fst extraction-edited/MkSeq.fst
 +%splice[] (init 13 (fun i -> create_gen_tac (i + 1)))
 diff -ruN extraction/Spec.Kyber.fst extraction-edited/Spec.Kyber.fst
 --- extraction/Spec.Kyber.fst	1970-01-01 01:00:00.000000000 +0100
-+++ extraction-edited/Spec.Kyber.fst	2024-05-14 15:56:45.430356417 +0200
++++ extraction-edited/Spec.Kyber.fst	2024-05-16 17:05:53.749567940 +0200
 @@ -0,0 +1,435 @@
 +module Spec.Kyber
 +#set-options "--fuel 0 --ifuel 1 --z3rlimit 100"

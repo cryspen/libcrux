@@ -8,7 +8,7 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
     if true
     then
       let _:Prims.unit =
-        if ~.((Core.Slice.impl__len slice <: usize) <=. v_LEN <: bool)
+        if ~.((Core.Slice.impl__len #u8 slice <: usize) <=. v_LEN <: bool)
         then
           Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: slice.len() <= LEN"
 
@@ -20,12 +20,16 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
   let out:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
   let out:t_Array u8 v_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
-      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = Core.Slice.impl__len slice <: usize }
+      ({
+          Core.Ops.Range.f_start = sz 0;
+          Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
+        }
         <:
         Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice (out.[ {
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
                 Core.Ops.Range.f_start = sz 0;
-                Core.Ops.Range.f_end = Core.Slice.impl__len slice <: usize
+                Core.Ops.Range.f_end = Core.Slice.impl__len #u8 slice <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -48,10 +52,9 @@ let sample_ring_element_cbd
   let domain_separator, error_1_, prf_input:(u8 &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     t_Array u8 (sz 33)) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -105,10 +108,9 @@ let sample_vector_cbd_then_ntt
   in
   let domain_separator, prf_input, re_as_ntt:(u8 & t_Array u8 (sz 33) &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -159,8 +161,13 @@ let compress_then_serialize_u
      =
   let out:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let out:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Iter.Traits.Collect.f_into_iter input
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter
+                  Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+              (Core.Iter.Traits.Collect.f_into_iter #(t_Array
+                      Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+                  input
                 <:
                 Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
             <:
@@ -180,7 +187,8 @@ let compress_then_serialize_u
               }
               <:
               Core.Ops.Range.t_Range usize)
-            (Core.Slice.impl__copy_from_slice (out.[ {
+            (Core.Slice.impl__copy_from_slice #u8
+                (out.[ {
                       Core.Ops.Range.f_start = i *! (v_OUT_LEN /! v_K <: usize) <: usize;
                       Core.Ops.Range.f_end
                       =
@@ -263,12 +271,11 @@ let encrypt_unpacked
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from ciphertext
       ({ Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice (ciphertext.[ { Core.Ops.Range.f_start = v_C1_LEN }
-              <:
-              Core.Ops.Range.t_RangeFrom usize ]
+      (Core.Slice.impl__copy_from_slice #u8
+          (ciphertext.[ { Core.Ops.Range.f_start = v_C1_LEN } <: Core.Ops.Range.t_RangeFrom usize ]
             <:
             t_Slice u8)
-          (Core.Array.impl_23__as_slice v_C2_LEN c2 <: t_Slice u8)
+          (Core.Array.impl_23__as_slice #u8 v_C2_LEN c2 <: t_Slice u8)
         <:
         t_Slice u8)
   in
@@ -282,8 +289,11 @@ let deserialize_then_decompress_u
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
   let u_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize ciphertext <: t_Slice u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8
+                  (Rust_primitives.unsize ciphertext <: t_Slice u8)
                   ((Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT *!
                       v_U_COMPRESSION_FACTOR
                       <:
@@ -375,8 +385,11 @@ let deserialize_secret_key (v_K: usize) (secret_key: t_Slice u8) =
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
   let secret_as_ntt:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact secret_key
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8
+                  secret_key
                   Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -423,8 +436,13 @@ let serialize_secret_key
      =
   let out:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let out:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Iter.Traits.Collect.f_into_iter key
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter
+                  Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+              (Core.Iter.Traits.Collect.f_into_iter #(t_Array
+                      Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
+                  key
                 <:
                 Core.Array.Iter.t_IntoIter Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K)
             <:
@@ -450,7 +468,8 @@ let serialize_secret_key
               }
               <:
               Core.Ops.Range.t_Range usize)
-            (Core.Slice.impl__copy_from_slice (out.[ {
+            (Core.Slice.impl__copy_from_slice #u8
+                (out.[ {
                       Core.Ops.Range.f_start
                       =
                       i *! Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT <: usize;
@@ -490,7 +509,8 @@ let serialize_public_key
       ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT }
         <:
         Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice (public_key_serialized.[ {
+      (Core.Slice.impl__copy_from_slice #u8
+          (public_key_serialized.[ {
                 Core.Ops.Range.f_start = sz 0;
                 Core.Ops.Range.f_end = v_RANKED_BYTES_PER_RING_ELEMENT
               }
@@ -513,9 +533,8 @@ let serialize_public_key
       ({ Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
         <:
         Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice (public_key_serialized.[ {
-                Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT
-              }
+      (Core.Slice.impl__copy_from_slice #u8
+          (public_key_serialized.[ { Core.Ops.Range.f_start = v_RANKED_BYTES_PER_RING_ELEMENT }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
@@ -532,7 +551,7 @@ let generate_keypair_unpacked
      =
   let hashed:t_Array u8 (sz 64) = Libcrux.Kem.Kyber.Hash_functions.v_G key_generation_seed in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
+    Core.Slice.impl__split_at #u8 (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)
   in
   let a_transpose:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
     Libcrux.Kem.Kyber.Matrix.sample_matrix_A v_K
@@ -558,10 +577,9 @@ let generate_keypair_unpacked
   in
   let secret_as_ntt, tt_as_ntt:(t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -577,7 +595,9 @@ let generate_keypair_unpacked
             temp_0_
           in
           let i:usize = i in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  usize)
+                ({
                     Core.Ops.Range.f_start = sz 0;
                     Core.Ops.Range.f_end
                     =
@@ -670,10 +690,9 @@ let generate_keypair_unpacked
     a_transpose
   in
   let a_matrix:t_Array (t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K) v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -685,10 +704,9 @@ let generate_keypair_unpacked
             a_matrix
           in
           let i:usize = i in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                    Core.Ops.Range.f_start = sz 0;
-                    Core.Ops.Range.f_end = v_K
-                  }
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  usize)
+                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                   <:
                   Core.Ops.Range.t_Range usize)
               <:

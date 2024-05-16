@@ -13,15 +13,16 @@ let serialize_kem_secret_key
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({
           Core.Ops.Range.f_start = pointer;
-          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len #u8 private_key <: usize) <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice (out.[ {
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
                 Core.Ops.Range.f_start = pointer;
                 Core.Ops.Range.f_end
                 =
-                pointer +! (Core.Slice.impl__len private_key <: usize) <: usize
+                pointer +! (Core.Slice.impl__len #u8 private_key <: usize) <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -31,20 +32,21 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
-  let pointer:usize = pointer +! (Core.Slice.impl__len private_key <: usize) in
+  let pointer:usize = pointer +! (Core.Slice.impl__len #u8 private_key <: usize) in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({
           Core.Ops.Range.f_start = pointer;
-          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+          Core.Ops.Range.f_end = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice (out.[ {
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
                 Core.Ops.Range.f_start = pointer;
                 Core.Ops.Range.f_end
                 =
-                pointer +! (Core.Slice.impl__len public_key <: usize) <: usize
+                pointer +! (Core.Slice.impl__len #u8 public_key <: usize) <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -54,7 +56,7 @@ let serialize_kem_secret_key
         <:
         t_Slice u8)
   in
-  let pointer:usize = pointer +! (Core.Slice.impl__len public_key <: usize) in
+  let pointer:usize = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({
@@ -63,7 +65,8 @@ let serialize_kem_secret_key
         }
         <:
         Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice (out.[ {
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
                 Core.Ops.Range.f_start = pointer;
                 Core.Ops.Range.f_end
                 =
@@ -88,15 +91,16 @@ let serialize_kem_secret_key
           Core.Ops.Range.f_start = pointer;
           Core.Ops.Range.f_end
           =
-          pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+          pointer +! (Core.Slice.impl__len #u8 implicit_rejection_value <: usize) <: usize
         }
         <:
         Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice (out.[ {
+      (Core.Slice.impl__copy_from_slice #u8
+          (out.[ {
                 Core.Ops.Range.f_start = pointer;
                 Core.Ops.Range.f_end
                 =
-                pointer +! (Core.Slice.impl__len implicit_rejection_value <: usize) <: usize
+                pointer +! (Core.Slice.impl__len #u8 implicit_rejection_value <: usize) <: usize
               }
               <:
               Core.Ops.Range.t_Range usize ]
@@ -118,10 +122,10 @@ let decapsulate
     Libcrux.Kem.Kyber.Types.impl_12__split_at v_SECRET_KEY_SIZE secret_key v_CPA_SECRET_KEY_SIZE
   in
   let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at secret_key v_PUBLIC_KEY_SIZE
+    Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
   in
   let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
+    Core.Slice.impl__split_at #u8 secret_key Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
   in
   let decrypted:t_Array u8 (sz 32) =
     Libcrux.Kem.Kyber.Ind_cpa.decrypt v_K
@@ -141,9 +145,8 @@ let decapsulate
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice (to_hash.[ {
-                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
-              }
+      (Core.Slice.impl__copy_from_slice #u8
+          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
@@ -156,7 +159,8 @@ let decapsulate
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
+    Core.Slice.impl__split_at #u8
+      (Rust_primitives.unsize hashed <: t_Slice u8)
       Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
   in
   let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
@@ -169,14 +173,17 @@ let decapsulate
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice (to_hash.[ {
-                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
-              }
+      (Core.Slice.impl__copy_from_slice #u8
+          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
             t_Slice u8)
-          (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
+          (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+              #(t_Slice u8)
+              ciphertext
+            <:
+            t_Slice u8)
         <:
         t_Slice u8)
   in
@@ -191,7 +198,11 @@ let decapsulate
   in
   let selector:u8 =
     Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
-      (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
+      (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+          #(t_Slice u8)
+          ciphertext
+        <:
+        t_Slice u8)
       (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
   in
   Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
@@ -213,9 +224,8 @@ let encapsulate
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice (to_hash.[ {
-                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE
-              }
+      (Core.Slice.impl__copy_from_slice #u8
+          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_H_DIGEST_SIZE }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
@@ -238,7 +248,8 @@ let encapsulate
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
+    Core.Slice.impl__split_at #u8
+      (Rust_primitives.unsize hashed <: t_Slice u8)
       Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
   in
   let ciphertext:t_Array u8 v_CIPHERTEXT_SIZE =
@@ -254,9 +265,12 @@ let encapsulate
   in
   let shared_secret_array:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let shared_secret_array:t_Array u8 (sz 32) =
-    Core.Slice.impl__copy_from_slice shared_secret_array shared_secret
+    Core.Slice.impl__copy_from_slice #u8 shared_secret_array shared_secret
   in
-  Core.Convert.f_into ciphertext, shared_secret_array
+  Core.Convert.f_into #(t_Array u8 v_CIPHERTEXT_SIZE)
+    #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    ciphertext,
+  shared_secret_array
   <:
   (Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 
@@ -326,9 +340,8 @@ let decapsulate_unpacked
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice (to_hash.[ {
-                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
-              }
+      (Core.Slice.impl__copy_from_slice #u8
+          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
@@ -341,7 +354,8 @@ let decapsulate_unpacked
     Libcrux.Kem.Kyber.Hash_functions.v_G (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
-    Core.Slice.impl__split_at (Rust_primitives.unsize hashed <: t_Slice u8)
+    Core.Slice.impl__split_at #u8
+      (Rust_primitives.unsize hashed <: t_Slice u8)
       Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
   in
   let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
@@ -354,14 +368,17 @@ let decapsulate_unpacked
       ({ Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
         <:
         Core.Ops.Range.t_RangeFrom usize)
-      (Core.Slice.impl__copy_from_slice (to_hash.[ {
-                Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE
-              }
+      (Core.Slice.impl__copy_from_slice #u8
+          (to_hash.[ { Core.Ops.Range.f_start = Libcrux.Kem.Kyber.Constants.v_SHARED_SECRET_SIZE }
               <:
               Core.Ops.Range.t_RangeFrom usize ]
             <:
             t_Slice u8)
-          (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
+          (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+              #(t_Slice u8)
+              ciphertext
+            <:
+            t_Slice u8)
         <:
         t_Slice u8)
   in
@@ -376,7 +393,11 @@ let decapsulate_unpacked
   in
   let selector:u8 =
     Libcrux.Kem.Kyber.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
-      (Core.Convert.f_as_ref ciphertext <: t_Slice u8)
+      (Core.Convert.f_as_ref #(Libcrux.Kem.Kyber.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+          #(t_Slice u8)
+          ciphertext
+        <:
+        t_Slice u8)
       (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
   in
   Libcrux.Kem.Kyber.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
@@ -421,12 +442,18 @@ let generate_keypair
   in
   let (private_key: Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE):Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey
   v_PRIVATE_KEY_SIZE =
-    Core.Convert.f_from secret_key_serialized
+    Core.Convert.f_from #(Libcrux.Kem.Kyber.Types.t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+      #(t_Array u8 v_PRIVATE_KEY_SIZE)
+      secret_key_serialized
   in
   Libcrux.Kem.Kyber.Types.impl__from v_PRIVATE_KEY_SIZE
     v_PUBLIC_KEY_SIZE
     private_key
-    (Core.Convert.f_into public_key <: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+    (Core.Convert.f_into #(t_Array u8 v_PUBLIC_KEY_SIZE)
+        #(Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+        public_key
+      <:
+      Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 
 let generate_keypair_unpacked
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
@@ -464,13 +491,17 @@ let generate_keypair_unpacked
     Libcrux.Kem.Kyber.Hash_functions.v_H (Rust_primitives.unsize ind_cpa_public_key <: t_Slice u8)
   in
   let (rej: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
-    Core.Result.impl__unwrap (Core.Convert.f_try_into implicit_rejection_value
+    Core.Result.impl__unwrap #(t_Array u8 (sz 32))
+      #Core.Array.t_TryFromSliceError
+      (Core.Convert.f_try_into #(t_Slice u8) #(t_Array u8 (sz 32)) implicit_rejection_value
         <:
         Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
   in
   let (pubkey: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE):Libcrux.Kem.Kyber.Types.t_MlKemPublicKey
   v_PUBLIC_KEY_SIZE =
-    Core.Convert.f_from ind_cpa_public_key
+    Core.Convert.f_from #(Libcrux.Kem.Kyber.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+      #(t_Array u8 v_PUBLIC_KEY_SIZE)
+      ind_cpa_public_key
   in
   ({
       f_secret_as_ntt = secret_as_ntt;
