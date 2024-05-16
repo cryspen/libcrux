@@ -1,9 +1,6 @@
-use crate::rust_simd::sha3_trait::*;
+//! A portable SHA3 implementation using the generic implementation.
 
-// This file optimizes for the stable Rust Neon Intrinsics
-// If we want to use the unstable neon-sha3 instructions, we could use:
-// veor3q_u64, vrax1q_u64, vxarq_u64, and vbcaxq_u64
-// These instructions might speed up our code even more.
+use crate::traits::*;
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {

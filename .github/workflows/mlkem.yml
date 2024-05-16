@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
-    branches: ["main", "dev"]
+    branches: ["main", "dev", "*"]
   workflow_dispatch:
   merge_group:
 
@@ -188,7 +188,7 @@ jobs:
       - name: 🏃🏻‍♀️ Benchmarks Windows
         if: ${{ matrix.os == 'windows-latest' }}
         run: cargo bench --verbose $RUST_TARGET_FLAG
-        
+
       - name: 🏃🏻‍♀️ Benchmarks Clang
         if: ${{ matrix.os != 'windows-latest' }}
         run: CC=clang cargo bench --verbose $RUST_TARGET_FLAG

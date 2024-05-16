@@ -32,4 +32,7 @@ pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
 
 // XXX: Eurydice can't handle this.
 // digest_size(Algorithm::Sha3_256);
+/// SHA3 256 digest size
 pub(crate) const H_DIGEST_SIZE: usize = 32;
+/// SHA3 512 digest size
+pub(crate) const G_DIGEST_SIZE: usize = 64;

@@ -1,8 +1,12 @@
-use std::ops::Index;
+//! The generic SHA3 implementation that uses portable or platform specific
+//! sub-routines.
 
-use crate::rust_simd::sha3_trait::*;
+use core::ops::Index;
+
+use crate::traits::*;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
+#[allow(private_bounds)] // TODO: figure out visibility
 #[derive(Clone, Copy)]
 pub struct KeccakState<const N: usize, T: KeccakItem<N>> {
     pub st: [[T; 5]; 5],
@@ -16,6 +20,7 @@ impl<const N: usize, T: KeccakItem<N>> Index<usize> for KeccakState<N, T> {
     }
 }
 
+#[allow(private_bounds)] // TODO: figure out visibility
 impl<const N: usize, T: KeccakItem<N>> KeccakState<N, T> {
     /// Create a new Shake128 x4 state.
     #[inline(always)]
