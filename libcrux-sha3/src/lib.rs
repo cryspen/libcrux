@@ -440,7 +440,7 @@ pub mod avx2 {
         use crate::generic_keccak::keccak;
 
         /// Perform 4 SHAKE256 operations in parallel
-        pub fn shake256x4(
+        pub fn shake256(
             input0: &[u8],
             input1: &[u8],
             input2: &[u8],
@@ -483,9 +483,9 @@ pub mod avx2 {
             #[cfg(feature = "simd128")]
             pub type KeccakState4 = [KeccakState2; 2];
             #[cfg(not(any(feature = "simd256", feature = "simd128")))]
-            pub type KeccakState4 = [KeccakState1; 4];
+            pub type KeccakState4 = [crate::portable::KeccakState1; 4];
 
-            pub fn shake128x4_init() -> KeccakState4 {
+            pub fn shake128_init() -> KeccakState4 {
                 #[cfg(not(feature = "simd256"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
@@ -508,7 +508,7 @@ pub mod avx2 {
                 KeccakState4::new()
             }
 
-            pub fn shake128x4_absorb_final(
+            pub fn shake128_absorb_final(
                 s: &mut KeccakState4,
                 data0: &[u8],
                 data1: &[u8],
@@ -546,7 +546,7 @@ pub mod avx2 {
                 );
             }
 
-            pub fn shake128x4_squeeze_first_three_blocks(
+            pub fn shake128_squeeze_first_three_blocks(
                 s: &mut KeccakState4,
                 out0: &mut [u8],
                 out1: &mut [u8],
@@ -584,7 +584,7 @@ pub mod avx2 {
                 );
             }
 
-            pub fn shake128x4_squeeze_next_block(
+            pub fn shake128_squeeze_next_block(
                 s: &mut KeccakState4,
                 out0: &mut [u8],
                 out1: &mut [u8],

@@ -2,7 +2,7 @@ use libcrux_polynomials::Operations;
 
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
-    hash_functions::{PRFxN, G, PRF},
+    hash_functions::Hash,
     helper::cloop,
     matrix::*,
     ntt::{ntt_binomially_sampled_ring_element, ntt_vector_u},
@@ -69,6 +69,7 @@ fn sample_ring_element_cbd<
     const ETA2_RANDOMNESS_SIZE: usize,
     const ETA2: usize,
     Vector: Operations,
+    Hasher: Hash<K>,
 >(
     prf_input: [u8; 33],
     mut domain_separator: u8,
@@ -79,7 +80,7 @@ fn sample_ring_element_cbd<
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = PRFxN(&prf_inputs);
+    let prf_outputs: [[u8; ETA2_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {
         error_1[i] = sample_from_binomial_distribution::<ETA2, Vector>(&prf_outputs[i]);
     }
@@ -94,6 +95,7 @@ fn sample_vector_cbd_then_ntt<
     const ETA: usize,
     const ETA_RANDOMNESS_SIZE: usize,
     Vector: Operations,
+    Hasher: Hash<K>,
 >(
     prf_input: [u8; 33],
     mut domain_separator: u8,
@@ -104,7 +106,7 @@ fn sample_vector_cbd_then_ntt<
         prf_inputs[i][32] = domain_separator;
         domain_separator += 1;
     }
-    let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = PRFxN(&prf_inputs);
+    let prf_outputs: [[u8; ETA_RANDOMNESS_SIZE]; K] = Hasher::PRFxN(&prf_inputs);
     for i in 0..K {
         re_as_ntt[i] = sample_from_binomial_distribution::<ETA, Vector>(&prf_outputs[i]);
         ntt_binomially_sampled_ring_element(&mut re_as_ntt[i]);
@@ -159,22 +161,24 @@ pub(crate) fn generate_keypair<
     const ETA1: usize,
     const ETA1_RANDOMNESS_SIZE: usize,
     Vector: Operations,
+    Hasher: Hash<K>,
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
     // (ρ,σ) := G(d)
-    let hashed = G(key_generation_seed);
+    let hashed = Hasher::G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
 
-    let A_transpose = sample_matrix_A(into_padded_array(seed_for_A), true);
+    let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed_for_A), true);
 
     let prf_input: [u8; 33] = into_padded_array(seed_for_secret_and_error);
     let (secret_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector>(prf_input, 0);
-    let (error_as_ntt, _) = sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector>(
-        prf_input,
-        domain_separator,
-    );
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
+    let (error_as_ntt, _) =
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+            prf_input,
+            domain_separator,
+        );
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
@@ -265,6 +269,7 @@ pub(crate) fn encrypt<
     const ETA2: usize,
     const ETA2_RANDOMNESS_SIZE: usize,
     Vector: Operations,
+    Hasher: Hash<K>,
 >(
     public_key: &[u8],
     message: [u8; SHARED_SECRET_SIZE],
@@ -282,7 +287,7 @@ pub(crate) fn encrypt<
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
-    let A_transpose = sample_matrix_A(into_padded_array(seed), false);
+    let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed), false);
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
@@ -291,21 +296,21 @@ pub(crate) fn encrypt<
     // rˆ := NTT(r)
     let mut prf_input: [u8; 33] = into_padded_array(randomness);
     let (r_as_ntt, domain_separator) =
-        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector>(prf_input, 0);
+        sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(prf_input, 0);
 
     // for i from 0 to k−1 do
     //     e1[i] := CBD_{η2}(PRF(r,N))
     //     N := N + 1
     // end for
     let (error_1, domain_separator) =
-        sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, Vector>(
+        sample_ring_element_cbd::<K, ETA2_RANDOMNESS_SIZE, ETA2, Vector, Hasher>(
             prf_input,
             domain_separator,
         );
 
     // e_2 := CBD{η2}(PRF(r, N))
     prf_input[32] = domain_separator;
-    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = PRF(&prf_input);
+    let prf_output: [u8; ETA2_RANDOMNESS_SIZE] = Hasher::PRF(&prf_input);
     let error_2 = sample_from_binomial_distribution::<ETA2, Vector>(&prf_output);
 
     // u := NTT^{-1}(AˆT ◦ rˆ) + e_1

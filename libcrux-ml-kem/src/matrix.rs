@@ -1,13 +1,13 @@
 use libcrux_polynomials::Operations;
 
 use crate::{
-    helper::cloop, invert_ntt::invert_ntt_montgomery, polynomial::PolynomialRingElement,
-    sampling::sample_from_xof,
+    hash_functions::Hash, helper::cloop, invert_ntt::invert_ntt_montgomery,
+    polynomial::PolynomialRingElement, sampling::sample_from_xof,
 };
 
 #[inline(always)]
 #[allow(non_snake_case)]
-pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations>(
+pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seed: [u8; 34],
     transpose: bool,
 ) -> [[PolynomialRingElement<Vector>; K]; K] {
@@ -21,7 +21,7 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations>(
             seeds[j][32] = i as u8;
             seeds[j][33] = j as u8;
         }
-        let sampled = sample_from_xof(seeds);
+        let sampled = sample_from_xof::<K, Vector, Hasher>(seeds);
         for (j, sample) in sampled.into_iter().enumerate() {
             // A[i][j] = A_transpose[j][i]
             if transpose {
