@@ -52,14 +52,9 @@ pub(crate) fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
-    /* Testing CI TODO UNDO*/
-    false
-}
-
-/*
     if cfg!(feature = "simd256")
         && cfg!(target_arch = "x86_64")
-        && libcrux_platform::simd256_support()
+//        && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return validate_public_key_generic::<
@@ -77,7 +72,7 @@ pub(crate) fn validate_public_key<
         >(public_key)
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
-        && libcrux_platform::simd128_support()
+//        && libcrux_platform::simd128_support()
     {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         return validate_public_key_generic::<
@@ -141,7 +136,7 @@ pub(crate) fn generate_keypair<
     // Runtime feature detection.
     if cfg!(feature = "simd256")
         && cfg!(target_arch = "x86_64")
-        && libcrux_platform::simd256_support()
+//        && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return generate_keypair_generic::<
@@ -169,7 +164,7 @@ pub(crate) fn generate_keypair<
         >(ind_cpa_keypair_randomness, implicit_rejection_value)
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
-        && libcrux_platform::simd128_support()
+//        && libcrux_platform::simd128_support()
     {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         return generate_keypair_generic::<
@@ -266,7 +261,7 @@ pub(crate) fn encapsulate<
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     if cfg!(feature = "simd256")
         && cfg!(target_arch = "x86_64")
-        && libcrux_platform::simd256_support()
+//        && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return encapsulate_generic::<
@@ -306,7 +301,7 @@ pub(crate) fn encapsulate<
         >(public_key, randomness)
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
-        && libcrux_platform::simd128_support()
+//        && libcrux_platform::simd128_support()
     {
         #[cfg(not(feature = "simd128"))]
         return encapsulate_generic::<
@@ -435,7 +430,7 @@ pub(crate) fn decapsulate<
 ) -> MlKemSharedSecret {
     if cfg!(feature = "simd256")
         && cfg!(target_arch = "x86_64")
-        && libcrux_platform::simd256_support()
+//        && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
         return decapsulate_generic::<
@@ -481,7 +476,7 @@ pub(crate) fn decapsulate<
         >(private_key, ciphertext);
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
-        && libcrux_platform::simd128_support()
+//        && libcrux_platform::simd128_support()
     {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         return decapsulate_generic::<
