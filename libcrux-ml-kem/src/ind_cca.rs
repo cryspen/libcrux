@@ -163,6 +163,7 @@ pub(crate) fn generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
             libcrux_polynomials::SIMD128Vector,
+            hash_functions::neon::Simd128Hash,
         >(ind_cpa_keypair_randomness, implicit_rejection_value);
         #[cfg(not(feature = "simd128"))]
         generate_keypair_generic::<
@@ -317,6 +318,7 @@ pub(crate) fn encapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             libcrux_polynomials::SIMD128Vector,
+            hash_functions::neon::Simd128Hash,
         >(public_key, randomness)
     } else {
         encapsulate_generic::<
@@ -470,6 +472,7 @@ pub(crate) fn decapsulate<
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
             libcrux_polynomials::SIMD128Vector,
+            hash_functions::neon::Simd128Hash,
         >(private_key, ciphertext);
         #[cfg(not(feature = "simd128"))]
         return decapsulate_generic::<

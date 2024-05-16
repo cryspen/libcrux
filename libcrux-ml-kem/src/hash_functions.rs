@@ -333,155 +333,198 @@ pub(crate) mod avx2 {
     }
 }
 
-// #[inline(always)]
-// pub(crate) fn G(input: &[u8]) -> [u8; 64] {
-//     simd::sha3_512(input)
-// }
+/// A SIMD128 implementation of [`Hash`] for NEON
+pub(crate) mod neon {
+    use super::*;
+    use libcrux_sha3::neon::x2::{self, incremental::KeccakState2};
 
-// #[inline(always)]
-// pub(crate) fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
-//     simd::sha3_256(input)
-// }
+    /// The state.
+    ///
+    /// It's only used for SHAKE128.
+    /// All other functions don't actually use any members.
+    pub(crate) struct Simd128Hash {
+        shake128_state: [KeccakState2; 2],
+    }
 
-// #[inline(always)]
-// pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-//     simd::shake256::<LEN>(input)
-// }
+    impl<const K: usize> Hash<K> for Simd128Hash {
+        fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
+            let mut digest = [0u8; G_DIGEST_SIZE];
+            libcrux_sha3::neon::sha512(&mut digest, input);
+            digest
+        }
 
-// #[cfg(feature = "simd128")]
-// #[inline(always)]
-// pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-//     let mut out = [[0u8; LEN]; K];
-//     let mut extra = [0u8; LEN];
+        fn H(input: &[u8]) -> [u8; H_DIGEST_SIZE] {
+            let mut digest = [0u8; H_DIGEST_SIZE];
+            libcrux_sha3::neon::sha256(&mut digest, input);
+            digest
+        }
 
-//     match K {
-//         2 => {
-//             let (out0, out1) = out.split_at_mut(1);
-//             simd::shake256x2(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-//         }
-//         3 => {
-//             let (out0, out12) = out.split_at_mut(1);
-//             let (out1, out2) = out12.split_at_mut(1);
-//             simd::shake256x2(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-//             simd::shake256x2(&input[2], &input[2], &mut out2[0], &mut extra);
-//         }
-//         _ => {
-//             let (out0, out123) = out.split_at_mut(1);
-//             let (out1, out23) = out123.split_at_mut(1);
-//             let (out2, out3) = out23.split_at_mut(1);
-//             simd::shake256x2(&input[0], &input[1], &mut out0[0], &mut out1[0]);
-//             simd::shake256x2(&input[2], &input[3], &mut out2[0], &mut out3[0]);
-//         }
-//     }
-//     out
-// }
+        fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
+            let mut digest = [0u8; LEN];
+            libcrux_sha3::neon::shake256(&mut digest, input);
+            digest
+        }
 
-// #[cfg(not(any(feature = "simd128", feature = "simd256")))]
-// #[inline(always)]
-// pub(crate) fn PRFxN<const LEN: usize, const K: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-//     core::array::from_fn(|i| simd::shake256::<LEN>(&input[i]))
-// }
+        fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
+            debug_assert!(K == 2 || K == 3 || K == 4);
 
-// #[cfg(feature = "simd128")]
-// pub(crate) type Shake128x4State = KeccakState4;
+            let mut out = [[0u8; LEN]; K];
+            match K {
+                2 => {
+                    let (out0, out1) = out.split_at_mut(1);
+                    x2::shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
+                }
+                3 => {
+                    let mut extra = [0u8; LEN];
+                    let (out0, out12) = out.split_at_mut(1);
+                    let (out1, out2) = out12.split_at_mut(1);
+                    x2::shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
+                    x2::shake256(&input[2], &input[2], &mut out2[0], &mut extra);
+                }
+                4 => {
+                    let (out0, out123) = out.split_at_mut(1);
+                    let (out1, out23) = out123.split_at_mut(1);
+                    let (out2, out3) = out23.split_at_mut(1);
+                    x2::shake256(&input[0], &input[1], &mut out0[0], &mut out1[0]);
+                    x2::shake256(&input[2], &input[3], &mut out2[0], &mut out3[0]);
+                }
+                _ => unreachable!(),
+            }
+            out
+        }
 
-// #[cfg(feature = "simd128")]
-// #[inline(always)]
-// pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> Shake128x4State {
-//     debug_assert!(K == 2 || K == 3 || K == 4);
+        fn shake128_init_absorb(input: [[u8; 34]; K]) -> Self {
+            debug_assert!(K == 2 || K == 3 || K == 4);
+            let mut state = [
+                x2::incremental::shake128_init(),
+                x2::incremental::shake128_init(),
+            ];
 
-//     let mut states = simd::shake128x4_init();
-//     match K {
-//         2 => {
-//             simd::shake128x2_absorb_final(&mut states[0], &input[0], &input[1]);
-//         }
-//         3 => {
-//             simd::shake128x2_absorb_final(&mut states[0], &input[0], &input[1]);
-//             simd::shake128x2_absorb_final(&mut states[1], &input[2], &input[2]);
-//         }
-//         _ => {
-//             simd::shake128x2_absorb_final(&mut states[0], &input[0], &input[1]);
-//             simd::shake128x2_absorb_final(&mut states[1], &input[2], &input[3]);
-//         }
-//     }
-//     states
-// }
+            match K {
+                2 => {
+                    x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
+                }
+                3 => {
+                    x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
+                    x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[2]);
+                }
+                _ => {
+                    x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
+                    x2::incremental::shake128_absorb_final(&mut state[1], &input[2], &input[3]);
+                }
+            }
+            // _ => unreachable!("This function is only called with 2, 3, 4"),
+            Self {
+                shake128_state: state,
+            }
+        }
 
-// #[cfg(feature = "simd128")]
-// #[inline(always)]
-// pub(crate) fn squeeze_three_blocks<const K: usize>(
-//     state: &mut Shake128x4State,
-// ) -> [[u8; THREE_BLOCKS]; K] {
-//     let mut out = [[0u8; THREE_BLOCKS]; K];
-//     let mut extra = [0u8; THREE_BLOCKS];
+        fn shake128_squeeze_three_blocks(&mut self) -> [[u8; THREE_BLOCKS]; K] {
+            debug_assert!(K == 2 || K == 3 || K == 4);
 
-//     match K {
-//         2 => {
-//             let (out0, out1) = out.split_at_mut(1);
-//             simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0[0], &mut out1[0]);
-//         }
-//         3 => {
-//             let (out0, out12) = out.split_at_mut(1);
-//             let (out1, out2) = out12.split_at_mut(1);
-//             simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0[0], &mut out1[0]);
-//             simd::shake128x2_squeeze_first_three_blocks(&mut state[1], &mut out2[0], &mut extra);
-//         }
-//         _ => {
-//             let (out0, out123) = out.split_at_mut(1);
-//             let (out1, out23) = out123.split_at_mut(1);
-//             let (out2, out3) = out23.split_at_mut(1);
-//             simd::shake128x2_squeeze_first_three_blocks(&mut state[0], &mut out0[0], &mut out1[0]);
-//             simd::shake128x2_squeeze_first_three_blocks(&mut state[1], &mut out2[0], &mut out3[0]);
-//         }
-//     }
-//     out
-// }
+            let mut out = [[0u8; THREE_BLOCKS]; K];
+            match K {
+                2 => {
+                    let (out0, out1) = out.split_at_mut(1);
+                    x2::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state[0],
+                        &mut out0[0],
+                        &mut out1[0],
+                    );
+                }
+                3 => {
+                    let mut extra = [0u8; THREE_BLOCKS];
+                    let (out0, out12) = out.split_at_mut(1);
+                    let (out1, out2) = out12.split_at_mut(1);
+                    x2::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state[0],
+                        &mut out0[0],
+                        &mut out1[0],
+                    );
+                    x2::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state[1],
+                        &mut out2[0],
+                        &mut extra,
+                    );
+                }
+                4 => {
+                    let (out0, out123) = out.split_at_mut(1);
+                    let (out1, out23) = out123.split_at_mut(1);
+                    let (out2, out3) = out23.split_at_mut(1);
+                    x2::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state[0],
+                        &mut out0[0],
+                        &mut out1[0],
+                    );
+                    x2::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state[1],
+                        &mut out2[0],
+                        &mut out3[0],
+                    );
+                }
+                _ => unreachable!("This function is only called with 2, 3, 4"),
+            }
+            out
+        }
 
-// #[cfg(feature = "simd128")]
-// #[inline(always)]
-// pub(crate) fn squeeze_block<const K: usize>(state: &mut Shake128x4State) -> [[u8; BLOCK_SIZE]; K] {
-//     let mut out0 = [0u8; BLOCK_SIZE];
-//     let mut out1 = [0u8; BLOCK_SIZE];
-//     let mut out2 = [0u8; BLOCK_SIZE];
-//     let mut out3 = [0u8; BLOCK_SIZE];
+        fn shake128_squeeze_block(&mut self) -> [[u8; BLOCK_SIZE]; K] {
+            debug_assert!(K == 2 || K == 3 || K == 4);
 
-//     let mut out = [[0u8; BLOCK_SIZE]; K];
-
-//     match K {
-//         2 => {
-//             simd::shake128x2_squeeze_next_block(&mut state[0], &mut out0, &mut out1);
-//             out[0] = out0;
-//             out[1] = out1;
-//         }
-//         3 => {
-//             simd::shake128x2_squeeze_next_block(&mut state[0], &mut out0, &mut out1);
-//             simd::shake128x2_squeeze_next_block(&mut state[1], &mut out2, &mut out3);
-//             out[0] = out0;
-//             out[1] = out1;
-//             out[2] = out2;
-//         }
-//         _ => {
-//             simd::shake128x2_squeeze_next_block(&mut state[0], &mut out0, &mut out1);
-//             simd::shake128x2_squeeze_next_block(&mut state[1], &mut out2, &mut out3);
-//             out[0] = out0;
-//             out[1] = out1;
-//             out[2] = out2;
-//             out[3] = out3;
-//         }
-//     }
-//     out
-// }
-
-// /// Free the memory of the state.
-// ///
-// /// **NOTE:** That this needs to be done manually for now.
-// #[cfg(not(any(feature = "simd256", feature = "simd128")))]
-// #[inline(always)]
-// pub(crate) fn free_state<const K: usize>(_xof_state: [simd::KeccakState1; K]) {}
-
-// /// Free the memory of the state.
-// ///
-// /// **NOTE:** That this needs to be done manually for now.
-// #[cfg(any(feature = "simd256", feature = "simd128"))]
-// #[inline(always)]
-// pub(crate) fn free_state(_xof_state: KeccakState4) {}
+            let mut out = [[0u8; BLOCK_SIZE]; K];
+            match K {
+                2 => {
+                    let mut out0 = [0u8; BLOCK_SIZE];
+                    let mut out1 = [0u8; BLOCK_SIZE];
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[0],
+                        &mut out0,
+                        &mut out1,
+                    );
+                    out[0] = out0;
+                    out[1] = out1;
+                }
+                3 => {
+                    let mut out0 = [0u8; BLOCK_SIZE];
+                    let mut out1 = [0u8; BLOCK_SIZE];
+                    let mut out2 = [0u8; BLOCK_SIZE];
+                    let mut out3 = [0u8; BLOCK_SIZE];
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[0],
+                        &mut out0,
+                        &mut out1,
+                    );
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[1],
+                        &mut out2,
+                        &mut out3,
+                    );
+                    out[0] = out0;
+                    out[1] = out1;
+                    out[2] = out2;
+                }
+                4 => {
+                    let mut out0 = [0u8; BLOCK_SIZE];
+                    let mut out1 = [0u8; BLOCK_SIZE];
+                    let mut out2 = [0u8; BLOCK_SIZE];
+                    let mut out3 = [0u8; BLOCK_SIZE];
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[0],
+                        &mut out0,
+                        &mut out1,
+                    );
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[1],
+                        &mut out2,
+                        &mut out3,
+                    );
+                    out[0] = out0;
+                    out[1] = out1;
+                    out[2] = out2;
+                    out[3] = out3;
+                }
+                _ => unreachable!("This function is only called with 2, 3, 4"),
+            }
+            out
+        }
+    }
+}
