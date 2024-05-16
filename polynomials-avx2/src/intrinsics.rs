@@ -3,6 +3,60 @@ pub(crate) use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 pub(crate) use core::arch::x86_64::*;
 
+pub(crate) fn mm256_storeu_si256(vector: __m256i) -> [i16; 16] {
+    let mut output = [0i16; 16];
+
+    unsafe {
+        _mm256_storeu_si256(output.as_mut_ptr() as *mut __m256i, vector);
+    }
+
+    output
+}
+pub(crate) fn mm_storeu_si128(vector: __m128i, output: &mut [i16]) {
+    debug_assert_eq!(output.len(), 8);
+    unsafe {
+        _mm_storeu_si128(output.as_mut_ptr() as *mut __m128i, vector);
+    }
+}
+
+pub(crate) fn mm_loadu_si128(input: [u8; 16]) -> __m128i {
+    unsafe { _mm_loadu_si128(input.as_ptr() as *const __m128i) }
+}
+
+pub(crate) fn mm256_loadu_si256(input: [i16; 16]) -> __m256i {
+    unsafe { _mm256_loadu_si256(input.as_ptr() as *const __m256i) }
+}
+
+pub(crate) fn mm256_setzero_si256() -> __m256i {
+    unsafe { _mm256_setzero_si256() }
+}
+
+pub(crate) fn mm_set_epi8(
+    byte15: i8,
+    byte14: i8,
+    byte13: i8,
+    byte12: i8,
+    byte11: i8,
+    byte10: i8,
+    byte9: i8,
+    byte8: i8,
+    byte7: i8,
+    byte6: i8,
+    byte5: i8,
+    byte4: i8,
+    byte3: i8,
+    byte2: i8,
+    byte1: i8,
+    byte0: i8,
+) -> __m128i {
+    unsafe {
+        _mm_set_epi8(
+            byte15, byte14, byte13, byte12, byte11, byte10,
+            byte9, byte8, byte7, byte6, byte5, byte4, byte3, byte2, byte1, byte0,
+        )
+    }
+}
+
 pub(crate) fn mm256_set_epi8(
     byte31: i8,
     byte30: i8,
@@ -126,6 +180,11 @@ pub(crate) fn mm256_mullo_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
 pub(crate) fn mm_mullo_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
     unsafe { _mm_mullo_epi16(lhs, rhs) }
 }
+
+pub(crate) fn mm256_cmpgt_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
+    unsafe { _mm256_cmpgt_epi16(lhs, rhs) }
+}
+
 pub(crate) fn mm_mulhi_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
     unsafe { _mm_mulhi_epi16(lhs, rhs) }
 }
@@ -168,6 +227,11 @@ pub(crate) fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: __m256i) -> __m256i 
     unsafe { _mm256_srli_epi32(vector, SHIFT_BY) }
 }
 
+pub(crate) fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+    debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
+    unsafe { _mm256_srli_epi64(vector, SHIFT_BY) }
+}
+
 pub(crate) fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unsafe { _mm256_slli_epi16(vector, SHIFT_BY) }
@@ -178,6 +242,9 @@ pub(crate) fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: __m256i) -> __m256i 
     unsafe { _mm256_slli_epi32(vector, SHIFT_BY) }
 }
 
+pub(crate) fn mm_shuffle_epi8(vector: __m128i, control: __m128i) -> __m128i {
+    unsafe { _mm_shuffle_epi8(vector, control) }
+}
 pub(crate) fn mm256_shuffle_epi8(vector: __m256i, control: __m256i) -> __m256i {
     unsafe { _mm256_shuffle_epi8(vector, control) }
 }
@@ -214,6 +281,9 @@ pub(crate) fn mm256_cvtepi16_epi32(vector: __m128i) -> __m256i {
     unsafe { _mm256_cvtepi16_epi32(vector) }
 }
 
+pub(crate) fn mm_packs_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
+    unsafe { _mm_packs_epi16(lhs, rhs) }
+}
 pub(crate) fn mm256_packs_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
     unsafe { _mm256_packs_epi32(lhs, rhs) }
 }
@@ -234,4 +304,16 @@ pub(crate) fn mm256_inserti128_si256<const CONTROL: i32>(
 pub(crate) fn mm256_blend_epi16<const CONTROL: i32>(lhs: __m256i, rhs: __m256i) -> __m256i {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_blend_epi16(lhs, rhs, CONTROL) }
+}
+
+pub(crate) fn mm_movemask_epi8(vector: __m128i) -> i32 {
+    unsafe { _mm_movemask_epi8(vector) }
+}
+
+pub(crate) fn mm256_permutevar8x32_epi32(vector: __m256i, control: __m256i) -> __m256i {
+    unsafe { _mm256_permutevar8x32_epi32(vector, control) }
+}
+
+pub(crate) fn mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
+    unsafe { _mm256_sllv_epi32(vector, counts) }
 }

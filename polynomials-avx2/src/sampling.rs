@@ -1,7 +1,4 @@
-#[cfg(target_arch = "x86")]
-use core::arch::x86::*;
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::*;
+use crate::intrinsics::*;
 
 use crate::serialize::{deserialize_12, serialize_1};
 use libcrux_traits::FIELD_MODULUS;
@@ -756,34 +753,30 @@ const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
 
 #[inline(always)]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
-    let count = unsafe {
-        let field_modulus = _mm256_set1_epi16(FIELD_MODULUS);
+    let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 
-        let potential_coefficients = deserialize_12(input);
+    let potential_coefficients = deserialize_12(input);
 
-        let compare_with_field_modulus = _mm256_cmpgt_epi16(field_modulus, potential_coefficients);
-        let good = serialize_1(compare_with_field_modulus);
+    let compare_with_field_modulus = mm256_cmpgt_epi16(field_modulus, potential_coefficients);
+    let good = serialize_1(compare_with_field_modulus);
 
-        let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
-        let lower_shuffles = _mm_loadu_si128(lower_shuffles.as_ptr() as *const __m128i);
-        let lower_coefficients = _mm256_castsi256_si128(potential_coefficients);
-        let lower_coefficients = _mm_shuffle_epi8(lower_coefficients, lower_shuffles);
+    let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
+    let lower_shuffles = mm_loadu_si128(lower_shuffles);
+    let lower_coefficients = mm256_castsi256_si128(potential_coefficients);
+    let lower_coefficients = mm_shuffle_epi8(lower_coefficients, lower_shuffles);
 
-        _mm_storeu_si128(output.as_mut_ptr() as *mut __m128i, lower_coefficients);
-        let sampled_count = good[0].count_ones();
+    mm_storeu_si128(lower_coefficients, &mut output[0..8]);
+    let sampled_count = good[0].count_ones() as usize;
 
-        let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
-        let upper_shuffles = _mm_loadu_si128(upper_shuffles.as_ptr() as *const __m128i);
-        let upper_coefficients = _mm256_extractf128_si256(potential_coefficients, 1);
-        let upper_coefficients = _mm_shuffle_epi8(upper_coefficients, upper_shuffles);
+    let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
+    let upper_shuffles = mm_loadu_si128(upper_shuffles);
+    let upper_coefficients = mm256_extracti128_si256::<1>(potential_coefficients);
+    let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);
 
-        _mm_storeu_si128(
-            output.as_mut_ptr().offset(sampled_count as isize) as *mut __m128i,
-            upper_coefficients,
-        );
+    mm_storeu_si128(
+        upper_coefficients,
+        &mut output[sampled_count..sampled_count + 8],
+    );
 
-        sampled_count + good[1].count_ones()
-    };
-
-    count as usize
+    sampled_count + (good[1].count_ones() as usize)
 }
