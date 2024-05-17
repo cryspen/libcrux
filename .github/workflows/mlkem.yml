@@ -75,6 +75,7 @@ jobs:
       - name: 🔨 Build
         run: |
           rustc --print=cfg
+          sysctl hw
           cargo build --verbose $RUST_TARGET_FLAG
 
       - name: 🔨 Build Release
