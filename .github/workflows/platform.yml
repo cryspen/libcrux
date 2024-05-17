@@ -1,0 +1,87 @@
+name: Platform
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev", "*"]
+  workflow_dispatch:
+  merge_group:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          - bits: 32
+            os: "macos-latest"
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: sys/platform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔨 Build
+        run: cargo build --verbose
+
+      - name: 🏃🏻‍♀️ Test
+        run: cargo test --verbose
+
+      - name: 🏃🏻‍♀️ Test Release
+        run: cargo test --verbose --release
+
+      - name: 🛠️ Setup Linux x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+
+      - name: 🏃🏻‍♀️ Test Linux x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: cargo test --verbose --target i686-unknown-linux-gnu
+
+      - name: 🏃🏻‍♀️ Test Release Linux x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: cargo test --verbose --release --target i686-unknown-linux-gnu
+
+      - name: 🛠️ Setup Windows x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
+        run: |
+          rustup target add i686-pc-windows-msvc
+
+      - name: 🏃🏻‍♀️ Test Windows x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
+        run: cargo test --verbose --target i686-pc-windows-msvc
+
+      - name: 🏃🏻‍♀️ Test Release Windows x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
+        run: cargo test --verbose --release --target i686-pc-windows-msvc
+
+      - name: 🛠️ Setup MacOS x86_64
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          rustup target add x86_64-apple-darwin
+
+      - name: 🏃🏻‍♀️ Test MacOS x86_64
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: cargo test --verbose --target x86_64-apple-darwin
+
+      - name: 🏃🏻‍♀️ Test Release MacOS x86_64
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: cargo test --verbose --release --target x86_64-apple-darwin
