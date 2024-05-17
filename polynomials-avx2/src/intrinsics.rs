@@ -57,8 +57,8 @@ pub(crate) fn mm_set_epi8(
 ) -> __m128i {
     unsafe {
         _mm_set_epi8(
-            byte15, byte14, byte13, byte12, byte11, byte10,
-            byte9, byte8, byte7, byte6, byte5, byte4, byte3, byte2, byte1, byte0,
+            byte15, byte14, byte13, byte12, byte11, byte10, byte9, byte8, byte7, byte6, byte5,
+            byte4, byte3, byte2, byte1, byte0,
         )
     }
 }

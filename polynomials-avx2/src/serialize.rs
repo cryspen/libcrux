@@ -95,15 +95,13 @@ pub(crate) fn serialize_4(vector: __m256i) -> [u8; 8] {
     let adjacent_8_combined = mm256_shuffle_epi8(
         adjacent_2_combined,
         mm256_set_epi8(
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0,
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, 12, 8, 4, 0,
         ),
     );
 
-    let combined = mm256_permutevar8x32_epi32(
-        adjacent_8_combined,
-        mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0),
-    );
+    let combined =
+        mm256_permutevar8x32_epi32(adjacent_8_combined, mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
     let combined = mm256_castsi256_si128(combined);
 
     mm_storeu_bytes_si128(&mut serialized[..], combined);
@@ -247,8 +245,8 @@ pub(crate) fn serialize_10(vector: __m256i) -> [u8; 20] {
     let adjacent_8_combined = mm256_shuffle_epi8(
         adjacent_4_combined,
         mm256_set_epi8(
-            -1, -1, -1, -1, -1, -1, 12, 11, 10, 9, 8, 4, 3, 2, 1, 0, -1, -1, -1, -1, -1, -1,
-            12, 11, 10, 9, 8, 4, 3, 2, 1, 0,
+            -1, -1, -1, -1, -1, -1, 12, 11, 10, 9, 8, 4, 3, 2, 1, 0, -1, -1, -1, -1, -1, -1, 12,
+            11, 10, 9, 8, 4, 3, 2, 1, 0,
         ),
     );
 
@@ -343,17 +341,15 @@ pub(crate) fn serialize_12(vector: __m256i) -> [u8; 24] {
         ),
     );
 
-    let adjacent_4_combined = mm256_sllv_epi32(
-        adjacent_2_combined,
-        mm256_set_epi32(0, 8, 0, 8, 0, 8, 0, 8),
-    );
+    let adjacent_4_combined =
+        mm256_sllv_epi32(adjacent_2_combined, mm256_set_epi32(0, 8, 0, 8, 0, 8, 0, 8));
     let adjacent_4_combined = mm256_srli_epi64::<8>(adjacent_4_combined);
 
     let adjacent_8_combined = mm256_shuffle_epi8(
         adjacent_4_combined,
         mm256_set_epi8(
-            -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0, -1, -1, -1, -1, 13, 12, 11,
-            10, 9, 8, 5, 4, 3, 2, 1, 0,
+            -1, -1, -1, -1, 13, 12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 0, -1, -1, -1, -1, 13, 12, 11, 10,
+            9, 8, 5, 4, 3, 2, 1, 0,
         ),
     );
 
