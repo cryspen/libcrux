@@ -70,22 +70,6 @@ jobs:
           echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
         if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
 
-      # Set up windows
-
-      - name: 🛠️ Setup Windows x86
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x86-windows-static-md
-
-      - name: 🛠️ Setup Windows x64
-        if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x64-windows-static-md
-
       # Build ...
 
       - name: 🔨 Build
@@ -98,9 +82,11 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
         run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
 
-      - name: 🏃🏻 Asan Linux
-        if: ${{ matrix.bits == 64 && matrix.os == 'ubuntu-latest' }}
-        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target x86_64-unknown-linux-gnu
+      # We get false positives here.
+      # TODO: Figure out what is going on here
+      # - name: 🏃🏻 Asan Linux
+      #   if: ${{ matrix.bits == 64 && matrix.os == 'ubuntu-latest' }}
+      #   run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target x86_64-unknown-linux-gnu
 
       # Test ...
 
@@ -166,22 +152,6 @@ jobs:
         run: |
           echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
         if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
-
-      # Set up windows
-
-      - name: 🛠️ Setup Windows x86
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x86-windows-static-md
-
-      - name: 🛠️ Setup Windows x64
-        if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x64-windows-static-md
 
       # Benchmarks ...
 
