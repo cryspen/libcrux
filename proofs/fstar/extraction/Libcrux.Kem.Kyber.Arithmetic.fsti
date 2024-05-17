@@ -42,7 +42,7 @@ val get_n_least_significant_bits (n: u8) (value: u32)
       (ensures
         fun result ->
           let result:u32 = result in
-          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into n <: u32) <: u32))
+          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into #u8 #u32 n <: u32) <: u32))
 
 /// Signed Barrett Reduction
 /// Given an input `value`, `barrett_reduce` outputs a representative `result`
@@ -54,8 +54,8 @@ val get_n_least_significant_bits (n: u8) (value: u32)
 val barrett_reduce (value: i32)
     : Prims.Pure i32
       (requires
-        (Core.Convert.f_from value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
-        (Core.Convert.f_from value <: i64) <. v_BARRETT_R)
+        (Core.Convert.f_from #i64 #i32 value <: i64) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i64) &&
+        (Core.Convert.f_from #i64 #i32 value <: i64) <. v_BARRETT_R)
       (ensures
         fun result ->
           let result:i32 = result in
@@ -132,7 +132,8 @@ let impl__PolynomialRingElement__ZERO: t_PolynomialRingElement =
 val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
     : Prims.Pure t_PolynomialRingElement
       (requires
-        Hax_lib.v_forall (fun i ->
+        Hax_lib.v_forall #usize
+          (fun i ->
               let i:usize = i in
               Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                   <:
@@ -155,12 +156,12 @@ val add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement)
       (ensures
         fun result ->
           let result:t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
+          Hax_lib.v_forall #usize
+            (fun i ->
                 let i:usize = i in
                 Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result.f_coefficients
-                          <:
-                          t_Slice i32)
+                    (Core.Slice.impl__len #i32
+                        (Rust_primitives.unsize result.f_coefficients <: t_Slice i32)
                       <:
                       usize)
                     <:

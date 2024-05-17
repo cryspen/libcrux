@@ -36,6 +36,39 @@ macro_rules! impl_consistency {
     };
 }
 
+macro_rules! impl_consistency_unpacked {
+    ($name:ident, $alg:expr) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            use rand::RngCore;
+            use rand_core::OsRng;
+            let mut rng = OsRng;
+
+            let mut seed = [0; 64];
+            rng.fill_bytes(&mut seed);
+            let (sk_state, pubkey) =
+                libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed.clone());
+
+            let kp = libcrux::kem::kyber::kyber768::generate_key_pair(seed);
+            assert_eq!(pubkey.as_slice(), kp.public_key().as_slice());
+
+            let mut rand = [0; 32];
+            rng.fill_bytes(&mut rand);
+            let (ciphertext, shared_secret) =
+                libcrux::kem::kyber::kyber768::encapsulate(&pubkey, rand);
+            let shared_secret_decapsulated =
+                libcrux::kem::kyber::kyber768::decapsulate_unpacked(&sk_state, &ciphertext);
+
+            let shared_secret_decapsulated2 =
+                libcrux::kem::kyber::kyber768::decapsulate(&kp.private_key(), &ciphertext);
+            assert_eq!(shared_secret, shared_secret_decapsulated2);
+
+            assert_eq!(shared_secret, shared_secret_decapsulated);
+        }
+    };
+}
+
 fn modify_ciphertext(alg: Algorithm, rng: &mut (impl CryptoRng + Rng), ciphertext: Ct) -> Ct {
     let mut raw_ciphertext = ciphertext.encode();
 
@@ -190,6 +223,8 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
 impl_consistency!(consistency_512, Algorithm::MlKem512);
 impl_consistency!(consistency_768, Algorithm::MlKem768);
 impl_consistency!(consistency_1024, Algorithm::MlKem1024);
+
+impl_consistency_unpacked!(consistency_768_unpacked, Algorithm::MlKem768);
 
 impl_modified_ciphertext!(modified_ciphertext_512, Algorithm::MlKem512);
 impl_modified_ciphertext!(modified_ciphertext_768, Algorithm::MlKem768);

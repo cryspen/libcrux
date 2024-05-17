@@ -94,11 +94,12 @@ val ntt_at_layer_3328_
 val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires
-        Hax_lib.v_forall (fun i ->
+        Hax_lib.v_forall #usize
+          (fun i ->
               let i:usize = i in
               Hax_lib.implies (i <.
-                  (Core.Slice.impl__len (Rust_primitives.unsize re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                  (Core.Slice.impl__len #i32
+                      (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         <:
                         t_Slice i32)
                     <:
@@ -120,11 +121,12 @@ val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
       (ensures
         fun result ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
+          Hax_lib.v_forall #usize
+            (fun i ->
                 let i:usize = i in
                 Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (Core.Slice.impl__len #i32
+                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                           <:
                           t_Slice i32)
                       <:
@@ -168,7 +170,8 @@ val ntt_binomially_sampled_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_Poly
 val ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires
-        Hax_lib.v_forall (fun i ->
+        Hax_lib.v_forall #usize
+          (fun i ->
               let i:usize = i in
               Hax_lib.implies (i <. Libcrux.Kem.Kyber.Constants.v_COEFFICIENTS_IN_RING_ELEMENT
                   <:
@@ -191,11 +194,12 @@ val ntt_multiply (lhs rhs: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
       (ensures
         fun result ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
+          Hax_lib.v_forall #usize
+            (fun i ->
                 let i:usize = i in
                 Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (Core.Slice.impl__len #i32
+                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                           <:
                           t_Slice i32)
                       <:
@@ -225,11 +229,12 @@ val ntt_vector_u
       (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
       (requires
-        Hax_lib.v_forall (fun i ->
+        Hax_lib.v_forall #usize
+          (fun i ->
               let i:usize = i in
               Hax_lib.implies (i <.
-                  (Core.Slice.impl__len (Rust_primitives.unsize re
-                            .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                  (Core.Slice.impl__len #i32
+                      (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                         <:
                         t_Slice i32)
                     <:
@@ -251,11 +256,12 @@ val ntt_vector_u
       (ensures
         fun result ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
+          Hax_lib.v_forall #usize
+            (fun i ->
                 let i:usize = i in
                 Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (Core.Slice.impl__len #i32
+                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                           <:
                           t_Slice i32)
                       <:

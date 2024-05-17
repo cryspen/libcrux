@@ -40,7 +40,7 @@ use crate::{
 
 // hacspec code: don't let clippy touch it.
 #[allow(clippy::all)]
-pub(crate) mod kyber;
+pub mod kyber;
 
 // TODO: These functions are currently exposed simply in order to make NIST KAT
 // testing possible without an implementation of the NIST AES-CTR DRBG. Remove them

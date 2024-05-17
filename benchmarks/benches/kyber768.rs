@@ -22,6 +22,14 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
+    group.bench_function("libcrux portable unpacked (external random)", |b| {
+        b.iter(|| {
+            let mut seed = [0; 64];
+            rng.fill_bytes(&mut seed);
+            let _tuple = libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
+        })
+    });
+
     group.bench_function("libcrux portable (HACL-DRBG)", |b| {
         b.iter(|| {
             let (_secret_key, _public_key) =
@@ -202,6 +210,27 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             },
             |(secret_key, ciphertext)| {
                 let _shared_secret = ciphertext.decapsulate(&secret_key);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("libcrux portable unpacked", |b| {
+        b.iter_batched(
+            || {
+                let mut seed = [0; 64];
+                OsRng.fill_bytes(&mut seed);
+                let (sk_state, pubkey) =
+                    libcrux::kem::kyber::kyber768::generate_key_pair_unpacked(seed);
+
+                let mut rand = [0; 32];
+                OsRng.fill_bytes(&mut rand);
+                let (ciphertext, _) = libcrux::kem::kyber::kyber768::encapsulate(&pubkey, rand);
+                (sk_state, ciphertext)
+            },
+            |(sk_state, ciphertext)| {
+                let _shared_secret =
+                    libcrux::kem::kyber::kyber768::decapsulate_unpacked(&sk_state, &ciphertext);
             },
             BatchSize::SmallInput,
         )
