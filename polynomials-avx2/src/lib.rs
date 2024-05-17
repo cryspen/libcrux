@@ -1,7 +1,4 @@
-#[cfg(target_arch = "x86")]
-use core::arch::x86::*;
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::*;
+use crate::intrinsics::*;
 use libcrux_traits::Operations;
 
 #[cfg(test)]
@@ -24,24 +21,21 @@ pub struct SIMD256Vector {
 #[inline(always)]
 fn zero() -> SIMD256Vector {
     SIMD256Vector {
-        elements: unsafe { _mm256_setzero_si256() },
+        elements: mm256_setzero_si256(),
     }
 }
 
 #[inline(always)]
 fn to_i16_array(v: SIMD256Vector) -> [i16; 16] {
-    let mut out = [0i16; 16];
+    let mut output = [0i16; 16];
+    mm256_storeu_si256(&mut output[..], v.elements);
 
-    unsafe {
-        _mm256_storeu_si256(out.as_mut_ptr() as *mut __m256i, v.elements);
-    }
-
-    out
+    output
 }
 #[inline(always)]
 fn from_i16_array(array: &[i16]) -> SIMD256Vector {
     SIMD256Vector {
-        elements: unsafe { _mm256_loadu_si256(array.as_ptr() as *const __m256i) },
+        elements: mm256_loadu_si256(array),
     }
 }
 
@@ -187,9 +181,9 @@ impl Operations for SIMD256Vector {
         serialize::serialize_1(vector.elements)
     }
 
-    fn deserialize_1(input: &[u8]) -> Self {
+    fn deserialize_1(bytes: &[u8]) -> Self {
         Self {
-            elements: serialize::deserialize_1(input),
+            elements: serialize::deserialize_1(bytes),
         }
     }
 
