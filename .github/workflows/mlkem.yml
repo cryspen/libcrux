@@ -75,7 +75,6 @@ jobs:
       - name: 🔨 Build
         run: |
           rustc --print=cfg
-          sysctl hw
           cargo build --verbose $RUST_TARGET_FLAG
 
       - name: 🔨 Build Release
@@ -123,13 +122,8 @@ jobs:
           cargo clean
           cargo test --verbose $RUST_TARGET_FLAG
 
-      - name: 🏃🏻‍♀️ Test Release MacOS +neon
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: |
-          cargo clean
-          RUSTFLAGS="-C target_feature=+neon" cargo test --verbose --release $RUST_TARGET_FLAG
-
       - name: 🏃🏻‍♀️ Test Release
+        if: ${{ matrix.os != 'macos-latest' }}
         run: |
           cargo clean
           cargo test --verbose --release $RUST_TARGET_FLAG
