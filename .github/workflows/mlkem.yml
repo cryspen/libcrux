@@ -73,7 +73,9 @@ jobs:
       # Build ...
 
       - name: 🔨 Build
-        run: cargo build --verbose $RUST_TARGET_FLAG
+        run: |
+          rustc --print=cfg
+          cargo build --verbose $RUST_TARGET_FLAG
 
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
