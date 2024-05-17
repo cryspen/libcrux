@@ -44,22 +44,17 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - name: ⚙️ Setup Ubuntu x86
+      - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add i686-unknown-linux-gnu
           sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib
 
-      - name: ⚙️ Setup Ubuntu x64
+      - name: 🛠️ Setup Ubuntu x64
         if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add aarch64-unknown-linux-gnu
-
-      - name: ⚙️ Setup macOS
-        if: ${{  matrix.os == 'macos-latest' }}
-        run: |
-          rustup target add aarch64-apple-darwin
 
       # Set up 32 bit systems
 
@@ -74,14 +69,14 @@ jobs:
 
       # Set up windows
 
-      - name: ⚙️ Setup Windows x86
+      - name: 🛠️ Setup Windows x86
         if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
         shell: pwsh
         run: |
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
           vcpkg install openssl:x86-windows-static-md
 
-      - name: ⚙️ Setup Windows x64
+      - name: 🛠️ Setup Windows x64
         if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
         shell: pwsh
         run: |
@@ -96,11 +91,13 @@ jobs:
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
 
-      # Cross compilation
-
-      - name: 🔨 Build aarch64 macOS
+      - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: cargo build --verbose --target aarch64-apple-darwin
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
+
+      - name: 🏃🏻 Asan Linux
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target x86_64-unknown-linux-gnu
 
       # Test ...
 
@@ -139,19 +136,19 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - name: ⚙️ Setup Ubuntu x86
+      - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add i686-unknown-linux-gnu
           sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib
 
-      - name: ⚙️ Setup Ubuntu x64
+      - name: 🛠️ Setup Ubuntu x64
         if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add aarch64-unknown-linux-gnu
 
-      - name: ⚙️ Setup macOS
+      - name: 🛠️ Setup macOS
         if: ${{  matrix.os == 'macos-latest' }}
         run: |
           rustup target add aarch64-apple-darwin
@@ -169,14 +166,14 @@ jobs:
 
       # Set up windows
 
-      - name: ⚙️ Setup Windows x86
+      - name: 🛠️ Setup Windows x86
         if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
         shell: pwsh
         run: |
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
           vcpkg install openssl:x86-windows-static-md
 
-      - name: ⚙️ Setup Windows x64
+      - name: 🛠️ Setup Windows x64
         if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
         shell: pwsh
         run: |
@@ -229,6 +226,8 @@ jobs:
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
 
       - name: 🏃🏻‍♀️ Test Linux x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
@@ -237,11 +236,6 @@ jobs:
       - name: 🏃🏻‍♀️ Test Release Linux x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: cargo test --verbose --release --target i686-unknown-linux-gnu -- --nocapture
-
-      - name: 🛠️ Setup Windows x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
-        run: |
-          rustup target add i686-pc-windows-msvc -- --nocapture
 
       - name: 🏃🏻‍♀️ Test Windows x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
