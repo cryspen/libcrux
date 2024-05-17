@@ -88,17 +88,51 @@ jobs:
       #   if: ${{ matrix.bits == 64 && matrix.os == 'ubuntu-latest' }}
       #   run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target x86_64-unknown-linux-gnu
 
+      # Test SHA3
+      - name: 🏃🏻‍♀️ Test SHA3
+        working-directory: libcrux-sha3
+        run: cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Release
+        working-directory: libcrux-sha3
+        run: cargo test --release --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Portable
+        working-directory: libcrux-sha3
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Portable Release
+        working-directory: libcrux-sha3
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
+
       # Test ...
 
       - name: 🏃🏻‍♀️ Test
         run: |
           cargo test --verbose $RUST_TARGET_FLAG
-          cd ../libcrux-sha3 && cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Release
         run: |
           cargo test --verbose --release $RUST_TARGET_FLAG
-          cd ../libcrux-sha3 && cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Release MacOS +neon
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          RUSTFLAGS="-C target_feature=+neon" cargo test --verbose --release $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Portable
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Portable Release
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
 
   benchmarks:
     strategy:
@@ -159,67 +193,10 @@ jobs:
 
       # Benchmarks ...
 
-      - name: 🏃🏻‍♀️ Benchmarks Windows
-        if: ${{ matrix.os == 'windows-latest' }}
+      - name: 🏃🏻‍♀️ Benchmarks
         run: cargo bench --verbose $RUST_TARGET_FLAG
 
-      - name: 🏃🏻‍♀️ Benchmarks Clang
-        if: ${{ matrix.os != 'windows-latest' }}
-        run: CC=clang cargo bench --verbose $RUST_TARGET_FLAG
-
-  platform:
-    strategy:
-      fail-fast: false
-      matrix:
-        bits: [32, 64]
-        os:
-          - macos-13 # Intel mac
-          - macos-latest # macos-14 m1
-          - ubuntu-latest
-          - windows-latest
-        exclude:
-          - bits: 32
-            os: "macos-latest"
-          - bits: 32
-            os: "macos-13"
-
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
-        working-directory: sys/platform
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 🔨 Build
-        run: cargo build --verbose
-
-      - name: 🏃🏻‍♀️ Test
-        run: cargo test --verbose -- --nocapture
-
-      - name: 🏃🏻‍♀️ Test Release
-        run: cargo test --verbose --release -- --nocapture
-
-      - name: 🛠️ Setup Linux x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+      - name: 🏃🏻‍♀️ Benchmarks Portable
         run: |
-          rustup target add i686-unknown-linux-gnu
-          sudo apt-get update
-          sudo apt-get install -y gcc-multilib g++-multilib
-
-      - name: 🏃🏻‍♀️ Test Linux x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
-        run: cargo test --verbose --target i686-unknown-linux-gnu -- --nocapture
-
-      - name: 🏃🏻‍♀️ Test Release Linux x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
-        run: cargo test --verbose --release --target i686-unknown-linux-gnu -- --nocapture
-
-      - name: 🏃🏻‍♀️ Test Windows x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
-        run: cargo test --verbose --target i686-pc-windows-msvc -- --nocapture
-
-      - name: 🏃🏻‍♀️ Test Release Windows x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
-        run: cargo test --verbose --release --target i686-pc-windows-msvc -- --nocapture
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo bench --verbose $RUST_TARGET_FLAG

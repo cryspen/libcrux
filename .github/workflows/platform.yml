@@ -16,18 +16,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  platform:
     strategy:
       fail-fast: false
       matrix:
         bits: [32, 64]
         os:
-          - macos-latest
+          - macos-13 # Intel mac
+          - macos-latest # macos-14 m1
           - ubuntu-latest
           - windows-latest
         exclude:
           - bits: 32
             os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -42,46 +45,30 @@ jobs:
         run: cargo build --verbose
 
       - name: 🏃🏻‍♀️ Test
-        run: cargo test --verbose
+        run: cargo test --verbose -- --nocapture
 
       - name: 🏃🏻‍♀️ Test Release
-        run: cargo test --verbose --release
+        run: cargo test --verbose --release -- --nocapture
 
       - name: 🛠️ Setup Linux x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
 
       - name: 🏃🏻‍♀️ Test Linux x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
-        run: cargo test --verbose --target i686-unknown-linux-gnu
+        run: cargo test --verbose --target i686-unknown-linux-gnu -- --nocapture
 
       - name: 🏃🏻‍♀️ Test Release Linux x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
-        run: cargo test --verbose --release --target i686-unknown-linux-gnu
-
-      - name: 🛠️ Setup Windows x86
-        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
-        run: |
-          rustup target add i686-pc-windows-msvc
+        run: cargo test --verbose --release --target i686-unknown-linux-gnu -- --nocapture
 
       - name: 🏃🏻‍♀️ Test Windows x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
-        run: cargo test --verbose --target i686-pc-windows-msvc
+        run: cargo test --verbose --target i686-pc-windows-msvc -- --nocapture
 
       - name: 🏃🏻‍♀️ Test Release Windows x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
-        run: cargo test --verbose --release --target i686-pc-windows-msvc
-
-      - name: 🛠️ Setup MacOS x86_64
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: |
-          rustup target add x86_64-apple-darwin
-
-      - name: 🏃🏻‍♀️ Test MacOS x86_64
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: cargo test --verbose --target x86_64-apple-darwin
-
-      - name: 🏃🏻‍♀️ Test Release MacOS x86_64
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: cargo test --verbose --release --target x86_64-apple-darwin
+        run: cargo test --verbose --release --target i686-pc-windows-msvc -- --nocapture
