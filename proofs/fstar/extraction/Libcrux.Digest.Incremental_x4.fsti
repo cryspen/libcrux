@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 /// Incremental state
-val t_Shake128StateX4:Type
+val t_Shake128StateX4:Type0
 
 /// Absorb up to 4 blocks.
 /// The `input` must be of length 1 to 4.

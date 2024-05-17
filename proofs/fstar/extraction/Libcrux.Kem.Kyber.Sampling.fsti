@@ -43,15 +43,16 @@ open FStar.Mul
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
+      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 2 *! sz 64 <: usize))
       (ensures
         fun result ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
+          Hax_lib.v_forall #usize
+            (fun i ->
                 let i:usize = i in
                 Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (Core.Slice.impl__len #i32
+                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                           <:
                           t_Slice i32)
                       <:
@@ -74,15 +75,16 @@ val sample_from_binomial_distribution_2_ (randomness: t_Slice u8)
 
 val sample_from_binomial_distribution_3_ (randomness: t_Slice u8)
     : Prims.Pure Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
+      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 3 *! sz 64 <: usize))
       (ensures
         fun result ->
           let result:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = result in
-          Hax_lib.v_forall (fun i ->
+          Hax_lib.v_forall #usize
+            (fun i ->
                 let i:usize = i in
                 Hax_lib.implies (i <.
-                    (Core.Slice.impl__len (Rust_primitives.unsize result
-                              .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+                    (Core.Slice.impl__len #i32
+                        (Rust_primitives.unsize result.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                           <:
                           t_Slice i32)
                       <:
