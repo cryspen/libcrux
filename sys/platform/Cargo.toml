@@ -10,4 +10,4 @@ readme.workspace = true
 description = "Platform detection crate for libcrux."
 
 [dependencies]
-libc = "0.2.147"
+libc = "0.2.153"

@@ -22,15 +22,15 @@ jobs:
       matrix:
         bits: [32, 64]
         os:
-          - macos-latest
+          - macos-13 # Intel mac
+          - macos-latest # macos-14 m1
           - ubuntu-latest
           - windows-latest
         exclude:
           - bits: 32
             os: "macos-latest"
-          # FIXME: Linking isn't working here yet for hacl #42
           - bits: 32
-            os: "windows-latest"
+            os: "macos-13"
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -44,22 +44,20 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - name: ⚙️ Setup Ubuntu x86
+      - name: 🛠️ Setup Rust Nightly
+        run: rustup toolchain install nightly
+
+      - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add i686-unknown-linux-gnu
           sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib
 
-      - name: ⚙️ Setup Ubuntu x64
+      - name: 🛠️ Setup Ubuntu x64
         if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add aarch64-unknown-linux-gnu
-
-      - name: ⚙️ Setup macOS
-        if: ${{  matrix.os == 'macos-latest' }}
-        run: |
-          rustup target add aarch64-apple-darwin
 
       # Set up 32 bit systems
 
@@ -72,43 +70,73 @@ jobs:
           echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
         if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
 
-      # Set up windows
-
-      - name: ⚙️ Setup Windows x86
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x86-windows-static-md
-
-      - name: ⚙️ Setup Windows x64
-        if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x64-windows-static-md
-
       # Build ...
 
       - name: 🔨 Build
-        run: cargo build --verbose $RUST_TARGET_FLAG
+        run: |
+          rustc --print=cfg
+          cargo build --verbose $RUST_TARGET_FLAG
 
       - name: 🔨 Build Release
         run: cargo build --verbose --release $RUST_TARGET_FLAG
 
-      # Cross compilation
-
-      - name: 🔨 Build aarch64 macOS
+      - name: 🏃🏻 Asan MacOS
         if: ${{ matrix.os == 'macos-latest' }}
-        run: cargo build --verbose --target aarch64-apple-darwin
+        run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
+
+      # We get false positives here.
+      # TODO: Figure out what is going on here
+      # - name: 🏃🏻 Asan Linux
+      #   if: ${{ matrix.bits == 64 && matrix.os == 'ubuntu-latest' }}
+      #   run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target x86_64-unknown-linux-gnu
+
+      # Test SHA3
+      - name: 🏃🏻‍♀️ SHA3 Test
+        working-directory: libcrux-sha3
+        run: |
+          cargo clean
+          cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ SHA3 Test Release
+        working-directory: libcrux-sha3
+        run: |
+          cargo clean
+          cargo test --release --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ SHA3 Test Portable
+        working-directory: libcrux-sha3
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ SHA3 Test Portable Release
+        working-directory: libcrux-sha3
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
 
       # Test ...
 
       - name: 🏃🏻‍♀️ Test
-        run: cargo test --verbose $RUST_TARGET_FLAG
+        run: |
+          cargo clean
+          cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Release
-        run: cargo test --verbose --release $RUST_TARGET_FLAG
+        if: ${{ matrix.os != 'macos-latest' }}
+        run: |
+          cargo clean
+          cargo test --verbose --release $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Portable
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Test Portable Release
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo test --verbose --release $RUST_TARGET_FLAG
 
   benchmarks:
     strategy:
@@ -116,6 +144,7 @@ jobs:
       matrix:
         bits: [32, 64]
         os:
+          - macos-13
           - macos-latest
           - ubuntu-latest
           - windows-latest
@@ -123,9 +152,8 @@ jobs:
           # There's no such thing as 32-bit macOS
           - bits: 32
             os: "macos-latest"
-          # FIXME: Linking isn't working here yet for hacl #42
           - bits: 32
-            os: "windows-latest"
+            os: "macos-13"
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -139,19 +167,19 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - name: ⚙️ Setup Ubuntu x86
+      - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add i686-unknown-linux-gnu
           sudo apt-get update
           sudo apt-get install -y gcc-multilib g++-multilib
 
-      - name: ⚙️ Setup Ubuntu x64
+      - name: 🛠️ Setup Ubuntu x64
         if: ${{ matrix.bits == 64 &&  matrix.os == 'ubuntu-latest' }}
         run: |
           rustup target add aarch64-unknown-linux-gnu
 
-      - name: ⚙️ Setup macOS
+      - name: 🛠️ Setup macOS
         if: ${{  matrix.os == 'macos-latest' }}
         run: |
           rustup target add aarch64-apple-darwin
@@ -167,28 +195,12 @@ jobs:
           echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
         if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
 
-      # Set up windows
-
-      - name: ⚙️ Setup Windows x86
-        if: ${{ matrix.bits == 32 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x86-windows-static-md
-
-      - name: ⚙️ Setup Windows x64
-        if: ${{ matrix.bits == 64 && matrix.os == 'windows-latest' }}
-        shell: pwsh
-        run: |
-          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-          vcpkg install openssl:x64-windows-static-md
-
       # Benchmarks ...
 
-      - name: 🏃🏻‍♀️ Benchmarks Windows
-        if: ${{ matrix.os == 'windows-latest' }}
+      - name: 🏃🏻‍♀️ Benchmarks
         run: cargo bench --verbose $RUST_TARGET_FLAG
 
-      - name: 🏃🏻‍♀️ Benchmarks Clang
-        if: ${{ matrix.os != 'windows-latest' }}
-        run: CC=clang cargo bench --verbose $RUST_TARGET_FLAG
+      - name: 🏃🏻‍♀️ Benchmarks Portable
+        run: |
+          cargo clean
+          LIBCRUX_DISABLE_SIMD128=1 LIBCRUX_DISABLE_SIMD256=1 cargo bench --verbose $RUST_TARGET_FLAG
