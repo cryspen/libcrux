@@ -26,31 +26,6 @@ pub(crate) fn from_i16_array(array: [i16; FIELD_ELEMENTS_IN_VECTOR]) -> Portable
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
-    let mut v = zero();
-
-    v.elements[0] = (bytes[0] & 0x1F) as i16;
-    v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i16;
-    v.elements[2] = ((bytes[1] >> 2) & 0x1F) as i16;
-    v.elements[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i16;
-    v.elements[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i16;
-    v.elements[5] = ((bytes[3] >> 1) & 0x1F) as i16;
-    v.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i16;
-    v.elements[7] = (bytes[4] >> 3) as i16;
-
-    v.elements[8] = (bytes[5 + 0] & 0x1F) as i16;
-    v.elements[9] = ((bytes[5 + 1] & 0x3) << 3 | (bytes[5 + 0] >> 5)) as i16;
-    v.elements[10] = ((bytes[5 + 1] >> 2) & 0x1F) as i16;
-    v.elements[11] = (((bytes[5 + 2] & 0xF) << 1) | (bytes[5 + 1] >> 7)) as i16;
-    v.elements[12] = (((bytes[5 + 3] & 1) << 4) | (bytes[5 + 2] >> 4)) as i16;
-    v.elements[13] = ((bytes[5 + 3] >> 1) & 0x1F) as i16;
-    v.elements[14] = (((bytes[5 + 4] & 0x7) << 2) | (bytes[5 + 3] >> 6)) as i16;
-    v.elements[15] = (bytes[5 + 4] >> 3) as i16;
-
-    v
-}
-
-#[inline(always)]
 pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     let mut result = [0u8; 22];
 

@@ -205,9 +205,44 @@ pub(crate) fn serialize_5(vector: __m256i) -> [u8; 10] {
 
 #[inline(always)]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> __m256i {
-    let output = portable::deserialize_5(bytes);
+    let coefficients = mm_set_epi8(
+        bytes[9], bytes[8], bytes[8], bytes[7], bytes[7], bytes[6], bytes[6], bytes[5], bytes[4],
+        bytes[3], bytes[3], bytes[2], bytes[2], bytes[1], bytes[1], bytes[0],
+    );
 
-    crate::from_i16_array(&portable::to_i16_array(output)).elements
+    let coefficients_loaded = mm256_castsi128_si256(coefficients);
+    let coefficients_loaded = mm256_inserti128_si256::<1>(coefficients_loaded, coefficients);
+
+    let coefficients = mm256_shuffle_epi8(
+        coefficients_loaded,
+        mm256_set_epi8(
+            15, 14, 15, 14, 13, 12, 13, 12, 11, 10, 11, 10, 9, 8, 9, 8, 7, 6, 7, 6, 5, 4, 5, 4, 3,
+            2, 3, 2, 1, 0, 1, 0,
+        ),
+    );
+
+    let coefficients = mm256_mullo_epi16(
+        coefficients,
+        mm256_set_epi16(
+            1 << 0,
+            1 << 5,
+            1 << 2,
+            1 << 7,
+            1 << 4,
+            1 << 9,
+            1 << 6,
+            1 << 11,
+            1 << 0,
+            1 << 5,
+            1 << 2,
+            1 << 7,
+            1 << 4,
+            1 << 9,
+            1 << 6,
+            1 << 11,
+        ),
+    );
+    mm256_srli_epi16::<11>(coefficients)
 }
 
 #[inline(always)]
