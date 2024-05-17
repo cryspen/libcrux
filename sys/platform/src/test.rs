@@ -1,9 +1,12 @@
 //! Test functions for CPU feature detection
 
+use crate::macos_arm::actually_arm;
+
 use super::*;
 
 #[test]
 fn dump_features() {
+    eprintln!("arm\t\t{:?}", actually_arm());
     eprintln!("simd128\t\t{:?}", simd128_support());
     eprintln!("simd256\t\t{:?}", simd256_support());
     eprintln!("x25519\t\t{:?}", x25519_support());
