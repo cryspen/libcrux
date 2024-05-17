@@ -1,0 +1,74 @@
+name: Platform
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev", "*"]
+  workflow_dispatch:
+  merge_group:
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-13 # Intel mac
+          - macos-latest # macos-14 m1
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          - bits: 32
+            os: "macos-latest"
+          - bits: 32
+            os: "macos-13"
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: sys/platform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔨 Build
+        run: cargo build --verbose
+
+      - name: 🏃🏻‍♀️ Test
+        run: cargo test --verbose -- --nocapture
+
+      - name: 🏃🏻‍♀️ Test Release
+        run: cargo test --verbose --release -- --nocapture
+
+      - name: 🛠️ Setup Linux x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: |
+          rustup target add i686-unknown-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib
+
+      - name: 🏃🏻‍♀️ Test Linux x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: cargo test --verbose --target i686-unknown-linux-gnu -- --nocapture
+
+      - name: 🏃🏻‍♀️ Test Release Linux x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
+        run: cargo test --verbose --release --target i686-unknown-linux-gnu -- --nocapture
+
+      - name: 🏃🏻‍♀️ Test Windows x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
+        run: cargo test --verbose --target i686-pc-windows-msvc -- --nocapture
+
+      - name: 🏃🏻‍♀️ Test Release Windows x86
+        if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
+        run: cargo test --verbose --release --target i686-pc-windows-msvc -- --nocapture

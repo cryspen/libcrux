@@ -1,38 +1,44 @@
-// XXX: Can't do no_std
-// #![no_std]
+//! # SHA3
+//!
+//! A SHA3 implementation with optional simd optimisations.
 
-// // Low* library code
-// mod lowstar;
+#![no_std]
 
-// // SHA3 plus helpers
-// mod hacl;
-// use crate::hacl::hash_sha3::{self, shake128_hacl, shake256_hacl};
+pub mod simd;
 
-/// A Sha3x4 API
-pub mod x4;
+mod generic_keccak;
+mod portable_keccak;
+mod traits;
 
+/// A SHA3 224 Digest
 pub type Sha3_224Digest = [u8; 28];
+
+/// A SHA3 256 Digest
 pub type Sha3_256Digest = [u8; 32];
+
+/// A SHA3 384 Digest
 pub type Sha3_384Digest = [u8; 48];
+
+/// A SHA3 512 Digest
 pub type Sha3_512Digest = [u8; 64];
 
 /// The Digest Algorithm.
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(u32)]
 pub enum Algorithm {
-    Sha3_224 = 1,
-    Sha3_256 = 2,
-    Sha3_384 = 3,
-    Sha3_512 = 4,
+    Sha224 = 1,
+    Sha256 = 2,
+    Sha384 = 3,
+    Sha512 = 4,
 }
 
 impl From<u32> for Algorithm {
     fn from(v: u32) -> Algorithm {
         match v {
-            1 => Algorithm::Sha3_224,
-            2 => Algorithm::Sha3_256,
-            3 => Algorithm::Sha3_384,
-            4 => Algorithm::Sha3_512,
+            1 => Algorithm::Sha224,
+            2 => Algorithm::Sha256,
+            3 => Algorithm::Sha384,
+            4 => Algorithm::Sha512,
             _ => panic!("Unknown Digest mode {}", v),
         }
     }
@@ -41,10 +47,10 @@ impl From<u32> for Algorithm {
 impl From<Algorithm> for u32 {
     fn from(v: Algorithm) -> u32 {
         match v {
-            Algorithm::Sha3_224 => 1,
-            Algorithm::Sha3_256 => 2,
-            Algorithm::Sha3_384 => 3,
-            Algorithm::Sha3_512 => 4,
+            Algorithm::Sha224 => 1,
+            Algorithm::Sha256 => 2,
+            Algorithm::Sha384 => 3,
+            Algorithm::Sha512 => 4,
         }
     }
 }
@@ -52,10 +58,10 @@ impl From<Algorithm> for u32 {
 /// Returns the output size of a digest.
 pub const fn digest_size(mode: Algorithm) -> usize {
     match mode {
-        Algorithm::Sha3_224 => 28,
-        Algorithm::Sha3_256 => 32,
-        Algorithm::Sha3_384 => 48,
-        Algorithm::Sha3_512 => 64,
+        Algorithm::Sha224 => 28,
+        Algorithm::Sha256 => 32,
+        Algorithm::Sha384 => 48,
+        Algorithm::Sha512 => 64,
     }
 }
 
@@ -65,48 +71,40 @@ pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN]
 
     let mut out = [0u8; LEN];
     match algorithm {
-        Algorithm::Sha3_224 => sha224_ema(&mut out, payload),
-        Algorithm::Sha3_256 => sha256_ema(&mut out, payload),
-        Algorithm::Sha3_384 => sha384_ema(&mut out, payload),
-        Algorithm::Sha3_512 => sha512_ema(&mut out, payload),
+        Algorithm::Sha224 => portable::sha224(&mut out, payload),
+        Algorithm::Sha256 => portable::sha256(&mut out, payload),
+        Algorithm::Sha384 => portable::sha384(&mut out, payload),
+        Algorithm::Sha512 => portable::sha512(&mut out, payload),
     }
     out
 }
 
-use libcrux_hacl::{
-    Hacl_Hash_SHA3_sha3_224, Hacl_Hash_SHA3_sha3_256, Hacl_Hash_SHA3_sha3_384,
-    Hacl_Hash_SHA3_sha3_512, Hacl_Hash_SHA3_shake128_hacl, Hacl_Hash_SHA3_shake256_hacl,
-};
-
 /// SHA3 224
 #[inline(always)]
-pub fn sha224(payload: &[u8]) -> [u8; 28] {
-    let mut digest = [0u8; 28];
-    sha224_ema(&mut digest, payload);
-    digest
+pub fn sha224(data: &[u8]) -> Sha3_224Digest {
+    let mut out = [0u8; 28];
+    sha224_ema(&mut out, data);
+    out
 }
 
 /// SHA3 224
+///
+/// Preconditions:
+/// - `digest.len() == 28`
 #[inline(always)]
 pub fn sha224_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 28);
 
-    unsafe {
-        Hacl_Hash_SHA3_sha3_224(
-            digest.as_mut_ptr(),
-            payload.as_ptr() as _,
-            payload.len().try_into().unwrap(),
-        );
-    }
+    portable::sha224(digest, payload)
 }
 
 /// SHA3 256
 #[inline(always)]
-pub fn sha256(payload: &[u8]) -> [u8; 32] {
-    let mut digest = [0u8; 32];
-    sha256_ema(&mut digest, payload);
-    digest
+pub fn sha256(data: &[u8]) -> Sha3_256Digest {
+    let mut out = [0u8; 32];
+    sha256_ema(&mut out, data);
+    out
 }
 
 /// SHA3 256
@@ -115,21 +113,15 @@ pub fn sha256_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 32);
 
-    unsafe {
-        Hacl_Hash_SHA3_sha3_256(
-            digest.as_mut_ptr(),
-            payload.as_ptr() as _,
-            payload.len().try_into().unwrap(),
-        );
-    }
+    portable::sha256(digest, payload)
 }
 
 /// SHA3 384
 #[inline(always)]
-pub fn sha384(payload: &[u8]) -> [u8; 48] {
-    let mut digest = [0u8; 48];
-    sha384_ema(&mut digest, payload);
-    digest
+pub fn sha384(data: &[u8]) -> Sha3_384Digest {
+    let mut out = [0u8; 48];
+    sha384_ema(&mut out, data);
+    out
 }
 
 /// SHA3 384
@@ -138,21 +130,15 @@ pub fn sha384_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 48);
 
-    unsafe {
-        Hacl_Hash_SHA3_sha3_384(
-            digest.as_mut_ptr(),
-            payload.as_ptr() as _,
-            payload.len().try_into().unwrap(),
-        );
-    }
+    portable::sha384(digest, payload)
 }
 
 /// SHA3 512
 #[inline(always)]
-pub fn sha512(payload: &[u8]) -> [u8; 64] {
-    let mut digest = [0u8; 64];
-    sha512_ema(&mut digest, payload);
-    digest
+pub fn sha512(data: &[u8]) -> Sha3_512Digest {
+    let mut out = [0u8; 64];
+    sha512_ema(&mut out, data);
+    out
 }
 
 /// SHA3 512
@@ -161,27 +147,14 @@ pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
     debug_assert!(payload.len() <= u32::MAX as usize);
     debug_assert!(digest.len() == 64);
 
-    unsafe {
-        Hacl_Hash_SHA3_sha3_512(
-            digest.as_mut_ptr(),
-            payload.as_ptr() as _,
-            payload.len().try_into().unwrap(),
-        );
-    }
+    portable::sha512(digest, payload)
 }
 
 /// SHAKE 128
 #[inline(always)]
 pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
-    unsafe {
-        Hacl_Hash_SHA3_shake128_hacl(
-            data.len() as u32,
-            data.as_ptr() as _,
-            BYTES as u32,
-            out.as_mut_ptr(),
-        );
-    }
+    portable::shake128(&mut out, data);
     out
 }
 
@@ -192,96 +165,479 @@ pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
 #[inline(always)]
 pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
-    unsafe {
-        Hacl_Hash_SHA3_shake256_hacl(
-            data.len() as u32,
-            data.as_ptr() as _,
-            BYTES as u32,
-            out.as_mut_ptr(),
-        );
-    }
+    portable::shake256(&mut out, data);
     out
 }
 
-// mod pure {
+mod incremental {}
 
-//     /// SHA3 224
-//     pub fn sha3_224(payload: &[u8]) -> Sha3_224Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 28];
+//  === The portable instantiation === //
 
-//         hash_sha3::sha3_224(&mut out, payload, payload.len() as u32);
+/// A portable SHA3 implementations without platform dependent optimisations.
+pub mod portable {
+    use super::*;
+    use generic_keccak::{keccak, KeccakState};
 
-//         out
-//     }
+    pub type KeccakState1 = KeccakState<1, u64>;
 
-//     /// SHA3 256
-//     pub fn sha3_256(payload: &[u8]) -> Sha3_256Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 32];
+    #[inline(always)]
+    fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
+        keccak::<1, u64, RATE, DELIM>(data, out)
+    }
 
-//         hash_sha3::sha3_256(&mut out, payload, payload.len() as u32);
+    /// A portable SHA3 224 implementation.
+    pub fn sha224(digest: &mut [u8], data: &[u8]) {
+        keccakx1::<144, 0x06u8>([data], [digest]);
+    }
 
-//         out
-//     }
+    /// A portable SHA3 256 implementation.
+    pub fn sha256(digest: &mut [u8], data: &[u8]) {
+        keccakx1::<136, 0x06u8>([data], [digest]);
+    }
 
-//     /// SHA3 384
-//     pub fn sha3_384(payload: &[u8]) -> Sha3_384Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 48];
+    /// A portable SHA3 384 implementation.
+    pub fn sha384(digest: &mut [u8], data: &[u8]) {
+        keccakx1::<104, 0x06u8>([data], [digest]);
+    }
 
-//         hash_sha3::sha3_384(&mut out, payload, payload.len() as u32);
+    /// A portable SHA3 512 implementation.
+    pub fn sha512(digest: &mut [u8], data: &[u8]) {
+        keccakx1::<72, 0x06u8>([data], [digest]);
+    }
 
-//         out
-//     }
+    /// A portable SHAKE128 implementation.
+    pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
+        keccakx1::<168, 0x1fu8>([data], [digest]);
+    }
 
-//     /// SHA3 512
-//     pub fn sha3_512(payload: &[u8]) -> Sha3_512Digest {
-//         debug_assert!(payload.len() <= u32::MAX as usize);
-//         let payload = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(payload.as_ptr() as *mut u8, payload.len()))
-//         };
-//         let mut out = [0u8; 64];
+    /// A portable SHAKE256 implementation.
+    pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
+        keccakx1::<136, 0x1fu8>([data], [digest]);
+    }
 
-//         hash_sha3::sha3_512(&mut out, payload, payload.len() as u32);
+    /// An incremental API for SHAKE
+    pub mod incremental {
+        use generic_keccak::{absorb_final, squeeze_first_three_blocks, squeeze_next_block};
 
-//         out
-//     }
+        use super::*;
 
-//     /// SHAKE 128
-//     ///
-//     /// The caller must define the size of the output in the return type.
-//     pub fn shake128<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
-//         debug_assert!(LEN <= u32::MAX as usize && data.len() <= u32::MAX as usize);
-//         let data = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(data.as_ptr() as *mut u8, data.len()))
-//         };
-//         let mut out = [0u8; LEN];
-//         shake128_hacl(data.len() as u32, data, LEN as u32, &mut out);
+        /// Initialise the SHAKE state.
+        pub fn shake128_init() -> KeccakState1 {
+            KeccakState1::new()
+        }
 
-//         out
-//     }
+        /// Absorb
+        pub fn shake128_absorb_final(s: &mut KeccakState1, data0: &[u8]) {
+            absorb_final::<1, u64, 168, 0x1fu8>(s, [data0]);
+        }
 
-//     /// SHAKE 256
-//     ///
-//     /// The caller must define the size of the output in the return type.
-//     pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
-//         debug_assert!(LEN <= u32::MAX as usize && data.len() <= u32::MAX as usize);
-//         let data = unsafe {
-//             &mut *(core::ptr::slice_from_raw_parts_mut(data.as_ptr() as *mut u8, data.len()))
-//         };
-//         let mut out = [0u8; LEN];
-//         shake256_hacl(data.len() as u32, data, LEN as u32, &mut out);
+        /// Squeeze three blocks
+        pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState1, out0: &mut [u8]) {
+            squeeze_first_three_blocks::<1, u64, 168>(s, [out0])
+        }
 
-//         out
-//     }
-// }
+        /// Squeeze another block
+        pub fn shake128_squeeze_next_block(s: &mut KeccakState1, out0: &mut [u8]) {
+            squeeze_next_block::<1, u64, 168>(s, [out0])
+        }
+    }
+}
+
+/// A neon optimised implementation.
+///
+/// When this is compiled for non-neon architectures, the functions panic.
+/// The caller must make sure to check for hardware feature before calling these
+/// functions and compile them in.
+///
+/// Feature `simd128` enables the implementations in this module.
+pub mod neon {
+    #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+    use crate::generic_keccak::keccak;
+
+    #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+    #[inline(always)]
+    fn keccakx2<const RATE: usize, const DELIM: u8>(data: [&[u8]; 2], out: [&mut [u8]; 2]) {
+        keccak::<2, core::arch::aarch64::uint64x2_t, RATE, DELIM>(data, out)
+    }
+
+    /// A portable SHA3 224 implementation.
+    #[allow(unused_variables)]
+    pub fn sha224(digest: &mut [u8], data: &[u8]) {
+        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        unimplemented!("The target architecture does not support neon instructions.");
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        {
+            let mut dummy = [0u8; 28];
+            keccakx2::<144, 0x06u8>([data, data], [digest, &mut dummy]);
+        }
+    }
+
+    /// A portable SHA3 256 implementation.
+    #[allow(unused_variables)]
+    pub fn sha256(digest: &mut [u8], data: &[u8]) {
+        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        unimplemented!("The target architecture does not support neon instructions.");
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        {
+            let mut dummy = [0u8; 32];
+            keccakx2::<136, 0x06u8>([data, data], [digest, &mut dummy]);
+        }
+    }
+
+    /// A portable SHA3 384 implementation.
+    #[allow(unused_variables)]
+    pub fn sha384(digest: &mut [u8], data: &[u8]) {
+        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        unimplemented!("The target architecture does not support neon instructions.");
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        {
+            let mut dummy = [0u8; 48];
+            keccakx2::<104, 0x06u8>([data, data], [digest, &mut dummy]);
+        }
+    }
+
+    /// A portable SHA3 512 implementation.
+    #[allow(unused_variables)]
+    pub fn sha512(digest: &mut [u8], data: &[u8]) {
+        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        unimplemented!("The target architecture does not support neon instructions.");
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        {
+            let mut dummy = [0u8; 64];
+            keccakx2::<72, 0x06u8>([data, data], [digest, &mut dummy]);
+        }
+    }
+
+    /// A portable SHAKE128 implementation.
+    #[allow(unused_variables)]
+    pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
+        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        unimplemented!("The target architecture does not support neon instructions.");
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        {
+            let mut dummy = [0u8; LEN];
+            keccakx2::<168, 0x1fu8>([data, data], [digest, &mut dummy]);
+        }
+    }
+
+    /// A portable SHAKE256 implementation.
+    #[allow(unused_variables)]
+    pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
+        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        unimplemented!("The target architecture does not support neon instructions.");
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        {
+            let mut dummy = [0u8; LEN];
+            keccakx2::<136, 0x1fu8>([data, data], [digest, &mut dummy]);
+        }
+    }
+
+    /// Performing 2 operations in parallel
+    pub mod x2 {
+        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        use super::*;
+
+        /// Run SHAKE256 on both inputs in parallel.
+        ///
+        /// Writes the two results into `out0` and `out1`
+        #[allow(unused_variables)]
+        pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
+            // TODO: make argument ordering consistent
+            #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+            unimplemented!("The target architecture does not support neon instructions.");
+            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
+        }
+
+        /// An incremental API to perform 2 operations in parallel
+        pub mod incremental {
+            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            use crate::generic_keccak::{
+                absorb_final, squeeze_first_three_blocks, squeeze_next_block, KeccakState,
+            };
+
+            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            pub type KeccakState2 = KeccakState<2, core::arch::aarch64::uint64x2_t>;
+            #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+            pub type KeccakState2 = [crate::portable::KeccakState1; 2];
+
+            pub fn shake128_init() -> KeccakState2 {
+                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // {
+                //     let s0 = KeccakState1::new();
+                //     let s1 = KeccakState1::new();
+                //     [s0, s1]
+                // }
+                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                KeccakState2::new()
+            }
+
+            #[allow(unused_variables)]
+            pub fn shake128_absorb_final(s: &mut KeccakState2, data0: &[u8], data1: &[u8]) {
+                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // {
+                //     let [mut s0, mut s1] = s;
+                //     shake128_absorb_final(&mut s0, data0);
+                //     shake128_absorb_final(&mut s1, data1);
+                // }
+                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(s, [data0, data1]);
+            }
+
+            #[allow(unused_variables)]
+            pub fn shake128_squeeze_first_three_blocks(
+                s: &mut KeccakState2,
+                out0: &mut [u8],
+                out1: &mut [u8],
+            ) {
+                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // {
+                //     let [mut s0, mut s1] = s;
+                //     shake128_squeeze_first_three_blocks(&mut s0, out0);
+                //     shake128_squeeze_first_three_blocks(&mut s1, out1);
+                // }
+                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                squeeze_first_three_blocks::<2, core::arch::aarch64::uint64x2_t, 168>(
+                    s,
+                    [out0, out1],
+                )
+            }
+
+            #[allow(unused_variables)]
+            pub fn shake128_squeeze_next_block(
+                s: &mut KeccakState2,
+                out0: &mut [u8],
+                out1: &mut [u8],
+            ) {
+                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // {
+                //     let [mut s0, mut s1] = s;
+                //     shake128_squeeze_next_block(&mut s0, out0);
+                //     shake128_squeeze_next_block(&mut s1, out1);
+                // }
+                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(s, [out0, out1])
+            }
+        }
+    }
+}
+
+/// An AVX2 optimised implementation.
+///
+/// When this is compiled for non-neon architectures, the functions panic.
+/// The caller must make sure to check for hardware feature before calling these
+/// functions and compile them in.
+///
+/// Feature `simd256` enables the implementations in this module.
+pub mod avx2 {
+
+    /// Performing 4 operations in parallel
+    pub mod x4 {
+        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+        use crate::generic_keccak::keccak;
+
+        /// Perform 4 SHAKE256 operations in parallel
+        #[allow(unused_variables)] // TODO: decide if we want to fall back here
+        pub fn shake256(
+            input0: &[u8],
+            input1: &[u8],
+            input2: &[u8],
+            input3: &[u8],
+            out0: &mut [u8],
+            out1: &mut [u8],
+            out2: &mut [u8],
+            out3: &mut [u8],
+        ) {
+            #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+            unimplemented!("The target architecture does not support neon instructions.");
+            // XXX: These functions could alternatively implement the same with
+            //      the portable implementation
+            // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            // {
+            //     keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
+            //     keccakx2::<136, 0x1fu8>([input2, input3], [out2, out3]);
+            // }
+            // {
+            //     keccakx1::<136, 0x1fu8>([input0], [out0]);
+            //     keccakx1::<136, 0x1fu8>([input1], [out1]);
+            //     keccakx1::<136, 0x1fu8>([input2], [out2]);
+            //     keccakx1::<136, 0x1fu8>([input3], [out3]);
+            // }
+            #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+            keccak::<4, core::arch::x86_64::__m256i, 136, 0x1fu8>(
+                [input0, input1, input2, input3],
+                [out0, out1, out2, out3],
+            );
+        }
+
+        /// An incremental API to perform 4 operations in parallel
+        pub mod incremental {
+            #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+            use crate::generic_keccak::{
+                absorb_final, squeeze_first_three_blocks, squeeze_next_block, KeccakState,
+            };
+
+            #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+            pub type KeccakState4 = KeccakState<4, core::arch::x86_64::__m256i>;
+            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            pub type KeccakState4 = [crate::neon::x2::incremental::KeccakState2; 2];
+            #[cfg(not(any(
+                all(feature = "simd256", target_arch = "x86_64"),
+                all(feature = "simd128", target_arch = "aarch64")
+            )))]
+            pub type KeccakState4 = [crate::portable::KeccakState1; 4];
+
+            pub fn shake128_init() -> KeccakState4 {
+                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // {
+                //     let s0 = KeccakState2::new();
+                //     let s1 = KeccakState2::new();
+                //     [s0, s1]
+                // }
+                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // {
+                //     let s0 = KeccakState1::new();
+                //     let s1 = KeccakState1::new();
+                //     let s2 = KeccakState1::new();
+                //     let s3 = KeccakState1::new();
+                //     [s0, s1, s2, s3]
+                // }
+                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                KeccakState4::new()
+            }
+
+            #[allow(unused_variables)] // TODO: decide if we want to fall back here
+            pub fn shake128_absorb_final(
+                s: &mut KeccakState4,
+                data0: &[u8],
+                data1: &[u8],
+                data2: &[u8],
+                data3: &[u8],
+            ) {
+                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // {
+                //     let [mut s0, mut s1] = s;
+                //     absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(
+                //         &mut s0,
+                //         [data0, data1],
+                //     );
+                //     absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(
+                //         &mut s1,
+                //         [data2, data3],
+                //     );
+                // }
+                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // {
+                //     let [mut s0, mut s1, mut s2, mut s3] = s;
+                //     shake128_absorb_final(&mut s0, data0);
+                //     shake128_absorb_final(&mut s1, data1);
+                //     shake128_absorb_final(&mut s2, data2);
+                //     shake128_absorb_final(&mut s3, data3);
+                // }
+                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                absorb_final::<4, core::arch::x86_64::__m256i, 168, 0x1fu8>(
+                    s,
+                    [data0, data1, data2, data3],
+                );
+            }
+
+            #[allow(unused_variables)] // TODO: decide if we want to fall back here
+            pub fn shake128_squeeze_first_three_blocks(
+                s: &mut KeccakState4,
+                out0: &mut [u8],
+                out1: &mut [u8],
+                out2: &mut [u8],
+                out3: &mut [u8],
+            ) {
+                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // {
+                //     let [mut s0, mut s1] = s;
+                //     squeeze_first_three_blocks::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //         &mut s0,
+                //         [out0, out1],
+                //     );
+                //     squeeze_first_three_blocks::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //         &mut s1,
+                //         [out2, out3],
+                //     );
+                // }
+                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // {
+                //     let [mut s0, mut s1, mut s2, mut s3] = s;
+                //     shake128_squeeze_first_three_blocks(&mut s0, out0);
+                //     shake128_squeeze_first_three_blocks(&mut s1, out1);
+                //     shake128_squeeze_first_three_blocks(&mut s2, out2);
+                //     shake128_squeeze_first_three_blocks(&mut s3, out3);
+                // }
+                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                squeeze_first_three_blocks::<4, core::arch::x86_64::__m256i, 168>(
+                    s,
+                    [out0, out1, out2, out3],
+                );
+            }
+
+            #[allow(unused_variables)] // TODO: decide if we want to fall back here
+            pub fn shake128_squeeze_next_block(
+                s: &mut KeccakState4,
+                out0: &mut [u8],
+                out1: &mut [u8],
+                out2: &mut [u8],
+                out3: &mut [u8],
+            ) {
+                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                unimplemented!("The target architecture does not support neon instructions.");
+                // XXX: These functions could alternatively implement the same with
+                //      the portable implementation
+                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // {
+                //     let [mut s0, mut s1] = s;
+                //     squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //         &mut s0,
+                //         [out0, out1],
+                //     );
+                //     squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //         &mut s1,
+                //         [out2, out3],
+                //     );
+                // }
+                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // {
+                //     let [mut s0, mut s1, mut s2, mut s3] = s;
+                //     shake128_squeeze_next_block(&mut s0, out0);
+                //     shake128_squeeze_next_block(&mut s1, out1);
+                //     shake128_squeeze_next_block(&mut s2, out2);
+                //     shake128_squeeze_next_block(&mut s3, out3);
+                // }
+                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                squeeze_next_block::<4, core::arch::x86_64::__m256i, 168>(
+                    s,
+                    [out0, out1, out2, out3],
+                );
+            }
+        }
+    }
+}

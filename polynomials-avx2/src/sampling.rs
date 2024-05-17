@@ -1,25 +1,9 @@
-#![forbid(unsafe_code)]
+use crate::intrinsics::*;
 
-use crate::neon::*;
+use crate::serialize::{deserialize_12, serialize_1};
+use libcrux_traits::FIELD_MODULUS;
 
-/// This table is taken from PQClean. It is used in rej_sample
-// It implements the following logic:
-// let mut index : [u8;16] = [0u8; 16];
-// let mut idx = 0;
-// for i in 0..8 {
-//     if used > 0 {
-//         let next = used.trailing_zeros();
-//         idx = idx + next;
-//         index[i*2] = (idx*2) as u8;
-//         index[i*2+1] = (idx*2 + 1) as u8;
-//         idx = idx + 1;
-//         used = used >> (next+1);
-//     }
-// }
-// let index_vec = unsafe { vld1q_u8(index.as_ptr() as *const u8) };
-// End of index table lookup calculation
-
-const IDX_TABLE: [[u8; 16]; 256] = [
+const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
     [
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff,
@@ -768,27 +752,31 @@ const IDX_TABLE: [[u8; 16]; 256] = [
 ];
 
 #[inline(always)]
-pub(crate) fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
-    let neon_bits: [u16; 8] = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
-    let bits = _vld1q_u16(&neon_bits);
-    let fm = _vdupq_n_s16(3328);
+pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
+    let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 
-    let input = super::simd128ops::deserialize_12(a);
-    let mask0 = _vcleq_s16(input.low, fm);
-    let mask1 = _vcleq_s16(input.high, fm);
-    let used0 = _vaddvq_u16(_vandq_u16(mask0, bits));
-    let used1 = _vaddvq_u16(_vandq_u16(mask1, bits));
-    let pick0 = used0.count_ones();
-    let pick1 = used1.count_ones();
+    let potential_coefficients = deserialize_12(input);
 
-    let index_vec0 = _vld1q_u8(&IDX_TABLE[used0 as usize]);
-    let shifted0 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.low), index_vec0));
-    let index_vec1 = _vld1q_u8(&IDX_TABLE[used1 as usize]);
-    let shifted1 =
-        _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.high), index_vec1));
+    let compare_with_field_modulus = mm256_cmpgt_epi16(field_modulus, potential_coefficients);
+    let good = serialize_1(compare_with_field_modulus);
 
-    let idx0 = pick0 as usize;
-    _vst1q_s16(&mut out[0..8], shifted0);
-    _vst1q_s16(&mut out[idx0..idx0 + 8], shifted1);
-    (pick0 + pick1) as usize
+    let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
+    let lower_shuffles = mm_loadu_si128(&lower_shuffles);
+    let lower_coefficients = mm256_castsi256_si128(potential_coefficients);
+    let lower_coefficients = mm_shuffle_epi8(lower_coefficients, lower_shuffles);
+
+    mm_storeu_si128(&mut output[0..8], lower_coefficients);
+    let sampled_count = good[0].count_ones() as usize;
+
+    let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
+    let upper_shuffles = mm_loadu_si128(&upper_shuffles);
+    let upper_coefficients = mm256_extracti128_si256::<1>(potential_coefficients);
+    let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);
+
+    mm_storeu_si128(
+        &mut output[sampled_count..sampled_count + 8],
+        upper_coefficients,
+    );
+
+    sampled_count + (good[1].count_ones() as usize)
 }
