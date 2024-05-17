@@ -91,10 +91,14 @@ jobs:
       # Test ...
 
       - name: 🏃🏻‍♀️ Test
-        run: cargo clean && cargo test --verbose $RUST_TARGET_FLAG
+        run: |
+          cargo test --verbose $RUST_TARGET_FLAG
+          cd ../libcrux-sha3 && cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Release
-        run: cargo clean && cargo test --verbose --release $RUST_TARGET_FLAG
+        run: |
+          cargo test --verbose --release $RUST_TARGET_FLAG
+          cd ../libcrux-sha3 && cargo test --verbose $RUST_TARGET_FLAG
 
   benchmarks:
     strategy:

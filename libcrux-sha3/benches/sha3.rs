@@ -19,7 +19,7 @@ pub fn fmt(x: usize) -> String {
 }
 
 macro_rules! impl_comp {
-    ($fun:ident, $libcrux:expr) => {
+    ($fun:ident, $libcrux:expr, $neon_fun:ident) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
             const PAYLOAD_SIZES: [usize; 3] = [128, 1024, 1024 * 1024 * 10];
@@ -43,7 +43,7 @@ macro_rules! impl_comp {
                     },
                 );
 
-                #[cfg(feature = "simd128")]
+                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
                 group.bench_with_input(
                     BenchmarkId::new("rust version (simd128)", fmt(*payload_size)),
                     payload_size,
@@ -51,7 +51,8 @@ macro_rules! impl_comp {
                         b.iter_batched(
                             || randombytes(*payload_size),
                             |payload| {
-                                let _d: [u8; digest_size($libcrux)] = neon::$fun(&payload);
+                                let mut digest = [0u8; digest_size($libcrux)];
+                                neon::$neon_fun(&mut digest, &payload);
                             },
                             BatchSize::SmallInput,
                         )
@@ -62,10 +63,10 @@ macro_rules! impl_comp {
     };
 }
 
-impl_comp!(Sha3_224, Algorithm::Sha224);
-impl_comp!(Sha3_256, Algorithm::Sha256);
-impl_comp!(Sha3_384, Algorithm::Sha384);
-impl_comp!(Sha3_512, Algorithm::Sha512);
+impl_comp!(Sha3_224, Algorithm::Sha224, sha224);
+impl_comp!(Sha3_256, Algorithm::Sha256, sha256);
+impl_comp!(Sha3_384, Algorithm::Sha384, sha384);
+impl_comp!(Sha3_512, Algorithm::Sha512, sha512);
 
 fn benchmarks(c: &mut Criterion) {
     Sha3_224(c);
