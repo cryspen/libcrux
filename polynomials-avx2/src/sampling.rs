@@ -1,6 +1,8 @@
-use crate::intrinsics::*;
+use crate::{
+    serialize::{deserialize_12, serialize_1},
+    *,
+};
 
-use crate::serialize::{deserialize_12, serialize_1};
 use libcrux_traits::FIELD_MODULUS;
 
 const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [

@@ -1,10 +1,17 @@
-use crate::intrinsics::*;
 use libcrux_traits::Operations;
 
 #[cfg(test)]
 mod debug;
 
+// When extracting F* or C, we don't want to extract this file.
+#[cfg(not(any(eurydice, hax)))]
 mod intrinsics;
+#[cfg(not(any(eurydice, hax)))]
+pub(crate) use crate::intrinsics::*;
+#[cfg(any(eurydice, hax))]
+mod intrinsics_extraction;
+#[cfg(any(eurydice, hax))]
+pub(crate) use intrinsics_extraction::*;
 
 mod arithmetic;
 mod compress;
@@ -15,7 +22,7 @@ mod serialize;
 
 #[derive(Clone, Copy)]
 pub struct SIMD256Vector {
-    elements: __m256i,
+    elements: Vec256,
 }
 
 #[inline(always)]

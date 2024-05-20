@@ -1,4 +1,4 @@
-use crate::intrinsics::*;
+use crate::*;
 use libcrux_traits::FIELD_MODULUS;
 
 // Multiply the 32-bit numbers contained in |lhs| and |rhs|, and store only
@@ -8,7 +8,7 @@ use libcrux_traits::FIELD_MODULUS;
 //
 // TODO: Optimize this implementation if performance numbers suggest doing so.
 #[inline(always)]
-fn mulhi_mm256_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
+fn mulhi_mm256_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     let prod02 = mm256_mul_epu32(lhs, rhs);
     let prod13 = mm256_mul_epu32(
         mm256_shuffle_epi32::<0b11_11_01_01>(lhs),
@@ -22,7 +22,7 @@ fn mulhi_mm256_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn compress_message_coefficient(vector: __m256i) -> __m256i {
+pub(crate) fn compress_message_coefficient(vector: Vec256) -> Vec256 {
     let field_modulus_halved = mm256_set1_epi16((FIELD_MODULUS - 1) / 2);
     let field_modulus_quartered = mm256_set1_epi16((FIELD_MODULUS - 1) / 4);
 
@@ -38,8 +38,8 @@ pub(crate) fn compress_message_coefficient(vector: __m256i) -> __m256i {
 
 #[inline(always)]
 pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    vector: __m256i,
-) -> __m256i {
+    vector: Vec256,
+) -> Vec256 {
     let field_modulus_halved = mm256_set1_epi32(((FIELD_MODULUS as i32) - 1) / 2);
     let compression_factor = mm256_set1_epi32(10_321_340);
     let coefficient_bits_mask = mm256_set1_epi32((1 << COEFFICIENT_BITS) - 1);
@@ -103,8 +103,8 @@ pub(crate) fn compress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
 
 #[inline(always)]
 pub(crate) fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
-    vector: __m256i,
-) -> __m256i {
+    vector: Vec256,
+) -> Vec256 {
     let field_modulus = mm256_set1_epi32(FIELD_MODULUS as i32);
     let two_pow_coefficient_bits = mm256_set1_epi32(1 << COEFFICIENT_BITS);
 
