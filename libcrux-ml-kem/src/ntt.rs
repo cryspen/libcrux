@@ -81,8 +81,8 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
         *zeta_i += 1;
 
         let offset = round * step * 2;
-        let offset_vec = offset / FIELD_ELEMENTS_IN_VECTOR;
-        let step_vec = step / FIELD_ELEMENTS_IN_VECTOR;
+        let offset_vec = offset / 16; //FIELD_ELEMENTS_IN_VECTOR;
+        let step_vec = step / 16; //FIELD_ELEMENTS_IN_VECTOR;
 
         for j in offset_vec..offset_vec + step_vec {
             let (x, y) = ntt_layer_int_vec_step(

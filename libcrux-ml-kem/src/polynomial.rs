@@ -13,9 +13,10 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] =
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
-pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
-    super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
+pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
+// super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
+#[cfg_attr(eurydice, derive(Clone, Copy))]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
@@ -33,9 +34,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     pub(crate) fn from_i16_array(a: &[i16]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
-            result.coefficients[i] = Vector::from_i16_array(
-                &a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR],
-            );
+            result.coefficients[i] = Vector::from_i16_array(&a[i * 16..(i + 1) * 16]);
         }
         result
     }

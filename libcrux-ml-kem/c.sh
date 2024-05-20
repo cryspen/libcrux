@@ -15,7 +15,7 @@ if [[ -z "$EURYDICE_HOME" ]]; then
 fi
 
 echo "Running charon ..."
-$CHARON_HOME/bin/charon --errors-as-warnings
+RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings
 mkdir -p c
 cd c
 

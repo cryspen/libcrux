@@ -22,12 +22,14 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
             seeds[j][33] = j as u8;
         }
         let sampled = sample_from_xof::<K, Vector, Hasher>(seeds);
-        for (j, sample) in sampled.into_iter().enumerate() {
-            // A[i][j] = A_transpose[j][i]
-            if transpose {
-                A_transpose[j][i] = sample;
-            } else {
-                A_transpose[i][j] = sample;
+        cloop! {
+            for (j, sample) in sampled.into_iter().enumerate() {
+                // A[i][j] = A_transpose[j][i]
+                if transpose {
+                    A_transpose[j][i] = sample;
+                } else {
+                    A_transpose[i][j] = sample;
+                }
             }
         }
     }

@@ -23,7 +23,7 @@ macro_rules! cloop {
     };
     (for ($i:ident, $item:ident) in $val:ident.into_iter().enumerate() $body:block) => {
         for $i in 0..$val.len() {
-            let $item = &$val[$i];
+            let $item = $val[$i];
             $body
         }
     };
