@@ -1,15 +1,13 @@
-use crate::intrinsics::*;
-
-use crate::arithmetic;
+use crate::*;
 
 #[inline(always)]
 pub(crate) fn ntt_layer_1_step(
-    vector: __m256i,
+    vector: Vec256,
     zeta0: i16,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
-) -> __m256i {
+) -> Vec256 {
     let zetas = mm256_set_epi16(
         -zeta3, -zeta3, zeta3, zeta3, -zeta2, -zeta2, zeta2, zeta2, -zeta1, -zeta1, zeta1, zeta1,
         -zeta0, -zeta0, zeta0, zeta0,
@@ -24,7 +22,7 @@ pub(crate) fn ntt_layer_1_step(
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_2_step(vector: __m256i, zeta0: i16, zeta1: i16) -> __m256i {
+pub(crate) fn ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256 {
     let zetas = mm256_set_epi16(
         -zeta1, -zeta1, -zeta1, -zeta1, zeta1, zeta1, zeta1, zeta1, -zeta0, -zeta0, -zeta0, -zeta0,
         zeta0, zeta0, zeta0, zeta0,
@@ -39,7 +37,7 @@ pub(crate) fn ntt_layer_2_step(vector: __m256i, zeta0: i16, zeta1: i16) -> __m25
 }
 
 #[inline(always)]
-pub(crate) fn ntt_layer_3_step(vector: __m256i, zeta: i16) -> __m256i {
+pub(crate) fn ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     let rhs = mm256_extracti128_si256::<1>(vector);
     let rhs = arithmetic::montgomery_multiply_m128i_by_constants(rhs, mm_set1_epi16(zeta));
 
@@ -56,12 +54,12 @@ pub(crate) fn ntt_layer_3_step(vector: __m256i, zeta: i16) -> __m256i {
 
 #[inline(always)]
 pub(crate) fn inv_ntt_layer_1_step(
-    vector: __m256i,
+    vector: Vec256,
     zeta0: i16,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
-) -> __m256i {
+) -> Vec256 {
     let lhs = mm256_shuffle_epi32::<0b11_11_01_01>(vector);
 
     let rhs = mm256_shuffle_epi32::<0b10_10_00_00>(vector);
@@ -84,7 +82,7 @@ pub(crate) fn inv_ntt_layer_1_step(
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_2_step(vector: __m256i, zeta0: i16, zeta1: i16) -> __m256i {
+pub(crate) fn inv_ntt_layer_2_step(vector: Vec256, zeta0: i16, zeta1: i16) -> Vec256 {
     let lhs = mm256_permute4x64_epi64::<0b11_11_01_01>(vector);
 
     let rhs = mm256_permute4x64_epi64::<0b10_10_00_00>(vector);
@@ -105,7 +103,7 @@ pub(crate) fn inv_ntt_layer_2_step(vector: __m256i, zeta0: i16, zeta1: i16) -> _
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_3_step(vector: __m256i, zeta: i16) -> __m256i {
+pub(crate) fn inv_ntt_layer_3_step(vector: Vec256, zeta: i16) -> Vec256 {
     let lhs = mm256_extracti128_si256::<1>(vector);
     let rhs = mm256_castsi256_si128(vector);
 
@@ -123,13 +121,13 @@ pub(crate) fn inv_ntt_layer_3_step(vector: __m256i, zeta: i16) -> __m256i {
 
 #[inline(always)]
 pub(crate) fn ntt_multiply(
-    lhs: __m256i,
-    rhs: __m256i,
+    lhs: Vec256,
+    rhs: Vec256,
     zeta0: i16,
     zeta1: i16,
     zeta2: i16,
     zeta3: i16,
-) -> __m256i {
+) -> Vec256 {
     // Compute the first term of the product
     let shuffle_with = mm256_set_epi8(
         15, 14, 11, 10, 7, 6, 3, 2, 13, 12, 9, 8, 5, 4, 1, 0, 15, 14, 11, 10, 7, 6, 3, 2, 13, 12,

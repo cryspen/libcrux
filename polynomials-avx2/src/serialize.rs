@@ -1,9 +1,7 @@
-use crate::intrinsics::*;
-
-use crate::{portable, SIMD256Vector};
+use crate::*;
 
 #[inline(always)]
-pub(crate) fn serialize_1(vector: __m256i) -> [u8; 2] {
+pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
     // We care only about the least significant bit in each lane,
     // move it to the most significant position to make it easier to work with.
     let lsb_to_msb = mm256_slli_epi16::<15>(vector);
@@ -37,7 +35,7 @@ pub(crate) fn serialize_1(vector: __m256i) -> [u8; 2] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_1(bytes: &[u8]) -> __m256i {
+pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
     // We need to take each bit from the 2 bytes of input and put them
     // into their own 16-bit lane. Ideally, we'd load the two bytes into the vector,
     // duplicate them, and right-shift the 0th element by 0 bits,
@@ -99,7 +97,7 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_4(vector: __m256i) -> [u8; 8] {
+pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let mut serialized = [0u8; 16];
 
     // If |vector| is laid out as follows:
@@ -162,7 +160,7 @@ pub(crate) fn serialize_4(vector: __m256i) -> [u8; 8] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_4(bytes: &[u8]) -> __m256i {
+pub(crate) fn deserialize_4(bytes: &[u8]) -> Vec256 {
     let shift_lsbs_to_msbs = mm256_set_epi16(
         1 << 0,
         1 << 4,
@@ -208,7 +206,7 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_5(vector: __m256i) -> [u8; 10] {
+pub(crate) fn serialize_5(vector: Vec256) -> [u8; 10] {
     let mut serialized = [0u8; 32];
 
     let adjacent_2_combined = mm256_madd_epi16(
@@ -256,7 +254,7 @@ pub(crate) fn serialize_5(vector: __m256i) -> [u8; 10] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_5(bytes: &[u8]) -> __m256i {
+pub(crate) fn deserialize_5(bytes: &[u8]) -> Vec256 {
     let coefficients = mm_set_epi8(
         bytes[9], bytes[8], bytes[8], bytes[7], bytes[7], bytes[6], bytes[6], bytes[5], bytes[4],
         bytes[3], bytes[3], bytes[2], bytes[2], bytes[1], bytes[1], bytes[0],
@@ -298,7 +296,7 @@ pub(crate) fn deserialize_5(bytes: &[u8]) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_10(vector: __m256i) -> [u8; 20] {
+pub(crate) fn serialize_10(vector: Vec256) -> [u8; 20] {
     let mut serialized = [0u8; 32];
 
     let adjacent_2_combined = mm256_madd_epi16(
@@ -347,7 +345,7 @@ pub(crate) fn serialize_10(vector: __m256i) -> [u8; 20] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_10(bytes: &[u8]) -> __m256i {
+pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
     let shift_lsbs_to_msbs = mm256_set_epi16(
         1 << 0,
         1 << 2,
@@ -389,21 +387,21 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn serialize_11(vector: __m256i) -> [u8; 22] {
+pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
     let input = portable::from_i16_array(crate::to_i16_array(SIMD256Vector { elements: vector }));
 
     portable::serialize_11(input)
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_11(bytes: &[u8]) -> __m256i {
+pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
     let output = portable::deserialize_11(bytes);
 
     crate::from_i16_array(&portable::to_i16_array(output)).elements
 }
 
 #[inline(always)]
-pub(crate) fn serialize_12(vector: __m256i) -> [u8; 24] {
+pub(crate) fn serialize_12(vector: Vec256) -> [u8; 24] {
     let mut serialized = [0u8; 32];
 
     let adjacent_2_combined = mm256_madd_epi16(
@@ -450,7 +448,7 @@ pub(crate) fn serialize_12(vector: __m256i) -> [u8; 24] {
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_12(bytes: &[u8]) -> __m256i {
+pub(crate) fn deserialize_12(bytes: &[u8]) -> Vec256 {
     let shift_lsbs_to_msbs = mm256_set_epi16(
         1 << 0,
         1 << 4,
