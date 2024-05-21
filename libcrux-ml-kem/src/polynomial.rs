@@ -1,5 +1,5 @@
 use libcrux_polynomials::{
-    FieldElementTimesMontgomeryR, GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR,
+    to_standard_domain, FieldElementTimesMontgomeryR, Operations, FIELD_ELEMENTS_IN_VECTOR,
 };
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -97,7 +97,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         for j in 0..VECTORS_IN_RING_ELEMENT {
             // The coefficients are of the form aR^{-1} mod q, which means
             // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = Vector::to_standard_domain(self.coefficients[j]);
+            let coefficient_normal_form = to_standard_domain::<Vector>(self.coefficients[j]);
 
             self.coefficients[j] = Vector::barrett_reduce(Vector::add(
                 coefficient_normal_form,

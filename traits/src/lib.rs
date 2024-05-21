@@ -65,28 +65,19 @@ pub trait Operations: Copy + Clone {
 }
 
 // hax does not support trait with default implementations, so we use the following patter
-pub trait GenericOperations {
-    fn montgomery_multiply_fe_by_fer(v: Self, fer: i16) -> Self;
-    fn to_standard_domain(v: Self) -> Self;
-    fn to_unsigned_representative(a: Self) -> Self;
-    fn decompress_1(v: Self) -> Self;
+pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
+    T::montgomery_multiply_by_constant(v, fer)
+}
+pub fn to_standard_domain<T: Operations>(v: T) -> T {
+    T::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
 }
 
-impl<T: Operations + Clone + Copy> GenericOperations for T {
-    fn montgomery_multiply_fe_by_fer(v: Self, fer: i16) -> Self {
-        Self::montgomery_multiply_by_constant(v, fer)
-    }
-    fn to_standard_domain(v: Self) -> Self {
-        Self::montgomery_multiply_by_constant(v, MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS as i16)
-    }
+pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
+    let t = T::shift_right::<15>(a);
+    let fm = T::bitwise_and_with_constant(t, FIELD_MODULUS);
+    T::add(a, &fm)
+}
 
-    fn to_unsigned_representative(a: Self) -> Self {
-        let t = Self::shift_right::<15>(a);
-        let fm = Self::bitwise_and_with_constant(t, FIELD_MODULUS);
-        Self::add(a, &fm)
-    }
-
-    fn decompress_1(v: Self) -> Self {
-        Self::bitwise_and_with_constant(Self::sub(Self::ZERO(), &v), 1665)
-    }
+pub fn decompress_1<T: Operations>(v: T) -> T {
+    T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
 }

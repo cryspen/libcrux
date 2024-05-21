@@ -10,7 +10,10 @@
 //! FIXME: This is kyber specific for now.
 
 use libcrux_traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-pub use libcrux_traits::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS};
+pub use libcrux_traits::{
+    decompress_1, montgomery_multiply_fe, to_standard_domain, to_unsigned_representative,
+    Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS,
+};
 
 // There's no runtime detection here. This either exposes the real SIMD vector,
 // or the portable when the feature is not set.

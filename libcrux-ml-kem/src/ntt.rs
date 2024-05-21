@@ -2,7 +2,9 @@ use crate::{
     hax_utils::hax_debug_assert,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT, ZETAS_TIMES_MONTGOMERY_R},
 };
-use libcrux_polynomials::{GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR};
+use libcrux_polynomials::{
+    montgomery_multiply_fe, Operations, FIELD_ELEMENTS_IN_VECTOR,
+};
 
 #[inline(always)]
 pub(crate) fn ntt_at_layer_1<Vector: Operations>(
@@ -62,7 +64,7 @@ fn ntt_layer_int_vec_step<Vector: Operations>(
     mut b: Vector,
     zeta_r: i16,
 ) -> (Vector, Vector) {
-    let t = Vector::montgomery_multiply_fe_by_fer(b, zeta_r);
+    let t = montgomery_multiply_fe::<Vector>(b, zeta_r);
     b = Vector::sub(a, &t);
     a = Vector::add(a, &t);
     (a, b)
