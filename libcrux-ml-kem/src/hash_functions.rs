@@ -206,7 +206,7 @@ pub(crate) mod avx2 {
                         &mut out3[0],
                     );
                 }
-                _ => unreachable!("This function is only called with 2, 3, 4"),
+                _ => unreachable!(),
             }
             out
         }
@@ -231,7 +231,7 @@ pub(crate) mod avx2 {
                         &mut state, &input[0], &input[1], &input[2], &input[3],
                     );
                 }
-                _ => unreachable!("This function is only called with 2, 3, 4"),
+                _ => unreachable!(),
             }
             Self {
                 shake128_state: state,
@@ -279,7 +279,7 @@ pub(crate) mod avx2 {
                         &mut out3[0],
                     );
                 }
-                _ => unreachable!("This function is only called with 2, 3, 4"),
+                _ => unreachable!(),
             }
             out
         }
@@ -326,7 +326,7 @@ pub(crate) mod avx2 {
                         &mut out3[0],
                     );
                 }
-                _ => unreachable!("This function is only called with 2, 3, 4"),
+                _ => unreachable!(),
             }
             out
         }
@@ -462,7 +462,7 @@ pub(crate) mod neon {
                         &mut out3[0],
                     );
                 }
-                _ => unreachable!("This function is only called with 2, 3, 4"),
+                _ => unreachable!(),
             }
             out
         }
@@ -522,7 +522,7 @@ pub(crate) mod neon {
                     out[2] = out2;
                     out[3] = out3;
                 }
-                _ => unreachable!("This function is only called with 2, 3, 4"),
+                _ => unreachable!(),
             }
             out
         }
