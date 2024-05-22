@@ -3,6 +3,12 @@ module Libcrux.Kem.Kyber
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux.Kem.Kyber.Types in
+  ()
+
 unfold
 let t_MlKemSharedSecret = t_Array u8 (sz 32)
 

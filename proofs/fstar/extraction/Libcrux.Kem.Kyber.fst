@@ -3,6 +3,12 @@ module Libcrux.Kem.Kyber
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux.Kem.Kyber.Types in
+  ()
+
 let serialize_kem_secret_key
       (v_SERIALIZED_KEY_LEN: usize)
       (private_key public_key implicit_rejection_value: t_Slice u8)
