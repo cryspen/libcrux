@@ -13,8 +13,8 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     group.bench_function("libcrux portable (external random)", |b| {
-        let mut seed = [0; 64];
-        rng.fill_bytes(&mut seed);
+        let mut seed = [13; 64];
+//        rng.fill_bytes(&mut seed);
         b.iter(|| {
             let _kp = mlkem768::generate_key_pair(seed);
         })
@@ -47,8 +47,8 @@ pub fn comparisons_pk_validation(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     group.bench_function("libcrux portable", |b| {
-        let mut seed = [0; 64];
-        rng.fill_bytes(&mut seed);
+        let mut seed = [13; 64];
+//        rng.fill_bytes(&mut seed);
         b.iter_batched(
             || {
                 let keypair = mlkem768::generate_key_pair(seed);
@@ -67,10 +67,10 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     group.bench_function("libcrux portable (external random)", |b| {
-        let mut seed1 = [0; 64];
-        OsRng.fill_bytes(&mut seed1);
-        let mut seed2 = [0; 32];
-        OsRng.fill_bytes(&mut seed2);
+        let mut seed1 = [13; 64];
+//        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [13; 32];
+//        OsRng.fill_bytes(&mut seed2);
         b.iter_batched(
             || mlkem768::generate_key_pair(seed1),
             |keypair| {
@@ -118,10 +118,10 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
     group.measurement_time(Duration::from_secs(10));
 
     group.bench_function("libcrux portable", |b| {
-        let mut seed1 = [0; 64];
-        OsRng.fill_bytes(&mut seed1);
-        let mut seed2 = [0; 32];
-        OsRng.fill_bytes(&mut seed2);
+        let mut seed1 = [13; 64];
+//        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [13; 32];
+//        OsRng.fill_bytes(&mut seed2);
         b.iter_batched(
             || {
                 let keypair = mlkem768::generate_key_pair(seed1);
