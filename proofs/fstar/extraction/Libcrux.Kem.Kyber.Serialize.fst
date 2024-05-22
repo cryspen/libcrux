@@ -151,9 +151,11 @@ let compress_then_serialize_10_
      =
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact i32))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+              (Core.Slice.impl__chunks_exact #i32
+                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
                     t_Slice i32)
                   (sz 4)
@@ -233,9 +235,11 @@ let compress_then_serialize_11_
      =
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact i32))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+              (Core.Slice.impl__chunks_exact #i32
+                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
                     t_Slice i32)
                   (sz 8)
@@ -389,9 +393,11 @@ let compress_then_serialize_4_
      =
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact i32))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+              (Core.Slice.impl__chunks_exact #i32
+                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
                     t_Slice i32)
                   (sz 2)
@@ -444,9 +450,11 @@ let compress_then_serialize_5_
      =
   let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
   let serialized:t_Array u8 v_OUT_LEN =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact i32))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+              (Core.Slice.impl__chunks_exact #i32
+                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
                     t_Slice i32)
                   (sz 8)
@@ -598,9 +606,11 @@ let compress_then_serialize_5_
 let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   let serialized:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let serialized:t_Array u8 (sz 32) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact i32))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+              (Core.Slice.impl__chunks_exact #i32
+                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
                     t_Slice i32)
                   (sz 8)
@@ -614,8 +624,10 @@ let compress_then_serialize_message (re: Libcrux.Kem.Kyber.Arithmetic.t_Polynomi
       (fun serialized temp_1_ ->
           let serialized:t_Array u8 (sz 32) = serialized in
           let i, coefficients:(usize & t_Slice i32) = temp_1_ in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-                    (Core.Slice.impl__iter coefficients <: Core.Slice.Iter.t_Iter i32)
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+                  (Core.Slice.Iter.t_Iter i32))
+                (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter i32)
+                    (Core.Slice.impl__iter #i32 coefficients <: Core.Slice.Iter.t_Iter i32)
                   <:
                   Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter i32))
               <:
@@ -672,8 +684,12 @@ let deserialize_then_decompress_10_ (serialized: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 5) <: Core.Slice.Iter.t_ChunksExact u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8 serialized (sz 5)
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -760,8 +776,12 @@ let deserialize_then_decompress_11_ (serialized: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 11) <: Core.Slice.Iter.t_ChunksExact u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8 serialized (sz 11)
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -923,8 +943,10 @@ let deserialize_then_decompress_4_ (serialized: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__iter serialized <: Core.Slice.Iter.t_Iter u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_Iter u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter u8)
+              (Core.Slice.impl__iter #u8 serialized <: Core.Slice.Iter.t_Iter u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_Iter u8))
         <:
@@ -974,8 +996,12 @@ let deserialize_then_decompress_5_ (serialized: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 5) <: Core.Slice.Iter.t_ChunksExact u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8 serialized (sz 5)
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -1129,8 +1155,10 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Iter.Traits.Collect.f_into_iter serialized
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Array.Iter.t_IntoIter u8 (sz 32)))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter u8 (sz 32))
+              (Core.Iter.Traits.Collect.f_into_iter #(t_Array u8 (sz 32)) serialized
                 <:
                 Core.Array.Iter.t_IntoIter u8 (sz 32))
             <:
@@ -1141,10 +1169,9 @@ let deserialize_then_decompress_message (serialized: t_Array u8 (sz 32)) =
       (fun re temp_1_ ->
           let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement = re in
           let i, byte:(usize & u8) = temp_1_ in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                    Core.Ops.Range.f_start = sz 0;
-                    Core.Ops.Range.f_end = sz 8
-                  }
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  usize)
+                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
                   <:
                   Core.Ops.Range.t_Range usize)
               <:
@@ -1210,9 +1237,12 @@ let deserialize_to_reduced_ring_element (ring_element: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact ring_element (sz 3) <: Core.Slice.Iter.t_ChunksExact u8
-              )
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8 ring_element (sz 3)
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -1295,8 +1325,11 @@ let deserialize_ring_elements_reduced (v_PUBLIC_KEY_SIZE v_K: usize) (public_key
     Rust_primitives.Hax.repeat Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO v_K
   in
   let deserialized_pk:t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact public_key
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8
+                  public_key
                   Libcrux.Kem.Kyber.Constants.v_BYTES_PER_RING_ELEMENT
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -1326,8 +1359,12 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let re:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 3) <: Core.Slice.Iter.t_ChunksExact u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8 serialized (sz 3)
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -1372,9 +1409,11 @@ let deserialize_to_uncompressed_ring_element (serialized: t_Slice u8) =
 let serialize_uncompressed_ring_element (re: Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement) =
   let serialized:t_Array u8 (sz 384) = Rust_primitives.Hax.repeat 0uy (sz 384) in
   let serialized:t_Array u8 (sz 384) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact (Rust_primitives.unsize re
-                        .Libcrux.Kem.Kyber.Arithmetic.f_coefficients
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact i32))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact i32)
+              (Core.Slice.impl__chunks_exact #i32
+                  (Rust_primitives.unsize re.Libcrux.Kem.Kyber.Arithmetic.f_coefficients
                     <:
                     t_Slice i32)
                   (sz 2)

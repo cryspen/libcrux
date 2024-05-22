@@ -3,11 +3,54 @@ module Libcrux_ml_kem.Ntt
 open Core
 open FStar.Mul
 
-/// Use the Gentleman-Sande butterfly to invert, in-place, the NTT representation
-/// of a `KyberPolynomialRingElement`. The coefficients of the output
-/// ring element are in the Montgomery domain.
-val invert_ntt_montgomery
-      (v_K: usize)
+val ntt_layer_int_vec_step
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (a b: v_Vector)
+      (zeta_r: i16)
+    : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
+
+val ntt_at_layer_1_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (v__layer v__initial_coefficient_bound: usize)
+    : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_at_layer_2_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (v__layer v__initial_coefficient_bound: usize)
+    : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_at_layer_3_
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (v__layer v__initial_coefficient_bound: usize)
+    : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_at_layer_4_plus
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (zeta_i: usize)
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (layer v__initial_coefficient_bound: usize)
+    : Prims.Pure (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_at_layer_7_
       (#v_Vector: Type)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -15,25 +58,16 @@ val invert_ntt_montgomery
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-/// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
-/// of a `KyberPolynomialRingElement`.
-/// This function operates on the ring element that partly constitutes
-/// the ciphertext.
+val ntt_binomially_sampled_ring_element
+      (#v_Vector: Type)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
-      (#v_Vector: Type)
-      {| i1: Libcrux_traits.t_Operations v_Vector |}
-      (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-/// Use the Cooley–Tukey butterfly to compute an in-place NTT representation
-/// of a `KyberPolynomialRingElement`.
-/// This function operates only on those which were produced by binomial
-/// sampling, and thus those which have small coefficients. The small
-/// coefficients let us skip the first round of Montgomery reductions.
-val ntt_binomially_sampled_ring_element
       (#v_Vector: Type)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)

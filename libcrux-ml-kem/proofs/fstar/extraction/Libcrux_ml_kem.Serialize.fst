@@ -32,56 +32,26 @@ let compress_then_serialize_10_
                 <:
                 v_Vector)
           in
-          let bytes:t_Array u8 (sz 10) = Libcrux_traits.f_serialize_10_ coefficient in
+          let bytes:t_Array u8 (sz 20) = Libcrux_traits.f_serialize_10_ coefficient in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (sz 10 *! i <: usize)
-              (bytes.[ sz 0 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 1 <: usize)
-              (bytes.[ sz 1 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 2 <: usize)
-              (bytes.[ sz 2 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 3 <: usize)
-              (bytes.[ sz 3 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 4 <: usize)
-              (bytes.[ sz 4 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 5 <: usize)
-              (bytes.[ sz 5 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 6 <: usize)
-              (bytes.[ sz 6 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 7 <: usize)
-              (bytes.[ sz 7 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 8 <: usize)
-              (bytes.[ sz 8 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 10 *! i <: usize) +! sz 9 <: usize)
-              (bytes.[ sz 9 ] <: u8)
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+              ({
+                  Core.Ops.Range.f_start = sz 20 *! i <: usize;
+                  Core.Ops.Range.f_end = (sz 20 *! i <: usize) +! sz 20 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice (serialized.[ {
+                        Core.Ops.Range.f_start = sz 20 *! i <: usize;
+                        Core.Ops.Range.f_end = (sz 20 *! i <: usize) +! sz 20 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                <:
+                t_Slice u8)
           in
           serialized)
   in
@@ -116,74 +86,38 @@ let compress_then_serialize_11_
                 <:
                 v_Vector)
           in
-          let bytes:t_Array u8 (sz 11) = Libcrux_traits.f_serialize_11_ coefficient in
+          let bytes:t_Array u8 (sz 22) = Libcrux_traits.f_serialize_11_ coefficient in
           let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (sz 11 *! i <: usize)
-              (bytes.[ sz 0 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 1 <: usize)
-              (bytes.[ sz 1 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 2 <: usize)
-              (bytes.[ sz 2 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 3 <: usize)
-              (bytes.[ sz 3 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 4 <: usize)
-              (bytes.[ sz 4 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 5 <: usize)
-              (bytes.[ sz 5 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 6 <: usize)
-              (bytes.[ sz 6 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 7 <: usize)
-              (bytes.[ sz 7 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 8 <: usize)
-              (bytes.[ sz 8 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 9 <: usize)
-              (bytes.[ sz 9 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 11 *! i <: usize) +! sz 10 <: usize)
-              (bytes.[ sz 10 ] <: u8)
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+              ({
+                  Core.Ops.Range.f_start = sz 22 *! i <: usize;
+                  Core.Ops.Range.f_end = (sz 22 *! i <: usize) +! sz 22 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice (serialized.[ {
+                        Core.Ops.Range.f_start = sz 22 *! i <: usize;
+                        Core.Ops.Range.f_end = (sz 22 *! i <: usize) +! sz 22 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                <:
+                t_Slice u8)
           in
           serialized)
   in
   serialized
 
 let compress_then_serialize_4_
-      (v_OUT_LEN: usize)
       (#v_Vector: Type)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (serialized: t_Slice u8)
      =
-  let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
-  let serialized:t_Array u8 v_OUT_LEN =
+  let serialized, hax_temp_output:t_Slice u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
@@ -194,7 +128,7 @@ let compress_then_serialize_4_
         Core.Ops.Range.t_Range usize)
       serialized
       (fun serialized i ->
-          let serialized:t_Array u8 v_OUT_LEN = serialized in
+          let serialized:t_Slice u8 = serialized in
           let i:usize = i in
           let coefficient:v_Vector =
             Libcrux_traits.f_compress 4l
@@ -205,39 +139,38 @@ let compress_then_serialize_4_
                 <:
                 v_Vector)
           in
-          let bytes:t_Array u8 (sz 4) = Libcrux_traits.f_serialize_4_ coefficient in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (sz 4 *! i <: usize)
-              (bytes.[ sz 0 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 4 *! i <: usize) +! sz 1 <: usize)
-              (bytes.[ sz 1 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 4 *! i <: usize) +! sz 2 <: usize)
-              (bytes.[ sz 2 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 4 *! i <: usize) +! sz 3 <: usize)
-              (bytes.[ sz 3 ] <: u8)
+          let bytes:t_Array u8 (sz 8) = Libcrux_traits.f_serialize_4_ coefficient in
+          let serialized:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+              ({
+                  Core.Ops.Range.f_start = sz 8 *! i <: usize;
+                  Core.Ops.Range.f_end = (sz 8 *! i <: usize) +! sz 8 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice (serialized.[ {
+                        Core.Ops.Range.f_start = sz 8 *! i <: usize;
+                        Core.Ops.Range.f_end = (sz 8 *! i <: usize) +! sz 8 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                <:
+                t_Slice u8)
           in
           serialized)
   in
   serialized
 
 let compress_then_serialize_5_
-      (v_OUT_LEN: usize)
       (#v_Vector: Type)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (serialized: t_Slice u8)
      =
-  let serialized:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
-  let serialized:t_Array u8 v_OUT_LEN =
+  let serialized, hax_temp_output:t_Slice u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
@@ -248,7 +181,7 @@ let compress_then_serialize_5_
         Core.Ops.Range.t_Range usize)
       serialized
       (fun serialized i ->
-          let serialized:t_Array u8 v_OUT_LEN = serialized in
+          let serialized:t_Slice u8 = serialized in
           let i:usize = i in
           let coefficients:v_Vector =
             Libcrux_traits.f_compress 5l
@@ -259,31 +192,26 @@ let compress_then_serialize_5_
                 <:
                 v_Vector)
           in
-          let bytes5:t_Array u8 (sz 5) = Libcrux_traits.f_serialize_5_ coefficients in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (sz 5 *! i <: usize)
-              (bytes5.[ sz 0 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 1 <: usize)
-              (bytes5.[ sz 1 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 2 <: usize)
-              (bytes5.[ sz 2 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 3 <: usize)
-              (bytes5.[ sz 3 ] <: u8)
-          in
-          let serialized:t_Array u8 v_OUT_LEN =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 5 *! i <: usize) +! sz 4 <: usize)
-              (bytes5.[ sz 4 ] <: u8)
+          let bytes:t_Array u8 (sz 10) = Libcrux_traits.f_serialize_5_ coefficients in
+          let serialized:t_Slice u8 =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+              ({
+                  Core.Ops.Range.f_start = sz 10 *! i <: usize;
+                  Core.Ops.Range.f_end = (sz 10 *! i <: usize) +! sz 10 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice (serialized.[ {
+                        Core.Ops.Range.f_start = sz 10 *! i <: usize;
+                        Core.Ops.Range.f_end = (sz 10 *! i <: usize) +! sz 10 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                <:
+                t_Slice u8)
           in
           serialized)
   in
@@ -298,7 +226,7 @@ let compress_then_serialize_message
   let serialized:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 32
+              Core.Ops.Range.f_end = sz 16
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -315,10 +243,26 @@ let compress_then_serialize_message
                 v_Vector)
           in
           let coefficient_compressed:v_Vector = Libcrux_traits.f_compress_1_ coefficient in
+          let bytes:t_Array u8 (sz 2) = Libcrux_traits.f_serialize_1_ coefficient_compressed in
           let serialized:t_Array u8 (sz 32) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              i
-              (Libcrux_traits.f_serialize_1_ coefficient_compressed <: u8)
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+              ({
+                  Core.Ops.Range.f_start = sz 2 *! i <: usize;
+                  Core.Ops.Range.f_end = (sz 2 *! i <: usize) +! sz 2 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice (serialized.[ {
+                        Core.Ops.Range.f_start = sz 2 *! i <: usize;
+                        Core.Ops.Range.f_end = (sz 2 *! i <: usize) +! sz 2 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                <:
+                t_Slice u8)
           in
           serialized)
   in
@@ -344,15 +288,22 @@ let compress_then_serialize_ring_element_v
       (#v_Vector: Type)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (out: t_Slice u8)
      =
-  match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
-  | 4ul -> compress_then_serialize_4_ v_OUT_LEN re
-  | 5ul -> compress_then_serialize_5_ v_OUT_LEN re
-  | _ ->
-    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+  let out, hax_temp_output:(t_Slice u8 & Prims.unit) =
+    match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
+    | 4ul -> compress_then_serialize_4_ re out, () <: (t_Slice u8 & Prims.unit)
+    | 5ul -> compress_then_serialize_5_ re out, () <: (t_Slice u8 & Prims.unit)
+    | _ ->
+      out,
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
 
-        <:
-        Rust_primitives.Hax.t_Never)
+          <:
+          Rust_primitives.Hax.t_Never)
+      <:
+      (t_Slice u8 & Prims.unit)
+  in
+  out
 
 let deserialize_then_decompress_10_
       (#v_Vector: Type)
@@ -364,7 +315,7 @@ let deserialize_then_decompress_10_
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 10) <: Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact serialized (sz 20) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -382,7 +333,7 @@ let deserialize_then_decompress_10_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_traits.f_decompress 10l coefficient <: v_Vector)
+                (Libcrux_traits.f_decompress_ciphertext_coefficient 10l coefficient <: v_Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
@@ -401,7 +352,7 @@ let deserialize_then_decompress_11_
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 11) <: Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact serialized (sz 22) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -419,7 +370,7 @@ let deserialize_then_decompress_11_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_traits.f_decompress 11l coefficient <: v_Vector)
+                (Libcrux_traits.f_decompress_ciphertext_coefficient 11l coefficient <: v_Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
@@ -438,7 +389,7 @@ let deserialize_then_decompress_4_
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 4) <: Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact serialized (sz 8) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -456,7 +407,7 @@ let deserialize_then_decompress_4_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_traits.f_decompress 4l coefficient <: v_Vector)
+                (Libcrux_traits.f_decompress_ciphertext_coefficient 4l coefficient <: v_Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
@@ -475,7 +426,7 @@ let deserialize_then_decompress_5_
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 5) <: Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact serialized (sz 10) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -505,7 +456,7 @@ let deserialize_then_decompress_5_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_traits.f_decompress 5l
+                (Libcrux_traits.f_decompress_ciphertext_coefficient 5l
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
                   <:
                   v_Vector)
@@ -528,7 +479,7 @@ let deserialize_then_decompress_message
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
               Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 32
+              Core.Ops.Range.f_end = sz 16
             }
             <:
             Core.Ops.Range.t_Range usize)
@@ -539,7 +490,14 @@ let deserialize_then_decompress_message
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
           let i:usize = i in
           let coefficient_compressed:v_Vector =
-            Libcrux_traits.f_deserialize_1_ (serialized.[ i ] <: u8)
+            Libcrux_traits.f_deserialize_1_ (serialized.[ {
+                    Core.Ops.Range.f_start = sz 2 *! i <: usize;
+                    Core.Ops.Range.f_end = (sz 2 *! i <: usize) +! sz 2 <: usize
+                  }
+                  <:
+                  Core.Ops.Range.t_Range usize ]
+                <:
+                t_Slice u8)
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -598,7 +556,7 @@ let deserialize_to_reduced_ring_element
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 12) <: Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact serialized (sz 24) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -632,10 +590,12 @@ let deserialize_ring_elements_reduced
       (public_key: t_Slice u8)
      =
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
-    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Polynomial.impl__ZERO ()
-        <:
-        Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      v_K
+    Core.Array.from_fn v_K
+      (fun v__i ->
+          let v__i:usize = v__i in
+          Libcrux_ml_kem.Polynomial.impl__ZERO ()
+          <:
+          Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
   in
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
@@ -674,7 +634,7 @@ let deserialize_to_uncompressed_ring_element
   in
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact serialized (sz 12) <: Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact serialized (sz 24) <: Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -692,7 +652,7 @@ let deserialize_to_uncompressed_ring_element
               i
               (Libcrux_traits.f_deserialize_12_ bytes <: v_Vector)
             <:
-            t_Array v_Vector (sz 32)
+            t_Array v_Vector (sz 16)
           }
           <:
           Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -724,66 +684,26 @@ let serialize_uncompressed_ring_element
                 <:
                 v_Vector)
           in
-          let bytes:t_Array u8 (sz 12) = Libcrux_traits.f_serialize_12_ coefficient in
+          let bytes:t_Array u8 (sz 24) = Libcrux_traits.f_serialize_12_ coefficient in
           let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              (sz 12 *! i <: usize)
-              (bytes.[ sz 0 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 1 <: usize)
-              (bytes.[ sz 1 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 2 <: usize)
-              (bytes.[ sz 2 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 3 <: usize)
-              (bytes.[ sz 3 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 4 <: usize)
-              (bytes.[ sz 4 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 5 <: usize)
-              (bytes.[ sz 5 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 6 <: usize)
-              (bytes.[ sz 6 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 7 <: usize)
-              (bytes.[ sz 7 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 8 <: usize)
-              (bytes.[ sz 8 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 9 <: usize)
-              (bytes.[ sz 9 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 10 <: usize)
-              (bytes.[ sz 10 ] <: u8)
-          in
-          let serialized:t_Array u8 (sz 384) =
-            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize serialized
-              ((sz 12 *! i <: usize) +! sz 11 <: usize)
-              (bytes.[ sz 11 ] <: u8)
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
+              ({
+                  Core.Ops.Range.f_start = sz 24 *! i <: usize;
+                  Core.Ops.Range.f_end = (sz 24 *! i <: usize) +! sz 24 <: usize
+                }
+                <:
+                Core.Ops.Range.t_Range usize)
+              (Core.Slice.impl__copy_from_slice (serialized.[ {
+                        Core.Ops.Range.f_start = sz 24 *! i <: usize;
+                        Core.Ops.Range.f_end = (sz 24 *! i <: usize) +! sz 24 <: usize
+                      }
+                      <:
+                      Core.Ops.Range.t_Range usize ]
+                    <:
+                    t_Slice u8)
+                  (Rust_primitives.unsize bytes <: t_Slice u8)
+                <:
+                t_Slice u8)
           in
           serialized)
   in

@@ -1,9 +1,8 @@
-#[cfg(target_arch = "x86")]
-use core::arch::x86::*;
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64::*;
+use crate::{
+    serialize::{deserialize_12, serialize_1},
+    *,
+};
 
-use crate::serialize::{deserialize_12, serialize_1};
 use libcrux_traits::FIELD_MODULUS;
 
 const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
@@ -756,34 +755,60 @@ const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [
 
 #[inline(always)]
 pub(crate) fn rejection_sample(input: &[u8], output: &mut [i16]) -> usize {
-    let count = unsafe {
-        let field_modulus = _mm256_set1_epi16(FIELD_MODULUS);
+    let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 
-        let potential_coefficients = deserialize_12(input);
+    // The input bytes can be interpreted as a sequence of serialized
+    // 12-bit (i.e. uncompressed) coefficients. Not all coefficients may be
+    // less than FIELD_MODULUS though.
+    let potential_coefficients = deserialize_12(input);
 
-        let compare_with_field_modulus = _mm256_cmpgt_epi16(field_modulus, potential_coefficients);
-        let good = serialize_1(compare_with_field_modulus);
+    // Suppose we view |potential_coefficients| as follows (grouping 64-bit elements):
+    //
+    // A B C D | E F G H | ....
+    //
+    // and A < 3329, D < 3329 and H < 3329, |compare_with_field_modulus| will look like:
+    //
+    // 0xFF 0 0 0xFF | 0 0 0 0xFF | ...
+    let compare_with_field_modulus = mm256_cmpgt_epi16(field_modulus, potential_coefficients);
 
-        let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
-        let lower_shuffles = _mm_loadu_si128(lower_shuffles.as_ptr() as *const __m128i);
-        let lower_coefficients = _mm256_castsi256_si128(potential_coefficients);
-        let lower_coefficients = _mm_shuffle_epi8(lower_coefficients, lower_shuffles);
+    // Since every bit in each lane is either 0 or 1, we only need one bit from
+    // each lane in the register to tell us what coefficients to keep and what
+    // to throw-away. Combine all the bits (there are 16) into two bytes.
+    let good = serialize_1(compare_with_field_modulus);
 
-        _mm_storeu_si128(output.as_mut_ptr() as *mut __m128i, lower_coefficients);
-        let sampled_count = good[0].count_ones();
+    // Each bit (and its corresponding position) represents an element we
+    // want to sample. We'd like all such elements to be next to each other starting
+    // at index 0, so that they can be read from the vector easily.
+    // |REJECTION_SAMPLE_SHUFFLE_TABLE| encodes the byte-level shuffling indices
+    // needed to make this happen.
+    //
+    // For e.g. if good[0] = 0b0_0_0_0_0_0_1_0, we need to move the element in
+    // the 2-nd 16-bit lane to the first. To do this, we need the byte-level
+    // shuffle indices to be 2 3 X X X X ...
+    let lower_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[0] as usize];
 
-        let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
-        let upper_shuffles = _mm_loadu_si128(upper_shuffles.as_ptr() as *const __m128i);
-        let upper_coefficients = _mm256_extractf128_si256(potential_coefficients, 1);
-        let upper_coefficients = _mm_shuffle_epi8(upper_coefficients, upper_shuffles);
+    // Shuffle the lower 8 16-bits accordingly ...
+    let lower_shuffles = mm_loadu_si128(&lower_shuffles);
+    let lower_coefficients = mm256_castsi256_si128(potential_coefficients);
+    let lower_coefficients = mm_shuffle_epi8(lower_coefficients, lower_shuffles);
 
-        _mm_storeu_si128(
-            output.as_mut_ptr().offset(sampled_count as isize) as *mut __m128i,
-            upper_coefficients,
-        );
+    // ... then write them out ...
+    mm_storeu_si128(&mut output[0..8], lower_coefficients);
 
-        sampled_count + good[1].count_ones()
-    };
+    // ... and finally count the number of bits of |good[0]| so we know how many
+    // were actually sampled
+    let sampled_count = good[0].count_ones() as usize;
 
-    count as usize
+    // Do the same for |goood[1]|
+    let upper_shuffles = REJECTION_SAMPLE_SHUFFLE_TABLE[good[1] as usize];
+    let upper_shuffles = mm_loadu_si128(&upper_shuffles);
+    let upper_coefficients = mm256_extracti128_si256::<1>(potential_coefficients);
+    let upper_coefficients = mm_shuffle_epi8(upper_coefficients, upper_shuffles);
+
+    mm_storeu_si128(
+        &mut output[sampled_count..sampled_count + 8],
+        upper_coefficients,
+    );
+
+    sampled_count + (good[1].count_ones() as usize)
 }

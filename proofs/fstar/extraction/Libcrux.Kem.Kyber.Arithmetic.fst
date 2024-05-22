@@ -10,7 +10,7 @@ let get_n_least_significant_bits (n: u8) (value: u32) =
 let barrett_reduce (value: i32) =
   let _:Prims.unit = () <: Prims.unit in
   let t:i64 =
-    ((Core.Convert.f_from value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
+    ((Core.Convert.f_from #i64 #i32 value <: i64) *! v_BARRETT_MULTIPLIER <: i64) +!
     (v_BARRETT_R >>! 1l <: i64)
   in
   let quotient:i32 = cast (t >>! v_BARRETT_SHIFT <: i64) <: i32 in
@@ -48,11 +48,13 @@ let add_to_ring_element (v_K: usize) (lhs rhs: t_PolynomialRingElement) =
   let _:Prims.unit = () <: Prims.unit in
   let _:Prims.unit = () <: Prims.unit in
   let lhs:t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end
               =
-              Core.Slice.impl__len (Rust_primitives.unsize lhs.f_coefficients <: t_Slice i32)
+              Core.Slice.impl__len #i32 (Rust_primitives.unsize lhs.f_coefficients <: t_Slice i32)
               <:
               usize
             }

@@ -32,8 +32,26 @@ let validate_public_key (public_key: Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (s
     <:
     Core.Option.t_Option (Libcrux.Kem.Kyber.Types.t_MlKemPublicKey (sz 1184))
 
+let decapsulate_unpacked
+      (state: Libcrux.Kem.Kyber.t_MlKemState (sz 3))
+      (ciphertext: Libcrux.Kem.Kyber.Types.t_MlKemCiphertext (sz 1088))
+     =
+  Libcrux.Kem.Kyber.decapsulate_unpacked (sz 3) (sz 2400) (sz 1152) (sz 1184) (sz 1088) (sz 1152)
+    (sz 960) (sz 128) (sz 10) (sz 4) (sz 320) (sz 2) (sz 128) (sz 2) (sz 128) (sz 1120) state
+    ciphertext
+
 let generate_key_pair (randomness: t_Array u8 (sz 64)) =
   Libcrux.Kem.Kyber.generate_keypair (sz 3)
+    (sz 1152)
+    (sz 2400)
+    (sz 1184)
+    (sz 1152)
+    (sz 2)
+    (sz 128)
+    randomness
+
+let generate_key_pair_unpacked (randomness: t_Array u8 (sz 64)) =
+  Libcrux.Kem.Kyber.generate_keypair_unpacked (sz 3)
     (sz 1152)
     (sz 2400)
     (sz 1184)

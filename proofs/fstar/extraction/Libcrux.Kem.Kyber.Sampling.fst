@@ -9,8 +9,12 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact randomness (sz 4) <: Core.Slice.Iter.t_ChunksExact u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8 randomness (sz 4)
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -32,7 +36,9 @@ let sample_from_binomial_distribution_2_ (randomness: t_Slice u8) =
           let even_bits:u32 = random_bits_as_u32 &. 1431655765ul in
           let odd_bits:u32 = (random_bits_as_u32 >>! 1l <: u32) &. 1431655765ul in
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
+                  (Core.Ops.Range.t_Range u32))
+                (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range u32)
                     ({
                         Core.Ops.Range.f_start = 0ul;
                         Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
@@ -81,8 +87,12 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
     Libcrux.Kem.Kyber.Arithmetic.impl__PolynomialRingElement__ZERO
   in
   let sampled:Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_enumerate
-              (Core.Slice.impl__chunks_exact randomness (sz 3) <: Core.Slice.Iter.t_ChunksExact u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
+            (Core.Slice.Iter.t_ChunksExact u8))
+          (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              (Core.Slice.impl__chunks_exact #u8 randomness (sz 3)
+                <:
+                Core.Slice.Iter.t_ChunksExact u8)
             <:
             Core.Iter.Adapters.Enumerate.t_Enumerate (Core.Slice.Iter.t_ChunksExact u8))
         <:
@@ -102,7 +112,9 @@ let sample_from_binomial_distribution_3_ (randomness: t_Slice u8) =
           let second_bits:u32 = (random_bits_as_u24 >>! 1l <: u32) &. 2396745ul in
           let third_bits:u32 = (random_bits_as_u24 >>! 2l <: u32) &. 2396745ul in
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Iter.Traits.Iterator.f_step_by
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
+                  (Core.Ops.Range.t_Range i32))
+                (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range i32)
                     ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
                       <:
                       Core.Ops.Range.t_Range i32)
@@ -163,10 +175,9 @@ let sample_from_uniform_distribution_next
   let done, out, sampled_coefficients:(bool &
     t_Array Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
     t_Array usize v_K) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = v_K
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -185,7 +196,9 @@ let sample_from_uniform_distribution_next
           let out, sampled_coefficients:(t_Array
               Libcrux.Kem.Kyber.Arithmetic.t_PolynomialRingElement v_K &
             t_Array usize v_K) =
-            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks
+            Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
+                    u8)
+                  (Core.Slice.impl__chunks #u8
                       (Rust_primitives.unsize (randomness.[ i ] <: t_Array u8 v_N) <: t_Slice u8)
                       (sz 3)
                     <:

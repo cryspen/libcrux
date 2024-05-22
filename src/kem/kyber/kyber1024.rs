@@ -69,6 +69,22 @@ pub fn generate_key_pair(
     >(randomness)
 }
 
+pub type MlKem1024State = MlKemState<RANK_1024>;
+
+pub fn generate_key_pair_unpacked(
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
+) -> (MlKem1024State, MlKem1024PublicKey) {
+    generate_keypair_unpacked::<
+        RANK_1024,
+        CPA_PKE_SECRET_KEY_SIZE_1024,
+        SECRET_KEY_SIZE_1024,
+        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+        RANKED_BYTES_PER_RING_ELEMENT_1024,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+    >(randomness)
+}
+
 /// Encapsulate ML-KEM 1024
 pub fn encapsulate(
     public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>,
@@ -117,4 +133,28 @@ pub fn decapsulate(
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(secret_key, ciphertext)
+}
+
+pub fn decapsulate_unpacked(
+    state: &MlKem1024State,
+    ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
+) -> [u8; SHARED_SECRET_SIZE] {
+    super::decapsulate_unpacked::<
+        RANK_1024,
+        SECRET_KEY_SIZE_1024,
+        CPA_PKE_SECRET_KEY_SIZE_1024,
+        CPA_PKE_PUBLIC_KEY_SIZE_1024,
+        CPA_PKE_CIPHERTEXT_SIZE_1024,
+        T_AS_NTT_ENCODED_SIZE_1024,
+        C1_SIZE_1024,
+        C2_SIZE_1024,
+        VECTOR_U_COMPRESSION_FACTOR_1024,
+        VECTOR_V_COMPRESSION_FACTOR_1024,
+        C1_BLOCK_SIZE_1024,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+    >(state, ciphertext)
 }

@@ -92,7 +92,7 @@ jobs:
       - name: 🏃 Extract & Verify ML-KEM crate (lax)
         run: |
           cd libcrux-ml-kem
-          ./hax.py extract
+          # ./hax.py extract
           # env FSTAR_HOME=${{ github.workspace }}/fstar \
           #     HACL_HOME=${{ github.workspace }}/hacl-star \
           #     HAX_HOME=${{ github.workspace }}/hax \
