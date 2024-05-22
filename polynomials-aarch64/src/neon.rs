@@ -8,7 +8,7 @@ pub(crate) fn _vdupq_n_s16(i: i16) -> int16x8_t {
 
 #[inline(always)]
 pub(crate) fn _vst1q_s16(out: &mut [i16], v: int16x8_t) {
-    unsafe { vst1q_s16(out.as_mut_ptr() as *mut i16, v) }
+    unsafe { vst1q_s16(out.as_mut_ptr(), v) }
 }
 
 #[inline(always)]
@@ -254,7 +254,7 @@ pub(super) fn _vreinterpretq_u8_s64(a: int64x2_t) -> uint8x16_t {
 
 #[inline(always)]
 pub(super) fn _vst1q_u8(out: &mut [u8], v: uint8x16_t) {
-    unsafe { vst1q_u8(out.as_mut_ptr() as *mut u8, v) }
+    unsafe { vst1q_u8(out.as_mut_ptr(), v) }
 }
 #[inline(always)]
 pub(crate) fn _vdupq_n_u16(value: u16) -> uint16x8_t {
