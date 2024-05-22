@@ -87,7 +87,7 @@ jobs:
       - name: ⬆ Upload build
         uses: ./.github/actions/upload_artifacts
         with:
-          name: ${{ matrix.os }}_${{ matrix.bits }}
+          name: build_${{ matrix.os }}_${{ matrix.bits }}
 
       # We get false positives here.
       # TODO: Figure out what is going on here
@@ -206,7 +206,7 @@ jobs:
       - name: ⬆ Upload build
         uses: ./.github/actions/upload_artifacts
         with:
-          name: ${{ matrix.os }}_${{ matrix.bits }}
+          name: benchmarks_${{ matrix.os }}_${{ matrix.bits }}
 
       # Benchmarks ...
 
