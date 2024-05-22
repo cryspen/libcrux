@@ -9,5 +9,7 @@ runs:
   steps:
     - shell: bash
       id: sha
+      # FIXME: use environment variables instead of set-output
+      # https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
       run: |
         echo ::set-output name=short-sha::${GITHUB_SHA: -8}

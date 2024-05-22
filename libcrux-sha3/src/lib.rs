@@ -265,14 +265,14 @@ pub mod neon {
     use crate::generic_keccak::keccak;
 
     #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-    #[inline(always)]
+
     fn keccakx2<const RATE: usize, const DELIM: u8>(data: [&[u8]; 2], out: [&mut [u8]; 2]) {
         keccak::<2, core::arch::aarch64::uint64x2_t, RATE, DELIM>(data, out)
     }
 
     /// A portable SHA3 224 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
+
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
         unimplemented!("The target architecture does not support neon instructions.");
@@ -285,7 +285,7 @@ pub mod neon {
 
     /// A portable SHA3 256 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
+
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
         unimplemented!("The target architecture does not support neon instructions.");
@@ -298,7 +298,7 @@ pub mod neon {
 
     /// A portable SHA3 384 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
+
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
         unimplemented!("The target architecture does not support neon instructions.");
@@ -311,7 +311,7 @@ pub mod neon {
 
     /// A portable SHA3 512 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
+
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
         unimplemented!("The target architecture does not support neon instructions.");
@@ -324,7 +324,7 @@ pub mod neon {
 
     /// A portable SHAKE128 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
+
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
         unimplemented!("The target architecture does not support neon instructions.");
@@ -337,7 +337,7 @@ pub mod neon {
 
     /// A portable SHAKE256 implementation.
     #[allow(unused_variables)]
-    #[inline(always)]
+
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
         unimplemented!("The target architecture does not support neon instructions.");
@@ -357,7 +357,7 @@ pub mod neon {
         ///
         /// Writes the two results into `out0` and `out1`
         #[allow(unused_variables)]
-        #[inline(always)]
+
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
             #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
@@ -370,7 +370,7 @@ pub mod neon {
         ///
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(non_snake_case)]
-        #[inline(always)]
+
         pub fn shake256xN<const LEN: usize, const N: usize>(
             input: &[[u8; 33]; N],
         ) -> [[u8; LEN]; N] {
@@ -414,7 +414,7 @@ pub mod neon {
             pub type KeccakState2 = [crate::portable::KeccakState1; 2];
 
             /// Initialise the `KeccakState2`.
-            #[inline(always)]
+
             pub fn shake128_init() -> KeccakState2 {
                 #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
                 unimplemented!("The target architecture does not support neon instructions.");
@@ -429,7 +429,6 @@ pub mod neon {
                 KeccakState2::new()
             }
 
-            #[inline(always)]
             #[allow(unused_variables)]
             fn shake128_absorb_final(s: &mut KeccakState2, data0: &[u8], data1: &[u8]) {
                 #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
@@ -450,7 +449,7 @@ pub mod neon {
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
-            #[inline(always)]
+
             pub fn shake128_absorb_finalxN<const N: usize>(
                 input: [[u8; 34]; N],
             ) -> [KeccakState2; 2] {
@@ -476,7 +475,7 @@ pub mod neon {
             }
 
             #[allow(unused_variables)]
-            #[inline(always)]
+
             fn shake128_squeeze_first_three_blocks(
                 s: &mut KeccakState2,
                 out0: &mut [u8],
@@ -503,7 +502,7 @@ pub mod neon {
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
-            #[inline(always)]
+
             pub fn shake128_squeeze3xN<const LEN: usize, const N: usize>(
                 state: &mut [KeccakState2; 2],
             ) -> [[u8; LEN]; N] {
@@ -555,7 +554,7 @@ pub mod neon {
             }
 
             #[allow(unused_variables)]
-            #[inline(always)]
+
             fn shake128_squeeze_next_block(s: &mut KeccakState2, out0: &mut [u8], out1: &mut [u8]) {
                 #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
                 unimplemented!("The target architecture does not support neon instructions.");
@@ -575,7 +574,7 @@ pub mod neon {
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
-            #[inline(always)]
+
             pub fn shake128_squeezexN<const LEN: usize, const N: usize>(
                 state: &mut [KeccakState2; 2],
             ) -> [[u8; LEN]; N] {
