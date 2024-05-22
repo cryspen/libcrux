@@ -71,8 +71,12 @@ case $1 in
 
             
         )
-        mv "$TEMPDIR/extraction-edited.patch" extraction-edited.patch
-        mv "$TEMPDIR/extraction-secret-independent.patch" extraction-secret-independent.patch
+        for patch in "extraction-edited.patch" "extraction-secret-independent.patch"; do
+            # remove timestamps
+            sed -i -E 's/^([-+]{3} .*[[:space:]]+)[0-9]{4}([ -:][0-9]{2})+[.][0-9]+ [+][0-9]+/\11970-01-01 01:00:00.000000000 +0100/g' "$TEMPDIR/$patch"
+            # move the patch file
+            mv "$TEMPDIR/$patch" "$patch"
+        done
         
         rm -rf "$TEMPDIR"
         ;;
