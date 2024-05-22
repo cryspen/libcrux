@@ -1,4 +1,4 @@
-#![forbid(unsafe_code)]
+//#![forbid(unsafe_code)]
 
 use crate::neon::*;
 
@@ -776,8 +776,16 @@ pub(crate) fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
     let input = super::simd128ops::deserialize_12(a);
     let mask0 = _vcleq_s16(input.low, fm);
     let mask1 = _vcleq_s16(input.high, fm);
-    let used0 = _vaddvq_u16(_vandq_u16(mask0, bits));
-    let used1 = _vaddvq_u16(_vandq_u16(mask1, bits));
+//    let used0 = _vaddvq_u16(_vandq_u16(mask0, bits));
+//    let used1 = _vaddvq_u16(_vandq_u16(mask1, bits));
+
+    let mut u0 = [0u16;8];
+    let mut u1 = [0u16;8];
+    unsafe{vst1q_u16(u0.as_mut_ptr() as *mut u16, _vandq_u16(mask0, bits));}
+    unsafe{vst1q_u16(u1.as_mut_ptr() as *mut u16, _vandq_u16(mask1, bits));}
+    let used0 = u0[0] + u0[1] + u0[2] + u0[3] + u0[4] + u0[5] + u0[6] + u0[7];
+    let used1 = u1[0] + u1[1] + u1[2] + u1[3] + u1[4] + u1[5] + u1[6] + u1[7];
+
     let pick0 = used0.count_ones();
     let pick1 = used1.count_ones();
 
