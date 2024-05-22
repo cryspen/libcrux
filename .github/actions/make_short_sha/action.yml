@@ -1,0 +1,13 @@
+name: make_short_sha
+description: Make SHORT_SHA available in environment
+outputs:
+  short-sha:
+    description: "Short SHA"
+    value: ${{ steps.sha.outputs.short-sha }}
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      id: sha
+      run: |
+        echo ::set-output name=short-sha::${GITHUB_SHA: -8}

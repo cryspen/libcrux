@@ -1,0 +1,17 @@
+name: upload_artifacts
+description: Upload artifacts
+inputs:
+  name:
+    description: Name
+    required: true
+runs:
+  using: composite
+  steps:
+    - id: sha
+      uses: ./.github/actions/make_short_sha
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.name }}_${{ steps.sha.outputs.short-sha }}
+        path: target
