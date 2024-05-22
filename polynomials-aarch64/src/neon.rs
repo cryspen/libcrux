@@ -13,7 +13,7 @@ pub(crate) fn _vst1q_s16(out: &mut [i16], v: int16x8_t) {
 
 #[inline(always)]
 pub(crate) fn _vld1q_s16(array: &[i16]) -> int16x8_t {
-    unsafe { vld1q_s16(array.as_ptr() as *const i16) }
+    unsafe { vld1q_s16(array.as_ptr()) }
 }
 
 #[inline(always)]
@@ -193,7 +193,7 @@ pub(crate) fn _vmlal_high_s16(a: int32x4_t, b: int16x8_t, c: int16x8_t) -> int32
 }
 #[inline(always)]
 pub(crate) fn _vld1q_u8(ptr: &[u8]) -> uint8x16_t {
-    unsafe { vld1q_u8(ptr.as_ptr() as *const u8) }
+    unsafe { vld1q_u8(ptr.as_ptr()) }
 }
 #[inline(always)]
 pub(crate) fn _vreinterpretq_u8_s16(a: int16x8_t) -> uint8x16_t {
@@ -270,7 +270,7 @@ pub(crate) fn _vreinterpretq_u16_u8(a: uint8x16_t) -> uint16x8_t {
 }
 #[inline(always)]
 pub(crate) fn _vld1q_u16(ptr: &[u16]) -> uint16x8_t {
-    unsafe { vld1q_u16(ptr.as_ptr() as *const u16) }
+    unsafe { vld1q_u16(ptr.as_ptr()) }
 }
 #[inline(always)]
 pub(crate) fn _vcleq_s16(a: int16x8_t, b: int16x8_t) -> uint16x8_t {
