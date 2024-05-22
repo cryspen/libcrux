@@ -3,6 +3,7 @@ module Libcrux_ml_kem.Types
 open Core
 open FStar.Mul
 
+///An ML-KEM Ciphertext
 type t_MlKemCiphertext (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -40,15 +41,15 @@ let impl_4 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_MlKemCip
     f_from = fun (value: t_MlKemCiphertext v_SIZE) -> value.f_value
   }
 
+/// A reference to the raw byte slice.
 val impl_6__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE)
     : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_6__len (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE)
-    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
-
+/// Split this value and return the raw byte slices.
 val impl_6__split_at (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) (mid: usize)
     : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
+///An ML-KEM Private key
 type t_MlKemPrivateKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -86,15 +87,15 @@ let impl_10 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_MlKemPr
     f_from = fun (value: t_MlKemPrivateKey v_SIZE) -> value.f_value
   }
 
+/// A reference to the raw byte slice.
 val impl_12__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE)
     : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_12__len (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE)
-    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
-
+/// Split this value and return the raw byte slices.
 val impl_12__split_at (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) (mid: usize)
     : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
+///An ML-KEM Public key
 type t_MlKemPublicKey (v_SIZE: usize) = { f_value:t_Array u8 v_SIZE }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
@@ -132,12 +133,11 @@ let impl_16 (v_SIZE: usize) : Core.Convert.t_From (t_Array u8 v_SIZE) (t_MlKemPu
     f_from = fun (value: t_MlKemPublicKey v_SIZE) -> value.f_value
   }
 
+/// A reference to the raw byte slice.
 val impl_18__as_slice (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE)
     : Prims.Pure (t_Array u8 v_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
-val impl_18__len (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE)
-    : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
-
+/// Split this value and return the raw byte slices.
 val impl_18__split_at (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) (mid: usize)
     : Prims.Pure (t_Slice u8 & t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -225,6 +225,7 @@ type t_MlKemKeyPair (v_PRIVATE_KEY_SIZE: usize) (v_PUBLIC_KEY_SIZE: usize) = {
   f_pk:t_MlKemPublicKey v_PUBLIC_KEY_SIZE
 }
 
+/// Create a new [`MlKemKeyPair`] from the secret and public key.
 val impl__from
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (sk: t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
@@ -242,21 +243,25 @@ val impl__new
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Get a reference to the raw public key bytes.
 val impl__pk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Get a reference to the [`MlKemPrivateKey<PRIVATE_KEY_SIZE>`].
 val impl__private_key
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : Prims.Pure (t_MlKemPrivateKey v_PRIVATE_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Get a reference to the [`MlKemPublicKey<PUBLIC_KEY_SIZE>`].
 val impl__public_key
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
     : Prims.Pure (t_MlKemPublicKey v_PUBLIC_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
+/// Get a reference to the raw private key bytes.
 val impl__sk
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
       (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)

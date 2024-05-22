@@ -37,11 +37,13 @@ open FStar.Mul
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val sample_from_uniform_distribution_next
+      (#v_Vector: Type)
       (v_K v_N: usize)
+      {| i1: Libcrux_traits.t_Operations v_Vector |}
       (randomness: t_Array (t_Array u8 v_N) v_K)
       (sampled_coefficients: t_Array usize v_K)
-      (out: t_Array (t_Array i32 (sz 256)) v_K)
-    : Prims.Pure (t_Array usize v_K & t_Array (t_Array i32 (sz 256)) v_K & bool)
+      (out: t_Array (t_Array i16 (sz 272)) v_K)
+    : Prims.Pure (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -110,8 +112,9 @@ val sample_from_binomial_distribution
 
 val sample_from_xof
       (v_K: usize)
-      (#v_Vector: Type)
-      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (#v_Vector #v_Hasher: Type)
+      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (seeds: t_Array (t_Array u8 (sz 34)) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       Prims.l_True

@@ -34,8 +34,8 @@ let zero (_: Prims.unit) : t_SIMD256Vector =
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_traits.t_Operations t_SIMD256Vector =
   {
-    _super_14285531652857523276 = FStar.Tactics.Typeclasses.solve;
-    _super_10391689928755043351 = FStar.Tactics.Typeclasses.solve;
+    _super_957087622381469234 = FStar.Tactics.Typeclasses.solve;
+    _super_2101570567305961368 = FStar.Tactics.Typeclasses.solve;
     f_ZERO_pre = (fun (_: Prims.unit) -> true);
     f_ZERO_post = (fun (_: Prims.unit) (out: t_SIMD256Vector) -> true);
     f_ZERO = (fun (_: Prims.unit) -> zero ());
