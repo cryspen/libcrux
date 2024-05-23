@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Polynomial
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_traits in
+  ()
+
 let v_ZETAS_TIMES_MONTGOMERY_R: t_Array i16 (sz 128) =
   let list =
     [

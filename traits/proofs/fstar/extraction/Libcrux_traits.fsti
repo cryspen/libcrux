@@ -238,23 +238,25 @@ let impl
     f_montgomery_multiply_fe_by_fer_post = (fun (v: v_T) (fer: i16) (out: v_T) -> true);
     f_montgomery_multiply_fe_by_fer
     =
-    (fun (v: v_T) (fer: i16) -> f_montgomery_multiply_by_constant v fer);
+    (fun (v: v_T) (fer: i16) -> f_montgomery_multiply_by_constant #v_T v fer);
     f_to_standard_domain_pre = (fun (v: v_T) -> true);
     f_to_standard_domain_post = (fun (v: v_T) (out: v_T) -> true);
     f_to_standard_domain
     =
-    (fun (v: v_T) -> f_montgomery_multiply_by_constant v v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
+    (fun (v: v_T) ->
+        f_montgomery_multiply_by_constant #v_T v v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS);
     f_to_unsigned_representative_pre = (fun (a: v_T) -> true);
     f_to_unsigned_representative_post = (fun (a: v_T) (out: v_T) -> true);
     f_to_unsigned_representative
     =
     (fun (a: v_T) ->
-        let t:v_T = f_shift_right 15l a in
-        let fm:v_T = f_bitwise_and_with_constant t v_FIELD_MODULUS in
-        f_add a fm);
+        let t:v_T = f_shift_right #v_T 15l a in
+        let fm:v_T = f_bitwise_and_with_constant #v_T t v_FIELD_MODULUS in
+        f_add #v_T a fm);
     f_decompress_1_pre = (fun (v: v_T) -> true);
     f_decompress_1_post = (fun (v: v_T) (out: v_T) -> true);
     f_decompress_1_
     =
-    fun (v: v_T) -> f_bitwise_and_with_constant (f_sub (f_ZERO () <: v_T) v <: v_T) 1665s
+    fun (v: v_T) ->
+      f_bitwise_and_with_constant #v_T (f_sub #v_T (f_ZERO #v_T () <: v_T) v <: v_T) 1665s
   }

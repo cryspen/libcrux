@@ -34,11 +34,12 @@ class extractAction(argparse.Action):
         includes = [
             "+:**",
             "-libcrux_sha3::generic_keccak::**",
+            "+libcrux_sha3::generic_keccak::KeccakState",
             "-libcrux_sha3::simd::**",
             "-libcrux_sha3::portable_keccak::**",
             "-libcrux_sha3::neon::keccakx2",
             "-libcrux_sha3::portable::keccakx1",
-            "-libcrux_sha3::traits::**",
+            "-libcrux_sha3::traits::internal::**",
         ]
         include_str = " ".join(includes)
         interface_include = "+**"

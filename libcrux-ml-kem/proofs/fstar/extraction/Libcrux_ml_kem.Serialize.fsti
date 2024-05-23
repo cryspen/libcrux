@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Serialize
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_traits in
+  ()
+
 val compress_then_serialize_10_
       (v_OUT_LEN: usize)
       (#v_Vector: Type0)

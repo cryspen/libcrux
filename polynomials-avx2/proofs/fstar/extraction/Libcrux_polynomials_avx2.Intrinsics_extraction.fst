@@ -103,14 +103,16 @@ let mm256_loadu_si256 (input: t_Slice i16) : u8 =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len input, sz 16 <: (usize & usize) with
+        match Core.Slice.impl__len #i16 input, sz 16 <: (usize & usize) with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
             let kind:Core.Panicking.t_AssertKind =
               Core.Panicking.AssertKind_Eq <: Core.Panicking.t_AssertKind
             in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed #usize
+                  #usize
+                  kind
                   left_val
                   right_val
                   (Core.Option.Option_None <: Core.Option.t_Option Core.Fmt.t_Arguments)
@@ -371,14 +373,16 @@ let mm256_storeu_si256 (output: t_Slice i16) (vector: u8) : t_Slice i16 =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len output, sz 16 <: (usize & usize) with
+        match Core.Slice.impl__len #i16 output, sz 16 <: (usize & usize) with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
             let kind:Core.Panicking.t_AssertKind =
               Core.Panicking.AssertKind_Eq <: Core.Panicking.t_AssertKind
             in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed #usize
+                  #usize
+                  kind
                   left_val
                   right_val
                   (Core.Option.Option_None <: Core.Option.t_Option Core.Fmt.t_Arguments)
@@ -429,14 +433,16 @@ let mm_loadu_si128 (input: t_Slice u8) : u8 =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len input, sz 16 <: (usize & usize) with
+        match Core.Slice.impl__len #u8 input, sz 16 <: (usize & usize) with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
             let kind:Core.Panicking.t_AssertKind =
               Core.Panicking.AssertKind_Eq <: Core.Panicking.t_AssertKind
             in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed #usize
+                  #usize
+                  kind
                   left_val
                   right_val
                   (Core.Option.Option_None <: Core.Option.t_Option Core.Fmt.t_Arguments)
@@ -492,14 +498,16 @@ let mm_storeu_bytes_si128 (output: t_Slice u8) (vector: u8) : t_Slice u8 =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len output, sz 16 <: (usize & usize) with
+        match Core.Slice.impl__len #u8 output, sz 16 <: (usize & usize) with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
             let kind:Core.Panicking.t_AssertKind =
               Core.Panicking.AssertKind_Eq <: Core.Panicking.t_AssertKind
             in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed #usize
+                  #usize
+                  kind
                   left_val
                   right_val
                   (Core.Option.Option_None <: Core.Option.t_Option Core.Fmt.t_Arguments)
@@ -520,14 +528,16 @@ let mm_storeu_si128 (output: t_Slice i16) (vector: u8) : t_Slice i16 =
     if true
     then
       let _:Prims.unit =
-        match Core.Slice.impl__len output, sz 8 <: (usize & usize) with
+        match Core.Slice.impl__len #i16 output, sz 8 <: (usize & usize) with
         | left_val, right_val ->
           if ~.(left_val =. right_val <: bool)
           then
             let kind:Core.Panicking.t_AssertKind =
               Core.Panicking.AssertKind_Eq <: Core.Panicking.t_AssertKind
             in
-            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed kind
+            Rust_primitives.Hax.never_to_any (Core.Panicking.assert_failed #usize
+                  #usize
+                  kind
                   left_val
                   right_val
                   (Core.Option.Option_None <: Core.Option.t_Option Core.Fmt.t_Arguments)

@@ -36,7 +36,11 @@ let deserialize_10_ (bytes: t_Slice u8) : u8 =
       (1s <<! 6l <: i16) (1s <<! 0l <: i16) (1s <<! 2l <: i16) (1s <<! 4l <: i16) (1s <<! 6l <: i16)
   in
   let lower_coefficients:u8 =
-    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap (Core.Convert.f_try_into
+    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap #(t_Slice
+            u8)
+          #Core.Convert.t_Infallible
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Slice u8)
               (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
                   <:
                   Core.Ops.Range.t_Range usize ]
@@ -55,7 +59,11 @@ let deserialize_10_ (bytes: t_Slice u8) : u8 =
         u8)
   in
   let upper_coefficients:u8 =
-    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap (Core.Convert.f_try_into
+    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap #(t_Slice
+            u8)
+          #Core.Convert.t_Infallible
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Slice u8)
               (bytes.[ { Core.Ops.Range.f_start = sz 4; Core.Ops.Range.f_end = sz 20 }
                   <:
                   Core.Ops.Range.t_Range usize ]
@@ -102,7 +110,11 @@ let deserialize_12_ (bytes: t_Slice u8) : u8 =
       (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16) (1s <<! 0l <: i16) (1s <<! 4l <: i16)
   in
   let lower_coefficients:u8 =
-    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap (Core.Convert.f_try_into
+    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap #(t_Slice
+            u8)
+          #Core.Convert.t_Infallible
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Slice u8)
               (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
                   <:
                   Core.Ops.Range.t_Range usize ]
@@ -121,7 +133,11 @@ let deserialize_12_ (bytes: t_Slice u8) : u8 =
         u8)
   in
   let upper_coefficients:u8 =
-    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap (Core.Convert.f_try_into
+    Libcrux_polynomials_avx2.Intrinsics_extraction.mm_loadu_si128 (Core.Result.impl__unwrap #(t_Slice
+            u8)
+          #Core.Convert.t_Infallible
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Slice u8)
               (bytes.[ { Core.Ops.Range.f_start = sz 8; Core.Ops.Range.f_end = sz 24 }
                   <:
                   Core.Ops.Range.t_Range usize ]
@@ -317,10 +333,11 @@ let serialize_10_ (vector: u8) : t_Array u8 (sz 20) =
         <:
         t_Slice u8)
   in
-  Core.Result.impl__unwrap (Core.Convert.f_try_into (serialized.[ {
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 20
-            }
+  Core.Result.impl__unwrap #(t_Array u8 (sz 20))
+    #Core.Array.t_TryFromSliceError
+    (Core.Convert.f_try_into #(t_Slice u8)
+        #(t_Array u8 (sz 20))
+        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 20 }
             <:
             Core.Ops.Range.t_Range usize ]
           <:
@@ -393,10 +410,11 @@ let serialize_12_ (vector: u8) : t_Array u8 (sz 24) =
         <:
         t_Slice u8)
   in
-  Core.Result.impl__unwrap (Core.Convert.f_try_into (serialized.[ {
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 24
-            }
+  Core.Result.impl__unwrap #(t_Array u8 (sz 24))
+    #Core.Array.t_TryFromSliceError
+    (Core.Convert.f_try_into #(t_Slice u8)
+        #(t_Array u8 (sz 24))
+        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 24 }
             <:
             Core.Ops.Range.t_Range usize ]
           <:
@@ -439,10 +457,11 @@ let serialize_4_ (vector: u8) : t_Array u8 (sz 8) =
         <:
         t_Slice u8)
   in
-  Core.Result.impl__unwrap (Core.Convert.f_try_into (serialized.[ {
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 8
-            }
+  Core.Result.impl__unwrap #(t_Array u8 (sz 8))
+    #Core.Array.t_TryFromSliceError
+    (Core.Convert.f_try_into #(t_Slice u8)
+        #(t_Array u8 (sz 8))
+        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
             <:
             Core.Ops.Range.t_Range usize ]
           <:
@@ -521,10 +540,11 @@ let serialize_5_ (vector: u8) : t_Array u8 (sz 10) =
         <:
         t_Slice u8)
   in
-  Core.Result.impl__unwrap (Core.Convert.f_try_into (serialized.[ {
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 10
-            }
+  Core.Result.impl__unwrap #(t_Array u8 (sz 10))
+    #Core.Array.t_TryFromSliceError
+    (Core.Convert.f_try_into #(t_Slice u8)
+        #(t_Array u8 (sz 10))
+        (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 10 }
             <:
             Core.Ops.Range.t_Range usize ]
           <:

@@ -3,6 +3,13 @@ module Libcrux_ml_kem.Ind_cpa
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_traits in
+  ()
+
 /// Pad the `slice` with `0`s at the end.
 val into_padded_array (v_LEN: usize) (slice: t_Slice u8)
     : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)

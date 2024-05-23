@@ -3,9 +3,6 @@ module Libcrux_sha3.Portable
 open Core
 open FStar.Mul
 
-unfold
-let t_KeccakState1 = Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64
-
 /// A portable SHA3 224 implementation.
 val sha224 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -25,3 +22,6 @@ val shake128 (v_LEN: usize) (digest: t_Array u8 v_LEN) (data: t_Slice u8)
 /// A portable SHAKE256 implementation.
 val shake256 (v_LEN: usize) (digest: t_Array u8 v_LEN) (data: t_Slice u8)
     : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
+
+unfold
+let t_KeccakState1 = Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64

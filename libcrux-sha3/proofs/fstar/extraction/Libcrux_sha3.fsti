@@ -119,7 +119,7 @@ let impl: Core.Convert.t_From t_Algorithm u32 =
                     <:
                     t_Slice string)
                   (Rust_primitives.unsize (let list =
-                          [Core.Fmt.Rt.impl_1__new_display v <: Core.Fmt.Rt.t_Argument]
+                          [Core.Fmt.Rt.impl_1__new_display #u32 v <: Core.Fmt.Rt.t_Argument]
                         in
                         FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
                         Rust_primitives.Hax.array_of_list 1 list)

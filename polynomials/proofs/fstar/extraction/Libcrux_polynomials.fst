@@ -59,7 +59,7 @@ let get_n_least_significant_bits (n: u8) (value: u32)
       (ensures
         fun result ->
           let result:u32 = result in
-          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into n <: u32) <: u32)) =
+          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into #u8 #u32 n <: u32) <: u32)) =
   value &. ((1ul <<! n <: u32) -! 1ul <: u32)
 
 let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) : i16 =
@@ -81,15 +81,15 @@ let compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16) : i16 =
 let barrett_reduce_element (value: i16)
     : Prims.Pure i16
       (requires
-        (Core.Convert.f_from value <: i32) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) &&
-        (Core.Convert.f_from value <: i32) <. v_BARRETT_R)
+        (Core.Convert.f_from #i32 #i16 value <: i32) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) &&
+        (Core.Convert.f_from #i32 #i16 value <: i32) <. v_BARRETT_R)
       (ensures
         fun result ->
           let result:i16 = result in
           result >. (Core.Ops.Arith.Neg.neg Libcrux_traits.v_FIELD_MODULUS <: i16) &&
           result <. Libcrux_traits.v_FIELD_MODULUS) =
   let t:i32 =
-    ((Core.Convert.f_from value <: i32) *! v_BARRETT_MULTIPLIER <: i32) +!
+    ((Core.Convert.f_from #i32 #i16 value <: i32) *! v_BARRETT_MULTIPLIER <: i32) +!
     (v_BARRETT_R >>! 1l <: i32)
   in
   let quotient:i16 = cast (t >>! v_BARRETT_SHIFT <: i32) <: i16 in
@@ -164,10 +164,9 @@ let ntt_multiply_binomials (a0, a1: (i16 & i16)) (b0, b1: (i16 & i16)) (zeta: i1
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) : (t_Slice i16 & usize) =
   let sampled:usize = sz 0 in
   let result, sampled:(t_Slice i16 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter (Core.Slice.impl__chunks a
-              (sz 3)
-            <:
-            Core.Slice.Iter.t_Chunks u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
+            u8)
+          (Core.Slice.impl__chunks #u8 a (sz 3) <: Core.Slice.Iter.t_Chunks u8)
         <:
         Core.Slice.Iter.t_Chunks u8)
       (result, sampled <: (t_Slice i16 & usize))
@@ -203,7 +202,9 @@ type t_PortableVector = { f_elements:t_Array i16 (sz 16) }
 
 let add (lhs rhs: t_PortableVector) : t_PortableVector =
   let lhs:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -232,7 +233,9 @@ let add (lhs rhs: t_PortableVector) : t_PortableVector =
 
 let barrett_reduce (v: t_PortableVector) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -261,7 +264,9 @@ let barrett_reduce (v: t_PortableVector) : t_PortableVector =
 
 let bitwise_and_with_constant (v: t_PortableVector) (c: i16) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -290,7 +295,9 @@ let bitwise_and_with_constant (v: t_PortableVector) (c: i16) : t_PortableVector 
 
 let compress (v_COEFFICIENT_BITS: i32) (v: t_PortableVector) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -322,7 +329,9 @@ let compress (v_COEFFICIENT_BITS: i32) (v: t_PortableVector) : t_PortableVector 
 
 let compress_1_ (v: t_PortableVector) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -353,7 +362,9 @@ let compress_1_ (v: t_PortableVector) : t_PortableVector =
 
 let cond_subtract_3329_ (v: t_PortableVector) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -400,10 +411,11 @@ let from_i16_array (array: t_Slice i16) : t_PortableVector =
   {
     f_elements
     =
-    Core.Result.impl__unwrap (Core.Convert.f_try_into (array.[ {
-                Core.Ops.Range.f_start = sz 0;
-                Core.Ops.Range.f_end = sz 16
-              }
+    Core.Result.impl__unwrap #(t_Array i16 (sz 16))
+      #Core.Array.t_TryFromSliceError
+      (Core.Convert.f_try_into #(t_Slice i16)
+          #(t_Array i16 (sz 16))
+          (array.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
               <:
               Core.Ops.Range.t_Range usize ]
             <:
@@ -1097,7 +1109,9 @@ let inv_ntt_layer_3_step (v: t_PortableVector) (zeta: i16) : t_PortableVector =
 
 let montgomery_multiply_by_constant (v: t_PortableVector) (c: i16) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -1126,7 +1140,9 @@ let montgomery_multiply_by_constant (v: t_PortableVector) (c: i16) : t_PortableV
 
 let multiply_by_constant (v: t_PortableVector) (c: i16) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -1765,10 +1781,9 @@ let ntt_layer_3_step (v: t_PortableVector) (zeta: i16) : t_PortableVector =
 let serialize_1_ (v: t_PortableVector) : t_Array u8 (sz 2) =
   let result:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
   let result:t_Array u8 (sz 2) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 8
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -1785,10 +1800,9 @@ let serialize_1_ (v: t_PortableVector) : t_Array u8 (sz 2) =
           t_Array u8 (sz 2))
   in
   let result:t_Array u8 (sz 2) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 8;
-              Core.Ops.Range.f_end = sz 16
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 8; Core.Ops.Range.f_end = sz 16 }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -2454,7 +2468,9 @@ let serialize_5_ (v: t_PortableVector) : t_Array u8 (sz 10) =
 
 let shift_left (v_SHIFT_BY: i32) (lhs: t_PortableVector) : t_PortableVector =
   let lhs:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -2483,7 +2499,9 @@ let shift_left (v_SHIFT_BY: i32) (lhs: t_PortableVector) : t_PortableVector =
 
 let shift_right (v_SHIFT_BY: i32) (v: t_PortableVector) : t_PortableVector =
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -2512,7 +2530,9 @@ let shift_right (v_SHIFT_BY: i32) (v: t_PortableVector) : t_PortableVector =
 
 let sub (lhs rhs: t_PortableVector) : t_PortableVector =
   let lhs:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -2547,9 +2567,9 @@ let decompress_ciphertext_coefficient (v_COEFFICIENT_BITS: i32) (v: t_PortableVe
     if true
     then
       let _, out:(Core.Array.Iter.t_IntoIter i16 (sz 16) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter (to_i16_array v
-                <:
-                t_Array i16 (sz 16))
+        Core.Iter.Traits.Iterator.f_all #(Core.Array.Iter.t_IntoIter i16 (sz 16))
+          (Core.Iter.Traits.Collect.f_into_iter #(t_Array i16 (sz 16))
+              (to_i16_array v <: t_Array i16 (sz 16))
             <:
             Core.Array.Iter.t_IntoIter i16 (sz 16))
           (fun coefficient ->
@@ -2569,7 +2589,9 @@ let decompress_ciphertext_coefficient (v_COEFFICIENT_BITS: i32) (v: t_PortableVe
       ()
   in
   let v:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }
@@ -2607,9 +2629,9 @@ let decompress_ciphertext_coefficient (v_COEFFICIENT_BITS: i32) (v: t_PortableVe
     if true
     then
       let _, out:(Core.Array.Iter.t_IntoIter i16 (sz 16) & bool) =
-        Core.Iter.Traits.Iterator.f_all (Core.Iter.Traits.Collect.f_into_iter (to_i16_array v
-                <:
-                t_Array i16 (sz 16))
+        Core.Iter.Traits.Iterator.f_all #(Core.Array.Iter.t_IntoIter i16 (sz 16))
+          (Core.Iter.Traits.Collect.f_into_iter #(t_Array i16 (sz 16))
+              (to_i16_array v <: t_Array i16 (sz 16))
             <:
             Core.Array.Iter.t_IntoIter i16 (sz 16))
           (fun coefficient ->
@@ -2636,10 +2658,9 @@ let zero (_: Prims.unit) : t_PortableVector =
 let deserialize_1_ (v: t_Slice u8) : t_PortableVector =
   let result:t_PortableVector = zero () in
   let result:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-              Core.Ops.Range.f_start = sz 0;
-              Core.Ops.Range.f_end = sz 8
-            }
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -2662,7 +2683,9 @@ let deserialize_1_ (v: t_Slice u8) : t_PortableVector =
           t_PortableVector)
   in
   let result:t_PortableVector =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
               Core.Ops.Range.f_start = sz 8;
               Core.Ops.Range.f_end = Libcrux_traits.v_FIELD_ELEMENTS_IN_VECTOR
             }

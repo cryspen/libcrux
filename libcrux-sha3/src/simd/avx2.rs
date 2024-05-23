@@ -1,6 +1,6 @@
 use core::arch::x86_64::*;
 
-use crate::traits::*;
+use crate::traits::internal::*;
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: __m256i) -> __m256i {

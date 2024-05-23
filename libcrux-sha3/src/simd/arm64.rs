@@ -1,6 +1,6 @@
 use core::arch::aarch64::*;
 
-use crate::traits::KeccakItem;
+use crate::traits::internal::KeccakItem;
 
 // This file optimizes for the stable Rust Neon Intrinsics
 // If we want to use the unstable neon-sha3 instructions, we could use:

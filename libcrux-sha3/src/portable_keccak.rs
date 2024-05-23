@@ -1,6 +1,6 @@
 //! A portable SHA3 implementation using the generic implementation.
 
-use crate::traits::*;
+use crate::traits::internal::*;
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {

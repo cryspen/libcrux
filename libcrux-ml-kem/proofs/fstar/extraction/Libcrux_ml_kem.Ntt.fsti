@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Ntt
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_traits in
+  ()
+
 val ntt_layer_int_vec_step
       (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}

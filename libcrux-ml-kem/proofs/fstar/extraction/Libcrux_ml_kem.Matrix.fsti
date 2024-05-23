@@ -3,6 +3,13 @@ module Libcrux_ml_kem.Matrix
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_traits in
+  ()
+
 /// Compute Â ◦ ŝ + ê
 val compute_As_plus_e
       (v_K: usize)

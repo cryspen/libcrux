@@ -66,10 +66,9 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
           Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy v_LEN <: t_Array u8 v_LEN) v_K
         in
         let out:t_Array (t_Array u8 v_LEN) v_K =
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                    Core.Ops.Range.f_start = sz 0;
-                    Core.Ops.Range.f_end = v_K
-                  }
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  usize)
+                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                   <:
                   Core.Ops.Range.t_Range usize)
               <:
@@ -116,10 +115,9 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
             v_K
         in
         let state:t_Array (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64) v_K =
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                    Core.Ops.Range.f_start = sz 0;
-                    Core.Ops.Range.f_end = v_K
-                  }
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  usize)
+                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                   <:
                   Core.Ops.Range.t_Range usize)
               <:
@@ -172,10 +170,9 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
             v_K
         in
         let out, self:(t_Array (t_Array u8 (sz 504)) v_K & t_PortableHash v_K) =
-          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                    Core.Ops.Range.f_start = sz 0;
-                    Core.Ops.Range.f_end = v_K
-                  }
+          Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                  usize)
+                ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                   <:
                   Core.Ops.Range.t_Range usize)
               <:
@@ -241,10 +238,9 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
           v_K
       in
       let out, self:(t_Array (t_Array u8 (sz 168)) v_K & t_PortableHash v_K) =
-        Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter ({
-                  Core.Ops.Range.f_start = sz 0;
-                  Core.Ops.Range.f_end = v_K
-                }
+        Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                usize)
+              ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                 <:
                 Core.Ops.Range.t_Range usize)
             <:
