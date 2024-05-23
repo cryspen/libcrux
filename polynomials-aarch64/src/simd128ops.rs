@@ -3,7 +3,6 @@
 use crate::neon::*;
 use libcrux_traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
-#[repr(align(16))]
 #[derive(Clone, Copy)]
 pub struct SIMD128Vector {
     pub low: int16x8_t,

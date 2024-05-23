@@ -776,28 +776,22 @@ pub(crate) fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
     let input = super::simd128ops::deserialize_12(a);
     let mask0 = _vcleq_s16(input.low, fm);
     let mask1 = _vcleq_s16(input.high, fm);
-    // eprintln!("bits: {bits:?}");
-    // eprintln!("mask0: {mask0:x?}");
     let masked = _vandq_u16(mask0, bits);
-    // eprintln!("masked: {masked:?}");
     let used0 = _vaddvq_u16(masked);
-    // assert!(used0 <= u8::max as u16);
-    // eprintln!("mask1: {mask1:x?}");
     let masked = _vandq_u16(mask1, bits);
-    // eprintln!("masked: {masked:?}");
     let used1 = _vaddvq_u16(masked);
-    // assert!(used1 <= u8::max as u16);
     let pick0 = used0.count_ones();
     let pick1 = used1.count_ones();
 
-    let index_vec0 = _vld1q_u8(&IDX_TABLE[usize::from(u8::try_from(used0).unwrap())]);
+    // XXX: the indices used0 and used1 must be < 256.
+    let index_vec0 = _vld1q_u8(&IDX_TABLE[(used0 as u8) as usize]);
     let shifted0 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.low), index_vec0));
-    let index_vec1 = _vld1q_u8(&IDX_TABLE[usize::from(u8::try_from(used1).unwrap())]);
+    let index_vec1 = _vld1q_u8(&IDX_TABLE[(used1 as u8) as usize]);
     let shifted1 =
         _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.high), index_vec1));
 
     let idx0 = usize::try_from(pick0).unwrap();
     _vst1q_s16(&mut out[0..8], shifted0);
     _vst1q_s16(&mut out[idx0..idx0 + 8], shifted1);
-    usize::try_from(pick0 + pick1).unwrap()
+    (pick0 + pick1) as usize
 }

@@ -84,10 +84,10 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
         run: RUSTDOCFLAGS=-Zsanitizer=address RUSTFLAGS=-Zsanitizer=address cargo +nightly test --release --target aarch64-apple-darwin
 
-      - name: ⬆ Upload build
-        uses: ./.github/actions/upload_artifacts
-        with:
-          name: build_${{ matrix.os }}_${{ matrix.bits }}
+      # - name: ⬆ Upload build
+      #   uses: ./.github/actions/upload_artifacts
+      #   with:
+      #     name: build_${{ matrix.os }}_${{ matrix.bits }}
 
       # We get false positives here.
       # TODO: Figure out what is going on here
@@ -128,7 +128,6 @@ jobs:
           cargo test --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Test Release
-        if: ${{ matrix.os != 'macos-latest' }}
         run: |
           cargo clean
           cargo test --verbose --release $RUST_TARGET_FLAG
@@ -200,13 +199,13 @@ jobs:
           echo "RUST_TARGET_FLAG=--target=i686-unknown-linux-gnu" > $GITHUB_ENV
         if: ${{ matrix.bits == 32 && matrix.os == 'ubuntu-latest' }}
 
-      - name: 🔨 Build
-        run: cargo build --benches
+      # - name: 🔨 Build
+      #   run: cargo build --benches
 
-      - name: ⬆ Upload build
-        uses: ./.github/actions/upload_artifacts
-        with:
-          name: benchmarks_${{ matrix.os }}_${{ matrix.bits }}
+      # - name: ⬆ Upload build
+      #   uses: ./.github/actions/upload_artifacts
+      #   with:
+      #     name: benchmarks_${{ matrix.os }}_${{ matrix.bits }}
 
       # Benchmarks ...
 
