@@ -848,8 +848,5 @@ pub(crate) fn deserialize_12(v: &[u8]) -> SIMD128Vector {
     let shifted1 = _vshlq_u16(moved1, shift_vec);
     let high = _vreinterpretq_s16_u16(_vandq_u16(shifted1, mask12));
 
-    SIMD128Vector {
-        low: low,
-        high: high,
-    }
+    SIMD128Vector { low, high }
 }
