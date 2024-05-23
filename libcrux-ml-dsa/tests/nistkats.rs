@@ -36,6 +36,6 @@ fn ml_dsa_65_nist_known_answer_tests() {
         serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
     for kat in nist_kats {
-        let _ = ml_dsa::ml_dsa_65::generate_key_pair(kat.key_generation_seed);
+        let _ = libcrux_ml_dsa::ml_dsa_65::generate_key_pair(kat.key_generation_seed);
     }
 }

@@ -14,7 +14,7 @@ members = [
     "polynomials-avx2",
     "traits",
     "polynomials-aarch64",
-    "ml-dsa",
+    "libcrux-ml-dsa",
 ]
 
 [workspace.package]
