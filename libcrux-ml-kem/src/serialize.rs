@@ -99,7 +99,8 @@ pub(super) fn deserialize_ring_elements_reduced<
 >(
     public_key: &[u8],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut deserialized_pk = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    // let mut deserialized_pk = core::array::from_fn(|_i| PolynomialRingElement::<Vector>::ZERO());
+    let mut deserialized_pk: [PolynomialRingElement<Vector>; K] = todo!();
     cloop! {
         for (i, ring_element) in public_key
             .chunks_exact(BYTES_PER_RING_ELEMENT)

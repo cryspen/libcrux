@@ -11,9 +11,10 @@ pub(crate) fn sample_matrix_A<const K: usize, Vector: Operations, Hasher: Hash<K
     seed: [u8; 34],
     transpose: bool,
 ) -> [[PolynomialRingElement<Vector>; K]; K] {
-    let mut A_transpose = core::array::from_fn(|_i| {
-        core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
-    });
+    let mut A_transpose: [[PolynomialRingElement<Vector>; K]; K] = todo!();
+    // let mut A_transpose = core::array::from_fn(|_i| {
+    //     core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
+    // });
 
     for i in 0..K {
         let mut seeds = [seed; K];

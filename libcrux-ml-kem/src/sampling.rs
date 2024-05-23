@@ -74,33 +74,34 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
 pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K>>(
     seeds: [[u8; 34]; K],
 ) -> [PolynomialRingElement<Vector>; K] {
-    let mut sampled_coefficients: [usize; K] = [0; K];
-    let mut out: [[i16; 272]; K] = [[0; 272]; K];
+    todo!()
+    // let mut sampled_coefficients: [usize; K] = [0; K];
+    // let mut out: [[i16; 272]; K] = [[0; 272]; K];
 
-    let mut xof_state = Hasher::shake128_init_absorb(seeds);
-    let randomness = xof_state.shake128_squeeze_three_blocks();
+    // let mut xof_state = Hasher::shake128_init_absorb(seeds);
+    // let randomness = xof_state.shake128_squeeze_three_blocks();
 
-    let mut done = sample_from_uniform_distribution_next::<Vector, K, THREE_BLOCKS>(
-        randomness,
-        &mut sampled_coefficients,
-        &mut out,
-    );
+    // let mut done = sample_from_uniform_distribution_next::<Vector, K, THREE_BLOCKS>(
+    //     randomness,
+    //     &mut sampled_coefficients,
+    //     &mut out,
+    // );
 
-    // Requiring more than 5 blocks to sample a ring element should be very
-    // unlikely according to:
-    // https://eprint.iacr.org/2023/708.pdf
-    // To avoid failing here, we squeeze more blocks out of the state until
-    // we have enough.
-    while !done {
-        let randomness = xof_state.shake128_squeeze_block();
-        done = sample_from_uniform_distribution_next::<Vector, K, BLOCK_SIZE>(
-            randomness,
-            &mut sampled_coefficients,
-            &mut out,
-        );
-    }
+    // // Requiring more than 5 blocks to sample a ring element should be very
+    // // unlikely according to:
+    // // https://eprint.iacr.org/2023/708.pdf
+    // // To avoid failing here, we squeeze more blocks out of the state until
+    // // we have enough.
+    // while !done {
+    //     let randomness = xof_state.shake128_squeeze_block();
+    //     done = sample_from_uniform_distribution_next::<Vector, K, BLOCK_SIZE>(
+    //         randomness,
+    //         &mut sampled_coefficients,
+    //         &mut out,
+    //     );
+    // }
 
-    out.map(|s| PolynomialRingElement::<Vector>::from_i16_array(&s[0..256]))
+    // out.map(|s| PolynomialRingElement::<Vector>::from_i16_array(&s[0..256]))
 }
 
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
