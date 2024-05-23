@@ -1,4 +1,4 @@
-use libcrux_polynomials::Operations;
+use crate::libcrux_polynomials::Operations;
 
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},

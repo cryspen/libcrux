@@ -1,4 +1,4 @@
-use libcrux_polynomials::Operations;
+use crate::libcrux_polynomials::Operations;
 
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, hax_utils::hax_debug_assert,

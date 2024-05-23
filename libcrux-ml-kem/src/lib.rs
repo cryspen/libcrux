@@ -37,7 +37,7 @@
 //! [F*]: https://fstar-lang.org
 
 #![no_std]
-#![forbid(unsafe_code, missing_docs)]
+#![forbid(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
 
@@ -70,6 +70,9 @@ mod types;
 pub mod mlkem1024;
 pub mod mlkem512;
 pub mod mlkem768;
+
+#[path = "../../polynomials/src/lib.rs"]
+pub mod libcrux_polynomials;
 
 pub use constants::SHARED_SECRET_SIZE;
 pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE};

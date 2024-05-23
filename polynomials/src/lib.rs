@@ -9,6 +9,9 @@
 //!
 //! FIXME: This is kyber specific for now.
 
+#[path = "../../traits/src/lib.rs"]
+mod libcrux_traits;
+
 use libcrux_traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 pub use libcrux_traits::{
     decompress_1, montgomery_multiply_fe, to_standard_domain, to_unsigned_representative,

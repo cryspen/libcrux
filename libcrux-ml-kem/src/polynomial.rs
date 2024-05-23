@@ -1,4 +1,4 @@
-use libcrux_polynomials::{
+use crate::libcrux_polynomials::{
     to_standard_domain, FieldElementTimesMontgomeryR, Operations, FIELD_ELEMENTS_IN_VECTOR,
 };
 

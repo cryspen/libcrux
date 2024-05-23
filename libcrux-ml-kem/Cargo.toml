@@ -13,7 +13,8 @@ exclude = ["/tests", "/implementation_notes.pdf"]
 rand_core = { version = "0.6" }
 libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
 libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
-libcrux-polynomials = { path = "../polynomials/" }
+# libcrux-polynomials = { path = "../polynomials/" }
+libcrux-traits = { path = "../traits/" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
