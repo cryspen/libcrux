@@ -215,6 +215,25 @@ pub(crate) fn squeeze_first_three_blocks<const N: usize, T: KeccakItem<N>, const
 }
 
 #[inline(always)]
+pub(crate) fn squeeze_first_five_blocks<const N: usize, T: KeccakItem<N>, const RATE: usize>(
+    s: &mut KeccakState<N, T>,
+    out: [&mut [u8]; N],
+) {
+    let (o0, o1) = T::split_at_mut_n(out, RATE);
+    squeeze_first_block::<N, T, RATE>(s, o0);
+    let (o1, o2) = T::split_at_mut_n(o1, RATE);
+
+    squeeze_next_block::<N, T, RATE>(s, o1);
+    let (o2, o3) = T::split_at_mut_n(o2, RATE);
+
+    squeeze_next_block::<N, T, RATE>(s, o2);
+    let (o3, o4) = T::split_at_mut_n(o3, RATE);
+
+    squeeze_next_block::<N, T, RATE>(s, o3);
+    squeeze_next_block::<N, T, RATE>(s, o4);
+}
+
+#[inline(always)]
 pub(crate) fn squeeze_last<const N: usize, T: KeccakItem<N>, const RATE: usize>(
     mut s: KeccakState<N, T>,
     out: [&mut [u8]; N],
