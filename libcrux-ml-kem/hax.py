@@ -30,7 +30,7 @@ def shell(command, expect=0, cwd=None, env={}):
 class extractAction(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None) -> None:
-        # Extract platform and sha3 interfaces
+        # Extract sha3 interfaces
         includes = [
             "+:**",
             "-libcrux_sha3::generic_keccak::**",
@@ -59,6 +59,7 @@ class extractAction(argparse.Action):
             env=hax_env,
         )
 
+        # Extract platform interfaces
         include_str = "+:**"
         interface_include = "+**"
         cargo_hax_into = [
@@ -75,6 +76,26 @@ class extractAction(argparse.Action):
         shell(
             cargo_hax_into,
             cwd="../sys/platform",
+            env=hax_env,
+        )
+
+        # Extract trait interfaces
+        include_str = "+**"
+        interface_include = "+**"
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+            "--interfaces",
+            interface_include,
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../traits",
             env=hax_env,
         )
 
