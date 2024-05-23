@@ -28,7 +28,6 @@ def shell(command, expect=0, cwd=None, env={}):
 
 
 class extractAction(argparse.Action):
-
     def __call__(self, parser, args, values, option_string=None) -> None:
         # Extract platform and sha3 interfaces
         # include_str = "+:libcrux_sha3::** -libcrux_sha3::x4::internal::**"
@@ -100,7 +99,6 @@ class extractAction(argparse.Action):
 
 
 class proveAction(argparse.Action):
-
     def __call__(self, parser, args, values, option_string=None) -> None:
         admit_env = {}
         if args.admit:
