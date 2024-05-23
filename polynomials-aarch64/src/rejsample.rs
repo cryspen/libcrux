@@ -786,12 +786,22 @@ pub(crate) fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
     let used0 = u0[0] + u0[1] + u0[2] + u0[3] + u0[4] + u0[5] + u0[6] + u0[7];
     let used1 = u1[0] + u1[1] + u1[2] + u1[3] + u1[4] + u1[5] + u1[6] + u1[7];
 
-    let pick0 = used0.count_ones();
-    let pick1 = used1.count_ones();
+//    let pick0 = used0.count_ones();
+//    let pick1 = used1.count_ones();
+    let mut pick0 = 0;
+    let mut pick1 = 0;
+    for i in 0..8 {
+ 	if (used0 >> i & 1) == 1 {
+           pick0 = pick0 + 1
+        }
+ 	if (used1 >> i & 1) == 1 {
+           pick1 = pick1 + 1
+        }
+    }
 
-    let index_vec0 = _vld1q_u8(&IDX_TABLE[used0 as u8]);
+    let index_vec0 = _vld1q_u8(&IDX_TABLE[used0 as usize]);
     let shifted0 = _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.low), index_vec0));
-    let index_vec1 = _vld1q_u8(&IDX_TABLE[used1 as u8]);
+    let index_vec1 = _vld1q_u8(&IDX_TABLE[used1 as usize]);
     let shifted1 =
         _vreinterpretq_s16_u8(_vqtbl1q_u8(_vreinterpretq_u8_s16(input.high), index_vec1));
 
