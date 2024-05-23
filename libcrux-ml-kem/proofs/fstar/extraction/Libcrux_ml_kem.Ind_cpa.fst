@@ -39,7 +39,7 @@ let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
 
 let sample_ring_element_cbd
       (v_K v_ETA2_RANDOMNESS_SIZE v_ETA2: usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -119,7 +119,7 @@ let sample_ring_element_cbd
 
 let sample_vector_cbd_then_ntt
       (v_K v_ETA v_ETA_RANDOMNESS_SIZE: usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -209,7 +209,7 @@ let sample_vector_cbd_then_ntt
 
 let compress_then_serialize_u
       (v_K v_OUT_LEN v_COMPRESSION_FACTOR v_BLOCK_LEN: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (input: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (out: t_Slice u8)
@@ -268,7 +268,7 @@ let compress_then_serialize_u
 
 let deserialize_then_decompress_u
       (v_K v_CIPHERTEXT_SIZE v_U_COMPRESSION_FACTOR: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
      =
@@ -325,7 +325,7 @@ let deserialize_then_decompress_u
 let encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -425,7 +425,7 @@ let encrypt
 
 let deserialize_secret_key
       (v_K: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (secret_key: t_Slice u8)
      =
@@ -467,7 +467,7 @@ let deserialize_secret_key
 let decrypt
       (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
           usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (secret_key: t_Slice u8)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
@@ -493,7 +493,7 @@ let decrypt
 
 let serialize_secret_key
       (v_K v_OUT_LEN: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
@@ -558,7 +558,7 @@ let serialize_secret_key
 
 let serialize_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (seed_for_a: t_Slice u8)
@@ -610,7 +610,7 @@ let serialize_public_key
 let generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:

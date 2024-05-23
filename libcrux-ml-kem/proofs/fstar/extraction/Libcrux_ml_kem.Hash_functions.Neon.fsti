@@ -7,7 +7,8 @@ open FStar.Mul
 /// It's only used for SHAKE128.
 /// All other functions don't actually use any members.
 type t_Simd128Hash = {
-  f_shake128_state:t_Array (t_Array (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64) (sz 2))
+  f_shake128_state:t_Array
+    (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2) Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
     (sz 2)
 }
 
@@ -84,8 +85,9 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
             in
             ()
         in
-        let state:t_Array (t_Array (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64) (sz 2))
-          (sz 2) =
+        let state:t_Array
+          (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2)
+              Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) (sz 2) =
           Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_finalxN v_K input
         in
         { f_shake128_state = state } <: t_Simd128Hash);
@@ -110,7 +112,8 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
             ()
         in
         let tmp0, out:(t_Array
-            (t_Array (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64) (sz 2)) (sz 2) &
+            (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2)
+                Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) (sz 2) &
           t_Array (t_Array u8 (sz 504)) v_K) =
           Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze3xN (sz 504) v_K self.f_shake128_state
         in
@@ -137,8 +140,9 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
           in
           ()
       in
-      let tmp0, out:(t_Array (t_Array (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64) (sz 2))
-          (sz 2) &
+      let tmp0, out:(t_Array
+          (Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2)
+              Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) (sz 2) &
         t_Array (t_Array u8 (sz 168)) v_K) =
         Libcrux_sha3.Neon.X2.Incremental.shake128_squeezexN (sz 168) v_K self.f_shake128_state
       in

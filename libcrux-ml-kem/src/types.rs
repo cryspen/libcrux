@@ -128,6 +128,7 @@ impl_generic_struct!(MlKemPrivateKey, "An ML-KEM Private key");
 impl_generic_struct!(MlKemPublicKey, "An ML-KEM Public key");
 
 // These traits are used only in `ind_cpa` for kyber cipher text.
+#[cfg_attr(hax, hax_lib::exclude)]
 mod index_impls {
     use super::*;
     impl_index_impls_for_generic_struct!(MlKemCiphertext);

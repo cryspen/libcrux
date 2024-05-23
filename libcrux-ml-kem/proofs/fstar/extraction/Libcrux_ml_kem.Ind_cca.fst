@@ -5,7 +5,7 @@ open FStar.Mul
 
 let serialize_kem_secret_key
       (v_K v_SERIALIZED_KEY_LEN: usize)
-      (#v_Hasher: Type)
+      (#v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
@@ -112,7 +112,7 @@ let serialize_kem_secret_key
 
 let validate_public_key_generic
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
@@ -143,44 +143,47 @@ let validate_public_key
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
   Rust_primitives.Hax.Control_flow_monad.Mexception.run (if
-        true && true && (Libcrux_platform.Platform.simd256_support () <: bool)
+        false && false && (Libcrux_platform.Platform.simd256_support () <: bool)
       then
-        let! hoist2:Rust_primitives.Hax.t_Never =
-          Core.Ops.Control_flow.ControlFlow_Break
-          (validate_public_key_generic v_K
-              v_RANKED_BYTES_PER_RING_ELEMENT
-              v_PUBLIC_KEY_SIZE
-              public_key)
+        Core.Ops.Control_flow.ControlFlow_Continue
+        (validate_public_key_generic v_K
+            v_RANKED_BYTES_PER_RING_ELEMENT
+            v_PUBLIC_KEY_SIZE
+            public_key
           <:
-          Core.Ops.Control_flow.t_ControlFlow bool Rust_primitives.Hax.t_Never
-        in
-        Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist2)
+          bool)
         <:
         Core.Ops.Control_flow.t_ControlFlow bool bool
       else
-        Core.Ops.Control_flow.ControlFlow_Continue
-        (if false && false && (Libcrux_platform.Platform.simd128_support () <: bool)
-          then
-            validate_public_key_generic v_K
-              v_RANKED_BYTES_PER_RING_ELEMENT
-              v_PUBLIC_KEY_SIZE
-              public_key
+        if true && true && (Libcrux_platform.Platform.simd128_support () <: bool)
+        then
+          let! hoist2:Rust_primitives.Hax.t_Never =
+            Core.Ops.Control_flow.ControlFlow_Break
+            (validate_public_key_generic v_K
+                v_RANKED_BYTES_PER_RING_ELEMENT
+                v_PUBLIC_KEY_SIZE
+                public_key)
             <:
-            bool
-          else
-            validate_public_key_generic v_K
+            Core.Ops.Control_flow.t_ControlFlow bool Rust_primitives.Hax.t_Never
+          in
+          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist2)
+          <:
+          Core.Ops.Control_flow.t_ControlFlow bool bool
+        else
+          Core.Ops.Control_flow.ControlFlow_Continue
+          (validate_public_key_generic v_K
               v_RANKED_BYTES_PER_RING_ELEMENT
               v_PUBLIC_KEY_SIZE
               public_key
             <:
             bool)
-        <:
-        Core.Ops.Control_flow.t_ControlFlow bool bool)
+          <:
+          Core.Ops.Control_flow.t_ControlFlow bool bool)
 
 let decapsulate_generic
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -279,7 +282,7 @@ let decapsulate
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
   Rust_primitives.Hax.Control_flow_monad.Mexception.run (if
-        true && true && (Libcrux_platform.Platform.simd256_support () <: bool)
+        false && false && (Libcrux_platform.Platform.simd256_support () <: bool)
       then
         let! hoist3:Rust_primitives.Hax.t_Never =
           Core.Ops.Control_flow.ControlFlow_Break
@@ -296,7 +299,7 @@ let decapsulate
         Core.Ops.Control_flow.t_ControlFlow (t_Array u8 (sz 32)) (t_Array u8 (sz 32))
       else
         Core.Ops.Control_flow.ControlFlow_Continue
-        (if false && false && (Libcrux_platform.Platform.simd128_support () <: bool)
+        (if true && true && (Libcrux_platform.Platform.simd128_support () <: bool)
           then
             let! hoist4:Rust_primitives.Hax.t_Never =
               Core.Ops.Control_flow.ControlFlow_Break
@@ -329,7 +332,7 @@ let decapsulate
 let encapsulate_generic
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -398,68 +401,26 @@ let encapsulate
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
      =
-  Rust_primitives.Hax.Control_flow_monad.Mexception.run (if
-        true && true && (Libcrux_platform.Platform.simd256_support () <: bool)
-      then
-        let! hoist5:Rust_primitives.Hax.t_Never =
-          Core.Ops.Control_flow.ControlFlow_Break
-          (encapsulate_generic v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE
-              v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR
-              v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE
-              public_key randomness)
-          <:
-          Core.Ops.Control_flow.t_ControlFlow
-            (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-            Rust_primitives.Hax.t_Never
-        in
-        Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist5)
-        <:
-        Core.Ops.Control_flow.t_ControlFlow
-          (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-          (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-      else
-        Core.Ops.Control_flow.ControlFlow_Continue
-        (if false && false && (Libcrux_platform.Platform.simd128_support () <: bool)
-          then
-            let! hoist6:Rust_primitives.Hax.t_Never =
-              Core.Ops.Control_flow.ControlFlow_Break
-              (encapsulate_generic v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE
-                  v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR
-                  v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE
-                  public_key randomness)
-              <:
-              Core.Ops.Control_flow.t_ControlFlow
-                (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-                Rust_primitives.Hax.t_Never
-            in
-            Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist6)
-            <:
-            Core.Ops.Control_flow.t_ControlFlow
-              (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-              (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-          else
-            Core.Ops.Control_flow.ControlFlow_Continue
-            (encapsulate_generic v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE
-                v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR
-                v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE
-                public_key randomness
-              <:
-              (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)))
-            <:
-            Core.Ops.Control_flow.t_ControlFlow
-              (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-              (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32)))
-        <:
-        Core.Ops.Control_flow.t_ControlFlow
-          (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-          (Core.Ops.Control_flow.t_ControlFlow
-              (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
-              (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))))
+  if false && false && Libcrux_platform.Platform.simd256_support ()
+  then
+    encapsulate_generic v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE
+      v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN
+      v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE public_key randomness
+  else
+    if true && true && Libcrux_platform.Platform.simd128_support ()
+    then
+      encapsulate_generic v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE
+        v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN
+        v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE public_key randomness
+    else
+      encapsulate_generic v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE
+        v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN
+        v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE public_key randomness
 
 let generate_keypair_generic
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
@@ -512,10 +473,48 @@ let generate_keypair
           <:
           Core.Ops.Range.t_RangeFrom usize ]
       in
-      if true && true && Libcrux_platform.Platform.simd256_support ()
+      if false && false && Libcrux_platform.Platform.simd256_support ()
       then
-        let! hoist7:Rust_primitives.Hax.t_Never =
-          Core.Ops.Control_flow.ControlFlow_Break
+        Core.Ops.Control_flow.ControlFlow_Continue
+        (generate_keypair_generic v_K
+            v_CPA_PRIVATE_KEY_SIZE
+            v_PRIVATE_KEY_SIZE
+            v_PUBLIC_KEY_SIZE
+            v_BYTES_PER_RING_ELEMENT
+            v_ETA1
+            v_ETA1_RANDOMNESS_SIZE
+            ind_cpa_keypair_randomness
+            implicit_rejection_value)
+        <:
+        Core.Ops.Control_flow.t_ControlFlow
+          (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+          (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+      else
+        if true && true && Libcrux_platform.Platform.simd128_support ()
+        then
+          let! hoist5:Rust_primitives.Hax.t_Never =
+            Core.Ops.Control_flow.ControlFlow_Break
+            (generate_keypair_generic v_K
+                v_CPA_PRIVATE_KEY_SIZE
+                v_PRIVATE_KEY_SIZE
+                v_PUBLIC_KEY_SIZE
+                v_BYTES_PER_RING_ELEMENT
+                v_ETA1
+                v_ETA1_RANDOMNESS_SIZE
+                ind_cpa_keypair_randomness
+                implicit_rejection_value)
+            <:
+            Core.Ops.Control_flow.t_ControlFlow
+              (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+              Rust_primitives.Hax.t_Never
+          in
+          Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist5)
+          <:
+          Core.Ops.Control_flow.t_ControlFlow
+            (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+            (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+        else
+          Core.Ops.Control_flow.ControlFlow_Continue
           (generate_keypair_generic v_K
               v_CPA_PRIVATE_KEY_SIZE
               v_PRIVATE_KEY_SIZE
@@ -528,37 +527,4 @@ let generate_keypair
           <:
           Core.Ops.Control_flow.t_ControlFlow
             (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-            Rust_primitives.Hax.t_Never
-        in
-        Core.Ops.Control_flow.ControlFlow_Continue (Rust_primitives.Hax.never_to_any hoist7)
-        <:
-        Core.Ops.Control_flow.t_ControlFlow
-          (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-          (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-      else
-        Core.Ops.Control_flow.ControlFlow_Continue
-        (if false && false && Libcrux_platform.Platform.simd128_support ()
-          then
-            generate_keypair_generic v_K
-              v_CPA_PRIVATE_KEY_SIZE
-              v_PRIVATE_KEY_SIZE
-              v_PUBLIC_KEY_SIZE
-              v_BYTES_PER_RING_ELEMENT
-              v_ETA1
-              v_ETA1_RANDOMNESS_SIZE
-              ind_cpa_keypair_randomness
-              implicit_rejection_value
-          else
-            generate_keypair_generic v_K
-              v_CPA_PRIVATE_KEY_SIZE
-              v_PRIVATE_KEY_SIZE
-              v_PUBLIC_KEY_SIZE
-              v_BYTES_PER_RING_ELEMENT
-              v_ETA1
-              v_ETA1_RANDOMNESS_SIZE
-              ind_cpa_keypair_randomness
-              implicit_rejection_value)
-        <:
-        Core.Ops.Control_flow.t_ControlFlow
-          (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
-          (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE))
+            (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE))

@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 let impl__ZERO
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (_: Prims.unit)
      =
@@ -13,7 +13,7 @@ let impl__ZERO
   t_PolynomialRingElement v_Vector
 
 let impl__add_error_reduce
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
@@ -56,7 +56,7 @@ let impl__add_error_reduce
   self
 
 let impl__add_message_error_reduce
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (self message result: t_PolynomialRingElement v_Vector)
      =
@@ -104,7 +104,7 @@ let impl__add_message_error_reduce
   result
 
 let impl__add_standard_error_reduce
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
@@ -146,7 +146,7 @@ let impl__add_standard_error_reduce
   self
 
 let impl__add_to_ring_element
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (v_K: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (self rhs: t_PolynomialRingElement v_Vector)
@@ -187,7 +187,7 @@ let impl__add_to_ring_element
   self
 
 let impl__from_i16_array
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (a: t_Slice i16)
      =
@@ -234,7 +234,7 @@ let impl__from_i16_array
   result
 
 let impl__ntt_multiply
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (self rhs: t_PolynomialRingElement v_Vector)
      =
@@ -287,7 +287,7 @@ let impl__ntt_multiply
   out
 
 let impl__poly_barrett_reduce
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (self: t_PolynomialRingElement v_Vector)
      =
@@ -320,7 +320,7 @@ let impl__poly_barrett_reduce
   self
 
 let impl__subtract_reduce
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (self b: t_PolynomialRingElement v_Vector)
      =

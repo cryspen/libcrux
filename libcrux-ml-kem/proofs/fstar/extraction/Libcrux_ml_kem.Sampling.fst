@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 let sample_from_uniform_distribution_next
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (v_K v_N: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (randomness: t_Array (t_Array u8 v_N) v_K)
@@ -135,7 +135,7 @@ let sample_from_uniform_distribution_next
   (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
 
 let sample_from_binomial_distribution_2_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
@@ -200,7 +200,7 @@ let sample_from_binomial_distribution_2_
     )
 
 let sample_from_binomial_distribution_3_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
@@ -261,7 +261,7 @@ let sample_from_binomial_distribution_3_
 
 let sample_from_binomial_distribution
       (v_ETA: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
@@ -276,7 +276,7 @@ let sample_from_binomial_distribution
 
 let sample_from_xof
       (v_K: usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:

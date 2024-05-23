@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 let ntt_layer_int_vec_step
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (a b: v_Vector)
       (zeta_r: i16)
@@ -15,7 +15,7 @@ let ntt_layer_int_vec_step
   a, b <: (v_Vector & v_Vector)
 
 let ntt_at_layer_1_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -75,7 +75,7 @@ let ntt_at_layer_1_
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let ntt_at_layer_2_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -127,7 +127,7 @@ let ntt_at_layer_2_
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let ntt_at_layer_3_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -174,7 +174,7 @@ let ntt_at_layer_3_
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let ntt_at_layer_4_plus
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -268,7 +268,7 @@ let ntt_at_layer_4_plus
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let ntt_at_layer_7_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
@@ -334,7 +334,7 @@ let ntt_at_layer_7_
   re
 
 let ntt_binomially_sampled_ring_element
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
@@ -386,7 +386,7 @@ let ntt_binomially_sampled_ring_element
 
 let ntt_vector_u
       (v_VECTOR_U_COMPRESSION_FACTOR: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =

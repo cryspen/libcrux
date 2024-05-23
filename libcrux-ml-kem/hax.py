@@ -31,28 +31,55 @@ class extractAction(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None) -> None:
         # Extract platform and sha3 interfaces
-        # include_str = "+:libcrux_sha3::** -libcrux_sha3::x4::internal::**"
-        # interface_include = "+!**"
-        # cargo_hax_into = [
-        #     "cargo",
-        #     "hax",
-        #     "into",
-        #     "-i",
-        #     include_str,
-        #     "fstar",
-        #     "--interfaces",
-        #     interface_include,
-        # ]
-        # hax_env = {}
-        # shell(
-        #     cargo_hax_into,
-        #     cwd="../libcrux-sha3",
-        #     env=hax_env,
-        # )
+        includes = [
+            "+:**",
+            "-libcrux_sha3::generic_keccak::**",
+            "-libcrux_sha3::simd::**",
+            "-libcrux_sha3::portable_keccak::**",
+            "-libcrux_sha3::neon::keccakx2",
+            "-libcrux_sha3::portable::keccakx1",
+            "-libcrux_sha3::traits::**",
+        ]
+        include_str = " ".join(includes)
+        interface_include = "+**"
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+            "--interfaces",
+            interface_include,
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../libcrux-sha3",
+            env=hax_env,
+        )
 
-        # Extract avx2
-        # include_str = "+:libcrux_sha3::** -libcrux_sha3::x4::internal::**"
-        # interface_include = "+!**"
+        include_str = "+:**"
+        interface_include = "+**"
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
+            "-i",
+            include_str,
+            "fstar",
+            "--interfaces",
+            interface_include,
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../sys/platform",
+            env=hax_env,
+        )
+
+        # Extract avx2 and portable
+        # TODO: add neon
         cargo_hax_into = [
             "cargo",
             "hax",
@@ -65,30 +92,27 @@ class extractAction(argparse.Action):
             cwd="../polynomials-avx2",
             env=hax_env,
         )
-
-        # Extract ml-kem
-        includes = [
-            "-libcrux_platform::macos_arm::*",
-            "+!libcrux_platform::platform::*",
-            "-libcrux_ml_kem::types::index_impls::**",
-        ]
-        include_str = " ".join(includes)
-        interfaces = [
-            "+*",
-            "-libcrux::kem::kyber::types",
-            "+!libcrux_platform::**",
-            "+!libcrux::digest::**",
-        ]
-        interface_include = " ".join(interfaces)
         cargo_hax_into = [
             "cargo",
             "hax",
             "into",
-            "-i",
-            include_str,
+            "fstar",
+        ]
+        hax_env = {}
+        shell(
+            cargo_hax_into,
+            cwd="../polynomials",
+            env=hax_env,
+        )
+
+        # Extract ml-kem
+        cargo_hax_into = [
+            "cargo",
+            "hax",
+            "into",
             "fstar",
             "--interfaces",
-            interface_include,
+            "+*",
         ]
         hax_env = {}
         shell(

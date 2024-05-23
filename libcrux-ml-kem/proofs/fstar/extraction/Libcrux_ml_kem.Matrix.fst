@@ -5,7 +5,7 @@ open FStar.Mul
 
 let compute_As_plus_e
       (v_K: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (matrix_A:
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
@@ -106,7 +106,7 @@ let compute_As_plus_e
 
 let compute_ring_element_v
       (v_K: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (tt_as_ntt r_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (error_2_ message: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -148,7 +148,7 @@ let compute_ring_element_v
 
 let compute_vector_u
       (v_K: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (a_as_ntt:
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
@@ -256,7 +256,7 @@ let compute_vector_u
 
 let compute_message
       (v_K: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_traits.t_Operations v_Vector)
       (v: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (secret_as_ntt u_as_ntt:
@@ -299,7 +299,7 @@ let compute_message
 
 let sample_matrix_A
       (v_K: usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i2: Libcrux_traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:

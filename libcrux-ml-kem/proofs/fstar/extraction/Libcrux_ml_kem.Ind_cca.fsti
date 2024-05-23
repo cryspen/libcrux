@@ -19,14 +19,14 @@ let v_KEY_GENERATION_SEED_SIZE: usize =
 /// Serialize the secret key.
 val serialize_kem_secret_key
       (v_K v_SERIALIZED_KEY_LEN: usize)
-      (#v_Hasher: Type)
+      (#v_Hasher: Type0)
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key public_key implicit_rejection_value: t_Slice u8)
     : Prims.Pure (t_Array u8 v_SERIALIZED_KEY_LEN) Prims.l_True (fun _ -> Prims.l_True)
 
 val validate_public_key_generic
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
     : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
@@ -39,7 +39,7 @@ val validate_public_key
 val decapsulate_generic
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
@@ -56,7 +56,7 @@ val decapsulate
 val encapsulate_generic
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
@@ -77,7 +77,7 @@ val encapsulate
 val generate_keypair_generic
       (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type)
+      (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (ind_cpa_keypair_randomness implicit_rejection_value: t_Slice u8)

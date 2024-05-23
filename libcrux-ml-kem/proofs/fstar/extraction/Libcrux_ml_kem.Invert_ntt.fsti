@@ -4,14 +4,14 @@ open Core
 open FStar.Mul
 
 val inv_ntt_layer_int_vec_step_reduce
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (a b: v_Vector)
       (zeta_r: i16)
     : Prims.Pure (v_Vector & v_Vector) Prims.l_True (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_1_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -21,7 +21,7 @@ val invert_ntt_at_layer_1_
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_2_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -31,7 +31,7 @@ val invert_ntt_at_layer_2_
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_3_
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -41,7 +41,7 @@ val invert_ntt_at_layer_3_
       (fun _ -> Prims.l_True)
 
 val invert_ntt_at_layer_4_plus
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
@@ -52,7 +52,7 @@ val invert_ntt_at_layer_4_plus
 
 val invert_ntt_montgomery
       (v_K: usize)
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       {| i1: Libcrux_traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
