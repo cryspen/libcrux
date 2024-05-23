@@ -35,7 +35,7 @@ pub(crate) fn sample_ring_element_for_A(seed: [u8; 34]) -> PolynomialRingElement
 
     let mut sampled = sample_from_uniform_distribution_next(&randomness, &mut out);
 
-    while !(sampled >= COEFFICIENTS_IN_RING_ELEMENT) {
+    while sampled < COEFFICIENTS_IN_RING_ELEMENT {
         let randomness = XOF::squeeze_next_block(&mut state);
         sampled += sample_from_uniform_distribution_next(&randomness, &mut out);
     }
@@ -49,6 +49,7 @@ mod tests {
 
     use crate::arithmetic::FieldElement;
 
+    #[allow(non_snake_case)]
     #[test]
     fn test_sample_ring_element_for_A() {
         let seed: [u8; 34] = [
