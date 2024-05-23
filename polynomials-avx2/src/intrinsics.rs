@@ -3,6 +3,9 @@ pub(crate) use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 pub(crate) use core::arch::x86_64::*;
 
+pub(crate) type Vec256 = __m256i;
+pub(crate) type Vec128 = __m128i;
+
 pub(crate) fn mm256_storeu_si256(output: &mut [i16], vector: __m256i) {
     debug_assert_eq!(output.len(), 16);
     unsafe {

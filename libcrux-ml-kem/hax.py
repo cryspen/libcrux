@@ -31,22 +31,38 @@ class extractAction(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None) -> None:
         # Extract platform and sha3 interfaces
-        include_str = "+:libcrux_sha3::** -libcrux_sha3::x4::internal::**"
-        interface_include = "+!**"
+        # include_str = "+:libcrux_sha3::** -libcrux_sha3::x4::internal::**"
+        # interface_include = "+!**"
+        # cargo_hax_into = [
+        #     "cargo",
+        #     "hax",
+        #     "into",
+        #     "-i",
+        #     include_str,
+        #     "fstar",
+        #     "--interfaces",
+        #     interface_include,
+        # ]
+        # hax_env = {}
+        # shell(
+        #     cargo_hax_into,
+        #     cwd="../libcrux-sha3",
+        #     env=hax_env,
+        # )
+
+        # Extract avx2
+        # include_str = "+:libcrux_sha3::** -libcrux_sha3::x4::internal::**"
+        # interface_include = "+!**"
         cargo_hax_into = [
             "cargo",
             "hax",
             "into",
-            "-i",
-            include_str,
             "fstar",
-            "--interfaces",
-            interface_include,
         ]
         hax_env = {}
         shell(
             cargo_hax_into,
-            cwd="../libcrux-sha3",
+            cwd="../polynomials-avx2",
             env=hax_env,
         )
 

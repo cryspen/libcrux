@@ -321,13 +321,18 @@ pub(crate) fn encrypt<
     let v = compute_ring_element_v(&t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
 
     let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
-    let (c1, c2) = ciphertext.split_at_mut(C1_LEN);
 
     // c_1 := Encode_{du}(Compress_q(u,d_u))
-    compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(u, c1);
+    compress_then_serialize_u::<K, C1_LEN, U_COMPRESSION_FACTOR, BLOCK_LEN, Vector>(
+        u,
+        &mut ciphertext[0..C1_LEN],
+    );
 
     // c_2 := Encode_{dv}(Compress_q(v,d_v))
-    compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN, Vector>(v, c2);
+    compress_then_serialize_ring_element_v::<V_COMPRESSION_FACTOR, C2_LEN, Vector>(
+        v,
+        &mut ciphertext[C1_LEN..],
+    );
 
     ciphertext
 }

@@ -5,21 +5,15 @@ open FStar.Mul
 
 let impl_6__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = self.f_value
 
-let impl_6__len (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = v_SIZE
-
 let impl_6__split_at (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) (mid: usize) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
 let impl_12__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = self.f_value
 
-let impl_12__len (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = v_SIZE
-
 let impl_12__split_at (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) (mid: usize) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid
 
 let impl_18__as_slice (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) = self.f_value
-
-let impl_18__len (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) = v_SIZE
 
 let impl_18__split_at (v_SIZE: usize) (self: t_MlKemPublicKey v_SIZE) (mid: usize) =
   Core.Slice.impl__split_at (Rust_primitives.unsize self.f_value <: t_Slice u8) mid

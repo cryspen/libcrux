@@ -1,38 +1,38 @@
-use crate::intrinsics::*;
+use crate::*;
 use libcrux_traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 #[inline(always)]
-pub(crate) fn add(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
     mm256_add_epi16(lhs, rhs)
 }
 
 #[inline(always)]
-pub(crate) fn sub(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub(crate) fn sub(lhs: Vec256, rhs: Vec256) -> Vec256 {
     mm256_sub_epi16(lhs, rhs)
 }
 
 #[inline(always)]
-pub(crate) fn multiply_by_constant(vector: __m256i, constant: i16) -> __m256i {
+pub(crate) fn multiply_by_constant(vector: Vec256, constant: i16) -> Vec256 {
     mm256_mullo_epi16(vector, mm256_set1_epi16(constant))
 }
 
 #[inline(always)]
-pub(crate) fn bitwise_and_with_constant(vector: __m256i, constant: i16) -> __m256i {
+pub(crate) fn bitwise_and_with_constant(vector: Vec256, constant: i16) -> Vec256 {
     mm256_and_si256(vector, mm256_set1_epi16(constant))
 }
 
 #[inline(always)]
-pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     mm256_srai_epi16::<{ SHIFT_BY }>(vector)
 }
 
 #[inline(always)]
-pub(crate) fn shift_left<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub(crate) fn shift_left<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     mm256_slli_epi16::<{ SHIFT_BY }>(vector)
 }
 
 #[inline(always)]
-pub(crate) fn cond_subtract_3329(vector: __m256i) -> __m256i {
+pub(crate) fn cond_subtract_3329(vector: Vec256) -> Vec256 {
     let field_modulus = mm256_set1_epi16(FIELD_MODULUS);
 
     // Compute v_i - Q and crate a mask from the sign bit of each of these
@@ -50,7 +50,7 @@ const BARRETT_MULTIPLIER: i16 = 20159;
 /// See Section 3.2 of the implementation notes document for an explanation
 /// of this code.
 #[inline(always)]
-pub(crate) fn barrett_reduce(vector: __m256i) -> __m256i {
+pub(crate) fn barrett_reduce(vector: Vec256) -> Vec256 {
     let t = mm256_mulhi_epi16(vector, mm256_set1_epi16(BARRETT_MULTIPLIER));
     let t = mm256_add_epi16(t, mm256_set1_epi16(512));
 
@@ -62,7 +62,7 @@ pub(crate) fn barrett_reduce(vector: __m256i) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply_by_constant(vector: __m256i, constant: i16) -> __m256i {
+pub(crate) fn montgomery_multiply_by_constant(vector: Vec256, constant: i16) -> Vec256 {
     let constant = mm256_set1_epi16(constant);
     let value_low = mm256_mullo_epi16(vector, constant);
 
@@ -78,7 +78,7 @@ pub(crate) fn montgomery_multiply_by_constant(vector: __m256i, constant: i16) ->
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply_by_constants(v: __m256i, c: __m256i) -> __m256i {
+pub(crate) fn montgomery_multiply_by_constants(v: Vec256, c: Vec256) -> Vec256 {
     let value_low = mm256_mullo_epi16(v, c);
 
     let k = mm256_mullo_epi16(
@@ -93,7 +93,7 @@ pub(crate) fn montgomery_multiply_by_constants(v: __m256i, c: __m256i) -> __m256
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_reduce_i32s(v: __m256i) -> __m256i {
+pub(crate) fn montgomery_reduce_i32s(v: Vec256) -> Vec256 {
     let k = mm256_mullo_epi16(
         v,
         mm256_set1_epi32(INVERSE_OF_MODULUS_MOD_MONTGOMERY_R as i32),
@@ -110,7 +110,7 @@ pub(crate) fn montgomery_reduce_i32s(v: __m256i) -> __m256i {
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply_m128i_by_constants(v: __m128i, c: __m128i) -> __m128i {
+pub(crate) fn montgomery_multiply_m128i_by_constants(v: Vec128, c: Vec128) -> Vec128 {
     let value_low = mm_mullo_epi16(v, c);
 
     let k = mm_mullo_epi16(

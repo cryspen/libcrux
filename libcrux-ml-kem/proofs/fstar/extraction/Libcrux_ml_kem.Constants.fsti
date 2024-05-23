@@ -17,10 +17,14 @@ let v_BYTES_PER_RING_ELEMENT: usize = v_BITS_PER_RING_ELEMENT /! sz 8
 
 let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = sz 32
 
-/// Field modulus: 3329
-let v_FIELD_MODULUS: i32 = 3329l
+/// SHA3 512 digest size
+let v_G_DIGEST_SIZE: usize = sz 64
 
+/// SHA3 256 digest size
 let v_H_DIGEST_SIZE: usize = sz 32
 
-/// PKE message size
+/// The size of an ML-KEM shared secret.
 let v_SHARED_SECRET_SIZE: usize = sz 32
+
+/// Field modulus: 3329
+let v__FIELD_MODULUS: i16 = 3329s
