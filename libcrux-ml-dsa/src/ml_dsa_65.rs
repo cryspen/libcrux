@@ -18,7 +18,9 @@ pub struct MLDSA65KeyPair {
 /// Generate an ML-DSA-65 Key Pair
 pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA65KeyPair {
     let (secret_key, public_key) =
-        crate::ml_dsa_generic::generate_key_pair::<SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(randomness);
+        crate::ml_dsa_generic::generate_key_pair::<COLUMNS_IN_A, SECRET_KEY_SIZE, PUBLIC_KEY_SIZE>(
+            randomness,
+        );
 
     MLDSA65KeyPair {
         secret_key,
