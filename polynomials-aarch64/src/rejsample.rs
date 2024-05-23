@@ -797,6 +797,8 @@ pub(crate) fn rej_sample(a: &[u8], out: &mut [i16]) -> usize {
 
     let idx0 = pick0 as usize;
     _vst1q_s16(&mut out[0..8], shifted0);
-    _vst1q_s16(&mut out[idx0..idx0 + 8], shifted1);
+    let mut u3 = [0i16;8];
+    _vst1q_s16(&mut u3, shifted1);
+    out[idx0..idx0+8].copy_from_slice(&u3);
     (pick0 + pick1) as usize
 }
