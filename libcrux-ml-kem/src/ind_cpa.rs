@@ -287,7 +287,9 @@ pub(crate) fn encrypt<
     //     end for
     // end for
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
+    println!("before sample matrix");
     let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed), false);
+    println!("after sample matrix");
 
     // for i from 0 to k−1 do
     //     r[i] := CBD{η1}(PRF(r, N))
