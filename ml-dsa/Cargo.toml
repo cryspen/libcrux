@@ -1,0 +1,18 @@
+[package]
+name = "ml-dsa"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dev-dependencies]
+hex = { version = "0.4.3", features = ["serde"] }
+serde_json = { version = "1.0" }
+serde = { version = "1.0", features = ["derive"] }
