@@ -1,5 +1,5 @@
 [package]
-name = "ml-dsa"
+name = "libcrux-ml-dsa"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
