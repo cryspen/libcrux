@@ -759,7 +759,9 @@ pub mod avx2 {
             };
 
             #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
-            pub type KeccakState4 = KeccakState<4, core::arch::x86_64::__m256i>;
+            pub struct KeccakState4 {
+                state: KeccakState<4, core::arch::x86_64::__m256i>,
+            }
             #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
             pub struct KeccakState4 {
                 state: [crate::neon::x2::incremental::KeccakState2; 2],
@@ -792,7 +794,9 @@ pub mod avx2 {
                 //     [s0, s1, s2, s3]
                 // }
                 #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
-                KeccakState4::new()
+                KeccakState4 {
+                    state: KeccakState::new(),
+                }
             }
 
             #[inline(always)]
@@ -830,7 +834,7 @@ pub mod avx2 {
                 // }
                 #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
                 absorb_final::<4, core::arch::x86_64::__m256i, 168, 0x1fu8>(
-                    s,
+                    &mut s.state,
                     [data0, data1, data2, data3],
                 );
             }
@@ -902,7 +906,7 @@ pub mod avx2 {
                 // }
                 #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
                 squeeze_first_three_blocks::<4, core::arch::x86_64::__m256i, 168>(
-                    s,
+                    &mut s.state,
                     [out0, out1, out2, out3],
                 );
             }
@@ -996,7 +1000,7 @@ pub mod avx2 {
                 // }
                 #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
                 squeeze_next_block::<4, core::arch::x86_64::__m256i, 168>(
-                    s,
+                    &mut s.state,
                     [out0, out1, out2, out3],
                 );
             }

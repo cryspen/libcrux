@@ -24,7 +24,7 @@ $EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc
 cp $EURYDICE_HOME/include/eurydice_glue.h .
 
 if [[ -n "$HACL_PACKAGES_HOME" ]]; then
-    clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
+    # clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
     cp internal/*.h $HACL_PACKAGES_HOME/libcrux/include/internal/
     cp *.h $HACL_PACKAGES_HOME/libcrux/include
     cp *.c $HACL_PACKAGES_HOME/libcrux/src
