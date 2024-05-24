@@ -68,15 +68,16 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, mut result: Self) -> Self {
-        for i in 0..VECTORS_IN_RING_ELEMENT {
-            let coefficient_normal_form =
-                Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
-            result.coefficients[i] = Vector::barrett_reduce(Vector::add(
-                coefficient_normal_form,
-                &Vector::add(self.coefficients[i], &message.coefficients[i]),
-            ));
-        }
-        result
+        todo!()
+        // for i in 0..VECTORS_IN_RING_ELEMENT {
+        //     let coefficient_normal_form =
+        //         Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
+        //     result.coefficients[i] = Vector::barrett_reduce(Vector::add(
+        //         coefficient_normal_form,
+        //         &Vector::add(self.coefficients[i], &message.coefficients[i]),
+        //     ));
+        // }
+        // result
     }
 
     #[inline(always)]
