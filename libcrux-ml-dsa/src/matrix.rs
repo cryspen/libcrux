@@ -1,4 +1,4 @@
-use crate::{arithmetic::PolynomialRingElement, sample::sample_ring_element_for_A};
+use crate::{arithmetic::PolynomialRingElement, sample::sample_ring_element_uniform};
 
 #[allow(non_snake_case)]
 #[inline(always)]
@@ -13,7 +13,7 @@ pub(crate) fn expand_to_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
             seed[32] = i as u8;
             seed[33] = j as u8;
 
-            let sampled = sample_ring_element_for_A(seed);
+            let sampled = sample_ring_element_uniform(seed);
 
             if transposed {
                 A[j][i] = sampled;

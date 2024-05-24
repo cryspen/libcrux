@@ -27,7 +27,7 @@ fn sample_from_uniform_distribution_next(
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn sample_ring_element_for_A(seed: [u8; 34]) -> PolynomialRingElement {
+pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingElement {
     let mut state = XOF::new(seed);
     let randomness = XOF::squeeze_first_five_blocks(&mut state);
 
@@ -51,7 +51,7 @@ mod tests {
 
     #[allow(non_snake_case)]
     #[test]
-    fn test_sample_ring_element_for_A() {
+    fn test_sample_ring_element_uniform() {
         let seed: [u8; 34] = [
             33, 192, 250, 216, 117, 61, 16, 12, 248, 51, 213, 110, 64, 57, 119, 80, 164, 83, 73,
             91, 80, 128, 195, 219, 203, 149, 170, 233, 16, 232, 209, 105, 4, 5,
@@ -88,7 +88,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_ring_element_for_A(seed).coefficients,
+            sample_ring_element_uniform(seed).coefficients,
             expected_coefficients
         );
     }
