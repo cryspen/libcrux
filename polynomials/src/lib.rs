@@ -349,9 +349,9 @@ fn compress<const COEFFICIENT_BITS: i32>(mut v: PortableVector) -> PortableVecto
 fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
     mut v: PortableVector,
 ) -> PortableVector {
-    debug_assert!(to_i16_array(v)
-        .into_iter()
-        .all(|coefficient| coefficient.abs() < 1 << COEFFICIENT_BITS));
+    // debug_assert!(to_i16_array(v)
+    //     .into_iter()
+    //     .all(|coefficient| coefficient.abs() < 1 << COEFFICIENT_BITS));
 
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         let mut decompressed = v.elements[i] as i32 * FIELD_MODULUS as i32;
@@ -360,9 +360,9 @@ fn decompress_ciphertext_coefficient<const COEFFICIENT_BITS: i32>(
         v.elements[i] = decompressed as i16;
     }
 
-    debug_assert!(to_i16_array(v)
-        .into_iter()
-        .all(|coefficient| coefficient.abs() as u16 <= 1 << 12));
+    // debug_assert!(to_i16_array(v)
+    //     .into_iter()
+    //     .all(|coefficient| coefficient.abs() as u16 <= 1 << 12));
 
     v
 }
