@@ -136,23 +136,24 @@ inline void
 libcrux_ml_kem_libcrux_polynomials_from_i16_array(Eurydice_slice array, int16_t ret[16U])
 {
   
-  /* int16_t ret0[16U]; */
+  int16_t ret0[16U];
   
   /* FIXME: `core_result_Result` seems not to be properly monomorphized here */
-  
   /* core_result_Result dst; */
   
-  /* Eurydice_slice_to_array2(&dst, */
-  /*   Eurydice_slice_subslice(array, */
-  /*     ((core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)16U }), */
-  /*     int16_t, */
-  /*     core_ops_range_Range__size_t, */
-  /*     Eurydice_slice), */
-  /*   Eurydice_slice, */
-  /*   int16_t [16U], */
-  /*   void *); */
-  /* unwrap__int16_t_16size_t__core_array_TryFromSliceError(dst, ret0); */
-  /* memcpy(ret, ret0, (size_t)16U * sizeof (int16_t)); */
+  Result__int16_t_16size_t__core_array_TryFromSliceError dst;
+  
+  Eurydice_slice_to_array2(&dst,
+    Eurydice_slice_subslice(array,
+      ((core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)16U }),
+      int16_t,
+      core_ops_range_Range__size_t,
+      Eurydice_slice),
+    Eurydice_slice,
+    int16_t [16U],
+    void *);
+  unwrap__int16_t_16size_t__core_array_TryFromSliceError(dst, ret0);
+  memcpy(ret, ret0, (size_t)16U * sizeof (int16_t));
 }
 
 void
