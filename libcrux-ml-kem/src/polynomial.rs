@@ -68,16 +68,31 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, mut result: Self) -> Self {
-        todo!()
-        // for i in 0..VECTORS_IN_RING_ELEMENT {
-        //     let coefficient_normal_form =
-        //         Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
-        //     result.coefficients[i] = Vector::barrett_reduce(Vector::add(
-        //         coefficient_normal_form,
-        //         &Vector::add(self.coefficients[i], &message.coefficients[i]),
-        //     ));
-        // }
-        // result
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            let coefficient_normal_form =
+                Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
+
+            // FIXME: Eurydice crashes with:
+            //
+            // Warning 11: in top-level declaration libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_message_error_reduce__libcrux_ml_kem_libcrux_polynomials_PortableVector: this expression is not Low*; the enclosing function cannot be translated into C*: let mutable ret(Mark.Present,(Mark.AtMost 2), ): int16_t[16size_t] = $any in
+            // libcrux_ml_kem.libcrux_polynomials.{(libcrux_ml_kem::libcrux_polynomials::libcrux_traits::Operations␣for␣libcrux_ml_kem::libcrux_polynomials::PortableVector)}.add ((@9: libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:int16_t[16size_t][16size_t])[@4] &(((@8: libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t])[@4]) @0;
+            // @0
+            // Warning 11 is fatal, exiting.
+            //
+            // On the following code:
+
+            // ```rust
+            // result.coefficients[i] = Vector::barrett_reduce(Vector::add(
+            //     coefficient_normal_form,
+            //     &Vector::add(self.coefficients[i], &message.coefficients[i]),
+            // ));
+            // ```
+
+            let tmp = Vector::add(self.coefficients[i], &message.coefficients[i]);
+            let tmp = Vector::add(coefficient_normal_form, &tmp);
+            result.coefficients[i] = Vector::barrett_reduce(tmp);
+        }
+        result
     }
 
     #[inline(always)]

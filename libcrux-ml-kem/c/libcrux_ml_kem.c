@@ -135,14 +135,10 @@ unwrap__int16_t_16size_t__core_array_TryFromSliceError(
 inline void
 libcrux_ml_kem_libcrux_polynomials_from_i16_array(Eurydice_slice array, int16_t ret[16U])
 {
-  
   int16_t ret0[16U];
-  
-  /* FIXME: `core_result_Result` seems not to be properly monomorphized here */
+  /* FIXME: missed monomorphization */
   /* core_result_Result dst; */
-  
   Result__int16_t_16size_t__core_array_TryFromSliceError dst;
-  
   Eurydice_slice_to_array2(&dst,
     Eurydice_slice_subslice(array,
       ((core_ops_range_Range__size_t){ .start = (size_t)0U, .end = (size_t)16U }),
@@ -4072,8 +4068,27 @@ libcrux_ml_kem_polynomial__libcrux_ml_kem__polynomial__PolynomialRingElement_Vec
   libcrux_ml_kem_libcrux_polynomials_PortableVector ret[16U]
 )
 {
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-  KRML_HOST_EXIT(255U);
+  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++)
+  {
+    size_t i0 = i;
+    int16_t coefficient_normal_form[16U];
+    libcrux_ml_kem_libcrux_polynomials___libcrux_ml_kem__libcrux_polynomials__libcrux_traits__Operations_for_libcrux_ml_kem__libcrux_polynomials__PortableVector___montgomery_multiply_by_constant(result[i0],
+      (int16_t)1441,
+      coefficient_normal_form);
+    int16_t tmp0[16U];
+    libcrux_ml_kem_libcrux_polynomials___libcrux_ml_kem__libcrux_polynomials__libcrux_traits__Operations_for_libcrux_ml_kem__libcrux_polynomials__PortableVector___add(self[0U][i0],
+      &message[0U][i0],
+      tmp0);
+    int16_t tmp[16U];
+    libcrux_ml_kem_libcrux_polynomials___libcrux_ml_kem__libcrux_polynomials__libcrux_traits__Operations_for_libcrux_ml_kem__libcrux_polynomials__PortableVector___add(coefficient_normal_form,
+      &tmp0,
+      tmp);
+    int16_t uu____0[16U];
+    libcrux_ml_kem_libcrux_polynomials___libcrux_ml_kem__libcrux_polynomials__libcrux_traits__Operations_for_libcrux_ml_kem__libcrux_polynomials__PortableVector___barrett_reduce(tmp,
+      uu____0);
+    memcpy(result[i0], uu____0, (size_t)16U * sizeof (int16_t));
+  }
+  memcpy(ret, result, (size_t)16U * sizeof (libcrux_ml_kem_libcrux_polynomials_PortableVector));
 }
 
 inline void
