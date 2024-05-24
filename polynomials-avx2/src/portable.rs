@@ -1,3 +1,4 @@
+use crate::libcrux_polynomials::libcrux_traits;
 pub use libcrux_traits::FIELD_ELEMENTS_IN_VECTOR;
 
 type FieldElement = i16;

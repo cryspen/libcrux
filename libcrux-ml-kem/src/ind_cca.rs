@@ -1,3 +1,4 @@
+use crate::libcrux_polynomials;
 use crate::libcrux_polynomials::{Operations, PortableVector};
 
 use crate::{

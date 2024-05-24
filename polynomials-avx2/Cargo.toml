@@ -9,7 +9,7 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-libcrux-traits = { path = "../traits" }
+# libcrux-traits = { path = "../traits" }
 
 # When using the hax toolchain, we have more dependencies.
 # This is only required when doing proofs.

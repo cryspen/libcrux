@@ -1,4 +1,5 @@
-use crate::intrinsics::*;
+use super::intrinsics::*;
+use crate::libcrux_polynomials::libcrux_traits;
 use libcrux_traits::FIELD_MODULUS;
 
 // Multiply the 32-bit numbers contained in |lhs| and |rhs|, and store only

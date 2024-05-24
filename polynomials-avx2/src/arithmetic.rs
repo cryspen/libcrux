@@ -1,4 +1,6 @@
-use crate::intrinsics::*;
+use super::intrinsics::*;
+use crate::libcrux_polynomials::libcrux_traits;
+
 use libcrux_traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 #[inline(always)]

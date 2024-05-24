@@ -1,6 +1,6 @@
-use crate::intrinsics::*;
+use super::intrinsics::*;
 
-use crate::arithmetic;
+use super::arithmetic;
 
 #[inline(always)]
 pub(crate) fn ntt_layer_1_step(

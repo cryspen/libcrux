@@ -24,7 +24,14 @@ pub use libcrux_traits::{
 // The consumer needs to use runtime feature detection and the appropriate vector
 // in each case.
 #[cfg(feature = "simd128")]
+#[path = "../../polynomials-aarch64/src/lib.rs"]
+mod libcrux_polynomials_aarch64;
+#[cfg(feature = "simd128")]
 pub use libcrux_polynomials_aarch64::SIMD128Vector;
+
+#[cfg(feature = "simd256")]
+#[path = "../../polynomials-avx2/src/lib.rs"]
+mod libcrux_polynomials_avx2;
 #[cfg(feature = "simd256")]
 pub use libcrux_polynomials_avx2::SIMD256Vector;
 

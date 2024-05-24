@@ -1,6 +1,6 @@
-use crate::intrinsics::*;
+use super::intrinsics::*;
 
-use crate::{portable, SIMD256Vector};
+use super::{portable, SIMD256Vector};
 
 #[inline(always)]
 pub(crate) fn serialize_1(vector: __m256i) -> [u8; 2] {
@@ -100,65 +100,66 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> __m256i {
 
 #[inline(always)]
 pub(crate) fn serialize_4(vector: __m256i) -> [u8; 8] {
-    let mut serialized = [0u8; 16];
+    todo!()
+    // let mut serialized = [0u8; 16];
 
-    // If |vector| is laid out as follows:
-    //
-    // 0x000A 0x000B 0x000C 0x000D | 0x000E 0x000F 0x000G 0x000H | ....
-    //
-    // |adjacent_2_combined| will be laid out as a series of 32-bit integeres,
-    // as follows:
-    //
-    // 0x00_00_00_BA 0x00_00_00_DC | 0x00_00_00_FE 0x00_00_00_HG | ...
-    let adjacent_2_combined = mm256_madd_epi16(
-        vector,
-        mm256_set_epi16(
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-            1 << 4,
-            1,
-        ),
-    );
+    // // If |vector| is laid out as follows:
+    // //
+    // // 0x000A 0x000B 0x000C 0x000D | 0x000E 0x000F 0x000G 0x000H | ....
+    // //
+    // // |adjacent_2_combined| will be laid out as a series of 32-bit integeres,
+    // // as follows:
+    // //
+    // // 0x00_00_00_BA 0x00_00_00_DC | 0x00_00_00_FE 0x00_00_00_HG | ...
+    // let adjacent_2_combined = mm256_madd_epi16(
+    //     vector,
+    //     mm256_set_epi16(
+    //         1 << 4,
+    //         1,
+    //         1 << 4,
+    //         1,
+    //         1 << 4,
+    //         1,
+    //         1 << 4,
+    //         1,
+    //         1 << 4,
+    //         1,
+    //         1 << 4,
+    //         1,
+    //         1 << 4,
+    //         1,
+    //         1 << 4,
+    //         1,
+    //     ),
+    // );
 
-    // Recall that |adjacent_2_combined| goes as follows:
-    //
-    // 0x00_00_00_BA 0x00_00_00_DC | 0x00_00_00_FE 0x00_00_00_HG | ...
-    //
-    // Out of this, we only need the first byte, the 4th byte, the 8th byte
-    // and so on from the bottom and the top 128 bits.
-    let adjacent_8_combined = mm256_shuffle_epi8(
-        adjacent_2_combined,
-        mm256_set_epi8(
-            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, 12, 8, 4, 0,
-        ),
-    );
+    // // Recall that |adjacent_2_combined| goes as follows:
+    // //
+    // // 0x00_00_00_BA 0x00_00_00_DC | 0x00_00_00_FE 0x00_00_00_HG | ...
+    // //
+    // // Out of this, we only need the first byte, the 4th byte, the 8th byte
+    // // and so on from the bottom and the top 128 bits.
+    // let adjacent_8_combined = mm256_shuffle_epi8(
+    //     adjacent_2_combined,
+    //     mm256_set_epi8(
+    //         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 8, 4, 0, -1, -1, -1, -1, -1, -1,
+    //         -1, -1, -1, -1, -1, -1, 12, 8, 4, 0,
+    //     ),
+    // );
 
-    // |adjacent_8_combined| looks like this:
-    //
-    // 0: 0xHG_FE_DC_BA 1: 0x00_00_00_00 | 2: 0x00_00_00_00 3: 0x00_00_00_00 | 4: 0xPO_NM_LK_JI ....
-    //
-    // We put the element at 4 after the element at 0 ...
-    let combined =
-        mm256_permutevar8x32_epi32(adjacent_8_combined, mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
-    let combined = mm256_castsi256_si128(combined);
+    // // |adjacent_8_combined| looks like this:
+    // //
+    // // 0: 0xHG_FE_DC_BA 1: 0x00_00_00_00 | 2: 0x00_00_00_00 3: 0x00_00_00_00 | 4: 0xPO_NM_LK_JI ....
+    // //
+    // // We put the element at 4 after the element at 0 ...
+    // let combined =
+    //     mm256_permutevar8x32_epi32(adjacent_8_combined, mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
+    // let combined = mm256_castsi256_si128(combined);
 
-    // ... so that we can read them out in one go.
-    mm_storeu_bytes_si128(&mut serialized[..], combined);
+    // // ... so that we can read them out in one go.
+    // mm_storeu_bytes_si128(&mut serialized[..], combined);
 
-    serialized[0..8].try_into().unwrap()
+    // serialized[0..8].try_into().unwrap()
 }
 
 #[inline(always)]
@@ -348,49 +349,50 @@ pub(crate) fn serialize_10(vector: __m256i) -> [u8; 20] {
 
 #[inline(always)]
 pub(crate) fn deserialize_10(bytes: &[u8]) -> __m256i {
-    let shift_lsbs_to_msbs = mm256_set_epi16(
-        1 << 0,
-        1 << 2,
-        1 << 4,
-        1 << 6,
-        1 << 0,
-        1 << 2,
-        1 << 4,
-        1 << 6,
-        1 << 0,
-        1 << 2,
-        1 << 4,
-        1 << 6,
-        1 << 0,
-        1 << 2,
-        1 << 4,
-        1 << 6,
-    );
+    todo!()
+    // let shift_lsbs_to_msbs = mm256_set_epi16(
+    //     1 << 0,
+    //     1 << 2,
+    //     1 << 4,
+    //     1 << 6,
+    //     1 << 0,
+    //     1 << 2,
+    //     1 << 4,
+    //     1 << 6,
+    //     1 << 0,
+    //     1 << 2,
+    //     1 << 4,
+    //     1 << 6,
+    //     1 << 0,
+    //     1 << 2,
+    //     1 << 4,
+    //     1 << 6,
+    // );
 
-    let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
-    let lower_coefficients = mm_shuffle_epi8(
-        lower_coefficients,
-        mm_set_epi8(9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 3, 2, 2, 1, 1, 0),
-    );
-    let upper_coefficients = mm_loadu_si128(bytes[4..20].try_into().unwrap());
-    let upper_coefficients = mm_shuffle_epi8(
-        upper_coefficients,
-        mm_set_epi8(15, 14, 14, 13, 13, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6),
-    );
+    // let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
+    // let lower_coefficients = mm_shuffle_epi8(
+    //     lower_coefficients,
+    //     mm_set_epi8(9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 3, 2, 2, 1, 1, 0),
+    // );
+    // let upper_coefficients = mm_loadu_si128(bytes[4..20].try_into().unwrap());
+    // let upper_coefficients = mm_shuffle_epi8(
+    //     upper_coefficients,
+    //     mm_set_epi8(15, 14, 14, 13, 13, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6),
+    // );
 
-    let coefficients = mm256_castsi128_si256(lower_coefficients);
-    let coefficients = mm256_inserti128_si256::<1>(coefficients, upper_coefficients);
+    // let coefficients = mm256_castsi128_si256(lower_coefficients);
+    // let coefficients = mm256_inserti128_si256::<1>(coefficients, upper_coefficients);
 
-    let coefficients = mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
-    let coefficients = mm256_srli_epi16::<6>(coefficients);
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 10) - 1));
+    // let coefficients = mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
+    // let coefficients = mm256_srli_epi16::<6>(coefficients);
+    // let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 10) - 1));
 
-    coefficients
+    // coefficients
 }
 
 #[inline(always)]
 pub(crate) fn serialize_11(vector: __m256i) -> [u8; 22] {
-    let input = portable::from_i16_array(crate::to_i16_array(SIMD256Vector { elements: vector }));
+    let input = portable::from_i16_array(super::to_i16_array(SIMD256Vector { elements: vector }));
 
     portable::serialize_11(input)
 }
@@ -399,7 +401,7 @@ pub(crate) fn serialize_11(vector: __m256i) -> [u8; 22] {
 pub(crate) fn deserialize_11(bytes: &[u8]) -> __m256i {
     let output = portable::deserialize_11(bytes);
 
-    crate::from_i16_array(&portable::to_i16_array(output)).elements
+    super::from_i16_array(&portable::to_i16_array(output)).elements
 }
 
 #[inline(always)]
@@ -451,42 +453,43 @@ pub(crate) fn serialize_12(vector: __m256i) -> [u8; 24] {
 
 #[inline(always)]
 pub(crate) fn deserialize_12(bytes: &[u8]) -> __m256i {
-    let shift_lsbs_to_msbs = mm256_set_epi16(
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-        1 << 0,
-        1 << 4,
-    );
+    todo!()
+    // let shift_lsbs_to_msbs = mm256_set_epi16(
+    //     1 << 0,
+    //     1 << 4,
+    //     1 << 0,
+    //     1 << 4,
+    //     1 << 0,
+    //     1 << 4,
+    //     1 << 0,
+    //     1 << 4,
+    //     1 << 0,
+    //     1 << 4,
+    //     1 << 0,
+    //     1 << 4,
+    //     1 << 0,
+    //     1 << 4,
+    //     1 << 0,
+    //     1 << 4,
+    // );
 
-    let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
-    let lower_coefficients = mm_shuffle_epi8(
-        lower_coefficients,
-        mm_set_epi8(11, 10, 10, 9, 8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0),
-    );
-    let upper_coefficients = mm_loadu_si128(bytes[8..24].try_into().unwrap());
-    let upper_coefficients = mm_shuffle_epi8(
-        upper_coefficients,
-        mm_set_epi8(15, 14, 14, 13, 12, 11, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4),
-    );
+    // let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
+    // let lower_coefficients = mm_shuffle_epi8(
+    //     lower_coefficients,
+    //     mm_set_epi8(11, 10, 10, 9, 8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0),
+    // );
+    // let upper_coefficients = mm_loadu_si128(bytes[8..24].try_into().unwrap());
+    // let upper_coefficients = mm_shuffle_epi8(
+    //     upper_coefficients,
+    //     mm_set_epi8(15, 14, 14, 13, 12, 11, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4),
+    // );
 
-    let coefficients = mm256_castsi128_si256(lower_coefficients);
-    let coefficients = mm256_inserti128_si256::<1>(coefficients, upper_coefficients);
+    // let coefficients = mm256_castsi128_si256(lower_coefficients);
+    // let coefficients = mm256_inserti128_si256::<1>(coefficients, upper_coefficients);
 
-    let coefficients = mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
-    let coefficients = mm256_srli_epi16::<4>(coefficients);
-    let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 12) - 1));
+    // let coefficients = mm256_mullo_epi16(coefficients, shift_lsbs_to_msbs);
+    // let coefficients = mm256_srli_epi16::<4>(coefficients);
+    // let coefficients = mm256_and_si256(coefficients, mm256_set1_epi16((1 << 12) - 1));
 
-    coefficients
+    // coefficients
 }

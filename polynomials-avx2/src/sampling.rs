@@ -1,6 +1,7 @@
-use crate::intrinsics::*;
+use super::intrinsics::*;
 
-use crate::serialize::{deserialize_12, serialize_1};
+use super::serialize::{deserialize_12, serialize_1};
+use crate::libcrux_polynomials::libcrux_traits;
 use libcrux_traits::FIELD_MODULUS;
 
 const REJECTION_SAMPLE_SHUFFLE_TABLE: [[u8; 16]; 256] = [

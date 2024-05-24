@@ -37,7 +37,7 @@
 //! [F*]: https://fstar-lang.org
 
 #![no_std]
-#![forbid(unsafe_code)]
+// #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
 
