@@ -7,15 +7,6 @@ import json
 import hashlib
 
 
-def generate_matrix_A_sampling_KATs():
-    algorithm = Dilithium3
-
-    for i in range(1):
-        pk, sk = algorithm.keygen()
-        print([x for x in algorithm.A_rejection_sampling_seed])
-        print([x for x in algorithm.A_sampled_ring_element])
-
-
 def generate_nistkats():
     for algorithm in [Dilithium2, Dilithium3, Dilithium5]:
         kats_formatted = []
@@ -56,5 +47,4 @@ def generate_nistkats():
                 json.dump(kats_formatted, f, ensure_ascii=False, indent=4)
 
 
-# generate_matrix_A_sampling_KATs()
 generate_nistkats()

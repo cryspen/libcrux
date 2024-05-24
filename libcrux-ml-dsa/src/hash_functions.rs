@@ -6,7 +6,7 @@ pub(crate) fn H<const OUTPUT_LENGTH: usize>(input: &[u8]) -> [u8; OUTPUT_LENGTH]
     out
 }
 
-pub(crate) mod XOF {
+pub(crate) mod H_128 {
     use libcrux_sha3::portable::{incremental, KeccakState1};
 
     const BLOCK_SIZE: usize = 168;

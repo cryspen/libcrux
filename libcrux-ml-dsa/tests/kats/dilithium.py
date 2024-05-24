@@ -289,9 +289,6 @@ class Dilithium:
         Shake128.absorb(seed)
         coeffs = [rejection_sample(Shake128) for _ in range(self.n)]
 
-        self.A_rejection_sampling_seed = seed
-        self.A_sampled_ring_element = coeffs
-
         return self.R(coeffs, is_ntt=is_ntt)
 
     def _sample_mask_polynomial(self, rho_prime, i, kappa, is_ntt=False):

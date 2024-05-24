@@ -1,7 +1,7 @@
 use crate::{
     arithmetic::PolynomialRingElement,
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    hash_functions::XOF,
+    hash_functions::{H, H_128},
 };
 
 fn rejection_sample_less_than_field_modulus(
@@ -32,10 +32,9 @@ fn rejection_sample_less_than_field_modulus(
 
     done
 }
-#[allow(non_snake_case)]
 pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingElement {
-    let mut state = XOF::new(seed);
-    let randomness = XOF::squeeze_first_five_blocks(&mut state);
+    let mut state = H_128::new(seed);
+    let randomness = H_128::squeeze_first_five_blocks(&mut state);
 
     let mut out = PolynomialRingElement::ZERO;
 
@@ -43,13 +42,53 @@ pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingEleme
     let mut done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
 
     while !done {
-        let randomness = XOF::squeeze_next_block(&mut state);
+        let randomness = H_128::squeeze_next_block(&mut state);
         done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
     }
 
     out
 }
 
+fn rejection_sample_less_than_eta_equals_2(
+    randomness: &[u8],
+    sampled: &mut usize,
+    out: &mut PolynomialRingElement,
+) -> bool {
+    let mut done = false;
+
+    for byte in randomness {
+        if !done {
+            let try_0 = byte & 0xF;
+            let try_1 = byte >> 4;
+
+            if try_0 < 15 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+                let try_0 = try_0 as i32;
+
+                // (try_0 * 26) >> 7 computes ⌊try_0 / 5⌋
+                let try_0_mod_5 = try_0 - ((try_0 * 26) >> 7) * 5;
+
+                out.coefficients[*sampled] = 2 - try_0_mod_5;
+
+                *sampled += 1;
+            }
+
+            if try_1 < 15 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+                let try_1 = try_1 as i32;
+                let try_1_mod_5 = try_1 - ((try_1 * 26) >> 7) * 5;
+
+                out.coefficients[*sampled] = 2 - try_1_mod_5;
+
+                *sampled += 1;
+            }
+
+            if *sampled == COEFFICIENTS_IN_RING_ELEMENT {
+                done = true;
+            }
+        }
+    }
+
+    done
+}
 fn rejection_sample_less_than_eta_equals_4(
     randomness: &[u8],
     sampled: &mut usize,
@@ -62,12 +101,12 @@ fn rejection_sample_less_than_eta_equals_4(
             let try_0 = byte & 0xF;
             let try_1 = byte >> 4;
 
-            if try_0 < (2 * 4) + 1 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_0 < 9 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
                 out.coefficients[*sampled] = 4 - (try_0 as i32);
                 *sampled += 1;
             }
 
-            if try_1 < (2 * 4) + 1 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_1 < 9 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
                 out.coefficients[*sampled] = 4 - (try_1 as i32);
                 *sampled += 1;
             }
@@ -80,19 +119,34 @@ fn rejection_sample_less_than_eta_equals_4(
 
     done
 }
+
+pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
+    randomness: &[u8],
+    sampled: &mut usize,
+    out: &mut PolynomialRingElement,
+) -> bool {
+    match ETA {
+        2 => rejection_sample_less_than_eta_equals_2(randomness, sampled, out),
+        4 => rejection_sample_less_than_eta_equals_4(randomness, sampled, out),
+        _ => unreachable!(),
+    }
+}
+
 #[allow(non_snake_case)]
-pub(crate) fn sample_error_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingElement {
-    let mut state = XOF::new(seed);
-    let randomness = XOF::squeeze_next_block(&mut state);
+pub(crate) fn sample_error_ring_element_uniform<const ETA: usize>(
+    seed: [u8; 66],
+) -> PolynomialRingElement {
+    // TODO: Use incremental API to squeeze one block at a time.
+    let randomness = H::<272>(&seed);
 
     let mut out = PolynomialRingElement::ZERO;
 
     let mut sampled = 0;
-    let mut done = rejection_sample_less_than_eta_equals_4(&randomness, &mut sampled, &mut out);
+    let done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
 
-    while !done {
-        let randomness = XOF::squeeze_next_block(&mut state);
-        done = rejection_sample_less_than_eta_equals_4(&randomness, &mut sampled, &mut out);
+    // TODO: Remove this panic using the incremental API.
+    if !done {
+        panic!("Not enough randomness");
     }
 
     out
@@ -104,7 +158,6 @@ mod tests {
 
     use crate::arithmetic::FieldElement;
 
-    #[allow(non_snake_case)]
     #[test]
     fn test_sample_ring_element_uniform() {
         let seed: [u8; 34] = [
@@ -144,6 +197,64 @@ mod tests {
 
         assert_eq!(
             sample_ring_element_uniform(seed).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_sample_error_ring_element_when_eta_is_4() {
+        let seed: [u8; 66] = [
+            236, 4, 148, 239, 41, 178, 188, 226, 130, 212, 6, 144, 208, 180, 180, 105, 47, 148, 75,
+            195, 181, 177, 5, 140, 204, 68, 24, 132, 169, 19, 68, 118, 67, 203, 13, 152, 29, 194,
+            235, 123, 101, 109, 162, 137, 198, 164, 97, 247, 11, 44, 34, 49, 235, 251, 243, 177,
+            213, 141, 65, 232, 136, 163, 85, 54, 10, 0,
+        ];
+
+        let expected_coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT] = [
+            2, -4, 2, -2, 1, 2, 4, 2, 4, -1, -4, 3, 2, 4, -1, 2, -3, 3, 1, -2, 0, 3, -2, 3, 4, 1,
+            -3, -2, 0, -4, -1, -4, 3, -4, 0, -3, -2, -3, 2, -3, -3, 3, -4, -3, -4, 1, -2, 4, -3, 4,
+            4, 1, -3, -3, 4, 0, -2, 2, 4, -4, 4, -4, -1, -3, 4, 3, 2, -1, 3, -2, -2, -4, -1, -1, 4,
+            1, 4, 0, 3, 4, -1, -3, 4, -4, 4, 1, -3, 0, -4, 2, 1, 4, -1, 0, -2, -2, -3, 3, -3, 4, 3,
+            2, -2, -2, -1, 2, -1, -4, 3, 0, -2, 4, -1, 0, 4, -2, 4, -3, 2, -4, 2, 3, 3, 2, -4, 2,
+            0, -2, 1, -4, 0, -4, -3, 2, 0, -2, -4, 1, 2, 3, 4, -4, 2, 2, 1, -4, 0, -4, -3, -2, -2,
+            -2, -1, 1, 4, 1, 0, -2, 2, 1, 4, -4, -1, 0, -1, -3, 2, 1, 3, 3, 4, -2, -2, 3, 1, 3, 3,
+            -4, -2, -1, -4, -3, 4, 1, 2, -3, -1, 3, 4, -3, 0, -1, -1, -4, -2, 1, -2, 3, -1, -2, 2,
+            -1, -2, 0, -2, 2, 3, 3, 2, 3, 4, 3, -3, -4, 1, 4, -3, 2, 0, -4, 4, -4, 2, 4, -2, -3,
+            -4, 3, 0, 1, -2, 2, -1, 4, 4, 0, -1, 1, 4, -2, -3, 2, -2, 4, 2, 1, 1, 1, -3, -2, -2, 2,
+            2, -4, -1, 1,
+        ];
+
+        assert_eq!(
+            sample_error_ring_element_uniform::<4>(seed).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_sample_error_ring_element_when_eta_is_2() {
+        let seed: [u8; 66] = [
+            51, 203, 133, 235, 126, 210, 169, 81, 4, 134, 147, 168, 252, 67, 176, 99, 130, 186,
+            254, 103, 241, 199, 173, 78, 121, 232, 12, 244, 4, 143, 8, 174, 122, 170, 124, 35, 53,
+            49, 202, 94, 27, 249, 200, 186, 175, 198, 169, 116, 244, 227, 133, 111, 205, 140, 233,
+            110, 227, 67, 35, 226, 194, 75, 130, 105, 5, 0,
+        ];
+
+        let expected_coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT] = [
+            1, 0, -1, 0, 1, -2, -1, 0, -2, 2, -1, -2, 1, -2, 1, -2, 1, 2, -2, 2, -2, -1, 0, -2, -1,
+            -2, -2, 1, 1, -1, 1, 1, 2, -2, 2, -1, 1, 2, 0, 2, -1, 0, 2, -2, -2, 2, 0, 2, 1, 1, 2,
+            1, 1, -2, 1, -1, 2, -2, -2, 2, -2, -2, 0, 0, -1, 0, 2, 0, 1, 2, 0, 2, -1, 2, 0, 2, 1,
+            -2, -2, 0, -1, -2, 2, -2, -1, 2, 1, -1, 2, 1, -2, -1, 1, -1, -1, -1, 2, -1, -2, -2, 2,
+            2, 0, -1, -1, -2, 0, -1, 0, 1, 2, -2, 0, 2, 2, 1, 0, -1, -1, 0, -2, 2, 2, -2, 2, 1, -1,
+            -2, -1, -2, -1, 1, 2, 2, -1, 0, 1, 2, -1, 0, 0, 0, 1, 1, -1, -1, -1, -2, 2, 0, -2, 0,
+            2, -1, 1, 1, 2, -2, 2, -2, 1, 0, -2, 1, 0, 0, -2, -2, 2, 2, -2, -1, 2, -2, 1, 0, 0, -1,
+            0, -2, 2, -1, -2, 2, -1, 1, -2, -1, 0, -2, 2, 1, 2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, -1,
+            -2, 1, 1, 0, -2, 1, 0, 0, -2, 1, -2, -1, 2, 0, 0, 2, 0, -2, -1, -1, 2, 2, -1, -1, -1,
+            -2, -2, -1, -2, 2, -2, 0, 1, 0, -2, -2, 2, 0, 1, 0, 0, -2, -1, 1, -1, 1, -1, -1, -1, 2,
+            2, 0,
+        ];
+
+        assert_eq!(
+            sample_error_ring_element_uniform::<2>(seed).coefficients,
             expected_coefficients
         );
     }
