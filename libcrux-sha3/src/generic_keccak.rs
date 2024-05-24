@@ -7,8 +7,8 @@ use crate::traits::*;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]
-pub struct KeccakState<const N: usize, T: KeccakItem<N>> {
-    pub st: [[T; 5]; 5],
+pub(crate) struct KeccakState<const N: usize, T: KeccakItem<N>> {
+    st: [[T; 5]; 5],
 }
 
 impl<const N: usize, T: KeccakItem<N>> Index<usize> for KeccakState<N, T> {

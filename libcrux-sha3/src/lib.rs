@@ -178,7 +178,10 @@ pub mod portable {
     use super::*;
     use generic_keccak::{keccak, KeccakState};
 
-    pub type KeccakState1 = KeccakState<1, u64>;
+    #[derive(Clone, Copy)]
+    pub struct KeccakState1 {
+        state: KeccakState<1, u64>,
+    }
 
     #[inline(always)]
     fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
@@ -223,22 +226,24 @@ pub mod portable {
 
         /// Initialise the SHAKE state.
         pub fn shake128_init() -> KeccakState1 {
-            KeccakState1::new()
+            KeccakState1 {
+                state: KeccakState::<1, u64>::new(),
+            }
         }
 
         /// Absorb
         pub fn shake128_absorb_final(s: &mut KeccakState1, data0: &[u8]) {
-            absorb_final::<1, u64, 168, 0x1fu8>(s, [data0]);
+            absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0]);
         }
 
         /// Squeeze three blocks
         pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState1, out0: &mut [u8]) {
-            squeeze_first_three_blocks::<1, u64, 168>(s, [out0])
+            squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, [out0])
         }
 
         /// Squeeze another block
         pub fn shake128_squeeze_next_block(s: &mut KeccakState1, out0: &mut [u8]) {
-            squeeze_next_block::<1, u64, 168>(s, [out0])
+            squeeze_next_block::<1, u64, 168>(&mut s.state, [out0])
         }
     }
 }
@@ -357,9 +362,15 @@ pub mod neon {
             };
 
             #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-            pub type KeccakState2 = KeccakState<2, core::arch::aarch64::uint64x2_t>;
+            pub struct KeccakState2 {
+                state: KeccakState<2, core::arch::aarch64::uint64x2_t>,
+            }
+            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            pub type KeccakState2Internal = KeccakState<2, core::arch::aarch64::uint64x2_t>;
             #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
-            pub type KeccakState2 = [crate::portable::KeccakState1; 2];
+            pub struct KeccakState2 {
+                state: [crate::portable::KeccakState1; 2],
+            }
 
             pub fn shake128_init() -> KeccakState2 {
                 #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
@@ -372,7 +383,9 @@ pub mod neon {
                 //     [s0, s1]
                 // }
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-                KeccakState2::new()
+                KeccakState2 {
+                    state: KeccakState2Internal::new(),
+                }
             }
 
             #[allow(unused_variables)]
@@ -387,7 +400,10 @@ pub mod neon {
                 //     shake128_absorb_final(&mut s1, data1);
                 // }
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-                absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(s, [data0, data1]);
+                absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(
+                    &mut s.state,
+                    [data0, data1],
+                );
             }
 
             #[allow(unused_variables)]
@@ -407,7 +423,7 @@ pub mod neon {
                 // }
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
                 squeeze_first_three_blocks::<2, core::arch::aarch64::uint64x2_t, 168>(
-                    s,
+                    &mut s.state,
                     [out0, out1],
                 )
             }
@@ -428,7 +444,10 @@ pub mod neon {
                 //     shake128_squeeze_next_block(&mut s1, out1);
                 // }
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-                squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(s, [out0, out1])
+                squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(
+                    &mut s.state,
+                    [out0, out1],
+                )
             }
         }
     }
@@ -492,7 +511,9 @@ pub mod avx2 {
             #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
             pub type KeccakState4 = KeccakState<4, core::arch::x86_64::__m256i>;
             #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-            pub type KeccakState4 = [crate::neon::x2::incremental::KeccakState2; 2];
+            pub struct KeccakState4 {
+                state: [crate::neon::x2::incremental::KeccakState2; 2],
+            }
             #[cfg(not(any(
                 all(feature = "simd256", target_arch = "x86_64"),
                 all(feature = "simd128", target_arch = "aarch64")
