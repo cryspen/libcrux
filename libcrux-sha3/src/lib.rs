@@ -762,6 +762,7 @@ pub mod avx2 {
             pub struct KeccakState4 {
                 state: KeccakState<4, core::arch::x86_64::__m256i>,
             }
+            #[allow(dead_code)]
             #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
             pub struct KeccakState4 {
                 state: [crate::neon::x2::incremental::KeccakState2; 2],

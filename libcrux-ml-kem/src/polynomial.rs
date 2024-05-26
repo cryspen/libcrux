@@ -13,8 +13,8 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] =
     -1530, -1278, 794, -1510, -854, -870, 478, -108, -308, 996, 991, 958, -1460, 1522, 1628,
 ];
 
-pub(crate) const VECTORS_IN_RING_ELEMENT: usize = 16;
-// super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
+pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
+    super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
 #[cfg_attr(eurydice, derive(Clone, Copy))]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
