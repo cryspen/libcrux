@@ -1,8 +1,6 @@
-use crate::libcrux_polynomials::Operations;
-
 use crate::{
     hash_functions::Hash, helper::cloop, invert_ntt::invert_ntt_montgomery,
-    polynomial::PolynomialRingElement, sampling::sample_from_xof,
+    polynomial::PolynomialRingElement, sampling::sample_from_xof, vector::Operations,
 };
 
 #[inline(always)]

@@ -1,4 +1,6 @@
-#![allow(non_camel_case_types)]
+// TODO: Move this into a separate intrinsics crate.
+
+#![allow(non_camel_case_types, unsafe_code)]
 pub(crate) use core::arch::aarch64::*;
 
 #[inline(always)]

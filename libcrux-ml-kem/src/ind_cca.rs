@@ -1,5 +1,6 @@
-use crate::libcrux_polynomials::{Operations, PortableVector};
+use crate::vector::{Operations, PortableVector};
 
+use crate::vector;
 use crate::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
@@ -61,7 +62,7 @@ pub(crate) fn validate_public_key<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            vector::SIMD256Vector,
         >(public_key);
         #[cfg(not(feature = "simd256"))]
         validate_public_key_generic::<
@@ -79,7 +80,7 @@ pub(crate) fn validate_public_key<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            vector::SIMD128Vector,
         >(public_key);
         #[cfg(not(feature = "simd128"))]
         validate_public_key_generic::<
@@ -146,7 +147,7 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(ind_cpa_keypair_randomness, implicit_rejection_value);
         #[cfg(not(feature = "simd256"))]
@@ -174,7 +175,7 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            vector::SIMD128Vector,
             hash_functions::neon::Simd128Hash,
         >(ind_cpa_keypair_randomness, implicit_rejection_value);
         #[cfg(not(feature = "simd128"))]
@@ -277,7 +278,7 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(public_key, randomness);
         #[cfg(not(feature = "simd256"))]
@@ -335,7 +336,7 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            vector::SIMD128Vector,
             hash_functions::neon::Simd128Hash,
         >(public_key, randomness)
     } else {
@@ -449,7 +450,7 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(private_key, ciphertext);
         #[cfg(not(feature = "simd256"))]
@@ -495,7 +496,7 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            vector::SIMD128Vector,
             hash_functions::neon::Simd128Hash,
         >(private_key, ciphertext);
         #[cfg(not(feature = "simd128"))]

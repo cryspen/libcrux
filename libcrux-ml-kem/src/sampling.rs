@@ -1,8 +1,6 @@
-use crate::libcrux_polynomials::Operations;
-
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, hash_functions::*, hax_utils::hax_debug_assert,
-    helper::cloop, polynomial::PolynomialRingElement,
+    helper::cloop, polynomial::PolynomialRingElement, vector::Operations,
 };
 
 /// If `bytes` contains a set of uniformly random bytes, this function

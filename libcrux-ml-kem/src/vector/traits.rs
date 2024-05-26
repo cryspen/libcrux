@@ -3,7 +3,7 @@ pub const FIELD_MODULUS: i16 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
-pub trait Operations: Copy + Clone {
+pub(crate) trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 

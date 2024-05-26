@@ -9,11 +9,10 @@
 //!
 //! FIXME: This is kyber specific for now.
 
-#[path = "../../traits/src/lib.rs"]
-mod libcrux_traits;
+pub(crate) mod traits;
+use traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 
-use libcrux_traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-pub use libcrux_traits::{
+pub(crate) use traits::{
     decompress_1, montgomery_multiply_fe, to_standard_domain, to_unsigned_representative,
     Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS,
 };
@@ -24,9 +23,13 @@ pub use libcrux_traits::{
 // The consumer needs to use runtime feature detection and the appropriate vector
 // in each case.
 #[cfg(feature = "simd128")]
-pub use libcrux_polynomials_aarch64::SIMD128Vector;
+mod neon;
+#[cfg(feature = "simd128")]
+pub(crate) use neon::SIMD128Vector;
 #[cfg(feature = "simd256")]
-pub use libcrux_polynomials_avx2::SIMD256Vector;
+mod avx2;
+#[cfg(feature = "simd256")]
+pub(crate) use libcrux_polynomials_avx2::SIMD256Vector;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.

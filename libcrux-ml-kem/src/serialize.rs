@@ -1,9 +1,9 @@
-use crate::libcrux_polynomials::{decompress_1, to_unsigned_representative, Operations};
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
     hax_utils::hax_debug_assert,
     helper::cloop,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
+    vector::{decompress_1, to_unsigned_representative, Operations},
 };
 
 #[cfg(hax)]

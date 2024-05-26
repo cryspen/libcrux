@@ -1,7 +1,8 @@
 #![forbid(unsafe_code)]
 
-use crate::neon::*;
-use libcrux_traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
+use crate::vector::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
+
+use super::{intrinsics::*, FIELD_MODULUS};
 
 #[derive(Clone, Copy)]
 pub struct SIMD128Vector {

@@ -1,5 +1,3 @@
-use crate::libcrux_polynomials::Operations;
-
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -15,6 +13,7 @@ use crate::{
         deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
         serialize_uncompressed_ring_element,
     },
+    vector::Operations,
 };
 
 /// Pad the `slice` with `0`s at the end.

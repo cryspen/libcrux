@@ -14,7 +14,7 @@ fn main() {
 
     if target_arch == "aarch64" && !disable_simd128 {
         // We enable simd128 on all aarch64 builds.
-        // println!("cargo:rustc-cfg=feature=\"simd128\"");
+        println!("cargo:rustc-cfg=feature=\"simd128\"");
     }
     if target_arch == "x86_64" && !disable_simd256 {
         // We enable simd256 on all x86_64 builds.

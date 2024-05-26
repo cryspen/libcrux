@@ -1,7 +1,7 @@
-use crate::libcrux_polynomials::{montgomery_multiply_fe, Operations, FIELD_ELEMENTS_IN_VECTOR};
 use crate::{
     hax_utils::hax_debug_assert,
     polynomial::{PolynomialRingElement, ZETAS_TIMES_MONTGOMERY_R},
+    vector::{montgomery_multiply_fe, Operations, FIELD_ELEMENTS_IN_VECTOR},
 };
 
 #[inline(always)]
