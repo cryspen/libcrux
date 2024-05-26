@@ -20,10 +20,11 @@ libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
 hax-lib = { git = "https://github.com/hacspec/hax/" }
 
 [features]
-default = []
+default = ["std"]
 simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
 tests = []                         # Test utilities. DO NOT USE.
+std = []
 
 [dev-dependencies]
 rand = { version = "0.8" }

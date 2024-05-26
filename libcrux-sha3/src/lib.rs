@@ -419,6 +419,7 @@ pub mod neon {
             }
             #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
             type KeccakState2Internal = KeccakState<2, core::arch::aarch64::uint64x2_t>;
+            #[allow(dead_code)]
             #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
             pub struct KeccakState2 {
                 state: [crate::portable::KeccakState1; 2],

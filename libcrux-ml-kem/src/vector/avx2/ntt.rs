@@ -1,4 +1,4 @@
-use crate::*;
+use super::*;
 
 #[inline(always)]
 pub(crate) fn ntt_layer_1_step(

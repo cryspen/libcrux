@@ -1,3 +1,7 @@
+// TODO: Move this into a separate intrinsics crate.
+
+#![allow(unsafe_code)]
+
 #[cfg(target_arch = "x86")]
 pub(crate) use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]

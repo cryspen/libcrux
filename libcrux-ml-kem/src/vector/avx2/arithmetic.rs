@@ -1,5 +1,6 @@
-use crate::*;
-use libcrux_traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
+use crate::vector::{traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, FIELD_MODULUS};
+
+use super::*;
 
 #[inline(always)]
 pub(crate) fn add(lhs: Vec256, rhs: Vec256) -> Vec256 {
@@ -26,10 +27,10 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     mm256_srai_epi16::<{ SHIFT_BY }>(vector)
 }
 
-#[inline(always)]
-pub(crate) fn shift_left<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
-    mm256_slli_epi16::<{ SHIFT_BY }>(vector)
-}
+// #[inline(always)]
+// pub(crate) fn shift_left<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
+//     mm256_slli_epi16::<{ SHIFT_BY }>(vector)
+// }
 
 #[inline(always)]
 pub(crate) fn cond_subtract_3329(vector: Vec256) -> Vec256 {

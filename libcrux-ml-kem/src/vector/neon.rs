@@ -18,10 +18,6 @@ impl Operations for SIMD128Vector {
         ZERO()
     }
 
-    fn to_i16_array(v: Self) -> [i16; 16] {
-        to_i16_array(v)
-    }
-
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
@@ -44,10 +40,6 @@ impl Operations for SIMD128Vector {
 
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<SHIFT_BY>(v)
-    }
-
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_left::<SHIFT_BY>(v)
     }
 
     fn cond_subtract_3329(v: Self) -> Self {

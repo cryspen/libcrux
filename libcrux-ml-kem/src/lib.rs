@@ -41,6 +41,9 @@
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 pub(crate) mod hax_utils;
 
 // This module is declared here since otherwise, hax reports the following error:

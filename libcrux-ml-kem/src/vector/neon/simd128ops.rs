@@ -73,12 +73,12 @@ pub(crate) fn shift_right<const SHIFT_BY: i32>(mut v: SIMD128Vector) -> SIMD128V
     v
 }
 
-#[inline(always)]
-pub(crate) fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
-    lhs.low = _vshlq_n_s16::<SHIFT_BY>(lhs.low);
-    lhs.high = _vshlq_n_s16::<SHIFT_BY>(lhs.high);
-    lhs
-}
+// #[inline(always)]
+// pub(crate) fn shift_left<const SHIFT_BY: i32>(mut lhs: SIMD128Vector) -> SIMD128Vector {
+//     lhs.low = _vshlq_n_s16::<SHIFT_BY>(lhs.low);
+//     lhs.high = _vshlq_n_s16::<SHIFT_BY>(lhs.high);
+//     lhs
+// }
 
 #[inline(always)]
 pub(crate) fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {

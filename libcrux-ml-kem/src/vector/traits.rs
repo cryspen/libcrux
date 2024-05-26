@@ -7,7 +7,6 @@ pub(crate) trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
-    fn to_i16_array(v: Self) -> [i16; 16];
     fn from_i16_array(array: &[i16]) -> Self;
 
     // Basic arithmetic
@@ -18,7 +17,7 @@ pub(crate) trait Operations: Copy + Clone {
     // Bitwise operations
     fn bitwise_and_with_constant(v: Self, c: i16) -> Self;
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self;
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
+    // fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self;
 
     // Modular operations
     fn cond_subtract_3329(v: Self) -> Self;

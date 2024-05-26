@@ -1,4 +1,4 @@
-pub use libcrux_traits::FIELD_ELEMENTS_IN_VECTOR;
+use crate::vector::FIELD_ELEMENTS_IN_VECTOR;
 
 type FieldElement = i16;
 

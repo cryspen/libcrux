@@ -1,4 +1,4 @@
-use libcrux_traits::Operations;
+use super::traits::Operations;
 
 #[cfg(test)]
 mod debug;
@@ -7,7 +7,7 @@ mod debug;
 #[cfg(not(any(eurydice, hax)))]
 mod intrinsics;
 #[cfg(not(any(eurydice, hax)))]
-pub(crate) use crate::intrinsics::*;
+pub(crate) use intrinsics::*;
 #[cfg(any(eurydice, hax))]
 mod intrinsics_extraction;
 #[cfg(any(eurydice, hax))]
@@ -51,10 +51,6 @@ impl Operations for SIMD256Vector {
         zero()
     }
 
-    fn to_i16_array(v: Self) -> [i16; 16] {
-        to_i16_array(v)
-    }
-
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
@@ -86,12 +82,6 @@ impl Operations for SIMD256Vector {
     fn shift_right<const SHIFT_BY: i32>(vector: Self) -> Self {
         Self {
             elements: arithmetic::shift_right::<{ SHIFT_BY }>(vector.elements),
-        }
-    }
-
-    fn shift_left<const SHIFT_BY: i32>(vector: Self) -> Self {
-        Self {
-            elements: arithmetic::shift_left::<{ SHIFT_BY }>(vector.elements),
         }
     }
 

@@ -29,7 +29,7 @@ pub(crate) use neon::SIMD128Vector;
 #[cfg(feature = "simd256")]
 mod avx2;
 #[cfg(feature = "simd256")]
-pub(crate) use libcrux_polynomials_avx2::SIMD256Vector;
+pub(crate) use avx2::SIMD256Vector;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
@@ -213,11 +213,6 @@ fn zero() -> PortableVector {
 }
 
 #[inline(always)]
-fn to_i16_array(v: PortableVector) -> [i16; FIELD_ELEMENTS_IN_VECTOR] {
-    v.elements
-}
-
-#[inline(always)]
 fn from_i16_array(array: &[i16]) -> PortableVector {
     PortableVector {
         elements: array[0..16].try_into().unwrap(),
@@ -269,14 +264,14 @@ fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     v
 }
 
-#[inline(always)]
-fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
-    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] = lhs.elements[i] << SHIFT_BY;
-    }
+// #[inline(always)]
+// fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
+//     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+//         lhs.elements[i] = lhs.elements[i] << SHIFT_BY;
+//     }
 
-    lhs
-}
+//     lhs
+// }
 
 #[inline(always)]
 fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
@@ -1077,10 +1072,6 @@ impl Operations for PortableVector {
         zero()
     }
 
-    fn to_i16_array(v: Self) -> [i16; FIELD_ELEMENTS_IN_VECTOR] {
-        to_i16_array(v)
-    }
-
     fn from_i16_array(array: &[i16]) -> Self {
         from_i16_array(array)
     }
@@ -1103,10 +1094,6 @@ impl Operations for PortableVector {
 
     fn shift_right<const SHIFT_BY: i32>(v: Self) -> Self {
         shift_right::<{ SHIFT_BY }>(v)
-    }
-
-    fn shift_left<const SHIFT_BY: i32>(v: Self) -> Self {
-        shift_left::<{ SHIFT_BY }>(v)
     }
 
     fn cond_subtract_3329(v: Self) -> Self {

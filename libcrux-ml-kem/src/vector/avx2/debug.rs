@@ -1,3 +1,7 @@
+#![allow(unsafe_code)]
+
+use std::println;
+
 #[cfg(target_arch = "x86")]
 use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]

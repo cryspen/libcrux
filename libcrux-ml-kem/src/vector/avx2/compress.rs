@@ -1,5 +1,6 @@
-use crate::*;
-use libcrux_traits::FIELD_MODULUS;
+use crate::vector::FIELD_MODULUS;
+
+use super::*;
 
 // Multiply the 32-bit numbers contained in |lhs| and |rhs|, and store only
 // the upper 32 bits of the resulting product.
