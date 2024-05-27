@@ -334,7 +334,7 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            vector::SIMD128Vector,
+            crate::vector::SIMD128Vector,
             hash_functions::neon::Simd128Hash,
         >(public_key, randomness)
     } else {

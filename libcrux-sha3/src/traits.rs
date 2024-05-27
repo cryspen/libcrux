@@ -1,5 +1,5 @@
 /// A trait for multiplexing implementations.
-pub trait KeccakItem<const N: usize>: Clone + Copy {
+pub(crate) trait KeccakItem<const N: usize>: Clone + Copy {
     fn zero() -> Self;
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self;
     fn rotate_left1_and_xor(a: Self, b: Self) -> Self;
