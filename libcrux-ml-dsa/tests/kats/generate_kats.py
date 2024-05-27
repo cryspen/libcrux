@@ -6,40 +6,45 @@ from aes256_ctr_drbg import AES256_CTR_DRBG
 import json
 import hashlib
 
-for algorithm in [Dilithium2, Dilithium3, Dilithium5]:
-    kats_formatted = []
 
-    entropy_input = bytes([i for i in range(48)])
-    rng = AES256_CTR_DRBG(entropy_input)
+def generate_nistkats():
+    for algorithm in [Dilithium2, Dilithium3, Dilithium5]:
+        kats_formatted = []
 
-    print("Generating KATs for ML-DSA-{}{}.".format(algorithm.k, algorithm.l))
+        entropy_input = bytes([i for i in range(48)])
+        rng = AES256_CTR_DRBG(entropy_input)
 
-    for i in range(100):
-        seed = rng.random_bytes(48)
+        print("Generating KATs for ML-DSA-{}{}.".format(algorithm.k, algorithm.l))
 
-        algorithm.set_drbg_seed(seed)
+        for i in range(100):
+            seed = rng.random_bytes(48)
 
-        pk, sk = algorithm.keygen()
+            algorithm.set_drbg_seed(seed)
 
-        msg_len = 33 * (i + 1)
-        msg = rng.random_bytes(msg_len)
-        sig = algorithm.sign(sk, msg)
+            pk, sk = algorithm.keygen()
 
-        kats_formatted.append(
-            {
-                "key_generation_seed": bytes(algorithm.keygen_seed).hex(),
-                "sha3_256_hash_of_public_key": bytes(
-                    hashlib.sha3_256(pk).digest()
-                ).hex(),
-                "sha3_256_hash_of_secret_key": bytes(
-                    hashlib.sha3_256(sk).digest()
-                ).hex(),
-                "message": bytes(msg).hex(),
-                "sha3_256_hash_of_signature": bytes(
-                    hashlib.sha3_256(sig).digest()
-                ).hex(),
-            }
-        )
+            msg_len = 33 * (i + 1)
+            msg = rng.random_bytes(msg_len)
+            sig = algorithm.sign(sk, msg)
 
-        with open("nistkats-{}{}.json".format(algorithm.k, algorithm.l), "w") as f:
-            json.dump(kats_formatted, f, ensure_ascii=False, indent=4)
+            kats_formatted.append(
+                {
+                    "key_generation_seed": bytes(algorithm.keygen_seed).hex(),
+                    "sha3_256_hash_of_public_key": bytes(
+                        hashlib.sha3_256(pk).digest()
+                    ).hex(),
+                    "sha3_256_hash_of_secret_key": bytes(
+                        hashlib.sha3_256(sk).digest()
+                    ).hex(),
+                    "message": bytes(msg).hex(),
+                    "sha3_256_hash_of_signature": bytes(
+                        hashlib.sha3_256(sig).digest()
+                    ).hex(),
+                }
+            )
+
+            with open("nistkats-{}{}.json".format(algorithm.k, algorithm.l), "w") as f:
+                json.dump(kats_formatted, f, ensure_ascii=False, indent=4)
+
+
+generate_nistkats()
