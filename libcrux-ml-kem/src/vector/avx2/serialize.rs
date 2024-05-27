@@ -154,7 +154,7 @@ pub(crate) fn serialize_4(vector: Vec256) -> [u8; 8] {
     let combined = mm256_castsi256_si128(combined);
 
     // ... so that we can read them out in one go.
-    mm_storeu_bytes_si128(&mut serialized[..], combined);
+    mm_storeu_bytes_si128(&mut serialized, combined);
 
     serialized[0..8].try_into().unwrap()
 }
@@ -365,12 +365,12 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
         1 << 6,
     );
 
-    let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
+    let lower_coefficients = mm_loadu_si128(&bytes[0..16]);
     let lower_coefficients = mm_shuffle_epi8(
         lower_coefficients,
         mm_set_epi8(9, 8, 8, 7, 7, 6, 6, 5, 4, 3, 3, 2, 2, 1, 1, 0),
     );
-    let upper_coefficients = mm_loadu_si128(bytes[4..20].try_into().unwrap());
+    let upper_coefficients = mm_loadu_si128(&bytes[4..20]);
     let upper_coefficients = mm_shuffle_epi8(
         upper_coefficients,
         mm_set_epi8(15, 14, 14, 13, 13, 12, 12, 11, 10, 9, 9, 8, 8, 7, 7, 6),
@@ -468,12 +468,12 @@ pub(crate) fn deserialize_12(bytes: &[u8]) -> Vec256 {
         1 << 4,
     );
 
-    let lower_coefficients = mm_loadu_si128(bytes[0..16].try_into().unwrap());
+    let lower_coefficients = mm_loadu_si128(&bytes[0..16]);
     let lower_coefficients = mm_shuffle_epi8(
         lower_coefficients,
         mm_set_epi8(11, 10, 10, 9, 8, 7, 7, 6, 5, 4, 4, 3, 2, 1, 1, 0),
     );
-    let upper_coefficients = mm_loadu_si128(bytes[8..24].try_into().unwrap());
+    let upper_coefficients = mm_loadu_si128(&bytes[8..24]);
     let upper_coefficients = mm_shuffle_epi8(
         upper_coefficients,
         mm_set_epi8(15, 14, 14, 13, 12, 11, 11, 10, 9, 8, 8, 7, 6, 5, 5, 4),

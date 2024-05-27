@@ -35,7 +35,7 @@ fn zero() -> SIMD256Vector {
 #[inline(always)]
 fn to_i16_array(v: SIMD256Vector) -> [i16; 16] {
     let mut output = [0i16; 16];
-    mm256_storeu_si256(&mut output[..], v.elements);
+    mm256_storeu_si256(&mut output, v.elements);
 
     output
 }
