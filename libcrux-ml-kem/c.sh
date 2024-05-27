@@ -46,7 +46,7 @@ if [[ -n "$HACL_PACKAGES_HOME" && "$no_hacl" = 0 ]]; then
     cp internal/*.h $HACL_PACKAGES_HOME/libcrux/include/internal/
     cp *.h $HACL_PACKAGES_HOME/libcrux/include
     cp *.c $HACL_PACKAGES_HOME/libcrux/src
-elif [[ "$no_hacl" = 0 ]]
+elif [[ "$no_hacl" = 0 ]]; then
     echo "Please set HACL_PACKAGES_HOME to the hacl-packages directory to copy the code over" 1>&2
 else
     echo "Copy to hacl-packages was disabled with --no-hacl" 1>&2
