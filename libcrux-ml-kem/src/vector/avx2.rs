@@ -1,6 +1,6 @@
 use super::traits::Operations;
 
-#[cfg(test)]
+#[cfg(all(feature = "simd256", target_arch = "x86_64", test))]
 mod debug;
 
 // When extracting F* or C, we don't want to extract this file.

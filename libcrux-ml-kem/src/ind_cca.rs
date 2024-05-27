@@ -62,7 +62,7 @@ pub(crate) fn validate_public_key<
             PUBLIC_KEY_SIZE,
             crate::vector::SIMD256Vector,
         >(public_key);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         validate_public_key_generic::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
@@ -148,7 +148,7 @@ pub(crate) fn generate_keypair<
             crate::vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(ind_cpa_keypair_randomness, implicit_rejection_value);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
@@ -279,7 +279,7 @@ pub(crate) fn encapsulate<
             crate::vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(public_key, randomness);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
@@ -451,7 +451,7 @@ pub(crate) fn decapsulate<
             crate::vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(private_key, ciphertext);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         return decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
