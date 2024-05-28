@@ -1,5 +1,5 @@
 [package]
-name = "libcrux-sha3"
+name = "libcrux-intrinsics"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -9,8 +9,7 @@ repository.workspace = true
 readme.workspace = true
 
 [dependencies]
-libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.2-pre.2", path = "../libcrux-intrinsics" }
+# libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
@@ -21,11 +20,4 @@ hax-lib = { git = "https://github.com/hacspec/hax/" }
 simd128 = []
 simd256 = []
 
-[[bench]]
-name = "sha3"
-harness = false
-
 [dev-dependencies]
-criterion = "0.5.1"
-hex = "0.4.3"
-rand = "0.8.5"

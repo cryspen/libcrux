@@ -2,7 +2,8 @@
 
 use crate::vector::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 
-use super::{intrinsics::*, FIELD_MODULUS};
+use super::FIELD_MODULUS;
+use libcrux_intrinsics::arm64::*;
 
 #[derive(Clone, Copy)]
 pub struct SIMD128Vector {

@@ -2,7 +2,6 @@
 
 use super::{Operations, FIELD_MODULUS};
 
-mod intrinsics;
 // mod rejsample;
 mod simd128ops;
 

@@ -11,6 +11,7 @@ members = [
     "libcrux-simd",
     "libcrux-sha3",
     "libcrux-ml-dsa",
+    "libcrux-intrinsics",
 ]
 
 [workspace.package]
