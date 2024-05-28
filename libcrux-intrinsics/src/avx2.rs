@@ -39,7 +39,7 @@ pub fn mm_loadu_si128(input: &[u8]) -> __m128i {
 }
 
 pub fn mm256_loadu_si256_u8(input: &[u8]) -> __m256i {
-    debug_assert_eq!(input.len(), 16);
+    debug_assert_eq!(input.len(), 32);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const __m256i) }
 }
 
