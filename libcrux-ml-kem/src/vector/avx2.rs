@@ -1,8 +1,5 @@
 use super::traits::Operations;
 
-#[cfg(all(feature = "simd256", target_arch = "x86_64", test))]
-mod debug;
-
 pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
