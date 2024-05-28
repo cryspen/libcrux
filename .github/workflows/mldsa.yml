@@ -1,4 +1,4 @@
-name: ML-KEM
+name: ML-DSA
 
 on:
   push:
