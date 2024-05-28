@@ -5,10 +5,20 @@ use crate::constants::*;
 const ROWS_IN_A: usize = 6;
 const COLUMNS_IN_A: usize = 5;
 
-const VERIFICATION_KEY_SIZE: usize =
-    32 + (32 * ROWS_IN_A * (FIELD_MODULUS_MINUS_ONE_BIT_LENGTH - BITS_IN_LOWER_PART_OF_T));
-const SIGNING_KEY_SIZE: usize = (32 + 32 + 64)
-    + 32 * (((ROWS_IN_A + COLUMNS_IN_A) * 4) + (BITS_IN_LOWER_PART_OF_T * ROWS_IN_A));
+const ETA: usize = 4;
+const TWO_TIMES_ETA_BIT_SIZE: usize = 4; // ⌊log_2(4)⌋ + 1
+
+const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
+    + (COEFFICIENTS_IN_RING_ELEMENT
+        * ROWS_IN_A
+        * (FIELD_MODULUS_MINUS_ONE_BIT_LENGTH - BITS_IN_LOWER_PART_OF_T))
+        / 8;
+
+const SIGNING_KEY_SIZE: usize = (SEED_FOR_A_SIZE + SEED_FOR_SIGNING_SIZE + HASH_OF_PUBLIC_KEY_SIZE)
+    + (COEFFICIENTS_IN_RING_ELEMENT
+        * (((ROWS_IN_A + COLUMNS_IN_A) * TWO_TIMES_ETA_BIT_SIZE)
+            + (BITS_IN_LOWER_PART_OF_T * ROWS_IN_A)))
+        / 8;
 
 pub struct MLDSA65KeyPair {
     pub signing_key: [u8; SIGNING_KEY_SIZE],
