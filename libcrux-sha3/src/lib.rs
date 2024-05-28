@@ -3,7 +3,7 @@
 //! A SHA3 implementation with optional simd optimisations.
 
 #![no_std]
-
+#![forbid(unsafe_code)]
 pub mod simd;
 
 mod generic_keccak;
@@ -272,7 +272,7 @@ pub mod neon {
     #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
     #[inline(always)]
     fn keccakx2<const RATE: usize, const DELIM: u8>(data: [&[u8]; 2], out: [&mut [u8]; 2]) {
-        keccak::<2, core::arch::aarch64::uint64x2_t, RATE, DELIM>(data, out)
+        keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, out)
     }
 
     /// A portable SHA3 224 implementation.
@@ -415,10 +415,10 @@ pub mod neon {
 
             #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
             pub struct KeccakState2 {
-                state: KeccakState<2, core::arch::aarch64::uint64x2_t>,
+                state: KeccakState<2, crate::simd::arm64::uint64x2_t>,
             }
             #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-            type KeccakState2Internal = KeccakState<2, core::arch::aarch64::uint64x2_t>;
+            type KeccakState2Internal = KeccakState<2, crate::simd::arm64::uint64x2_t>;
             #[allow(dead_code)]
             #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
             pub struct KeccakState2 {
@@ -456,7 +456,7 @@ pub mod neon {
                 //     shake128_absorb_final(&mut s1, data1);
                 // }
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-                absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(
+                absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                     &mut s.state,
                     [data0, data1],
                 );
@@ -509,7 +509,7 @@ pub mod neon {
                 //     shake128_squeeze_first_three_blocks(&mut s1, out1);
                 // }
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-                squeeze_first_three_blocks::<2, core::arch::aarch64::uint64x2_t, 168>(
+                squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     [out0, out1],
                 )
@@ -584,7 +584,7 @@ pub mod neon {
                 //     shake128_squeeze_next_block(&mut s1, out1);
                 // }
                 #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-                squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(
+                squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     [out0, out1],
                 )
@@ -817,11 +817,11 @@ pub mod avx2 {
                 // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
                 // {
                 //     let [mut s0, mut s1] = s;
-                //     absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(
+                //     absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                 //         &mut s0,
                 //         [data0, data1],
                 //     );
-                //     absorb_final::<2, core::arch::aarch64::uint64x2_t, 168, 0x1fu8>(
+                //     absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                 //         &mut s1,
                 //         [data2, data3],
                 //     );
@@ -889,11 +889,11 @@ pub mod avx2 {
                 // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
                 // {
                 //     let [mut s0, mut s1] = s;
-                //     squeeze_first_three_blocks::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //     squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                 //         &mut s0,
                 //         [out0, out1],
                 //     );
-                //     squeeze_first_three_blocks::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //     squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                 //         &mut s1,
                 //         [out2, out3],
                 //     );
@@ -983,11 +983,11 @@ pub mod avx2 {
                 // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
                 // {
                 //     let [mut s0, mut s1] = s;
-                //     squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //     squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                 //         &mut s0,
                 //         [out0, out1],
                 //     );
-                //     squeeze_next_block::<2, core::arch::aarch64::uint64x2_t, 168>(
+                //     squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                 //         &mut s1,
                 //         [out2, out3],
                 //     );

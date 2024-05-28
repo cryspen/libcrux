@@ -6,6 +6,6 @@
 //! must be used.
 
 #[cfg(feature = "simd128")]
-mod arm64;
+pub(crate) mod arm64;
 #[cfg(feature = "simd256")]
-mod avx2;
+pub(crate) mod avx2;

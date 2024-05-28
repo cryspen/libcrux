@@ -1,6 +1,8 @@
-use core::arch::aarch64::*;
+use libcrux_intrinsics::arm64::*;
 
 use crate::traits::KeccakItem;
+
+pub type uint64x2_t = _uint64x2_t;
 
 // This file optimizes for the stable Rust Neon Intrinsics
 // If we want to use the unstable neon-sha3 instructions, we could use:
@@ -12,7 +14,7 @@ fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: uint64x2_t) -> uint64x2_t {
     debug_assert!(LEFT + RIGHT == 64);
     // The following looks faster but is actually significantly slower
     //unsafe { vsriq_n_u64::<RIGHT>(vshlq_n_u64::<LEFT>(x), x) }
-    unsafe { veorq_u64(vshlq_n_u64::<LEFT>(x), vshrq_n_u64::<RIGHT>(x)) }
+    _veorq_u64(_vshlq_n_u64::<LEFT>(x), _vshrq_n_u64::<RIGHT>(x)) 
 }
 
 #[inline(always)]
@@ -23,24 +25,24 @@ fn _veor5q_u64(
     d: uint64x2_t,
     e: uint64x2_t,
 ) -> uint64x2_t {
-    let ab = unsafe { veorq_u64(a, b) };
-    let cd = unsafe { veorq_u64(c, d) };
-    let abcd = unsafe { veorq_u64(ab, cd) };
-    unsafe { veorq_u64(abcd, e) }
+    let ab = _veorq_u64(a, b);
+    let cd = _veorq_u64(c, d);
+    let abcd = _veorq_u64(ab, cd);
+    _veorq_u64(abcd, e)
     // Needs nightly+neon-sha3
     //unsafe {veor3q_u64(veor3q_u64(a,b,c),d,e)}
 }
 
 #[inline(always)]
 fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
-    unsafe { veorq_u64(a, rotate_left::<1, 63>(b)) }
+   _veorq_u64(a, rotate_left::<1, 63>(b)) 
     // Needs nightly+neon-sha3
     //unsafe { vrax1q_u64(a, b) }
 }
 
 #[inline(always)]
 fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
-    let ab = unsafe { veorq_u64(a, b) };
+    let ab = _veorq_u64(a, b);
     rotate_left::<LEFT, RIGHT>(ab)
     // Needs nightly+neon-sha3
     // unsafe { vxarq_u64::<RIGHT>(a,b) }
@@ -48,27 +50,27 @@ fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: uint64x2_t, b: uint64x2_t) -
 
 #[inline(always)]
 fn _vbcaxq_u64(a: uint64x2_t, b: uint64x2_t, c: uint64x2_t) -> uint64x2_t {
-    unsafe { veorq_u64(a, vbicq_u64(b, c)) }
+    _veorq_u64(a, _vbicq_u64(b, c))
     // Needs nightly+neon-sha3
     // unsafe{ vbcaxq_u64(a, b, c) }
 }
 
 #[inline(always)]
 fn _veorq_n_u64(a: uint64x2_t, c: u64) -> uint64x2_t {
-    let c = unsafe { vdupq_n_u64(c) };
-    unsafe { veorq_u64(a, c) }
+    let c = _vdupq_n_u64(c);
+    _veorq_u64(a, c)
 }
 
 #[inline(always)]
 pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks: [&[u8]; 2]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 16 {
-        let v0 = unsafe { vld1q_u64(blocks[0][16 * i..16 * (i + 1)].as_ptr() as *const u64) };
-        let v1 = unsafe { vld1q_u64(blocks[1][16 * i..16 * (i + 1)].as_ptr() as *const u64) };
+        let v0 = _vld1q_bytes_u64(&blocks[0][16 * i..16 * (i + 1)]);
+        let v1 = _vld1q_bytes_u64(&blocks[1][16 * i..16 * (i + 1)]);
         s[(2 * i) / 5][(2 * i) % 5] =
-            unsafe { veorq_u64(s[(2 * i) / 5][(2 * i) % 5], vtrn1q_u64(v0, v1)) };
+            _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(v0, v1));
         s[(2 * i + 1) / 5][(2 * i + 1) % 5] =
-            unsafe { veorq_u64(s[(2 * i + 1) / 5][(2 * i + 1) % 5], vtrn2q_u64(v0, v1)) };
+            _veorq_u64(s[(2 * i + 1) / 5][(2 * i + 1) % 5], _vtrn2q_u64(v0, v1));
     }
     if RATE % 16 != 0 {
         let i = (RATE / 8 - 1) / 5;
@@ -76,8 +78,8 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks
         let mut u = [0u64; 2];
         u[0] = u64::from_le_bytes(blocks[0][RATE - 8..RATE].try_into().unwrap());
         u[1] = u64::from_le_bytes(blocks[1][RATE - 8..RATE].try_into().unwrap());
-        let uvec = unsafe { vld1q_u64(u.as_ptr() as *const u64) };
-        s[i][j] = unsafe { veorq_u64(s[i][j], uvec) };
+        let uvec = _vld1q_u64(&u);
+        s[i][j] = _veorq_u64(s[i][j], uvec);
     }
 }
 
@@ -93,27 +95,27 @@ pub(crate) fn load_block_full<const RATE: usize>(
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mut [u8]; 2]) {
     for i in 0..RATE / 16 {
-        let v0 = unsafe {
-            vtrn1q_u64(
+        let v0 = 
+            _vtrn1q_u64(
                 s[(2 * i) / 5][(2 * i) % 5],
                 s[(2 * i + 1) / 5][(2 * i + 1) % 5],
             )
-        };
-        let v1 = unsafe {
-            vtrn2q_u64(
+        ;
+        let v1 = 
+            _vtrn2q_u64(
                 s[(2 * i) / 5][(2 * i) % 5],
                 s[(2 * i + 1) / 5][(2 * i + 1) % 5],
             )
-        };
-        unsafe { vst1q_u64(out[0][16 * i..16 * (i + 1)].as_mut_ptr() as *mut u64, v0) };
-        unsafe { vst1q_u64(out[1][16 * i..16 * (i + 1)].as_mut_ptr() as *mut u64, v1) };
+        ;
+        _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
+        _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
     }
     if RATE % 16 != 0 {
         debug_assert!(RATE % 8 == 0);
         let i = (RATE / 8 - 1) / 5;
         let j = (RATE / 8 - 1) % 5;
         let mut u = [0u8; 16];
-        unsafe { vst1q_u64(u.as_mut_ptr() as *mut u64, s[i][j]) };
+        _vst1q_bytes_u64(&mut u, s[i][j]);
         out[0][RATE - 8..RATE].copy_from_slice(&u[0..8]);
         out[1][RATE - 8..RATE].copy_from_slice(&u[8..16]);
     }
@@ -143,7 +145,7 @@ fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8
 impl KeccakItem<2> for uint64x2_t {
     #[inline(always)]
     fn zero() -> Self {
-        unsafe { vdupq_n_u64(0) }
+        _vdupq_n_u64(0)
     }
     #[inline(always)]
     fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self {
@@ -167,7 +169,7 @@ impl KeccakItem<2> for uint64x2_t {
     }
     #[inline(always)]
     fn xor(a: Self, b: Self) -> Self {
-        unsafe { veorq_u64(a, b) }
+        _veorq_u64(a, b)
     }
     #[inline(always)]
     fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 2]) {

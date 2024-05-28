@@ -3,10 +3,16 @@ use core::arch::aarch64::*;
 
 pub type _int16x8_t = int16x8_t;
 pub type _uint32x4_t = uint32x4_t;
+pub type _uint64x2_t = uint64x2_t;
 
 #[inline(always)]
 pub fn _vdupq_n_s16(i: i16) -> int16x8_t {
     unsafe { vdupq_n_s16(i) }
+}
+
+#[inline(always)]
+pub fn _vdupq_n_u64(i: u64) -> uint64x2_t {
+    unsafe { vdupq_n_u64(i) }
 }
 
 #[inline(always)]
@@ -17,6 +23,26 @@ pub fn _vst1q_s16(out: &mut [i16], v: int16x8_t) {
 #[inline(always)]
 pub fn _vld1q_s16(array: &[i16]) -> int16x8_t {
     unsafe { vld1q_s16(array.as_ptr()) }
+}
+
+#[inline(always)]
+pub fn _vld1q_bytes_u64(array: &[u8]) -> uint64x2_t {
+    unsafe { vld1q_u64(array.as_ptr() as *const u64) }
+}
+
+#[inline(always)]
+pub fn _vld1q_u64(array: &[u64]) -> uint64x2_t {
+    unsafe { vld1q_u64(array.as_ptr()) }
+}
+
+#[inline(always)]
+pub fn _vst1q_u64(out: &mut [u64], v: uint64x2_t) {
+    unsafe { vst1q_u64(out.as_mut_ptr(), v) }
+}
+
+#[inline(always)]
+pub fn _vst1q_bytes_u64(out: &mut [u8], v: uint64x2_t) {
+    unsafe { vst1q_u64(out.as_mut_ptr() as *mut u64, v) }
 }
 
 #[inline(always)]
@@ -50,6 +76,16 @@ pub fn _vshrq_n_u16<const SHIFT_BY: i32>(v: uint16x8_t) -> uint16x8_t {
 }
 
 #[inline(always)]
+pub fn _vshrq_n_u64<const SHIFT_BY: i32>(v: uint64x2_t) -> uint64x2_t {
+    unsafe { vshrq_n_u64::<SHIFT_BY>(v) }
+}
+
+#[inline(always)]
+pub fn _vshlq_n_u64<const SHIFT_BY: i32>(v: uint64x2_t) -> uint64x2_t {
+    unsafe { vshlq_n_u64::<SHIFT_BY>(v) }
+}
+
+#[inline(always)]
 pub fn _vshlq_n_s16<const SHIFT_BY: i32>(v: int16x8_t) -> int16x8_t {
     unsafe { vshlq_n_s16::<SHIFT_BY>(v) }
 }
@@ -74,6 +110,12 @@ pub fn _vcgeq_s16(v: int16x8_t, c: int16x8_t) -> uint16x8_t {
 pub fn _vandq_s16(a: int16x8_t, b: int16x8_t) -> int16x8_t {
     unsafe { vandq_s16(a, b) }
 }
+
+#[inline(always)]
+pub fn _vbicq_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
+    unsafe { vbicq_u64(a, b) }
+}
+
 #[inline(always)]
 pub fn _vreinterpretq_s16_u16(m0: uint16x8_t) -> int16x8_t {
     unsafe { vreinterpretq_s16_u16(m0) }
@@ -86,10 +128,17 @@ pub fn _vreinterpretq_u16_s16(m0: int16x8_t) -> uint16x8_t {
 pub fn _vmulq_s16(v: int16x8_t, c: int16x8_t) -> int16x8_t {
     unsafe { vmulq_s16(v, c) }
 }
+
 #[inline(always)]
 pub fn _veorq_s16(mask: int16x8_t, shifted: int16x8_t) -> int16x8_t {
     unsafe { veorq_s16(mask, shifted) }
 }
+
+#[inline(always)]
+pub fn _veorq_u64(mask: uint64x2_t, shifted: uint64x2_t) -> uint64x2_t {
+    unsafe { veorq_u64(mask, shifted) }
+}
+
 #[inline(always)]
 pub fn _vdupq_n_u32(value: u32) -> uint32x4_t {
     unsafe { vdupq_n_u32(value) }
@@ -162,6 +211,12 @@ pub fn _vtrn2q_s32(a: int32x4_t, b: int32x4_t) -> int32x4_t {
 pub fn _vtrn1q_s64(a: int64x2_t, b: int64x2_t) -> int64x2_t {
     unsafe { vtrn1q_s64(a, b) }
 }
+
+#[inline(always)]
+pub fn _vtrn1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
+    unsafe { vtrn1q_u64(a, b) }
+}
+
 #[inline(always)]
 pub fn _vreinterpretq_s16_s64(a: int64x2_t) -> int16x8_t {
     unsafe { vreinterpretq_s16_s64(a) }
@@ -174,6 +229,12 @@ pub fn _vreinterpretq_s64_s16(a: int16x8_t) -> int64x2_t {
 pub fn _vtrn2q_s64(a: int64x2_t, b: int64x2_t) -> int64x2_t {
     unsafe { vtrn2q_s64(a, b) }
 }
+
+#[inline(always)]
+pub fn _vtrn2q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
+    unsafe { vtrn2q_u64(a, b) }
+}
+
 #[inline(always)]
 pub fn _vmull_s16(a: int16x4_t, b: int16x4_t) -> int32x4_t {
     unsafe { vmull_s16(a, b) }
