@@ -2,6 +2,7 @@ use libcrux_intrinsics::arm64::*;
 
 use crate::traits::KeccakItem;
 
+#[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
 
 // This file optimizes for the stable Rust Neon Intrinsics
@@ -14,7 +15,7 @@ fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: uint64x2_t) -> uint64x2_t {
     debug_assert!(LEFT + RIGHT == 64);
     // The following looks faster but is actually significantly slower
     //unsafe { vsriq_n_u64::<RIGHT>(vshlq_n_u64::<LEFT>(x), x) }
-    _veorq_u64(_vshlq_n_u64::<LEFT>(x), _vshrq_n_u64::<RIGHT>(x)) 
+    _veorq_u64(_vshlq_n_u64::<LEFT>(x), _vshrq_n_u64::<RIGHT>(x))
 }
 
 #[inline(always)]
@@ -35,7 +36,7 @@ fn _veor5q_u64(
 
 #[inline(always)]
 fn _vrax1q_u64(a: uint64x2_t, b: uint64x2_t) -> uint64x2_t {
-   _veorq_u64(a, rotate_left::<1, 63>(b)) 
+    _veorq_u64(a, rotate_left::<1, 63>(b))
     // Needs nightly+neon-sha3
     //unsafe { vrax1q_u64(a, b) }
 }
@@ -67,8 +68,7 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], blocks
     for i in 0..RATE / 16 {
         let v0 = _vld1q_bytes_u64(&blocks[0][16 * i..16 * (i + 1)]);
         let v1 = _vld1q_bytes_u64(&blocks[1][16 * i..16 * (i + 1)]);
-        s[(2 * i) / 5][(2 * i) % 5] =
-            _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(v0, v1));
+        s[(2 * i) / 5][(2 * i) % 5] = _veorq_u64(s[(2 * i) / 5][(2 * i) % 5], _vtrn1q_u64(v0, v1));
         s[(2 * i + 1) / 5][(2 * i + 1) % 5] =
             _veorq_u64(s[(2 * i + 1) / 5][(2 * i + 1) % 5], _vtrn2q_u64(v0, v1));
     }
@@ -95,18 +95,14 @@ pub(crate) fn load_block_full<const RATE: usize>(
 #[inline(always)]
 pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mut [u8]; 2]) {
     for i in 0..RATE / 16 {
-        let v0 = 
-            _vtrn1q_u64(
-                s[(2 * i) / 5][(2 * i) % 5],
-                s[(2 * i + 1) / 5][(2 * i + 1) % 5],
-            )
-        ;
-        let v1 = 
-            _vtrn2q_u64(
-                s[(2 * i) / 5][(2 * i) % 5],
-                s[(2 * i + 1) / 5][(2 * i + 1) % 5],
-            )
-        ;
+        let v0 = _vtrn1q_u64(
+            s[(2 * i) / 5][(2 * i) % 5],
+            s[(2 * i + 1) / 5][(2 * i + 1) % 5],
+        );
+        let v1 = _vtrn2q_u64(
+            s[(2 * i) / 5][(2 * i) % 5],
+            s[(2 * i + 1) / 5][(2 * i + 1) % 5],
+        );
         _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
         _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
     }
