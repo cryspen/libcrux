@@ -1,7 +1,18 @@
 files:
+  # Different crate
   - name: libcrux_sha3
     api:
       - [libcrux_sha3, "*"]
+
+  # Different crate
+  - name: libcrux_intrinsics_neon
+    api:
+      - [libcrux_intrinsics, arm64]
+
+  # Different crate
+  - name: libcrux_intrinsics_avx2
+    api:
+      - [libcrux_intrinsics, avx2]
 
   # - name: libcrux_mlkem_sha3_neon
   #   specialized_over_trait_impl:
@@ -28,12 +39,6 @@ files:
     # inline_static: true
     api:
       - [libcrux_ml_kem, vector, neon, intrinsics]
-
-  - name: libcrux_avx2_intrinsics
-    library: true
-    # inline_static: true
-    api:
-      - [libcrux_ml_kem, vector, avx2, intrinsics_extraction]
 
   - name: libcrux_mlkem_vector
     api:

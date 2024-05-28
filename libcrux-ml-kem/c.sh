@@ -36,7 +36,7 @@ fi
 
 if [[ "$no_charon" = 0 ]]; then
     echo "Running charon ..."
-    LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings
 else
     echo "Skipping charon"
 fi
