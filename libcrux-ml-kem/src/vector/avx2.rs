@@ -3,15 +3,7 @@ use super::traits::Operations;
 #[cfg(all(feature = "simd256", target_arch = "x86_64", test))]
 mod debug;
 
-// When extracting F* or C, we don't want to extract this file.
-#[cfg(not(any(eurydice, hax)))]
-mod intrinsics;
-#[cfg(not(any(eurydice, hax)))]
-pub(crate) use intrinsics::*;
-#[cfg(any(eurydice, hax))]
-mod intrinsics_extraction;
-#[cfg(any(eurydice, hax))]
-pub(crate) use intrinsics_extraction::*;
+pub(crate) use libcrux_intrinsics::avx2::*;
 
 mod arithmetic;
 mod compress;
@@ -35,14 +27,14 @@ fn zero() -> SIMD256Vector {
 #[inline(always)]
 fn to_i16_array(v: SIMD256Vector) -> [i16; 16] {
     let mut output = [0i16; 16];
-    mm256_storeu_si256(&mut output, v.elements);
+    mm256_storeu_si256_i16(&mut output, v.elements);
 
     output
 }
 #[inline(always)]
 fn from_i16_array(array: &[i16]) -> SIMD256Vector {
     SIMD256Vector {
-        elements: mm256_loadu_si256(array),
+        elements: mm256_loadu_si256_i16(array),
     }
 }
 
