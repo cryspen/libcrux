@@ -2,10 +2,10 @@ mod arithmetic;
 mod constants;
 mod hash_functions;
 mod matrix;
+mod ml_dsa_generic;
+mod ntt;
 mod sample;
 mod serialize;
 mod utils;
-
-mod ml_dsa_generic;
 
 pub mod ml_dsa_65;

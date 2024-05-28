@@ -52,7 +52,7 @@ fn serialize_ring_element_of_t0s(re: PolynomialRingElement) -> [u8; 416] {
 }
 
 #[inline(always)]
-fn serialize_ring_element_of_t1s(re: PolynomialRingElement) -> [u8; 320] {
+fn serialize_ring_element_of_4_bit_coefficients(re: PolynomialRingElement) -> [u8; 320] {
     let mut serialized = [0u8; 320];
 
     for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
@@ -76,7 +76,7 @@ mod tests {
     use crate::arithmetic::PolynomialRingElement;
 
     #[test]
-    fn test_serialize_ring_element_of_t1s() {
+    fn test_serialize_ring_element_of_4_bit_coefficients() {
         let re = PolynomialRingElement {
             coefficients: [
                 127, 627, 86, 834, 463, 169, 792, 8, 595, 212, 1015, 213, 321, 501, 471, 633, 686,
@@ -119,7 +119,10 @@ mod tests {
             122,
         ];
 
-        assert_eq!(serialize_ring_element_of_t1s(re), expected_re_serialized);
+        assert_eq!(
+            serialize_ring_element_of_4_bit_coefficients(re),
+            expected_re_serialized
+        );
     }
 
     #[test]
