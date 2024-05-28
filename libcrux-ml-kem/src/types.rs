@@ -49,11 +49,11 @@ macro_rules! impl_generic_struct {
             }
 
             // This is only used for some of the macro callers.
-            #[allow(dead_code)]
-            /// Split this value and return the raw byte slices.
-            pub(crate) fn split_at(&self, mid: usize) -> (&[u8], &[u8]) {
-                self.value.split_at(mid)
-            }
+            // #[allow(dead_code)]
+            // /// Split this value and return the raw byte slices.
+            // pub(crate) fn split_at(&self, mid: usize) -> (&[u8], &[u8]) {
+            //     self.value.split_at(mid)
+            // }
 
             #[cfg(feature = "tests")]
             /// The number of bytes.

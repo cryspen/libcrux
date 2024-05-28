@@ -16,6 +16,7 @@ fi
 
 portable_only=0
 no_hacl=0
+no_charon=0
 
 # Parse command line arguments.
 all_args=("$@")
@@ -23,6 +24,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
     -p | --portable) portable_only=1 ;;
     --no-hacl) no_hacl=1 ;;
+    --no-charon) no_charon=1 ;;
     esac
     shift
 done
@@ -32,8 +34,13 @@ if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD128=1
 fi
 
-echo "Running charon ..."
-LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings
+if [[ "$no_charon" = 0 ]]; then
+    echo "Running charon ..."
+    LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings
+else
+    echo "Skipping charon"
+fi
+
 mkdir -p c
 cd c
 

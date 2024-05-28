@@ -17,6 +17,10 @@ pub(crate) use traits::{
     Operations, FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS,
 };
 
+// XXX: This is not used on neon right now
+#[cfg(feature = "simd256")]
+pub(crate) mod rej_sample_table;
+
 // There's no runtime detection here. This either exposes the real SIMD vector,
 // or the portable when the feature is not set.
 //

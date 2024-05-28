@@ -5,7 +5,7 @@ use super::{Operations, FIELD_MODULUS};
 // mod rejsample;
 mod simd128ops;
 
-pub use simd128ops::SIMD128Vector;
+pub(crate) use simd128ops::SIMD128Vector;
 use simd128ops::*;
 
 // This is an empty shell, calling into standalone functions in `simd128ops`.

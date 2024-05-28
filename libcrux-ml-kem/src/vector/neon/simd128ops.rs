@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use crate::vector::traits::INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
 
 use super::FIELD_MODULUS;
@@ -7,8 +5,8 @@ use libcrux_intrinsics::arm64::*;
 
 #[derive(Clone, Copy)]
 pub struct SIMD128Vector {
-    pub low: int16x8_t,
-    pub high: int16x8_t,
+    pub low: _int16x8_t,
+    pub high: _int16x8_t,
 }
 
 #[allow(non_snake_case)]
@@ -96,7 +94,7 @@ pub(crate) fn cond_subtract_3329(mut v: SIMD128Vector) -> SIMD128Vector {
 const BARRETT_MULTIPLIER: i16 = 20159;
 
 #[inline(always)]
-fn barrett_reduce_int16x8_t(v: int16x8_t) -> int16x8_t {
+fn barrett_reduce_int16x8_t(v: _int16x8_t) -> _int16x8_t {
     //let pv = crate::simd::portable::from_i16_array(to_i16_array(v));
     //from_i16_array(crate::simd::portable::to_i16_array(crate::simd::portable::barrett_reduce(pv)))
 
@@ -129,7 +127,7 @@ pub(crate) fn barrett_reduce(mut v: SIMD128Vector) -> SIMD128Vector {
 }
 
 #[inline(always)]
-fn montgomery_reduce_int16x8_t(low: int16x8_t, high: int16x8_t) -> int16x8_t {
+fn montgomery_reduce_int16x8_t(low: _int16x8_t, high: _int16x8_t) -> _int16x8_t {
     // This is what we are trying to do in portable:
     // let k = low as i16 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
     // let k_times_modulus = (k as i16 as i16) * (FIELD_MODULUS as i16);
@@ -145,7 +143,7 @@ fn montgomery_reduce_int16x8_t(low: int16x8_t, high: int16x8_t) -> int16x8_t {
 }
 
 #[inline(always)]
-fn montgomery_multiply_by_constant_int16x8_t(v: int16x8_t, c: i16) -> int16x8_t {
+fn montgomery_multiply_by_constant_int16x8_t(v: _int16x8_t, c: i16) -> _int16x8_t {
     // This is what we are trying to do in portable:
     // let value = v as i16 * c
     // let k = (value as i16) as i16 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
@@ -160,7 +158,7 @@ fn montgomery_multiply_by_constant_int16x8_t(v: int16x8_t, c: i16) -> int16x8_t 
 }
 
 #[inline(always)]
-fn montgomery_multiply_int16x8_t(v: int16x8_t, c: int16x8_t) -> int16x8_t {
+fn montgomery_multiply_int16x8_t(v: _int16x8_t, c: _int16x8_t) -> _int16x8_t {
     // This is what we are trying to do in portable:
     // let value = v as i16 * c
     // let k = (value as i16) as i16 * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
@@ -224,7 +222,7 @@ fn mask_n_least_significant_bits(coefficient_bits: i16) -> i16 {
 }
 
 #[inline(always)]
-fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4_t {
+fn compress_int32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32x4_t {
     // This is what we are trying to do in portable:
     // let mut compressed = (fe as u64) << coefficient_bits;
     // compressed += 1664 as u64;
@@ -273,7 +271,7 @@ pub(crate) fn compress<const COEFFICIENT_BITS: i32>(mut v: SIMD128Vector) -> SIM
 }
 
 #[inline(always)]
-fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: uint32x4_t) -> uint32x4_t {
+fn decompress_uint32x4_t<const COEFFICIENT_BITS: i32>(v: _uint32x4_t) -> _uint32x4_t {
     let coeff = _vdupq_n_u32(1 << (COEFFICIENT_BITS - 1));
     let decompressed = _vmulq_n_u32(v, FIELD_MODULUS as u32);
     let decompressed = _vaddq_u32(decompressed, coeff);

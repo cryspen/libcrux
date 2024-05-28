@@ -388,7 +388,8 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
 
 #[inline(always)]
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
-    let input = portable::from_i16_array(to_i16_array(SIMD256Vector { elements: vector }));
+    let array = to_i16_array(SIMD256Vector { elements: vector });
+    let input = portable::from_i16_array(array);
 
     portable::serialize_11(input)
 }
