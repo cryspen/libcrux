@@ -71,8 +71,7 @@ fn slice_1(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
 
 #[inline(always)]
 fn split_at_mut_1(out: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
-    let [out0] = out;
-    let (out00, out01) = out0.split_at_mut(mid);
+    let (out00, out01) = out[0].split_at_mut(mid);
     ([out00], [out01])
 }
 

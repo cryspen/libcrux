@@ -23,7 +23,7 @@ pub type Sha3_384Digest = [u8; 48];
 pub type Sha3_512Digest = [u8; 64];
 
 /// The Digest Algorithm.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(not(eurydice), derive(Copy, Clone, Debug, PartialEq))]
 #[repr(u32)]
 pub enum Algorithm {
     Sha224 = 1,

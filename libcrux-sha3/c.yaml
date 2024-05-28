@@ -1,0 +1,15 @@
+files:
+  # # TODO: neon and avx2
+  # - name: libcrux_sha3_neon
+  #   api:
+  #     - [libcrux_sha3, simd, neon]
+
+  # - name: libcrux_sha3_avx2
+  #   api:
+  #     - [libcrux_sha3, simd, avx2]
+
+  - name: core
+    private:
+      - [core, "*"]
+    api:
+      - [Eurydice, "*"]

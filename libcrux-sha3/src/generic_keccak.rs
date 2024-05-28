@@ -37,11 +37,20 @@ const _ROTC: [usize; 24] = [
 
 #[inline(always)]
 pub(crate) fn theta_rho<const N: usize, T: KeccakItem<N>>(s: &mut KeccakState<N, T>) {
-    let c: [T; 5] = core::array::from_fn(|j| {
-        T::xor5(s.st[0][j], s.st[1][j], s.st[2][j], s.st[3][j], s.st[4][j])
-    });
-    let t: [T; 5] =
-        core::array::from_fn(|j| T::rotate_left1_and_xor(c[(j + 4) % 5], c[(j + 1) % 5]));
+    let c: [T; 5] = [
+        T::xor5(s.st[0][0], s.st[1][0], s.st[2][0], s.st[3][0], s.st[4][1]),
+        T::xor5(s.st[0][1], s.st[1][1], s.st[2][1], s.st[3][1], s.st[4][2]),
+        T::xor5(s.st[0][2], s.st[1][2], s.st[2][2], s.st[3][2], s.st[4][2]),
+        T::xor5(s.st[0][3], s.st[1][3], s.st[2][3], s.st[3][3], s.st[4][3]),
+        T::xor5(s.st[0][4], s.st[1][4], s.st[2][4], s.st[3][4], s.st[4][4]),
+    ];
+    let t: [T; 5] = [
+        T::rotate_left1_and_xor(c[(0 + 4) % 5], c[(0 + 1) % 5]),
+        T::rotate_left1_and_xor(c[(1 + 4) % 5], c[(1 + 1) % 5]),
+        T::rotate_left1_and_xor(c[(2 + 4) % 5], c[(2 + 1) % 5]),
+        T::rotate_left1_and_xor(c[(3 + 4) % 5], c[(3 + 1) % 5]),
+        T::rotate_left1_and_xor(c[(4 + 4) % 5], c[(4 + 1) % 5]),
+    ];
 
     s.st[0][0] = T::xor(s.st[0][0], t[0]);
     s.st[1][0] = T::xor_and_rotate::<36, 28>(s.st[1][0], t[0]);
