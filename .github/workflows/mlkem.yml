@@ -36,7 +36,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-dsa
+        working-directory: libcrux-ml-kem
 
     steps:
       - uses: actions/checkout@v4
@@ -163,7 +163,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: libcrux-ml-dsa
+        working-directory: libcrux-ml-kem
 
     steps:
       - uses: actions/checkout@v4
