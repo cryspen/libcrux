@@ -88,8 +88,7 @@ pub(crate) fn load_block_full<const RATE: usize>(
     s: &mut [[uint64x2_t; 5]; 5],
     blocks: [[u8; 200]; 2],
 ) {
-    let [b0, b1] = blocks;
-    load_block::<RATE>(s, [&b0 as &[u8], &b1 as &[u8]]);
+    load_block::<RATE>(s, [&blocks[0] as &[u8], &blocks[1] as &[u8]]);
 }
 
 #[inline(always)]
