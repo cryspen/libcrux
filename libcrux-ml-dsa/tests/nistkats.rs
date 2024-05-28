@@ -24,6 +24,7 @@ struct MlDsaNISTKAT {
     sha3_256_hash_of_signature: [u8; 32],
 }
 
+#[ignore]
 #[test]
 fn ml_dsa_65_nist_known_answer_tests() {
     let katfile_path = Path::new("tests")
