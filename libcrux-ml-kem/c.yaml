@@ -20,8 +20,61 @@ files:
   #   api:
   #     - [libcrux_ml_kem, hash_functions, neon, "*"]
 
+  - name: libcrux_mlkem_neon
+    api:
+      - [libcrux_ml_kem, vector, neon, "*"]
+      - [libcrux_ml_kem, hash_functions, neon, "*"]
+      - [libcrux_sha3, neon, "*"]
+    monomorphizations_using:
+      - [libcrux_ml_kem, vector, neon, "*"]
+      - [libcrux_ml_kem, hash_functions, neon, "*"]
+      - [libcrux_sha3, neon, "*"]
+    monomorphizations_of:
+      - [libcrux_ml_kem, vector, neon, "*"]
+      - [libcrux_ml_kem, hash_functions, neon, "*"]
+      - [libcrux_sha3, neon, "*"]
+    include_in_c:
+      - '"libcrux_hacl_glue.h"'
+
+  - name: libcrux_core
+    monomorphizations_of:
+      - [ core, "*"]
+      - [ libcrux_ml_kem, types, "*"]
+      - [ libcrux_ml_kem, constant_time_ops, "*"]
+    monomorphizations_using:
+      - [ Eurydice, "*" ]
+      - [ libcrux_ml_kem, types, "*"]
+    monomorphizations_exact:
+      - [ K, "__uint8_t[1536size_t]_uint8_t[1568size_t]" ]
+      - [ K, "__uint8_t[1152size_t]_uint8_t[1184size_t]" ]
+      - [ K, "__uint8_t[768size_t]_uint8_t[800size_t]" ]
+      - [ libcrux_ml_kem, ind_cpa, into_padded_array___33size_t ]
+      - [ libcrux_ml_kem, ind_cpa, into_padded_array___34size_t ]
+      - [ libcrux_ml_kem, ind_cpa, into_padded_array___64size_t ]
+      - [ libcrux_ml_kem, ind_cpa, into_padded_array___800size_t ]
+      - [ libcrux_ml_kem, ind_cpa, into_padded_array___1120size_t ]
+      - [ libcrux_ml_kem, ind_cpa, into_padded_array___1600size_t ]
+    private:
+      - [ core, "*"]
+      - [ libcrux_ml_kem, types ]
+      - [ libcrux_ml_kem, constants ]
+      - [ libcrux_ml_kem, constant_time_ops, "*"]
+    api:
+      - [Eurydice, "*"]
+
+  - name: libcrux_polynomial
+    private:
+      - [ libcrux_ml_kem, polynomial, "*" ]
+      - [ libcrux_ml_kem, vector, "*" ]
+    monomorphizations_of:
+      - [ libcrux_ml_kem, polynomial, "*" ]
+      - [ libcrux_ml_kem, vector, "*" ]
+    monomorphizations_using:
+      - [ libcrux_ml_kem, polynomial, "*" ]
+      - [ libcrux_ml_kem, vector, traits, "*" ]
+
   - name: libcrux_mlkem_sha3_avx2
-    specialized_over_trait_impl:
+    monomorphizations_using:
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
     api:
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
@@ -34,39 +87,10 @@ files:
     api:
       - [libcrux_platform, "*"]
 
-  - name: libcrux_neon_intrinsics
-    library: true
-    # inline_static: true
-    api:
-      - [libcrux_ml_kem, vector, neon, intrinsics]
-
-  - name: libcrux_mlkem_vector
-    api:
-      - [libcrux_ml_kem, vector, traits]
-      - [libcrux_ml_kem, vector]
-
-  - name: libcrux_mlkem_constants
-    api:
-      - [libcrux_ml_kem, constants]
-
-  - name: libcrux_mlkem_ctops
-    api:
-      - [libcrux_ml_kem, constant_time_ops]
-
   # Extras needed for the C code from eurydice
   - name: libcrux_mlkem_eurydice
     api:
       - [libcrux_ml_kem, eurydice_types, "*"]
-
-  - name: libcrux_mlkem_neon
-    api:
-      - [libcrux_ml_kem, vector, neon, "*"]
-      - [libcrux_ml_kem, hash_functions, neon, "*"]
-    specialized_over_trait_impl:
-      - [libcrux_ml_kem, hash_functions, neon, "*"]
-      - [libcrux_ml_kem, vector, neon, "*"]
-    include_in_c:
-      - '"libcrux_hacl_glue.h"'
 
   # - name: libcrux_mlkem_avx2
   #   api:
@@ -76,13 +100,13 @@ files:
   #   include_in_c:
   #     - '"libcrux_hacl_glue.h"'
 
-  - name: libcrux_mlkem_sha3
-    api:
-      - [libcrux_ml_kem, hash_functions, "*"]
-    specialized_over_trait_impl:
-      - [libcrux_ml_kem, hash_functions, "*"]
-    include_in_c:
-      - '"libcrux_hacl_glue.h"'
+#   - name: libcrux_mlkem_sha3
+#     api:
+#       - [libcrux_ml_kem, hash_functions, "*"]
+#     specialized_over_trait_impl:
+#       - [libcrux_ml_kem, hash_functions, "*"]
+#     include_in_c:
+#       - '"libcrux_hacl_glue.h"'
 
   - name: libcrux_mlkem512
     api:
@@ -109,8 +133,3 @@ files:
       - '"libcrux_hacl_glue.h"'
     inline_static: true
 
-  - name: core
-    private:
-      - [core, "*"]
-    api:
-      - [Eurydice, "*"]
