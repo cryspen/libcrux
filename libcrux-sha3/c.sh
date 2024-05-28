@@ -45,7 +45,7 @@ mkdir -p c
 cd c
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --log '*' ../../libcrux_sha3.llbc
+$EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_sha3.llbc
 cp $EURYDICE_HOME/include/eurydice_glue.h .
 
 if [[ -n "$HACL_PACKAGES_HOME" && "$no_hacl" = 0 ]]; then
