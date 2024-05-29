@@ -7,6 +7,8 @@ files:
 
   # Different crate
   - name: libcrux_intrinsics_avx2
+    library: true
+    inline_static: true
     api:
       - [libcrux_intrinsics, avx2]
 

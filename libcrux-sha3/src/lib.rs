@@ -39,7 +39,7 @@ impl From<u32> for Algorithm {
             2 => Algorithm::Sha256,
             3 => Algorithm::Sha384,
             4 => Algorithm::Sha512,
-            _ => panic!("Unknown Digest mode {}", v),
+            _ => panic!(),
         }
     }
 }
@@ -376,9 +376,7 @@ pub mod neon {
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(non_snake_case)]
         #[inline(always)]
-        fn _shake256xN<const LEN: usize, const N: usize>(
-            input: &[[u8; 33]; N],
-        ) -> [[u8; LEN]; N] {
+        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
 
             let mut out = [[0u8; LEN]; N];
@@ -468,9 +466,7 @@ pub mod neon {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
             #[inline(always)]
-            fn _shake128_absorb_finalxN<const N: usize>(
-                input: [[u8; 34]; N],
-            ) -> [KeccakState2; 2] {
+            fn _shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> [KeccakState2; 2] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
                 let mut state = [shake128_init(), shake128_init()];
 
@@ -573,7 +569,11 @@ pub mod neon {
 
             #[allow(unused_variables)]
             #[inline(always)]
-            pub fn shake128_squeeze_next_block(s: &mut KeccakState2, out0: &mut [u8], out1: &mut [u8]) {
+            pub fn shake128_squeeze_next_block(
+                s: &mut KeccakState2,
+                out0: &mut [u8],
+                out1: &mut [u8],
+            ) {
                 #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
@@ -695,9 +695,7 @@ pub mod avx2 {
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(unused_variables, non_snake_case)]
         #[inline(always)]
-        fn _shake256xN<const LEN: usize, const N: usize>(
-            input: &[[u8; 33]; N],
-        ) -> [[u8; LEN]; N] {
+        fn _shake256xN<const LEN: usize, const N: usize>(input: &[[u8; 33]; N]) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
             let mut out = [[0u8; LEN]; N];
 
