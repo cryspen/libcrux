@@ -25,6 +25,12 @@ file(GLOB SOURCES_vec256
     libcrux_sha3_avx2.c
 )
 
+if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+    add_compile_options(
+        -fPIC
+    )
+endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+
 add_library(sha3_vec256 OBJECT ${SOURCES_vec256})
 add_library(sha3 SHARED ${SOURCES})
 add_library(sha3_static STATIC ${SOURCES})
