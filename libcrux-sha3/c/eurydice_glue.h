@@ -174,7 +174,10 @@ typedef const char *Prims_string;
 
 // MISC (UNTESTED)
 
-#define core_fmt_Formatter void
+typedef void *core_fmt_Formatter;
+typedef void *core_fmt_Arguments;
+typedef void *core_fmt_rt_Argument;
+#define core_fmt_rt__core__fmt__rt__Argument__a__1__new_display(x1, x2, x3, x4) NULL
 
 // VECTORS (ANCIENT, POSSIBLY UNTESTED)
 
