@@ -36,6 +36,22 @@ files:
     include_in_c:
       - '"libcrux_hacl_glue.h"'
 
+  - name: libcrux_mlkem_avx2
+    api:
+      - [libcrux_ml_kem, vector, avx2, "*"]
+      - [libcrux_ml_kem, hash_functions, avx2, "*"]
+      - [libcrux_sha3, avx2, "*"]
+    monomorphizations_using:
+      - [libcrux_ml_kem, vector, avx2, "*"]
+      - [libcrux_ml_kem, hash_functions, avx2, "*"]
+      - [libcrux_sha3, avx2, "*"]
+    monomorphizations_of:
+      - [libcrux_ml_kem, vector, avx2, "*"]
+      - [libcrux_ml_kem, hash_functions, avx2, "*"]
+      - [libcrux_sha3, avx2, "*"]
+    include_in_c:
+      - '"libcrux_hacl_glue.h"'
+
   - name: libcrux_core
     monomorphizations_of:
       - [ core, "*"]
@@ -120,7 +136,7 @@ files:
     include_in_c:
       - '"libcrux_hacl_glue.h"'
 
-  - name: libcrux_mlkem1027
+  - name: libcrux_mlkem1024
     api:
       - [libcrux_ml_kem, mlkem1024]
     include_in_c:
