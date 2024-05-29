@@ -12,6 +12,17 @@ impl PolynomialRingElement {
     };
 }
 
+pub(crate) fn add_to_ring_element(
+    mut lhs: PolynomialRingElement,
+    rhs: &PolynomialRingElement,
+) -> PolynomialRingElement {
+    for i in 0..lhs.coefficients.len() {
+        lhs.coefficients[i] += rhs.coefficients[i];
+    }
+
+    lhs
+}
+
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
     value & ((1 << n) - 1)
 }
@@ -60,7 +71,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 //
 // This approach has been taken from:
 // https://github.com/cloudflare/circl/blob/main/sign/dilithium/internal/common/field.go#L35
-pub(crate) fn power2round(t: i32) -> (i32, i32) {
+fn power2round(t: i32) -> (i32, i32) {
     debug_assert!(t >= 0 && t < FIELD_MODULUS);
 
     // Compute t mod 2ᵈ
@@ -81,6 +92,27 @@ pub(crate) fn power2round(t: i32) -> (i32, i32) {
     let t1 = (t - t0) >> BITS_IN_LOWER_PART_OF_T;
 
     (t0, t1)
+}
+
+pub(crate) fn power2round_vector<const ROWS_IN_A: usize>(
+    t: [PolynomialRingElement; ROWS_IN_A],
+) -> (
+    [PolynomialRingElement; ROWS_IN_A],
+    [PolynomialRingElement; ROWS_IN_A],
+) {
+    let mut vector_t0 = [PolynomialRingElement::ZERO; ROWS_IN_A];
+    let mut vector_t1 = [PolynomialRingElement::ZERO; ROWS_IN_A];
+
+    for i in 0..ROWS_IN_A {
+        for (j, coefficient) in t[i].coefficients.into_iter().enumerate() {
+            let (c0, c1) = power2round(coefficient);
+
+            vector_t0[i].coefficients[j] = c0;
+            vector_t1[i].coefficients[j] = c1;
+        }
+    }
+
+    (vector_t0, vector_t1)
 }
 
 pub(crate) fn t0_to_unsigned_representative(t0: i32) -> i32 {

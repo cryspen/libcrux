@@ -30,6 +30,7 @@ pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA65KeyPair {
     let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
         ROWS_IN_A,
         COLUMNS_IN_A,
+        ETA,
         SIGNING_KEY_SIZE,
         VERIFICATION_KEY_SIZE,
     >(randomness);
