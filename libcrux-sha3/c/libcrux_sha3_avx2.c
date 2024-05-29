@@ -5,11 +5,11 @@
   KaRaMeL version: e8e461ce
  */
 
+#include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "internal/libcrux_sha3_avx2.h"
 
 #include "internal/libcrux_sha3.h"
 #include "internal/core.h"
-#include "intrinsics/libcrux_intrinsics_avx2.h"
 
 static inline core_core_arch_x86___m256i
 _veor5q_u64(
