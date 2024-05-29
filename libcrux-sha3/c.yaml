@@ -41,8 +41,6 @@ files:
   - name: libcrux_sha3
     api:
       - [libcrux_sha3]
-    include_in_c:
-      - '"libcrux_core.h"'
 
   - name: core
     private:
