@@ -49,6 +49,10 @@ static inline core_core_arch_x86___m256i libcrux_intrinsics_avx2_mm256_set1_epi3
   return _mm256_set1_epi32(a);
 }
 
+static inline core_core_arch_x86___m256i libcrux_intrinsics_avx2_mm256_set1_epi64x(int64_t a){
+  return _mm256_set1_epi64x(a);
+}
+
 static inline core_core_arch_x86___m128i libcrux_intrinsics_avx2_mm_set1_epi16(int16_t a){
   return _mm_set1_epi16(a);
 }
@@ -163,7 +167,12 @@ static inline core_core_arch_x86___m256i
 libcrux_intrinsics_avx2_mm256_loadu_si256_i16(Eurydice_slice a){
   return _mm256_loadu_si256(a.ptr);
 }
-  
+
+static inline core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_mm256_loadu_si256_u8(Eurydice_slice a){
+  return _mm256_loadu_si256(a.ptr);
+}
+
 static inline core_core_arch_x86___m128i libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_slice a){
   return _mm_loadu_si128(a.ptr);
 }
@@ -176,6 +185,14 @@ libcrux_intrinsics_avx2_mm_storeu_bytes_si128(Eurydice_slice a, core_core_arch_x
 
 static inline void
 libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
+  Eurydice_slice a,
+  core_core_arch_x86___m256i b
+){
+  return _mm256_storeu_si256(a.ptr,b);
+}
+
+static inline void
+libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
   Eurydice_slice a,
   core_core_arch_x86___m256i b
 ){
@@ -309,6 +326,15 @@ libcrux_intrinsics_avx2_mm256_and_si256(
 }
 
 static inline core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_mm256_andnot_si256(
+  core_core_arch_x86___m256i a,
+  core_core_arch_x86___m256i b
+){
+  return _mm256_andnot_si256(a,b);
+}
+
+
+static inline core_core_arch_x86___m256i
 libcrux_intrinsics_avx2_mm256_xor_si256(
   core_core_arch_x86___m256i a,
   core_core_arch_x86___m256i b
@@ -342,6 +368,13 @@ libcrux_intrinsics_avx2_mm256_slli_epi32(int32_t a, core_core_arch_x86___m256i b
 }
 
 static inline core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_mm256_slli_epi64_(int32_t a, core_core_arch_x86___m256i b){
+  return _mm256_slli_epi64(b,a);
+}
+
+#define libcrux_intrinsics_avx2_mm256_slli_epi64(a,b,c) (libcrux_intrinsics_avx2_mm256_slli_epi64_(a,b))
+
+static inline core_core_arch_x86___m256i
 libcrux_intrinsics_avx2_mm256_srai_epi32(int32_t a, core_core_arch_x86___m256i b){
   return _mm256_srai_epi32(b,a);
 }
@@ -360,9 +393,11 @@ libcrux_intrinsics_avx2_mm256_sllv_epi32(
 }
 
 static inline core_core_arch_x86___m256i
-libcrux_intrinsics_avx2_mm256_srli_epi64(int32_t a, core_core_arch_x86___m256i b){
+libcrux_intrinsics_avx2_mm256_srli_epi64_(int32_t a, core_core_arch_x86___m256i b){
   return _mm256_srli_epi64(b,a);
 }
+
+#define libcrux_intrinsics_avx2_mm256_srli_epi64(a,b,c) (libcrux_intrinsics_avx2_mm256_srli_epi64_(a,b))
 
 // Shuffle and Vector Interleaving
 
@@ -372,6 +407,14 @@ libcrux_intrinsics_avx2_mm256_unpacklo_epi32(
   core_core_arch_x86___m256i b
 ){
   return _mm256_unpacklo_epi32(a,b);
+}
+
+static inline core_core_arch_x86___m256i
+libcrux_intrinsics_avx2_mm256_unpacklo_epi64(
+  core_core_arch_x86___m256i a,
+  core_core_arch_x86___m256i b
+){
+  return _mm256_unpacklo_epi64(a,b);
 }
 
 static inline core_core_arch_x86___m256i
@@ -422,6 +465,7 @@ libcrux_intrinsics_avx2_mm256_permute4x64_epi64(int32_t a, core_core_arch_x86___
   return _mm256_permute4x64_epi64(b,a);
 }
 
+#define libcrux_intrinsics_avx2_mm256_permute2x128_si256(a,b,c,d) (_mm256_permute2x128_si256(b,c,a))
 
 static inline core_core_arch_x86___m256i
 libcrux_intrinsics_avx2_mm256_inserti128_si256(

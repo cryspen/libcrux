@@ -48,6 +48,14 @@ typedef struct {
 #define core_slice___Slice_T___copy_from_slice(dst, src, t, _ret_t) memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) ((Eurydice_slice){ .ptr = ptr_, .len = len_ })
 
+static inline void core_num__u64_9__to_le_bytes(uint64_t v,uint8_t buf[8]) {
+        store64_le(buf,v);
+}
+static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
+        return load64_le(buf);
+}
+
+  
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone(len, src, dst, elem_type, _ret_t) \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define core_array_TryFromSliceError uint8_t
