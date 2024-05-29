@@ -376,7 +376,7 @@ pub mod neon {
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(non_snake_case)]
         #[inline(always)]
-        fn shake256xN<const LEN: usize, const N: usize>(
+        fn _shake256xN<const LEN: usize, const N: usize>(
             input: &[[u8; 33]; N],
         ) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
@@ -468,7 +468,7 @@ pub mod neon {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
             #[inline(always)]
-            fn shake128_absorb_finalxN<const N: usize>(
+            fn _shake128_absorb_finalxN<const N: usize>(
                 input: [[u8; 34]; N],
             ) -> [KeccakState2; 2] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
@@ -521,7 +521,7 @@ pub mod neon {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
             #[inline(always)]
-            fn shake128_squeeze3xN<const LEN: usize, const N: usize>(
+            fn _shake128_squeeze3xN<const LEN: usize, const N: usize>(
                 state: &mut [KeccakState2; 2],
             ) -> [[u8; LEN]; N] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
@@ -596,7 +596,7 @@ pub mod neon {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
             #[inline(always)]
-            fn shake128_squeezexN<const LEN: usize, const N: usize>(
+            fn _shake128_squeezexN<const LEN: usize, const N: usize>(
                 state: &mut [KeccakState2; 2],
             ) -> [[u8; LEN]; N] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
@@ -695,7 +695,7 @@ pub mod avx2 {
         /// **PANICS** when `N` is not 2, 3, or 4.
         #[allow(unused_variables, non_snake_case)]
         #[inline(always)]
-        fn shake256xN<const LEN: usize, const N: usize>(
+        fn _shake256xN<const LEN: usize, const N: usize>(
             input: &[[u8; 33]; N],
         ) -> [[u8; LEN]; N] {
             debug_assert!(N == 2 || N == 3 || N == 4);
@@ -847,7 +847,7 @@ pub mod avx2 {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[inline(always)]
             #[allow(unused_variables, non_snake_case)]
-            fn shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> KeccakState4 {
+            fn _shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> KeccakState4 {
                 debug_assert!(N == 2 || N == 3 || N == 4);
                 let mut state = shake128_init();
 
@@ -919,7 +919,7 @@ pub mod avx2 {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[inline(always)]
             #[allow(unused_variables, non_snake_case)]
-            fn shake128_squeeze3xN<const LEN: usize, const N: usize>(
+            fn _shake128_squeeze3xN<const LEN: usize, const N: usize>(
                 state: &mut KeccakState4,
             ) -> [[u8; LEN]; N] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
@@ -1013,7 +1013,7 @@ pub mod avx2 {
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[allow(unused_variables, non_snake_case)]
             #[inline(always)]
-            fn shake128_squeezexN<const LEN: usize, const N: usize>(
+            fn _shake128_squeezexN<const LEN: usize, const N: usize>(
                 state: &mut KeccakState4,
             ) -> [[u8; LEN]; N] {
                 debug_assert!(N == 2 || N == 3 || N == 4);
