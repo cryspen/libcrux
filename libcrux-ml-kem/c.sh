@@ -3,8 +3,6 @@
 set -e
 set -o pipefail
 
-rm -rf c
-
 if [[ -z "$CHARON_HOME" ]]; then
     echo "Please set CHARON_HOME to the Charon directory" 1>&2
     exit 1
