@@ -1,6 +1,7 @@
 files:
   # Different crate
   - name: libcrux_intrinsics_neon
+    library: true
     inline_static: true
     api:
       - [libcrux_intrinsics, arm64]
