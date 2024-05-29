@@ -47,5 +47,7 @@ files:
   - name: core
     private:
       - [core, "*"]
+    monomorphizations_of:
+      - [core, result, "*"]
     api:
       - [Eurydice, "*"]
