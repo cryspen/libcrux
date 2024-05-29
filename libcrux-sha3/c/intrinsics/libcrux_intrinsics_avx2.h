@@ -450,40 +450,25 @@ libcrux_intrinsics_avx2_mm_packs_epi16(
 }
 
 
-static inline core_core_arch_x86___m256i
-libcrux_intrinsics_avx2_mm256_shuffle_epi32(int32_t a, core_core_arch_x86___m256i b){
-  return _mm256_shuffle_epi32(b,a);
-}
+#define libcrux_intrinsics_avx2_mm256_shuffle_epi32(a, b) \
+  (_mm256_shuffle_epi32(b,a))
   
-static inline core_core_arch_x86___m128i
-libcrux_intrinsics_avx2_mm256_extracti128_si256(int32_t a, core_core_arch_x86___m256i b){
-  return _mm256_extracti128_si256(b,a);
-}
+#define libcrux_intrinsics_avx2_mm256_extracti128_si256(a, b)\
+ (_mm256_extracti128_si256(b,a))
 
-static inline core_core_arch_x86___m256i
-libcrux_intrinsics_avx2_mm256_permute4x64_epi64(int32_t a, core_core_arch_x86___m256i b){
-  return _mm256_permute4x64_epi64(b,a);
-}
+#define libcrux_intrinsics_avx2_mm256_permute4x64_epi64(a,  b) \
+  (_mm256_permute4x64_epi64(b,a))
 
 #define libcrux_intrinsics_avx2_mm256_permute2x128_si256(a,b,c,d) (_mm256_permute2x128_si256(b,c,a))
 
-static inline core_core_arch_x86___m256i
-libcrux_intrinsics_avx2_mm256_inserti128_si256(
-  int32_t a,
-  core_core_arch_x86___m256i b,
-  core_core_arch_x86___m128i c
-){
-  return _mm256_inserti128_si256(b,c,a);
-}
+#define libcrux_intrinsics_avx2_mm256_inserti128_si256(\
+  a,\
+  b,\
+  c \
+) (_mm256_inserti128_si256(b,c,a))
 
-static inline core_core_arch_x86___m256i
-libcrux_intrinsics_avx2_mm256_blend_epi16(
-  int32_t a,
-  core_core_arch_x86___m256i b,
-  core_core_arch_x86___m256i c
-){
-  return _mm256_blend_epi16(b,c,a);
-}
+#define libcrux_intrinsics_avx2_mm256_blend_epi16(a,b, c) \
+  (_mm256_blend_epi16(b,c,a))
 
 
 static inline core_core_arch_x86___m256i
