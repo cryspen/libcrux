@@ -20,26 +20,28 @@ void libcrux_sha3_portable_shake256(Eurydice_slice x0, Eurydice_slice x1)
 libcrux_sha3_portable_KeccakState1
 libcrux_sha3_portable_incremental_shake128_init(void)
 {
-    return Hacl_Hash_SHA3_Scalar_state_malloc();
+  libcrux_sha3_portable_KeccakState1 st;
+  st.st = Hacl_Hash_SHA3_Scalar_state_malloc();
+  return st;
 }
 
 void libcrux_sha3_portable_incremental_shake128_absorb_final(
     libcrux_sha3_portable_KeccakState1 *x0,
     Eurydice_slice x1)
 {
-    Hacl_Hash_SHA3_Scalar_shake128_absorb_final(x0, x1.ptr, x1.len);
+    Hacl_Hash_SHA3_Scalar_shake128_absorb_final(x0->st, x1.ptr, x1.len);
 }
 
 void libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
     libcrux_sha3_portable_KeccakState1 *x0,
     Eurydice_slice x1)
 {
-    Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(x0, x1.ptr, x1.len);
+    Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(x0->st, x1.ptr, x1.len);
 }
 
 void libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_portable_KeccakState1 *x0,
     Eurydice_slice x1)
 {
-    Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(x0, x1.ptr, x1.len);
+    Hacl_Hash_SHA3_Scalar_shake128_squeeze_nblocks(x0->st, x1.ptr, x1.len);
 }
