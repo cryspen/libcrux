@@ -50,7 +50,7 @@ TEST(Sha3Test, ConsistencyTest)
   input.ptr = (void *)message;
   input.len = message_size;
 
-  libcrux_sha3_portable_sha256(input, digest);
+  libcrux_sha3_portable_sha256(input, EURYDICE_SLICE(digest, 0, 32));
 
   bytes expected_digest = from_hex(
       "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef");
