@@ -88,6 +88,11 @@ target_link_libraries(ml_kem_test PRIVATE
     gtest_main
     nlohmann_json::nlohmann_json
 )
+target_compile_definitions(ml_kem_test PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(ml_kem_test PRIVATE
+    -mavx
+    -mavx2
+)
 
 add_executable(sha3_test
     ${PROJECT_SOURCE_DIR}/tests/sha3.cc
@@ -96,4 +101,9 @@ target_link_libraries(sha3_test PRIVATE
     ml_kem_static
     gtest_main
     nlohmann_json::nlohmann_json
+)
+target_compile_definitions(sha3_test PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(sha3_test PRIVATE
+    -mavx
+    -mavx2
 )
