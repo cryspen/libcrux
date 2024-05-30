@@ -163,8 +163,8 @@ TEST(MlKem768Test, ConsistencyTest)
         randomness[i] = 13;
     //  generate_random(randomness, 64);
     auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair(randomness);
-    cout << "key_pair pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 1184U)) << endl;
-    cout << "key_pair sk: " << bytes_to_hex(bytes(key_pair.sk.value, key_pair.sk.value + 2400U)) << endl;
+    // cout << "key_pair pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 1184U)) << endl;
+    // cout << "key_pair sk: " << bytes_to_hex(bytes(key_pair.sk.value, key_pair.sk.value + 2400U)) << endl;
 
     //  generate_random(randomness, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_encapsulate(&key_pair.pk, randomness);

@@ -8611,7 +8611,7 @@ sample_from_xof__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_fu
   ret[3U]
 )
 {
-  printf(" >>> sample from xof 3 \n");
+  //  printf(" >>> sample from xof 3 \n");
   size_t sampled_coefficients[3U] = { 0U };
   int16_t out[3U][272U] = { { 0U } };
   uint8_t uu____0[3U][34U];
