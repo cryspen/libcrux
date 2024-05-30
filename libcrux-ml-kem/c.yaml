@@ -59,8 +59,6 @@ files:
       - [libcrux_ml_kem, vector, neon, "*"]
       - [libcrux_ml_kem, hash_functions, neon, "*"]
       - [libcrux_sha3, neon, "*"]
-    include_in_c:
-      - '"libcrux_hacl_glue.h"'
 
   - name: libcrux_mlkem_avx2
     api:
@@ -75,8 +73,6 @@ files:
       - [libcrux_ml_kem, vector, avx2, "*"]
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
       - [libcrux_sha3, avx2, "*"]
-    include_in_c:
-      - '"libcrux_hacl_glue.h"'
 
   - name: libcrux_core
     monomorphizations_of:
@@ -137,26 +133,18 @@ files:
   - name: libcrux_mlkem512
     api:
       - [libcrux_ml_kem, mlkem512]
-    include_in_c:
-      - '"libcrux_hacl_glue.h"'
 
   - name: libcrux_mlkem768
     api:
       - [libcrux_ml_kem, mlkem768]
-    include_in_c:
-      - '"libcrux_hacl_glue.h"'
 
   - name: libcrux_mlkem1024
     api:
       - [libcrux_ml_kem, mlkem1024]
-    include_in_c:
-      - '"libcrux_hacl_glue.h"'
 
   # Just a few constants not caught by anything above. Most likely can go into
   # core or polynomial (TODO: try it).
   - name: libcrux_mlkem_common
     private:
       - [libcrux_ml_kem, "*"]
-    include_in_h:
-      - '"libcrux_hacl_glue.h"'
     inline_static: true
