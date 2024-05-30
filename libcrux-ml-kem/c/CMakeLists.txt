@@ -32,6 +32,8 @@ file(GLOB SOURCES_vec256
     ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
 )
 
+# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
         -fPIC

@@ -44,13 +44,6 @@ files:
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 
-  # Common parts of SHA3 (this catches stuff that hasn't matched above)
-  - name: libcrux_sha3
-    api:
-      - [libcrux_sha3, "*"]
-    include_in_c:
-      - '"libcrux_core.h"'
-
   - name: libcrux_mlkem_neon
     api:
       - [libcrux_ml_kem, vector, neon, "*"]
@@ -78,6 +71,15 @@ files:
       - [libcrux_ml_kem, vector, avx2, "*"]
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
       - [libcrux_sha3, avx2, "*"]
+
+  # Common parts of SHA3 (this catches stuff that hasn't matched above)
+  - name: libcrux_sha3
+    api:
+      - [libcrux_sha3, "*"]
+    private:
+      - [libcrux_ml_kem, hash_functions, "*"]
+    include_in_c:
+      - '"libcrux_core.h"'
 
   - name: libcrux_core
     monomorphizations_of:
@@ -121,19 +123,6 @@ files:
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
     api:
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
-
-  - name: libcrux_mlkem_sha3
-    api:
-      - [libcrux_ml_kem, hash_functions, "*"]
-
-  - name: libcrux_platform
-    api:
-      - [libcrux_platform, "*"]
-
-  # I think this is not doing anything
-  - name: libcrux_mlkem_eurydice
-    api:
-      - [libcrux_ml_kem, eurydice_types, "*"]
 
   - name: libcrux_mlkem512
     api:
