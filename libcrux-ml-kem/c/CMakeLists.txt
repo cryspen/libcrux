@@ -22,14 +22,16 @@ file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
     ${PROJECT_SOURCE_DIR}/libcrux_polynomial.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3.c
+    ${PROJECT_SOURCE_DIR}/Hacl_Hash_SHA3_Scalar.c
+    # ${PROJECT_SOURCE_DIR}/libcrux_sha3.c
 )
 # file(GLOB VEC128_SOURCES
 #     libcrux_sha3_neon.c
 # )
 file(GLOB SOURCES_vec256
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
+    ${PROJECT_SOURCE_DIR}/Hacl_Hash_SHA3_Simd256.c
+    # ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
