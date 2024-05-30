@@ -1,5 +1,7 @@
 # cmake -B build -G "Ninja Multi-Config"
 # cmake --build build
+# # For release (benchmarks)
+# cmake --build build --config Release
 
 cmake_minimum_required(VERSION 3.10)
 
@@ -8,7 +10,17 @@ project(libcrux-ml-kem
     LANGUAGES C CXX
 )
 
-set(CMAKE_C_FLAGS " -Wall ")
+set(CMAKE_C_STANDARD 11)
+add_compile_options(
+    -Wall
+    # -Wextra
+    # -pedantic
+    # -Wconversion
+    # -Wsign-conversion
+    $<$<CONFIG:DEBUG>:-g>
+    $<$<CONFIG:DEBUG>:-Og>
+    $<$<CONFIG:RELEASE>:-O3>
+)
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 include_directories(
     ${PROJECT_SOURCE_DIR}
@@ -104,6 +116,30 @@ target_link_libraries(sha3_test PRIVATE
 )
 target_compile_definitions(sha3_test PUBLIC HACL_CAN_COMPILE_VEC256)
 target_compile_options(sha3_test PRIVATE
+    -mavx
+    -mavx2
+)
+
+# --- Benchmarks
+
+FetchContent_Populate(benchmark
+    GIT_REPOSITORY  https://github.com/google/benchmark.git
+    # The latest release 1.7.1 is broken due to https://github.com/google/benchmark/pull/1517
+    # But also: need the fix for https://github.com/google/benchmark/pull/1669
+    GIT_TAG         bc946b919cac6f25a199a526da571638cfde109f
+)
+add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
+
+
+add_executable(ml_kem_bench
+    ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
+)
+target_link_libraries(ml_kem_bench PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(ml_kem_bench PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(ml_kem_bench PRIVATE
     -mavx
     -mavx2
 )
