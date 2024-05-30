@@ -1,6 +1,6 @@
 use crate::{
     arithmetic::{power2round_vector, PolynomialRingElement},
-    constants::{RING_ELEMENT_OF_T1S_SIZE, SEED_FOR_A_SIZE, SEED_FOR_ERROR_VECTORS_SIZE},
+    constants::{BYTES_IN_RING_ELEMENT_OF_T1S, SEED_FOR_A_SIZE, SEED_FOR_ERROR_VECTORS_SIZE},
     hash_functions::H,
     matrix::{compute_As1_plus_s2, expand_to_A, sample_error_vector},
     serialize::serialize_ring_element_of_t1s,
@@ -20,8 +20,8 @@ pub(super) fn serialize_verification_key<
     verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(&seed_for_A);
 
     for i in 0..ROWS_IN_A {
-        let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
-        verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
+        let offset = SEED_FOR_A_SIZE + (i * BYTES_IN_RING_ELEMENT_OF_T1S);
+        verification_key_serialized[offset..offset + BYTES_IN_RING_ELEMENT_OF_T1S]
             .copy_from_slice(&serialize_ring_element_of_t1s(t1[i]));
     }
 

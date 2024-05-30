@@ -68,13 +68,14 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     montgomery_reduce((fe as i64) * (fer as i64))
 }
 
-// Splits t into t0 and t1 with a = t1*2ᴰ + t0
+// Splits t ∈ {0, ..., q-1} into t0 and t1 with a = t1*2ᴰ + t0
 // and -2ᴰ⁻¹ < t0 < 2ᴰ⁻¹.  Returns t0 and t1 computed as.
 //
 // - t0 = t mod± 2ᵈ
 // - t1 = (t - t0) / 2ᵈ.
 //
-// We assume the input t is in the signed representative range.
+// We assume the input t is in the signed representative range and convert it
+// to the standard unsigned range.
 //
 // This approach has been taken from:
 // https://github.com/cloudflare/circl/blob/main/sign/dilithium/internal/common/field.go#L35

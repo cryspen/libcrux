@@ -31,8 +31,8 @@ pub(crate) fn expand_to_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
 
     for i in 0..ROWS_IN_A {
         for j in 0..COLUMNS_IN_A {
-            seed[32] = i as u8;
-            seed[33] = j as u8;
+            seed[32] = j as u8;
+            seed[33] = i as u8;
 
             let sampled = sample_ring_element_uniform(seed);
 
