@@ -19,7 +19,9 @@ add_compile_options(
     # -Wsign-conversion
     $<$<CONFIG:DEBUG>:-g>
     $<$<CONFIG:DEBUG>:-Og>
+    $<$<CONFIG:RELEASE>:-g>
     $<$<CONFIG:RELEASE>:-O3>
+    -fno-omit-frame-pointer
 )
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 include_directories(
@@ -130,7 +132,6 @@ FetchContent_Populate(benchmark
 )
 add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
 
-
 add_executable(ml_kem_bench
     ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
 )
@@ -140,6 +141,32 @@ target_link_libraries(ml_kem_bench PRIVATE
 )
 target_compile_definitions(ml_kem_bench PUBLIC HACL_CAN_COMPILE_VEC256)
 target_compile_options(ml_kem_bench PRIVATE
+    -mavx
+    -mavx2
+)
+
+add_executable(ml_kem_keygen
+    ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
+)
+target_link_libraries(ml_kem_keygen PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(ml_kem_keygen PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(ml_kem_keygen PRIVATE
+    -mavx
+    -mavx2
+)
+
+add_executable(ml_kem_encaps
+    ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
+)
+target_link_libraries(ml_kem_encaps PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(ml_kem_encaps PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(ml_kem_encaps PRIVATE
     -mavx
     -mavx2
 )
