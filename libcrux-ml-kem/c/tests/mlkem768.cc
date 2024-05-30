@@ -266,23 +266,23 @@ TEST(MlKem768Test, NISTKnownAnswerTest)
             libcrux_ml_kem_mlkem768_generate_key_pair(kat.key_generation_seed.data());
         cout << "key_pair pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 1184U)) << endl;
         uint8_t pk_hash[32];
-        libcrux_sha3_sha256(
+        libcrux_sha3_portable_sha256(
             EURYDICE_SLICE(key_pair.pk.value, 0,
                            LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE_768),
-            pk_hash);
+            EURYDICE_SLICE(pk_hash, 0, 32));
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
         uint8_t sk_hash[32];
-        libcrux_sha3_sha256(
-            EURYDICE_SLICE(key_pair.sk.value, 0, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768), sk_hash);
+        libcrux_sha3_portable_sha256(
+            EURYDICE_SLICE(key_pair.sk.value, 0, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768), EURYDICE_SLICE(sk_hash, 0, 32));
         EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
         auto ctxt = libcrux_ml_kem_mlkem768_encapsulate(
             &key_pair.pk, kat.encapsulation_seed.data());
         uint8_t ct_hash[32];
-        libcrux_sha3_sha256(
+        libcrux_sha3_portable_sha256(
             EURYDICE_SLICE(ctxt.fst.value, 0,
                            LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE_768),
-            ct_hash);
+            EURYDICE_SLICE(ct_hash, 0, 32));
         EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
         EXPECT_EQ(0,
                   memcmp(ctxt.snd,
