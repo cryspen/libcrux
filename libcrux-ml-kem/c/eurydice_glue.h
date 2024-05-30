@@ -15,7 +15,7 @@ extern "C" {
 
 typedef uint64_t* libcrux_sha3_portable_KeccakState1;
 #if defined(__x86_64__) || defined(_M_X64)
-#if defined(HACL_CAN_COMPILE_VEC128)
+#if defined(HACL_CAN_COMPILE_VEC256)
 typedef Lib_IntVector_Intrinsics_vec256* libcrux_sha3_avx2_x4_incremental_KeccakState4;
 #endif
 #endif

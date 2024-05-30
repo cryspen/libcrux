@@ -45,6 +45,10 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 add_library(ml_kem SHARED ${SOURCES})
 add_library(ml_kem_static STATIC ${SOURCES})
 
+# XXX: This is wrong, but we need avx2 everywhere right now.
+target_compile_definitions(ml_kem PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_definitions(ml_kem_static PUBLIC HACL_CAN_COMPILE_VEC256)
+
 # if(LIBCRUX_VEC256)
 add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
 target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
