@@ -88,3 +88,65 @@ target_link_libraries(sha3_test PRIVATE
     gtest_main
     nlohmann_json::nlohmann_json
 )
+
+# --- Benchmarks
+
+FetchContent_Populate(benchmark
+    GIT_REPOSITORY  https://github.com/google/benchmark.git
+    # The latest release 1.7.1 is broken due to https://github.com/google/benchmark/pull/1517
+    # But also: need the fix for https://github.com/google/benchmark/pull/1669
+    GIT_TAG         bc946b919cac6f25a199a526da571638cfde109f
+)
+add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
+
+add_executable(ml_kem_bench
+    ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
+)
+target_link_libraries(ml_kem_bench PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(ml_kem_bench PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(ml_kem_bench PRIVATE
+    -mavx
+    -mavx2
+)
+
+add_executable(ml_kem_keygen
+    ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
+)
+target_link_libraries(ml_kem_keygen PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(ml_kem_keygen PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(ml_kem_keygen PRIVATE
+    -mavx
+    -mavx2
+)
+
+add_executable(ml_kem_encaps
+    ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
+)
+target_link_libraries(ml_kem_encaps PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(ml_kem_encaps PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(ml_kem_encaps PRIVATE
+    -mavx
+    -mavx2
+)
+
+add_executable(sha3_bench
+    ${PROJECT_SOURCE_DIR}/benches/sha3.cc
+)
+target_link_libraries(sha3_bench PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(sha3_bench PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(sha3_bench PRIVATE
+    -mavx
+    -mavx2
+)

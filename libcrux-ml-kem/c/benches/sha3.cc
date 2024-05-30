@@ -11,8 +11,7 @@
 #include "libcrux_sha3_avx2.h"
 #include "libcrux_mlkem768.h"
 #include "internal/libcrux_core.h"
-#include "Hacl_Hash_SHA3_Scalar.h"
-#include "Hacl_Hash_SHA3_Simd256.h"
+
 
 void generate_random(uint8_t *output, uint32_t output_len)
 {
@@ -61,15 +60,15 @@ shake128_34_504(benchmark::State &state)
     generate_random(input, 34);
 
     // libcrux_sha3_portable_sha256(EURYDICE_SLICE(input, 0, 32), EURYDICE_SLICE(digest, 0, 32));
-    libcrux_sha3_avx2_x4_incremental_KeccakState4 st;
-    st.st = Hacl_Hash_SHA3_Simd256_state_malloc();
-    Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(st.st, digest0, digest1, digest2, digest3, 504);
+    libcrux_sha3_avx2_x4_incremental_KeccakState4 st = libcrux_sha3_avx2_x4_incremental_shake128_init();
+    libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(&st,EURYDICE_SLICE(input,0,34),EURYDICE_SLICE(input,0,34),EURYDICE_SLICE(input,0,34),EURYDICE_SLICE(input,0,34));
+    libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(st,EURYDICE_SLICE(digest0,0,504),EURYDICE_SLICE(digest,0,504),EURYDICE_SLICE(digest,0,504),EURYDICE_SLICE(digest,0,504));
 
     for (auto _ : state)
     {
-        libcrux_sha3_avx2_x4_incremental_KeccakState4 st;
-        st.st = Hacl_Hash_SHA3_Simd256_state_malloc();
-        Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(st.st, digest0, digest1, digest2, digest3, 504);
+    libcrux_sha3_avx2_x4_incremental_KeccakState4 st = libcrux_sha3_avx2_x4_incremental_shake128_init();
+    libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(&st,EURYDICE_SLICE(input,0,34),EURYDICE_SLICE(input,0,34),EURYDICE_SLICE(input,0,34),EURYDICE_SLICE(input,0,34));
+    libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(st,EURYDICE_SLICE(digest0,0,504),EURYDICE_SLICE(digest,0,504),EURYDICE_SLICE(digest,0,504),EURYDICE_SLICE(digest,0,504));
     }
 }
 

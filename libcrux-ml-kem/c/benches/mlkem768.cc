@@ -11,7 +11,6 @@
 #include "libcrux_sha3.h"
 #include "libcrux_mlkem768.h"
 #include "internal/libcrux_core.h"
-#include "Hacl_Hash_SHA3_Scalar.h"
 
 void generate_random(uint8_t *output, uint32_t output_len)
 {
