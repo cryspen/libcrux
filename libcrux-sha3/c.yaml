@@ -1,12 +1,15 @@
 files:
   # Different crate
   - name: libcrux_intrinsics_neon
+    library: true
     inline_static: true
     api:
       - [libcrux_intrinsics, arm64]
 
   # Different crate
   - name: libcrux_intrinsics_avx2
+    library: true
+    inline_static: true
     api:
       - [libcrux_intrinsics, avx2]
 
@@ -41,11 +44,11 @@ files:
   - name: libcrux_sha3
     api:
       - [libcrux_sha3]
-    include_in_c:
-      - '"libcrux_core.h"'
 
   - name: core
     private:
       - [core, "*"]
+    monomorphizations_of:
+      - [core, result, "*"]
     api:
       - [Eurydice, "*"]
