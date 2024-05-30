@@ -29,10 +29,14 @@ libcrux_sha3_avx2_x4_shake256(
   Eurydice_slice x5,
   Eurydice_slice x6,
   Eurydice_slice x7
-);
+){
+    Hacl_Hash_SHA3_Simd256_shake256(x4.ptr, x5.ptr, x6.ptr, x7.ptr, x4.len, x0.ptr, x1.ptr, x2.ptr, x3.ptr, x0.len);
+}
 
 extern libcrux_sha3_avx2_x4_incremental_KeccakState4
-libcrux_sha3_avx2_x4_incremental_shake128_init(void);
+libcrux_sha3_avx2_x4_incremental_shake128_init(void){
+    return Hacl_Hash_SHA3_Simd256_state_malloc();
+}
 
 extern void
 libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
@@ -41,7 +45,9 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
   Eurydice_slice x2,
   Eurydice_slice x3,
   Eurydice_slice x4
-);
+){
+    Hacl_Hash_SHA3_Simd256_shake128_absorb_final(x0, x1.ptr, x2.ptr, x3.ptr, x4.ptr, x1.len);
+}
 
 extern void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
@@ -50,7 +56,9 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
   Eurydice_slice x2,
   Eurydice_slice x3,
   Eurydice_slice x4
-);
+){
+    Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(x0, x1.ptr, x2.ptr, x3.ptr, x4.ptr, x1.len);
+}
 
 extern void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
@@ -59,7 +67,9 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
   Eurydice_slice x2,
   Eurydice_slice x3,
   Eurydice_slice x4
-);
+){
+    Hacl_Hash_SHA3_Simd256_shake128_squeeze_nblocks(x0, x1.ptr, x2.ptr, x3.ptr, x4.ptr, x1.len);
+}
 
 #if defined(__cplusplus)
 }
