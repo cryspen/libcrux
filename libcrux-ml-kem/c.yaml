@@ -33,6 +33,7 @@ files:
     private:
       - [libcrux_sha3, simd, avx2, "*"]
     monomorphizations_of:
+      - [libcrux_sha3, avx2, "*"]
       - [libcrux_sha3, simd, avx2, "*"]
     monomorphizations_using:
       - [libcrux_sha3, simd, avx2, "*"]
