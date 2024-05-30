@@ -5,8 +5,6 @@
   KaRaMeL version: 04cb86b9
  */
 
-#include "intrinsics/libcrux_intrinsics_arm64.h"
-
 #include "libcrux_sha3_neon.h"
 
 #include "internal/libcrux_core.h"

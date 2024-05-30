@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#include "intrinsics/libcrux_intrinsics_arm64.h"
+
 #include "libcrux_sha3.h"
 #include "libcrux_core.h"
 #include "eurydice_glue.h"

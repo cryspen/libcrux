@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(libcrux-sha3
+project(libcrux-ml-kem
     VERSION 0.1.0
     LANGUAGES C CXX
 )
@@ -16,12 +16,17 @@ include_directories(
 )
 file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_core.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
+    ${PROJECT_SOURCE_DIR}/libcrux_polynomial.c
     ${PROJECT_SOURCE_DIR}/libcrux_sha3.c
 )
 # file(GLOB VEC128_SOURCES
 #     libcrux_sha3_neon.c
 # )
 file(GLOB SOURCES_vec256
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
     ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
 )
 
@@ -31,18 +36,18 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     )
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
-add_library(sha3_vec256 OBJECT ${SOURCES_vec256})
-add_library(sha3 SHARED ${SOURCES})
-add_library(sha3_static STATIC ${SOURCES})
+add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
+add_library(ml_kem SHARED ${SOURCES})
+add_library(ml_kem_static STATIC ${SOURCES})
 
-target_compile_options(sha3_vec256 PRIVATE
+target_compile_options(ml_kem_vec256 PRIVATE
     -mavx
     -mavx2
 )
 
 # if(LIBCRUX_VEC256)
-target_sources(sha3_static PRIVATE $<TARGET_OBJECTS:sha3_vec256>)
-target_sources(sha3 PRIVATE $<TARGET_OBJECTS:sha3_vec256>)
+target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
 # endif()
 
 # --- Tests
@@ -65,11 +70,11 @@ DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(json)
 
-add_executable(sha3_test
+add_executable(ml_kem_test
     ${PROJECT_SOURCE_DIR}/tests/sha3.cc
 )
-target_link_libraries(sha3_test PRIVATE
-    sha3_static
+target_link_libraries(ml_kem_test PRIVATE
+    ml_kem_static
     gtest_main
     nlohmann_json::nlohmann_json
 )

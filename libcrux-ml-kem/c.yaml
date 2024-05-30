@@ -28,7 +28,7 @@ files:
     monomorphizations_using:
       - [libcrux_sha3, neon, "*"]
       - [libcrux_sha3, simd, arm64, "*"]
-    include_in_c:
+    include_in_h:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
   - name: libcrux_sha3_avx2
@@ -41,7 +41,7 @@ files:
       - [libcrux_sha3, simd, avx2, "*"]
     monomorphizations_using:
       - [libcrux_sha3, simd, avx2, "*"]
-    include_in_c:
+    include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 
   # Common parts of SHA3 (this catches stuff that hasn't matched above)
