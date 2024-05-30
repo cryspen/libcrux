@@ -9,6 +9,7 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_FLAGS " -Wall ")
+set(CMAKE_COLOR_DIAGNOSTICS "ON")
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/internal
