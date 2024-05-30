@@ -236,7 +236,7 @@ fn generate_keypair_generic<
     let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
         MlKemPrivateKey::from(secret_key_serialized);
 
-    MlKemKeyPair::from(private_key, public_key.into())
+    MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
 pub(crate) fn encapsulate<
@@ -402,7 +402,7 @@ fn encapsulate_generic<
     >(public_key.as_slice(), randomness, pseudorandomness);
     let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
     shared_secret_array.copy_from_slice(shared_secret);
-    (ciphertext.into(), shared_secret_array)
+    (MlKemCiphertext::from(ciphertext), shared_secret_array)
 }
 
 pub(crate) fn decapsulate<

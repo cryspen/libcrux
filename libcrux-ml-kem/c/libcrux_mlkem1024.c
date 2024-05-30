@@ -1500,10 +1500,7 @@ encapsulate_generic__libcrux_ml_kem_vector_PortableVector_libcrux_ml_kem_hash_fu
   memcpy(uu____4, ciphertext, (size_t)1568U * sizeof (uint8_t));
   libcrux_ml_kem_types_MlKemCiphertext____1568size_t
   uu____5 =
-    core_convert___core__convert__Into_U__for_T__3__into(uu____4,
-      uint8_t [1568U],
-      libcrux_ml_kem_types_MlKemCiphertext____1568size_t,
-      libcrux_ml_kem_types_MlKemCiphertext____1568size_t);
+    libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1568size_t(uu____4);
   uint8_t uu____6[32U];
   memcpy(uu____6, shared_secret_array, (size_t)32U * sizeof (uint8_t));
   K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_ lit;
@@ -1934,10 +1931,7 @@ generate_keypair_generic__libcrux_ml_kem_vector_PortableVector_libcrux_ml_kem_ha
   memcpy(uu____4, public_key, (size_t)1568U * sizeof (uint8_t));
   return
     libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBLIC_KEY_SIZE___from___3168size_t_1568size_t(uu____3,
-      core_convert___core__convert__Into_U__for_T__3__into(uu____4,
-        uint8_t [1568U],
-        libcrux_ml_kem_types_MlKemPublicKey____1568size_t,
-        libcrux_ml_kem_types_MlKemPublicKey____1568size_t));
+      libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___1568size_t(uu____4));
 }
 
 static libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t

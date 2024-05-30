@@ -61,8 +61,8 @@ typedef struct {
     .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
 #define core_slice___Slice_T___split_at_mut(slice, mid, element_type, ret_t) \
   ((ret_t){ \
-    .fst = EURYDICE_SLICE((element_type*)slice.ptr, 0, mid), \
-    .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
+    .fst = { .ptr = slice.ptr, .len = mid }, \
+    .snd = { .ptr = slice.ptr + mid * sizeof(element_type), .len = slice.len - mid }})
 
 
 // Can't have a flexible array as a member of a union -- this violates strict aliasing rules.
