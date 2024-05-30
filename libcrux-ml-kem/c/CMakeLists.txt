@@ -170,3 +170,16 @@ target_compile_options(ml_kem_encaps PRIVATE
     -mavx
     -mavx2
 )
+
+add_executable(sha3_bench
+    ${PROJECT_SOURCE_DIR}/benches/sha3.cc
+)
+target_link_libraries(sha3_bench PRIVATE
+    ml_kem_static
+    benchmark::benchmark
+)
+target_compile_definitions(sha3_bench PUBLIC HACL_CAN_COMPILE_VEC256)
+target_compile_options(sha3_bench PRIVATE
+    -mavx
+    -mavx2
+)
