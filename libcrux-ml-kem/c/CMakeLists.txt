@@ -15,7 +15,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/karamel/include
 )
 file(GLOB SOURCES
-    ${PROJECT_SOURCE_DIR}/core.c
+    ${PROJECT_SOURCE_DIR}/libcrux_core.c
     ${PROJECT_SOURCE_DIR}/libcrux_sha3.c
 )
 # file(GLOB VEC128_SOURCES

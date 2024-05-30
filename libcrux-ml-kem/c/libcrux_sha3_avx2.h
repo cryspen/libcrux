@@ -13,7 +13,6 @@ extern "C" {
 #endif
 
 #include "libcrux_sha3.h"
-#include "libcrux_intrinsics_avx2.h"
 #include "libcrux_core.h"
 #include "eurydice_glue.h"
 
