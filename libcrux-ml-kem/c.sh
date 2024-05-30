@@ -33,9 +33,7 @@ if [[ "$portable_only" = 1 ]]; then
 fi
 
 if [[ "$no_charon" = 0 ]]; then
-    rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
-    echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings)
+    rm -rf ../libcrux_ml_kem.llbc
     if ! [[ -f ../libcrux_sha3.llbc ]]; then
       echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
       echo "Suggestion: rm -rf ../target"
@@ -51,16 +49,5 @@ mkdir -p c
 cd c
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+$EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc
 cp $EURYDICE_HOME/include/eurydice_glue.h .
-
-# if [[ -n "$HACL_PACKAGES_HOME" && "$no_hacl" = 0 ]]; then
-#     # clang-format --style=Mozilla -i libcrux_kyber.c libcrux_kyber.h
-#     cp internal/*.h $HACL_PACKAGES_HOME/libcrux/include/internal/
-#     cp *.h $HACL_PACKAGES_HOME/libcrux/include
-#     cp *.c $HACL_PACKAGES_HOME/libcrux/src
-# elif [[ "$no_hacl" = 0 ]]; then
-#     echo "Please set HACL_PACKAGES_HOME to the hacl-packages directory to copy the code over" 1>&2
-# else
-#     echo "Copy to hacl-packages was disabled with --no-hacl" 1>&2
-# fi

@@ -264,6 +264,7 @@ TEST(MlKem768Test, NISTKnownAnswerTest)
     {
         auto key_pair =
             libcrux_ml_kem_mlkem768_generate_key_pair(kat.key_generation_seed.data());
+        cout << "key_pair pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 1184U)) << endl;
         uint8_t pk_hash[32];
         libcrux_sha3_sha256(
             EURYDICE_SLICE(key_pair.pk.value, 0,
