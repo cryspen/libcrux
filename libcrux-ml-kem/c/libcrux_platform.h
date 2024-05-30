@@ -14,7 +14,9 @@ extern "C" {
 
 #include "eurydice_glue.h"
 
-extern bool libcrux_platform_platform_simd256_support(void);
+static inline bool libcrux_platform_platform_simd256_support(void) {
+  return true;
+}
 
 extern bool libcrux_platform_platform_simd128_support(void);
 
