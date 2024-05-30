@@ -165,22 +165,22 @@ libcrux_intrinsics_avx2_mm256_set_epi32(
 
 static inline core_core_arch_x86___m256i
 libcrux_intrinsics_avx2_mm256_loadu_si256_i16(Eurydice_slice a){
-  return _mm256_loadu_si256(a.ptr);
+  return _mm256_loadu_si256((const __m256i*) a.ptr);
 }
 
 static inline core_core_arch_x86___m256i
 libcrux_intrinsics_avx2_mm256_loadu_si256_u8(Eurydice_slice a){
-  return _mm256_loadu_si256(a.ptr);
+  return _mm256_loadu_si256((const __m256i*) a.ptr);
 }
 
 static inline core_core_arch_x86___m128i libcrux_intrinsics_avx2_mm_loadu_si128(Eurydice_slice a){
-  return _mm_loadu_si128(a.ptr);
+  return _mm_loadu_si128((const __m128i*) a.ptr);
 }
 
 
 static inline void
 libcrux_intrinsics_avx2_mm_storeu_bytes_si128(Eurydice_slice a, core_core_arch_x86___m128i b){
-  return _mm_storeu_si128(a.ptr,b);
+  return _mm_storeu_si128((__m128i*) a.ptr,b);
 }
 
 static inline void
@@ -188,7 +188,7 @@ libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
   Eurydice_slice a,
   core_core_arch_x86___m256i b
 ){
-  return _mm256_storeu_si256(a.ptr,b);
+  return _mm256_storeu_si256((__m256i*) a.ptr,b);
 }
 
 static inline void
@@ -196,12 +196,12 @@ libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
   Eurydice_slice a,
   core_core_arch_x86___m256i b
 ){
-  return _mm256_storeu_si256(a.ptr,b);
+  return _mm256_storeu_si256((__m256i*) a.ptr,b);
 }
 
 static inline void
 libcrux_intrinsics_avx2_mm_storeu_si128(Eurydice_slice a, core_core_arch_x86___m128i b){
-  return _mm_storeu_si128(a.ptr,b);
+  return _mm_storeu_si128((__m128i*) a.ptr,b);
 }
 
 // Arithmetic: Add, Sub
