@@ -17,7 +17,6 @@ extern "C" {
 #include "Hacl_Hash_SHA3_Simd256.h"
 #include "libintvector.h"
 
-typedef Lib_IntVector_Intrinsics_vec256* libcrux_sha3_avx2_x4_incremental_KeccakState4;
 
 extern void
 libcrux_sha3_avx2_x4_shake256(
