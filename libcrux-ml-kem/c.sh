@@ -35,7 +35,10 @@ if [[ "$portable_only" = 1 ]]; then
 fi
 
 if [[ "$no_charon" = 0 ]]; then
-    echo "Running charon ..."
+    rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
+    echo "Running charon (sha3) ..."
+    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings)
+    echo "Running charon (ml-kem) ..."
     RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings
 else
     echo "Skipping charon"
@@ -45,7 +48,7 @@ mkdir -p c
 cd c
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc
+$EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 cp $EURYDICE_HOME/include/eurydice_glue.h .
 
 if [[ -n "$HACL_PACKAGES_HOME" && "$no_hacl" = 0 ]]; then

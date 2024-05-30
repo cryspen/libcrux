@@ -1,24 +1,50 @@
 files:
-  # Different crate
-  - name: libcrux_sha3
-    api:
-      - [libcrux_sha3, "*"]
-
-  # Different crate
+  # Intrinsics, in their own separate files.
   - name: libcrux_intrinsics_neon
     api:
       - [libcrux_intrinsics, arm64]
 
-  # Different crate
   - name: libcrux_intrinsics_avx2
     api:
       - [libcrux_intrinsics, avx2]
 
-  # - name: libcrux_mlkem_sha3_neon
-  #   specialized_over_trait_impl:
-  #     - [libcrux_ml_kem, hash_functions, neon, "*"]
-  #   api:
-  #     - [libcrux_ml_kem, hash_functions, neon, "*"]
+  - name: libcrux_platform
+    api:
+      - [libcrux_platform, "*"]
+
+  # Keep the per-target seperation idea: each SHA3 variant in its own file
+  - name: libcrux_sha3_neon
+    api:
+      - [libcrux_sha3, neon, "*"]
+    private:
+      - [libcrux_sha3, simd, arm64, "*"]
+    monomorphizations_of:
+      - [libcrux_sha3, neon, "*"]
+      - [libcrux_sha3, simd, arm64, "*"]
+    monomorphizations_using:
+      - [libcrux_sha3, neon, "*"]
+      - [libcrux_sha3, simd, arm64, "*"]
+    include_in_c:
+      - '"intrinsics/libcrux_intrinsics_arm64.h"'
+
+  - name: libcrux_sha3_avx2
+    api:
+      - [libcrux_sha3, avx2, "*"]
+    private:
+      - [libcrux_sha3, simd, avx2, "*"]
+    monomorphizations_of:
+      - [libcrux_sha3, simd, avx2, "*"]
+    monomorphizations_using:
+      - [libcrux_sha3, simd, avx2, "*"]
+    include_in_c:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+
+  # Common parts of SHA3 (this catches stuff that hasn't matched above)
+  - name: libcrux_sha3
+    api:
+      - [libcrux_sha3, "*"]
+    include_in_c:
+      - '"libcrux_core.h"'
 
   - name: libcrux_mlkem_neon
     api:
@@ -103,26 +129,10 @@ files:
     api:
       - [libcrux_platform, "*"]
 
-  # Extras needed for the C code from eurydice
+  # I think this is not doing anything
   - name: libcrux_mlkem_eurydice
     api:
       - [libcrux_ml_kem, eurydice_types, "*"]
-
-  # - name: libcrux_mlkem_avx2
-  #   api:
-  #     - [libcrux_ml_kem, vector, avx2, "*"]
-  #   specialized_over_trait_impl:
-  #     - [libcrux_ml_kem, vector, avx2, "*"]
-  #   include_in_c:
-  #     - '"libcrux_hacl_glue.h"'
-
-#   - name: libcrux_mlkem_sha3
-#     api:
-#       - [libcrux_ml_kem, hash_functions, "*"]
-#     specialized_over_trait_impl:
-#       - [libcrux_ml_kem, hash_functions, "*"]
-#     include_in_c:
-#       - '"libcrux_hacl_glue.h"'
 
   - name: libcrux_mlkem512
     api:
@@ -142,10 +152,11 @@ files:
     include_in_c:
       - '"libcrux_hacl_glue.h"'
 
+  # Just a few constants not caught by anything above. Most likely can go into
+  # core or polynomial (TODO: try it).
   - name: libcrux_mlkem_common
     private:
-      - [libcrux_mlkem, "*"]
+      - [libcrux_ml_kem, "*"]
     include_in_h:
       - '"libcrux_hacl_glue.h"'
     inline_static: true
-
