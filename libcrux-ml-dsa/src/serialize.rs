@@ -83,7 +83,9 @@ fn serialize_error_ring_element_when_eta_is_4<const BYTES_FOR_OUTPUT: usize>(
     let mut serialized = [0u8; BYTES_FOR_OUTPUT];
 
     for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
-        serialized[i] = ((coefficients[1] as u8) << 4) | (coefficients[0] as u8);
+        let coefficient0 = (4 - coefficients[0]) as u8;
+        let coefficient1 = (4 - coefficients[1]) as u8;
+        serialized[i] = (coefficient1 << 4) | coefficient0;
     }
 
     serialized
