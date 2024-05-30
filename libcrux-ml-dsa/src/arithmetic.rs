@@ -43,10 +43,6 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 const MONTGOMERY_SHIFT: u8 = 32;
 const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449; // FIELD_MODULUS^{-1} mod 2^32
 
-/// This is calculated as (MONTGOMERY_R)^2 mod FIELD_MODULUS
-/// where MONTGOMERY_R = 1 << MONTGOMERY_SHIFT
-const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 66;
-
 pub(crate) fn montgomery_reduce(value: i64) -> MontgomeryFieldElement {
     let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
         * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
@@ -79,7 +75,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 //
 // This approach has been taken from:
 // https://github.com/cloudflare/circl/blob/main/sign/dilithium/internal/common/field.go#L35
-fn power2round(t: i32) -> (i32, i32) {
+pub(crate) fn power2round(t: i32) -> (i32, i32) {
     // -floor(N / 2) = -4,190,208
     // floor((N - 1) / 2) = 4,190,208
     debug_assert!(t >= -4_190_208 && t <= 4_190_208);
@@ -105,27 +101,6 @@ fn power2round(t: i32) -> (i32, i32) {
     let t1 = (t - t0) >> BITS_IN_LOWER_PART_OF_T;
 
     (t0, t1)
-}
-
-pub(crate) fn power2round_vector<const ROWS_IN_A: usize>(
-    t: [PolynomialRingElement; ROWS_IN_A],
-) -> (
-    [PolynomialRingElement; ROWS_IN_A],
-    [PolynomialRingElement; ROWS_IN_A],
-) {
-    let mut vector_t0 = [PolynomialRingElement::ZERO; ROWS_IN_A];
-    let mut vector_t1 = [PolynomialRingElement::ZERO; ROWS_IN_A];
-
-    for i in 0..ROWS_IN_A {
-        for (j, coefficient) in t[i].coefficients.into_iter().enumerate() {
-            let (c0, c1) = power2round(coefficient);
-
-            vector_t0[i].coefficients[j] = c0;
-            vector_t1[i].coefficients[j] = c1;
-        }
-    }
-
-    (vector_t0, vector_t1)
 }
 
 pub(crate) fn t0_to_unsigned_representative(t0: i32) -> i32 {

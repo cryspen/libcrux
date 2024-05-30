@@ -1,8 +1,29 @@
 use crate::{
-    arithmetic::{add_to_ring_element, PolynomialRingElement},
+    arithmetic::{add_to_ring_element, power2round, PolynomialRingElement},
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     sample::{sample_error_ring_element_uniform, sample_ring_element_uniform},
 };
+
+pub(crate) fn power2round_vector<const ROWS_IN_A: usize>(
+    t: [PolynomialRingElement; ROWS_IN_A],
+) -> (
+    [PolynomialRingElement; ROWS_IN_A],
+    [PolynomialRingElement; ROWS_IN_A],
+) {
+    let mut vector_t0 = [PolynomialRingElement::ZERO; ROWS_IN_A];
+    let mut vector_t1 = [PolynomialRingElement::ZERO; ROWS_IN_A];
+
+    for i in 0..ROWS_IN_A {
+        for (j, coefficient) in t[i].coefficients.into_iter().enumerate() {
+            let (c0, c1) = power2round(coefficient);
+
+            vector_t0[i].coefficients[j] = c0;
+            vector_t1[i].coefficients[j] = c1;
+        }
+    }
+
+    (vector_t0, vector_t1)
+}
 
 #[inline(always)]
 pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
@@ -25,7 +46,6 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
 #[inline(always)]
 pub(crate) fn expand_to_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
     mut seed: [u8; 34],
-    transposed: bool,
 ) -> [[PolynomialRingElement; COLUMNS_IN_A]; ROWS_IN_A] {
     let mut A = [[PolynomialRingElement::ZERO; COLUMNS_IN_A]; ROWS_IN_A];
 
@@ -34,13 +54,7 @@ pub(crate) fn expand_to_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
             seed[32] = j as u8;
             seed[33] = i as u8;
 
-            let sampled = sample_ring_element_uniform(seed);
-
-            if transposed {
-                A[j][i] = sampled;
-            } else {
-                A[i][j] = sampled;
-            }
+            A[i][j] = sample_ring_element_uniform(seed);
         }
     }
 

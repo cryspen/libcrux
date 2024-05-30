@@ -3,8 +3,6 @@ use serde_json;
 
 use std::{fs::File, io::BufReader, path::Path};
 
-use libcrux_sha3::sha256;
-
 #[derive(Debug, Deserialize)]
 struct MlDsaNISTKAT {
     #[serde(with = "hex::serde")]
@@ -40,5 +38,11 @@ fn ml_dsa_65_nist_known_answer_tests() {
 
         let verification_key_hash = libcrux_sha3::sha256(&key_pair.verification_key);
         assert_eq!(verification_key_hash, kat.sha3_256_hash_of_verification_key);
+
+        let signing_key_hash = libcrux_sha3::sha256(&key_pair.signing_key);
+        assert_eq!(
+            signing_key_hash, kat.sha3_256_hash_of_signing_key,
+            "signing_key_hash != kat.sha3_256_hash_of_signing_key"
+        );
     }
 }
