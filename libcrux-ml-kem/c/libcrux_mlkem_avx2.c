@@ -10,6 +10,16 @@
 #include "internal/libcrux_polynomial.h"
 #include "internal/libcrux_core.h"
 
+void
+print_hex_ln(size_t bytes_len, uint8_t* bytes)
+{
+  for (int i = 0; i < bytes_len; ++i) {
+    printf("%02x", bytes[i]);
+  }
+
+  printf("\n");
+}
+
 inline core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_zero(void)
 {
   return libcrux_intrinsics_avx2_mm256_setzero_si256();
@@ -8392,15 +8402,15 @@ libcrux_ml_kem_hash_functions_avx2___libcrux_ml_kem__hash_functions__Hash_K__for
   Eurydice_slice out1 = uu____1.fst;
   Eurydice_slice out2 = uu____1.snd;
   libcrux_sha3_avx2_x4_incremental_KeccakState4 *uu____2 = self;
-  uint8_t ret0[504U];
-  Eurydice_slice_index_outparam(out0, (size_t)0U, ret0, uint8_t [504U], void *);
-  Eurydice_slice uu____3 = Eurydice_array_to_slice((size_t)504U, ret0, uint8_t, Eurydice_slice);
-  uint8_t ret1[504U];
-  Eurydice_slice_index_outparam(out1, (size_t)0U, ret1, uint8_t [504U], void *);
-  Eurydice_slice uu____4 = Eurydice_array_to_slice((size_t)504U, ret1, uint8_t, Eurydice_slice);
-  uint8_t ret2[504U];
-  Eurydice_slice_index_outparam(out2, (size_t)0U, ret2, uint8_t [504U], void *);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice((size_t)504U, ret2, uint8_t, Eurydice_slice);
+  // uint8_t ret0[504U] = out0.ptr;
+  // Eurydice_slice_index_outparam(out0, (size_t)0U, ret0, uint8_t [504U], void *);
+  Eurydice_slice uu____3 = Eurydice_array_to_slice((size_t)504U, out[0], uint8_t, Eurydice_slice);
+  // uint8_t ret1[504U];
+  // Eurydice_slice_index_outparam(out1, (size_t)0U, ret1, uint8_t [504U], void *);
+  Eurydice_slice uu____4 = Eurydice_array_to_slice((size_t)504U, out[1], uint8_t, Eurydice_slice);
+  // uint8_t ret2[504U];
+  // Eurydice_slice_index_outparam(out2, (size_t)0U, ret2, uint8_t [504U], void *);
+  Eurydice_slice uu____5 = Eurydice_array_to_slice((size_t)504U, out[2], uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(uu____2,
     uu____3,
     uu____4,
@@ -8601,6 +8611,7 @@ sample_from_xof__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_fu
   ret[3U]
 )
 {
+  printf(" >>> sample from xof 3 \n");
   size_t sampled_coefficients[3U] = { 0U };
   int16_t out[3U][272U] = { { 0U } };
   uint8_t uu____0[3U][34U];
