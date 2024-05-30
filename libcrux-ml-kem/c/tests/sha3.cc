@@ -83,9 +83,21 @@ TEST(Shake256Test, ConsistencyTest)
   libcrux_sha3_avx2_x4_shake256(input, input, input, input, out0, out1, out2, out3);
 
   bytes expected_digest = from_hex(
-      "1af17a664e3fa8e419b8ba05c2a173169df76162a5a286e0c405b460d478f7ef");
+      "b3be97bfd978833a65588ceae8a34cf59e95585af62063e6b89d0789f372424e");
 
-  EXPECT_EQ(strncmp((char *)digest,
+  EXPECT_EQ(strncmp((char *)digest0,
+                    (char *)expected_digest.data(),
+                    32),
+            0);
+  EXPECT_EQ(strncmp((char *)digest1,
+                    (char *)expected_digest.data(),
+                    32),
+            0);
+  EXPECT_EQ(strncmp((char *)digest2,
+                    (char *)expected_digest.data(),
+                    32),
+            0);
+  EXPECT_EQ(strncmp((char *)digest3,
                     (char *)expected_digest.data(),
                     32),
             0);
