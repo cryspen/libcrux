@@ -8510,15 +8510,15 @@ libcrux_ml_kem_hash_functions_avx2___libcrux_ml_kem__hash_functions__Hash_K__for
   Eurydice_slice out1 = uu____1.fst;
   Eurydice_slice out2 = uu____1.snd;
   libcrux_sha3_avx2_x4_incremental_KeccakState4 *uu____2 = self;
-  uint8_t ret0[168U];
-  Eurydice_slice_index_outparam(out0, (size_t)0U, ret0, uint8_t [168U], void *);
-  Eurydice_slice uu____3 = Eurydice_array_to_slice((size_t)168U, ret0, uint8_t, Eurydice_slice);
-  uint8_t ret1[168U];
-  Eurydice_slice_index_outparam(out1, (size_t)0U, ret1, uint8_t [168U], void *);
-  Eurydice_slice uu____4 = Eurydice_array_to_slice((size_t)168U, ret1, uint8_t, Eurydice_slice);
-  uint8_t ret2[168U];
-  Eurydice_slice_index_outparam(out2, (size_t)0U, ret2, uint8_t [168U], void *);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice((size_t)168U, ret2, uint8_t, Eurydice_slice);
+  //  uint8_t ret0[168U];
+  //  Eurydice_slice_index_outparam(out0, (size_t)0U, ret0, uint8_t [168U], void *);
+  Eurydice_slice uu____3 = Eurydice_array_to_slice((size_t)168U, out[0], uint8_t, Eurydice_slice);
+  //  uint8_t ret1[168U];
+  //  Eurydice_slice_index_outparam(out1, (size_t)0U, ret1, uint8_t [168U], void *);
+  Eurydice_slice uu____4 = Eurydice_array_to_slice((size_t)168U, out[1], uint8_t, Eurydice_slice);
+  //  uint8_t ret2[168U];
+  //  Eurydice_slice_index_outparam(out2, (size_t)0U, ret2, uint8_t [168U], void *);
+  Eurydice_slice uu____5 = Eurydice_array_to_slice((size_t)168U, out[2], uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(uu____2,
     uu____3,
     uu____4,
@@ -8786,15 +8786,15 @@ libcrux_ml_kem_hash_functions_avx2___libcrux_ml_kem__hash_functions__Hash_K__for
   uu____4 = Eurydice_array_to_slice((size_t)33U, input[2U], uint8_t, Eurydice_slice);
   Eurydice_slice
   uu____5 = Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  uint8_t ret0[128U];
-  Eurydice_slice_index_outparam(out0, (size_t)0U, ret0, uint8_t [128U], void *);
-  Eurydice_slice uu____6 = Eurydice_array_to_slice((size_t)128U, ret0, uint8_t, Eurydice_slice);
-  uint8_t ret1[128U];
-  Eurydice_slice_index_outparam(out1, (size_t)0U, ret1, uint8_t [128U], void *);
-  Eurydice_slice uu____7 = Eurydice_array_to_slice((size_t)128U, ret1, uint8_t, Eurydice_slice);
-  uint8_t ret2[128U];
-  Eurydice_slice_index_outparam(out2, (size_t)0U, ret2, uint8_t [128U], void *);
-  Eurydice_slice uu____8 = Eurydice_array_to_slice((size_t)128U, ret2, uint8_t, Eurydice_slice);
+  //  uint8_t ret0[128U];
+  //  Eurydice_slice_index_outparam(out0, (size_t)0U, ret0, uint8_t [128U], void *);
+  Eurydice_slice uu____6 = Eurydice_array_to_slice((size_t)128U, out[0], uint8_t, Eurydice_slice);
+  //  uint8_t ret1[128U];
+  //  Eurydice_slice_index_outparam(out1, (size_t)0U, ret1, uint8_t [128U], void *);
+  Eurydice_slice uu____7 = Eurydice_array_to_slice((size_t)128U, out[1], uint8_t, Eurydice_slice);
+  //  uint8_t ret2[128U];
+  //Eurydice_slice_index_outparam(out2, (size_t)0U, ret2, uint8_t [128U], void *);
+  Eurydice_slice uu____8 = Eurydice_array_to_slice((size_t)128U, out[2], uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_shake256(uu____2,
     uu____3,
     uu____4,
