@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#include "intrinsics/libcrux_intrinsics_avx2.h"
+
 #include "eurydice_glue.h"
 
 extern void

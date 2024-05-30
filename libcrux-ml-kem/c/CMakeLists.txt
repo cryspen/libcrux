@@ -14,6 +14,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/internal
     ${PROJECT_SOURCE_DIR}/karamel/include
+    ${PROJECT_SOURCE_DIR}/karamel/krmllib/dist/minimal/
 )
 file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_core.c
@@ -31,6 +32,7 @@ file(GLOB SOURCES
 file(GLOB SOURCES_vec256
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
     ${PROJECT_SOURCE_DIR}/Hacl_Hash_SHA3_Simd256.c
+    ${PROJECT_SOURCE_DIR}/sha3_avx2.c
     # ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
 )
 
@@ -51,6 +53,7 @@ target_compile_options(ml_kem_vec256 PRIVATE
     -mavx
     -mavx2
 )
+target_compile_definitions(ml_kem_vec256 PUBLIC HACL_CAN_COMPILE_VEC256)
 # endif()
 
 # --- Tests
