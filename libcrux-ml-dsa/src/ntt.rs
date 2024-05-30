@@ -115,7 +115,11 @@ pub(crate) fn invert_ntt_montgomery(mut re: PolynomialRingElement) -> Polynomial
     re = invert_ntt_at_layer(&mut zeta_i, re, 7);
 
     for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        // 41,978 = (MONTGOMERY_R^2 / 2^8) mod Q
+        // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
+        // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
+        //
+        // - Divide the elements by 256 and
+        // - Convert the elements form montgomery domain to the standard domain.
         re.coefficients[i] = montgomery_reduce(41_978 * (re.coefficients[i] as i64));
     }
     re

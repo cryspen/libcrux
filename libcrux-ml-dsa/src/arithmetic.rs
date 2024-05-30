@@ -1,6 +1,6 @@
 use crate::constants::{BITS_IN_LOWER_PART_OF_T, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct PolynomialRingElement {
     pub(crate) coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT],
 }
@@ -42,6 +42,11 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 const MONTGOMERY_SHIFT: u8 = 32;
 const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449; // FIELD_MODULUS^{-1} mod 2^32
+
+/// This is calculated as (MONTGOMERY_R)^2 mod FIELD_MODULUS
+/// where MONTGOMERY_R = 1 << MONTGOMERY_SHIFT
+const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i32 = 66;
+
 pub(crate) fn montgomery_reduce(value: i64) -> MontgomeryFieldElement {
     let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
         * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
@@ -63,16 +68,23 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     montgomery_reduce((fe as i64) * (fer as i64))
 }
 
-// Splits 0 ≤ t < Q into t0 and t1 with a = t1*2ᴰ + t0
+// Splits t into t0 and t1 with a = t1*2ᴰ + t0
 // and -2ᴰ⁻¹ < t0 < 2ᴰ⁻¹.  Returns t0 and t1 computed as.
 //
 // - t0 = t mod± 2ᵈ
 // - t1 = (t - t0) / 2ᵈ.
 //
+// We assume the input t is in the signed representative range.
+//
 // This approach has been taken from:
 // https://github.com/cloudflare/circl/blob/main/sign/dilithium/internal/common/field.go#L35
 fn power2round(t: i32) -> (i32, i32) {
-    debug_assert!(t >= 0 && t < FIELD_MODULUS);
+    // -floor(N / 2) = -4,190,208
+    // floor((N - 1) / 2) = 4,190,208
+    debug_assert!(t >= -4_190_208 && t <= 4_190_208);
+
+    // Convert the signed representative to the standard unsigned one.
+    let t = t + ((t >> 31) & FIELD_MODULUS);
 
     // Compute t mod 2ᵈ
     // t0 is now one of 0, 1, ..., 2ᵈ⁻¹-1, 2ᵈ⁻¹, 2ᵈ⁻¹+1, ..., 2ᵈ-1
@@ -133,8 +145,9 @@ mod tests {
 
     #[test]
     fn test_power2round() {
-        assert_eq!(power2round(2898283), (-1685, 354));
-        assert_eq!(power2round(3821421), (3949, 466));
-        assert_eq!(power2round(2577417), (-3063, 315));
+        assert_eq!(power2round(669975), (-1769, 82));
+        assert_eq!(power2round(1843331), (131, 225));
+        assert_eq!(power2round(-1568816), (4049, 831));
+        assert_eq!(power2round(-4022142), (131, 532));
     }
 }
