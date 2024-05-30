@@ -9,7 +9,7 @@ void libcrux_sha3_portable_sha512(Eurydice_slice x0, Eurydice_slice x1)
 
 void libcrux_sha3_portable_sha256(Eurydice_slice x0, Eurydice_slice x1)
 {
-    Hacl_Hash_SHA3_Scalar_sha3_256(x0.ptr, x1.ptr, x1.len);
+    Hacl_Hash_SHA3_Scalar_sha3_256(x1.ptr, x0.ptr, x0.len);
 }
 
 void libcrux_sha3_portable_shake256(Eurydice_slice x0, Eurydice_slice x1)
