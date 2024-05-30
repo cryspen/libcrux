@@ -38,18 +38,17 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     )
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
-add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
 add_library(ml_kem SHARED ${SOURCES})
 add_library(ml_kem_static STATIC ${SOURCES})
 
+# if(LIBCRUX_VEC256)
+add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
+target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
 target_compile_options(ml_kem_vec256 PRIVATE
     -mavx
     -mavx2
 )
-
-# if(LIBCRUX_VEC256)
-target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
 # endif()
 
 # --- Tests
@@ -73,9 +72,18 @@ DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 FetchContent_MakeAvailable(json)
 
 add_executable(ml_kem_test
-    ${PROJECT_SOURCE_DIR}/tests/sha3.cc
+    ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
 )
 target_link_libraries(ml_kem_test PRIVATE
+    ml_kem_static
+    gtest_main
+    nlohmann_json::nlohmann_json
+)
+
+add_executable(sha3_test
+    ${PROJECT_SOURCE_DIR}/tests/sha3.cc
+)
+target_link_libraries(sha3_test PRIVATE
     ml_kem_static
     gtest_main
     nlohmann_json::nlohmann_json
