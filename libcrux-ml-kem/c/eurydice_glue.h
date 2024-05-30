@@ -100,6 +100,8 @@ core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
   return x;
 }
 
+static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) { return __builtin_popcount(x0); }
+
 // unsigned overflow wraparound semantics in C
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) { return x + y; }
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) { return x - y; }
