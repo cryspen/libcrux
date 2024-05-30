@@ -1,3 +1,4 @@
+#include "eurydice_glue.h"
 #include "libcrux_sha3.h"
 #include "Hacl_Hash_SHA3_Scalar.h"
 
