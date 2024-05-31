@@ -76,9 +76,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 // This approach has been taken from:
 // https://github.com/cloudflare/circl/blob/main/sign/dilithium/internal/common/field.go#L35
 pub(crate) fn power2round(t: i32) -> (i32, i32) {
-    // -floor(N / 2) = -4,190,208
-    // floor((N - 1) / 2) = 4,190,208
-    debug_assert!(t >= -4_190_208 && t <= 4_190_208);
+    debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS, "t is {}", t);
 
     // Convert the signed representative to the standard unsigned one.
     let t = t + ((t >> 31) & FIELD_MODULUS);
