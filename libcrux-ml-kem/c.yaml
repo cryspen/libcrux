@@ -1,5 +1,6 @@
 files:
-  # Intrinsics, in their own separate files.
+  # INTRINSICS
+
   - name: libcrux_intrinsics_neon
     library: true
     inline_static: true
@@ -15,6 +16,8 @@ files:
   - name: libcrux_platform
     api:
       - [libcrux_platform, "*"]
+
+  # SHA3 (no mention of libcrux_mlkem in this section, please)
 
   # Keep the per-target seperation idea: each SHA3 variant in its own file
   - name: libcrux_sha3_neon
@@ -36,16 +39,19 @@ files:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
   - name: libcrux_sha3_avx2
-    api:
-      - [libcrux_sha3, avx2, "*"]
     # This is needed solely for the benchmarking test -- otherwise these would
-    # all be private.
+    # all be private. Note that the order matters! So we put these first so that
+    # they match immediately (and get promoted to internal), then the rest of
+    # the behavior applies.
     internal:
       exact:
         - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
       monomorphizations_exact:
+        - [libcrux_sha3, avx2, x4, incremental, KeccakState4]
         - [libcrux_sha3, generic_keccak, absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t ]
         - [libcrux_sha3, generic_keccak, squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t ]
+    api:
+      - [libcrux_sha3, avx2, "*"]
     private:
       patterns:
         - [libcrux_sha3, simd, avx2, "*"]
@@ -53,24 +59,63 @@ files:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_using:
+        # Should this also include the monomorphizations using
+        # core.arch.x86.__m256i?
         - [libcrux_sha3, simd, avx2, "*"]
+      monomorphizations_exact:
+        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_x86___m256i_$4size_t"]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
+
+  # Public API header for SHA3
+  - name: libcrux_sha3
+    api:
+      exact:
+        - [libcrux_sha3, hash]
+        - [libcrux_sha3, sha224]
+        - [libcrux_sha3, sha256]
+        - [libcrux_sha3, sha384]
+        - [libcrux_sha3, sha512]
+        - [libcrux_sha3, keccakx1]
+        - [libcrux_sha3, shake128]
+        - [libcrux_sha3, shake256]
+        - [libcrux_sha3, sha224_ema]
+        - [libcrux_sha3, sha256_ema]
+        - [libcrux_sha3, sha384_ema]
+        - [libcrux_sha3, sha512_ema]
+        - [libcrux_sha3, portable, sha224]
+        - [libcrux_sha3, portable, sha256]
+        - [libcrux_sha3, portable, sha384]
+        - [libcrux_sha3, portable, sha512]
+        - [libcrux_sha3, portable, keccakx1]
+        - [libcrux_sha3, portable, shake128]
+        - [libcrux_sha3, portable, shake256]
+
+  # Common parts of SHA3 (this catches stuff that hasn't matched above). Must
+  # come after the (more precise) patterns above concerning platform-specific hash_functions
+  - name: libcrux_sha3_internal
+    internal:
+      patterns:
+        - [libcrux_sha3, "*"]
+      monomorphizations_of:
+        - [libcrux_sha3, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, "*"]
+    inline_static: true
+
+  # MLKEM
 
   - name: libcrux_mlkem_neon
     api:
       - [libcrux_ml_kem, vector, neon, "*"]
       - [libcrux_ml_kem, hash_functions, neon, "*"]
-      - [libcrux_sha3, neon, "*"]
     private:
       monomorphizations_using:
         - [libcrux_ml_kem, vector, neon, "*"]
         - [libcrux_ml_kem, hash_functions, neon, "*"]
-        - [libcrux_sha3, neon, "*"]
       monomorphizations_of:
         - [libcrux_ml_kem, vector, neon, "*"]
         - [libcrux_ml_kem, hash_functions, neon, "*"]
-        - [libcrux_sha3, neon, "*"]
 
   - name: libcrux_mlkem_avx2
     api:
@@ -83,15 +128,6 @@ files:
       monomorphizations_of:
         - [libcrux_ml_kem, vector, avx2, "*"]
         - [libcrux_ml_kem, hash_functions, avx2, "*"]
-
-  # Common parts of SHA3 (this catches stuff that hasn't matched above)
-  - name: libcrux_sha3
-    api:
-      - [libcrux_sha3, "*"]
-    private:
-      - [libcrux_ml_kem, hash_functions, "*"]
-    include_in_c:
-      - '"libcrux_core.h"'
 
   - name: libcrux_core
     private:

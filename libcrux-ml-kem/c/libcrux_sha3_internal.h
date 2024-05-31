@@ -5,22 +5,23 @@
   KaRaMeL version: 5666a5de
  */
 
-#ifndef __libcrux_platform_H
-#define __libcrux_platform_H
+#ifndef __libcrux_sha3_internal_H
+#define __libcrux_sha3_internal_H
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
+#include "libcrux_core.h"
 #include "eurydice_glue.h"
 
-extern bool libcrux_platform_platform_simd256_support(void);
-
-extern bool libcrux_platform_platform_simd128_support(void);
+typedef struct libcrux_sha3_generic_keccak_KeccakState__uint64_t__1size_t_s
+{ uint64_t st[5U][5U]; }
+libcrux_sha3_generic_keccak_KeccakState__uint64_t__1size_t;
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __libcrux_platform_H_DEFINED
+#define __libcrux_sha3_internal_H_DEFINED
 #endif
