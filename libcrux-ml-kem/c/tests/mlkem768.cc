@@ -295,8 +295,5 @@ TEST(MlKem768Test, NISTKnownAnswerTest)
                   memcmp(ctxt.snd,
                          sharedSecret2,
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
-
-        // FIXME: REMOVE AGAIN
-        break;
     }
 }

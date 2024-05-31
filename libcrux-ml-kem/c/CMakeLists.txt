@@ -1,5 +1,7 @@
 # cmake -B build -G "Ninja Multi-Config"
 # cmake --build build
+# # For release (benchmarks)
+# cmake --build build --config Release
 
 cmake_minimum_required(VERSION 3.10)
 
@@ -8,7 +10,21 @@ project(libcrux-ml-kem
     LANGUAGES C CXX
 )
 
-set(CMAKE_C_FLAGS " -Wall ")
+set(CMAKE_C_STANDARD 11)
+add_compile_options(
+    -Wall
+    # -Wextra
+    # -pedantic
+    # -Wconversion
+    # -Wsign-conversion
+    $<$<CONFIG:DEBUG>:-g>
+    $<$<CONFIG:DEBUG>:-Og>
+    $<$<CONFIG:RELEASE>:-g>
+    $<$<CONFIG:RELEASE>:-O3>
+    -fno-omit-frame-pointer
+    -flto
+)
+add_link_options(-flto)
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 include_directories(
     ${PROJECT_SOURCE_DIR}
