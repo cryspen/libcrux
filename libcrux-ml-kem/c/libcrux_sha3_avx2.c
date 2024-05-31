@@ -7,7 +7,6 @@
 
 #include "internal/libcrux_sha3_avx2.h"
 
-#include "internal/libcrux_sha3_internal.h"
 #include "internal/libcrux_core.h"
 
 static inline core_core_arch_x86___m256i zero(void)

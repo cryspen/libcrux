@@ -14,7 +14,6 @@ extern "C" {
 
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
-#include "internal/libcrux_sha3_internal.h"
 #include "internal/libcrux_core.h"
 #include "../libcrux_sha3_avx2.h"
 #include "eurydice_glue.h"

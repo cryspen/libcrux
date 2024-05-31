@@ -30,6 +30,17 @@ extern uint8_t Eurydice_shr_pv_u8(uint8_t *x, int32_t y);
 
 typedef uint8_t core_option_Option__size_t_tags;
 
+typedef struct core_option_Option__size_t_s
+{
+  core_option_Option__size_t_tags tag;
+  size_t f0;
+}
+core_option_Option__size_t;
+
+static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
+
+static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
+
 typedef struct libcrux_ml_kem_types_MlKemPublicKey____800size_t_s { uint8_t value[800U]; }
 libcrux_ml_kem_types_MlKemPublicKey____800size_t;
 
@@ -119,6 +130,42 @@ typedef struct K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_3
   uint8_t snd[32U];
 }
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_;
+
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags;
+
+typedef struct core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError_s
+{
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  union {
+    uint8_t case_Ok[8U];
+    core_array_TryFromSliceError case_Err;
+  }
+  val;
+}
+core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError;
+
+void
+core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
+  core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError self,
+  uint8_t ret[8U]
+);
+
+typedef struct K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t_s
+{
+  Eurydice_slice fst;
+  Eurydice_slice snd;
+}
+K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t;
+
+typedef struct K___Eurydice_slice_uint8_t_1size_t__Eurydice_slice_uint8_t_1size_t__s
+{
+  Eurydice_slice fst[1U];
+  Eurydice_slice snd[1U];
+}
+K___Eurydice_slice_uint8_t_1size_t__Eurydice_slice_uint8_t_1size_t_;
 
 #if defined(__cplusplus)
 }

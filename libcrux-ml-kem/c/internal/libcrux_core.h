@@ -20,18 +20,7 @@ extern void core_fmt_rt__core__fmt__rt__Argument__a__1__none(core_fmt_rt_Argumen
 extern core_fmt_Arguments
 core_fmt__core__fmt__Arguments__a__2__new_v1(Eurydice_slice x0, Eurydice_slice x1);
 
-typedef struct core_option_Option__size_t_s
-{
-  core_option_Option__size_t_tags tag;
-  size_t f0;
-}
-core_option_Option__size_t;
-
 #define CORE_NUM__U32_8__BITS (32U)
-
-static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
-
-static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0);
 
@@ -235,11 +224,6 @@ libcrux_ml_kem_ind_cpa_into_padded_array___1120size_t(Eurydice_slice slice, uint
 void
 libcrux_ml_kem_ind_cpa_into_padded_array___64size_t(Eurydice_slice slice, uint8_t ret[64U]);
 
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags;
-
 typedef struct core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_s
 {
   core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
@@ -321,37 +305,6 @@ typedef struct K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_
   Eurydice_slice snd[4U];
 }
 K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_;
-
-typedef struct core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError_s
-{
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
-  union {
-    uint8_t case_Ok[8U];
-    core_array_TryFromSliceError case_Err;
-  }
-  val;
-}
-core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError;
-
-void
-core_result__core__result__Result_T__E___unwrap__uint8_t_8size_t__core_array_TryFromSliceError(
-  core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError self,
-  uint8_t ret[8U]
-);
-
-typedef struct K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t_s
-{
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-}
-K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t;
-
-typedef struct K___Eurydice_slice_uint8_t_1size_t__Eurydice_slice_uint8_t_1size_t__s
-{
-  Eurydice_slice fst[1U];
-  Eurydice_slice snd[1U];
-}
-K___Eurydice_slice_uint8_t_1size_t__Eurydice_slice_uint8_t_1size_t_;
 
 #if defined(__cplusplus)
 }

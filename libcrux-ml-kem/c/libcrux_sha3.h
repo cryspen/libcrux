@@ -12,36 +12,103 @@
 extern "C" {
 #endif
 
+#include "libcrux_sha3_internal.h"
 #include "libcrux_core.h"
 #include "eurydice_glue.h"
 
-void libcrux_sha3_portable_sha512(Eurydice_slice digest, Eurydice_slice data);
+static inline void libcrux_sha3_portable_sha512(Eurydice_slice digest, Eurydice_slice data)
+{
+  Eurydice_slice buf0[1U] = { data };
+  Eurydice_slice buf[1U] = { digest };
+  libcrux_sha3_portable_keccakx1___72size_t_6uint8_t(buf0, buf);
+}
 
-void libcrux_sha3_portable_sha256(Eurydice_slice digest, Eurydice_slice data);
+static inline void libcrux_sha3_portable_sha256(Eurydice_slice digest, Eurydice_slice data)
+{
+  Eurydice_slice buf0[1U] = { data };
+  Eurydice_slice buf[1U] = { digest };
+  libcrux_sha3_portable_keccakx1___136size_t_6uint8_t(buf0, buf);
+}
 
-void libcrux_sha3_portable_shake256(Eurydice_slice digest, Eurydice_slice data);
+static inline void libcrux_sha3_portable_shake256(Eurydice_slice digest, Eurydice_slice data)
+{
+  Eurydice_slice buf0[1U] = { data };
+  Eurydice_slice buf[1U] = { digest };
+  libcrux_sha3_portable_keccakx1___136size_t_31uint8_t(buf0, buf);
+}
 
-void libcrux_sha3_portable_sha224(Eurydice_slice digest, Eurydice_slice data);
+static inline void libcrux_sha3_portable_sha224(Eurydice_slice digest, Eurydice_slice data)
+{
+  Eurydice_slice buf0[1U] = { data };
+  Eurydice_slice buf[1U] = { digest };
+  libcrux_sha3_portable_keccakx1___144size_t_6uint8_t(buf0, buf);
+}
 
-void libcrux_sha3_portable_sha384(Eurydice_slice digest, Eurydice_slice data);
+static inline void libcrux_sha3_portable_sha384(Eurydice_slice digest, Eurydice_slice data)
+{
+  Eurydice_slice buf0[1U] = { data };
+  Eurydice_slice buf[1U] = { digest };
+  libcrux_sha3_portable_keccakx1___104size_t_6uint8_t(buf0, buf);
+}
 
-void libcrux_sha3_sha224_ema(Eurydice_slice digest, Eurydice_slice payload);
+static inline void libcrux_sha3_sha224_ema(Eurydice_slice digest, Eurydice_slice payload)
+{
+  libcrux_sha3_portable_sha224(digest, payload);
+}
 
-void libcrux_sha3_sha224(Eurydice_slice data, uint8_t ret[28U]);
+static inline void libcrux_sha3_sha224(Eurydice_slice data, uint8_t ret[28U])
+{
+  uint8_t out[28U] = { 0U };
+  libcrux_sha3_sha224_ema(Eurydice_array_to_slice((size_t)28U, out, uint8_t, Eurydice_slice),
+    data);
+  memcpy(ret, out, (size_t)28U * sizeof (uint8_t));
+}
 
-void libcrux_sha3_sha256_ema(Eurydice_slice digest, Eurydice_slice payload);
+static inline void libcrux_sha3_sha256_ema(Eurydice_slice digest, Eurydice_slice payload)
+{
+  libcrux_sha3_portable_sha256(digest, payload);
+}
 
-void libcrux_sha3_sha256(Eurydice_slice data, uint8_t ret[32U]);
+static inline void libcrux_sha3_sha256(Eurydice_slice data, uint8_t ret[32U])
+{
+  uint8_t out[32U] = { 0U };
+  libcrux_sha3_sha256_ema(Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
+    data);
+  memcpy(ret, out, (size_t)32U * sizeof (uint8_t));
+}
 
-void libcrux_sha3_sha384_ema(Eurydice_slice digest, Eurydice_slice payload);
+static inline void libcrux_sha3_sha384_ema(Eurydice_slice digest, Eurydice_slice payload)
+{
+  libcrux_sha3_portable_sha384(digest, payload);
+}
 
-void libcrux_sha3_sha384(Eurydice_slice data, uint8_t ret[48U]);
+static inline void libcrux_sha3_sha384(Eurydice_slice data, uint8_t ret[48U])
+{
+  uint8_t out[48U] = { 0U };
+  libcrux_sha3_sha384_ema(Eurydice_array_to_slice((size_t)48U, out, uint8_t, Eurydice_slice),
+    data);
+  memcpy(ret, out, (size_t)48U * sizeof (uint8_t));
+}
 
-void libcrux_sha3_sha512_ema(Eurydice_slice digest, Eurydice_slice payload);
+static inline void libcrux_sha3_sha512_ema(Eurydice_slice digest, Eurydice_slice payload)
+{
+  libcrux_sha3_portable_sha512(digest, payload);
+}
 
-void libcrux_sha3_sha512(Eurydice_slice data, uint8_t ret[64U]);
+static inline void libcrux_sha3_sha512(Eurydice_slice data, uint8_t ret[64U])
+{
+  uint8_t out[64U] = { 0U };
+  libcrux_sha3_sha512_ema(Eurydice_array_to_slice((size_t)64U, out, uint8_t, Eurydice_slice),
+    data);
+  memcpy(ret, out, (size_t)64U * sizeof (uint8_t));
+}
 
-void libcrux_sha3_portable_shake128(Eurydice_slice digest, Eurydice_slice data);
+static inline void libcrux_sha3_portable_shake128(Eurydice_slice digest, Eurydice_slice data)
+{
+  Eurydice_slice buf0[1U] = { data };
+  Eurydice_slice buf[1U] = { digest };
+  libcrux_sha3_portable_keccakx1___168size_t_31uint8_t(buf0, buf);
+}
 
 #if defined(__cplusplus)
 }

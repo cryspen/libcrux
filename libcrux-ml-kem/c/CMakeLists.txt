@@ -22,7 +22,6 @@ file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
     ${PROJECT_SOURCE_DIR}/libcrux_polynomial.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3.c
 )
 # file(GLOB VEC128_SOURCES
 #     libcrux_sha3_neon.c
@@ -32,7 +31,7 @@ file(GLOB SOURCES_vec256
     ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
 )
 
-# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
