@@ -5,7 +5,7 @@
   KaRaMeL version: 38d348ce
  */
 
-#include "libcrux_sha3_avx2.h"
+#include "internal/libcrux_sha3_avx2.h"
 
 #include "internal/libcrux_core.h"
 
@@ -2160,8 +2160,8 @@ load_block_full___168size_t0(core_core_arch_x86___m256i (*a)[5U], uint8_t b[4U][
   load_block_full___168size_t(uu____0, uu____1);
 }
 
-static inline void
-absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(
+inline void
+libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t *s,
   Eurydice_slice last[4U]
 )
@@ -2201,7 +2201,8 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
 )
 {
   Eurydice_slice buf[4U] = { data0, data1, data2, data3 };
-  absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(s, buf);
+  libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(s,
+    buf);
 }
 
 static inline void
@@ -2466,8 +2467,8 @@ squeeze_first_block__core_core_arch_x86___m256i_4size_t_168size_t(
   store_block___168size_t0(s->st, out);
 }
 
-static inline void
-squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(
+inline void
+libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t *s,
   Eurydice_slice out[4U]
 )
@@ -2499,6 +2500,7 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
 )
 {
   Eurydice_slice buf[4U] = { out0, out1, out2, out3 };
-  squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(s, buf);
+  libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(s,
+    buf);
 }
 

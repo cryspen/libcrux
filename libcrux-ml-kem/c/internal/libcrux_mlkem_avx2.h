@@ -12,6 +12,7 @@
 extern "C" {
 #endif
 
+#include "internal/libcrux_sha3_avx2.h"
 #include "internal/libcrux_polynomial.h"
 #include "internal/libcrux_core.h"
 #include "../libcrux_mlkem_avx2.h"

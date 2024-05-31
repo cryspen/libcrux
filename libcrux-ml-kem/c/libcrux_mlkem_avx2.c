@@ -7,8 +7,11 @@
 
 #include "internal/libcrux_mlkem_avx2.h"
 
+#include "internal/libcrux_sha3_avx2.h"
 #include "internal/libcrux_polynomial.h"
 #include "internal/libcrux_core.h"
+
+typedef core_core_arch_x86___m256i SIMD256Vector;
 
 inline core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_zero(void)
 {
@@ -2662,6 +2665,8 @@ closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_
         libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
       ));
 }
+
+typedef libcrux_sha3_avx2_x4_incremental_KeccakState4 Simd256Hash;
 
 static inline libcrux_sha3_avx2_x4_incremental_KeccakState4
 shake128_init_absorb___2size_t(uint8_t input[2U][34U])

@@ -17,8 +17,6 @@ extern "C" {
 #include "libcrux_core.h"
 #include "eurydice_glue.h"
 
-typedef core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_SIMD256Vector;
-
 core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_zero(void);
 
 core_core_arch_x86___m256i
@@ -422,9 +420,6 @@ typedef struct
 libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_s
 { core_core_arch_x86___m256i coefficients[16U]; }
 libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector;
-
-typedef libcrux_sha3_avx2_x4_incremental_KeccakState4
-libcrux_ml_kem_hash_functions_avx2_Simd256Hash;
 
 #if defined(__cplusplus)
 }

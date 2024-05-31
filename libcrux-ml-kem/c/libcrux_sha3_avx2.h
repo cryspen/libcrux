@@ -34,9 +34,6 @@ libcrux_sha3_avx2_x4_shake256(
   Eurydice_slice out3
 );
 
-typedef libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-libcrux_sha3_avx2_x4_incremental_KeccakState4;
-
 libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
 libcrux_sha3_avx2_x4_incremental_shake128_init(void);
 

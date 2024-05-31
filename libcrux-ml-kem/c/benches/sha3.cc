@@ -8,8 +8,8 @@
 
 #include <benchmark/benchmark.h>
 
-#include "libcrux_sha3_avx2.h"
 #include "internal/libcrux_sha3.h"
+#include "internal/libcrux_sha3_avx2.h"
 #include "libcrux_mlkem768.h"
 #include "internal/libcrux_core.h"
 
