@@ -69,6 +69,7 @@ files:
 
   # Public API header for SHA3
   - name: libcrux_sha3
+    inline_static: true
     api:
       exact:
         - [libcrux_sha3, hash]

@@ -38,7 +38,6 @@ file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
     ${PROJECT_SOURCE_DIR}/libcrux_polynomial.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3.c
 )
 # file(GLOB VEC128_SOURCES
 #     libcrux_sha3_neon.c
