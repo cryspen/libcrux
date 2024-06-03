@@ -226,7 +226,9 @@ pub mod portable {
 
     /// An incremental API for SHAKE
     pub mod incremental {
-        use generic_keccak::{absorb_final, squeeze_first_three_blocks, squeeze_next_block};
+        use generic_keccak::{
+            absorb_final, squeeze_first_five_blocks, squeeze_first_three_blocks, squeeze_next_block,
+        };
 
         use super::*;
 
@@ -248,6 +250,12 @@ pub mod portable {
         #[inline(always)]
         pub fn shake128_squeeze_first_three_blocks(s: &mut KeccakState1, out0: &mut [u8]) {
             squeeze_first_three_blocks::<1, u64, 168>(&mut s.state, [out0])
+        }
+
+        /// Squeeze five blocks
+        #[inline(always)]
+        pub fn shake128_squeeze_first_five_blocks(s: &mut KeccakState1, out0: &mut [u8]) {
+            squeeze_first_five_blocks::<1, u64, 168>(&mut s.state, [out0])
         }
 
         /// Squeeze another block
