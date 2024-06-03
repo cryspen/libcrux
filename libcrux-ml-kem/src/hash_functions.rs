@@ -36,7 +36,6 @@ pub(crate) trait Hash<const K: usize> {
 
     /// Squeeze 1 block out of the SHAKE128 state.
     fn shake128_squeeze_block(&mut self) -> [[u8; BLOCK_SIZE]; K];
-
 }
 
 /// A portable implementation of [`Hash`]
@@ -228,25 +227,25 @@ pub(crate) mod avx2 {
             debug_assert!(K == 2 || K == 3 || K == 4);
             let mut state = x4::incremental::shake128_init();
 
-                match K {
-                    2 => {
-                        x4::incremental::shake128_absorb_final(
-                            &mut state, &input[0], &input[1], &input[0], &input[0],
-                        );
-                    }
-                    3 => {
-                        x4::incremental::shake128_absorb_final(
-                            &mut state, &input[0], &input[1], &input[2], &input[0],
-                        );
-                    }
-                    4 => {
-                        x4::incremental::shake128_absorb_final(
-                            &mut state, &input[0], &input[1], &input[2], &input[3],
-                        );
-                    }
-                    _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            match K {
+                2 => {
+                    x4::incremental::shake128_absorb_final(
+                        &mut state, &input[0], &input[1], &input[0], &input[0],
+                    );
                 }
-            
+                3 => {
+                    x4::incremental::shake128_absorb_final(
+                        &mut state, &input[0], &input[1], &input[2], &input[0],
+                    );
+                }
+                4 => {
+                    x4::incremental::shake128_absorb_final(
+                        &mut state, &input[0], &input[1], &input[2], &input[3],
+                    );
+                }
+                _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            }
+
             Self {
                 shake128_state: state,
             }
@@ -256,46 +255,46 @@ pub(crate) mod avx2 {
         fn shake128_squeeze_three_blocks(&mut self) -> [[u8; THREE_BLOCKS]; K] {
             debug_assert!(K == 2 || K == 3 || K == 4);
             let mut out = [[0u8; THREE_BLOCKS]; K];
-                match K {
-                    2 => {
-                        let mut dummy_out0 = [0u8; THREE_BLOCKS];
-                        let mut dummy_out1 = [0u8; THREE_BLOCKS];
-                        let (out0, out1) = out.split_at_mut(1);
-                        x4::incremental::shake128_squeeze_first_three_blocks(
-                            &mut self.shake128_state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut dummy_out0,
-                            &mut dummy_out1,
-                        );
-                    }
-                    3 => {
-                        let mut dummy_out0 = [0u8; THREE_BLOCKS];
-                        let (out0, out12) = out.split_at_mut(1);
-                        let (out1, out2) = out12.split_at_mut(1);
-                        x4::incremental::shake128_squeeze_first_three_blocks(
-                            &mut self.shake128_state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut out2[0],
-                            &mut dummy_out0,
-                        );
-                    }
-                    4 => {
-                        let (out0, out123) = out.split_at_mut(1);
-                        let (out1, out23) = out123.split_at_mut(1);
-                        let (out2, out3) = out23.split_at_mut(1);
-                        x4::incremental::shake128_squeeze_first_three_blocks(
-                            &mut self.shake128_state,
-                            &mut out0[0],
-                            &mut out1[0],
-                            &mut out2[0],
-                            &mut out3[0],
-                        );
-                    }
-                    _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            match K {
+                2 => {
+                    let mut dummy_out0 = [0u8; THREE_BLOCKS];
+                    let mut dummy_out1 = [0u8; THREE_BLOCKS];
+                    let (out0, out1) = out.split_at_mut(1);
+                    x4::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state,
+                        &mut out0[0],
+                        &mut out1[0],
+                        &mut dummy_out0,
+                        &mut dummy_out1,
+                    );
                 }
-                out
+                3 => {
+                    let mut dummy_out0 = [0u8; THREE_BLOCKS];
+                    let (out0, out12) = out.split_at_mut(1);
+                    let (out1, out2) = out12.split_at_mut(1);
+                    x4::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state,
+                        &mut out0[0],
+                        &mut out1[0],
+                        &mut out2[0],
+                        &mut dummy_out0,
+                    );
+                }
+                4 => {
+                    let (out0, out123) = out.split_at_mut(1);
+                    let (out1, out23) = out123.split_at_mut(1);
+                    let (out2, out3) = out23.split_at_mut(1);
+                    x4::incremental::shake128_squeeze_first_three_blocks(
+                        &mut self.shake128_state,
+                        &mut out0[0],
+                        &mut out1[0],
+                        &mut out2[0],
+                        &mut out3[0],
+                    );
+                }
+                _ => unreachable!("This function must only be called with N = 2, 3, 4"),
+            }
+            out
         }
 
         #[inline(always)]
@@ -413,7 +412,10 @@ pub(crate) mod neon {
         #[inline(always)]
         fn shake128_init_absorb(input: [[u8; 34]; K]) -> Self {
             debug_assert!(K == 2 || K == 3 || K == 4);
-            let mut state = [x2::incremental::shake128_init(), x2::incremental::shake128_init()];
+            let mut state = [
+                x2::incremental::shake128_init(),
+                x2::incremental::shake128_init(),
+            ];
             match K {
                 2 => {
                     x2::incremental::shake128_absorb_final(&mut state[0], &input[0], &input[1]);
@@ -492,7 +494,11 @@ pub(crate) mod neon {
                 2 => {
                     let mut out0 = [0u8; BLOCK_SIZE];
                     let mut out1 = [0u8; BLOCK_SIZE];
-                    x2::incremental::shake128_squeeze_next_block(&mut self.shake128_state[0], &mut out0, &mut out1);
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[0],
+                        &mut out0,
+                        &mut out1,
+                    );
                     out[0] = out0;
                     out[1] = out1;
                 }
@@ -501,8 +507,16 @@ pub(crate) mod neon {
                     let mut out1 = [0u8; BLOCK_SIZE];
                     let mut out2 = [0u8; BLOCK_SIZE];
                     let mut out3 = [0u8; BLOCK_SIZE];
-                    x2::incremental::shake128_squeeze_next_block(&mut self.shake128_state[0], &mut out0, &mut out1);
-                    x2::incremental::shake128_squeeze_next_block(&mut self.shake128_state[1], &mut out2, &mut out3);
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[0],
+                        &mut out0,
+                        &mut out1,
+                    );
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[1],
+                        &mut out2,
+                        &mut out3,
+                    );
                     out[0] = out0;
                     out[1] = out1;
                     out[2] = out2;
@@ -512,8 +526,16 @@ pub(crate) mod neon {
                     let mut out1 = [0u8; BLOCK_SIZE];
                     let mut out2 = [0u8; BLOCK_SIZE];
                     let mut out3 = [0u8; BLOCK_SIZE];
-                    x2::incremental::shake128_squeeze_next_block(&mut self.shake128_state[0], &mut out0, &mut out1);
-                    x2::incremental::shake128_squeeze_next_block(&mut self.shake128_state[1], &mut out2, &mut out3);
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[0],
+                        &mut out0,
+                        &mut out1,
+                    );
+                    x2::incremental::shake128_squeeze_next_block(
+                        &mut self.shake128_state[1],
+                        &mut out2,
+                        &mut out3,
+                    );
                     out[0] = out0;
                     out[1] = out1;
                     out[2] = out2;
