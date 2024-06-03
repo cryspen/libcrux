@@ -353,6 +353,19 @@ pub mod neon {
         }
     }
 
+    pub fn hash<const LEN: usize>(algorithm: crate::Algorithm, payload: &[u8]) -> [u8; LEN] {
+        debug_assert!(payload.len() <= u32::MAX as usize);
+
+        let mut out = [0u8; LEN];
+        match algorithm {
+            crate::Algorithm::Sha224 => sha224(&mut out, payload),
+            crate::Algorithm::Sha256 => sha256(&mut out, payload),
+            crate::Algorithm::Sha384 => sha384(&mut out, payload),
+            crate::Algorithm::Sha512 => sha512(&mut out, payload),
+        }
+        out
+    }
+
     /// Performing 2 operations in parallel
     pub mod x2 {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]

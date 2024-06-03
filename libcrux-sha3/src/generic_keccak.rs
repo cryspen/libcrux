@@ -118,12 +118,45 @@ pub(crate) fn pi<const N: usize, T: KeccakItem<N>>(s: &mut KeccakState<N, T>) {
 
 #[inline(always)]
 pub(crate) fn chi<const N: usize, T: KeccakItem<N>>(s: &mut KeccakState<N, T>) {
-    let old = s.st;
-    for i in 0..5 {
-        for j in 0..5 {
-            s.st[i][j] = T::and_not_xor(s.st[i][j], old[i][(j + 2) % 5], old[i][(j + 1) % 5]);
-        }
-    }
+    let old = s.st[0];
+    s.st[0][0] = T::and_not_xor(s.st[0][0], old[(0 + 2) % 5], old[(0 + 1) % 5]);
+    s.st[0][1] = T::and_not_xor(s.st[0][1], old[(1 + 2) % 5], old[(1 + 1) % 5]);
+    s.st[0][2] = T::and_not_xor(s.st[0][2], old[(2 + 2) % 5], old[(2 + 1) % 5]);
+    s.st[0][3] = T::and_not_xor(s.st[0][3], old[(3 + 2) % 5], old[(3 + 1) % 5]);
+    s.st[0][4] = T::and_not_xor(s.st[0][4], old[(4 + 2) % 5], old[(4 + 1) % 5]);
+
+    let old = s.st[1];
+    s.st[1][0] = T::and_not_xor(s.st[1][0], old[(0 + 2) % 5], old[(0 + 1) % 5]);
+    s.st[1][1] = T::and_not_xor(s.st[1][1], old[(1 + 2) % 5], old[(1 + 1) % 5]);
+    s.st[1][2] = T::and_not_xor(s.st[1][2], old[(2 + 2) % 5], old[(2 + 1) % 5]);
+    s.st[1][3] = T::and_not_xor(s.st[1][3], old[(3 + 2) % 5], old[(3 + 1) % 5]);
+    s.st[1][4] = T::and_not_xor(s.st[1][4], old[(4 + 2) % 5], old[(4 + 1) % 5]);
+
+    let old = s.st[2];
+    s.st[2][0] = T::and_not_xor(s.st[2][0], old[(0 + 2) % 5], old[(0 + 1) % 5]);
+    s.st[2][1] = T::and_not_xor(s.st[2][1], old[(1 + 2) % 5], old[(1 + 1) % 5]);
+    s.st[2][2] = T::and_not_xor(s.st[2][2], old[(2 + 2) % 5], old[(2 + 1) % 5]);
+    s.st[2][3] = T::and_not_xor(s.st[2][3], old[(3 + 2) % 5], old[(3 + 1) % 5]);
+    s.st[2][4] = T::and_not_xor(s.st[2][4], old[(4 + 2) % 5], old[(4 + 1) % 5]);
+
+    let old = s.st[3];
+    s.st[3][0] = T::and_not_xor(s.st[3][0], old[(0 + 2) % 5], old[(0 + 1) % 5]);
+    s.st[3][1] = T::and_not_xor(s.st[3][1], old[(1 + 2) % 5], old[(1 + 1) % 5]);
+    s.st[3][2] = T::and_not_xor(s.st[3][2], old[(2 + 2) % 5], old[(2 + 1) % 5]);
+    s.st[3][3] = T::and_not_xor(s.st[3][3], old[(3 + 2) % 5], old[(3 + 1) % 5]);
+    s.st[3][4] = T::and_not_xor(s.st[3][4], old[(4 + 2) % 5], old[(4 + 1) % 5]);
+
+    let old = s.st[4];
+    s.st[4][0] = T::and_not_xor(s.st[4][0], old[(0 + 2) % 5], old[(0 + 1) % 5]);
+    s.st[4][1] = T::and_not_xor(s.st[4][1], old[(1 + 2) % 5], old[(1 + 1) % 5]);
+    s.st[4][2] = T::and_not_xor(s.st[4][2], old[(2 + 2) % 5], old[(2 + 1) % 5]);
+    s.st[4][3] = T::and_not_xor(s.st[4][3], old[(3 + 2) % 5], old[(3 + 1) % 5]);
+    s.st[4][4] = T::and_not_xor(s.st[4][4], old[(4 + 2) % 5], old[(4 + 1) % 5]);
+    // for i in 0..5 {
+    //     for j in 0..5 {
+    //         s.st[i][j] = T::and_not_xor(s.st[i][j], old[i][(j + 2) % 5], old[i][(j + 1) % 5]);
+    //     }
+    // }
 }
 
 const ROUNDCONSTANTS: [u64; 24] = [

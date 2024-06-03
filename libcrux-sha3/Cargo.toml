@@ -29,3 +29,4 @@ harness = false
 criterion = "0.5.1"
 hex = "0.4.3"
 rand = "0.8.5"
+libcrux = { version = "0.0.2-pre.2", path = ".." }
