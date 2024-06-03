@@ -6,7 +6,8 @@ from aes256_ctr_drbg import AES256_CTR_DRBG
 import json
 import hashlib
 
-for algorithm in [Dilithium2, Dilithium3, Dilithium5]:
+
+def generate_nistkats(algorithm):
     kats_formatted = []
 
     entropy_input = bytes([i for i in range(48)])
@@ -43,3 +44,8 @@ for algorithm in [Dilithium2, Dilithium3, Dilithium5]:
 
         with open("nistkats-{}{}.json".format(algorithm.k, algorithm.l), "w") as f:
             json.dump(kats_formatted, f, ensure_ascii=False, indent=4)
+
+
+generate_nistkats(Dilithium2)
+generate_nistkats(Dilithium3)
+generate_nistkats(Dilithium5)
