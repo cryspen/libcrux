@@ -133,7 +133,7 @@ pub(crate) fn generate_keypair(
         // η₁ * 64 = 2 * 64 sampling coins
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        secret[i] = sample_poly_cbd(2, &prf_output[..]);
+        secret[i] = sample_poly_cbd(2, &prf_output);
     }
 
     // for(i ← 0; i < k; i++)
@@ -149,7 +149,7 @@ pub(crate) fn generate_keypair(
         // η₂ * 64 = 2 * 64 sampling coins
         let prf_output: [u8; 128] = PRF(&prf_input);
 
-        error[i] = sample_poly_cbd(2, &prf_output[..]);
+        error[i] = sample_poly_cbd(2, &prf_output);
     }
 
     // ŝ ← NTT(s)

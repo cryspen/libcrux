@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include <openssl/bytestring.h>
-#include <openssl/kyber.h>
+#include <openssl/experimental/kyber.h>
 
 #include <benchmark/benchmark.h>
 
@@ -48,7 +48,7 @@ static void BM_Encapsulation(benchmark::State &state) {
       state.SkipWithError("Error: KYBER_parse_public_key");
     }
 
-    KYBER_encap(ciphertext, shared_secret, sizeof(shared_secret), &pub);
+    KYBER_encap(ciphertext, shared_secret, &pub);
   }
 }
 
@@ -87,7 +87,7 @@ static void BM_Decapsulation(benchmark::State &state) {
       state.SkipWithError("Error: KYBER_parse_private_key()");
     }
 
-    KYBER_decap(shared_secret, sizeof(shared_secret), ciphertext, &priv);
+    KYBER_decap(shared_secret, ciphertext, &priv);
   }
 }
 

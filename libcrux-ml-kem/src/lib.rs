@@ -37,9 +37,12 @@
 //! [F*]: https://fstar-lang.org
 
 #![no_std]
-#![forbid(unsafe_code, missing_docs)]
+#![forbid(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
+
+#[cfg(feature = "std")]
+extern crate std;
 
 pub(crate) mod hax_utils;
 
@@ -66,6 +69,8 @@ mod polynomial;
 mod sampling;
 mod serialize;
 mod types;
+mod vector;
+
 // Variants
 pub mod mlkem1024;
 pub mod mlkem512;

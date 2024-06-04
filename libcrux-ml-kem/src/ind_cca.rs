@@ -1,5 +1,3 @@
-use libcrux_polynomials::{Operations, PortableVector};
-
 use crate::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
@@ -9,6 +7,7 @@ use crate::{
     ind_cpa::{into_padded_array, serialize_public_key},
     serialize::deserialize_ring_elements_reduced,
     types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey},
+    vector::{Operations, PortableVector},
 };
 
 /// Seed size for key generation
@@ -61,9 +60,9 @@ pub(crate) fn validate_public_key<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            crate::vector::SIMD256Vector,
         >(public_key);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         validate_public_key_generic::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
@@ -79,7 +78,7 @@ pub(crate) fn validate_public_key<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            crate::vector::SIMD128Vector,
         >(public_key);
         #[cfg(not(feature = "simd128"))]
         validate_public_key_generic::<
@@ -146,10 +145,10 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            crate::vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(ind_cpa_keypair_randomness, implicit_rejection_value);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
@@ -174,7 +173,7 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            crate::vector::SIMD128Vector,
             hash_functions::neon::Simd128Hash,
         >(ind_cpa_keypair_randomness, implicit_rejection_value);
         #[cfg(not(feature = "simd128"))]
@@ -237,7 +236,7 @@ fn generate_keypair_generic<
     let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
         MlKemPrivateKey::from(secret_key_serialized);
 
-    MlKemKeyPair::from(private_key, public_key.into())
+    MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
 pub(crate) fn encapsulate<
@@ -277,10 +276,10 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            crate::vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(public_key, randomness);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
@@ -335,7 +334,7 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            crate::vector::SIMD128Vector,
             hash_functions::neon::Simd128Hash,
         >(public_key, randomness)
     } else {
@@ -403,7 +402,7 @@ fn encapsulate_generic<
     >(public_key.as_slice(), randomness, pseudorandomness);
     let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
     shared_secret_array.copy_from_slice(shared_secret);
-    (ciphertext.into(), shared_secret_array)
+    (MlKemCiphertext::from(ciphertext), shared_secret_array)
 }
 
 pub(crate) fn decapsulate<
@@ -449,10 +448,10 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            libcrux_polynomials::SIMD256Vector,
+            crate::vector::SIMD256Vector,
             hash_functions::avx2::Simd256Hash,
         >(private_key, ciphertext);
-        #[cfg(not(feature = "simd256"))]
+        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
         return decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
@@ -495,7 +494,7 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            libcrux_polynomials::SIMD128Vector,
+            crate::vector::SIMD128Vector,
             hash_functions::neon::Simd128Hash,
         >(private_key, ciphertext);
         #[cfg(not(feature = "simd128"))]
@@ -566,7 +565,7 @@ pub(crate) fn decapsulate_generic<
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
-    let (ind_cpa_secret_key, secret_key) = private_key.split_at(CPA_SECRET_KEY_SIZE);
+    let (ind_cpa_secret_key, secret_key) = private_key.value.split_at(CPA_SECRET_KEY_SIZE);
     let (ind_cpa_public_key, secret_key) = secret_key.split_at(PUBLIC_KEY_SIZE);
     let (ind_cpa_public_key_hash, implicit_rejection_value) = secret_key.split_at(H_DIGEST_SIZE);
 

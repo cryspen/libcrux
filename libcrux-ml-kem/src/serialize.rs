@@ -3,8 +3,8 @@ use crate::{
     hax_utils::hax_debug_assert,
     helper::cloop,
     polynomial::{PolynomialRingElement, VECTORS_IN_RING_ELEMENT},
+    vector::{decompress_1, to_unsigned_representative, Operations},
 };
-use libcrux_polynomials::{GenericOperations, Operations};
 
 #[cfg(hax)]
 use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
@@ -15,7 +15,7 @@ pub(super) fn compress_then_serialize_message<Vector: Operations>(
 ) -> [u8; SHARED_SECRET_SIZE] {
     let mut serialized = [0u8; SHARED_SECRET_SIZE];
     for i in 0..16 {
-        let coefficient = Vector::to_unsigned_representative(re.coefficients[i]);
+        let coefficient = to_unsigned_representative::<Vector>(re.coefficients[i]);
         let coefficient_compressed = Vector::compress_1(coefficient);
 
         let bytes = Vector::serialize_1(coefficient_compressed);
@@ -31,7 +31,7 @@ pub(super) fn deserialize_then_decompress_message<Vector: Operations>(
     let mut re = PolynomialRingElement::<Vector>::ZERO();
     for i in 0..16 {
         let coefficient_compressed = Vector::deserialize_1(&serialized[2 * i..2 * i + 2]);
-        re.coefficients[i] = Vector::decompress_1(coefficient_compressed);
+        re.coefficients[i] = decompress_1::<Vector>(coefficient_compressed);
     }
     re
 }
@@ -42,7 +42,7 @@ pub(super) fn serialize_uncompressed_ring_element<Vector: Operations>(
 ) -> [u8; BYTES_PER_RING_ELEMENT] {
     let mut serialized = [0u8; BYTES_PER_RING_ELEMENT];
     for i in 0..VECTORS_IN_RING_ELEMENT {
-        let coefficient = Vector::to_unsigned_representative(re.coefficients[i]);
+        let coefficient = to_unsigned_representative::<Vector>(re.coefficients[i]);
 
         let bytes = Vector::serialize_12(coefficient);
         serialized[24 * i..24 * i + 24].copy_from_slice(&bytes);
@@ -118,7 +118,7 @@ fn compress_then_serialize_10<const OUT_LEN: usize, Vector: Operations>(
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
-            Vector::compress::<10>(Vector::to_unsigned_representative(re.coefficients[i]));
+            Vector::compress::<10>(to_unsigned_representative::<Vector>(re.coefficients[i]));
 
         let bytes = Vector::serialize_10(coefficient);
         serialized[20 * i..20 * i + 20].copy_from_slice(&bytes);
@@ -133,7 +133,7 @@ fn compress_then_serialize_11<const OUT_LEN: usize, Vector: Operations>(
     let mut serialized = [0u8; OUT_LEN];
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
-            Vector::compress::<11>(Vector::to_unsigned_representative(re.coefficients[i]));
+            Vector::compress::<11>(to_unsigned_representative::<Vector>(re.coefficients[i]));
 
         let bytes = Vector::serialize_11(coefficient);
         serialized[22 * i..22 * i + 22].copy_from_slice(&bytes);
@@ -165,7 +165,7 @@ fn compress_then_serialize_4<Vector: Operations>(
 ) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
-            Vector::compress::<4>(Vector::to_unsigned_representative(re.coefficients[i]));
+            Vector::compress::<4>(to_unsigned_representative::<Vector>(re.coefficients[i]));
 
         let bytes = Vector::serialize_4(coefficient);
         serialized[8 * i..8 * i + 8].copy_from_slice(&bytes);
@@ -179,7 +179,7 @@ fn compress_then_serialize_5<Vector: Operations>(
 ) {
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficients =
-            Vector::compress::<5>(Vector::to_unsigned_representative(re.coefficients[i]));
+            Vector::compress::<5>(to_unsigned_representative::<Vector>(re.coefficients[i]));
 
         let bytes = Vector::serialize_5(coefficients);
         serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);

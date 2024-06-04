@@ -1,5 +1,5 @@
-use libcrux_polynomials::{
-    FieldElementTimesMontgomeryR, GenericOperations, Operations, FIELD_ELEMENTS_IN_VECTOR,
+use crate::vector::{
+    to_standard_domain, FieldElementTimesMontgomeryR, Operations, FIELD_ELEMENTS_IN_VECTOR,
 };
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
@@ -16,6 +16,7 @@ pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] =
 pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
     super::constants::COEFFICIENTS_IN_RING_ELEMENT / FIELD_ELEMENTS_IN_VECTOR;
 
+#[cfg_attr(eurydice, derive(Clone, Copy))]
 pub(crate) struct PolynomialRingElement<Vector: Operations> {
     pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
 }
@@ -33,9 +34,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     pub(crate) fn from_i16_array(a: &[i16]) -> Self {
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
-            result.coefficients[i] = Vector::from_i16_array(
-                &a[i * FIELD_ELEMENTS_IN_VECTOR..(i + 1) * FIELD_ELEMENTS_IN_VECTOR],
-            );
+            result.coefficients[i] = Vector::from_i16_array(&a[i * 16..(i + 1) * 16]);
         }
         result
     }
@@ -72,10 +71,26 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         for i in 0..VECTORS_IN_RING_ELEMENT {
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
-            result.coefficients[i] = Vector::barrett_reduce(Vector::add(
-                coefficient_normal_form,
-                &Vector::add(self.coefficients[i], &message.coefficients[i]),
-            ));
+
+            // FIXME: Eurydice crashes with:
+            //
+            // Warning 11: in top-level declaration libcrux_ml_kem.polynomial.{libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0]}.add_message_error_reduce__libcrux_ml_kem_libcrux_polynomials_PortableVector: this expression is not Low*; the enclosing function cannot be translated into C*: let mutable ret(Mark.Present,(Mark.AtMost 2), ): int16_t[16size_t] = $any in
+            // libcrux_ml_kem.libcrux_polynomials.{(libcrux_ml_kem::libcrux_polynomials::libcrux_traits::Operations␣for␣libcrux_ml_kem::libcrux_polynomials::PortableVector)}.add ((@9: libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:int16_t[16size_t][16size_t])[@4] &(((@8: libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t]*)[0uint32_t]:libcrux_ml_kem_libcrux_polynomials_PortableVector[16size_t])[@4]) @0;
+            // @0
+            // Warning 11 is fatal, exiting.
+            //
+            // On the following code:
+
+            // ```rust
+            // result.coefficients[i] = Vector::barrett_reduce(Vector::add(
+            //     coefficient_normal_form,
+            //     &Vector::add(self.coefficients[i], &message.coefficients[i]),
+            // ));
+            // ```
+
+            let tmp = Vector::add(self.coefficients[i], &message.coefficients[i]);
+            let tmp = Vector::add(coefficient_normal_form, &tmp);
+            result.coefficients[i] = Vector::barrett_reduce(tmp);
         }
         result
     }
@@ -98,7 +113,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         for j in 0..VECTORS_IN_RING_ELEMENT {
             // The coefficients are of the form aR^{-1} mod q, which means
             // calling to_montgomery_domain() on them should return a mod q.
-            let coefficient_normal_form = Vector::to_standard_domain(self.coefficients[j]);
+            let coefficient_normal_form = to_standard_domain::<Vector>(self.coefficients[j]);
 
             self.coefficients[j] = Vector::barrett_reduce(Vector::add(
                 coefficient_normal_form,
