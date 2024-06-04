@@ -44,6 +44,109 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 /// Am ML-KEM 768 Key pair
 pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
+// Instantiate the different functions.
+macro_rules! instantiate {
+    ($modp:ident, $p:path) => {
+        pub mod $modp {
+            use super::*;
+            use $p as p;
+
+            /// Validate a public key.
+            ///
+            /// Returns `Some(public_key)` if valid, and `None` otherwise.
+            pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
+                if p::validate_public_key_generic::<
+                    RANK_768,
+                    RANKED_BYTES_PER_RING_ELEMENT_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                >(&public_key.value)
+                {
+                    Some(public_key)
+                } else {
+                    None
+                }
+            }
+
+            /// Generate ML-KEM 768 Key Pair
+            pub fn generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem768KeyPair {
+                p::generate_keypair_generic::<
+                    RANK_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    RANKED_BYTES_PER_RING_ELEMENT_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
+            /// Encapsulate ML-KEM 768
+            ///
+            /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
+            /// bytes of `randomness`.
+            pub fn encapsulate(
+                public_key: &MlKem768PublicKey,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                p::encapsulate_generic::<
+                    RANK_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    T_AS_NTT_ENCODED_SIZE_768,
+                    C1_SIZE_768,
+                    C2_SIZE_768,
+                    VECTOR_U_COMPRESSION_FACTOR_768,
+                    VECTOR_V_COMPRESSION_FACTOR_768,
+                    C1_BLOCK_SIZE_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
+            /// Decapsulate ML-KEM 768
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
+            pub fn decapsulate(
+                private_key: &MlKem768PrivateKey,
+                ciphertext: &MlKem768Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::decapsulate_generic::<
+                    RANK_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                    T_AS_NTT_ENCODED_SIZE_768,
+                    C1_SIZE_768,
+                    C2_SIZE_768,
+                    VECTOR_U_COMPRESSION_FACTOR_768,
+                    VECTOR_V_COMPRESSION_FACTOR_768,
+                    C1_BLOCK_SIZE_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
+        }
+    };
+}
+
+// Instantiations
+
+instantiate! {portable, ind_cca::portable}
+#[cfg(feature = "simd256")]
+instantiate! {avx2, ind_cca::avx2}
+#[cfg(feature = "simd128")]
+instantiate! {neon, ind_cca::neon}
+
 /// Validate a public key.
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
@@ -64,6 +167,13 @@ pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768Publ
 ///
 /// Generate an ML-KEM key pair. The input is a byte array of size
 /// [`KEY_GENERATION_SEED_SIZE`].
+///
+/// This function uses CPU feature detection to pick the most efficient version
+/// on each platform. To use a specific version with your own feature detection
+/// use one of the following
+/// - [`generate_key_pair_avx2`]
+/// - [`generate_key_pair_neon`]
+/// - [`generate_key_pair_portable`]
 ///
 /// This function returns an [`MlKem768KeyPair`].
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
