@@ -3,11 +3,11 @@ use crate::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
-    hash_functions::{self, Hash},
+    hash_functions::Hash,
     ind_cpa::{into_padded_array, serialize_public_key},
     serialize::deserialize_ring_elements_reduced,
     types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey},
-    vector::{Operations, PortableVector},
+    vector::Operations,
 };
 
 /// Seed size for key generation
@@ -23,6 +23,151 @@ pub const ENCAPS_SEED_SIZE: usize = SHARED_SECRET_SIZE;
 ///
 /// A byte array of size [`SHARED_SECRET_SIZE`].
 pub type MlKemSharedSecret = [u8; SHARED_SECRET_SIZE];
+
+macro_rules! instantiate {
+    ($modp:ident, $vector:path, $hash:path) => {
+        pub mod $modp {
+            use crate::{
+                MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey, MlKemSharedSecret,
+                KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
+            };
+
+            /// Portable generate key pair.
+            pub(crate) fn generate_keypair_generic<
+                const K: usize,
+                const CPA_PRIVATE_KEY_SIZE: usize,
+                const PRIVATE_KEY_SIZE: usize,
+                const PUBLIC_KEY_SIZE: usize,
+                const BYTES_PER_RING_ELEMENT: usize,
+                const ETA1: usize,
+                const ETA1_RANDOMNESS_SIZE: usize,
+            >(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+                super::generate_keypair_generic::<
+                    K,
+                    CPA_PRIVATE_KEY_SIZE,
+                    PRIVATE_KEY_SIZE,
+                    PUBLIC_KEY_SIZE,
+                    BYTES_PER_RING_ELEMENT,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    $vector,
+                    $hash,
+                >(randomness)
+            }
+
+            /// Portable public key validation
+            pub(crate) fn validate_public_key_generic<
+                const K: usize,
+                const RANKED_BYTES_PER_RING_ELEMENT: usize,
+                const PUBLIC_KEY_SIZE: usize,
+            >(
+                public_key: &[u8; PUBLIC_KEY_SIZE],
+            ) -> bool {
+                super::validate_public_key_generic::<
+                    K,
+                    RANKED_BYTES_PER_RING_ELEMENT,
+                    PUBLIC_KEY_SIZE,
+                    $vector,
+                >(public_key)
+            }
+
+            /// Portable encapsualte
+            pub(crate) fn encapsulate_generic<
+                const K: usize,
+                const CIPHERTEXT_SIZE: usize,
+                const PUBLIC_KEY_SIZE: usize,
+                const T_AS_NTT_ENCODED_SIZE: usize,
+                const C1_SIZE: usize,
+                const C2_SIZE: usize,
+                const VECTOR_U_COMPRESSION_FACTOR: usize,
+                const VECTOR_V_COMPRESSION_FACTOR: usize,
+                const VECTOR_U_BLOCK_LEN: usize,
+                const ETA1: usize,
+                const ETA1_RANDOMNESS_SIZE: usize,
+                const ETA2: usize,
+                const ETA2_RANDOMNESS_SIZE: usize,
+            >(
+                public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
+                super::encapsulate_generic::<
+                    K,
+                    CIPHERTEXT_SIZE,
+                    PUBLIC_KEY_SIZE,
+                    T_AS_NTT_ENCODED_SIZE,
+                    C1_SIZE,
+                    C2_SIZE,
+                    VECTOR_U_COMPRESSION_FACTOR,
+                    VECTOR_V_COMPRESSION_FACTOR,
+                    VECTOR_U_BLOCK_LEN,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    $vector,
+                    $hash,
+                >(public_key, randomness)
+            }
+
+            /// Portable decapsulate
+            pub fn decapsulate_generic<
+                const K: usize,
+                const SECRET_KEY_SIZE: usize,
+                const CPA_SECRET_KEY_SIZE: usize,
+                const PUBLIC_KEY_SIZE: usize,
+                const CIPHERTEXT_SIZE: usize,
+                const T_AS_NTT_ENCODED_SIZE: usize,
+                const C1_SIZE: usize,
+                const C2_SIZE: usize,
+                const VECTOR_U_COMPRESSION_FACTOR: usize,
+                const VECTOR_V_COMPRESSION_FACTOR: usize,
+                const C1_BLOCK_SIZE: usize,
+                const ETA1: usize,
+                const ETA1_RANDOMNESS_SIZE: usize,
+                const ETA2: usize,
+                const ETA2_RANDOMNESS_SIZE: usize,
+                const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
+            >(
+                private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
+                ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+            ) -> MlKemSharedSecret {
+                super::decapsulate_generic::<
+                    K,
+                    SECRET_KEY_SIZE,
+                    CPA_SECRET_KEY_SIZE,
+                    PUBLIC_KEY_SIZE,
+                    CIPHERTEXT_SIZE,
+                    T_AS_NTT_ENCODED_SIZE,
+                    C1_SIZE,
+                    C2_SIZE,
+                    VECTOR_U_COMPRESSION_FACTOR,
+                    VECTOR_V_COMPRESSION_FACTOR,
+                    C1_BLOCK_SIZE,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                    $vector,
+                    $hash,
+                >(private_key, ciphertext)
+            }
+        }
+    };
+}
+
+// Portable generic implementations.
+instantiate! {portable, crate::vector::PortableVector, crate::hash_functions::portable::PortableHash<K>}
+
+// AVX2 generic implementation.
+#[cfg(feature = "simd256")]
+instantiate! {avx2, crate::vector::SIMD256Vector, crate::hash_functions::avx2::Simd256Hash}
+
+// NEON generic implementation.
+#[cfg(feature = "simd128")]
+instantiate! {neon, crate::vector::SIMD128Vector, crate::hash_functions::neon::Simd128Hash}
 
 /// Serialize the secret key.
 #[inline(always)]
@@ -56,19 +201,15 @@ pub(crate) fn validate_public_key<
         && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
-        return validate_public_key_generic::<
+        return avx2::validate_public_key_generic::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
-            crate::vector::SIMD256Vector,
         >(public_key);
         #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
-        validate_public_key_generic::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-            PortableVector,
-        >(public_key)
+        portable::validate_public_key_generic::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+            public_key,
+        )
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
         && libcrux_platform::simd128_support()
@@ -81,19 +222,13 @@ pub(crate) fn validate_public_key<
             crate::vector::SIMD128Vector,
         >(public_key);
         #[cfg(not(feature = "simd128"))]
-        validate_public_key_generic::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-            PortableVector,
-        >(public_key)
+        portable::validate_public_key_generic::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+            public_key,
+        )
     } else {
-        validate_public_key_generic::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-            PortableVector,
-        >(public_key)
+        portable::validate_public_key_generic::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
+            public_key,
+        )
     }
 }
 
@@ -128,16 +263,13 @@ pub(crate) fn generate_keypair<
 >(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
-    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
-    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
-
     // Runtime feature detection.
     if cfg!(feature = "simd256")
         && cfg!(target_arch = "x86_64")
         && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
-        return generate_keypair_generic::<
+        return avx2::generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -145,11 +277,9 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            crate::vector::SIMD256Vector,
-            hash_functions::avx2::Simd256Hash,
-        >(ind_cpa_keypair_randomness, implicit_rejection_value);
+        >(randomness);
         #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
-        generate_keypair_generic::<
+        portable::generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -157,9 +287,7 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
-        >(ind_cpa_keypair_randomness, implicit_rejection_value)
+        >(randomness)
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
         && libcrux_platform::simd128_support()
@@ -177,7 +305,7 @@ pub(crate) fn generate_keypair<
             hash_functions::neon::Simd128Hash,
         >(ind_cpa_keypair_randomness, implicit_rejection_value);
         #[cfg(not(feature = "simd128"))]
-        generate_keypair_generic::<
+        portable::generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -185,11 +313,9 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
-        >(ind_cpa_keypair_randomness, implicit_rejection_value)
+        >(randomness)
     } else {
-        generate_keypair_generic::<
+        portable::generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -197,12 +323,14 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
-        >(ind_cpa_keypair_randomness, implicit_rejection_value)
+        >(randomness)
     }
 }
 
+/// Generate a key pair.
+///
+/// Depending on the `Vector` and `Hasher` used, this requires different hardware
+/// features
 fn generate_keypair_generic<
     const K: usize,
     const CPA_PRIVATE_KEY_SIZE: usize,
@@ -214,9 +342,11 @@ fn generate_keypair_generic<
     Vector: Operations,
     Hasher: Hash<K>,
 >(
-    ind_cpa_keypair_randomness: &[u8],
-    implicit_rejection_value: &[u8],
+    randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+    let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
+    let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
+
     let (ind_cpa_private_key, public_key) = crate::ind_cpa::generate_keypair::<
         K,
         CPA_PRIVATE_KEY_SIZE,
@@ -262,7 +392,7 @@ pub(crate) fn encapsulate<
         && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
-        return encapsulate_generic::<
+        return avx2::encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -276,11 +406,9 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            crate::vector::SIMD256Vector,
-            hash_functions::avx2::Simd256Hash,
         >(public_key, randomness);
         #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
-        encapsulate_generic::<
+        portable::encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -294,15 +422,13 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
         >(public_key, randomness)
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
         && libcrux_platform::simd128_support()
     {
         #[cfg(not(feature = "simd128"))]
-        return encapsulate_generic::<
+        return portable::encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -316,8 +442,6 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
         >(public_key, randomness);
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
         encapsulate_generic::<
@@ -338,7 +462,7 @@ pub(crate) fn encapsulate<
             hash_functions::neon::Simd128Hash,
         >(public_key, randomness)
     } else {
-        encapsulate_generic::<
+        portable::encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -352,8 +476,6 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
         >(public_key, randomness)
     }
 }
@@ -431,7 +553,7 @@ pub(crate) fn decapsulate<
         && libcrux_platform::simd256_support()
     {
         #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
-        return decapsulate_generic::<
+        return avx2::decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -448,11 +570,9 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            crate::vector::SIMD256Vector,
-            hash_functions::avx2::Simd256Hash,
         >(private_key, ciphertext);
         #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
-        return decapsulate_generic::<
+        return portable::decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -469,8 +589,6 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
         >(private_key, ciphertext);
     } else if cfg!(feature = "simd128")
         && cfg!(target_arch = "aarch64")
@@ -498,7 +616,7 @@ pub(crate) fn decapsulate<
             hash_functions::neon::Simd128Hash,
         >(private_key, ciphertext);
         #[cfg(not(feature = "simd128"))]
-        return decapsulate_generic::<
+        return portable::decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -515,11 +633,9 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
         >(private_key, ciphertext);
     } else {
-        decapsulate_generic::<
+        portable::decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -536,8 +652,6 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            PortableVector,
-            hash_functions::portable::PortableHash<K>,
         >(private_key, ciphertext)
     }
 }
