@@ -215,11 +215,10 @@ pub(crate) fn validate_public_key<
         && libcrux_platform::simd128_support()
     {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-        return validate_public_key_generic::<
+        return neon::validate_public_key_generic::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
-            crate::vector::SIMD128Vector,
         >(public_key);
         #[cfg(not(feature = "simd128"))]
         portable::validate_public_key_generic::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(
@@ -293,7 +292,7 @@ pub(crate) fn generate_keypair<
         && libcrux_platform::simd128_support()
     {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-        return generate_keypair_generic::<
+        return neon::generate_keypair_generic::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -301,9 +300,7 @@ pub(crate) fn generate_keypair<
             BYTES_PER_RING_ELEMENT,
             ETA1,
             ETA1_RANDOMNESS_SIZE,
-            crate::vector::SIMD128Vector,
-            hash_functions::neon::Simd128Hash,
-        >(ind_cpa_keypair_randomness, implicit_rejection_value);
+        >(randomness);
         #[cfg(not(feature = "simd128"))]
         portable::generate_keypair_generic::<
             K,
@@ -444,7 +441,7 @@ pub(crate) fn encapsulate<
             ETA2_RANDOMNESS_SIZE,
         >(public_key, randomness);
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-        encapsulate_generic::<
+        neon::encapsulate_generic::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -458,8 +455,6 @@ pub(crate) fn encapsulate<
             ETA1_RANDOMNESS_SIZE,
             ETA2,
             ETA2_RANDOMNESS_SIZE,
-            crate::vector::SIMD128Vector,
-            hash_functions::neon::Simd128Hash,
         >(public_key, randomness)
     } else {
         portable::encapsulate_generic::<
@@ -595,7 +590,7 @@ pub(crate) fn decapsulate<
         && libcrux_platform::simd128_support()
     {
         #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-        return decapsulate_generic::<
+        return neon::decapsulate_generic::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -612,8 +607,6 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-            crate::vector::SIMD128Vector,
-            hash_functions::neon::Simd128Hash,
         >(private_key, ciphertext);
         #[cfg(not(feature = "simd128"))]
         return portable::decapsulate_generic::<
