@@ -1,8 +1,13 @@
-use crate::arithmetic::{t0_to_unsigned_representative, PolynomialRingElement};
+use crate::{
+    arithmetic::{t0_to_unsigned_representative, PolynomialRingElement},
+    constants::{BYTES_FOR_RING_ELEMENT_OF_T0S, BYTES_FOR_RING_ELEMENT_OF_T1S},
+};
 
 #[inline(always)]
-fn serialize_ring_element_of_t0s(re: PolynomialRingElement) -> [u8; 416] {
-    let mut serialized = [0u8; 416];
+pub(crate) fn serialize_ring_element_of_t0s(
+    re: PolynomialRingElement,
+) -> [u8; BYTES_FOR_RING_ELEMENT_OF_T0S] {
+    let mut serialized = [0u8; BYTES_FOR_RING_ELEMENT_OF_T0S];
 
     for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
         let coefficient0 = t0_to_unsigned_representative(coefficients[0]);
@@ -52,8 +57,10 @@ fn serialize_ring_element_of_t0s(re: PolynomialRingElement) -> [u8; 416] {
 }
 
 #[inline(always)]
-fn serialize_ring_element_of_t1s(re: PolynomialRingElement) -> [u8; 320] {
-    let mut serialized = [0u8; 320];
+pub(crate) fn serialize_ring_element_of_t1s(
+    re: PolynomialRingElement,
+) -> [u8; BYTES_FOR_RING_ELEMENT_OF_T1S] {
+    let mut serialized = [0u8; BYTES_FOR_RING_ELEMENT_OF_T1S];
 
     for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
         serialized[5 * i] = (coefficients[0] & 0xFF) as u8;
@@ -67,6 +74,56 @@ fn serialize_ring_element_of_t1s(re: PolynomialRingElement) -> [u8; 320] {
     }
 
     serialized
+}
+
+#[inline(always)]
+fn serialize_error_ring_element_when_eta_is_2<const BYTES_FOR_OUTPUT: usize>(
+    re: PolynomialRingElement,
+) -> [u8; BYTES_FOR_OUTPUT] {
+    let mut serialized = [0u8; BYTES_FOR_OUTPUT];
+
+    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
+        let coefficient0 = (2 - coefficients[0]) as u8;
+        let coefficient1 = (2 - coefficients[1]) as u8;
+        let coefficient2 = (2 - coefficients[2]) as u8;
+        let coefficient3 = (2 - coefficients[3]) as u8;
+        let coefficient4 = (2 - coefficients[4]) as u8;
+        let coefficient5 = (2 - coefficients[5]) as u8;
+        let coefficient6 = (2 - coefficients[6]) as u8;
+        let coefficient7 = (2 - coefficients[7]) as u8;
+
+        serialized[3 * i + 0] = (coefficient2 << 6) | (coefficient1 << 3) | coefficient0;
+        serialized[3 * i + 1] =
+            (coefficient5 << 7) | (coefficient4 << 4) | (coefficient3 << 1) | (coefficient2 >> 2);
+        serialized[3 * i + 2] = (coefficient7 << 5) | (coefficient6 << 2) | (coefficient5 >> 1);
+    }
+
+    serialized
+}
+
+#[inline(always)]
+fn serialize_error_ring_element_when_eta_is_4<const BYTES_FOR_OUTPUT: usize>(
+    re: PolynomialRingElement,
+) -> [u8; BYTES_FOR_OUTPUT] {
+    let mut serialized = [0u8; BYTES_FOR_OUTPUT];
+
+    for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
+        let coefficient0 = (4 - coefficients[0]) as u8;
+        let coefficient1 = (4 - coefficients[1]) as u8;
+        serialized[i] = (coefficient1 << 4) | coefficient0;
+    }
+
+    serialized
+}
+
+pub(crate) fn serialize_error_ring_element<const ETA: usize, const BYTES_FOR_OUTPUT: usize>(
+    re: PolynomialRingElement,
+) -> [u8; BYTES_FOR_OUTPUT] {
+    match ETA {
+        2 => serialize_error_ring_element_when_eta_is_2::<BYTES_FOR_OUTPUT>(re),
+        4 => serialize_error_ring_element_when_eta_is_4::<BYTES_FOR_OUTPUT>(re),
+        _ => unreachable!(),
+    }
 }
 
 #[cfg(test)]

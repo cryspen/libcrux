@@ -20,7 +20,7 @@ def generate_nistkats(algorithm):
 
         algorithm.set_drbg_seed(seed)
 
-        pk, sk = algorithm.keygen()
+        vk, sk = algorithm.keygen()
 
         msg_len = 33 * (i + 1)
         msg = rng.random_bytes(msg_len)
@@ -29,10 +29,10 @@ def generate_nistkats(algorithm):
         kats_formatted.append(
             {
                 "key_generation_seed": bytes(algorithm.keygen_seed).hex(),
-                "sha3_256_hash_of_public_key": bytes(
-                    hashlib.sha3_256(pk).digest()
+                "sha3_256_hash_of_verification_key": bytes(
+                    hashlib.sha3_256(vk).digest()
                 ).hex(),
-                "sha3_256_hash_of_secret_key": bytes(
+                "sha3_256_hash_of_signing_key": bytes(
                     hashlib.sha3_256(sk).digest()
                 ).hex(),
                 "message": bytes(msg).hex(),
