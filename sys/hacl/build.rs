@@ -470,7 +470,7 @@ fn main() {
     };
 
     // Set re-run trigger for all of c
-    println!("cargo::rerun-if-changed=c");
+    println!("cargo:rerun-if-changed=c");
 
     // Build the C files
     build(&platform, home_path);
