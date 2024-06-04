@@ -1,12 +1,12 @@
 use crate::constants::*;
 
-// ML-DSA-65 parameters
+// ML-DSA-44 parameters
 
-const ROWS_IN_A: usize = 6;
-const COLUMNS_IN_A: usize = 5;
+const ROWS_IN_A: usize = 4;
+const COLUMNS_IN_A: usize = 4;
 
-const ETA: usize = 4;
-const TWO_TIMES_ETA_BIT_SIZE: usize = 4; // ⌊log_2(2 * 4)⌋ + 1
+const ETA: usize = 2;
+const TWO_TIMES_ETA_BIT_SIZE: usize = 3; // ⌊log_2(2 * 2)⌋ + 1
 
 const BYTES_FOR_ERROR_RING_ELEMENT: usize =
     (TWO_TIMES_ETA_BIT_SIZE * COEFFICIENTS_IN_RING_ELEMENT) / 8;
