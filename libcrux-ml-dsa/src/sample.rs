@@ -1,6 +1,7 @@
 use crate::{
     arithmetic::PolynomialRingElement,
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    deserialize::deserialize_to_mask_ring_element,
     hash_functions::{H, H_128},
 };
 
@@ -133,9 +134,7 @@ pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn sample_error_ring_element_uniform<const ETA: usize>(
-    seed: [u8; 66],
-) -> PolynomialRingElement {
+pub(crate) fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     // TODO: Use incremental API to squeeze one block at a time.
     let randomness = H::<272>(&seed);
 
@@ -150,6 +149,16 @@ pub(crate) fn sample_error_ring_element_uniform<const ETA: usize>(
     }
 
     out
+}
+
+pub(crate) fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(
+    seed: [u8; 66],
+) -> PolynomialRingElement {
+    match GAMMA1_EXPONENT {
+        17 => deserialize_to_mask_ring_element::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
+        19 => deserialize_to_mask_ring_element::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
+        _ => unreachable!(),
+    }
 }
 
 #[cfg(test)]
@@ -225,7 +234,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element_uniform::<2>(seed).coefficients,
+            sample_error_ring_element::<2>(seed).coefficients,
             expected_coefficients
         );
     }
@@ -254,7 +263,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element_uniform::<4>(seed).coefficients,
+            sample_error_ring_element::<4>(seed).coefficients,
             expected_coefficients
         );
     }

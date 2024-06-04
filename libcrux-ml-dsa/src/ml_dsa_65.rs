@@ -6,10 +6,23 @@ const ROWS_IN_A: usize = 6;
 const COLUMNS_IN_A: usize = 5;
 
 const ETA: usize = 4;
-const TWO_TIMES_ETA_BIT_SIZE: usize = 4; // ⌊log_2(2 * 4)⌋ + 1
+const GAMMA1_EXPONENT: usize = 19;
+
+// To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
+// in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
+// 4 bits when ETA is 4.
+const BITS_PER_ERROR_COEFFICIENT: usize = 4;
 
 const BYTES_FOR_ERROR_RING_ELEMENT: usize =
-    (TWO_TIMES_ETA_BIT_SIZE * COEFFICIENTS_IN_RING_ELEMENT) / 8;
+    (BITS_PER_ERROR_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
+
+// To sample a value in the interval [-(GAMMA - 1), GAMMA], we can sample a
+// value (say 'v') in the interval [0, (2 * GAMMA) - 1] and then compute
+// GAMMA - v. This can be done in 20 bits when GAMMA is 2^{19}.
+const BITS_PER_MASK_COEFFICIENT: usize = 20;
+
+const BYTES_PER_MASK_RING_ELEMENT: usize =
+    (BITS_PER_MASK_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 
 const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
     + (COEFFICIENTS_IN_RING_ELEMENT
