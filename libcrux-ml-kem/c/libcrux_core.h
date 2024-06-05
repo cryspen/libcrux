@@ -37,35 +37,6 @@ static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
-typedef struct libcrux_ml_kem_types_MlKemPublicKey____800size_t_s {
-  uint8_t value[800U];
-} libcrux_ml_kem_types_MlKemPublicKey____800size_t;
-
-typedef struct
-    core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t___s {
-  core_option_Option__size_t_tags tag;
-  libcrux_ml_kem_types_MlKemPublicKey____800size_t f0;
-} core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t__;
-
-typedef struct libcrux_ml_kem_types_MlKemPrivateKey____1632size_t_s {
-  uint8_t value[1632U];
-} libcrux_ml_kem_types_MlKemPrivateKey____1632size_t;
-
-typedef struct libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t_s {
-  libcrux_ml_kem_types_MlKemPrivateKey____1632size_t sk;
-  libcrux_ml_kem_types_MlKemPublicKey____800size_t pk;
-} libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t;
-
-typedef struct libcrux_ml_kem_types_MlKemCiphertext____768size_t_s {
-  uint8_t value[768U];
-} libcrux_ml_kem_types_MlKemCiphertext____768size_t;
-
-typedef struct
-    K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t__s {
-  libcrux_ml_kem_types_MlKemCiphertext____768size_t fst;
-  uint8_t snd[32U];
-} K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_;
-
 typedef struct libcrux_ml_kem_types_MlKemPublicKey____1568size_t_s {
   uint8_t value[1568U];
 } libcrux_ml_kem_types_MlKemPublicKey____1568size_t;
@@ -123,6 +94,35 @@ typedef struct
   libcrux_ml_kem_types_MlKemCiphertext____1088size_t fst;
   uint8_t snd[32U];
 } K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_;
+
+typedef struct libcrux_ml_kem_types_MlKemPublicKey____800size_t_s {
+  uint8_t value[800U];
+} libcrux_ml_kem_types_MlKemPublicKey____800size_t;
+
+typedef struct
+    core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t___s {
+  core_option_Option__size_t_tags tag;
+  libcrux_ml_kem_types_MlKemPublicKey____800size_t f0;
+} core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___800size_t__;
+
+typedef struct libcrux_ml_kem_types_MlKemPrivateKey____1632size_t_s {
+  uint8_t value[1632U];
+} libcrux_ml_kem_types_MlKemPrivateKey____1632size_t;
+
+typedef struct libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t_s {
+  libcrux_ml_kem_types_MlKemPrivateKey____1632size_t sk;
+  libcrux_ml_kem_types_MlKemPublicKey____800size_t pk;
+} libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t;
+
+typedef struct libcrux_ml_kem_types_MlKemCiphertext____768size_t_s {
+  uint8_t value[768U];
+} libcrux_ml_kem_types_MlKemCiphertext____768size_t;
+
+typedef struct
+    K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t__s {
+  libcrux_ml_kem_types_MlKemCiphertext____768size_t fst;
+  uint8_t snd[32U];
+} K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_;
 
 #define core_result_Ok 0
 #define core_result_Err 1

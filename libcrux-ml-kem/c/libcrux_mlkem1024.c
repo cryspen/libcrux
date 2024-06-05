@@ -8,7 +8,7 @@
 #include "libcrux_mlkem1024.h"
 
 #include "internal/libcrux_core.h"
-#include "internal/libcrux_mlkem768_portable.h"
+#include "internal/libcrux_mlkem512_portable.h"
 #include "internal/libcrux_mlkem_avx2.h"
 #include "internal/libcrux_polynomial.h"
 #include "internal/libcrux_sha3_internal.h"
@@ -1102,11 +1102,15 @@ decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_140
   if (libcrux_platform_platform_simd256_support()) {
     libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
         private_key, ciphertext, uu____0);
+  } else if (libcrux_platform_platform_simd128_support()) {
+    libcrux_ml_kem_ind_cca_instantiations_portable_decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
+        private_key, ciphertext, uu____0);
+  } else {
+    libcrux_ml_kem_ind_cca_instantiations_portable_decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
+        private_key, ciphertext, uu____0);
     memcpy(ret, uu____0, (size_t)32U * sizeof(uint8_t));
     return;
   }
-  libcrux_ml_kem_ind_cca_instantiations_portable_decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
-      private_key, ciphertext, uu____0);
   memcpy(ret, uu____0, (size_t)32U * sizeof(uint8_t));
 }
 
@@ -1225,14 +1229,22 @@ encapsulate___4size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11si
     uu____0 =
         libcrux_ml_kem_ind_cca_instantiations_avx2_encapsulate___4size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t(
             uu____1, uu____2);
+  } else if (libcrux_platform_platform_simd128_support()) {
+    libcrux_ml_kem_types_MlKemPublicKey____1568size_t *uu____3 = public_key;
+    uint8_t uu____4[32U];
+    memcpy(uu____4, randomness, (size_t)32U * sizeof(uint8_t));
+    uu____0 =
+        libcrux_ml_kem_ind_cca_instantiations_portable_encapsulate___4size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t(
+            uu____3, uu____4);
+  } else {
+    libcrux_ml_kem_types_MlKemPublicKey____1568size_t *uu____5 = public_key;
+    uint8_t uu____6[32U];
+    memcpy(uu____6, randomness, (size_t)32U * sizeof(uint8_t));
+    uu____0 =
+        libcrux_ml_kem_ind_cca_instantiations_portable_encapsulate___4size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t(
+            uu____5, uu____6);
     return uu____0;
   }
-  libcrux_ml_kem_types_MlKemPublicKey____1568size_t *uu____3 = public_key;
-  uint8_t uu____4[32U];
-  memcpy(uu____4, randomness, (size_t)32U * sizeof(uint8_t));
-  uu____0 =
-      libcrux_ml_kem_ind_cca_instantiations_portable_encapsulate___4size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t(
-          uu____3, uu____4);
   return uu____0;
 }
 
@@ -1597,13 +1609,19 @@ generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_1
     uu____0 =
         libcrux_ml_kem_ind_cca_instantiations_avx2_generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
             uu____1);
-    return uu____0;
+  } else if (libcrux_platform_platform_simd128_support()) {
+    uint8_t uu____2[64U];
+    memcpy(uu____2, randomness, (size_t)64U * sizeof(uint8_t));
+    uu____0 =
+        libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
+            uu____2);
+  } else {
+    uint8_t uu____3[64U];
+    memcpy(uu____3, randomness, (size_t)64U * sizeof(uint8_t));
+    uu____0 =
+        libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
+            uu____3);
   }
-  uint8_t uu____2[64U];
-  memcpy(uu____2, randomness, (size_t)64U * sizeof(uint8_t));
-  uu____0 =
-      libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
-          uu____2);
   return uu____0;
 }
 
@@ -1701,11 +1719,15 @@ static bool validate_public_key___4size_t_1536size_t_1568size_t(
     uu____0 =
         libcrux_ml_kem_ind_cca_instantiations_avx2_validate_public_key___4size_t_1536size_t_1568size_t(
             public_key);
-    return uu____0;
+  } else if (libcrux_platform_platform_simd128_support()) {
+    uu____0 =
+        libcrux_ml_kem_ind_cca_instantiations_portable_validate_public_key___4size_t_1536size_t_1568size_t(
+            public_key);
+  } else {
+    uu____0 =
+        libcrux_ml_kem_ind_cca_instantiations_portable_validate_public_key___4size_t_1536size_t_1568size_t(
+            public_key);
   }
-  uu____0 =
-      libcrux_ml_kem_ind_cca_instantiations_portable_validate_public_key___4size_t_1536size_t_1568size_t(
-          public_key);
   return uu____0;
 }
 

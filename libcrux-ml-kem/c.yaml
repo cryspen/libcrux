@@ -1,17 +1,17 @@
 files:
   # INTRINSICS
 
-  # - name: libcrux_intrinsics_neon
-  #   library: true
-  #   inline_static: true
-  #   api:
-  #     - [libcrux_intrinsics, arm64]
+  - name: libcrux_intrinsics_neon
+    library: true
+    inline_static: true
+    api:
+      - [libcrux_intrinsics, arm64]
 
-  # - name: libcrux_intrinsics_avx2
-  #   library: true
-  #   inline_static: true
-  #   api:
-  #     - [libcrux_intrinsics, avx2]
+  - name: libcrux_intrinsics_avx2
+    library: true
+    inline_static: true
+    api:
+      - [libcrux_intrinsics, avx2]
 
   - name: libcrux_platform
     api:
@@ -178,6 +178,16 @@ files:
     api:
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
 
+  - name: libcrux_mlkem512_avx2
+    api:
+      - [libcrux_ml_kem, mlkem512, avx2]
+      - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+
+  - name: libcrux_mlkem512_portable
+    api:
+      - [libcrux_ml_kem, mlkem512, portable]
+      - [libcrux_ml_kem, ind_cca, instantiations, portable]
+
   - name: libcrux_mlkem512
     api:
       - [libcrux_ml_kem, mlkem512]
@@ -195,6 +205,16 @@ files:
   - name: libcrux_mlkem768
     api:
       - [libcrux_ml_kem, mlkem768]
+
+  - name: libcrux_mlkem1024_avx2
+    api:
+      - [libcrux_ml_kem, mlkem1024, avx2]
+      - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+
+  - name: libcrux_mlkem1024_portable
+    api:
+      - [libcrux_ml_kem, mlkem1024, portable]
+      - [libcrux_ml_kem, ind_cca, instantiations, portable]
 
   - name: libcrux_mlkem1024
     api:

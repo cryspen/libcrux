@@ -11,6 +11,7 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_STANDARD 11)
+#FIXME: Windows?
 add_compile_options(
     -Wall
     # -Wextra
@@ -21,7 +22,6 @@ add_compile_options(
     $<$<CONFIG:DEBUG>:-Og>
     $<$<CONFIG:RELEASE>:-g>
     $<$<CONFIG:RELEASE>:-O3>
-    -fno-omit-frame-pointer
     -flto
 )
 add_link_options(-flto)
@@ -34,20 +34,23 @@ include_directories(
 file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_core.c
     ${PROJECT_SOURCE_DIR}/libcrux_platform.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_portable.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_portable.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_portable.c
     ${PROJECT_SOURCE_DIR}/libcrux_polynomial.c
 )
 # file(GLOB VEC128_SOURCES
-#     libcrux_sha3_neon.c
+#     ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_neon.c
+#     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_neon.c
+#     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_neon.c
+#     ${PROJECT_SOURCE_DIR}/libcrux_sha3_neon.c
 # )
 file(GLOB SOURCES_vec256
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_avx2.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_avx2.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_avx2.c
     ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
 )
-
-# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(

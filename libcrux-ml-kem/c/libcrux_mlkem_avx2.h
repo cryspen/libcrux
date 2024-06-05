@@ -16,7 +16,6 @@ extern "C" {
 #include "libcrux_core.h"
 #include "libcrux_sha3.h"
 #include "libcrux_sha3_avx2.h"
-#include "libcrux_sha3_libcrux_ml_kem.h"
 
 core_core_arch_x86___m256i libcrux_ml_kem_vector_avx2_zero(void);
 

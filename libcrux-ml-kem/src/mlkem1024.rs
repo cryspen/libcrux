@@ -45,6 +45,109 @@ pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 /// Am ML-KEM 1024 Key pair
 pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
+// Instantiate the different functions.
+macro_rules! instantiate {
+    ($modp:ident, $p:path) => {
+        pub mod $modp {
+            use super::*;
+            use $p as p;
+
+            /// Validate a public key.
+            ///
+            /// Returns `Some(public_key)` if valid, and `None` otherwise.
+            pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024PublicKey> {
+                if p::validate_public_key::<
+                    RANK_1024,
+                    RANKED_BYTES_PER_RING_ELEMENT_1024,
+                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                >(&public_key.value)
+                {
+                    Some(public_key)
+                } else {
+                    None
+                }
+            }
+
+            /// Generate ML-KEM 1024 Key Pair
+            pub fn generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem1024KeyPair {
+                p::generate_keypair::<
+                    RANK_1024,
+                    CPA_PKE_SECRET_KEY_SIZE_1024,
+                    SECRET_KEY_SIZE_1024,
+                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    RANKED_BYTES_PER_RING_ELEMENT_1024,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
+            /// Encapsulate ML-KEM 1024
+            ///
+            /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
+            /// bytes of `randomness`.
+            pub fn encapsulate(
+                public_key: &MlKem1024PublicKey,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
+                p::encapsulate::<
+                    RANK_1024,
+                    CPA_PKE_CIPHERTEXT_SIZE_1024,
+                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    T_AS_NTT_ENCODED_SIZE_1024,
+                    C1_SIZE_1024,
+                    C2_SIZE_1024,
+                    VECTOR_U_COMPRESSION_FACTOR_1024,
+                    VECTOR_V_COMPRESSION_FACTOR_1024,
+                    C1_BLOCK_SIZE_1024,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
+            /// Decapsulate ML-KEM 1024
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
+            pub fn decapsulate(
+                private_key: &MlKem1024PrivateKey,
+                ciphertext: &MlKem1024Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::decapsulate::<
+                    RANK_1024,
+                    SECRET_KEY_SIZE_1024,
+                    CPA_PKE_SECRET_KEY_SIZE_1024,
+                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    CPA_PKE_CIPHERTEXT_SIZE_1024,
+                    T_AS_NTT_ENCODED_SIZE_1024,
+                    C1_SIZE_1024,
+                    C2_SIZE_1024,
+                    VECTOR_U_COMPRESSION_FACTOR_1024,
+                    VECTOR_V_COMPRESSION_FACTOR_1024,
+                    C1_BLOCK_SIZE_1024,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
+        }
+    };
+}
+
+// Instantiations
+
+instantiate! {portable, ind_cca::instantiations::portable}
+#[cfg(feature = "simd256")]
+instantiate! {avx2, ind_cca::instantiations::avx2}
+#[cfg(feature = "simd128")]
+instantiate! {neon, ind_cca::instantiations::neon}
+
 /// Validate a public key.
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.

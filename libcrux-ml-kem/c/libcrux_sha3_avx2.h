@@ -16,7 +16,6 @@ extern "C" {
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "libcrux_core.h"
 #include "libcrux_sha3_internal.h"
-#include "libcrux_sha3_libcrux_ml_kem.h"
 
 typedef struct
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t_s {
