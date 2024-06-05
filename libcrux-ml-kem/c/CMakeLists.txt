@@ -42,12 +42,12 @@ file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_portable.c
     ${PROJECT_SOURCE_DIR}/libcrux_polynomial.c
 )
-# file(GLOB VEC128_SOURCES
-#     ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_neon.c
-#     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_neon.c
-#     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_neon.c
-#     ${PROJECT_SOURCE_DIR}/libcrux_sha3_neon.c
-# )
+file(GLOB SOURCES_vec128
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_neon.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_neon.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_neon.c
+    ${PROJECT_SOURCE_DIR}/libcrux_sha3_neon.c
+)
 file(GLOB SOURCES_vec256
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_avx2.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_avx2.c
@@ -65,12 +65,20 @@ add_library(ml_kem SHARED ${SOURCES})
 add_library(ml_kem_static STATIC ${SOURCES})
 
 # if(LIBCRUX_VEC256)
-add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
-target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-target_compile_options(ml_kem_vec256 PRIVATE
-    -mavx
-    -mavx2
+# add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
+# target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+# target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+# target_compile_options(ml_kem_vec256 PRIVATE
+#     -mavx
+#     -mavx2
+# )
+# endif()
+
+# if(LIBCRUX_VEC128)
+add_library(ml_kem_vec128 OBJECT ${SOURCES_vec128})
+target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
+target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
+target_compile_options(ml_kem_vec128 PRIVATE
 )
 # endif()
 
