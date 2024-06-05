@@ -50,6 +50,8 @@ fi
 mkdir -p c
 cd c
 
+rm -rf *.c *.h
+rm -rf internal/*.h
 echo "Running eurydice ..."
 $EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 cp $EURYDICE_HOME/include/eurydice_glue.h .

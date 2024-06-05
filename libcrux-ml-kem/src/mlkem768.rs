@@ -55,7 +55,7 @@ macro_rules! instantiate {
             ///
             /// Returns `Some(public_key)` if valid, and `None` otherwise.
             pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-                if p::validate_public_key_generic::<
+                if p::validate_public_key::<
                     RANK_768,
                     RANKED_BYTES_PER_RING_ELEMENT_768,
                     CPA_PKE_PUBLIC_KEY_SIZE_768,
@@ -71,7 +71,7 @@ macro_rules! instantiate {
             pub fn generate_key_pair(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem768KeyPair {
-                p::generate_keypair_generic::<
+                p::generate_keypair::<
                     RANK_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
                     SECRET_KEY_SIZE_768,
@@ -91,7 +91,7 @@ macro_rules! instantiate {
                 public_key: &MlKem768PublicKey,
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
-                p::encapsulate_generic::<
+                p::encapsulate::<
                     RANK_768,
                     CPA_PKE_CIPHERTEXT_SIZE_768,
                     CPA_PKE_PUBLIC_KEY_SIZE_768,
@@ -116,7 +116,7 @@ macro_rules! instantiate {
                 private_key: &MlKem768PrivateKey,
                 ciphertext: &MlKem768Ciphertext,
             ) -> MlKemSharedSecret {
-                p::decapsulate_generic::<
+                p::decapsulate::<
                     RANK_768,
                     SECRET_KEY_SIZE_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
@@ -141,17 +141,17 @@ macro_rules! instantiate {
 
 // Instantiations
 
-instantiate! {portable, ind_cca::portable}
+instantiate! {portable, ind_cca::instantiations::portable}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::avx2}
+instantiate! {avx2, ind_cca::instantiations::avx2}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::neon}
+instantiate! {neon, ind_cca::instantiations::neon}
 
 /// Validate a public key.
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
 pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
-    if ind_cca::validate_public_key::<
+    if multiplexing::validate_public_key::<
         RANK_768,
         RANKED_BYTES_PER_RING_ELEMENT_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
@@ -177,7 +177,7 @@ pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768Publ
 ///
 /// This function returns an [`MlKem768KeyPair`].
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
-    generate_keypair::<
+    multiplexing::generate_keypair::<
         RANK_768,
         CPA_PKE_SECRET_KEY_SIZE_768,
         SECRET_KEY_SIZE_768,
@@ -197,7 +197,7 @@ pub fn encapsulate(
     public_key: &MlKem768PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
-    ind_cca::encapsulate::<
+    multiplexing::encapsulate::<
         RANK_768,
         CPA_PKE_CIPHERTEXT_SIZE_768,
         CPA_PKE_PUBLIC_KEY_SIZE_768,
@@ -222,7 +222,7 @@ pub fn decapsulate(
     private_key: &MlKem768PrivateKey,
     ciphertext: &MlKem768Ciphertext,
 ) -> MlKemSharedSecret {
-    ind_cca::decapsulate::<
+    multiplexing::decapsulate::<
         RANK_768,
         SECRET_KEY_SIZE_768,
         CPA_PKE_SECRET_KEY_SIZE_768,

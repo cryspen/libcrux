@@ -1,17 +1,17 @@
 files:
   # INTRINSICS
 
-  - name: libcrux_intrinsics_neon
-    library: true
-    inline_static: true
-    api:
-      - [libcrux_intrinsics, arm64]
+  # - name: libcrux_intrinsics_neon
+  #   library: true
+  #   inline_static: true
+  #   api:
+  #     - [libcrux_intrinsics, arm64]
 
-  - name: libcrux_intrinsics_avx2
-    library: true
-    inline_static: true
-    api:
-      - [libcrux_intrinsics, avx2]
+  # - name: libcrux_intrinsics_avx2
+  #   library: true
+  #   inline_static: true
+  #   api:
+  #     - [libcrux_intrinsics, avx2]
 
   - name: libcrux_platform
     api:
@@ -182,6 +182,16 @@ files:
     api:
       - [libcrux_ml_kem, mlkem512]
 
+  - name: libcrux_mlkem768_avx2
+    api:
+      - [libcrux_ml_kem, mlkem768, avx2]
+      - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+
+  - name: libcrux_mlkem768_portable
+    api:
+      - [libcrux_ml_kem, mlkem768, portable]
+      - [libcrux_ml_kem, ind_cca, instantiations, portable]
+
   - name: libcrux_mlkem768
     api:
       - [libcrux_ml_kem, mlkem768]
@@ -190,9 +200,20 @@ files:
     api:
       - [libcrux_ml_kem, mlkem1024]
 
-  # Just a few constants not caught by anything above. Most likely can go into
-  # core or polynomial (TODO: try it).
-  - name: libcrux_mlkem_common
+  - name: libcrux_mlkem_multiplexing
     private:
+      - [libcrux_ml_kem, ind_cca, multiplexing]
+    inline_static: true
+
+  - name: libcrux_mlkem_ind_cca
+    private:
+      - [libcrux_ml_kem, ind_cca]
       - [libcrux_ml_kem, "*"]
     inline_static: true
+
+  # # Just a few constants not caught by anything above. Most likely can go into
+  # # core or polynomial (TODO: try it).
+  # - name: libcrux_mlkem_common
+  #   private:
+  #     - [libcrux_ml_kem, "*"]
+  #   inline_static: true
