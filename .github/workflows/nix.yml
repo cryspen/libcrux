@@ -1,0 +1,13 @@
+name: Nix
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: DeterminateSystems/nix-installer-action@v12
+      - uses: actions/checkout@v4
+      - run: nix build -L .#ml-kem
