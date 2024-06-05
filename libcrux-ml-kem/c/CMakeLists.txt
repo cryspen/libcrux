@@ -34,6 +34,9 @@ include_directories(
 file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_core.c
     ${PROJECT_SOURCE_DIR}/libcrux_platform.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_portable.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_portable.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_portable.c

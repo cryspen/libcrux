@@ -274,10 +274,10 @@ pub mod portable {
 ///
 /// Feature `simd128` enables the implementations in this module.
 pub mod neon {
-    #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+    #[cfg(feature = "simd128")]
     use crate::generic_keccak::keccak;
 
-    #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+    #[cfg(feature = "simd128")]
     #[inline(always)]
     fn keccakx2<const RATE: usize, const DELIM: u8>(data: [&[u8]; 2], out: [&mut [u8]; 2]) {
         keccak::<2, crate::simd::arm64::uint64x2_t, RATE, DELIM>(data, out)
@@ -287,9 +287,9 @@ pub mod neon {
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        #[cfg(not(feature = "simd128"))]
         unimplemented!("The target architecture does not support neon instructions.");
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 28];
             keccakx2::<144, 0x06u8>([data, data], [digest, &mut dummy]);
@@ -300,9 +300,9 @@ pub mod neon {
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        #[cfg(not(feature = "simd128"))]
         unimplemented!("The target architecture does not support neon instructions.");
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 32];
             keccakx2::<136, 0x06u8>([data, data], [digest, &mut dummy]);
@@ -313,9 +313,9 @@ pub mod neon {
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        #[cfg(not(feature = "simd128"))]
         unimplemented!("The target architecture does not support neon instructions.");
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 48];
             keccakx2::<104, 0x06u8>([data, data], [digest, &mut dummy]);
@@ -326,9 +326,9 @@ pub mod neon {
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
-        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        #[cfg(not(feature = "simd128"))]
         unimplemented!("The target architecture does not support neon instructions.");
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 64];
             keccakx2::<72, 0x06u8>([data, data], [digest, &mut dummy]);
@@ -339,9 +339,9 @@ pub mod neon {
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
-        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        #[cfg(not(feature = "simd128"))]
         unimplemented!("The target architecture does not support neon instructions.");
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; LEN];
             keccakx2::<168, 0x1fu8>([data, data], [digest, &mut dummy]);
@@ -352,9 +352,9 @@ pub mod neon {
     #[allow(unused_variables)]
     #[inline(always)]
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
-        #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+        #[cfg(not(feature = "simd128"))]
         unimplemented!("The target architecture does not support neon instructions.");
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; LEN];
             keccakx2::<136, 0x1fu8>([data, data], [digest, &mut dummy]);
@@ -363,7 +363,7 @@ pub mod neon {
 
     /// Performing 2 operations in parallel
     pub mod x2 {
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         use super::*;
 
         /// Run SHAKE256 on both inputs in parallel.
@@ -373,9 +373,9 @@ pub mod neon {
         #[inline(always)]
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
-            #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+            #[cfg(not(feature = "simd128"))]
             unimplemented!("The target architecture does not support neon instructions.");
-            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            #[cfg(feature = "simd128")]
             keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
         }
 
@@ -414,19 +414,19 @@ pub mod neon {
 
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
-            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            #[cfg(feature = "simd128")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block, KeccakState,
             };
 
-            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            #[cfg(feature = "simd128")]
             pub struct KeccakState2 {
                 state: KeccakState<2, crate::simd::arm64::uint64x2_t>,
             }
-            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            #[cfg(feature = "simd128")]
             type KeccakState2Internal = KeccakState<2, crate::simd::arm64::uint64x2_t>;
             #[allow(dead_code)]
-            #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+            #[cfg(not(feature = "simd128"))]
             pub struct KeccakState2 {
                 state: [crate::portable::KeccakState1; 2],
             }
@@ -434,7 +434,7 @@ pub mod neon {
             /// Initialise the `KeccakState2`.
             #[inline(always)]
             pub fn shake128_init() -> KeccakState2 {
-                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                #[cfg(not(feature = "simd128"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
@@ -443,7 +443,7 @@ pub mod neon {
                 //     let s1 = KeccakState1::new();
                 //     [s0, s1]
                 // }
-                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                #[cfg(feature = "simd128")]
                 KeccakState2 {
                     state: KeccakState2Internal::new(),
                 }
@@ -452,7 +452,7 @@ pub mod neon {
             #[inline(always)]
             #[allow(unused_variables)]
             pub fn shake128_absorb_final(s: &mut KeccakState2, data0: &[u8], data1: &[u8]) {
-                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                #[cfg(not(feature = "simd128"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
@@ -461,7 +461,7 @@ pub mod neon {
                 //     shake128_absorb_final(&mut s0, data0);
                 //     shake128_absorb_final(&mut s1, data1);
                 // }
-                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                #[cfg(feature = "simd128")]
                 absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                     &mut s.state,
                     [data0, data1],
@@ -503,7 +503,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                #[cfg(not(feature = "simd128"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
@@ -512,7 +512,7 @@ pub mod neon {
                 //     shake128_squeeze_first_three_blocks(&mut s0, out0);
                 //     shake128_squeeze_first_three_blocks(&mut s1, out1);
                 // }
-                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                #[cfg(feature = "simd128")]
                 squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     [out0, out1],
@@ -582,7 +582,7 @@ pub mod neon {
                 out0: &mut [u8],
                 out1: &mut [u8],
             ) {
-                #[cfg(not(all(feature = "simd128", target_arch = "aarch64")))]
+                #[cfg(not(feature = "simd128"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
@@ -591,7 +591,7 @@ pub mod neon {
                 //     shake128_squeeze_next_block(&mut s0, out0);
                 //     shake128_squeeze_next_block(&mut s1, out1);
                 // }
-                #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                #[cfg(feature = "simd128")]
                 squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
                     &mut s.state,
                     [out0, out1],
@@ -660,7 +660,7 @@ pub mod avx2 {
 
     /// Performing 4 operations in parallel
     pub mod x4 {
-        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+        #[cfg(feature = "simd256")]
         use crate::generic_keccak::keccak;
 
         /// Perform 4 SHAKE256 operations in parallel
@@ -676,11 +676,11 @@ pub mod avx2 {
             out2: &mut [u8],
             out3: &mut [u8],
         ) {
-            #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+            #[cfg(not(feature = "simd256"))]
             unimplemented!("The target architecture does not support neon instructions.");
             // XXX: These functions could alternatively implement the same with
             //      the portable implementation
-            // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            // #[cfg(feature = "simd128")]
             // {
             //     keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
             //     keccakx2::<136, 0x1fu8>([input2, input3], [out2, out3]);
@@ -691,7 +691,7 @@ pub mod avx2 {
             //     keccakx1::<136, 0x1fu8>([input2], [out2]);
             //     keccakx1::<136, 0x1fu8>([input3], [out3]);
             // }
-            #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+            #[cfg(feature = "simd256")]
             keccak::<4, core::arch::x86_64::__m256i, 136, 0x1fu8>(
                 [input0, input1, input2, input3],
                 [out0, out1, out2, out3],
@@ -760,40 +760,37 @@ pub mod avx2 {
 
         /// An incremental API to perform 4 operations in parallel
         pub mod incremental {
-            #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+            #[cfg(feature = "simd256")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block, KeccakState,
             };
 
-            #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+            #[cfg(feature = "simd256")]
             pub struct KeccakState4 {
                 state: KeccakState<4, core::arch::x86_64::__m256i>,
             }
             #[allow(dead_code)]
-            #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+            #[cfg(all(feature = "simd128", not(feature = "simd256")))]
             pub struct KeccakState4 {
                 state: [crate::neon::x2::incremental::KeccakState2; 2],
             }
-            #[cfg(not(any(
-                all(feature = "simd256", target_arch = "x86_64"),
-                all(feature = "simd128", target_arch = "aarch64")
-            )))]
+            #[cfg(not(any(feature = "simd256", feature = "simd128")))]
             pub type KeccakState4 = [crate::portable::KeccakState1; 4];
 
             /// Initialise the [`KeccakState4`].
             #[inline(always)]
             pub fn shake128_init() -> KeccakState4 {
-                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                #[cfg(not(feature = "simd256"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
-                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // #[cfg(feature = "simd128")]
                 // {
                 //     let s0 = KeccakState2::new();
                 //     let s1 = KeccakState2::new();
                 //     [s0, s1]
                 // }
-                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
                 // {
                 //     let s0 = KeccakState1::new();
                 //     let s1 = KeccakState1::new();
@@ -801,7 +798,7 @@ pub mod avx2 {
                 //     let s3 = KeccakState1::new();
                 //     [s0, s1, s2, s3]
                 // }
-                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                #[cfg(feature = "simd256")]
                 KeccakState4 {
                     state: KeccakState::new(),
                 }
@@ -816,11 +813,11 @@ pub mod avx2 {
                 data2: &[u8],
                 data3: &[u8],
             ) {
-                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                #[cfg(not(feature = "simd256"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
-                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // #[cfg(feature = "simd128")]
                 // {
                 //     let [mut s0, mut s1] = s;
                 //     absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
@@ -832,7 +829,7 @@ pub mod avx2 {
                 //         [data2, data3],
                 //     );
                 // }
-                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
                 // {
                 //     let [mut s0, mut s1, mut s2, mut s3] = s;
                 //     shake128_absorb_final(&mut s0, data0);
@@ -840,7 +837,7 @@ pub mod avx2 {
                 //     shake128_absorb_final(&mut s2, data2);
                 //     shake128_absorb_final(&mut s3, data3);
                 // }
-                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                #[cfg(feature = "simd256")]
                 absorb_final::<4, core::arch::x86_64::__m256i, 168, 0x1fu8>(
                     &mut s.state,
                     [data0, data1, data2, data3],
@@ -888,11 +885,11 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                #[cfg(not(feature = "simd256"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
-                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // #[cfg(feature = "simd128")]
                 // {
                 //     let [mut s0, mut s1] = s;
                 //     squeeze_first_three_blocks::<2, crate::simd::arm64::uint64x2_t, 168>(
@@ -904,7 +901,7 @@ pub mod avx2 {
                 //         [out2, out3],
                 //     );
                 // }
-                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
                 // {
                 //     let [mut s0, mut s1, mut s2, mut s3] = s;
                 //     shake128_squeeze_first_three_blocks(&mut s0, out0);
@@ -912,7 +909,7 @@ pub mod avx2 {
                 //     shake128_squeeze_first_three_blocks(&mut s2, out2);
                 //     shake128_squeeze_first_three_blocks(&mut s3, out3);
                 // }
-                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                #[cfg(feature = "simd256")]
                 squeeze_first_three_blocks::<4, core::arch::x86_64::__m256i, 168>(
                     &mut s.state,
                     [out0, out1, out2, out3],
@@ -982,11 +979,11 @@ pub mod avx2 {
                 out2: &mut [u8],
                 out3: &mut [u8],
             ) {
-                #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+                #[cfg(not(feature = "simd256"))]
                 unimplemented!("The target architecture does not support neon instructions.");
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
-                // #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+                // #[cfg(feature = "simd128")]
                 // {
                 //     let [mut s0, mut s1] = s;
                 //     squeeze_next_block::<2, crate::simd::arm64::uint64x2_t, 168>(
@@ -998,7 +995,7 @@ pub mod avx2 {
                 //         [out2, out3],
                 //     );
                 // }
-                // #[cfg(not(any(all(feature = "simd128", target_arch = "aarch64"), all(feature = "simd256", target_arch = "x86_64"))))]
+                // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
                 // {
                 //     let [mut s0, mut s1, mut s2, mut s3] = s;
                 //     shake128_squeeze_next_block(&mut s0, out0);
@@ -1006,7 +1003,7 @@ pub mod avx2 {
                 //     shake128_squeeze_next_block(&mut s2, out2);
                 //     shake128_squeeze_next_block(&mut s3, out3);
                 // }
-                #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+                #[cfg(feature = "simd256")]
                 squeeze_next_block::<4, core::arch::x86_64::__m256i, 168>(
                     &mut s.state,
                     [out0, out1, out2, out3],

@@ -32,6 +32,7 @@ if [[ "$portable_only" = 1 ]]; then
     export LIBCRUX_DISABLE_SIMD128=1
 fi
 
+# TODO: add LIBCRUX_ENABLE_SIMD128=1 LIBCRUX_ENABLE_SIMD256=1 charon invocations
 if [[ "$no_charon" = 0 ]]; then
     rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."

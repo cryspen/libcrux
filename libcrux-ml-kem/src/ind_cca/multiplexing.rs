@@ -8,20 +8,20 @@ pub(crate) fn validate_public_key<
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
     if libcrux_platform::simd256_support() {
-        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+        #[cfg(feature = "simd256")]
         return instantiations::avx2::validate_public_key::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
         >(public_key);
-        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+        #[cfg(not(feature = "simd256"))]
         instantiations::portable::validate_public_key::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
             PUBLIC_KEY_SIZE,
         >(public_key)
     } else if libcrux_platform::simd128_support() {
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         return instantiations::neon::validate_public_key::<
             K,
             RANKED_BYTES_PER_RING_ELEMENT,
@@ -55,7 +55,7 @@ pub(crate) fn generate_keypair<
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     // Runtime feature detection.
     if libcrux_platform::simd256_support() {
-        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+        #[cfg(feature = "simd256")]
         return instantiations::avx2::generate_keypair::<
             K,
             CPA_PRIVATE_KEY_SIZE,
@@ -65,7 +65,7 @@ pub(crate) fn generate_keypair<
             ETA1,
             ETA1_RANDOMNESS_SIZE,
         >(randomness);
-        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+        #[cfg(not(feature = "simd256"))]
         instantiations::portable::generate_keypair::<
             K,
             CPA_PRIVATE_KEY_SIZE,
@@ -76,7 +76,7 @@ pub(crate) fn generate_keypair<
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
     } else if libcrux_platform::simd128_support() {
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         return instantiations::neon::generate_keypair::<
             K,
             CPA_PRIVATE_KEY_SIZE,
@@ -128,7 +128,7 @@ pub(crate) fn encapsulate<
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     if libcrux_platform::simd256_support() {
-        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+        #[cfg(feature = "simd256")]
         return instantiations::avx2::encapsulate::<
             K,
             CIPHERTEXT_SIZE,
@@ -144,7 +144,7 @@ pub(crate) fn encapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
         >(public_key, randomness);
-        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+        #[cfg(not(feature = "simd256"))]
         instantiations::portable::encapsulate::<
             K,
             CIPHERTEXT_SIZE,
@@ -234,7 +234,7 @@ pub(crate) fn decapsulate<
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
     if libcrux_platform::simd256_support() {
-        #[cfg(all(feature = "simd256", target_arch = "x86_64"))]
+        #[cfg(feature = "simd256")]
         return instantiations::avx2::decapsulate::<
             K,
             SECRET_KEY_SIZE,
@@ -253,7 +253,7 @@ pub(crate) fn decapsulate<
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext);
-        #[cfg(not(all(feature = "simd256", target_arch = "x86_64")))]
+        #[cfg(not(feature = "simd256"))]
         return instantiations::portable::decapsulate::<
             K,
             SECRET_KEY_SIZE,
@@ -273,7 +273,7 @@ pub(crate) fn decapsulate<
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
         >(private_key, ciphertext);
     } else if libcrux_platform::simd128_support() {
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
+        #[cfg(feature = "simd128")]
         return instantiations::neon::decapsulate::<
             K,
             SECRET_KEY_SIZE,

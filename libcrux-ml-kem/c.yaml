@@ -180,13 +180,21 @@ files:
 
   - name: libcrux_mlkem512_avx2
     api:
-      - [libcrux_ml_kem, mlkem512, avx2]
-      - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+      patterns:
+        - [libcrux_ml_kem, mlkem512, avx2]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem512, avx2]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
 
   - name: libcrux_mlkem512_portable
     api:
-      - [libcrux_ml_kem, mlkem512, portable]
-      - [libcrux_ml_kem, ind_cca, instantiations, portable]
+      patterns:
+        - [libcrux_ml_kem, mlkem512, portable]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem512, portable]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable]
 
   - name: libcrux_mlkem512
     api:
@@ -194,13 +202,21 @@ files:
 
   - name: libcrux_mlkem768_avx2
     api:
-      - [libcrux_ml_kem, mlkem768, avx2]
-      - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+      patterns:  
+        - [libcrux_ml_kem, mlkem768, avx2]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem768, avx2]
+        - [libcrux_ml_kem, ind_cca, instantiations, avx2]
 
   - name: libcrux_mlkem768_portable
     api:
-      - [libcrux_ml_kem, mlkem768, portable]
-      - [libcrux_ml_kem, ind_cca, instantiations, portable]
+      patterns:
+        - [libcrux_ml_kem, mlkem768, portable]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable]
+      monomorphizations_of:
+        - [libcrux_ml_kem, mlkem768, portable]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable]
 
   - name: libcrux_mlkem768
     api:
