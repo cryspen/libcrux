@@ -1,5 +1,4 @@
 /target
-/Cargo.lock
 .vscode
 .DS_Store
 benches/boringssl/build
