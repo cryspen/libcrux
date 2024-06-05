@@ -51,18 +51,18 @@ typedef struct libcrux_ml_kem_types_MlKemPrivateKey____3168size_t_s {
   uint8_t value[3168U];
 } libcrux_ml_kem_types_MlKemPrivateKey____3168size_t;
 
-typedef struct libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t_s {
+typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s {
   libcrux_ml_kem_types_MlKemPrivateKey____3168size_t sk;
   libcrux_ml_kem_types_MlKemPublicKey____1568size_t pk;
-} libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t;
+} libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
 
-typedef struct libcrux_ml_kem_types_MlKemCiphertext____1568size_t_s {
+typedef struct libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext_s {
   uint8_t value[1568U];
-} libcrux_ml_kem_types_MlKemCiphertext____1568size_t;
+} libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext;
 
 typedef struct
     K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t__s {
-  libcrux_ml_kem_types_MlKemCiphertext____1568size_t fst;
+  libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext fst;
   uint8_t snd[32U];
 } K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_;
 
@@ -80,18 +80,18 @@ typedef struct libcrux_ml_kem_types_MlKemPrivateKey____2400size_t_s {
   uint8_t value[2400U];
 } libcrux_ml_kem_types_MlKemPrivateKey____2400size_t;
 
-typedef struct libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t_s {
+typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s {
   libcrux_ml_kem_types_MlKemPrivateKey____2400size_t sk;
   libcrux_ml_kem_types_MlKemPublicKey____1184size_t pk;
-} libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t;
+} libcrux_ml_kem_mlkem768_MlKem768KeyPair;
 
-typedef struct libcrux_ml_kem_types_MlKemCiphertext____1088size_t_s {
+typedef struct libcrux_ml_kem_mlkem768_MlKem768Ciphertext_s {
   uint8_t value[1088U];
-} libcrux_ml_kem_types_MlKemCiphertext____1088size_t;
+} libcrux_ml_kem_mlkem768_MlKem768Ciphertext;
 
 typedef struct
     K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t__s {
-  libcrux_ml_kem_types_MlKemCiphertext____1088size_t fst;
+  libcrux_ml_kem_mlkem768_MlKem768Ciphertext fst;
   uint8_t snd[32U];
 } K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_;
 

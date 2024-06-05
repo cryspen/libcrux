@@ -65,6 +65,18 @@ extern "C" {
   (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE +                   \
    LIBCRUX_ML_KEM_MLKEM512_CPA_PKE_CIPHERTEXT_SIZE_512)
 
+typedef libcrux_ml_kem_types_MlKemCiphertext____768size_t
+    libcrux_ml_kem_mlkem512_MlKem512Ciphertext;
+
+typedef libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t
+    libcrux_ml_kem_mlkem512_MlKem512KeyPair;
+
+typedef libcrux_ml_kem_types_MlKemPrivateKey____1632size_t
+    libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
+
+typedef libcrux_ml_kem_types_MlKemPublicKey____800size_t
+    libcrux_ml_kem_mlkem512_MlKem512PublicKey;
+
 #define LIBCRUX_ML_KEM_MLKEM512_RANKED_BYTES_PER_RING_ELEMENT_512 \
   (LIBCRUX_ML_KEM_MLKEM512_RANK_512 *                             \
    LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)

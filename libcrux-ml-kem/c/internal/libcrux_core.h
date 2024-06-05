@@ -48,7 +48,7 @@ libcrux_ml_kem_types_MlKemPublicKey____1568size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___1568size_t(
     uint8_t value[1568U]);
 
-libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t
+libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBLIC_KEY_SIZE___from___3168size_t_1568size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t sk,
     libcrux_ml_kem_types_MlKemPublicKey____1568size_t pk);
@@ -62,7 +62,7 @@ typedef struct K___uint8_t_1536size_t__uint8_t_1568size_t__s {
   uint8_t snd[1568U];
 } K___uint8_t_1536size_t__uint8_t_1568size_t_;
 
-libcrux_ml_kem_types_MlKemCiphertext____1568size_t
+libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1568size_t(
     uint8_t value[1568U]);
 
@@ -76,7 +76,7 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time___1568size
 
 Eurydice_slice
 libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1568size_t(
-    libcrux_ml_kem_types_MlKemCiphertext____1568size_t *self);
+    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *self);
 
 void libcrux_ml_kem_ind_cpa_into_padded_array___1600size_t(Eurydice_slice slice,
                                                            uint8_t ret[1600U]);
@@ -85,7 +85,7 @@ libcrux_ml_kem_types_MlKemPublicKey____1184size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___1184size_t(
     uint8_t value[1184U]);
 
-libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t
+libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBLIC_KEY_SIZE___from___2400size_t_1184size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t sk,
     libcrux_ml_kem_types_MlKemPublicKey____1184size_t pk);
@@ -99,7 +99,7 @@ typedef struct K___uint8_t_1152size_t__uint8_t_1184size_t__s {
   uint8_t snd[1184U];
 } K___uint8_t_1152size_t__uint8_t_1184size_t_;
 
-libcrux_ml_kem_types_MlKemCiphertext____1088size_t
+libcrux_ml_kem_mlkem768_MlKem768Ciphertext
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1088size_t(
     uint8_t value[1088U]);
 
@@ -113,7 +113,7 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time___1088size
 
 Eurydice_slice
 libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1088size_t(
-    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *self);
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
 
 void libcrux_ml_kem_ind_cpa_into_padded_array___1120size_t(Eurydice_slice slice,
                                                            uint8_t ret[1120U]);

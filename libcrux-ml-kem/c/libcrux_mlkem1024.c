@@ -11,7 +11,7 @@
 
 void libcrux_ml_kem_ind_cca_multiplexing_decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____1568size_t *ciphertext,
+    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
   uint8_t uu____0[32U];
   if (libcrux_platform_platform_simd256_support()) {
@@ -31,7 +31,7 @@ void libcrux_ml_kem_ind_cca_multiplexing_decapsulate___4size_t_3168size_t_1536si
 
 void libcrux_ml_kem_mlkem1024_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____1568size_t *ciphertext,
+    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
   uint8_t ret0[32U];
   libcrux_ml_kem_ind_cca_multiplexing_decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
@@ -82,10 +82,10 @@ libcrux_ml_kem_mlkem1024_encapsulate(
       uu____0, uu____1);
 }
 
-libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t
+libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_ind_cca_multiplexing_generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
     uint8_t randomness[64U]) {
-  libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t uu____0;
+  libcrux_ml_kem_mlkem1024_MlKem1024KeyPair uu____0;
   if (libcrux_platform_platform_simd256_support()) {
     uint8_t uu____1[64U];
     memcpy(uu____1, randomness, (size_t)64U * sizeof(uint8_t));
@@ -108,7 +108,7 @@ libcrux_ml_kem_ind_cca_multiplexing_generate_keypair___4size_t_1536size_t_3168si
   return uu____0;
 }
 
-libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t
+libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_generate_key_pair(uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));

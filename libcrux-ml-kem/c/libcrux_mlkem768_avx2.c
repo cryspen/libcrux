@@ -9,8 +9,7 @@
 
 void libcrux_ml_kem_mlkem768_avx2_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
-    uint8_t ret[32U]) {
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
   uint8_t ret0[32U];
   libcrux_ml_kem_ind_cca_instantiations_avx2_decapsulate___3size_t_2400size_t_1152size_t_1184size_t_1088size_t_1152size_t_960size_t_128size_t_10size_t_4size_t_320size_t_2size_t_128size_t_2size_t_128size_t_1120size_t(
       private_key, ciphertext, ret0);
@@ -28,7 +27,7 @@ libcrux_ml_kem_mlkem768_avx2_encapsulate(
       uu____0, uu____1);
 }
 
-libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t
+libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_mlkem768_avx2_generate_key_pair(uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));

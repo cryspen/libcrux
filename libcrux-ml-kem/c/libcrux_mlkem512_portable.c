@@ -97,7 +97,7 @@ bool libcrux_ml_kem_ind_cca_instantiations_portable_validate_public_key___4size_
       public_key);
 }
 
-libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t
+libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
     uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
@@ -119,7 +119,7 @@ libcrux_ml_kem_ind_cca_instantiations_portable_encapsulate___4size_t_1568size_t_
 
 void libcrux_ml_kem_ind_cca_instantiations_portable_decapsulate___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____1568size_t *ciphertext,
+    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
     uint8_t ret[32U]) {
   uint8_t ret0[32U];
   libcrux_ml_kem_ind_cca_decapsulate__libcrux_ml_kem_vector_portable_PortableVector_libcrux_ml_kem_hash_functions_portable_PortableHash___4size_t___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
@@ -133,7 +133,7 @@ bool libcrux_ml_kem_ind_cca_instantiations_portable_validate_public_key___3size_
       public_key);
 }
 
-libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t
+libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_ind_cca_instantiations_portable_generate_keypair___3size_t_1152size_t_2400size_t_1184size_t_1152size_t_2size_t_128size_t(
     uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
@@ -155,8 +155,7 @@ libcrux_ml_kem_ind_cca_instantiations_portable_encapsulate___3size_t_1088size_t_
 
 void libcrux_ml_kem_ind_cca_instantiations_portable_decapsulate___3size_t_2400size_t_1152size_t_1184size_t_1088size_t_1152size_t_960size_t_128size_t_10size_t_4size_t_320size_t_2size_t_128size_t_2size_t_128size_t_1120size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
-    uint8_t ret[32U]) {
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
   uint8_t ret0[32U];
   libcrux_ml_kem_ind_cca_decapsulate__libcrux_ml_kem_vector_portable_PortableVector_libcrux_ml_kem_hash_functions_portable_PortableHash___3size_t___3size_t_2400size_t_1152size_t_1184size_t_1088size_t_1152size_t_960size_t_128size_t_10size_t_4size_t_320size_t_2size_t_128size_t_2size_t_128size_t_1120size_t(
       private_key, ciphertext, ret0);

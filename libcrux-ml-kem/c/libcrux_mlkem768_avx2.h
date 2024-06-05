@@ -18,15 +18,14 @@ extern "C" {
 
 void libcrux_ml_kem_mlkem768_avx2_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
-    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
-    uint8_t ret[32U]);
+    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
 
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
 libcrux_ml_kem_mlkem768_avx2_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey____1184size_t *public_key,
     uint8_t randomness[32U]);
 
-libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t
+libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_mlkem768_avx2_generate_key_pair(uint8_t randomness[64U]);
 
 core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___1184size_t__
