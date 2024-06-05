@@ -1,5 +1,5 @@
 use libcrux_intrinsics::arm64::*;
-
+use core::arch::aarch64::*;
 use crate::traits::KeccakItem;
 
 #[allow(non_camel_case_types)]
@@ -14,8 +14,8 @@ pub type uint64x2_t = _uint64x2_t;
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: uint64x2_t) -> uint64x2_t {
     debug_assert!(LEFT + RIGHT == 64);
     // The following looks faster but is actually significantly slower
-    //unsafe { vsriq_n_u64::<RIGHT>(vshlq_n_u64::<LEFT>(x), x) }
-    _veorq_u64(_vshlq_n_u64::<LEFT>(x), _vshrq_n_u64::<RIGHT>(x))
+    unsafe { vsriq_n_u64::<RIGHT>(vshlq_n_u64::<LEFT>(x), x) }
+    //_veorq_u64(_vshlq_n_u64::<LEFT>(x), _vshrq_n_u64::<RIGHT>(x))
 }
 
 #[inline(always)]

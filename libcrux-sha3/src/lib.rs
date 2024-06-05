@@ -3,7 +3,7 @@
 //! A SHA3 implementation with optional simd optimisations.
 
 #![no_std]
-#![forbid(unsafe_code)]
+//#![forbid(unsafe_code)]
 pub mod simd;
 
 mod generic_keccak;
