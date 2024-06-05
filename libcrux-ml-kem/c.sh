@@ -52,6 +52,8 @@ mkdir -p c
 cd c
 
 rm -rf *.c *.h
+# HAND_WRITTEN FILE
+git checkout libcrux_platform.c
 rm -rf internal/*.h
 echo "Running eurydice ..."
 $EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc

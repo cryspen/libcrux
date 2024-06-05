@@ -155,7 +155,11 @@ static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
        ? ((ret_t){.tag = core_option_None})          \
        : ((ret_t){.tag = core_option_Some, .f0 = (iter_ptr)->start++}))
 
+// Old name (TODO: remove once everyone has upgraded to the latest Charon)
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___3__next \
+  Eurydice_range_iter_next
+
+#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
