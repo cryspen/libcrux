@@ -108,13 +108,7 @@ target_link_libraries(sha3_test PRIVATE
 
 # --- Benchmarks
 
-FetchContent_Populate(benchmark
-    GIT_REPOSITORY  https://github.com/google/benchmark.git
-    # The latest release 1.7.1 is broken due to https://github.com/google/benchmark/pull/1517
-    # But also: need the fix for https://github.com/google/benchmark/pull/1669
-    GIT_TAG         bc946b919cac6f25a199a526da571638cfde109f
-)
-add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
+find_package(benchmark)
 
 add_executable(ml_kem_bench
     ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
