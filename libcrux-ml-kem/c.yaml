@@ -136,9 +136,13 @@ files:
         - [ core, "*"]
         - [ libcrux_ml_kem, types, "*"]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
+        - [ libcrux_ml_kem, polynomial, "*" ]
+        - [ libcrux_ml_kem, vector, "*" ]
       monomorphizations_using:
         - [ Eurydice, "*" ]
         - [ libcrux_ml_kem, types, "*"]
+        - [ libcrux_ml_kem, polynomial, "*" ]
+        - [ libcrux_ml_kem, vector, traits, "*" ]
       monomorphizations_exact:
         - [ K, "__uint8_t[1536size_t]_uint8_t[1568size_t]" ]
         - [ K, "__uint8_t[1152size_t]_uint8_t[1184size_t]" ]
@@ -154,20 +158,10 @@ files:
         - [ libcrux_ml_kem, types ]
         - [ libcrux_ml_kem, constants ]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
+        - [ libcrux_ml_kem, polynomial, "*" ]
+        - [ libcrux_ml_kem, vector, "*" ]
     api:
       - [Eurydice, "*"]
-
-  - name: libcrux_polynomial
-    private:
-      patterns:
-        - [ libcrux_ml_kem, polynomial, "*" ]
-        - [ libcrux_ml_kem, vector, "*" ]
-      monomorphizations_of:
-        - [ libcrux_ml_kem, polynomial, "*" ]
-        - [ libcrux_ml_kem, vector, "*" ]
-      monomorphizations_using:
-        - [ libcrux_ml_kem, polynomial, "*" ]
-        - [ libcrux_ml_kem, vector, traits, "*" ]
 
   - name: libcrux_mlkem_sha3_avx2
     private:
