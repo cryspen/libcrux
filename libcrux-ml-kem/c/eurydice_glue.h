@@ -189,11 +189,11 @@ static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
   size_t chunk_size = chunks->slice.len >= chunks->chunk_size
                           ? chunks->chunk_size
                           : chunks->slice.len;
-  Eurydice_slice curr_chunk =
-      ((Eurydice_slice){.ptr = chunks->slice.ptr, .len = chunk_size});
-  chunks->slice = ((Eurydice_slice){
-      .ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size,
-      .len = chunks->slice.len - chunk_size});
+  Eurydice_slice curr_chunk;
+  curr_chunk.ptr = chunks->slice.ptr;
+  curr_chunk.len = chunk_size;
+  chunks->slice.ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size;
+  chunks->slice.len = chunks->slice.len - chunk_size;
   return curr_chunk;
 }
 
