@@ -4,10 +4,9 @@ use crate::{
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::{self, Hash},
-    ind_cpa::{into_padded_array, serialize_public_key},
+    ind_cpa::{self, into_padded_array, serialize_public_key},
     serialize::deserialize_ring_elements_reduced,
-    types::{MlKemCiphertext, MlKemKeyPair, MlKemKeyPairUnpacked, MlKemPrivateKey, 
-            MlKemPublicKey, MlKemPublicKeyUnpacked, MlKemPrivateKeyUnpacked},
+    types::{MlKemCiphertext, MlKemKeyPair, MlKemKeyPairUnpacked, MlKemPrivateKey, MlKemPrivateKeyUnpacked, MlKemPublicKey, MlKemPublicKeyUnpacked},
     vector::{Operations, PortableVector},
 };
 
@@ -38,7 +37,9 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     pointer += private_key.len();
     out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
     pointer += public_key.len();
-    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key));
+    let public_key_hash = Hasher::H(public_key);
+   
+    out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&public_key_hash);
     pointer += H_DIGEST_SIZE;
     out[pointer..pointer + implicit_rejection_value.len()]
         .copy_from_slice(implicit_rejection_value);
@@ -143,10 +144,11 @@ pub(crate) fn generate_keypair_unpacked<
     >(ind_cpa_keypair_randomness);
     let pk_serialized = serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
                             &ind_cpa_public_key.t_as_ntt, &ind_cpa_public_key.seed_for_A);
-    let pk_hash = Hasher::H(&pk_serialized);
+    let public_key_hash = Hasher::H(&pk_serialized);
+   
     MlKemKeyPairUnpacked{private_key:ind_cpa_private_key, 
                          public_key:ind_cpa_public_key,
-                         public_key_hash: pk_hash,
+                         public_key_hash: public_key_hash,
                          implicit_rejection_value:implicit_rejection_value.clone().try_into().unwrap()}
 }
 
@@ -176,7 +178,7 @@ pub(crate) fn encapsulate_unpacked<
 
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
-
+    
     let ciphertext = crate::ind_cpa::encrypt_unpacked::<
         K,
         CIPHERTEXT_SIZE,
@@ -556,6 +558,7 @@ fn encapsulate_generic<
         Vector,
         Hasher,
     >(public_key.as_slice(), randomness, pseudorandomness);
+    
     let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
     shared_secret_array.copy_from_slice(shared_secret);
     (MlKemCiphertext::from(ciphertext), shared_secret_array)

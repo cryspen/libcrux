@@ -180,7 +180,11 @@ pub(crate) fn generate_keypair_unpacked<
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
-    let pk = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose, seed_for_A : seed_for_A.clone().try_into().unwrap()};
+    let A = core::array::from_fn(|i| {
+        core::array::from_fn(|j| A_transpose[j][i])
+    });
+
+    let pk = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose: A, seed_for_A : seed_for_A.clone().try_into().unwrap()};
     let sk = MlKemPrivateKeyUnpacked {secret_as_ntt};
     (sk,pk)
 }

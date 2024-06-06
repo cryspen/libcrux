@@ -20,6 +20,23 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
+    group.bench_function("libcrux portable (unpacked portable)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::generate_key_pair_unpacked_portable(seed);
+        })
+    });
+
+    #[cfg(feature = "simd256")]
+    group.bench_function("libcrux portable (unpacked avx2)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::generate_key_pair_unpacked_simd256(seed);
+        })
+    });
+
     // group.bench_function("libcrux portable (HACL-DRBG)", |b| {
     //     b.iter(|| {
     //         let (_secret_key, _public_key) =
@@ -81,6 +98,37 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         )
     });
 
+    group.bench_function("libcrux portable (unpacked)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::generate_key_pair_unpacked_portable(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::encapsulate_unpacked_portable(&keypair.public_key, &keypair.public_key_hash, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(feature = "simd256")]
+    group.bench_function("libcrux avx2 (unpacked)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::generate_key_pair_unpackes(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::encapsulate(&keypair.public_key, &keypair.public_key_hash, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
     // group.bench_function("libcrux portable", |b| {
     //     b.iter_batched(
     //         || {
@@ -135,6 +183,46 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
+
+    group.bench_function("libcrux portable (unpacked)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::generate_key_pair_unpacked_portable(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::encapsulate_unpacked_portable(&keypair.public_key, &keypair.public_key_hash, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret = mlkem768::decapsulate_unpacked_portable(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(feature = "simd256")]
+    group.bench_function("libcrux avx2 (unpacked)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::generate_key_pair_unpacked_simd256(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::encapsulate_unpacked_simd256(&keypair.public_key, &keypair.public_key_hash, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret = mlkem768::decapsulate_unpacked_simd256(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
 
     // group.bench_function("pqclean reference implementation", |b| {
     //     b.iter_batched(
