@@ -36,8 +36,13 @@
         src = ./.;
         cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
         ml-kem = craneLib.buildPackage {
-          inherit src cargoArtifacts;
           name = "ml-kem";
+          inherit src cargoArtifacts;
+          postPatch = ''
+            substituteInPlace libcrux-ml-kem/c/CMakeLists.txt \
+              --replace "    -flto" "    # -flto" \
+              --replace "add_link_options(-flto)" "#add_link_options(-flto)"
+          '';
           nativeBuildInputs = [
             pkgs.clang
             pkgs.cmake
