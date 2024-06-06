@@ -11,6 +11,7 @@
 #include "libcrux_sha3.h"
 #include "libcrux_mlkem768.h"
 #include "internal/libcrux_core.h"
+#include "inc/symcrypt.h"
 
 void generate_random(uint8_t *output, uint32_t output_len)
 {
@@ -65,8 +66,70 @@ kyber768_decapsulation(benchmark::State &state)
   }
 }
 
+#include "inc/symcrypt.h"
+
+static void
+symcrypt_kyber768_key_generation(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+  auto pKey = SymCryptMlKemkeyAllocate(SymCryptMlKemParamsDraft203MlKem768);
+  SymCryptMlKemkeyGenerate(pKey, 0);
+
+  for (auto _ : state)
+  {
+    pKey = SymCryptMlKemkeyAllocate(SymCryptMlKemParamsDraft203MlKem768);
+    SymCryptMlKemkeyGenerate(pKey, 0);
+  }
+}
+
+static void
+symcrypt_kyber768_encapsulation(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto pKey = SymCryptMlKemkeyAllocate(SymCryptMlKemParamsDraft203MlKem768);
+  SymCryptMlKemkeyGenerate(pKey, 0);
+  generate_random(randomness, 32);
+
+  BYTE secret[32];
+  BYTE cipher[1088];
+  SymCryptMlKemEncapsulate(pKey, secret, 32, cipher, 1088);
+
+  for (auto _ : state)
+  {
+    SymCryptMlKemEncapsulate(pKey, secret, 32, cipher, 1088);
+  }
+}
+
+static void
+symcrypt_kyber768_decapsulation(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto pKey = SymCryptMlKemkeyAllocate(SymCryptMlKemParamsDraft203MlKem768);
+  SymCryptMlKemkeyGenerate(pKey, 0);
+
+  generate_random(randomness, 32);
+  BYTE secret[32];
+  BYTE cipher[1088];
+  SymCryptMlKemEncapsulate(pKey, secret, 32, cipher, 1088);
+
+  BYTE sharedSecret2[32];
+
+  for (auto _ : state)
+  {
+    SymCryptMlKemDecapsulate(pKey, cipher, 1088, sharedSecret2, 32);
+  }
+}
+
 BENCHMARK(kyber768_key_generation);
 BENCHMARK(kyber768_encapsulation);
 BENCHMARK(kyber768_decapsulation);
+BENCHMARK(symcrypt_kyber768_key_generation);
+BENCHMARK(symcrypt_kyber768_encapsulation);
+BENCHMARK(symcrypt_kyber768_decapsulation);
 
 BENCHMARK_MAIN();

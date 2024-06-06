@@ -48,6 +48,7 @@ file(GLOB SOURCES_vec256
 )
 
 # set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+set(CMAKE_BUILD_TYPE Release)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
@@ -88,6 +89,16 @@ DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(json)
 
+FetchContent_Populate(symcrypt
+    GIT_REPOSITORY  https://github.com/microsoft/symcrypt
+    # The latest release 1.7.1 is broken due to https://github.com/google/benchmark/pull/1517
+    # But also: need the fix for https://github.com/google/benchmark/pull/1669
+    GIT_TAG         b070a5d236a4d40aa90524cb5b492463c5452b40
+)
+add_subdirectory(${symcrypt_SOURCE_DIR} ${symcrypt_BINARY_DIR})
+include_directories(${symcrypt_SOURCE_DIR})
+link_directories(${symcrypt_BINARY_DIR}/../module/generic)
+
 add_executable(ml_kem_test
     ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
 )
@@ -120,6 +131,7 @@ add_executable(ml_kem_bench
     ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
 )
 target_link_libraries(ml_kem_bench PRIVATE
+    symcrypt
     ml_kem_static
     benchmark::benchmark
 )
