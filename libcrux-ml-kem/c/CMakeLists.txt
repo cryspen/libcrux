@@ -22,7 +22,6 @@ add_compile_options(
     $<$<CONFIG:DEBUG>:-Og>
     $<$<CONFIG:RELEASE>:-g>
     $<$<CONFIG:RELEASE>:-O3>
-    -flto
 )
 add_link_options(-flto)
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
@@ -60,29 +59,36 @@ file(GLOB SOURCES_vec256
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
         -fPIC
+        -flto
     )
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
 add_library(ml_kem SHARED ${SOURCES})
 add_library(ml_kem_static STATIC ${SOURCES})
 
-# if(LIBCRUX_VEC256)
-add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
-target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-target_compile_options(ml_kem_vec256 PRIVATE
-    -mavx
-    -mavx2
-)
-# endif()
+# This is only for local testing and we assume avx2 on x64.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+    message(STATUS "Detected an x64 architecture")
+    add_compile_definitions(LIBCRUX_X64)
 
-# if(LIBCRUX_VEC128)
-# add_library(ml_kem_vec128 OBJECT ${SOURCES_vec128})
-# target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
-# target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
-# target_compile_options(ml_kem_vec128 PRIVATE
-# )
-# endif()
+    add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
+    target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+    target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+    target_compile_options(ml_kem_vec256 PRIVATE
+        -mavx
+        -mavx2
+    )
+endif()
+
+# This is only for local testing and we assume neon on arm64.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8")
+    message(STATUS "Detected an arm64 architecture")
+    add_compile_definitions(LIBCRUX_AARCH64)
+
+    add_library(ml_kem_vec128 OBJECT ${SOURCES_vec128})
+    target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
+    target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
+endif()
 
 # --- Tests
 
@@ -140,10 +146,7 @@ target_link_libraries(ml_kem_bench PRIVATE
     benchmark::benchmark
 )
 target_compile_definitions(ml_kem_bench PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_bench PRIVATE
-    -mavx
-    -mavx2
-)
+target_compile_options(ml_kem_bench PRIVATE)
 
 add_executable(ml_kem_keygen
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
@@ -153,10 +156,7 @@ target_link_libraries(ml_kem_keygen PRIVATE
     benchmark::benchmark
 )
 target_compile_definitions(ml_kem_keygen PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_keygen PRIVATE
-    -mavx
-    -mavx2
-)
+target_compile_options(ml_kem_keygen PRIVATE)
 
 add_executable(ml_kem_encaps
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
@@ -166,10 +166,7 @@ target_link_libraries(ml_kem_encaps PRIVATE
     benchmark::benchmark
 )
 target_compile_definitions(ml_kem_encaps PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_encaps PRIVATE
-    -mavx
-    -mavx2
-)
+target_compile_options(ml_kem_encaps PRIVATE)
 
 add_executable(sha3_bench
     ${PROJECT_SOURCE_DIR}/benches/sha3.cc
@@ -179,7 +176,4 @@ target_link_libraries(sha3_bench PRIVATE
     benchmark::benchmark
 )
 target_compile_definitions(sha3_bench PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(sha3_bench PRIVATE
-    -mavx
-    -mavx2
-)
+target_compile_options(sha3_bench PRIVATE)

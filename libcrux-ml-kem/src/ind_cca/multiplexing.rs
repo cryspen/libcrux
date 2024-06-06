@@ -1,5 +1,30 @@
 use super::*;
 
+// For the case where we didn't compile with the simd128/simd256 features but
+// have a CPU that has it and thus tries to call the simd128/simd256 version,
+// we fall back to the portable version in this case.
+
+#[cfg(feature = "simd256")]
+use instantiations::avx2::{
+    decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
+    generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
+};
+#[cfg(feature = "simd128")]
+use instantiations::neon::{
+    decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
+    generate_keypair as generate_keypair_neon, validate_public_key as validate_public_key_neon,
+};
+#[cfg(not(feature = "simd256"))]
+use instantiations::portable::{
+    decapsulate as decapsulate_avx2, encapsulate as encapsulate_avx2,
+    generate_keypair as generate_keypair_avx2, validate_public_key as validate_public_key_avx2,
+};
+#[cfg(not(feature = "simd128"))]
+use instantiations::portable::{
+    decapsulate as decapsulate_neon, encapsulate as encapsulate_neon,
+    generate_keypair as generate_keypair_neon, validate_public_key as validate_public_key_neon,
+};
+
 pub(crate) fn validate_public_key<
     const K: usize,
     const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -8,31 +33,9 @@ pub(crate) fn validate_public_key<
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
     if libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
-        return instantiations::avx2::validate_public_key::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-        >(public_key);
-        #[cfg(not(feature = "simd256"))]
-        instantiations::portable::validate_public_key::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-        >(public_key)
+        validate_public_key_avx2::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
     } else if libcrux_platform::simd128_support() {
-        #[cfg(feature = "simd128")]
-        return instantiations::neon::validate_public_key::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-        >(public_key);
-        #[cfg(not(feature = "simd128"))]
-        instantiations::portable::validate_public_key::<
-            K,
-            RANKED_BYTES_PER_RING_ELEMENT,
-            PUBLIC_KEY_SIZE,
-        >(public_key)
+        validate_public_key_neon::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE>(public_key)
     } else {
         instantiations::portable::validate_public_key::<
             K,
@@ -55,18 +58,7 @@ pub(crate) fn generate_keypair<
 ) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
     // Runtime feature detection.
     if libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
-        return instantiations::avx2::generate_keypair::<
-            K,
-            CPA_PRIVATE_KEY_SIZE,
-            PRIVATE_KEY_SIZE,
-            PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-        >(randomness);
-        #[cfg(not(feature = "simd256"))]
-        instantiations::portable::generate_keypair::<
+        generate_keypair_avx2::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -76,18 +68,7 @@ pub(crate) fn generate_keypair<
             ETA1_RANDOMNESS_SIZE,
         >(randomness)
     } else if libcrux_platform::simd128_support() {
-        #[cfg(feature = "simd128")]
-        return instantiations::neon::generate_keypair::<
-            K,
-            CPA_PRIVATE_KEY_SIZE,
-            PRIVATE_KEY_SIZE,
-            PUBLIC_KEY_SIZE,
-            BYTES_PER_RING_ELEMENT,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-        >(randomness);
-        #[cfg(not(feature = "simd128"))]
-        instantiations::portable::generate_keypair::<
+        generate_keypair_neon::<
             K,
             CPA_PRIVATE_KEY_SIZE,
             PRIVATE_KEY_SIZE,
@@ -128,24 +109,7 @@ pub(crate) fn encapsulate<
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     if libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
-        return instantiations::avx2::encapsulate::<
-            K,
-            CIPHERTEXT_SIZE,
-            PUBLIC_KEY_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            VECTOR_U_BLOCK_LEN,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness);
-        #[cfg(not(feature = "simd256"))]
-        instantiations::portable::encapsulate::<
+        encapsulate_avx2::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -161,24 +125,7 @@ pub(crate) fn encapsulate<
             ETA2_RANDOMNESS_SIZE,
         >(public_key, randomness)
     } else if libcrux_platform::simd128_support() {
-        #[cfg(not(feature = "simd128"))]
-        return instantiations::portable::encapsulate::<
-            K,
-            CIPHERTEXT_SIZE,
-            PUBLIC_KEY_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            VECTOR_U_BLOCK_LEN,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-        >(public_key, randomness);
-        #[cfg(all(feature = "simd128", target_arch = "aarch64"))]
-        instantiations::neon::encapsulate::<
+        encapsulate_neon::<
             K,
             CIPHERTEXT_SIZE,
             PUBLIC_KEY_SIZE,
@@ -234,8 +181,7 @@ pub(crate) fn decapsulate<
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
 ) -> MlKemSharedSecret {
     if libcrux_platform::simd256_support() {
-        #[cfg(feature = "simd256")]
-        return instantiations::avx2::decapsulate::<
+        decapsulate_avx2::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -252,29 +198,9 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-        >(private_key, ciphertext);
-        #[cfg(not(feature = "simd256"))]
-        return instantiations::portable::decapsulate::<
-            K,
-            SECRET_KEY_SIZE,
-            CPA_SECRET_KEY_SIZE,
-            PUBLIC_KEY_SIZE,
-            CIPHERTEXT_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            C1_BLOCK_SIZE,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-        >(private_key, ciphertext);
+        >(private_key, ciphertext)
     } else if libcrux_platform::simd128_support() {
-        #[cfg(feature = "simd128")]
-        return instantiations::neon::decapsulate::<
+        decapsulate_neon::<
             K,
             SECRET_KEY_SIZE,
             CPA_SECRET_KEY_SIZE,
@@ -291,26 +217,7 @@ pub(crate) fn decapsulate<
             ETA2,
             ETA2_RANDOMNESS_SIZE,
             IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-        >(private_key, ciphertext);
-        #[cfg(not(feature = "simd128"))]
-        return instantiations::portable::decapsulate::<
-            K,
-            SECRET_KEY_SIZE,
-            CPA_SECRET_KEY_SIZE,
-            PUBLIC_KEY_SIZE,
-            CIPHERTEXT_SIZE,
-            T_AS_NTT_ENCODED_SIZE,
-            C1_SIZE,
-            C2_SIZE,
-            VECTOR_U_COMPRESSION_FACTOR,
-            VECTOR_V_COMPRESSION_FACTOR,
-            C1_BLOCK_SIZE,
-            ETA1,
-            ETA1_RANDOMNESS_SIZE,
-            ETA2,
-            ETA2_RANDOMNESS_SIZE,
-            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-        >(private_key, ciphertext);
+        >(private_key, ciphertext)
     } else {
         instantiations::portable::decapsulate::<
             K,

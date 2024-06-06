@@ -150,6 +150,7 @@ instantiate! {neon, ind_cca::instantiations::neon}
 /// Validate a public key.
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
+#[cfg(not(eurydice))]
 pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768PublicKey> {
     if multiplexing::validate_public_key::<
         RANK_768,
@@ -176,6 +177,7 @@ pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768Publ
 /// - [`generate_key_pair_portable`]
 ///
 /// This function returns an [`MlKem768KeyPair`].
+#[cfg(not(eurydice))]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPair {
     multiplexing::generate_keypair::<
         RANK_768,
@@ -193,6 +195,7 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768
 /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
 /// bytes of `randomness`.
+#[cfg(not(eurydice))]
 pub fn encapsulate(
     public_key: &MlKem768PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -218,6 +221,7 @@ pub fn encapsulate(
 ///
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
+#[cfg(not(eurydice))]
 pub fn decapsulate(
     private_key: &MlKem768PrivateKey,
     ciphertext: &MlKem768Ciphertext,

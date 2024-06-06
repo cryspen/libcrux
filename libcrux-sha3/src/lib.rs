@@ -662,6 +662,8 @@ pub mod avx2 {
     pub mod x4 {
         #[cfg(feature = "simd256")]
         use crate::generic_keccak::keccak;
+        #[cfg(feature = "simd256")]
+        use libcrux_intrinsics::avx2::*;
 
         /// Perform 4 SHAKE256 operations in parallel
         #[allow(unused_variables)] // TODO: decide if we want to fall back here
@@ -692,7 +694,7 @@ pub mod avx2 {
             //     keccakx1::<136, 0x1fu8>([input3], [out3]);
             // }
             #[cfg(feature = "simd256")]
-            keccak::<4, core::arch::x86_64::__m256i, 136, 0x1fu8>(
+            keccak::<4, Vec256, 136, 0x1fu8>(
                 [input0, input1, input2, input3],
                 [out0, out1, out2, out3],
             );
@@ -764,10 +766,12 @@ pub mod avx2 {
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block, KeccakState,
             };
+            #[cfg(feature = "simd256")]
+            use libcrux_intrinsics::avx2::*;
 
             #[cfg(feature = "simd256")]
             pub struct KeccakState4 {
-                state: KeccakState<4, core::arch::x86_64::__m256i>,
+                state: KeccakState<4, Vec256>,
             }
             #[allow(dead_code)]
             #[cfg(all(feature = "simd128", not(feature = "simd256")))]
@@ -838,10 +842,7 @@ pub mod avx2 {
                 //     shake128_absorb_final(&mut s3, data3);
                 // }
                 #[cfg(feature = "simd256")]
-                absorb_final::<4, core::arch::x86_64::__m256i, 168, 0x1fu8>(
-                    &mut s.state,
-                    [data0, data1, data2, data3],
-                );
+                absorb_final::<4, Vec256, 168, 0x1fu8>(&mut s.state, [data0, data1, data2, data3]);
             }
 
             /// Initialise the state and perform up to 4 absorbs at the same time,
@@ -910,7 +911,7 @@ pub mod avx2 {
                 //     shake128_squeeze_first_three_blocks(&mut s3, out3);
                 // }
                 #[cfg(feature = "simd256")]
-                squeeze_first_three_blocks::<4, core::arch::x86_64::__m256i, 168>(
+                squeeze_first_three_blocks::<4, Vec256, 168>(
                     &mut s.state,
                     [out0, out1, out2, out3],
                 );
@@ -1004,10 +1005,7 @@ pub mod avx2 {
                 //     shake128_squeeze_next_block(&mut s3, out3);
                 // }
                 #[cfg(feature = "simd256")]
-                squeeze_next_block::<4, core::arch::x86_64::__m256i, 168>(
-                    &mut s.state,
-                    [out0, out1, out2, out3],
-                );
+                squeeze_next_block::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
             }
 
             /// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState4`].

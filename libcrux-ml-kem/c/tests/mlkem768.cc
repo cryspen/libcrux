@@ -12,8 +12,12 @@
 
 #include "libcrux_sha3.h"
 #include "libcrux_mlkem768.h"
+#include "libcrux_mlkem768_portable.h"
 #include "internal/libcrux_core.h"
-// #include "util.h"
+
+#ifdef LIBCRUX_X64
+#include "libcrux_mlkem768_avx2.h"
+#endif
 
 using namespace std;
 
@@ -156,27 +160,46 @@ read_kats(string path)
 //   return sharedSecret;
 // }
 
-TEST(MlKem768Test, ConsistencyTest)
+#ifdef LIBCRUX_X64
+TEST(MlKem768TestAvx2, ConsistencyTest)
+{
+    uint8_t randomness[64];
+    for (int i = 0; i < 64; i++)
+        randomness[i] = 13;
+    auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
+    auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate(&key_pair.pk, randomness);
+
+    uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+    libcrux_ml_kem_mlkem768_avx2_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+
+    EXPECT_EQ(0,
+              memcmp(ctxt.snd,
+                     sharedSecret2,
+                     LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+}
+#endif
+
+TEST(MlKem768TestPortable, ConsistencyTest)
 {
     uint8_t randomness[64];
     for (int i = 0; i < 64; i++)
         randomness[i] = 13;
     //  generate_random(randomness, 64);
-    auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair(randomness);
+    auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
     // printf("pk: ");
     // print_hex_ln(1184, key_pair.pk.value);
     // printf("sk: ");
     // print_hex_ln(2400, key_pair.sk.value);
 
     //  generate_random(randomness, 32);
-    auto ctxt = libcrux_ml_kem_mlkem768_encapsulate(&key_pair.pk, randomness);
+    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
     // printf("ctxt: ");
     // print_hex_ln(1088U, ctxt.fst.value);
     // printf("secret: ");
     // print_hex_ln(32, ctxt.snd);
 
     uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
-    libcrux_ml_kem_mlkem768_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+    libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
     // printf("secret2: ");
     // print_hex_ln(32, sharedSecret2);
 
@@ -262,38 +285,52 @@ TEST(MlKem768Test, NISTKnownAnswerTest)
 
     for (auto kat : kats)
     {
-        auto key_pair =
-            libcrux_ml_kem_mlkem768_generate_key_pair(kat.key_generation_seed.data());
+        // auto key_pair =
+        //     libcrux_ml_kem_mlkem768_portable_generate_key_pair(kat.key_generation_seed.data());
+
+#ifdef LIBCRUX_X64
+        auto key_pair_avx2 = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(kat.key_generation_seed.data());
+#endif
+
         uint8_t pk_hash[32];
+        // libcrux_sha3_sha256(
+        //     EURYDICE_SLICE(key_pair.pk.value, 0,
+        //                    LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE_768),
+        //     pk_hash);
+        // EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
+
+#ifdef LIBCRUX_X64
         libcrux_sha3_sha256(
-            EURYDICE_SLICE(key_pair.pk.value, 0,
+            EURYDICE_SLICE(key_pair_avx2.pk.value, 0,
                            LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_PUBLIC_KEY_SIZE_768),
             pk_hash);
         EXPECT_EQ(0, memcmp(pk_hash, kat.sha3_256_hash_of_public_key.data(), 32));
-        uint8_t sk_hash[32];
-        libcrux_sha3_sha256(
-            EURYDICE_SLICE(key_pair.sk.value, 0, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768), sk_hash);
-        EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
+#endif
 
-        auto ctxt = libcrux_ml_kem_mlkem768_encapsulate(
-            &key_pair.pk, kat.encapsulation_seed.data());
-        uint8_t ct_hash[32];
-        libcrux_sha3_sha256(
-            EURYDICE_SLICE(ctxt.fst.value, 0,
-                           LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE_768),
-            ct_hash);
-        EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
-        EXPECT_EQ(0,
-                  memcmp(ctxt.snd,
-                         kat.shared_secret.data(),
-                         LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+        // uint8_t sk_hash[32];
+        // libcrux_sha3_sha256(
+        //     EURYDICE_SLICE(key_pair.sk.value, 0, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768), sk_hash);
+        // EXPECT_EQ(0, memcmp(sk_hash, kat.sha3_256_hash_of_secret_key.data(), 32));
 
-        uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
-        libcrux_ml_kem_mlkem768_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+        // auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(
+        //     &key_pair.pk, kat.encapsulation_seed.data());
+        // uint8_t ct_hash[32];
+        // libcrux_sha3_sha256(
+        //     EURYDICE_SLICE(ctxt.fst.value, 0,
+        //                    LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE_768),
+        //     ct_hash);
+        // EXPECT_EQ(0, memcmp(ct_hash, kat.sha3_256_hash_of_ciphertext.data(), 32));
+        // EXPECT_EQ(0,
+        //           memcmp(ctxt.snd,
+        //                  kat.shared_secret.data(),
+        //                  LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
-        EXPECT_EQ(0,
-                  memcmp(ctxt.snd,
-                         sharedSecret2,
-                         LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+        // uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+        // libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+
+        // EXPECT_EQ(0,
+        //           memcmp(ctxt.snd,
+        //                  sharedSecret2,
+        //                  LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
     }
 }

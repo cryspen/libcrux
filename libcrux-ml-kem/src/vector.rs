@@ -211,7 +211,6 @@ pub(crate) mod portable {
     pub(crate) struct PortableVector {
         pub(crate) elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
     }
-
 }
 
 use portable::*;
@@ -295,8 +294,6 @@ pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
     }
     v
 }
-
-use portable::*;
 
 /// Signed Barrett Reduction
 ///
