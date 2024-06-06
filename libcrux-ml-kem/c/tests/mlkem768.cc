@@ -184,6 +184,17 @@ TEST(MlKem768Test, ConsistencyTest)
               memcmp(ctxt.snd,
                      sharedSecret2,
                      LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+
+
+    auto key_pair2 = libcrux_ml_kem_mlkem768_generate_key_pair_unpacked_simd256(randomness);
+    auto ctxt2 = libcrux_ml_kem_mlkem768_encapsulate_unpacked_simd256(&key_pair2.public_key, EURYDICE_SLICE(key_pair2.public_key_hash, 0, 32), randomness);
+    libcrux_ml_kem_mlkem768_decapsulate_unpacked_simd256(&key_pair2, &ctxt2.fst, sharedSecret2);
+
+    EXPECT_EQ(0,
+              memcmp(ctxt.snd,
+                     sharedSecret2,
+                     LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
+
 }
 
 // TEST(Kyber768Test, ModifiedCiphertextTest)
