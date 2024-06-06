@@ -12,7 +12,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Key Generation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable (external random)", |b| {
+    group.bench_function("libcrux default (packed)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter(|| {
@@ -20,7 +20,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("libcrux portable (unpacked portable)", |b| {
+    group.bench_function("libcrux portable (unpacked)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter(|| {
@@ -29,7 +29,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     });
 
     #[cfg(feature = "simd256")]
-    group.bench_function("libcrux portable (unpacked avx2)", |b| {
+    group.bench_function("libcrux avx2 (unpacked)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter(|| {
@@ -63,7 +63,7 @@ pub fn comparisons_pk_validation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 PK Validation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable", |b| {
+    group.bench_function("libcrux default", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter_batched(
@@ -83,7 +83,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Encapsulation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable (external random)", |b| {
+    group.bench_function("libcrux default (packed)", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
         let mut seed2 = [0; 32];
@@ -120,10 +120,10 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         let mut seed2 = [0; 32];
         OsRng.fill_bytes(&mut seed2);
         b.iter_batched(
-            || mlkem768::generate_key_pair_unpackes(seed1),
+            || mlkem768::generate_key_pair_unpacked_simd256(seed1),
             |keypair| {
                 let (_shared_secret, _ciphertext) =
-                    mlkem768::encapsulate(&keypair.public_key, &keypair.public_key_hash, seed2);
+                    mlkem768::encapsulate_unpacked_simd256(&keypair.public_key, &keypair.public_key_hash, seed2);
             },
             BatchSize::SmallInput,
         )
@@ -165,7 +165,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Decapsulation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable", |b| {
+    group.bench_function("libcrux default (packed)", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
         let mut seed2 = [0; 32];
