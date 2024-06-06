@@ -24,11 +24,11 @@ kyber768_key_generation(benchmark::State &state)
 {
   uint8_t randomness[64];
   generate_random(randomness, 64);
-  auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair(randomness);
+  auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair_unpacked_simd256(randomness);
 
   for (auto _ : state)
   {
-    key_pair = libcrux_ml_kem_mlkem768_generate_key_pair(randomness);
+    key_pair = libcrux_ml_kem_mlkem768_generate_key_pair_unpacked_simd256(randomness);
   }
 }
 
@@ -38,13 +38,13 @@ kyber768_encapsulation(benchmark::State &state)
   uint8_t randomness[64];
   generate_random(randomness, 64);
 
-  auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair(randomness);
+  auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair_unpacked_simd256(randomness);
   generate_random(randomness, 32);
-  auto ctxt = libcrux_ml_kem_mlkem768_encapsulate(&key_pair.pk, randomness);
+  auto ctxt = libcrux_ml_kem_mlkem768_encapsulate_unpacked_simd256(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
 
   for (auto _ : state)
   {
-    ctxt = libcrux_ml_kem_mlkem768_encapsulate(&key_pair.pk, randomness);
+    ctxt = libcrux_ml_kem_mlkem768_encapsulate_unpacked_simd256(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
   }
 }
 
@@ -54,15 +54,15 @@ kyber768_decapsulation(benchmark::State &state)
   uint8_t randomness[64];
   generate_random(randomness, 64);
 
-  auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair(randomness);
+  auto key_pair = libcrux_ml_kem_mlkem768_generate_key_pair_unpacked_simd256(randomness);
   generate_random(randomness, 32);
-  auto ctxt = libcrux_ml_kem_mlkem768_encapsulate(&key_pair.pk, randomness);
+  auto ctxt = libcrux_ml_kem_mlkem768_encapsulate_unpacked_simd256(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
 
   uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
 
   for (auto _ : state)
   {
-    libcrux_ml_kem_mlkem768_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+    libcrux_ml_kem_mlkem768_decapsulate_unpacked_simd256(&key_pair, &ctxt.fst, sharedSecret2);
   }
 }
 
