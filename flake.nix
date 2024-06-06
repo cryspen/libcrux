@@ -38,15 +38,11 @@
         ml-kem = craneLib.buildPackage {
           name = "ml-kem";
           inherit src cargoArtifacts;
-          postPatch = ''
-            substituteInPlace libcrux-ml-kem/c/CMakeLists.txt \
-              --replace "    -flto" "    # -flto" \
-              --replace "add_link_options(-flto)" "#add_link_options(-flto)"
-          '';
           nativeBuildInputs = [
             pkgs.clang
             pkgs.cmake
             pkgs.gbenchmark
+            pkgs.mold-wrapped
             pkgs.ninja
             pkgs.python3
           ];
@@ -57,6 +53,8 @@
             cmake \
               -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
               -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
+              -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+              -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
               -G "Ninja Multi-Config" -B build
             cmake --build build --config Release
           '';
