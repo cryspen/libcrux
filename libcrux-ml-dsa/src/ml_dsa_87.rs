@@ -6,7 +6,7 @@ const ROWS_IN_A: usize = 8;
 const COLUMNS_IN_A: usize = 7;
 
 const ETA: usize = 2;
-const BITS_PER_ERROR_COEFFICIENT: usize = 3; // ⌊log_2(2 * 2)⌋ + 1
+const BITS_PER_ERROR_COEFFICIENT: usize = 3;
 
 const BYTES_FOR_ERROR_RING_ELEMENT: usize =
     (BITS_PER_ERROR_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
