@@ -66,18 +66,6 @@ extern "C" {
   (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE +                   \
    LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE_768)
 
-typedef libcrux_ml_kem_types_MlKemPrivateKey____2400size_t
-    libcrux_ml_kem_mlkem768_MlKem768PrivateKey;
-
-typedef libcrux_ml_kem_types_MlKemPublicKey____1184size_t
-    libcrux_ml_kem_mlkem768_MlKem768PublicKey;
-
-typedef libcrux_ml_kem_types_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_PortableVector__3size_t
-    libcrux_ml_kem_mlkem768_MlKem768PublicKeyUnpackedPortable;
-
-typedef libcrux_ml_kem_types_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
-    libcrux_ml_kem_mlkem768_MlKem768PublicKeyUnpackedSimd256;
-
 #define LIBCRUX_ML_KEM_MLKEM768_RANKED_BYTES_PER_RING_ELEMENT_768 \
   (LIBCRUX_ML_KEM_MLKEM768_RANK_768 *                             \
    LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
@@ -90,15 +78,20 @@ typedef libcrux_ml_kem_types_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_avx2_
 
 void libcrux_ml_kem_mlkem768_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
+    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
+    uint8_t ret[32U]);
 
 void libcrux_ml_kem_mlkem768_decapsulate_unpacked_portable(
-    libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedPortable *private_key,
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
+    libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_PortableVector__3size_t
+        *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
+    uint8_t ret[32U]);
 
 void libcrux_ml_kem_mlkem768_decapsulate_unpacked_simd256(
-    libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedSimd256 *private_key,
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]);
+    libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
+        *private_key,
+    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
+    uint8_t ret[32U]);
 
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
 libcrux_ml_kem_mlkem768_encapsulate(
@@ -117,14 +110,14 @@ libcrux_ml_kem_mlkem768_encapsulate_unpacked_simd256(
         *public_key,
     Eurydice_slice public_key_hash, uint8_t randomness[32U]);
 
-libcrux_ml_kem_mlkem768_MlKem768KeyPair
+libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t
 libcrux_ml_kem_mlkem768_generate_key_pair(uint8_t randomness[64U]);
 
-libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedPortable
+libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_PortableVector__3size_t
 libcrux_ml_kem_mlkem768_generate_key_pair_unpacked_portable(
     uint8_t randomness[64U]);
 
-libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedSimd256
+libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
 libcrux_ml_kem_mlkem768_generate_key_pair_unpacked_simd256(
     uint8_t randomness[64U]);
 

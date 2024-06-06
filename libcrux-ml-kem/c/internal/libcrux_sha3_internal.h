@@ -243,14 +243,6 @@ libcrux_sha3___core__convert__From_u32__for_libcrux_sha3__Algorithm___from(
   return uu____0;
 }
 
-typedef uint8_t libcrux_sha3_Sha3_512Digest[64U];
-
-typedef uint8_t libcrux_sha3_Sha3_384Digest[48U];
-
-typedef uint8_t libcrux_sha3_Sha3_256Digest[32U];
-
-typedef uint8_t libcrux_sha3_Sha3_224Digest[28U];
-
 #if defined(__cplusplus)
 }
 #endif

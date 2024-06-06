@@ -2623,39 +2623,20 @@ compute_As_plus_e__libcrux_ml_kem_vector_avx2_SIMD256Vector_2size_t(
               libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector));
 }
 
-typedef struct
-    ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_2size_t____size_t__s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector (
-      *fst)[2U];
-  size_t *snd;
-} ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_2size_t____size_t_;
-
 static libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
 closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t_3size_t_192size_t0(
-    ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_2size_t____size_t_
-        *state,
-    size_t j) {
-  return state->fst[j][state->snd[0U]];
+    void) {
+  return ZERO__libcrux_ml_kem_vector_avx2_SIMD256Vector();
 }
 
 static void
 closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t_3size_t_192size_t1(
-    libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector (
-        **state)[2U],
-    size_t i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
         ret[2U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
       ret0[2U];
-  KRML_MAYBE_FOR2(
-      i0, (size_t)0U, (size_t)2U, (size_t)1U,
-      ret0[i0] =
-          ((___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_2size_t____size_t_){
-               .fst = state[0U], .snd = &i})
-              .fst[i0]
-                  [((___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_2size_t____size_t_){
-                        .fst = state[0U], .snd = &i})
-                       .snd[0U]];);
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U,
+                  ret0[i] = ZERO__libcrux_ml_kem_vector_avx2_SIMD256Vector(););
   memcpy(
       ret, ret0,
       (size_t)2U *
@@ -2719,7 +2700,11 @@ generate_keypair_unpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_k
   KRML_MAYBE_FOR2(
       i, (size_t)0U, (size_t)2U, (size_t)1U,
       closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t_3size_t_192size_t1(
-          &A_transpose, i, A[i]););
+          A[i]););
+  KRML_MAYBE_FOR2(
+      i0, (size_t)0U, (size_t)2U, (size_t)1U, size_t i1 = i0;
+      KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, size_t j = i;
+                      A[i1][j] = A_transpose[j][i1];););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
       uu____4[2U];
   memcpy(
@@ -2873,7 +2858,7 @@ serialize_kem_secret_key__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t
   memcpy(ret, out, (size_t)1632U * sizeof(uint8_t));
 }
 
-libcrux_ml_kem_mlkem512_MlKem512KeyPair
+libcrux_ml_kem_types_MlKemKeyPair____1632size_t__800size_t
 libcrux_ml_kem_ind_cca_generate_keypair_generic__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t_768size_t_1632size_t_800size_t_768size_t_3size_t_192size_t(
     Eurydice_slice ind_cpa_keypair_randomness,
     Eurydice_slice implicit_rejection_value) {
@@ -3955,7 +3940,7 @@ libcrux_ml_kem_ind_cca_encapsulate_generic__libcrux_ml_kem_vector_avx2_SIMD256Ve
       shared_secret, uint8_t, void *);
   uint8_t uu____4[768U];
   memcpy(uu____4, ciphertext, (size_t)768U * sizeof(uint8_t));
-  libcrux_ml_kem_mlkem512_MlKem512Ciphertext uu____5 =
+  libcrux_ml_kem_types_MlKemCiphertext____768size_t uu____5 =
       libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___768size_t(
           uu____4);
   uint8_t uu____6[32U];
@@ -4598,7 +4583,8 @@ static inline void PRF___2size_t_32size_t(Eurydice_slice input,
 
 void libcrux_ml_kem_ind_cca_decapsulate_generic__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t_1632size_t_768size_t_800size_t_768size_t_768size_t_640size_t_128size_t_10size_t_4size_t_320size_t_3size_t_192size_t_2size_t_128size_t_800size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____1632size_t *private_key,
-    libcrux_ml_kem_mlkem512_MlKem512Ciphertext *ciphertext, uint8_t ret[32U]) {
+    libcrux_ml_kem_types_MlKemCiphertext____768size_t *ciphertext,
+    uint8_t ret[32U]) {
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____0 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)1632U, private_key->value, uint8_t,
@@ -5372,39 +5358,20 @@ compute_As_plus_e__libcrux_ml_kem_vector_avx2_SIMD256Vector_4size_t(
               libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector));
 }
 
-typedef struct
-    ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_4size_t____size_t__s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector (
-      *fst)[4U];
-  size_t *snd;
-} ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_4size_t____size_t_;
-
 static libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
 closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t_2size_t_128size_t0(
-    ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_4size_t____size_t_
-        *state,
-    size_t j) {
-  return state->fst[j][state->snd[0U]];
+    void) {
+  return ZERO__libcrux_ml_kem_vector_avx2_SIMD256Vector();
 }
 
 static void
 closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t_2size_t_128size_t1(
-    libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector (
-        **state)[4U],
-    size_t i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
         ret[4U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
       ret0[4U];
-  KRML_MAYBE_FOR4(
-      i0, (size_t)0U, (size_t)4U, (size_t)1U,
-      ret0[i0] =
-          ((___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_4size_t____size_t_){
-               .fst = state[0U], .snd = &i})
-              .fst[i0]
-                  [((___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_4size_t____size_t_){
-                        .fst = state[0U], .snd = &i})
-                       .snd[0U]];);
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U,
+                  ret0[i] = ZERO__libcrux_ml_kem_vector_avx2_SIMD256Vector(););
   memcpy(
       ret, ret0,
       (size_t)4U *
@@ -5468,7 +5435,11 @@ generate_keypair_unpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_k
   KRML_MAYBE_FOR4(
       i, (size_t)0U, (size_t)4U, (size_t)1U,
       closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t_2size_t_128size_t1(
-          &A_transpose, i, A[i]););
+          A[i]););
+  KRML_MAYBE_FOR4(
+      i0, (size_t)0U, (size_t)4U, (size_t)1U, size_t i1 = i0;
+      KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, size_t j = i;
+                      A[i1][j] = A_transpose[j][i1];););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
       uu____4[4U];
   memcpy(
@@ -5622,7 +5593,7 @@ serialize_kem_secret_key__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t
   memcpy(ret, out, (size_t)3168U * sizeof(uint8_t));
 }
 
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
+libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t
 libcrux_ml_kem_ind_cca_generate_keypair_generic__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
     Eurydice_slice ind_cpa_keypair_randomness,
     Eurydice_slice implicit_rejection_value) {
@@ -6173,7 +6144,7 @@ libcrux_ml_kem_ind_cca_encapsulate_generic__libcrux_ml_kem_vector_avx2_SIMD256Ve
       shared_secret, uint8_t, void *);
   uint8_t uu____4[1568U];
   memcpy(uu____4, ciphertext, (size_t)1568U * sizeof(uint8_t));
-  libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext uu____5 =
+  libcrux_ml_kem_types_MlKemCiphertext____1568size_t uu____5 =
       libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1568size_t(
           uu____4);
   uint8_t uu____6[32U];
@@ -6401,7 +6372,7 @@ static inline void PRF___4size_t_32size_t(Eurydice_slice input,
 
 void libcrux_ml_kem_ind_cca_decapsulate_generic__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
+    libcrux_ml_kem_types_MlKemCiphertext____1568size_t *ciphertext,
     uint8_t ret[32U]) {
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____0 =
       core_slice___Slice_T___split_at(
@@ -7138,39 +7109,20 @@ compute_As_plus_e__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t(
               libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector));
 }
 
-typedef struct
-    ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t____size_t__s {
-  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector (
-      *fst)[3U];
-  size_t *snd;
-} ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t____size_t_;
-
 static libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
 closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_2size_t_128size_t0(
-    ___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t____size_t_
-        *state,
-    size_t j) {
-  return state->fst[j][state->snd[0U]];
+    void) {
+  return ZERO__libcrux_ml_kem_vector_avx2_SIMD256Vector();
 }
 
 static void
 closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_2size_t_128size_t1(
-    libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector (
-        **state)[3U],
-    size_t i,
     libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
         ret[3U]) {
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
       ret0[3U];
-  KRML_MAYBE_FOR3(
-      i0, (size_t)0U, (size_t)3U, (size_t)1U,
-      ret0[i0] =
-          ((___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t____size_t_){
-               .fst = state[0U], .snd = &i})
-              .fst[i0]
-                  [((___libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t____size_t_){
-                        .fst = state[0U], .snd = &i})
-                       .snd[0U]];);
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U,
+                  ret0[i] = ZERO__libcrux_ml_kem_vector_avx2_SIMD256Vector(););
   memcpy(
       ret, ret0,
       (size_t)3U *
@@ -7234,7 +7186,11 @@ generate_keypair_unpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_k
   KRML_MAYBE_FOR3(
       i, (size_t)0U, (size_t)3U, (size_t)1U,
       closure__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_2size_t_128size_t1(
-          &A_transpose, i, A[i]););
+          A[i]););
+  KRML_MAYBE_FOR3(
+      i0, (size_t)0U, (size_t)3U, (size_t)1U, size_t i1 = i0;
+      KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, size_t j = i;
+                      A[i1][j] = A_transpose[j][i1];););
   libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_avx2_SIMD256Vector
       uu____4[3U];
   memcpy(
@@ -7297,7 +7253,7 @@ static inline void H___3size_t(Eurydice_slice input, uint8_t ret[32U]) {
   memcpy(ret, digest, (size_t)32U * sizeof(uint8_t));
 }
 
-libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedSimd256
+libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
 libcrux_ml_kem_ind_cca_generate_keypair_unpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_1152size_t_2400size_t_1184size_t_1152size_t_2size_t_128size_t(
     uint8_t randomness[64U]) {
   Eurydice_slice ind_cpa_keypair_randomness = Eurydice_array_to_subslice(
@@ -7336,7 +7292,8 @@ libcrux_ml_kem_ind_cca_generate_keypair_unpacked__libcrux_ml_kem_vector_avx2_SIM
       uu____3 = ind_cpa_public_key;
   uint8_t uu____4[32U];
   memcpy(uu____4, public_key_hash, (size_t)32U * sizeof(uint8_t));
-  libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedSimd256 lit;
+  libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
+      lit;
   lit.private_key = uu____2;
   lit.public_key = uu____3;
   memcpy(lit.public_key_hash, uu____4, (size_t)32U * sizeof(uint8_t));
@@ -7443,7 +7400,7 @@ serialize_kem_secret_key__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t
   memcpy(ret, out, (size_t)2400U * sizeof(uint8_t));
 }
 
-libcrux_ml_kem_mlkem768_MlKem768KeyPair
+libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t
 libcrux_ml_kem_ind_cca_generate_keypair_generic__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_1152size_t_2400size_t_1184size_t_1152size_t_2size_t_128size_t(
     Eurydice_slice ind_cpa_keypair_randomness,
     Eurydice_slice implicit_rejection_value) {
@@ -7805,7 +7762,7 @@ libcrux_ml_kem_ind_cca_encapsulate_unpacked__libcrux_ml_kem_vector_avx2_SIMD256V
       shared_secret, uint8_t, void *);
   uint8_t uu____3[1088U];
   memcpy(uu____3, ciphertext, (size_t)1088U * sizeof(uint8_t));
-  libcrux_ml_kem_mlkem768_MlKem768Ciphertext uu____4 =
+  libcrux_ml_kem_types_MlKemCiphertext____1088size_t uu____4 =
       libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1088size_t(
           uu____3);
   uint8_t uu____5[32U];
@@ -7969,7 +7926,7 @@ libcrux_ml_kem_ind_cca_encapsulate_generic__libcrux_ml_kem_vector_avx2_SIMD256Ve
       shared_secret, uint8_t, void *);
   uint8_t uu____4[1088U];
   memcpy(uu____4, ciphertext, (size_t)1088U * sizeof(uint8_t));
-  libcrux_ml_kem_mlkem768_MlKem768Ciphertext uu____5 =
+  libcrux_ml_kem_types_MlKemCiphertext____1088size_t uu____5 =
       libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1088size_t(
           uu____4);
   uint8_t uu____6[32U];
@@ -8088,8 +8045,10 @@ static inline void PRF___3size_t_32size_t(Eurydice_slice input,
 }
 
 void libcrux_ml_kem_ind_cca_decapsulate_unpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_2400size_t_1152size_t_1184size_t_1088size_t_1152size_t_960size_t_128size_t_10size_t_4size_t_320size_t_2size_t_128size_t_2size_t_128size_t_1120size_t(
-    libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedSimd256 *key_pair,
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
+    libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
+        *key_pair,
+    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
+    uint8_t ret[32U]) {
   uint8_t decrypted[32U];
   decrypt_unpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t_1088size_t_960size_t_10size_t_4size_t(
       &key_pair->private_key, ciphertext->value, decrypted);
@@ -8226,7 +8185,8 @@ decrypt__libcrux_ml_kem_vector_avx2_SIMD256Vector_3size_t_1088size_t_960size_t_1
 
 void libcrux_ml_kem_ind_cca_decapsulate_generic__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_2400size_t_1152size_t_1184size_t_1088size_t_1152size_t_960size_t_128size_t_10size_t_4size_t_320size_t_2size_t_128size_t_2size_t_128size_t_1120size_t(
     libcrux_ml_kem_types_MlKemPrivateKey____2400size_t *private_key,
-    libcrux_ml_kem_mlkem768_MlKem768Ciphertext *ciphertext, uint8_t ret[32U]) {
+    libcrux_ml_kem_types_MlKemCiphertext____1088size_t *ciphertext,
+    uint8_t ret[32U]) {
   K___Eurydice_slice_uint8_t_Eurydice_slice_uint8_t uu____0 =
       core_slice___Slice_T___split_at(
           Eurydice_array_to_slice((size_t)2400U, private_key->value, uint8_t,

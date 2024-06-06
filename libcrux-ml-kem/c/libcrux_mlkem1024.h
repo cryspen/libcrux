@@ -67,12 +67,6 @@ extern "C" {
   (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE +                    \
    LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_CIPHERTEXT_SIZE_1024)
 
-typedef libcrux_ml_kem_types_MlKemPrivateKey____3168size_t
-    libcrux_ml_kem_mlkem1024_MlKem1024PrivateKey;
-
-typedef libcrux_ml_kem_types_MlKemPublicKey____1568size_t
-    libcrux_ml_kem_mlkem1024_MlKem1024PublicKey;
-
 #define LIBCRUX_ML_KEM_MLKEM1024_RANKED_BYTES_PER_RING_ELEMENT_1024 \
   (LIBCRUX_ML_KEM_MLKEM1024_RANK_1024 *                             \
    LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
@@ -85,14 +79,15 @@ typedef libcrux_ml_kem_types_MlKemPublicKey____1568size_t
 
 void libcrux_ml_kem_mlkem1024_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
-    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
+    libcrux_ml_kem_types_MlKemCiphertext____1568size_t *ciphertext,
+    uint8_t ret[32U]);
 
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
 libcrux_ml_kem_mlkem1024_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey____1568size_t *public_key,
     uint8_t randomness[32U]);
 
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
+libcrux_ml_kem_types_MlKemKeyPair____3168size_t__1568size_t
 libcrux_ml_kem_mlkem1024_generate_key_pair(uint8_t randomness[64U]);
 
 core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___1568size_t__

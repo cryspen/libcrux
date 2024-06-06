@@ -300,14 +300,15 @@ typedef struct
       A_transpose[3U][3U];
 } libcrux_ml_kem_types_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t;
 
-typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedSimd256_s {
+typedef struct
+    libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t_s {
   libcrux_ml_kem_types_MlKemPrivateKeyUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
       private_key;
   libcrux_ml_kem_types_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t
       public_key;
   uint8_t public_key_hash[32U];
   uint8_t implicit_rejection_value[32U];
-} libcrux_ml_kem_mlkem768_MlKem768KeyPairUnpackedSimd256;
+} libcrux_ml_kem_types_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_avx2_SIMD256Vector__3size_t;
 
 #if defined(__cplusplus)
 }
