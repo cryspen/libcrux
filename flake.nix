@@ -53,14 +53,16 @@
           buildPhase = ''
             cd libcrux-ml-kem
             bash c.sh
-          '';
-          checkPhase = ''
             cd c
             cmake \
               -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
               -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
               -G "Ninja Multi-Config" -B build
             cmake --build build --config Release
+          '';
+          checkPhase = ''
+            build/Release/ml_kem_test
+            build/Release/ml_kem_bench
           '';
           installPhase = "cp -r . $out";
           CHARON_HOME = inputs.charon.packages.${system}.default;
