@@ -2,7 +2,9 @@
   "nodes": {
     "charon": {
       "inputs": {
-        "crane": "crane",
+        "crane": [
+          "crane"
+        ],
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "nixpkgs": [
@@ -26,27 +28,6 @@
       }
     },
     "crane": {
-      "inputs": {
-        "nixpkgs": [
-          "charon",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1717535930,
-        "narHash": "sha256-1hZ/txnbd/RmiBPNUs7i8UQw2N89uAK3UzrGAWdnFfU=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "55e7754ec31dac78980c8be45f8a28e80e370946",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
-    "crane_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -314,7 +295,7 @@
     "root": {
       "inputs": {
         "charon": "charon",
-        "crane": "crane_2",
+        "crane": "crane",
         "eurydice": "eurydice",
         "flake-utils": "flake-utils_5",
         "fstar": [
