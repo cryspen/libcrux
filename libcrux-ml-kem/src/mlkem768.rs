@@ -1,6 +1,8 @@
 //! ML-KEM 512
 //!
-use super::{constants::*, ind_cca::*, *};
+use vector::PortableVector;
+
+use super::{constants::*, ind_cca::*, types::*, *};
 
 // Kyber 768 parameters
 const RANK_768: usize = 3;
@@ -131,6 +133,154 @@ pub fn decapsulate(
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(private_key, ciphertext)
 }
+
+// Unpacked API for Portable
+
+/// An ML-KEM 768 Public key
+pub type MlKem768PublicKeyUnpackedPortable = MlKemPublicKeyUnpacked<RANK_768,PortableVector>;
+/// Am ML-KEM 768 Key pair
+pub type MlKem768KeyPairUnpackedPortable = MlKemKeyPairUnpacked<RANK_768,PortableVector>;
+
+pub fn generate_key_pair_unpacked_portable(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPairUnpackedPortable {
+    generate_keypair_unpacked::<
+        RANK_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        RANKED_BYTES_PER_RING_ELEMENT_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        PortableVector,
+        hash_functions::portable::PortableHash<RANK_768>,
+    >(randomness)
+}
+
+pub fn encapsulate_unpacked_portable(
+    public_key: &MlKem768PublicKeyUnpackedPortable,
+    public_key_hash: &[u8],
+    randomness: [u8; SHARED_SECRET_SIZE],
+) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+    encapsulate_unpacked::<
+        RANK_768,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        PortableVector,
+        hash_functions::portable::PortableHash<RANK_768>,
+    >(public_key, public_key_hash, randomness)
+}
+
+pub fn decapsulate_unpacked_portable(
+    private_key: &MlKem768KeyPairUnpackedPortable,
+    ciphertext: &MlKem768Ciphertext,
+) -> MlKemSharedSecret {
+    decapsulate_unpacked::<
+        RANK_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        PortableVector,
+        hash_functions::portable::PortableHash<RANK_768>,
+    >(private_key, ciphertext)
+}
+
+// Unpacked API for AVX2
+
+/// An ML-KEM 768 Public key
+#[cfg(feature = "simd256")]
+pub type MlKem768PublicKeyUnpackedSimd256 = MlKemPublicKeyUnpacked<RANK_768,vector::SIMD256Vector>;
+/// Am ML-KEM 768 Key pair 
+#[cfg(feature = "simd256")]
+pub type MlKem768KeyPairUnpackedSimd256 = MlKemKeyPairUnpacked<RANK_768,vector::SIMD256Vector>;
+
+#[cfg(feature = "simd256")]
+pub fn generate_key_pair_unpacked_simd256(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPairUnpackedSimd256 {
+    generate_keypair_unpacked::<
+        RANK_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        RANKED_BYTES_PER_RING_ELEMENT_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        vector::SIMD256Vector,
+        hash_functions::avx2::Simd256Hash,
+    >(randomness)
+}
+
+#[cfg(feature = "simd256")]
+pub fn encapsulate_unpacked_simd256(
+    public_key: &MlKem768PublicKeyUnpackedSimd256,
+    public_key_hash: &[u8],
+    randomness: [u8; SHARED_SECRET_SIZE],
+) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+    encapsulate_unpacked::<
+        RANK_768,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        vector::SIMD256Vector,
+        hash_functions::avx2::Simd256Hash,
+    >(public_key, public_key_hash, randomness)
+}
+
+#[cfg(feature = "simd256")]
+pub fn decapsulate_unpacked_simd256(
+    private_key: &MlKem768KeyPairUnpackedSimd256,
+    ciphertext: &MlKem768Ciphertext,
+) -> MlKemSharedSecret {
+    decapsulate_unpacked::<
+        RANK_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        CPA_PKE_CIPHERTEXT_SIZE_768,
+        T_AS_NTT_ENCODED_SIZE_768,
+        C1_SIZE_768,
+        C2_SIZE_768,
+        VECTOR_U_COMPRESSION_FACTOR_768,
+        VECTOR_V_COMPRESSION_FACTOR_768,
+        C1_BLOCK_SIZE_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        vector::SIMD256Vector,
+        hash_functions::avx2::Simd256Hash,
+    >(private_key, ciphertext)
+}
+
 
 #[cfg(test)]
 mod tests {

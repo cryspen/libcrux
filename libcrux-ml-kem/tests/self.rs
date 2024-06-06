@@ -33,6 +33,29 @@ macro_rules! impl_consistency {
     };
 }
 
+macro_rules! impl_consistency_unpacked {
+    ($name:ident, $key_gen:expr, $encaps:expr, $decaps:expr) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            let randomness = random_array();
+            let key_pair = $key_gen(randomness);
+            let randomness = random_array();
+            let (ciphertext, shared_secret) = $encaps(&key_pair.public_key, &key_pair.public_key_hash, randomness);
+            let shared_secret_decapsulated = $decaps(&key_pair, &ciphertext);
+            assert_eq!(
+                shared_secret, shared_secret_decapsulated,
+                "lhs: shared_secret, rhs: shared_secret_decapsulated"
+            );
+
+            // If the randomness was not enough for the rejection sampling step
+            // in key-generation and encapsulation, simply return without
+            // failing.
+        }
+    };
+}
+
+
 fn modify_ciphertext<const LEN: usize>(
     mut ciphertext: MlKemCiphertext<LEN>,
 ) -> MlKemCiphertext<LEN> {
@@ -179,6 +202,22 @@ impl_consistency!(
     mlkem1024::generate_key_pair,
     mlkem1024::encapsulate,
     mlkem1024::decapsulate
+);
+
+
+impl_consistency_unpacked!(
+    consistency_768_unpacked_portable,
+    mlkem768::generate_key_pair_unpacked_portable,
+    mlkem768::encapsulate_unpacked_portable,
+    mlkem768::decapsulate_unpacked_portable
+);
+
+#[cfg(feature = "simd256")]
+impl_consistency_unpacked!(
+    consistency_768_unpacked_simd256,
+    mlkem768::generate_key_pair_unpacked_simd256,
+    mlkem768::encapsulate_unpacked_simd256,
+    mlkem768::decapsulate_unpacked_simd256
 );
 
 impl_modified_ciphertext!(
