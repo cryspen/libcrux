@@ -149,7 +149,7 @@ pub(crate) fn generate_keypair_unpacked<
     MlKemKeyPairUnpacked{private_key:ind_cpa_private_key, 
                          public_key:ind_cpa_public_key,
                          public_key_hash: public_key_hash,
-                         implicit_rejection_value:implicit_rejection_value.clone().try_into().unwrap()}
+                         implicit_rejection_value:implicit_rejection_value.try_into().unwrap()}
 }
 
 pub(crate) fn encapsulate_unpacked<

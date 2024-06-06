@@ -184,7 +184,7 @@ pub(crate) fn generate_keypair_unpacked<
         core::array::from_fn(|j| A_transpose[j][i])
     });
 
-    let pk = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose: A, seed_for_A : seed_for_A.clone().try_into().unwrap()};
+    let pk = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose: A, seed_for_A : seed_for_A.try_into().unwrap()};
     let sk = MlKemPrivateKeyUnpacked {secret_as_ntt};
     (sk,pk)
 }
@@ -379,7 +379,7 @@ pub(crate) fn encrypt<
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
     let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed), false);
 
-    let public_key_unpacked = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose, seed_for_A: seed.clone().try_into().unwrap()};
+    let public_key_unpacked = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose, seed_for_A: seed.try_into().unwrap()};
     encrypt_unpacked::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,
                        U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,
                        ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE,Vector,Hasher>(
