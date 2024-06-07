@@ -184,7 +184,7 @@ static inline int16_t libcrux_intrinsics_arm64__vaddvq_s16(
 
 static inline uint16_t libcrux_intrinsics_arm64__vaddv_u16(
     core_core_arch_arm_shared_neon_uint16x4_t a) {
-  return vaddv_s16(a);
+  return vaddv_u16(a);
 }
 
 static inline uint16_t libcrux_intrinsics_arm64__vaddvq_u16(
@@ -216,7 +216,7 @@ libcrux_intrinsics_arm64__vqdmulhq_n_s16(
 static inline core_core_arch_arm_shared_neon_uint16x8_t
 libcrux_intrinsics_arm64__vmulq_n_u16(
     core_core_arch_arm_shared_neon_uint16x8_t a, uint16_t c) {
-  return vmulq_n_s16(a, c);
+  return vmulq_n_u16(a, c);
 }
 
 static inline core_core_arch_arm_shared_neon_int32x4_t
@@ -246,8 +246,9 @@ libcrux_intrinsics_arm64__vqdmulhq_s16(
 }
 
 static inline core_core_arch_arm_shared_neon_int32x4_t
-libcrux_intrinsics_arm64__vmull_s16(core_core_arch_arm_shared_neon_int16x4_t a,
-                                    core_core_arch_arm_shared_neon_int16x4_t b) {
+libcrux_intrinsics_arm64__vmull_s16(
+    core_core_arch_arm_shared_neon_int16x4_t a,
+    core_core_arch_arm_shared_neon_int16x4_t b) {
   return vmull_s16(a, b);
 }
 
@@ -348,9 +349,11 @@ libcrux_intrinsics_arm64__vshlq_u16(
   return vshlq_u16(a, b);
 }
 
-#define libcrux_intrinsics_arm64__vsliq_n_s32(N, a, b, _ret_t) (vsliq_n_s16(a, b, N))
+#define libcrux_intrinsics_arm64__vsliq_n_s32(N, a, b, _ret_t) \
+  (vsliq_n_s32(a, b, N))
 
-#define libcrux_intrinsics_arm64__vsliq_n_s64(N, a, b, _ret_t) (vsliq_n_s64(a, b, N))
+#define libcrux_intrinsics_arm64__vsliq_n_s64(N, a, b, _ret_t) \
+  (vsliq_n_s64(a, b, N))
 
 // Transpose and Vector Manipulations
 
