@@ -11,6 +11,7 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
 # FIXME: Windows?
 add_compile_options(
