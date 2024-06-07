@@ -187,8 +187,12 @@ TEST(MlKem768TestPortable, ConsistencyTest)
         randomness[i] = 13;
     }
     auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
+    //  cout << "key pair.pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 16U)) << endl;
+    //  cout << "key pair.sk: " << bytes_to_hex(bytes(key_pair.sk.value, key_pair.sk.value + 16U)) << endl;
 
     auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness);
+
+    // cout << "ctxt: " << bytes_to_hex(bytes(ctxt.fst.value, ctxt.fst.value + 16U)) << endl;
 
     uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
     libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
@@ -456,8 +460,6 @@ TEST(MlKem768TestNeon, ConsistencyTest)
     for (int i = 0; i < 64; i++)
         randomness[i] = 13;
     auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
-    cout << "key pair: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 1184U)) << endl;
-
     auto ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(&key_pair.pk, randomness);
 
     uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
@@ -512,5 +514,4 @@ TEST(MlKem768TestNeon, NISTKnownAnswerTest)
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
     }
 }
-
 #endif // LIBCRUX_AARCH64

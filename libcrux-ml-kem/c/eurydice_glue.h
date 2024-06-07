@@ -114,9 +114,8 @@ static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
 }
-
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t x0[4U]) {
-  return (uint32_t)x0[0] << 24 | (uint32_t)x0[1] << 16 | (uint32_t)x0[2] << 8 | (uint32_t)x0[3];
+static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+  return load32_le(buf);
 }
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
