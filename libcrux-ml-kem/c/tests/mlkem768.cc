@@ -168,13 +168,16 @@ compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
 {
     uint8_t *hashInput = new uint8_t[32 + ciphertext_size];
     uint8_t *sharedSecret = new uint8_t[32];
+    Eurydice_slice ss;
+    ss.ptr = (void*) sharedSecret;
+    ss.len = 32;
 
     std::copy(secret_key + (secret_key_size - 32),
               secret_key + secret_key_size,
               hashInput);
     std::copy(ciphertext, ciphertext + ciphertext_size, hashInput + 32);
 
-    libcrux_sha3_sha256(mk_slice(hashInput, 32 + ciphertext_size), sharedSecret);
+    libcrux_sha3_portable_shake256(ss,mk_slice(hashInput, 32 + ciphertext_size));
 
     delete[] hashInput;
     return sharedSecret;
@@ -245,8 +248,7 @@ TEST(Kyber768TestPortable, ModifiedCiphertextTest)
             key_pair.sk.value,
             LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE_768);
 
-    cout << "implicitRejectionSS: " << bytes_to_hex(bytes(implicitRejectionSharedSecret, implicitRejectionSharedSecret + 32)) << endl;
-    cout << "sharedSecret2: " << bytes_to_hex(bytes(sharedSecret2, sharedSecret2 + 32)) << endl;
+    
     EXPECT_EQ(0,
               memcmp(implicitRejectionSharedSecret,
                      sharedSecret2,
