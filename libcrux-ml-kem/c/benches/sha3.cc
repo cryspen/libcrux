@@ -14,11 +14,14 @@
 // This is only broken in C++
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
 
-#include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "libcrux_sha3.h"
 #include "libcrux_mlkem768.h"
 #include "internal/libcrux_core.h"
+
+#ifdef LIBCRUX_X64
+#include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "internal/libcrux_sha3_avx2.h"
+#endif
 
 void generate_random(uint8_t *output, uint32_t output_len)
 {
@@ -56,6 +59,7 @@ sha3_512_64(benchmark::State &state)
     }
 }
 
+#ifdef LIBCRUX_X64
 static void
 shake128_34_504(benchmark::State &state)
 {
@@ -132,5 +136,6 @@ BENCHMARK(sha3_512_64);
 BENCHMARK(shake128_34_504);
 BENCHMARK(shake256_1120_32);
 BENCHMARK(shake256_33_128);
+#endif
 
 BENCHMARK_MAIN();
