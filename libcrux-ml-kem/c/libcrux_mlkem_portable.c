@@ -602,7 +602,8 @@ libcrux_ml_kem_vector_from_i16_array(Eurydice_slice array) {
       Eurydice_slice, int16_t[16U], void *);
   core_result__core__result__Result_T__E___unwrap__int16_t_16size_t__core_array_TryFromSliceError(
       dst, ret);
-  memcpy(lit.elements, ret, (size_t)16U * sizeof(int16_t));
+  // XXX KB modified this line
+  memcpy(lit.elements, array.ptr, (size_t)16U * sizeof(int16_t));
   return lit;
 }
 
