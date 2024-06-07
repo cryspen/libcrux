@@ -132,7 +132,9 @@ libcrux_intrinsics_arm64__vdupq_n_u32(uint32_t a) {
 }
 
 static inline core_core_arch_arm_shared_neon_uint16x8_t
-libcrux_intrinsics_arm64__vdupq_n_u16(uint16_t value);
+libcrux_intrinsics_arm64__vdupq_n_u16(uint16_t value) {
+  return vdupq_n_u16(value);
+}
 
 static inline core_core_arch_arm_shared_neon_int16x8_t
 libcrux_intrinsics_arm64__vld1q_s16(Eurydice_slice slice) {
@@ -245,7 +247,9 @@ libcrux_intrinsics_arm64__vqdmulhq_s16(
 
 static inline core_core_arch_arm_shared_neon_int32x4_t
 libcrux_intrinsics_arm64__vmull_s16(core_core_arch_arm_shared_neon_int16x4_t a,
-                                    core_core_arch_arm_shared_neon_int16x4_t b);
+                                    core_core_arch_arm_shared_neon_int16x4_t b) {
+  return vmull_s16(a, b);
+}
 
 static inline core_core_arch_arm_shared_neon_int32x4_t
 libcrux_intrinsics_arm64__vmull_high_s16(
@@ -317,17 +321,17 @@ libcrux_intrinsics_arm64__vandq_u16(
 
 // Shift Operations
 
-#define libcrux_intrinsics_arm64__vshrq_n_s16(SHIFT_BY, a) \
+#define libcrux_intrinsics_arm64__vshrq_n_s16(SHIFT_BY, a, _ret_t) \
   (vshrq_n_s16(a, SHIFT_BY))
 
-#define libcrux_intrinsics_arm64__vshrq_n_u16(SHIFT_BY, a) \
+#define libcrux_intrinsics_arm64__vshrq_n_u16(SHIFT_BY, a, _ret_t) \
   (vshrq_n_u16(a, SHIFT_BY))
 
-#define libcrux_intrinsics_arm64__vshrq_n_u32(N, a) (vshrq_n_u32(a, N))
+#define libcrux_intrinsics_arm64__vshrq_n_u32(N, a, _ret_t) (vshrq_n_u32(a, N))
 
-#define libcrux_intrinsics_arm64__vshlq_n_u32(N, a) (vshlq_n_u32(a, N))
+#define libcrux_intrinsics_arm64__vshlq_n_u32(N, a, _ret_t) (vshlq_n_u32(a, N))
 
-#define libcrux_intrinsics_arm64__vshlq_n_s16(SHIFT_BY, a) \
+#define libcrux_intrinsics_arm64__vshlq_n_s16(SHIFT_BY, a, _ret_t) \
   (vshlq_n_s16(a, SHIFT_BY))
 
 static inline core_core_arch_arm_shared_neon_int16x8_t
@@ -344,9 +348,9 @@ libcrux_intrinsics_arm64__vshlq_u16(
   return vshlq_u16(a, b);
 }
 
-#define libcrux_intrinsics_arm64__vsliq_n_s32(N, a, b) (vsliq_n_s16(a, b, N))
+#define libcrux_intrinsics_arm64__vsliq_n_s32(N, a, b, _ret_t) (vsliq_n_s16(a, b, N))
 
-#define libcrux_intrinsics_arm64__vsliq_n_s64(N, a, b) (vsliq_n_s64(a, b, N))
+#define libcrux_intrinsics_arm64__vsliq_n_s64(N, a, b, _ret_t) (vsliq_n_s64(a, b, N))
 
 // Transpose and Vector Manipulations
 

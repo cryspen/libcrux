@@ -11,9 +11,11 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_STANDARD 11)
-#FIXME: Windows?
+
+# FIXME: Windows?
 add_compile_options(
     -Wall
+
     # -Wextra
     # -pedantic
     # -Wconversion
@@ -23,7 +25,7 @@ add_compile_options(
     $<$<CONFIG:RELEASE>:-g>
     $<$<CONFIG:RELEASE>:-O3>
 )
-add_link_options(-flto)
+
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 include_directories(
     ${PROJECT_SOURCE_DIR}
@@ -61,6 +63,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
         -fPIC
         -flto
     )
+    add_link_options(-flto)
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
 add_library(ml_kem SHARED ${SOURCES})
@@ -95,7 +98,7 @@ endif()
 # Get gtests
 include(FetchContent)
 FetchContent_Declare(googletest
-DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     URL https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip
 )
 
@@ -105,7 +108,7 @@ FetchContent_MakeAvailable(googletest)
 
 # Get nlohmann json
 FetchContent_Declare(json
-DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     URL https://github.com/nlohmann/json/archive/refs/tags/v3.10.3.zip
 )
 FetchContent_MakeAvailable(json)
@@ -129,12 +132,12 @@ target_link_libraries(sha3_test PRIVATE
 )
 
 # --- Benchmarks
-
 FetchContent_Populate(benchmark
-    GIT_REPOSITORY  https://github.com/google/benchmark.git
+    GIT_REPOSITORY https://github.com/google/benchmark.git
+
     # The latest release 1.7.1 is broken due to https://github.com/google/benchmark/pull/1517
     # But also: need the fix for https://github.com/google/benchmark/pull/1669
-    GIT_TAG         bc946b919cac6f25a199a526da571638cfde109f
+    GIT_TAG bc946b919cac6f25a199a526da571638cfde109f
 )
 add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
 

@@ -115,6 +115,10 @@ static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   memcpy(dst, &x, 4);
 }
 
+static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t x0[4U]) {
+  return (uint32_t)x0[0] << 24 | (uint32_t)x0[1] << 16 | (uint32_t)x0[2] << 8 | (uint32_t)x0[3];
+}
+
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
@@ -189,11 +193,11 @@ static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
   size_t chunk_size = chunks->slice.len >= chunks->chunk_size
                           ? chunks->chunk_size
                           : chunks->slice.len;
-  Eurydice_slice curr_chunk =
-      ((Eurydice_slice){.ptr = chunks->slice.ptr, .len = chunk_size});
-  chunks->slice = ((Eurydice_slice){
-      .ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size,
-      .len = chunks->slice.len - chunk_size});
+  Eurydice_slice curr_chunk;
+  curr_chunk.ptr = chunks->slice.ptr;
+  curr_chunk.len = chunk_size;
+  chunks->slice.ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size;
+  chunks->slice.len = chunks->slice.len - chunk_size;
   return curr_chunk;
 }
 
