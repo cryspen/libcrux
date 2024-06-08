@@ -70,4 +70,59 @@ BENCHMARK(kyber768_key_generation);
 BENCHMARK(kyber768_encapsulation);
 BENCHMARK(kyber768_decapsulation);
 
+#ifdef LIBCRUX_AARCH64
+#include "libcrux_mlkem768_neon.h"
+
+static void
+kyber768_key_generation_neon(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+  auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
+
+  for (auto _ : state)
+  {
+    key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
+  }
+}
+
+static void
+kyber768_encapsulation_neon(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
+  generate_random(randomness, 32);
+  auto ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(&key_pair.pk, randomness);
+
+  for (auto _ : state)
+  {
+    ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(&key_pair.pk, randomness);
+  }
+}
+
+static void
+kyber768_decapsulation_neon(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto key_pair = libcrux_ml_kem_mlkem768_neon_generate_key_pair(randomness);
+  generate_random(randomness, 32);
+  auto ctxt = libcrux_ml_kem_mlkem768_neon_encapsulate(&key_pair.pk, randomness);
+
+  uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+
+  for (auto _ : state)
+  {
+    libcrux_ml_kem_mlkem768_neon_decapsulate(&key_pair.sk, &ctxt.fst, sharedSecret2);
+  }
+}
+
+BENCHMARK(kyber768_key_generation_neon);
+BENCHMARK(kyber768_encapsulation_neon);
+BENCHMARK(kyber768_decapsulation_neon);
+#endif
+
 BENCHMARK_MAIN();
