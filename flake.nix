@@ -24,12 +24,16 @@
       system:
       let
         pkgs = import inputs.nixpkgs { inherit system; };
-        googletest = pkgs.fetchzip {
-          url = "https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip";
+        googletest = pkgs.fetchFromGitHub {
+          owner = "google";
+          repo = "googletest";
+          rev = "release-1.11.0";
           sha256 = "SjlJxushfry13RGA7BCjYC9oZqV4z6x8dOiHfl/wpF0=";
         };
-        json = pkgs.fetchzip {
-          url = "https://github.com/nlohmann/json/archive/refs/tags/v3.10.3.zip";
+        json = pkgs.fetchFromGitHub {
+          owner = "nlohmann";
+          repo = "json";
+          rev = "v3.10.3";
           sha256 = "EBzwaHyDWF8h/z3Zfq4p/n5Vpz7Ozlc3eoWDKXWv2YY=";
         };
         craneLib = inputs.crane.mkLib pkgs;
