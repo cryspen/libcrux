@@ -11,21 +11,22 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 
-# FIXME: Windows?
-add_compile_options(
-    -Wall
-
-    # -Wextra
-    # -pedantic
-    # -Wconversion
-    # -Wsign-conversion
-    $<$<CONFIG:DEBUG>:-g>
-    $<$<CONFIG:DEBUG>:-Og>
-    $<$<CONFIG:RELEASE>:-g>
-    $<$<CONFIG:RELEASE>:-O3>
-)
+if(NOT MSVC)
+    # TODO: Clean up
+    add_compile_options(
+        -Wall
+        # -Wextra
+        # -pedantic
+        # -Wconversion
+        # -Wsign-conversion
+        $<$<CONFIG:DEBUG>:-g>
+        $<$<CONFIG:DEBUG>:-Og>
+        $<$<CONFIG:RELEASE>:-g>
+        $<$<CONFIG:RELEASE>:-O3>
+    )
+endif(NOT MSVC)
 
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 include_directories(
@@ -78,14 +79,16 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
     add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
     target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
     target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-    target_compile_options(ml_kem_vec256 PRIVATE
-        -mavx
-        -mavx2
-    )
+    if(NOT MSVC)
+        target_compile_options(ml_kem_vec256 PRIVATE
+            -mavx
+            -mavx2
+        )
+    endif(NOT MSVC)
 endif()
 
 # This is only for local testing and we assume neon on arm64.
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED $ENV{LIBCRUX_NEON})
     message(STATUS "Detected an arm64 architecture")
     add_compile_definitions(LIBCRUX_AARCH64)
 
@@ -179,5 +182,3 @@ target_link_libraries(sha3_bench PRIVATE
     ml_kem_static
     benchmark::benchmark
 )
-target_compile_definitions(sha3_bench PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(sha3_bench PRIVATE)

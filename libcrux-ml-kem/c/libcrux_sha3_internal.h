@@ -112,7 +112,7 @@ static inline void libcrux_sha3_portable_keccak_slice_1(
     Eurydice_slice a[1U], size_t start, size_t len, Eurydice_slice ret[1U]) {
   ret[0U] = Eurydice_slice_subslice(
       a[0U],
-      ((core_ops_range_Range__size_t){.start = start, .end = start + len}),
+      (CLITERAL(core_ops_range_Range__size_t){.start = start, .end = start + len}),
       uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
 }
 
@@ -218,7 +218,7 @@ static inline void libcrux_sha3_portable_keccak_load_block___168size_t(
         &dst,
         Eurydice_slice_subslice(
             blocks[0U],
-            ((core_ops_range_Range__size_t){
+            (CLITERAL(core_ops_range_Range__size_t){
                 .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
@@ -895,7 +895,7 @@ libcrux_sha3_generic_keccak_absorb_final__uint64_t_1size_t_168size_t_31uint8_t(
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = Eurydice_array_to_subslice(
         (size_t)200U, blocks[i],
-        ((core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(uu____0, last[i], uint8_t, void *);
     blocks[i][last_len] = 31U;
@@ -916,7 +916,7 @@ static inline void libcrux_sha3_portable_keccak_store_block___168size_t(
     size_t i0 = i;
     Eurydice_slice uu____0 = Eurydice_slice_subslice(
         out[0U],
-        ((core_ops_range_Range__size_t){.start = (size_t)8U * i0,
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)8U * i0,
                                         .end = (size_t)8U * i0 + (size_t)8U}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     uint8_t ret[8U];
@@ -1086,7 +1086,7 @@ libcrux_sha3_generic_keccak_keccak__uint64_t_1size_t_168size_t_31uint8_t(
         &s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter(
-            ((core_ops_range_Range__size_t){.start = (size_t)1U,
+            (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
                                             .end = blocks}),
             core_ops_range_Range__size_t, core_ops_range_Range__size_t);
     while (true) {
@@ -1132,7 +1132,7 @@ static inline void libcrux_sha3_portable_keccak_load_block___104size_t(
         &dst,
         Eurydice_slice_subslice(
             blocks[0U],
-            ((core_ops_range_Range__size_t){
+            (CLITERAL(core_ops_range_Range__size_t){
                 .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
@@ -1193,7 +1193,7 @@ libcrux_sha3_generic_keccak_absorb_final__uint64_t_1size_t_104size_t_6uint8_t(
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = Eurydice_array_to_subslice(
         (size_t)200U, blocks[i],
-        ((core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(uu____0, last[i], uint8_t, void *);
     blocks[i][last_len] = 6U;
@@ -1214,7 +1214,7 @@ static inline void libcrux_sha3_portable_keccak_store_block___104size_t(
     size_t i0 = i;
     Eurydice_slice uu____0 = Eurydice_slice_subslice(
         out[0U],
-        ((core_ops_range_Range__size_t){.start = (size_t)8U * i0,
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)8U * i0,
                                         .end = (size_t)8U * i0 + (size_t)8U}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     uint8_t ret[8U];
@@ -1363,7 +1363,7 @@ libcrux_sha3_generic_keccak_keccak__uint64_t_1size_t_104size_t_6uint8_t(
         &s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter(
-            ((core_ops_range_Range__size_t){.start = (size_t)1U,
+            (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
                                             .end = blocks}),
             core_ops_range_Range__size_t, core_ops_range_Range__size_t);
     while (true) {
@@ -1409,7 +1409,7 @@ static inline void libcrux_sha3_portable_keccak_load_block___144size_t(
         &dst,
         Eurydice_slice_subslice(
             blocks[0U],
-            ((core_ops_range_Range__size_t){
+            (CLITERAL(core_ops_range_Range__size_t){
                 .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
@@ -1470,7 +1470,7 @@ libcrux_sha3_generic_keccak_absorb_final__uint64_t_1size_t_144size_t_6uint8_t(
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = Eurydice_array_to_subslice(
         (size_t)200U, blocks[i],
-        ((core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(uu____0, last[i], uint8_t, void *);
     blocks[i][last_len] = 6U;
@@ -1491,7 +1491,7 @@ static inline void libcrux_sha3_portable_keccak_store_block___144size_t(
     size_t i0 = i;
     Eurydice_slice uu____0 = Eurydice_slice_subslice(
         out[0U],
-        ((core_ops_range_Range__size_t){.start = (size_t)8U * i0,
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)8U * i0,
                                         .end = (size_t)8U * i0 + (size_t)8U}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     uint8_t ret[8U];
@@ -1640,7 +1640,7 @@ libcrux_sha3_generic_keccak_keccak__uint64_t_1size_t_144size_t_6uint8_t(
         &s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter(
-            ((core_ops_range_Range__size_t){.start = (size_t)1U,
+            (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
                                             .end = blocks}),
             core_ops_range_Range__size_t, core_ops_range_Range__size_t);
     while (true) {
@@ -1686,7 +1686,7 @@ static inline void libcrux_sha3_portable_keccak_load_block___136size_t(
         &dst,
         Eurydice_slice_subslice(
             blocks[0U],
-            ((core_ops_range_Range__size_t){
+            (CLITERAL(core_ops_range_Range__size_t){
                 .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
@@ -1747,7 +1747,7 @@ libcrux_sha3_generic_keccak_absorb_final__uint64_t_1size_t_136size_t_31uint8_t(
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = Eurydice_array_to_subslice(
         (size_t)200U, blocks[i],
-        ((core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(uu____0, last[i], uint8_t, void *);
     blocks[i][last_len] = 31U;
@@ -1768,7 +1768,7 @@ static inline void libcrux_sha3_portable_keccak_store_block___136size_t(
     size_t i0 = i;
     Eurydice_slice uu____0 = Eurydice_slice_subslice(
         out[0U],
-        ((core_ops_range_Range__size_t){.start = (size_t)8U * i0,
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)8U * i0,
                                         .end = (size_t)8U * i0 + (size_t)8U}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     uint8_t ret[8U];
@@ -1917,7 +1917,7 @@ libcrux_sha3_generic_keccak_keccak__uint64_t_1size_t_136size_t_31uint8_t(
         &s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter(
-            ((core_ops_range_Range__size_t){.start = (size_t)1U,
+            (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
                                             .end = blocks}),
             core_ops_range_Range__size_t, core_ops_range_Range__size_t);
     while (true) {
@@ -1963,7 +1963,7 @@ libcrux_sha3_generic_keccak_absorb_final__uint64_t_1size_t_136size_t_6uint8_t(
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = Eurydice_array_to_subslice(
         (size_t)200U, blocks[i],
-        ((core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(uu____0, last[i], uint8_t, void *);
     blocks[i][last_len] = 6U;
@@ -2025,7 +2025,7 @@ libcrux_sha3_generic_keccak_keccak__uint64_t_1size_t_136size_t_6uint8_t(
         &s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter(
-            ((core_ops_range_Range__size_t){.start = (size_t)1U,
+            (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
                                             .end = blocks}),
             core_ops_range_Range__size_t, core_ops_range_Range__size_t);
     while (true) {
@@ -2071,7 +2071,7 @@ static inline void libcrux_sha3_portable_keccak_load_block___72size_t(
         &dst,
         Eurydice_slice_subslice(
             blocks[0U],
-            ((core_ops_range_Range__size_t){
+            (CLITERAL(core_ops_range_Range__size_t){
                 .start = (size_t)8U * i0, .end = (size_t)8U * i0 + (size_t)8U}),
             uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
         Eurydice_slice, uint8_t[8U], void *);
@@ -2132,7 +2132,7 @@ libcrux_sha3_generic_keccak_absorb_final__uint64_t_1size_t_72size_t_6uint8_t(
     size_t i = (size_t)0U;
     Eurydice_slice uu____0 = Eurydice_array_to_subslice(
         (size_t)200U, blocks[i],
-        ((core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)0U, .end = last_len}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     core_slice___Slice_T___copy_from_slice(uu____0, last[i], uint8_t, void *);
     blocks[i][last_len] = 6U;
@@ -2153,7 +2153,7 @@ static inline void libcrux_sha3_portable_keccak_store_block___72size_t(
     size_t i0 = i;
     Eurydice_slice uu____0 = Eurydice_slice_subslice(
         out[0U],
-        ((core_ops_range_Range__size_t){.start = (size_t)8U * i0,
+        (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)8U * i0,
                                         .end = (size_t)8U * i0 + (size_t)8U}),
         uint8_t, core_ops_range_Range__size_t, Eurydice_slice);
     uint8_t ret[8U];
@@ -2302,7 +2302,7 @@ libcrux_sha3_generic_keccak_keccak__uint64_t_1size_t_72size_t_6uint8_t(
         &s, o0);
     core_ops_range_Range__size_t iter =
         core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter(
-            ((core_ops_range_Range__size_t){.start = (size_t)1U,
+            (CLITERAL(core_ops_range_Range__size_t){.start = (size_t)1U,
                                             .end = blocks}),
             core_ops_range_Range__size_t, core_ops_range_Range__size_t);
     while (true) {
