@@ -44,6 +44,21 @@ void libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
 
 #define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
+typedef struct libcrux_ml_kem_utils_Keypair1024_s {
+  uint8_t fst[1536U];
+  uint8_t snd[1568U];
+} libcrux_ml_kem_utils_Keypair1024;
+
+typedef struct libcrux_ml_kem_utils_Keypair512_s {
+  uint8_t fst[768U];
+  uint8_t snd[800U];
+} libcrux_ml_kem_utils_Keypair512;
+
+typedef struct libcrux_ml_kem_utils_Keypair768_s {
+  uint8_t fst[1152U];
+  uint8_t snd[1184U];
+} libcrux_ml_kem_utils_Keypair768;
+
 libcrux_ml_kem_types_MlKemPublicKey____1568size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___1568size_t(
     uint8_t value[1568U]);
@@ -56,11 +71,6 @@ libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBL
 libcrux_ml_kem_types_MlKemPrivateKey____3168size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPrivateKey_SIZE___8__from___3168size_t(
     uint8_t value[3168U]);
-
-typedef struct K___uint8_t_1536size_t__uint8_t_1568size_t__s {
-  uint8_t fst[1536U];
-  uint8_t snd[1568U];
-} K___uint8_t_1536size_t__uint8_t_1568size_t_;
 
 libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1568size_t(
@@ -78,8 +88,8 @@ Eurydice_slice
 libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1568size_t(
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *self);
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___1600size_t(Eurydice_slice slice,
-                                                           uint8_t ret[1600U]);
+void libcrux_ml_kem_utils_into_padded_array___1600size_t(Eurydice_slice slice,
+                                                         uint8_t ret[1600U]);
 
 libcrux_ml_kem_types_MlKemPublicKey____1184size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___1184size_t(
@@ -93,11 +103,6 @@ libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBL
 libcrux_ml_kem_types_MlKemPrivateKey____2400size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPrivateKey_SIZE___8__from___2400size_t(
     uint8_t value[2400U]);
-
-typedef struct K___uint8_t_1152size_t__uint8_t_1184size_t__s {
-  uint8_t fst[1152U];
-  uint8_t snd[1184U];
-} K___uint8_t_1152size_t__uint8_t_1184size_t_;
 
 libcrux_ml_kem_mlkem768_MlKem768Ciphertext
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___1088size_t(
@@ -115,8 +120,8 @@ Eurydice_slice
 libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1088size_t(
     libcrux_ml_kem_mlkem768_MlKem768Ciphertext *self);
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___1120size_t(Eurydice_slice slice,
-                                                           uint8_t ret[1120U]);
+void libcrux_ml_kem_utils_into_padded_array___1120size_t(Eurydice_slice slice,
+                                                         uint8_t ret[1120U]);
 
 libcrux_ml_kem_types_MlKemPublicKey____800size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___800size_t(
@@ -130,11 +135,6 @@ libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemKeyPair_PRIVATE_KEY_SIZE__PUBL
 libcrux_ml_kem_types_MlKemPrivateKey____1632size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPrivateKey_SIZE___8__from___1632size_t(
     uint8_t value[1632U]);
-
-typedef struct K___uint8_t_768size_t__uint8_t_800size_t__s {
-  uint8_t fst[768U];
-  uint8_t snd[800U];
-} K___uint8_t_768size_t__uint8_t_800size_t_;
 
 libcrux_ml_kem_types_MlKemCiphertext____768size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___2__from___768size_t(
@@ -160,11 +160,11 @@ typedef struct
   Eurydice_slice snd;
 } K___Eurydice_slice_uint8_t_192size_t__Eurydice_slice_uint8_t_192size_t_;
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___33size_t(Eurydice_slice slice,
-                                                         uint8_t ret[33U]);
+void libcrux_ml_kem_utils_into_padded_array___33size_t(Eurydice_slice slice,
+                                                       uint8_t ret[33U]);
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___34size_t(Eurydice_slice slice,
-                                                         uint8_t ret[34U]);
+void libcrux_ml_kem_utils_into_padded_array___34size_t(Eurydice_slice slice,
+                                                       uint8_t ret[34U]);
 
 typedef struct
     K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t__s {
@@ -182,11 +182,11 @@ Eurydice_slice
 libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___768size_t(
     libcrux_ml_kem_types_MlKemCiphertext____768size_t *self);
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___800size_t(Eurydice_slice slice,
-                                                          uint8_t ret[800U]);
+void libcrux_ml_kem_utils_into_padded_array___800size_t(Eurydice_slice slice,
+                                                        uint8_t ret[800U]);
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___64size_t(Eurydice_slice slice,
-                                                         uint8_t ret[64U]);
+void libcrux_ml_kem_utils_into_padded_array___64size_t(Eurydice_slice slice,
+                                                       uint8_t ret[64U]);
 
 typedef struct
     core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_s {

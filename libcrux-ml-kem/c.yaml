@@ -63,6 +63,7 @@ files:
       monomorphizations_using:
         # Should this also include the monomorphizations using
         # core.arch.x86.__m256i?
+        - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_exact:
         - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_x86___m256i_$4size_t"]
@@ -157,24 +158,16 @@ files:
         - [ core, "*"]
         - [ libcrux_ml_kem, types, "*"]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
+        - [ libcrux_ml_kem, utils ]
       monomorphizations_using:
         - [ Eurydice, "*" ]
         - [ libcrux_ml_kem, types, "*"]
-      monomorphizations_exact:
-        - [ K, "__uint8_t[1536size_t]_uint8_t[1568size_t]" ]
-        - [ K, "__uint8_t[1152size_t]_uint8_t[1184size_t]" ]
-        - [ K, "__uint8_t[768size_t]_uint8_t[800size_t]" ]
-        - [ libcrux_ml_kem, ind_cpa, into_padded_array___33size_t ]
-        - [ libcrux_ml_kem, ind_cpa, into_padded_array___34size_t ]
-        - [ libcrux_ml_kem, ind_cpa, into_padded_array___64size_t ]
-        - [ libcrux_ml_kem, ind_cpa, into_padded_array___800size_t ]
-        - [ libcrux_ml_kem, ind_cpa, into_padded_array___1120size_t ]
-        - [ libcrux_ml_kem, ind_cpa, into_padded_array___1600size_t ]
       patterns:
         - [ core, "*"]
         - [ libcrux_ml_kem, types ]
         - [ libcrux_ml_kem, constants ]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
+        - [ libcrux_ml_kem, utils ]
     api:
       - [Eurydice, "*"]
 

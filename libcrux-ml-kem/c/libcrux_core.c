@@ -102,8 +102,8 @@ libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__type
                                  Eurydice_slice);
 }
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___1600size_t(Eurydice_slice slice,
-                                                           uint8_t ret[1600U]) {
+void libcrux_ml_kem_utils_into_padded_array___1600size_t(Eurydice_slice slice,
+                                                         uint8_t ret[1600U]) {
   uint8_t out[1600U] = {0U};
   uint8_t *uu____0 = out;
   core_slice___Slice_T___copy_from_slice(
@@ -183,8 +183,8 @@ libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__type
                                  Eurydice_slice);
 }
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___1120size_t(Eurydice_slice slice,
-                                                           uint8_t ret[1120U]) {
+void libcrux_ml_kem_utils_into_padded_array___1120size_t(Eurydice_slice slice,
+                                                         uint8_t ret[1120U]) {
   uint8_t out[1120U] = {0U};
   uint8_t *uu____0 = out;
   core_slice___Slice_T___copy_from_slice(
@@ -257,8 +257,8 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time___768size_
   return is_non_zero(r);
 }
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___33size_t(Eurydice_slice slice,
-                                                         uint8_t ret[33U]) {
+void libcrux_ml_kem_utils_into_padded_array___33size_t(Eurydice_slice slice,
+                                                       uint8_t ret[33U]) {
   uint8_t out[33U] = {0U};
   uint8_t *uu____0 = out;
   core_slice___Slice_T___copy_from_slice(
@@ -272,8 +272,8 @@ void libcrux_ml_kem_ind_cpa_into_padded_array___33size_t(Eurydice_slice slice,
   memcpy(ret, out, (size_t)33U * sizeof(uint8_t));
 }
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___34size_t(Eurydice_slice slice,
-                                                         uint8_t ret[34U]) {
+void libcrux_ml_kem_utils_into_padded_array___34size_t(Eurydice_slice slice,
+                                                       uint8_t ret[34U]) {
   uint8_t out[34U] = {0U};
   uint8_t *uu____0 = out;
   core_slice___Slice_T___copy_from_slice(
@@ -294,8 +294,8 @@ libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__type
                                  Eurydice_slice);
 }
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___800size_t(Eurydice_slice slice,
-                                                          uint8_t ret[800U]) {
+void libcrux_ml_kem_utils_into_padded_array___800size_t(Eurydice_slice slice,
+                                                        uint8_t ret[800U]) {
   uint8_t out[800U] = {0U};
   uint8_t *uu____0 = out;
   core_slice___Slice_T___copy_from_slice(
@@ -309,8 +309,8 @@ void libcrux_ml_kem_ind_cpa_into_padded_array___800size_t(Eurydice_slice slice,
   memcpy(ret, out, (size_t)800U * sizeof(uint8_t));
 }
 
-void libcrux_ml_kem_ind_cpa_into_padded_array___64size_t(Eurydice_slice slice,
-                                                         uint8_t ret[64U]) {
+void libcrux_ml_kem_utils_into_padded_array___64size_t(Eurydice_slice slice,
+                                                       uint8_t ret[64U]) {
   uint8_t out[64U] = {0U};
   uint8_t *uu____0 = out;
   core_slice___Slice_T___copy_from_slice(
