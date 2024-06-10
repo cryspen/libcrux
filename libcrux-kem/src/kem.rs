@@ -2,11 +2,11 @@
 //!
 //! A KEM interface.
 //!
-//! For ECDH structs, check the [`ecdh`] module.
+//! For ECDH structs, check the [`libcrux::ecdh`] module.
 //!
 //! Available algorithms:
-//! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`ecdh#x25519`].
-//! * [`Algorithm::Secp256r1`]\: NIST P256 ECDH KEM. Also see [`ecdh#P256`].
+//! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`libcrux::ecdh#x25519`].
+//! * [`Algorithm::Secp256r1`]\: NIST P256 ECDH KEM. Also see [`libcrux::ecdh#P256`].
 //! * [`Algorithm::MlKem512`]\: ML-KEM 512 from [FIPS 203].
 //! * [`Algorithm::MlKem768`]\: ML-KEM 768 from [FIPS 203].
 //! * [`Algorithm::MlKem1024`]\: ML-KEM 1024 from [FIPS 203].
@@ -14,7 +14,8 @@
 //! * [`Algorithm::XWingKemDraft02`]\: Hybrid x25519 - ML-KEM 768 [draft xwing kem for hpke](https://www.ietf.org/archive/id/draft-connolly-cfrg-xwing-kem-02.html).
 //!
 //! ```
-//! use libcrux::{kem::*, drbg::Drbg, digest::Algorithm::Sha256};
+//! use libcrux::{drbg::Drbg, digest::Algorithm::Sha256};
+//! use libcrux_kem::*;
 //!
 //! let mut rng = Drbg::new(Sha256).unwrap();
 //! let (sk_a, pk_a) = key_gen(Algorithm::MlKem768, &mut rng).unwrap();
