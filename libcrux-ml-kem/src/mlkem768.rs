@@ -23,8 +23,8 @@ const CPA_PKE_SECRET_KEY_SIZE_768: usize =
     (RANK_768 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
 const CPA_PKE_PUBLIC_KEY_SIZE_768: usize = T_AS_NTT_ENCODED_SIZE_768 + 32;
 // These two are used in the hybrid kem. This could probably be improved.
-pub(crate) const CPA_PKE_CIPHERTEXT_SIZE_768: usize = C1_SIZE_768 + C2_SIZE_768;
-pub(crate) const SECRET_KEY_SIZE_768: usize =
+pub const CPA_PKE_CIPHERTEXT_SIZE_768: usize = C1_SIZE_768 + C2_SIZE_768;
+pub const SECRET_KEY_SIZE_768: usize =
     CPA_PKE_SECRET_KEY_SIZE_768 + CPA_PKE_PUBLIC_KEY_SIZE_768 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
 
 const ETA1: usize = 2;
