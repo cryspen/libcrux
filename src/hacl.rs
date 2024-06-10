@@ -27,6 +27,7 @@ pub enum Error {
     Curve25519(curve25519::Error),
     P256(p256::Error),
     Ed25519(ed25519::Error),
+    Hkdf(libcrux_hkdf::Error),
 }
 
 impl From<chacha20_poly1305::Error> for Error {
@@ -44,6 +45,12 @@ impl From<curve25519::Error> for Error {
 impl From<p256::Error> for Error {
     fn from(val: p256::Error) -> Self {
         Error::P256(val)
+    }
+}
+
+impl From<libcrux_hkdf::Error> for Error {
+    fn from(val: libcrux_hkdf::Error) -> Self {
+        Error::Hkdf(val)
     }
 }
 
