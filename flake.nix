@@ -30,6 +30,12 @@
           rev = "release-1.11.0";
           sha256 = "SjlJxushfry13RGA7BCjYC9oZqV4z6x8dOiHfl/wpF0=";
         };
+        benchmark = pkgs.fetchFromGitHub {
+          owner = "google";
+          repo = "benchmark";
+          rev = "v1.8.4";
+          sha256 = "O+1ZHaNHSkKz3PlKDyI94LqiLtjyrKxjOIi8Q236/MI=";
+        };
         json = pkgs.fetchFromGitHub {
           owner = "nlohmann";
           repo = "json";
@@ -45,7 +51,6 @@
           nativeBuildInputs = [
             pkgs.clang-tools
             pkgs.cmake
-            pkgs.gbenchmark
             pkgs.mold-wrapped
             pkgs.ninja
             pkgs.python3
@@ -56,6 +61,7 @@
             cd c
             cmake \
               -DFETCHCONTENT_SOURCE_DIR_GOOGLETEST=${googletest} \
+              -DFETCHCONTENT_SOURCE_DIR_BENCHMARK=${benchmark} \
               -DFETCHCONTENT_SOURCE_DIR_JSON=${json} \
               -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
               -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \

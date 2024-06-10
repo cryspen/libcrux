@@ -108,7 +108,11 @@ target_link_libraries(sha3_test PRIVATE
 
 # --- Benchmarks
 
-find_package(benchmark)
+FetchContent_Declare(benchmark
+    GIT_REPOSITORY https://github.com/google/benchmark.git
+    GIT_TAG v1.8.4
+)
+FetchContent_MakeAvailable(benchmark)
 
 add_executable(ml_kem_bench
     ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
