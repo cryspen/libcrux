@@ -45,7 +45,7 @@ pub enum Algorithm {
     P521,
 }
 
-pub(crate) mod x25519 {
+pub mod x25519 {
     use rand::{CryptoRng, Rng};
 
     use super::Error;
@@ -132,7 +132,7 @@ pub(crate) mod x25519 {
     }
 
     #[cfg(all(bmi2, adx, target_arch = "x86_64"))]
-    pub(crate) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         use crate::hacl::curve25519;
         use libcrux_platform::x25519_support;
         // On x64 we use vale if available or hacl as fallback.
@@ -159,7 +159,7 @@ pub(crate) mod x25519 {
         all(target_arch = "x86_64", any(not(bmi2), not(adx))),
         target_arch = "x86"
     ))]
-    pub(crate) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         use crate::hacl::curve25519;
         // On x64 we use vale if available or hacl as fallback.
         // Jasmin exists but is not verified yet.
@@ -173,7 +173,7 @@ pub(crate) mod x25519 {
     }
 
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-    pub(crate) fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
+    pub fn derive(p: &PublicKey, s: &PrivateKey) -> Result<PublicKey, Error> {
         // On any other platform we use the portable HACL implementation.
         use crate::hacl::curve25519;
 
@@ -231,7 +231,7 @@ pub(crate) mod x25519 {
 pub use x25519::generate_secret as x25519_generate_secret;
 pub use x25519::key_gen as x25519_key_gen;
 
-pub(crate) mod p256 {
+pub mod p256 {
     use rand::{CryptoRng, Rng};
 
     // P256 we only have in HACL
@@ -394,7 +394,7 @@ pub fn derive(
     }
 }
 
-pub(crate) fn p256_derive(
+pub fn p256_derive(
     point: &p256::PublicKey,
     scalar: &p256::PrivateKey,
 ) -> Result<p256::PublicKey, Error> {
