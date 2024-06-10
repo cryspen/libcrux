@@ -39,7 +39,7 @@
           name = "ml-kem";
           inherit src cargoArtifacts;
           nativeBuildInputs = [
-            pkgs.clang
+            pkgs.clang-tools
             pkgs.cmake
             pkgs.gbenchmark
             pkgs.mold-wrapped
