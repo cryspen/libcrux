@@ -1,0 +1,50 @@
+name: Build & Test C
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+  workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        bits: [32, 64]
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        exclude:
+          - bits: 32
+            os: "macos-latest"
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-kem/c
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔨 Build
+        run: |
+          cmake -B build -G "Ninja Multi-Config"
+          cmake --build build
+
+      - name: 🏃🏻‍♀️ Test
+        run: ./build/Debug/ml_kem_test
+
+      - name: 🔨 Build Release
+        run: cmake --build build --config Release
+
+      - name: 🏃🏻‍♀️ Benchmark
+        run: ./build/Release/ml_kem_bench
