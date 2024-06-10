@@ -16,7 +16,6 @@ pub(crate) mod curve25519;
 #[cfg(not(target_arch = "wasm32"))]
 pub(crate) mod drbg;
 pub(crate) mod ed25519;
-pub(crate) mod hmac;
 pub(crate) mod p256;
 pub(crate) mod sha2;
 pub(crate) mod sha3;
