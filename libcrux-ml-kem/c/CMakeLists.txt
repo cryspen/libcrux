@@ -175,10 +175,14 @@ target_link_libraries(ml_kem_encaps PRIVATE
 target_compile_definitions(ml_kem_encaps PUBLIC HACL_CAN_COMPILE_VEC256)
 target_compile_options(ml_kem_encaps PRIVATE)
 
-add_executable(sha3_bench
-    ${PROJECT_SOURCE_DIR}/benches/sha3.cc
-)
-target_link_libraries(sha3_bench PRIVATE
-    ml_kem_static
-    benchmark::benchmark
-)
+if(NOT MSVC)
+    # We benchmark internal functions here that are inlined and thus not available
+    # in MSVC.
+    add_executable(sha3_bench
+        ${PROJECT_SOURCE_DIR}/benches/sha3.cc
+    )
+    target_link_libraries(sha3_bench PRIVATE
+        ml_kem_static
+        benchmark::benchmark
+    )
+endif(NOT MSVC)
