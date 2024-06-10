@@ -137,8 +137,8 @@ mod index_impls {
 
 /// An ML-KEM key pair
 pub struct MlKemKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
-    pub(crate) sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
-    pub(crate) pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
+    pub sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
+    pub pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
 }
 
 impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
