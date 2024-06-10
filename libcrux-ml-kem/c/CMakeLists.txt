@@ -89,7 +89,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
 endif()
 
 # This is only for local testing and we assume neon on arm64.
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED $ENV{LIBCRUX_NEON})
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED ENV{LIBCRUX_NEON})
     message(STATUS "Detected an arm64 architecture")
     add_compile_definitions(LIBCRUX_AARCH64)
 
@@ -154,12 +154,13 @@ target_link_libraries(ml_kem_bench PRIVATE
     benchmark::benchmark
 )
 
-if(DEFINED $ENV{SYMCRYPT_PATH})
+if(DEFINED ENV{SYMCRYPT_PATH})
+    message("Symcrypt path: $ENV{SYMCRYPT_PATH}")
     add_compile_definitions(LIBCRUX_SYMCRYPT)
     target_include_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH})
-    target_link_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH}/build/module/generic/)
+    target_link_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH}/bin/lib)
     target_link_libraries(ml_kem_bench PRIVATE symcrypt)
-endif(DEFINED $ENV{SYMCRYPT_PATH})
+endif(DEFINED ENV{SYMCRYPT_PATH})
 
 add_executable(ml_kem_keygen
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
