@@ -16,7 +16,6 @@ pub(crate) mod curve25519;
 #[cfg(not(target_arch = "wasm32"))]
 pub(crate) mod drbg;
 pub(crate) mod ed25519;
-pub(crate) mod hkdf;
 pub(crate) mod hmac;
 pub(crate) mod p256;
 pub(crate) mod sha2;
@@ -29,7 +28,6 @@ pub enum Error {
     Curve25519(curve25519::Error),
     P256(p256::Error),
     Ed25519(ed25519::Error),
-    Hkdf(hkdf::Error),
 }
 
 impl From<chacha20_poly1305::Error> for Error {
@@ -47,12 +45,6 @@ impl From<curve25519::Error> for Error {
 impl From<p256::Error> for Error {
     fn from(val: p256::Error) -> Self {
         Error::P256(val)
-    }
-}
-
-impl From<hkdf::Error> for Error {
-    fn from(val: hkdf::Error) -> Self {
-        Error::Hkdf(val)
     }
 }
 
