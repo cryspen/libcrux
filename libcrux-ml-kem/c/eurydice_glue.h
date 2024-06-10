@@ -22,9 +22,9 @@ extern "C" {
 // SLICES, ARRAYS, ETC.
 
 #if defined(__cplusplus)
-    #define CLITERAL(type)      type
+#define CLITERAL(type) type
 #else
-    #define CLITERAL(type)      (type)
+#define CLITERAL(type) (type)
 #endif
 
 // We represent a slice as a pair of an (untyped) pointer, along with the length
@@ -89,12 +89,14 @@ typedef struct {
   Eurydice_array_eq
 
 #define core_slice___Slice_T___split_at(slice, mid, element_type, ret_t) \
-  (CLITERAL(ret_t){.fst = EURYDICE_SLICE((element_type *)slice.ptr, 0, mid), \
-           .snd = EURYDICE_SLICE((element_type *)slice.ptr, mid, slice.len)})
+  (CLITERAL(ret_t){                                                      \
+      .fst = EURYDICE_SLICE((element_type *)slice.ptr, 0, mid),          \
+      .snd = EURYDICE_SLICE((element_type *)slice.ptr, mid, slice.len)})
 #define core_slice___Slice_T___split_at_mut(slice, mid, element_type, ret_t) \
-  (CLITERAL(ret_t){.fst = {.ptr = slice.ptr, .len = mid},                    \
-           .snd = {.ptr = (char *)slice.ptr + mid * sizeof(element_type),    \
-                   .len = slice.len - mid}})
+  (CLITERAL(ret_t){                                                          \
+      .fst = {.ptr = slice.ptr, .len = mid},                                 \
+      .snd = {.ptr = (char *)slice.ptr + mid * sizeof(element_type),         \
+              .len = slice.len - mid}})
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
@@ -166,8 +168,9 @@ static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
 #define core_num_nonzero_NonZeroUsize size_t
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
-       ? (CLITERAL(ret_t){.tag = core_option_None})          \
-       : (CLITERAL(ret_t){.tag = core_option_Some, .f0 = (iter_ptr)->start++}))
+       ? (CLITERAL(ret_t){.tag = core_option_None})  \
+       : (CLITERAL(ret_t){.tag = core_option_Some,   \
+                          .f0 = (iter_ptr)->start++}))
 
 // Old name (TODO: remove once everyone has upgraded to the latest Charon)
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___3__next \
@@ -232,9 +235,10 @@ typedef struct {
                                                                   ret_t)   \
   (((iter)->index == (iter)->s.len)                                        \
        ? (CLITERAL(ret_t){.tag = core_option_None})                        \
-       : (CLITERAL(ret_t){.tag = core_option_Some,                         \
-                  .f0 = ((iter)->index++,                                  \
-                         &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
+       : (CLITERAL(ret_t){                                                 \
+             .tag = core_option_Some,                                      \
+             .f0 = ((iter)->index++,                                       \
+                    &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
 
 // STRINGS
 

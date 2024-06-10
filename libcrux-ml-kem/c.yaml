@@ -14,7 +14,7 @@ files:
       - [libcrux_intrinsics, avx2]
 
   - name: libcrux_platform
-    api:
+    private:
       - [libcrux_platform, "*"]
 
   # SHA3 (no mention of libcrux_mlkem in this section, please)
