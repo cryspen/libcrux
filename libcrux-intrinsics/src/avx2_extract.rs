@@ -3,8 +3,8 @@
 
 #![allow(unused_variables, non_camel_case_types)]
 
-pub type Vec256 = u8;
-pub type Vec128 = u8;
+pub struct Vec256(u8);
+pub struct Vec128(u8);
 
 pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
     debug_assert_eq!(output.len(), 16);

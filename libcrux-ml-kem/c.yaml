@@ -35,8 +35,7 @@ files:
       monomorphizations_using:
         - [libcrux_sha3, neon, "*"]
         - [libcrux_sha3, simd, arm64, "*"]
-      monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_arm_shared_neon_uint64x2_t_$2size_t"]
+        - [core, arch, arm]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
@@ -61,11 +60,9 @@ files:
         - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
       monomorphizations_using:
-        # Should this also include the monomorphizations using
-        # core.arch.x86.__m256i?
+        - [libcrux_sha3, avx2, "*"]
         - [libcrux_sha3, simd, avx2, "*"]
-      monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, "KeccakState__core_core_arch_x86___m256i_$4size_t"]
+        - [core, arch, x86]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 

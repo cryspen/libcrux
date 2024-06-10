@@ -953,6 +953,10 @@ libcrux_sha3_generic_keccak_squeeze_first_block__uint64_t_1size_t_168size_t(
       s->st, out);
 }
 
+typedef struct libcrux_sha3_generic_keccak_KeccakState__uint8_t__2size_t_s {
+  uint8_t st[5U][5U];
+} libcrux_sha3_generic_keccak_KeccakState__uint8_t__2size_t;
+
 static inline void
 libcrux_sha3_portable_keccak___libcrux_sha3__traits__KeccakItem_1__usize__for_u64___load_block___168size_t(
     uint64_t (*a)[5U], Eurydice_slice b[1U]) {
@@ -2344,6 +2348,10 @@ static inline void libcrux_sha3_portable_keccakx1___72size_t_6uint8_t(
   libcrux_sha3_generic_keccak_keccak__uint64_t_1size_t_72size_t_6uint8_t(
       uu____0, out);
 }
+
+typedef struct libcrux_sha3_generic_keccak_KeccakState__uint8_t__4size_t_s {
+  uint8_t st[5U][5U];
+} libcrux_sha3_generic_keccak_KeccakState__uint8_t__4size_t;
 
 #if defined(__cplusplus)
 }
