@@ -17,14 +17,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bits: [32, 64]
         os:
           - macos-latest
           - ubuntu-latest
           - windows-latest
-        exclude:
-          - bits: 32
-            os: "macos-latest"
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -37,14 +33,16 @@ jobs:
 
       - name: 🔨 Build
         run: |
-          cmake -B build -G "Ninja Multi-Config"
+          cmake -B build
           cmake --build build
 
       - name: 🏃🏻‍♀️ Test
         run: ./build/Debug/ml_kem_test
 
       - name: 🔨 Build Release
-        run: cmake --build build --config Release
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
 
       - name: 🏃🏻‍♀️ Benchmark
         run: ./build/Release/ml_kem_bench
