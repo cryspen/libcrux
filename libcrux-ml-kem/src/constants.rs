@@ -1,3 +1,4 @@
+#[cfg(hax)]
 /// Field modulus: 3329
 pub(crate) const FIELD_MODULUS: i16 = 3329;
 
