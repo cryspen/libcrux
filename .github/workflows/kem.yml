@@ -31,6 +31,8 @@ jobs:
             os: "macos-latest"
           - bits: 32
             os: "macos-13"
+          - bits: 32 # FIXME: Linking isn't working here yet for hacl #42
+            os: "windows-latest"
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -43,9 +45,6 @@ jobs:
 
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
-
-      - name: 🛠️ Setup Rust Nightly
-        run: rustup toolchain install nightly
 
       - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
