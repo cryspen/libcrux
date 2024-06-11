@@ -663,8 +663,7 @@ pub fn secret_to_public(alg: Algorithm, sk: impl AsRef<[u8]>) -> Result<Vec<u8>,
 fn gen_mlkem768(
     rng: &mut (impl CryptoRng + Rng),
 ) -> Result<(MlKem768PrivateKey, MlKem768PublicKey), Error> {
-    let MlKemKeyPair { sk, pk } = mlkem768::generate_key_pair(random_array(rng)?);
-    Ok((sk, pk))
+    Ok(mlkem768::generate_key_pair(random_array(rng)?).into_parts())
 }
 
 fn random_array<const L: usize>(rng: &mut (impl CryptoRng + Rng)) -> Result<[u8; L], Error> {
@@ -690,15 +689,15 @@ pub fn key_gen(
             .map_err(|e| e.into())
             .map(|(private, public)| (PrivateKey::P256(private), PublicKey::P256(public))),
         Algorithm::MlKem512 => {
-            let MlKemKeyPair { sk, pk } = mlkem512::generate_key_pair(random_array(rng)?);
+            let (sk, pk) = mlkem512::generate_key_pair(random_array(rng)?).into_parts();
             Ok((PrivateKey::MlKem512(sk), PublicKey::MlKem512(pk)))
         }
         Algorithm::MlKem768 => {
-            let MlKemKeyPair { sk, pk } = mlkem768::generate_key_pair(random_array(rng)?);
+            let (sk, pk) = mlkem768::generate_key_pair(random_array(rng)?).into_parts();
             Ok((PrivateKey::MlKem768(sk), PublicKey::MlKem768(pk)))
         }
         Algorithm::MlKem1024 => {
-            let MlKemKeyPair { sk, pk } = mlkem1024::generate_key_pair(random_array(rng)?);
+            let (sk, pk) = mlkem1024::generate_key_pair(random_array(rng)?).into_parts();
             Ok((PrivateKey::MlKem1024(sk), PublicKey::MlKem1024(pk)))
         }
         Algorithm::X25519MlKem768Draft00 => {
