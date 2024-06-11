@@ -411,9 +411,9 @@ impl PrivateKey {
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::MlKem768),
             Algorithm::X25519MlKem768Draft00 => {
-                let key: [u8; mlkem768::SECRET_KEY_SIZE_768 + 32] =
+                let key: [u8; MlKem768PrivateKey::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
-                let (ksk, xsk) = key.split_at(mlkem768::SECRET_KEY_SIZE_768);
+                let (ksk, xsk) = key.split_at(MlKem768PrivateKey::len());
                 Ok(Self::X25519MlKem768Draft00(
                     X25519MlKem768Draft00PrivateKey {
                         mlkem: ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
@@ -623,18 +623,18 @@ impl Ct {
                 .map_err(|_| Error::InvalidCiphertext)
                 .map(Self::MlKem768),
             Algorithm::X25519MlKem768Draft00 => {
-                let key: [u8; mlkem768::CPA_PKE_CIPHERTEXT_SIZE_768 + 32] =
+                let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (kct, xct) = key.split_at(mlkem768::CPA_PKE_CIPHERTEXT_SIZE_768);
+                let (kct, xct) = key.split_at(MlKem768Ciphertext::len());
                 Ok(Self::X25519MlKem768Draft00(
                     kct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     xct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                 ))
             }
             Algorithm::XWingKemDraft02 => {
-                let key: [u8; mlkem768::CPA_PKE_CIPHERTEXT_SIZE_768 + 32] =
+                let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (ct_m, ct_x) = key.split_at(mlkem768::CPA_PKE_CIPHERTEXT_SIZE_768);
+                let (ct_m, ct_x) = key.split_at(MlKem768Ciphertext::len());
                 Ok(Self::XWingKemDraft02(
                     ct_m.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     ct_x.try_into().map_err(|_| Error::InvalidCiphertext)?,

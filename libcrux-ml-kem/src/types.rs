@@ -55,9 +55,9 @@ macro_rules! impl_generic_struct {
             //     self.value.split_at(mid)
             // }
 
-            #[cfg(feature = "tests")]
+
             /// The number of bytes.
-            pub const fn len(&self) -> usize {
+            pub const fn len() -> usize {
                 SIZE
             }
         }
