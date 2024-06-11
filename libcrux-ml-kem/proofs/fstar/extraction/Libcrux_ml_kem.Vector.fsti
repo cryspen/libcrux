@@ -124,9 +124,15 @@ val montgomery_multiply_fe_by_fer (fe fer: i16)
 val montgomery_reduce_element (value: i32)
     : Prims.Pure i16
       (requires
-        Rust_primitives.Hax.failure ""
-          "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node = Types.Err;\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/vector.rs\"));\n    hi = { Types.col = \"114\"; line = \"80\" };\n    lo = { Types.col = \"16\"; line = \"80\" } };\n  ty = Types.Never }"
-        )
+        value >=.
+        ((cast (Core.Ops.Arith.Neg.neg Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32) *!
+          v_MONTGOMERY_R
+          <:
+          i32) &&
+        value <=.
+        ((cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32) *! v_MONTGOMERY_R
+          <:
+          i32))
       (ensures
         fun result ->
           let result:i16 = result in

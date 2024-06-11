@@ -77,7 +77,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 /// `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
 ///
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
-#[cfg_attr(hax, hax_lib::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
+#[cfg_attr(hax, hax_lib::requires(value >= -(FIELD_MODULUS as i32) * MONTGOMERY_R && value <= (FIELD_MODULUS as i32) * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
