@@ -21,9 +21,9 @@ const VECTOR_V_COMPRESSION_FACTOR_512: usize = 4;
 const C2_SIZE_512: usize = (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR_512) / 8;
 const CPA_PKE_SECRET_KEY_SIZE_512: usize =
     (RANK_512 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-const CPA_PKE_PUBLIC_KEY_SIZE_512: usize = T_AS_NTT_ENCODED_SIZE_512 + 32;
+pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE_512: usize = T_AS_NTT_ENCODED_SIZE_512 + 32;
 const CPA_PKE_CIPHERTEXT_SIZE_512: usize = C1_SIZE_512 + C2_SIZE_512;
-const SECRET_KEY_SIZE_512: usize =
+pub(crate) const SECRET_KEY_SIZE_512: usize =
     CPA_PKE_SECRET_KEY_SIZE_512 + CPA_PKE_PUBLIC_KEY_SIZE_512 + H_DIGEST_SIZE + SHARED_SECRET_SIZE;
 
 const ETA1: usize = 3;
@@ -43,11 +43,115 @@ pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
 /// Am ML-KEM 512 Key pair
 pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>;
 
+// Instantiate the different functions.
+macro_rules! instantiate {
+    ($modp:ident, $p:path) => {
+        pub mod $modp {
+            use super::*;
+            use $p as p;
+
+            /// Validate a public key.
+            ///
+            /// Returns `Some(public_key)` if valid, and `None` otherwise.
+            pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512PublicKey> {
+                if p::validate_public_key::<
+                    RANK_512,
+                    RANKED_BYTES_PER_RING_ELEMENT_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                >(&public_key.value)
+                {
+                    Some(public_key)
+                } else {
+                    None
+                }
+            }
+
+            /// Generate ML-KEM 512 Key Pair
+            pub fn generate_key_pair(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem512KeyPair {
+                p::generate_keypair::<
+                    RANK_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    RANKED_BYTES_PER_RING_ELEMENT_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
+            /// Encapsulate ML-KEM 512
+            ///
+            /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+            /// bytes of `randomness`.
+            pub fn encapsulate(
+                public_key: &MlKem512PublicKey,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                p::encapsulate::<
+                    RANK_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
+            /// Decapsulate ML-KEM 512
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+            pub fn decapsulate(
+                private_key: &MlKem512PrivateKey,
+                ciphertext: &MlKem512Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::decapsulate::<
+                    RANK_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
+        }
+    };
+}
+
+// Instantiations
+
+instantiate! {portable, ind_cca::instantiations::portable}
+#[cfg(feature = "simd256")]
+instantiate! {avx2, ind_cca::instantiations::avx2}
+#[cfg(feature = "simd128")]
+instantiate! {neon, ind_cca::instantiations::neon}
+
 /// Validate a public key.
 ///
 /// Returns `Some(public_key)` if valid, and `None` otherwise.
+#[cfg(not(eurydice))]
 pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512PublicKey> {
-    if ind_cca::validate_public_key::<
+    if multiplexing::validate_public_key::<
         RANK_512,
         RANKED_BYTES_PER_RING_ELEMENT_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
@@ -65,8 +169,9 @@ pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512Publ
 /// [`KEY_GENERATION_SEED_SIZE`].
 ///
 /// This function returns an [`MlKem512KeyPair`].
+#[cfg(not(eurydice))]
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512KeyPair {
-    generate_keypair::<
+    multiplexing::generate_keypair::<
         RANK_512,
         CPA_PKE_SECRET_KEY_SIZE_512,
         SECRET_KEY_SIZE_512,
@@ -82,11 +187,12 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem512
 /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
 /// bytes of `randomness`.
+#[cfg(not(eurydice))]
 pub fn encapsulate(
     public_key: &MlKem512PublicKey,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
-    ind_cca::encapsulate::<
+    multiplexing::encapsulate::<
         RANK_512,
         CPA_PKE_CIPHERTEXT_SIZE_512,
         CPA_PKE_PUBLIC_KEY_SIZE_512,
@@ -107,11 +213,12 @@ pub fn encapsulate(
 ///
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+#[cfg(not(eurydice))]
 pub fn decapsulate(
     private_key: &MlKem512PrivateKey,
     ciphertext: &MlKem512Ciphertext,
 ) -> MlKemSharedSecret {
-    ind_cca::decapsulate::<
+    multiplexing::decapsulate::<
         RANK_512,
         SECRET_KEY_SIZE_512,
         CPA_PKE_SECRET_KEY_SIZE_512,

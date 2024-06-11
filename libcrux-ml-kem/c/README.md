@@ -17,6 +17,8 @@ cmake -B build -G "Ninja Multi-Config"
 cmake --build build
 ```
 
+To enable neon builds, set `LIBCRUX_NEON=1`.
+
 ### Test
 
 ```bash

@@ -10,12 +10,22 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 #include "krml/internal/target.h"
 #include "krml/lowstar_endianness.h"
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
 
 // SLICES, ARRAYS, ETC.
+
+#if defined(__cplusplus)
+#define CLITERAL(type) type
+#else
+#define CLITERAL(type) (type)
+#endif
 
 // We represent a slice as a pair of an (untyped) pointer, along with the length
 // of the slice, i.e. the number of elements in the slice (this is NOT the
@@ -37,7 +47,7 @@ typedef struct {
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end) \
-  ((Eurydice_slice){.ptr = (void *)(x + start), .len = end - start})
+  (CLITERAL(Eurydice_slice){.ptr = (void *)(x + start), .len = end - start})
 #define EURYDICE_SLICE_LEN(s, _) s.len
 // This macro is a pain because in case the dereferenced element type is an
 // array, you cannot simply write `t x` as it would yield `int[4] x` instead,
@@ -79,36 +89,38 @@ typedef struct {
   Eurydice_array_eq
 
 #define core_slice___Slice_T___split_at(slice, mid, element_type, ret_t) \
-  ((ret_t){.fst = EURYDICE_SLICE((element_type *)slice.ptr, 0, mid),     \
-           .snd = EURYDICE_SLICE((element_type *)slice.ptr, mid, slice.len)})
+  (CLITERAL(ret_t){                                                      \
+      .fst = EURYDICE_SLICE((element_type *)slice.ptr, 0, mid),          \
+      .snd = EURYDICE_SLICE((element_type *)slice.ptr, mid, slice.len)})
 #define core_slice___Slice_T___split_at_mut(slice, mid, element_type, ret_t) \
-  ((ret_t){.fst = {.ptr = slice.ptr, .len = mid},                            \
-           .snd = {.ptr = (char *)slice.ptr + mid * sizeof(element_type),    \
-                   .len = slice.len - mid}})
+  (CLITERAL(ret_t){                                                          \
+      .fst = {.ptr = slice.ptr, .len = mid},                                 \
+      .snd = {.ptr = (char *)slice.ptr + mid * sizeof(element_type),         \
+              .len = slice.len - mid}})
 
-// Can't have a flexible array as a member of a union -- this violates strict
-// aliasing rules.
-typedef struct {
-  uint8_t tag;
-  uint8_t case_Ok[];
-} result_tryfromslice_flexible;
-
-// See note in karamel/lib/Inlining.ml if you change this
-#define Eurydice_slice_to_array2(dst, src, _, t_arr, _ret_t)         \
-  Eurydice_slice_to_array3((result_tryfromslice_flexible *)dst, src, \
+// Conversion of slice to an array, rewritten (by Eurydice) to name the
+// destination array, since arrays are not values in C.
+// N.B.: see note in karamel/lib/Inlining.ml if you change this.
+#define Eurydice_slice_to_array2(dst, src, _, t_arr, _ret_t)              \
+  Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src, \
                            sizeof(t_arr))
 
-static inline void Eurydice_slice_to_array3(result_tryfromslice_flexible *dst,
+static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
                                             Eurydice_slice src, size_t sz) {
-  dst->tag = 0;
-  memcpy(dst->case_Ok, src.ptr, sz);
+  *dst_tag = 0;
+  memcpy(dst_ok, src.ptr, sz);
 }
 
 // CORE STUFF (conversions, endianness, ...)
 
 static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+  // TODO: why not store32_be?
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
+}
+
+static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+  return load32_le(buf);
 }
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
@@ -124,7 +136,11 @@ core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
 }
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
+#ifdef _MSC_VER
+  return __popcnt(x0);
+#else
   return __builtin_popcount(x0);
+#endif
 }
 
 // unsigned overflow wraparound semantics in C
@@ -152,10 +168,15 @@ static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
 #define core_num_nonzero_NonZeroUsize size_t
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
-       ? ((ret_t){.tag = core_option_None})          \
-       : ((ret_t){.tag = core_option_Some, .f0 = (iter_ptr)->start++}))
+       ? (CLITERAL(ret_t){.tag = core_option_None})  \
+       : (CLITERAL(ret_t){.tag = core_option_Some,   \
+                          .f0 = (iter_ptr)->start++}))
 
+// Old name (TODO: remove once everyone has upgraded to the latest Charon)
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___3__next \
+  Eurydice_range_iter_next
+
+#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
@@ -177,11 +198,11 @@ static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
   size_t chunk_size = chunks->slice.len >= chunks->chunk_size
                           ? chunks->chunk_size
                           : chunks->slice.len;
-  Eurydice_slice curr_chunk =
-      ((Eurydice_slice){.ptr = chunks->slice.ptr, .len = chunk_size});
-  chunks->slice = ((Eurydice_slice){
-      .ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size,
-      .len = chunks->slice.len - chunk_size});
+  Eurydice_slice curr_chunk;
+  curr_chunk.ptr = chunks->slice.ptr;
+  curr_chunk.len = chunk_size;
+  chunks->slice.ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size;
+  chunks->slice.len = chunks->slice.len - chunk_size;
   return curr_chunk;
 }
 
@@ -213,10 +234,11 @@ typedef struct {
 #define core_slice_iter__core__slice__iter__Iter__a__T__181__next(iter, t, \
                                                                   ret_t)   \
   (((iter)->index == (iter)->s.len)                                        \
-       ? ((ret_t){.tag = core_option_None})                                \
-       : ((ret_t){.tag = core_option_Some,                                 \
-                  .f0 = ((iter)->index++,                                  \
-                         &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
+       ? (CLITERAL(ret_t){.tag = core_option_None})                        \
+       : (CLITERAL(ret_t){                                                 \
+             .tag = core_option_Some,                                      \
+             .f0 = ((iter)->index++,                                       \
+                    &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
 
 // STRINGS
 

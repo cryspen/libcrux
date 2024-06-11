@@ -118,22 +118,22 @@ static inline core_core_arch_x86___m128i libcrux_intrinsics_avx2_mm_loadu_si128(
 
 static inline void libcrux_intrinsics_avx2_mm_storeu_bytes_si128(
     Eurydice_slice a, core_core_arch_x86___m128i b) {
-  return _mm_storeu_si128((__m128i*)a.ptr, b);
+  _mm_storeu_si128((__m128i*)a.ptr, b);
 }
 
 static inline void libcrux_intrinsics_avx2_mm256_storeu_si256_i16(
     Eurydice_slice a, core_core_arch_x86___m256i b) {
-  return _mm256_storeu_si256((__m256i*)a.ptr, b);
+  _mm256_storeu_si256((__m256i*)a.ptr, b);
 }
 
 static inline void libcrux_intrinsics_avx2_mm256_storeu_si256_u8(
     Eurydice_slice a, core_core_arch_x86___m256i b) {
-  return _mm256_storeu_si256((__m256i*)a.ptr, b);
+  _mm256_storeu_si256((__m256i*)a.ptr, b);
 }
 
 static inline void libcrux_intrinsics_avx2_mm_storeu_si128(
     Eurydice_slice a, core_core_arch_x86___m128i b) {
-  return _mm_storeu_si128((__m128i*)a.ptr, b);
+  _mm_storeu_si128((__m128i*)a.ptr, b);
 }
 
 // Arithmetic: Add, Sub

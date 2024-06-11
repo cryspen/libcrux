@@ -57,28 +57,3 @@ TEST(Sha3Test, ConsistencyTest)
                       32),
               0);
 }
-
-#define KYBER768_SECRETKEYBYTES 2400
-#define KYBER768_PUBLICKEYBYTES 1184
-#define KYBER768_CIPHERTEXTBYTES 1088
-#define KYBER768_SHAREDSECRETBYTES 32
-
-TEST(Kyber768Test, ConsistencyTest)
-{
-  uint8_t randomness[64] = { 0 };
-  uint8_t publicKey[KYBER768_PUBLICKEYBYTES];
-  uint8_t secretKey[KYBER768_SECRETKEYBYTES];
-
-  libcrux_ml_kem_types_MlKemKeyPair____2400size_t__1184size_t kp =
-    libcrux_ml_kem_mlkem768_generate_key_pair(randomness);
-
-  uint8_t ciphertext[KYBER768_CIPHERTEXTBYTES];
-  K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_ cipher_and_shared_secret =
-  libcrux_ml_kem_mlkem768_encapsulate(&kp.pk, randomness);
-
-  uint8_t sharedSecret2[KYBER768_SHAREDSECRETBYTES];
-  libcrux_ml_kem_mlkem768_decapsulate(&kp.sk, &cipher_and_shared_secret.fst, sharedSecret2);
-
-  EXPECT_EQ(0, memcmp(cipher_and_shared_secret.snd, sharedSecret2, KYBER768_SHAREDSECRETBYTES));
-}
-
