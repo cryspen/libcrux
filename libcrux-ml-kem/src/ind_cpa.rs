@@ -13,17 +13,9 @@ use crate::{
         deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
         serialize_uncompressed_ring_element,
     },
+    utils::into_padded_array,
     vector::Operations,
 };
-
-/// Pad the `slice` with `0`s at the end.
-#[inline(always)]
-pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
-    debug_assert!(slice.len() <= LEN);
-    let mut out = [0u8; LEN];
-    out[0..slice.len()].copy_from_slice(slice);
-    out
-}
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
