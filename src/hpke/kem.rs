@@ -2,12 +2,11 @@
 #![doc = include_str!("KEM_Security.md")]
 #![allow(non_camel_case_types, non_snake_case)]
 
-use crate::{
-    ecdh::x25519,
-    kem::{
-        kyber::{kyber768, MlKemKeyPair},
-        *,
-    },
+use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
+
+use crate::kem::{
+    kyber::{kyber768, MlKemKeyPair},
+    *,
 };
 
 use super::errors::*;
@@ -522,10 +521,8 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
 
             let private = XWingKemDraft02PrivateKey {
                 sk_m: sk,
-                sk_x: x25519::PrivateKey(
-                    xsk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?,
-                ),
-                pk_x: x25519::PublicKey(
+                sk_x: X25519PrivateKey(xsk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
+                pk_x: X25519PublicKey(
                     xpk.clone()
                         .try_into()
                         .map_err(|_| HpkeError::DeriveKeyPairError)?,
@@ -533,7 +530,7 @@ pub fn DeriveKeyPair(alg: KEM, ikm: &InputKeyMaterial) -> Result<KeyPair, HpkeEr
             };
             let public = XWingKemDraft02PublicKey {
                 pk_m: pk,
-                pk_x: x25519::PublicKey(xpk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
+                pk_x: X25519PublicKey(xpk.try_into().map_err(|_| HpkeError::DeriveKeyPairError)?),
             };
             Ok((private.encode(), public.encode()))
         }
@@ -579,11 +576,11 @@ pub fn GenerateKeyPair(alg: KEM, randomness: Randomness) -> Result<KeyPair, Hpke
 
                 let private = X25519MlKem768Draft00PrivateKey {
                     mlkem: sk,
-                    x25519: crate::ecdh::x25519::PrivateKey(xsk.try_into().unwrap()),
+                    x25519: libcrux_ecdh::X25519PrivateKey(xsk.try_into().unwrap()),
                 };
                 let public = X25519MlKem768Draft00PublicKey {
                     mlkem: pk,
-                    x25519: x25519::PublicKey(xpk.try_into().unwrap()),
+                    x25519: X25519PublicKey(xpk.try_into().unwrap()),
                 };
                 Ok((private.encode(), public.encode()))
             }
