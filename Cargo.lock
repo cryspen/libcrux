@@ -180,9 +180,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.0.98"
+version = "1.0.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41c270e7540d725e65ac7f1b212ac8ce349719624d7bcff99f8e2e488e8cf03f"
+checksum = "96c51067fd44124faa7f870b4b1c969379ad32b2ba805aa959430ceaa384f695"
 dependencies = [
  "jobserver",
  "libc",
@@ -279,9 +279,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.4"
+version = "4.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90bc066a67923782aa8515dbaea16946c5bcc5addbd668bb80af688e53e548a0"
+checksum = "5db83dced34638ad474f39f250d7fea9598bdd239eaced1bdf45d597da0f433f"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -289,9 +289,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.2"
+version = "4.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae129e2e766ae0ec03484e609954119f123cc1fe650337e155d03b022f24f7b4"
+checksum = "f7e204572485eb3fbf28f871612191521df159bc3e15a9f5064c66dba3a8c05f"
 dependencies = [
  "anstream",
  "anstyle",
@@ -301,9 +301,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.5.4"
+version = "4.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "528131438037fd55894f62d6e9f068b8f45ac57ffa77517819645d10aed04f64"
+checksum = "c780290ccf4fb26629baa7a1081e68ced113f1d3ec302fa5948f1c381ebf06c6"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -313,9 +313,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98cc8fbded0c607b7ba9dd60cd98df59af97e84d24e49c8557331cfc26d301ce"
+checksum = "4b82cf0babdbd58558212896d1a4272303a57bdb245c2bf1147185fb45640e70"
 
 [[package]]
 name = "colorchoice"
@@ -681,7 +681,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#3444df704959e5a0865bad11894fc95ada97ee5e"
+source = "git+https://github.com/hacspec/hax/?branch=main#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
 dependencies = [
  "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
  "num-bigint",
@@ -691,7 +691,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#3444df704959e5a0865bad11894fc95ada97ee5e"
+source = "git+https://github.com/hacspec/hax/#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
 dependencies = [
  "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "num-bigint",
@@ -701,7 +701,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#3444df704959e5a0865bad11894fc95ada97ee5e"
+source = "git+https://github.com/hacspec/hax/?branch=main#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
 dependencies = [
  "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
  "proc-macro-error",
@@ -713,7 +713,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#3444df704959e5a0865bad11894fc95ada97ee5e"
+source = "git+https://github.com/hacspec/hax/#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
 dependencies = [
  "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "proc-macro-error",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#3444df704959e5a0865bad11894fc95ada97ee5e"
+source = "git+https://github.com/hacspec/hax/?branch=main#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -737,7 +737,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#3444df704959e5a0865bad11894fc95ada97ee5e"
+source = "git+https://github.com/hacspec/hax/#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -916,6 +916,8 @@ dependencies = [
  "hex",
  "libcrux",
  "libcrux-hacl",
+ "libcrux-hkdf",
+ "libcrux-hmac",
  "libcrux-platform",
  "log",
  "pretty_env_logger",
@@ -947,6 +949,21 @@ dependencies = [
  "hex",
  "libcrux-platform",
  "wasm-bindgen-test",
+]
+
+[[package]]
+name = "libcrux-hkdf"
+version = "0.0.2-pre.2"
+dependencies = [
+ "libcrux-hacl",
+]
+
+[[package]]
+name = "libcrux-hmac"
+version = "0.0.2-pre.2"
+dependencies = [
+ "libcrux-hacl",
+ "libcrux-hkdf",
 ]
 
 [[package]]
@@ -1431,9 +1448,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.10.4"
+version = "1.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c117dbdfde9c8308975b6a18d71f3f385c89461f7b3fb054288ecf2a2058ba4c"
+checksum = "b91213439dad192326a0d7c6ee3955910425f441d7038e0d6933b0aec5c4517f"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -1443,9 +1460,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.6"
+version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86b83b8b9847f9bf95ef68afb0b8e6cdb80f498442f5179a29fad448fcc1eaea"
+checksum = "38caf58cc5ef2fed281f89292ef23f6365465ed9a41b7a7754eb4e26496c92df"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -1454,9 +1471,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.8.3"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
+checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
 
 [[package]]
 name = "rfc6979"
@@ -1725,9 +1742,9 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "utf8parse"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
+checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
