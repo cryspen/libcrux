@@ -58,9 +58,9 @@ val barrett_reduce_element (value: i16)
 val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
     : Prims.Pure i16
       (requires
-        Rust_primitives.Hax.failure ""
-          "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node = Types.Err;\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/vector.rs\"));\n    hi = { Types.col = \"55\"; line = \"182\" };\n    lo = { Types.col = \"4\"; line = \"177\" } };\n  ty = Types.Never }"
-        )
+        (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
+        coefficient_bits =. 11uy) &&
+        fe <. (cast (Libcrux_ml_kem.Constants.v_FIELD_MODULUS <: i16) <: u16))
       (ensures
         fun result ->
           let result:i16 = result in
@@ -84,10 +84,7 @@ val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val compress_message_coefficient (fe: u16)
     : Prims.Pure u8
-      (requires
-        Rust_primitives.Hax.failure ""
-          "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node = Types.Err;\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/vector.rs\"));\n    hi = { Types.col = \"80\"; line = \"146\" };\n    lo = { Types.col = \"16\"; line = \"146\" } };\n  ty = Types.Never }"
-        )
+      (requires fe <. (cast (Libcrux_ml_kem.Constants.v_FIELD_MODULUS <: i16) <: u16))
       (ensures
         fun result ->
           let result:u8 = result in

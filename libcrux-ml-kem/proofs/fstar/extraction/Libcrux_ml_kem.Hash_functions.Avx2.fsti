@@ -41,7 +41,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
     (fun
         (v_LEN: usize)
         (input: t_Array (t_Array u8 (sz 33)) v_K)
-        (out1: t_Array (t_Array u8 v_LEN) v_K)
+        (out4: t_Array (t_Array u8 v_LEN) v_K)
         ->
         true);
     f_PRFxN
@@ -63,7 +63,123 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
         let out:t_Array (t_Array u8 v_LEN) v_K =
           Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy v_LEN <: t_Array u8 v_LEN) v_K
         in
-        let _:Prims.unit = "failure" in
+        let out0:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
+        let out1:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
+        let out2:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
+        let out3:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
+        let out, out0, out1, out2, out3:(t_Array (t_Array u8 v_LEN) v_K & t_Array u8 v_LEN &
+          t_Array u8 v_LEN &
+          t_Array u8 v_LEN &
+          t_Array u8 v_LEN) =
+          match cast (v_K <: usize) <: u8 with
+          | 2uy ->
+            let tmp0, tmp1, tmp2, tmp3:(t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN &
+              t_Array u8 v_LEN) =
+              Libcrux_sha3.Avx2.X4.shake256 (Rust_primitives.unsize (input.[ sz 0 ]
+                      <:
+                      t_Array u8 (sz 33))
+                  <:
+                  t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                out0
+                out1
+                out2
+                out3
+            in
+            let out0:t_Array u8 v_LEN = tmp0 in
+            let out1:t_Array u8 v_LEN = tmp1 in
+            let out2:t_Array u8 v_LEN = tmp2 in
+            let out3:t_Array u8 v_LEN = tmp3 in
+            let _:Prims.unit = () in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+            in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+            in
+            out, out0, out1, out2, out3
+            <:
+            (t_Array (t_Array u8 v_LEN) v_K & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN &
+              t_Array u8 v_LEN)
+          | 3uy ->
+            let tmp0, tmp1, tmp2, tmp3:(t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN &
+              t_Array u8 v_LEN) =
+              Libcrux_sha3.Avx2.X4.shake256 (Rust_primitives.unsize (input.[ sz 0 ]
+                      <:
+                      t_Array u8 (sz 33))
+                  <:
+                  t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                out0
+                out1
+                out2
+                out3
+            in
+            let out0:t_Array u8 v_LEN = tmp0 in
+            let out1:t_Array u8 v_LEN = tmp1 in
+            let out2:t_Array u8 v_LEN = tmp2 in
+            let out3:t_Array u8 v_LEN = tmp3 in
+            let _:Prims.unit = () in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+            in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+            in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) out2
+            in
+            out, out0, out1, out2, out3
+            <:
+            (t_Array (t_Array u8 v_LEN) v_K & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN &
+              t_Array u8 v_LEN)
+          | 4uy ->
+            let tmp0, tmp1, tmp2, tmp3:(t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN &
+              t_Array u8 v_LEN) =
+              Libcrux_sha3.Avx2.X4.shake256 (Rust_primitives.unsize (input.[ sz 0 ]
+                      <:
+                      t_Array u8 (sz 33))
+                  <:
+                  t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                (Rust_primitives.unsize (input.[ sz 3 ] <: t_Array u8 (sz 33)) <: t_Slice u8)
+                out0
+                out1
+                out2
+                out3
+            in
+            let out0:t_Array u8 v_LEN = tmp0 in
+            let out1:t_Array u8 v_LEN = tmp1 in
+            let out2:t_Array u8 v_LEN = tmp2 in
+            let out3:t_Array u8 v_LEN = tmp3 in
+            let _:Prims.unit = () in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+            in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+            in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) out2
+            in
+            let out:t_Array (t_Array u8 v_LEN) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 3) out3
+            in
+            out, out0, out1, out2, out3
+            <:
+            (t_Array (t_Array u8 v_LEN) v_K & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN &
+              t_Array u8 v_LEN)
+          | _ ->
+            out, out0, out1, out2, out3
+            <:
+            (t_Array (t_Array u8 v_LEN) v_K & t_Array u8 v_LEN & t_Array u8 v_LEN & t_Array u8 v_LEN &
+              t_Array u8 v_LEN)
+        in
         out);
     f_shake128_init_absorb_pre = (fun (input: t_Array (t_Array u8 (sz 34)) v_K) -> true);
     f_shake128_init_absorb_post
@@ -123,7 +239,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
     f_shake128_squeeze_three_blocks_pre = (fun (self: t_Simd256Hash) -> true);
     f_shake128_squeeze_three_blocks_post
     =
-    (fun (self: t_Simd256Hash) (out1: (t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K)) -> true);
+    (fun (self: t_Simd256Hash) (out4: (t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K)) -> true);
     f_shake128_squeeze_three_blocks
     =
     (fun (self: t_Simd256Hash) ->
@@ -145,50 +261,70 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
             )
             v_K
         in
-        let _:Prims.unit =
+        let out0:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
+        let out1:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
+        let out2:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
+        let out3:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
+        let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 &
+          t_Array u8 (sz 504) &
+          t_Array u8 (sz 504) &
+          t_Array u8 (sz 504) &
+          t_Array u8 (sz 504)) =
+          Libcrux_sha3.Avx2.X4.Incremental.shake128_squeeze_first_three_blocks self.f_shake128_state
+            out0
+            out1
+            out2
+            out3
+        in
+        let self:t_Simd256Hash = { self with f_shake128_state = tmp0 } <: t_Simd256Hash in
+        let out0:t_Array u8 (sz 504) = tmp1 in
+        let out1:t_Array u8 (sz 504) = tmp2 in
+        let out2:t_Array u8 (sz 504) = tmp3 in
+        let out3:t_Array u8 (sz 504) = tmp4 in
+        let _:Prims.unit = () in
+        let out:t_Array (t_Array u8 (sz 504)) v_K =
           match cast (v_K <: usize) <: u8 with
           | 2uy ->
-            let dummy_out0:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
-            let dummy_out1:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
-            Rust_primitives.Hax.failure ""
-              "{\n        let Tuple2(out0, out1): tuple2<&mut [[int; 504]], &mut [[int; 504]]> = {\n            core::slice::impl__split_at_mut::<[int; 504]>(rust_primitives::unsize(&mut (out)), 1)\n        };\n        {\n            let _: tuple0 = {\n                libcrux_sha3::avx2::x4::incremental::shake128_squeeze_first_three_blocks(\n                    &mut (deref(\n                        &mut (proj_libcrux_ml_kem::hash_functions::avx2::f_shake128_state(self)),\n                    )),\n                    rust_primitives::unsize(\n                        &mut (deref(&mut (core::ops::index::Index::index(deref(out0), 0)))),\n                    ),\n                    rust_primitives::unsize(\n                        &mut (deref(&mut (core::ops::index::Index::index(deref(out1), 0)))),\n                    ),\n                    rust_primitives::unsize(&mut (deref(&mut (dummy_out0)))),\n                    rust_primitives::unsize(&mut (deref(&mut (dummy_out1)))),\n                )\n            };\n            Tuple0\n        }\n    }"
-
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+            in
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+            in
+            out
           | 3uy ->
-            let dummy_out0:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
-            Rust_primitives.Hax.failure ""
-              "{\n        let Tuple2(out0, out12): tuple2<&mut [[int; 504]], &mut [[int; 504]]> = {\n            core::slice::impl__split_at_mut::<[int; 504]>(rust_primitives::unsize(&mut (out)), 1)\n        };\n        {\n            let Tuple2(out1, out2): tuple2<&mut [[int; 504]], &mut [[int; 504]]> =\n                { core::slice::impl__split_at_mut::<[int; 504]>(&mut (deref(out12)), 1) };\n            {\n                let _: tuple0 = {\n                    libcrux_sha3::avx2::x4::incremental::shake128_squeeze_first_three_blocks(\n                        &mut (deref(\n                            &mut (proj_libcrux_ml_kem::hash_functions::avx2::f_shake128_state(\n                                self,\n                            )),\n                        )),\n                        rust_primitives::unsize(\n                            &mut (deref(&mut (core::ops::index::Index::index(deref(out0), 0)))),\n                        ),\n                        rust_primitives::unsize(\n                            &mut (deref(&mut (core::ops::index::Index::index(deref(out1), 0)))),\n                        ),\n                        rust_primitives::unsize(\n                            &mut (deref(&mut (core::ops::index::Index::index(deref(out2), 0)))),\n                        ),\n                        rust_primitives::unsize(&mut (deref(&mut (dummy_out0)))),\n                    )\n                };\n                Tuple0\n            }\n        }\n    }"
-
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+            in
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+            in
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) out2
+            in
+            out
           | 4uy ->
-            Rust_primitives.Hax.failure ""
-              "{\n        let Tuple2(out0, out123): tuple2<&mut [[int; 504]], &mut [[int; 504]]> = {\n            core::slice::impl__split_at_mut::<[int; 504]>(rust_primitives::unsize(&mut (out)), 1)\n        };\n        {\n            let Tuple2(out1, out23): tuple2<&mut [[int; 504]], &mut [[int; 504]]> =\n                { core::slice::impl__split_at_mut::<[int; 504]>(&mut (deref(out123)), 1) };\n            {\n                let Tuple2(out2, out3): tuple2<&mut [[int; 504]], &mut [[int; 504]]> =\n                    { core::slice::impl__split_at_mut::<[int; 504]>(&mut (deref(out23)), 1) };\n                {\n                    let _: tuple0 = {\n                        libcrux_sha3::avx2::x4::incremental::shake128_squeeze_first_three_blocks(\n                            &mut (deref(\n                                &mut (proj_libcrux_ml_kem::hash_functions::avx2::f_shake128_state(\n                                    self,\n                                )),\n                            )),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out0), 0)))),\n                            ),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out1), 0)))),\n                            ),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out2), 0)))),\n                            ),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out3), 0)))),\n                            ),\n                        )\n                    };\n                    Tuple0\n                }\n            }\n        }\n    }"
-
-          | _ ->
-            Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
-                          (let list =
-                              [
-                                "internal error: entered unreachable code: This function must only be called with N = 2, 3, 4"
-                              ]
-                            in
-                            FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                            Rust_primitives.Hax.array_of_list 1 list)
-                        <:
-                        t_Slice string)
-                      (Rust_primitives.unsize (Core.Fmt.Rt.impl_1__none ()
-                            <:
-                            t_Array Core.Fmt.Rt.t_Argument (sz 0))
-                        <:
-                        t_Slice Core.Fmt.Rt.t_Argument)
-                    <:
-                    Core.Fmt.t_Arguments)
-                <:
-                Rust_primitives.Hax.t_Never)
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+            in
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+            in
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) out2
+            in
+            let out:t_Array (t_Array u8 (sz 504)) v_K =
+              Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 3) out3
+            in
+            out
+          | _ -> out
         in
         let hax_temp_output:t_Array (t_Array u8 (sz 504)) v_K = out in
         self, hax_temp_output <: (t_Simd256Hash & t_Array (t_Array u8 (sz 504)) v_K));
     f_shake128_squeeze_block_pre = (fun (self: t_Simd256Hash) -> true);
     f_shake128_squeeze_block_post
     =
-    (fun (self: t_Simd256Hash) (out1: (t_Simd256Hash & t_Array (t_Array u8 (sz 168)) v_K)) -> true);
+    (fun (self: t_Simd256Hash) (out4: (t_Simd256Hash & t_Array (t_Array u8 (sz 168)) v_K)) -> true);
     f_shake128_squeeze_block
     =
     fun (self: t_Simd256Hash) ->
@@ -209,43 +345,63 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
         Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0uy (sz 168) <: t_Array u8 (sz 168))
           v_K
       in
-      let _:Prims.unit =
+      let out0:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
+      let out1:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
+      let out2:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
+      let out3:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
+      let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 &
+        t_Array u8 (sz 168) &
+        t_Array u8 (sz 168) &
+        t_Array u8 (sz 168) &
+        t_Array u8 (sz 168)) =
+        Libcrux_sha3.Avx2.X4.Incremental.shake128_squeeze_next_block self.f_shake128_state
+          out0
+          out1
+          out2
+          out3
+      in
+      let self:t_Simd256Hash = { self with f_shake128_state = tmp0 } <: t_Simd256Hash in
+      let out0:t_Array u8 (sz 168) = tmp1 in
+      let out1:t_Array u8 (sz 168) = tmp2 in
+      let out2:t_Array u8 (sz 168) = tmp3 in
+      let out3:t_Array u8 (sz 168) = tmp4 in
+      let _:Prims.unit = () in
+      let out:t_Array (t_Array u8 (sz 168)) v_K =
         match cast (v_K <: usize) <: u8 with
         | 2uy ->
-          let dummy_out0:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-          let dummy_out1:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-          Rust_primitives.Hax.failure ""
-            "{\n        let Tuple2(out0, out1): tuple2<&mut [[int; 168]], &mut [[int; 168]]> = {\n            core::slice::impl__split_at_mut::<[int; 168]>(rust_primitives::unsize(&mut (out)), 1)\n        };\n        {\n            let _: tuple0 = {\n                libcrux_sha3::avx2::x4::incremental::shake128_squeeze_next_block(\n                    &mut (deref(\n                        &mut (proj_libcrux_ml_kem::hash_functions::avx2::f_shake128_state(self)),\n                    )),\n                    rust_primitives::unsize(\n                        &mut (deref(&mut (core::ops::index::Index::index(deref(out0), 0)))),\n                    ),\n                    rust_primitives::unsize(\n                        &mut (deref(&mut (core::ops::index::Index::index(deref(out1), 0)))),\n                    ),\n                    rust_primitives::unsize(&mut (deref(&mut (dummy_out0)))),\n                    rust_primitives::unsize(&mut (deref(&mut (dummy_out1)))),\n                )\n            };\n            Tuple0\n        }\n    }"
-
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+          in
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+          in
+          out
         | 3uy ->
-          let dummy_out0:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-          Rust_primitives.Hax.failure ""
-            "{\n        let Tuple2(out0, out12): tuple2<&mut [[int; 168]], &mut [[int; 168]]> = {\n            core::slice::impl__split_at_mut::<[int; 168]>(rust_primitives::unsize(&mut (out)), 1)\n        };\n        {\n            let Tuple2(out1, out2): tuple2<&mut [[int; 168]], &mut [[int; 168]]> =\n                { core::slice::impl__split_at_mut::<[int; 168]>(&mut (deref(out12)), 1) };\n            {\n                let _: tuple0 = {\n                    libcrux_sha3::avx2::x4::incremental::shake128_squeeze_next_block(\n                        &mut (deref(\n                            &mut (proj_libcrux_ml_kem::hash_functions::avx2::f_shake128_state(\n                                self,\n                            )),\n                        )),\n                        rust_primitives::unsize(\n                            &mut (deref(&mut (core::ops::index::Index::index(deref(out0), 0)))),\n                        ),\n                        rust_primitives::unsize(\n                            &mut (deref(&mut (core::ops::index::Index::index(deref(out1), 0)))),\n                        ),\n                        rust_primitives::unsize(\n                            &mut (deref(&mut (core::ops::index::Index::index(deref(out2), 0)))),\n                        ),\n                        rust_primitives::unsize(&mut (deref(&mut (dummy_out0)))),\n                    )\n                };\n                Tuple0\n            }\n        }\n    }"
-
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+          in
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+          in
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) out2
+          in
+          out
         | 4uy ->
-          Rust_primitives.Hax.failure ""
-            "{\n        let Tuple2(out0, out123): tuple2<&mut [[int; 168]], &mut [[int; 168]]> = {\n            core::slice::impl__split_at_mut::<[int; 168]>(rust_primitives::unsize(&mut (out)), 1)\n        };\n        {\n            let Tuple2(out1, out23): tuple2<&mut [[int; 168]], &mut [[int; 168]]> =\n                { core::slice::impl__split_at_mut::<[int; 168]>(&mut (deref(out123)), 1) };\n            {\n                let Tuple2(out2, out3): tuple2<&mut [[int; 168]], &mut [[int; 168]]> =\n                    { core::slice::impl__split_at_mut::<[int; 168]>(&mut (deref(out23)), 1) };\n                {\n                    let _: tuple0 = {\n                        libcrux_sha3::avx2::x4::incremental::shake128_squeeze_next_block(\n                            &mut (deref(\n                                &mut (proj_libcrux_ml_kem::hash_functions::avx2::f_shake128_state(\n                                    self,\n                                )),\n                            )),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out0), 0)))),\n                            ),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out1), 0)))),\n                            ),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out2), 0)))),\n                            ),\n                            rust_primitives::unsize(\n                                &mut (deref(&mut (core::ops::index::Index::index(deref(out3), 0)))),\n                            ),\n                        )\n                    };\n                    Tuple0\n                }\n            }\n        }\n    }"
-
-        | _ ->
-          Rust_primitives.Hax.never_to_any (Core.Panicking.panic_fmt (Core.Fmt.impl_2__new_v1 (Rust_primitives.unsize
-                        (let list =
-                            [
-                              "internal error: entered unreachable code: This function is only called with 2, 3, 4"
-                            ]
-                          in
-                          FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-                          Rust_primitives.Hax.array_of_list 1 list)
-                      <:
-                      t_Slice string)
-                    (Rust_primitives.unsize (Core.Fmt.Rt.impl_1__none ()
-                          <:
-                          t_Array Core.Fmt.Rt.t_Argument (sz 0))
-                      <:
-                      t_Slice Core.Fmt.Rt.t_Argument)
-                  <:
-                  Core.Fmt.t_Arguments)
-              <:
-              Rust_primitives.Hax.t_Never)
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 0) out0
+          in
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 1) out1
+          in
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 2) out2
+          in
+          let out:t_Array (t_Array u8 (sz 168)) v_K =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out (sz 3) out3
+          in
+          out
+        | _ -> out
       in
       let hax_temp_output:t_Array (t_Array u8 (sz 168)) v_K = out in
       self, hax_temp_output <: (t_Simd256Hash & t_Array (t_Array u8 (sz 168)) v_K)
