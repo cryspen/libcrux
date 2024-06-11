@@ -70,10 +70,10 @@ clang-format --style=Google -i internal/*.h
 clang-format --style=Google -i intrinsics/*.h
 
 # Write out infos about the used tools
-[ -z "$CHARON_REV" ] && export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
-[ -z "$EURYDICE_REV" ] && export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
-[ -z "$KRML_REV" ] && export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
-[ -z "$FSTAR_REV" ] && export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
+[ -n "$CHARON_REV" ] || export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
+[ -n "$EURYDICE_REV" ] || export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
+[ -n "$KRML_REV" ] || export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
+[ -n "$FSTAR_REV" ] || export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
 rm -f code_gen.txt
 echo "This code was generated with the following tools:" >> code_gen.txt
 echo -n "Charon: " >> code_gen.txt
