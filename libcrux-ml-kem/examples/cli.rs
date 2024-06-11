@@ -4,12 +4,16 @@ use std::{
 };
 
 use base64::prelude::*;
-use libcrux::{
-    drbg::Drbg,
-    kem::{self, PublicKey},
-};
-
 use clap::{Parser, Subcommand};
+use libcrux_ml_kem::{
+    mlkem1024::{
+        self, MlKem1024Ciphertext, MlKem1024KeyPair, MlKem1024PrivateKey, MlKem1024PublicKey,
+    },
+    mlkem512::{self, MlKem512Ciphertext, MlKem512KeyPair, MlKem512PrivateKey, MlKem512PublicKey},
+    mlkem768::{self, MlKem768Ciphertext, MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey},
+    MlKemSharedSecret, KEY_GENERATION_SEED_SIZE,
+};
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 
 #[allow(non_snake_case)]
@@ -35,24 +39,6 @@ enum LintType {
     PublicKey,
 }
 
-fn kem_algorithm(algorithm: &str) -> kem::Algorithm {
-    match algorithm {
-        "MlKem512" => kem::Algorithm::MlKem512,
-        "MlKem768" => kem::Algorithm::MlKem768,
-        "MlKem1024" => kem::Algorithm::MlKem1024,
-        _ => panic!("Unsupported kem algorithm {algorithm}"),
-    }
-}
-
-fn kem_algorithm_str(algorithm: &kem::Algorithm) -> String {
-    match algorithm {
-        kem::Algorithm::MlKem512 => "MlKem512".to_owned(),
-        kem::Algorithm::MlKem768 => "MlKem768".to_owned(),
-        kem::Algorithm::MlKem1024 => "MlKem1024".to_owned(),
-        _ => panic!("Unsupported kem algorithm {algorithm:?}"),
-    }
-}
-
 impl Lint {
     // XXX: Only kem for now. Needs updating for ml-dsa
     fn new(
@@ -60,7 +46,7 @@ impl Lint {
         lint_type: LintType,
         pk: &[u8],
         name: &str,
-        algorithm: kem::Algorithm,
+        algorithm: &str,
         valid: bool,
     ) -> Self {
         Self {
@@ -70,7 +56,7 @@ impl Lint {
             },
             id,
             publicKey: BASE64_STANDARD.encode(pk),
-            algorithm: kem_algorithm_str(&algorithm),
+            algorithm: algorithm.to_string(),
             valid,
         }
     }
@@ -86,8 +72,8 @@ impl Lint {
         &self.id
     }
 
-    fn kem_algorithm(&self) -> kem::Algorithm {
-        kem_algorithm(&self.algorithm)
+    fn kem_algorithm(&self) -> &str {
+        &self.algorithm
     }
 
     fn public_key(&self) -> Option<Vec<u8>> {
@@ -174,6 +160,163 @@ struct Cli {
     algorithm: Option<u16>,
 }
 
+enum Algorithm {
+    MlKem1024,
+    MlKem768,
+    MlKem512,
+}
+
+enum KeyPair {
+    MlKem1024(MlKem1024KeyPair),
+    MlKem768(MlKem768KeyPair),
+    MlKem512(MlKem512KeyPair),
+}
+
+impl KeyPair {
+    fn generate(alg: Algorithm, rng: &mut impl RngCore) -> Self {
+        let randomness = rand(rng);
+        match alg {
+            Algorithm::MlKem1024 => KeyPair::MlKem1024(mlkem1024::generate_key_pair(randomness)),
+            Algorithm::MlKem768 => KeyPair::MlKem768(mlkem768::generate_key_pair(randomness)),
+            Algorithm::MlKem512 => KeyPair::MlKem512(mlkem512::generate_key_pair(randomness)),
+        }
+    }
+
+    fn write_to_file(&self, sk_name: String, pk_name: String) {
+        write_to_file(sk_name, self.private_key_slice());
+        write_to_file(pk_name, self.public_key_slice());
+    }
+
+    fn private_key_slice(&self) -> &[u8] {
+        match self {
+            KeyPair::MlKem1024(k) => k.pk(),
+            KeyPair::MlKem768(k) => k.pk(),
+            KeyPair::MlKem512(k) => k.pk(),
+        }
+    }
+
+    fn public_key_slice(&self) -> &[u8] {
+        match self {
+            KeyPair::MlKem1024(k) => k.sk(),
+            KeyPair::MlKem768(k) => k.sk(),
+            KeyPair::MlKem512(k) => k.sk(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Error {
+    InvalidPublicKey,
+    InvalidPrivateKey,
+    InvalidCiphertext,
+}
+
+enum PublicKey {
+    MlKem1024(MlKem1024PublicKey),
+    MlKem768(MlKem768PublicKey),
+    MlKem512(MlKem512PublicKey),
+}
+
+impl PublicKey {
+    fn decode(alg: Algorithm, pk: &[u8]) -> Result<Self, Error> {
+        match alg {
+            Algorithm::MlKem1024 => MlKem1024PublicKey::try_from(pk)
+                .ok()
+                .and_then(mlkem1024::validate_public_key)
+                .map(Self::MlKem1024)
+                .ok_or(Error::InvalidPublicKey),
+            Algorithm::MlKem768 => MlKem768PublicKey::try_from(pk)
+                .ok()
+                .and_then(mlkem768::validate_public_key)
+                .map(Self::MlKem768)
+                .ok_or(Error::InvalidPublicKey),
+            Algorithm::MlKem512 => MlKem512PublicKey::try_from(pk)
+                .ok()
+                .and_then(mlkem512::validate_public_key)
+                .map(Self::MlKem512)
+                .ok_or(Error::InvalidPublicKey),
+        }
+    }
+
+    fn encapsulate(&self, rng: &mut impl RngCore) -> (Ciphertext, MlKemSharedSecret) {
+        let randomness = rand(rng);
+        match self {
+            PublicKey::MlKem1024(k) => {
+                let (ct, ss) = mlkem1024::encapsulate(k, randomness);
+                (Ciphertext::MlKem1024(ct), ss)
+            }
+            PublicKey::MlKem768(k) => {
+                let (ct, ss) = mlkem768::encapsulate(k, randomness);
+                (Ciphertext::MlKem768(ct), ss)
+            }
+            PublicKey::MlKem512(k) => {
+                let (ct, ss) = mlkem512::encapsulate(k, randomness);
+                (Ciphertext::MlKem512(ct), ss)
+            }
+        }
+    }
+}
+
+enum PrivateKey {
+    MlKem1024(MlKem1024PrivateKey),
+    MlKem768(MlKem768PrivateKey),
+    MlKem512(MlKem512PrivateKey),
+}
+impl PrivateKey {
+    fn decode(alg: Algorithm, sk: &[u8]) -> Result<Self, Error> {
+        match alg {
+            Algorithm::MlKem1024 => MlKem1024PrivateKey::try_from(sk)
+                .map(Self::MlKem1024)
+                .map_err(|_| Error::InvalidPrivateKey),
+            Algorithm::MlKem768 => MlKem768PrivateKey::try_from(sk)
+                .map(Self::MlKem768)
+                .map_err(|_| Error::InvalidPrivateKey),
+            Algorithm::MlKem512 => MlKem512PrivateKey::try_from(sk)
+                .map(Self::MlKem512)
+                .map_err(|_| Error::InvalidPrivateKey),
+        }
+    }
+}
+
+fn rand<const L: usize>(rng: &mut impl RngCore) -> [u8; L] {
+    let mut r = [0u8; L];
+    rng.fill_bytes(&mut r);
+    r
+}
+
+enum Ciphertext {
+    MlKem1024(MlKem1024Ciphertext),
+    MlKem768(MlKem768Ciphertext),
+    MlKem512(MlKem512Ciphertext),
+}
+impl Ciphertext {
+    fn write_to_file(&self, ct_out: String) {
+        match self {
+            Ciphertext::MlKem1024(ct) => write_to_file(ct_out, ct.as_ref()),
+            Ciphertext::MlKem768(ct) => write_to_file(ct_out, ct.as_ref()),
+            Ciphertext::MlKem512(ct) => write_to_file(ct_out, ct.as_ref()),
+        }
+    }
+
+    fn decode(alg: Algorithm, ct: &[u8]) -> Result<Self, Error> {
+        match alg {
+            Algorithm::MlKem1024 => MlKem1024Ciphertext::try_from(ct)
+                .map(Self::MlKem1024)
+                .map_err(|_| Error::InvalidCiphertext),
+            Algorithm::MlKem768 => MlKem768Ciphertext::try_from(ct)
+                .map(Self::MlKem768)
+                .map_err(|_| Error::InvalidCiphertext),
+            Algorithm::MlKem512 => MlKem512Ciphertext::try_from(ct)
+                .map(Self::MlKem512)
+                .map_err(|_| Error::InvalidCiphertext),
+        }
+    }
+
+    fn decapsulate(&self, sk: &PrivateKey) -> _ {
+        todo!()
+    }
+}
+
 fn main() {
     pretty_env_logger::init();
 
@@ -181,19 +324,19 @@ fn main() {
 
     let alg = if let Some(l) = cli.algorithm {
         match l {
-            512 => kem::Algorithm::MlKem512,
-            768 => kem::Algorithm::MlKem768,
-            1024 => kem::Algorithm::MlKem1024,
+            512 => Algorithm::MlKem512,
+            768 => Algorithm::MlKem768,
+            1024 => Algorithm::MlKem1024,
             _ => {
                 eprintln!("Invalid algorithm variant {l}");
                 return;
             }
         }
     } else {
-        kem::Algorithm::MlKem768
+        Algorithm::MlKem768
     };
 
-    let mut rng = Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
+    let mut rng = rand::rngs::OsRng;
 
     match cli.cmd {
         GenerateCli::GenerateKey { out: file } => {
@@ -203,26 +346,15 @@ fn main() {
                 None => ("mlkem.priv".to_owned(), "mlkem.pub".to_owned()),
             };
 
-            let (secret_key, public_key) = kem::key_gen(alg, &mut rng).unwrap();
-
-            println!("Writing private key to {sk_name}");
-            File::create(sk_name.clone())
-                .expect(&format!("Can not create file {sk_name}"))
-                .write_all(&secret_key.encode())
-                .expect("Error writing private key");
-            println!("Writing public key to {pk_name}");
-            File::create(pk_name.clone())
-                .expect(&format!("Can not create file {pk_name}"))
-                .write_all(&public_key.encode())
-                .expect("Error writing public key");
+            let key_pair = KeyPair::generate(alg, &mut rng);
+            key_pair.write_to_file(sk_name, pk_name);
         }
 
         GenerateCli::Encaps { key, ct: out, ss } => {
             let pk = bytes_from_file(key);
-            let pk = kem::PublicKey::decode(alg, &pk).expect("Error decoding public key");
+            let pk = PublicKey::decode(alg, &pk).expect("Error decoding public key");
 
-            let (shared_secret, ciphertext) =
-                pk.encapsulate(&mut rng).expect("Error encapsulating");
+            let (ciphertext, shared_secret) = pk.encapsulate(&mut rng);
 
             let ct_out = match out {
                 Some(n) => n,
@@ -233,27 +365,16 @@ fn main() {
                 None => "mlkem-encapsulated.ss".to_owned(),
             };
 
-            println!("Writing ciphertext to {ct_out}");
-            let mut out_file =
-                File::create(ct_out.clone()).expect(&format!("Can not create file {ct_out}"));
-            out_file
-                .write_all(&ciphertext.encode())
-                .expect("Error writing public key");
-
-            println!("Writing shared secret to {ss_out}");
-            let mut out_file =
-                File::create(ss_out.clone()).expect(&format!("Can not create file {ss_out}"));
-            out_file
-                .write_all(&shared_secret.encode())
-                .expect("Error writing public key");
+            ciphertext.write_to_file(ct_out);
+            write_to_file(ss_out, &shared_secret);
         }
         GenerateCli::Decaps { key, ss: out, ct } => {
             let sk = bytes_from_file(key);
-            let sk = kem::PrivateKey::decode(alg, &sk).expect("Error decoding private key");
+            let sk = PrivateKey::decode(alg, &sk).expect("Error decoding private key");
 
             let ct = bytes_from_file(ct);
 
-            let ct = kem::Ct::decode(alg, &ct).expect("Error decoding ct.");
+            let ct = Ciphertext::decode(alg, &ct).expect("Error decoding ct.");
             let shared_secret = ct.decapsulate(&sk).expect("Error decapsulating.");
 
             let out = match out {
@@ -289,8 +410,8 @@ fn main() {
                     (pk_bytes, false)
                 } else {
                     // Generates a key pair.
-                    let (_, public_key) = kem::key_gen(alg, &mut rng).unwrap();
-                    (public_key.encode(), true)
+                    let key_pair = KeyPair::generate(alg, &mut rng);
+                    (key_pair.public_key_slice().to_vec(), true)
                 };
 
                 let mut payload = lint_name.as_bytes().to_vec();
@@ -393,4 +514,10 @@ fn bytes_from_file(file: String) -> Vec<u8> {
         .read_to_end(&mut bytes)
         .expect(&format!("Error reading file {file}."));
     bytes
+}
+
+fn write_to_file(file: String, bytes: &[u8]) {
+    println!("Writing to {file}");
+    let mut out_file = File::create(file.clone()).expect(&format!("Can not create file {file}"));
+    out_file.write_all(bytes).expect("Error writing public key");
 }

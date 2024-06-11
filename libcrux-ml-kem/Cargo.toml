@@ -29,11 +29,14 @@ std = []
 
 [dev-dependencies]
 rand = { version = "0.8" }
-serde_json = { version = "1.0" }
+serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.5"
 libcrux-ml-kem = { path = ".", features = ["tests"] }
+base64 = "0.22"
+clap = { version = "4.5.7", features = ["derive"] }
+pretty_env_logger = "0.5.0"
 
 [[bench]]
 name = "ml-kem"
