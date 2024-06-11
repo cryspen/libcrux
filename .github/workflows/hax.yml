@@ -28,9 +28,6 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: Update dependencies
-        run: cargo update
-
       - name: ⤵ Install FStar
         run: nix profile install github:FStarLang/FStar/v2024.01.13
 
