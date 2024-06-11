@@ -58,7 +58,7 @@ val barrett_reduce_element (value: i16)
 val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
     : Prims.Pure i16
       (requires
-        Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! Please report this by submitting an issue on GitHub!\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above.\n"
+        Rust_primitives.Hax.failure ""
           "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node = Types.Err;\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/vector.rs\"));\n    hi = { Types.col = \"55\"; line = \"182\" };\n    lo = { Types.col = \"4\"; line = \"177\" } };\n  ty = Types.Never }"
         )
       (ensures
@@ -85,7 +85,7 @@ val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
 val compress_message_coefficient (fe: u16)
     : Prims.Pure u8
       (requires
-        Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! Please report this by submitting an issue on GitHub!\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above.\n"
+        Rust_primitives.Hax.failure ""
           "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node = Types.Err;\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/vector.rs\"));\n    hi = { Types.col = \"80\"; line = \"146\" };\n    lo = { Types.col = \"16\"; line = \"146\" } };\n  ty = Types.Never }"
         )
       (ensures
@@ -127,7 +127,7 @@ val montgomery_multiply_fe_by_fer (fe fer: i16)
 val montgomery_reduce_element (value: i32)
     : Prims.Pure i16
       (requires
-        Rust_primitives.Hax.failure "(AST import) Fatal error: something we considered as impossible occurred! Please report this by submitting an issue on GitHub!\nDetails: [import_thir:literal] got an error literal: this means the Rust compiler or Hax's frontend probably reported errors above.\n"
+        Rust_primitives.Hax.failure ""
           "{ Types.attributes = [];\n  contents =\n  Types.Literal {\n    lit =\n    { Types.node = Types.Err;\n      span =\n      { Types.filename =\n        (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/lib.rs\"));\n        hi = { Types.col = \"0\"; line = \"1\" };\n        lo = { Types.col = \"0\"; line = \"1\" } }\n      };\n    neg = false};\n  hir_id = None;\n  span =\n  { Types.filename =\n    (Types.Real (Types.LocalPath \"libcrux-ml-kem/src/vector.rs\"));\n    hi = { Types.col = \"114\"; line = \"80\" };\n    lo = { Types.col = \"16\"; line = \"80\" } };\n  ty = Types.Never }"
         )
       (ensures
