@@ -1,7 +1,7 @@
 use crate::arithmetic::PolynomialRingElement;
 
 #[inline(always)]
-fn deserialize_to_mask_when_gamma_is_2_pow_17(serialized: &[u8]) -> PolynomialRingElement {
+fn deserialize_to_mask_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PolynomialRingElement {
     const GAMMA1: i32 = 1 << 17;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
@@ -38,7 +38,7 @@ fn deserialize_to_mask_when_gamma_is_2_pow_17(serialized: &[u8]) -> PolynomialRi
 }
 
 #[inline(always)]
-fn deserialize_to_mask_when_gamma_is_2_pow_19(serialized: &[u8]) -> PolynomialRingElement {
+fn deserialize_to_mask_when_gamma1_is_2_pow_19(serialized: &[u8]) -> PolynomialRingElement {
     const GAMMA1: i32 = 1 << 19;
     const GAMMA1_TIMES_2_BITMASK: i32 = (GAMMA1 << 1) - 1;
 
@@ -66,8 +66,8 @@ pub(crate) fn deserialize_to_mask_ring_element<const GAMMA1_EXPONENT: usize>(
     serialized: &[u8],
 ) -> PolynomialRingElement {
     match GAMMA1_EXPONENT {
-        17 => deserialize_to_mask_when_gamma_is_2_pow_17(serialized),
-        19 => deserialize_to_mask_when_gamma_is_2_pow_19(serialized),
+        17 => deserialize_to_mask_when_gamma1_is_2_pow_17(serialized),
+        19 => deserialize_to_mask_when_gamma1_is_2_pow_19(serialized),
         _ => unreachable!(),
     }
 }
@@ -77,7 +77,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_deserialize_to_mask_when_gamma_is_2_pow_17() {
+    fn test_deserialize_to_mask_when_gamma1_is_2_pow_17() {
         let bytes = [
             198, 32, 33, 79, 53, 132, 46, 198, 17, 233, 84, 94, 175, 136, 13, 127, 137, 254, 113,
             82, 68, 239, 94, 176, 179, 22, 102, 177, 253, 142, 176, 250, 96, 201, 11, 213, 230, 41,
@@ -146,7 +146,7 @@ mod tests {
     }
 
     #[test]
-    fn test_deserialize_to_mask_when_gamma_is_2_pow_19() {
+    fn test_deserialize_to_mask_when_gamma1_is_2_pow_19() {
         let bytes: [u8; 640] = [
             253, 11, 216, 60, 251, 71, 79, 187, 242, 250, 209, 44, 72, 206, 98, 3, 22, 91, 184, 22,
             197, 50, 249, 184, 253, 104, 8, 3, 9, 116, 147, 157, 110, 167, 67, 218, 30, 79, 58, 12,

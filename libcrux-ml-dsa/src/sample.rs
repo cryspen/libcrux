@@ -165,7 +165,7 @@ pub(crate) fn sample_challenge_ring_element<const TAU: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement {
     // TODO: Use incremental API to squeeze one block at a time.
-    let mut randomness = H::<544>(&seed).into_iter();
+    let mut randomness = H::<136>(&seed).into_iter();
 
     let mut signs: u64 = 0;
     for i in 0..8 {
@@ -175,11 +175,13 @@ pub(crate) fn sample_challenge_ring_element<const TAU: usize>(
     let mut out = PolynomialRingElement::ZERO;
 
     for index in (out.coefficients.len() - TAU)..out.coefficients.len() {
+        // TODO: Rewrite this without using `break`. It's doable, just probably
+        // not as nice.
         let sample_at = loop {
             let i = match randomness.next() {
                 Some(byte) => byte as usize,
 
-                // TODO: We need to re-sample here instead of panicking.
+                // TODO: We need to incrementally sample here instead of panicking.
                 None => panic!("Insufficient randomness to sample challenge ring element."),
             };
 

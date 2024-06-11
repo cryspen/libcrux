@@ -21,6 +21,8 @@ const BYTES_FOR_ERROR_RING_ELEMENT: usize =
 // GAMMA - v. This can be done in 20 bits when GAMMA is 2^{19}.
 const BITS_PER_MASK_COEFFICIENT: usize = 20;
 
+const MAX_NUMBER_OF_ONES_IN_HINT: usize = 55;
+
 const BYTES_PER_MASK_RING_ELEMENT: usize =
     (BITS_PER_MASK_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 
