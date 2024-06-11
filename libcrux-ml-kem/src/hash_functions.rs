@@ -171,7 +171,7 @@ pub(crate) mod avx2 {
             debug_assert!(K == 2 || K == 3 || K == 4);
             let mut out = [[0u8; LEN]; K];
 
-            match K {
+            match K as u8 {
                 2 => {
                     let mut dummy_out0 = [0u8; LEN];
                     let mut dummy_out1 = [0u8; LEN];
