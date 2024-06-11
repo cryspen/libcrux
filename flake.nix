@@ -81,6 +81,10 @@
           '';
           FSTAR_HOME = inputs.fstar.packages.${system}.default;
           KRML_HOME = inputs.karamel.packages.${system}.default.home;
+          CHARON_REV = inputs.charon.rev;
+          EURYDICE_REV = inputs.eurydice.rev;
+          KRML_REV = inputs.karamel.rev;
+          FSTAR_REV = inputs.fstar.rev;
         };
       in
       {
