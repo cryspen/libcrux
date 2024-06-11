@@ -21,7 +21,7 @@ const VECTOR_V_COMPRESSION_FACTOR_768: usize = 4;
 const C2_SIZE_768: usize = (COEFFICIENTS_IN_RING_ELEMENT * VECTOR_V_COMPRESSION_FACTOR_768) / 8;
 const CPA_PKE_SECRET_KEY_SIZE_768: usize =
     (RANK_768 * COEFFICIENTS_IN_RING_ELEMENT * BITS_PER_COEFFICIENT) / 8;
-const CPA_PKE_PUBLIC_KEY_SIZE_768: usize = T_AS_NTT_ENCODED_SIZE_768 + 32;
+pub(crate) const CPA_PKE_PUBLIC_KEY_SIZE_768: usize = T_AS_NTT_ENCODED_SIZE_768 + 32;
 // These two are used in the hybrid kem. This could probably be improved.
 pub(crate) const CPA_PKE_CIPHERTEXT_SIZE_768: usize = C1_SIZE_768 + C2_SIZE_768;
 pub(crate) const SECRET_KEY_SIZE_768: usize =

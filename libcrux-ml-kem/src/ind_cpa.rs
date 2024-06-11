@@ -13,8 +13,8 @@ use crate::{
         deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
         serialize_uncompressed_ring_element,
     },
-    vector::Operations,
     utils::into_padded_array,
+    vector::Operations,
 };
 
 /// Concatenate `t` and `ρ` into the public key.

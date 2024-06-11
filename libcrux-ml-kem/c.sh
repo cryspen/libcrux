@@ -68,3 +68,15 @@ cp $EURYDICE_HOME/include/eurydice_glue.h .
 clang-format --style=Google -i *.c *.h
 clang-format --style=Google -i internal/*.h
 clang-format --style=Google -i intrinsics/*.h
+
+# Write out infos about the used tools
+rm -f code_gen.txt
+echo "This code was generated with the following tools:" >> code_gen.txt
+echo -n "Charon: " >> code_gen.txt
+git -C $CHARON_HOME rev-parse HEAD >> code_gen.txt
+echo -n "Eurydice: " >> code_gen.txt
+git -C $EURYDICE_HOME rev-parse HEAD >> code_gen.txt
+echo -n "Karamel: " >> code_gen.txt
+git -C $KRML_HOME rev-parse HEAD >> code_gen.txt
+echo -n "F*: " >> code_gen.txt
+git -C $FSTAR_HOME rev-parse HEAD >> code_gen.txt

@@ -88,7 +88,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
 endif()
 
 # This is only for local testing and we assume neon on arm64.
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED $ENV{LIBCRUX_NEON})
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED ENV{LIBCRUX_NEON})
     message(STATUS "Detected an arm64 architecture")
     add_compile_definitions(LIBCRUX_AARCH64)
 

@@ -13,10 +13,6 @@ files:
     api:
       - [libcrux_intrinsics, avx2]
 
-  - name: libcrux_platform
-    private:
-      - [libcrux_platform, "*"]
-
   # SHA3 (no mention of libcrux_mlkem in this section, please)
 
   # Keep the per-target seperation idea: each SHA3 variant in its own file
@@ -158,7 +154,7 @@ files:
         - [ core, "*"]
         - [ libcrux_ml_kem, types, "*"]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
-        - [ libcrux_ml_kem, utils ]
+        - [ libcrux_ml_kem, utils, "*" ]
       monomorphizations_using:
         - [ Eurydice, "*" ]
         - [ libcrux_ml_kem, types, "*"]
@@ -167,7 +163,7 @@ files:
         - [ libcrux_ml_kem, types ]
         - [ libcrux_ml_kem, constants ]
         - [ libcrux_ml_kem, constant_time_ops, "*"]
-        - [ libcrux_ml_kem, utils ]
+        - [ libcrux_ml_kem, utils, "*" ]
     api:
       - [Eurydice, "*"]
 
