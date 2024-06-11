@@ -2,7 +2,7 @@
 //!
 //! A KEM interface.
 //!
-//! For ECDH structs, check the [`libcrux::ecdh`] module.
+//! For ECDH structs, check the [`libcrux_ecdh`] crate.
 //!
 //! Available algorithms:
 //! * [`Algorithm::X25519`]\: x25519 ECDH KEM. Also see [`libcrux::ecdh#x25519`].
@@ -34,12 +34,9 @@
 
 use rand::{CryptoRng, Rng};
 
-// use crate::{
-//     ecdh::{self, p256, p256_derive, x25519},
-//     hacl::sha3,
-// };
-use libcrux::ecdh::p256_derive;
-use libcrux::ecdh::{self, p256, x25519};
+use libcrux_ecdh;
+use libcrux_ecdh::{p256_derive, x25519_derive};
+use libcrux_ecdh::{P256PrivateKey, P256PublicKey, X25519PrivateKey, X25519PublicKey};
 use libcrux_sha3 as sha3;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
@@ -96,7 +93,7 @@ pub enum Algorithm {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Error {
-    EcDhError(ecdh::Error),
+    EcDhError(libcrux_ecdh::Error),
     KeyGen,
     Encapsulate,
     Decapsulate,
@@ -106,25 +103,25 @@ pub enum Error {
     InvalidCiphertext,
 }
 
-impl TryFrom<Algorithm> for ecdh::Algorithm {
+impl TryFrom<Algorithm> for libcrux_ecdh::Algorithm {
     type Error = &'static str;
 
     fn try_from(value: Algorithm) -> Result<Self, Self::Error> {
         match value {
-            Algorithm::X25519 => Ok(ecdh::Algorithm::X25519),
-            Algorithm::X448 => Ok(ecdh::Algorithm::X448),
-            Algorithm::Secp256r1 => Ok(ecdh::Algorithm::P256),
-            Algorithm::Secp384r1 => Ok(ecdh::Algorithm::P384),
-            Algorithm::Secp521r1 => Ok(ecdh::Algorithm::P521),
-            Algorithm::X25519MlKem768Draft00 => Ok(ecdh::Algorithm::X25519),
-            Algorithm::XWingKemDraft02 => Ok(ecdh::Algorithm::X25519),
+            Algorithm::X25519 => Ok(libcrux_ecdh::Algorithm::X25519),
+            Algorithm::X448 => Ok(libcrux_ecdh::Algorithm::X448),
+            Algorithm::Secp256r1 => Ok(libcrux_ecdh::Algorithm::P256),
+            Algorithm::Secp384r1 => Ok(libcrux_ecdh::Algorithm::P384),
+            Algorithm::Secp521r1 => Ok(libcrux_ecdh::Algorithm::P521),
+            Algorithm::X25519MlKem768Draft00 => Ok(libcrux_ecdh::Algorithm::X25519),
+            Algorithm::XWingKemDraft02 => Ok(libcrux_ecdh::Algorithm::X25519),
             _ => Err("provided algorithm is not an ECDH algorithm"),
         }
     }
 }
 
-impl From<ecdh::Error> for Error {
-    fn from(value: ecdh::Error) -> Self {
+impl From<libcrux_ecdh::Error> for Error {
+    fn from(value: libcrux_ecdh::Error) -> Self {
         Error::EcDhError(value)
     }
 }
@@ -132,7 +129,7 @@ impl From<ecdh::Error> for Error {
 /// An ML-KEM768-x25519 private key.
 pub struct X25519MlKem768Draft00PrivateKey {
     pub mlkem: MlKem768PrivateKey,
-    pub x25519: x25519::PrivateKey,
+    pub x25519: X25519PrivateKey,
 }
 
 impl X25519MlKem768Draft00PrivateKey {
@@ -157,8 +154,8 @@ impl X25519MlKem768Draft00PrivateKey {
 /// An X-Wing private key.
 pub struct XWingKemDraft02PrivateKey {
     pub sk_m: MlKem768PrivateKey,
-    pub sk_x: x25519::PrivateKey,
-    pub pk_x: x25519::PublicKey,
+    pub sk_x: X25519PrivateKey,
+    pub pk_x: X25519PublicKey,
 }
 
 impl XWingKemDraft02PrivateKey {
@@ -186,8 +183,8 @@ impl XWingKemDraft02PrivateKey {
 
 /// A KEM private key.
 pub enum PrivateKey {
-    X25519(x25519::PrivateKey),
-    P256(p256::PrivateKey),
+    X25519(X25519PrivateKey),
+    P256(P256PrivateKey),
     MlKem512(MlKem512PrivateKey),
     MlKem768(MlKem768PrivateKey),
     X25519MlKem768Draft00(X25519MlKem768Draft00PrivateKey),
@@ -198,7 +195,7 @@ pub enum PrivateKey {
 /// An ML-KEM768-x25519 public key.
 pub struct X25519MlKem768Draft00PublicKey {
     pub mlkem: MlKem768PublicKey,
-    pub x25519: x25519::PublicKey,
+    pub x25519: X25519PublicKey,
 }
 
 impl X25519MlKem768Draft00PublicKey {
@@ -224,7 +221,7 @@ impl X25519MlKem768Draft00PublicKey {
 /// An X-Wing public key.
 pub struct XWingKemDraft02PublicKey {
     pub pk_m: MlKem768PublicKey,
-    pub pk_x: x25519::PublicKey,
+    pub pk_x: X25519PublicKey,
 }
 
 impl XWingKemDraft02PublicKey {
@@ -249,8 +246,8 @@ impl XWingKemDraft02PublicKey {
 
 /// A KEM public key.
 pub enum PublicKey {
-    X25519(x25519::PublicKey),
-    P256(p256::PublicKey),
+    X25519(X25519PublicKey),
+    P256(P256PublicKey),
     MlKem512(MlKem512PublicKey),
     MlKem768(MlKem768PublicKey),
     X25519MlKem768Draft00(X25519MlKem768Draft00PublicKey),
@@ -260,12 +257,12 @@ pub enum PublicKey {
 
 /// A KEM ciphertext
 pub enum Ct {
-    X25519(x25519::PublicKey),
-    P256(p256::PublicKey),
+    X25519(X25519PublicKey),
+    P256(P256PublicKey),
     MlKem512(MlKem512Ciphertext),
     MlKem768(MlKem768Ciphertext),
-    X25519MlKem768Draft00(MlKem768Ciphertext, x25519::PublicKey),
-    XWingKemDraft02(MlKem768Ciphertext, x25519::PublicKey),
+    X25519MlKem768Draft00(MlKem768Ciphertext, X25519PublicKey),
+    XWingKemDraft02(MlKem768Ciphertext, X25519PublicKey),
     MlKem1024(MlKem1024Ciphertext),
 }
 
@@ -279,7 +276,7 @@ impl Ct {
                 } else {
                     return Err(Error::InvalidPrivateKey);
                 };
-                x25519::derive(ct, sk).map_err(|e| e.into()).map(Ss::X25519)
+                x25519_derive(ct, sk).map_err(|e| e.into()).map(Ss::X25519)
             }
             Ct::P256(ct) => {
                 let sk = if let PrivateKey::P256(k) = sk {
@@ -321,7 +318,7 @@ impl Ct {
                         return Err(Error::InvalidPrivateKey);
                     };
                 let kss = mlkem768::decapsulate(ksk, kct);
-                let xss = x25519::derive(xct, xsk)?;
+                let xss = x25519_derive(xct, xsk)?;
 
                 Ok(Ss::X25519MlKem768Draft00(kss, xss))
             }
@@ -338,13 +335,13 @@ impl Ct {
                         return Err(Error::InvalidPrivateKey);
                     };
                 let ss_m = mlkem768::decapsulate(sk_m, ct_m);
-                let ss_x = x25519::derive(ct_x, sk_x)?;
+                let ss_x = x25519_derive(ct_x, sk_x)?;
 
                 Ok(Ss::XWingKemDraft02(
                     ss_m,
                     ss_x,
-                    x25519::PublicKey(ct_x.0.clone()),
-                    x25519::PublicKey(pk_x.0.clone()),
+                    X25519PublicKey(ct_x.0.clone()),
+                    X25519PublicKey(pk_x.0.clone()),
                 ))
             }
             Ct::MlKem1024(ct) => {
@@ -363,16 +360,16 @@ impl Ct {
 
 /// A KEM shared secret
 pub enum Ss {
-    X25519(x25519::PublicKey),
-    P256(p256::PublicKey),
+    X25519(X25519PublicKey),
+    P256(P256PublicKey),
     MlKem512(MlKemSharedSecret),
     MlKem768(MlKemSharedSecret),
-    X25519MlKem768Draft00(MlKemSharedSecret, x25519::PublicKey),
+    X25519MlKem768Draft00(MlKemSharedSecret, X25519PublicKey),
     XWingKemDraft02(
         MlKemSharedSecret, // ss_M
-        x25519::PublicKey, // ss_X
-        x25519::PublicKey, // ct_X
-        x25519::PublicKey, // pk_X
+        X25519PublicKey,   // ss_X
+        X25519PublicKey,   // ct_X
+        X25519PublicKey,   // pk_X
     ),
     MlKem1024(MlKemSharedSecret),
 }
@@ -440,12 +437,12 @@ impl PublicKey {
     pub fn encapsulate(&self, rng: &mut (impl CryptoRng + Rng)) -> Result<(Ss, Ct), Error> {
         match self {
             PublicKey::X25519(pk) => {
-                let (new_sk, new_pk) = ecdh::x25519_key_gen(rng)?;
-                let gxy = x25519::derive(pk, &new_sk)?;
+                let (new_sk, new_pk) = libcrux_ecdh::x25519_key_gen(rng)?;
+                let gxy = x25519_derive(pk, &new_sk)?;
                 Ok((Ss::X25519(gxy), Ct::X25519(new_pk)))
             }
             PublicKey::P256(pk) => {
-                let (new_sk, new_pk) = ecdh::p256_key_gen(rng)?;
+                let (new_sk, new_pk) = libcrux_ecdh::p256_key_gen(rng)?;
                 let gxy = p256_derive(pk, &new_sk)?;
                 Ok((Ss::P256(gxy), Ct::P256(new_pk)))
             }
@@ -474,8 +471,8 @@ impl PublicKey {
             }) => {
                 let seed = mlkem_rand(rng)?;
                 let (mlkem_ct, mlkem_ss) = mlkem768::encapsulate(kpk, seed);
-                let (x_sk, x_pk) = ecdh::x25519_key_gen(rng)?;
-                let x_ss = x25519::derive(xpk, &x_sk)?;
+                let (x_sk, x_pk) = libcrux_ecdh::x25519_key_gen(rng)?;
+                let x_ss = x25519_derive(xpk, &x_sk)?;
 
                 Ok((
                     Ss::X25519MlKem768Draft00(mlkem_ss, x_ss),
@@ -486,17 +483,17 @@ impl PublicKey {
             PublicKey::XWingKemDraft02(XWingKemDraft02PublicKey { pk_m, pk_x }) => {
                 let seed = mlkem_rand(rng)?;
                 let (ct_m, ss_m) = mlkem768::encapsulate(pk_m, seed);
-                let (ek_x, ct_x) = ecdh::x25519_key_gen(rng)?;
-                let ss_x = x25519::derive(pk_x, &ek_x)?;
+                let (ek_x, ct_x) = libcrux_ecdh::x25519_key_gen(rng)?;
+                let ss_x = x25519_derive(pk_x, &ek_x)?;
 
                 Ok((
                     Ss::XWingKemDraft02(
                         ss_m,
                         ss_x,
-                        x25519::PublicKey(ct_x.0.clone()),
-                        x25519::PublicKey(pk_x.0.clone()),
+                        X25519PublicKey(ct_x.0.clone()),
+                        X25519PublicKey(pk_x.0.clone()),
                     ),
-                    Ct::XWingKemDraft02(ct_m, x25519::PublicKey(ct_x.0.clone())),
+                    Ct::XWingKemDraft02(ct_m, X25519PublicKey(ct_x.0.clone())),
                 ))
             }
         }
@@ -654,7 +651,8 @@ impl Ct {
 pub fn secret_to_public(alg: Algorithm, sk: impl AsRef<[u8]>) -> Result<Vec<u8>, Error> {
     match alg {
         Algorithm::X25519 | Algorithm::Secp256r1 => {
-            ecdh::secret_to_public(alg.try_into().unwrap(), sk.as_ref()).map_err(|e| e.into())
+            libcrux_ecdh::secret_to_public(alg.try_into().unwrap(), sk.as_ref())
+                .map_err(|e| e.into())
         }
         _ => Err(Error::UnsupportedAlgorithm),
     }
@@ -682,10 +680,10 @@ pub fn key_gen(
     rng: &mut (impl CryptoRng + Rng),
 ) -> Result<(PrivateKey, PublicKey), Error> {
     match alg {
-        Algorithm::X25519 => ecdh::x25519_key_gen(rng)
+        Algorithm::X25519 => libcrux_ecdh::x25519_key_gen(rng)
             .map_err(|e| e.into())
             .map(|(private, public)| (PrivateKey::X25519(private), PublicKey::X25519(public))),
-        Algorithm::Secp256r1 => ecdh::p256_key_gen(rng)
+        Algorithm::Secp256r1 => libcrux_ecdh::p256_key_gen(rng)
             .map_err(|e| e.into())
             .map(|(private, public)| (PrivateKey::P256(private), PublicKey::P256(public))),
         Algorithm::MlKem512 => {
@@ -702,7 +700,7 @@ pub fn key_gen(
         }
         Algorithm::X25519MlKem768Draft00 => {
             let (mlkem_private, mlkem_public) = gen_mlkem768(rng)?;
-            let (x25519_private, x25519_public) = ecdh::x25519_key_gen(rng)?;
+            let (x25519_private, x25519_public) = libcrux_ecdh::x25519_key_gen(rng)?;
             Ok((
                 PrivateKey::X25519MlKem768Draft00(X25519MlKem768Draft00PrivateKey {
                     mlkem: mlkem_private,
@@ -716,12 +714,12 @@ pub fn key_gen(
         }
         Algorithm::XWingKemDraft02 => {
             let (sk_m, pk_m) = gen_mlkem768(rng)?;
-            let (sk_x, pk_x) = ecdh::x25519_key_gen(rng)?;
+            let (sk_x, pk_x) = libcrux_ecdh::x25519_key_gen(rng)?;
             Ok((
                 PrivateKey::XWingKemDraft02(XWingKemDraft02PrivateKey {
                     sk_m,
                     sk_x,
-                    pk_x: x25519::PublicKey(pk_x.0.clone()),
+                    pk_x: X25519PublicKey(pk_x.0.clone()),
                 }),
                 PublicKey::XWingKemDraft02(XWingKemDraft02PublicKey { pk_m, pk_x }),
             ))
@@ -736,4 +734,28 @@ fn mlkem_rand(
     let mut seed = [0; libcrux_ml_kem::SHARED_SECRET_SIZE];
     rng.try_fill_bytes(&mut seed).map_err(|_| Error::KeyGen)?;
     Ok(seed)
+}
+
+impl TryInto<libcrux_ecdh::X25519PublicKey> for PublicKey {
+    type Error = libcrux_ecdh::Error;
+
+    fn try_into(self) -> Result<libcrux_ecdh::X25519PublicKey, libcrux_ecdh::Error> {
+        if let PublicKey::X25519(k) = self {
+            Ok(k)
+        } else {
+            Err(libcrux_ecdh::Error::InvalidPoint)
+        }
+    }
+}
+
+impl TryInto<libcrux_ecdh::X25519PrivateKey> for PrivateKey {
+    type Error = libcrux_ecdh::Error;
+
+    fn try_into(self) -> Result<libcrux_ecdh::X25519PrivateKey, libcrux_ecdh::Error> {
+        if let PrivateKey::X25519(k) = self {
+            Ok(k)
+        } else {
+            Err(libcrux_ecdh::Error::InvalidPoint)
+        }
+    }
 }

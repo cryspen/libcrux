@@ -14,7 +14,7 @@ path = "src/kem.rs"
 [dependencies]
 libcrux-ml-kem = { version = "0.0.2-pre.2", path = "../libcrux-ml-kem" }
 libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
-libcrux = { version = "0.0.2-pre.2", path = "../" }
+libcrux-ecdh = { version = "0.0.2-pre.2", path = "../libcrux-ecdh" }
 rand = { version = "0.8" }
 
 
