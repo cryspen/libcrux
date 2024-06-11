@@ -3,9 +3,97 @@ use std::{
     io::{Read, Write},
 };
 
-use libcrux::{drbg::Drbg, kem};
+use base64::prelude::*;
+use libcrux::{
+    drbg::Drbg,
+    kem::{self, PublicKey},
+};
 
 use clap::{Parser, Subcommand};
+use serde::{Deserialize, Serialize};
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+struct Lint {
+    lintName: String,
+    algorithm: String,
+    valid: bool,
+    r#type: String,
+    id: String,
+    publicKey: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize)]
+struct LintResult {
+    lintName: String,
+    id: String,
+    result: String,
+}
+
+enum LintType {
+    PublicKey,
+}
+
+fn kem_algorithm(algorithm: &str) -> kem::Algorithm {
+    match algorithm {
+        "MlKem512" => kem::Algorithm::MlKem512,
+        "MlKem768" => kem::Algorithm::MlKem768,
+        "MlKem1024" => kem::Algorithm::MlKem1024,
+        _ => panic!("Unsupported kem algorithm {algorithm}"),
+    }
+}
+
+fn kem_algorithm_str(algorithm: &kem::Algorithm) -> String {
+    match algorithm {
+        kem::Algorithm::MlKem512 => "MlKem512".to_owned(),
+        kem::Algorithm::MlKem768 => "MlKem768".to_owned(),
+        kem::Algorithm::MlKem1024 => "MlKem1024".to_owned(),
+        _ => panic!("Unsupported kem algorithm {algorithm:?}"),
+    }
+}
+
+impl Lint {
+    // XXX: Only kem for now. Needs updating for ml-dsa
+    fn new(
+        id: String,
+        lint_type: LintType,
+        pk: &[u8],
+        name: &str,
+        algorithm: kem::Algorithm,
+        valid: bool,
+    ) -> Self {
+        Self {
+            lintName: name.to_owned(),
+            r#type: match lint_type {
+                LintType::PublicKey => "PublicKey".to_owned(),
+            },
+            id,
+            publicKey: BASE64_STANDARD.encode(pk),
+            algorithm: kem_algorithm_str(&algorithm),
+            valid,
+        }
+    }
+
+    fn input_type(&self) -> Option<LintType> {
+        match self.publicKey.as_str() {
+            "PublicKey" => Some(LintType::PublicKey),
+            _ => None,
+        }
+    }
+
+    fn id(&self) -> &str {
+        &self.id
+    }
+
+    fn kem_algorithm(&self) -> kem::Algorithm {
+        kem_algorithm(&self.algorithm)
+    }
+
+    fn public_key(&self) -> Option<Vec<u8>> {
+        BASE64_STANDARD.decode(&self.publicKey).ok()
+    }
+}
 
 #[derive(Subcommand)]
 enum GenerateCli {
@@ -47,6 +135,27 @@ enum GenerateCli {
         /// This defaults to `mlkem-decapsulated.ss``.
         #[arg(short, long)]
         ss: Option<String>,
+    },
+    Lint {
+        /// Optionally, a file name to store/read the lint.
+        /// Defaults to `lint.json`.
+        ///
+        /// The lint will be store into/read from `$file.json` when this is used.
+        #[arg(short, long)]
+        file: Option<String>,
+
+        /// Generate a lint with the given name.
+        #[arg(short, long)]
+        name: Option<String>,
+
+        /// A raw, invalid, hex public key.
+        #[arg(short, long)]
+        invalid: Option<String>,
+
+        /// Optionally, a file name to store the lint result.
+        /// Defaults to `lint_result.json`.
+        #[arg(short, long)]
+        result: Option<String>,
     },
 }
 
@@ -159,7 +268,121 @@ fn main() {
                 .write_all(&shared_secret.encode())
                 .expect("Error writing public key");
         }
+        GenerateCli::Lint {
+            file,
+            name,
+            result,
+            invalid,
+        } => {
+            let file = match file {
+                Some(n) => n,
+                None => "lint.json".to_owned(),
+            };
+
+            if let Some(lint_name) = name {
+                // Generate for the given lint.
+
+                // There's a hex public key.
+                let (public_key, validity) = if let Some(pk) = invalid {
+                    let pk_bytes = hex::decode(&pk)
+                        .expect(&format!("Error reading hex pk from command line\n\t{}", pk));
+                    (pk_bytes, false)
+                } else {
+                    // Generates a key pair.
+                    let (_, public_key) = kem::key_gen(alg, &mut rng).unwrap();
+                    (public_key.encode(), true)
+                };
+
+                let mut payload = lint_name.as_bytes().to_vec();
+                payload.extend_from_slice(&public_key);
+                let id = libcrux::digest::sha2_256(&payload);
+                let lint = Lint::new(
+                    hex::encode(&id),
+                    LintType::PublicKey,
+                    &public_key,
+                    &lint_name,
+                    alg,
+                    validity,
+                );
+                let lint = lint;
+
+                println!("Writing lint to {file}");
+                let mut file =
+                    File::create(file.clone()).expect(&format!("Can not create file {file}"));
+                serde_json::to_writer_pretty(&mut file, &lint).expect("Error writing lint file");
+            } else {
+                // Run the lint in the file.
+                let json_file =
+                    File::open(file.clone()).expect(&format!("Can not open file {file}"));
+                let lint: Lint = serde_json::from_reader(json_file)
+                    .expect(&format!("Error reading file {file}"));
+                let alg = lint.kem_algorithm();
+
+                let pk_bytes = lint.public_key().expect("Error reading public key.");
+                eprintln!("alg: {alg:?}");
+                let result_key = PublicKey::decode(alg, &pk_bytes);
+
+                let mut lint_result = LintResult {
+                    lintName: lint.lintName.clone(),
+                    id: lint.id.clone(),
+                    result: "Failure".to_owned(),
+                };
+
+                // We expect this one to pass.
+                if lint.valid && result_key.is_err() {
+                    lint_result.result = "Error".to_owned();
+                    print_status("Error: valid lint lead to error.", &pk_bytes, &lint);
+                }
+
+                // This pk should not have passed.
+                if !lint.valid && result_key.is_ok() {
+                    lint_result.result = "Error".to_owned();
+                    print_status(
+                        "Error: pk validation didn't fail for invalid lint .",
+                        &pk_bytes,
+                        &lint,
+                    );
+                }
+
+                // Passed. Valid.
+                if lint.valid && result_key.is_ok() {
+                    lint_result.result = "Pass".to_owned();
+                    print_status(
+                        "Pass: valid lint lead to successful pk validation.",
+                        &pk_bytes,
+                        &lint,
+                    );
+                }
+
+                // Passed. Invalid
+                if !lint.valid && result_key.is_err() {
+                    lint_result.result = "Pass".to_owned();
+                    print_status(
+                        "Pass: invalid lint lead to pk validation error.",
+                        &pk_bytes,
+                        &lint,
+                    );
+                }
+
+                let file = match result {
+                    Some(n) => n,
+                    None => "lint_result.json".to_owned(),
+                };
+
+                println!("Writing lint to {file}");
+                let mut file =
+                    File::create(file.clone()).expect(&format!("Can not create file {file}"));
+                serde_json::to_writer_pretty(&mut file, &lint_result)
+                    .expect("Error writing lint file");
+            }
+        }
     }
+}
+
+fn print_status(msg: &str, pk_bytes: &[u8], lint: &Lint) {
+    eprintln!("{msg}");
+    eprintln!("pk: {}", hex::encode(pk_bytes));
+    eprintln!("lint: {}", serde_json::to_string_pretty(&lint).unwrap());
 }
 
 fn bytes_from_file(file: String) -> Vec<u8> {
