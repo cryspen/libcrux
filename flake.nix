@@ -48,6 +48,7 @@
         ml-kem = craneLib.buildPackage {
           name = "ml-kem";
           inherit src cargoArtifacts;
+
           nativeBuildInputs = [
             pkgs.clang-tools
             pkgs.cmake
@@ -73,6 +74,7 @@
             build/Release/ml_kem_bench
           '';
           installPhase = "cp -r . $out";
+
           CHARON_HOME = inputs.charon.packages.${system}.default;
           EURYDICE_HOME = pkgs.runCommand "eurydice-home" { } ''
             mkdir -p $out
@@ -81,6 +83,7 @@
           '';
           FSTAR_HOME = inputs.fstar.packages.${system}.default;
           KRML_HOME = inputs.karamel.packages.${system}.default.home;
+
           CHARON_REV = inputs.charon.rev;
           EURYDICE_REV = inputs.eurydice.rev;
           KRML_REV = inputs.karamel.rev;
