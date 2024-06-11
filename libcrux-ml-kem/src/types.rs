@@ -55,7 +55,6 @@ macro_rules! impl_generic_struct {
             //     self.value.split_at(mid)
             // }
 
-
             /// The number of bytes.
             pub const fn len() -> usize {
                 SIZE
@@ -137,8 +136,8 @@ mod index_impls {
 
 /// An ML-KEM key pair
 pub struct MlKemKeyPair<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize> {
-    pub (crate) sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
-    pub (crate) pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
+    pub(crate) sk: MlKemPrivateKey<PRIVATE_KEY_SIZE>,
+    pub(crate) pk: MlKemPublicKey<PUBLIC_KEY_SIZE>,
 }
 
 impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
