@@ -46,6 +46,9 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
+      - name: 🛠️ Setup Rust Nightly
+        run: rustup toolchain install nightly
+
       - name: 🛠️ Setup Ubuntu x86
         if: ${{ matrix.bits == 32 &&  matrix.os == 'ubuntu-latest' }}
         run: |
