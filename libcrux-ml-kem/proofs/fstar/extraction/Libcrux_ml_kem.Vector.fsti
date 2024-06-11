@@ -60,7 +60,7 @@ val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
       (requires
         (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
         coefficient_bits =. 11uy) &&
-        fe <. (cast (Libcrux_ml_kem.Constants.v_FIELD_MODULUS <: i16) <: u16))
+        fe <. (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u16))
       (ensures
         fun result ->
           let result:i16 = result in
@@ -84,7 +84,7 @@ val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val compress_message_coefficient (fe: u16)
     : Prims.Pure u8
-      (requires fe <. (cast (Libcrux_ml_kem.Constants.v_FIELD_MODULUS <: i16) <: u16))
+      (requires fe <. (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u16))
       (ensures
         fun result ->
           let result:u8 = result in
@@ -125,7 +125,9 @@ val montgomery_reduce_element (value: i32)
     : Prims.Pure i16
       (requires
         value >=.
-        ((cast (Core.Ops.Arith.Neg.neg Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32) *!
+        ((Core.Ops.Arith.Neg.neg (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: i32)
+            <:
+            i32) *!
           v_MONTGOMERY_R
           <:
           i32) &&

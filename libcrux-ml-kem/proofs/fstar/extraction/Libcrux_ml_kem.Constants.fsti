@@ -17,9 +17,6 @@ let v_COEFFICIENTS_IN_RING_ELEMENT: usize = Rust_primitives.Hax.dropped_body
 
 let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = Rust_primitives.Hax.dropped_body
 
-/// Field modulus: 3329
-let v_FIELD_MODULUS: i16 = Rust_primitives.Hax.dropped_body
-
 /// SHA3 512 digest size
 let v_G_DIGEST_SIZE: usize = Rust_primitives.Hax.dropped_body
 

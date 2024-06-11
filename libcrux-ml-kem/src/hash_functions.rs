@@ -174,32 +174,20 @@ pub(crate) mod avx2 {
             let mut out1 = [0u8; LEN];
             let mut out2 = [0u8; LEN];
             let mut out3 = [0u8; LEN];
-            
+
             match K as u8 {
                 2 => {
                     x4::shake256(
-                        &input[0],
-                        &input[1],
-                        &input[0],
-                        &input[0],
-                        &mut out0,
-                        &mut out1,
-                        &mut out2,
-                        &mut out3,
+                        &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1,
+                        &mut out2, &mut out3,
                     );
                     out[0] = out0;
                     out[1] = out1;
                 }
                 3 => {
                     x4::shake256(
-                        &input[0],
-                        &input[1],
-                        &input[2],
-                        &input[0],
-                        &mut out0,
-                        &mut out1,
-                        &mut out2,
-                        &mut out3,
+                        &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1,
+                        &mut out2, &mut out3,
                     );
                     out[0] = out0;
                     out[1] = out1;
@@ -207,14 +195,8 @@ pub(crate) mod avx2 {
                 }
                 4 => {
                     x4::shake256(
-                        &input[0],
-                        &input[1],
-                        &input[2],
-                        &input[3],
-                        &mut out0,
-                        &mut out1,
-                        &mut out2,
-                        &mut out3,
+                        &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1,
+                        &mut out2, &mut out3,
                     );
                     out[0] = out0;
                     out[1] = out1;
