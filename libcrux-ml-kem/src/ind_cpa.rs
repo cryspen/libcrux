@@ -3,7 +3,6 @@ use crate::{
     hash_functions::Hash,
     helper::cloop,
     matrix::*,
-    types::*,
     ntt::{ntt_binomially_sampled_ring_element, ntt_vector_u},
     polynomial::PolynomialRingElement,
     sampling::sample_from_binomial_distribution,
@@ -14,6 +13,7 @@ use crate::{
         deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
         serialize_uncompressed_ring_element,
     },
+    types::*,
     utils::into_padded_array,
     vector::Operations,
 };
@@ -156,7 +156,10 @@ pub(crate) fn generate_keypair_unpacked<
     Hasher: Hash<K>,
 >(
     key_generation_seed: &[u8],
-) -> (MlKemPrivateKeyUnpacked<K,Vector>,MlKemPublicKeyUnpacked<K,Vector>) {
+) -> (
+    MlKemPrivateKeyUnpacked<K, Vector>,
+    MlKemPublicKeyUnpacked<K, Vector>,
+) {
     // (ρ,σ) := G(d)
     let hashed = Hasher::G(key_generation_seed);
     let (seed_for_A, seed_for_secret_and_error) = hashed.split_at(32);
@@ -170,7 +173,7 @@ pub(crate) fn generate_keypair_unpacked<
         sample_vector_cbd_then_ntt::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
             prf_input,
             domain_separator,
-        ); 
+        );
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
@@ -180,17 +183,21 @@ pub(crate) fn generate_keypair_unpacked<
     });
     for i in 0..K {
         for j in 0..K {
-	   A[i][j] = A_transpose[j][i];
-	}
+            A[i][j] = A_transpose[j][i];
+        }
     }
-//  We would like to write the following but it is not supported by Eurydice yet.
-//    let A = core::array::from_fn(|i| {
-//        core::array::from_fn(|j| A_transpose[j][i])
-//    }); 
+    //  We would like to write the following but it is not supported by Eurydice yet.
+    //    let A = core::array::from_fn(|i| {
+    //        core::array::from_fn(|j| A_transpose[j][i])
+    //    });
 
-    let pk = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose: A, seed_for_A : seed_for_A.try_into().unwrap()};
-    let sk = MlKemPrivateKeyUnpacked {secret_as_ntt};
-    (sk,pk)
+    let pk = MlKemPublicKeyUnpacked {
+        t_as_ntt,
+        A_transpose: A,
+        seed_for_A: seed_for_A.try_into().unwrap(),
+    };
+    let sk = MlKemPrivateKeyUnpacked { secret_as_ntt };
+    (sk, pk)
 }
 
 #[allow(non_snake_case)]
@@ -206,12 +213,15 @@ pub(crate) fn generate_keypair<
 >(
     key_generation_seed: &[u8],
 ) -> ([u8; PRIVATE_KEY_SIZE], [u8; PUBLIC_KEY_SIZE]) {
-    let (sk,pk) = generate_keypair_unpacked::<K,ETA1,ETA1_RANDOMNESS_SIZE,Vector,Hasher>(key_generation_seed);
+    let (sk, pk) = generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
+        key_generation_seed,
+    );
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
         serialize_public_key::<K, RANKED_BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
-            &pk.t_as_ntt, &pk.seed_for_A,
+            &pk.t_as_ntt,
+            &pk.seed_for_A,
         );
 
     // sk := Encode_12(sˆ mod^{+}q)
@@ -219,7 +229,6 @@ pub(crate) fn generate_keypair<
 
     (secret_key_serialized, public_key_serialized)
 }
-
 
 /// Call [`compress_then_serialize_ring_element_u`] on each ring element.
 fn compress_then_serialize_u<
@@ -297,7 +306,7 @@ pub(crate) fn encrypt_unpacked<
     Vector: Operations,
     Hasher: Hash<K>,
 >(
-    public_key: &MlKemPublicKeyUnpacked<K,Vector>,
+    public_key: &MlKemPublicKeyUnpacked<K, Vector>,
     message: [u8; SHARED_SECRET_SIZE],
     randomness: &[u8],
 ) -> [u8; CIPHERTEXT_SIZE] {
@@ -330,7 +339,12 @@ pub(crate) fn encrypt_unpacked<
 
     // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
     let message_as_ring_element = deserialize_then_decompress_message(message);
-    let v = compute_ring_element_v(&public_key.t_as_ntt, &r_as_ntt, &error_2, &message_as_ring_element);
+    let v = compute_ring_element_v(
+        &public_key.t_as_ntt,
+        &r_as_ntt,
+        &error_2,
+        &message_as_ring_element,
+    );
 
     let mut ciphertext = [0u8; CIPHERTEXT_SIZE];
 
@@ -384,13 +398,28 @@ pub(crate) fn encrypt<
     let seed = &public_key[T_AS_NTT_ENCODED_SIZE..];
     let A_transpose = sample_matrix_A::<K, Vector, Hasher>(into_padded_array(seed), false);
 
-    let public_key_unpacked = MlKemPublicKeyUnpacked {t_as_ntt, A_transpose, seed_for_A: seed.try_into().unwrap()};
-    encrypt_unpacked::<K,CIPHERTEXT_SIZE,T_AS_NTT_ENCODED_SIZE,C1_LEN,C2_LEN,
-                       U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,BLOCK_LEN,
-                       ETA1,ETA1_RANDOMNESS_SIZE,ETA2,ETA2_RANDOMNESS_SIZE,Vector,Hasher>(
-                        &public_key_unpacked, message, randomness)
+    let public_key_unpacked = MlKemPublicKeyUnpacked {
+        t_as_ntt,
+        A_transpose,
+        seed_for_A: seed.try_into().unwrap(),
+    };
+    encrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_LEN,
+        C2_LEN,
+        U_COMPRESSION_FACTOR,
+        V_COMPRESSION_FACTOR,
+        BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        Vector,
+        Hasher,
+    >(&public_key_unpacked, message, randomness)
 }
-
 
 /// Call [`deserialize_then_decompress_ring_element_u`] on each ring element
 /// in the `ciphertext`.
@@ -461,7 +490,7 @@ pub(crate) fn decrypt_unpacked<
     const V_COMPRESSION_FACTOR: usize,
     Vector: Operations,
 >(
-    secret_key: &MlKemPrivateKeyUnpacked<K,Vector>,
+    secret_key: &MlKemPrivateKeyUnpacked<K, Vector>,
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [u8; SHARED_SECRET_SIZE] {
     // u := Decompress_q(Decode_{d_u}(c), d_u)
@@ -492,9 +521,16 @@ pub(crate) fn decrypt<
     ciphertext: &[u8; CIPHERTEXT_SIZE],
 ) -> [u8; SHARED_SECRET_SIZE] {
     // sˆ := Decode_12(sk)
-    let secret_as_ntt = deserialize_secret_key::<K,Vector>(secret_key);
+    let secret_as_ntt = deserialize_secret_key::<K, Vector>(secret_key);
 
-    let secret_key_unpacked = MlKemPrivateKeyUnpacked{secret_as_ntt};
+    let secret_key_unpacked = MlKemPrivateKeyUnpacked { secret_as_ntt };
 
-    decrypt_unpacked::<K,CIPHERTEXT_SIZE,VECTOR_U_ENCODED_SIZE,U_COMPRESSION_FACTOR,V_COMPRESSION_FACTOR,Vector>(&secret_key_unpacked, ciphertext)
+    decrypt_unpacked::<
+        K,
+        CIPHERTEXT_SIZE,
+        VECTOR_U_ENCODED_SIZE,
+        U_COMPRESSION_FACTOR,
+        V_COMPRESSION_FACTOR,
+        Vector,
+    >(&secret_key_unpacked, ciphertext)
 }

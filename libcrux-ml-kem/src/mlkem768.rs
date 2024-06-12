@@ -44,11 +44,10 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 /// Am ML-KEM 768 Key pair
 pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
- /// An Unpacked ML-KEM 768 Public key
- pub type MlKem768PublicKeyUnpacked<Vector:Operations> = MlKemPublicKeyUnpacked<RANK_768,Vector>;
- /// Am Unpacked ML-KEM 768 Key pair
- pub type MlKem768KeyPairUnpacked<Vector:Operations> = MlKemKeyPairUnpacked<RANK_768,Vector>;
-
+/// An Unpacked ML-KEM 768 Public key
+pub type MlKem768PublicKeyUnpacked<Vector: Operations> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
+/// Am Unpacked ML-KEM 768 Key pair
+pub type MlKem768KeyPairUnpacked<Vector: Operations> = MlKemKeyPairUnpacked<RANK_768, Vector>;
 
 // Instantiate the different functions.
 macro_rules! instantiate {
@@ -143,7 +142,9 @@ macro_rules! instantiate {
             }
 
             // Unpacked API
-            pub fn generate_key_pair_unpacked(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPairUnpacked<$vec> {
+            pub fn generate_key_pair_unpacked(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem768KeyPairUnpacked<$vec> {
                 p::generate_keypair_unpacked::<
                     RANK_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
@@ -154,7 +155,7 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                 >(randomness)
             }
-            
+
             pub fn encapsulate_unpacked(
                 public_key: &MlKem768PublicKeyUnpacked<$vec>,
                 public_key_hash: &[u8],
@@ -176,7 +177,7 @@ macro_rules! instantiate {
                     ETA2_RANDOMNESS_SIZE,
                 >(public_key, public_key_hash, randomness)
             }
-            
+
             pub fn decapsulate_unpacked_portable(
                 private_key: &MlKem768KeyPairUnpacked<$vec>,
                 ciphertext: &MlKem768Ciphertext,
@@ -200,7 +201,6 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
-           
         }
     };
 }

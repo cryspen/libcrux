@@ -2,9 +2,9 @@ macro_rules! instantiate {
     ($modp:ident, $vector:path, $hash:path) => {
         pub mod $modp {
             use crate::{
+                types::{MlKemKeyPairUnpacked, MlKemPublicKeyUnpacked},
                 MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey, MlKemSharedSecret,
                 KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
-                types::{MlKemKeyPairUnpacked, MlKemPublicKeyUnpacked}
             };
 
             /// Portable generate key pair.
@@ -141,7 +141,7 @@ macro_rules! instantiate {
                 const ETA1_RANDOMNESS_SIZE: usize,
             >(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
-            ) -> MlKemKeyPairUnpacked<K,$vector> {
+            ) -> MlKemKeyPairUnpacked<K, $vector> {
                 crate::ind_cca::generate_keypair_unpacked::<
                     K,
                     CPA_PRIVATE_KEY_SIZE,
@@ -169,9 +169,9 @@ macro_rules! instantiate {
                 const ETA1: usize,
                 const ETA1_RANDOMNESS_SIZE: usize,
                 const ETA2: usize,
-                const ETA2_RANDOMNESS_SIZE: usize
+                const ETA2_RANDOMNESS_SIZE: usize,
             >(
-                public_key: &MlKemPublicKeyUnpacked<K,$vector>,
+                public_key: &MlKemPublicKeyUnpacked<K, $vector>,
                 public_key_hash: &[u8],
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
@@ -213,7 +213,7 @@ macro_rules! instantiate {
                 const ETA2_RANDOMNESS_SIZE: usize,
                 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
             >(
-                key_pair: &MlKemKeyPairUnpacked<K,$vector>,
+                key_pair: &MlKemKeyPairUnpacked<K, $vector>,
                 ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
             ) -> MlKemSharedSecret {
                 crate::ind_cca::decapsulate_unpacked::<
