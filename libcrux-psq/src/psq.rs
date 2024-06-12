@@ -8,7 +8,6 @@ use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
 use libcrux_hmac::hmac;
 use rand::{CryptoRng, Rng};
 
-pub const PSK_EXPIRATION: Duration = Duration::hours(2);
 pub const PSK_LENGTH: usize = 32;
 pub const K0_LENGTH: usize = 32;
 pub const KM_LENGTH: usize = 32;
@@ -173,12 +172,14 @@ impl PublicKey<'_> {
 pub struct PskMessage {
     enc: Ciphertext,
     ts: i64,
+    psk_ttl: Duration,
     mac: Mac,
 }
 
 pub fn generate_psk(
     pk: &PublicKey,
     sctx: &[u8],
+    psk_ttl: Duration,
     rng: &mut (impl CryptoRng + Rng),
 ) -> Result<(Psk, PskMessage), Error> {
     let (ik, enc) = pk.encapsulate(rng).map_err(|_| Error::GenerationError)?;
@@ -208,18 +209,28 @@ pub fn generate_psk(
         .expect("should receive the correct number of bytes from HKDF");
 
     let now = Utc::now();
-    let ts = now.timestamp();
+    let ts = now.timestamp_millis();
+    let mut mac_input = ts.to_be_bytes().to_vec();
+    mac_input.extend_from_slice(&psk_ttl.num_milliseconds().to_be_bytes());
 
     let mac: Mac = hmac(
         libcrux_hmac::Algorithm::Sha256,
         &km,
-        &ts.to_be_bytes(),
+        &mac_input,
         Some(MAC_LENGTH),
     )
     .try_into()
     .expect("should receive the correct number of bytes from HMAC");
 
-    Ok((psk, PskMessage { enc, ts, mac }))
+    Ok((
+        psk,
+        PskMessage {
+            enc,
+            ts,
+            psk_ttl,
+            mac,
+        },
+    ))
 }
 
 pub fn derive_psk(
@@ -228,7 +239,12 @@ pub fn derive_psk(
     message: &PskMessage,
     sctx: &[u8],
 ) -> Result<Psk, Error> {
-    let PskMessage { enc, ts, mac } = message;
+    let PskMessage {
+        enc,
+        ts,
+        psk_ttl,
+        mac,
+    } = message;
 
     let received_ts = if let Some(time) = DateTime::from_timestamp(*ts, 0) {
         time
@@ -237,7 +253,7 @@ pub fn derive_psk(
     };
 
     let now = Utc::now();
-    if now.signed_duration_since(received_ts) >= PSK_EXPIRATION {
+    if now.signed_duration_since(received_ts) >= *psk_ttl {
         return Err(Error::DerivationError);
     }
 
@@ -263,10 +279,13 @@ pub fn derive_psk(
     )
     .map_err(|_| Error::DerivationError)?;
 
+    let mut mac_input = (*ts).to_be_bytes().to_vec();
+    mac_input.extend_from_slice(&psk_ttl.num_milliseconds().to_be_bytes());
+
     let recomputed_mac: Mac = hmac(
         libcrux_hmac::Algorithm::Sha256,
         &km,
-        &ts.to_be_bytes(),
+        &mac_input,
         Some(MAC_LENGTH),
     )
     .try_into()
@@ -293,7 +312,8 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = generate_psk(&pk, sctx, &mut rng).unwrap();
+        let (psk_initiator, message) =
+            generate_psk(&pk, sctx, Duration::hours(2), &mut rng).unwrap();
 
         let psk_responder = derive_psk(&pk, &sk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
@@ -304,7 +324,8 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::MlKem768, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = generate_psk(&pk, sctx, &mut rng).unwrap();
+        let (psk_initiator, message) =
+            generate_psk(&pk, sctx, Duration::hours(2), &mut rng).unwrap();
 
         let psk_responder = derive_psk(&pk, &sk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
@@ -315,7 +336,8 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::ClassicMcEliece, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = generate_psk(&pk, sctx, &mut rng).unwrap();
+        let (psk_initiator, message) =
+            generate_psk(&pk, sctx, Duration::hours(2), &mut rng).unwrap();
 
         let psk_responder = derive_psk(&pk, &sk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
