@@ -1,6 +1,6 @@
 //! ML-KEM 512
 //!
-use super::{constants::*, ind_cca::*, *};
+use super::{constants::*, ind_cca::*, types::*, vector::Operations, *};
 
 // Kyber 768 parameters
 const RANK_768: usize = 3;
@@ -44,9 +44,15 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 /// Am ML-KEM 768 Key pair
 pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
+ /// An Unpacked ML-KEM 768 Public key
+ pub type MlKem768PublicKeyUnpacked<Vector:Operations> = MlKemPublicKeyUnpacked<RANK_768,Vector>;
+ /// Am Unpacked ML-KEM 768 Key pair
+ pub type MlKem768KeyPairUnpacked<Vector:Operations> = MlKemKeyPairUnpacked<RANK_768,Vector>;
+
+
 // Instantiate the different functions.
 macro_rules! instantiate {
-    ($modp:ident, $p:path) => {
+    ($modp:ident, $p:path, $vec:path) => {
         pub mod $modp {
             use super::*;
             use $p as p;
@@ -135,17 +141,77 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
+
+            // Unpacked API
+            pub fn generate_key_pair_unpacked(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768KeyPairUnpacked<$vec> {
+                p::generate_keypair_unpacked::<
+                    RANK_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    RANKED_BYTES_PER_RING_ELEMENT_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+            
+            pub fn encapsulate_unpacked(
+                public_key: &MlKem768PublicKeyUnpacked<$vec>,
+                public_key_hash: &[u8],
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                p::encapsulate_unpacked::<
+                    RANK_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    T_AS_NTT_ENCODED_SIZE_768,
+                    C1_SIZE_768,
+                    C2_SIZE_768,
+                    VECTOR_U_COMPRESSION_FACTOR_768,
+                    VECTOR_V_COMPRESSION_FACTOR_768,
+                    C1_BLOCK_SIZE_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, public_key_hash, randomness)
+            }
+            
+            pub fn decapsulate_unpacked_portable(
+                private_key: &MlKem768KeyPairUnpacked<$vec>,
+                ciphertext: &MlKem768Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::decapsulate_unpacked::<
+                    RANK_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                    T_AS_NTT_ENCODED_SIZE_768,
+                    C1_SIZE_768,
+                    C2_SIZE_768,
+                    VECTOR_U_COMPRESSION_FACTOR_768,
+                    VECTOR_V_COMPRESSION_FACTOR_768,
+                    C1_BLOCK_SIZE_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
+           
         }
     };
 }
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable}
+instantiate! {portable, ind_cca::instantiations::portable, crate::vector::portable::PortableVector}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2}
+instantiate! {avx2, ind_cca::instantiations::avx2, crate::vector::SIMD256Vector}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::instantiations::neon}
+instantiate! {neon, ind_cca::instantiations::neon, crate::vector::SIMD128Vector}
 
 /// Validate a public key.
 ///
