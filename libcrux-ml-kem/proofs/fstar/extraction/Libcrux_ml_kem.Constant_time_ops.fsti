@@ -3,22 +3,6 @@ module Libcrux_ml_kem.Constant_time_ops
 open Core
 open FStar.Mul
 
-/// Return 1 if `value` is not zero and 0 otherwise.
-val is_non_zero (value: u8)
-    : Prims.Pure u8
-      Prims.l_True
-      (ensures
-        fun result ->
-          let result:u8 = result in
-          Hax_lib.implies (value =. 0uy <: bool)
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 0uy <: bool) &&
-          Hax_lib.implies (value <>. 0uy <: bool)
-            (fun temp_0_ ->
-                let _:Prims.unit = temp_0_ in
-                result =. 1uy <: bool))
-
 /// Return 1 if the bytes of `lhs` and `rhs` do not exactly
 /// match and 0 otherwise.
 val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
@@ -32,6 +16,22 @@ val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
                 let _:Prims.unit = temp_0_ in
                 result =. 0uy <: bool) &&
           Hax_lib.implies (lhs <>. rhs <: bool)
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 1uy <: bool))
+
+/// Return 1 if `value` is not zero and 0 otherwise.
+val is_non_zero (value: u8)
+    : Prims.Pure u8
+      Prims.l_True
+      (ensures
+        fun result ->
+          let result:u8 = result in
+          Hax_lib.implies (value =. 0uy <: bool)
+            (fun temp_0_ ->
+                let _:Prims.unit = temp_0_ in
+                result =. 0uy <: bool) &&
+          Hax_lib.implies (value <>. 0uy <: bool)
             (fun temp_0_ ->
                 let _:Prims.unit = temp_0_ in
                 result =. 1uy <: bool))

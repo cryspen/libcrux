@@ -77,7 +77,7 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
 /// `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
 ///
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
-#[cfg_attr(hax, hax_lib::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
+#[cfg_attr(hax, hax_lib::requires(value >= -(FIELD_MODULUS as i32) * MONTGOMERY_R && value <= (FIELD_MODULUS as i32) * MONTGOMERY_R))]
 #[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce_element(value: i32) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
@@ -143,7 +143,7 @@ fn montgomery_multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVec
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib::requires(fe < (crate::constants::FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib::requires(fe < (FIELD_MODULUS as u16)))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
         hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
         hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
@@ -179,7 +179,7 @@ pub(crate) fn compress_message_coefficient(fe: u16) -> u8 {
          coefficient_bits == 5 ||
          coefficient_bits == 10 ||
          coefficient_bits == 11) &&
-         fe < (crate::constants::FIELD_MODULUS as u16)))]
+         fe < (FIELD_MODULUS as u16)))]
 #[cfg_attr(hax,
      hax_lib::ensures(
      |result| result >= 0 && result < 2i16.pow(coefficient_bits as u32)))]
@@ -203,28 +203,35 @@ pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
     get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 }
 
-#[derive(Clone, Copy)]
-pub struct PortableVector {
-    elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
+pub(crate) mod portable {
+
+    use super::*;
+
+    #[derive(Clone, Copy)]
+    pub(crate) struct PortableVector {
+        pub(crate) elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
+    }
 }
+
+use portable::*;
 
 #[allow(non_snake_case)]
 #[inline(always)]
-fn zero() -> PortableVector {
+pub fn zero() -> PortableVector {
     PortableVector {
         elements: [0i16; FIELD_ELEMENTS_IN_VECTOR],
     }
 }
 
 #[inline(always)]
-fn from_i16_array(array: &[i16]) -> PortableVector {
+pub fn from_i16_array(array: &[i16]) -> PortableVector {
     PortableVector {
         elements: array[0..16].try_into().unwrap(),
     }
 }
 
 #[inline(always)]
-fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         lhs.elements[i] += rhs.elements[i];
     }
@@ -233,7 +240,7 @@ fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+pub fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         lhs.elements[i] -= rhs.elements[i];
     }
@@ -242,7 +249,7 @@ fn sub(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
+pub fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] *= c;
     }
@@ -251,7 +258,7 @@ fn multiply_by_constant(mut v: PortableVector, c: i16) -> PortableVector {
 }
 
 #[inline(always)]
-fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVector {
+pub fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] &= c;
     }
@@ -260,7 +267,7 @@ fn bitwise_and_with_constant(mut v: PortableVector, c: i16) -> PortableVector {
 }
 
 #[inline(always)]
-fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
+pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         v.elements[i] = v.elements[i] >> SHIFT_BY;
     }
@@ -269,7 +276,7 @@ fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
 }
 
 // #[inline(always)]
-// fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
+// pub fn shift_left<const SHIFT_BY: i32>(mut lhs: PortableVector) -> PortableVector {
 //     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
 //         lhs.elements[i] = lhs.elements[i] << SHIFT_BY;
 //     }
@@ -278,7 +285,7 @@ fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector {
 // }
 
 #[inline(always)]
-fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
+pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
         if v.elements[i] >= 3329 {

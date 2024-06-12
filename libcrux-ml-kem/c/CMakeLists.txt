@@ -11,20 +11,23 @@ project(libcrux-ml-kem
 )
 
 set(CMAKE_C_STANDARD 11)
-add_compile_options(
-    -Wall
-    # -Wextra
-    # -pedantic
-    # -Wconversion
-    # -Wsign-conversion
-    $<$<CONFIG:DEBUG>:-g>
-    $<$<CONFIG:DEBUG>:-Og>
-    $<$<CONFIG:RELEASE>:-g>
-    $<$<CONFIG:RELEASE>:-O3>
-    -fno-omit-frame-pointer
-    -flto
-)
-add_link_options(-flto)
+set(CMAKE_CXX_STANDARD 20)
+
+if(NOT MSVC)
+    # TODO: Clean up
+    add_compile_options(
+        -Wall
+        # -Wextra
+        # -pedantic
+        # -Wconversion
+        # -Wsign-conversion
+        $<$<CONFIG:DEBUG>:-g>
+        $<$<CONFIG:DEBUG>:-Og>
+        $<$<CONFIG:RELEASE>:-g>
+        $<$<CONFIG:RELEASE>:-O3>
+    )
+endif(NOT MSVC)
+
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 include_directories(
     ${PROJECT_SOURCE_DIR}
@@ -37,43 +40,69 @@ file(GLOB SOURCES
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem512.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
-    ${PROJECT_SOURCE_DIR}/libcrux_polynomial.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_portable.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_portable.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_portable.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_portable.c
 )
-# file(GLOB VEC128_SOURCES
-#     libcrux_sha3_neon.c
-# )
+file(GLOB SOURCES_vec128
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_neon.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_neon.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_neon.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_neon.c
+    ${PROJECT_SOURCE_DIR}/libcrux_sha3_neon.c
+)
 file(GLOB SOURCES_vec256
     ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_avx2.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_avx2.c
+    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_avx2.c
     ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
 )
-
-# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
         -fPIC
+        -flto
     )
+    add_link_options(-flto)
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
 add_library(ml_kem SHARED ${SOURCES})
 add_library(ml_kem_static STATIC ${SOURCES})
 
-# if(LIBCRUX_VEC256)
-add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
-target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-target_compile_options(ml_kem_vec256 PRIVATE
-    -mavx
-    -mavx2
-)
-# endif()
+# This is only for local testing and we assume avx2 on x64.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+    message(STATUS "Detected an x64 architecture")
+    add_compile_definitions(LIBCRUX_X64)
+
+    add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
+    target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+    target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+    if(NOT MSVC)
+        target_compile_options(ml_kem_vec256 PRIVATE
+            -mavx
+            -mavx2
+        )
+    endif(NOT MSVC)
+endif()
+
+# This is only for local testing and we assume neon on arm64.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED ENV{LIBCRUX_NEON})
+    message(STATUS "Detected an arm64 architecture")
+    add_compile_definitions(LIBCRUX_AARCH64)
+
+    add_library(ml_kem_vec128 OBJECT ${SOURCES_vec128})
+    target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
+    target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
+endif()
 
 # --- Tests
 
 # Get gtests
 include(FetchContent)
 FetchContent_Declare(googletest
-DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     URL https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip
 )
 
@@ -83,7 +112,7 @@ FetchContent_MakeAvailable(googletest)
 
 # Get nlohmann json
 FetchContent_Declare(json
-DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     URL https://github.com/nlohmann/json/archive/refs/tags/v3.10.3.zip
 )
 FetchContent_MakeAvailable(json)
@@ -107,14 +136,11 @@ target_link_libraries(sha3_test PRIVATE
 )
 
 # --- Benchmarks
-
-FetchContent_Populate(benchmark
-    GIT_REPOSITORY  https://github.com/google/benchmark.git
-    # The latest release 1.7.1 is broken due to https://github.com/google/benchmark/pull/1517
-    # But also: need the fix for https://github.com/google/benchmark/pull/1669
-    GIT_TAG         bc946b919cac6f25a199a526da571638cfde109f
+FetchContent_Declare(benchmark
+    GIT_REPOSITORY https://github.com/google/benchmark.git
+    GIT_TAG v1.8.4
 )
-add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
+FetchContent_MakeAvailable(benchmark)
 
 add_executable(ml_kem_bench
     ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
@@ -124,10 +150,7 @@ target_link_libraries(ml_kem_bench PRIVATE
     benchmark::benchmark
 )
 target_compile_definitions(ml_kem_bench PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_bench PRIVATE
-    -mavx
-    -mavx2
-)
+target_compile_options(ml_kem_bench PRIVATE)
 
 add_executable(ml_kem_keygen
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
@@ -137,10 +160,7 @@ target_link_libraries(ml_kem_keygen PRIVATE
     benchmark::benchmark
 )
 target_compile_definitions(ml_kem_keygen PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_keygen PRIVATE
-    -mavx
-    -mavx2
-)
+target_compile_options(ml_kem_keygen PRIVATE)
 
 add_executable(ml_kem_encaps
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
@@ -150,20 +170,16 @@ target_link_libraries(ml_kem_encaps PRIVATE
     benchmark::benchmark
 )
 target_compile_definitions(ml_kem_encaps PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_encaps PRIVATE
-    -mavx
-    -mavx2
-)
+target_compile_options(ml_kem_encaps PRIVATE)
 
-add_executable(sha3_bench
-    ${PROJECT_SOURCE_DIR}/benches/sha3.cc
-)
-target_link_libraries(sha3_bench PRIVATE
-    ml_kem_static
-    benchmark::benchmark
-)
-target_compile_definitions(sha3_bench PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(sha3_bench PRIVATE
-    -mavx
-    -mavx2
-)
+if(NOT MSVC)
+    # We benchmark internal functions here that are inlined and thus not available
+    # in MSVC.
+    add_executable(sha3_bench
+        ${PROJECT_SOURCE_DIR}/benches/sha3.cc
+    )
+    target_link_libraries(sha3_bench PRIVATE
+        ml_kem_static
+        benchmark::benchmark
+    )
+endif(NOT MSVC)

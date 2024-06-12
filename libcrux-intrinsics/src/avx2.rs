@@ -6,49 +6,49 @@ pub use core::arch::x86_64::*;
 pub type Vec256 = __m256i;
 pub type Vec128 = __m128i;
 
-pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: __m256i) {
+pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
     debug_assert_eq!(output.len(), 16);
     unsafe {
-        _mm256_storeu_si256(output.as_mut_ptr() as *mut __m256i, vector);
+        _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
     }
 }
 
-pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: __m256i) {
+pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     debug_assert_eq!(output.len(), 32);
     unsafe {
-        _mm256_storeu_si256(output.as_mut_ptr() as *mut __m256i, vector);
+        _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
     }
 }
-pub fn mm_storeu_si128(output: &mut [i16], vector: __m128i) {
+pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     // debug_assert_eq!(output.len(), 8);
     unsafe {
-        _mm_storeu_si128(output.as_mut_ptr() as *mut __m128i, vector);
+        _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
     }
 }
 
-pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: __m128i) {
+pub fn mm_storeu_bytes_si128(output: &mut [u8], vector: Vec128) {
     debug_assert_eq!(output.len(), 16);
     unsafe {
-        _mm_storeu_si128(output.as_mut_ptr() as *mut __m128i, vector);
+        _mm_storeu_si128(output.as_mut_ptr() as *mut Vec128, vector);
     }
 }
 
-pub fn mm_loadu_si128(input: &[u8]) -> __m128i {
+pub fn mm_loadu_si128(input: &[u8]) -> Vec128 {
     debug_assert_eq!(input.len(), 16);
-    unsafe { _mm_loadu_si128(input.as_ptr() as *const __m128i) }
+    unsafe { _mm_loadu_si128(input.as_ptr() as *const Vec128) }
 }
 
-pub fn mm256_loadu_si256_u8(input: &[u8]) -> __m256i {
+pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
     debug_assert_eq!(input.len(), 32);
-    unsafe { _mm256_loadu_si256(input.as_ptr() as *const __m256i) }
+    unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
 
-pub fn mm256_loadu_si256_i16(input: &[i16]) -> __m256i {
+pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
     debug_assert_eq!(input.len(), 16);
-    unsafe { _mm256_loadu_si256(input.as_ptr() as *const __m256i) }
+    unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
 
-pub fn mm256_setzero_si256() -> __m256i {
+pub fn mm256_setzero_si256() -> Vec256 {
     unsafe { _mm256_setzero_si256() }
 }
 
@@ -69,7 +69,7 @@ pub fn mm_set_epi8(
     byte2: u8,
     byte1: u8,
     byte0: u8,
-) -> __m128i {
+) -> Vec128 {
     unsafe {
         _mm_set_epi8(
             byte15 as i8,
@@ -125,7 +125,7 @@ pub fn mm256_set_epi8(
     byte2: i8,
     byte1: i8,
     byte0: i8,
-) -> __m256i {
+) -> Vec256 {
     unsafe {
         _mm256_set_epi8(
             byte31, byte30, byte29, byte28, byte27, byte26, byte25, byte24, byte23, byte22, byte21,
@@ -135,7 +135,7 @@ pub fn mm256_set_epi8(
     }
 }
 
-pub fn mm256_set1_epi16(constant: i16) -> __m256i {
+pub fn mm256_set1_epi16(constant: i16) -> Vec256 {
     unsafe { _mm256_set1_epi16(constant) }
 }
 pub fn mm256_set_epi16(
@@ -155,7 +155,7 @@ pub fn mm256_set_epi16(
     input2: i16,
     input1: i16,
     input0: i16,
-) -> __m256i {
+) -> Vec256 {
     unsafe {
         _mm256_set_epi16(
             input15, input14, input13, input12, input11, input10, input9, input8, input7, input6,
@@ -164,11 +164,11 @@ pub fn mm256_set_epi16(
     }
 }
 
-pub fn mm_set1_epi16(constant: i16) -> __m128i {
+pub fn mm_set1_epi16(constant: i16) -> Vec128 {
     unsafe { _mm_set1_epi16(constant) }
 }
 
-pub fn mm256_set1_epi32(constant: i32) -> __m256i {
+pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
     unsafe { _mm256_set1_epi32(constant) }
 }
 pub fn mm256_set_epi32(
@@ -180,7 +180,7 @@ pub fn mm256_set_epi32(
     input2: i32,
     input1: i32,
     input0: i32,
-) -> __m256i {
+) -> Vec256 {
     unsafe {
         _mm256_set_epi32(
             input7, input6, input5, input4, input3, input2, input1, input0,
@@ -188,192 +188,189 @@ pub fn mm256_set_epi32(
     }
 }
 
-pub fn mm_add_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
+pub fn mm_add_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_add_epi16(lhs, rhs) }
 }
-pub fn mm256_add_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_add_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi16(lhs, rhs) }
 }
-pub fn mm256_madd_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_madd_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_madd_epi16(lhs, rhs) }
 }
-pub fn mm256_add_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_add_epi32(lhs, rhs) }
 }
 
-pub fn mm256_sub_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_sub_epi16(lhs, rhs) }
 }
-pub fn mm_sub_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
+pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_sub_epi16(lhs, rhs) }
 }
 
-pub fn mm256_mullo_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_mullo_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mullo_epi16(lhs, rhs) }
 }
 
-pub fn mm_mullo_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
+pub fn mm_mullo_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_mullo_epi16(lhs, rhs) }
 }
 
-pub fn mm256_cmpgt_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_cmpgt_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_cmpgt_epi16(lhs, rhs) }
 }
 
-pub fn mm_mulhi_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
+pub fn mm_mulhi_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_mulhi_epi16(lhs, rhs) }
 }
 
-pub fn mm256_mullo_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_mullo_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mullo_epi32(lhs, rhs) }
 }
 
-pub fn mm256_mulhi_epi16(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_mulhi_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mulhi_epi16(lhs, rhs) }
 }
 
-pub fn mm256_mul_epu32(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epu32(lhs, rhs) }
 }
 
-pub fn mm256_and_si256(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_and_si256(lhs, rhs) }
 }
 
-pub fn mm256_xor_si256(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_xor_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_xor_si256(lhs, rhs) }
 }
 
-pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_srai_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unsafe { _mm256_srai_epi16(vector, SHIFT_BY) }
 }
-pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_srai_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
     unsafe { _mm256_srai_epi32(vector, SHIFT_BY) }
 }
 
-pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_srli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unsafe { _mm256_srli_epi16(vector, SHIFT_BY) }
 }
-pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
     unsafe { _mm256_srli_epi32(vector, SHIFT_BY) }
 }
 
-pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     unsafe { _mm256_srli_epi64(vector, SHIFT_BY) }
 }
 
-pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_slli_epi16<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 16);
     unsafe { _mm256_slli_epi16(vector, SHIFT_BY) }
 }
 
-pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_slli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 32);
     unsafe { _mm256_slli_epi32(vector, SHIFT_BY) }
 }
 
-pub fn mm_shuffle_epi8(vector: __m128i, control: __m128i) -> __m128i {
+pub fn mm_shuffle_epi8(vector: Vec128, control: Vec128) -> Vec128 {
     unsafe { _mm_shuffle_epi8(vector, control) }
 }
-pub fn mm256_shuffle_epi8(vector: __m256i, control: __m256i) -> __m256i {
+pub fn mm256_shuffle_epi8(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_shuffle_epi8(vector, control) }
 }
-pub fn mm256_shuffle_epi32<const CONTROL: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_shuffle_epi32<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_shuffle_epi32(vector, CONTROL) }
 }
 
-pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: __m256i) -> __m256i {
+pub fn mm256_permute4x64_epi64<const CONTROL: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_permute4x64_epi64(vector, CONTROL) }
 }
 
-pub fn mm256_unpackhi_epi64(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_unpackhi_epi64(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_unpackhi_epi64(lhs, rhs) }
 }
 
-pub fn mm256_unpacklo_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_unpacklo_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_unpacklo_epi32(lhs, rhs) }
 }
 
-pub fn mm256_unpackhi_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_unpackhi_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_unpackhi_epi32(lhs, rhs) }
 }
 
-pub fn mm256_castsi256_si128(vector: __m256i) -> __m128i {
+pub fn mm256_castsi256_si128(vector: Vec256) -> Vec128 {
     unsafe { _mm256_castsi256_si128(vector) }
 }
-pub fn mm256_castsi128_si256(vector: __m128i) -> __m256i {
+pub fn mm256_castsi128_si256(vector: Vec128) -> Vec256 {
     unsafe { _mm256_castsi128_si256(vector) }
 }
 
-pub fn mm256_cvtepi16_epi32(vector: __m128i) -> __m256i {
+pub fn mm256_cvtepi16_epi32(vector: Vec128) -> Vec256 {
     unsafe { _mm256_cvtepi16_epi32(vector) }
 }
 
-pub fn mm_packs_epi16(lhs: __m128i, rhs: __m128i) -> __m128i {
+pub fn mm_packs_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_packs_epi16(lhs, rhs) }
 }
-pub fn mm256_packs_epi32(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_packs_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_packs_epi32(lhs, rhs) }
 }
 
-pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: __m256i) -> __m128i {
+pub fn mm256_extracti128_si256<const CONTROL: i32>(vector: Vec256) -> Vec128 {
     debug_assert!(CONTROL == 0 || CONTROL == 1);
     unsafe { _mm256_extracti128_si256(vector, CONTROL) }
 }
 
-pub fn mm256_inserti128_si256<const CONTROL: i32>(
-    vector: __m256i,
-    vector_i128: __m128i,
-) -> __m256i {
+pub fn mm256_inserti128_si256<const CONTROL: i32>(vector: Vec256, vector_i128: Vec128) -> Vec256 {
     debug_assert!(CONTROL == 0 || CONTROL == 1);
     unsafe { _mm256_inserti128_si256(vector, vector_i128, CONTROL) }
 }
 
-pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: __m256i, rhs: __m256i) -> __m256i {
+pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_blend_epi16(lhs, rhs, CONTROL) }
 }
 
-pub fn mm_movemask_epi8(vector: __m128i) -> i32 {
+pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unsafe { _mm_movemask_epi8(vector) }
 }
 
-pub fn mm256_permutevar8x32_epi32(vector: __m256i, control: __m256i) -> __m256i {
+pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_permutevar8x32_epi32(vector, control) }
 }
 
-pub fn mm256_sllv_epi32(vector: __m256i, counts: __m256i) -> __m256i {
+pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_sllv_epi32(vector, counts) }
 }
 
 #[inline(always)]
-pub fn mm256_slli_epi64<const LEFT: i32>(x: __m256i) -> __m256i {
+pub fn mm256_slli_epi64<const LEFT: i32>(x: Vec256) -> Vec256 {
     unsafe { _mm256_slli_epi64::<LEFT>(x) }
 }
 
 #[inline(always)]
-pub fn mm256_andnot_si256(a: __m256i, b: __m256i) -> __m256i {
+pub fn mm256_andnot_si256(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_andnot_si256(a, b) }
 }
 
 #[inline(always)]
-pub fn mm256_set1_epi64x(a: i64) -> __m256i {
+pub fn mm256_set1_epi64x(a: i64) -> Vec256 {
     unsafe { _mm256_set1_epi64x(a) }
 }
 
 #[inline(always)]
-pub fn mm256_unpacklo_epi64(a: __m256i, b: __m256i) -> __m256i {
+pub fn mm256_unpacklo_epi64(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_unpacklo_epi64(a, b) }
 }
 
 #[inline(always)]
-pub fn mm256_permute2x128_si256<const IMM8: i32>(a: __m256i, b: __m256i) -> __m256i {
+pub fn mm256_permute2x128_si256<const IMM8: i32>(a: Vec256, b: Vec256) -> Vec256 {
     unsafe { _mm256_permute2x128_si256::<IMM8>(a, b) }
 }

@@ -9,7 +9,7 @@ open FStar.Mul
 /// - AVX2
 /// - NEON
 /// - Portable
-class t_Hash (v_Self: Type) (v_K: usize) = {
+class t_Hash (v_Self: Type0) (v_K: usize) = {
   f_G_pre:t_Slice u8 -> bool;
   f_G_post:t_Slice u8 -> t_Array u8 (sz 64) -> bool;
   f_G:x0: t_Slice u8
@@ -51,7 +51,7 @@ class t_Hash (v_Self: Type) (v_K: usize) = {
 }
 
 /// The SHA3 block size.
-let v_BLOCK_SIZE: usize = sz 168
+let v_BLOCK_SIZE: usize = Rust_primitives.Hax.dropped_body
 
 /// The size of 3 SHA3 blocks.
-let v_THREE_BLOCKS: usize = v_BLOCK_SIZE *! sz 3
+let v_THREE_BLOCKS: usize = Rust_primitives.Hax.dropped_body

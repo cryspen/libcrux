@@ -1,17 +1,15 @@
-use core::arch::x86_64::*;
-
-use crate::traits::*;
+use crate::traits::internal::*;
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]
-fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: __m256i) -> __m256i {
+fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: Vec256) -> Vec256 {
     debug_assert!(LEFT + RIGHT == 64);
     // XXX: This could be done more efficiently, if the shift values are multiples of 8.
     mm256_xor_si256(mm256_slli_epi64::<LEFT>(x), mm256_srli_epi64::<RIGHT>(x))
 }
 
 #[inline(always)]
-fn _veor5q_u64(a: __m256i, b: __m256i, c: __m256i, d: __m256i, e: __m256i) -> __m256i {
+fn _veor5q_u64(a: Vec256, b: Vec256, c: Vec256, d: Vec256, e: Vec256) -> Vec256 {
     let ab = mm256_xor_si256(a, b);
     let cd = mm256_xor_si256(c, d);
     let abcd = mm256_xor_si256(ab, cd);
@@ -19,30 +17,30 @@ fn _veor5q_u64(a: __m256i, b: __m256i, c: __m256i, d: __m256i, e: __m256i) -> __
 }
 
 #[inline(always)]
-fn _vrax1q_u64(a: __m256i, b: __m256i) -> __m256i {
+fn _vrax1q_u64(a: Vec256, b: Vec256) -> Vec256 {
     mm256_xor_si256(a, rotate_left::<1, 63>(b))
 }
 
 #[inline(always)]
-fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: __m256i, b: __m256i) -> __m256i {
+fn _vxarq_u64<const LEFT: i32, const RIGHT: i32>(a: Vec256, b: Vec256) -> Vec256 {
     let ab = mm256_xor_si256(a, b);
     rotate_left::<LEFT, RIGHT>(ab)
 }
 
 #[inline(always)]
-fn _vbcaxq_u64(a: __m256i, b: __m256i, c: __m256i) -> __m256i {
+fn _vbcaxq_u64(a: Vec256, b: Vec256, c: Vec256) -> Vec256 {
     mm256_xor_si256(a, mm256_andnot_si256(c, b))
 }
 
 #[inline(always)]
-fn _veorq_n_u64(a: __m256i, c: u64) -> __m256i {
+fn _veorq_n_u64(a: Vec256, c: u64) -> Vec256 {
     // Casting here is required, doesn't change the value.
     let c = mm256_set1_epi64x(c as i64);
     mm256_xor_si256(a, c)
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(s: &mut [[__m256i; 5]; 5], blocks: [&[u8]; 4]) {
+pub(crate) fn load_block<const RATE: usize>(s: &mut [[Vec256; 5]; 5], blocks: [&[u8]; 4]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0 && (RATE % 32 == 8 || RATE % 32 == 16));
     for i in 0..RATE / 32 {
         let v0 = mm256_loadu_si256_u8(&blocks[0][32 * i..32 * (i + 1)]);
@@ -94,10 +92,7 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[__m256i; 5]; 5], blocks: [
 }
 
 #[inline(always)]
-pub(crate) fn load_block_full<const RATE: usize>(
-    s: &mut [[__m256i; 5]; 5],
-    blocks: [[u8; 200]; 4],
-) {
+pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[Vec256; 5]; 5], blocks: [[u8; 200]; 4]) {
     load_block::<RATE>(
         s,
         [
@@ -110,7 +105,7 @@ pub(crate) fn load_block_full<const RATE: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[__m256i; 5]; 5], out: [&mut [u8]; 4]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [u8]; 4]) {
     for i in 0..RATE / 32 {
         let v0l = mm256_permute2x128_si256::<0x20>(
             s[(4 * i) / 5][(4 * i) % 5],
@@ -164,7 +159,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[__m256i; 5]; 5], out: [&mut [
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[[__m256i; 5]; 5]) -> [[u8; 200]; 4] {
+pub(crate) fn store_block_full<const RATE: usize>(s: &[[Vec256; 5]; 5]) -> [[u8; 200]; 4] {
     let mut out0 = [0u8; 200];
     let mut out1 = [0u8; 200];
     let mut out2 = [0u8; 200];
@@ -193,7 +188,7 @@ fn split_at_mut_4(out: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8
     ([out00, out10, out20, out30], [out01, out11, out21, out31])
 }
 
-impl KeccakItem<4> for __m256i {
+impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn zero() -> Self {
         mm256_set1_epi64x(0)

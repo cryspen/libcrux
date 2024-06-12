@@ -57,6 +57,7 @@ pub(crate) mod constants;
 
 /// Helpers for verification and extraction
 mod helper;
+mod utils;
 
 mod constant_time_ops;
 mod hash_functions;
