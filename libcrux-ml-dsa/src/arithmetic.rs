@@ -89,7 +89,9 @@ pub(crate) fn power2round(t: i32) -> (i32, i32) {
     (t0, t1)
 }
 
-pub(crate) fn t0_to_unsigned_representative(t0: i32) -> i32 {
+// If t0 is a signed representative, change it to an unsigned one and
+// vice versa.
+pub(crate) fn change_t0_interval(t0: i32) -> i32 {
     (1 << (BITS_IN_LOWER_PART_OF_T - 1)) - t0
 }
 

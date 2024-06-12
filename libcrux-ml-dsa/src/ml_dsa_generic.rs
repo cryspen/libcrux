@@ -5,8 +5,10 @@ use crate::{
         BYTES_FOR_VERIFICATION_KEY_HASH, SEED_FOR_A_SIZE, SEED_FOR_ERROR_VECTORS_SIZE,
         SEED_FOR_SIGNING_SIZE,
     },
+    deserialize::{deserialize_to_error_ring_element, deserialize_to_ring_element_of_t0s},
     hash_functions::H,
     matrix::{compute_As1_plus_s2, expand_to_A, power2round_vector, sample_error_vector},
+    ntt::ntt,
     serialize::{
         serialize_error_ring_element, serialize_ring_element_of_t0s, serialize_ring_element_of_t1s,
     },
@@ -146,6 +148,7 @@ pub(crate) fn generate_key_pair<
 pub(crate) fn sign<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
+    const ETA: usize,
     const BYTES_FOR_ERROR_RING_ELEMENT: usize,
     const SIGNING_KEY_SIZE: usize,
     const SIGNATURE_SIZE: usize,
@@ -161,9 +164,16 @@ pub(crate) fn sign<
         remaining_signing_key.split_at(BYTES_FOR_VERIFICATION_KEY_HASH);
 
     let (s1_serialized, remaining_signing_key) =
-        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT);
-    let (s2_serializd, t0_serialized) =
-        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT);
+        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT * COLUMNS_IN_A);
+    let (s2_serialized, t0_serialized) =
+        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT * ROWS_IN_A);
+
+    let s1 = deserialize_to_error_ring_element::<ETA>(s1_serialized);
+    let s2 = deserialize_to_error_ring_element::<ETA>(s2_serialized);
+    let t0 = deserialize_to_ring_element_of_t0s(t0_serialized);
+
+    let s1_as_ntt = ntt(s1);
+    let s2_as_ntt = ntt(s2);
 
     todo!();
 }

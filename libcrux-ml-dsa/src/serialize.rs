@@ -1,5 +1,5 @@
 use crate::{
-    arithmetic::{t0_to_unsigned_representative, PolynomialRingElement},
+    arithmetic::{change_t0_interval, PolynomialRingElement},
     constants::{BYTES_FOR_RING_ELEMENT_OF_T0S, BYTES_FOR_RING_ELEMENT_OF_T1S},
 };
 
@@ -10,14 +10,14 @@ pub(crate) fn serialize_ring_element_of_t0s(
     let mut serialized = [0u8; BYTES_FOR_RING_ELEMENT_OF_T0S];
 
     for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
-        let coefficient0 = t0_to_unsigned_representative(coefficients[0]);
-        let coefficient1 = t0_to_unsigned_representative(coefficients[1]);
-        let coefficient2 = t0_to_unsigned_representative(coefficients[2]);
-        let coefficient3 = t0_to_unsigned_representative(coefficients[3]);
-        let coefficient4 = t0_to_unsigned_representative(coefficients[4]);
-        let coefficient5 = t0_to_unsigned_representative(coefficients[5]);
-        let coefficient6 = t0_to_unsigned_representative(coefficients[6]);
-        let coefficient7 = t0_to_unsigned_representative(coefficients[7]);
+        let coefficient0 = change_t0_interval(coefficients[0]);
+        let coefficient1 = change_t0_interval(coefficients[1]);
+        let coefficient2 = change_t0_interval(coefficients[2]);
+        let coefficient3 = change_t0_interval(coefficients[3]);
+        let coefficient4 = change_t0_interval(coefficients[4]);
+        let coefficient5 = change_t0_interval(coefficients[5]);
+        let coefficient6 = change_t0_interval(coefficients[6]);
+        let coefficient7 = change_t0_interval(coefficients[7]);
 
         serialized[13 * i + 0] = coefficient0 as u8;
 

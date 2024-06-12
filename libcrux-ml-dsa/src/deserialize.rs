@@ -1,4 +1,7 @@
-use crate::arithmetic::PolynomialRingElement;
+use crate::{
+    arithmetic::{change_t0_interval, PolynomialRingElement},
+    constants::BITS_IN_LOWER_PART_OF_T,
+};
 
 #[inline(always)]
 fn deserialize_to_mask_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PolynomialRingElement {
@@ -70,6 +73,132 @@ pub(crate) fn deserialize_to_mask_ring_element<const GAMMA1_EXPONENT: usize>(
         19 => deserialize_to_mask_when_gamma1_is_2_pow_19(serialized),
         _ => unreachable!(),
     }
+}
+
+#[inline(always)]
+fn deserialize_to_error_ring_element_when_eta_is_2(serialized: &[u8]) -> PolynomialRingElement {
+    let mut re = PolynomialRingElement::ZERO;
+    const ETA: i32 = 2;
+
+    for (i, bytes) in serialized.chunks_exact(3).enumerate() {
+        let byte0 = bytes[0] as i32;
+        let byte1 = bytes[1] as i32;
+        let byte2 = bytes[2] as i32;
+
+        re.coefficients[8 * i + 0] = (byte0 >> 0) & 7;
+        re.coefficients[8 * i + 1] = (byte0 >> 3) & 7;
+        re.coefficients[8 * i + 2] = ((byte0 >> 6) | (byte1 << 2)) & 7;
+        re.coefficients[8 * i + 3] = (byte1 >> 1) & 7;
+        re.coefficients[8 * i + 4] = (byte1 >> 4) & 7;
+        re.coefficients[8 * i + 5] = ((byte1 >> 7) | (byte2 << 1)) & 7;
+        re.coefficients[8 * i + 6] = (byte2 >> 2) & 7;
+        re.coefficients[8 * i + 7] = (byte2 >> 5) & 7;
+
+        re.coefficients[8 * i + 0] = ETA - re.coefficients[8 * i + 0];
+        re.coefficients[8 * i + 1] = ETA - re.coefficients[8 * i + 1];
+        re.coefficients[8 * i + 2] = ETA - re.coefficients[8 * i + 2];
+        re.coefficients[8 * i + 3] = ETA - re.coefficients[8 * i + 3];
+        re.coefficients[8 * i + 4] = ETA - re.coefficients[8 * i + 4];
+        re.coefficients[8 * i + 5] = ETA - re.coefficients[8 * i + 5];
+        re.coefficients[8 * i + 6] = ETA - re.coefficients[8 * i + 6];
+        re.coefficients[8 * i + 7] = ETA - re.coefficients[8 * i + 7];
+    }
+
+    re
+}
+
+#[inline(always)]
+fn deserialize_to_error_ring_element_when_eta_is_4(serialized: &[u8]) -> PolynomialRingElement {
+    let mut re = PolynomialRingElement::ZERO;
+    const ETA: i32 = 4;
+
+    for (i, byte) in serialized.into_iter().enumerate() {
+        re.coefficients[2 * i + 0] = ETA - ((byte & 0xF) as i32);
+        re.coefficients[2 * i + 1] = ETA - ((byte >> 4) as i32);
+    }
+
+    re
+}
+
+#[inline(always)]
+pub(crate) fn deserialize_to_error_ring_element<const ETA: usize>(
+    serialized: &[u8],
+) -> PolynomialRingElement {
+    match ETA {
+        2 => deserialize_to_error_ring_element_when_eta_is_2(serialized),
+        4 => deserialize_to_error_ring_element_when_eta_is_4(serialized),
+        _ => unreachable!(),
+    }
+}
+
+#[inline(always)]
+pub(crate) fn deserialize_to_ring_element_of_t0s(serialized: &[u8]) -> PolynomialRingElement {
+    let mut re = PolynomialRingElement::ZERO;
+
+    const BITS_IN_LOWER_PART_OF_T_MASK: i32 = (1 << (BITS_IN_LOWER_PART_OF_T as i32)) - 1;
+
+    for (i, bytes) in serialized.chunks_exact(13).enumerate() {
+        let byte0 = bytes[0] as i32;
+        let byte1 = bytes[1] as i32;
+        let byte2 = bytes[2] as i32;
+        let byte3 = bytes[3] as i32;
+        let byte4 = bytes[4] as i32;
+        let byte5 = bytes[5] as i32;
+        let byte6 = bytes[6] as i32;
+        let byte7 = bytes[7] as i32;
+        let byte8 = bytes[8] as i32;
+        let byte9 = bytes[9] as i32;
+        let byte10 = bytes[10] as i32;
+        let byte11 = bytes[11] as i32;
+        let byte12 = bytes[12] as i32;
+
+        re.coefficients[8 * i + 0] = byte0;
+        re.coefficients[8 * i + 0] |= byte1 << 8;
+        re.coefficients[8 * i + 0] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 1] = byte1 >> 5;
+        re.coefficients[8 * i + 1] |= byte2 << 3;
+        re.coefficients[8 * i + 1] |= byte3 << 11;
+        re.coefficients[8 * i + 1] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 2] = byte3 >> 2;
+        re.coefficients[8 * i + 2] |= byte4 << 6;
+        re.coefficients[8 * i + 2] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 3] = byte4 >> 7;
+        re.coefficients[8 * i + 3] |= byte5 << 1;
+        re.coefficients[8 * i + 3] |= byte6 << 9;
+        re.coefficients[8 * i + 3] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 4] = byte6 >> 4;
+        re.coefficients[8 * i + 4] |= byte7 << 4;
+        re.coefficients[8 * i + 4] |= byte8 << 12;
+        re.coefficients[8 * i + 4] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 5] = byte8 >> 1;
+        re.coefficients[8 * i + 5] |= byte9 << 7;
+        re.coefficients[8 * i + 5] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 6] = byte9 >> 6;
+        re.coefficients[8 * i + 6] |= byte10 << 2;
+        re.coefficients[8 * i + 6] |= byte11 << 10;
+        re.coefficients[8 * i + 6] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 7] = byte11 >> 3;
+        re.coefficients[8 * i + 7] |= byte12 << 5;
+        re.coefficients[8 * i + 7] &= BITS_IN_LOWER_PART_OF_T_MASK;
+
+        re.coefficients[8 * i + 0] = change_t0_interval(re.coefficients[8 * i + 0]);
+        re.coefficients[8 * i + 1] = change_t0_interval(re.coefficients[8 * i + 1]);
+        re.coefficients[8 * i + 2] = change_t0_interval(re.coefficients[8 * i + 2]);
+        re.coefficients[8 * i + 3] = change_t0_interval(re.coefficients[8 * i + 3]);
+        re.coefficients[8 * i + 4] = change_t0_interval(re.coefficients[8 * i + 4]);
+        re.coefficients[8 * i + 5] = change_t0_interval(re.coefficients[8 * i + 5]);
+        re.coefficients[8 * i + 6] = change_t0_interval(re.coefficients[8 * i + 6]);
+        re.coefficients[8 * i + 7] = change_t0_interval(re.coefficients[8 * i + 7]);
+    }
+
+    re
 }
 
 #[cfg(test)]
@@ -215,6 +344,123 @@ mod tests {
 
         assert_eq!(
             deserialize_to_mask_ring_element::<19>(&bytes).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_deserialize_to_error_ring_element_when_eta_is_2() {
+        let serialized = [
+            220, 24, 44, 136, 134, 36, 11, 195, 72, 82, 34, 144, 36, 33, 9, 196, 22, 70, 100, 148,
+            65, 32, 163, 1, 210, 40, 14, 224, 38, 72, 33, 41, 136, 156, 146, 80, 25, 37, 50, 92,
+            66, 140, 227, 144, 96, 9, 64, 141, 193, 50, 1, 140, 20, 141, 92, 32, 97, 2, 25, 42, 34,
+            66, 50, 193, 72, 113, 202, 8, 16, 209, 54, 44, 129, 194, 48, 144, 20, 141, 228, 166,
+            141, 228, 20, 144, 146, 54, 12, 99, 4, 140, 226, 18, 12, 194, 38, 97,
+        ];
+
+        let expected_coefficients = [
+            -2, -1, -1, -2, 1, 2, -1, 1, 2, 1, 0, -1, 2, 1, 1, 1, -1, 1, -2, 1, -2, 1, 0, 0, 0, 0,
+            1, 1, 0, 2, -2, -2, -2, -2, -2, 2, 0, 0, 0, 2, -2, 2, -1, -1, 1, -2, 1, 0, -2, -2, 1,
+            0, 1, -1, 2, 0, 2, -2, -2, 1, 0, -1, 2, 2, 0, 0, -1, -2, 0, -2, -1, 2, 2, -2, -1, -1,
+            0, 2, 0, 0, 1, -2, -2, -2, 0, 2, 0, -2, -2, -1, 0, 1, 1, 1, -2, 0, 1, -1, -2, 0, 0, -2,
+            -2, 1, -2, -1, 1, 1, -2, 2, -1, -2, -1, -2, -1, 2, 1, 1, 2, -1, 1, 1, 2, 2, -2, 0, -1,
+            -2, 1, 2, -1, 1, -1, 0, 2, 2, -2, 1, 0, 0, 1, 0, -1, -2, -2, -1, 1, 2, 0, 0, 2, -1, 0,
+            2, -2, -2, 1, -2, 0, 1, 0, -2, 2, 1, -2, -2, -2, 1, 1, 2, -1, -2, -2, 0, -2, -1, 0, 1,
+            -1, -2, 2, 2, -2, 2, 1, 0, -1, -1, -1, 2, -1, 1, 1, 2, 0, 1, -2, 1, -2, 1, 2, 0, 0, 0,
+            1, 0, -1, -2, -2, -2, -1, -1, 0, -1, -1, -2, -2, -2, -1, 0, 1, 2, -2, -2, 0, 0, 0, -1,
+            -1, 2, -1, 2, -1, -2, 1, 0, 2, 2, -1, -2, 0, -2, -1, 1, 1, 2, -1, 2, 0, 2, -1, -1, 0,
+            0, 2, -1,
+        ];
+
+        assert_eq!(
+            deserialize_to_error_ring_element::<2>(&serialized).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_deserialize_to_error_ring_element_when_eta_is_4() {
+        let serialized = [
+            22, 103, 55, 49, 34, 65, 50, 129, 52, 65, 21, 85, 82, 69, 3, 55, 52, 101, 80, 64, 114,
+            136, 53, 8, 135, 67, 64, 71, 131, 21, 117, 81, 23, 99, 17, 84, 51, 23, 117, 56, 52, 85,
+            131, 17, 22, 117, 85, 68, 34, 113, 87, 24, 65, 81, 2, 80, 118, 53, 34, 8, 32, 51, 51,
+            82, 24, 2, 69, 0, 80, 68, 129, 133, 134, 17, 134, 82, 18, 21, 37, 114, 55, 87, 83, 8,
+            80, 52, 103, 1, 84, 82, 99, 16, 86, 48, 16, 133, 17, 2, 67, 51, 120, 71, 19, 5, 72, 19,
+            21, 103, 114, 115, 69, 36, 97, 68, 115, 56, 18, 83, 99, 32, 83, 88, 37, 71, 35, 82, 24,
+            19,
+        ];
+
+        let expected_coefficients = [
+            -2, 3, -3, -2, -3, 1, 3, 1, 2, 2, 3, 0, 2, 1, 3, -4, 0, 1, 3, 0, -1, 3, -1, -1, 2, -1,
+            -1, 0, 1, 4, -3, 1, 0, 1, -1, -2, 4, -1, 4, 0, 2, -3, -4, -4, -1, 1, -4, 4, -3, -4, 1,
+            0, 4, 0, -3, 0, 1, -4, -1, 3, -1, -3, 3, -1, -3, 3, 1, -2, 3, 3, 0, -1, 1, 1, -3, 3,
+            -1, -3, -4, 1, 0, 1, -1, -1, 1, -4, 3, 3, -2, 3, -1, -3, -1, -1, 0, 0, 2, 2, 3, -3, -3,
+            -1, -4, 3, 3, 0, 3, -1, 2, 4, 4, -1, -2, -3, -1, 1, 2, 2, -4, 4, 4, 2, 1, 1, 1, 1, 2,
+            -1, -4, 3, 2, 4, -1, 0, 4, 4, 4, -1, 0, 0, 3, -4, -1, -4, -2, -4, 3, 3, -2, -4, 2, -1,
+            2, 3, -1, 3, -1, 2, 2, -3, -3, 1, -3, -1, 1, -1, -4, 4, 4, -1, 0, 1, -3, -2, 3, 4, 0,
+            -1, 2, -1, 1, -2, 4, 3, -2, -1, 4, 1, 4, 3, -1, -4, 3, 3, 2, 4, 1, 0, 1, 1, -4, -3, -3,
+            0, 1, 3, -1, 4, -4, 0, 1, 3, -1, 3, -3, -2, 2, -3, 1, -3, -1, 0, 0, 2, 3, -2, 0, 0, 1,
+            -3, -4, 1, 2, 3, 1, -1, 1, -2, 4, 2, 1, -1, -4, -1, -1, 2, -3, 0, 1, 2, 2, -1, -4, 3,
+            1, 3,
+        ];
+
+        assert_eq!(
+            deserialize_to_error_ring_element::<4>(&serialized).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_deserialize_to_ring_element_of_t0s() {
+        let serialized = [
+            142, 115, 136, 74, 18, 206, 88, 7, 0, 22, 20, 228, 219, 113, 49, 227, 242, 177, 86, 8,
+            110, 150, 82, 137, 103, 225, 186, 160, 235, 159, 98, 45, 123, 187, 93, 112, 177, 99,
+            251, 129, 207, 135, 162, 175, 115, 126, 16, 1, 68, 214, 247, 203, 33, 148, 238, 24, 92,
+            61, 61, 70, 127, 17, 66, 65, 162, 196, 167, 28, 225, 232, 40, 224, 246, 214, 32, 44, 0,
+            64, 182, 68, 10, 16, 127, 154, 193, 64, 220, 171, 165, 110, 54, 86, 243, 191, 193, 96,
+            102, 104, 85, 97, 195, 220, 185, 8, 98, 225, 29, 111, 9, 154, 159, 243, 83, 167, 78,
+            106, 106, 46, 37, 117, 135, 86, 12, 164, 2, 139, 19, 89, 160, 108, 163, 85, 44, 92,
+            165, 163, 89, 231, 204, 238, 154, 211, 104, 62, 245, 69, 55, 19, 240, 91, 3, 107, 179,
+            195, 198, 23, 104, 95, 134, 200, 100, 224, 188, 54, 149, 209, 120, 104, 162, 62, 251,
+            175, 105, 37, 2, 241, 62, 147, 210, 96, 89, 232, 131, 193, 167, 154, 122, 85, 23, 17,
+            130, 227, 120, 89, 120, 5, 76, 28, 116, 125, 92, 136, 19, 239, 246, 150, 215, 151, 153,
+            79, 157, 252, 136, 86, 115, 251, 95, 170, 181, 223, 2, 210, 134, 84, 40, 177, 151, 148,
+            82, 254, 195, 81, 161, 173, 141, 161, 65, 254, 179, 54, 53, 243, 145, 27, 157, 62, 39,
+            161, 234, 177, 25, 47, 82, 228, 236, 162, 68, 252, 94, 90, 4, 137, 43, 183, 221, 79,
+            218, 218, 78, 243, 237, 180, 32, 92, 75, 15, 210, 71, 59, 254, 113, 145, 98, 26, 99,
+            79, 204, 24, 150, 162, 219, 250, 92, 252, 112, 109, 203, 75, 20, 133, 166, 243, 231,
+            120, 220, 28, 149, 7, 77, 128, 3, 48, 203, 190, 8, 116, 79, 149, 166, 187, 60, 34, 221,
+            241, 217, 2, 38, 57, 118, 243, 26, 174, 47, 4, 240, 77, 188, 119, 126, 239, 235, 207,
+            105, 14, 59, 223, 155, 108, 56, 53, 39, 134, 181, 79, 78, 189, 98, 123, 52, 69, 242,
+            124, 194, 30, 190, 206, 2, 185, 8, 150, 250, 186, 47, 147, 129, 27, 67, 45, 124, 165,
+            37, 165, 223, 215, 169, 175, 63, 43, 16, 181, 202, 134, 66, 162, 246, 48, 30, 235, 124,
+            145, 86, 76, 50, 247, 213, 157, 68, 112, 162, 228, 14, 164, 240, 198, 232, 176,
+        ];
+
+        let expected_coefficients = [
+            -910, -1091, 2926, -412, 3979, 1280, -80, -2940, -369, -1817, 900, -173, 2336, 1717,
+            -3621, -3116, 3910, -3933, -2215, -1626, -2999, -2094, 315, -3948, 127, -1086, 1048,
+            -3303, -263, 3584, -3929, -2430, -1057, 2188, -1798, -2682, -1123, 1857, 2808, -1096,
+            2108, 1819, -2616, 4015, 146, -107, 3920, 2048, 2890, 4014, -4036, 3276, 3060, -1518,
+            -2710, 2355, -854, 513, -2096, -204, -1366, 3664, 2189, 3817, 3742, -2287, 3493, -3892,
+            -3897, -937, 1734, 691, 2770, -2985, -1441, 2024, -42, 1595, 3740, 620, -1443, 3742,
+            1705, -839, 395, -1894, 405, 742, -1342, -2607, 2867, -2016, -53, -2485, -2830, 3336,
+            -3944, 3022, -2354, -2496, -875, 1846, 3613, -1101, -2878, 641, 1702, 3580, -1007,
+            1719, 2685, -3339, 3709, -1342, -3750, 342, 3823, -449, 2589, 245, 1019, 3870, -3933,
+            -184, -312, -2935, -3675, -762, 103, 2838, 3521, 2387, -4023, -1327, -3798, 4005, 2350,
+            3420, 950, 1745, 2775, 3585, 2745, -1460, 3699, -525, 769, 1427, -3891, 568, -2676,
+            2841, 1375, 625, 1082, 1884, 306, 3503, -3057, 1205, 1788, -2396, -1901, -1183, 595,
+            -2471, -951, 3050, 1188, -122, -500, -3190, -1823, -328, 919, 1556, -2252, -1200,
+            -1768, -2549, 59, -1720, 211, 3447, 2427, -3997, -3641, -2488, -2385, 2429, 511, 2560,
+            -3787, 4027, -989, 726, 1094, -286, 2188, -2878, 2558, -457, -3293, -3125, 3334, -2050,
+            -311, 265, 130, -3935, -2675, -1564, -3571, -1613, -1249, 2842, -1414, -637, 173,
+            -1733, -839, -2338, 1549, 3112, 322, 2026, 3538, -1324, -2991, 1641, 506, 1949, -3117,
+            725, 1719, 65, -2717, -4055, 3924, -1698, 2358, -532, -3496, -3169, 335, 1858, -346,
+            2487, -1527, 2834, -3089, 1724, 3858, -2130, 3301, -1565,
+        ];
+
+        assert_eq!(
+            deserialize_to_ring_element_of_t0s(&serialized).coefficients,
             expected_coefficients
         );
     }
