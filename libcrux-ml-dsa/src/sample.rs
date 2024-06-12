@@ -134,7 +134,7 @@ pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
+fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     // TODO: Use incremental API to squeeze one block at a time.
     let randomness = H::<272>(&seed);
 
@@ -150,10 +150,25 @@ pub(crate) fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> Pol
 
     out
 }
+#[inline(always)]
+pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
+    mut seed: [u8; 66],
+    domain_separator: &mut u16,
+) -> [PolynomialRingElement; DIMENSION] {
+    let mut error = [PolynomialRingElement::ZERO; DIMENSION];
+    for i in 0..DIMENSION {
+        seed[64] = *domain_separator as u8;
+        seed[65] = (*domain_separator >> 8) as u8;
+        *domain_separator += 1;
 
-pub(crate) fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(
-    seed: [u8; 66],
-) -> PolynomialRingElement {
+        error[i] = sample_error_ring_element::<ETA>(seed);
+    }
+
+    error
+}
+
+#[inline(always)]
+fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     match GAMMA1_EXPONENT {
         17 => encoding::mask::deserialize::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
         19 => encoding::mask::deserialize::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
@@ -161,7 +176,25 @@ pub(crate) fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(
     }
 }
 
-pub(crate) fn sample_challenge_ring_element<const TAU: usize>(
+#[inline(always)]
+pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: usize>(
+    mut seed: [u8; 66],
+    domain_separator: &mut u16,
+) -> [PolynomialRingElement; DIMENSION] {
+    let mut error = [PolynomialRingElement::ZERO; DIMENSION];
+
+    for i in 0..DIMENSION {
+        seed[64] = *domain_separator as u8;
+        seed[65] = (*domain_separator >> 8) as u8;
+        *domain_separator += 1;
+
+        error[i] = sample_mask_ring_element::<GAMMA1_EXPONENT>(seed);
+    }
+
+    error
+}
+
+pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement {
     // TODO: Use incremental API to squeeze one block at a time.
@@ -174,7 +207,7 @@ pub(crate) fn sample_challenge_ring_element<const TAU: usize>(
 
     let mut out = PolynomialRingElement::ZERO;
 
-    for index in (out.coefficients.len() - TAU)..out.coefficients.len() {
+    for index in (out.coefficients.len() - NUMBER_OF_ONES)..out.coefficients.len() {
         // TODO: Rewrite this without using `break`. It's doable, just probably
         // not as nice.
         let sample_at = loop {

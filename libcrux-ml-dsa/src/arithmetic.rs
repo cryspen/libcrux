@@ -10,17 +10,47 @@ impl PolynomialRingElement {
         // FIXME: hax issue, 256 is COEFFICIENTS_IN_RING_ELEMENT
         coefficients: [0i32; 256],
     };
-}
 
-pub(crate) fn add_to_ring_element(
-    mut lhs: PolynomialRingElement,
-    rhs: &PolynomialRingElement,
-) -> PolynomialRingElement {
-    for i in 0..lhs.coefficients.len() {
-        lhs.coefficients[i] += rhs.coefficients[i];
+    pub(crate) fn add(&self, rhs: &Self) -> Self {
+        let mut sum = Self::ZERO;
+
+        for i in 0..rhs.coefficients.len() {
+            sum.coefficients[i] = self.coefficients[i] + rhs.coefficients[i];
+        }
+
+        sum
     }
 
-    lhs
+    pub(crate) fn sub(&self, rhs: &Self) -> Self {
+        let mut difference = Self::ZERO;
+
+        for i in 0..rhs.coefficients.len() {
+            difference.coefficients[i] = self.coefficients[i] - rhs.coefficients[i];
+        }
+
+        difference
+    }
+
+    pub(crate) fn infinity_norm_exceeds(&self, value: i32) -> bool {
+        if value > (FIELD_MODULUS - 1) / 8 {
+            return true;
+        }
+
+        // It is ok to leak which coefficient violates the bound since
+        // the probability for each coefficient is independent of secret
+        // data but we must not leak the sign of the centralized representative.
+        for coefficient in self.coefficients.iter() {
+            // Normalize the coefficient
+            let sign = coefficient >> 31;
+            let normalized = coefficient - (sign & (2 * coefficient));
+
+            if normalized >= value {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
@@ -72,7 +102,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 //
 // We assume the input t is in the signed representative range and convert it
 // to the standard unsigned range.
-pub(crate) fn power2round(t: i32) -> (i32, i32) {
+fn power2round(t: i32) -> (i32, i32) {
     debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS, "t is {}", t);
 
     // Convert the signed representative to the standard unsigned one.
@@ -87,6 +117,26 @@ pub(crate) fn power2round(t: i32) -> (i32, i32) {
     let t0 = t - (t1 << BITS_IN_LOWER_PART_OF_T);
 
     (t0, t1)
+}
+pub(crate) fn power2round_vector<const DIMENSION: usize>(
+    t: [PolynomialRingElement; DIMENSION],
+) -> (
+    [PolynomialRingElement; DIMENSION],
+    [PolynomialRingElement; DIMENSION],
+) {
+    let mut vector_t0 = [PolynomialRingElement::ZERO; DIMENSION];
+    let mut vector_t1 = [PolynomialRingElement::ZERO; DIMENSION];
+
+    for i in 0..DIMENSION {
+        for (j, coefficient) in t[i].coefficients.into_iter().enumerate() {
+            let (c0, c1) = power2round(coefficient);
+
+            vector_t0[i].coefficients[j] = c0;
+            vector_t1[i].coefficients[j] = c1;
+        }
+    }
+
+    (vector_t0, vector_t1)
 }
 
 // If t0 is a signed representative, change it to an unsigned one and
@@ -106,7 +156,7 @@ pub(crate) fn change_t0_interval(t0: i32) -> i32 {
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
-pub(crate) fn decompose<const ALPHA: i32>(r: i32) -> (i32, i32) {
+fn decompose<const ALPHA: i32>(r: i32) -> (i32, i32) {
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
@@ -138,6 +188,26 @@ pub(crate) fn decompose<const ALPHA: i32>(r: i32) -> (i32, i32) {
     r0 -= (((FIELD_MODULUS - 1) / 2 - r0) >> 31) & FIELD_MODULUS;
 
     (r0, r1)
+}
+pub(crate) fn decompose_vector<const DIMENSION: usize, const ALPHA: i32>(
+    t: [PolynomialRingElement; DIMENSION],
+) -> (
+    [PolynomialRingElement; DIMENSION],
+    [PolynomialRingElement; DIMENSION],
+) {
+    let mut vector_low = [PolynomialRingElement::ZERO; DIMENSION];
+    let mut vector_high = [PolynomialRingElement::ZERO; DIMENSION];
+
+    for i in 0..DIMENSION {
+        for (j, coefficient) in t[i].coefficients.into_iter().enumerate() {
+            let (low, high) = decompose::<ALPHA>(coefficient);
+
+            vector_low[i].coefficients[j] = low;
+            vector_high[i].coefficients[j] = high;
+        }
+    }
+
+    (vector_low, vector_high)
 }
 
 pub(crate) fn make_hint<const GAMMA2: i32>(low: i32, high: i32) -> bool {
