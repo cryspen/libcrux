@@ -1,6 +1,13 @@
 //! ML-KEM 512
 //!
-use super::{constants::*, ind_cca::*, types::*, vector::Operations, *};
+use vector::traits::VectorType;
+
+use super::{
+    constants::*,
+    ind_cca::*,
+    types::{unpacked::*, *},
+    *,
+};
 
 // Kyber 768 parameters
 const RANK_768: usize = 3;
@@ -45,9 +52,9 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
 /// An Unpacked ML-KEM 768 Public key
-pub type MlKem768PublicKeyUnpacked<Vector: Operations> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
+pub type MlKem768PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
 /// Am Unpacked ML-KEM 768 Key pair
-pub type MlKem768KeyPairUnpacked<Vector: Operations> = MlKemKeyPairUnpacked<RANK_768, Vector>;
+pub type MlKem768KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_768, Vector>;
 
 // Instantiate the different functions.
 macro_rules! instantiate {
@@ -207,11 +214,11 @@ macro_rules! instantiate {
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable, crate::vector::portable::PortableVector}
+instantiate! {portable, ind_cca::instantiations::portable, vector::portable::PortableVector}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2, crate::vector::SIMD256Vector}
+instantiate! {avx2, ind_cca::instantiations::avx2, vector::SIMD256Vector}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::instantiations::neon, crate::vector::SIMD128Vector}
+instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector}
 
 /// Validate a public key.
 ///

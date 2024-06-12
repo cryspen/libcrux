@@ -2,7 +2,7 @@ macro_rules! instantiate {
     ($modp:ident, $vector:path, $hash:path) => {
         pub mod $modp {
             use crate::{
-                types::{MlKemKeyPairUnpacked, MlKemPublicKeyUnpacked},
+                types::unpacked::{MlKemKeyPairUnpacked, MlKemPublicKeyUnpacked},
                 MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey, MlKemSharedSecret,
                 KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
             };

@@ -13,7 +13,7 @@ use crate::{
         deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
         serialize_uncompressed_ring_element,
     },
-    types::*,
+    types::unpacked::*,
     utils::into_padded_array,
     vector::Operations,
 };

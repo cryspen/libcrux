@@ -1,6 +1,3 @@
-use crate::polynomial::PolynomialRingElement;
-use crate::vector::Operations;
-
 macro_rules! impl_generic_struct {
     ($name:ident, $doc:expr) => {
         #[doc = $doc]
@@ -195,22 +192,27 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     }
 }
 
-/// An unpacked ML-KEM Private Key
-pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
-    pub(crate) secret_as_ntt: [PolynomialRingElement<Vector>; K],
-}
+/// Types for the unpacked API.
+pub mod unpacked {
+    use crate::{polynomial::PolynomialRingElement, vector::traits::VectorType};
 
-/// An unpacked ML-KEM Public Key
-pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
-    pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
-    pub(crate) seed_for_A: [u8; 32],
-    pub(crate) A_transpose: [[PolynomialRingElement<Vector>; K]; K],
-}
+    /// An unpacked ML-KEM Private Key
+    pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: VectorType> {
+        pub(crate) secret_as_ntt: [PolynomialRingElement<Vector>; K],
+    }
 
-/// An unpacked ML-KEM KeyPair
-pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
-    pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
-    pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
-    pub public_key_hash: [u8; 32],
-    pub implicit_rejection_value: [u8; 32],
+    /// An unpacked ML-KEM Public Key
+    pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: VectorType> {
+        pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
+        pub(crate) seed_for_A: [u8; 32],
+        pub(crate) A_transpose: [[PolynomialRingElement<Vector>; K]; K],
+    }
+
+    /// An unpacked ML-KEM KeyPair
+    pub struct MlKemKeyPairUnpacked<const K: usize, Vector: VectorType> {
+        pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
+        pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
+        pub public_key_hash: [u8; 32],
+        pub implicit_rejection_value: [u8; 32],
+    }
 }

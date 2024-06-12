@@ -272,6 +272,20 @@ void libcrux_ml_kem_utils_into_padded_array___33size_t(Eurydice_slice slice,
   memcpy(ret, out, (size_t)33U * sizeof(uint8_t));
 }
 
+void core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
+    core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError self,
+    uint8_t ret[32U]) {
+  if (self.tag == core_result_Ok) {
+    uint8_t f0[32U];
+    memcpy(f0, self.val.case_Ok, (size_t)32U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)32U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
 void libcrux_ml_kem_utils_into_padded_array___34size_t(Eurydice_slice slice,
                                                        uint8_t ret[34U]) {
   uint8_t out[34U] = {0U};

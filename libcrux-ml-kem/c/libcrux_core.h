@@ -128,11 +128,11 @@ typedef struct
 #define core_result_Err 1
 
 typedef uint8_t
-    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags;
+    core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags;
 
 typedef struct
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
   union {
     uint8_t case_Ok[8U];
     core_array_TryFromSliceError case_Err;

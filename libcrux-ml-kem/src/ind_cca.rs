@@ -6,7 +6,7 @@ use crate::{
     hash_functions::Hash,
     ind_cpa::serialize_public_key,
     serialize::deserialize_ring_elements_reduced,
-    types::*,
+    types::{unpacked::*, *},
     utils::into_padded_array,
     vector::Operations,
 };

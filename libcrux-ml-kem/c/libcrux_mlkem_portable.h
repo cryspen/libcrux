@@ -310,6 +310,31 @@ typedef struct
   libcrux_ml_kem_vector_portable_PortableVector coefficients[16U];
 } libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_portable_PortableVector;
 
+typedef struct
+    libcrux_ml_kem_types_unpacked_MlKemPrivateKeyUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t_s {
+  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_portable_PortableVector
+      secret_as_ntt[3U];
+} libcrux_ml_kem_types_unpacked_MlKemPrivateKeyUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t;
+
+typedef struct
+    libcrux_ml_kem_types_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t_s {
+  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_portable_PortableVector
+      t_as_ntt[3U];
+  uint8_t seed_for_A[32U];
+  libcrux_ml_kem_polynomial_PolynomialRingElement__libcrux_ml_kem_vector_portable_PortableVector
+      A_transpose[3U][3U];
+} libcrux_ml_kem_types_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t;
+
+typedef struct
+    libcrux_ml_kem_types_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t_s {
+  libcrux_ml_kem_types_unpacked_MlKemPrivateKeyUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t
+      private_key;
+  libcrux_ml_kem_types_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t
+      public_key;
+  uint8_t public_key_hash[32U];
+  uint8_t implicit_rejection_value[32U];
+} libcrux_ml_kem_types_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_portable_PortableVector__3size_t;
+
 #if defined(__cplusplus)
 }
 #endif
