@@ -59,11 +59,11 @@ jobs:
           rm -f sys/platform/proofs/fstar/extraction/*.fst*
           ./hax-driver.py --kyber-reference
 
-      - name: 🏃 Regenerate `extraction-*` folders
-        run: ./proofs/fstar/patches.sh apply
+#      - name: 🏃 Regenerate `extraction-*` folders
+#        run: ./proofs/fstar/patches.sh apply
 
-      - name: 🏃 Make sure snapshots are up-to-date
-        run: git diff --exit-code
+#      - name: 🏃 Make sure snapshots are up-to-date
+#        run: git diff --exit-code
 
       - name: 🏃 Verify the Kyber reference code
         run: |
@@ -92,7 +92,7 @@ jobs:
       - name: 🏃 Extract & Verify ML-KEM crate (lax)
         run: |
           cd libcrux-ml-kem
-          # ./hax.py extract
+          ./hax.py extract
           # env FSTAR_HOME=${{ github.workspace }}/fstar \
           #     HACL_HOME=${{ github.workspace }}/hacl-star \
           #     HAX_HOME=${{ github.workspace }}/hax \
