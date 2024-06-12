@@ -16,6 +16,7 @@
     };
     fstar.follows = "eurydice/fstar";
     karamel.follows = "eurydice/karamel";
+    hax.url = "github:hacspec/hax";
   };
 
   outputs =
@@ -55,9 +56,11 @@
             pkgs.mold-wrapped
             pkgs.ninja
             pkgs.python3
+            inputs.hax.packages.${system}.default
           ];
           buildPhase = ''
             cd libcrux-ml-kem
+            python hax.py extract
             bash c.sh
             cd c
             cmake \
@@ -73,7 +76,10 @@
             build/Release/ml_kem_test
             build/Release/ml_kem_bench
           '';
-          installPhase = "cp -r . $out";
+          installPhase = ''
+            cd ./..
+            cp -r . $out
+          '';
 
           CHARON_HOME = inputs.charon.packages.${system}.default;
           EURYDICE_HOME = pkgs.runCommand "eurydice-home" { } ''
