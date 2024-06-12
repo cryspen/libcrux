@@ -263,6 +263,10 @@ inline static int32_t krml_time(void) {
   KRML_LOOP8(i, n, x)                                                          \
   KRML_LOOP8(i, n, x)
 
+#define KRML_LOOP24(i, n, x)                                                   \
+  KRML_LOOP16(i, n, x)                                                          \
+  KRML_LOOP8(i, n, x)
+
 #define KRML_UNROLL_FOR(i, z, n, k, x)                                         \
   do {                                                                         \
     uint32_t i = z;                                                            \
@@ -382,4 +386,11 @@ inline static int32_t krml_time(void) {
 #else
 #  define KRML_MAYBE_FOR16(i, z, n, k, x) KRML_ACTUAL_FOR(i, z, n, k, x)
 #endif
+
+#if 24 <= KRML_UNROLL_MAX
+#  define KRML_MAYBE_FOR24(i, z, n, k, x) KRML_UNROLL_FOR(i, z, 24, k, x)
+#else
+#  define KRML_MAYBE_FOR24(i, z, n, k, x) KRML_ACTUAL_FOR(i, z, n, k, x)
+#endif
+
 #endif
