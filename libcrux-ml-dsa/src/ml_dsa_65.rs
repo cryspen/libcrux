@@ -13,7 +13,7 @@ const GAMMA1_EXPONENT: usize = 19;
 // 4 bits when ETA is 4.
 const BITS_PER_ERROR_COEFFICIENT: usize = 4;
 
-const BYTES_FOR_ERROR_RING_ELEMENT: usize =
+const ERROR_RING_ELEMENT_SIZE: usize =
     (BITS_PER_ERROR_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 
 // To sample a value in the interval [-(GAMMA - 1), GAMMA], we can sample a
@@ -23,7 +23,7 @@ const BITS_PER_MASK_COEFFICIENT: usize = 20;
 
 const MAX_NUMBER_OF_ONES_IN_HINT: usize = 55;
 
-const BYTES_PER_MASK_RING_ELEMENT: usize =
+const MASK_RING_ELEMENT_SIZE: usize =
     (BITS_PER_MASK_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 
 const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
@@ -35,7 +35,7 @@ const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
 const SIGNING_KEY_SIZE: usize = SEED_FOR_A_SIZE
     + SEED_FOR_SIGNING_SIZE
     + BYTES_FOR_VERIFICATION_KEY_HASH
-    + (ROWS_IN_A + COLUMNS_IN_A) * BYTES_FOR_ERROR_RING_ELEMENT
+    + (ROWS_IN_A + COLUMNS_IN_A) * ERROR_RING_ELEMENT_SIZE
     + ROWS_IN_A * BYTES_FOR_RING_ELEMENT_OF_T0S;
 
 pub struct MLDSA65KeyPair {
@@ -49,7 +49,7 @@ pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA65KeyPair {
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
-        BYTES_FOR_ERROR_RING_ELEMENT,
+        ERROR_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         VERIFICATION_KEY_SIZE,
     >(randomness);

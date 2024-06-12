@@ -42,7 +42,7 @@ pub(super) fn generate_serialized_signing_key<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
-    const BYTES_FOR_ERROR_RING_ELEMENT: usize,
+    const ERROR_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
 >(
     seed_for_A: &[u8],
@@ -68,17 +68,15 @@ pub(super) fn generate_serialized_signing_key<
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
     for i in 0..COLUMNS_IN_A {
-        signing_key_serialized[offset..offset + BYTES_FOR_ERROR_RING_ELEMENT].copy_from_slice(
-            &serialize_error_ring_element::<ETA, BYTES_FOR_ERROR_RING_ELEMENT>(s1[i]),
-        );
-        offset += BYTES_FOR_ERROR_RING_ELEMENT;
+        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE]
+            .copy_from_slice(&serialize_error_ring_element::<ETA, ERROR_RING_ELEMENT_SIZE>(s1[i]));
+        offset += ERROR_RING_ELEMENT_SIZE;
     }
 
     for i in 0..ROWS_IN_A {
-        signing_key_serialized[offset..offset + BYTES_FOR_ERROR_RING_ELEMENT].copy_from_slice(
-            &serialize_error_ring_element::<ETA, BYTES_FOR_ERROR_RING_ELEMENT>(s2[i]),
-        );
-        offset += BYTES_FOR_ERROR_RING_ELEMENT;
+        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE]
+            .copy_from_slice(&serialize_error_ring_element::<ETA, ERROR_RING_ELEMENT_SIZE>(s2[i]));
+        offset += ERROR_RING_ELEMENT_SIZE;
     }
 
     for i in 0..ROWS_IN_A {
@@ -95,7 +93,7 @@ pub(crate) fn generate_key_pair<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
-    const BYTES_FOR_ERROR_RING_ELEMENT: usize,
+    const ERROR_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
     const VERIFICATION_KEY_SIZE: usize,
 >(
@@ -130,7 +128,7 @@ pub(crate) fn generate_key_pair<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
-        BYTES_FOR_ERROR_RING_ELEMENT,
+        ERROR_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
     >(
         seed_for_A,
@@ -149,7 +147,7 @@ pub(crate) fn sign<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
-    const BYTES_FOR_ERROR_RING_ELEMENT: usize,
+    const ERROR_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
     const SIGNATURE_SIZE: usize,
 >(
@@ -164,9 +162,9 @@ pub(crate) fn sign<
         remaining_signing_key.split_at(BYTES_FOR_VERIFICATION_KEY_HASH);
 
     let (s1_serialized, remaining_signing_key) =
-        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT * COLUMNS_IN_A);
+        remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * COLUMNS_IN_A);
     let (s2_serialized, t0_serialized) =
-        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT * ROWS_IN_A);
+        remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
 
     let s1 = deserialize_to_error_ring_element::<ETA>(s1_serialized);
     let s2 = deserialize_to_error_ring_element::<ETA>(s2_serialized);
