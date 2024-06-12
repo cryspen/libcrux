@@ -5,13 +5,10 @@ use crate::{
         BYTES_FOR_VERIFICATION_KEY_HASH, SEED_FOR_A_SIZE, SEED_FOR_ERROR_VECTORS_SIZE,
         SEED_FOR_SIGNING_SIZE,
     },
-    deserialize::{deserialize_to_error_ring_element, deserialize_to_ring_element_of_t0s},
+    encoding,
     hash_functions::H,
     matrix::{compute_As1_plus_s2, expand_to_A, power2round_vector, sample_error_vector},
     ntt::ntt,
-    serialize::{
-        serialize_error_ring_element, serialize_ring_element_of_t0s, serialize_ring_element_of_t1s,
-    },
     utils::into_padded_array,
 };
 
@@ -30,7 +27,7 @@ pub(super) fn generate_serialized_verification_key<
     for i in 0..ROWS_IN_A {
         let offset = SEED_FOR_A_SIZE + (i * BYTES_FOR_RING_ELEMENT_OF_T1S);
         verification_key_serialized[offset..offset + BYTES_FOR_RING_ELEMENT_OF_T1S]
-            .copy_from_slice(&serialize_ring_element_of_t1s(t1[i]));
+            .copy_from_slice(&encoding::t1::serialize(t1[i]));
     }
 
     verification_key_serialized
@@ -68,20 +65,22 @@ pub(super) fn generate_serialized_signing_key<
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
     for i in 0..COLUMNS_IN_A {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize_error_ring_element::<ETA, ERROR_RING_ELEMENT_SIZE>(s1[i]));
+        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
+            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(s1[i]),
+        );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
     for i in 0..ROWS_IN_A {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize_error_ring_element::<ETA, ERROR_RING_ELEMENT_SIZE>(s2[i]));
+        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
+            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(s2[i]),
+        );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
     for i in 0..ROWS_IN_A {
         signing_key_serialized[offset..offset + BYTES_FOR_RING_ELEMENT_OF_T0S]
-            .copy_from_slice(&serialize_ring_element_of_t0s(t0[i]));
+            .copy_from_slice(&encoding::t0::serialize(t0[i]));
         offset += BYTES_FOR_RING_ELEMENT_OF_T0S;
     }
 
@@ -165,13 +164,6 @@ pub(crate) fn sign<
         remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * COLUMNS_IN_A);
     let (s2_serialized, t0_serialized) =
         remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
-
-    let s1 = deserialize_to_error_ring_element::<ETA>(s1_serialized);
-    let s2 = deserialize_to_error_ring_element::<ETA>(s2_serialized);
-    let t0 = deserialize_to_ring_element_of_t0s(t0_serialized);
-
-    let s1_as_ntt = ntt(s1);
-    let s2_as_ntt = ntt(s2);
 
     todo!();
 }

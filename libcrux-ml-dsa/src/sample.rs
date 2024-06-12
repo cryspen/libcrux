@@ -1,7 +1,7 @@
 use crate::{
     arithmetic::PolynomialRingElement,
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    deserialize::deserialize_to_mask_ring_element,
+    encoding,
     hash_functions::{H, H_128},
 };
 
@@ -155,8 +155,8 @@ pub(crate) fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(
     seed: [u8; 66],
 ) -> PolynomialRingElement {
     match GAMMA1_EXPONENT {
-        17 => deserialize_to_mask_ring_element::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
-        19 => deserialize_to_mask_ring_element::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
+        17 => encoding::mask::deserialize::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
+        19 => encoding::mask::deserialize::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
         _ => unreachable!(),
     }
 }
