@@ -11,7 +11,7 @@ use libcrux_ml_kem::{
     },
     mlkem512::{self, MlKem512Ciphertext, MlKem512KeyPair, MlKem512PrivateKey, MlKem512PublicKey},
     mlkem768::{self, MlKem768Ciphertext, MlKem768KeyPair, MlKem768PrivateKey, MlKem768PublicKey},
-    MlKemSharedSecret, KEY_GENERATION_SEED_SIZE,
+    MlKemSharedSecret,
 };
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
@@ -20,7 +20,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 struct Lint {
     lintName: String,
-    algorithm: String,
+    algorithm: Algorithm,
     valid: bool,
     r#type: String,
     id: String,
@@ -46,7 +46,7 @@ impl Lint {
         lint_type: LintType,
         pk: &[u8],
         name: &str,
-        algorithm: &str,
+        algorithm: Algorithm,
         valid: bool,
     ) -> Self {
         Self {
@@ -56,7 +56,7 @@ impl Lint {
             },
             id,
             publicKey: BASE64_STANDARD.encode(pk),
-            algorithm: algorithm.to_string(),
+            algorithm,
             valid,
         }
     }
@@ -72,8 +72,8 @@ impl Lint {
         &self.id
     }
 
-    fn kem_algorithm(&self) -> &str {
-        &self.algorithm
+    fn kem_algorithm(&self) -> Algorithm {
+        self.algorithm
     }
 
     fn public_key(&self) -> Option<Vec<u8>> {
@@ -160,6 +160,7 @@ struct Cli {
     algorithm: Option<u16>,
 }
 
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 enum Algorithm {
     MlKem1024,
     MlKem768,
@@ -312,8 +313,15 @@ impl Ciphertext {
         }
     }
 
-    fn decapsulate(&self, sk: &PrivateKey) -> _ {
-        todo!()
+    fn decapsulate(&self, sk: &PrivateKey) -> MlKemSharedSecret {
+        match (self, sk) {
+            (Ciphertext::MlKem1024(ct), PrivateKey::MlKem1024(sk)) => {
+                mlkem1024::decapsulate(sk, ct)
+            }
+            (Ciphertext::MlKem768(ct), PrivateKey::MlKem768(sk)) => mlkem768::decapsulate(sk, ct),
+            (Ciphertext::MlKem512(ct), PrivateKey::MlKem512(sk)) => mlkem512::decapsulate(sk, ct),
+            _ => unreachable!(),
+        }
     }
 }
 
@@ -375,19 +383,14 @@ fn main() {
             let ct = bytes_from_file(ct);
 
             let ct = Ciphertext::decode(alg, &ct).expect("Error decoding ct.");
-            let shared_secret = ct.decapsulate(&sk).expect("Error decapsulating.");
+            let shared_secret = ct.decapsulate(&sk);
 
             let out = match out {
                 Some(n) => n,
                 None => "mlkem-decapsulated.ss".to_owned(),
             };
 
-            println!("Writing shared secret to {out}");
-            let mut out_file =
-                File::create(out.clone()).expect(&format!("Can not create file {out}"));
-            out_file
-                .write_all(&shared_secret.encode())
-                .expect("Error writing public key");
+            write_to_file(out, &shared_secret);
         }
         GenerateCli::Lint {
             file,
@@ -416,7 +419,7 @@ fn main() {
 
                 let mut payload = lint_name.as_bytes().to_vec();
                 payload.extend_from_slice(&public_key);
-                let id = libcrux::digest::sha2_256(&payload);
+                let id = libcrux_sha3::sha256(&payload);
                 let lint = Lint::new(
                     hex::encode(&id),
                     LintType::PublicKey,
