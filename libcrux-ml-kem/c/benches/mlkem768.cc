@@ -69,6 +69,57 @@ BENCHMARK(kyber768_key_generation);
 BENCHMARK(kyber768_encapsulation);
 BENCHMARK(kyber768_decapsulation);
 
+static void
+kyber768_key_generation_unpacked(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+  auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(randomness);
+
+  for (auto _ : state)
+  {
+    key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(randomness);
+  }
+}
+
+static void
+kyber768_encapsulation_unpacked(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(randomness);
+  generate_random(randomness, 32);
+  auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+
+  for (auto _ : state)
+  {
+    ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+  }
+}
+
+static void
+kyber768_decapsulation_unpacked(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(randomness);
+  generate_random(randomness, 32);
+  auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+
+  uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+
+  for (auto _ : state)
+  {
+    libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked_portable(&key_pair, &ctxt.fst, sharedSecret2);
+  }
+}
+
+BENCHMARK(kyber768_key_generation_unpacked);
+BENCHMARK(kyber768_encapsulation_unpacked);
+BENCHMARK(kyber768_decapsulation_unpacked);
+
 #ifdef LIBCRUX_AARCH64
 #include "libcrux_mlkem768_neon.h"
 
@@ -177,6 +228,58 @@ kyber768_decapsulation_avx2(benchmark::State &state)
 BENCHMARK(kyber768_key_generation_avx2);
 BENCHMARK(kyber768_encapsulation_avx2);
 BENCHMARK(kyber768_decapsulation_avx2);
+
+static void
+kyber768_key_generation_avx2_unpacked(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+  auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair_unpacked(randomness);
+
+  for (auto _ : state)
+  {
+    key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair_unpacked(randomness);
+  }
+}
+
+static void
+kyber768_encapsulation_avx2_unpacked(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair_unpacked(randomness);
+  generate_random(randomness, 32);
+  auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+
+  for (auto _ : state)
+  {
+    ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+  }
+}
+
+static void
+kyber768_decapsulation_avx2_unpacked(benchmark::State &state)
+{
+  uint8_t randomness[64];
+  generate_random(randomness, 64);
+
+  auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair_unpacked(randomness);
+  generate_random(randomness, 32);
+  auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+
+  uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
+
+  for (auto _ : state)
+  {
+    libcrux_ml_kem_mlkem768_avx2_decapsulate_unpacked_portable(&key_pair, &ctxt.fst, sharedSecret2);
+  }
+}
+
+BENCHMARK(kyber768_key_generation_avx2_unpacked);
+BENCHMARK(kyber768_encapsulation_avx2_unpacked);
+BENCHMARK(kyber768_decapsulation_avx2_unpacked);
+
 #endif
 
 #ifdef LIBCRUX_SYMCRYPT
