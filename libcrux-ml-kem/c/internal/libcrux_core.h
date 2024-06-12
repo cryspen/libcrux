@@ -148,35 +148,11 @@ uint8_t
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time___768size_t(
     Eurydice_slice lhs, Eurydice_slice rhs);
 
-typedef struct
-    K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t__s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_;
-
-typedef struct
-    K___Eurydice_slice_uint8_t_192size_t__Eurydice_slice_uint8_t_192size_t__s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} K___Eurydice_slice_uint8_t_192size_t__Eurydice_slice_uint8_t_192size_t_;
-
 void libcrux_ml_kem_utils_into_padded_array___33size_t(Eurydice_slice slice,
                                                        uint8_t ret[33U]);
 
 void libcrux_ml_kem_utils_into_padded_array___34size_t(Eurydice_slice slice,
                                                        uint8_t ret[34U]);
-
-typedef struct
-    K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t__s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_;
-
-typedef struct
-    K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t__s {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
-} K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_;
 
 Eurydice_slice
 libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___768size_t(

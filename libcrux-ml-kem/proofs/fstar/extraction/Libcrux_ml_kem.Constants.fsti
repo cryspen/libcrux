@@ -4,27 +4,24 @@ open Core
 open FStar.Mul
 
 /// Each field element needs floor(log_2(FIELD_MODULUS)) + 1 = 12 bits to represent
-let v_BITS_PER_COEFFICIENT: usize = sz 12
-
-/// Coefficients per ring element
-let v_COEFFICIENTS_IN_RING_ELEMENT: usize = sz 256
+let v_BITS_PER_COEFFICIENT: usize = Rust_primitives.Hax.dropped_body
 
 /// Bits required per (uncompressed) ring element
-let v_BITS_PER_RING_ELEMENT: usize = v_COEFFICIENTS_IN_RING_ELEMENT *! sz 12
+let v_BITS_PER_RING_ELEMENT: usize = Rust_primitives.Hax.dropped_body
 
 /// Bytes required per (uncompressed) ring element
-let v_BYTES_PER_RING_ELEMENT: usize = v_BITS_PER_RING_ELEMENT /! sz 8
+let v_BYTES_PER_RING_ELEMENT: usize = Rust_primitives.Hax.dropped_body
 
-let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = sz 32
+/// Coefficients per ring element
+let v_COEFFICIENTS_IN_RING_ELEMENT: usize = Rust_primitives.Hax.dropped_body
+
+let v_CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = Rust_primitives.Hax.dropped_body
 
 /// SHA3 512 digest size
-let v_G_DIGEST_SIZE: usize = sz 64
+let v_G_DIGEST_SIZE: usize = Rust_primitives.Hax.dropped_body
 
 /// SHA3 256 digest size
-let v_H_DIGEST_SIZE: usize = sz 32
+let v_H_DIGEST_SIZE: usize = Rust_primitives.Hax.dropped_body
 
 /// The size of an ML-KEM shared secret.
-let v_SHARED_SECRET_SIZE: usize = sz 32
-
-/// Field modulus: 3329
-let v__FIELD_MODULUS: i16 = 3329s
+let v_SHARED_SECRET_SIZE: usize = Rust_primitives.Hax.dropped_body
