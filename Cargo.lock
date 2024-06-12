@@ -1029,13 +1029,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "libcrux-simd"
-version = "0.0.2-pre.2"
-dependencies = [
- "libcrux-platform",
-]
-
-[[package]]
 name = "libfuzzer-sys"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
