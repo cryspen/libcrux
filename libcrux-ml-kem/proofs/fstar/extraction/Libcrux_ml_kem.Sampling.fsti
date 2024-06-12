@@ -3,6 +3,13 @@ module Libcrux_ml_kem.Sampling
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_ml_kem.Vector.Traits in
+  ()
+
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation
 /// of the corresponding polynomial `a`.
@@ -37,13 +44,22 @@ open FStar.Mul
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val sample_from_uniform_distribution_next
-      (#v_Vector: Type)
+      (#v_Vector: Type0)
       (v_K v_N: usize)
-      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Array (t_Array u8 v_N) v_K)
       (sampled_coefficients: t_Array usize v_K)
       (out: t_Array (t_Array i16 (sz 272)) v_K)
     : Prims.Pure (t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val sample_from_binomial_distribution
+      (v_ETA: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (randomness: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
@@ -86,34 +102,25 @@ val sample_from_uniform_distribution_next
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val sample_from_binomial_distribution_2_
-      (#v_Vector: Type)
-      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 2 *! sz 64 <: usize))
+      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 2 *! sz 64 <: usize))
       (fun _ -> Prims.l_True)
 
 val sample_from_binomial_distribution_3_
-      (#v_Vector: Type)
-      {| i1: Libcrux_traits.t_Operations v_Vector |}
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (requires (Core.Slice.impl__len randomness <: usize) =. (sz 3 *! sz 64 <: usize))
-      (fun _ -> Prims.l_True)
-
-val sample_from_binomial_distribution
-      (v_ETA: usize)
-      (#v_Vector: Type)
-      {| i1: Libcrux_traits.t_Operations v_Vector |}
-      (randomness: t_Slice u8)
-    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 3 *! sz 64 <: usize))
       (fun _ -> Prims.l_True)
 
 val sample_from_xof
       (v_K: usize)
-      (#v_Vector #v_Hasher: Type)
-      {| i2: Libcrux_traits.t_Operations v_Vector |}
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (seeds: t_Array (t_Array u8 (sz 34)) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)

@@ -1810,42 +1810,30 @@ static inline void shake128_squeeze_three_blocks___3size_t(
     libcrux_sha3_avx2_x4_incremental_KeccakState4 *self,
     uint8_t ret[3U][504U]) {
   uint8_t out[3U][504U] = {{0U}};
-  uint8_t dummy_out0[504U] = {0U};
-  K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)3U, out, uint8_t[504U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[504U],
-          K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out12 = uu____0.snd;
-  K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_
-      uu____1 = core_slice___Slice_T___split_at_mut(
-          out12, (size_t)1U, uint8_t[504U],
-          K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_);
-  Eurydice_slice out1 = uu____1.fst;
-  Eurydice_slice out2 = uu____1.snd;
+  uint8_t out0[504U] = {0U};
+  uint8_t out1[504U] = {0U};
+  uint8_t out2[504U] = {0U};
+  uint8_t out3[504U] = {0U};
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-      *uu____2 = self;
-  Eurydice_slice uu____3 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____4 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out2, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
+      *uu____0 = self;
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_slice((size_t)504U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)504U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_slice((size_t)504U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
-      uu____2, uu____3, uu____4, uu____5,
-      Eurydice_array_to_slice((size_t)504U, dummy_out0, uint8_t,
-                              Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3,
+      Eurydice_array_to_slice((size_t)504U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____4[504U];
+  memcpy(uu____4, out0, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[0U], uu____4, (size_t)504U * sizeof(uint8_t));
+  uint8_t uu____5[504U];
+  memcpy(uu____5, out1, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[1U], uu____5, (size_t)504U * sizeof(uint8_t));
+  uint8_t uu____6[504U];
+  memcpy(uu____6, out2, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[2U], uu____6, (size_t)504U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)3U * sizeof(uint8_t[504U]));
 }
 
@@ -1894,42 +1882,30 @@ static inline void shake128_squeeze_block___3size_t(
     libcrux_sha3_avx2_x4_incremental_KeccakState4 *self,
     uint8_t ret[3U][168U]) {
   uint8_t out[3U][168U] = {{0U}};
-  uint8_t dummy_out0[168U] = {0U};
-  K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)3U, out, uint8_t[168U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[168U],
-          K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out12 = uu____0.snd;
-  K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_
-      uu____1 = core_slice___Slice_T___split_at_mut(
-          out12, (size_t)1U, uint8_t[168U],
-          K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_);
-  Eurydice_slice out1 = uu____1.fst;
-  Eurydice_slice out2 = uu____1.snd;
+  uint8_t out0[168U] = {0U};
+  uint8_t out1[168U] = {0U};
+  uint8_t out2[168U] = {0U};
+  uint8_t out3[168U] = {0U};
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-      *uu____2 = self;
-  Eurydice_slice uu____3 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____4 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out2, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
+      *uu____0 = self;
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_slice((size_t)168U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)168U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_slice((size_t)168U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-      uu____2, uu____3, uu____4, uu____5,
-      Eurydice_array_to_slice((size_t)168U, dummy_out0, uint8_t,
-                              Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3,
+      Eurydice_array_to_slice((size_t)168U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____4[168U];
+  memcpy(uu____4, out0, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[0U], uu____4, (size_t)168U * sizeof(uint8_t));
+  uint8_t uu____5[168U];
+  memcpy(uu____5, out1, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[1U], uu____5, (size_t)168U * sizeof(uint8_t));
+  uint8_t uu____6[168U];
+  memcpy(uu____6, out2, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[2U], uu____6, (size_t)168U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)3U * sizeof(uint8_t[168U]));
 }
 
@@ -2116,48 +2092,36 @@ typedef struct
 static inline void PRFxN___3size_t_128size_t(uint8_t (*input)[33U],
                                              uint8_t ret[3U][128U]) {
   uint8_t out[3U][128U] = {{0U}};
-  uint8_t dummy_out0[128U] = {0U};
-  K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)3U, out, uint8_t[128U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[128U],
-          K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out12 = uu____0.snd;
-  K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_
-      uu____1 = core_slice___Slice_T___split_at_mut(
-          out12, (size_t)1U, uint8_t[128U],
-          K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_);
-  Eurydice_slice out1 = uu____1.fst;
-  Eurydice_slice out2 = uu____1.snd;
-  Eurydice_slice uu____2 =
+  uint8_t out0[128U] = {0U};
+  uint8_t out1[128U] = {0U};
+  uint8_t out2[128U] = {0U};
+  uint8_t out3[128U] = {0U};
+  Eurydice_slice uu____0 =
       Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____3 =
+  Eurydice_slice uu____1 =
       Eurydice_array_to_slice((size_t)33U, input[1U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____4 =
+  Eurydice_slice uu____2 =
       Eurydice_array_to_slice((size_t)33U, input[2U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 =
+  Eurydice_slice uu____3 =
       Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____6 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____7 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____8 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out2, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
+  Eurydice_slice uu____4 =
+      Eurydice_array_to_slice((size_t)128U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____5 =
+      Eurydice_array_to_slice((size_t)128U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____6 =
+      Eurydice_array_to_slice((size_t)128U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_shake256(
-      uu____2, uu____3, uu____4, uu____5, uu____6, uu____7, uu____8,
-      Eurydice_array_to_slice((size_t)128U, dummy_out0, uint8_t,
-                              Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3, uu____4, uu____5, uu____6,
+      Eurydice_array_to_slice((size_t)128U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____7[128U];
+  memcpy(uu____7, out0, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[0U], uu____7, (size_t)128U * sizeof(uint8_t));
+  uint8_t uu____8[128U];
+  memcpy(uu____8, out1, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[1U], uu____8, (size_t)128U * sizeof(uint8_t));
+  uint8_t uu____9[128U];
+  memcpy(uu____9, out2, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[2U], uu____9, (size_t)128U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)3U * sizeof(uint8_t[128U]));
 }
 
@@ -4573,50 +4537,33 @@ static inline void shake128_squeeze_three_blocks___4size_t(
     libcrux_sha3_avx2_x4_incremental_KeccakState4 *self,
     uint8_t ret[4U][504U]) {
   uint8_t out[4U][504U] = {{0U}};
-  K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)4U, out, uint8_t[504U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[504U],
-          K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out123 = uu____0.snd;
-  K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_
-      uu____1 = core_slice___Slice_T___split_at_mut(
-          out123, (size_t)1U, uint8_t[504U],
-          K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_);
-  Eurydice_slice out1 = uu____1.fst;
-  Eurydice_slice out23 = uu____1.snd;
-  K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_
-      uu____2 = core_slice___Slice_T___split_at_mut(
-          out23, (size_t)1U, uint8_t[504U],
-          K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_);
-  Eurydice_slice out2 = uu____2.fst;
-  Eurydice_slice out3 = uu____2.snd;
+  uint8_t out0[504U] = {0U};
+  uint8_t out1[504U] = {0U};
+  uint8_t out2[504U] = {0U};
+  uint8_t out3[504U] = {0U};
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-      *uu____3 = self;
-  Eurydice_slice uu____4 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____6 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out2, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
+      *uu____0 = self;
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_slice((size_t)504U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)504U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_slice((size_t)504U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
-      uu____3, uu____4, uu____5, uu____6,
-      Eurydice_array_to_slice(
-          (size_t)504U,
-          Eurydice_slice_index(out3, (size_t)0U, uint8_t[504U],
-                               uint8_t(*)[504U], uint8_t[504U]),
-          uint8_t, Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3,
+      Eurydice_array_to_slice((size_t)504U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____4[504U];
+  memcpy(uu____4, out0, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[0U], uu____4, (size_t)504U * sizeof(uint8_t));
+  uint8_t uu____5[504U];
+  memcpy(uu____5, out1, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[1U], uu____5, (size_t)504U * sizeof(uint8_t));
+  uint8_t uu____6[504U];
+  memcpy(uu____6, out2, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[2U], uu____6, (size_t)504U * sizeof(uint8_t));
+  uint8_t uu____7[504U];
+  memcpy(uu____7, out3, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[3U], uu____7, (size_t)504U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)4U * sizeof(uint8_t[504U]));
 }
 
@@ -4665,50 +4612,33 @@ static inline void shake128_squeeze_block___4size_t(
     libcrux_sha3_avx2_x4_incremental_KeccakState4 *self,
     uint8_t ret[4U][168U]) {
   uint8_t out[4U][168U] = {{0U}};
-  K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)4U, out, uint8_t[168U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[168U],
-          K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out123 = uu____0.snd;
-  K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_
-      uu____1 = core_slice___Slice_T___split_at_mut(
-          out123, (size_t)1U, uint8_t[168U],
-          K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_);
-  Eurydice_slice out1 = uu____1.fst;
-  Eurydice_slice out23 = uu____1.snd;
-  K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_
-      uu____2 = core_slice___Slice_T___split_at_mut(
-          out23, (size_t)1U, uint8_t[168U],
-          K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_);
-  Eurydice_slice out2 = uu____2.fst;
-  Eurydice_slice out3 = uu____2.snd;
+  uint8_t out0[168U] = {0U};
+  uint8_t out1[168U] = {0U};
+  uint8_t out2[168U] = {0U};
+  uint8_t out3[168U] = {0U};
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-      *uu____3 = self;
-  Eurydice_slice uu____4 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____6 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out2, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
+      *uu____0 = self;
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_slice((size_t)168U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)168U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_slice((size_t)168U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-      uu____3, uu____4, uu____5, uu____6,
-      Eurydice_array_to_slice(
-          (size_t)168U,
-          Eurydice_slice_index(out3, (size_t)0U, uint8_t[168U],
-                               uint8_t(*)[168U], uint8_t[168U]),
-          uint8_t, Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3,
+      Eurydice_array_to_slice((size_t)168U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____4[168U];
+  memcpy(uu____4, out0, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[0U], uu____4, (size_t)168U * sizeof(uint8_t));
+  uint8_t uu____5[168U];
+  memcpy(uu____5, out1, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[1U], uu____5, (size_t)168U * sizeof(uint8_t));
+  uint8_t uu____6[168U];
+  memcpy(uu____6, out2, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[2U], uu____6, (size_t)168U * sizeof(uint8_t));
+  uint8_t uu____7[168U];
+  memcpy(uu____7, out3, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[3U], uu____7, (size_t)168U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)4U * sizeof(uint8_t[168U]));
 }
 
@@ -4875,56 +4805,39 @@ typedef struct
 static inline void PRFxN___4size_t_128size_t(uint8_t (*input)[33U],
                                              uint8_t ret[4U][128U]) {
   uint8_t out[4U][128U] = {{0U}};
-  K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)4U, out, uint8_t[128U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[128U],
-          K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out123 = uu____0.snd;
-  K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_
-      uu____1 = core_slice___Slice_T___split_at_mut(
-          out123, (size_t)1U, uint8_t[128U],
-          K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_);
-  Eurydice_slice out1 = uu____1.fst;
-  Eurydice_slice out23 = uu____1.snd;
-  K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_
-      uu____2 = core_slice___Slice_T___split_at_mut(
-          out23, (size_t)1U, uint8_t[128U],
-          K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_);
-  Eurydice_slice out2 = uu____2.fst;
-  Eurydice_slice out3 = uu____2.snd;
-  Eurydice_slice uu____3 =
+  uint8_t out0[128U] = {0U};
+  uint8_t out1[128U] = {0U};
+  uint8_t out2[128U] = {0U};
+  uint8_t out3[128U] = {0U};
+  Eurydice_slice uu____0 =
       Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____4 =
+  Eurydice_slice uu____1 =
       Eurydice_array_to_slice((size_t)33U, input[1U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 =
+  Eurydice_slice uu____2 =
       Eurydice_array_to_slice((size_t)33U, input[2U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____6 =
+  Eurydice_slice uu____3 =
       Eurydice_array_to_slice((size_t)33U, input[3U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____7 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____8 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____9 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out2, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
+  Eurydice_slice uu____4 =
+      Eurydice_array_to_slice((size_t)128U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____5 =
+      Eurydice_array_to_slice((size_t)128U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____6 =
+      Eurydice_array_to_slice((size_t)128U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_shake256(
-      uu____3, uu____4, uu____5, uu____6, uu____7, uu____8, uu____9,
-      Eurydice_array_to_slice(
-          (size_t)128U,
-          Eurydice_slice_index(out3, (size_t)0U, uint8_t[128U],
-                               uint8_t(*)[128U], uint8_t[128U]),
-          uint8_t, Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3, uu____4, uu____5, uu____6,
+      Eurydice_array_to_slice((size_t)128U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____7[128U];
+  memcpy(uu____7, out0, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[0U], uu____7, (size_t)128U * sizeof(uint8_t));
+  uint8_t uu____8[128U];
+  memcpy(uu____8, out1, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[1U], uu____8, (size_t)128U * sizeof(uint8_t));
+  uint8_t uu____9[128U];
+  memcpy(uu____9, out2, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[2U], uu____9, (size_t)128U * sizeof(uint8_t));
+  uint8_t uu____10[128U];
+  memcpy(uu____10, out3, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[3U], uu____10, (size_t)128U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)4U * sizeof(uint8_t[128U]));
 }
 
@@ -6124,34 +6037,27 @@ static inline void shake128_squeeze_three_blocks___2size_t(
     libcrux_sha3_avx2_x4_incremental_KeccakState4 *self,
     uint8_t ret[2U][504U]) {
   uint8_t out[2U][504U] = {{0U}};
-  uint8_t dummy_out0[504U] = {0U};
-  uint8_t dummy_out1[504U] = {0U};
-  K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)2U, out, uint8_t[504U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[504U],
-          K___Eurydice_slice_uint8_t_504size_t__Eurydice_slice_uint8_t_504size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out1 = uu____0.snd;
+  uint8_t out0[504U] = {0U};
+  uint8_t out1[504U] = {0U};
+  uint8_t out2[504U] = {0U};
+  uint8_t out3[504U] = {0U};
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-      *uu____1 = self;
-  Eurydice_slice uu____2 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____3 = Eurydice_array_to_slice(
-      (size_t)504U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[504U], uint8_t(*)[504U],
-                           uint8_t[504U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____4 = Eurydice_array_to_slice((size_t)504U, dummy_out0,
-                                                   uint8_t, Eurydice_slice);
+      *uu____0 = self;
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_slice((size_t)504U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)504U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_slice((size_t)504U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
-      uu____1, uu____2, uu____3, uu____4,
-      Eurydice_array_to_slice((size_t)504U, dummy_out1, uint8_t,
-                              Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3,
+      Eurydice_array_to_slice((size_t)504U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____4[504U];
+  memcpy(uu____4, out0, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[0U], uu____4, (size_t)504U * sizeof(uint8_t));
+  uint8_t uu____5[504U];
+  memcpy(uu____5, out1, (size_t)504U * sizeof(uint8_t));
+  memcpy(out[1U], uu____5, (size_t)504U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)2U * sizeof(uint8_t[504U]));
 }
 
@@ -6200,34 +6106,27 @@ static inline void shake128_squeeze_block___2size_t(
     libcrux_sha3_avx2_x4_incremental_KeccakState4 *self,
     uint8_t ret[2U][168U]) {
   uint8_t out[2U][168U] = {{0U}};
-  uint8_t dummy_out0[168U] = {0U};
-  uint8_t dummy_out1[168U] = {0U};
-  K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)2U, out, uint8_t[168U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[168U],
-          K___Eurydice_slice_uint8_t_168size_t__Eurydice_slice_uint8_t_168size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out1 = uu____0.snd;
+  uint8_t out0[168U] = {0U};
+  uint8_t out1[168U] = {0U};
+  uint8_t out2[168U] = {0U};
+  uint8_t out3[168U] = {0U};
   libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
-      *uu____1 = self;
-  Eurydice_slice uu____2 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____3 = Eurydice_array_to_slice(
-      (size_t)168U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[168U], uint8_t(*)[168U],
-                           uint8_t[168U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____4 = Eurydice_array_to_slice((size_t)168U, dummy_out0,
-                                                   uint8_t, Eurydice_slice);
+      *uu____0 = self;
+  Eurydice_slice uu____1 =
+      Eurydice_array_to_slice((size_t)168U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)168U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____3 =
+      Eurydice_array_to_slice((size_t)168U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-      uu____1, uu____2, uu____3, uu____4,
-      Eurydice_array_to_slice((size_t)168U, dummy_out1, uint8_t,
-                              Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3,
+      Eurydice_array_to_slice((size_t)168U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____4[168U];
+  memcpy(uu____4, out0, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[0U], uu____4, (size_t)168U * sizeof(uint8_t));
+  uint8_t uu____5[168U];
+  memcpy(uu____5, out1, (size_t)168U * sizeof(uint8_t));
+  memcpy(out[1U], uu____5, (size_t)168U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)2U * sizeof(uint8_t[168U]));
 }
 
@@ -6394,40 +6293,33 @@ typedef struct
 static inline void PRFxN___2size_t_192size_t(uint8_t (*input)[33U],
                                              uint8_t ret[2U][192U]) {
   uint8_t out[2U][192U] = {{0U}};
-  uint8_t dummy_out0[192U] = {0U};
-  uint8_t dummy_out1[192U] = {0U};
-  K___Eurydice_slice_uint8_t_192size_t__Eurydice_slice_uint8_t_192size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)2U, out, uint8_t[192U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[192U],
-          K___Eurydice_slice_uint8_t_192size_t__Eurydice_slice_uint8_t_192size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out1 = uu____0.snd;
-  Eurydice_slice uu____1 =
+  uint8_t out0[192U] = {0U};
+  uint8_t out1[192U] = {0U};
+  uint8_t out2[192U] = {0U};
+  uint8_t out3[192U] = {0U};
+  Eurydice_slice uu____0 =
       Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____2 =
+  Eurydice_slice uu____1 =
       Eurydice_array_to_slice((size_t)33U, input[1U], uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
   Eurydice_slice uu____3 =
       Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
   Eurydice_slice uu____4 =
-      Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice(
-      (size_t)192U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[192U], uint8_t(*)[192U],
-                           uint8_t[192U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____6 = Eurydice_array_to_slice(
-      (size_t)192U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[192U], uint8_t(*)[192U],
-                           uint8_t[192U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____7 = Eurydice_array_to_slice((size_t)192U, dummy_out0,
-                                                   uint8_t, Eurydice_slice);
+      Eurydice_array_to_slice((size_t)192U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____5 =
+      Eurydice_array_to_slice((size_t)192U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____6 =
+      Eurydice_array_to_slice((size_t)192U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_shake256(
-      uu____1, uu____2, uu____3, uu____4, uu____5, uu____6, uu____7,
-      Eurydice_array_to_slice((size_t)192U, dummy_out1, uint8_t,
-                              Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3, uu____4, uu____5, uu____6,
+      Eurydice_array_to_slice((size_t)192U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____7[192U];
+  memcpy(uu____7, out0, (size_t)192U * sizeof(uint8_t));
+  memcpy(out[0U], uu____7, (size_t)192U * sizeof(uint8_t));
+  uint8_t uu____8[192U];
+  memcpy(uu____8, out1, (size_t)192U * sizeof(uint8_t));
+  memcpy(out[1U], uu____8, (size_t)192U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)2U * sizeof(uint8_t[192U]));
 }
 
@@ -6800,40 +6692,33 @@ deserialize_ring_elements_reduced__libcrux_ml_kem_vector_avx2_SIMD256Vector_768s
 static inline void PRFxN___2size_t_128size_t(uint8_t (*input)[33U],
                                              uint8_t ret[2U][128U]) {
   uint8_t out[2U][128U] = {{0U}};
-  uint8_t dummy_out0[128U] = {0U};
-  uint8_t dummy_out1[128U] = {0U};
-  K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_
-      uu____0 = core_slice___Slice_T___split_at_mut(
-          Eurydice_array_to_slice((size_t)2U, out, uint8_t[128U],
-                                  Eurydice_slice),
-          (size_t)1U, uint8_t[128U],
-          K___Eurydice_slice_uint8_t_128size_t__Eurydice_slice_uint8_t_128size_t_);
-  Eurydice_slice out0 = uu____0.fst;
-  Eurydice_slice out1 = uu____0.snd;
-  Eurydice_slice uu____1 =
+  uint8_t out0[128U] = {0U};
+  uint8_t out1[128U] = {0U};
+  uint8_t out2[128U] = {0U};
+  uint8_t out3[128U] = {0U};
+  Eurydice_slice uu____0 =
       Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____2 =
+  Eurydice_slice uu____1 =
       Eurydice_array_to_slice((size_t)33U, input[1U], uint8_t, Eurydice_slice);
+  Eurydice_slice uu____2 =
+      Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
   Eurydice_slice uu____3 =
       Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
   Eurydice_slice uu____4 =
-      Eurydice_array_to_slice((size_t)33U, input[0U], uint8_t, Eurydice_slice);
-  Eurydice_slice uu____5 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out0, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____6 = Eurydice_array_to_slice(
-      (size_t)128U,
-      Eurydice_slice_index(out1, (size_t)0U, uint8_t[128U], uint8_t(*)[128U],
-                           uint8_t[128U]),
-      uint8_t, Eurydice_slice);
-  Eurydice_slice uu____7 = Eurydice_array_to_slice((size_t)128U, dummy_out0,
-                                                   uint8_t, Eurydice_slice);
+      Eurydice_array_to_slice((size_t)128U, out0, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____5 =
+      Eurydice_array_to_slice((size_t)128U, out1, uint8_t, Eurydice_slice);
+  Eurydice_slice uu____6 =
+      Eurydice_array_to_slice((size_t)128U, out2, uint8_t, Eurydice_slice);
   libcrux_sha3_avx2_x4_shake256(
-      uu____1, uu____2, uu____3, uu____4, uu____5, uu____6, uu____7,
-      Eurydice_array_to_slice((size_t)128U, dummy_out1, uint8_t,
-                              Eurydice_slice));
+      uu____0, uu____1, uu____2, uu____3, uu____4, uu____5, uu____6,
+      Eurydice_array_to_slice((size_t)128U, out3, uint8_t, Eurydice_slice));
+  uint8_t uu____7[128U];
+  memcpy(uu____7, out0, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[0U], uu____7, (size_t)128U * sizeof(uint8_t));
+  uint8_t uu____8[128U];
+  memcpy(uu____8, out1, (size_t)128U * sizeof(uint8_t));
+  memcpy(out[1U], uu____8, (size_t)128U * sizeof(uint8_t));
   memcpy(ret, out, (size_t)2U * sizeof(uint8_t[128U]));
 }
 
