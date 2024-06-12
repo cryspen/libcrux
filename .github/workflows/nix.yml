@@ -1,0 +1,20 @@
+name: Nix
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: DeterminateSystems/nix-installer-action@v12
+      - uses: DeterminateSystems/magic-nix-cache-action@v7
+      - name: Install & configure Cachix
+        shell: bash
+        run: |
+          nix-env --quiet -j8 -iA cachix -f https://cachix.org/api/v1/install
+          cachix use hax
+      - uses: actions/checkout@v4
+      - run: nix build -L .#ml-kem

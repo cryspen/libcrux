@@ -41,6 +41,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Update dependencies
+        run: cargo update
+
       - name: 🔨 Build
         run: cargo build --verbose
 

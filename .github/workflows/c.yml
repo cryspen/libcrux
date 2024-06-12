@@ -50,9 +50,10 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
 
-      - name: 🏃🏻‍♀️ Benchmark
-        run: ./build/Release/ml_kem_bench
-        if: ${{ matrix.os == 'windows-latest' }}
+      # FIXME: Benchmarks on Windows CI are not working right now.
+      # - name: 🏃🏻‍♀️ Benchmark
+      #   run: ./build/Release/ml_kem_bench
+      #   if: ${{ matrix.os == 'windows-latest' }}
 
       - name: 🏃🏻‍♀️ Benchmark
         run: ./build/ml_kem_bench

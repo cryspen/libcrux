@@ -4,9 +4,10 @@ use crate::{
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
-    ind_cpa::{into_padded_array, serialize_public_key},
+    ind_cpa::serialize_public_key,
     serialize::deserialize_ring_elements_reduced,
     types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey},
+    utils::into_padded_array,
     vector::Operations,
 };
 
