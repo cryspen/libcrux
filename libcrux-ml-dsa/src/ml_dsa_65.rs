@@ -6,35 +6,33 @@ const ROWS_IN_A: usize = 6;
 const COLUMNS_IN_A: usize = 5;
 
 const ETA: usize = 4;
-const GAMMA1_EXPONENT: usize = 19;
-
 // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
 // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
 // 4 bits when ETA is 4.
 const BITS_PER_ERROR_COEFFICIENT: usize = 4;
-
 const ERROR_RING_ELEMENT_SIZE: usize =
     (BITS_PER_ERROR_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
+
+const GAMMA1_EXPONENT: usize = 19;
+const GAMMA2: i32 = (FIELD_MODULUS - 1) / 32;
 
 // To sample a value in the interval [-(GAMMA - 1), GAMMA], we can sample a
 // value (say 'v') in the interval [0, (2 * GAMMA) - 1] and then compute
 // GAMMA - v. This can be done in 20 bits when GAMMA is 2^{19}.
-const BITS_PER_MASK_COEFFICIENT: usize = 20;
+const BITS_PER_GAMMA1_COEFFICIENT: usize = 20;
+const GAMMA1_RING_ELEMENT_SIZE: usize =
+    (BITS_PER_GAMMA1_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 
-const MAX_NUMBER_OF_ONES_IN_HINT: usize = 55;
+const MAX_ONES_IN_HINT: usize = 55;
 
-const NUMBER_OF_ONES_IN_VERIFIER_CHALLENGE: usize = 49;
-
-const ALPHA: i32 = 2 * ((FIELD_MODULUS - 1) / 32);
+const ONES_IN_VERIFIER_CHALLENGE: usize = 49;
 
 const BITS_PER_COMMITMENT_COEFFICIENT: usize =
-    ((FIELD_MODULUS as usize) - 1) / ((ALPHA as usize) - 1);
+    ((FIELD_MODULUS as usize) - 1) / (((2 * GAMMA2) as usize) - 1);
+
 const COMMITMENT_RING_ELEMENT_SIZE: usize =
     (BITS_PER_COMMITMENT_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 const COMMITMENT_VECTOR_SIZE: usize = COMMITMENT_RING_ELEMENT_SIZE * ROWS_IN_A;
-
-const MASK_RING_ELEMENT_SIZE: usize =
-    (BITS_PER_MASK_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 
 const COMMITMENT_HASH_SIZE: usize = 96;
 
@@ -50,7 +48,8 @@ const SIGNING_KEY_SIZE: usize = SEED_FOR_A_SIZE
     + (ROWS_IN_A + COLUMNS_IN_A) * ERROR_RING_ELEMENT_SIZE
     + ROWS_IN_A * RING_ELEMENT_OF_T0S_SIZE;
 
-const SIGNATURE_SIZE: usize = 1000;
+const SIGNATURE_SIZE: usize =
+    COMMITMENT_HASH_SIZE + (COLUMNS_IN_A * GAMMA1_RING_ELEMENT_SIZE) + MAX_ONES_IN_HINT + ROWS_IN_A;
 
 pub struct MLDSA65SigningKey(pub [u8; SIGNING_KEY_SIZE]);
 pub struct MLDSA65VerificationKey(pub [u8; VERIFICATION_KEY_SIZE]);
@@ -91,11 +90,13 @@ pub fn sign(
         ETA,
         ERROR_RING_ELEMENT_SIZE,
         GAMMA1_EXPONENT,
-        ALPHA,
+        GAMMA2,
         COMMITMENT_RING_ELEMENT_SIZE,
         COMMITMENT_VECTOR_SIZE,
         COMMITMENT_HASH_SIZE,
-        NUMBER_OF_ONES_IN_VERIFIER_CHALLENGE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+        GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
     >(signing_key.0, message, randomness);

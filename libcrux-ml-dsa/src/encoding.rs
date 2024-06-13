@@ -314,8 +314,79 @@ pub(crate) mod error {
 // Functions for serializing and deserializing a mask ring element.
 // ---------------------------------------------------------------------------
 
-pub(crate) mod mask {
+pub(crate) mod gamma1 {
     use crate::arithmetic::PolynomialRingElement;
+
+    #[inline(always)]
+    fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
+        re: PolynomialRingElement,
+    ) -> [u8; OUTPUT_SIZE] {
+        let mut serialized = [0u8; OUTPUT_SIZE];
+        const GAMMA1: i32 = 1 << 17;
+
+        for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
+            let coefficient0 = GAMMA1 - coefficients[0];
+            let coefficient1 = GAMMA1 - coefficients[1];
+            let coefficient2 = GAMMA1 - coefficients[2];
+            let coefficient3 = GAMMA1 - coefficients[3];
+
+            serialized[9 * i + 0] = coefficient0 as u8;
+            serialized[9 * i + 1] = (coefficient0 >> 8) as u8;
+
+            serialized[9 * i + 2] = (coefficient0 >> 16) as u8;
+            serialized[9 * i + 2] |= (coefficient1 << 2) as u8;
+
+            serialized[9 * i + 3] = (coefficient1 >> 6) as u8;
+
+            serialized[9 * i + 4] = (coefficient1 >> 14) as u8;
+            serialized[9 * i + 4] |= (coefficient2 << 4) as u8;
+
+            serialized[9 * i + 5] = (coefficient2 >> 4) as u8;
+
+            serialized[9 * i + 6] = (coefficient2 >> 12) as u8;
+            serialized[9 * i + 6] |= (coefficient3 << 6) as u8;
+
+            serialized[9 * i + 7] = (coefficient3 >> 2) as u8;
+            serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
+        }
+
+        serialized
+    }
+
+    #[inline(always)]
+    fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
+        re: PolynomialRingElement,
+    ) -> [u8; OUTPUT_SIZE] {
+        let mut serialized = [0u8; OUTPUT_SIZE];
+        const GAMMA1: i32 = 1 << 19;
+
+        for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
+            let coefficient0 = GAMMA1 - coefficients[0];
+            let coefficient1 = GAMMA1 - coefficients[1];
+
+            serialized[5 * i + 0] = coefficient0 as u8;
+            serialized[5 * i + 1] = (coefficient0 >> 8) as u8;
+
+            serialized[5 * i + 2] = (coefficient0 >> 16) as u8;
+            serialized[5 * i + 2] |= (coefficient1 << 4) as u8;
+
+            serialized[5 * i + 3] = (coefficient1 >> 4) as u8;
+            serialized[5 * i + 4] = (coefficient1 >> 12) as u8;
+        }
+
+        serialized
+    }
+
+    #[inline(always)]
+    pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_SIZE: usize>(
+        re: PolynomialRingElement,
+    ) -> [u8; OUTPUT_SIZE] {
+        match GAMMA1_EXPONENT {
+            17 => serialize_when_gamma1_is_2_pow_17(re),
+            19 => serialize_when_gamma1_is_2_pow_19(re),
+            _ => unreachable!(),
+        }
+    }
 
     #[inline(always)]
     fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PolynomialRingElement {
@@ -616,7 +687,7 @@ mod tests {
     }
 
     #[test]
-    fn test_deserialize_to_mask_when_gamma1_is_2_pow_17() {
+    fn test_deserialize_when_gamma1_is_2_pow_17() {
         let bytes = [
             198, 32, 33, 79, 53, 132, 46, 198, 17, 233, 84, 94, 175, 136, 13, 127, 137, 254, 113,
             82, 68, 239, 94, 176, 179, 22, 102, 177, 253, 142, 176, 250, 96, 201, 11, 213, 230, 41,
@@ -679,13 +750,13 @@ mod tests {
         ];
 
         assert_eq!(
-            mask::deserialize::<17>(&bytes).coefficients,
+            gamma1::deserialize::<17>(&bytes).coefficients,
             expected_coefficients
         );
     }
 
     #[test]
-    fn test_deserialize_to_mask_when_gamma1_is_2_pow_19() {
+    fn test_deserialize_when_gamma1_is_2_pow_19() {
         let bytes: [u8; 640] = [
             253, 11, 216, 60, 251, 71, 79, 187, 242, 250, 209, 44, 72, 206, 98, 3, 22, 91, 184, 22,
             197, 50, 249, 184, 253, 104, 8, 3, 9, 116, 147, 157, 110, 167, 67, 218, 30, 79, 58, 12,
@@ -753,7 +824,7 @@ mod tests {
         ];
 
         assert_eq!(
-            mask::deserialize::<19>(&bytes).coefficients,
+            gamma1::deserialize::<19>(&bytes).coefficients,
             expected_coefficients
         );
     }

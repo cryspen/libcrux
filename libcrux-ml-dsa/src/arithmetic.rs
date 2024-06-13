@@ -53,6 +53,19 @@ impl PolynomialRingElement {
     }
 }
 
+pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
+    vector: [PolynomialRingElement; DIMENSION],
+    value: i32,
+) -> bool {
+    for i in 0..DIMENSION {
+        if vector[i].infinity_norm_exceeds(value) {
+            return true;
+        }
+    }
+
+    false
+}
+
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
     value & ((1 << n) - 1)
 }
@@ -139,12 +152,6 @@ pub(crate) fn power2round_vector<const DIMENSION: usize>(
     (vector_t0, vector_t1)
 }
 
-// If t0 is a signed representative, change it to an unsigned one and
-// vice versa.
-pub(crate) fn change_t0_interval(t0: i32) -> i32 {
-    (1 << (BITS_IN_LOWER_PART_OF_T - 1)) - t0
-}
-
 // Splits 0 ≤ r < q into r₀ and r₁ such that:
 //
 // - r = r₁*α + r₀
@@ -156,12 +163,14 @@ pub(crate) fn change_t0_interval(t0: i32) -> i32 {
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
-fn decompose<const ALPHA: i32>(r: i32) -> (i32, i32) {
+fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
+    let alpha = GAMMA2 * 2;
+
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
-        match ALPHA {
+        match alpha {
             190_464 => {
                 // 1488/2²⁴ is an approximation of 1/1488
                 let result = ((ceil_of_r_by_128 * 11_275) + (1 << 23)) >> 24;
@@ -180,7 +189,7 @@ fn decompose<const ALPHA: i32>(r: i32) -> (i32, i32) {
         }
     };
 
-    let mut r0 = r - (r1 * ALPHA);
+    let mut r0 = r - (r1 * alpha);
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
@@ -189,7 +198,7 @@ fn decompose<const ALPHA: i32>(r: i32) -> (i32, i32) {
 
     (r0, r1)
 }
-pub(crate) fn decompose_vector<const DIMENSION: usize, const ALPHA: i32>(
+pub(crate) fn decompose_vector<const DIMENSION: usize, const GAMMA2: i32>(
     t: [PolynomialRingElement; DIMENSION],
 ) -> (
     [PolynomialRingElement; DIMENSION],
@@ -200,7 +209,7 @@ pub(crate) fn decompose_vector<const DIMENSION: usize, const ALPHA: i32>(
 
     for i in 0..DIMENSION {
         for (j, coefficient) in t[i].coefficients.into_iter().enumerate() {
-            let (low, high) = decompose::<ALPHA>(coefficient);
+            let (low, high) = decompose::<GAMMA2>(coefficient);
 
             vector_low[i].coefficients[j] = low;
             vector_high[i].coefficients[j] = high;
@@ -210,8 +219,28 @@ pub(crate) fn decompose_vector<const DIMENSION: usize, const ALPHA: i32>(
     (vector_low, vector_high)
 }
 
-pub(crate) fn make_hint<const GAMMA2: i32>(low: i32, high: i32) -> bool {
+fn make_hint<const GAMMA2: i32>(low: i32, high: i32) -> bool {
     (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0)
+}
+
+pub(crate) fn make_hint_vector<const DIMENSION: usize, const GAMMA2: i32>(
+    low: [PolynomialRingElement; DIMENSION],
+    high: [PolynomialRingElement; DIMENSION],
+) -> ([[bool; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
+    let mut hint_vector = [[false; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
+    let mut hints_of_one = 0;
+
+    for i in 0..DIMENSION {
+        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            hint_vector[i][j] =
+                make_hint::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
+            if hint_vector[i][j] == true {
+                hints_of_one += 1;
+            }
+        }
+    }
+
+    (hint_vector, hints_of_one)
 }
 
 #[cfg(test)]
@@ -236,12 +265,12 @@ mod tests {
 
     #[test]
     fn test_decompose() {
-        assert_eq!(decompose::<190_464>(3574899), (-43917, 19));
-        assert_eq!(decompose::<190_464>(7368323), (-59773, 39));
-        assert_eq!(decompose::<190_464>(3640854), (22038, 19));
+        assert_eq!(decompose::<95_232>(3574899), (-43917, 19));
+        assert_eq!(decompose::<95_232>(7368323), (-59773, 39));
+        assert_eq!(decompose::<95_232>(3640854), (22038, 19));
 
-        assert_eq!(decompose::<523_776>(563751), (39975, 1));
-        assert_eq!(decompose::<523_776>(6645076), (-164012, 13));
-        assert_eq!(decompose::<523_776>(7806985), (-49655, 15));
+        assert_eq!(decompose::<261_888>(563751), (39975, 1));
+        assert_eq!(decompose::<261_888>(6645076), (-164012, 13));
+        assert_eq!(decompose::<261_888>(7806985), (-49655, 15));
     }
 }

@@ -170,8 +170,8 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
 #[inline(always)]
 fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     match GAMMA1_EXPONENT {
-        17 => encoding::mask::deserialize::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
-        19 => encoding::mask::deserialize::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
+        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
+        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
         _ => unreachable!(),
     }
 }

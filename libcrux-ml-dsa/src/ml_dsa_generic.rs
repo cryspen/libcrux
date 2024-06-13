@@ -1,12 +1,15 @@
 use crate::{
-    arithmetic::{decompose_vector, power2round_vector, PolynomialRingElement},
+    arithmetic::{
+        decompose_vector, make_hint_vector, power2round_vector, vector_infinity_norm_exceeds,
+        PolynomialRingElement,
+    },
     commitment,
     constants::*,
     encoding,
     hash_functions::H,
     matrix::{
-        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_challenge_times_error,
-        expand_to_A, subtract_vectors,
+        add_vectors, compute_A_times_mask, compute_As1_plus_s2, expand_to_A, subtract_vectors,
+        vector_times_ring_element,
     },
     ntt::ntt,
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
@@ -143,17 +146,69 @@ pub(crate) fn generate_key_pair<
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
+pub(super) fn generate_serialized_signature<
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+    const COMMITMENT_HASH_SIZE: usize,
+    const GAMMA1_EXPONENT: usize,
+    const GAMMA1_RING_ELEMENT_SIZE: usize,
+    const MAX_ONES_IN_HINT: usize,
+    const SIGNATURE_SIZE: usize,
+>(
+    commitment_hash: [u8; COMMITMENT_HASH_SIZE],
+    signer_response: [PolynomialRingElement; COLUMNS_IN_A],
+    hint_vector: [[bool; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
+) -> [u8; SIGNATURE_SIZE] {
+    let mut signature = [0u8; SIGNATURE_SIZE];
+    let mut offset = 0;
+
+    signature[offset..offset + COMMITMENT_HASH_SIZE].copy_from_slice(&commitment_hash);
+    offset += COMMITMENT_HASH_SIZE;
+
+    for i in 0..COLUMNS_IN_A {
+        signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE].copy_from_slice(
+            &encoding::gamma1::serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE>(
+                signer_response[i],
+            ),
+        );
+        offset += GAMMA1_RING_ELEMENT_SIZE;
+    }
+
+    for i in offset..offset + (MAX_ONES_IN_HINT + ROWS_IN_A) {
+        signature[i] = 0;
+    }
+    offset += MAX_ONES_IN_HINT + ROWS_IN_A;
+
+    let mut one_count = 0;
+    for i in 0..ROWS_IN_A {
+        for hint in hint_vector[i].into_iter() {
+            if hint == true {
+                signature[offset] = 1;
+                offset += 1;
+                one_count += 1;
+            }
+        }
+        signature[MAX_ONES_IN_HINT + i] = one_count;
+    }
+
+    signature
+}
+
+#[allow(non_snake_case)]
 pub(crate) fn sign<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
     const ERROR_RING_ELEMENT_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
-    const ALPHA: i32,
+    const GAMMA2: i32,
     const COMMITMENT_RING_ELEMENT_SIZE: usize,
     const COMMITMENT_VECTOR_SIZE: usize,
     const COMMITMENT_HASH_SIZE: usize,
-    const NUMBER_OF_ONES_IN_VERIFIER_CHALLENGE: usize,
+    const ONES_IN_VERIFIER_CHALLENGE: usize,
+    const MAX_ONES_IN_HINT: usize,
+    const GAMMA1_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
     const SIGNATURE_SIZE: usize,
 >(
@@ -201,10 +256,9 @@ pub(crate) fn sign<
         H::<MASK_SEED_SIZE>(&hash_input[..])
     };
 
-    let invalid_signatures: u16 = 0;
     let mut domain_separator_for_mask: u16 = 0;
 
-    loop {
+    let (commitment_hash, signer_response, hint_vector) = loop {
         let mask = sample_mask_vector::<COLUMNS_IN_A, GAMMA1_EXPONENT>(
             into_padded_array(&mask_seed),
             &mut domain_separator_for_mask,
@@ -212,9 +266,9 @@ pub(crate) fn sign<
 
         let A_times_mask = compute_A_times_mask(&A_as_ntt, &mask);
 
-        let (w0, commitment) = decompose_vector::<ROWS_IN_A, ALPHA>(A_times_mask);
+        let (w0, commitment) = decompose_vector::<ROWS_IN_A, GAMMA2>(A_times_mask);
 
-        let verifier_challenge_seed: [u8; 32] = {
+        let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
             let commitment_encoded = commitment::encode_vector::<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
@@ -224,22 +278,55 @@ pub(crate) fn sign<
             let mut hash_input = message_representative.to_vec();
             hash_input.extend_from_slice(&commitment_encoded);
 
-            (&H::<COMMITMENT_HASH_SIZE>(&hash_input[..])[0..32])
-                .try_into()
-                .unwrap()
+            H::<COMMITMENT_HASH_SIZE>(&hash_input[..])
         };
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
-            NUMBER_OF_ONES_IN_VERIFIER_CHALLENGE,
-        >(verifier_challenge_seed));
+            ONES_IN_VERIFIER_CHALLENGE,
+        >(commitment_hash[0..32].try_into().unwrap()));
 
         let challenge_times_s1 =
-            compute_challenge_times_error::<COLUMNS_IN_A>(&verifier_challenge_as_ntt, &s1_as_ntt);
+            vector_times_ring_element::<COLUMNS_IN_A>(&s1_as_ntt, &verifier_challenge_as_ntt);
         let challenge_times_s2 =
-            compute_challenge_times_error::<ROWS_IN_A>(&verifier_challenge_as_ntt, &s2_as_ntt);
+            vector_times_ring_element::<ROWS_IN_A>(&s2_as_ntt, &verifier_challenge_as_ntt);
 
         let signer_response = add_vectors::<COLUMNS_IN_A>(&mask, &challenge_times_s1);
 
         let w0_minus_challenge_times_s2 = subtract_vectors::<ROWS_IN_A>(&w0, &challenge_times_s2);
-    }
+
+        let beta = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
+        if vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
+            signer_response,
+            (1 << GAMMA1_EXPONENT) - beta,
+        ) {
+            continue;
+        }
+        if vector_infinity_norm_exceeds::<ROWS_IN_A>(w0_minus_challenge_times_s2, GAMMA2 - beta) {
+            continue;
+        }
+
+        let challenge_times_t0 =
+            vector_times_ring_element::<ROWS_IN_A>(&t0_as_ntt, &verifier_challenge_as_ntt);
+        if vector_infinity_norm_exceeds::<ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+            continue;
+        }
+
+        let (hint_vector, ones_in_hint) =
+            make_hint_vector::<ROWS_IN_A, GAMMA2>(challenge_times_t0, w0_minus_challenge_times_s2);
+        if ones_in_hint > MAX_ONES_IN_HINT {
+            continue;
+        }
+
+        break (commitment_hash, signer_response, hint_vector);
+    };
+
+    generate_serialized_signature::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        COMMITMENT_HASH_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        MAX_ONES_IN_HINT,
+        SIGNATURE_SIZE,
+    >(commitment_hash, signer_response, hint_vector)
 }

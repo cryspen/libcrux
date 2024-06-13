@@ -69,15 +69,14 @@ pub(crate) fn compute_A_times_mask<const ROWS_IN_A: usize, const COLUMNS_IN_A: u
 
 #[inline(always)]
 #[allow(non_snake_case)]
-pub(crate) fn compute_challenge_times_error<const DIMENSION: usize>(
-    challenge_as_ntt: &PolynomialRingElement,
-    error_as_ntt: &[PolynomialRingElement; DIMENSION],
+pub(crate) fn vector_times_ring_element<const DIMENSION: usize>(
+    vector: &[PolynomialRingElement; DIMENSION],
+    ring_element: &PolynomialRingElement,
 ) -> [PolynomialRingElement; DIMENSION] {
     let mut result = [PolynomialRingElement::ZERO; DIMENSION];
 
-    for (i, ring_element) in error_as_ntt.iter().enumerate() {
-        result[i] =
-            invert_ntt_montgomery(ntt_multiply_montgomery(&challenge_as_ntt, &error_as_ntt[i]));
+    for (i, vector_element) in vector.iter().enumerate() {
+        result[i] = invert_ntt_montgomery(ntt_multiply_montgomery(&vector_element, ring_element));
     }
 
     result
