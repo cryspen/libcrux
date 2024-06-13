@@ -55,11 +55,9 @@ UNVERIFIED = \
 	Libcrux_ml_kem.Constant_time_ops.fsti \
 	Libcrux_ml_kem.Constants.fsti \
 	Libcrux_ml_kem.Hash_functions.Avx2.fsti \
-	Libcrux_ml_kem.Hash_functions.Neon.fsti \
 	Libcrux_ml_kem.Hash_functions.Portable.fsti \
 	Libcrux_ml_kem.Hash_functions.fsti \
-	Libcrux_ml_kem.Ind_cca.Instantiations.Neon.fst \
-	Libcrux_ml_kem.Ind_cca.Instantiations.Neon.fsti \
+	Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.fst \
 	Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fst \
 	Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fsti \
 	Libcrux_ml_kem.Ind_cca.Multiplexing.fst \
@@ -72,20 +70,20 @@ UNVERIFIED = \
 	Libcrux_ml_kem.Invert_ntt.fsti \
 	Libcrux_ml_kem.Matrix.fst \
 	Libcrux_ml_kem.Matrix.fsti \
-	Libcrux_ml_kem.Mlkem1024.Neon.fst \
-	Libcrux_ml_kem.Mlkem1024.Neon.fsti \
+	Libcrux_ml_kem.Mlkem1024.Avx2.fst \
+	Libcrux_ml_kem.Mlkem1024.Avx2.fsti \
 	Libcrux_ml_kem.Mlkem1024.Portable.fst \
 	Libcrux_ml_kem.Mlkem1024.Portable.fsti \
 	Libcrux_ml_kem.Mlkem1024.fst \
 	Libcrux_ml_kem.Mlkem1024.fsti \
-	Libcrux_ml_kem.Mlkem512.Neon.fst \
-	Libcrux_ml_kem.Mlkem512.Neon.fsti \
+	Libcrux_ml_kem.Mlkem512.Avx2.fst \
+	Libcrux_ml_kem.Mlkem512.Avx2.fsti \
 	Libcrux_ml_kem.Mlkem512.Portable.fst \
 	Libcrux_ml_kem.Mlkem512.Portable.fsti \
 	Libcrux_ml_kem.Mlkem512.fst \
 	Libcrux_ml_kem.Mlkem512.fsti \
-	Libcrux_ml_kem.Mlkem768.Neon.fst \
-	Libcrux_ml_kem.Mlkem768.Neon.fsti \
+	Libcrux_ml_kem.Mlkem768.Avx2.fst \
+	Libcrux_ml_kem.Mlkem768.Avx2.fsti \
 	Libcrux_ml_kem.Mlkem768.Portable.fst \
 	Libcrux_ml_kem.Mlkem768.Portable.fsti \
 	Libcrux_ml_kem.Mlkem768.fst \
@@ -102,10 +100,8 @@ UNVERIFIED = \
 	Libcrux_ml_kem.Types.fsti \
 	Libcrux_ml_kem.Utils.fst \
 	Libcrux_ml_kem.Utils.fsti \
-	Libcrux_ml_kem.Vector.Neon.Simd128ops.fst \
-	Libcrux_ml_kem.Vector.Neon.Simd128ops.fsti \
-	Libcrux_ml_kem.Vector.Neon.fst \
-	Libcrux_ml_kem.Vector.Neon.fsti \
+	Libcrux_ml_kem.Vector.Avx2.fst \
+	Libcrux_ml_kem.Vector.Avx2.fsti \
 	Libcrux_ml_kem.Vector.Portable.fsti \
 	Libcrux_ml_kem.Vector.Traits.fst \
 	Libcrux_ml_kem.Vector.Traits.fsti \
