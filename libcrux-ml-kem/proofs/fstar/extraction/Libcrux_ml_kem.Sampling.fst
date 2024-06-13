@@ -370,8 +370,8 @@ let sample_from_xof
           (bool & t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K & v_Hasher))
   in
   Core.Array.impl_23__map #(t_Array i16 (sz 272))
-    #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     v_K
+    #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     out
     (fun s ->
         let s:t_Array i16 (sz 272) = s in
