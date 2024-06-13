@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use serde_json;
 
+use hex;
+
 use std::{fs::File, io::BufReader, path::Path};
 
 #[derive(Debug, Deserialize)]
@@ -17,6 +19,9 @@ struct MlDsaNISTKAT {
     // The length of the message in each KAT is 33 * (i + 1), where i is the
     // 0-indexed KAT counter.
     message: String,
+
+    #[serde(with = "hex::serde")]
+    signing_randomness: [u8; 32],
 
     #[serde(with = "hex::serde")]
     sha3_256_hash_of_signature: [u8; 32],
@@ -74,6 +79,17 @@ fn ml_dsa_65_nist_known_answer_tests() {
         assert_eq!(
             signing_key_hash, kat.sha3_256_hash_of_signing_key,
             "signing_key_hash != kat.sha3_256_hash_of_signing_key"
+        );
+
+        let message = hex::decode(kat.message).expect("Hex-decoding the message failed.");
+
+        let signature =
+            libcrux_ml_dsa::ml_dsa_65::sign(key_pair.signing_key, &message, kat.signing_randomness);
+
+        let signature_hash = libcrux_sha3::sha256(&signature.0);
+        assert_eq!(
+            signature_hash, kat.sha3_256_hash_of_signature,
+            "signature_hash != kat.sha3_256_hash_of_signature"
         );
     }
 }
