@@ -21,3 +21,10 @@ classic-mceliece-rust = { version = "2.0.0", features = [
 ] }
 chrono = "0.4.31"
 rand = { version = "0.8" }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "psq"
+harness = false
