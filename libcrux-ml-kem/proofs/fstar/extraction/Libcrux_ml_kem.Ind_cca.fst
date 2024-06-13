@@ -86,7 +86,7 @@ let serialize_kem_secret_key
               Core.Ops.Range.t_Range usize ]
             <:
             t_Slice u8)
-          (Rust_primitives.unsize (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher v_K public_key
+          (Rust_primitives.unsize (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher #v_K public_key
                 <:
                 t_Array u8 (sz 32))
             <:
@@ -130,6 +130,7 @@ let validate_public_key
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
+  admit();
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Libcrux_ml_kem.Serialize.deserialize_ring_elements_reduced v_PUBLIC_KEY_SIZE
       v_K
@@ -207,7 +208,7 @@ let decapsulate
         t_Slice u8)
   in
   let hashed:t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Hash_functions.f_G #v_Hasher v_K (Rust_primitives.unsize to_hash <: t_Slice u8)
+    Libcrux_ml_kem.Hash_functions.f_G #v_Hasher #v_K (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
@@ -240,7 +241,7 @@ let decapsulate
   in
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux_ml_kem.Hash_functions.f_PRF #v_Hasher
-      v_K
+      #v_K
       (sz 32)
       (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
@@ -291,7 +292,7 @@ let encapsulate
             <:
             t_Slice u8)
           (Rust_primitives.unsize (Libcrux_ml_kem.Hash_functions.f_H #v_Hasher
-                  v_K
+                  #v_K
                   (Rust_primitives.unsize (Libcrux_ml_kem.Types.impl_18__as_slice v_PUBLIC_KEY_SIZE
                           public_key
                         <:
@@ -306,7 +307,7 @@ let encapsulate
         t_Slice u8)
   in
   let hashed:t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Hash_functions.f_G #v_Hasher v_K (Rust_primitives.unsize to_hash <: t_Slice u8)
+    Libcrux_ml_kem.Hash_functions.f_G #v_Hasher #v_K (Rust_primitives.unsize to_hash <: t_Slice u8)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
