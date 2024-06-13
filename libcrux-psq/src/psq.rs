@@ -306,6 +306,17 @@ pub struct PskMessage {
     mac: Mac,
 }
 
+impl PskMessage {
+    pub fn ct_size(&self) -> usize {
+        self.enc.encode().len()
+    }
+    pub fn size(&self) -> usize {
+        self.ct_size()
+            + self.mac.len()
+            + self.ts.to_be_bytes().len()
+            + self.psk_ttl.num_milliseconds().to_be_bytes().len()
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -314,6 +325,7 @@ mod tests {
     fn simple_x25519() {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
+        eprintln!("Size of pk: {}", std::mem::size_of::<PrivateKey>());
         let sctx = b"test context";
         let (psk_initiator, message) = pk.generate_psk(sctx, Duration::hours(2), &mut rng).unwrap();
 
