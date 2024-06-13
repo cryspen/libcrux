@@ -138,6 +138,9 @@ pub fn generate_key_pair(
 }
 
 impl PublicKey<'_> {
+    pub fn size(&self) -> usize {
+        self.encode().len()
+    }
     pub(crate) fn encode(&self) -> Vec<u8> {
         match self {
             PublicKey::X25519(k) | PublicKey::MlKem768(k) => k.encode(),
@@ -168,7 +171,7 @@ impl PublicKey<'_> {
         }
     }
 
-    pub fn generate_psk(
+    pub fn send_psk(
         &self,
         sctx: &[u8],
         psk_ttl: Duration,
@@ -228,7 +231,7 @@ impl PublicKey<'_> {
 }
 
 impl PrivateKey<'_> {
-    pub fn derive_psk(
+    pub fn receive_psk(
         &self,
         pk: &PublicKey,
         message: &PskMessage,
@@ -327,9 +330,9 @@ mod tests {
         let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
         eprintln!("Size of pk: {}", std::mem::size_of::<PrivateKey>());
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.generate_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
 
-        let psk_responder = sk.derive_psk(&pk, &message, sctx).unwrap();
+        let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
     }
 
@@ -338,9 +341,9 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::MlKem768, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.generate_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
 
-        let psk_responder = sk.derive_psk(&pk, &message, sctx).unwrap();
+        let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
     }
 
@@ -349,9 +352,9 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::ClassicMcEliece, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.generate_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
 
-        let psk_responder = sk.derive_psk(&pk, &message, sctx).unwrap();
+        let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
     }
 }

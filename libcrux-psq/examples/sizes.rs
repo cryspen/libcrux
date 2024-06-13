@@ -10,18 +10,19 @@ fn main() {
 
     let mlkem_message = mlkem_keypair
         .1
-        .generate_psk(b"size context", Duration::hours(1), &mut rng)
+        .send_psk(b"size context", Duration::hours(1), &mut rng)
         .unwrap();
     let x25519_message = x25519_keypair
         .1
-        .generate_psk(b"size context", Duration::hours(1), &mut rng)
+        .send_psk(b"size context", Duration::hours(1), &mut rng)
         .unwrap();
     let classic_mceliece_message = classic_mceliece_keypair
         .1
-        .generate_psk(b"size context", Duration::hours(1), &mut rng)
+        .send_psk(b"size context", Duration::hours(1), &mut rng)
         .unwrap();
 
     println!("ML-KEM-768:");
+    println!("  Public key size (bytes): {}", mlkem_keypair.1.size());
     println!("  Message size (bytes): {}", mlkem_message.1.size());
     println!(
         "  including ciphertext size (bytes): {}",
@@ -29,6 +30,7 @@ fn main() {
     );
 
     println!("X25519:");
+    println!("  Public key size (bytes): {}", x25519_keypair.1.size());
     println!("  Message size (bytes): {}", x25519_message.1.size());
     println!(
         "  including ciphertext size (bytes): {}",
@@ -36,6 +38,10 @@ fn main() {
     );
 
     println!("Classic McEliece:");
+    println!(
+        "  Public key size (bytes): {}",
+        classic_mceliece_keypair.1.size()
+    );
     println!(
         "  Message size (bytes): {}",
         classic_mceliece_message.1.size()
