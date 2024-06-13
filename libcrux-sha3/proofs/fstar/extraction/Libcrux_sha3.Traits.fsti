@@ -3,16 +3,12 @@ module Libcrux_sha3.Traits
 open Core
 open FStar.Mul
 
-let _ =
-  (* This module has implicit dependencies, here we make them explicit. *)
-  (* The implicit dependencies arise from typeclasses instances. *)
-  let open Libcrux_sha3.Traits.Internal in
-  ()
+val t_KeccakItem: Type0 -> usize -> Type0
 
 /// A Keccak Item
 /// This holds the internal state and depends on the architecture.
 class t_KeccakStateItem (v_Self: Type0) (v_N: usize) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_7919791445461910775:Libcrux_sha3.Traits.Internal.t_KeccakItem
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_7919791445461910775:t_KeccakItem
     v_Self v_N
 }
 
@@ -22,6 +18,6 @@ let impl
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_sha3.Traits.Internal.t_KeccakItem v_T v_N)
+          t_KeccakItem v_T v_N)
     : t_KeccakStateItem v_T v_N =
-  { _super_7919791445461910775 = FStar.Tactics.Typeclasses.solve; __marker_trait = () }
+  { _super_7919791445461910775 = FStar.Tactics.Typeclasses.solve; }
