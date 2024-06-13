@@ -525,7 +525,7 @@ pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
 pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
     let output = portable::deserialize_11(bytes);
     let array = portable::to_i16_array(output);
-    mm256_loadu_si256_i16(array)
+    mm256_loadu_si256_i16(&array)
 }
 
 #[inline(always)]
