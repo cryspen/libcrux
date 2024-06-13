@@ -109,6 +109,8 @@ dependencies = [
  "curve25519-dalek",
  "lib25519",
  "libcrux",
+ "libcrux-kem",
+ "libcrux-ml-kem",
  "libjade-sys",
  "openssl",
  "p256",
