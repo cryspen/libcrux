@@ -919,6 +919,8 @@ dependencies = [
  "libcrux-hacl",
  "libcrux-hkdf",
  "libcrux-hmac",
+ "libcrux-kem",
+ "libcrux-ml-kem",
  "libcrux-platform",
  "log",
  "pretty_env_logger",
@@ -991,8 +993,10 @@ dependencies = [
 name = "libcrux-kem"
 version = "0.0.2-pre.2"
 dependencies = [
+ "hex",
  "libcrux",
  "libcrux-ecdh",
+ "libcrux-kem",
  "libcrux-ml-kem",
  "libcrux-sha3",
  "rand",
