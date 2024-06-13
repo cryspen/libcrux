@@ -12,8 +12,6 @@ pub enum Error {
     InvalidPoint,
     NoCompressedPoint,
     NoUnCompressedPoint,
-    SigningError,
-    InvalidSignature,
 }
 
 /// Parse an uncompressed P256 point and return the 64 byte array with the
