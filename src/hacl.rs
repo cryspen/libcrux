@@ -26,7 +26,7 @@ pub(crate) mod sha3;
 pub enum Error {
     ChaCha20Poly1305(chacha20_poly1305::Error),
     Curve25519(libcrux_ecdh::curve25519::Error),
-    P256(libcrux_ecdh::p256::Error),
+    P256ECDH(libcrux_ecdh::p256::Error),
     P256ECDSA(p256::ecdsa::Error),
     Ed25519(ed25519::Error),
     Hkdf(libcrux_hkdf::Error),
@@ -46,7 +46,7 @@ impl From<libcrux_ecdh::curve25519::Error> for Error {
 
 impl From<libcrux_ecdh::p256::Error> for Error {
     fn from(val: libcrux_ecdh::p256::Error) -> Self {
-        Error::P256(val)
+        Error::P256ECDH(val)
     }
 }
 
