@@ -27,6 +27,7 @@ pub type MlKemSharedSecret = [u8; SHARED_SECRET_SIZE];
 
 /// This module instantiates the functions in this file and multiplexes between
 /// different implementations at runtime.
+#[cfg(not(eurydice))]
 pub(crate) mod multiplexing;
 
 /// This module instantiates the functions in this file for each platform.

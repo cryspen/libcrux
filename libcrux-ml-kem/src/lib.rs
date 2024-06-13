@@ -73,8 +73,11 @@ mod types;
 mod vector;
 
 // Variants
+#[cfg(feature = "mlkem1024")]
 pub mod mlkem1024;
+#[cfg(feature = "mlkem512")]
 pub mod mlkem512;
+#[cfg(feature = "mlkem768")]
 pub mod mlkem768;
 
 pub use constants::SHARED_SECRET_SIZE;

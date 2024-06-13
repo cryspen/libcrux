@@ -21,10 +21,13 @@ libcrux-intrinsics = { version = "0.0.2-pre.2", path = "../libcrux-intrinsics" }
 hax-lib = { git = "https://github.com/hacspec/hax/" }
 
 [features]
-default = ["std"]
+default = ["std", "mlkem512", "mlkem768", "mlkem1024"]
 simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
-tests = []                         # Test utilities. DO NOT USE.
+mlkem512 = []
+mlkem768 = []
+mlkem1024 = []
+tests = []                                             # Test utilities. DO NOT USE.
 std = []
 
 [dev-dependencies]
