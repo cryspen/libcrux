@@ -28,29 +28,34 @@ pub enum Algorithm {
     X25519,
     MlKem768,
     ClassicMcEliece,
+    XWingKemDraft02,
 }
 
 enum Ciphertext {
     X25519(libcrux_kem::Ct),
     MlKem768(libcrux_kem::Ct),
+    XWingKemDraft02(libcrux_kem::Ct),
     ClassicMcEliece(classic_mceliece_rust::Ciphertext),
 }
 
 pub enum PublicKey<'a> {
     X25519(libcrux_kem::PublicKey),
     MlKem768(libcrux_kem::PublicKey),
+    XWingKemDraft02(libcrux_kem::PublicKey),
     ClassicMcEliece(classic_mceliece_rust::PublicKey<'a>),
 }
 
 pub enum PrivateKey<'a> {
     X25519(libcrux_kem::PrivateKey),
     MlKem768(libcrux_kem::PrivateKey),
+    XWingKemDraft02(libcrux_kem::PrivateKey),
     ClassicMcEliece(classic_mceliece_rust::SecretKey<'a>),
 }
 
 enum SharedSecret<'a> {
     X25519(libcrux_kem::Ss),
     MlKem768(libcrux_kem::Ss),
+    XWingKemDraft02(libcrux_kem::Ss),
     ClassicMcEliece(classic_mceliece_rust::SharedSecret<'a>),
 }
 
@@ -60,6 +65,7 @@ impl SharedSecret<'_> {
             SharedSecret::X25519(ss) => ss.encode(),
             SharedSecret::MlKem768(ss) => ss.encode(),
             SharedSecret::ClassicMcEliece(ss) => ss.as_ref().to_owned(),
+            SharedSecret::XWingKemDraft02(ss) => ss.encode(),
         }
     }
 }
@@ -70,6 +76,7 @@ impl Ciphertext {
             Ciphertext::X25519(ct) => ct.encode(),
             Ciphertext::MlKem768(ct) => ct.encode(),
             Ciphertext::ClassicMcEliece(ct) => ct.as_ref().to_owned(),
+            Ciphertext::XWingKemDraft02(ct) => ct.encode(),
         }
     }
     fn decapsulate(&self, sk: &PrivateKey) -> Result<SharedSecret, Error> {
@@ -98,6 +105,14 @@ impl Ciphertext {
                     Err(Error::InvalidPrivateKey)
                 }
             }
+            Ciphertext::XWingKemDraft02(ct) => {
+                if let PrivateKey::XWingKemDraft02(sk) = sk {
+                    let ss = ct.decapsulate(sk).unwrap();
+                    Ok(SharedSecret::XWingKemDraft02(ss))
+                } else {
+                    Err(Error::InvalidPrivateKey)
+                }
+            }
         }
     }
 }
@@ -110,6 +125,7 @@ impl Into<libcrux_kem::Algorithm> for Algorithm {
             Algorithm::ClassicMcEliece => {
                 unimplemented!("libcrux does not support Classic McEliece")
             }
+            Algorithm::XWingKemDraft02 => libcrux_kem::Algorithm::XWingKemDraft02,
         }
     }
 }
@@ -134,6 +150,13 @@ pub fn generate_key_pair(
                 PublicKey::ClassicMcEliece(pk),
             ))
         }
+        Algorithm::XWingKemDraft02 => {
+            let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng).unwrap();
+            Ok((
+                PrivateKey::XWingKemDraft02(sk),
+                PublicKey::XWingKemDraft02(pk),
+            ))
+        }
     }
 }
 
@@ -143,7 +166,9 @@ impl PublicKey<'_> {
     }
     pub(crate) fn encode(&self) -> Vec<u8> {
         match self {
-            PublicKey::X25519(k) | PublicKey::MlKem768(k) => k.encode(),
+            PublicKey::X25519(k) | PublicKey::MlKem768(k) | PublicKey::XWingKemDraft02(k) => {
+                k.encode()
+            }
             PublicKey::ClassicMcEliece(k) => k.as_ref().to_vec(),
         }
     }
@@ -166,6 +191,13 @@ impl PublicKey<'_> {
                 Ok((
                     SharedSecret::ClassicMcEliece(ss),
                     Ciphertext::ClassicMcEliece(enc),
+                ))
+            }
+            PublicKey::XWingKemDraft02(pk) => {
+                let (ss, enc) = pk.encapsulate(rng).unwrap();
+                Ok((
+                    SharedSecret::XWingKemDraft02(ss),
+                    Ciphertext::XWingKemDraft02(enc),
                 ))
             }
         }
@@ -340,6 +372,17 @@ mod tests {
     fn simple_mlkem768() {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::MlKem768, &mut rng).unwrap();
+        let sctx = b"test context";
+        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+
+        let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
+        assert_eq!(psk_initiator, psk_responder);
+    }
+
+    #[test]
+    fn simple_xwing() {
+        let mut rng = rand::thread_rng();
+        let (sk, pk) = generate_key_pair(Algorithm::XWingKemDraft02, &mut rng).unwrap();
         let sctx = b"test context";
         let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
 
