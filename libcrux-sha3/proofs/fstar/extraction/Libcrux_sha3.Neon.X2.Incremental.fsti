@@ -3,14 +3,7 @@ module Libcrux_sha3.Neon.X2.Incremental
 open Core
 open FStar.Mul
 
-unfold
-let t_KeccakState2Internal =
-  Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2) Core.Core_arch.Arm_shared.Neon.t_uint64x2_t
-
-type t_KeccakState2 = {
-  f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2)
-    Core.Core_arch.Arm_shared.Neon.t_uint64x2_t
-}
+type t_KeccakState2 = { f_state:t_Array Libcrux_sha3.Portable.t_KeccakState1 (sz 2) }
 
 /// Initialise the state and perform up to 4 absorbs at the same time,
 /// using two [`KeccakState2`].

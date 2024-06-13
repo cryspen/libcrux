@@ -51,7 +51,7 @@ class t_Hash (v_Self: Type0) (v_K: usize) = {
 }
 
 /// The SHA3 block size.
-let v_BLOCK_SIZE: usize = Rust_primitives.Hax.dropped_body
+let v_BLOCK_SIZE: usize = sz 168
 
 /// The size of 3 SHA3 blocks.
-let v_THREE_BLOCKS: usize = Rust_primitives.Hax.dropped_body
+let v_THREE_BLOCKS: usize = v_BLOCK_SIZE *! sz 3

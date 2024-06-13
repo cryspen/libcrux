@@ -517,20 +517,12 @@ let deserialize_11_ (bytes: t_Slice u8) =
   let output:Libcrux_ml_kem.Vector.Avx2.Portable.t_PortableVector =
     Libcrux_ml_kem.Vector.Avx2.Portable.deserialize_11_ bytes
   in
-  (Libcrux_ml_kem.Vector.Avx2.from_i16_array (Rust_primitives.unsize (Libcrux_ml_kem.Vector.Avx2.Portable.to_i16_array
-              output
-            <:
-            t_Array i16 (sz 16))
-        <:
-        t_Slice i16))
-    .Libcrux_ml_kem.Vector.Avx2.f_elements
+  let array:t_Array i16 (sz 16) = Libcrux_ml_kem.Vector.Avx2.Portable.to_i16_array output in
+  Libcrux_intrinsics.Avx2.mm256_loadu_si256_i16 (Rust_primitives.unsize array <: t_Slice i16)
 
 let serialize_11_ (vector: Core.Core_arch.X86.t____m256i) =
-  let array:t_Array i16 (sz 16) =
-    Libcrux_ml_kem.Vector.Avx2.to_i16_array ({ Libcrux_ml_kem.Vector.Avx2.f_elements = vector }
-        <:
-        Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
-  in
+  let array:t_Array i16 (sz 16) = Rust_primitives.Hax.repeat 0s (sz 16) in
+  let array:t_Array i16 (sz 16) = Libcrux_intrinsics.Avx2.mm256_storeu_si256_i16 array vector in
   let input:Libcrux_ml_kem.Vector.Avx2.Portable.t_PortableVector =
     Libcrux_ml_kem.Vector.Avx2.Portable.from_i16_array array
   in

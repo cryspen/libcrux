@@ -3,11 +3,12 @@ module Libcrux_ml_kem.Ind_cca.Instantiations.Avx2
 open Core
 open FStar.Mul
 
-/// Portable public key validation
-val validate_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
-    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Hash_functions.Avx2 in
+  let open Libcrux_ml_kem.Vector.Avx2 in
+  ()
 
 /// Portable decapsulate
 val decapsulate
@@ -26,6 +27,12 @@ val encapsulate
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
       Prims.l_True
       (fun _ -> Prims.l_True)
+
+/// Portable public key validation
+val validate_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
+    : Prims.Pure bool Prims.l_True (fun _ -> Prims.l_True)
 
 /// Portable generate key pair.
 val generate_keypair
