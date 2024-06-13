@@ -1,6 +1,6 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::KeccakItem;
+use crate::traits::internal::KeccakItem;
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;

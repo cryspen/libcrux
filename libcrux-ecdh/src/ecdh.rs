@@ -357,15 +357,6 @@ pub mod p256 {
     pub use hacl::p256::validate_point;
     pub use hacl::p256::validate_scalar_slice;
     pub use hacl::p256::Error;
-    pub mod ecdsa {
-        use super::hacl;
-        pub use hacl::p256::ecdsa::sign_sha256;
-        pub use hacl::p256::ecdsa::sign_sha384;
-        pub use hacl::p256::ecdsa::sign_sha512;
-        pub use hacl::p256::ecdsa::verify_sha256;
-        pub use hacl::p256::ecdsa::verify_sha384;
-        pub use hacl::p256::ecdsa::verify_sha512;
-    }
 }
 
 pub use p256_internal::generate_secret as p256_generate_secret;

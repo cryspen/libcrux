@@ -373,7 +373,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha256) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                libcrux_ecdh::p256::ecdsa::sign_sha256(payload, private_key.as_ref(), &nonce)
+                crate::hacl::p256::ecdsa::sign_sha256(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -381,7 +381,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha384) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                libcrux_ecdh::p256::ecdsa::sign_sha384(payload, private_key.as_ref(), &nonce)
+                crate::hacl::p256::ecdsa::sign_sha384(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -389,7 +389,7 @@ pub fn sign(
         Algorithm::EcDsaP256(DigestAlgorithm::Sha512) => {
             let (private_key, nonce) = ecdsa_p256_sign_prep(private_key, rng)?;
             ecdsa_p256_sign_post(
-                libcrux_ecdh::p256::ecdsa::sign_sha512(payload, private_key.as_ref(), &nonce)
+                crate::hacl::p256::ecdsa::sign_sha512(payload, private_key.as_ref(), &nonce)
                     .map_err(into_signing_error)?,
                 alg,
             )?
@@ -446,17 +446,17 @@ pub fn verify(payload: &[u8], signature: &Signature, public_key: &[u8]) -> Resul
         Signature::EcDsaP256(signature) => match signature.alg {
             Algorithm::EcDsaP256(DigestAlgorithm::Sha256) => {
                 let pk = ecdsa_p256_verify_prep(public_key)?;
-                libcrux_ecdh::p256::ecdsa::verify_sha256(payload, &pk, &signature.r, &signature.s)
+                crate::hacl::p256::ecdsa::verify_sha256(payload, &pk, &signature.r, &signature.s)
             }
             Algorithm::EcDsaP256(DigestAlgorithm::Sha384) => {
                 let pk = ecdsa_p256_verify_prep(public_key)?;
-                libcrux_ecdh::p256::ecdsa::verify_sha384(payload, &pk, &signature.r, &signature.s)
+                crate::hacl::p256::ecdsa::verify_sha384(payload, &pk, &signature.r, &signature.s)
             }
             Algorithm::EcDsaP256(DigestAlgorithm::Sha512) => {
                 let pk = ecdsa_p256_verify_prep(public_key)?;
-                libcrux_ecdh::p256::ecdsa::verify_sha512(payload, &pk, &signature.r, &signature.s)
+                crate::hacl::p256::ecdsa::verify_sha512(payload, &pk, &signature.r, &signature.s)
             }
-            _ => Err(libcrux_ecdh::p256::Error::InvalidInput),
+            _ => Err(crate::hacl::p256::ecdsa::Error::InvalidInput),
         }
         .map_err(into_verify_error),
         Signature::Ed25519(signature) => {

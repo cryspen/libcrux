@@ -1,13 +1,11 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
-use libcrux_ecdh::{secret_to_public, x25519_derive, X25519PublicKey};
+use libcrux_ecdh::{self, secret_to_public, x25519_derive, X25519PublicKey};
+use libcrux_ml_kem::mlkem768;
 
-use crate::{
-    ecdh,
-    kem::{
-        self, kyber::kyber768, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey,
-        X25519MlKem768Draft00PublicKey, XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
-    },
+use crate::kem::{
+    self, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey,
+    XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
 };
 
 use super::aead::*;
@@ -439,7 +437,7 @@ pub fn SetupBaseS(
             let XWingKemDraft02PublicKey { pk_m, pk_x } =
                 XWingKemDraft02PublicKey::decode(pkR).map_err(|_| HpkeError::EncapError)?;
 
-            let (ct_m, ss_m) = kyber768::encapsulate(
+            let (ct_m, ss_m) = mlkem768::encapsulate(
                 &pk_m,
                 randomness[0..32]
                     .try_into()
