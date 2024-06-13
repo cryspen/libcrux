@@ -1,5 +1,6 @@
 mod arithmetic;
 mod constants;
+mod deserialize;
 mod hash_functions;
 mod matrix;
 mod ml_dsa_generic;

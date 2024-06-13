@@ -141,3 +141,29 @@ pub(crate) fn generate_key_pair<
 
     (signing_key_serialized, verification_key_serialized)
 }
+
+#[allow(non_snake_case)]
+pub(crate) fn sign<
+    const ROWS_IN_A: usize,
+    const COLUMNS_IN_A: usize,
+    const BYTES_FOR_ERROR_RING_ELEMENT: usize,
+    const SIGNING_KEY_SIZE: usize,
+    const SIGNATURE_SIZE: usize,
+>(
+    signing_key: [u8; SIGNING_KEY_SIZE],
+    message: &[u8],
+    randomness: [u8; 32],
+) -> [u8; SIGNATURE_SIZE] {
+    let (rho, remaining_signing_key) = signing_key.split_at(SEED_FOR_A_SIZE);
+    let (seed_for_signing, remaining_signing_key) =
+        remaining_signing_key.split_at(SEED_FOR_SIGNING_SIZE);
+    let (verification_key_hash, remaining_signing_key) =
+        remaining_signing_key.split_at(BYTES_FOR_VERIFICATION_KEY_HASH);
+
+    let (s1_serialized, remaining_signing_key) =
+        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT);
+    let (s2_serializd, t0_serialized) =
+        remaining_signing_key.split_at(BYTES_FOR_ERROR_RING_ELEMENT);
+
+    todo!();
+}

@@ -72,37 +72,74 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 //
 // We assume the input t is in the signed representative range and convert it
 // to the standard unsigned range.
-//
-// This approach has been taken from:
-// https://github.com/cloudflare/circl/blob/main/sign/dilithium/internal/common/field.go#L35
 pub(crate) fn power2round(t: i32) -> (i32, i32) {
     debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS, "t is {}", t);
 
     // Convert the signed representative to the standard unsigned one.
     let t = t + ((t >> 31) & FIELD_MODULUS);
 
-    // Compute t mod 2ᵈ
-    // t0 is now one of 0, 1, ..., 2ᵈ⁻¹-1, 2ᵈ⁻¹, 2ᵈ⁻¹+1, ..., 2ᵈ-1
-    let mut t0 = t & ((1 << BITS_IN_LOWER_PART_OF_T) - 1);
-
-    // now t0 is -2ᵈ⁻¹-1, -2ᵈ⁻¹, ..., -2, -1, 0, ..., 2ᵈ⁻¹-2
-    t0 -= (1 << (BITS_IN_LOWER_PART_OF_T - 1)) + 1;
-
-    // Next, we add 2ᴰ to those t0 that are negative
-    // now a0 is 2ᵈ⁻¹-1, 2ᵈ⁻¹, ..., 2ᵈ-2, 2ᵈ-1, 0, ..., 2ᵈ⁻¹-2
-    t0 += (t0 >> 31) & (1 << BITS_IN_LOWER_PART_OF_T);
-
-    // now t0 is 0, 1, 2, ..., 2ᵈ⁻¹-1, 2ᵈ⁻¹-1, -2ᵈ⁻¹-1, ...
-    // which is what we want.
-    t0 -= (1 << (BITS_IN_LOWER_PART_OF_T - 1)) - 1;
-
-    let t1 = (t - t0) >> BITS_IN_LOWER_PART_OF_T;
+    // t0 = t - (2^{BITS_IN_LOWER_PART_OF_T} * t1)
+    // t1 = ⌊(t - 1)/2^{BITS_IN_LOWER_PART_OF_T} + 1/2⌋
+    //
+    // See Lemma 10 of the implementation notes document for more information
+    // on what these compute.
+    let t1 = (t - 1 + (1 << (BITS_IN_LOWER_PART_OF_T - 1))) >> BITS_IN_LOWER_PART_OF_T;
+    let t0 = t - (t1 << BITS_IN_LOWER_PART_OF_T);
 
     (t0, t1)
 }
 
 pub(crate) fn t0_to_unsigned_representative(t0: i32) -> i32 {
     (1 << (BITS_IN_LOWER_PART_OF_T - 1)) - t0
+}
+
+// Splits 0 ≤ r < q into r₀ and r₁ such that:
+//
+// - r = r₁*α + r₀
+// - -α/2 < r₀ ≤ α/2
+//
+// except when r₁ = (q-1)/α; in this case:
+//
+// - r₁ is set to 0 is taken
+// - α/2 ≤ r₀ < 0.
+//
+// Note that 0 ≤ r₁ < (q-1)/α.
+pub(crate) fn decompose<const ALPHA: i32>(r: i32) -> (i32, i32) {
+    let r1 = {
+        // Compute ⌈r / 128⌉
+        let ceil_of_r_by_128 = (r + 127) >> 7;
+
+        match ALPHA {
+            190_464 => {
+                // 1488/2²⁴ is an approximation of 1/1488
+                let result = ((ceil_of_r_by_128 * 11_275) + (1 << 23)) >> 24;
+
+                // For the corner-case a₁ = (q-1)/α = 44, we have to set a₁=0.
+                (result ^ (43 - result) >> 31) & result
+            }
+            523_776 => {
+                // 1025/2²² is an approximation of 1/4092
+                let result = (ceil_of_r_by_128 * 1025 + (1 << 21)) >> 22;
+
+                // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
+                result & 15
+            }
+            _ => unreachable!(),
+        }
+    };
+
+    let mut r0 = r - (r1 * ALPHA);
+
+    // In the corner-case, when we set a₁=0, we will incorrectly
+    // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
+    // return a₀ + q, that comes down to adding q if a₀ < (q-1)/2.
+    r0 -= (((FIELD_MODULUS - 1) / 2 - r0) >> 31) & FIELD_MODULUS;
+
+    (r0, r1)
+}
+
+pub(crate) fn make_hint<const GAMMA2: i32>(low: i32, high: i32) -> bool {
+    (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0)
 }
 
 #[cfg(test)]
@@ -123,5 +160,16 @@ mod tests {
         assert_eq!(power2round(1843331), (131, 225));
         assert_eq!(power2round(-1568816), (4049, 831));
         assert_eq!(power2round(-4022142), (131, 532));
+    }
+
+    #[test]
+    fn test_decompose() {
+        assert_eq!(decompose::<190_464>(3574899), (-43917, 19));
+        assert_eq!(decompose::<190_464>(7368323), (-59773, 39));
+        assert_eq!(decompose::<190_464>(3640854), (22038, 19));
+
+        assert_eq!(decompose::<523_776>(563751), (39975, 1));
+        assert_eq!(decompose::<523_776>(6645076), (-164012, 13));
+        assert_eq!(decompose::<523_776>(7806985), (-49655, 15));
     }
 }

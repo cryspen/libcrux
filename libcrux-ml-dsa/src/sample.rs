@@ -1,6 +1,7 @@
 use crate::{
     arithmetic::PolynomialRingElement,
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    deserialize::deserialize_to_mask_ring_element,
     hash_functions::{H, H_128},
 };
 
@@ -133,9 +134,7 @@ pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
 }
 
 #[allow(non_snake_case)]
-pub(crate) fn sample_error_ring_element_uniform<const ETA: usize>(
-    seed: [u8; 66],
-) -> PolynomialRingElement {
+pub(crate) fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     // TODO: Use incremental API to squeeze one block at a time.
     let randomness = H::<272>(&seed);
 
@@ -147,6 +146,53 @@ pub(crate) fn sample_error_ring_element_uniform<const ETA: usize>(
     // TODO: Remove this panic using the incremental API.
     if !done {
         panic!("Not enough randomness for sampling short vector.");
+    }
+
+    out
+}
+
+pub(crate) fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(
+    seed: [u8; 66],
+) -> PolynomialRingElement {
+    match GAMMA1_EXPONENT {
+        17 => deserialize_to_mask_ring_element::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
+        19 => deserialize_to_mask_ring_element::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
+        _ => unreachable!(),
+    }
+}
+
+pub(crate) fn sample_challenge_ring_element<const TAU: usize>(
+    seed: [u8; 32],
+) -> PolynomialRingElement {
+    // TODO: Use incremental API to squeeze one block at a time.
+    let mut randomness = H::<136>(&seed).into_iter();
+
+    let mut signs: u64 = 0;
+    for i in 0..8 {
+        signs |= (randomness.next().unwrap() as u64) << (8 * i);
+    }
+
+    let mut out = PolynomialRingElement::ZERO;
+
+    for index in (out.coefficients.len() - TAU)..out.coefficients.len() {
+        // TODO: Rewrite this without using `break`. It's doable, just probably
+        // not as nice.
+        let sample_at = loop {
+            let i = match randomness.next() {
+                Some(byte) => byte as usize,
+
+                // TODO: We need to incrementally sample here instead of panicking.
+                None => panic!("Insufficient randomness to sample challenge ring element."),
+            };
+
+            if i <= index {
+                break i;
+            }
+        };
+
+        out.coefficients[index] = out.coefficients[sample_at];
+        out.coefficients[sample_at] = 1 - 2 * ((signs & 1) as i32);
+        signs >>= 1;
     }
 
     out
@@ -225,7 +271,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element_uniform::<2>(seed).coefficients,
+            sample_error_ring_element::<2>(seed).coefficients,
             expected_coefficients
         );
     }
@@ -254,7 +300,85 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element_uniform::<4>(seed).coefficients,
+            sample_error_ring_element::<4>(seed).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_sample_challenge_ring_element_when_tau_is_39() {
+        let seed: [u8; 32] = [
+            3, 9, 159, 119, 236, 6, 207, 7, 103, 108, 187, 137, 222, 35, 37, 30, 79, 224, 204, 186,
+            41, 38, 148, 188, 201, 50, 105, 155, 129, 217, 124, 57,
+        ];
+
+        let expected_coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT] = [
+            0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, -1,
+            -1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, -1,
+            -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, 1,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1,
+            0, 0, 0, 1, 0, 0, -1, 0, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1,
+            0,
+        ];
+
+        assert_eq!(
+            sample_challenge_ring_element::<39>(seed).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_sample_challenge_ring_element_when_tau_is_49() {
+        let seed: [u8; 32] = [
+            147, 7, 165, 152, 200, 20, 4, 38, 107, 110, 111, 176, 108, 84, 109, 201, 232, 125, 52,
+            83, 160, 120, 106, 44, 76, 41, 76, 144, 8, 184, 4, 74,
+        ];
+
+        let expected_coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT] = [
+            0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -1, -1, 0,
+            1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0,
+            -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            -1, 0, 0, 1, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+            -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0,
+            -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0,
+            0, -1, 0, 0, 0,
+        ];
+
+        assert_eq!(
+            sample_challenge_ring_element::<49>(seed).coefficients,
+            expected_coefficients
+        );
+    }
+
+    #[test]
+    fn test_sample_challenge_ring_element_when_tau_is_60() {
+        let seed: [u8; 32] = [
+            188, 193, 17, 175, 172, 179, 13, 23, 90, 238, 237, 230, 143, 113, 24, 65, 250, 86, 234,
+            229, 251, 57, 199, 158, 9, 4, 102, 249, 11, 68, 140, 107,
+        ];
+
+        let expected_coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT] = [
+            0, 0, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0,
+            0, 0, 1, 1, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, -1, 0, 0, -1,
+            0, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, -1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0,
+            0, 1, 0, -1, 1, 0, 0, 0, 0, 0, 1, 1, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 1, 0, 0, 1, 1, -1, 0,
+            0, 0, 0, 1, -1, 0,
+        ];
+
+        assert_eq!(
+            sample_challenge_ring_element::<60>(seed).coefficients,
             expected_coefficients
         );
     }
