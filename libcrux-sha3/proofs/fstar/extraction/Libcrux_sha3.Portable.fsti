@@ -23,4 +23,4 @@ val shake128 (digest data: t_Slice u8)
 val shake256 (digest data: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
-type t_KeccakState1 = { f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64 }
+type t_KeccakState1 = { f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) #u64 }

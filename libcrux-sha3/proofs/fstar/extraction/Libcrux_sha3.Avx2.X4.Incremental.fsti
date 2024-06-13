@@ -4,7 +4,7 @@ open Core
 open FStar.Mul
 
 type t_KeccakState4 = {
-  f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 4) Core.Core_arch.X86.t____m256i
+  f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 4) #Core.Core_arch.X86.t____m256i
 }
 
 /// Initialise the state and perform up to 4 absorbs at the same time,
