@@ -27,6 +27,6 @@ jobs:
           git config --local user.name "$NAME"
           git config --local user.email "$EMAIL"
           git commit -am "update \`flake.lock\`"
-      - uses: ad-m/github-push-action@v0.8
+      - uses: ad-m/github-push-action@master
         with:
           branch: ${{ inputs.branch }}
