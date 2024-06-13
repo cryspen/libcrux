@@ -118,7 +118,8 @@ ROOTS = $(UNVERIFIED) $(VERIFIED)
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives \
 	$(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) \
 	../../../../sys/platform/proofs/fstar/extraction/ \
-	../../../../libcrux-sha3/proofs/fstar/extraction/
+	../../../../libcrux-sha3/proofs/fstar/extraction/ \
+	../../../../libcrux-intrinsics/proofs/fstar/extraction
 
 FSTAR_FLAGS = --cmi \
   --warn_error -331-321-274 \

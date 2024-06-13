@@ -18,6 +18,7 @@
         "${HAX_HOME}/proof-libs/fstar/core",
         "${HAX_HOME}/hax-lib/proofs/fstar/extraction",
         "../../../../sys/platform/proofs/fstar/extraction",
-        "../../../../libcrux-sha3/proofs/fstar/extraction"
+        "../../../../libcrux-sha3/proofs/fstar/extraction",
+        "../../../../libcrux-intrinsics/proofs/fstar/extraction"
     ]
 }
