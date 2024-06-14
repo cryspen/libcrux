@@ -10,9 +10,9 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-#include "libcrux_sha3.h"
-#include "libcrux_mlkem768.h"
+#include "libcrux_sha3_portable.h"
 #include "libcrux_mlkem768_portable.h"
+
 #include "internal/libcrux_core.h"
 
 using namespace std;

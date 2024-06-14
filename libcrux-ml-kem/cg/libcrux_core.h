@@ -37,6 +37,23 @@ static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
 
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
+  uint8_t fst[1152U];
+  uint8_t snd[1184U];
+} libcrux_ml_kem_utils_extraction_helper_Keypair768;
+
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t
+    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags;
+
+typedef struct
+    K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t__s {
+  Eurydice_slice fst[4U];
+  Eurydice_slice snd[4U];
+} K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_;
+
 typedef struct libcrux_ml_kem_types_MlKemPublicKey____1184size_t_s {
   uint8_t value[1184U];
 } libcrux_ml_kem_types_MlKemPublicKey____1184size_t;
@@ -65,12 +82,6 @@ typedef struct
   libcrux_ml_kem_mlkem768_MlKem768Ciphertext fst;
   uint8_t snd[32U];
 } K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_;
-
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t
-    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags;
 
 typedef struct
     core_result_Result__uint8_t_8size_t__core_array_TryFromSliceError_s {

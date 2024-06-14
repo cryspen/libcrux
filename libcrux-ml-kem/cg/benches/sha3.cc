@@ -13,13 +13,11 @@
 // This is only broken in C++
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
 
-#include "libcrux_sha3.h"
-#include "libcrux_mlkem768.h"
+#include "libcrux_sha3_portable.h"
 #include "internal/libcrux_core.h"
 
 #ifdef LIBCRUX_X64
-#include "intrinsics/libcrux_intrinsics_avx2.h"
-#include "internal/libcrux_sha3_avx2.h"
+#include "libcrux_sha3_avx2.h"
 #endif
 
 void generate_random(uint8_t *output, uint32_t output_len)

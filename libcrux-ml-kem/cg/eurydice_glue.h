@@ -10,14 +10,8 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
-
-#include "krml/internal/target.h"
-#include "krml/lowstar_endianness.h"
-
-#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+#include "karamel/lowstar_endianness.h"
+#include "karamel/target.h"
 
 // SLICES, ARRAYS, ETC.
 
@@ -70,8 +64,6 @@ typedef struct {
   EURYDICE_SLICE((t *)x, 0, r)
 #define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _ret_t) \
   EURYDICE_SLICE((t *)x, r, size)
-#define Eurydice_array_repeat(dst, len, init, t, _ret_t) \
-  ERROR "should've been desugared"
 #define core_slice___Slice_T___len(s, t, _ret_t) EURYDICE_SLICE_LEN(s, t)
 #define core_slice___Slice_T___copy_from_slice(dst, src, t, _ret_t) \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
@@ -113,26 +105,11 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 
 // CORE STUFF (conversions, endianness, ...)
 
-static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
-  // TODO: why not store32_be?
-  uint32_t x = htobe32(src);
-  memcpy(dst, &x, 4);
-}
-
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
-  return load32_le(buf);
-}
-
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
-}
-
-static inline int64_t
-core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
-  return x;
 }
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
@@ -151,30 +128,21 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
 
-static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
-                                                       int32_t *x1) {
-  *x0 = *x0 + *x1;
-}
 
-static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
-  return (*p) & v;
-}
-static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
-  return (*p) >> v;
-}
+// static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
+//   return (*p) & v;
+// }
+// static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
+//   return (*p) >> v;
+// }
 
 // ITERATORS
 
-#define core_num_nonzero_NonZeroUsize size_t
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t) \
   (((iter_ptr)->start == (iter_ptr)->end)            \
        ? (CLITERAL(ret_t){.tag = core_option_None})  \
        : (CLITERAL(ret_t){.tag = core_option_Some,   \
                           .f0 = (iter_ptr)->start++}))
-
-// Old name (TODO: remove once everyone has upgraded to the latest Charon)
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___3__next \
-  Eurydice_range_iter_next
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
   Eurydice_range_iter_next
@@ -183,135 +151,6 @@ static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
 #define Eurydice_into_iter(x, t, _ret_t) (x)
 #define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter \
   Eurydice_into_iter
-
-typedef struct {
-  Eurydice_slice slice;
-  size_t chunk_size;
-} Eurydice_chunks;
-
-// Can't use macros Eurydice_slice_subslice_{to,from} because they require a
-// type, and this static inline function cannot receive a type as an argument.
-// Instead, we receive the element size and use it to peform manual offset
-// computations rather than going through the macros.
-static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
-                                        size_t element_size) {
-  size_t chunk_size = chunks->slice.len >= chunks->chunk_size
-                          ? chunks->chunk_size
-                          : chunks->slice.len;
-  Eurydice_slice curr_chunk;
-  curr_chunk.ptr = chunks->slice.ptr;
-  curr_chunk.len = chunk_size;
-  chunks->slice.ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size;
-  chunks->slice.len = chunks->slice.len - chunk_size;
-  return curr_chunk;
-}
-
-#define core_slice___Slice_T___chunks(slice_, sz_, t, _ret_t) \
-  ((Eurydice_chunks){.slice = slice_, .chunk_size = sz_})
-#define core_slice___Slice_T___chunks_exact(slice_, sz_, t, _ret_t)         \
-  ((Eurydice_chunks){                                                       \
-      .slice = {.ptr = slice_.ptr, .len = slice_.len - (slice_.len % sz_)}, \
-      .chunk_size = sz_})
-#define core_slice_iter_Chunks Eurydice_chunks
-#define core_slice_iter_ChunksExact Eurydice_chunks
-#define core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___70__next( \
-    iter, t, ret_t)                                                                                              \
-  (((iter)->slice.len == 0) ? ((ret_t){.tag = core_option_None})                                                 \
-                            : ((ret_t){.tag = core_option_Some,                                                  \
-                                       .f0 = chunk_next(iter, sizeof(t))}))
-#define core_slice_iter__core__slice__iter__ChunksExact__a__T__89__next( \
-    iter, t, _ret_t)                                                     \
-  core_slice_iter__core__slice__iter__Chunks__a__T__70__next(iter, t)
-
-typedef struct {
-  Eurydice_slice s;
-  size_t index;
-} Eurydice_slice_iterator;
-
-#define core_slice___Slice_T___iter(x, t, _ret_t) \
-  ((Eurydice_slice_iterator){.s = x, .index = 0})
-#define core_slice_iter_Iter Eurydice_slice_iterator
-#define core_slice_iter__core__slice__iter__Iter__a__T__181__next(iter, t, \
-                                                                  ret_t)   \
-  (((iter)->index == (iter)->s.len)                                        \
-       ? (CLITERAL(ret_t){.tag = core_option_None})                        \
-       : (CLITERAL(ret_t){                                                 \
-             .tag = core_option_Some,                                      \
-             .f0 = ((iter)->index++,                                       \
-                    &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
-
-// STRINGS
-
-typedef const char *Prims_string;
-
-// MISC (UNTESTED)
-
-typedef void *core_fmt_Formatter;
-typedef void *core_fmt_Arguments;
-typedef void *core_fmt_rt_Argument;
-#define core_fmt_rt__core__fmt__rt__Argument__a__1__new_display(x1, x2, x3, \
-                                                                x4)         \
-  NULL
-
-// VECTORS (ANCIENT, POSSIBLY UNTESTED)
-
-/* For now these are passed by value -- three words. We could conceivably change
- * the representation to heap-allocate this struct and only pass around the
- * pointer (one word). */
-typedef struct {
-  void *ptr;
-  size_t len;        /* the number of elements */
-  size_t alloc_size; /* the size of the allocation, in number of BYTES */
-} Eurydice_vec_s, *Eurydice_vec;
-
-/* Here, we set everything to zero rather than use a non-standard GCC
- * statement-expression -- this suitably initializes ptr to NULL and len and
- * size to 0. */
-#define EURYDICE_VEC_NEW(_) calloc(1, sizeof(Eurydice_vec_s))
-#define EURYDICE_VEC_PUSH(v, x, t)                                        \
-  do {                                                                    \
-    /* Grow the vector if capacity has been reached. */                   \
-    if (v->len == v->alloc_size / sizeof(t)) {                            \
-      /* Assuming that this does not exceed SIZE_MAX, because code proven \
-       * correct by Aeneas. Would this even happen in practice? */        \
-      size_t new_size;                                                    \
-      if (v->alloc_size == 0)                                             \
-        new_size = 8 * sizeof(t);                                         \
-      else if (v->alloc_size <= SIZE_MAX / 2)                             \
-        /* TODO: discuss growth policy */                                 \
-        new_size = 2 * v->alloc_size;                                     \
-      else                                                                \
-        new_size = (SIZE_MAX / sizeof(t)) * sizeof(t);                    \
-      v->ptr = realloc(v->ptr, new_size);                                 \
-      v->alloc_size = new_size;                                           \
-    }                                                                     \
-    ((t *)v->ptr)[v->len] = x;                                            \
-    v->len++;                                                             \
-  } while (0)
-
-#define EURYDICE_VEC_DROP(v, t) \
-  do {                          \
-    free(v->ptr);               \
-    free(v);                    \
-  } while (0)
-
-#define EURYDICE_VEC_INDEX(v, i, t) &((t *)v->ptr)[i]
-#define EURYDICE_VEC_LEN(v, t) (v)->len
-
-/* TODO: remove GCC-isms */
-#define EURYDICE_BOX_NEW(x, t) \
-  ({                           \
-    t *p = malloc(sizeof(t));  \
-    *p = x;                    \
-    p;                         \
-  })
-
-#define EURYDICE_REPLACE(ptr, new_v, t) \
-  ({                                    \
-    t old_v = *ptr;                     \
-    *ptr = new_v;                       \
-    old_v;                              \
-  })
 
 #if defined(__cplusplus)
 }

@@ -15,12 +15,6 @@ extern "C" {
 #include "../libcrux_core.h"
 #include "eurydice_glue.h"
 
-extern void core_fmt_rt__core__fmt__rt__Argument__a__1__none(
-    core_fmt_rt_Argument *x0);
-
-extern core_fmt_Arguments core_fmt__core__fmt__Arguments__a__2__new_v1(
-    Eurydice_slice x0, Eurydice_slice x1);
-
 #define CORE_NUM__U32_8__BITS (32U)
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0);
@@ -44,10 +38,44 @@ void libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
 
 #define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
-typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s {
-  uint8_t fst[1152U];
-  uint8_t snd[1184U];
-} libcrux_ml_kem_utils_extraction_helper_Keypair768;
+typedef struct
+    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_s {
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  union {
+    uint8_t case_Ok[24U];
+    core_array_TryFromSliceError case_Err;
+  } val;
+} core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError;
+
+void core_result__core__result__Result_T__E___unwrap__uint8_t_24size_t__core_array_TryFromSliceError(
+    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError self,
+    uint8_t ret[24U]);
+
+typedef struct
+    core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError_s {
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  union {
+    uint8_t case_Ok[20U];
+    core_array_TryFromSliceError case_Err;
+  } val;
+} core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError;
+
+void core_result__core__result__Result_T__E___unwrap__uint8_t_20size_t__core_array_TryFromSliceError(
+    core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError self,
+    uint8_t ret[20U]);
+
+typedef struct
+    core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError_s {
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
+  union {
+    uint8_t case_Ok[10U];
+    core_array_TryFromSliceError case_Err;
+  } val;
+} core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError;
+
+void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_array_TryFromSliceError(
+    core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError self,
+    uint8_t ret[10U]);
 
 libcrux_ml_kem_types_MlKemPublicKey____1184size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___1184size_t(
@@ -91,50 +119,6 @@ void libcrux_ml_kem_utils_into_padded_array___64size_t(Eurydice_slice slice,
                                                        uint8_t ret[64U]);
 
 typedef struct
-    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
-  union {
-    uint8_t case_Ok[24U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError;
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_24size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError self,
-    uint8_t ret[24U]);
-
-typedef struct
-    core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
-  union {
-    uint8_t case_Ok[20U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError;
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_20size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError self,
-    uint8_t ret[20U]);
-
-typedef struct
-    core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
-  union {
-    uint8_t case_Ok[10U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError;
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError self,
-    uint8_t ret[10U]);
-
-typedef struct core_option_Option__Eurydice_slice_uint8_t_s {
-  core_option_Option__size_t_tags tag;
-  Eurydice_slice f0;
-} core_option_Option__Eurydice_slice_uint8_t;
-
-typedef struct
     core_result_Result__int16_t_16size_t__core_array_TryFromSliceError_s {
   core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
   union {
@@ -146,12 +130,6 @@ typedef struct
 void core_result__core__result__Result_T__E___unwrap__int16_t_16size_t__core_array_TryFromSliceError(
     core_result_Result__int16_t_16size_t__core_array_TryFromSliceError self,
     int16_t ret[16U]);
-
-typedef struct
-    K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t__s {
-  Eurydice_slice fst[4U];
-  Eurydice_slice snd[4U];
-} K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_;
 
 #if defined(__cplusplus)
 }

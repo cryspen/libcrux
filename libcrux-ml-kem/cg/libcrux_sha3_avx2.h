@@ -15,20 +15,467 @@ extern "C" {
 #include "eurydice_glue.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 #include "libcrux_core.h"
-#include "libcrux_sha3_internal.h"
+#include "libcrux_sha3_portable.h"
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___zero(
+    void);
+
+core_core_arch_x86___m256i libcrux_sha3_simd_avx2__veor5q_u64(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
+    core_core_arch_x86___m256i c, core_core_arch_x86___m256i d,
+    core_core_arch_x86___m256i e);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor5(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
+    core_core_arch_x86___m256i c, core_core_arch_x86___m256i d,
+    core_core_arch_x86___m256i e);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___1int32_t_63int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i libcrux_sha3_simd_avx2__vrax1q_u64(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___rotate_left1_and_xor(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i libcrux_sha3_simd_avx2__vbcaxq_u64(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
+    core_core_arch_x86___m256i c);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___and_not_xor(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
+    core_core_arch_x86___m256i c);
+
+core_core_arch_x86___m256i libcrux_sha3_simd_avx2__veorq_n_u64(
+    core_core_arch_x86___m256i a, uint64_t c);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_constant(
+    core_core_arch_x86___m256i a, uint64_t c);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+void libcrux_sha3_simd_avx2_slice_4(Eurydice_slice a[4U], size_t start,
+                                    size_t len, Eurydice_slice ret[4U]);
+
+void libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___slice_n(
+    Eurydice_slice a[4U], size_t start, size_t len, Eurydice_slice ret[4U]);
+
+K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_
+libcrux_sha3_simd_avx2_split_at_mut_4(Eurydice_slice out[4U], size_t mid);
+
+K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___split_at_mut_n(
+    Eurydice_slice a[4U], size_t mid);
 
 typedef struct
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t_s {
   core_core_arch_x86___m256i st[5U][5U];
 } libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t;
 
+libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+libcrux_sha3_generic_keccak__libcrux_sha3__generic_keccak__KeccakState_T__N__TraitClause_0__1__new__core_core_arch_x86___m256i_4size_t(
+    void);
+
+void libcrux_sha3_simd_avx2_load_block___136size_t(
+    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice blocks[4U]);
+
+void
+    libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___load_block___136size_t(
+        core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___36int32_t_28int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___36int32_t_28int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___36int32_t_28int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___3int32_t_61int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___3int32_t_61int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___3int32_t_61int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___41int32_t_23int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___41int32_t_23int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___41int32_t_23int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___18int32_t_46int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___18int32_t_46int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___18int32_t_46int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___1int32_t_63int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___1int32_t_63int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___44int32_t_20int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___44int32_t_20int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___44int32_t_20int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___10int32_t_54int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___10int32_t_54int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___10int32_t_54int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___45int32_t_19int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___45int32_t_19int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___45int32_t_19int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___2int32_t_62int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___2int32_t_62int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___2int32_t_62int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___62int32_t_2int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___62int32_t_2int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___62int32_t_2int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___6int32_t_58int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___6int32_t_58int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___6int32_t_58int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___43int32_t_21int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___43int32_t_21int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___43int32_t_21int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___15int32_t_49int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___15int32_t_49int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___15int32_t_49int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___61int32_t_3int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___61int32_t_3int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___61int32_t_3int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___28int32_t_36int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___28int32_t_36int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___28int32_t_36int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___55int32_t_9int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___55int32_t_9int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___55int32_t_9int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___25int32_t_39int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___25int32_t_39int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___25int32_t_39int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___21int32_t_43int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___21int32_t_43int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___21int32_t_43int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___56int32_t_8int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___56int32_t_8int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___56int32_t_8int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___27int32_t_37int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___27int32_t_37int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___27int32_t_37int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___20int32_t_44int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___20int32_t_44int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___20int32_t_44int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___39int32_t_25int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___39int32_t_25int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___39int32_t_25int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___8int32_t_56int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___8int32_t_56int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___8int32_t_56int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2_rotate_left___14int32_t_50int32_t(
+    core_core_arch_x86___m256i x);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2__vxarq_u64___14int32_t_50int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+core_core_arch_x86___m256i
+libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___xor_and_rotate___14int32_t_50int32_t(
+    core_core_arch_x86___m256i a, core_core_arch_x86___m256i b);
+
+void libcrux_sha3_generic_keccak_theta_rho__core_core_arch_x86___m256i_4size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s);
+
+void libcrux_sha3_generic_keccak_pi__core_core_arch_x86___m256i_4size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s);
+
+void libcrux_sha3_generic_keccak_chi__core_core_arch_x86___m256i_4size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s);
+
+void libcrux_sha3_generic_keccak_iota__core_core_arch_x86___m256i_4size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    size_t i);
+
+void libcrux_sha3_generic_keccak_keccakf1600__core_core_arch_x86___m256i_4size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s);
+
+void libcrux_sha3_generic_keccak_absorb_block__core_core_arch_x86___m256i_4size_t_136size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice blocks[4U]);
+
+void libcrux_sha3_simd_avx2_load_block_full___136size_t(
+    core_core_arch_x86___m256i (*s)[5U], uint8_t blocks[4U][200U]);
+
+void
+    libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___load_block_full___136size_t(
+        core_core_arch_x86___m256i (*a)[5U], uint8_t b[4U][200U]);
+
+void libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_136size_t_31uint8_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice last[4U]);
+
+void libcrux_sha3_simd_avx2_store_block___136size_t(
+    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice out[4U]);
+
+void libcrux_sha3_simd_avx2_store_block_full___136size_t(
+    core_core_arch_x86___m256i (*s)[5U], uint8_t ret[4U][200U]);
+
+void
+    libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___store_block_full___136size_t(
+        core_core_arch_x86___m256i (*a)[5U], uint8_t ret[4U][200U]);
+
+void libcrux_sha3_generic_keccak_squeeze_first_and_last__core_core_arch_x86___m256i_4size_t_136size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice out[4U]);
+
+void
+    libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___store_block___136size_t(
+        core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]);
+
+void libcrux_sha3_generic_keccak_squeeze_first_block__core_core_arch_x86___m256i_4size_t_136size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice out[4U]);
+
+void libcrux_sha3_generic_keccak_squeeze_next_block__core_core_arch_x86___m256i_4size_t_136size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice out[4U]);
+
+void libcrux_sha3_generic_keccak_squeeze_last__core_core_arch_x86___m256i_4size_t_136size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        s,
+    Eurydice_slice out[4U]);
+
+void libcrux_sha3_generic_keccak_keccak__core_core_arch_x86___m256i_4size_t_136size_t_31uint8_t(
+    Eurydice_slice data[4U], Eurydice_slice out[4U]);
+
 void libcrux_sha3_avx2_x4_shake256(Eurydice_slice input0, Eurydice_slice input1,
                                    Eurydice_slice input2, Eurydice_slice input3,
                                    Eurydice_slice out0, Eurydice_slice out1,
                                    Eurydice_slice out2, Eurydice_slice out3);
 
+typedef libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+    libcrux_sha3_avx2_x4_incremental_KeccakState4;
+
 libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
 libcrux_sha3_avx2_x4_incremental_shake128_init(void);
+
+void libcrux_sha3_simd_avx2_load_block___168size_t(
+    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice blocks[4U]);
+
+void libcrux_sha3_simd_avx2_load_block_full___168size_t(
+    core_core_arch_x86___m256i (*s)[5U], uint8_t blocks[4U][200U]);
+
+void
+    libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___load_block_full___168size_t(
+        core_core_arch_x86___m256i (*a)[5U], uint8_t b[4U][200U]);
+
+void libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice last[4U]);
 
 void libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -36,11 +483,33 @@ void libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
     Eurydice_slice data0, Eurydice_slice data1, Eurydice_slice data2,
     Eurydice_slice data3);
 
+void libcrux_sha3_simd_avx2_store_block___168size_t(
+    core_core_arch_x86___m256i (*s)[5U], Eurydice_slice out[4U]);
+
+void
+    libcrux_sha3_simd_avx2___libcrux_sha3__traits__internal__KeccakItem_4__usize__for_core__core_arch__x86____m256i___store_block___168size_t(
+        core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]);
+
+void libcrux_sha3_generic_keccak_squeeze_next_block__core_core_arch_x86___m256i_4size_t_168size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice out[4U]);
+
 void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
         *s,
     Eurydice_slice out0, Eurydice_slice out1, Eurydice_slice out2,
     Eurydice_slice out3);
+
+void libcrux_sha3_generic_keccak_squeeze_first_block__core_core_arch_x86___m256i_4size_t_168size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice out[4U]);
+
+void libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(
+    libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
+        *s,
+    Eurydice_slice out[4U]);
 
 void libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t

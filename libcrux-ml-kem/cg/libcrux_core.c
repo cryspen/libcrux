@@ -36,6 +36,48 @@ void libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
   memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
+void core_result__core__result__Result_T__E___unwrap__uint8_t_24size_t__core_array_TryFromSliceError(
+    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError self,
+    uint8_t ret[24U]) {
+  if (self.tag == core_result_Ok) {
+    uint8_t f0[24U];
+    memcpy(f0, self.val.case_Ok, (size_t)24U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)24U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+void core_result__core__result__Result_T__E___unwrap__uint8_t_20size_t__core_array_TryFromSliceError(
+    core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError self,
+    uint8_t ret[20U]) {
+  if (self.tag == core_result_Ok) {
+    uint8_t f0[20U];
+    memcpy(f0, self.val.case_Ok, (size_t)20U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)20U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_array_TryFromSliceError(
+    core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError self,
+    uint8_t ret[10U]) {
+  if (self.tag == core_result_Ok) {
+    uint8_t f0[10U];
+    memcpy(f0, self.val.case_Ok, (size_t)10U * sizeof(uint8_t));
+    memcpy(ret, f0, (size_t)10U * sizeof(uint8_t));
+  } else {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
+                      "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
 libcrux_ml_kem_types_MlKemPublicKey____1184size_t
 libcrux_ml_kem_types___core__convert__From__Array_u8__SIZE___for_libcrux_ml_kem__types__MlKemPublicKey_SIZE___14__from___1184size_t(
     uint8_t value[1184U]) {
@@ -160,48 +202,6 @@ void libcrux_ml_kem_utils_into_padded_array___64size_t(Eurydice_slice slice,
           uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
       slice, uint8_t, void *);
   memcpy(ret, out, (size_t)64U * sizeof(uint8_t));
-}
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_24size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError self,
-    uint8_t ret[24U]) {
-  if (self.tag == core_result_Ok) {
-    uint8_t f0[24U];
-    memcpy(f0, self.val.case_Ok, (size_t)24U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)24U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_20size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError self,
-    uint8_t ret[20U]) {
-  if (self.tag == core_result_Ok) {
-    uint8_t f0[20U];
-    memcpy(f0, self.val.case_Ok, (size_t)20U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)20U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError self,
-    uint8_t ret[10U]) {
-  if (self.tag == core_result_Ok) {
-    uint8_t f0[10U];
-    memcpy(f0, self.val.case_Ok, (size_t)10U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)10U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
 }
 
 void core_result__core__result__Result_T__E___unwrap__int16_t_16size_t__core_array_TryFromSliceError(
