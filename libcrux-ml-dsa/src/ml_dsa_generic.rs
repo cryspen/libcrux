@@ -178,18 +178,18 @@ pub(super) fn generate_serialized_signature<
     for i in offset..offset + (MAX_ONES_IN_HINT + ROWS_IN_A) {
         signature[i] = 0;
     }
-    offset += MAX_ONES_IN_HINT + ROWS_IN_A;
 
     let mut one_count = 0;
+    let hint_serialized = &mut signature[offset..];
+
     for i in 0..ROWS_IN_A {
-        for hint in hint_vector[i].into_iter() {
+        for (j, hint) in hint_vector[i].into_iter().enumerate() {
             if hint == true {
-                signature[offset] = 1;
-                offset += 1;
+                hint_serialized[one_count] = j as u8;
                 one_count += 1;
             }
         }
-        signature[MAX_ONES_IN_HINT + i] = one_count;
+        hint_serialized[MAX_ONES_IN_HINT + i] = one_count as u8;
     }
 
     signature
@@ -258,6 +258,8 @@ pub(crate) fn sign<
 
     let mut domain_separator_for_mask: u16 = 0;
 
+    let BETA = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
+
     let (commitment_hash, signer_response, hint_vector) = loop {
         let mask = sample_mask_vector::<COLUMNS_IN_A, GAMMA1_EXPONENT>(
             into_padded_array(&mask_seed),
@@ -294,14 +296,13 @@ pub(crate) fn sign<
 
         let w0_minus_challenge_times_s2 = subtract_vectors::<ROWS_IN_A>(&w0, &challenge_times_s2);
 
-        let beta = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
         if vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
             signer_response,
-            (1 << GAMMA1_EXPONENT) - beta,
+            (1 << GAMMA1_EXPONENT) - BETA,
         ) {
             continue;
         }
-        if vector_infinity_norm_exceeds::<ROWS_IN_A>(w0_minus_challenge_times_s2, GAMMA2 - beta) {
+        if vector_infinity_norm_exceeds::<ROWS_IN_A>(w0_minus_challenge_times_s2, GAMMA2 - BETA) {
             continue;
         }
 
@@ -311,8 +312,10 @@ pub(crate) fn sign<
             continue;
         }
 
+        let w0_minus_c_times_s2_plus_c_times_t0 =
+            add_vectors::<ROWS_IN_A>(&w0_minus_challenge_times_s2, &challenge_times_t0);
         let (hint_vector, ones_in_hint) =
-            make_hint_vector::<ROWS_IN_A, GAMMA2>(challenge_times_t0, w0_minus_challenge_times_s2);
+            make_hint_vector::<ROWS_IN_A, GAMMA2>(w0_minus_c_times_s2_plus_c_times_t0, commitment);
         if ones_in_hint > MAX_ONES_IN_HINT {
             continue;
         }

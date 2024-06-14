@@ -1,21 +1,21 @@
 use crate::constants::*;
 
-// ML-DSA-65 parameters
+// ML-DSA-65-specific parameters
 
 const ROWS_IN_A: usize = 6;
 const COLUMNS_IN_A: usize = 5;
 
 const ETA: usize = 4;
+
 // To sample a value in the interval [-ETA, ETA], we can sample a value (say 'v')
 // in the interval [0, 2 * ETA] and then compute ETA - v. This can be done in
 // 4 bits when ETA is 4.
 const BITS_PER_ERROR_COEFFICIENT: usize = 4;
+
 const ERROR_RING_ELEMENT_SIZE: usize =
     (BITS_PER_ERROR_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 
 const GAMMA1_EXPONENT: usize = 19;
-const GAMMA2: i32 = (FIELD_MODULUS - 1) / 32;
-
 // To sample a value in the interval [-(GAMMA - 1), GAMMA], we can sample a
 // value (say 'v') in the interval [0, (2 * GAMMA) - 1] and then compute
 // GAMMA - v. This can be done in 20 bits when GAMMA is 2^{19}.
@@ -27,14 +27,18 @@ const MAX_ONES_IN_HINT: usize = 55;
 
 const ONES_IN_VERIFIER_CHALLENGE: usize = 49;
 
-const BITS_PER_COMMITMENT_COEFFICIENT: usize =
-    ((FIELD_MODULUS as usize) - 1) / (((2 * GAMMA2) as usize) - 1);
+const GAMMA2: i32 = (FIELD_MODULUS - 1) / 32;
+
+// Commitment coefficients are in the interval: [0, ((FIELD_MODULUS − 1)/2γ2) − 1]
+// ((FIELD_MODULUS − 1)/2γ2) − 1 = 15, which means we need 4 bits to represent a
+// coefficient.
+const BITS_PER_COMMITMENT_COEFFICIENT: usize = 4;
 
 const COMMITMENT_RING_ELEMENT_SIZE: usize =
     (BITS_PER_COMMITMENT_COEFFICIENT * COEFFICIENTS_IN_RING_ELEMENT) / 8;
 const COMMITMENT_VECTOR_SIZE: usize = COMMITMENT_RING_ELEMENT_SIZE * ROWS_IN_A;
 
-const COMMITMENT_HASH_SIZE: usize = 96;
+const COMMITMENT_HASH_SIZE: usize = 48;
 
 const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
     + (COEFFICIENTS_IN_RING_ELEMENT

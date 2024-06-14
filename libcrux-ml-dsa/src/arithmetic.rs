@@ -152,7 +152,10 @@ pub(crate) fn power2round_vector<const DIMENSION: usize>(
     (vector_t0, vector_t1)
 }
 
-// Splits 0 ≤ r < q into r₀ and r₁ such that:
+// Take a representative -q < r < q and convert it
+// to the standard unsigned one in the interval [0, q).
+//
+// Splits this representative r into r₀ and r₁ such that:
 //
 // - r = r₁*α + r₀
 // - -α/2 < r₀ ≤ α/2
@@ -164,6 +167,15 @@ pub(crate) fn power2round_vector<const DIMENSION: usize>(
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
 fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
+    debug_assert!(
+        r > -FIELD_MODULUS && r < FIELD_MODULUS,
+        "the representative is {}",
+        r
+    );
+
+    // Convert the signed representative to the standard unsigned one.
+    let r = r + ((r >> 31) & FIELD_MODULUS);
+
     let alpha = GAMMA2 * 2;
 
     let r1 = {
