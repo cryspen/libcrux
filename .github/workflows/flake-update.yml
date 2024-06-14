@@ -26,7 +26,8 @@ jobs:
           EMAIL=$(echo "$COMMITTER" | jq '.email')
           git config --local user.name "$NAME"
           git config --local user.email "$EMAIL"
-          git commit -am "update \`flake.lock\`"
+          git add flake.lock
+          git commit -m "update \`flake.lock\`"
       - uses: ad-m/github-push-action@master
         with:
           branch: ${{ inputs.branch }}
