@@ -60,6 +60,12 @@ macro_rules! impl_generic_struct {
             pub const fn len(&self) -> usize {
                 SIZE
             }
+
+            #[cfg(feature = "tests")]
+            /// Modify a byte.
+	    pub fn set(&mut self, index: usize, val: u8) {
+		self.value[index] = val;
+	    }
         }
     };
 }
@@ -73,11 +79,12 @@ macro_rules! impl_index_impls_for_generic_struct {
             }
         }
 
-        impl<const SIZE: usize> core::ops::IndexMut<usize> for $name<SIZE> {
-            fn index_mut(&mut self, range: usize) -> &mut Self::Output {
-                &mut self.value[range]
-            }
-        }
+        // Unused, and not supported as-is by hax, needs an UpdateAt wrapper if we want to use it.
+        // impl<const SIZE: usize> core::ops::IndexMut<usize> for $name<SIZE> {
+        //     fn index_mut(&mut self, range: usize) -> &mut Self::Output {
+        //         &mut self.value[range]
+        //     }
+        // }
 
         impl<const SIZE: usize> core::ops::Index<core::ops::Range<usize>> for $name<SIZE> {
             type Output = [u8];
@@ -87,11 +94,12 @@ macro_rules! impl_index_impls_for_generic_struct {
             }
         }
 
-        impl<const SIZE: usize> core::ops::IndexMut<core::ops::Range<usize>> for $name<SIZE> {
-            fn index_mut(&mut self, range: core::ops::Range<usize>) -> &mut Self::Output {
-                &mut self.value[range]
-            }
-        }
+        // Unused, and not supported as-is by hax, needs an UpdateAt wrapper if we want to use it.
+        // impl<const SIZE: usize> core::ops::IndexMut<core::ops::Range<usize>> for $name<SIZE> {
+        //     fn index_mut(&mut self, range: core::ops::Range<usize>) -> &mut Self::Output {
+        //         &mut self.value[range]
+        //     }
+        // }
 
         impl<const SIZE: usize> core::ops::Index<core::ops::RangeTo<usize>> for $name<SIZE> {
             type Output = [u8];
@@ -101,11 +109,12 @@ macro_rules! impl_index_impls_for_generic_struct {
             }
         }
 
-        impl<const SIZE: usize> core::ops::IndexMut<core::ops::RangeTo<usize>> for $name<SIZE> {
-            fn index_mut(&mut self, range: core::ops::RangeTo<usize>) -> &mut Self::Output {
-                &mut self.value[range]
-            }
-        }
+        // Unused, and not supported as-is by hax, needs an UpdateAt wrapper if we want to use it.
+        // impl<const SIZE: usize> core::ops::IndexMut<core::ops::RangeTo<usize>> for $name<SIZE> {
+        //     fn index_mut(&mut self, range: core::ops::RangeTo<usize>) -> &mut Self::Output {
+        //         &mut self.value[range]
+        //     }
+        // }
 
         impl<const SIZE: usize> core::ops::Index<core::ops::RangeFrom<usize>> for $name<SIZE> {
             type Output = [u8];
@@ -115,11 +124,12 @@ macro_rules! impl_index_impls_for_generic_struct {
             }
         }
 
-        impl<const SIZE: usize> core::ops::IndexMut<core::ops::RangeFrom<usize>> for $name<SIZE> {
-            fn index_mut(&mut self, range: core::ops::RangeFrom<usize>) -> &mut Self::Output {
-                &mut self.value[range]
-            }
-        }
+        // Unused, and not supported as-is by hax, needs an UpdateAt wrapper if we want to use it.
+        // impl<const SIZE: usize> core::ops::IndexMut<core::ops::RangeFrom<usize>> for $name<SIZE> {
+        //     fn index_mut(&mut self, range: core::ops::RangeFrom<usize>) -> &mut Self::Output {
+        //         &mut self.value[range]
+        //     }
+        // }
     };
 }
 
