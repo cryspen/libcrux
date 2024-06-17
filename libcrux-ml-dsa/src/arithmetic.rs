@@ -184,14 +184,16 @@ fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
 
         match alpha {
             190_464 => {
-                // 1488/2²⁴ is an approximation of 1/1488
+                // We approximate 1 / 1488 as:
+                // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
                 let result = ((ceil_of_r_by_128 * 11_275) + (1 << 23)) >> 24;
 
                 // For the corner-case a₁ = (q-1)/α = 44, we have to set a₁=0.
                 (result ^ (43 - result) >> 31) & result
             }
             523_776 => {
-                // 1025/2²² is an approximation of 1/4092
+                // We approximate 1 / 4092 as:
+                // ⌊2²² / 4092⌋ / 2²² = 1025 / 2²²
                 let result = (ceil_of_r_by_128 * 1025 + (1 << 21)) >> 22;
 
                 // For the corner-case a₁ = (q-1)/α = 16, we have to set a₁=0.
