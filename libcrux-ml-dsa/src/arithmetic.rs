@@ -246,9 +246,10 @@ pub(crate) fn make_hint_vector<const DIMENSION: usize, const GAMMA2: i32>(
         for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
             hint_vector[i][j] =
                 make_hint::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
-            if hint_vector[i][j] == true {
-                hints_of_one += 1;
-            }
+
+            // From https://doc.rust-lang.org/std/primitive.bool.html:
+            // "If you cast a bool into an integer, true will be 1 and false will be 0."
+            hints_of_one += hint_vector[i][j] as usize;
         }
     }
 

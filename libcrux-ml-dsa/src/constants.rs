@@ -23,3 +23,5 @@ pub(crate) const SIGNING_RANDOMNESS_SIZE: usize = 32;
 
 pub(crate) const MESSAGE_REPRESENTATIVE_SIZE: usize = 64;
 pub(crate) const MASK_SEED_SIZE: usize = 64;
+
+pub(crate) const VERIFIER_CHALLENGE_SEED_SIZE: usize = 32;

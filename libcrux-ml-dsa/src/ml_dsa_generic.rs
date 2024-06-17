@@ -259,7 +259,19 @@ pub(crate) fn sign<
 
     let BETA = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
 
+    let mut attempt = 0;
+
     let (commitment_hash, signer_response, hint_vector) = loop {
+        attempt += 1;
+        if attempt >= 576 {
+            // Depending on the mode, one try has a chance between 1/7 and 1/4
+            // of succeeding.  Thus it is safe to say that 576 iterations
+            // are enough as (6/7)⁵⁷⁶ < 2⁻¹²⁸.
+            //
+            // TODO: Attribute to CIRCL.
+            panic!("At least 576 signing attempts were made; this should only happen 1 in 2^{{128}} times: something is wrong.")
+        }
+
         let mask = sample_mask_vector::<COLUMNS_IN_A, GAMMA1_EXPONENT>(
             into_padded_array(&mask_seed),
             &mut domain_separator_for_mask,
@@ -282,9 +294,12 @@ pub(crate) fn sign<
             H::<COMMITMENT_HASH_SIZE>(&hash_input[..])
         };
 
-        let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
-            ONES_IN_VERIFIER_CHALLENGE,
-        >(commitment_hash[0..32].try_into().unwrap()));
+        let verifier_challenge_as_ntt =
+            ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
+                commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
+                    .try_into()
+                    .unwrap(),
+            ));
 
         let challenge_times_s1 =
             vector_times_ring_element::<COLUMNS_IN_A>(&s1_as_ntt, &verifier_challenge_as_ntt);
