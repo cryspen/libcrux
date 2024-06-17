@@ -79,6 +79,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
     add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
     target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
     target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
+
     if(NOT MSVC)
         target_compile_options(ml_kem_vec256 PRIVATE
             -mavx
@@ -136,14 +137,11 @@ target_link_libraries(sha3_test PRIVATE
 )
 
 # --- Benchmarks
-FetchContent_Populate(benchmark
+FetchContent_Declare(benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
-
-    # The latest release 1.7.1 is broken due to https://github.com/google/benchmark/pull/1517
-    # But also: need the fix for https://github.com/google/benchmark/pull/1669
-    GIT_TAG bc946b919cac6f25a199a526da571638cfde109f
+    GIT_TAG v1.8.4
 )
-add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
+FetchContent_MakeAvailable(benchmark)
 
 add_executable(ml_kem_bench
     ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
@@ -152,8 +150,14 @@ target_link_libraries(ml_kem_bench PRIVATE
     ml_kem_static
     benchmark::benchmark
 )
-target_compile_definitions(ml_kem_bench PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_bench PRIVATE)
+
+if(DEFINED ENV{SYMCRYPT_PATH})
+    message("Symcrypt path: $ENV{SYMCRYPT_PATH}")
+    add_compile_definitions(LIBCRUX_SYMCRYPT)
+    target_include_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH})
+    target_link_directories(ml_kem_bench PRIVATE $ENV{SYMCRYPT_PATH}/bin/lib)
+    target_link_libraries(ml_kem_bench PRIVATE symcrypt)
+endif(DEFINED ENV{SYMCRYPT_PATH})
 
 add_executable(ml_kem_keygen
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
@@ -162,8 +166,6 @@ target_link_libraries(ml_kem_keygen PRIVATE
     ml_kem_static
     benchmark::benchmark
 )
-target_compile_definitions(ml_kem_keygen PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_keygen PRIVATE)
 
 add_executable(ml_kem_encaps
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
@@ -172,8 +174,6 @@ target_link_libraries(ml_kem_encaps PRIVATE
     ml_kem_static
     benchmark::benchmark
 )
-target_compile_definitions(ml_kem_encaps PUBLIC HACL_CAN_COMPILE_VEC256)
-target_compile_options(ml_kem_encaps PRIVATE)
 
 if(NOT MSVC)
     # We benchmark internal functions here that are inlined and thus not available

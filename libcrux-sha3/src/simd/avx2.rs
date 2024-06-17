@@ -1,4 +1,4 @@
-use crate::traits::*;
+use crate::traits::internal::*;
 use libcrux_intrinsics::avx2::*;
 
 #[inline(always)]

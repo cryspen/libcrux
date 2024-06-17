@@ -12,11 +12,12 @@
 pub(crate) mod aesgcm;
 pub(crate) mod blake2;
 pub(crate) mod chacha20_poly1305;
-pub(crate) mod curve25519;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub(crate) mod drbg;
 pub(crate) mod ed25519;
 pub(crate) mod p256;
+
 pub(crate) mod sha2;
 pub(crate) mod sha3;
 
@@ -24,8 +25,9 @@ pub(crate) mod sha3;
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Error {
     ChaCha20Poly1305(chacha20_poly1305::Error),
-    Curve25519(curve25519::Error),
-    P256(p256::Error),
+    Curve25519(libcrux_ecdh::curve25519::Error),
+    P256ECDH(libcrux_ecdh::p256::Error),
+    P256ECDSA(p256::ecdsa::Error),
     Ed25519(ed25519::Error),
     Hkdf(libcrux_hkdf::Error),
 }
@@ -36,15 +38,15 @@ impl From<chacha20_poly1305::Error> for Error {
     }
 }
 
-impl From<curve25519::Error> for Error {
-    fn from(val: curve25519::Error) -> Self {
+impl From<libcrux_ecdh::curve25519::Error> for Error {
+    fn from(val: libcrux_ecdh::curve25519::Error) -> Self {
         Error::Curve25519(val)
     }
 }
 
-impl From<p256::Error> for Error {
-    fn from(val: p256::Error) -> Self {
-        Error::P256(val)
+impl From<libcrux_ecdh::p256::Error> for Error {
+    fn from(val: libcrux_ecdh::p256::Error) -> Self {
+        Error::P256ECDH(val)
     }
 }
 
@@ -57,5 +59,11 @@ impl From<libcrux_hkdf::Error> for Error {
 impl From<ed25519::Error> for Error {
     fn from(val: ed25519::Error) -> Self {
         Error::Ed25519(val)
+    }
+}
+
+impl From<p256::ecdsa::Error> for Error {
+    fn from(val: p256::ecdsa::Error) -> Self {
+        Error::P256ECDSA(val)
     }
 }

@@ -1,7 +1,7 @@
 use crate::{
     arithmetic::{add_to_ring_element, power2round, PolynomialRingElement},
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
-    sample::{sample_error_ring_element_uniform, sample_ring_element_uniform},
+    sample::{sample_error_ring_element, sample_mask_ring_element, sample_ring_element_uniform},
 };
 
 pub(crate) fn power2round_vector<const ROWS_IN_A: usize>(
@@ -36,7 +36,25 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        error[i] = sample_error_ring_element_uniform::<ETA>(seed);
+        error[i] = sample_error_ring_element::<ETA>(seed);
+    }
+
+    error
+}
+
+#[inline(always)]
+pub(crate) fn sample_mask_vector<const COLUMNS_IN_A: usize, const GAMMA1_EXPONENT: usize>(
+    mut seed: [u8; 66],
+    signing_attempt_counter: u16,
+) -> [PolynomialRingElement; COLUMNS_IN_A] {
+    let mut error = [PolynomialRingElement::ZERO; COLUMNS_IN_A];
+
+    for i in 0..COLUMNS_IN_A {
+        let domain_separator = signing_attempt_counter + (i as u16);
+        seed[64] = domain_separator as u8;
+        seed[65] = (domain_separator >> 8) as u8;
+
+        error[i] = sample_mask_ring_element::<GAMMA1_EXPONENT>(seed);
     }
 
     error
