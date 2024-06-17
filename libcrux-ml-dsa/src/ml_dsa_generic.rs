@@ -3,7 +3,6 @@ use crate::{
         decompose_vector, make_hint_vector, power2round_vector, vector_infinity_norm_exceeds,
         PolynomialRingElement,
     },
-    commitment,
     constants::*,
     encoding,
     hash_functions::H,
@@ -271,7 +270,7 @@ pub(crate) fn sign<
         let (w0, commitment) = decompose_vector::<ROWS_IN_A, GAMMA2>(A_times_mask);
 
         let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
-            let commitment_encoded = commitment::encode_vector::<
+            let commitment_encoded = encoding::commitment::serialize_vector::<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,

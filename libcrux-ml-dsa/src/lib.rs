@@ -1,5 +1,4 @@
 mod arithmetic;
-mod commitment;
 mod constants;
 mod encoding;
 mod hash_functions;

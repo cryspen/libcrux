@@ -1,7 +1,7 @@
 use crate::arithmetic::PolynomialRingElement;
 
 #[inline(always)]
-fn encode<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT_SIZE] {
+fn serialize<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT_SIZE] {
     let mut out = [0u8; OUTPUT_SIZE];
 
     match OUTPUT_SIZE {
@@ -39,9 +39,9 @@ fn encode<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT_SI
     }
 }
 
-pub(crate) fn encode_vector<
+pub(crate) fn serialize_vector<
     const DIMENSION: usize,
-    const COMMITMENT_RING_ELEMENT_SIZE: usize,
+    const RING_ELEMENT_SIZE: usize,
     const OUTPUT_SIZE: usize,
 >(
     vector: [PolynomialRingElement; DIMENSION],
@@ -50,12 +50,9 @@ pub(crate) fn encode_vector<
     let mut offset: usize = 0;
 
     for i in 0..DIMENSION {
-        serialized[offset..offset + COMMITMENT_RING_ELEMENT_SIZE].copy_from_slice(&encode::<
-            COMMITMENT_RING_ELEMENT_SIZE,
-        >(
-            vector[i]
-        ));
-        offset += COMMITMENT_RING_ELEMENT_SIZE;
+        serialized[offset..offset + RING_ELEMENT_SIZE]
+            .copy_from_slice(&serialize::<RING_ELEMENT_SIZE>(vector[i]));
+        offset += RING_ELEMENT_SIZE;
     }
 
     serialized
@@ -101,7 +98,7 @@ mod tests {
             149,
         ];
 
-        assert_eq!(encode::<192>(re), serialized);
+        assert_eq!(serialize::<192>(re), serialized);
 
         // Test serialization when LOW_ORDER_ROUNDING_RANGE = 261,888
         let re = PolynomialRingElement {
@@ -130,6 +127,6 @@ mod tests {
             64, 117, 190, 98, 179, 38, 80, 88, 89, 9, 34, 243, 128, 219, 98, 11,
         ];
 
-        assert_eq!(encode::<128>(re), serialized);
+        assert_eq!(serialize::<128>(re), serialized);
     }
 }
