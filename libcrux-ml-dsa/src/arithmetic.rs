@@ -11,6 +11,7 @@ impl PolynomialRingElement {
         coefficients: [0i32; 256],
     };
 
+    #[inline(always)]
     pub(crate) fn add(&self, rhs: &Self) -> Self {
         let mut sum = Self::ZERO;
 
@@ -21,6 +22,7 @@ impl PolynomialRingElement {
         sum
     }
 
+    #[inline(always)]
     pub(crate) fn sub(&self, rhs: &Self) -> Self {
         let mut difference = Self::ZERO;
 
@@ -31,6 +33,7 @@ impl PolynomialRingElement {
         difference
     }
 
+    #[inline(always)]
     pub(crate) fn infinity_norm_exceeds(&self, value: i32) -> bool {
         if value > (FIELD_MODULUS - 1) / 8 {
             return true;
@@ -53,6 +56,7 @@ impl PolynomialRingElement {
     }
 }
 
+#[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     vector: [PolynomialRingElement; DIMENSION],
     value: i32,
@@ -66,6 +70,7 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     false
 }
 
+#[inline(always)]
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
     value & ((1 << n) - 1)
 }
@@ -86,6 +91,7 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 const MONTGOMERY_SHIFT: u8 = 32;
 const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449; // FIELD_MODULUS^{-1} mod 2^32
 
+#[inline(always)]
 pub(crate) fn montgomery_reduce(value: i64) -> MontgomeryFieldElement {
     let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
         * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
@@ -115,6 +121,7 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 //
 // We assume the input t is in the signed representative range and convert it
 // to the standard unsigned range.
+#[inline(always)]
 fn power2round(t: i32) -> (i32, i32) {
     debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS, "t is {}", t);
 
@@ -131,6 +138,8 @@ fn power2round(t: i32) -> (i32, i32) {
 
     (t0, t1)
 }
+
+#[inline(always)]
 pub(crate) fn power2round_vector<const DIMENSION: usize>(
     t: [PolynomialRingElement; DIMENSION],
 ) -> (
@@ -166,6 +175,7 @@ pub(crate) fn power2round_vector<const DIMENSION: usize>(
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
+#[inline(always)]
 fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     debug_assert!(
         r > -FIELD_MODULUS && r < FIELD_MODULUS,
@@ -212,6 +222,8 @@ fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
 
     (r0, r1)
 }
+
+#[inline(always)]
 pub(crate) fn decompose_vector<const DIMENSION: usize, const GAMMA2: i32>(
     t: [PolynomialRingElement; DIMENSION],
 ) -> (
@@ -233,10 +245,12 @@ pub(crate) fn decompose_vector<const DIMENSION: usize, const GAMMA2: i32>(
     (vector_low, vector_high)
 }
 
+#[inline(always)]
 fn make_hint<const GAMMA2: i32>(low: i32, high: i32) -> bool {
     (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0)
 }
 
+#[inline(always)]
 pub(crate) fn make_hint_vector<const DIMENSION: usize, const GAMMA2: i32>(
     low: [PolynomialRingElement; DIMENSION],
     high: [PolynomialRingElement; DIMENSION],

@@ -1,6 +1,4 @@
-// ---------------------------------------------------------------------------
 // Functions for serializing and deserializing an error ring element.
-// ---------------------------------------------------------------------------
 
 use crate::{arithmetic::PolynomialRingElement, ntt::ntt};
 

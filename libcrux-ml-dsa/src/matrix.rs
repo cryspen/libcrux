@@ -24,8 +24,8 @@ pub(crate) fn expand_to_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
 }
 
 /// Compute InvertNTT(Â ◦ ŝ₁) + s₂
-#[inline(always)]
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn compute_As1_plus_s2<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
     A_as_ntt: &[[PolynomialRingElement; COLUMNS_IN_A]; ROWS_IN_A],
     s1: &[PolynomialRingElement; COLUMNS_IN_A],
@@ -47,8 +47,8 @@ pub(crate) fn compute_As1_plus_s2<const ROWS_IN_A: usize, const COLUMNS_IN_A: us
 }
 
 /// Compute InvertNTT(Â ◦ ŷ)
-#[inline(always)]
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn compute_A_times_mask<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
     A_as_ntt: &[[PolynomialRingElement; COLUMNS_IN_A]; ROWS_IN_A],
     mask: &[PolynomialRingElement; COLUMNS_IN_A],
@@ -67,8 +67,8 @@ pub(crate) fn compute_A_times_mask<const ROWS_IN_A: usize, const COLUMNS_IN_A: u
     result
 }
 
-#[inline(always)]
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn vector_times_ring_element<const DIMENSION: usize>(
     vector: &[PolynomialRingElement; DIMENSION],
     ring_element: &PolynomialRingElement,
@@ -82,8 +82,8 @@ pub(crate) fn vector_times_ring_element<const DIMENSION: usize>(
     result
 }
 
-#[inline(always)]
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn add_vectors<const DIMENSION: usize>(
     lhs: &[PolynomialRingElement; DIMENSION],
     rhs: &[PolynomialRingElement; DIMENSION],
@@ -97,8 +97,8 @@ pub(crate) fn add_vectors<const DIMENSION: usize>(
     result
 }
 
-#[inline(always)]
 #[allow(non_snake_case)]
+#[inline(always)]
 pub(crate) fn subtract_vectors<const DIMENSION: usize>(
     lhs: &[PolynomialRingElement; DIMENSION],
     rhs: &[PolynomialRingElement; DIMENSION],

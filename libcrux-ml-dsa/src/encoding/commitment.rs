@@ -39,6 +39,7 @@ fn serialize<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT
     }
 }
 
+#[inline(always)]
 pub(crate) fn serialize_vector<
     const DIMENSION: usize,
     const RING_ELEMENT_SIZE: usize,

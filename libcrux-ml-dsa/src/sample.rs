@@ -5,6 +5,7 @@ use crate::{
     hash_functions::{H, H_128},
 };
 
+#[inline(always)]
 fn rejection_sample_less_than_field_modulus(
     randomness: &[u8],
     sampled: &mut usize,
@@ -33,6 +34,8 @@ fn rejection_sample_less_than_field_modulus(
 
     done
 }
+
+#[inline(always)]
 pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingElement {
     let mut state = H_128::new(seed);
     let randomness = H_128::squeeze_first_five_blocks(&mut state);
@@ -50,6 +53,7 @@ pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingEleme
     out
 }
 
+#[inline(always)]
 fn rejection_sample_less_than_eta_equals_2(
     randomness: &[u8],
     sampled: &mut usize,
@@ -90,6 +94,8 @@ fn rejection_sample_less_than_eta_equals_2(
 
     done
 }
+
+#[inline(always)]
 fn rejection_sample_less_than_eta_equals_4(
     randomness: &[u8],
     sampled: &mut usize,
@@ -121,6 +127,7 @@ fn rejection_sample_less_than_eta_equals_4(
     done
 }
 
+#[inline(always)]
 pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
     randomness: &[u8],
     sampled: &mut usize,
@@ -134,6 +141,7 @@ pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
 }
 
 #[allow(non_snake_case)]
+#[inline(always)]
 fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     // TODO: Use incremental API to squeeze one block at a time.
     let randomness = H::<272>(&seed);
@@ -150,6 +158,7 @@ fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRing
 
     out
 }
+
 #[inline(always)]
 pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
     mut seed: [u8; 66],
@@ -194,6 +203,7 @@ pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: 
     error
 }
 
+#[inline(always)]
 pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement {
