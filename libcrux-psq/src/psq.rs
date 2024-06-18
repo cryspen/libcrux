@@ -355,13 +355,14 @@ impl PskMessage {
 }
 #[cfg(test)]
 mod tests {
+    use std::thread::sleep;
+
     use super::*;
 
     #[test]
     fn simple_x25519() {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
-        eprintln!("Size of pk: {}", std::mem::size_of::<PrivateKey>());
         let sctx = b"test context";
         let (psk_initiator, message) = pk
             .send_psk(sctx, Duration::from_secs(2 * 3600), &mut rng)
@@ -369,6 +370,32 @@ mod tests {
 
         let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
+    }
+
+    #[test]
+    #[should_panic]
+    fn zero_ttl() {
+        let mut rng = rand::thread_rng();
+        let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
+        let sctx = b"test context";
+        let (_psk_initiator, message) =
+            pk.send_psk(sctx, Duration::from_secs(0), &mut rng).unwrap();
+
+        let _psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn expired_timestamp() {
+        let mut rng = rand::thread_rng();
+        let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
+        let sctx = b"test context";
+        let (_psk_initiator, message) =
+            pk.send_psk(sctx, Duration::from_secs(1), &mut rng).unwrap();
+
+        sleep(Duration::from_secs(2));
+
+        let _psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
     }
 
     #[test]
