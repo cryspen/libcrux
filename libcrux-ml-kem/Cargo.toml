@@ -7,7 +7,15 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme.workspace = true
-exclude = ["/tests", "/implementation_notes.pdf"]
+exclude = [
+    "/tests",
+    "/implementation_notes.pdf",
+    "/c",
+    "/proofs",
+    "/c.sh",
+    "/c.yaml",
+    "/hax.py",
+]
 
 [dependencies]
 rand_core = { version = "0.6" }
