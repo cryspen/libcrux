@@ -19,7 +19,6 @@ classic-mceliece-rust = { version = "2.0.0", features = [
     "mceliece460896f",
     "zeroize",
 ] }
-chrono = "0.4.31"
 rand = { version = "0.8" }
 
 [dev-dependencies]

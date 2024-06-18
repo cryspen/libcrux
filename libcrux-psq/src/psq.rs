@@ -3,7 +3,7 @@
 //! This crate implements a post-quantum (PQ) pre-shared key (PSK) establishment
 //! protocol.
 
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, SystemTime};
 
 use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
 use libcrux_hmac::hmac;
@@ -238,11 +238,11 @@ impl PublicKey<'_> {
                 .expect("should receive the correct number of bytes from HKDF");
 
         let now = SystemTime::now();
-        let ts = now
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_millis();
-        let mut mac_input = ts.to_be_bytes().to_vec();
+        let ts = now.duration_since(SystemTime::UNIX_EPOCH).unwrap();
+        let ts_seconds = ts.as_secs();
+        let ts_subsec_millis = ts.subsec_millis();
+        let mut mac_input = ts_seconds.to_be_bytes().to_vec();
+        mac_input.extend_from_slice(&ts_subsec_millis.to_be_bytes());
         mac_input.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
         let mac: Mac = hmac(
@@ -258,7 +258,7 @@ impl PublicKey<'_> {
             psk,
             PskMessage {
                 enc,
-                ts,
+                ts: (ts_seconds, ts_subsec_millis),
                 psk_ttl,
                 mac,
             },
@@ -275,15 +275,17 @@ impl PrivateKey<'_> {
     ) -> Result<Psk, Error> {
         let PskMessage {
             enc,
-            ts,
+            ts: (ts_seconds, ts_subsec_millis),
             psk_ttl,
             mac,
         } = message;
 
-        // let now = Instant::now();
-        // if now.duration_since(received_ts) >= *psk_ttl {
-        //     return Err(Error::DerivationError);
-        // }
+        let now = SystemTime::now();
+        let ts_since_epoch =
+            Duration::from_secs(*ts_seconds) + Duration::from_millis((*ts_subsec_millis).into());
+        if now.duration_since(SystemTime::UNIX_EPOCH).unwrap() - ts_since_epoch >= *psk_ttl {
+            return Err(Error::DerivationError);
+        }
 
         let ik = enc.decapsulate(&self).map_err(|_| Error::DerivationError)?;
 
@@ -307,7 +309,8 @@ impl PrivateKey<'_> {
         )
         .map_err(|_| Error::DerivationError)?;
 
-        let mut mac_input = (*ts).to_be_bytes().to_vec();
+        let mut mac_input = ts_seconds.to_be_bytes().to_vec();
+        mac_input.extend_from_slice(&ts_subsec_millis.to_be_bytes());
         mac_input.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
         let recomputed_mac: Mac = hmac(
@@ -334,7 +337,7 @@ impl PrivateKey<'_> {
 }
 pub struct PskMessage {
     enc: Ciphertext,
-    ts: u128,
+    ts: (u64, u32),
     psk_ttl: Duration,
     mac: Mac,
 }
