@@ -266,9 +266,9 @@ pub(crate) fn sign<
         if attempt >= 576 {
             // Depending on the mode, one try has a chance between 1/7 and 1/4
             // of succeeding.  Thus it is safe to say that 576 iterations
-            // are enough as (6/7)⁵⁷⁶ < 2⁻¹²⁸.
+            // are enough as (6/7)⁵⁷⁶ < 2⁻¹²⁸[1].
             //
-            // TODO: Attribute to CIRCL.
+            // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
             panic!("At least 576 signing attempts were made; this should only happen 1 in 2^{{128}} times: something is wrong.")
         }
 

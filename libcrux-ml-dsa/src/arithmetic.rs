@@ -39,20 +39,24 @@ impl PolynomialRingElement {
             return true;
         }
 
+        let mut exceeds = false;
+
         // It is ok to leak which coefficient violates the bound since
         // the probability for each coefficient is independent of secret
         // data but we must not leak the sign of the centralized representative.
+        //
+        // TODO: We can break out of this loop early if need be, but the most
+        // straightforward way to do so (returning false) will not go through hax;
+        // revisit if performance is impacted.
         for coefficient in self.coefficients.iter() {
             // Normalize the coefficient
             let sign = coefficient >> 31;
             let normalized = coefficient - (sign & (2 * coefficient));
 
-            if normalized >= value {
-                return true;
-            }
+            exceeds |= normalized >= value;
         }
 
-        return false;
+        exceeds
     }
 }
 
@@ -61,13 +65,16 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     vector: [PolynomialRingElement; DIMENSION],
     value: i32,
 ) -> bool {
+    let mut exceeds = false;
+
+    // TODO: We can break out of this loop early if need be, but the most
+    // straightforward way to do so (returning false) will not go through hax;
+    // revisit if performance is impacted.
     for i in 0..DIMENSION {
-        if vector[i].infinity_norm_exceeds(value) {
-            return true;
-        }
+        exceeds |= vector[i].infinity_norm_exceeds(value);
     }
 
-    false
+    exceeds
 }
 
 #[inline(always)]
