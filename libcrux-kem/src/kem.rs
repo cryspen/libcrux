@@ -410,7 +410,7 @@ impl PrivateKey {
             Algorithm::X25519MlKem768Draft00 => {
                 let key: [u8; MlKem768PrivateKey::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
-                let (ksk, xsk) = key.split_at(MlKem768PrivateKey::len());
+                let (xsk, ksk) = key.split_at(32);
                 Ok(Self::X25519MlKem768Draft00(
                     X25519MlKem768Draft00PrivateKey {
                         mlkem: ksk.try_into().map_err(|_| Error::InvalidPrivateKey)?,
