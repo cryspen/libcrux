@@ -3,9 +3,7 @@ module Libcrux_sha3.Avx2.X4.Incremental
 open Core
 open FStar.Mul
 
-type t_KeccakState4 = {
-  f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 4) #Core.Core_arch.X86.t____m256i
-}
+type t_KeccakState4 = { f_state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) }
 
 /// Initialise the state and perform up to 4 absorbs at the same time,
 /// using two [`KeccakState4`].

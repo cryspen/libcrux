@@ -32,7 +32,7 @@ let impl__add_error_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
-  let self:t_PolynomialRingElement v_Vector =
+  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
@@ -127,7 +127,7 @@ let impl__add_standard_error_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
-  let self:t_PolynomialRingElement v_Vector =
+  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
@@ -174,7 +174,7 @@ let impl__add_to_ring_element
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self rhs: t_PolynomialRingElement v_Vector)
      =
-  let self:t_PolynomialRingElement v_Vector =
+  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           ({
@@ -320,7 +320,7 @@ let impl__poly_barrett_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_PolynomialRingElement v_Vector)
      =
-  let self:t_PolynomialRingElement v_Vector =
+  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }

@@ -679,6 +679,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "hax-bounded-integers"
+version = "0.1.0-pre.1"
+source = "git+https://github.com/hacspec/hax/#2db0e6999010100dffaa4ae7711a66829eb8e192"
+dependencies = [
+ "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+]
+
+[[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
 source = "git+https://github.com/hacspec/hax/?branch=main#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
@@ -691,7 +699,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
+source = "git+https://github.com/hacspec/hax/#2db0e6999010100dffaa4ae7711a66829eb8e192"
 dependencies = [
  "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "num-bigint",
@@ -713,7 +721,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
+source = "git+https://github.com/hacspec/hax/#2db0e6999010100dffaa4ae7711a66829eb8e192"
 dependencies = [
  "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "proc-macro-error",
@@ -737,7 +745,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/#46bb5c19fb6f6397e15d9a4ff86c556482f81802"
+source = "git+https://github.com/hacspec/hax/#2db0e6999010100dffaa4ae7711a66829eb8e192"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -988,6 +996,7 @@ name = "libcrux-ml-kem"
 version = "0.0.2-pre.2"
 dependencies = [
  "criterion",
+ "hax-bounded-integers",
  "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "hex",
  "libcrux-intrinsics",

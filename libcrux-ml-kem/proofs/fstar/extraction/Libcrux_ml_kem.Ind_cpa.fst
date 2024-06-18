@@ -60,7 +60,7 @@ let sample_ring_element_cbd
   in
   let (prf_outputs: t_Array (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K):t_Array
     (t_Array u8 v_ETA2_RANDOMNESS_SIZE) v_K =
-    Libcrux_ml_kem.Hash_functions.f_PRFxN #v_Hasher #v_K v_ETA2_RANDOMNESS_SIZE prf_inputs
+    Libcrux_ml_kem.Hash_functions.f_PRFxN #v_Hasher v_K v_ETA2_RANDOMNESS_SIZE prf_inputs
   in
   let error_1_:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
@@ -142,7 +142,7 @@ let sample_vector_cbd_then_ntt
   in
   let (prf_outputs: t_Array (t_Array u8 v_ETA_RANDOMNESS_SIZE) v_K):t_Array
     (t_Array u8 v_ETA_RANDOMNESS_SIZE) v_K =
-    Libcrux_ml_kem.Hash_functions.f_PRFxN #v_Hasher #v_K v_ETA_RANDOMNESS_SIZE prf_inputs
+    Libcrux_ml_kem.Hash_functions.f_PRFxN #v_Hasher v_K v_ETA_RANDOMNESS_SIZE prf_inputs
   in
   let re_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
@@ -192,7 +192,7 @@ let compress_then_serialize_u
       (input: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (out: t_Slice u8)
      =
-  let out:t_Slice u8 =
+  let out, hax_temp_output:t_Slice u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Array.Iter.t_IntoIter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                 v_K))
@@ -377,7 +377,7 @@ let encrypt
   in
   let (prf_output: t_Array u8 v_ETA2_RANDOMNESS_SIZE):t_Array u8 v_ETA2_RANDOMNESS_SIZE =
     Libcrux_ml_kem.Hash_functions.f_PRF #v_Hasher
-      #v_K
+      v_K
       v_ETA2_RANDOMNESS_SIZE
       (Rust_primitives.unsize prf_input <: t_Slice u8)
   in
@@ -655,7 +655,7 @@ let generate_keypair
       (key_generation_seed: t_Slice u8)
      =
   let hashed:t_Array u8 (sz 64) =
-    Libcrux_ml_kem.Hash_functions.f_G #v_Hasher #v_K key_generation_seed
+    Libcrux_ml_kem.Hash_functions.f_G #v_Hasher v_K key_generation_seed
   in
   let seed_for_A, seed_for_secret_and_error:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 (Rust_primitives.unsize hashed <: t_Slice u8) (sz 32)

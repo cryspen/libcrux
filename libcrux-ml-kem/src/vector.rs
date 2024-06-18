@@ -205,7 +205,13 @@ pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
 
 pub(crate) mod portable {
 
+    use hax_bounded_integers::BoundedI16;
+
     use super::*;
+
+    #[hax_lib::refinement_type(|x| x > -(B as i16) && x < B as i16)]
+    #[derive(Clone, Copy)]
+    pub struct BI16<const B:usize>(i16); 
 
     #[derive(Clone, Copy)]
     pub(crate) struct PortableVector {

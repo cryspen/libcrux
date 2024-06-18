@@ -9,5 +9,5 @@ let _ =
   let open Libcrux_sha3.Traits in
   ()
 
-val t_KeccakState (v_N: usize) (#v_T: Type0) 
+val t_KeccakState (v_N: usize) (#v_T: Type0) {| i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N |}
     : Type0
