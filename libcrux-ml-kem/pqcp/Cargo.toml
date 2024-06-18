@@ -1,0 +1,45 @@
+[package]
+name = "libcrux-ml-kem"
+version = "0.0.2-pre.2"
+authors = ["Cryspen"]
+license = "Apache-2.0"
+homepage = "https://github.com/cryspen/libcrux"
+edition = "2021"
+repository = "https://github.com/cryspen/libcrux"
+readme = "Readme.md"
+exclude = ["/tests", "/implementation_notes.pdf"]
+
+[dependencies]
+rand_core = { version = "0.6" }
+libcrux-platform = { git = "https://github.com/cryspen/libcrux", version = "0.0.2-pre.2", branch = "dev" }
+libcrux-sha3 = { git = "https://github.com/cryspen/libcrux", version = "0.0.2-pre.2", branch = "dev" }
+libcrux-intrinsics = { git = "https://github.com/cryspen/libcrux", version = "0.0.2-pre.2", branch = "dev" }
+
+# This is only required for verification.
+# The hax config is set by the hax toolchain.
+[target.'cfg(hax)'.dependencies]
+hax-lib = { git = "https://github.com/hacspec/hax/" }
+
+[features]
+default = ["std"]
+simd128 = ["libcrux-sha3/simd128"]
+simd256 = ["libcrux-sha3/simd256"]
+tests = []                         # Test utilities. DO NOT USE.
+std = []
+
+[dev-dependencies]
+rand = { version = "0.8" }
+serde_json = { version = "1.0" }
+serde = { version = "1.0", features = ["derive"] }
+hex = { version = "0.4.3", features = ["serde"] }
+criterion = "0.5"
+libcrux-ml-kem = { path = ".", features = ["tests"] }
+
+[[bench]]
+name = "ml-kem"
+harness = false
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"

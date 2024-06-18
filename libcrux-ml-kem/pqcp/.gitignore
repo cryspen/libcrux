@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+# (TODO customize .gitignore for project)
+
+.vscode
+.idea
+/target
+Cargo.lock
