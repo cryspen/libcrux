@@ -1,3 +1,5 @@
+use libcrux_sha3::shake256;
+
 use crate::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
@@ -136,7 +138,8 @@ fn encapsulate<
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
+    let hashed_randomness = Hasher::H(&randomness);
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&hashed_randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
 
     let hashed = Hasher::G(&to_hash);
@@ -157,9 +160,13 @@ fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(public_key.as_slice(), randomness, pseudorandomness);
+    >(public_key.as_slice(), hashed_randomness, pseudorandomness);
+
+    let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
+    kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
+    let shared_secret = shake256::<32>(&kdf_input);
     let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
-    shared_secret_array.copy_from_slice(shared_secret);
+    shared_secret_array.copy_from_slice(&shared_secret);
     (MlKemCiphertext::from(ciphertext), shared_secret_array)
 }
 
@@ -232,8 +239,17 @@ pub(crate) fn decapsulate<
         &expected_ciphertext,
     );
 
+    let mut kdf_input_rejection_sampled: [u8; 2 * H_DIGEST_SIZE] =
+        into_padded_array(&implicit_rejection_shared_secret);
+    kdf_input_rejection_sampled[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
+    let implicit_rejection_shared_secret = shake256::<32>(&kdf_input_rejection_sampled);
+
+    let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
+    kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
+    let shared_secret = shake256::<32>(&kdf_input);
+
     select_shared_secret_in_constant_time(
-        shared_secret,
+        &shared_secret,
         &implicit_rejection_shared_secret,
         selector,
     )
