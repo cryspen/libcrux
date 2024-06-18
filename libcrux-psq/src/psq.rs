@@ -3,7 +3,8 @@
 //! This crate implements a post-quantum (PQ) pre-shared key (PSK) establishment
 //! protocol.
 
-use chrono::{DateTime, Duration, Utc};
+use std::time::{Duration, Instant, SystemTime};
+
 use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
 use libcrux_hmac::hmac;
 use rand::{CryptoRng, Rng};
@@ -236,10 +237,13 @@ impl PublicKey<'_> {
                 .try_into()
                 .expect("should receive the correct number of bytes from HKDF");
 
-        let now = Utc::now();
-        let ts = now.timestamp_millis();
+        let now = SystemTime::now();
+        let ts = now
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
         let mut mac_input = ts.to_be_bytes().to_vec();
-        mac_input.extend_from_slice(&psk_ttl.num_milliseconds().to_be_bytes());
+        mac_input.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
         let mac: Mac = hmac(
             libcrux_hmac::Algorithm::Sha256,
@@ -276,16 +280,10 @@ impl PrivateKey<'_> {
             mac,
         } = message;
 
-        let received_ts = if let Some(time) = DateTime::from_timestamp(*ts, 0) {
-            time
-        } else {
-            return Err(Error::DerivationError);
-        };
-
-        let now = Utc::now();
-        if now.signed_duration_since(received_ts) >= *psk_ttl {
-            return Err(Error::DerivationError);
-        }
+        // let now = Instant::now();
+        // if now.duration_since(received_ts) >= *psk_ttl {
+        //     return Err(Error::DerivationError);
+        // }
 
         let ik = enc.decapsulate(&self).map_err(|_| Error::DerivationError)?;
 
@@ -310,7 +308,7 @@ impl PrivateKey<'_> {
         .map_err(|_| Error::DerivationError)?;
 
         let mut mac_input = (*ts).to_be_bytes().to_vec();
-        mac_input.extend_from_slice(&psk_ttl.num_milliseconds().to_be_bytes());
+        mac_input.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
         let recomputed_mac: Mac = hmac(
             libcrux_hmac::Algorithm::Sha256,
@@ -336,7 +334,7 @@ impl PrivateKey<'_> {
 }
 pub struct PskMessage {
     enc: Ciphertext,
-    ts: i64,
+    ts: u128,
     psk_ttl: Duration,
     mac: Mac,
 }
@@ -347,9 +345,9 @@ impl PskMessage {
     }
     pub fn size(&self) -> usize {
         self.ct_size()
-            + self.mac.len()
-            + self.ts.to_be_bytes().len()
-            + self.psk_ttl.num_milliseconds().to_be_bytes().len()
+            + MAC_LENGTH // self.mac.len()
+            + 8 // self.ts.to_be_bytes().len()
+            + 8 // self.psk_ttl.num_milliseconds().to_be_bytes().len()
     }
 }
 #[cfg(test)]
@@ -362,7 +360,9 @@ mod tests {
         let (sk, pk) = generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
         eprintln!("Size of pk: {}", std::mem::size_of::<PrivateKey>());
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+        let (psk_initiator, message) = pk
+            .send_psk(sctx, Duration::from_secs(2 * 3600), &mut rng)
+            .unwrap();
 
         let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
@@ -373,7 +373,9 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::MlKem768, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+        let (psk_initiator, message) = pk
+            .send_psk(sctx, Duration::from_secs(2 * 3600), &mut rng)
+            .unwrap();
 
         let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
@@ -384,7 +386,9 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::XWingKemDraft02, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+        let (psk_initiator, message) = pk
+            .send_psk(sctx, Duration::from_secs(2 * 3600), &mut rng)
+            .unwrap();
 
         let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);
@@ -395,7 +399,9 @@ mod tests {
         let mut rng = rand::thread_rng();
         let (sk, pk) = generate_key_pair(Algorithm::ClassicMcEliece, &mut rng).unwrap();
         let sctx = b"test context";
-        let (psk_initiator, message) = pk.send_psk(sctx, Duration::hours(2), &mut rng).unwrap();
+        let (psk_initiator, message) = pk
+            .send_psk(sctx, Duration::from_secs(2 * 3600), &mut rng)
+            .unwrap();
 
         let psk_responder = sk.receive_psk(&pk, &message, sctx).unwrap();
         assert_eq!(psk_initiator, psk_responder);

@@ -175,7 +175,7 @@ pub fn comparisons_psq_send(c: &mut Criterion) {
             |(_sk, pk)| {
                 let _ = pk.send_psk(
                     b"bench context",
-                    chrono::Duration::hours(1),
+                    Duration::from_secs(3600),
                     &mut thread_rng(),
                 );
             },
@@ -189,7 +189,7 @@ pub fn comparisons_psq_send(c: &mut Criterion) {
             |(_sk, pk)| {
                 let _ = pk.send_psk(
                     b"bench context",
-                    chrono::Duration::hours(1),
+                    Duration::from_secs(3600),
                     &mut thread_rng(),
                 );
             },
@@ -206,7 +206,7 @@ pub fn comparisons_psq_send(c: &mut Criterion) {
             |(_sk, pk)| {
                 let _ = pk.send_psk(
                     b"bench context",
-                    chrono::Duration::hours(1),
+                    Duration::from_secs(3600),
                     &mut thread_rng(),
                 );
             },
@@ -223,7 +223,7 @@ pub fn comparisons_psq_send(c: &mut Criterion) {
             |(_sk, pk)| {
                 let _ = pk.send_psk(
                     b"bench context",
-                    chrono::Duration::hours(1),
+                    Duration::from_secs(3600),
                     &mut thread_rng(),
                 );
             },
@@ -245,7 +245,7 @@ pub fn comparisons_psq_receive(c: &mut Criterion) {
                         .unwrap();
 
                 let (_psk, message) = pk
-                    .send_psk(b"bench context", chrono::Duration::hours(1), &mut rng)
+                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
                     .unwrap();
                 (pk, sk, message)
             },
@@ -264,7 +264,7 @@ pub fn comparisons_psq_receive(c: &mut Criterion) {
                         .unwrap();
 
                 let (_psk, message) = pk
-                    .send_psk(b"bench context", chrono::Duration::hours(1), &mut rng)
+                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
                     .unwrap();
                 (pk, sk, message)
             },
@@ -285,7 +285,7 @@ pub fn comparisons_psq_receive(c: &mut Criterion) {
                 .unwrap();
 
                 let (_psk, message) = pk
-                    .send_psk(b"bench context", chrono::Duration::hours(1), &mut rng)
+                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
                     .unwrap();
                 (pk, sk, message)
             },
@@ -306,7 +306,7 @@ pub fn comparisons_psq_receive(c: &mut Criterion) {
                 .unwrap();
 
                 let (_psk, message) = pk
-                    .send_psk(b"bench context", chrono::Duration::hours(1), &mut rng)
+                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
                     .unwrap();
                 (pk, sk, message)
             },

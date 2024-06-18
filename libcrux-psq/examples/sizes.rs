@@ -1,4 +1,5 @@
-use chrono::Duration;
+use std::time::Duration;
+
 use libcrux_psq::*;
 use rand::{self, thread_rng};
 
@@ -11,19 +12,19 @@ fn main() {
 
     let mlkem_message = mlkem_keypair
         .1
-        .send_psk(b"size context", Duration::hours(1), &mut rng)
+        .send_psk(b"size context", Duration::from_secs(3600), &mut rng)
         .unwrap();
     let x25519_message = x25519_keypair
         .1
-        .send_psk(b"size context", Duration::hours(1), &mut rng)
+        .send_psk(b"size context", Duration::from_secs(3600), &mut rng)
         .unwrap();
     let xwing_message = xwing_keypair
         .1
-        .send_psk(b"size context", Duration::hours(1), &mut rng)
+        .send_psk(b"size context", Duration::from_secs(3600), &mut rng)
         .unwrap();
     let classic_mceliece_message = classic_mceliece_keypair
         .1
-        .send_psk(b"size context", Duration::hours(1), &mut rng)
+        .send_psk(b"size context", Duration::from_secs(3600), &mut rng)
         .unwrap();
 
     println!("ML-KEM-768:");
