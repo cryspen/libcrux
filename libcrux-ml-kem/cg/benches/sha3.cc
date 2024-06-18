@@ -14,7 +14,6 @@
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
 
 #include "libcrux_sha3_portable.h"
-#include "internal/libcrux_core.h"
 
 #ifdef LIBCRUX_X64
 #include "libcrux_sha3_avx2.h"

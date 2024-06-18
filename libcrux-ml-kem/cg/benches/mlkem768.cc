@@ -9,7 +9,6 @@
 #include <benchmark/benchmark.h>
 
 #include "libcrux_mlkem768_portable.h"
-#include "internal/libcrux_core.h"
 
 void generate_random(uint8_t *output, uint32_t output_len)
 {

@@ -34,68 +34,15 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/internal
     ${PROJECT_SOURCE_DIR}/karamel/include
 )
-file(GLOB SOURCES
-    ${PROJECT_SOURCE_DIR}/libcrux_core.c
-    ${PROJECT_SOURCE_DIR}/libcrux_platform.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_portable.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_portable.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_portable.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_portable.c
-)
-file(GLOB SOURCES_vec128
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_neon.c
-)
-file(GLOB SOURCES_vec256
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
-)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-    add_compile_options(
-        -fPIC
-        -flto
-    )
-    add_link_options(-flto)
-endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-
-add_library(ml_kem SHARED ${SOURCES})
-add_library(ml_kem_static STATIC ${SOURCES})
-
-# This is only for local testing and we assume avx2 on x64.
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
     message(STATUS "Detected an x64 architecture")
     add_compile_definitions(LIBCRUX_X64)
-
-    add_library(ml_kem_vec256 OBJECT ${SOURCES_vec256})
-    target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-    target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec256>)
-
-    if(NOT MSVC)
-        target_compile_options(ml_kem_vec256 PRIVATE
-            -mavx
-            -mavx2
-        )
-    endif(NOT MSVC)
 endif()
 
-# This is only for local testing and we assume neon on arm64.
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED ENV{LIBCRUX_NEON})
     message(STATUS "Detected an arm64 architecture")
     add_compile_definitions(LIBCRUX_AARCH64)
-
-    add_library(ml_kem_vec128 OBJECT ${SOURCES_vec128})
-    target_sources(ml_kem_static PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
-    target_sources(ml_kem PRIVATE $<TARGET_OBJECTS:ml_kem_vec128>)
 endif()
 
 # --- Tests
@@ -122,7 +69,6 @@ add_executable(ml_kem_test
     ${PROJECT_SOURCE_DIR}/tests/mlkem768.cc
 )
 target_link_libraries(ml_kem_test PRIVATE
-    ml_kem_static
     gtest_main
     nlohmann_json::nlohmann_json
 )
@@ -131,7 +77,6 @@ add_executable(sha3_test
     ${PROJECT_SOURCE_DIR}/tests/sha3.cc
 )
 target_link_libraries(sha3_test PRIVATE
-    ml_kem_static
     gtest_main
     nlohmann_json::nlohmann_json
 )
@@ -147,7 +92,6 @@ add_executable(ml_kem_bench
     ${PROJECT_SOURCE_DIR}/benches/mlkem768.cc
 )
 target_link_libraries(ml_kem_bench PRIVATE
-    ml_kem_static
     benchmark::benchmark
 )
 
@@ -163,7 +107,6 @@ add_executable(ml_kem_keygen
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_keygen.cc
 )
 target_link_libraries(ml_kem_keygen PRIVATE
-    ml_kem_static
     benchmark::benchmark
 )
 
@@ -171,7 +114,6 @@ add_executable(ml_kem_encaps
     ${PROJECT_SOURCE_DIR}/benches/mlkem768_encaps.cc
 )
 target_link_libraries(ml_kem_encaps PRIVATE
-    ml_kem_static
     benchmark::benchmark
 )
 
@@ -182,7 +124,6 @@ if(NOT MSVC)
         ${PROJECT_SOURCE_DIR}/benches/sha3.cc
     )
     target_link_libraries(sha3_bench PRIVATE
-        ml_kem_static
         benchmark::benchmark
     )
 endif(NOT MSVC)

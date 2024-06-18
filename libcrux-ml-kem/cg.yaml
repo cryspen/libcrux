@@ -10,6 +10,7 @@ files:
   # SHA3 (no mention of libcrux_mlkem in this section, please)
 
   - name: libcrux_sha3_avx2
+    inline_static: true
     # This is needed solely for the benchmarking test -- otherwise these would
     # all be private. Note that the order matters! So we put these first so that
     # they match immediately (and get promoted to internal), then the rest of
@@ -93,6 +94,7 @@ files:
 
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
   - name: libcrux_core
+    inline_static: true
     private:
       monomorphizations_of:
         - [core, "*"]
@@ -110,11 +112,11 @@ files:
         - [libcrux_ml_kem, utils, "*" ]
     api:
       - [Eurydice, "*"]
-    # inline_static: true
 
   # MLKEM-768
 
   - name: libcrux_mlkem768_avx2
+    inline_static: true
     api:
       patterns:  
         - [libcrux_ml_kem, vector, avx2, "*"]
@@ -131,22 +133,23 @@ files:
         - [libcrux_ml_kem, hash_functions, avx2, "*"]
 
   - name: libcrux_mlkem768_portable
+    inline_static: true
     api:
       patterns:
         - [libcrux_ml_kem, "*"]
-        # - [libcrux_ml_kem, vector, "*"]
-        # - [libcrux_ml_kem, hash_functions, portable, "*"]
+        - [libcrux_ml_kem, vector, "*"]
+        - [libcrux_ml_kem, hash_functions, portable, "*"]
         # - [libcrux_ml_kem, polynomial, "*" ]
-        # - [libcrux_ml_kem, mlkem768, portable, "*"]
-        # - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+        - [libcrux_ml_kem, mlkem768, portable, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
       monomorphizations_of:
         - [libcrux_ml_kem, polynomial, "*" ]
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
         - [libcrux_ml_kem, mlkem768, portable]
-        # - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
       monomorphizations_using:
         - [libcrux_ml_kem, polynomial, "*" ]
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
-        # - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
+        - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
