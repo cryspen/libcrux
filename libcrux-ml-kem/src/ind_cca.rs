@@ -118,7 +118,7 @@ fn generate_keypair<
     MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key))
 }
 
-fn encapsulate<
+fn kyber_encapsulate<
     const K: usize,
     const CIPHERTEXT_SIZE: usize,
     const PUBLIC_KEY_SIZE: usize,
@@ -139,7 +139,51 @@ fn encapsulate<
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let hashed_randomness = Hasher::H(&randomness);
-    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&hashed_randomness);
+    let (ciphertext, shared_secret) = encapsulate::<
+        K,
+        CIPHERTEXT_SIZE,
+        PUBLIC_KEY_SIZE,
+        T_AS_NTT_ENCODED_SIZE,
+        C1_SIZE,
+        C2_SIZE,
+        VECTOR_U_COMPRESSION_FACTOR,
+        VECTOR_V_COMPRESSION_FACTOR,
+        VECTOR_U_BLOCK_LEN,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        Vector,
+        Hasher,
+        >(public_key, hashed_randomness);
+    let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
+    kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
+    let shared_secret = shake256::<32>(&kdf_input);
+
+    (MlKemCiphertext::from(ciphertext), shared_secret)
+}
+
+fn encapsulate<
+    const K: usize,
+    const CIPHERTEXT_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const T_AS_NTT_ENCODED_SIZE: usize,
+    const C1_SIZE: usize,
+    const C2_SIZE: usize,
+    const VECTOR_U_COMPRESSION_FACTOR: usize,
+    const VECTOR_V_COMPRESSION_FACTOR: usize,
+    const VECTOR_U_BLOCK_LEN: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    const ETA2: usize,
+    const ETA2_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
+    randomness: [u8; SHARED_SECRET_SIZE],
+) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
+    let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
 
     let hashed = Hasher::G(&to_hash);
@@ -160,11 +204,8 @@ fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(public_key.as_slice(), hashed_randomness, pseudorandomness);
+    >(public_key.as_slice(), randomness, pseudorandomness);
 
-    let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
-    kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
-    let shared_secret = shake256::<32>(&kdf_input);
     let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
     shared_secret_array.copy_from_slice(&shared_secret);
     (MlKemCiphertext::from(ciphertext), shared_secret_array)
