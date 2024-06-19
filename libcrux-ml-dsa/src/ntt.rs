@@ -36,7 +36,7 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
 ];
 
 #[inline(always)]
-fn ntt_at_layer(
+fn ntt_at_layer<const SHIFT_COEFFICIENT_BY: usize>(
     zeta_i: &mut usize,
     mut re: PolynomialRingElement,
     layer: usize,
@@ -50,11 +50,11 @@ fn ntt_at_layer(
 
         for j in offset..offset + step {
             let t = montgomery_multiply_fe_by_fer(
-                re.coefficients[j + step],
+                re.coefficients[j + step] << SHIFT_COEFFICIENT_BY,
                 ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             );
-            re.coefficients[j + step] = re.coefficients[j] - t;
-            re.coefficients[j] = re.coefficients[j] + t;
+            re.coefficients[j + step] = (re.coefficients[j] << SHIFT_COEFFICIENT_BY) - t;
+            re.coefficients[j] = (re.coefficients[j] << SHIFT_COEFFICIENT_BY) + t;
         }
     }
 
@@ -62,17 +62,19 @@ fn ntt_at_layer(
 }
 
 #[inline(always)]
-pub(crate) fn ntt(mut re: PolynomialRingElement) -> PolynomialRingElement {
+pub(crate) fn ntt<const SHIFT_COEFFICIENT_BY: usize>(
+    mut re: PolynomialRingElement,
+) -> PolynomialRingElement {
     let mut zeta_i = 0;
 
-    re = ntt_at_layer(&mut zeta_i, re, 7);
-    re = ntt_at_layer(&mut zeta_i, re, 6);
-    re = ntt_at_layer(&mut zeta_i, re, 5);
-    re = ntt_at_layer(&mut zeta_i, re, 4);
-    re = ntt_at_layer(&mut zeta_i, re, 3);
-    re = ntt_at_layer(&mut zeta_i, re, 2);
-    re = ntt_at_layer(&mut zeta_i, re, 1);
-    re = ntt_at_layer(&mut zeta_i, re, 0);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 7);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 6);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 5);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 4);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 3);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 2);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 1);
+    re = ntt_at_layer::<SHIFT_COEFFICIENT_BY>(&mut zeta_i, re, 0);
 
     re
 }
@@ -211,7 +213,7 @@ mod tests {
             15979738, 1459696, 8351548, 3335586, 1150210, -2462074, -4642922, 4538634, 1858098,
         ];
 
-        assert_eq!(ntt(re).coefficients, expected_coefficients);
+        assert_eq!(ntt::<0>(re).coefficients, expected_coefficients);
     }
 
     #[test]

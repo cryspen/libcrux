@@ -182,6 +182,7 @@ pub(crate) fn power2round_vector<const DIMENSION: usize>(
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
+#[allow(non_snake_case)]
 #[inline(always)]
 fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     debug_assert!(
@@ -193,13 +194,13 @@ fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
 
-    let alpha = GAMMA2 * 2;
+    let ALPHA = GAMMA2 * 2;
 
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
-        match alpha {
+        match ALPHA {
             190_464 => {
                 // We approximate 1 / 1488 as:
                 // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
@@ -220,7 +221,7 @@ fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
         }
     };
 
-    let mut r0 = r - (r1 * alpha);
+    let mut r0 = r - (r1 * ALPHA);
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
@@ -253,30 +254,30 @@ pub(crate) fn decompose_vector<const DIMENSION: usize, const GAMMA2: i32>(
 }
 
 #[inline(always)]
-fn make_hint<const GAMMA2: i32>(low: i32, high: i32) -> bool {
+fn compute_hint_value<const GAMMA2: i32>(low: i32, high: i32) -> bool {
     (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0)
 }
 
 #[inline(always)]
-pub(crate) fn make_hint_vector<const DIMENSION: usize, const GAMMA2: i32>(
+pub(crate) fn make_hint<const DIMENSION: usize, const GAMMA2: i32>(
     low: [PolynomialRingElement; DIMENSION],
     high: [PolynomialRingElement; DIMENSION],
 ) -> ([[bool; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
-    let mut hint_vector = [[false; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
-    let mut hints_of_one = 0;
+    let mut hint = [[false; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
+    let mut true_hints = 0;
 
     for i in 0..DIMENSION {
         for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            hint_vector[i][j] =
-                make_hint::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
+            hint[i][j] =
+                compute_hint_value::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
 
             // From https://doc.rust-lang.org/std/primitive.bool.html:
             // "If you cast a bool into an integer, true will be 1 and false will be 0."
-            hints_of_one += hint_vector[i][j] as usize;
+            true_hints += hint[i][j] as usize;
         }
     }
 
-    (hint_vector, hints_of_one)
+    (hint, true_hints)
 }
 
 #[cfg(test)]

@@ -107,3 +107,24 @@ pub fn sign(
 
     MLDSA65Signature(signature)
 }
+
+pub use crate::ml_dsa_generic::VerificationError;
+
+/// Verify an ML-DSA-65 Signature
+pub fn verify(
+    verification_key: MLDSA65VerificationKey,
+    message: &[u8],
+    signature: MLDSA65Signature,
+) -> Result<(), VerificationError> {
+    crate::ml_dsa_generic::verify::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(verification_key.0, message, signature.0)
+}

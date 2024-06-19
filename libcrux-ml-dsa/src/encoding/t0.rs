@@ -143,7 +143,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<const DIMENSION: usize>(
     let mut ring_elements = [PolynomialRingElement::ZERO; DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
-        ring_elements[i] = ntt(deserialize(bytes));
+        ring_elements[i] = ntt::<0>(deserialize(bytes));
     }
 
     ring_elements

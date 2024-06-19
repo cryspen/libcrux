@@ -35,7 +35,7 @@ pub(crate) fn compute_As1_plus_s2<const ROWS_IN_A: usize, const COLUMNS_IN_A: us
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(ring_element, &ntt(s1[j]));
+            let product = ntt_multiply_montgomery(ring_element, &ntt::<0>(s1[j]));
             result[i] = result[i].add(&product);
         }
 
@@ -57,7 +57,7 @@ pub(crate) fn compute_A_times_mask<const ROWS_IN_A: usize, const COLUMNS_IN_A: u
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(ring_element, &ntt(mask[j]));
+            let product = ntt_multiply_montgomery(ring_element, &ntt::<0>(mask[j]));
             result[i] = result[i].add(&product);
         }
 
@@ -107,6 +107,32 @@ pub(crate) fn subtract_vectors<const DIMENSION: usize>(
 
     for i in 0..DIMENSION {
         result[i] = lhs[i].sub(&rhs[i]);
+    }
+
+    result
+}
+
+/// Compute InvertNTT(Â ◦ ẑ - ĉ ◦ NTT(t₁2ᵈ))
+#[allow(non_snake_case)]
+#[inline(always)]
+pub(crate) fn compute_w_approx<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
+    A_as_ntt: &[[PolynomialRingElement; COLUMNS_IN_A]; ROWS_IN_A],
+    signer_response_as_ntt: [PolynomialRingElement; COLUMNS_IN_A],
+    verifier_challenge_as_ntt: PolynomialRingElement,
+    t1_shifted_as_ntt: [PolynomialRingElement; ROWS_IN_A],
+) -> [PolynomialRingElement; ROWS_IN_A] {
+    let mut result = [PolynomialRingElement::ZERO; ROWS_IN_A];
+
+    for (i, row) in A_as_ntt.iter().enumerate() {
+        for (j, ring_element) in row.iter().enumerate() {
+            let product = ntt_multiply_montgomery(&ring_element, &signer_response_as_ntt[j]);
+
+            result[i] = result[i].add(&product);
+        }
+
+        let challenge_times_t1_shifted =
+            ntt_multiply_montgomery(&verifier_challenge_as_ntt, &t1_shifted_as_ntt[i]);
+        result[i] = invert_ntt_montgomery(result[i].sub(&challenge_times_t1_shifted));
     }
 
     result
