@@ -3,9 +3,16 @@
 use super::{Operations, FIELD_MODULUS};
 
 // mod rejsample;
+mod vector_type;
+mod arithmetic;
+mod compress;
+mod ntt;
+mod serialize;
 mod simd128ops;
 
-pub(crate) use simd128ops::SIMD128Vector;
+pub(crate) use vector_type::SIMD128Vector;
+use vector_type::*;
+use arithmetic::*;
 use simd128ops::*;
 
 // This is an empty shell, calling into standalone functions in `simd128ops`.
