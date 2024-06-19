@@ -11,6 +11,9 @@ use crate::{
     vector::Operations,
 };
 
+use hax_lib::*;
+use hax_lib::int::*;
+
 /// Seed size for key generation
 pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
 
@@ -34,18 +37,24 @@ pub(crate) mod multiplexing;
 pub(crate) mod instantiations;
 
 /// Serialize the secret key.
+#[cfg_attr(hax, requires(
+    private_key.len().lift() + public_key.len().lift() +
+    H_DIGEST_SIZE.lift() + implicit_rejection_value.len().lift() <
+    SERIALIZED_KEY_LEN.lift()
+))]
 #[inline(always)]
 fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Hasher: Hash<K>>(
     private_key: &[u8],
     public_key: &[u8],
     implicit_rejection_value: &[u8],
 ) -> [u8; SERIALIZED_KEY_LEN] {
-    let mut out = [0u8; SERIALIZED_KEY_LEN];
-    let mut pointer = 0;
+    let mut out: [u8; SERIALIZED_KEY_LEN] = [0u8; SERIALIZED_KEY_LEN];
+    let mut pointer: usize = 0;
     out[pointer..pointer + private_key.len()].copy_from_slice(private_key);
     pointer += private_key.len();
     out[pointer..pointer + public_key.len()].copy_from_slice(public_key);
     pointer += public_key.len();
+    fstar!("assume (Libcrux_ml_kem.Hash_functions.f_H_pre #v_Hasher #v_K public_key)");
     out[pointer..pointer + H_DIGEST_SIZE].copy_from_slice(&Hasher::H(public_key));
     pointer += H_DIGEST_SIZE;
     out[pointer..pointer + implicit_rejection_value.len()]
