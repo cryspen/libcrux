@@ -1,4 +1,4 @@
-use crate::constants::*;
+use crate::{constants::*, VerificationError};
 
 // ML-DSA-44-specific parameters
 
@@ -16,6 +16,8 @@ const ERROR_RING_ELEMENT_SIZE: usize =
 
 const GAMMA1_EXPONENT: usize = 17;
 const GAMMA2: i32 = (FIELD_MODULUS - 1) / 88;
+
+const BETA: i32 = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
 
 // To sample a value in the interval [-(GAMMA - 1), GAMMA], we can sample a
 // value (say 'v') in the interval [0, (2 * GAMMA) - 1] and then compute
@@ -104,4 +106,27 @@ pub fn sign(
     >(signing_key.0, message, randomness);
 
     MLDSA44Signature(signature)
+}
+
+/// Verify an ML-DSA-44 Signature
+pub fn verify(
+    verification_key: MLDSA44VerificationKey,
+    message: &[u8],
+    signature: MLDSA44Signature,
+) -> Result<(), VerificationError> {
+    crate::ml_dsa_generic::verify::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(verification_key.0, message, signature.0)
 }

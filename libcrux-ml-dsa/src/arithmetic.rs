@@ -33,12 +33,10 @@ impl PolynomialRingElement {
         difference
     }
 
+    // TODO: Revisit this function when doing the range analysis and testing
+    // additional KATs.
     #[inline(always)]
-    pub(crate) fn infinity_norm_exceeds(&self, value: i32) -> bool {
-        if value > (FIELD_MODULUS - 1) / 8 {
-            return true;
-        }
-
+    pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut exceeds = false;
 
         // It is ok to leak which coefficient violates the bound since
@@ -48,12 +46,23 @@ impl PolynomialRingElement {
         // TODO: We can break out of this loop early if need be, but the most
         // straightforward way to do so (returning false) will not go through hax;
         // revisit if performance is impacted.
-        for coefficient in self.coefficients.iter() {
-            // Normalize the coefficient
+        for coefficient in self.coefficients.into_iter() {
+            debug_assert!(
+                coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS,
+                "coefficient is {}",
+                coefficient
+            );
+            // This norm is calculated using the absolute value of the
+            // signed representative in the range:
+            //
+            // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
+            //
+            // So if the coefficient is negative, get its absolute value, but
+            // don't convert it into a different representation.
             let sign = coefficient >> 31;
             let normalized = coefficient - (sign & (2 * coefficient));
 
-            exceeds |= normalized >= value;
+            exceeds |= normalized >= bound;
         }
 
         exceeds
@@ -118,6 +127,25 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     fer: FieldElementTimesMontgomeryR,
 ) -> FieldElement {
     montgomery_reduce((fe as i64) * (fer as i64))
+}
+
+fn reduce(fe: FieldElement) -> FieldElement {
+    let quotient = (fe + (1 << 22)) >> 23;
+
+    fe - (quotient * FIELD_MODULUS)
+}
+
+pub(crate) fn shift_coefficients_left_then_reduce(
+    re: PolynomialRingElement,
+    shift_by: usize,
+) -> PolynomialRingElement {
+    let mut out = PolynomialRingElement::ZERO;
+
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+        out.coefficients[i] = reduce(re.coefficients[i] << shift_by);
+    }
+
+    out
 }
 
 // Splits t ∈ {0, ..., q-1} into t0 and t1 with a = t1*2ᴰ + t0

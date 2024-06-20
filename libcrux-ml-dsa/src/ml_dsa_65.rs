@@ -1,4 +1,4 @@
-use crate::constants::*;
+use crate::{constants::*, VerificationError};
 
 // ML-DSA-65-specific parameters
 
@@ -109,8 +109,6 @@ pub fn sign(
 
     MLDSA65Signature(signature)
 }
-
-pub use crate::ml_dsa_generic::VerificationError;
 
 /// Verify an ML-DSA-65 Signature
 pub fn verify(

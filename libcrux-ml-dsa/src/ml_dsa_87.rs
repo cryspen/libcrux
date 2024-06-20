@@ -1,4 +1,4 @@
-use crate::constants::*;
+use crate::{constants::*, VerificationError};
 
 // ML-DSA-87 parameters
 
@@ -28,6 +28,8 @@ const MAX_ONES_IN_HINT: usize = 75;
 const ONES_IN_VERIFIER_CHALLENGE: usize = 60;
 
 const GAMMA2: i32 = (FIELD_MODULUS - 1) / 32;
+
+const BETA: i32 = (ONES_IN_VERIFIER_CHALLENGE * ETA) as i32;
 
 // Commitment coefficients are in the interval: [0, ((FIELD_MODULUS − 1)/2γ2) − 1]
 // ((FIELD_MODULUS − 1)/2γ2) − 1 = 15, which means we need 4 bits to represent a
@@ -106,4 +108,27 @@ pub fn sign(
     >(signing_key.0, message, randomness);
 
     MLDSA87Signature(signature)
+}
+
+/// Verify an ML-DSA-87 Signature
+pub fn verify(
+    verification_key: MLDSA87VerificationKey,
+    message: &[u8],
+    signature: MLDSA87Signature,
+) -> Result<(), VerificationError> {
+    crate::ml_dsa_generic::verify::<
+        ROWS_IN_A,
+        COLUMNS_IN_A,
+        SIGNATURE_SIZE,
+        VERIFICATION_KEY_SIZE,
+        GAMMA1_EXPONENT,
+        GAMMA1_RING_ELEMENT_SIZE,
+        GAMMA2,
+        BETA,
+        COMMITMENT_RING_ELEMENT_SIZE,
+        COMMITMENT_VECTOR_SIZE,
+        COMMITMENT_HASH_SIZE,
+        ONES_IN_VERIFIER_CHALLENGE,
+        MAX_ONES_IN_HINT,
+    >(verification_key.0, message, signature.0)
 }

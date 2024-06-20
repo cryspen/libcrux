@@ -1,5 +1,5 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
+    arithmetic::{shift_coefficients_left_then_reduce, PolynomialRingElement},
     constants::BITS_IN_LOWER_PART_OF_T,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     sample::sample_ring_element_uniform,
@@ -36,7 +36,7 @@ pub(crate) fn compute_As1_plus_s2<const ROWS_IN_A: usize, const COLUMNS_IN_A: us
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(ring_element, &ntt::<0>(s1[j]));
+            let product = ntt_multiply_montgomery(ring_element, &ntt(s1[j]));
             result[i] = result[i].add(&product);
         }
 
@@ -58,7 +58,7 @@ pub(crate) fn compute_A_times_mask<const ROWS_IN_A: usize, const COLUMNS_IN_A: u
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(ring_element, &ntt::<0>(mask[j]));
+            let product = ntt_multiply_montgomery(ring_element, &ntt(mask[j]));
             result[i] = result[i].add(&product);
         }
 
@@ -126,15 +126,14 @@ pub(crate) fn compute_w_approx<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(&ring_element, &ntt::<0>(signer_response[j]));
+            let product = ntt_multiply_montgomery(&ring_element, &ntt(signer_response[j]));
 
             result[i] = result[i].add(&product);
         }
 
-        let challenge_times_t1_shifted = ntt_multiply_montgomery(
-            &verifier_challenge_as_ntt,
-            &ntt::<BITS_IN_LOWER_PART_OF_T>(t1[i]),
-        );
+        let t1_shifted = shift_coefficients_left_then_reduce(t1[i], BITS_IN_LOWER_PART_OF_T);
+        let challenge_times_t1_shifted =
+            ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
         result[i] = invert_ntt_montgomery(result[i].sub(&challenge_times_t1_shifted));
     }
 

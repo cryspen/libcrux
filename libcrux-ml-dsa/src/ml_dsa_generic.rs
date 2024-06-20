@@ -397,7 +397,7 @@ pub(crate) fn sign<
         };
 
         let verifier_challenge_as_ntt =
-            ntt::<0>(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
+            ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
                 commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
                     .try_into()
                     .unwrap(),
@@ -496,7 +496,7 @@ pub(crate) fn verify<
     };
 
     let verifier_challenge_as_ntt =
-        ntt::<0>(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
+        ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
             signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
                 .try_into()
                 .unwrap(),
