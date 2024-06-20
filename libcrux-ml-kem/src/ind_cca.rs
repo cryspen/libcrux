@@ -257,9 +257,7 @@ pub(crate) trait Variant<const K: usize, H: Hash<K>> {
 
 pub(crate) struct Kyber {}
 
-impl<const K: usize, Hasher: Hash<K>>
-    Variant<K, Hasher> for Kyber
-{
+impl<const K: usize, Hasher: Hash<K>> Variant<K, Hasher> for Kyber {
     fn kdf(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32] {
         let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
         kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext));
@@ -273,9 +271,7 @@ impl<const K: usize, Hasher: Hash<K>>
 
 pub(crate) struct MlKem {}
 
-impl<const K: usize, H: Hash<K>> Variant<K, H>
-    for MlKem
-{
+impl<const K: usize, H: Hash<K>> Variant<K, H> for MlKem {
     fn kdf(shared_secret: &[u8], _ciphertext: &[u8]) -> [u8; 32] {
         let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
         shared_secret_array.copy_from_slice(shared_secret);
