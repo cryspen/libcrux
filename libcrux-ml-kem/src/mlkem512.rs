@@ -107,6 +107,33 @@ macro_rules! instantiate {
                 >(public_key, randomness)
             }
 
+            /// Encapsulate Kyber 512
+            ///
+            /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+            /// bytes of `randomness`.
+            #[cfg(feature = "kyber")]
+            pub fn kyber_encapsulate(
+                public_key: &MlKem512PublicKey,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                p::kyber_encapsulate::<
+                    RANK_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
             /// Decapsulate ML-KEM 512
             ///
             /// Generates an [`MlKemSharedSecret`].
@@ -116,6 +143,35 @@ macro_rules! instantiate {
                 ciphertext: &MlKem512Ciphertext,
             ) -> MlKemSharedSecret {
                 p::decapsulate::<
+                    RANK_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
+
+            /// Decapsulate ML-KEM 512
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+            #[cfg(feature = "kyber")]
+            pub fn kyber_decapsulate(
+                private_key: &MlKem512PrivateKey,
+                ciphertext: &MlKem512Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::kyber_decapsulate::<
                     RANK_512,
                     SECRET_KEY_SIZE_512,
                     CPA_PKE_SECRET_KEY_SIZE_512,
@@ -209,6 +265,33 @@ pub fn encapsulate(
     >(public_key, randomness)
 }
 
+/// Encapsulate Kyber 512
+///
+/// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+/// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+/// bytes of `randomness`.
+#[cfg(all(not(eurydice), feature = "kyber"))]
+pub fn kyber_encapsulate(
+    public_key: &MlKem512PublicKey,
+    randomness: [u8; SHARED_SECRET_SIZE],
+) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+    multiplexing::kyber_encapsulate::<
+        RANK_512,
+        CPA_PKE_CIPHERTEXT_SIZE_512,
+        CPA_PKE_PUBLIC_KEY_SIZE_512,
+        T_AS_NTT_ENCODED_SIZE_512,
+        C1_SIZE_512,
+        C2_SIZE_512,
+        VECTOR_U_COMPRESSION_FACTOR_512,
+        VECTOR_V_COMPRESSION_FACTOR_512,
+        C1_BLOCK_SIZE_512,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+    >(public_key, randomness)
+}
+
 /// Decapsulate ML-KEM 512
 ///
 /// Generates an [`MlKemSharedSecret`].
@@ -219,6 +302,35 @@ pub fn decapsulate(
     ciphertext: &MlKem512Ciphertext,
 ) -> MlKemSharedSecret {
     multiplexing::decapsulate::<
+        RANK_512,
+        SECRET_KEY_SIZE_512,
+        CPA_PKE_SECRET_KEY_SIZE_512,
+        CPA_PKE_PUBLIC_KEY_SIZE_512,
+        CPA_PKE_CIPHERTEXT_SIZE_512,
+        T_AS_NTT_ENCODED_SIZE_512,
+        C1_SIZE_512,
+        C2_SIZE_512,
+        VECTOR_U_COMPRESSION_FACTOR_512,
+        VECTOR_V_COMPRESSION_FACTOR_512,
+        C1_BLOCK_SIZE_512,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        ETA2,
+        ETA2_RANDOMNESS_SIZE,
+        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+    >(private_key, ciphertext)
+}
+
+/// Decapsulate Kyber 512
+///
+/// Generates an [`MlKemSharedSecret`].
+/// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+#[cfg(all(not(eurydice), feature = "kyber"))]
+pub fn kyber_decapsulate(
+    private_key: &MlKem512PrivateKey,
+    ciphertext: &MlKem512Ciphertext,
+) -> MlKemSharedSecret {
+    multiplexing::kyber_decapsulate::<
         RANK_512,
         SECRET_KEY_SIZE_512,
         CPA_PKE_SECRET_KEY_SIZE_512,

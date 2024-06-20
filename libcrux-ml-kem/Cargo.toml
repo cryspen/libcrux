@@ -26,6 +26,7 @@ simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
 tests = []                         # Test utilities. DO NOT USE.
 std = []
+kyber = []
 
 [dev-dependencies]
 rand = { version = "0.8" }
