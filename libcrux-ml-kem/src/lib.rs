@@ -64,6 +64,7 @@ mod hash_functions;
 mod ind_cca;
 mod ind_cpa;
 mod invert_ntt;
+mod kem;
 mod matrix;
 mod ntt;
 mod polynomial;
