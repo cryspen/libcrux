@@ -280,6 +280,60 @@ pub(crate) fn make_hint<const DIMENSION: usize, const GAMMA2: i32>(
     (hint, true_hints)
 }
 
+#[inline(always)]
+pub(crate) fn use_hint_value<const GAMMA2: i32>(r: i32, hint: bool) -> i32 {
+    let (r0, r1) = decompose::<GAMMA2>(r);
+
+    if hint == false {
+        return r1;
+    }
+
+    match GAMMA2 {
+        95_232 => {
+            if r0 > 0 {
+                if r1 == 43 {
+                    0
+                } else {
+                    r1 + 1
+                }
+            } else {
+                if r1 == 0 {
+                    43
+                } else {
+                    r1 - 1
+                }
+            }
+        }
+
+        261_888 => {
+            if r0 > 0 {
+                (r1 + 1) & 15
+            } else {
+                (r1 - 1) & 15
+            }
+        }
+
+        _ => unreachable!(),
+    }
+}
+
+#[inline(always)]
+pub(crate) fn use_hint<const DIMENSION: usize, const GAMMA2: i32>(
+    hint: [[bool; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
+    re_vector: [PolynomialRingElement; DIMENSION],
+) -> [PolynomialRingElement; DIMENSION] {
+    let mut result = [PolynomialRingElement::ZERO; DIMENSION];
+
+    for i in 0..DIMENSION {
+        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            result[i].coefficients[j] =
+                use_hint_value::<GAMMA2>(re_vector[i].coefficients[j], hint[i][j]);
+        }
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -309,5 +363,14 @@ mod tests {
         assert_eq!(decompose::<261_888>(563751), (39975, 1));
         assert_eq!(decompose::<261_888>(6645076), (-164012, 13));
         assert_eq!(decompose::<261_888>(7806985), (-49655, 15));
+    }
+
+    #[test]
+    fn test_use_hint_value() {
+        assert_eq!(use_hint_value::<95_232>(7622170, false), 40);
+        assert_eq!(use_hint_value::<95_232>(2332762, true), 13);
+
+        assert_eq!(use_hint_value::<261_888>(7691572, false), 15);
+        assert_eq!(use_hint_value::<261_888>(6635697, true), 12);
     }
 }

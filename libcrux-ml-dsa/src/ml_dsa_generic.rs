@@ -1,14 +1,14 @@
 use crate::{
     arithmetic::{
-        decompose_vector, make_hint, power2round_vector, vector_infinity_norm_exceeds,
+        decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
         PolynomialRingElement,
     },
     constants::*,
     encoding,
     hash_functions::H,
     matrix::{
-        add_vectors, compute_A_times_mask, compute_As1_plus_s2, expand_to_A, subtract_vectors,
-        vector_times_ring_element,
+        add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, expand_to_A,
+        subtract_vectors, vector_times_ring_element,
     },
     ntt::ntt,
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
@@ -48,9 +48,9 @@ pub(super) fn deserialize_verification_key<
     let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
 
     for i in 0..ROWS_IN_A {
-        t1[i] = ntt::<BITS_IN_LOWER_PART_OF_T>(encoding::t1::deserialize(
+        t1[i] = encoding::t1::deserialize(
             &serialized_remaining[i * RING_ELEMENT_OF_T1S_SIZE..(i + 1) * RING_ELEMENT_OF_T1S_SIZE],
-        ));
+        );
     }
 
     (seed_for_A.try_into().unwrap(), t1)
@@ -166,8 +166,11 @@ pub(crate) fn generate_key_pair<
     (signing_key_serialized, verification_key_serialized)
 }
 
+#[derive(Debug)]
 pub enum VerificationError {
     MalformedHintError,
+    SignerResponseExceedsBoundError,
+    CommitmentHashesDontMatchError,
 }
 
 struct Signature<
@@ -185,7 +188,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 {
     #[allow(non_snake_case)]
     #[inline(always)]
-    pub(super) fn serialize<
+    pub(crate) fn serialize<
         const GAMMA1_EXPONENT: usize,
         const GAMMA1_RING_ELEMENT_SIZE: usize,
         const MAX_ONES_IN_HINT: usize,
@@ -208,21 +211,17 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
             offset += GAMMA1_RING_ELEMENT_SIZE;
         }
 
-        for i in offset..offset + (MAX_ONES_IN_HINT + ROWS_IN_A) {
-            signature[i] = 0;
-        }
-
-        let mut one_count = 0;
+        let mut true_hints_seen = 0;
         let hint_serialized = &mut signature[offset..];
 
         for i in 0..ROWS_IN_A {
             for (j, hint) in self.hint[i].into_iter().enumerate() {
                 if hint == true {
-                    hint_serialized[one_count] = j as u8;
-                    one_count += 1;
+                    hint_serialized[true_hints_seen] = j as u8;
+                    true_hints_seen += 1;
                 }
             }
-            hint_serialized[MAX_ONES_IN_HINT + i] = one_count as u8;
+            hint_serialized[MAX_ONES_IN_HINT + i] = true_hints_seen as u8;
         }
 
         signature
@@ -230,7 +229,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
     #[allow(non_snake_case)]
     #[inline(always)]
-    pub(super) fn deserialize<
+    pub(crate) fn deserialize<
         const GAMMA1_EXPONENT: usize,
         const GAMMA1_RING_ELEMENT_SIZE: usize,
         const MAX_ONES_IN_HINT: usize,
@@ -239,32 +238,29 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
         serialized: [u8; SIGNATURE_SIZE],
     ) -> Result<Self, VerificationError> {
         let (commitment_hash, rest_of_serialized) = serialized.split_at(COMMITMENT_HASH_SIZE);
+        let (signer_response_serialized, hint_serialized) =
+            rest_of_serialized.split_at(GAMMA1_RING_ELEMENT_SIZE * COLUMNS_IN_A);
 
         let mut signer_response = [PolynomialRingElement::ZERO; COLUMNS_IN_A];
 
-        let mut offset = 0;
-
         for i in 0..COLUMNS_IN_A {
             signer_response[i] = encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(
-                &rest_of_serialized[offset..offset + GAMMA1_RING_ELEMENT_SIZE],
+                &signer_response_serialized
+                    [i * GAMMA1_RING_ELEMENT_SIZE..(i + 1) * GAMMA1_RING_ELEMENT_SIZE],
             );
-
-            offset += GAMMA1_RING_ELEMENT_SIZE;
         }
 
-        // While there are several ways to encode the same hint vector, we only
-        // allow one such encoding, to ensure "strong unforgeability".
-        let hint_serialized = &serialized[offset..];
-
+        // While there are several ways to encode the same hint vector, we
+        // allow only one such encoding, to ensure strong unforgeability.
         let mut hint = [[false; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
 
-        let mut previous_true_hints_count = 0usize;
+        let mut previous_true_hints_seen = 0usize;
 
         for i in 0..ROWS_IN_A {
-            let current_true_hints_count = hint_serialized[MAX_ONES_IN_HINT + i] as usize;
+            let current_true_hints_seen = hint_serialized[MAX_ONES_IN_HINT + i] as usize;
 
-            if (current_true_hints_count < previous_true_hints_count)
-                || (previous_true_hints_count > MAX_ONES_IN_HINT)
+            if (current_true_hints_seen < previous_true_hints_seen)
+                || (previous_true_hints_seen > MAX_ONES_IN_HINT)
             {
                 // the true hints seen should be increasing
                 //
@@ -273,8 +269,8 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
                 return Err(VerificationError::MalformedHintError);
             }
 
-            for j in previous_true_hints_count..current_true_hints_count {
-                if j > previous_true_hints_count && hint_serialized[j] <= hint_serialized[j - 1] {
+            for j in previous_true_hints_seen..current_true_hints_seen {
+                if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1] {
                     // indices of true hints for a specific polynomial should be
                     // increasing
                     return Err(VerificationError::MalformedHintError);
@@ -282,10 +278,10 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
                 hint[i][hint_serialized[j] as usize] = true;
             }
-            previous_true_hints_count = current_true_hints_count;
+            previous_true_hints_seen = current_true_hints_seen;
         }
 
-        for j in previous_true_hints_count..MAX_ONES_IN_HINT {
+        for j in previous_true_hints_seen..MAX_ONES_IN_HINT {
             if hint_serialized[j] != 0 {
                 // ensures padding indices are zero
                 return Err(VerificationError::MalformedHintError);
@@ -388,14 +384,14 @@ pub(crate) fn sign<
         let (w0, commitment) = decompose_vector::<ROWS_IN_A, GAMMA2>(A_times_mask);
 
         let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
-            let commitment_encoded = encoding::commitment::serialize_vector::<
+            let commitment_serialized = encoding::commitment::serialize_vector::<
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
             >(commitment);
 
             let mut hash_input = message_representative.to_vec();
-            hash_input.extend_from_slice(&commitment_encoded);
+            hash_input.extend_from_slice(&commitment_serialized);
 
             H::<COMMITMENT_HASH_SIZE>(&hash_input[..])
         };
@@ -459,6 +455,10 @@ pub(crate) fn verify<
     const VERIFICATION_KEY_SIZE: usize,
     const GAMMA1_EXPONENT: usize,
     const GAMMA1_RING_ELEMENT_SIZE: usize,
+    const GAMMA2: i32,
+    const BETA: i32,
+    const COMMITMENT_RING_ELEMENT_SIZE: usize,
+    const COMMITMENT_VECTOR_SIZE: usize,
     const COMMITMENT_HASH_SIZE: usize,
     const ONES_IN_VERIFIER_CHALLENGE: usize,
     const MAX_ONES_IN_HINT: usize,
@@ -467,7 +467,7 @@ pub(crate) fn verify<
     message: &[u8],
     signature_serialized: [u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let (seed_for_A, t1_as_ntt) = deserialize_verification_key::<ROWS_IN_A, VERIFICATION_KEY_SIZE>(
+    let (seed_for_A, t1) = deserialize_verification_key::<ROWS_IN_A, VERIFICATION_KEY_SIZE>(
         verification_key_serialized,
     );
 
@@ -477,6 +477,13 @@ pub(crate) fn verify<
         MAX_ONES_IN_HINT,
         SIGNATURE_SIZE,
     >(signature_serialized)?;
+
+    if vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
+        signature.signer_response,
+        (2 << GAMMA1_EXPONENT) - BETA,
+    ) {
+        return Err(VerificationError::SignerResponseExceedsBoundError);
+    }
 
     let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
@@ -495,5 +502,30 @@ pub(crate) fn verify<
                 .unwrap(),
         ));
 
-    todo!();
+    let w_approx = compute_w_approx::<ROWS_IN_A, COLUMNS_IN_A>(
+        &A_as_ntt,
+        signature.signer_response,
+        verifier_challenge_as_ntt,
+        t1,
+    );
+
+    let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
+        let commitment = use_hint::<ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
+        let commitment_serialized = encoding::commitment::serialize_vector::<
+            ROWS_IN_A,
+            COMMITMENT_RING_ELEMENT_SIZE,
+            COMMITMENT_VECTOR_SIZE,
+        >(commitment);
+
+        let mut hash_input = message_representative.to_vec();
+        hash_input.extend_from_slice(&commitment_serialized);
+
+        H::<COMMITMENT_HASH_SIZE>(&hash_input[..])
+    };
+
+    if signature.commitment_hash != commitment_hash {
+        return Err(VerificationError::CommitmentHashesDontMatchError);
+    }
+
+    Ok(())
 }

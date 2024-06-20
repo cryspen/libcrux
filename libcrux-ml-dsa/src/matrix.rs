@@ -1,5 +1,6 @@
 use crate::{
     arithmetic::PolynomialRingElement,
+    constants::BITS_IN_LOWER_PART_OF_T,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     sample::sample_ring_element_uniform,
 };
@@ -117,21 +118,23 @@ pub(crate) fn subtract_vectors<const DIMENSION: usize>(
 #[inline(always)]
 pub(crate) fn compute_w_approx<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
     A_as_ntt: &[[PolynomialRingElement; COLUMNS_IN_A]; ROWS_IN_A],
-    signer_response_as_ntt: [PolynomialRingElement; COLUMNS_IN_A],
+    signer_response: [PolynomialRingElement; COLUMNS_IN_A],
     verifier_challenge_as_ntt: PolynomialRingElement,
-    t1_shifted_as_ntt: [PolynomialRingElement; ROWS_IN_A],
+    t1: [PolynomialRingElement; ROWS_IN_A],
 ) -> [PolynomialRingElement; ROWS_IN_A] {
     let mut result = [PolynomialRingElement::ZERO; ROWS_IN_A];
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(&ring_element, &signer_response_as_ntt[j]);
+            let product = ntt_multiply_montgomery(&ring_element, &ntt::<0>(signer_response[j]));
 
             result[i] = result[i].add(&product);
         }
 
-        let challenge_times_t1_shifted =
-            ntt_multiply_montgomery(&verifier_challenge_as_ntt, &t1_shifted_as_ntt[i]);
+        let challenge_times_t1_shifted = ntt_multiply_montgomery(
+            &verifier_challenge_as_ntt,
+            &ntt::<BITS_IN_LOWER_PART_OF_T>(t1[i]),
+        );
         result[i] = invert_ntt_montgomery(result[i].sub(&challenge_times_t1_shifted));
     }
 

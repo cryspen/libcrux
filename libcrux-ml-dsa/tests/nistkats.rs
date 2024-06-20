@@ -102,6 +102,9 @@ fn ml_dsa_65_nist_known_answer_tests() {
             signature_hash, kat.sha3_256_hash_of_signature,
             "signature_hash != kat.sha3_256_hash_of_signature"
         );
+
+        libcrux_ml_dsa::ml_dsa_65::verify(key_pair.verification_key, &message, signature)
+            .expect("Signature was generated honestly, so verification should pass");
     }
 }
 
