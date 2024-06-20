@@ -36,5 +36,3 @@ mod avx2;
 pub(crate) use avx2::SIMD256Vector;
 
 pub mod portable;
-
-

@@ -1,18 +1,18 @@
 use super::Operations;
 
-mod vector_type;
 mod arithmetic;
 mod compress;
 mod ntt;
-mod serialize;
 mod sampling;
+mod serialize;
+mod vector_type;
 
-use vector_type::*;
 use arithmetic::*;
 use compress::*;
 use ntt::*;
-use serialize::*;
 use sampling::*;
+use serialize::*;
+use vector_type::*;
 
 pub(crate) use vector_type::PortableVector;
 

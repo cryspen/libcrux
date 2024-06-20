@@ -1,6 +1,7 @@
-use crate::vector::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R, 
-                    traits::FIELD_ELEMENTS_IN_VECTOR};
 use super::vector_type::*;
+use crate::vector::{
+    traits::FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
+};
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -191,4 +192,3 @@ pub(crate) fn montgomery_multiply_by_constant(mut v: PortableVector, c: i16) -> 
     }
     v
 }
-

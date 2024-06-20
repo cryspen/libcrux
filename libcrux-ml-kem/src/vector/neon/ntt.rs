@@ -1,5 +1,5 @@
-use super::vector_type::*;
 use super::arithmetic::*;
+use super::vector_type::*;
 use libcrux_intrinsics::arm64::*;
 
 #[inline(always)]
