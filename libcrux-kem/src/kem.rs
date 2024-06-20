@@ -431,9 +431,9 @@ pub enum Ss {
         X25519PublicKey,   // ct_X
         X25519PublicKey,   // pk_X
     ),
-                #[cfg(feature = "kyber")]
+    #[cfg(feature = "kyber")]
     X25519Kyber768Draft00(MlKemSharedSecret, X25519PublicKey),
-                    #[cfg(feature = "kyber")]
+    #[cfg(feature = "kyber")]
     XWingKyberDraft02(
         MlKemSharedSecret, // ss_M
         X25519PublicKey,   // ss_X
@@ -710,13 +710,13 @@ impl Ss {
                 input.extend_from_slice(pk_x.0.as_ref());
                 sha3::sha256(&input).to_vec()
             }
-                            #[cfg(feature = "kyber")]
+            #[cfg(feature = "kyber")]
             Ss::X25519Kyber768Draft00(kk, xk) => {
                 let mut out = xk.0.to_vec();
                 out.extend_from_slice(kk.as_ref());
                 out
             }
-                                        #[cfg(feature = "kyber")]
+            #[cfg(feature = "kyber")]
             Ss::XWingKyberDraft02(ss_m, ss_x, ct_x, pk_x) => {
                 // \./
                 // /^\
@@ -751,13 +751,13 @@ impl Ct {
                 out.extend_from_slice(ct_x.as_ref());
                 out
             }
-                                        #[cfg(feature = "kyber")]
-                        Ct::X25519Kyber768Draft00(kk, xk) => {
+            #[cfg(feature = "kyber")]
+            Ct::X25519Kyber768Draft00(kk, xk) => {
                 let mut out = xk.0.to_vec();
                 out.extend_from_slice(kk.as_ref());
                 out
-                        }
-                                        #[cfg(feature = "kyber")]
+            }
+            #[cfg(feature = "kyber")]
             Ct::XWingKyberDraft02(ct_m, ct_x) => {
                 let mut out = ct_m.as_ref().to_vec();
                 out.extend_from_slice(ct_x.as_ref());
@@ -804,8 +804,8 @@ impl Ct {
                     ct_x.try_into().map_err(|_| Error::InvalidCiphertext)?,
                 ))
             }
-                                        #[cfg(feature = "kyber")]
-                        Algorithm::X25519Kyber768Draft00 => {
+            #[cfg(feature = "kyber")]
+            Algorithm::X25519Kyber768Draft00 => {
                 let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
                 let (xct, kct) = key.split_at(32);
@@ -813,8 +813,8 @@ impl Ct {
                     kct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     xct.try_into().map_err(|_| Error::InvalidCiphertext)?,
                 ))
-                        }
-                                                    #[cfg(feature = "kyber")]
+            }
+            #[cfg(feature = "kyber")]
             Algorithm::XWingKyberDraft02 => {
                 let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
