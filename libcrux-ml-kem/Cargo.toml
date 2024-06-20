@@ -27,6 +27,7 @@ simd256 = ["libcrux-sha3/simd256"]
 tests = []                         # Test utilities. DO NOT USE.
 std = []
 kyber = []
+pre-verification = []
 
 [dev-dependencies]
 rand = { version = "0.8" }

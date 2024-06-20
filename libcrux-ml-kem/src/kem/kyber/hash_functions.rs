@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use super::constants::H_DIGEST_SIZE;
-use crate::constants::G_DIGEST_SIZE;
+const G_DIGEST_SIZE: usize = 64;
 
 use libcrux_sha3::portable::{
     self,

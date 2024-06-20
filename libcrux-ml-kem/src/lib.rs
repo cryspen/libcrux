@@ -53,32 +53,91 @@ pub(crate) mod hax_utils;
 // was stolen.
 //
 // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
+#[cfg(feature = "pre-verification")]
 pub(crate) mod constants;
 
 /// Helpers for verification and extraction
+#[cfg(feature = "pre-verification")]
 mod helper;
+#[cfg(feature = "pre-verification")]
 mod utils;
 
+#[cfg(feature = "pre-verification")]
 mod constant_time_ops;
+#[cfg(feature = "pre-verification")]
 mod hash_functions;
+#[cfg(feature = "pre-verification")]
 mod ind_cca;
+#[cfg(feature = "pre-verification")]
 mod ind_cpa;
+#[cfg(feature = "pre-verification")]
 mod invert_ntt;
-mod kem;
+
+#[cfg(feature = "pre-verification")]
 mod matrix;
+#[cfg(feature = "pre-verification")]
 mod ntt;
+#[cfg(feature = "pre-verification")]
 mod polynomial;
+#[cfg(feature = "pre-verification")]
 mod sampling;
+#[cfg(feature = "pre-verification")]
 mod serialize;
+#[cfg(feature = "pre-verification")]
 mod types;
+#[cfg(feature = "pre-verification")]
 mod vector;
 
-// Variants
-pub mod mlkem1024;
-pub mod mlkem512;
-pub mod mlkem768;
+#[cfg(not(feature = "pre-verification"))]
+mod kem;
 
+// Variants
+#[cfg(feature = "pre-verification")]
+pub mod mlkem512;
+#[cfg(not(feature = "pre-verification"))]
+pub mod mlkem512 {
+    pub use crate::kem::kyber::kyber512::decapsulate;
+    pub use crate::kem::kyber::kyber512::encapsulate;
+    pub use crate::kem::kyber::kyber512::generate_key_pair;
+    pub use crate::kem::kyber::kyber512::validate_public_key;
+}
+
+#[cfg(feature = "pre-verification")]
+pub mod mlkem768;
+#[cfg(not(feature = "pre-verification"))]
+pub mod mlkem768 {
+    pub use crate::kem::kyber::kyber768::decapsulate;
+    pub use crate::kem::kyber::kyber768::encapsulate;
+    pub use crate::kem::kyber::kyber768::generate_key_pair;
+    pub use crate::kem::kyber::kyber768::validate_public_key;
+}
+
+#[cfg(feature = "pre-verification")]
+pub mod mlkem1024;
+#[cfg(not(feature = "pre-verification"))]
+pub mod mlkem1024 {
+    pub use crate::kem::kyber::kyber1024::decapsulate;
+    pub use crate::kem::kyber::kyber1024::encapsulate;
+    pub use crate::kem::kyber::kyber1024::generate_key_pair;
+    pub use crate::kem::kyber::kyber1024::validate_public_key;
+}
+
+#[cfg(feature = "pre-verification")]
 pub use constants::SHARED_SECRET_SIZE;
+#[cfg(not(feature = "pre-verification"))]
+pub const SHARED_SECRET_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
+
+#[cfg(feature = "pre-verification")]
 pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE};
+#[cfg(not(feature = "pre-verification"))]
+pub use kem::kyber::MlKemSharedSecret;
+#[cfg(not(feature = "pre-verification"))]
+pub const ENCAPS_SEED_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
+#[cfg(not(feature = "pre-verification"))]
+pub const KEY_GENERATION_SEED_SIZE: usize = kem::kyber::KEY_GENERATION_SEED_SIZE;
+
 // These types all have type aliases for the different variants.
+#[cfg(not(feature = "pre-verification"))]
+pub use kem::kyber::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
+#[cfg(feature = "pre-verification")]
 pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};

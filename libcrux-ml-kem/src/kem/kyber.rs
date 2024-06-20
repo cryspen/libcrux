@@ -45,7 +45,7 @@ use self::{
 };
 
 /// Seed size for key generation
-pub(in crate::kem) const KEY_GENERATION_SEED_SIZE: usize =
+pub(crate) const KEY_GENERATION_SEED_SIZE: usize =
     CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
 
 /// Serialize the secret key.

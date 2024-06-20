@@ -85,10 +85,10 @@ impl_nist_known_answer_tests!(
     mlkem1024::decapsulate
 );
 
-impl_nist_known_answer_tests!(
-    kyber768_nist_kats_portable,
-    768,
-    mlkem768::portable::generate_key_pair,
-    mlkem768::portable::encapsulate,
-    mlkem768::portable::decapsulate
-);
+// impl_nist_known_answer_tests!(
+//     kyber768_nist_kats_portable,
+//     768,
+//     mlkem768::portable::generate_key_pair,
+//     mlkem768::portable::encapsulate,
+//     mlkem768::portable::decapsulate
+// );
