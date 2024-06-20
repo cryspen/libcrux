@@ -109,6 +109,8 @@ dependencies = [
  "curve25519-dalek",
  "lib25519",
  "libcrux",
+ "libcrux-kem",
+ "libcrux-ml-kem",
  "libjade-sys",
  "openssl",
  "p256",
@@ -923,9 +925,12 @@ dependencies = [
  "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
  "hex",
  "libcrux",
+ "libcrux-ecdh",
  "libcrux-hacl",
  "libcrux-hkdf",
  "libcrux-hmac",
+ "libcrux-kem",
+ "libcrux-ml-kem",
  "libcrux-platform",
  "log",
  "pretty_env_logger",
@@ -937,6 +942,19 @@ dependencies = [
  "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-test",
+]
+
+[[package]]
+name = "libcrux-ecdh"
+version = "0.0.2-pre.2"
+dependencies = [
+ "hex",
+ "libcrux",
+ "libcrux-hacl",
+ "pretty_env_logger",
+ "rand",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -979,6 +997,19 @@ name = "libcrux-intrinsics"
 version = "0.0.2-pre.2"
 dependencies = [
  "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+]
+
+[[package]]
+name = "libcrux-kem"
+version = "0.0.2-pre.2"
+dependencies = [
+ "hex",
+ "libcrux",
+ "libcrux-ecdh",
+ "libcrux-kem",
+ "libcrux-ml-kem",
+ "libcrux-sha3",
+ "rand",
 ]
 
 [[package]]

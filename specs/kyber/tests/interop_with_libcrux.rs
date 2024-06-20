@@ -3,7 +3,7 @@
 use hacspec_kyber::{
     KYBER768_CIPHERTEXT_SIZE, KYBER768_KEY_GENERATION_SEED_SIZE, KYBER768_SHARED_SECRET_SIZE,
 };
-use libcrux::kem::MlKemCiphertext;
+use libcrux_kem::MlKemCiphertext;
 use rand::{rngs::OsRng, RngCore};
 
 #[test]
@@ -13,7 +13,7 @@ fn same_inputs_result_in_same_output() {
 
     let spec_key_pair = hacspec_kyber::generate_keypair(keygen_seed).unwrap();
     let libcrux_key_pair =
-        libcrux::kem::deterministic::kyber768_generate_keypair_derand(keygen_seed);
+        libcrux_kem::deterministic::mlkem768_generate_keypair_derand(keygen_seed);
 
     assert_eq!(libcrux_key_pair.pk(), spec_key_pair.pk());
     assert_eq!(libcrux_key_pair.sk(), spec_key_pair.sk());
@@ -22,7 +22,7 @@ fn same_inputs_result_in_same_output() {
     OsRng.fill_bytes(&mut message);
 
     let (spec_ct, spec_ss) = hacspec_kyber::encapsulate(*spec_key_pair.pk(), message).unwrap();
-    let (libcrux_ct, libcrux_ss) = libcrux::kem::deterministic::kyber768_encapsulate_derand(
+    let (libcrux_ct, libcrux_ss) = libcrux_kem::deterministic::mlkem768_encapsulate_derand(
         &libcrux_key_pair.pk().into(),
         message,
     );
@@ -31,7 +31,7 @@ fn same_inputs_result_in_same_output() {
     assert_eq!(libcrux_ss.as_ref(), spec_ss);
 
     let (spec_ct, spec_ss) = hacspec_kyber::encapsulate(*spec_key_pair.pk(), message).unwrap();
-    let (libcrux_ct, libcrux_ss) = libcrux::kem::deterministic::kyber768_encapsulate_derand(
+    let (libcrux_ct, libcrux_ss) = libcrux_kem::deterministic::mlkem768_encapsulate_derand(
         &libcrux_key_pair.pk().into(),
         message,
     );
@@ -40,7 +40,7 @@ fn same_inputs_result_in_same_output() {
     assert_eq!(libcrux_ss.as_ref(), spec_ss);
 
     let spec_ss = hacspec_kyber::decapsulate(spec_ct, *spec_key_pair.sk());
-    let libcrux_ss = libcrux::kem::deterministic::kyber768_decapsulate_derand(
+    let libcrux_ss = libcrux_kem::deterministic::mlkem768_decapsulate_derand(
         libcrux_key_pair.private_key(),
         &libcrux_ct,
     );
@@ -81,13 +81,13 @@ fn implicit_rejection_happens_the_same_way() {
 
     let spec_key_pair = hacspec_kyber::generate_keypair(keygen_seed).unwrap();
     let libcrux_key_pair =
-        libcrux::kem::deterministic::kyber768_generate_keypair_derand(keygen_seed);
+        libcrux_kem::deterministic::mlkem768_generate_keypair_derand(keygen_seed);
 
     let mut message = [0u8; KYBER768_SHARED_SECRET_SIZE];
     OsRng.fill_bytes(&mut message);
 
     let (spec_ct, spec_ss) = hacspec_kyber::encapsulate(*spec_key_pair.pk(), message).unwrap();
-    let (libcrux_ct, libcrux_ss) = libcrux::kem::deterministic::kyber768_encapsulate_derand(
+    let (libcrux_ct, libcrux_ss) = libcrux_kem::deterministic::mlkem768_encapsulate_derand(
         &libcrux_key_pair.pk().into(),
         message,
     );
@@ -96,7 +96,7 @@ fn implicit_rejection_happens_the_same_way() {
     assert_eq!(libcrux_ss.as_ref(), spec_ss);
 
     let (spec_ct, _) = hacspec_kyber::encapsulate(*spec_key_pair.pk(), message).unwrap();
-    let (libcrux_ct, _) = libcrux::kem::deterministic::kyber768_encapsulate_derand(
+    let (libcrux_ct, _) = libcrux_kem::deterministic::mlkem768_encapsulate_derand(
         &libcrux_key_pair.pk().into(),
         message,
     );
@@ -104,7 +104,7 @@ fn implicit_rejection_happens_the_same_way() {
     let (modified_libcrux_ct, modified_spec_ct) = modify_ciphertext_pair(libcrux_ct, spec_ct);
 
     let spec_ss = hacspec_kyber::decapsulate(modified_spec_ct, *spec_key_pair.sk());
-    let libcrux_ss = libcrux::kem::deterministic::kyber768_decapsulate_derand(
+    let libcrux_ss = libcrux_kem::deterministic::mlkem768_decapsulate_derand(
         libcrux_key_pair.private_key(),
         &modified_libcrux_ct,
     );
