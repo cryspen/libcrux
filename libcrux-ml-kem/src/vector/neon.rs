@@ -8,12 +8,13 @@ mod arithmetic;
 mod compress;
 mod ntt;
 mod serialize;
-mod simd128ops;
 
 pub(crate) use vector_type::SIMD128Vector;
 use vector_type::*;
 use arithmetic::*;
-use simd128ops::*;
+use compress::*;
+use ntt::*;
+use serialize::*;
 
 // This is an empty shell, calling into standalone functions in `simd128ops`.
 // This is due to limitations in F* and hax to deal with large trait implementations
