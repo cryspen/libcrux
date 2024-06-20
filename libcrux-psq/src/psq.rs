@@ -14,6 +14,9 @@ const K0_LENGTH: usize = 32;
 const KM_LENGTH: usize = 32;
 const MAC_LENGTH: usize = 32;
 
+const CONFIRMATION_CONTEXT: &[u8] = b"Confirmation";
+const PSK_CONTEXT: &[u8] = b"PSK";
+
 type Psk = [u8; PSK_LENGTH];
 type Mac = [u8; MAC_LENGTH];
 
@@ -167,9 +170,9 @@ impl PublicKey<'_> {
     }
     pub(crate) fn encode(&self) -> Vec<u8> {
         match self {
-            PublicKey::X25519(k) | PublicKey::MlKem768(k) | PublicKey::XWingKemDraft02(k) => {
-                k.encode()
-            }
+            PublicKey::X25519(k) => k.encode(),
+            PublicKey::MlKem768(k) => k.encode(),
+            PublicKey::XWingKemDraft02(k) => k.encode(),
             PublicKey::ClassicMcEliece(k) => k.as_ref().to_vec(),
         }
     }
@@ -226,13 +229,14 @@ impl PublicKey<'_> {
         let km = libcrux_hkdf::expand(
             libcrux_hkdf::Algorithm::Sha256,
             &k0,
-            b"Confirmation",
+            CONFIRMATION_CONTEXT,
             KM_LENGTH,
         )
         .map_err(|_| Error::GenerationError)?;
 
+
         let psk: Psk =
-            libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, &k0, b"PSK", PSK_LENGTH)
+            libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, &k0, PSK_CONTEXT, PSK_LENGTH)
                 .map_err(|_| Error::GenerationError)?
                 .try_into()
                 .expect("should receive the correct number of bytes from HKDF");
@@ -284,55 +288,56 @@ impl PrivateKey<'_> {
         let ts_since_epoch =
             Duration::from_secs(*ts_seconds) + Duration::from_millis((*ts_subsec_millis).into());
         if now.duration_since(SystemTime::UNIX_EPOCH).unwrap() - ts_since_epoch >= *psk_ttl {
-            return Err(Error::DerivationError);
+            Err(Error::DerivationError)
+        } else {
+            let ik = enc.decapsulate(&self).map_err(|_| Error::DerivationError)?;
+
+            let mut info = pk.encode();
+            info.extend_from_slice(&enc.encode());
+            info.extend_from_slice(sctx);
+
+            let k0 = libcrux_hkdf::expand(
+                libcrux_hkdf::Algorithm::Sha256,
+                ik.encode(),
+                info,
+                K0_LENGTH,
+            )
+            .map_err(|_| Error::DerivationError)?;
+
+
+            let km = libcrux_hkdf::expand(
+                libcrux_hkdf::Algorithm::Sha256,
+                &k0,
+                CONFIRMATION_CONTEXT,
+                KM_LENGTH,
+            )
+            .map_err(|_| Error::DerivationError)?;
+
+            let mut mac_input = ts_seconds.to_be_bytes().to_vec();
+            mac_input.extend_from_slice(&ts_subsec_millis.to_be_bytes());
+            mac_input.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
+
+            let recomputed_mac: Mac = hmac(
+                libcrux_hmac::Algorithm::Sha256,
+                &km,
+                &mac_input,
+                Some(MAC_LENGTH),
+            )
+            .try_into()
+            .expect("should receive the correct number of bytes from HMAC");
+
+            if recomputed_mac != *mac {
+                Err(Error::DerivationError)
+            } else {
+                let psk: Psk =
+                    libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, &k0, PSK_CONTEXT, PSK_LENGTH)
+                        .map_err(|_| Error::DerivationError)?
+                        .try_into()
+                        .expect("should receive the correct number of bytes from HKDF");
+
+                Ok(psk)
+            }
         }
-
-        let ik = enc.decapsulate(&self).map_err(|_| Error::DerivationError)?;
-
-        let mut info = pk.encode();
-        info.extend_from_slice(&enc.encode());
-        info.extend_from_slice(sctx);
-
-        let k0 = libcrux_hkdf::expand(
-            libcrux_hkdf::Algorithm::Sha256,
-            ik.encode(),
-            info,
-            K0_LENGTH,
-        )
-        .map_err(|_| Error::DerivationError)?;
-
-        let km = libcrux_hkdf::expand(
-            libcrux_hkdf::Algorithm::Sha256,
-            &k0,
-            b"Confirmation",
-            KM_LENGTH,
-        )
-        .map_err(|_| Error::DerivationError)?;
-
-        let mut mac_input = ts_seconds.to_be_bytes().to_vec();
-        mac_input.extend_from_slice(&ts_subsec_millis.to_be_bytes());
-        mac_input.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
-
-        let recomputed_mac: Mac = hmac(
-            libcrux_hmac::Algorithm::Sha256,
-            &km,
-            &mac_input,
-            Some(MAC_LENGTH),
-        )
-        .try_into()
-        .expect("should receive the correct number of bytes from HMAC");
-
-        if recomputed_mac != *mac {
-            return Err(Error::DerivationError);
-        }
-
-        let psk: Psk =
-            libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, &k0, b"PSK", PSK_LENGTH)
-                .map_err(|_| Error::DerivationError)?
-                .try_into()
-                .expect("should receive the correct number of bytes from HKDF");
-
-        Ok(psk)
     }
 }
 pub struct PskMessage {
