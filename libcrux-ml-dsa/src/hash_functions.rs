@@ -20,6 +20,7 @@ pub(crate) mod H_128 {
         state
     }
 
+    #[inline(always)]
     pub(crate) fn squeeze_first_five_blocks(state: &mut KeccakState1) -> [u8; FIVE_BLOCKS_SIZE] {
         let mut out = [0u8; FIVE_BLOCKS_SIZE];
         incremental::shake128_squeeze_first_five_blocks(state, &mut out);
@@ -27,6 +28,7 @@ pub(crate) mod H_128 {
         out
     }
 
+    #[inline(always)]
     pub(crate) fn squeeze_next_block(state: &mut KeccakState1) -> [u8; BLOCK_SIZE] {
         let mut out = [0u8; BLOCK_SIZE];
         incremental::shake128_squeeze_next_block(state, &mut out);
