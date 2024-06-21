@@ -53,6 +53,10 @@ macro_rules! impl_generic_struct {
             pub const fn len(&self) -> usize {
                 SIZE
             }
+
+            pub const fn size() -> usize {
+                SIZE
+            }
         }
     };
 }
@@ -144,7 +148,6 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
         self.sk.as_slice()
     }
 
-    #[cfg(feature = "tests")]
     pub fn into_parts(
         self,
     ) -> (

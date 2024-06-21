@@ -1,8 +1,7 @@
-use libcrux_ml_kem::mlkem768;
-
 #[test]
 #[cfg(feature = "kyber")]
 fn kyber768() {
+    use libcrux_ml_kem::mlkem768;
     let key_pair = mlkem768::generate_key_pair(hex::decode("7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d8626ed79d451140800e03b59b956f8210e556067407d13dc90fa9e8b872bfb8f").unwrap().try_into().unwrap());
 
     let public_key = key_pair.pk();

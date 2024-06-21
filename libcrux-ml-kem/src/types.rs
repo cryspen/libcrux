@@ -56,7 +56,11 @@ macro_rules! impl_generic_struct {
             // }
 
             /// The number of bytes.
-            pub const fn len() -> usize {
+            pub const fn len(&self) -> usize {
+                SIZE
+            }
+            
+            pub const fn size() -> usize {
                 SIZE
             }
         }
