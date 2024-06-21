@@ -16,101 +16,6 @@ use crate::{
 };
 
 #[allow(non_snake_case)]
-#[inline(always)]
-pub(super) fn generate_serialized_verification_key<
-    const ROWS_IN_A: usize,
-    const VERIFICATION_KEY_SIZE: usize,
->(
-    seed_for_A: &[u8],
-    t1: [PolynomialRingElement; ROWS_IN_A],
-) -> [u8; VERIFICATION_KEY_SIZE] {
-    let mut verification_key_serialized = [0u8; VERIFICATION_KEY_SIZE];
-    verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(&seed_for_A);
-
-    for i in 0..ROWS_IN_A {
-        let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
-        verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
-            .copy_from_slice(&encoding::t1::serialize(t1[i]));
-    }
-
-    verification_key_serialized
-}
-
-#[allow(non_snake_case)]
-#[inline(always)]
-pub(super) fn deserialize_verification_key<
-    const ROWS_IN_A: usize,
-    const VERIFICATION_KEY_SIZE: usize,
->(
-    serialized: [u8; VERIFICATION_KEY_SIZE],
-) -> ([u8; SEED_FOR_A_SIZE], [PolynomialRingElement; ROWS_IN_A]) {
-    let mut t1 = [PolynomialRingElement::ZERO; ROWS_IN_A];
-    let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
-
-    for i in 0..ROWS_IN_A {
-        t1[i] = encoding::t1::deserialize(
-            &serialized_remaining[i * RING_ELEMENT_OF_T1S_SIZE..(i + 1) * RING_ELEMENT_OF_T1S_SIZE],
-        );
-    }
-
-    (seed_for_A.try_into().unwrap(), t1)
-}
-
-#[allow(non_snake_case)]
-#[inline(always)]
-pub(super) fn generate_serialized_signing_key<
-    const ROWS_IN_A: usize,
-    const COLUMNS_IN_A: usize,
-    const ETA: usize,
-    const ERROR_RING_ELEMENT_SIZE: usize,
-    const SIGNING_KEY_SIZE: usize,
->(
-    seed_for_A: &[u8],
-    seed_for_signing: &[u8],
-    verification_key: &[u8],
-    s1: [PolynomialRingElement; COLUMNS_IN_A],
-    s2: [PolynomialRingElement; ROWS_IN_A],
-    t0: [PolynomialRingElement; ROWS_IN_A],
-) -> [u8; SIGNING_KEY_SIZE] {
-    let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];
-    let mut offset = 0;
-
-    signing_key_serialized[offset..offset + SEED_FOR_A_SIZE].copy_from_slice(&seed_for_A);
-    offset += SEED_FOR_A_SIZE;
-
-    signing_key_serialized[offset..offset + SEED_FOR_SIGNING_SIZE]
-        .copy_from_slice(&seed_for_signing);
-    offset += SEED_FOR_SIGNING_SIZE;
-
-    let verification_key_hash = H::<BYTES_FOR_VERIFICATION_KEY_HASH>(verification_key);
-    signing_key_serialized[offset..offset + BYTES_FOR_VERIFICATION_KEY_HASH]
-        .copy_from_slice(&verification_key_hash);
-    offset += BYTES_FOR_VERIFICATION_KEY_HASH;
-
-    for i in 0..COLUMNS_IN_A {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(s1[i]),
-        );
-        offset += ERROR_RING_ELEMENT_SIZE;
-    }
-
-    for i in 0..ROWS_IN_A {
-        signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(s2[i]),
-        );
-        offset += ERROR_RING_ELEMENT_SIZE;
-    }
-
-    for i in 0..ROWS_IN_A {
-        signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
-            .copy_from_slice(&encoding::t0::serialize(t0[i]));
-        offset += RING_ELEMENT_OF_T0S_SIZE;
-    }
-
-    signing_key_serialized
-}
-
-#[allow(non_snake_case)]
 pub(crate) fn generate_key_pair<
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
@@ -145,10 +50,12 @@ pub(crate) fn generate_key_pair<
 
     let (t0, t1) = power2round_vector::<ROWS_IN_A>(t);
 
-    let verification_key_serialized =
-        generate_serialized_verification_key::<ROWS_IN_A, VERIFICATION_KEY_SIZE>(seed_for_A, t1);
+    let verification_key_serialized = encoding::verification_key::generate_serialized::<
+        ROWS_IN_A,
+        VERIFICATION_KEY_SIZE,
+    >(seed_for_A, t1);
 
-    let signing_key_serialized = generate_serialized_signing_key::<
+    let signing_key_serialized = encoding::signing_key::generate_serialized::<
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -467,9 +374,10 @@ pub(crate) fn verify<
     message: &[u8],
     signature_serialized: [u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let (seed_for_A, t1) = deserialize_verification_key::<ROWS_IN_A, VERIFICATION_KEY_SIZE>(
-        verification_key_serialized,
-    );
+    let (seed_for_A, t1) = encoding::verification_key::deserialize::<
+        ROWS_IN_A,
+        VERIFICATION_KEY_SIZE,
+    >(verification_key_serialized);
 
     let signature = Signature::<COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
         GAMMA1_EXPONENT,
