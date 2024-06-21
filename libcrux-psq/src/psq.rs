@@ -234,12 +234,15 @@ impl PublicKey<'_> {
         )
         .map_err(|_| Error::GenerationError)?;
 
-
-        let psk: Psk =
-            libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, &k0, PSK_CONTEXT, PSK_LENGTH)
-                .map_err(|_| Error::GenerationError)?
-                .try_into()
-                .expect("should receive the correct number of bytes from HKDF");
+        let psk: Psk = libcrux_hkdf::expand(
+            libcrux_hkdf::Algorithm::Sha256,
+            &k0,
+            PSK_CONTEXT,
+            PSK_LENGTH,
+        )
+        .map_err(|_| Error::GenerationError)?
+        .try_into()
+        .expect("should receive the correct number of bytes from HKDF");
 
         let now = SystemTime::now();
         let ts = now.duration_since(SystemTime::UNIX_EPOCH).unwrap();
@@ -304,7 +307,6 @@ impl PrivateKey<'_> {
             )
             .map_err(|_| Error::DerivationError)?;
 
-
             let km = libcrux_hkdf::expand(
                 libcrux_hkdf::Algorithm::Sha256,
                 &k0,
@@ -329,11 +331,15 @@ impl PrivateKey<'_> {
             if recomputed_mac != *mac {
                 Err(Error::DerivationError)
             } else {
-                let psk: Psk =
-                    libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, &k0, PSK_CONTEXT, PSK_LENGTH)
-                        .map_err(|_| Error::DerivationError)?
-                        .try_into()
-                        .expect("should receive the correct number of bytes from HKDF");
+                let psk: Psk = libcrux_hkdf::expand(
+                    libcrux_hkdf::Algorithm::Sha256,
+                    &k0,
+                    PSK_CONTEXT,
+                    PSK_LENGTH,
+                )
+                .map_err(|_| Error::DerivationError)?
+                .try_into()
+                .expect("should receive the correct number of bytes from HKDF");
 
                 Ok(psk)
             }
