@@ -59,7 +59,7 @@ macro_rules! impl_generic_struct {
             pub const fn len(&self) -> usize {
                 SIZE
             }
-            
+
             pub const fn size() -> usize {
                 SIZE
             }
