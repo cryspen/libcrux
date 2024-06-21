@@ -21,6 +21,7 @@ rand = { version = "0.8" }
 [features]
 tests = [] # Expose functions for testing.
 kyber = ["libcrux-ml-kem/kyber"]
+pre-verification = ["libcrux-ml-kem/pre-verification"]
 
 [dev-dependencies]
 libcrux-kem = { version = "0.0.2-pre.2", path = "./", features = ["tests"] }

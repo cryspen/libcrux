@@ -481,7 +481,7 @@ impl PrivateKey {
                 .map_err(|_| Error::InvalidPrivateKey)
                 .map(Self::MlKem768),
             Algorithm::X25519MlKem768Draft00 => {
-                let key: [u8; MlKem768PrivateKey::len() + 32] =
+                let key: [u8; MlKem768PrivateKey::size() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidPrivateKey)?;
                 let (xsk, ksk) = key.split_at(32);
                 Ok(Self::X25519MlKem768Draft00(
@@ -787,7 +787,7 @@ impl Ct {
                 .map_err(|_| Error::InvalidCiphertext)
                 .map(Self::MlKem768),
             Algorithm::X25519MlKem768Draft00 => {
-                let key: [u8; MlKem768Ciphertext::len() + 32] =
+                let key: [u8; MlKem768Ciphertext::size() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
                 let (xct, kct) = key.split_at(32);
                 Ok(Self::X25519MlKem768Draft00(
@@ -796,9 +796,9 @@ impl Ct {
                 ))
             }
             Algorithm::XWingKemDraft02 => {
-                let key: [u8; MlKem768Ciphertext::len() + 32] =
+                let key: [u8; MlKem768Ciphertext::size() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (ct_m, ct_x) = key.split_at(MlKem768Ciphertext::len());
+                let (ct_m, ct_x) = key.split_at(MlKem768Ciphertext::size());
                 Ok(Self::XWingKemDraft02(
                     ct_m.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     ct_x.try_into().map_err(|_| Error::InvalidCiphertext)?,
@@ -818,7 +818,7 @@ impl Ct {
             Algorithm::XWingKyberDraft02 => {
                 let key: [u8; MlKem768Ciphertext::len() + 32] =
                     bytes.try_into().map_err(|_| Error::InvalidCiphertext)?;
-                let (ct_m, ct_x) = key.split_at(MlKem768Ciphertext::len());
+                let (ct_m, ct_x) = key.split_at(MlKem768Ciphertext::size());
                 Ok(Self::XWingKyberDraft02(
                     ct_m.try_into().map_err(|_| Error::InvalidCiphertext)?,
                     ct_x.try_into().map_err(|_| Error::InvalidCiphertext)?,
