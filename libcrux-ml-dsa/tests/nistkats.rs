@@ -28,7 +28,7 @@ struct MlDsaNISTKAT {
 }
 
 #[test]
-fn ml_dsa_44_nist_known_answer_tests() {
+fn nist_known_answer_tests_44() {
     let katfile_path = Path::new("tests")
         .join("kats")
         .join(format!("nistkats-{}.json", 44));
@@ -70,7 +70,7 @@ fn ml_dsa_44_nist_known_answer_tests() {
 }
 
 #[test]
-fn ml_dsa_65_nist_known_answer_tests() {
+fn nist_known_answer_tests_65() {
     let katfile_path = Path::new("tests")
         .join("kats")
         .join(format!("nistkats-{}.json", 65));
@@ -112,7 +112,7 @@ fn ml_dsa_65_nist_known_answer_tests() {
 }
 
 #[test]
-fn ml_dsa_87_nist_known_answer_tests() {
+fn nist_known_answer_tests_87() {
     let katfile_path = Path::new("tests")
         .join("kats")
         .join(format!("nistkats-{}.json", 87));
