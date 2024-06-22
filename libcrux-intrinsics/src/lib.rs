@@ -5,6 +5,9 @@ pub mod arm64;
 #[cfg(feature = "simd256")]
 pub mod avx2;
 
+#[cfg(feature = "wasm")]
+pub mod wasm;
+
 // // When extracting C or F* we only want dummy files here.
 // #[cfg(all(feature = "simd128", any(eurydice, hax)))]
 // pub mod arm64_extract;
