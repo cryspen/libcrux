@@ -3,18 +3,18 @@
 use super::{Operations, FIELD_MODULUS};
 
 // mod sampling;
-mod vector_type;
 mod arithmetic;
 mod compress;
 mod ntt;
 mod serialize;
+mod vector_type;
 
-pub(crate) use vector_type::SIMD128Vector;
-use vector_type::*;
 use arithmetic::*;
 use compress::*;
 use ntt::*;
 use serialize::*;
+pub(crate) use vector_type::SIMD128Vector;
+use vector_type::*;
 
 impl Operations for SIMD128Vector {
     #[inline(always)]

@@ -98,7 +98,7 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
         1 << 12,
         1 << 13,
         1 << 14,
-        1 << 15,
+        -32768,
         1 << 8,
         1 << 9,
         1 << 10,
@@ -106,7 +106,7 @@ pub(crate) fn deserialize_1(bytes: &[u8]) -> Vec256 {
         1 << 12,
         1 << 13,
         1 << 14,
-        1 << 15,
+        -32768,
     );
     let coefficients_in_msb = mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
 

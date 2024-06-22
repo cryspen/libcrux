@@ -1,8 +1,7 @@
+use super::arithmetic::*;
+use super::vector_type::*;
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 use crate::vector::FIELD_MODULUS;
-use super::vector_type::*;
-use super::arithmetic::*;
-
 
 /// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
 /// 203 standard (Page 18, Expression 4.5), which is defined as:
@@ -83,8 +82,6 @@ pub(crate) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
 
     get_n_least_significant_bits(coefficient_bits, compressed as u32) as FieldElement
 }
-
-
 
 #[inline(always)]
 pub(crate) fn compress_1(mut v: PortableVector) -> PortableVector {

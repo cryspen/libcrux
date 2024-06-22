@@ -1,7 +1,5 @@
-use super::vector_type::*;
 use super::arithmetic::*;
-
-
+use super::vector_type::*;
 
 #[inline(always)]
 pub(crate) fn ntt_layer_1_step(
@@ -170,7 +168,11 @@ pub(crate) fn inv_ntt_layer_1_step(
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_layer_2_step(mut v: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
+pub(crate) fn inv_ntt_layer_2_step(
+    mut v: PortableVector,
+    zeta0: i16,
+    zeta1: i16,
+) -> PortableVector {
     // First 8 elements.
     let a_minus_b = v.elements[4] - v.elements[0];
     v.elements[0] = v.elements[0] + v.elements[4];

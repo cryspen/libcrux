@@ -1,7 +1,6 @@
 use super::vector_type::*;
 use libcrux_intrinsics::arm64::*;
 
-
 #[inline(always)]
 pub(crate) fn serialize_1(v: SIMD128Vector) -> [u8; 2] {
     let shifter: [i16; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
