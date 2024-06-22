@@ -1,0 +1,27 @@
+[package]
+name = "libcrux-kem"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[lib]
+path = "src/kem.rs"
+
+[dependencies]
+libcrux-ml-kem = { version = "0.0.2-pre.2", path = "../libcrux-ml-kem" }
+libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
+libcrux-ecdh = { version = "0.0.2-pre.2", path = "../libcrux-ecdh" }
+rand = { version = "0.8" }
+
+
+[features]
+tests = [] # Expose functions for testing.
+
+[dev-dependencies]
+libcrux-kem = { version = "0.0.2-pre.2", path = "./", features = ["tests"] }
+libcrux = { version = "0.0.2-pre.2", path = "../", features = ["rand"] }
+hex = { version = "0.4.3", features = ["serde"] }

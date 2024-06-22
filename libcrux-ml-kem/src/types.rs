@@ -55,9 +55,8 @@ macro_rules! impl_generic_struct {
             //     self.value.split_at(mid)
             // }
 
-            #[cfg(feature = "tests")]
             /// The number of bytes.
-            pub const fn len(&self) -> usize {
+            pub const fn len() -> usize {
                 SIZE
             }
         }
@@ -180,7 +179,6 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
         self.sk.as_slice()
     }
 
-    #[cfg(feature = "tests")]
     /// Separate this key into the public and private key.
     pub fn into_parts(
         self,

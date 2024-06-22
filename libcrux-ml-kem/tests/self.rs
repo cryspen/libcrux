@@ -44,7 +44,7 @@ fn modify_ciphertext<const LEN: usize>(
     }
     random_u32 >>= 8;
 
-    let position = random_u32 % ciphertext.len();
+    let position = random_u32 % MlKemCiphertext::<LEN>::len();
     ciphertext[position] ^= random_byte;
 
     ciphertext
@@ -87,9 +87,9 @@ fn modify_secret_key<const LEN: usize>(
     random_u32 >>= 8;
 
     let position = if modify_implicit_rejection_value {
-        (raw_secret_key.len() - SHARED_SECRET_SIZE) + (random_u32 % SHARED_SECRET_SIZE)
+        (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE) + (random_u32 % SHARED_SECRET_SIZE)
     } else {
-        random_u32 % (raw_secret_key.len() - SHARED_SECRET_SIZE)
+        random_u32 % (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE)
     };
 
     raw_secret_key[position] ^= random_byte;
@@ -101,7 +101,7 @@ fn compute_implicit_rejection_shared_secret<const CLEN: usize, const LEN: usize>
     ciphertext: MlKemCiphertext<CLEN>,
     secret_key: MlKemPrivateKey<LEN>,
 ) -> [u8; SHARED_SECRET_SIZE] {
-    let mut to_hash = secret_key[secret_key.len() - SHARED_SECRET_SIZE..].to_vec();
+    let mut to_hash = secret_key[MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE..].to_vec();
     to_hash.extend_from_slice(ciphertext.as_ref());
 
     shake256(&to_hash)
