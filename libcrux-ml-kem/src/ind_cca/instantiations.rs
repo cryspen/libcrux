@@ -1,14 +1,15 @@
 macro_rules! instantiate {
     ($modp:ident, $vector:path, $hash:path) => {
-        
         pub mod $modp {
             use crate::{
                 MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey, MlKemSharedSecret,
                 KEY_GENERATION_SEED_SIZE, SHARED_SECRET_SIZE,
             };
 
-            pub(crate) type MlKemKeyPairUnpacked<const K:usize> = crate::types::unpacked::MlKemKeyPairUnpacked<K,$vector>;
-            pub(crate) type MlKemPublicKeyUnpacked<const K:usize> = crate::types::unpacked::MlKemPublicKeyUnpacked<K,$vector>;
+            pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
+                crate::types::unpacked::MlKemKeyPairUnpacked<K, $vector>;
+            pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
+                crate::types::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
             /// Portable generate key pair.
             pub(crate) fn generate_keypair<

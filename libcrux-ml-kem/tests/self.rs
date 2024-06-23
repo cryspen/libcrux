@@ -43,13 +43,18 @@ macro_rules! impl_consistency_unpacked {
             let key_pair = $key_gen(randomness);
             let randomness = random_array();
             let (ciphertext, shared_secret) = $encaps(key_pair.public_key(), randomness);
-            let (ciphertext_unpacked, shared_secret_unpacked) = $encaps_unpacked(&key_pair_unpacked.public_key, &key_pair_unpacked.public_key_hash, randomness);
+            let (ciphertext_unpacked, shared_secret_unpacked) = $encaps_unpacked(
+                &key_pair_unpacked.public_key,
+                &key_pair_unpacked.public_key_hash,
+                randomness,
+            );
             assert_eq!(
                 shared_secret, shared_secret_unpacked,
                 "lhs: shared_secret, rhs: shared_secret_unpacked"
             );
             assert_eq!(
-                ciphertext.as_slice(), ciphertext_unpacked.as_slice(),
+                ciphertext.as_slice(),
+                ciphertext_unpacked.as_slice(),
                 "lhs: ciphertext, rhs: ciphertext_unpacked"
             );
             let shared_secret_decapsulated = $decaps_unpacked(&key_pair_unpacked, &ciphertext);
@@ -298,8 +303,6 @@ impl_consistency_unpacked!(
     mlkem768::avx2::encapsulate_unpacked,
     mlkem768::avx2::decapsulate_unpacked
 );
-
-
 
 impl_modified_ciphertext!(
     modified_ciphertext_512,

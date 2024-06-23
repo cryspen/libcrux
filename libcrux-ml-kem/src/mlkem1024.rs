@@ -1,6 +1,11 @@
 //! ML-KEM 1024
 
-use super::{constants::*, ind_cca::*, types::{unpacked::*, *}, *};
+use super::{
+    constants::*,
+    ind_cca::*,
+    types::{unpacked::*, *},
+    *,
+};
 
 // Kyber 1024 parameters
 const RANK_1024: usize = 4;
@@ -143,7 +148,7 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
-            
+
             // Unpacked API
             pub fn generate_key_pair_unpacked(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],

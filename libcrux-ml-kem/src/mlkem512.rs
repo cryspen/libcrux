@@ -1,5 +1,10 @@
 //! ML-KEM 512
-use super::{constants::*, ind_cca::*, types::{unpacked::*, *}, *};
+use super::{
+    constants::*,
+    ind_cca::*,
+    types::{unpacked::*, *},
+    *,
+};
 
 // Kyber 512 parameters
 const RANK_512: usize = 2;
@@ -46,7 +51,6 @@ pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_
 pub type MlKem512PublicKeyUnpacked<Vector> = MlKemPublicKeyUnpacked<RANK_512, Vector>;
 /// Am Unpacked ML-KEM 512 Key pair
 pub type MlKem512KeyPairUnpacked<Vector> = MlKemKeyPairUnpacked<RANK_512, Vector>;
-
 
 // Instantiate the different functions.
 macro_rules! instantiate {
@@ -200,7 +204,6 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
-
         }
     };
 }
