@@ -21,7 +21,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     });
 
     #[cfg(feature = "simd256")]
-    group.bench_function("libcrux neon unpacked (external random)", |b| {
+    group.bench_function("libcrux avx2 unpacked (external random)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter(|| {
