@@ -12,7 +12,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Key Generation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable (external random)", |b| {
+    group.bench_function("libcrux (external random)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter(|| {
@@ -20,25 +20,31 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
-    // group.bench_function("libcrux portable (HACL-DRBG)", |b| {
-    //     b.iter(|| {
-    //         let (_secret_key, _public_key) =
-    //             libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
-    //     })
-    // });
+    #[cfg(feature = "simd256")]
+    group.bench_function("libcrux neon unpacked (external random)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::avx2::generate_key_pair_unpacked(seed);
+        })
+    });
 
-    // group.bench_function("libcrux portable (OsRng)", |b| {
-    //     b.iter(|| {
-    //         let (_secret_key, _public_key) =
-    //             libcrux::kem::key_gen(Algorithm::MlKem768, &mut rng).unwrap();
-    //     })
-    // });
+    #[cfg(feature = "simd128")]
+    group.bench_function("libcrux neon unpacked (external random)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::neon::generate_key_pair_unpacked(seed);
+        })
+    });
 
-    // group.bench_function("pqclean reference implementation", |b| {
-    //     b.iter(|| {
-    //         let (_public_key, _secret_key) = pqcrypto_kyber::kyber768::keypair();
-    //     })
-    // });
+    group.bench_function("libcrux portable unpacked (external random)", |b| {
+        let mut seed = [0; 64];
+        rng.fill_bytes(&mut seed);
+        b.iter(|| {
+            let _kp = mlkem768::portable::generate_key_pair_unpacked(seed);
+        })
+    });
 }
 
 pub fn comparisons_pk_validation(c: &mut Criterion) {
@@ -46,7 +52,7 @@ pub fn comparisons_pk_validation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 PK Validation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable", |b| {
+    group.bench_function("libcrux", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
         b.iter_batched(
@@ -60,13 +66,14 @@ pub fn comparisons_pk_validation(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
+
 }
 
 pub fn comparisons_encapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Encapsulation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable (external random)", |b| {
+    group.bench_function("libcrux (external random)", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
         let mut seed2 = [0; 32];
@@ -81,43 +88,59 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         )
     });
 
-    // group.bench_function("libcrux portable", |b| {
-    //     b.iter_batched(
-    //         || {
-    //             let mut drbg = Drbg::new(digest::Algorithm::Sha256).unwrap();
-    //             let (_secret_key, public_key) =
-    //                 libcrux::kem::key_gen(Algorithm::MlKem768, &mut drbg).unwrap();
+    group.bench_function("libcrux unpacked portable (external random)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::portable::generate_key_pair_unpacked(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::portable::encapsulate_unpacked(&keypair.public_key, &keypair.public_key_hash, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
 
-    //             (drbg, public_key)
-    //         },
-    //         |(mut rng, public_key)| {
-    //             let (_shared_secret, _ciphertext) = public_key.encapsulate(&mut rng).unwrap();
-    //         },
-    //         BatchSize::SmallInput,
-    //     )
-    // });
+    #[cfg(feature = "simd128")]
+    group.bench_function("libcrux unpacked neon (external random)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::neon::generate_key_pair_unpacked(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::neon::encapsulate_unpacked(&keypair.public_key, &keypair.public_key_hash, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
 
-    // group.bench_function("pqclean reference implementation", |b| {
-    //     b.iter_batched(
-    //         || {
-    //             let (public_key, _secret_key) = pqcrypto_kyber::kyber768::keypair();
-
-    //             public_key
-    //         },
-    //         |public_key| {
-    //             let (_shared_secret, _ciphertext) =
-    //                 pqcrypto_kyber::kyber768::encapsulate(&public_key);
-    //         },
-    //         BatchSize::SmallInput,
-    //     )
-    // });
+    #[cfg(feature = "simd256")]
+    group.bench_function("libcrux unpacked avx2 (external random)", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || mlkem768::avx2::generate_key_pair_unpacked(seed1),
+            |keypair| {
+                let (_shared_secret, _ciphertext) =
+                    mlkem768::avx2::encapsulate_unpacked(&keypair.public_key, &keypair.public_key_hash, seed2);
+            },
+            BatchSize::SmallInput,
+        )
+    });
 }
 
 pub fn comparisons_decapsulation(c: &mut Criterion) {
     let mut group = c.benchmark_group("Kyber768 Decapsulation");
     group.measurement_time(Duration::from_secs(10));
 
-    group.bench_function("libcrux portable", |b| {
+    group.bench_function("libcrux", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
         let mut seed2 = [0; 32];
@@ -136,22 +159,65 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
         )
     });
 
-    // group.bench_function("pqclean reference implementation", |b| {
-    //     b.iter_batched(
-    //         || {
-    //             let (public_key, secret_key) = pqcrypto_kyber::kyber768::keypair();
-    //             let (_shared_secret, ciphertext) =
-    //                 pqcrypto_kyber::kyber768::encapsulate(&public_key);
+    group.bench_function("libcrux unpacked portable", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::portable::generate_key_pair_unpacked(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::portable::encapsulate_unpacked(&keypair.public_key, &keypair.public_key_hash, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret = mlkem768::portable::decapsulate_unpacked(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
 
-    //             (ciphertext, secret_key)
-    //         },
-    //         |(ciphertext, secret_key)| {
-    //             let _shared_secret =
-    //                 pqcrypto_kyber::kyber768::decapsulate(&ciphertext, &secret_key);
-    //         },
-    //         BatchSize::SmallInput,
-    //     )
-    // });
+    #[cfg(feature = "simd128")]
+    group.bench_function("libcrux unpacked neon", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::neon::generate_key_pair_unpacked(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::neon::encapsulate_unpacked(&keypair.public_key, &keypair.public_key_hash, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret = mlkem768::neon::decapsulate_unpacked(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    #[cfg(feature = "simd256")]
+    group.bench_function("libcrux unpacked avx2", |b| {
+        let mut seed1 = [0; 64];
+        OsRng.fill_bytes(&mut seed1);
+        let mut seed2 = [0; 32];
+        OsRng.fill_bytes(&mut seed2);
+        b.iter_batched(
+            || {
+                let keypair = mlkem768::avx2::generate_key_pair_unpacked(seed1);
+                let (ciphertext, _shared_secret) =
+                    mlkem768::avx2::encapsulate_unpacked(&keypair.public_key, &keypair.public_key_hash, seed2);
+                (keypair, ciphertext)
+            },
+            |(keypair, ciphertext)| {
+                let _shared_secret = mlkem768::avx2::decapsulate_unpacked(&keypair, &ciphertext);
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
 }
 
 pub fn comparisons(c: &mut Criterion) {
