@@ -33,6 +33,37 @@ macro_rules! impl_consistency {
     };
 }
 
+macro_rules! impl_consistency_unpacked {
+    ($name:ident, $key_gen:expr, $encaps:expr, $key_gen_unpacked:expr, $encaps_unpacked:expr, $decaps_unpacked:expr) => {
+        #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
+        #[test]
+        fn $name() {
+            let randomness = random_array();
+            let key_pair_unpacked = $key_gen_unpacked(randomness);
+            let key_pair = $key_gen(randomness);
+            let randomness = random_array();
+            let (ciphertext, shared_secret) = $encaps(key_pair.public_key(), randomness);
+            let (ciphertext_unpacked, shared_secret_unpacked) = $encaps_unpacked(&key_pair_unpacked.public_key, &key_pair_unpacked.public_key_hash, randomness);
+            assert_eq!(
+                shared_secret, shared_secret_unpacked,
+                "lhs: shared_secret, rhs: shared_secret_unpacked"
+            );
+            assert_eq!(
+                ciphertext.as_slice(), ciphertext_unpacked.as_slice(),
+                "lhs: ciphertext, rhs: ciphertext_unpacked"
+            );
+            let shared_secret_decapsulated = $decaps_unpacked(&key_pair_unpacked, &ciphertext);
+            assert_eq!(
+                shared_secret_unpacked, shared_secret_decapsulated,
+                "lhs: shared_secret_unpacked, rhs: shared_secret_decapsulated"
+            );
+            // If the randomness was not enough for the rejection sampling step
+            // in key-generation and encapsulation, simply return without
+            // failing.
+        }
+    };
+}
+
 fn modify_ciphertext<const LEN: usize>(
     mut ciphertext: MlKemCiphertext<LEN>,
 ) -> MlKemCiphertext<LEN> {
@@ -180,6 +211,95 @@ impl_consistency!(
     mlkem1024::encapsulate,
     mlkem1024::decapsulate
 );
+
+impl_consistency_unpacked!(
+    consistency_unpacked_512_portable,
+    mlkem512::portable::generate_key_pair,
+    mlkem512::portable::encapsulate,
+    mlkem512::portable::generate_key_pair_unpacked,
+    mlkem512::portable::encapsulate_unpacked,
+    mlkem512::portable::decapsulate_unpacked
+);
+
+#[cfg(feature = "simd128")]
+impl_consistency_unpacked!(
+    consistency_unpacked_512_neon,
+    mlkem512::neon::generate_key_pair,
+    mlkem512::neon::encapsulate,
+    mlkem512::neon::generate_key_pair_unpacked,
+    mlkem512::neon::encapsulate_unpacked,
+    mlkem512::neon::decapsulate_unpacked
+);
+
+#[cfg(feature = "simd256")]
+impl_consistency_unpacked!(
+    consistency_unpacked_512_avx2,
+    mlkem512::avx2::generate_key_pair,
+    mlkem512::avx2::encapsulate,
+    mlkem512::avx2::generate_key_pair_unpacked,
+    mlkem512::avx2::encapsulate_unpacked,
+    mlkem512::avx2::decapsulate_unpacked
+);
+
+impl_consistency_unpacked!(
+    consistency_unpacked_1024_portable,
+    mlkem1024::portable::generate_key_pair,
+    mlkem1024::portable::encapsulate,
+    mlkem1024::portable::generate_key_pair_unpacked,
+    mlkem1024::portable::encapsulate_unpacked,
+    mlkem1024::portable::decapsulate_unpacked
+);
+
+#[cfg(feature = "simd128")]
+impl_consistency_unpacked!(
+    consistency_unpacked_1024_neon,
+    mlkem1024::neon::generate_key_pair,
+    mlkem1024::neon::encapsulate,
+    mlkem1024::neon::generate_key_pair_unpacked,
+    mlkem1024::neon::encapsulate_unpacked,
+    mlkem1024::neon::decapsulate_unpacked
+);
+
+#[cfg(feature = "simd256")]
+impl_consistency_unpacked!(
+    consistency_unpacked_1024_avx2,
+    mlkem1024::avx2::generate_key_pair,
+    mlkem1024::avx2::encapsulate,
+    mlkem1024::avx2::generate_key_pair_unpacked,
+    mlkem1024::avx2::encapsulate_unpacked,
+    mlkem1024::avx2::decapsulate_unpacked
+);
+
+impl_consistency_unpacked!(
+    consistency_unpacked_768_portable,
+    mlkem768::portable::generate_key_pair,
+    mlkem768::portable::encapsulate,
+    mlkem768::portable::generate_key_pair_unpacked,
+    mlkem768::portable::encapsulate_unpacked,
+    mlkem768::portable::decapsulate_unpacked
+);
+
+#[cfg(feature = "simd128")]
+impl_consistency_unpacked!(
+    consistency_unpacked_768_neon,
+    mlkem768::neon::generate_key_pair,
+    mlkem768::neon::encapsulate,
+    mlkem768::neon::generate_key_pair_unpacked,
+    mlkem768::neon::encapsulate_unpacked,
+    mlkem768::neon::decapsulate_unpacked
+);
+
+#[cfg(feature = "simd256")]
+impl_consistency_unpacked!(
+    consistency_unpacked_768_avx2,
+    mlkem768::avx2::generate_key_pair,
+    mlkem768::avx2::encapsulate,
+    mlkem768::avx2::generate_key_pair_unpacked,
+    mlkem768::avx2::encapsulate_unpacked,
+    mlkem768::avx2::decapsulate_unpacked
+);
+
+
 
 impl_modified_ciphertext!(
     modified_ciphertext_512,

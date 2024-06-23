@@ -190,6 +190,7 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     }
 }
 
+#[allow(non_snake_case)]
 /// Types for the unpacked API.
 pub mod unpacked {
     use crate::{polynomial::PolynomialRingElement, vector::traits::VectorType};

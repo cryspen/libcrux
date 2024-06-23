@@ -52,9 +52,9 @@ pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
 pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
 /// An Unpacked ML-KEM 768 Public key
-pub type MlKem768PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
+pub type MlKem768PublicKeyUnpacked<Vector:VectorType> = MlKemPublicKeyUnpacked<RANK_768, Vector>;
 /// Am Unpacked ML-KEM 768 Key pair
-pub type MlKem768KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_768, Vector>;
+pub type MlKem768KeyPairUnpacked<Vector:VectorType> = MlKemKeyPairUnpacked<RANK_768, Vector>;
 
 // Instantiate the different functions.
 macro_rules! instantiate {
@@ -185,7 +185,7 @@ macro_rules! instantiate {
                 >(public_key, public_key_hash, randomness)
             }
 
-            pub fn decapsulate_unpacked_portable(
+            pub fn decapsulate_unpacked(
                 private_key: &MlKem768KeyPairUnpacked<$vec>,
                 ciphertext: &MlKem768Ciphertext,
             ) -> MlKemSharedSecret {
