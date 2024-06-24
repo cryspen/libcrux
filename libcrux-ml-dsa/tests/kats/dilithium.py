@@ -472,9 +472,8 @@ class Dilithium:
         # Set seeds and nonce (kappa)
         mu = self._h(tr + m, 64)
         kappa = 0
-        if rnd is None:
-            # deterministic signing
-            rnd = b"\x00" * 32  # RNDBYTES
+        rnd = self.random_bytes(32)
+        self.signing_randomness = rnd
         rho_prime = self._h(K + rnd + mu, 64)
 
         # Precompute NTT representation
