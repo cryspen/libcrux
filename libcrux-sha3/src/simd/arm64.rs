@@ -92,7 +92,7 @@ pub(crate) fn load_block_full<const RATE: usize>(
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mut [u8]; 2]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mut [u8]; 2], start: usize) {
     for i in 0..RATE / 16 {
         let v0 = _vtrn1q_u64(
             s[(2 * i) / 5][(2 * i) % 5],
@@ -102,8 +102,8 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mu
             s[(2 * i) / 5][(2 * i) % 5],
             s[(2 * i + 1) / 5][(2 * i + 1) % 5],
         );
-        _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
-        _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
+        _vst1q_bytes_u64(&mut out[0][start + 16 * i..start + 16 * (i + 1)], v0);
+        _vst1q_bytes_u64(&mut out[1][start + 16 * i..start + 16 * (i + 1)], v1);
     }
     if RATE % 16 != 0 {
         debug_assert!(RATE % 8 == 0);
@@ -111,8 +111,8 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mu
         let j = (RATE / 8 - 1) % 5;
         let mut u = [0u8; 16];
         _vst1q_bytes_u64(&mut u, s[i][j]);
-        out[0][RATE - 8..RATE].copy_from_slice(&u[0..8]);
-        out[1][RATE - 8..RATE].copy_from_slice(&u[8..16]);
+        out[0][start + RATE - 8..start + RATE].copy_from_slice(&u[0..8]);
+        out[1][start + RATE - 8..start + RATE].copy_from_slice(&u[8..16]);
     }
 }
 
@@ -120,7 +120,7 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mu
 pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> [[u8; 200]; 2] {
     let mut out0 = [0u8; 200];
     let mut out1 = [0u8; 200];
-    store_block::<RATE>(s, [&mut out0, &mut out1]);
+    store_block::<RATE>(s, [&mut out0, &mut out1], 0);
     [out0, out1]
 }
 
@@ -171,8 +171,8 @@ impl KeccakItem<2> for uint64x2_t {
         load_block::<BLOCKSIZE>(a, b)
     }
     #[inline(always)]
-    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 2]) {
-        store_block::<BLOCKSIZE>(a, b)
+    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 2], start:usize) {
+        store_block::<BLOCKSIZE>(a, b, start)
     }
     #[inline(always)]
     fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 2]) {
@@ -182,12 +182,12 @@ impl KeccakItem<2> for uint64x2_t {
     fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 2] {
         store_block_full::<BLOCKSIZE>(a)
     }
-    #[inline(always)]
-    fn slice_n(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
-        slice_2(a, start, len)
-    }
-    #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
-        split_at_mut_2(a, mid)
-    }
+    // #[inline(always)]
+    // fn slice_n(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
+    //     slice_2(a, start, len)
+    // }
+    // #[inline(always)]
+    // fn split_at_mut_n(a: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
+    //     split_at_mut_2(a, mid)
+    // }
 }

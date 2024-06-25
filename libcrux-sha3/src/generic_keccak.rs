@@ -204,16 +204,17 @@ pub(crate) fn squeeze_first_block<const N: usize, T: KeccakStateItem<N>, const R
     s: &KeccakState<N, T>,
     out: [&mut [u8]; N],
 ) {
-    T::store_block::<RATE>(&s.st, out)
+    T::store_block::<RATE>(&s.st, out, 0)
 }
 
 #[inline(always)]
-pub(crate) fn squeeze_next_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
+fn squeeze_next_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
     s: &mut KeccakState<N, T>,
     out: [&mut [u8]; N],
+    start: usize
 ) {
     keccakf1600(s);
-    T::store_block::<RATE>(&s.st, out)
+    T::store_block::<RATE>(&s.st, out, start)
 }
 
 #[inline(always)]
@@ -225,11 +226,9 @@ pub(crate) fn squeeze_first_three_blocks<
     s: &mut KeccakState<N, T>,
     out: [&mut [u8]; N],
 ) {
-    let (o0, o1) = T::split_at_mut_n(out, RATE);
-    squeeze_first_block::<N, T, RATE>(s, o0);
-    let (o1, o2) = T::split_at_mut_n(o1, RATE);
-    squeeze_next_block::<N, T, RATE>(s, o1);
-    squeeze_next_block::<N, T, RATE>(s, o2);
+    squeeze_first_block::<N, T, RATE>(s, out);
+    squeeze_next_block::<N, T, RATE>(s, out, RATE);
+    squeeze_next_block::<N, T, RATE>(s, out, 2*RATE);
 }
 
 #[inline(always)]

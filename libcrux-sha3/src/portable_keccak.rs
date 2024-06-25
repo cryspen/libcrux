@@ -120,12 +120,12 @@ impl KeccakItem<1> for u64 {
     fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 1] {
         store_block_full::<BLOCKSIZE>(a)
     }
-    #[inline(always)]
-    fn slice_n(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
-        slice_1(a, start, len)
-    }
-    #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
-        split_at_mut_1(a, mid)
-    }
+    // #[inline(always)]
+    // fn slice_n(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
+    //     slice_1(a, start, len)
+    // }
+    // #[inline(always)]
+    // fn split_at_mut_n(a: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
+    //     split_at_mut_1(a, mid)
+    // }
 }

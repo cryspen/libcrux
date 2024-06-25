@@ -3,59 +3,25 @@ module Libcrux_sha3.Traits
 open Core
 open FStar.Mul
 
-(* item error backend: (RefMut) The mutation of this &mut is not allowed here.
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_sha3.Traits.Internal in
+  ()
 
-Last available AST for this item:
-
-/** A trait for multiplexing implementations.*/
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-trait t_KeccakItem<Self_, const N: int>
-where
-    _: core::clone::t_Clone<Self>,
-    _: core::marker::t_Copy<Self>,
-{
-    fn f_zero(_: tuple0) -> Self;
-    fn f_xor5(_: Self, _: Self, _: Self, _: Self, _: Self) -> Self;
-    fn f_rotate_left1_and_xor(_: Self, _: Self) -> Self;
-    fn f_xor_and_rotate<const LEFT: int, const RIGHT: int>(_: Self, _: Self) -> Self;
-    fn f_and_not_xor(_: Self, _: Self, _: Self) -> Self;
-    fn f_xor_constant(_: Self, _: int) -> Self;
-    fn f_xor(_: Self, _: Self) -> Self;
-    fn f_load_block<const BLOCKSIZE: int, Anonymous: 'unk, Anonymous: 'unk>(
-        _: [[Self; 5]; 5],
-        _: [&[int]; N],
-    ) -> [[Self; 5]; 5];
-    fn f_store_block<const BLOCKSIZE: int, Anonymous: 'unk, Anonymous: 'unk>(
-        _: &[[Self; 5]; 5],
-        _: [&mut [int]; N],
-    ) -> tuple0;
-    fn f_load_block_full<const BLOCKSIZE: int, Anonymous: 'unk>(
-        _: [[Self; 5]; 5],
-        _: [[int; 200]; N],
-    ) -> [[Self; 5]; 5];
-    fn f_store_block_full<const BLOCKSIZE: int, Anonymous: 'unk>(
-        _: &[[Self; 5]; 5],
-    ) -> [[int; 200]; N];
-    fn f_slice_n<Anonymous: 'unk>(_: [&[int]; N], _: int, _: int) -> [&[int]; N];
-    fn f_split_at_mut_n<Anonymous: 'unk>(
-        _: [&mut [int]; N],
-        _: int,
-    ) -> tuple2<[&mut [int]; N], [&mut [int]; N]>;
+/// A Keccak Item
+/// This holds the internal state and depends on the architecture.
+class t_KeccakStateItem (v_Self: Type0) (v_N: usize) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_7919791445461910775:Libcrux_sha3.Traits.Internal.t_KeccakItem
+    v_Self v_N
 }
 
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "traits"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.TypeNs "KeccakItem"); disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl
+      (v_N: usize)
+      (#v_T: Type0)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i1:
+          Libcrux_sha3.Traits.Internal.t_KeccakItem v_T v_N)
+    : t_KeccakStateItem v_T v_N =
+  { _super_7919791445461910775 = FStar.Tactics.Typeclasses.solve; __marker_trait = () }
