@@ -38,7 +38,7 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: &[&[u8]; 1]) {
+pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [&[u8]; 1]) {
     debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
     for i in 0..RATE / 8 {
         s[i / 5][i % 5] ^= u64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
@@ -47,7 +47,7 @@ pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: &[&[u
 
 #[inline(always)]
 pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [[u8; 200]; 1]) {
-    load_block::<RATE>(s, &[&blocks[0] as &[u8]]);
+    load_block::<RATE>(s, [&blocks[0] as &[u8]]);
 }
 
 #[inline(always)]
@@ -105,7 +105,7 @@ impl KeccakItem<1> for u64 {
         a ^ b
     }
     #[inline(always)]
-    fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: &[&[u8]; 1]) {
+    fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 1]) {
         load_block::<BLOCKSIZE>(a, b)
     }
     #[inline(always)]

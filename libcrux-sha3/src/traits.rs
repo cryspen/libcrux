@@ -15,7 +15,7 @@ pub(crate) mod internal {
         fn and_not_xor(a: Self, b: Self, c: Self) -> Self;
         fn xor_constant(a: Self, c: u64) -> Self;
         fn xor(a: Self, b: Self) -> Self;
-        fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: &[&[u8]; N]);
+        fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; N]);
         fn store_block<const BLOCKSIZE: usize, const SIZE:usize>(a: &[[Self; 5]; 5], b: &mut [[u8; SIZE]; N], start: usize);
         fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; N]);
         fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; N];

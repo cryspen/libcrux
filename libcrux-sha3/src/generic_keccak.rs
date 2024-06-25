@@ -173,7 +173,7 @@ pub(crate) fn absorb_block<const N: usize, T: KeccakStateItem<N>, const RATE: us
     s: &mut KeccakState<N, T>,
     blocks: [&[u8]; N],
 ) {
-    T::load_block::<RATE>(&mut s.st, &blocks);
+    T::load_block::<RATE>(&mut s.st, blocks);
     keccakf1600(s)
 }
 
