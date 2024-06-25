@@ -105,7 +105,7 @@ pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[Vec256; 5]; 5], block
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[Vec256; 5]; 5], out: [&mut [u8]; 4], start: usize) {
+pub(crate) fn store_block<const RATE: usize, const SIZE: usize>(s: &[[Vec256; 5]; 5], out: &mut [[u8; SIZE]; 4], start: usize) {
     for i in 0..RATE / 32 {
         let v0l = mm256_permute2x128_si256::<0x20>(
             s[(4 * i) / 5][(4 * i) % 5],
@@ -178,16 +178,6 @@ fn slice_4(a: [&[u8]; 4], start: usize, len: usize) -> [&[u8]; 4] {
     ]
 }
 
-#[inline(always)]
-fn split_at_mut_4(out: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8]; 4]) {
-    let [out0, out1, out2, out3] = out;
-    let (out00, out01) = out0.split_at_mut(mid);
-    let (out10, out11) = out1.split_at_mut(mid);
-    let (out20, out21) = out2.split_at_mut(mid);
-    let (out30, out31) = out3.split_at_mut(mid);
-    ([out00, out10, out20, out30], [out01, out11, out21, out31])
-}
-
 impl KeccakItem<4> for Vec256 {
     #[inline(always)]
     fn zero() -> Self {
@@ -222,7 +212,7 @@ impl KeccakItem<4> for Vec256 {
         load_block::<BLOCKSIZE>(a, b)
     }
     #[inline(always)]
-    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 4], start: usize) {
+    fn store_block<const BLOCKSIZE: usize, const SIZE: usize>(a: &[[Self; 5]; 5], b: &mut [[u8; SIZE]; 4], start: usize) {
         store_block::<BLOCKSIZE>(a, b, start)
     }
     #[inline(always)]
@@ -233,12 +223,8 @@ impl KeccakItem<4> for Vec256 {
     fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 4] {
         store_block_full::<BLOCKSIZE>(a)
     }
-    // #[inline(always)]
-    // fn slice_n(a: [&[u8]; 4], start: usize, len: usize) -> [&[u8]; 4] {
-    //     slice_4(a, start, len)
-    // }
-    // #[inline(always)]
-    // fn split_at_mut_n(a: [&mut [u8]; 4], mid: usize) -> ([&mut [u8]; 4], [&mut [u8]; 4]) {
-    //     split_at_mut_4(a, mid)
-    // }
+    #[inline(always)]
+    fn slice_n(a: [&[u8]; 4], start: usize, len: usize) -> [&[u8]; 4] {
+        slice_4(a, start, len)
+    }
 }
