@@ -82,19 +82,13 @@ fn shake256(c: &mut Criterion) {
                 )
             },
             |(payload0, payload1, payload2, payload3)| {
-                let mut digest0 = [0u8; 128];
-                let mut digest1 = [0u8; 128];
-                let mut digest2 = [0u8; 128];
-                let mut digest3 = [0u8; 128];
+                let mut digest = [[0u8; 128]; 4];
                 avx2::x4::shake256(
                     &payload0,
                     &payload1,
                     &payload2,
                     &payload3,
-                    &mut digest0,
-                    &mut digest1,
-                    &mut digest2,
-                    &mut digest3,
+                    &mut digest
                 );
             },
             BatchSize::SmallInput,

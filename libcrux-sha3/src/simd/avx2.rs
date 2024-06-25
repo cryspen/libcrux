@@ -160,12 +160,9 @@ pub(crate) fn store_block<const RATE: usize, const SIZE: usize>(s: &[[Vec256; 5]
 
 #[inline(always)]
 pub(crate) fn store_block_full<const RATE: usize>(s: &[[Vec256; 5]; 5]) -> [[u8; 200]; 4] {
-    let mut out0 = [0u8; 200];
-    let mut out1 = [0u8; 200];
-    let mut out2 = [0u8; 200];
-    let mut out3 = [0u8; 200];
-    store_block::<RATE>(s, [&mut out0, &mut out1, &mut out2, &mut out3]);
-    [out0, out1, out2, out3]
+    let mut out = [[0u8; 200]; 4];
+    store_block::<RATE, 200>(s, &mut out, 0);
+    out
 }
 
 #[inline(always)]
@@ -213,7 +210,7 @@ impl KeccakItem<4> for Vec256 {
     }
     #[inline(always)]
     fn store_block<const BLOCKSIZE: usize, const SIZE: usize>(a: &[[Self; 5]; 5], b: &mut [[u8; SIZE]; 4], start: usize) {
-        store_block::<BLOCKSIZE>(a, b, start)
+        store_block::<BLOCKSIZE, SIZE>(a, b, start)
     }
     #[inline(always)]
     fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 4]) {
