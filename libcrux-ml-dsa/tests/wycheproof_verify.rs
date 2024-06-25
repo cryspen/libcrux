@@ -22,6 +22,16 @@ fn wycheproof_verify_44() {
     for test_group in katfile_serialized.test_groups {
         let verification_key_bytes = hex::decode(test_group.public_key).unwrap();
         if verification_key_bytes.len() != ml_dsa_44::VERIFICATION_KEY_SIZE {
+            // If the verification key size in the KAT does not match the
+            // verification key size in our implementation, ensure that the KAT
+            // key has a corresponding flag set staring that its length is incorrect.
+            //
+            // This flag is set on the child `tests` object.
+            assert_eq!(test_group.tests.len(), 1);
+            assert!(test_group.tests[0]
+                .flags
+                .contains(&Flag::IncorrectPublicKeyLength));
+
             continue;
         }
         let verification_key =
@@ -32,6 +42,12 @@ fn wycheproof_verify_44() {
 
             let signature_bytes = hex::decode(test.sig).unwrap();
             if signature_bytes.len() != ml_dsa_44::SIGNATURE_SIZE {
+                // If the signature size in the KAT does not match the
+                // signature size in our implementation, ensure that the KAT
+                // signature has a corresponding flag set staring that its length
+                // is incorrect.
+                assert!(test.flags.contains(&Flag::IncorrectSignatureLength));
+
                 continue;
             }
             let signature = ml_dsa_44::MLDSA44Signature(signature_bytes.try_into().unwrap());

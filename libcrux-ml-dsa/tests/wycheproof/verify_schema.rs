@@ -13,7 +13,7 @@
 
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VerifySchema {
     algorithm: String,
@@ -31,7 +31,7 @@ pub struct VerifySchema {
     test_groups: Vec<TestGroup>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Notes {
     boundary_condition: BoundaryCondition,
@@ -53,7 +53,7 @@ pub struct Notes {
     zero_public_key: BoundaryCondition,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BoundaryCondition {
     bug_type: String,
@@ -61,7 +61,7 @@ pub struct BoundaryCondition {
     description: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestGroup {
     #[serde(rename = "type")]
@@ -72,13 +72,13 @@ pub struct TestGroup {
     tests: Vec<Test>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 pub enum Type {
     #[serde(rename = "MlDsaVerify")]
     MlDsaVerify,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Test {
     tc_id: i64,
@@ -94,7 +94,7 @@ pub struct Test {
     flags: Vec<Flag>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 pub enum Flag {
     #[serde(rename = "BoundaryCondition")]
     BoundaryCondition,
@@ -124,7 +124,7 @@ pub enum Flag {
     ZeroPublicKey,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Result {
     Invalid,
