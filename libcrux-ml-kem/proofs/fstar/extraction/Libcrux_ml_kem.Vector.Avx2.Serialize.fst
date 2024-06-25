@@ -18,9 +18,8 @@ let deserialize_1_ (bytes: t_Slice u8) =
   let shift_lsb_to_msb:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_set_epi16 (1s <<! 8l <: i16) (1s <<! 9l <: i16)
       (1s <<! 10l <: i16) (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16)
-      (1s <<! 14l <: i16) (1s <<! 15l <: i16) (1s <<! 8l <: i16) (1s <<! 9l <: i16)
-      (1s <<! 10l <: i16) (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16)
-      (1s <<! 14l <: i16) (1s <<! 15l <: i16)
+      (1s <<! 14l <: i16) (-32768s) (1s <<! 8l <: i16) (1s <<! 9l <: i16) (1s <<! 10l <: i16)
+      (1s <<! 11l <: i16) (1s <<! 12l <: i16) (1s <<! 13l <: i16) (1s <<! 14l <: i16) (-32768s)
   in
   let coefficients_in_msb:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients shift_lsb_to_msb

@@ -20,7 +20,7 @@ let decapsulate
     v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR
     v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
     v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
-    #Libcrux_ml_kem.Vector.Neon.Simd128ops.t_SIMD128Vector
+    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
     #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash private_key ciphertext
 
 let encapsulate
@@ -32,7 +32,7 @@ let encapsulate
   Libcrux_ml_kem.Ind_cca.encapsulate v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE
     v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR
     v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE
-    #Libcrux_ml_kem.Vector.Neon.Simd128ops.t_SIMD128Vector
+    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
     #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash public_key randomness
 
 let validate_public_key
@@ -42,7 +42,7 @@ let validate_public_key
   Libcrux_ml_kem.Ind_cca.validate_public_key v_K
     v_RANKED_BYTES_PER_RING_ELEMENT
     v_PUBLIC_KEY_SIZE
-    #Libcrux_ml_kem.Vector.Neon.Simd128ops.t_SIMD128Vector
+    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
     public_key
 
 let generate_keypair
@@ -52,5 +52,5 @@ let generate_keypair
      =
   Libcrux_ml_kem.Ind_cca.generate_keypair v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE
     v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE
-    #Libcrux_ml_kem.Vector.Neon.Simd128ops.t_SIMD128Vector
+    #Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
     #Libcrux_ml_kem.Hash_functions.Neon.t_Simd128Hash randomness

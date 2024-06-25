@@ -69,6 +69,7 @@ let serialize_kem_secret_key
         t_Slice u8)
   in
   let pointer:usize = pointer +! (Core.Slice.impl__len #u8 public_key <: usize) in
+  let _:Prims.unit = assume (Libcrux_ml_kem.Hash_functions.f_H_pre #v_Hasher #v_K public_key) in
   let out:t_Array u8 v_SERIALIZED_KEY_LEN =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range out
       ({
@@ -172,8 +173,17 @@ let decapsulate
       (Rust_primitives.unsize private_key.Libcrux_ml_kem.Types.f_value <: t_Slice u8)
       v_CPA_SECRET_KEY_SIZE
   in
+  let _:Prims.unit =
+    Hax_lib.v_assume (v_PUBLIC_KEY_SIZE <=. (Core.Slice.impl__len #u8 secret_key <: usize) <: bool)
+  in
   let ind_cpa_public_key, secret_key:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 secret_key v_PUBLIC_KEY_SIZE
+  in
+  let _:Prims.unit =
+    Hax_lib.v_assume (Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE <=.
+        (Core.Slice.impl__len #u8 secret_key <: usize)
+        <:
+        bool)
   in
   let ind_cpa_public_key_hash, implicit_rejection_value:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8 secret_key Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
@@ -206,8 +216,19 @@ let decapsulate
         <:
         t_Slice u8)
   in
+  let _:Prims.unit =
+    assume (Libcrux_ml_kem.Hash_functions.f_G_pre #v_Hasher
+          #v_K
+          (Rust_primitives.unsize to_hash <: t_Slice u8))
+  in
   let hashed:t_Array u8 (sz 64) =
     Libcrux_ml_kem.Hash_functions.f_G #v_Hasher v_K (Rust_primitives.unsize to_hash <: t_Slice u8)
+  in
+  let _:Prims.unit =
+    Hax_lib.v_assume (Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE <=.
+        (Core.Slice.impl__len #u8 (Rust_primitives.unsize hashed <: t_Slice u8) <: usize)
+        <:
+        bool)
   in
   let shared_secret, pseudorandomness:(t_Slice u8 & t_Slice u8) =
     Core.Slice.impl__split_at #u8
@@ -218,6 +239,20 @@ let decapsulate
     v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Libcrux_ml_kem.Utils.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
       implicit_rejection_value
+  in
+  let _:Prims.unit =
+    Hax_lib.v_assume (Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE <.
+        v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
+        <:
+        bool)
+  in
+  let _:Prims.unit =
+    Hax_lib.v_assume (v_CIPHERTEXT_SIZE =.
+        (v_IMPLICIT_REJECTION_HASH_INPUT_SIZE -! Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
+          <:
+          usize)
+        <:
+        bool)
   in
   let to_hash:t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range_from to_hash
@@ -237,6 +272,12 @@ let decapsulate
             t_Slice u8)
         <:
         t_Slice u8)
+  in
+  let _:Prims.unit =
+    assume (Libcrux_ml_kem.Hash_functions.f_PRF_pre #v_Hasher
+          #v_K
+          (sz 32)
+          (Rust_primitives.unsize to_hash <: t_Slice u8))
   in
   let (implicit_rejection_shared_secret: t_Array u8 (sz 32)):t_Array u8 (sz 32) =
     Libcrux_ml_kem.Hash_functions.f_PRF #v_Hasher
@@ -372,6 +413,37 @@ let generate_keypair
       #v_Vector
       #v_Hasher
       ind_cpa_keypair_randomness
+  in
+  let _:Prims.unit =
+    Hax_lib.v_assume (((((Rust_primitives.Hax.Int.from_machine (Core.Slice.impl__len #u8
+                      (Rust_primitives.unsize ind_cpa_private_key <: t_Slice u8)
+                    <:
+                    usize)
+                <:
+                Hax_lib.Int.t_Int) +
+              (Rust_primitives.Hax.Int.from_machine (Core.Slice.impl__len #u8
+                      (Rust_primitives.unsize public_key <: t_Slice u8)
+                    <:
+                    usize)
+                <:
+                Hax_lib.Int.t_Int)
+              <:
+              Hax_lib.Int.t_Int) +
+            (Rust_primitives.Hax.Int.from_machine Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
+              <:
+              Hax_lib.Int.t_Int)
+            <:
+            Hax_lib.Int.t_Int) +
+          (Rust_primitives.Hax.Int.from_machine (Core.Slice.impl__len #u8 implicit_rejection_value
+                <:
+                usize)
+            <:
+            Hax_lib.Int.t_Int)
+          <:
+          Hax_lib.Int.t_Int) <
+        (Rust_primitives.Hax.Int.from_machine v_PRIVATE_KEY_SIZE <: Hax_lib.Int.t_Int)
+        <:
+        bool)
   in
   let secret_key_serialized:t_Array u8 v_PRIVATE_KEY_SIZE =
     serialize_kem_secret_key v_K

@@ -11,7 +11,7 @@ type t_PortableHash (v_K: usize) = {
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K) v_K =
+let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #(t_PortableHash v_K) v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
     f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);

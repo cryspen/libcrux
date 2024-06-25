@@ -1,13 +1,7 @@
-module Libcrux_ml_kem.Vector.Neon
+module Libcrux_ml_kem.Vector.Portable.Sampling
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
-
-let _ =
-  (* This module has implicit dependencies, here we make them explicit. *)
-  (* The implicit dependencies arise from typeclasses instances. *)
-  let open Libcrux_ml_kem.Vector.Neon.Vector_type in
-  ()
 
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   let sampled:usize = sz 0 in

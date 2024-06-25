@@ -30,7 +30,30 @@ val serialize_kem_secret_key
       (#v_Hasher: Type0)
       {| i1: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key public_key implicit_rejection_value: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_SERIALIZED_KEY_LEN) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 v_SERIALIZED_KEY_LEN)
+      (requires
+        ((((Rust_primitives.Hax.Int.from_machine (Core.Slice.impl__len #u8 private_key <: usize)
+                <:
+                Hax_lib.Int.t_Int) +
+              (Rust_primitives.Hax.Int.from_machine (Core.Slice.impl__len #u8 public_key <: usize)
+                <:
+                Hax_lib.Int.t_Int)
+              <:
+              Hax_lib.Int.t_Int) +
+            (Rust_primitives.Hax.Int.from_machine Libcrux_ml_kem.Constants.v_H_DIGEST_SIZE
+              <:
+              Hax_lib.Int.t_Int)
+            <:
+            Hax_lib.Int.t_Int) +
+          (Rust_primitives.Hax.Int.from_machine (Core.Slice.impl__len #u8 implicit_rejection_value
+                <:
+                usize)
+            <:
+            Hax_lib.Int.t_Int)
+          <:
+          Hax_lib.Int.t_Int) <
+        (Rust_primitives.Hax.Int.from_machine v_SERIALIZED_KEY_LEN <: Hax_lib.Int.t_Int))
+      (fun _ -> Prims.l_True)
 
 val validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
@@ -47,7 +70,9 @@ val decapsulate
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires v_CPA_SECRET_KEY_SIZE <=. v_SECRET_KEY_SIZE)
+      (fun _ -> Prims.l_True)
 
 val encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:

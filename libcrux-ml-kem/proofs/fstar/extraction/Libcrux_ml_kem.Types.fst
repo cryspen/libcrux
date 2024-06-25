@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Types
 open Core
 open FStar.Mul
 
+let impl_6__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+
+let impl_12__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+
+let impl_18__len (v_SIZE: usize) (_: Prims.unit) = v_SIZE
+
 let impl_6__as_slice (v_SIZE: usize) (self: t_MlKemCiphertext v_SIZE) = self.f_value
 
 let impl_12__as_slice (v_SIZE: usize) (self: t_MlKemPrivateKey v_SIZE) = self.f_value
@@ -14,6 +20,14 @@ let impl__from
       (sk: t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
       (pk: t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
      = { f_sk = sk; f_pk = pk } <: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE
+
+let impl__into_parts
+      (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
+      (self: t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+     =
+  self.f_sk, self.f_pk
+  <:
+  (t_MlKemPrivateKey v_PRIVATE_KEY_SIZE & t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
 
 let impl__new
       (v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE: usize)
