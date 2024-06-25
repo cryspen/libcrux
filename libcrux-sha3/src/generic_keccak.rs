@@ -173,7 +173,7 @@ pub(crate) fn absorb_block<const N: usize, T: KeccakStateItem<N>, const RATE: us
     s: &mut KeccakState<N, T>,
     blocks: [&[u8]; N],
 ) {
-    T::load_block::<RATE>(&mut s.st, blocks);
+    T::load_block::<RATE>(&mut s.st, &blocks);
     keccakf1600(s)
 }
 
@@ -200,21 +200,21 @@ pub(crate) fn absorb_final<
 }
 
 #[inline(always)]
-pub(crate) fn squeeze_first_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
+pub(crate) fn squeeze_first_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const SIZE: usize>(
     s: &KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [[u8; SIZE]; N],
 ) {
-    T::store_block::<RATE>(&s.st, out, 0)
+    T::store_block::<RATE, SIZE>(&s.st, out, 0)
 }
 
 #[inline(always)]
-fn squeeze_next_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
+pub(crate) fn squeeze_next_block<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const SIZE: usize>(
     s: &mut KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [[u8; SIZE]; N],
     start: usize
 ) {
     keccakf1600(s);
-    T::store_block::<RATE>(&s.st, out, start)
+    T::store_block::<RATE, SIZE>(&s.st, out, start)
 }
 
 #[inline(always)]
@@ -222,13 +222,14 @@ pub(crate) fn squeeze_first_three_blocks<
     const N: usize,
     T: KeccakStateItem<N>,
     const RATE: usize,
+    const SIZE: usize
 >(
     s: &mut KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [[u8; SIZE]; N],
 ) {
-    squeeze_first_block::<N, T, RATE>(s, out);
-    squeeze_next_block::<N, T, RATE>(s, out, RATE);
-    squeeze_next_block::<N, T, RATE>(s, out, 2*RATE);
+    squeeze_first_block::<N, T, RATE, SIZE>(s, out);
+    squeeze_next_block::<N, T, RATE, SIZE>(s, out, RATE);
+    squeeze_next_block::<N, T, RATE, SIZE>(s, out, 2*RATE);
 }
 
 #[inline(always)]
@@ -236,51 +237,47 @@ pub(crate) fn squeeze_first_five_blocks<
     const N: usize,
     T: KeccakStateItem<N>,
     const RATE: usize,
+    const SIZE: usize
 >(
     s: &mut KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [[u8; SIZE]; N],
 ) {
-    let (o0, o1) = T::split_at_mut_n(out, RATE);
-    squeeze_first_block::<N, T, RATE>(s, o0);
-    let (o1, o2) = T::split_at_mut_n(o1, RATE);
-
-    squeeze_next_block::<N, T, RATE>(s, o1);
-    let (o2, o3) = T::split_at_mut_n(o2, RATE);
-
-    squeeze_next_block::<N, T, RATE>(s, o2);
-    let (o3, o4) = T::split_at_mut_n(o3, RATE);
-
-    squeeze_next_block::<N, T, RATE>(s, o3);
-    squeeze_next_block::<N, T, RATE>(s, o4);
+    squeeze_first_block::<N, T, RATE, SIZE>(s, out);
+    squeeze_next_block::<N, T, RATE, SIZE>(s, out, RATE);
+    squeeze_next_block::<N, T, RATE, SIZE>(s, out, 2*RATE);
+    squeeze_next_block::<N, T, RATE, SIZE>(s, out, 3*RATE);
+    squeeze_next_block::<N, T, RATE, SIZE>(s, out, 4*RATE);
 }
 
+
 #[inline(always)]
-pub(crate) fn squeeze_last<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
+pub(crate) fn squeeze_last<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const SIZE: usize>(
     mut s: KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [[u8; SIZE]; N],
+    start: usize
 ) {
     keccakf1600(&mut s);
     let b = T::store_block_full::<RATE>(&s.st);
     for i in 0..N {
-        out[i].copy_from_slice(&b[i][0..out[i].len()]);
+        out[i][start..SIZE].copy_from_slice(&b[i][0..SIZE - start]);
     }
 }
 
 #[inline(always)]
-pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakStateItem<N>, const RATE: usize>(
+pub(crate) fn squeeze_first_and_last<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const SIZE: usize>(
     s: &KeccakState<N, T>,
-    out: [&mut [u8]; N],
+    out: &mut [[u8; SIZE]; N],
 ) {
     let b = T::store_block_full::<RATE>(&s.st);
     for i in 0..N {
-        out[i].copy_from_slice(&b[i][0..out[i].len()]);
+        out[i].copy_from_slice(&b[i][0..SIZE]);
     }
 }
 
 #[inline(always)]
-pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const DELIM: u8>(
+pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const SIZE: usize, const DELIM: u8>(
     data: [&[u8]; N],
-    out: [&mut [u8]; N],
+    out: &mut [[u8; SIZE]; N],
 ) {
     let mut s = KeccakState::<N, T>::new();
     for i in 0..data[0].len() / RATE {
@@ -294,17 +291,14 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
     let last = outlen - (outlen % RATE);
 
     if blocks == 0 {
-        squeeze_first_and_last::<N, T, RATE>(&s, out)
+        squeeze_first_and_last::<N, T, RATE, SIZE>(&s, out)
     } else {
-        let (o0, mut o1) = T::split_at_mut_n(out, RATE);
-        squeeze_first_block::<N, T, RATE>(&s, o0);
-        for _i in 1..blocks {
-            let (o, orest) = T::split_at_mut_n(o1, RATE);
-            squeeze_next_block::<N, T, RATE>(&mut s, o);
-            o1 = orest;
+        squeeze_first_block::<N, T, RATE, SIZE>(&s, out);
+        for i in 1..blocks {
+            squeeze_next_block::<N, T, RATE, SIZE>(&mut s, out, i*RATE);
         }
         if last < outlen {
-            squeeze_last::<N, T, RATE>(s, o1)
+            squeeze_last::<N, T, RATE, SIZE>(s, out, blocks*RATE)
         }
     }
 }
