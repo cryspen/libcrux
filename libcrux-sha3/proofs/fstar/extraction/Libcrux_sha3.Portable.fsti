@@ -3,6 +3,16 @@ module Libcrux_sha3.Portable
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_sha3.Portable_keccak in
+  let open Libcrux_sha3.Traits in
+  ()
+
+val keccakx1 (v_RATE v_SIZE: usize) (v_DELIM: u8) (data out: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
 /// A portable SHA3 224 implementation.
 val sha224 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -16,11 +26,11 @@ val sha384 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun
 val sha512 (digest data: t_Slice u8) : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 /// A portable SHAKE128 implementation.
-val shake128 (digest data: t_Slice u8)
+val shake128 (v_SIZE: usize) (digest data: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 /// A portable SHAKE256 implementation.
-val shake256 (digest data: t_Slice u8)
+val shake256 (v_SIZE: usize) (digest data: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 type t_KeccakState1 = { f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64 }

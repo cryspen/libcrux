@@ -5,7 +5,7 @@
 //! If the caller does not perform feature detection, the top level functions
 //! must be used.
 
-#[cfg(feature = "simd128")]
+#[cfg(any(feature = "simd128", hax))]
 pub(crate) mod arm64;
-#[cfg(feature = "simd256")]
+#[cfg(any(feature = "simd256", hax))]
 pub(crate) mod avx2;

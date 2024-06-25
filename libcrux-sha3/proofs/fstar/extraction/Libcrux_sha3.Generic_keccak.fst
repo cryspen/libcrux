@@ -10,81 +10,12 @@ let _ =
   let open Libcrux_sha3.Traits.Internal in
   ()
 
-let v_ROUNDCONSTANTS: t_Array u64 (sz 24) =
-  let list =
-    [
-      1uL; 32898uL; 9223372036854808714uL; 9223372039002292224uL; 32907uL; 2147483649uL;
-      9223372039002292353uL; 9223372036854808585uL; 138uL; 136uL; 2147516425uL; 2147483658uL;
-      2147516555uL; 9223372036854775947uL; 9223372036854808713uL; 9223372036854808579uL;
-      9223372036854808578uL; 9223372036854775936uL; 32778uL; 9223372039002259466uL;
-      9223372039002292353uL; 9223372036854808704uL; 2147483649uL; 9223372039002292232uL
-    ]
-  in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 24);
-  Rust_primitives.Hax.array_of_list 24 list
-
-let v__PI: t_Array usize (sz 24) =
-  let list =
-    [
-      sz 6; sz 12; sz 18; sz 24; sz 3; sz 9; sz 10; sz 16; sz 22; sz 1; sz 7; sz 13; sz 19; sz 20;
-      sz 4; sz 5; sz 11; sz 17; sz 23; sz 2; sz 8; sz 14; sz 15; sz 21
-    ]
-  in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 24);
-  Rust_primitives.Hax.array_of_list 24 list
-
-/// From here, everything is generic
-let v__ROTC: t_Array usize (sz 24) =
-  let list =
-    [
-      sz 1; sz 62; sz 28; sz 27; sz 36; sz 44; sz 6; sz 55; sz 20; sz 3; sz 10; sz 43; sz 25; sz 39;
-      sz 41; sz 45; sz 15; sz 21; sz 8; sz 18; sz 2; sz 61; sz 56; sz 14
-    ]
-  in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 24);
-  Rust_primitives.Hax.array_of_list 24 list
-
-(* item error backend: ((Diagnostics.Context.Backend FStar),
- Types.AttributeRejected {
-   reason =
-   "a type cannot be opaque if its module is not extracted as an interface"})
-
-Last AST:
-#[_hax::json("\"OpaqueType\"")]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-struct t_KeccakState<const N: int, T>
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    f_st: [[T; 5]; 5],
-}
- *)
-
-[@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl
-      (v_N: usize)
-      (#v_T: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
-    : Core.Ops.Index.t_Index (t_KeccakState v_N v_T) usize =
-  {
-    f_Output = t_Array v_T (sz 5);
-    f_index_pre = (fun (self: t_KeccakState v_N v_T) (index: usize) -> true);
-    f_index_post
-    =
-    (fun (self: t_KeccakState v_N v_T) (index: usize) (out: t_Array v_T (sz 5)) -> true);
-    f_index = fun (self: t_KeccakState v_N v_T) (index: usize) -> self.f_st.[ index ]
-  }
-
-/// Create a new Shake128 x4 state.
 let impl_1__new
       (v_N: usize)
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (_: Prims.unit)
-    : t_KeccakState v_N v_T =
+     =
   {
     f_st
     =
@@ -106,7 +37,7 @@ let chi
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
-    : t_KeccakState v_N v_T =
+     =
   let old:t_Array (t_Array v_T (sz 5)) (sz 5) = s.f_st in
   let s, hax_temp_output:t_KeccakState v_N v_T =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
@@ -174,7 +105,7 @@ let iota
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
       (i: usize)
-    : t_KeccakState v_N v_T =
+     =
   let s:t_KeccakState v_N v_T =
     {
       s with
@@ -205,7 +136,7 @@ let pi
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
-    : t_KeccakState v_N v_T =
+     =
   let old:t_Array (t_Array v_T (sz 5)) (sz 5) =
     Core.Clone.f_clone #(t_Array (t_Array v_T (sz 5)) (sz 5)) s.f_st
   in
@@ -650,7 +581,7 @@ let squeeze_first_and_last
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
       (out: t_Array (t_Array u8 v_SIZE) v_N)
-    : t_Array (t_Array u8 v_SIZE) v_N =
+     =
   let b:t_Array (t_Array u8 (sz 200)) v_N =
     Libcrux_sha3.Traits.Internal.f_store_block_full #v_T v_N v_RATE s.f_st
   in
@@ -692,7 +623,7 @@ let squeeze_first_block
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
       (out: t_Array (t_Array u8 v_SIZE) v_N)
-    : t_Array (t_Array u8 v_SIZE) v_N =
+     =
   let hax_temp_output, out:(Prims.unit & t_Array (t_Array u8 v_SIZE) v_N) =
     (), Libcrux_sha3.Traits.Internal.f_store_block #v_T v_N v_RATE v_SIZE s.f_st out (sz 0)
     <:
@@ -705,7 +636,7 @@ let theta_rho
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
-    : t_KeccakState v_N v_T =
+     =
   let (c: t_Array v_T (sz 5)):t_Array v_T (sz 5) =
     let list =
       [
@@ -1407,7 +1338,7 @@ let keccakf1600
       (#v_T: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
-    : t_KeccakState v_N v_T =
+     =
   let s, hax_temp_output:t_KeccakState v_N v_T =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
@@ -1435,7 +1366,7 @@ let absorb_block
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
       (blocks: t_Array (t_Slice u8) v_N)
-    : t_KeccakState v_N v_T =
+     =
   let s:t_KeccakState v_N v_T =
     { s with f_st = Libcrux_sha3.Traits.Internal.f_load_block #v_T v_N v_RATE s.f_st blocks }
     <:
@@ -1454,7 +1385,7 @@ let absorb_final
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
       (last: t_Array (t_Slice u8) v_N)
-    : t_KeccakState v_N v_T =
+     =
   let _:Prims.unit =
     if true
     then
@@ -1555,7 +1486,7 @@ let squeeze_last
       (s: t_KeccakState v_N v_T)
       (out: t_Array (t_Array u8 v_SIZE) v_N)
       (start: usize)
-    : t_Array (t_Array u8 v_SIZE) v_N =
+     =
   let s:t_KeccakState v_N v_T = keccakf1600 v_N #v_T s in
   let b:t_Array (t_Array u8 (sz 200)) v_N =
     Libcrux_sha3.Traits.Internal.f_store_block_full #v_T v_N v_RATE s.f_st
@@ -1614,7 +1545,7 @@ let squeeze_next_block
       (s: t_KeccakState v_N v_T)
       (out: t_Array (t_Array u8 v_SIZE) v_N)
       (start: usize)
-    : (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+     =
   let s:t_KeccakState v_N v_T = keccakf1600 v_N #v_T s in
   let hax_temp_output, out:(Prims.unit & t_Array (t_Array u8 v_SIZE) v_N) =
     (), Libcrux_sha3.Traits.Internal.f_store_block #v_T v_N v_RATE v_SIZE s.f_st out start
@@ -1631,7 +1562,7 @@ let keccak
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (data: t_Array (t_Slice u8) v_N)
       (out: t_Array (t_Array u8 v_SIZE) v_N)
-    : t_Array (t_Array u8 v_SIZE) v_N =
+     =
   let s:t_KeccakState v_N v_T = impl_1__new v_N #v_T () in
   let s:t_KeccakState v_N v_T =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
@@ -1734,7 +1665,7 @@ let squeeze_first_five_blocks
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
       (out: t_Array (t_Array u8 v_SIZE) v_N)
-    : (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+     =
   let out:t_Array (t_Array u8 v_SIZE) v_N = squeeze_first_block v_N #v_T v_RATE v_SIZE s out in
   let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
     squeeze_next_block v_N #v_T v_RATE v_SIZE s out v_RATE
@@ -1769,7 +1700,7 @@ let squeeze_first_three_blocks
       (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
       (s: t_KeccakState v_N v_T)
       (out: t_Array (t_Array u8 v_SIZE) v_N)
-    : (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+     =
   let out:t_Array (t_Array u8 v_SIZE) v_N = squeeze_first_block v_N #v_T v_RATE v_SIZE s out in
   let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
     squeeze_next_block v_N #v_T v_RATE v_SIZE s out v_RATE

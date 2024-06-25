@@ -54,50 +54,6 @@ let t_Sha3_512Digest = t_Array u8 (sz 64)
 /// Returns the output size of a digest.
 val digest_size (mode: t_Algorithm) : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
 
-/// SHA3
-val hash (v_LEN: usize) (algorithm: t_Algorithm) (payload: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 224
-val sha224 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 28)) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 224
-/// Preconditions:
-/// - `digest.len() == 28`
-val sha224_ema (digest payload: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 256
-val sha256 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 256
-val sha256_ema (digest payload: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 384
-val sha384 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 48)) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 384
-val sha384_ema (digest payload: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 512
-val sha512 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 64)) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHA3 512
-val sha512_ema (digest payload: t_Slice u8)
-    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHAKE 128
-val shake128 (v_BYTES: usize) (data: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_BYTES) Prims.l_True (fun _ -> Prims.l_True)
-
-/// SHAKE 256
-/// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
-/// the output will only return `u32::MAX` bytes.
-val shake256 (v_BYTES: usize) (data: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_BYTES) Prims.l_True (fun _ -> Prims.l_True)
-
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Core.Convert.t_From t_Algorithm u32 =
   {
@@ -116,3 +72,47 @@ let impl: Core.Convert.t_From t_Algorithm u32 =
             <:
             Rust_primitives.Hax.t_Never)
   }
+
+/// SHA3
+val hash (v_LEN: usize) (algorithm: t_Algorithm) (payload: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_LEN) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 224
+/// Preconditions:
+/// - `digest.len() == 28`
+val sha224_ema (digest payload: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 224
+val sha224 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 28)) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 256
+val sha256_ema (digest payload: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 256
+val sha256 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 384
+val sha384_ema (digest payload: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 384
+val sha384 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 48)) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 512
+val sha512_ema (digest payload: t_Slice u8)
+    : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHA3 512
+val sha512 (data: t_Slice u8) : Prims.Pure (t_Array u8 (sz 64)) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHAKE 128
+val shake128 (v_BYTES: usize) (data: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_BYTES) Prims.l_True (fun _ -> Prims.l_True)
+
+/// SHAKE 256
+/// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
+/// the output will only return `u32::MAX` bytes.
+val shake256 (v_BYTES: usize) (data: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_BYTES) Prims.l_True (fun _ -> Prims.l_True)
