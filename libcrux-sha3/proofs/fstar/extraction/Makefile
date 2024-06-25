@@ -50,21 +50,7 @@ all:
 
 VERIFIED = 
 
-UNVERIFIED = \
-	Libcrux_sha3.Avx2.X4.Incremental.fst \
-	Libcrux_sha3.Avx2.X4.fst \
-	Libcrux_sha3.Generic_keccak.fst \
-	Libcrux_sha3.Neon.X2.Incremental.fst \
-	Libcrux_sha3.Neon.X2.fst \
-	Libcrux_sha3.Neon.fst \
-	Libcrux_sha3.Portable.Incremental.fst \
-	Libcrux_sha3.Portable.fst \
-	Libcrux_sha3.Portable_keccak.fst \
-	Libcrux_sha3.Simd.Arm64.fst \
-	Libcrux_sha3.Simd.Avx2.fst \
-	Libcrux_sha3.Traits.Internal.fst \
-	Libcrux_sha3.Traits.fst \
-	Libcrux_sha3.fst
+UNVERIFIED = $(wildcard *.fst)
 
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(VERIFIED)))
 UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIED)))

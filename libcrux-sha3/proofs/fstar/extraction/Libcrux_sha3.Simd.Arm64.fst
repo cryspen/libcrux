@@ -3,21 +3,19 @@ module Libcrux_sha3.Simd.Arm64
 open Core
 open FStar.Mul
 
-let v__vbcaxq_u64 (a b c: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) =
-  Libcrux_intrinsics.Arm64.v__veorq_u64 a
-    (Libcrux_intrinsics.Arm64.v__vbicq_u64 b c <: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+let v__vbcaxq_u64 (a b c: u8) =
+  Libcrux_intrinsics.Arm64_extract.v__veorq_u64 a
+    (Libcrux_intrinsics.Arm64_extract.v__vbicq_u64 b c <: u8)
 
-let v__veor5q_u64 (a b c d e: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) =
-  let ab:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t = Libcrux_intrinsics.Arm64.v__veorq_u64 a b in
-  let cd:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t = Libcrux_intrinsics.Arm64.v__veorq_u64 c d in
-  let abcd:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t =
-    Libcrux_intrinsics.Arm64.v__veorq_u64 ab cd
-  in
-  Libcrux_intrinsics.Arm64.v__veorq_u64 abcd e
+let v__veor5q_u64 (a b c d e: u8) =
+  let ab:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_u64 a b in
+  let cd:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_u64 c d in
+  let abcd:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_u64 ab cd in
+  Libcrux_intrinsics.Arm64_extract.v__veorq_u64 abcd e
 
-let v__veorq_n_u64 (a: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) (c: u64) =
-  let c:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t = Libcrux_intrinsics.Arm64.v__vdupq_n_u64 c in
-  Libcrux_intrinsics.Arm64.v__veorq_u64 a c
+let v__veorq_n_u64 (a: u8) (c: u64) =
+  let c:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_u64 c in
+  Libcrux_intrinsics.Arm64_extract.v__veorq_u64 a c
 
 let slice_2_ (a: t_Array (t_Slice u8) (sz 2)) (start len: usize) =
   let list =
@@ -39,7 +37,7 @@ let slice_2_ (a: t_Array (t_Slice u8) (sz 2)) (start len: usize) =
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
   Rust_primitives.Hax.array_of_list 2 list
 
-let rotate_left (v_LEFT v_RIGHT: i32) (x: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) =
+let rotate_left (v_LEFT v_RIGHT: i32) (x: u8) =
   let _:Prims.unit =
     if true
     then
@@ -53,24 +51,22 @@ let rotate_left (v_LEFT v_RIGHT: i32) (x: Core.Core_arch.Arm_shared.Neon.t_uint6
       in
       ()
   in
-  Libcrux_intrinsics.Arm64.v__veorq_u64 (Libcrux_intrinsics.Arm64.v__vshlq_n_u64 v_LEFT x
+  Libcrux_intrinsics.Arm64_extract.v__veorq_u64 (Libcrux_intrinsics.Arm64_extract.v__vshlq_n_u64 v_LEFT
+        x
       <:
-      Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
-    (Libcrux_intrinsics.Arm64.v__vshrq_n_u64 v_RIGHT x
-      <:
-      Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+      u8)
+    (Libcrux_intrinsics.Arm64_extract.v__vshrq_n_u64 v_RIGHT x <: u8)
 
-let v__vrax1q_u64 (a b: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) =
-  Libcrux_intrinsics.Arm64.v__veorq_u64 a
-    (rotate_left 1l 63l b <: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+let v__vrax1q_u64 (a b: u8) =
+  Libcrux_intrinsics.Arm64_extract.v__veorq_u64 a (rotate_left 1l 63l b <: u8)
 
-let v__vxarq_u64 (v_LEFT v_RIGHT: i32) (a b: Core.Core_arch.Arm_shared.Neon.t_uint64x2_t) =
-  let ab:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t = Libcrux_intrinsics.Arm64.v__veorq_u64 a b in
+let v__vxarq_u64 (v_LEFT v_RIGHT: i32) (a b: u8) =
+  let ab:u8 = Libcrux_intrinsics.Arm64_extract.v__veorq_u64 a b in
   rotate_left v_LEFT v_RIGHT ab
 
 let load_block
       (v_RATE: usize)
-      (s: t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5))
+      (s: t_Array (t_Array u8 (sz 5)) (sz 5))
       (blocks: t_Array (t_Slice u8) (sz 2))
      =
   let _:Prims.unit =
@@ -89,7 +85,7 @@ let load_block
       in
       ()
   in
-  let s:t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) =
+  let s:t_Array (t_Array u8 (sz 5)) (sz 5) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_RATE /! sz 16 <: usize }
@@ -99,10 +95,10 @@ let load_block
         Core.Ops.Range.t_Range usize)
       s
       (fun s i ->
-          let s:t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) = s in
+          let s:t_Array (t_Array u8 (sz 5)) (sz 5) = s in
           let i:usize = i in
-          let v0:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t =
-            Libcrux_intrinsics.Arm64.v__vld1q_bytes_u64 ((blocks.[ sz 0 ] <: t_Slice u8).[ {
+          let v0:u8 =
+            Libcrux_intrinsics.Arm64_extract.v__vld1q_bytes_u64 ((blocks.[ sz 0 ] <: t_Slice u8).[ {
                     Core.Ops.Range.f_start = sz 16 *! i <: usize;
                     Core.Ops.Range.f_end = sz 16 *! (i +! sz 1 <: usize) <: usize
                   }
@@ -111,8 +107,8 @@ let load_block
                 <:
                 t_Slice u8)
           in
-          let v1:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t =
-            Libcrux_intrinsics.Arm64.v__vld1q_bytes_u64 ((blocks.[ sz 1 ] <: t_Slice u8).[ {
+          let v1:u8 =
+            Libcrux_intrinsics.Arm64_extract.v__vld1q_bytes_u64 ((blocks.[ sz 1 ] <: t_Slice u8).[ {
                     Core.Ops.Range.f_start = sz 16 *! i <: usize;
                     Core.Ops.Range.f_end = sz 16 *! (i +! sz 1 <: usize) <: usize
                   }
@@ -121,7 +117,7 @@ let load_block
                 <:
                 t_Slice u8)
           in
-          let s:t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) =
+          let s:t_Array (t_Array u8 (sz 5)) (sz 5) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s
               ((sz 2 *! i <: usize) /! sz 5 <: usize)
               (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (s.[ (sz 2 *! i <: usize) /!
@@ -129,28 +125,22 @@ let load_block
                       <:
                       usize ]
                     <:
-                    t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5))
+                    t_Array u8 (sz 5))
                   ((sz 2 *! i <: usize) %! sz 5 <: usize)
-                  (Libcrux_intrinsics.Arm64.v__veorq_u64 ((s.[ (sz 2 *! i <: usize) /! sz 5 <: usize
-                          ]
-                          <:
-                          t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ (sz 2 *! i
+                  (Libcrux_intrinsics.Arm64_extract.v__veorq_u64 ((s.[ (sz 2 *! i <: usize) /! sz 5
                             <:
-                            usize) %!
-                          sz 5
+                            usize ]
                           <:
-                          usize ]
+                          t_Array u8 (sz 5)).[ (sz 2 *! i <: usize) %! sz 5 <: usize ]
                         <:
-                        Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
-                      (Libcrux_intrinsics.Arm64.v__vtrn1q_u64 v0 v1
-                        <:
-                        Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                        u8)
+                      (Libcrux_intrinsics.Arm64_extract.v__vtrn1q_u64 v0 v1 <: u8)
                     <:
-                    Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                    u8)
                 <:
-                t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5))
+                t_Array u8 (sz 5))
           in
-          let s:t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) =
+          let s:t_Array (t_Array u8 (sz 5)) (sz 5) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s
               (((sz 2 *! i <: usize) +! sz 1 <: usize) /! sz 5 <: usize)
               (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (s.[ ((sz 2 *! i <: usize
@@ -162,39 +152,29 @@ let load_block
                       <:
                       usize ]
                     <:
-                    t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5))
+                    t_Array u8 (sz 5))
                   (((sz 2 *! i <: usize) +! sz 1 <: usize) %! sz 5 <: usize)
-                  (Libcrux_intrinsics.Arm64.v__veorq_u64 ((s.[ ((sz 2 *! i <: usize) +! sz 1
+                  (Libcrux_intrinsics.Arm64_extract.v__veorq_u64 ((s.[ ((sz 2 *! i <: usize) +! sz 1
                               <:
                               usize) /!
                             sz 5
                             <:
                             usize ]
                           <:
-                          t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ ((sz 2 *! i
-                              <:
-                              usize) +!
-                            sz 1
-                            <:
-                            usize) %!
-                          sz 5
+                          t_Array u8 (sz 5)).[ ((sz 2 *! i <: usize) +! sz 1 <: usize) %! sz 5
                           <:
                           usize ]
                         <:
-                        Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
-                      (Libcrux_intrinsics.Arm64.v__vtrn2q_u64 v0 v1
-                        <:
-                        Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                        u8)
+                      (Libcrux_intrinsics.Arm64_extract.v__vtrn2q_u64 v0 v1 <: u8)
                     <:
-                    Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                    u8)
                 <:
-                t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5))
+                t_Array u8 (sz 5))
           in
           s)
   in
-  let s, hax_temp_output:(t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5))
-      (sz 5) &
-    Prims.unit) =
+  let s, hax_temp_output:(t_Array (t_Array u8 (sz 5)) (sz 5) & Prims.unit) =
     if (v_RATE %! sz 16 <: usize) <>. sz 0
     then
       let i:usize = ((v_RATE /! sz 8 <: usize) -! sz 1 <: usize) /! sz 5 in
@@ -244,43 +224,35 @@ let load_block
             <:
             u64)
       in
-      let uvec:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t =
-        Libcrux_intrinsics.Arm64.v__vld1q_u64 (Rust_primitives.unsize u <: t_Slice u64)
+      let uvec:u8 =
+        Libcrux_intrinsics.Arm64_extract.v__vld1q_u64 (Rust_primitives.unsize u <: t_Slice u64)
       in
-      let s:t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) =
+      let s:t_Array (t_Array u8 (sz 5)) (sz 5) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize s
           i
-          (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (s.[ i ]
-                <:
-                t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5))
+          (Rust_primitives.Hax.Monomorphized_update_at.update_at_usize (s.[ i ] <: t_Array u8 (sz 5)
+              )
               j
-              (Libcrux_intrinsics.Arm64.v__veorq_u64 ((s.[ i ]
-                      <:
-                      t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ j ]
+              (Libcrux_intrinsics.Arm64_extract.v__veorq_u64 ((s.[ i ] <: t_Array u8 (sz 5)).[ j ]
                     <:
-                    Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                    u8)
                   uvec
                 <:
-                Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                u8)
             <:
-            t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5))
+            t_Array u8 (sz 5))
       in
-      s, ()
-      <:
-      (t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) & Prims.unit)
-    else
-      s, ()
-      <:
-      (t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) & Prims.unit)
+      s, () <: (t_Array (t_Array u8 (sz 5)) (sz 5) & Prims.unit)
+    else s, () <: (t_Array (t_Array u8 (sz 5)) (sz 5) & Prims.unit)
   in
   s
 
 let load_block_full
       (v_RATE: usize)
-      (s: t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5))
+      (s: t_Array (t_Array u8 (sz 5)) (sz 5))
       (blocks: t_Array (t_Array u8 (sz 200)) (sz 2))
      =
-  let s:t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5) =
+  let s:t_Array (t_Array u8 (sz 5)) (sz 5) =
     load_block v_RATE
       s
       (let list =
@@ -296,7 +268,7 @@ let load_block_full
 
 let store_block
       (v_RATE v_SIZE: usize)
-      (s: t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5))
+      (s: t_Array (t_Array u8 (sz 5)) (sz 5))
       (out: t_Array (t_Array u8 v_SIZE) (sz 2))
       (start: usize)
      =
@@ -312,49 +284,31 @@ let store_block
       (fun out i ->
           let out:t_Array (t_Array u8 v_SIZE) (sz 2) = out in
           let i:usize = i in
-          let v0:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t =
-            Libcrux_intrinsics.Arm64.v__vtrn1q_u64 ((s.[ (sz 2 *! i <: usize) /! sz 5 <: usize ]
-                  <:
-                  t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ (sz 2 *! i <: usize) %!
-                  sz 5
-                  <:
-                  usize ]
-                <:
-                Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
-              ((s.[ ((sz 2 *! i <: usize) +! sz 1 <: usize) /! sz 5 <: usize ]
-                  <:
-                  t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ ((sz 2 *! i <: usize
-                    ) +!
-                    sz 1
+          let v0:u8 =
+            Libcrux_intrinsics.Arm64_extract.v__vtrn1q_u64 ((s.[ (sz 2 *! i <: usize) /! sz 5
                     <:
-                    usize) %!
-                  sz 5
+                    usize ]
                   <:
-                  usize ]
+                  t_Array u8 (sz 5)).[ (sz 2 *! i <: usize) %! sz 5 <: usize ]
                 <:
-                Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                u8)
+              ((s.[ ((sz 2 *! i <: usize) +! sz 1 <: usize) /! sz 5 <: usize ] <: t_Array u8 (sz 5)).[
+                  ((sz 2 *! i <: usize) +! sz 1 <: usize) %! sz 5 <: usize ]
+                <:
+                u8)
           in
-          let v1:Core.Core_arch.Arm_shared.Neon.t_uint64x2_t =
-            Libcrux_intrinsics.Arm64.v__vtrn2q_u64 ((s.[ (sz 2 *! i <: usize) /! sz 5 <: usize ]
-                  <:
-                  t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ (sz 2 *! i <: usize) %!
-                  sz 5
-                  <:
-                  usize ]
-                <:
-                Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
-              ((s.[ ((sz 2 *! i <: usize) +! sz 1 <: usize) /! sz 5 <: usize ]
-                  <:
-                  t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ ((sz 2 *! i <: usize
-                    ) +!
-                    sz 1
+          let v1:u8 =
+            Libcrux_intrinsics.Arm64_extract.v__vtrn2q_u64 ((s.[ (sz 2 *! i <: usize) /! sz 5
                     <:
-                    usize) %!
-                  sz 5
+                    usize ]
                   <:
-                  usize ]
+                  t_Array u8 (sz 5)).[ (sz 2 *! i <: usize) %! sz 5 <: usize ]
                 <:
-                Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+                u8)
+              ((s.[ ((sz 2 *! i <: usize) +! sz 1 <: usize) /! sz 5 <: usize ] <: t_Array u8 (sz 5)).[
+                  ((sz 2 *! i <: usize) +! sz 1 <: usize) %! sz 5 <: usize ]
+                <:
+                u8)
           in
           let out:t_Array (t_Array u8 v_SIZE) (sz 2) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
@@ -370,8 +324,9 @@ let store_block
                     }
                     <:
                     Core.Ops.Range.t_Range usize)
-                  (Libcrux_intrinsics.Arm64.v__vst1q_bytes_u64 ((out.[ sz 0 ] <: t_Array u8 v_SIZE).[
-                          {
+                  (Libcrux_intrinsics.Arm64_extract.v__vst1q_bytes_u64 ((out.[ sz 0 ]
+                          <:
+                          t_Array u8 v_SIZE).[ {
                             Core.Ops.Range.f_start = start +! (sz 16 *! i <: usize) <: usize;
                             Core.Ops.Range.f_end
                             =
@@ -401,8 +356,9 @@ let store_block
                     }
                     <:
                     Core.Ops.Range.t_Range usize)
-                  (Libcrux_intrinsics.Arm64.v__vst1q_bytes_u64 ((out.[ sz 1 ] <: t_Array u8 v_SIZE).[
-                          {
+                  (Libcrux_intrinsics.Arm64_extract.v__vst1q_bytes_u64 ((out.[ sz 1 ]
+                          <:
+                          t_Array u8 v_SIZE).[ {
                             Core.Ops.Range.f_start = start +! (sz 16 *! i <: usize) <: usize;
                             Core.Ops.Range.f_end
                             =
@@ -440,10 +396,8 @@ let store_block
       let j:usize = ((v_RATE /! sz 8 <: usize) -! sz 1 <: usize) %! sz 5 in
       let u:t_Array u8 (sz 16) = Rust_primitives.Hax.repeat 0uy (sz 16) in
       let u:t_Array u8 (sz 16) =
-        Libcrux_intrinsics.Arm64.v__vst1q_bytes_u64 u
-          ((s.[ i ] <: t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)).[ j ]
-            <:
-            Core.Core_arch.Arm_shared.Neon.t_uint64x2_t)
+        Libcrux_intrinsics.Arm64_extract.v__vst1q_bytes_u64 u
+          ((s.[ i ] <: t_Array u8 (sz 5)).[ j ] <: u8)
       in
       let out:t_Array (t_Array u8 v_SIZE) (sz 2) =
         Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
@@ -512,10 +466,7 @@ let store_block
   in
   out
 
-let store_block_full
-      (v_RATE: usize)
-      (s: t_Array (t_Array Core.Core_arch.Arm_shared.Neon.t_uint64x2_t (sz 5)) (sz 5))
-     =
+let store_block_full (v_RATE: usize) (s: t_Array (t_Array u8 (sz 5)) (sz 5)) =
   let out:t_Array (t_Array u8 (sz 200)) (sz 2) =
     let list = [Rust_primitives.Hax.repeat 0uy (sz 200); Rust_primitives.Hax.repeat 0uy (sz 200)] in
     FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);

@@ -17,14 +17,7 @@ let keccakx2
       (out: t_Array (t_Array u8 v_SIZE) (sz 2))
      =
   let hax_temp_output, out:(Prims.unit & t_Array (t_Array u8 v_SIZE) (sz 2)) =
-    (),
-    Libcrux_sha3.Generic_keccak.keccak (sz 2)
-      #Core.Core_arch.Arm_shared.Neon.t_uint64x2_t
-      v_RATE
-      v_SIZE
-      v_DELIM
-      data
-      out
+    (), Libcrux_sha3.Generic_keccak.keccak (sz 2) #u8 v_RATE v_SIZE v_DELIM data out
     <:
     (Prims.unit & t_Array (t_Array u8 v_SIZE) (sz 2))
   in
