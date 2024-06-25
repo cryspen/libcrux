@@ -11,13 +11,9 @@ let _ =
   ()
 
 unfold
-let t_KeccakState2Internal =
-  Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2) Core.Core_arch.Arm_shared.Neon.t_uint64x2_t
+let t_KeccakState2Internal = Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2) u8
 
-type t_KeccakState2 = {
-  f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2)
-    Core.Core_arch.Arm_shared.Neon.t_uint64x2_t
-}
+type t_KeccakState2 = { f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 2) u8 }
 
 val shake128_absorb_final (s: t_KeccakState2) (data0 data1: t_Slice u8)
     : Prims.Pure t_KeccakState2 Prims.l_True (fun _ -> Prims.l_True)

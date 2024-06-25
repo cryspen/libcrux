@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_ml_kem.Types in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
 
@@ -16,10 +17,12 @@ unfold
 let t_MlKemSharedSecret = t_Array u8 (sz 32)
 
 /// Seed size for encapsulation
-let v_ENCAPS_SEED_SIZE: usize = Rust_primitives.Hax.dropped_body
+let v_ENCAPS_SEED_SIZE: usize = Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
 
 /// Seed size for key generation
-let v_KEY_GENERATION_SEED_SIZE: usize = Rust_primitives.Hax.dropped_body
+let v_KEY_GENERATION_SEED_SIZE: usize =
+  Libcrux_ml_kem.Constants.v_CPA_PKE_KEY_GENERATION_SEED_SIZE +!
+  Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
 
 /// Serialize the secret key.
 val serialize_kem_secret_key

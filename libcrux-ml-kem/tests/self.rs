@@ -81,7 +81,7 @@ fn modify_ciphertext<const LEN: usize>(
     random_u32 >>= 8;
 
     let position = random_u32 % MlKemCiphertext::<LEN>::len();
-    ciphertext[position] ^= random_byte;
+    ciphertext.set(position, ciphertext[position] ^ random_byte);
 
     ciphertext
 }
@@ -128,7 +128,7 @@ fn modify_secret_key<const LEN: usize>(
         random_u32 % (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE)
     };
 
-    raw_secret_key[position] ^= random_byte;
+    raw_secret_key.set(position, raw_secret_key[position] ^ random_byte);
 
     raw_secret_key
 }

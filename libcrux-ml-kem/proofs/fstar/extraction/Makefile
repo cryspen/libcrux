@@ -48,25 +48,92 @@ all:
 	$(MAKE) verify
 
 
-VERIFIED = \
-	Libcrux_ml_kem.Constants.fsti \
-	Libcrux_ml_kem.Kyber768.fst \
-	Libcrux_ml_kem.Kyber1024.fst \
-	Libcrux_ml_kem.Kyber512.fst
-
+VERIFIED =
 
 UNVERIFIED = \
-	Libcrux_ml_kem.Types.fst \
-	Libcrux_ml_kem.fst \
-	Libcrux_ml_kem.Ind_cpa.fst \
 	Libcrux_ml_kem.Constant_time_ops.fst \
-	Libcrux_ml_kem.Hash_functions.fst \
+	Libcrux_ml_kem.Constant_time_ops.fsti \
+	Libcrux_ml_kem.Constants.fsti \
+	Libcrux_ml_kem.Hash_functions.Avx2.fsti \
+	Libcrux_ml_kem.Hash_functions.Neon.fsti \
+	Libcrux_ml_kem.Hash_functions.Portable.fsti \
+	Libcrux_ml_kem.Hash_functions.fsti \
+	Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.fst \
+	Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.fsti \
+	Libcrux_ml_kem.Ind_cca.Instantiations.Neon.fst \
+	Libcrux_ml_kem.Ind_cca.Instantiations.Neon.fsti \
+	Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fst \
+	Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fsti \
+	Libcrux_ml_kem.Ind_cca.Multiplexing.fst \
+	Libcrux_ml_kem.Ind_cca.Multiplexing.fsti \
+	Libcrux_ml_kem.Ind_cca.fst \
+	Libcrux_ml_kem.Ind_cca.fsti \
+	Libcrux_ml_kem.Ind_cpa.fst \
+	Libcrux_ml_kem.Ind_cpa.fsti \
+	Libcrux_ml_kem.Invert_ntt.fst \
+	Libcrux_ml_kem.Invert_ntt.fsti \
 	Libcrux_ml_kem.Matrix.fst \
+	Libcrux_ml_kem.Matrix.fsti \
+	Libcrux_ml_kem.Mlkem1024.Avx2.fst \
+	Libcrux_ml_kem.Mlkem1024.Avx2.fsti \
+	Libcrux_ml_kem.Mlkem1024.Neon.fst \
+	Libcrux_ml_kem.Mlkem1024.Neon.fsti \
+	Libcrux_ml_kem.Mlkem1024.Portable.fst \
+	Libcrux_ml_kem.Mlkem1024.Portable.fsti \
+	Libcrux_ml_kem.Mlkem1024.fst \
+	Libcrux_ml_kem.Mlkem1024.fsti \
+	Libcrux_ml_kem.Mlkem512.Avx2.fst \
+	Libcrux_ml_kem.Mlkem512.Avx2.fsti \
+	Libcrux_ml_kem.Mlkem512.Neon.fst \
+	Libcrux_ml_kem.Mlkem512.Neon.fsti \
+	Libcrux_ml_kem.Mlkem512.Portable.fst \
+	Libcrux_ml_kem.Mlkem512.Portable.fsti \
+	Libcrux_ml_kem.Mlkem512.fst \
+	Libcrux_ml_kem.Mlkem512.fsti \
+	Libcrux_ml_kem.Mlkem768.Avx2.fst \
+	Libcrux_ml_kem.Mlkem768.Avx2.fsti \
+	Libcrux_ml_kem.Mlkem768.Neon.fst \
+	Libcrux_ml_kem.Mlkem768.Neon.fsti \
+	Libcrux_ml_kem.Mlkem768.Portable.fst \
+	Libcrux_ml_kem.Mlkem768.Portable.fsti \
+	Libcrux_ml_kem.Mlkem768.fst \
+	Libcrux_ml_kem.Mlkem768.fsti \
 	Libcrux_ml_kem.Ntt.fst \
+	Libcrux_ml_kem.Ntt.fsti \
+	Libcrux_ml_kem.Polynomial.fst \
+	Libcrux_ml_kem.Polynomial.fsti \
 	Libcrux_ml_kem.Sampling.fst \
-	Libcrux_ml_kem.Serialize.fst
-# Libcrux.Digest.fsti
-# Libcrux.Digest.Incremental_x4.fsti
+	Libcrux_ml_kem.Sampling.fsti \
+	Libcrux_ml_kem.Serialize.fst \
+	Libcrux_ml_kem.Serialize.fsti \
+	Libcrux_ml_kem.Types.fst \
+	Libcrux_ml_kem.Types.fsti \
+	Libcrux_ml_kem.Utils.fst \
+	Libcrux_ml_kem.Utils.fsti \
+	Libcrux_ml_kem.Vector.Avx2.Arithmetic.fst \
+	Libcrux_ml_kem.Vector.Avx2.Arithmetic.fsti \
+	Libcrux_ml_kem.Vector.Avx2.Compress.fst \
+	Libcrux_ml_kem.Vector.Avx2.Compress.fsti \
+	Libcrux_ml_kem.Vector.Avx2.fst \
+	Libcrux_ml_kem.Vector.Avx2.fsti \
+	Libcrux_ml_kem.Vector.Avx2.Ntt.fst \
+	Libcrux_ml_kem.Vector.Avx2.Ntt.fsti \
+	Libcrux_ml_kem.Vector.Avx2.Portable.fst \
+	Libcrux_ml_kem.Vector.Avx2.Portable.fsti \
+	Libcrux_ml_kem.Vector.Avx2.Sampling.fst \
+	Libcrux_ml_kem.Vector.Avx2.Sampling.fsti \
+	Libcrux_ml_kem.Vector.Avx2.Serialize.fst \
+	Libcrux_ml_kem.Vector.Avx2.Serialize.fsti \
+	Libcrux_ml_kem.Vector.Portable.fsti \
+	Libcrux_ml_kem.Vector.Rej_sample_table.fsti \
+	Libcrux_ml_kem.Vector.Traits.fst \
+	Libcrux_ml_kem.Vector.Traits.fsti \
+	Libcrux_ml_kem.Vector.Neon.fst \
+	Libcrux_ml_kem.Vector.Neon.fsti \
+	Libcrux_ml_kem.Vector.Neon.Simd128ops.fst \
+	Libcrux_ml_kem.Vector.Neon.Simd128ops.fsti \
+	Libcrux_ml_kem.Vector.fst \
+	Libcrux_ml_kem.Vector.fsti
 
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(VERIFIED)))
 UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIED)))
@@ -78,7 +145,8 @@ ROOTS = $(UNVERIFIED) $(VERIFIED)
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives \
 	$(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) \
 	../../../../sys/platform/proofs/fstar/extraction/ \
-	../../../../libcrux-sha3/proofs/fstar/extraction/
+	../../../../libcrux-sha3/proofs/fstar/extraction/ \
+	../../../../libcrux-intrinsics/proofs/fstar/extraction
 
 FSTAR_FLAGS = --cmi \
   --warn_error -331-321-274 \

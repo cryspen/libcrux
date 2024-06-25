@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Avx2
 open Core
 open FStar.Mul
 
-type t_SIMD256Vector = { f_elements:Core.Core_arch.X86.t____m256i }
+type t_SIMD256Vector = { f_elements:u8 }
 
 val from_i16_array (array: t_Slice i16)
     : Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
