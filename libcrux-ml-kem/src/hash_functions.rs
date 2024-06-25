@@ -76,7 +76,7 @@ pub(crate) mod portable {
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
             let mut digest = [0u8; LEN];
-            portable::shake256(&mut digest, input);
+            portable::shake256::<LEN>(&mut digest, input);
             digest
         }
 
@@ -86,7 +86,7 @@ pub(crate) mod portable {
 
             let mut out = [[0u8; LEN]; K];
             for i in 0..K {
-                portable::shake256(&mut out[i], &input[i]);
+                portable::shake256::<LEN>(&mut out[i], &input[i]);
             }
             out
         }
@@ -162,7 +162,7 @@ pub(crate) mod avx2 {
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
             let mut digest = [0u8; LEN];
-            portable::shake256(&mut digest, input);
+            portable::shake256::<LEN>(&mut digest, input);
             digest
         }
 
@@ -170,38 +170,32 @@ pub(crate) mod avx2 {
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
             debug_assert!(K == 2 || K == 3 || K == 4);
             let mut out = [[0u8; LEN]; K];
-            let mut out0 = [0u8; LEN];
-            let mut out1 = [0u8; LEN];
-            let mut out2 = [0u8; LEN];
-            let mut out3 = [0u8; LEN];
+            let mut out4 = [[0u8; LEN]; 4];
 
             match K as u8 {
                 2 => {
                     x4::shake256(
-                        &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1,
-                        &mut out2, &mut out3,
+                        &input[0], &input[1], &input[0], &input[0], &mut out4,
                     );
-                    out[0] = out0;
-                    out[1] = out1;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
                 }
                 3 => {
                     x4::shake256(
-                        &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1,
-                        &mut out2, &mut out3,
+                        &input[0], &input[1], &input[2], &input[0], &mut out4
                     );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
+                    out[2] = out4[2];
                 }
                 4 => {
                     x4::shake256(
-                        &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1,
-                        &mut out2, &mut out3,
+                        &input[0], &input[1], &input[2], &input[3], &mut out4
                     );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                    out[3] = out3;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
+                    out[2] = out4[2];
+                    out[3] = out4[3];
                 }
                 _ => unreachable!("This function must only be called with N = 2, 3, 4"),
             }
@@ -241,32 +235,27 @@ pub(crate) mod avx2 {
         fn shake128_squeeze_three_blocks(&mut self) -> [[u8; THREE_BLOCKS]; K] {
             debug_assert!(K == 2 || K == 3 || K == 4);
             let mut out = [[0u8; THREE_BLOCKS]; K];
-            let mut out0 = [0u8; THREE_BLOCKS];
-            let mut out1 = [0u8; THREE_BLOCKS];
-            let mut out2 = [0u8; THREE_BLOCKS];
-            let mut out3 = [0u8; THREE_BLOCKS];
+            let mut out4 = [[0u8; THREE_BLOCKS]; 4];
+            
             x4::incremental::shake128_squeeze_first_three_blocks(
                 &mut self.shake128_state,
-                &mut out0,
-                &mut out1,
-                &mut out2,
-                &mut out3,
+                &mut out4,
             );
             match K as u8 {
                 2 => {
-                    out[0] = out0;
-                    out[1] = out1;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
                 }
                 3 => {
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
+                    out[2] = out4[2];
                 }
                 4 => {
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                    out[3] = out3;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
+                    out[2] = out4[2];
+                    out[3] = out4[3];
                 }
                 _ => unreachable!("This function must only be called with N = 2, 3, 4"),
             }
@@ -277,32 +266,27 @@ pub(crate) mod avx2 {
         fn shake128_squeeze_block(&mut self) -> [[u8; BLOCK_SIZE]; K] {
             debug_assert!(K == 2 || K == 3 || K == 4);
             let mut out = [[0u8; BLOCK_SIZE]; K];
-            let mut out0 = [0u8; BLOCK_SIZE];
-            let mut out1 = [0u8; BLOCK_SIZE];
-            let mut out2 = [0u8; BLOCK_SIZE];
-            let mut out3 = [0u8; BLOCK_SIZE];
+            let mut out4 = [[0u8; BLOCK_SIZE]; 4];
+            
             x4::incremental::shake128_squeeze_next_block(
                 &mut self.shake128_state,
-                &mut out0,
-                &mut out1,
-                &mut out2,
-                &mut out3,
+                &mut out4,
             );
             match K as u8 {
                 2 => {
-                    out[0] = out0;
-                    out[1] = out1;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
                 }
                 3 => {
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
+                    out[2] = out4[2];
                 }
                 4 => {
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                    out[3] = out3;
+                    out[0] = out4[0];
+                    out[1] = out4[1];
+                    out[2] = out4[2];
+                    out[3] = out4[3];
                 }
                 _ => unreachable!("This function is only called with 2, 3, 4"),
             }
@@ -341,40 +325,37 @@ pub(crate) mod neon {
 
         #[inline(always)]
         fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
-            let mut digest = [0u8; LEN];
-            let mut dummy = [0u8; LEN];
-            x2::shake256(input, input, &mut digest, &mut dummy);
-            digest
+            let mut digest = [[0u8; LEN]; 2];
+            x2::shake256::<LEN>(input, input, &mut digest);
+            digest[0]
         }
 
         #[inline(always)]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
             debug_assert!(K == 2 || K == 3 || K == 4);
             let mut out = [[0u8; LEN]; K];
-            let mut out0 = [0u8; LEN];
-            let mut out1 = [0u8; LEN];
-            let mut out2 = [0u8; LEN];
-            let mut out3 = [0u8; LEN];
+            let mut out0 = [[0u8; LEN]; 2];
+            let mut out1 = [[0u8; LEN]; 2];
             match K as u8 {
                 2 => {
-                    x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                    out[0] = out0;
-                    out[1] = out1;
+                    x2::shake256::<LEN>(&input[0], &input[1], &mut out0);
+                    out[0] = out0[0];
+                    out[1] = out0[1];
                 }
                 3 => {
-                    x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                    x2::shake256(&input[2], &input[2], &mut out2, &mut out3);
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
+                    x2::shake256::<LEN>(&input[0], &input[1], &mut out0);
+                    x2::shake256::<LEN>(&input[2], &input[2], &mut out1);
+                    out[0] = out0[0];
+                    out[1] = out0[1];
+                    out[2] = out1[0];
                 }
                 4 => {
-                    x2::shake256(&input[0], &input[1], &mut out0, &mut out1);
-                    x2::shake256(&input[2], &input[3], &mut out2, &mut out3);
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                    out[3] = out3;
+                    x2::shake256::<LEN>(&input[0], &input[1], &mut out0);
+                    x2::shake256::<LEN>(&input[2], &input[3], &mut out1);
+                    out[0] = out0[0];
+                    out[1] = out0[1];
+                    out[2] = out1[0];
+                    out[3] = out1[1];
                 }
                 _ => unreachable!("Only 2, 3, or 4 are supported for N"),
             }
@@ -413,51 +394,45 @@ pub(crate) mod neon {
             debug_assert!(K == 2 || K == 3 || K == 4);
 
             let mut out = [[0u8; THREE_BLOCKS]; K];
-            let mut out0 = [0u8; THREE_BLOCKS];
-            let mut out1 = [0u8; THREE_BLOCKS];
-            let mut out2 = [0u8; THREE_BLOCKS];
-            let mut out3 = [0u8; THREE_BLOCKS];
+            let mut out01 = [[0u8; THREE_BLOCKS]; 2];
+            let mut out23 = [[0u8; THREE_BLOCKS]; 2];
+            
 
             match K as u8 {
                 2 => {
                     x2::incremental::shake128_squeeze_first_three_blocks(
                         &mut self.shake128_state[0],
-                        &mut out0,
-                        &mut out1,
+                        &mut out01,
                     );
-                    out[0] = out0;
-                    out[1] = out1;
+                    out[0] = out01[0];
+                    out[1] = out01[1];
                 }
                 3 => {
                     x2::incremental::shake128_squeeze_first_three_blocks(
                         &mut self.shake128_state[0],
-                        &mut out0,
-                        &mut out1,
+                        &mut out01
                     );
                     x2::incremental::shake128_squeeze_first_three_blocks(
                         &mut self.shake128_state[1],
-                        &mut out2,
-                        &mut out3,
+                        &mut out23,
                     );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
+                    out[0] = out01[0];
+                    out[1] = out01[1];
+                    out[2] = out23[0];
                 }
                 4 => {
                     x2::incremental::shake128_squeeze_first_three_blocks(
                         &mut self.shake128_state[0],
-                        &mut out0,
-                        &mut out1,
+                        &mut out01,
                     );
                     x2::incremental::shake128_squeeze_first_three_blocks(
                         &mut self.shake128_state[1],
-                        &mut out2,
-                        &mut out3,
+                        &mut out23,
                     );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                    out[3] = out3;
+                    out[0] = out01[0];
+                    out[1] = out01[1];
+                    out[2] = out23[0];
+                    out[3] = out23[1];
                 }
                 _ => unreachable!("This function can only called be called with N = 2, 3, 4"),
             }
@@ -469,51 +444,44 @@ pub(crate) mod neon {
             debug_assert!(K == 2 || K == 3 || K == 4);
 
             let mut out = [[0u8; BLOCK_SIZE]; K];
-            let mut out0 = [0u8; BLOCK_SIZE];
-            let mut out1 = [0u8; BLOCK_SIZE];
-            let mut out2 = [0u8; BLOCK_SIZE];
-            let mut out3 = [0u8; BLOCK_SIZE];
+            let mut out01 = [[0u8; BLOCK_SIZE]; 2];
+            let mut out23 = [[0u8; BLOCK_SIZE]; 2];
 
             match K as u8 {
                 2 => {
                     x2::incremental::shake128_squeeze_next_block(
                         &mut self.shake128_state[0],
-                        &mut out0,
-                        &mut out1,
+                        &mut out01,
                     );
-                    out[0] = out0;
-                    out[1] = out1;
+                    out[0] = out01[0];
+                    out[1] = out01[1];
                 }
                 3 => {
                     x2::incremental::shake128_squeeze_next_block(
                         &mut self.shake128_state[0],
-                        &mut out0,
-                        &mut out1,
+                        &mut out01,
                     );
                     x2::incremental::shake128_squeeze_next_block(
                         &mut self.shake128_state[1],
-                        &mut out2,
-                        &mut out3,
+                        &mut out23,
                     );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
+                    out[0] = out01[0];
+                    out[1] = out01[1];
+                    out[2] = out23[0];
                 }
                 4 => {
                     x2::incremental::shake128_squeeze_next_block(
                         &mut self.shake128_state[0],
-                        &mut out0,
-                        &mut out1,
+                        &mut out01,
                     );
                     x2::incremental::shake128_squeeze_next_block(
                         &mut self.shake128_state[1],
-                        &mut out2,
-                        &mut out3,
+                        &mut out23,
                     );
-                    out[0] = out0;
-                    out[1] = out1;
-                    out[2] = out2;
-                    out[3] = out3;
+                    out[0] = out01[0];
+                    out[1] = out01[1];
+                    out[2] = out23[0];
+                    out[3] = out23[1];
                 }
                 _ => unreachable!("This function is only called with N = 2, 3, 4"),
             }
