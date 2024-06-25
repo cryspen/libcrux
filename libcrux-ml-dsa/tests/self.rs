@@ -15,7 +15,7 @@ macro_rules! impl_consistency {
             let signing_randomness = random_array();
 
             // TODO: Choose the length randomly
-            let message = random_array::<948839>();
+            let message = random_array::<94883>();
 
             let key_pair = $key_gen(key_generation_seed);
 

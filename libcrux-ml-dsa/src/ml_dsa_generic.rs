@@ -390,6 +390,7 @@ pub(crate) fn verify<
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
+        // TODO: These early returns won't go through verification, fix them.
         return Err(VerificationError::SignerResponseExceedsBoundError);
     }
 
