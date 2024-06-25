@@ -68,6 +68,7 @@ pub struct MLDSA65KeyPair {
     pub verification_key: MLDSA65VerificationKey,
 }
 
+#[derive(Clone, Copy)]
 pub struct MLDSA65Signature(pub [u8; SIGNATURE_SIZE]);
 
 /// Generate an ML-DSA-65 Key Pair

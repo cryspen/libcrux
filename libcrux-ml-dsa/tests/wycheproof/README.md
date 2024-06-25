@@ -1,4 +1,4 @@
-The JSON files were taken from `https://github.com/C2SP/wycheproof/pull/112`, and
+The JSON files were taken from `https://github.com/C2SP/wycheproof/pull/112`.
 
 Both `sign_schema.rs` and `verify_schema.rs` were generated with
 [quicktype](https://github.com/glideapps/quicktype), using the commands:

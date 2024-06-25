@@ -18,3 +18,9 @@ rand = { version = "0.8" }
 hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
+criterion = "0.5"
+pqcrypto-dilithium = "0.5.0"
+
+[[bench]]
+name = "ml-dsa"
+harness = false
