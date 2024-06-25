@@ -723,11 +723,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-<<<<<<< HEAD
-source = "git+https://github.com/hacspec/hax/#6a3081c8234e5a4468704c1dc50c1bdcd4b49f96"
-=======
 source = "git+https://github.com/hacspec/hax/#2db0e6999010100dffaa4ae7711a66829eb8e192"
->>>>>>> dev_ml_kem_lax
 dependencies = [
  "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "proc-macro-error",
@@ -751,11 +747,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-<<<<<<< HEAD
-source = "git+https://github.com/hacspec/hax/#6a3081c8234e5a4468704c1dc50c1bdcd4b49f96"
-=======
 source = "git+https://github.com/hacspec/hax/#2db0e6999010100dffaa4ae7711a66829eb8e192"
->>>>>>> dev_ml_kem_lax
 dependencies = [
  "proc-macro2",
  "quote",
