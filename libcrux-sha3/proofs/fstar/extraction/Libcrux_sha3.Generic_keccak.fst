@@ -643,110 +643,62 @@ let pi
   in
   s
 
-(* item error backend: 
-Last available AST for this item:
+let squeeze_first_and_last
+      (v_N: usize)
+      (#v_T: Type0)
+      (v_RATE v_SIZE: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
+      (s: t_KeccakState v_N v_T)
+      (out: t_Array (t_Array u8 v_SIZE) v_N)
+    : t_Array (t_Array u8 v_SIZE) v_N =
+  let b:t_Array (t_Array u8 (sz 200)) v_N =
+    Libcrux_sha3.Traits.Internal.f_store_block_full #v_T v_N v_RATE s.f_st
+  in
+  let out, hax_temp_output:t_Array (t_Array u8 v_SIZE) v_N =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_N }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      out
+      (fun out i ->
+          let out:t_Array (t_Array u8 v_SIZE) v_N = out in
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+            i
+            (Core.Slice.impl__copy_from_slice #u8
+                (out.[ i ] <: t_Array u8 v_SIZE)
+                ((b.[ i ] <: t_Array u8 (sz 200)).[ {
+                      Core.Ops.Range.f_start = sz 0;
+                      Core.Ops.Range.f_end = v_SIZE
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize ]
+                  <:
+                  t_Slice u8)
+              <:
+              t_Array u8 v_SIZE)
+          <:
+          t_Array (t_Array u8 v_SIZE) v_N)
+  in
+  out
 
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn squeeze_first_and_last<const N: int, T, const RATE: int, Anonymous: 'unk, Anonymous: 'unk>(
-    s: &libcrux_sha3::generic_keccak::t_KeccakState<generic_value!(todo), T>,
-    out: [&mut [int]; N],
-) -> tuple0
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    {
-        let b: [[int; 200]; N] = {
-            libcrux_sha3::traits::internal::f_store_block_full::<
-                T,
-                generic_value!(todo),
-                generic_value!(todo),
-            >(&(deref(&(proj_libcrux_sha3::generic_keccak::f_st(deref(s))))))
-        };
-        {
-            {
-                for i in (core::iter::traits::collect::f_into_iter::<core::ops::range::t_Range<int>>(
-                    core::ops::range::Range {
-                        f_start: 0,
-                        f_end: N,
-                    },
-                )) {
-                    core::slice::impl__copy_from_slice::<int>(
-                        &mut (deref(core::ops::index::Index::index(out, i))),
-                        &(deref(core::ops::index::f_index::<
-                            [int; 200],
-                            core::ops::range::t_Range<int>,
-                        >(
-                            &(core::ops::index::Index::index(b, i)),
-                            core::ops::range::Range {
-                                f_start: 0,
-                                f_end: core::slice::impl__len::<int>(
-                                    &(deref(core::ops::index::Index::index(out, i))),
-                                ),
-                            },
-                        ))),
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "generic_keccak"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "squeeze_first_and_last");
-      disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
-
-(* item error backend: 
-Last available AST for this item:
-
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn squeeze_first_block<const N: int, T, const RATE: int, Anonymous: 'unk, Anonymous: 'unk>(
-    s: &libcrux_sha3::generic_keccak::t_KeccakState<generic_value!(todo), T>,
-    out: [&mut [int]; N],
-) -> tuple0
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    {
-        libcrux_sha3::traits::internal::f_store_block::<T, generic_value!(todo), generic_value!(todo)>(
-            &(deref(&(proj_libcrux_sha3::generic_keccak::f_st(deref(s))))),
-            out,
-        )
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "generic_keccak"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "squeeze_first_block");
-      disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
+let squeeze_first_block
+      (v_N: usize)
+      (#v_T: Type0)
+      (v_RATE v_SIZE: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
+      (s: t_KeccakState v_N v_T)
+      (out: t_Array (t_Array u8 v_SIZE) v_N)
+    : t_Array (t_Array u8 v_SIZE) v_N =
+  let hax_temp_output, out:(Prims.unit & t_Array (t_Array u8 v_SIZE) v_N) =
+    (), Libcrux_sha3.Traits.Internal.f_store_block #v_T v_N v_RATE v_SIZE s.f_st out (sz 0)
+    <:
+    (Prims.unit & t_Array (t_Array u8 v_SIZE) v_N)
+  in
+  out
 
 let theta_rho
       (v_N: usize)
@@ -1595,467 +1547,240 @@ let absorb_final
   in
   s
 
-(* item error backend: 
-Last available AST for this item:
+let squeeze_last
+      (v_N: usize)
+      (#v_T: Type0)
+      (v_RATE v_SIZE: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
+      (s: t_KeccakState v_N v_T)
+      (out: t_Array (t_Array u8 v_SIZE) v_N)
+      (start: usize)
+    : t_Array (t_Array u8 v_SIZE) v_N =
+  let s:t_KeccakState v_N v_T = keccakf1600 v_N #v_T s in
+  let b:t_Array (t_Array u8 (sz 200)) v_N =
+    Libcrux_sha3.Traits.Internal.f_store_block_full #v_T v_N v_RATE s.f_st
+  in
+  let out, hax_temp_output:t_Array (t_Array u8 v_SIZE) v_N =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_N }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      out
+      (fun out i ->
+          let out:t_Array (t_Array u8 v_SIZE) v_N = out in
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+            i
+            (Rust_primitives.Hax.Monomorphized_update_at.update_at_range (out.[ i ]
+                  <:
+                  t_Array u8 v_SIZE)
+                ({ Core.Ops.Range.f_start = start; Core.Ops.Range.f_end = v_SIZE }
+                  <:
+                  Core.Ops.Range.t_Range usize)
+                (Core.Slice.impl__copy_from_slice #u8
+                    ((out.[ i ] <: t_Array u8 v_SIZE).[ {
+                          Core.Ops.Range.f_start = start;
+                          Core.Ops.Range.f_end = v_SIZE
+                        }
+                        <:
+                        Core.Ops.Range.t_Range usize ]
+                      <:
+                      t_Slice u8)
+                    ((b.[ i ] <: t_Array u8 (sz 200)).[ {
+                          Core.Ops.Range.f_start = sz 0;
+                          Core.Ops.Range.f_end = v_SIZE -! start <: usize
+                        }
+                        <:
+                        Core.Ops.Range.t_Range usize ]
+                      <:
+                      t_Slice u8)
+                  <:
+                  t_Slice u8)
+              <:
+              t_Array u8 v_SIZE)
+          <:
+          t_Array (t_Array u8 v_SIZE) v_N)
+  in
+  out
 
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn squeeze_last<const N: int, T, const RATE: int, Anonymous: 'unk>(
-    mut s: libcrux_sha3::generic_keccak::t_KeccakState<generic_value!(todo), T>,
-    out: [&mut [int]; N],
-) -> tuple0
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    {
-        let _: tuple0 = {
-            libcrux_sha3::generic_keccak::keccakf1600::<generic_value!(todo), T>(
-                &mut (deref(&mut (s))),
-            )
-        };
-        {
-            let b: [[int; 200]; N] = {
-                libcrux_sha3::traits::internal::f_store_block_full::<
-                    T,
-                    generic_value!(todo),
-                    generic_value!(todo),
-                >(&(deref(&(proj_libcrux_sha3::generic_keccak::f_st(s)))))
-            };
-            {
-                {
-                    for i in (core::iter::traits::collect::f_into_iter::<
-                        core::ops::range::t_Range<int>,
-                    >(core::ops::range::Range {
-                        f_start: 0,
-                        f_end: N,
-                    })) {
-                        core::slice::impl__copy_from_slice::<int>(
-                            &mut (deref(core::ops::index::Index::index(out, i))),
-                            &(deref(core::ops::index::f_index::<
-                                [int; 200],
-                                core::ops::range::t_Range<int>,
-                            >(
-                                &(core::ops::index::Index::index(b, i)),
-                                core::ops::range::Range {
-                                    f_start: 0,
-                                    f_end: core::slice::impl__len::<int>(
-                                        &(deref(core::ops::index::Index::index(out, i))),
-                                    ),
-                                },
-                            ))),
-                        )
-                    }
-                }
+let squeeze_next_block
+      (v_N: usize)
+      (#v_T: Type0)
+      (v_RATE v_SIZE: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
+      (s: t_KeccakState v_N v_T)
+      (out: t_Array (t_Array u8 v_SIZE) v_N)
+      (start: usize)
+    : (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+  let s:t_KeccakState v_N v_T = keccakf1600 v_N #v_T s in
+  let hax_temp_output, out:(Prims.unit & t_Array (t_Array u8 v_SIZE) v_N) =
+    (), Libcrux_sha3.Traits.Internal.f_store_block #v_T v_N v_RATE v_SIZE s.f_st out start
+    <:
+    (Prims.unit & t_Array (t_Array u8 v_SIZE) v_N)
+  in
+  s, out <: (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N)
+
+let keccak
+      (v_N: usize)
+      (#v_T: Type0)
+      (v_RATE v_SIZE: usize)
+      (v_DELIM: u8)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
+      (data: t_Array (t_Slice u8) v_N)
+      (out: t_Array (t_Array u8 v_SIZE) v_N)
+    : t_Array (t_Array u8 v_SIZE) v_N =
+  let s:t_KeccakState v_N v_T = impl_1__new v_N #v_T () in
+  let s:t_KeccakState v_N v_T =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end
+              =
+              (Core.Slice.impl__len #u8 (data.[ sz 0 ] <: t_Slice u8) <: usize) /! v_RATE <: usize
             }
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "generic_keccak"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "squeeze_last"); disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
-
-(* item error backend: 
-Last available AST for this item:
-
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn squeeze_next_block<const N: int, T, const RATE: int, Anonymous: 'unk, Anonymous: 'unk>(
-    mut s: libcrux_sha3::generic_keccak::t_KeccakState<generic_value!(todo), T>,
-    out: [&mut [int]; N],
-) -> tuple0
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    {
-        let _: tuple0 =
-            { libcrux_sha3::generic_keccak::keccakf1600::<generic_value!(todo), T>(&mut (s)) };
-        {
-            let hax_temp_output: tuple0 = {
-                {
-                    libcrux_sha3::traits::internal::f_store_block::<
-                        T,
-                        generic_value!(todo),
-                        generic_value!(todo),
-                    >(
-                        &(deref(&(proj_libcrux_sha3::generic_keccak::f_st(s)))), out
-                    )
-                }
-            };
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      s
+      (fun s i ->
+          let s:t_KeccakState v_N v_T = s in
+          let i:usize = i in
+          absorb_block v_N
+            #v_T
+            v_RATE
             s
-        }
-    }
-}
+            (Libcrux_sha3.Traits.Internal.f_slice_n #v_T v_N data (i *! v_RATE <: usize) v_RATE
+              <:
+              t_Array (t_Slice u8) v_N)
+          <:
+          t_KeccakState v_N v_T)
+  in
+  let rem:usize = (Core.Slice.impl__len #u8 (data.[ sz 0 ] <: t_Slice u8) <: usize) %! v_RATE in
+  let s:t_KeccakState v_N v_T =
+    absorb_final v_N
+      #v_T
+      v_RATE
+      v_DELIM
+      s
+      (Libcrux_sha3.Traits.Internal.f_slice_n #v_T
+          v_N
+          data
+          ((Core.Slice.impl__len #u8 (data.[ sz 0 ] <: t_Slice u8) <: usize) -! rem <: usize)
+          rem
+        <:
+        t_Array (t_Slice u8) v_N)
+  in
+  let outlen:usize =
+    Core.Slice.impl__len #u8
+      (Rust_primitives.unsize (out.[ sz 0 ] <: t_Array u8 v_SIZE) <: t_Slice u8)
+  in
+  let blocks:usize = outlen /! v_RATE in
+  let last:usize = outlen -! (outlen %! v_RATE <: usize) in
+  let (out, s), hax_temp_output:((t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T) &
+    Prims.unit) =
+    if blocks =. sz 0
+    then
+      (squeeze_first_and_last v_N #v_T v_RATE v_SIZE s out, s
+        <:
+        (t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T)),
+      ()
+      <:
+      ((t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T) & Prims.unit)
+    else
+      let out:t_Array (t_Array u8 v_SIZE) v_N = squeeze_first_block v_N #v_T v_RATE v_SIZE s out in
+      let out, s:(t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T) =
+        Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+                usize)
+              ({ Core.Ops.Range.f_start = sz 1; Core.Ops.Range.f_end = blocks }
+                <:
+                Core.Ops.Range.t_Range usize)
+            <:
+            Core.Ops.Range.t_Range usize)
+          (out, s <: (t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T))
+          (fun temp_0_ i ->
+              let out, s:(t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T) = temp_0_ in
+              let i:usize = i in
+              let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+                squeeze_next_block v_N #v_T v_RATE v_SIZE s out (i *! v_RATE <: usize)
+              in
+              let s:t_KeccakState v_N v_T = tmp0 in
+              let out:t_Array (t_Array u8 v_SIZE) v_N = tmp1 in
+              out, s <: (t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T))
+      in
+      if last <. outlen
+      then
+        (squeeze_last v_N #v_T v_RATE v_SIZE s out (blocks *! v_RATE <: usize), s
+          <:
+          (t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T)),
+        ()
+        <:
+        ((t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T) & Prims.unit)
+      else
+        (out, s <: (t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T)), ()
+        <:
+        ((t_Array (t_Array u8 v_SIZE) v_N & t_KeccakState v_N v_T) & Prims.unit)
+  in
+  out
 
+let squeeze_first_five_blocks
+      (v_N: usize)
+      (#v_T: Type0)
+      (v_RATE v_SIZE: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
+      (s: t_KeccakState v_N v_T)
+      (out: t_Array (t_Array u8 v_SIZE) v_N)
+    : (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+  let out:t_Array (t_Array u8 v_SIZE) v_N = squeeze_first_block v_N #v_T v_RATE v_SIZE s out in
+  let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+    squeeze_next_block v_N #v_T v_RATE v_SIZE s out v_RATE
+  in
+  let s:t_KeccakState v_N v_T = tmp0 in
+  let out:t_Array (t_Array u8 v_SIZE) v_N = tmp1 in
+  let _:Prims.unit = () in
+  let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+    squeeze_next_block v_N #v_T v_RATE v_SIZE s out (sz 2 *! v_RATE <: usize)
+  in
+  let s:t_KeccakState v_N v_T = tmp0 in
+  let out:t_Array (t_Array u8 v_SIZE) v_N = tmp1 in
+  let _:Prims.unit = () in
+  let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+    squeeze_next_block v_N #v_T v_RATE v_SIZE s out (sz 3 *! v_RATE <: usize)
+  in
+  let s:t_KeccakState v_N v_T = tmp0 in
+  let out:t_Array (t_Array u8 v_SIZE) v_N = tmp1 in
+  let _:Prims.unit = () in
+  let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+    squeeze_next_block v_N #v_T v_RATE v_SIZE s out (sz 4 *! v_RATE <: usize)
+  in
+  let s:t_KeccakState v_N v_T = tmp0 in
+  let out:t_Array (t_Array u8 v_SIZE) v_N = tmp1 in
+  let _:Prims.unit = () in
+  s, out <: (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N)
 
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "generic_keccak"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "squeeze_next_block");
-      disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
-
-(* item error backend: 
-Last available AST for this item:
-
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn keccak<const N: int, T, const RATE: int, const DELIM: int, Anonymous: 'unk, Anonymous: 'unk>(
-    data: [&[int]; N],
-    out: [&mut [int]; N],
-) -> tuple0
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    {
-        let mut s: libcrux_sha3::generic_keccak::t_KeccakState<generic_value!(todo), T> =
-            { libcrux_sha3::generic_keccak::impl_1__new::<generic_value!(todo), T>(Tuple0) };
-        {
-            let _: tuple0 = {
-                {
-                    for i in (core::iter::traits::collect::f_into_iter::<
-                        core::ops::range::t_Range<int>,
-                    >(core::ops::range::Range {
-                        f_start: 0,
-                        f_end: core::ops::arith::Div::div(
-                            core::slice::impl__len::<int>(
-                                &(deref(core::ops::index::Index::index(data, 0))),
-                            ),
-                            RATE,
-                        ),
-                    })) {
-                        libcrux_sha3::generic_keccak::absorb_block::<
-                            generic_value!(todo),
-                            T,
-                            generic_value!(todo),
-                        >(
-                            &mut (s),
-                            libcrux_sha3::traits::internal::f_slice_n::<T, generic_value!(todo)>(
-                                data,
-                                core::ops::arith::Mul::mul(i, RATE),
-                                RATE,
-                            ),
-                        )
-                    }
-                }
-            };
-            {
-                let rem: int = {
-                    core::ops::arith::Rem::rem(
-                        core::slice::impl__len::<int>(
-                            &(deref(core::ops::index::Index::index(data, 0))),
-                        ),
-                        RATE,
-                    )
-                };
-                {
-                    let _: tuple0 = {
-                        libcrux_sha3::generic_keccak::absorb_final::<
-                            generic_value!(todo),
-                            T,
-                            generic_value!(todo),
-                            generic_value!(todo),
-                        >(
-                            &mut (deref(&mut (s))),
-                            libcrux_sha3::traits::internal::f_slice_n::<T, generic_value!(todo)>(
-                                data,
-                                core::ops::arith::Sub::sub(
-                                    core::slice::impl__len::<int>(
-                                        &(deref(core::ops::index::Index::index(data, 0))),
-                                    ),
-                                    rem,
-                                ),
-                                rem,
-                            ),
-                        )
-                    };
-                    {
-                        let outlen: int = {
-                            core::slice::impl__len::<int>(
-                                &(deref(core::ops::index::Index::index(out, 0))),
-                            )
-                        };
-                        {
-                            let blocks: int = { core::ops::arith::Div::div(outlen, RATE) };
-                            {
-                                let last: int = {
-                                    core::ops::arith::Sub::sub(
-                                        outlen,
-                                        core::ops::arith::Rem::rem(outlen, RATE),
-                                    )
-                                };
-                                {
-                                    (if core::cmp::PartialEq::eq(blocks, 0) {
-                                        {
-                                            libcrux_sha3::generic_keccak::squeeze_first_and_last::<
-                                                generic_value!(todo),
-                                                T,
-                                                generic_value!(todo),
-                                            >(
-                                                &(deref(&(s))), out
-                                            )
-                                        }
-                                    } else {
-                                        {
-                                            let Tuple2(o0, mut o1): tuple2<
-                                                [&mut [int]; N],
-                                                [&mut [int]; N],
-                                            > = {
-                                                libcrux_sha3::traits::internal::f_split_at_mut_n::<
-                                                    T,
-                                                    generic_value!(todo),
-                                                >(
-                                                    out, RATE
-                                                )
-                                            };
-                                            {
-                                                let _: tuple0 = {
-                                                    libcrux_sha3::generic_keccak::squeeze_first_block::<generic_value!(todo),T,generic_value!(todo)>(&(deref(&(s))),o0)
-                                                };
-                                                {
-                                                    let _: tuple0 = {
-                                                        {
-                                                            for _i in (core::iter::traits::collect::f_into_iter::<core::ops::range::t_Range<int>>(core::ops::range::Range{f_start:1,f_end:blocks,})) { {let Tuple2(o, orest): tuple2<[&mut [int];N], [&mut [int];N]> = {libcrux_sha3::traits::internal::f_split_at_mut_n::<T,generic_value!(todo)>(o1,RATE)};{let _: tuple0 = {libcrux_sha3::generic_keccak::squeeze_next_block::<generic_value!(todo),T,generic_value!(todo)>(&mut (s),o)};{let _: tuple0 = {(o1 = orest)};Tuple0}}} }
-                                                        }
-                                                    };
-                                                    {
-                                                        (if core::cmp::PartialOrd::lt(last, outlen)
-                                                        {
-                                                            {
-                                                                libcrux_sha3::generic_keccak::squeeze_last::<generic_value!(todo),T,generic_value!(todo)>(s,o1)
-                                                            }
-                                                        })
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    })
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "generic_keccak"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "keccak"); disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
-
-(* item error backend: 
-Last available AST for this item:
-
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn squeeze_first_five_blocks<const N: int, T, const RATE: int, Anonymous: 'unk, Anonymous: 'unk>(
-    mut s: libcrux_sha3::generic_keccak::t_KeccakState<generic_value!(todo), T>,
-    out: [&mut [int]; N],
-) -> tuple0
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    {
-        let Tuple2(o0, o1): tuple2<[&mut [int]; N], [&mut [int]; N]> = {
-            libcrux_sha3::traits::internal::f_split_at_mut_n::<T, generic_value!(todo)>(out, RATE)
-        };
-        {
-            let _: tuple0 = {
-                libcrux_sha3::generic_keccak::squeeze_first_block::<
-                    generic_value!(todo),
-                    T,
-                    generic_value!(todo),
-                >(&(s), o0)
-            };
-            {
-                let Tuple2(o1, o2): tuple2<[&mut [int]; N], [&mut [int]; N]> = {
-                    libcrux_sha3::traits::internal::f_split_at_mut_n::<T, generic_value!(todo)>(
-                        o1, RATE,
-                    )
-                };
-                {
-                    let _: tuple0 = {
-                        libcrux_sha3::generic_keccak::squeeze_next_block::<
-                            generic_value!(todo),
-                            T,
-                            generic_value!(todo),
-                        >(&mut (s), o1)
-                    };
-                    {
-                        let Tuple2(o2, o3): tuple2<[&mut [int]; N], [&mut [int]; N]> = {
-                            libcrux_sha3::traits::internal::f_split_at_mut_n::<
-                                T,
-                                generic_value!(todo),
-                            >(o2, RATE)
-                        };
-                        {
-                            let _: tuple0 = {
-                                libcrux_sha3::generic_keccak::squeeze_next_block::<
-                                    generic_value!(todo),
-                                    T,
-                                    generic_value!(todo),
-                                >(&mut (s), o2)
-                            };
-                            {
-                                let Tuple2(o3, o4): tuple2<[&mut [int]; N], [&mut [int]; N]> = {
-                                    libcrux_sha3::traits::internal::f_split_at_mut_n::<
-                                        T,
-                                        generic_value!(todo),
-                                    >(o3, RATE)
-                                };
-                                {
-                                    let _: tuple0 = {
-                                        libcrux_sha3::generic_keccak::squeeze_next_block::<
-                                            generic_value!(todo),
-                                            T,
-                                            generic_value!(todo),
-                                        >(&mut (s), o3)
-                                    };
-                                    {
-                                        let _: tuple0 = {
-                                            libcrux_sha3::generic_keccak::squeeze_next_block::<
-                                                generic_value!(todo),
-                                                T,
-                                                generic_value!(todo),
-                                            >(
-                                                &mut (s), o4
-                                            )
-                                        };
-                                        s
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "generic_keccak"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "squeeze_first_five_blocks");
-      disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
-
-(* item error backend: 
-Last available AST for this item:
-
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn squeeze_first_three_blocks<const N: int, T, const RATE: int, Anonymous: 'unk, Anonymous: 'unk>(
-    mut s: libcrux_sha3::generic_keccak::t_KeccakState<generic_value!(todo), T>,
-    out: [&mut [int]; N],
-) -> tuple0
-where
-    _: libcrux_sha3::traits::t_KeccakStateItem<T, generic_value!(todo)>,
-{
-    {
-        let Tuple2(o0, o1): tuple2<[&mut [int]; N], [&mut [int]; N]> = {
-            libcrux_sha3::traits::internal::f_split_at_mut_n::<T, generic_value!(todo)>(out, RATE)
-        };
-        {
-            let _: tuple0 = {
-                libcrux_sha3::generic_keccak::squeeze_first_block::<
-                    generic_value!(todo),
-                    T,
-                    generic_value!(todo),
-                >(&(s), o0)
-            };
-            {
-                let Tuple2(o1, o2): tuple2<[&mut [int]; N], [&mut [int]; N]> = {
-                    libcrux_sha3::traits::internal::f_split_at_mut_n::<T, generic_value!(todo)>(
-                        o1, RATE,
-                    )
-                };
-                {
-                    let _: tuple0 = {
-                        libcrux_sha3::generic_keccak::squeeze_next_block::<
-                            generic_value!(todo),
-                            T,
-                            generic_value!(todo),
-                        >(&mut (s), o1)
-                    };
-                    {
-                        let _: tuple0 = {
-                            libcrux_sha3::generic_keccak::squeeze_next_block::<
-                                generic_value!(todo),
-                                T,
-                                generic_value!(todo),
-                            >(&mut (s), o2)
-                        };
-                        s
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "generic_keccak"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "squeeze_first_three_blocks");
-      disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
+let squeeze_first_three_blocks
+      (v_N: usize)
+      (#v_T: Type0)
+      (v_RATE v_SIZE: usize)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: Libcrux_sha3.Traits.t_KeccakStateItem v_T v_N)
+      (s: t_KeccakState v_N v_T)
+      (out: t_Array (t_Array u8 v_SIZE) v_N)
+    : (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+  let out:t_Array (t_Array u8 v_SIZE) v_N = squeeze_first_block v_N #v_T v_RATE v_SIZE s out in
+  let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+    squeeze_next_block v_N #v_T v_RATE v_SIZE s out v_RATE
+  in
+  let s:t_KeccakState v_N v_T = tmp0 in
+  let out:t_Array (t_Array u8 v_SIZE) v_N = tmp1 in
+  let _:Prims.unit = () in
+  let tmp0, tmp1:(t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N) =
+    squeeze_next_block v_N #v_T v_RATE v_SIZE s out (sz 2 *! v_RATE <: usize)
+  in
+  let s:t_KeccakState v_N v_T = tmp0 in
+  let out:t_Array (t_Array u8 v_SIZE) v_N = tmp1 in
+  let _:Prims.unit = () in
+  s, out <: (t_KeccakState v_N v_T & t_Array (t_Array u8 v_SIZE) v_N)

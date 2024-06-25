@@ -27,47 +27,6 @@ let slice_1_ (a: t_Array (t_Slice u8) (sz 1)) (start len: usize) : t_Array (t_Sl
   FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
   Rust_primitives.Hax.array_of_list 1 list
 
-(* item error backend: 
-Last available AST for this item:
-
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn split_at_mut_1_<Anonymous: 'unk>(
-    out: [&mut [int]; 1],
-    mid: int,
-) -> tuple2<[&mut [int]; 1], [&mut [int]; 1]> {
-    {
-        let Tuple2(out00, out01): tuple2<&mut [int], &mut [int]> = {
-            core::slice::impl__split_at_mut::<int>(
-                &mut (deref(core::ops::index::Index::index(out, 0))),
-                mid,
-            )
-        };
-        {
-            Tuple2([&mut (deref(out00))], [&mut (deref(out01))])
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "portable_keccak"); disambiguator = 0
-     };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "split_at_mut_1"); disambiguator = 0
-      }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
-
 let load_block
       (v_RATE: usize)
       (s: t_Array (t_Array u64 (sz 5)) (sz 5))
@@ -171,196 +130,222 @@ let load_block_full
   in
   s
 
-(* item error backend: 
-Last available AST for this item:
-
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn store_block<const RATE: int, Anonymous: 'unk, Anonymous: 'unk>(
-    s: &[[int; 5]; 5],
-    out: [&mut [int]; 1],
-) -> tuple0 {
-    {
-        {
-            for i in (core::iter::traits::collect::f_into_iter::<core::ops::range::t_Range<int>>(
-                core::ops::range::Range {
-                    f_start: 0,
-                    f_end: core::ops::arith::Div::div(RATE, 8),
-                },
-            )) {
-                core::slice::impl__copy_from_slice::<int>(
-                    &mut (deref(core::ops::index::f_index_mut::<
-                        [int],
-                        core::ops::range::t_Range<int>,
-                    >(
-                        &mut (deref(core::ops::index::Index::index(out, 0))),
-                        core::ops::range::Range {
-                            f_start: core::ops::arith::Mul::mul(8, i),
-                            f_end: core::ops::arith::Add::add(core::ops::arith::Mul::mul(8, i), 8),
-                        },
-                    ))),
-                    rust_primitives::unsize(
-                        &(core::num::impl__u64__to_le_bytes(core::ops::index::Index::index(
-                            core::ops::index::Index::index(
-                                deref(s),
-                                core::ops::arith::Div::div(i, 5),
-                            ),
-                            core::ops::arith::Rem::rem(i, 5),
-                        ))),
-                    ),
-                )
-            }
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "portable_keccak"); disambiguator = 0
-     };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "store_block"); disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
+let store_block
+      (v_RATE v_SIZE: usize)
+      (s: t_Array (t_Array u64 (sz 5)) (sz 5))
+      (out: t_Array (t_Array u8 v_SIZE) (sz 1))
+      (start: usize)
+    : t_Array (t_Array u8 v_SIZE) (sz 1) =
+  let out, hax_temp_output:t_Array (t_Array u8 v_SIZE) (sz 1) =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_RATE /! sz 8 <: usize }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      out
+      (fun out i ->
+          let out:t_Array (t_Array u8 v_SIZE) (sz 1) = out in
+          let i:usize = i in
+          Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out
+            (sz 0)
+            (Rust_primitives.Hax.Monomorphized_update_at.update_at_range (out.[ sz 0 ]
+                  <:
+                  t_Array u8 v_SIZE)
+                ({
+                    Core.Ops.Range.f_start = start +! (sz 8 *! i <: usize) <: usize;
+                    Core.Ops.Range.f_end = (start +! (sz 8 *! i <: usize) <: usize) +! sz 8 <: usize
+                  }
+                  <:
+                  Core.Ops.Range.t_Range usize)
+                (Core.Slice.impl__copy_from_slice #u8
+                    ((out.[ sz 0 ] <: t_Array u8 v_SIZE).[ {
+                          Core.Ops.Range.f_start = start +! (sz 8 *! i <: usize) <: usize;
+                          Core.Ops.Range.f_end
+                          =
+                          (start +! (sz 8 *! i <: usize) <: usize) +! sz 8 <: usize
+                        }
+                        <:
+                        Core.Ops.Range.t_Range usize ]
+                      <:
+                      t_Slice u8)
+                    (Rust_primitives.unsize (Core.Num.impl__u64__to_le_bytes ((s.[ i /! sz 5
+                                  <:
+                                  usize ]
+                                <:
+                                t_Array u64 (sz 5)).[ i %! sz 5 <: usize ]
+                              <:
+                              u64)
+                          <:
+                          t_Array u8 (sz 8))
+                      <:
+                      t_Slice u8)
+                  <:
+                  t_Slice u8)
+              <:
+              t_Array u8 v_SIZE)
+          <:
+          t_Array (t_Array u8 v_SIZE) (sz 1))
+  in
+  out
 
 let store_block_full (v_RATE: usize) (s: t_Array (t_Array u64 (sz 5)) (sz 5))
     : t_Array (t_Array u8 (sz 200)) (sz 1) =
-  let out:t_Array u8 (sz 200) = Rust_primitives.Hax.repeat 0uy (sz 200) in
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "libcrux_sha3::portable_keccak::store_block"
-      v_RATE
-      s
-      (Rust_primitives.Hax.failure "" "[rust_primitives::unsize(&mut (deref(&mut (out))))]")
+  let out:t_Array (t_Array u8 (sz 200)) (sz 1) =
+    let list = [Rust_primitives.Hax.repeat 0uy (sz 200)] in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+    Rust_primitives.Hax.array_of_list 1 list
   in
-  let list = [out] in
-  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-  Rust_primitives.Hax.array_of_list 1 list
+  let out:t_Array (t_Array u8 (sz 200)) (sz 1) = store_block v_RATE (sz 200) s out (sz 0) in
+  out
 
-(* item error backend: 
-Last available AST for this item:
-
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-impl libcrux_sha3::traits::internal::t_KeccakItem<int, generic_value!(todo)> for int {
-    fn f_zero(_: tuple0) -> int {
-        {
-            0
-        }
-    }
-    fn f_xor5(a: int, b: int, c: int, d: int, e: int) -> int {
-        {
-            libcrux_sha3::portable_keccak::v__veor5q_u64(a, b, c, d, e)
-        }
-    }
-    fn f_rotate_left1_and_xor(a: int, b: int) -> int {
-        {
-            libcrux_sha3::portable_keccak::v__vrax1q_u64(a, b)
-        }
-    }
-    fn f_xor_and_rotate<const LEFT: int, const RIGHT: int>(a: int, b: int) -> int {
-        {
-            libcrux_sha3::portable_keccak::v__vxarq_u64::<generic_value!(todo), generic_value!(todo)>(
-                a, b,
-            )
-        }
-    }
-    fn f_and_not_xor(a: int, b: int, c: int) -> int {
-        {
-            libcrux_sha3::portable_keccak::v__vbcaxq_u64(a, b, c)
-        }
-    }
-    fn f_xor_constant(a: int, c: int) -> int {
-        {
-            libcrux_sha3::portable_keccak::v__veorq_n_u64(a, c)
-        }
-    }
-    fn f_xor(a: int, b: int) -> int {
-        {
-            core::ops::bit::BitXor::bitxor(a, b)
-        }
-    }
-    fn f_load_block<const BLOCKSIZE: int, Anonymous: 'unk, Anonymous: 'unk>(
-        mut a: [[int; 5]; 5],
-        b: [&[int]; 1],
-    ) -> tuple0 {
-        {
-            let hax_temp_output: tuple0 = {
-                {
-                    libcrux_sha3::portable_keccak::load_block::<generic_value!(todo)>(&mut (a), b)
-                }
-            };
-            a
-        }
-    }
-    fn f_store_block<const BLOCKSIZE: int, Anonymous: 'unk, Anonymous: 'unk>(
-        a: &[[int; 5]; 5],
-        b: [&mut [int]; 1],
-    ) -> tuple0 {
-        {
-            libcrux_sha3::portable_keccak::store_block::<generic_value!(todo)>(&(deref(a)), b)
-        }
-    }
-    fn f_load_block_full<const BLOCKSIZE: int, Anonymous: 'unk>(
-        mut a: [[int; 5]; 5],
-        b: [[int; 200]; 1],
-    ) -> tuple0 {
-        {
-            let hax_temp_output: tuple0 = {
-                {
-                    libcrux_sha3::portable_keccak::load_block_full::<generic_value!(todo)>(
-                        &mut (a),
-                        b,
-                    )
-                }
-            };
-            a
-        }
-    }
-    fn f_store_block_full<const BLOCKSIZE: int, Anonymous: 'unk>(
-        a: &[[int; 5]; 5],
-    ) -> [[int; 200]; 1] {
-        {
-            libcrux_sha3::portable_keccak::store_block_full::<generic_value!(todo)>(&(deref(a)))
-        }
-    }
-    fn f_slice_n<Anonymous: 'unk>(a: [&[int]; 1], start: int, len: int) -> [&[int]; 1] {
-        {
-            libcrux_sha3::portable_keccak::slice_1_(a, start, len)
-        }
-    }
-    fn f_split_at_mut_n<Anonymous: 'unk>(
-        a: [&mut [int]; 1],
-        mid: int,
-    ) -> tuple2<[&mut [int]; 1], [&mut [int]; 1]> {
-        {
-            libcrux_sha3::portable_keccak::split_at_mut_1_(a, mid)
-        }
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "portable_keccak"); disambiguator = 0
-     };
-    { Concrete_ident.Imported.data = Concrete_ident.Imported.Impl;
-      disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl: Libcrux_sha3.Traits.Internal.t_KeccakItem u64 (sz 1) =
+  {
+    _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
+    _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
+    f_zero_pre = (fun (_: Prims.unit) -> true);
+    f_zero_post = (fun (_: Prims.unit) (out: u64) -> true);
+    f_zero = (fun (_: Prims.unit) -> 0uL);
+    f_xor5_pre = (fun (a: u64) (b: u64) (c: u64) (d: u64) (e: u64) -> true);
+    f_xor5_post = (fun (a: u64) (b: u64) (c: u64) (d: u64) (e: u64) (out: u64) -> true);
+    f_xor5 = (fun (a: u64) (b: u64) (c: u64) (d: u64) (e: u64) -> v__veor5q_u64 a b c d e);
+    f_rotate_left1_and_xor_pre = (fun (a: u64) (b: u64) -> true);
+    f_rotate_left1_and_xor_post = (fun (a: u64) (b: u64) (out: u64) -> true);
+    f_rotate_left1_and_xor = (fun (a: u64) (b: u64) -> v__vrax1q_u64 a b);
+    f_xor_and_rotate_pre = (fun (v_LEFT: i32) (v_RIGHT: i32) (a: u64) (b: u64) -> true);
+    f_xor_and_rotate_post = (fun (v_LEFT: i32) (v_RIGHT: i32) (a: u64) (b: u64) (out: u64) -> true);
+    f_xor_and_rotate
+    =
+    (fun (v_LEFT: i32) (v_RIGHT: i32) (a: u64) (b: u64) -> v__vxarq_u64 v_LEFT v_RIGHT a b);
+    f_and_not_xor_pre = (fun (a: u64) (b: u64) (c: u64) -> true);
+    f_and_not_xor_post = (fun (a: u64) (b: u64) (c: u64) (out: u64) -> true);
+    f_and_not_xor = (fun (a: u64) (b: u64) (c: u64) -> v__vbcaxq_u64 a b c);
+    f_xor_constant_pre = (fun (a: u64) (c: u64) -> true);
+    f_xor_constant_post = (fun (a: u64) (c: u64) (out: u64) -> true);
+    f_xor_constant = (fun (a: u64) (c: u64) -> v__veorq_n_u64 a c);
+    f_xor_pre = (fun (a: u64) (b: u64) -> true);
+    f_xor_post = (fun (a: u64) (b: u64) (out: u64) -> true);
+    f_xor = (fun (a: u64) (b: u64) -> a ^. b);
+    f_load_block_pre
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Slice u8) (sz 1))
+        ->
+        true);
+    f_load_block_post
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Slice u8) (sz 1))
+        (out: t_Array (t_Array u64 (sz 5)) (sz 5))
+        ->
+        true);
+    f_load_block
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Slice u8) (sz 1))
+        ->
+        let hax_temp_output, a:(Prims.unit & t_Array (t_Array u64 (sz 5)) (sz 5)) =
+          (), load_block v_BLOCKSIZE a b <: (Prims.unit & t_Array (t_Array u64 (sz 5)) (sz 5))
+        in
+        a);
+    f_store_block_pre
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (v_SIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Array u8 v_SIZE) (sz 1))
+        (start: usize)
+        ->
+        true);
+    f_store_block_post
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (v_SIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Array u8 v_SIZE) (sz 1))
+        (start: usize)
+        (out: t_Array (t_Array u8 v_SIZE) (sz 1))
+        ->
+        true);
+    f_store_block
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (v_SIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Array u8 v_SIZE) (sz 1))
+        (start: usize)
+        ->
+        let hax_temp_output, b:(Prims.unit & t_Array (t_Array u8 v_SIZE) (sz 1)) =
+          (), store_block v_BLOCKSIZE v_SIZE a b start
+          <:
+          (Prims.unit & t_Array (t_Array u8 v_SIZE) (sz 1))
+        in
+        b);
+    f_load_block_full_pre
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Array u8 (sz 200)) (sz 1))
+        ->
+        true);
+    f_load_block_full_post
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Array u8 (sz 200)) (sz 1))
+        (out: t_Array (t_Array u64 (sz 5)) (sz 5))
+        ->
+        true);
+    f_load_block_full
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (b: t_Array (t_Array u8 (sz 200)) (sz 1))
+        ->
+        let hax_temp_output, a:(Prims.unit & t_Array (t_Array u64 (sz 5)) (sz 5)) =
+          (), load_block_full v_BLOCKSIZE a b <: (Prims.unit & t_Array (t_Array u64 (sz 5)) (sz 5))
+        in
+        a);
+    f_store_block_full_pre
+    =
+    (fun (v_BLOCKSIZE: usize) (a: t_Array (t_Array u64 (sz 5)) (sz 5)) -> true);
+    f_store_block_full_post
+    =
+    (fun
+        (v_BLOCKSIZE: usize)
+        (a: t_Array (t_Array u64 (sz 5)) (sz 5))
+        (out: t_Array (t_Array u8 (sz 200)) (sz 1))
+        ->
+        true);
+    f_store_block_full
+    =
+    (fun (v_BLOCKSIZE: usize) (a: t_Array (t_Array u64 (sz 5)) (sz 5)) ->
+        store_block_full v_BLOCKSIZE a);
+    f_slice_n_pre = (fun (a: t_Array (t_Slice u8) (sz 1)) (start: usize) (len: usize) -> true);
+    f_slice_n_post
+    =
+    (fun
+        (a: t_Array (t_Slice u8) (sz 1))
+        (start: usize)
+        (len: usize)
+        (out: t_Array (t_Slice u8) (sz 1))
+        ->
+        true);
+    f_slice_n
+    =
+    fun (a: t_Array (t_Slice u8) (sz 1)) (start: usize) (len: usize) -> slice_1_ a start len
+  }

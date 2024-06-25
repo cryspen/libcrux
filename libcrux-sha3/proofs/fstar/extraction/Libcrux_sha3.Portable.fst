@@ -3,124 +3,72 @@ module Libcrux_sha3.Portable
 open Core
 open FStar.Mul
 
-(* item error backend: 
-Last available AST for this item:
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_sha3.Portable_keccak in
+  let open Libcrux_sha3.Traits in
+  ()
 
-#[inline(always)]
-#[no_std()]
-#[forbid(unsafe_code)]
-#[feature(register_tool)]
-#[register_tool(_hax)]
-fn keccakx1<const RATE: int, const DELIM: int, Anonymous: 'unk, Anonymous: 'unk>(
-    data: [&[int]; 1],
-    out: [&mut [int]; 1],
-) -> tuple0 {
-    {
-        libcrux_sha3::generic_keccak::keccak::<
-            generic_value!(todo),
-            int,
-            generic_value!(todo),
-            generic_value!(todo),
-        >(data, out)
-    }
-}
-
-
-Last AST:
-/* print_rust: pitem: not implemented  (item: { Concrete_ident.T.def_id =
-{ Concrete_ident.Imported.krate = "libcrux_sha3";
-  path =
-  [{ Concrete_ident.Imported.data =
-     (Concrete_ident.Imported.TypeNs "portable"); disambiguator = 0 };
-    { Concrete_ident.Imported.data =
-      (Concrete_ident.Imported.ValueNs "keccakx1"); disambiguator = 0 }
-    ]
-  };
-kind = Concrete_ident.Kind.Value }) */
- *)
-
-/// A portable SHA3 224 implementation.
-let sha224 (digest data: t_Slice u8) : t_Slice u8 =
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "libcrux_sha3::portable::keccakx1"
-      (sz 144)
-      6uy
+let keccakx1 (v_RATE v_SIZE: usize) (v_DELIM: u8) (data out: t_Slice u8) : t_Slice u8 =
+  let out1:t_Array (t_Array u8 v_SIZE) (sz 1) =
+    let list = [Rust_primitives.Hax.repeat 0uy v_SIZE] in
+    FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
+    Rust_primitives.Hax.array_of_list 1 list
+  in
+  let out1:t_Array (t_Array u8 v_SIZE) (sz 1) =
+    Libcrux_sha3.Generic_keccak.keccak (sz 1)
+      #u64
+      v_RATE
+      v_SIZE
+      v_DELIM
       (let list = [data] in
         FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
         Rust_primitives.Hax.array_of_list 1 list)
-      (Rust_primitives.Hax.failure "" "[&mut (digest)]")
+      out1
   in
+  let out:t_Slice u8 =
+    Core.Slice.impl__copy_from_slice #u8
+      out
+      ((out1.[ sz 0 ] <: t_Array u8 v_SIZE).[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = v_SIZE
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  out
+
+/// A portable SHA3 224 implementation.
+let sha224 (digest data: t_Slice u8) : t_Slice u8 =
+  let digest:t_Slice u8 = keccakx1 (sz 144) (sz 28) 6uy data digest in
   digest
 
 /// A portable SHA3 256 implementation.
 let sha256 (digest data: t_Slice u8) : t_Slice u8 =
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "libcrux_sha3::portable::keccakx1"
-      (sz 136)
-      6uy
-      (let list = [data] in
-        FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-        Rust_primitives.Hax.array_of_list 1 list)
-      (Rust_primitives.Hax.failure "" "[&mut (digest)]")
-  in
+  let digest:t_Slice u8 = keccakx1 (sz 136) (sz 32) 6uy data digest in
   digest
 
 /// A portable SHA3 384 implementation.
 let sha384 (digest data: t_Slice u8) : t_Slice u8 =
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "libcrux_sha3::portable::keccakx1"
-      (sz 104)
-      6uy
-      (let list = [data] in
-        FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-        Rust_primitives.Hax.array_of_list 1 list)
-      (Rust_primitives.Hax.failure "" "[&mut (digest)]")
-  in
+  let digest:t_Slice u8 = keccakx1 (sz 104) (sz 48) 6uy data digest in
   digest
 
 /// A portable SHA3 512 implementation.
 let sha512 (digest data: t_Slice u8) : t_Slice u8 =
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "libcrux_sha3::portable::keccakx1"
-      (sz 72)
-      6uy
-      (let list = [data] in
-        FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-        Rust_primitives.Hax.array_of_list 1 list)
-      (Rust_primitives.Hax.failure "" "[&mut (digest)]")
-  in
+  let digest:t_Slice u8 = keccakx1 (sz 72) (sz 64) 6uy data digest in
   digest
 
 /// A portable SHAKE128 implementation.
-let shake128 (digest data: t_Slice u8) : t_Slice u8 =
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "libcrux_sha3::portable::keccakx1"
-      (sz 168)
-      31uy
-      (let list = [data] in
-        FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-        Rust_primitives.Hax.array_of_list 1 list)
-      (Rust_primitives.Hax.failure "" "[&mut (digest)]")
-  in
+let shake128 (v_SIZE: usize) (digest data: t_Slice u8) : t_Slice u8 =
+  let digest:t_Slice u8 = keccakx1 (sz 168) v_SIZE 31uy data digest in
   digest
 
 /// A portable SHAKE256 implementation.
-let shake256 (digest data: t_Slice u8) : t_Slice u8 =
-  let _:Prims.unit =
-    Rust_primitives.Hax.failure ""
-      "libcrux_sha3::portable::keccakx1"
-      (sz 136)
-      31uy
-      (let list = [data] in
-        FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 1);
-        Rust_primitives.Hax.array_of_list 1 list)
-      (Rust_primitives.Hax.failure "" "[&mut (digest)]")
-  in
+let shake256 (v_SIZE: usize) (digest data: t_Slice u8) : t_Slice u8 =
+  let digest:t_Slice u8 = keccakx1 (sz 136) v_SIZE 31uy data digest in
   digest
 
 type t_KeccakState1 = { f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64 }

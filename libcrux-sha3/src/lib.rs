@@ -620,38 +620,6 @@ pub mod avx2 {
                 absorb_final::<4, Vec256, 168, 0x1fu8>(&mut s.state, [data0, data1, data2, data3]);
             }
 
-            /// Initialise the state and perform up to 4 absorbs at the same time,
-            /// using two [`KeccakState4`].
-            ///
-            /// **PANICS** when `N` is not 2, 3, or 4.
-            #[inline(always)]
-            #[allow(unused_variables, non_snake_case)]
-            fn _shake128_absorb_finalxN<const N: usize>(input: [[u8; 34]; N]) -> KeccakState4 {
-                debug_assert!(N == 2 || N == 3 || N == 4);
-                let mut state = shake128_init();
-
-                match N {
-                    2 => {
-                        shake128_absorb_final(
-                            &mut state, &input[0], &input[1], &input[0], &input[0],
-                        );
-                    }
-                    3 => {
-                        shake128_absorb_final(
-                            &mut state, &input[0], &input[1], &input[2], &input[0],
-                        );
-                    }
-                    4 => {
-                        shake128_absorb_final(
-                            &mut state, &input[0], &input[1], &input[2], &input[3],
-                        );
-                    }
-                    _ => unreachable!("This function must only be called with N = 2, 3, 4"),
-                }
-
-                state
-            }
-
             #[inline(always)]
             #[allow(unused_variables)] // TODO: decide if we want to fall back here
             pub fn shake128_squeeze_first_three_blocks(
