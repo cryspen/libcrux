@@ -161,9 +161,10 @@ fn encapsulate<
         Hasher,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    let shared_secret_array = Scheme::kdf::<K, Hasher>(shared_secret, &ciphertext);
+    let ciphertext = MlKemCiphertext::from(ciphertext);
+    let shared_secret_array = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext);
 
-    (MlKemCiphertext::from(ciphertext), shared_secret_array)
+    (ciphertext, shared_secret_array)
 }
 
 pub(crate) fn decapsulate<
@@ -237,8 +238,8 @@ pub(crate) fn decapsulate<
     );
 
     let implicit_rejection_shared_secret =
-        Scheme::kdf::<K, Hasher>(&implicit_rejection_shared_secret, ciphertext.as_slice());
-    let shared_secret = Scheme::kdf::<K, Hasher>(&shared_secret, ciphertext.as_slice());
+        Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
+    let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
 
     select_shared_secret_in_constant_time(
         &shared_secret,
@@ -253,7 +254,10 @@ pub(crate) fn decapsulate<
 ///
 /// cf. FIPS 203 (Draft), section 1.3
 pub(crate) trait Variant {
-    fn kdf<const K: usize, Hasher: Hash<K>>(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32];
+    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
+        shared_secret: &[u8],
+        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    ) -> [u8; 32];
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
 }
 
@@ -268,9 +272,12 @@ pub(crate) struct Kyber {}
 #[cfg(feature = "kyber")]
 impl Variant for Kyber {
     #[inline(always)]
-    fn kdf<const K: usize, Hasher: Hash<K>>(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32] {
+    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
+        shared_secret: &[u8],
+        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    ) -> [u8; 32] {
         let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
-        kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext));
+        kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
         Hasher::PRF::<32>(&kdf_input)
     }
 
@@ -289,16 +296,15 @@ pub(crate) struct MlKem {}
 
 impl Variant for MlKem {
     #[inline(always)]
-    fn kdf<const K: usize, Hasher: Hash<K>>(shared_secret: &[u8], _ciphertext: &[u8]) -> [u8; 32] {
-        let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
-        shared_secret_array.copy_from_slice(shared_secret);
-        shared_secret_array
+    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
+        shared_secret: &[u8],
+        _: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    ) -> [u8; 32] {
+        shared_secret.try_into().unwrap()
     }
 
     #[inline(always)]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
-        let mut randomness_array = [0u8; 32];
-        randomness_array.copy_from_slice(randomness);
-        randomness_array
+        randomness.try_into().unwrap()
     }
 }

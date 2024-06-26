@@ -1,4 +1,4 @@
-#[cfg(feature = "kyber")]
+#[cfg(all(feature = "kyber", feature = "pre-verification"))]
 use libcrux_ml_kem::{kyber1024, kyber512, kyber768};
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 use serde::Deserialize;
@@ -100,7 +100,7 @@ impl_nist_known_answer_tests!(
     mlkem768::portable::decapsulate
 );
 
-#[cfg(feature = "kyber")]
+#[cfg(all(feature = "kyber", feature = "pre-verification"))]
 impl_nist_known_answer_tests!(
     kyber512_nist_known_answer_tests,
     "kyber",
@@ -109,7 +109,8 @@ impl_nist_known_answer_tests!(
     kyber512::encapsulate,
     kyber512::decapsulate
 );
-#[cfg(feature = "kyber")]
+
+#[cfg(all(feature = "kyber", feature = "pre-verification"))]
 impl_nist_known_answer_tests!(
     kyber768_nist_known_answer_tests,
     "kyber",
@@ -118,7 +119,8 @@ impl_nist_known_answer_tests!(
     kyber768::encapsulate,
     kyber768::decapsulate
 );
-#[cfg(feature = "kyber")]
+
+#[cfg(all(feature = "kyber", feature = "pre-verification"))]
 impl_nist_known_answer_tests!(
     kyber1024_nist_known_answer_tests,
     "kyber",
