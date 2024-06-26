@@ -1,9 +1,6 @@
 #[cfg(not(feature = "pre-verification"))]
 pub mod default {
-    use libcrux_ml_kem::{
-        mlkem1024::{self, MlKem1024Ciphertext},
-        mlkem512, mlkem768, MlKemCiphertext, MlKemPrivateKey,
-    };
+    use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768, MlKemCiphertext, MlKemPrivateKey};
     use libcrux_sha3::shake256;
     use rand::{rngs::OsRng, thread_rng, RngCore};
 

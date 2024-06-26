@@ -118,7 +118,6 @@ pub mod mlkem768 {
     pub use crate::kem::kyber::kyber768::MlKem768PublicKey;
 }
 
-
 #[cfg(feature = "pre-verification")]
 pub mod mlkem1024;
 #[cfg(not(feature = "pre-verification"))]
@@ -159,6 +158,7 @@ pub mod kyber1024 {
     pub use crate::mlkem1024::validate_public_key;
 }
 
+#[cfg(feature = "pre-verification")]
 pub use constants::SHARED_SECRET_SIZE;
 #[cfg(not(feature = "pre-verification"))]
 pub const SHARED_SECRET_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
