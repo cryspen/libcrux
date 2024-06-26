@@ -97,13 +97,6 @@ pub mod mlkem512;
 #[cfg(not(feature = "pre-verification"))]
 pub mod mlkem512 {
     pub use crate::kem::kyber::kyber512::*;
-    // pub use crate::kem::kyber::kyber512::decapsulate;
-    // pub use crate::kem::kyber::kyber512::encapsulate;
-    // pub use crate::kem::kyber::kyber512::generate_key_pair;
-    // pub use crate::kem::kyber::kyber512::validate_public_key;
-    // pub use crate::kem::kyber::kyber512::MlKem512Ciphertext;
-    // pub use crate::kem::kyber::kyber512::MlKem512PrivateKey;
-    // pub use crate::kem::kyber::kyber512::MlKem512PublicKey;
 }
 
 #[cfg(feature = "pre-verification")]
@@ -111,13 +104,6 @@ pub mod mlkem768;
 #[cfg(not(feature = "pre-verification"))]
 pub mod mlkem768 {
     pub use crate::kem::kyber::kyber768::*;
-    // pub use crate::kem::kyber::kyber768::decapsulate;
-    // pub use crate::kem::kyber::kyber768::encapsulate;
-    // pub use crate::kem::kyber::kyber768::generate_key_pair;
-    // pub use crate::kem::kyber::kyber768::validate_public_key;
-    // pub use crate::kem::kyber::kyber768::MlKem768Ciphertext;
-    // pub use crate::kem::kyber::kyber768::MlKem768PrivateKey;
-    // pub use crate::kem::kyber::kyber768::MlKem768PublicKey;
 }
 
 #[cfg(feature = "pre-verification")]
@@ -125,13 +111,6 @@ pub mod mlkem1024;
 #[cfg(not(feature = "pre-verification"))]
 pub mod mlkem1024 {
     pub use crate::kem::kyber::kyber1024::*;
-    // pub use crate::kem::kyber::kyber1024::decapsulate;
-    // pub use crate::kem::kyber::kyber1024::encapsulate;
-    // pub use crate::kem::kyber::kyber1024::generate_key_pair;
-    // pub use crate::kem::kyber::kyber1024::validate_public_key;
-    // pub use crate::kem::kyber::kyber1024::MlKem1024Ciphertext;
-    // pub use crate::kem::kyber::kyber1024::MlKem1024PrivateKey;
-    // pub use crate::kem::kyber::kyber1024::MlKem1024PublicKey;
 }
 
 #[cfg(all(feature = "kyber", feature = "pre-verification"))]
