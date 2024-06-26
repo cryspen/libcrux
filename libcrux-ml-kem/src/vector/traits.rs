@@ -6,11 +6,8 @@ pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1
 /// Internal vectors.
 ///
 /// Used in the unpacked API.
-pub trait VectorType: Operations {}
 
-impl<T: Operations> VectorType for T {}
-
-pub(crate) trait Operations: Copy + Clone {
+pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
