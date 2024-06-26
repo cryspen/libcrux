@@ -132,12 +132,12 @@ fn encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
-    Scheme: Variant<K, Hasher>,
+    Scheme: Variant,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
-    let randomness = Scheme::entropy_preprocess(&randomness);
+    let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
 
@@ -161,7 +161,7 @@ fn encapsulate<
         Hasher,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    let shared_secret_array = Scheme::kdf(shared_secret, &ciphertext);
+    let shared_secret_array = Scheme::kdf::<K, Hasher>(shared_secret, &ciphertext);
 
     (MlKemCiphertext::from(ciphertext), shared_secret_array)
 }
@@ -185,7 +185,7 @@ pub(crate) fn decapsulate<
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
-    Scheme: Variant<K, Hasher>,
+    Scheme: Variant,
 >(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
@@ -237,8 +237,8 @@ pub(crate) fn decapsulate<
     );
 
     let implicit_rejection_shared_secret =
-        Scheme::kdf(&implicit_rejection_shared_secret, ciphertext.as_slice());
-    let shared_secret = Scheme::kdf(&shared_secret, ciphertext.as_slice());
+        Scheme::kdf::<K, Hasher>(&implicit_rejection_shared_secret, ciphertext.as_slice());
+    let shared_secret = Scheme::kdf::<K, Hasher>(&shared_secret, ciphertext.as_slice());
 
     select_shared_secret_in_constant_time(
         &shared_secret,
@@ -252,10 +252,9 @@ pub(crate) fn decapsulate<
 /// NIST PQ competition.
 ///
 /// cf. FIPS 203 (Draft), section 1.3
-pub(crate) trait Variant<const K: usize, H: Hash<K>> {
-    fn kdf(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32];
-
-    fn entropy_preprocess(randomness: &[u8]) -> [u8; 32];
+pub(crate) trait Variant {
+    fn kdf<const K: usize, Hasher: Hash<K>>(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32];
+    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
 }
 
 /// Implements [`Variant`], to perform the Kyber-specific actions
@@ -267,16 +266,16 @@ pub(crate) trait Variant<const K: usize, H: Hash<K>> {
 pub(crate) struct Kyber {}
 
 #[cfg(feature = "kyber")]
-impl<const K: usize, Hasher: Hash<K>> Variant<K, Hasher> for Kyber {
+impl Variant for Kyber {
     #[inline(always)]
-    fn kdf(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32] {
+    fn kdf<const K: usize, Hasher: Hash<K>>(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32] {
         let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
         kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext));
         Hasher::PRF::<32>(&kdf_input)
     }
 
     #[inline(always)]
-    fn entropy_preprocess(randomness: &[u8]) -> [u8; 32] {
+    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
         Hasher::H(&randomness)
     }
 }
@@ -288,16 +287,16 @@ impl<const K: usize, Hasher: Hash<K>> Variant<K, Hasher> for Kyber {
 /// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
 pub(crate) struct MlKem {}
 
-impl<const K: usize, H: Hash<K>> Variant<K, H> for MlKem {
+impl Variant for MlKem {
     #[inline(always)]
-    fn kdf(shared_secret: &[u8], _ciphertext: &[u8]) -> [u8; 32] {
+    fn kdf<const K: usize, Hasher: Hash<K>>(shared_secret: &[u8], _ciphertext: &[u8]) -> [u8; 32] {
         let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
         shared_secret_array.copy_from_slice(shared_secret);
         shared_secret_array
     }
 
     #[inline(always)]
-    fn entropy_preprocess(randomness: &[u8]) -> [u8; 32] {
+    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
         let mut randomness_array = [0u8; 32];
         randomness_array.copy_from_slice(randomness);
         randomness_array
