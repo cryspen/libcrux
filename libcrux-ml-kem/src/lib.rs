@@ -96,7 +96,7 @@ mod kem;
 pub mod mlkem512;
 #[cfg(not(feature = "pre-verification"))]
 pub mod mlkem512 {
-        pub use crate::kem::kyber::kyber512::*;
+    pub use crate::kem::kyber::kyber512::*;
     // pub use crate::kem::kyber::kyber512::decapsulate;
     // pub use crate::kem::kyber::kyber512::encapsulate;
     // pub use crate::kem::kyber::kyber512::generate_key_pair;
@@ -124,7 +124,7 @@ pub mod mlkem768 {
 pub mod mlkem1024;
 #[cfg(not(feature = "pre-verification"))]
 pub mod mlkem1024 {
-        pub use crate::kem::kyber::kyber1024::*;
+    pub use crate::kem::kyber::kyber1024::*;
     // pub use crate::kem::kyber::kyber1024::decapsulate;
     // pub use crate::kem::kyber::kyber1024::encapsulate;
     // pub use crate::kem::kyber::kyber1024::generate_key_pair;
@@ -142,7 +142,6 @@ pub mod kyber512 {
     pub use crate::mlkem512::kyber::encapsulate;
     pub use crate::mlkem512::validate_public_key;
 }
-
 
 #[cfg(all(feature = "kyber", feature = "pre-verification"))]
 pub mod kyber768 {
