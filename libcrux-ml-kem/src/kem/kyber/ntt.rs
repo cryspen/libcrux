@@ -5,7 +5,7 @@ use super::{
         barrett_reduce, montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElement,
         FieldElementTimesMontgomeryR, MontgomeryFieldElement, PolynomialRingElement,
     },
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [

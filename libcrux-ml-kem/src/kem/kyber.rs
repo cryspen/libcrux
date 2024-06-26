@@ -31,7 +31,7 @@ pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 // TODO: We should make this an actual type as opposed to alias so we can enforce
 // some checks at the type level. This is being tracked in:
 // https://github.com/cryspen/libcrux/issues/123
-pub type MlKemSharedSecret = [u8; constants::SHARED_SECRET_SIZE];
+pub type MlKemSharedSecret = [u8; SHARED_SECRET_SIZE];
 
 use self::{
     arithmetic::PolynomialRingElement,
@@ -205,7 +205,7 @@ pub(super) fn encapsulate<
         ETA2_RANDOMNESS_SIZE,
     >(public_key.as_slice(), randomness, pseudorandomness);
 
-    let mut shared_secret_array = [0u8; constants::SHARED_SECRET_SIZE];
+    let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
     shared_secret_array.copy_from_slice(shared_secret);
     (ciphertext.into(), shared_secret_array)
 }

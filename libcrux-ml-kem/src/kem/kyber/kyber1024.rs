@@ -58,7 +58,7 @@ pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024Pu
 pub fn generate_key_pair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
-    super::generate_keypair::<
+    generate_keypair::<
         RANK_1024,
         CPA_PKE_SECRET_KEY_SIZE_1024,
         SECRET_KEY_SIZE_1024,

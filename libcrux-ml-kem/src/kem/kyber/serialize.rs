@@ -9,9 +9,6 @@ use super::{
 use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
 
-#[cfg(not(hax))]
-use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
-
 #[inline(always)]
 pub(super) fn compress_then_serialize_message(
     re: PolynomialRingElement,

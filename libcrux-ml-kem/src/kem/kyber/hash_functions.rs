@@ -111,6 +111,6 @@ pub(crate) fn squeeze_block<const K: usize>(
 ///
 /// **NOTE:** That this needs to be done manually for now.
 #[inline(always)]
-pub(crate) fn free_state<const K: usize>(xof_state: [KeccakState1; K]) {
+pub(crate) fn free_state<const K: usize>(_xof_state: [KeccakState1; K]) {
     // xof_state.free_memory();
 }
