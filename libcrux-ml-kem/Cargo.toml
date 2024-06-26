@@ -32,7 +32,6 @@ hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/" }
 default = ["std"]
 simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
-tests = []                         # Test utilities. DO NOT USE.
 std = []
 kyber = []
 
@@ -42,7 +41,6 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.5"
-libcrux-ml-kem = { path = ".", features = ["tests"] }
 
 [[bench]]
 name = "ml-kem"
