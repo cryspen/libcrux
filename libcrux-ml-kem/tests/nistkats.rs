@@ -1,6 +1,6 @@
-use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 #[cfg(feature = "kyber")]
 use libcrux_ml_kem::{kyber1024, kyber512, kyber768};
+use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 use serde::Deserialize;
 use serde_json;
 use std::{fs::File, io::BufReader, path::Path};
