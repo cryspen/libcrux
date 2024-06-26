@@ -5,8 +5,8 @@
   version: 0e2a116d KaRaMeL version: 018dcd1d
  */
 
-#ifndef __libcrux_mlkem1024_portable_H
-#define __libcrux_mlkem1024_portable_H
+#ifndef __libcrux_mlkem1024_neon_H
+#define __libcrux_mlkem1024_neon_H
 
 #if defined(__cplusplus)
 extern "C" {
@@ -14,27 +14,27 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
-#include "libcrux_mlkem512_portable.h"
+#include "libcrux_mlkem512_neon.h"
 
-void libcrux_ml_kem_mlkem1024_portable_decapsulate(
+void libcrux_ml_kem_mlkem1024_neon_decapsulate(
     libcrux_ml_kem_types_MlKemPrivateKey____3168size_t *private_key,
     libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext, uint8_t ret[32U]);
 
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
-libcrux_ml_kem_mlkem1024_portable_encapsulate(
+libcrux_ml_kem_mlkem1024_neon_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey____1568size_t *public_key,
     uint8_t randomness[32U]);
 
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_mlkem1024_portable_generate_key_pair(uint8_t randomness[64U]);
+libcrux_ml_kem_mlkem1024_neon_generate_key_pair(uint8_t randomness[64U]);
 
 core_option_Option__libcrux_ml_kem_types_MlKemPublicKey___1568size_t__
-libcrux_ml_kem_mlkem1024_portable_validate_public_key(
+libcrux_ml_kem_mlkem1024_neon_validate_public_key(
     libcrux_ml_kem_types_MlKemPublicKey____1568size_t public_key);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __libcrux_mlkem1024_portable_H_DEFINED
+#define __libcrux_mlkem1024_neon_H_DEFINED
 #endif
