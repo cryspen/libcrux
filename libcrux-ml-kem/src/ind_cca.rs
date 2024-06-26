@@ -247,12 +247,22 @@ pub(crate) fn decapsulate<
     )
 }
 
+/// This trait collects differences in specification between ML-KEM
+/// (Draft FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
+/// NIST PQ competition.
+///
+/// cf. FIPS 203 (Draft), section 1.3
 pub(crate) trait Variant<const K: usize, H: Hash<K>> {
     fn kdf(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32];
 
     fn entropy_preprocess(randomness: &[u8]) -> [u8; 32];
 }
 
+/// Implements [`Variant`], to perform the Kyber-specific actions
+/// during encapsulation and decapsulation.
+/// Specifically,
+/// * during encapsulation, the initial randomness is hashed before being used,
+/// * the derivation of the shared secret includes a hash of the Kyber ciphertext.
 pub(crate) struct Kyber {}
 
 impl<const K: usize, Hasher: Hash<K>> Variant<K, Hasher> for Kyber {
@@ -267,6 +277,11 @@ impl<const K: usize, Hasher: Hash<K>> Variant<K, Hasher> for Kyber {
     }
 }
 
+/// Implements [`Variant`], to perform the ML-KEM-specific actions
+/// during encapsulation and decapsulation.
+/// Specifically,
+/// * during encapsulation, the initial randomness is used without prior hashing,
+/// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
 pub(crate) struct MlKem {}
 
 impl<const K: usize, H: Hash<K>> Variant<K, H> for MlKem {
