@@ -3,7 +3,7 @@
 # This file is a modified version of:
 # https://github.com/bwesterb/draft-schwabe-cfrg-kyber/blob/main/kyber_test.py
 
-from kyber import *
+from mlkem import *
 
 import hashlib
 import json
@@ -87,5 +87,5 @@ for params in [params512, params768, params1024]:
         else:
             output_suffix = "1024"
 
-        with open("nistkats_{}.json".format(output_suffix), "w") as f:
+        with open("nistkats_mlkem_{}.json".format(output_suffix), "w") as f:
             json.dump(kats_formatted, f, ensure_ascii=False, indent=4)
