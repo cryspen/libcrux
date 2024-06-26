@@ -1,5 +1,3 @@
-use libcrux_sha3::shake256;
-
 use crate::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
@@ -261,7 +259,7 @@ impl<const K: usize, Hasher: Hash<K>> Variant<K, Hasher> for Kyber {
     fn kdf(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32] {
         let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
         kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext));
-        shake256::<32>(&kdf_input)
+        Hasher::PRF::<32>(&kdf_input)
     }
 
     fn entropy_preprocess(randomness: &[u8]) -> [u8; 32] {
