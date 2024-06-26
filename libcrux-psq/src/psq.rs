@@ -3,6 +3,7 @@
 //! This crate implements a post-quantum (PQ) pre-shared key (PSK) establishment
 //! protocol.
 
+#![deny(missing_docs)]
 use std::time::{Duration, SystemTime};
 
 use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
@@ -21,17 +22,27 @@ type Psk = [u8; PSK_LENGTH];
 type Mac = [u8; MAC_LENGTH];
 
 #[derive(Debug)]
+/// PSQ Errors.
 pub enum Error {
+    /// An invalid public key was provided
     InvalidPublicKey,
+    /// An invalid private key was provided
     InvalidPrivateKey,
+    /// An error during PSK encapsulation
     GenerationError,
+    /// An error during PSK decapsulation
     DerivationError,
 }
 
+/// The algorithm that should be used for the internal KEM.
 pub enum Algorithm {
+    /// An elliptic-curve Diffie-Hellman based KEM (Does not provide post-quantum security)
     X25519,
+    /// ML-KEM 768, a lattice-based post-quantum KEM, as specified in FIPS 203 (Draft)
     MlKem768,
+    /// A code-based post-quantum KEM & Round 4 candidate in the NIST PQ competition (Parameter Set `mceliece460896f`)
     ClassicMcEliece,
+    /// A hybrid post-quantum KEM combining X25519 and ML-KEM 768
     XWingKemDraft02,
 }
 
@@ -42,17 +53,27 @@ enum Ciphertext {
     ClassicMcEliece(classic_mceliece_rust::Ciphertext),
 }
 
+/// A PSQ public key
 pub enum PublicKey<'a> {
+    ///  for use with X25519-based protocol
     X25519(libcrux_kem::PublicKey),
+    /// for use with ML-KEM-768-based protocol
     MlKem768(libcrux_kem::PublicKey),
+    /// for use with hybrid KEM XWingDraft02-based protocol
     XWingKemDraft02(libcrux_kem::PublicKey),
+    /// for use with Classic McEliece-based protocol
     ClassicMcEliece(classic_mceliece_rust::PublicKey<'a>),
 }
 
+/// A PSQ private key
 pub enum PrivateKey<'a> {
+    ///  for use with X25519-based protocol
     X25519(libcrux_kem::PrivateKey),
+    /// for use with ML-KEM-768-based protocol
     MlKem768(libcrux_kem::PrivateKey),
+    /// for use with hybrid KEM XWingDraft02-based protocol
     XWingKemDraft02(libcrux_kem::PrivateKey),
+    /// for use with Classic McEliece-based protocol
     ClassicMcEliece(classic_mceliece_rust::SecretKey<'a>),
 }
 
@@ -121,9 +142,9 @@ impl Ciphertext {
     }
 }
 
-impl Into<libcrux_kem::Algorithm> for Algorithm {
-    fn into(self) -> libcrux_kem::Algorithm {
-        match self {
+impl From<Algorithm> for libcrux_kem::Algorithm {
+    fn from(val: Algorithm) -> Self {
+        match val {
             Algorithm::X25519 => libcrux_kem::Algorithm::X25519,
             Algorithm::MlKem768 => libcrux_kem::Algorithm::MlKem768,
             Algorithm::ClassicMcEliece => {
@@ -134,6 +155,7 @@ impl Into<libcrux_kem::Algorithm> for Algorithm {
     }
 }
 
+/// Generate a PSQ key pair.
 pub fn generate_key_pair(
     alg: Algorithm,
     rng: &mut (impl CryptoRng + Rng),
@@ -165,6 +187,7 @@ pub fn generate_key_pair(
 }
 
 impl PublicKey<'_> {
+    /// Return the size (in bytes) of the PSQ public key.
     pub fn size(&self) -> usize {
         self.encode().len()
     }
@@ -177,6 +200,7 @@ impl PublicKey<'_> {
         }
     }
 
+    /// Use the underlying KEM to encapsulate a shared secret towards the receiver.
     pub(crate) fn encapsulate(
         &self,
         rng: &mut (impl CryptoRng + Rng),
@@ -207,6 +231,14 @@ impl PublicKey<'_> {
         }
     }
 
+    /// Generate a fresh PSK, and a message encapsulating it for the
+    /// receiver.
+    ///
+    /// The encapsulated PSK is valid for the given duration
+    /// `psk_ttl`, based on milliseconds since the UNIX epoch until
+    /// current system time. Parameter `sctx` is used to
+    /// cryptographically bind the generated PSK to a given outer
+    /// protocol context and may be considered public.
     pub fn send_psk(
         &self,
         sctx: &[u8],
@@ -274,6 +306,10 @@ impl PublicKey<'_> {
 }
 
 impl PrivateKey<'_> {
+    /// Derive a PSK from a PSQ message.
+    ///
+    /// Can error, if the given PSQ message is invalid, i.e. beyond
+    /// its TTL or cryptographically invalid.
     pub fn receive_psk(
         &self,
         pk: &PublicKey,
@@ -293,7 +329,7 @@ impl PrivateKey<'_> {
         if now.duration_since(SystemTime::UNIX_EPOCH).unwrap() - ts_since_epoch >= *psk_ttl {
             Err(Error::DerivationError)
         } else {
-            let ik = enc.decapsulate(&self).map_err(|_| Error::DerivationError)?;
+            let ik = enc.decapsulate(self).map_err(|_| Error::DerivationError)?;
 
             let mut info = pk.encode();
             info.extend_from_slice(&enc.encode());
@@ -346,6 +382,9 @@ impl PrivateKey<'_> {
         }
     }
 }
+
+/// A message that encapsulates as post-quantum PSK of a certain
+/// lifetime, tied to a specific outer protocol context.
 pub struct PskMessage {
     enc: Ciphertext,
     ts: (u64, u32),
@@ -354,9 +393,11 @@ pub struct PskMessage {
 }
 
 impl PskMessage {
+    /// Returns the size (in bytes) of the ciphertext enclosed in the message.
     pub fn ct_size(&self) -> usize {
         self.enc.encode().len()
     }
+    /// Returns the total size (in bytes) of the message.
     pub fn size(&self) -> usize {
         self.ct_size()
             + MAC_LENGTH // self.mac.len()
@@ -364,6 +405,7 @@ impl PskMessage {
             + 8 // self.psk_ttl.num_milliseconds().to_be_bytes().len()
     }
 }
+
 #[cfg(test)]
 mod tests {
     use std::thread::sleep;
