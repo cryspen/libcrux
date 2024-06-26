@@ -263,8 +263,10 @@ pub(crate) trait Variant<const K: usize, H: Hash<K>> {
 /// Specifically,
 /// * during encapsulation, the initial randomness is hashed before being used,
 /// * the derivation of the shared secret includes a hash of the Kyber ciphertext.
+#[cfg(feature = "kyber")]
 pub(crate) struct Kyber {}
 
+#[cfg(feature = "kyber")]
 impl<const K: usize, Hasher: Hash<K>> Variant<K, Hasher> for Kyber {
     #[inline(always)]
     fn kdf(shared_secret: &[u8], ciphertext: &[u8]) -> [u8; 32] {

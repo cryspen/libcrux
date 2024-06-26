@@ -1,8 +1,8 @@
 #[test]
 #[cfg(feature = "kyber")]
 fn kyber768() {
-    use libcrux_ml_kem::mlkem768;
-    let key_pair = mlkem768::generate_key_pair(hex::decode("7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d8626ed79d451140800e03b59b956f8210e556067407d13dc90fa9e8b872bfb8f").unwrap().try_into().unwrap());
+    use libcrux_ml_kem::kyber768;
+    let key_pair = kyber768::generate_key_pair(hex::decode("7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d8626ed79d451140800e03b59b956f8210e556067407d13dc90fa9e8b872bfb8f").unwrap().try_into().unwrap());
 
     let public_key = key_pair.pk();
     let secret_key = key_pair.sk();
@@ -18,7 +18,7 @@ fn kyber768() {
         "lhs: computed secret key hash, rhs: hash from kat"
     );
 
-    let (ciphertext, shared_secret) = mlkem768::kyber_encapsulate(
+    let (ciphertext, shared_secret) = kyber768::encapsulate(
         key_pair.public_key(),
         hex::decode("147c03f7a5bebba406c8fae1874d7f13c80efe79a3a9a874cc09fe76f6997615")
             .unwrap()
@@ -37,7 +37,6 @@ fn kyber768() {
         "lhs: computed shared secret from encapsulate, rhs: shared secret from kat"
     );
 
-    let shared_secret_from_decapsulate =
-        mlkem768::kyber_decapsulate(key_pair.private_key(), &ciphertext);
+    let shared_secret_from_decapsulate = kyber768::decapsulate(key_pair.private_key(), &ciphertext);
     assert_eq!(shared_secret_from_decapsulate, shared_secret.as_ref(), "lhs: shared secret computed via decapsulation, rhs: shared secret computed via encapsulation");
 }
