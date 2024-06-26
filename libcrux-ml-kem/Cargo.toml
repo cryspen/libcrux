@@ -35,8 +35,8 @@ simd256 = ["libcrux-sha3/simd256"]
 mlkem512 = []
 mlkem768 = []
 mlkem1024 = []
-tests = []                                             # Test utilities. DO NOT USE.
 std = []
+kyber = []
 
 [dev-dependencies]
 rand = { version = "0.8" }
@@ -44,7 +44,6 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.5"
-libcrux-ml-kem = { path = ".", features = ["tests"] }
 
 [[bench]]
 name = "ml-kem"

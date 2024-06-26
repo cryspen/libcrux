@@ -133,10 +133,12 @@ fn encapsulate<
     const ETA2_RANDOMNESS_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
+    Scheme: Variant,
 >(
     public_key: &MlKemPublicKey<PUBLIC_KEY_SIZE>,
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
+    let randomness = Scheme::entropy_preprocess::<K, Hasher>(&randomness);
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
 
@@ -159,9 +161,11 @@ fn encapsulate<
         Vector,
         Hasher,
     >(public_key.as_slice(), randomness, pseudorandomness);
-    let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
-    shared_secret_array.copy_from_slice(shared_secret);
-    (MlKemCiphertext::from(ciphertext), shared_secret_array)
+
+    let ciphertext = MlKemCiphertext::from(ciphertext);
+    let shared_secret_array = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, &ciphertext);
+
+    (ciphertext, shared_secret_array)
 }
 
 pub(crate) fn decapsulate<
@@ -183,6 +187,7 @@ pub(crate) fn decapsulate<
     const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize,
     Vector: Operations,
     Hasher: Hash<K>,
+    Scheme: Variant,
 >(
     private_key: &MlKemPrivateKey<SECRET_KEY_SIZE>,
     ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
@@ -233,9 +238,74 @@ pub(crate) fn decapsulate<
         &expected_ciphertext,
     );
 
+    let implicit_rejection_shared_secret =
+        Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
+    let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
+
     select_shared_secret_in_constant_time(
-        shared_secret,
+        &shared_secret,
         &implicit_rejection_shared_secret,
         selector,
     )
+}
+
+/// This trait collects differences in specification between ML-KEM
+/// (Draft FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
+/// NIST PQ competition.
+///
+/// cf. FIPS 203 (Draft), section 1.3
+pub(crate) trait Variant {
+    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
+        shared_secret: &[u8],
+        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    ) -> [u8; 32];
+    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32];
+}
+
+/// Implements [`Variant`], to perform the Kyber-specific actions
+/// during encapsulation and decapsulation.
+/// Specifically,
+/// * during encapsulation, the initial randomness is hashed before being used,
+/// * the derivation of the shared secret includes a hash of the Kyber ciphertext.
+#[cfg(feature = "kyber")]
+pub(crate) struct Kyber {}
+
+#[cfg(feature = "kyber")]
+impl Variant for Kyber {
+    #[inline(always)]
+    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
+        shared_secret: &[u8],
+        ciphertext: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    ) -> [u8; 32] {
+        let mut kdf_input: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&shared_secret);
+        kdf_input[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(ciphertext.as_slice()));
+        Hasher::PRF::<32>(&kdf_input)
+    }
+
+    #[inline(always)]
+    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
+        Hasher::H(&randomness)
+    }
+}
+
+/// Implements [`Variant`], to perform the ML-KEM-specific actions
+/// during encapsulation and decapsulation.
+/// Specifically,
+/// * during encapsulation, the initial randomness is used without prior hashing,
+/// * the derivation of the shared secret does not include a hash of the ML-KEM ciphertext.
+pub(crate) struct MlKem {}
+
+impl Variant for MlKem {
+    #[inline(always)]
+    fn kdf<const K: usize, const CIPHERTEXT_SIZE: usize, Hasher: Hash<K>>(
+        shared_secret: &[u8],
+        _: &MlKemCiphertext<CIPHERTEXT_SIZE>,
+    ) -> [u8; 32] {
+        shared_secret.try_into().unwrap()
+    }
+
+    #[inline(always)]
+    fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
+        randomness.try_into().unwrap()
+    }
 }
