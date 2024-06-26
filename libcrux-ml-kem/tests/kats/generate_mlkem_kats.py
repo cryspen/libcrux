@@ -2,6 +2,7 @@
 
 # This file is a modified version of:
 # https://github.com/bwesterb/draft-schwabe-cfrg-kyber/blob/main/kyber_test.py
+# It generates Known Answer Tests (KATs) for ML-KEM.
 
 from mlkem import *
 
