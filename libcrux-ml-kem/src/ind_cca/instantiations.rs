@@ -47,7 +47,7 @@ macro_rules! instantiate {
                 >(public_key)
             }
 
-            /// Portable encapsualte
+            /// Portable encapsulate
             #[cfg(feature = "kyber")]
             pub(crate) fn kyber_encapsulate<
                 const K: usize,
