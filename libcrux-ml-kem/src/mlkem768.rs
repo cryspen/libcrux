@@ -108,6 +108,33 @@ macro_rules! instantiate {
                 >(public_key, randomness)
             }
 
+            /// Encapsulate Kyber 768
+            ///
+            /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
+            /// bytes of `randomness`.
+            #[cfg(feature = "kyber")]
+            pub fn kyber_encapsulate(
+                public_key: &MlKem768PublicKey,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+                p::kyber_encapsulate::<
+                    RANK_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    T_AS_NTT_ENCODED_SIZE_768,
+                    C1_SIZE_768,
+                    C2_SIZE_768,
+                    VECTOR_U_COMPRESSION_FACTOR_768,
+                    VECTOR_V_COMPRESSION_FACTOR_768,
+                    C1_BLOCK_SIZE_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
             /// Decapsulate ML-KEM 768
             ///
             /// Generates an [`MlKemSharedSecret`].
@@ -117,6 +144,34 @@ macro_rules! instantiate {
                 ciphertext: &MlKem768Ciphertext,
             ) -> MlKemSharedSecret {
                 p::decapsulate::<
+                    RANK_768,
+                    SECRET_KEY_SIZE_768,
+                    CPA_PKE_SECRET_KEY_SIZE_768,
+                    CPA_PKE_PUBLIC_KEY_SIZE_768,
+                    CPA_PKE_CIPHERTEXT_SIZE_768,
+                    T_AS_NTT_ENCODED_SIZE_768,
+                    C1_SIZE_768,
+                    C2_SIZE_768,
+                    VECTOR_U_COMPRESSION_FACTOR_768,
+                    VECTOR_V_COMPRESSION_FACTOR_768,
+                    C1_BLOCK_SIZE_768,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
+            /// Decapsulate Kyber 768
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
+            #[cfg(feature = "kyber")]
+            pub fn kyber_decapsulate(
+                private_key: &MlKem768PrivateKey,
+                ciphertext: &MlKem768Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::kyber_decapsulate::<
                     RANK_768,
                     SECRET_KEY_SIZE_768,
                     CPA_PKE_SECRET_KEY_SIZE_768,
@@ -246,6 +301,64 @@ pub fn decapsulate(
     >(private_key, ciphertext)
 }
 
+#[cfg(all(not(eurydice), feature = "kyber"))]
+pub(crate) mod kyber {
+    use super::*;
+
+    /// Encapsulate Kyber 768
+    ///
+    /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
+    /// bytes of `randomness`.
+    pub fn encapsulate(
+        public_key: &MlKem768PublicKey,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> (MlKem768Ciphertext, MlKemSharedSecret) {
+        multiplexing::kyber_encapsulate::<
+            RANK_768,
+            CPA_PKE_CIPHERTEXT_SIZE_768,
+            CPA_PKE_PUBLIC_KEY_SIZE_768,
+            T_AS_NTT_ENCODED_SIZE_768,
+            C1_SIZE_768,
+            C2_SIZE_768,
+            VECTOR_U_COMPRESSION_FACTOR_768,
+            VECTOR_V_COMPRESSION_FACTOR_768,
+            C1_BLOCK_SIZE_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key, randomness)
+    }
+
+    /// Decapsulate ML-KEM 768
+    ///
+    /// Generates an [`MlKemSharedSecret`].
+    /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
+    pub fn decapsulate(
+        private_key: &MlKem768PrivateKey,
+        ciphertext: &MlKem768Ciphertext,
+    ) -> MlKemSharedSecret {
+        multiplexing::kyber_decapsulate::<
+            RANK_768,
+            SECRET_KEY_SIZE_768,
+            CPA_PKE_SECRET_KEY_SIZE_768,
+            CPA_PKE_PUBLIC_KEY_SIZE_768,
+            CPA_PKE_CIPHERTEXT_SIZE_768,
+            T_AS_NTT_ENCODED_SIZE_768,
+            C1_SIZE_768,
+            C2_SIZE_768,
+            VECTOR_U_COMPRESSION_FACTOR_768,
+            VECTOR_V_COMPRESSION_FACTOR_768,
+            C1_BLOCK_SIZE_768,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext)
+    }
+}
 #[cfg(test)]
 mod tests {
     use rand::{rngs::OsRng, RngCore};

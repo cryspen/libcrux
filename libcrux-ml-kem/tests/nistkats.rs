@@ -1,3 +1,5 @@
+#[cfg(feature = "kyber")]
+use libcrux_ml_kem::{kyber1024, kyber512, kyber768};
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 use serde::Deserialize;
 use serde_json;
@@ -6,7 +8,7 @@ use std::{fs::File, io::BufReader, path::Path};
 use libcrux_sha3::*;
 
 #[derive(Deserialize)]
-struct KyberNISTKAT {
+struct MlKemNISTKAT {
     #[serde(with = "hex::serde")]
     key_generation_seed: [u8; 64],
 
@@ -27,16 +29,16 @@ struct KyberNISTKAT {
 }
 
 macro_rules! impl_nist_known_answer_tests {
-    ($name:ident, $parameter_set: literal, $key_gen_derand:expr, $encapsulate_derand:expr, $decapsulate_derand: expr) => {
+    ($name:ident, $variant:literal, $parameter_set: literal, $key_gen_derand:expr, $encapsulate_derand:expr, $decapsulate_derand: expr) => {
         #[test]
         fn $name() {
             let katfile_path = Path::new("tests")
                 .join("kats")
-                .join(format!("nistkats_{}.json", $parameter_set));
+            .join(format!("nistkats_{}_{}.json", $variant, $parameter_set));
             let katfile = File::open(katfile_path).expect("Could not open KAT file.");
             let reader = BufReader::new(katfile);
 
-            let nist_kats: Vec<KyberNISTKAT> =
+            let nist_kats: Vec<MlKemNISTKAT> =
                 serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
             for kat in nist_kats {
@@ -64,21 +66,24 @@ macro_rules! impl_nist_known_answer_tests {
 }
 
 impl_nist_known_answer_tests!(
-    kyber512_nist_known_answer_tests,
+    mlkem512_nist_known_answer_tests,
+    "mlkem",
     512,
     mlkem512::generate_key_pair,
     mlkem512::encapsulate,
     mlkem512::decapsulate
 );
 impl_nist_known_answer_tests!(
-    kyber768_nist_known_answer_tests,
+    mlkem768_nist_known_answer_tests,
+    "mlkem",
     768,
     mlkem768::generate_key_pair,
     mlkem768::encapsulate,
     mlkem768::decapsulate
 );
 impl_nist_known_answer_tests!(
-    kyber1024_nist_known_answer_tests,
+    mlkem1024_nist_known_answer_tests,
+    "mlkem",
     1024,
     mlkem1024::generate_key_pair,
     mlkem1024::encapsulate,
@@ -86,9 +91,38 @@ impl_nist_known_answer_tests!(
 );
 
 impl_nist_known_answer_tests!(
-    kyber768_nist_kats_portable,
+    mlkem768_nist_kats_portable,
+    "mlkem",
     768,
     mlkem768::portable::generate_key_pair,
     mlkem768::portable::encapsulate,
     mlkem768::portable::decapsulate
+);
+
+#[cfg(feature = "kyber")]
+impl_nist_known_answer_tests!(
+    kyber512_nist_known_answer_tests,
+    "kyber",
+    512,
+    kyber512::generate_key_pair,
+    kyber512::encapsulate,
+    kyber512::decapsulate
+);
+#[cfg(feature = "kyber")]
+impl_nist_known_answer_tests!(
+    kyber768_nist_known_answer_tests,
+    "kyber",
+    768,
+    kyber768::generate_key_pair,
+    kyber768::encapsulate,
+    kyber768::decapsulate
+);
+#[cfg(feature = "kyber")]
+impl_nist_known_answer_tests!(
+    kyber1024_nist_known_answer_tests,
+    "kyber",
+    1024,
+    kyber1024::generate_key_pair,
+    kyber1024::encapsulate,
+    kyber1024::decapsulate
 );
