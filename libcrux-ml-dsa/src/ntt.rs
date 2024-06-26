@@ -101,6 +101,7 @@ fn invert_ntt_at_layer(
 
     re
 }
+
 #[inline(always)]
 pub(crate) fn invert_ntt_montgomery(mut re: PolynomialRingElement) -> PolynomialRingElement {
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT;
@@ -125,6 +126,7 @@ pub(crate) fn invert_ntt_montgomery(mut re: PolynomialRingElement) -> Polynomial
     re
 }
 
+#[inline(always)]
 pub(crate) fn ntt_multiply_montgomery(
     lhs: &PolynomialRingElement,
     rhs: &PolynomialRingElement,
