@@ -41,6 +41,9 @@ use libcrux_sha3 as sha3;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
+#[cfg(feature = "kyber")]
+use libcrux_ml_kem::kyber768;
+
 // TODO: These functions are currently exposed simply in order to make NIST KAT
 // testing possible without an implementation of the NIST AES-CTR DRBG. Remove them
 // (and change the visibility of the exported functions to pub(crate)) the
@@ -386,7 +389,7 @@ impl Ct {
                     } else {
                         return Err(Error::InvalidPrivateKey);
                     };
-                let kss = mlkem768::kyber_decapsulate(ksk, kct);
+                let kss = kyber768::decapsulate(ksk, kct);
                 let xss = x25519_derive(xct, xsk)?;
 
                 Ok(Ss::X25519Kyber768Draft00(kss, xss))
@@ -404,7 +407,7 @@ impl Ct {
                     } else {
                         return Err(Error::InvalidPrivateKey);
                     };
-                let ss_m = mlkem768::kyber_decapsulate(sk_m, ct_m);
+                let ss_m = kyber768::decapsulate(sk_m, ct_m);
                 let ss_x = x25519_derive(ct_x, sk_x)?;
 
                 Ok(Ss::XWingKyberDraft02(
@@ -594,7 +597,7 @@ impl PublicKey {
                 x25519: xpk,
             }) => {
                 let seed = mlkem_rand(rng)?;
-                let (mlkem_ct, mlkem_ss) = mlkem768::kyber_encapsulate(kpk, seed);
+                let (mlkem_ct, mlkem_ss) = kyber768::encapsulate(kpk, seed);
                 let (x_sk, x_pk) = libcrux_ecdh::x25519_key_gen(rng)?;
                 let x_ss = x25519_derive(xpk, &x_sk)?;
 
@@ -607,7 +610,7 @@ impl PublicKey {
             #[cfg(feature = "kyber")]
             PublicKey::XWingKyberDraft02(XWingKemDraft02PublicKey { pk_m, pk_x }) => {
                 let seed = mlkem_rand(rng)?;
-                let (ct_m, ss_m) = mlkem768::kyber_encapsulate(pk_m, seed);
+                let (ct_m, ss_m) = kyber768::encapsulate(pk_m, seed);
                 let (ek_x, ct_x) = libcrux_ecdh::x25519_key_gen(rng)?;
                 let ss_x = x25519_derive(pk_x, &ek_x)?;
 

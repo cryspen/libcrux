@@ -118,6 +118,7 @@ pub mod mlkem768 {
     pub use crate::kem::kyber::kyber768::MlKem768PublicKey;
 }
 
+
 #[cfg(feature = "pre-verification")]
 pub mod mlkem1024;
 #[cfg(not(feature = "pre-verification"))]
@@ -131,7 +132,33 @@ pub mod mlkem1024 {
     pub use crate::kem::kyber::kyber1024::MlKem1024PublicKey;
 }
 
-#[cfg(feature = "pre-verification")]
+#[cfg(all(feature = "kyber", feature = "pre-verification"))]
+pub mod kyber512 {
+    //! Kyber 512 (NIST PQC Round 3)
+    pub use crate::mlkem512::generate_key_pair;
+    pub use crate::mlkem512::kyber::decapsulate;
+    pub use crate::mlkem512::kyber::encapsulate;
+    pub use crate::mlkem512::validate_public_key;
+}
+
+#[cfg(all(feature = "kyber", feature = "pre-verification"))]
+pub mod kyber768 {
+    //! Kyber 768 (NIST PQC Round 3)
+    pub use crate::mlkem768::generate_key_pair;
+    pub use crate::mlkem768::kyber::decapsulate;
+    pub use crate::mlkem768::kyber::encapsulate;
+    pub use crate::mlkem768::validate_public_key;
+}
+
+#[cfg(all(feature = "kyber", feature = "pre-verification"))]
+pub mod kyber1024 {
+    //! Kyber 1024 (NIST PQC Round 3)
+    pub use crate::mlkem1024::generate_key_pair;
+    pub use crate::mlkem1024::kyber::decapsulate;
+    pub use crate::mlkem1024::kyber::encapsulate;
+    pub use crate::mlkem1024::validate_public_key;
+}
+
 pub use constants::SHARED_SECRET_SIZE;
 #[cfg(not(feature = "pre-verification"))]
 pub const SHARED_SECRET_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;

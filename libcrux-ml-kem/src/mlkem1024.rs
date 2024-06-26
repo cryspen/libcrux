@@ -271,33 +271,6 @@ pub fn encapsulate(
     >(public_key, randomness)
 }
 
-/// Encapsulate Kyber 1024
-///
-/// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
-/// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
-/// bytes of `randomness`.
-#[cfg(all(not(eurydice), feature = "kyber"))]
-pub fn kyber_encapsulate(
-    public_key: &MlKem1024PublicKey,
-    randomness: [u8; SHARED_SECRET_SIZE],
-) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
-    multiplexing::kyber_encapsulate::<
-        RANK_1024,
-        CPA_PKE_CIPHERTEXT_SIZE_1024,
-        CPA_PKE_PUBLIC_KEY_SIZE_1024,
-        T_AS_NTT_ENCODED_SIZE_1024,
-        C1_SIZE_1024,
-        C2_SIZE_1024,
-        VECTOR_U_COMPRESSION_FACTOR_1024,
-        VECTOR_V_COMPRESSION_FACTOR_1024,
-        C1_BLOCK_SIZE_1024,
-        ETA1,
-        ETA1_RANDOMNESS_SIZE,
-        ETA2,
-        ETA2_RANDOMNESS_SIZE,
-    >(public_key, randomness)
-}
-
 /// Decapsulate ML-KEM 1024
 ///
 /// Generates an [`MlKemSharedSecret`].
@@ -327,31 +300,62 @@ pub fn decapsulate(
     >(private_key, ciphertext)
 }
 
-/// Decapsulate Kyber 1024
-///
-/// Generates an [`MlKemSharedSecret`].
-/// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
 #[cfg(all(not(eurydice), feature = "kyber"))]
-pub fn kyber_decapsulate(
-    private_key: &MlKem1024PrivateKey,
-    ciphertext: &MlKem1024Ciphertext,
-) -> MlKemSharedSecret {
-    multiplexing::kyber_decapsulate::<
-        RANK_1024,
-        SECRET_KEY_SIZE_1024,
-        CPA_PKE_SECRET_KEY_SIZE_1024,
-        CPA_PKE_PUBLIC_KEY_SIZE_1024,
-        CPA_PKE_CIPHERTEXT_SIZE_1024,
-        T_AS_NTT_ENCODED_SIZE_1024,
-        C1_SIZE_1024,
-        C2_SIZE_1024,
-        VECTOR_U_COMPRESSION_FACTOR_1024,
-        VECTOR_V_COMPRESSION_FACTOR_1024,
-        C1_BLOCK_SIZE_1024,
-        ETA1,
-        ETA1_RANDOMNESS_SIZE,
-        ETA2,
-        ETA2_RANDOMNESS_SIZE,
-        IMPLICIT_REJECTION_HASH_INPUT_SIZE,
-    >(private_key, ciphertext)
+pub(crate) mod kyber {
+    use super::*;
+
+    /// Encapsulate Kyber 1024
+    ///
+    /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
+    /// bytes of `randomness`.
+    pub fn encapsulate(
+        public_key: &MlKem1024PublicKey,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
+        multiplexing::kyber_encapsulate::<
+            RANK_1024,
+            CPA_PKE_CIPHERTEXT_SIZE_1024,
+            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+            T_AS_NTT_ENCODED_SIZE_1024,
+            C1_SIZE_1024,
+            C2_SIZE_1024,
+            VECTOR_U_COMPRESSION_FACTOR_1024,
+            VECTOR_V_COMPRESSION_FACTOR_1024,
+            C1_BLOCK_SIZE_1024,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key, randomness)
+    }
+
+    /// Decapsulate Kyber 1024
+    ///
+    /// Generates an [`MlKemSharedSecret`].
+    /// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
+    #[cfg(all(not(eurydice), feature = "kyber"))]
+    pub fn decapsulate(
+        private_key: &MlKem1024PrivateKey,
+        ciphertext: &MlKem1024Ciphertext,
+    ) -> MlKemSharedSecret {
+        multiplexing::kyber_decapsulate::<
+            RANK_1024,
+            SECRET_KEY_SIZE_1024,
+            CPA_PKE_SECRET_KEY_SIZE_1024,
+            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+            CPA_PKE_CIPHERTEXT_SIZE_1024,
+            T_AS_NTT_ENCODED_SIZE_1024,
+            C1_SIZE_1024,
+            C2_SIZE_1024,
+            VECTOR_U_COMPRESSION_FACTOR_1024,
+            VECTOR_V_COMPRESSION_FACTOR_1024,
+            C1_BLOCK_SIZE_1024,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext)
+    }
 }
