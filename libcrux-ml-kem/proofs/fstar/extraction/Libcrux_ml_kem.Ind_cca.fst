@@ -16,7 +16,7 @@ let serialize_kem_secret_key
       (#v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (private_key public_key implicit_rejection_value: t_Slice u8)
      =
   let out:t_Array u8 v_SERIALIZED_KEY_LEN = Rust_primitives.Hax.repeat 0uy v_SERIALIZED_KEY_LEN in
@@ -128,7 +128,7 @@ let validate_public_key
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (public_key: t_Array u8 v_PUBLIC_KEY_SIZE)
      =
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -161,10 +161,10 @@ let decapsulate
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
@@ -310,10 +310,10 @@ let encapsulate
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
      =
@@ -381,10 +381,10 @@ let generate_keypair
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (randomness: t_Array u8 (sz 64))
      =
   let ind_cpa_keypair_randomness:t_Slice u8 =

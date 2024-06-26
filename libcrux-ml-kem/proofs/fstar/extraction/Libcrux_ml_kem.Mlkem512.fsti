@@ -62,18 +62,6 @@ let v_CPA_PKE_CIPHERTEXT_SIZE_512_: usize = v_C1_SIZE_512_ +! v_C2_SIZE_512_
 let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
   Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_512_
 
-/// An ML-KEM 512 Ciphertext
-unfold
-let t_MlKem512Ciphertext = Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 768)
-
-/// An ML-KEM 512 Private key
-unfold
-let t_MlKem512PrivateKey = Libcrux_ml_kem.Types.t_MlKemPrivateKey (sz 1632)
-
-/// An ML-KEM 512 Public key
-unfold
-let t_MlKem512PublicKey = Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)
-
 /// Decapsulate ML-KEM 512
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
@@ -99,10 +87,6 @@ val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 8
     : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 800)))
       Prims.l_True
       (fun _ -> Prims.l_True)
-
-/// Am ML-KEM 512 Key pair
-unfold
-let t_MlKem512KeyPair = Libcrux_ml_kem.Types.t_MlKemKeyPair (sz 1632) (sz 800)
 
 /// Generate ML-KEM 512 Key Pair
 /// Generate an ML-KEM key pair. The input is a byte array of size

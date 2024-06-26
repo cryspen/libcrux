@@ -13,7 +13,7 @@ let inv_ntt_layer_int_vec_step_reduce
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (a b: v_Vector)
       (zeta_r: i16)
      =
@@ -29,7 +29,7 @@ let invert_ntt_at_layer_1_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
@@ -88,7 +88,7 @@ let invert_ntt_at_layer_2_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
@@ -139,7 +139,7 @@ let invert_ntt_at_layer_3_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
@@ -185,7 +185,7 @@ let invert_ntt_at_layer_4_plus
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (zeta_i: usize)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (layer: usize)
@@ -272,7 +272,7 @@ let invert_ntt_montgomery
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
   let zeta_i:usize = Libcrux_ml_kem.Constants.v_COEFFICIENTS_IN_RING_ELEMENT /! sz 2 in

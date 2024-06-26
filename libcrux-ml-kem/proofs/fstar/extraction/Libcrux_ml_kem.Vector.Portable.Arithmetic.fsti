@@ -3,18 +3,6 @@ module Libcrux_ml_kem.Vector.Portable.Arithmetic
 open Core
 open FStar.Mul
 
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
-/// We use 'fer' as a shorthand for this type.
-unfold
-let t_FieldElementTimesMontgomeryR = i16
-
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
-/// We use 'mfe' as a shorthand for this type
-unfold
-let t_MontgomeryFieldElement = i16
-
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
 let v_BARRETT_MULTIPLIER: i32 = 20159l
 

@@ -15,7 +15,7 @@ let sample_from_uniform_distribution_next
       (v_K v_N: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (randomness: t_Array (t_Array u8 v_N) v_K)
       (sampled_coefficients: t_Array usize v_K)
       (out: t_Array (t_Array i16 (sz 272)) v_K)
@@ -145,7 +145,7 @@ let sample_from_binomial_distribution_2_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (randomness: t_Slice u8)
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
@@ -218,7 +218,7 @@ let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (randomness: t_Slice u8)
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
@@ -287,7 +287,7 @@ let sample_from_binomial_distribution
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (randomness: t_Slice u8)
      =
   match cast (v_ETA <: usize) <: u32 with
@@ -304,10 +304,10 @@ let sample_from_xof
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (seeds: t_Array (t_Array u8 (sz 34)) v_K)
      =
   let (sampled_coefficients: t_Array usize v_K):t_Array usize v_K =

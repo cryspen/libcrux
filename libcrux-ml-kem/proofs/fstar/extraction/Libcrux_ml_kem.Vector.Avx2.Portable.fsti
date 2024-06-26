@@ -3,9 +3,6 @@ module Libcrux_ml_kem.Vector.Avx2.Portable
 open Core
 open FStar.Mul
 
-unfold
-let t_FieldElement = i16
-
 type t_PortableVector = { f_elements:t_Array i16 (sz 16) }
 
 val from_i16_array (array: t_Array i16 (sz 16))

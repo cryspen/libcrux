@@ -189,14 +189,14 @@ let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
 
 let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353s
 
-val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
+val decompress_1_ (#v_T: Type0) {| i1: t_Operations #v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
-val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
+val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations #v_T |} (v: v_T) (fer: i16)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
-val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
+val to_standard_domain (#v_T: Type0) {| i1: t_Operations #v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
-val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
+val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations #v_T |} (a: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)

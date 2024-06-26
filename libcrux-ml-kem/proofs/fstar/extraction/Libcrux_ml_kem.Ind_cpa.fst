@@ -15,10 +15,10 @@ let sample_ring_element_cbd
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (prf_input: t_Array u8 (sz 33))
       (domain_separator: u8)
      =
@@ -97,10 +97,10 @@ let sample_vector_cbd_then_ntt
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (prf_input: t_Array u8 (sz 33))
       (domain_separator: u8)
      =
@@ -188,7 +188,7 @@ let compress_then_serialize_u
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (input: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (out: t_Slice u8)
      =
@@ -257,7 +257,7 @@ let deserialize_then_decompress_u
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
      =
   let u_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -322,10 +322,10 @@ let encrypt
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (public_key: t_Slice u8)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
@@ -440,7 +440,7 @@ let deserialize_secret_key
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (secret_key: t_Slice u8)
      =
   let secret_as_ntt:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
@@ -489,7 +489,7 @@ let decrypt
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (secret_key: t_Slice u8)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
      =
@@ -518,7 +518,7 @@ let serialize_secret_key
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
      =
   let out:t_Array u8 v_OUT_LEN = Rust_primitives.Hax.repeat 0uy v_OUT_LEN in
@@ -593,7 +593,7 @@ let serialize_public_key
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (seed_for_a: t_Slice u8)
      =
@@ -648,10 +648,10 @@ let generate_keypair
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
       (key_generation_seed: t_Slice u8)
      =
   let hashed:t_Array u8 (sz 64) =
