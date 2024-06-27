@@ -2,6 +2,7 @@
 /// can go through.
 
 #[cfg(not(hax))]
+#[doc(hidden)]
 #[macro_export]
 macro_rules! cloop {
     (for ($i:ident, $chunk:ident) in $val:ident.$values:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
@@ -37,6 +38,7 @@ macro_rules! cloop {
 }
 
 #[cfg(hax)]
+#[doc(hidden)]
 #[macro_export]
 macro_rules! cloop {
     (for ($i:ident, $chunk:ident) in $val:ident.$values:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
