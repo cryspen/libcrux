@@ -288,7 +288,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
-        unimplemented!("The target architecture does not support neon instructions.");
+        unimplemented!();
         #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 28];
@@ -301,7 +301,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
-        unimplemented!("The target architecture does not support neon instructions.");
+        unimplemented!();
         #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 32];
@@ -314,7 +314,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
-        unimplemented!("The target architecture does not support neon instructions.");
+        unimplemented!();
         #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 48];
@@ -327,7 +327,7 @@ pub mod neon {
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
-        unimplemented!("The target architecture does not support neon instructions.");
+        unimplemented!();
         #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; 64];
@@ -340,7 +340,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake128<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
-        unimplemented!("The target architecture does not support neon instructions.");
+        unimplemented!();
         #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; LEN];
@@ -353,7 +353,7 @@ pub mod neon {
     #[inline(always)]
     pub fn shake256<const LEN: usize>(digest: &mut [u8; LEN], data: &[u8]) {
         #[cfg(not(feature = "simd128"))]
-        unimplemented!("The target architecture does not support neon instructions.");
+        unimplemented!();
         #[cfg(feature = "simd128")]
         {
             let mut dummy = [0u8; LEN];
@@ -374,7 +374,7 @@ pub mod neon {
         pub fn shake256(input0: &[u8], input1: &[u8], out0: &mut [u8], out1: &mut [u8]) {
             // TODO: make argument ordering consistent
             #[cfg(not(feature = "simd128"))]
-            unimplemented!("The target architecture does not support neon instructions.");
+            unimplemented!();
             #[cfg(feature = "simd128")]
             keccakx2::<136, 0x1fu8>([input0, input1], [out0, out1]);
         }
@@ -435,7 +435,7 @@ pub mod neon {
             #[inline(always)]
             pub fn shake128_init() -> KeccakState2 {
                 #[cfg(not(feature = "simd128"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -453,7 +453,7 @@ pub mod neon {
             #[allow(unused_variables)]
             pub fn shake128_absorb_final(s: &mut KeccakState2, data0: &[u8], data1: &[u8]) {
                 #[cfg(not(feature = "simd128"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -504,7 +504,7 @@ pub mod neon {
                 out1: &mut [u8],
             ) {
                 #[cfg(not(feature = "simd128"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -583,7 +583,7 @@ pub mod neon {
                 out1: &mut [u8],
             ) {
                 #[cfg(not(feature = "simd128"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
@@ -679,7 +679,7 @@ pub mod avx2 {
             out3: &mut [u8],
         ) {
             #[cfg(not(feature = "simd256"))]
-            unimplemented!("The target architecture does not support neon instructions.");
+            unimplemented!();
             // XXX: These functions could alternatively implement the same with
             //      the portable implementation
             // #[cfg(feature = "simd128")]
@@ -785,7 +785,7 @@ pub mod avx2 {
             #[inline(always)]
             pub fn shake128_init() -> KeccakState4 {
                 #[cfg(not(feature = "simd256"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // #[cfg(feature = "simd128")]
@@ -818,7 +818,7 @@ pub mod avx2 {
                 data3: &[u8],
             ) {
                 #[cfg(not(feature = "simd256"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // #[cfg(feature = "simd128")]
@@ -887,7 +887,7 @@ pub mod avx2 {
                 out3: &mut [u8],
             ) {
                 #[cfg(not(feature = "simd256"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // #[cfg(feature = "simd128")]
@@ -981,7 +981,7 @@ pub mod avx2 {
                 out3: &mut [u8],
             ) {
                 #[cfg(not(feature = "simd256"))]
-                unimplemented!("The target architecture does not support neon instructions.");
+                unimplemented!();
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // #[cfg(feature = "simd128")]

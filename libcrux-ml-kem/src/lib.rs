@@ -74,9 +74,39 @@ mod types;
 mod vector;
 
 // Variants
+#[cfg(feature = "mlkem1024")]
 pub mod mlkem1024;
+#[cfg(feature = "mlkem512")]
 pub mod mlkem512;
+#[cfg(feature = "mlkem768")]
 pub mod mlkem768;
+
+#[cfg(feature = "kyber")]
+pub mod kyber512 {
+    //! Kyber 512 (NIST PQC Round 3)
+    pub use crate::mlkem512::generate_key_pair;
+    pub use crate::mlkem512::kyber::decapsulate;
+    pub use crate::mlkem512::kyber::encapsulate;
+    pub use crate::mlkem512::validate_public_key;
+}
+
+#[cfg(feature = "kyber")]
+pub mod kyber768 {
+    //! Kyber 768 (NIST PQC Round 3)
+    pub use crate::mlkem768::generate_key_pair;
+    pub use crate::mlkem768::kyber::decapsulate;
+    pub use crate::mlkem768::kyber::encapsulate;
+    pub use crate::mlkem768::validate_public_key;
+}
+
+#[cfg(feature = "kyber")]
+pub mod kyber1024 {
+    //! Kyber 1024 (NIST PQC Round 3)
+    pub use crate::mlkem1024::generate_key_pair;
+    pub use crate::mlkem1024::kyber::decapsulate;
+    pub use crate::mlkem1024::kyber::encapsulate;
+    pub use crate::mlkem1024::validate_public_key;
+}
 
 pub use constants::SHARED_SECRET_SIZE;
 pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE};
