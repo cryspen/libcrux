@@ -15,12 +15,6 @@ extern "C" {
 #include "../libcrux_core.h"
 #include "eurydice_glue.h"
 
-extern void core_fmt_rt__core__fmt__rt__Argument__a__1__none(
-    core_fmt_rt_Argument *x0);
-
-extern core_fmt_Arguments core_fmt__core__fmt__Arguments__a__2__new_v1(
-    Eurydice_slice x0, Eurydice_slice x1);
-
 #define CORE_NUM__U32_8__BITS (32U)
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0);
@@ -215,11 +209,6 @@ typedef struct
 void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_array_TryFromSliceError(
     core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError self,
     uint8_t ret[10U]);
-
-typedef struct core_option_Option__Eurydice_slice_uint8_t_s {
-  core_option_Option__size_t_tags tag;
-  Eurydice_slice f0;
-} core_option_Option__Eurydice_slice_uint8_t;
 
 typedef struct
     core_result_Result__int16_t_16size_t__core_array_TryFromSliceError_s {

@@ -2206,72 +2206,61 @@ libcrux_ml_kem_vector_portable___libcrux_ml_kem__vector__traits__Operations_for_
 inline size_t libcrux_ml_kem_vector_portable_sampling_rej_sample(
     Eurydice_slice a, Eurydice_slice result) {
   size_t sampled = (size_t)0U;
-  core_slice_iter_Chunks iter =
-      core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter(
-          core_slice___Slice_T___chunks(a, (size_t)3U, uint8_t,
-                                        core_slice_iter_Chunks),
-          core_slice_iter_Chunks, core_slice_iter_Chunks);
-  while (true) {
-    core_option_Option__Eurydice_slice_uint8_t uu____0 =
-        core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___70__next(
-            &iter, uint8_t, core_option_Option__Eurydice_slice_uint8_t);
-    if (uu____0.tag == core_option_None) {
-      break;
-    } else {
-      Eurydice_slice bytes = uu____0.f0;
-      int16_t b1 = (int16_t)Eurydice_slice_index(bytes, (size_t)0U, uint8_t,
-                                                 uint8_t *, uint8_t);
-      int16_t b2 = (int16_t)Eurydice_slice_index(bytes, (size_t)1U, uint8_t,
-                                                 uint8_t *, uint8_t);
-      int16_t b3 = (int16_t)Eurydice_slice_index(bytes, (size_t)2U, uint8_t,
-                                                 uint8_t *, uint8_t);
-      int16_t d1 = (b2 & (int16_t)15) << 8U | b1;
-      int16_t d2 = b3 << 4U | b2 >> 4U;
-      bool uu____1;
-      int16_t uu____2;
-      bool uu____3;
-      size_t uu____4;
-      int16_t uu____5;
-      size_t uu____6;
-      int16_t uu____7;
-      if (d1 < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS) {
-        if (sampled < (size_t)16U) {
-          int16_t uu____8 = d1;
-          Eurydice_slice_index(result, sampled, int16_t, int16_t *, int16_t) =
-              uu____8;
-          sampled++;
-          uu____2 = d2;
-          uu____7 = LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
-          uu____1 = uu____2 < uu____7;
-          if (uu____1) {
-            uu____4 = sampled;
-            uu____3 = uu____4 < (size_t)16U;
-            if (uu____3) {
-              uu____5 = d2;
-              uu____6 = sampled;
-              Eurydice_slice_index(result, uu____6, int16_t, int16_t *,
-                                   int16_t) = uu____5;
-              sampled++;
-              continue;
-            }
+  for (size_t i = (size_t)0U;
+       i < core_slice___Slice_T___len(a, uint8_t, size_t) / (size_t)3U; i++) {
+    size_t i0 = i;
+    int16_t b1 = (int16_t)Eurydice_slice_index(a, i0 * (size_t)3U + (size_t)0U,
+                                               uint8_t, uint8_t *, uint8_t);
+    int16_t b2 = (int16_t)Eurydice_slice_index(a, i0 * (size_t)3U + (size_t)1U,
+                                               uint8_t, uint8_t *, uint8_t);
+    int16_t b3 = (int16_t)Eurydice_slice_index(a, i0 * (size_t)3U + (size_t)2U,
+                                               uint8_t, uint8_t *, uint8_t);
+    int16_t d1 = (b2 & (int16_t)15) << 8U | b1;
+    int16_t d2 = b3 << 4U | b2 >> 4U;
+    bool uu____0;
+    int16_t uu____1;
+    bool uu____2;
+    size_t uu____3;
+    int16_t uu____4;
+    size_t uu____5;
+    int16_t uu____6;
+    if (d1 < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS) {
+      if (sampled < (size_t)16U) {
+        int16_t uu____7 = d1;
+        Eurydice_slice_index(result, sampled, int16_t, int16_t *, int16_t) =
+            uu____7;
+        sampled++;
+        uu____1 = d2;
+        uu____6 = LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
+        uu____0 = uu____1 < uu____6;
+        if (uu____0) {
+          uu____3 = sampled;
+          uu____2 = uu____3 < (size_t)16U;
+          if (uu____2) {
+            uu____4 = d2;
+            uu____5 = sampled;
+            Eurydice_slice_index(result, uu____5, int16_t, int16_t *, int16_t) =
+                uu____4;
+            sampled++;
+            continue;
           }
-          continue;
         }
+        continue;
       }
-      uu____2 = d2;
-      uu____7 = LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
-      uu____1 = uu____2 < uu____7;
-      if (uu____1) {
-        uu____4 = sampled;
-        uu____3 = uu____4 < (size_t)16U;
-        if (uu____3) {
-          uu____5 = d2;
-          uu____6 = sampled;
-          Eurydice_slice_index(result, uu____6, int16_t, int16_t *, int16_t) =
-              uu____5;
-          sampled++;
-          continue;
-        }
+    }
+    uu____1 = d2;
+    uu____6 = LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS;
+    uu____0 = uu____1 < uu____6;
+    if (uu____0) {
+      uu____3 = sampled;
+      uu____2 = uu____3 < (size_t)16U;
+      if (uu____2) {
+        uu____4 = d2;
+        uu____5 = sampled;
+        Eurydice_slice_index(result, uu____5, int16_t, int16_t *, int16_t) =
+            uu____4;
+        sampled++;
+        continue;
       }
     }
   }

@@ -14,7 +14,6 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "intrinsics/libcrux_intrinsics_arm64.h"
-#include "libcrux_core.h"
 #include "libcrux_sha3_internal.h"
 
 void libcrux_sha3_neon_sha512(Eurydice_slice digest, Eurydice_slice data);
