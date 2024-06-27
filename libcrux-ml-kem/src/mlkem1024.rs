@@ -223,7 +223,7 @@ macro_rules! instantiate {
             }
 
             /// Encapsulate ML-KEM 1024 (unpacked)
-            /// 
+            ///
             /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
             /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked<$vec>`],
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.

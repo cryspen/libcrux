@@ -218,7 +218,7 @@ macro_rules! instantiate {
             }
 
             /// Encapsulate ML-KEM 512 (unpacked)
-            /// 
+            ///
             /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
             /// The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked<$vec>`],
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
@@ -271,7 +271,7 @@ macro_rules! instantiate {
                     ETA2_RANDOMNESS_SIZE,
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
-	    }
+            }
         }
     };
 }
