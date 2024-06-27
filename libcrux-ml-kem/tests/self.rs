@@ -96,8 +96,7 @@ pub mod default {
         random_u32 >>= 8;
 
         let position = if modify_implicit_rejection_value {
-            (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE)
-                + (random_u32 % SHARED_SECRET_SIZE)
+            (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE) + (random_u32 % SHARED_SECRET_SIZE)
         } else {
             random_u32 % (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE)
         };
@@ -115,8 +114,7 @@ pub mod default {
         ciphertext: MlKemCiphertext<CLEN>,
         secret_key: MlKemPrivateKey<LEN>,
     ) -> [u8; SHARED_SECRET_SIZE] {
-        let mut to_hash =
-            secret_key[MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE..].to_vec();
+        let mut to_hash = secret_key[MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE..].to_vec();
         to_hash.extend_from_slice(ciphertext.as_ref());
 
         shake256(&to_hash)
@@ -345,8 +343,7 @@ pub mod pre_verification {
         random_u32 >>= 8;
 
         let position = if modify_implicit_rejection_value {
-            (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE)
-                + (random_u32 % SHARED_SECRET_SIZE)
+            (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE) + (random_u32 % SHARED_SECRET_SIZE)
         } else {
             random_u32 % (MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE)
         };
@@ -360,8 +357,7 @@ pub mod pre_verification {
         ciphertext: MlKemCiphertext<CLEN>,
         secret_key: MlKemPrivateKey<LEN>,
     ) -> [u8; SHARED_SECRET_SIZE] {
-        let mut to_hash =
-            secret_key[MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE..].to_vec();
+        let mut to_hash = secret_key[MlKemPrivateKey::<LEN>::len() - SHARED_SECRET_SIZE..].to_vec();
         to_hash.extend_from_slice(ciphertext.as_ref());
 
         shake256(&to_hash)
