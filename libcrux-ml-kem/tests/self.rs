@@ -1,6 +1,13 @@
-#[cfg(not(feature = "pre-verification"))]
+#[cfg(all(feature = "std", not(feature = "pre-verification")))]
 pub mod default {
-    use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768, MlKemCiphertext, MlKemPrivateKey};
+    #[cfg(feature = "mlkem1024")]
+    use libcrux_ml_kem::mlkem1024;
+    #[cfg(feature = "mlkem512")]
+    use libcrux_ml_kem::mlkem512;
+    #[cfg(feature = "mlkem768")]
+    use libcrux_ml_kem::mlkem768;
+    use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
+
     use libcrux_sha3::shake256;
     use rand::{rngs::OsRng, thread_rng, RngCore};
 
@@ -175,56 +182,63 @@ pub mod default {
         };
     }
 
+    #[cfg(feature = "mlkem512")]
     impl_consistency!(
         consistency_512,
         mlkem512::generate_key_pair,
         mlkem512::encapsulate,
         mlkem512::decapsulate
     );
+    #[cfg(feature = "mlkem768")]
     impl_consistency!(
         consistency_768,
         mlkem768::generate_key_pair,
         mlkem768::encapsulate,
         mlkem768::decapsulate
     );
+    #[cfg(feature = "mlkem1024")]
     impl_consistency!(
         consistency_1024,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
-
+    #[cfg(feature = "mlkem512")]
     impl_modified_ciphertext!(
         modified_ciphertext_512,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
+    #[cfg(feature = "mlkem768")]
     impl_modified_ciphertext!(
         modified_ciphertext_768,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
+    #[cfg(feature = "mlkem1024")]
     impl_modified_ciphertext!(
         modified_ciphertext_1024,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
-
+    #[cfg(feature = "mlkem512")]
     impl_modified_secret_key!(
         modified_secret_key_512,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
+    #[cfg(feature = "mlkem768")]
     impl_modified_secret_key!(
         modified_secret_key_768,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
+    #[cfg(feature = "mlkem1024")]
     impl_modified_secret_key!(
         modified_secret_key_1024,
         mlkem1024::generate_key_pair,
@@ -232,18 +246,21 @@ pub mod default {
         mlkem1024::decapsulate
     );
 
+    #[cfg(feature = "mlkem512")]
     impl_modified_ciphertext_and_implicit_rejection_value!(
         modified_ciphertext_and_implicit_rejection_value_512,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
+    #[cfg(feature = "mlkem768")]
     impl_modified_ciphertext_and_implicit_rejection_value!(
         modified_ciphertext_and_implicit_rejection_value_768,
         mlkem1024::generate_key_pair,
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
+    #[cfg(feature = "mlkem1024")]
     impl_modified_ciphertext_and_implicit_rejection_value!(
         modified_ciphertext_and_implicit_rejection_value_1024,
         mlkem1024::generate_key_pair,
@@ -254,7 +271,13 @@ pub mod default {
 
 #[cfg(feature = "pre-verification")]
 pub mod pre_verification {
-    use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768, MlKemCiphertext, MlKemPrivateKey};
+    #[cfg(feature = "mlkem1024")]
+    use libcrux_ml_kem::mlkem1024;
+    #[cfg(feature = "mlkem512")]
+    use libcrux_ml_kem::mlkem512;
+    #[cfg(feature = "mlkem768")]
+    use libcrux_ml_kem::mlkem768;
+    use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
     use libcrux_sha3::shake256;
     use rand::{rngs::OsRng, thread_rng, RngCore};
 
@@ -487,6 +510,7 @@ pub mod pre_verification {
         mlkem1024::encapsulate,
         mlkem1024::decapsulate
     );
+
     impl_modified_ciphertext_and_implicit_rejection_value!(
         modified_ciphertext_and_implicit_rejection_value_1024,
         mlkem1024::generate_key_pair,

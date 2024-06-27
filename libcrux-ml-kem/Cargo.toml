@@ -49,3 +49,15 @@ criterion = "0.5"
 [[bench]]
 name = "ml-kem"
 harness = false
+
+[[example]]
+name = "encapsulate"
+required-features = ["mlkem768"]
+
+[[example]]
+name = "decapsulate"
+required-features = ["mlkem768"]
+
+[[example]]
+name = "keygen"
+required-features = ["mlkem768"]

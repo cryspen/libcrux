@@ -2,7 +2,7 @@
 macro_rules! cfg_verified {
     ($($item:item)*) => {
         $(
-            #[cfg(not(feature = "pre-verification"))]
+            #[cfg(all(feature = "std", not(feature = "pre-verification")))]
             $item
         )*
     }

@@ -4,35 +4,40 @@
 //! formally verified using [hax](https://cryspen.com/hax) and
 //! [F*](https://fstar-lang.org).
 //!
-//! ```
-//! use rand::{rngs::OsRng, RngCore};
-//!
-//! // Ensure you use good randomness.
-//! // It is not recommended to use OsRng directly!
-//! // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
-//! // bad system entropy.
-//! fn random_array<const L: usize>() -> [u8; L] {
-//!     let mut rng = OsRng;
-//!     let mut seed = [0; L];
-//!     rng.try_fill_bytes(&mut seed).unwrap();
-//!     seed
-//! }
-//!
-//! use libcrux_ml_kem::*;
-//!
-//! // This example use ML-KEM 768. The other variants can be used the same way.
-//!
-//! // Generate a key pair.
-//! let randomness = random_array();
-//! let key_pair = mlkem768::generate_key_pair(randomness);
-//!
-//! // Encapsulating a shared secret to a public key.
-//! let randomness = random_array();
-//! let (ciphertext, shared_secret) = mlkem768::encapsulate(key_pair.public_key(), randomness);
-//!
-//! // Decapsulating a shared secret with a private key.
-//! let shared_secret_decapsulated = mlkem768::decapsulate(key_pair.private_key(), &ciphertext);
-//! ```
+
+#![cfg_attr(
+    feature = "mlkem768",
+    doc = r##"
+```
+ use rand::{rngs::OsRng, RngCore};
+
+ // Ensure you use good randomness.
+ // It is not recommended to use OsRng directly!
+ // Instead it is highly encouraged to use RNGs like NISTs DRBG to account for
+ // bad system entropy.
+ fn random_array<const L: usize>() -> [u8; L] {
+     let mut rng = OsRng;
+     let mut seed = [0; L];
+     rng.try_fill_bytes(&mut seed).unwrap();
+     seed
+ }
+
+ use libcrux_ml_kem::*;
+
+ // This example use ML-KEM 768. The other variants can be used the same way.
+
+ // Generate a key pair.
+ let randomness = random_array();
+ let key_pair = mlkem768::generate_key_pair(randomness);
+
+ // Encapsulating a shared secret to a public key.
+ let randomness = random_array();
+ let (ciphertext, shared_secret) = mlkem768::encapsulate(key_pair.public_key(), randomness);
+
+ // Decapsulating a shared secret with a private key.
+ let shared_secret_decapsulated = mlkem768::decapsulate(key_pair.private_key(), &ciphertext);
+```"##
+)]
 //!
 //! ## Features
 //!
@@ -49,7 +54,6 @@
 //! to an, as yet, unverified implementation of Kyber as submitted in Round 3 of
 //! the NIST PQ competition.
 //!
-
 #![no_std]
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
@@ -132,7 +136,7 @@ cfg_pre_verification! {
     }
 }
 
-#[cfg(not(feature = "pre-verification"))]
+#[cfg(all(feature = "std", not(feature = "pre-verification")))]
 mod kem;
 
 cfg_verified! {
