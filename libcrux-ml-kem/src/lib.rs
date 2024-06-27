@@ -1,7 +1,7 @@
 //! # ML-KEM
 //!
-//! This crate implements all three ML-KEM variants 512, 768, and 1024.
-//! It is formally verified using [hax] and [F*].
+//! This crate implements all three ML-KEM variants 512, 768, and 1024. It is
+//! formally verified using [hax](https://cryspen.com/hax) and [F*](https://fstar-lang.org).
 //!
 //! ```
 //! use rand::{rngs::OsRng, RngCore};
@@ -33,8 +33,19 @@
 //! let shared_secret_decapsulated = mlkem768::decapsulate(key_pair.private_key(), &ciphertext);
 //! ```
 //!
-//! [hax]: https://cryspen.com/hax
-//! [F*]: https://fstar-lang.org
+//! ## Features
+//!
+//! By default, all ML-KEM parameter sets are enabled. If required, they are
+//! available individually under feature flags `mlkem512`, `mlkem768`,
+//! `mlkem1024`.
+//!
+//! In addition to the verified implementations of the ML-KEM variants, the
+//! feature flag `pre-verification` gives access to, as yet, unverified
+//! implementations of ML-KEM that are optimized for SIMD instruction sets. The
+//! `pre-verification` flag in combination with the `kyber` flag also gives
+//! access to an, as yet, unverified implementation of Kyber as submitted in
+//! Round 3 of the NIST PQ competition.
+//!
 
 #![no_std]
 #![forbid(unsafe_code)]
