@@ -59,6 +59,7 @@ pub type MlKem768KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK
 // Instantiate the different functions.
 macro_rules! instantiate {
     ($modp:ident, $p:path, $vec:path) => {
+        /// Provides $modp implementations of ML-KEM 768
         pub mod $modp {
             use super::*;
             use $p as p;
@@ -148,7 +149,7 @@ macro_rules! instantiate {
                 >(private_key, ciphertext)
             }
 
-            // Unpacked API
+            /// Generate ML-KEM 768 Key Pair in "unpacked" form
             pub fn generate_key_pair_unpacked(
                 randomness: [u8; KEY_GENERATION_SEED_SIZE],
             ) -> MlKem768KeyPairUnpacked<$vec> {
@@ -163,6 +164,11 @@ macro_rules! instantiate {
                 >(randomness)
             }
 
+            /// Encapsulate ML-KEM 768 (unpacked)
+            /// 
+            /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked<$vec>`],
+            /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
             pub fn encapsulate_unpacked(
                 public_key: &MlKem768PublicKeyUnpacked<$vec>,
                 public_key_hash: &[u8],
@@ -185,6 +191,11 @@ macro_rules! instantiate {
                 >(public_key, public_key_hash, randomness)
             }
 
+            /// Decapsulate ML-KEM 768 (unpacked)
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an unpacked key pair of type [`MlKem768KeyPairUnpacked<$vec>`]
+            /// and an [`MlKem768Ciphertext`].
             pub fn decapsulate_unpacked(
                 private_key: &MlKem768KeyPairUnpacked<$vec>,
                 ciphertext: &MlKem768Ciphertext,
