@@ -41,122 +41,112 @@
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
 
+/// Feature gating helper macros
+#[macro_use]
+mod cfg;
+
 #[cfg(feature = "std")]
 extern crate std;
 
 pub(crate) mod hax_utils;
 
-// This module is declared here since otherwise, hax reports the following error:
-//
-// The THIR body of item
-// DefId(0:986 ~ libcrux[92b3]::kem::kyber768::parameters::COEFFICIENTS_IN_RING_ELEMENT)
-// was stolen.
-//
-// This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
-#[cfg(feature = "pre-verification")]
-pub(crate) mod constants;
+cfg_pre_verification! {
+    // This module is declared here since otherwise, hax reports the following error:
+    //
+    // The THIR body of item
+    // DefId(0:986 ~ libcrux[92b3]::kem::kyber768::parameters::COEFFICIENTS_IN_RING_ELEMENT)
+    // was stolen.
+    //
+    // This is being tracked in https://github.com/hacspec/hacspec-v2/issues/27
+    pub(crate) mod constants;
 
-/// Helpers for verification and extraction
-#[cfg(feature = "pre-verification")]
-mod helper;
-#[cfg(feature = "pre-verification")]
-mod utils;
+    /// Helpers for verification and extraction
+    mod helper;
 
-#[cfg(feature = "pre-verification")]
-mod constant_time_ops;
-#[cfg(feature = "pre-verification")]
-mod hash_functions;
-#[cfg(feature = "pre-verification")]
-mod ind_cca;
-#[cfg(feature = "pre-verification")]
-mod ind_cpa;
-#[cfg(feature = "pre-verification")]
-mod invert_ntt;
+    mod utils;
+    mod constant_time_ops;
+    mod hash_functions;
+    mod ind_cca;
+    mod ind_cpa;
+    mod invert_ntt;
+    mod matrix;
+    mod ntt;
+    mod polynomial;
+    mod sampling;
+    mod serialize;
+    mod types;
+    mod vector;
 
-#[cfg(feature = "pre-verification")]
-mod matrix;
-#[cfg(feature = "pre-verification")]
-mod ntt;
-#[cfg(feature = "pre-verification")]
-mod polynomial;
-#[cfg(feature = "pre-verification")]
-mod sampling;
-#[cfg(feature = "pre-verification")]
-mod serialize;
-#[cfg(feature = "pre-verification")]
-mod types;
-#[cfg(feature = "pre-verification")]
-mod vector;
+    #[cfg(feature = "mlkem1024")]
+    pub mod mlkem1024;
+    #[cfg(feature = "mlkem1024")]
+    pub mod mlkem512;
+    #[cfg(feature = "mlkem1024")]
+    pub mod mlkem768;
+
+    pub use constants::SHARED_SECRET_SIZE;
+
+    pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE};
+
+    // These types all have type aliases for the different variants.
+    pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
+
+    cfg_kyber! {
+        pub mod kyber512 {
+            //! Kyber 512 (NIST PQC Round 3)
+            pub use crate::mlkem512::generate_key_pair;
+            pub use crate::mlkem512::kyber::decapsulate;
+            pub use crate::mlkem512::kyber::encapsulate;
+            pub use crate::mlkem512::validate_public_key;
+        }
+
+        pub mod kyber768 {
+            //! Kyber 768 (NIST PQC Round 3)
+            pub use crate::mlkem768::generate_key_pair;
+            pub use crate::mlkem768::kyber::decapsulate;
+            pub use crate::mlkem768::kyber::encapsulate;
+            pub use crate::mlkem768::validate_public_key;
+        }
+
+        pub mod kyber1024 {
+            //! Kyber 1024 (NIST PQC Round 3)
+            pub use crate::mlkem1024::generate_key_pair;
+            pub use crate::mlkem1024::kyber::decapsulate;
+            pub use crate::mlkem1024::kyber::encapsulate;
+            pub use crate::mlkem1024::validate_public_key;
+        }
+    }
+}
 
 #[cfg(not(feature = "pre-verification"))]
 mod kem;
-// Variants
-#[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
-pub mod mlkem1024;
-#[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
-pub mod mlkem512;
-#[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
-pub mod mlkem768;
 
-// Variants
-#[cfg(all(feature = "mlkem512", not(feature = "pre-verification")))]
-pub mod mlkem512 {
-    pub use crate::kem::kyber::kyber512::*;
+cfg_verified! {
+    // Variants
+    #[cfg(feature = "mlkem512")]
+    pub mod mlkem512 {
+        pub use crate::kem::kyber::kyber512::*;
+    }
+
+    #[cfg(feature = "mlkem768")]
+    pub mod mlkem768 {
+        pub use crate::kem::kyber::kyber768::*;
+    }
+
+
+    #[cfg(feature = "mlkem1024")]
+    pub mod mlkem1024 {
+        pub use crate::kem::kyber::kyber1024::*;
+    }
+
+    pub const SHARED_SECRET_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
+
+    pub use kem::kyber::MlKemSharedSecret;
+
+    pub const ENCAPS_SEED_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
+
+    pub const KEY_GENERATION_SEED_SIZE: usize = kem::kyber::KEY_GENERATION_SEED_SIZE;
+    // These types all have type aliases for the different variants.
+
+    pub use kem::kyber::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 }
-
-#[cfg(all(feature = "mlkem768", not(feature = "pre-verification")))]
-pub mod mlkem768 {
-    pub use crate::kem::kyber::kyber768::*;
-}
-
-#[cfg(all(feature = "mlkem1024", not(feature = "pre-verification")))]
-pub mod mlkem1024 {
-    pub use crate::kem::kyber::kyber1024::*;
-}
-
-#[cfg(all(feature = "kyber", feature = "pre-verification"))]
-pub mod kyber512 {
-    //! Kyber 512 (NIST PQC Round 3)
-    pub use crate::mlkem512::generate_key_pair;
-    pub use crate::mlkem512::kyber::decapsulate;
-    pub use crate::mlkem512::kyber::encapsulate;
-    pub use crate::mlkem512::validate_public_key;
-}
-
-#[cfg(all(feature = "kyber", feature = "pre-verification"))]
-pub mod kyber768 {
-    //! Kyber 768 (NIST PQC Round 3)
-    pub use crate::mlkem768::generate_key_pair;
-    pub use crate::mlkem768::kyber::decapsulate;
-    pub use crate::mlkem768::kyber::encapsulate;
-    pub use crate::mlkem768::validate_public_key;
-}
-
-#[cfg(all(feature = "kyber", feature = "pre-verification"))]
-pub mod kyber1024 {
-    //! Kyber 1024 (NIST PQC Round 3)
-    pub use crate::mlkem1024::generate_key_pair;
-    pub use crate::mlkem1024::kyber::decapsulate;
-    pub use crate::mlkem1024::kyber::encapsulate;
-    pub use crate::mlkem1024::validate_public_key;
-}
-
-#[cfg(feature = "pre-verification")]
-pub use constants::SHARED_SECRET_SIZE;
-#[cfg(not(feature = "pre-verification"))]
-pub const SHARED_SECRET_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
-
-#[cfg(feature = "pre-verification")]
-pub use ind_cca::{MlKemSharedSecret, ENCAPS_SEED_SIZE, KEY_GENERATION_SEED_SIZE};
-#[cfg(not(feature = "pre-verification"))]
-pub use kem::kyber::MlKemSharedSecret;
-#[cfg(not(feature = "pre-verification"))]
-pub const ENCAPS_SEED_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
-#[cfg(not(feature = "pre-verification"))]
-pub const KEY_GENERATION_SEED_SIZE: usize = kem::kyber::KEY_GENERATION_SEED_SIZE;
-
-// These types all have type aliases for the different variants.
-#[cfg(not(feature = "pre-verification"))]
-pub use kem::kyber::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
-#[cfg(feature = "pre-verification")]
-pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
