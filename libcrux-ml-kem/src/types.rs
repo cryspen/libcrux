@@ -55,12 +55,8 @@ macro_rules! impl_generic_struct {
             //     self.value.split_at(mid)
             // }
 
-            /// The number of bytes.
-            pub const fn len(&self) -> usize {
-                SIZE
-            }
-
-            pub const fn size() -> usize {
+            /// The number of bytes
+            pub const fn len() -> usize {
                 SIZE
             }
         }
