@@ -33,12 +33,10 @@ impl PolynomialRingElement {
         difference
     }
 
+    // TODO: Revisit this function when doing the range analysis and testing
+    // additional KATs.
     #[inline(always)]
-    pub(crate) fn infinity_norm_exceeds(&self, value: i32) -> bool {
-        if value > (FIELD_MODULUS - 1) / 8 {
-            return true;
-        }
-
+    pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut exceeds = false;
 
         // It is ok to leak which coefficient violates the bound since
@@ -48,12 +46,23 @@ impl PolynomialRingElement {
         // TODO: We can break out of this loop early if need be, but the most
         // straightforward way to do so (returning false) will not go through hax;
         // revisit if performance is impacted.
-        for coefficient in self.coefficients.iter() {
-            // Normalize the coefficient
+        for coefficient in self.coefficients.into_iter() {
+            debug_assert!(
+                coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS,
+                "coefficient is {}",
+                coefficient
+            );
+            // This norm is calculated using the absolute value of the
+            // signed representative in the range:
+            //
+            // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
+            //
+            // So if the coefficient is negative, get its absolute value, but
+            // don't convert it into a different representation.
             let sign = coefficient >> 31;
             let normalized = coefficient - (sign & (2 * coefficient));
 
-            exceeds |= normalized >= value;
+            exceeds |= normalized >= bound;
         }
 
         exceeds
@@ -120,6 +129,25 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     montgomery_reduce((fe as i64) * (fer as i64))
 }
 
+fn reduce(fe: FieldElement) -> FieldElement {
+    let quotient = (fe + (1 << 22)) >> 23;
+
+    fe - (quotient * FIELD_MODULUS)
+}
+
+pub(crate) fn shift_coefficients_left_then_reduce(
+    re: PolynomialRingElement,
+    shift_by: usize,
+) -> PolynomialRingElement {
+    let mut out = PolynomialRingElement::ZERO;
+
+    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
+        out.coefficients[i] = reduce(re.coefficients[i] << shift_by);
+    }
+
+    out
+}
+
 // Splits t ∈ {0, ..., q-1} into t0 and t1 with a = t1*2ᴰ + t0
 // and -2ᴰ⁻¹ < t0 < 2ᴰ⁻¹.  Returns t0 and t1 computed as.
 //
@@ -182,6 +210,7 @@ pub(crate) fn power2round_vector<const DIMENSION: usize>(
 // - α/2 ≤ r₀ < 0.
 //
 // Note that 0 ≤ r₁ < (q-1)/α.
+#[allow(non_snake_case)]
 #[inline(always)]
 fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     debug_assert!(
@@ -193,13 +222,13 @@ fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
     // Convert the signed representative to the standard unsigned one.
     let r = r + ((r >> 31) & FIELD_MODULUS);
 
-    let alpha = GAMMA2 * 2;
+    let ALPHA = GAMMA2 * 2;
 
     let r1 = {
         // Compute ⌈r / 128⌉
         let ceil_of_r_by_128 = (r + 127) >> 7;
 
-        match alpha {
+        match ALPHA {
             190_464 => {
                 // We approximate 1 / 1488 as:
                 // ⌊2²⁴ / 1488⌋ / 2²⁴ = 11,275 / 2²⁴
@@ -220,7 +249,7 @@ fn decompose<const GAMMA2: i32>(r: i32) -> (i32, i32) {
         }
     };
 
-    let mut r0 = r - (r1 * alpha);
+    let mut r0 = r - (r1 * ALPHA);
 
     // In the corner-case, when we set a₁=0, we will incorrectly
     // have a₀ > (q-1)/2 and we'll need to subtract q.  As we
@@ -253,30 +282,84 @@ pub(crate) fn decompose_vector<const DIMENSION: usize, const GAMMA2: i32>(
 }
 
 #[inline(always)]
-fn make_hint<const GAMMA2: i32>(low: i32, high: i32) -> bool {
+fn compute_hint_value<const GAMMA2: i32>(low: i32, high: i32) -> bool {
     (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0)
 }
 
 #[inline(always)]
-pub(crate) fn make_hint_vector<const DIMENSION: usize, const GAMMA2: i32>(
+pub(crate) fn make_hint<const DIMENSION: usize, const GAMMA2: i32>(
     low: [PolynomialRingElement; DIMENSION],
     high: [PolynomialRingElement; DIMENSION],
 ) -> ([[bool; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
-    let mut hint_vector = [[false; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
-    let mut hints_of_one = 0;
+    let mut hint = [[false; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
+    let mut true_hints = 0;
 
     for i in 0..DIMENSION {
         for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            hint_vector[i][j] =
-                make_hint::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
+            hint[i][j] =
+                compute_hint_value::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
 
             // From https://doc.rust-lang.org/std/primitive.bool.html:
             // "If you cast a bool into an integer, true will be 1 and false will be 0."
-            hints_of_one += hint_vector[i][j] as usize;
+            true_hints += hint[i][j] as usize;
         }
     }
 
-    (hint_vector, hints_of_one)
+    (hint, true_hints)
+}
+
+#[inline(always)]
+pub(crate) fn use_hint_value<const GAMMA2: i32>(r: i32, hint: bool) -> i32 {
+    let (r0, r1) = decompose::<GAMMA2>(r);
+
+    if hint == false {
+        return r1;
+    }
+
+    match GAMMA2 {
+        95_232 => {
+            if r0 > 0 {
+                if r1 == 43 {
+                    0
+                } else {
+                    r1 + 1
+                }
+            } else {
+                if r1 == 0 {
+                    43
+                } else {
+                    r1 - 1
+                }
+            }
+        }
+
+        261_888 => {
+            if r0 > 0 {
+                (r1 + 1) & 15
+            } else {
+                (r1 - 1) & 15
+            }
+        }
+
+        _ => unreachable!(),
+    }
+}
+
+#[inline(always)]
+pub(crate) fn use_hint<const DIMENSION: usize, const GAMMA2: i32>(
+    hint: [[bool; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
+    re_vector: [PolynomialRingElement; DIMENSION],
+) -> [PolynomialRingElement; DIMENSION] {
+    let mut result = [PolynomialRingElement::ZERO; DIMENSION];
+
+    for i in 0..DIMENSION {
+        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
+            result[i].coefficients[j] =
+                use_hint_value::<GAMMA2>(re_vector[i].coefficients[j], hint[i][j]);
+        }
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -308,5 +391,14 @@ mod tests {
         assert_eq!(decompose::<261_888>(563751), (39975, 1));
         assert_eq!(decompose::<261_888>(6645076), (-164012, 13));
         assert_eq!(decompose::<261_888>(7806985), (-49655, 15));
+    }
+
+    #[test]
+    fn test_use_hint_value() {
+        assert_eq!(use_hint_value::<95_232>(7622170, false), 40);
+        assert_eq!(use_hint_value::<95_232>(2332762, true), 13);
+
+        assert_eq!(use_hint_value::<261_888>(7691572, false), 15);
+        assert_eq!(use_hint_value::<261_888>(6635697, true), 12);
     }
 }

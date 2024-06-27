@@ -16,6 +16,10 @@ portable_only=0
 no_hacl=0
 no_charon=0
 clean=0
+config=c.yaml
+out=c
+glue=$EURYDICE_HOME/include/eurydice_glue.h
+features=
 
 # Parse command line arguments.
 all_args=("$@")
@@ -25,6 +29,10 @@ while [ $# -gt 0 ]; do
     --no-hacl) no_hacl=1 ;;
     --no-charon) no_charon=1 ;;
     -c | --clean) clean=1 ;;
+    --config) config="$2"; shift ;;
+    --out) out="$2"; shift ;;
+    --glue) glue="$2"; shift ;;
+    --mlkem768) features="--cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
     esac
     shift
 done
@@ -38,20 +46,20 @@ fi
 if [[ "$no_charon" = 0 ]]; then
     rm -rf ../libcrux_ml_kem.llbc ../libcrux_sha3.llbc
     echo "Running charon (sha3) ..."
-    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings)
+    (cd ../libcrux-sha3 && RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon)
     if ! [[ -f ../libcrux_sha3.llbc ]]; then
       echo "😱😱😱 You are the victim of this bug: https://hacspec.zulipchat.com/#narrow/stream/433829-Circus/topic/charon.20declines.20to.20generate.20an.20llbc.20file"
       echo "Suggestion: rm -rf ../target or cargo clean"
       exit 1
     fi
     echo "Running charon (ml-kem) ..."
-    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon --errors-as-warnings
+    RUSTFLAGS="--cfg eurydice" $CHARON_HOME/bin/charon $features
 else
     echo "Skipping charon"
 fi
 
-mkdir -p c
-cd c
+mkdir -p $out
+cd $out
 
 # Clean only when requesting it.
 # Note that we can not extract for all platforms on any platform right now.
@@ -62,7 +70,7 @@ if [[ "$clean" = 1 ]]; then
 fi
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../c.yaml ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+$EURYDICE_HOME/eurydice --config ../$config ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 cp $EURYDICE_HOME/include/eurydice_glue.h .
 
 clang-format --style=Google -i *.c *.h
@@ -70,10 +78,10 @@ clang-format --style=Google -i internal/*.h
 clang-format --style=Google -i intrinsics/*.h
 
 # Write out infos about the used tools
-[ -n "$CHARON_REV" ] || export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
-[ -n "$EURYDICE_REV" ] || export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
-[ -n "$KRML_REV" ] || export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
-[ -n "$FSTAR_REV" ] || export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
+[[ -z "$CHARON_REV" && -d $CHARON_HOME/.git ]] && export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
+[[ -z "$EURYDICE_REV" && -d $EURYDICE_HOME/.git ]] && export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
+[[ -z "$KRML_REV" && -d $KRML_HOME/.git ]] && export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
+[[ -z "$FSTAR_REV" && -d $FSTAR_HOME/.git ]] && export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
 rm -f code_gen.txt
 echo "This code was generated with the following tools:" >> code_gen.txt
 echo -n "Charon: " >> code_gen.txt
