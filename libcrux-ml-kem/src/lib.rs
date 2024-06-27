@@ -88,27 +88,30 @@ mod types;
 #[cfg(feature = "pre-verification")]
 mod vector;
 
+
 #[cfg(not(feature = "pre-verification"))]
 mod kem;
+// Variants
+#[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
+pub mod mlkem1024;
+#[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
+pub mod mlkem512;
+#[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+pub mod mlkem768;
+
 
 // Variants
-#[cfg(feature = "pre-verification")]
-pub mod mlkem512;
-#[cfg(not(feature = "pre-verification"))]
+#[cfg(all(feature = "mlkem512", not(feature = "pre-verification")))]
 pub mod mlkem512 {
     pub use crate::kem::kyber::kyber512::*;
 }
 
-#[cfg(feature = "pre-verification")]
-pub mod mlkem768;
-#[cfg(not(feature = "pre-verification"))]
+#[cfg(all(feature = "mlkem768", not(feature = "pre-verification")))]
 pub mod mlkem768 {
     pub use crate::kem::kyber::kyber768::*;
 }
 
-#[cfg(feature = "pre-verification")]
-pub mod mlkem1024;
-#[cfg(not(feature = "pre-verification"))]
+#[cfg(all(feature = "mlkem1024", not(feature = "pre-verification")))]
 pub mod mlkem1024 {
     pub use crate::kem::kyber::kyber1024::*;
 }

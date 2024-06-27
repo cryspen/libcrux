@@ -320,6 +320,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4b82cf0babdbd58558212896d1a4272303a57bdb245c2bf1147185fb45640e70"
 
 [[package]]
+name = "classic-mceliece-rust"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45ce62f72a15a9071f83c5084bdf0af4e8cbf31431e79eb4a5509a2f7fe7fe5d"
+dependencies = [
+ "rand",
+ "sha3",
+ "zeroize",
+]
+
+[[package]]
 name = "colorchoice"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1004,8 +1015,11 @@ dependencies = [
 name = "libcrux-ml-dsa"
 version = "0.0.2-pre.2"
 dependencies = [
+ "criterion",
  "hex",
  "libcrux-sha3",
+ "pqcrypto-dilithium",
+ "rand",
  "serde",
  "serde_json",
 ]
@@ -1040,6 +1054,18 @@ dependencies = [
  "bindgen",
  "cc",
  "fs_extra",
+]
+
+[[package]]
+name = "libcrux-psq"
+version = "0.0.2-pre.2"
+dependencies = [
+ "classic-mceliece-rust",
+ "criterion",
+ "libcrux-hkdf",
+ "libcrux-hmac",
+ "libcrux-kem",
+ "rand",
 ]
 
 [[package]]
@@ -1284,6 +1310,19 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
+
+[[package]]
+name = "pqcrypto-dilithium"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "685de0fa68c6786559d5fcdaa414f0cd68ef3f5d162f61823bd7424cd276726f"
+dependencies = [
+ "cc",
+ "glob",
+ "libc",
+ "pqcrypto-internals",
+ "pqcrypto-traits",
+]
 
 [[package]]
 name = "pqcrypto-internals"
