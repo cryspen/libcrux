@@ -36,6 +36,7 @@ def generate_nistkats(algorithm):
                     hashlib.sha3_256(sk).digest()
                 ).hex(),
                 "message": bytes(msg).hex(),
+                "signing_randomness": bytes(algorithm.signing_randomness).hex(),
                 "sha3_256_hash_of_signature": bytes(
                     hashlib.sha3_256(sig).digest()
                 ).hex(),
