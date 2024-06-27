@@ -4,6 +4,7 @@ use super::{
     constants::*,
     ind_cca::*,
     types::{unpacked::*, *},
+    vector::traits::VectorType,
     *,
 };
 
@@ -51,9 +52,9 @@ pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
 /// An Unpacked ML-KEM 1024 Public key
-pub type MlKem1024PublicKeyUnpacked<Vector> = MlKemPublicKeyUnpacked<RANK_1024, Vector>;
+pub type MlKem1024PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_1024, Vector>;
 /// Am Unpacked ML-KEM 1024 Key pair
-pub type MlKem1024KeyPairUnpacked<Vector> = MlKemKeyPairUnpacked<RANK_1024, Vector>;
+pub type MlKem1024KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_1024, Vector>;
 
 // Instantiate the different functions.
 macro_rules! instantiate {

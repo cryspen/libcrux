@@ -3,10 +3,6 @@ pub const FIELD_MODULUS: i16 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;
 pub const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
-/// Internal vectors.
-///
-/// Used in the unpacked API.
-
 pub trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
@@ -84,3 +80,10 @@ pub fn to_unsigned_representative<T: Operations>(a: T) -> T {
 pub fn decompress_1<T: Operations>(v: T) -> T {
     T::bitwise_and_with_constant(T::sub(T::ZERO(), &v), 1665)
 }
+
+/// Internal vectors.
+///
+/// Used in the unpacked API.
+pub trait VectorType: Operations {}
+
+impl<T: Operations> VectorType for T {}
