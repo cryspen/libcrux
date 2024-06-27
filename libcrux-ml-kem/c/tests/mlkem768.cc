@@ -214,7 +214,7 @@ TEST(MlKem768TestPortableUnpacked, ConsistencyTest)
     auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, mk_slice(key_pair.public_key_hash, 32), randomness2);
 
     uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
-    libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked_portable(&key_pair, &ctxt.fst, sharedSecret2);
+    libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
 
     EXPECT_EQ(0,
               memcmp(ctxt.snd,
@@ -362,7 +362,7 @@ TEST(MlKem768TestPortableUnpacked, NISTKnownAnswerTest)
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
         uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
-        libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked_portable(&key_pair, &ctxt.fst, sharedSecret2);
+        libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
 
         EXPECT_EQ(0,
                   memcmp(ctxt.snd,
