@@ -17,6 +17,17 @@ void libcrux_ml_kem_mlkem1024_neon_decapsulate(
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
+void libcrux_ml_kem_mlkem1024_neon_decapsulate_unpacked(
+    libcrux_ml_kem_types_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
+        *private_key,
+    libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext *ciphertext,
+    uint8_t ret[32U]) {
+  uint8_t ret0[32U];
+  libcrux_ml_kem_ind_cca_instantiations_neon_decapsulate_unpacked___4size_t_3168size_t_1536size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t_1600size_t(
+      private_key, ciphertext, ret0);
+  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+}
+
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
 libcrux_ml_kem_mlkem1024_neon_encapsulate(
     libcrux_ml_kem_types_MlKemPublicKey____1568size_t *public_key,
@@ -28,11 +39,34 @@ libcrux_ml_kem_mlkem1024_neon_encapsulate(
       uu____0, uu____1);
 }
 
+K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
+libcrux_ml_kem_mlkem1024_neon_encapsulate_unpacked(
+    libcrux_ml_kem_types_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
+        *public_key,
+    Eurydice_slice public_key_hash, uint8_t randomness[32U]) {
+  libcrux_ml_kem_types_unpacked_MlKemPublicKeyUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
+      *uu____0 = public_key;
+  Eurydice_slice uu____1 = public_key_hash;
+  uint8_t uu____2[32U];
+  memcpy(uu____2, randomness, (size_t)32U * sizeof(uint8_t));
+  return libcrux_ml_kem_ind_cca_instantiations_neon_encapsulate_unpacked___4size_t_1568size_t_1568size_t_1536size_t_1408size_t_160size_t_11size_t_5size_t_352size_t_2size_t_128size_t_2size_t_128size_t(
+      uu____0, uu____1, uu____2);
+}
+
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_mlkem1024_neon_generate_key_pair(uint8_t randomness[64U]) {
   uint8_t uu____0[64U];
   memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
   return libcrux_ml_kem_ind_cca_instantiations_neon_generate_keypair___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
+      uu____0);
+}
+
+libcrux_ml_kem_types_unpacked_MlKemKeyPairUnpacked__libcrux_ml_kem_vector_neon_vector_type_SIMD128Vector__4size_t
+libcrux_ml_kem_mlkem1024_neon_generate_key_pair_unpacked(
+    uint8_t randomness[64U]) {
+  uint8_t uu____0[64U];
+  memcpy(uu____0, randomness, (size_t)64U * sizeof(uint8_t));
+  return libcrux_ml_kem_ind_cca_instantiations_neon_generate_keypair_unpacked___4size_t_1536size_t_3168size_t_1568size_t_1536size_t_2size_t_128size_t(
       uu____0);
 }
 

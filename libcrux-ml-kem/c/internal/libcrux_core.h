@@ -15,12 +15,6 @@ extern "C" {
 #include "../libcrux_core.h"
 #include "eurydice_glue.h"
 
-extern void core_fmt_rt__core__fmt__rt__Argument__a__1__none(
-    core_fmt_rt_Argument *x0);
-
-extern core_fmt_Arguments core_fmt__core__fmt__Arguments__a__2__new_v1(
-    Eurydice_slice x0, Eurydice_slice x1);
-
 #define CORE_NUM__U32_8__BITS (32U)
 
 static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t x0[4U]);

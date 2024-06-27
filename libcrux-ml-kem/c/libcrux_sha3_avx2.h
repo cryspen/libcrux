@@ -14,7 +14,6 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "intrinsics/libcrux_intrinsics_avx2.h"
-#include "libcrux_core.h"
 #include "libcrux_sha3_neon.h"
 
 void libcrux_sha3_avx2_x4_shake256(Eurydice_slice input0, Eurydice_slice input1,
