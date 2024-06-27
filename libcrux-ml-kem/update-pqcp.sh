@@ -9,8 +9,6 @@
 # `cargo test`, a signed-off commit is created in the target
 # repository.
 
-
-
 set -e
 set -o pipefail
 

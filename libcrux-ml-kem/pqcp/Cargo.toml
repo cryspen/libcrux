@@ -7,7 +7,7 @@ homepage = "https://github.com/cryspen/libcrux"
 edition = "2021"
 repository = "https://github.com/cryspen/libcrux"
 readme = "Readme.md"
-exclude = ["/tests", "/implementation_notes.pdf"]
+exclude = ["/tests"]
 
 [dependencies]
 rand_core = { version = "0.6" }
@@ -21,11 +21,15 @@ libcrux-intrinsics = { git = "https://github.com/cryspen/libcrux", version = "0.
 hax-lib = { git = "https://github.com/hacspec/hax/" }
 
 [features]
-default = ["std"]
+default = ["std", "mlkem512", "mlkem768", "mlkem1024"]
 simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
-tests = []                         # Test utilities. DO NOT USE.
+mlkem512 = []
+mlkem768 = []
+mlkem1024 = []
 std = []
+kyber = []
+pre-verification = []
 
 [dev-dependencies]
 rand = { version = "0.8" }
@@ -33,7 +37,6 @@ serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 hex = { version = "0.4.3", features = ["serde"] }
 criterion = "0.5"
-libcrux-ml-kem = { path = ".", features = ["tests"] }
 
 [[bench]]
 name = "ml-kem"
