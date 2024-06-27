@@ -72,8 +72,10 @@ getrandom = { version = "0.2", features = ["js"] }
 
 [features]
 hacspec = []            # TODO: #7 Use specs instead of efficient implementations
-rand = []
+rand = ["std"]          # rand requires std because of std::error::Error
 wasm = ["wasm-bindgen"]
 log = ["dep:log"]
+default = ["std"]
+std = []
 tests = []              # Expose functions for testing.
 experimental = []       # Expose experimental APIs.

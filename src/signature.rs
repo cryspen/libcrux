@@ -8,6 +8,7 @@ use crate::{
     ecdh,
     hacl::{self, ed25519, p256},
 };
+use alloc::vec::Vec;
 use rand::{CryptoRng, Rng, RngCore};
 
 use self::rsa_pss::RsaPssSignature;
@@ -85,6 +86,8 @@ pub mod rsa_pss {
     };
 
     use super::{DigestAlgorithm, Error};
+    use alloc::vec;
+    use alloc::vec::Vec;
 
     /// A [`Algorithm::RsaPss`](super::Algorithm::RsaPss) Signature
     #[derive(Debug, Clone, PartialEq, Eq)]

@@ -4,6 +4,8 @@
 use crate::hkdf::Algorithm;
 
 use super::errors::*;
+use alloc::vec;
+use alloc::vec::Vec;
 
 /// ## Key Derivation Functions (KDFs)
 ///

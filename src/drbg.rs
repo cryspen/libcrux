@@ -4,6 +4,8 @@
 
 use crate::hacl::drbg;
 // re-export here for convenience
+use alloc::vec;
+use alloc::vec::Vec;
 pub use rand::{CryptoRng, RngCore};
 
 #[derive(Debug)]
@@ -16,12 +18,23 @@ pub enum Error {
     UnableToGenerate,
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_fmt(format_args!("{self:?}"))
     }
 }
 
+// The `Error` trait is defined in `core::error::Error` but it is not yet stabilized.
+// See: https://github.com/rust-lang/rust/issues/103765
+//
+// When `core::error::Error` is stablized, this should be changed to `impl core::error::Error`
+// and the #[cfg] should be removed.
+//
+// Because of this, the `rand` feature depends on the `std` feature. The `rand` crate itself
+// necessarily depends on std because it is exporting a type that depends on `std::error::Error`.
+// If `core::error::Error` is stabilized and the `rand` crate moves to it, then no_std becomes
+// viable for both `rand` and this crate.
+#[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
 pub struct Drbg {
@@ -169,6 +182,7 @@ impl Drbg {
 }
 
 /// Implementation of the [`RngCore`] trait for the [`Drbg`].
+#[cfg(feature = "rand")]
 impl RngCore for Drbg {
     fn next_u32(&mut self) -> u32 {
         let mut bytes: [u8; 4] = [0; 4];

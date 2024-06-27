@@ -12,6 +12,8 @@
 //! For P256 the portable HACL implementation is used.
 
 use crate::hacl;
+use alloc::string::String;
+use alloc::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum LowLevelError {
@@ -46,6 +48,7 @@ pub enum Algorithm {
 }
 
 pub(crate) mod x25519 {
+    use alloc::format;
     use rand::{CryptoRng, Rng};
 
     use super::Error;
@@ -232,6 +235,7 @@ pub use x25519::generate_secret as x25519_generate_secret;
 pub use x25519::key_gen as x25519_key_gen;
 
 pub(crate) mod p256 {
+    use alloc::format;
     use rand::{CryptoRng, Rng};
 
     // P256 we only have in HACL

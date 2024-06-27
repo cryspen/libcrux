@@ -4,9 +4,11 @@
 
 // We wrap hax utilities here to only require that dependency when using the
 // `hax` configuration.
+#![cfg_attr(all(not(test), not(feature = "std")), no_std)]
 pub(crate) mod hax_utils;
 
 pub use libcrux_platform::aes_ni_support;
+extern crate alloc;
 
 // Jasmin
 #[cfg(all(

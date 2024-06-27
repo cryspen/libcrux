@@ -13,6 +13,9 @@ use crate::{
 use super::errors::*;
 use super::kdf::*;
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 /// ## Key Encapsulation Mechanisms (KEMs)
 ///
 /// | Value  | KEM                        | Nsecret  | Nenc | Npk  | Nsk  | Auth | Reference               |

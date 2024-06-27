@@ -22,6 +22,7 @@ use crate::hacl::{
     sha3,
 };
 
+use alloc::vec::Vec;
 use libcrux_platform::{simd128_support, simd256_support};
 
 #[derive(Debug)]
