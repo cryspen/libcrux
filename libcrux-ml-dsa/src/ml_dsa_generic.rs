@@ -224,30 +224,16 @@ pub(crate) fn sign<
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> [u8; SIGNATURE_SIZE] {
-    let (seed_for_A, remaining_signing_key) = signing_key.split_at(SEED_FOR_A_SIZE);
-    let (seed_for_signing, remaining_signing_key) =
-        remaining_signing_key.split_at(SEED_FOR_SIGNING_SIZE);
-    let (verification_key_hash, remaining_signing_key) =
-        remaining_signing_key.split_at(BYTES_FOR_VERIFICATION_KEY_HASH);
+    let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
+        encoding::signing_key::deserialize_then_ntt::<
+            ROWS_IN_A,
+            COLUMNS_IN_A,
+            ETA,
+            ERROR_RING_ELEMENT_SIZE,
+            SIGNING_KEY_SIZE,
+        >(signing_key);
 
-    let (s1_serialized, remaining_signing_key) =
-        remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * COLUMNS_IN_A);
-    let (s2_serialized, t0_serialized) =
-        remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
-
-    let s1_as_ntt = encoding::error::deserialize_to_vector_then_ntt::<
-        COLUMNS_IN_A,
-        ETA,
-        ERROR_RING_ELEMENT_SIZE,
-    >(s1_serialized);
-    let s2_as_ntt =
-        encoding::error::deserialize_to_vector_then_ntt::<ROWS_IN_A, ETA, ERROR_RING_ELEMENT_SIZE>(
-            s2_serialized,
-        );
-
-    let t0_as_ntt = encoding::t0::deserialize_to_vector_then_ntt::<ROWS_IN_A>(t0_serialized);
-
-    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_A));
+    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     let message_representative = {
         let mut hash_input = verification_key_hash.to_vec();

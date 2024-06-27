@@ -50,7 +50,16 @@ macro_rules! wycheproof_sign_test {
                             signature.0.as_slice(),
                             hex::decode(test.sig).unwrap().as_slice()
                         );
-                    } // TODO: else, how should invalid signatures be handled?
+                    }
+                    // TODO: else, the generated signature is invalid; we can
+                    // check that our own implementation agrees with this judgement,
+                    // but in order to do so we'd need the verification key.
+                    //
+                    // It should be possible to derive the verification key
+                    // from the signing key, and such functionality could be
+                    // implemented in the source code, but it seems overkill, and
+                    // far cleaner to just include the verification key in the
+                    // JSON KAT files.
                 }
             }
         }
