@@ -5,7 +5,7 @@ use crate::hax_utils::hax_debug_assert;
 // operations are not being optimized away/constant-timedness is not being broken.
 
 /// Return 1 if `value` is not zero and 0 otherwise.
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::implies(value == 0, || result == 0) &&
     hax_lib::implies(value != 0, || result == 1)
 ))]
@@ -20,7 +20,7 @@ fn is_non_zero(value: u8) -> u8 {
 
 /// Return 1 if the bytes of `lhs` and `rhs` do not exactly
 /// match and 0 otherwise.
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::implies(lhs == rhs, || result == 0) &&
     hax_lib::implies(lhs != rhs, || result == 1)
 ))]
@@ -41,7 +41,7 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
 
 /// If `selector` is not zero, return the bytes in `rhs`; return the bytes in
 /// `lhs` otherwise.
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::implies(selector == 0, || result == lhs) &&
     hax_lib::implies(selector != 0, || result == rhs)
 ))]

@@ -26,8 +26,8 @@ use super::{
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 
-#[cfg_attr(hax, hax_lib_macros::requires(fe < (FIELD_MODULUS as u16)))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::requires(fe < (FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib::ensures(|result|
         hax_lib::implies(833 <= fe && fe <= 2596, || result == 1) &&
         hax_lib::implies(!(833 <= fe && fe <= 2596), || result == 0)
 ))]
@@ -57,14 +57,14 @@ pub(super) fn compress_message_coefficient(fe: u16) -> u8 {
 }
 
 #[cfg_attr(hax,
-    hax_lib_macros::requires(
+    hax_lib::requires(
         (coefficient_bits == 4 ||
          coefficient_bits == 5 ||
          coefficient_bits == 10 ||
          coefficient_bits == 11) &&
          fe < (FIELD_MODULUS as u16)))]
 #[cfg_attr(hax,
-     hax_lib_macros::ensures(
+     hax_lib::ensures(
      |result| result >= 0 && result < 2i32.pow(coefficient_bits as u32)))]
 pub(super) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> FieldElement {
     hax_debug_assert!(
@@ -107,14 +107,14 @@ pub(super) fn compress_ciphertext_coefficient(coefficient_bits: u8, fe: u16) -> 
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 
-#[cfg_attr(hax, hax_lib_macros::requires((fe == 0) || (fe == 1)))]
+#[cfg_attr(hax, hax_lib::requires((fe == 0) || (fe == 1)))]
 #[inline(always)]
 pub(super) fn decompress_message_coefficient(fe: FieldElement) -> FieldElement {
     -fe & ((FIELD_MODULUS + 1) / 2)
 }
 
-#[cfg_attr(hax, hax_lib_macros::requires((coefficient_bits == 4 || coefficient_bits == 5 || coefficient_bits == 10 || coefficient_bits == 11) && (fe >= 0) && (fe < 2i32.pow(coefficient_bits as u32))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib::requires((coefficient_bits == 4 || coefficient_bits == 5 || coefficient_bits == 10 || coefficient_bits == 11) && (fe >= 0) && (fe < 2i32.pow(coefficient_bits as u32))))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result < FIELD_MODULUS))]
 pub(super) fn decompress_ciphertext_coefficient(
     coefficient_bits: u8,
     fe: FieldElement,

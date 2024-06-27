@@ -19,8 +19,8 @@ pub(crate) type MontgomeryFieldElement = i32;
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
-#[cfg_attr(hax, hax_lib_macros::requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result < 2u32.pow(n.into())))]
+#[cfg_attr(hax, hax_lib::requires(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result < 2u32.pow(n.into())))]
 #[inline(always)]
 pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     hax_debug_assert!(n == 4 || n == 5 || n == 10 || n == 11 || n == MONTGOMERY_SHIFT);
@@ -46,8 +46,8 @@ const BARRETT_MULTIPLIER: i64 = 20159;
 ///
 /// In particular, if `|value| < BARRETT_R`, then `|result| < FIELD_MODULUS`.
 
-#[cfg_attr(hax, hax_lib_macros::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib::requires((i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R)))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result > -FIELD_MODULUS && result < FIELD_MODULUS))]
 pub(crate) fn barrett_reduce(value: FieldElement) -> FieldElement {
     hax_debug_assert!(
         i64::from(value) > -BARRETT_R && i64::from(value) < BARRETT_R,
@@ -80,8 +80,8 @@ const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209; // FIELD_MODULUS^{-1} mo
 /// `|result| ≤ (|value| / MONTGOMERY_R) + (FIELD_MODULUS / 2)
 ///
 /// In particular, if `|value| ≤ FIELD_MODULUS * MONTGOMERY_R`, then `|o| < (3 · FIELD_MODULUS) / 2`.
-#[cfg_attr(hax, hax_lib_macros::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
+#[cfg_attr(hax, hax_lib::requires(value >= -FIELD_MODULUS * MONTGOMERY_R && value <= FIELD_MODULUS * MONTGOMERY_R))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result >= -(3 * FIELD_MODULUS) / 2 && result <= (3 * FIELD_MODULUS) / 2))]
 pub(crate) fn montgomery_reduce(value: FieldElement) -> MontgomeryFieldElement {
     // This forces hax to extract code for MONTGOMERY_R before it extracts code
     // for this function. The removal of this line is being tracked in:
@@ -142,8 +142,8 @@ pub(crate) fn to_standard_domain(mfe: MontgomeryFieldElement) -> FieldElement {
 /// output `o` such that:
 /// - `o` is congruent to `fe`
 /// - 0 ≤ `o` FIELD_MODULUS
-#[cfg_attr(hax, hax_lib_macros::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
+#[cfg_attr(hax, hax_lib::requires(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS))]
+#[cfg_attr(hax, hax_lib::ensures(|result| result >= 0 && result < (FIELD_MODULUS as u16)))]
 #[inline(always)]
 pub(crate) fn to_unsigned_representative(fe: FieldElement) -> u16 {
     hax_debug_assert!(fe >= -FIELD_MODULUS && fe < FIELD_MODULUS);
@@ -163,14 +163,14 @@ impl PolynomialRingElement {
 
 /// Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
 /// sum of their constituent coefficients.
-#[cfg_attr(hax, hax_lib_macros::requires(
+#[cfg_attr(hax, hax_lib::requires(
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < COEFFICIENTS_IN_RING_ELEMENT, ||
             (lhs.coefficients[i].abs() <= ((K as i32) - 1) * FIELD_MODULUS) &&
             (rhs.coefficients[i].abs() <= FIELD_MODULUS)
 
 ))))]
-#[cfg_attr(hax, hax_lib_macros::ensures(|result|
+#[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::forall(|i:usize|
         hax_lib::implies(i < result.coefficients.len(), ||
                 result.coefficients[i].abs() <= (K as i32) * FIELD_MODULUS
