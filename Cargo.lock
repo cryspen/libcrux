@@ -320,6 +320,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4b82cf0babdbd58558212896d1a4272303a57bdb245c2bf1147185fb45640e70"
 
 [[package]]
+name = "classic-mceliece-rust"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45ce62f72a15a9071f83c5084bdf0af4e8cbf31431e79eb4a5509a2f7fe7fe5d"
+dependencies = [
+ "rand",
+ "sha3",
+ "zeroize",
+]
+
+[[package]]
 name = "colorchoice"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1043,6 +1054,18 @@ dependencies = [
  "bindgen",
  "cc",
  "fs_extra",
+]
+
+[[package]]
+name = "libcrux-psq"
+version = "0.0.2-pre.2"
+dependencies = [
+ "classic-mceliece-rust",
+ "criterion",
+ "libcrux-hkdf",
+ "libcrux-hmac",
+ "libcrux-kem",
+ "rand",
 ]
 
 [[package]]
