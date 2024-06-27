@@ -36,7 +36,7 @@ pub mod default {
     }
 
     fn modify_ciphertext<const LEN: usize>(
-        mut ciphertext: MlKemCiphertext<LEN>,
+        ciphertext: MlKemCiphertext<LEN>,
     ) -> MlKemCiphertext<LEN> {
         let mut raw_ciphertext = [0u8; LEN];
         raw_ciphertext.copy_from_slice(ciphertext.as_ref());

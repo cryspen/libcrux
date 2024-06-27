@@ -88,7 +88,6 @@ mod types;
 #[cfg(feature = "pre-verification")]
 mod vector;
 
-
 #[cfg(not(feature = "pre-verification"))]
 mod kem;
 // Variants
@@ -98,7 +97,6 @@ pub mod mlkem1024;
 pub mod mlkem512;
 #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
 pub mod mlkem768;
-
 
 // Variants
 #[cfg(all(feature = "mlkem512", not(feature = "pre-verification")))]
