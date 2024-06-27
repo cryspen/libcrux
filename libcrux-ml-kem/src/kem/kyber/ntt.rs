@@ -7,6 +7,8 @@ use super::{
     },
     constants::COEFFICIENTS_IN_RING_ELEMENT,
 };
+#[cfg(hax)]
+use crate::kem::kyber::constants::FIELD_MODULUS;
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
