@@ -1,7 +1,8 @@
 //! # ML-KEM
 //!
 //! This crate implements all three ML-KEM variants 512, 768, and 1024. It is
-//! formally verified using [hax](https://cryspen.com/hax) and [F*](https://fstar-lang.org).
+//! formally verified using [hax](https://cryspen.com/hax) and
+//! [F*](https://fstar-lang.org).
 //!
 //! ```
 //! use rand::{rngs::OsRng, RngCore};
@@ -41,10 +42,12 @@
 //!
 //! In addition to the verified implementations of the ML-KEM variants, the
 //! feature flag `pre-verification` gives access to, as yet, unverified
-//! implementations of ML-KEM that are optimized for SIMD instruction sets. The
-//! `pre-verification` flag in combination with the `kyber` flag also gives
-//! access to an, as yet, unverified implementation of Kyber as submitted in
-//! Round 3 of the NIST PQ competition.
+//! implementations of ML-KEM that are optimized for SIMD instruction sets.
+//!
+//! ### Kyber Round 3
+//! The `kyber` flag (in combination with `pre-verification`) also gives access
+//! to an, as yet, unverified implementation of Kyber as submitted in Round 3 of
+//! the NIST PQ competition.
 //!
 
 #![no_std]
