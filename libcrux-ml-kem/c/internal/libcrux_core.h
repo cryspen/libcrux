@@ -138,19 +138,6 @@ uint8_t *
 libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice___800size_t(
     libcrux_ml_kem_types_MlKemPublicKey____800size_t *self);
 
-typedef struct
-    core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
-  union {
-    uint8_t case_Ok[32U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError;
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError self,
-    uint8_t ret[32U]);
-
 uint8_t
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time___768size_t(
     Eurydice_slice lhs, Eurydice_slice rhs);
@@ -173,7 +160,7 @@ void libcrux_ml_kem_utils_into_padded_array___64size_t(Eurydice_slice slice,
 
 typedef struct
     core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
   union {
     uint8_t case_Ok[24U];
     core_array_TryFromSliceError case_Err;
@@ -186,7 +173,7 @@ void core_result__core__result__Result_T__E___unwrap__uint8_t_24size_t__core_arr
 
 typedef struct
     core_result_Result__uint8_t_20size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
   union {
     uint8_t case_Ok[20U];
     core_array_TryFromSliceError case_Err;
@@ -199,7 +186,7 @@ void core_result__core__result__Result_T__E___unwrap__uint8_t_20size_t__core_arr
 
 typedef struct
     core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
   union {
     uint8_t case_Ok[10U];
     core_array_TryFromSliceError case_Err;
@@ -212,7 +199,7 @@ void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_arr
 
 typedef struct
     core_result_Result__int16_t_16size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
+  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
   union {
     int16_t case_Ok[16U];
     core_array_TryFromSliceError case_Err;

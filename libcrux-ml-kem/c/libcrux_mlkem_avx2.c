@@ -618,10 +618,10 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_1(Eurydice_slice bytes) {
       libcrux_intrinsics_avx2_mm256_set_epi16(
           (int16_t)1 << 8U, (int16_t)1 << 9U, (int16_t)1 << 10U,
           (int16_t)1 << 11U, (int16_t)1 << 12U, (int16_t)1 << 13U,
-          (int16_t)1 << 14U, (int16_t)1 << 15U, (int16_t)1 << 8U,
+          (int16_t)1 << 14U, (int16_t)-32768, (int16_t)1 << 8U,
           (int16_t)1 << 9U, (int16_t)1 << 10U, (int16_t)1 << 11U,
           (int16_t)1 << 12U, (int16_t)1 << 13U, (int16_t)1 << 14U,
-          (int16_t)1 << 15U);
+          (int16_t)-32768);
   core_core_arch_x86___m256i coefficients_in_msb =
       libcrux_intrinsics_avx2_mm256_mullo_epi16(coefficients, shift_lsb_to_msb);
   return libcrux_intrinsics_avx2_mm256_srli_epi16(
@@ -2744,13 +2744,11 @@ libcrux_ml_kem_ind_cca_generate_keypair__libcrux_ml_kem_vector_avx2_SIMD256Vecto
 static inline void
 entropy_preprocess__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t(
     Eurydice_slice randomness, uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
-  Eurydice_slice_to_array2(&dst, randomness, Eurydice_slice, uint8_t[32U],
-                           void *);
-  core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
-      dst, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  uint8_t out[32U] = {0U};
+  core_slice___Slice_T___copy_from_slice(
+      Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
+      randomness, uint8_t, void *);
+  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 static inline void
@@ -3611,13 +3609,11 @@ encrypt__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_
 static inline void
 kdf__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_3size_t_1088size_t(
     Eurydice_slice shared_secret, uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
-  Eurydice_slice_to_array2(&dst, shared_secret, Eurydice_slice, uint8_t[32U],
-                           void *);
-  core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
-      dst, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  uint8_t out[32U] = {0U};
+  core_slice___Slice_T___copy_from_slice(
+      Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
+      shared_secret, uint8_t, void *);
+  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 K___libcrux_ml_kem_types_MlKemCiphertext___1088size_t___uint8_t_32size_t_
@@ -5149,13 +5145,11 @@ libcrux_ml_kem_ind_cca_generate_keypair__libcrux_ml_kem_vector_avx2_SIMD256Vecto
 static inline void
 entropy_preprocess__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t(
     Eurydice_slice randomness, uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
-  Eurydice_slice_to_array2(&dst, randomness, Eurydice_slice, uint8_t[32U],
-                           void *);
-  core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
-      dst, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  uint8_t out[32U] = {0U};
+  core_slice___Slice_T___copy_from_slice(
+      Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
+      randomness, uint8_t, void *);
+  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 static inline void
@@ -5535,13 +5529,11 @@ encrypt__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_
 static inline void
 kdf__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_4size_t_1568size_t(
     Eurydice_slice shared_secret, uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
-  Eurydice_slice_to_array2(&dst, shared_secret, Eurydice_slice, uint8_t[32U],
-                           void *);
-  core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
-      dst, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  uint8_t out[32U] = {0U};
+  core_slice___Slice_T___copy_from_slice(
+      Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
+      shared_secret, uint8_t, void *);
+  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 K___libcrux_ml_kem_types_MlKemCiphertext___1568size_t___uint8_t_32size_t_
@@ -6652,13 +6644,11 @@ libcrux_ml_kem_ind_cca_generate_keypair__libcrux_ml_kem_vector_avx2_SIMD256Vecto
 static inline void
 entropy_preprocess__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t(
     Eurydice_slice randomness, uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
-  Eurydice_slice_to_array2(&dst, randomness, Eurydice_slice, uint8_t[32U],
-                           void *);
-  core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
-      dst, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  uint8_t out[32U] = {0U};
+  core_slice___Slice_T___copy_from_slice(
+      Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
+      randomness, uint8_t, void *);
+  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 static inline void
@@ -7016,13 +7006,11 @@ encrypt__libcrux_ml_kem_vector_avx2_SIMD256Vector_libcrux_ml_kem_hash_functions_
 static inline void
 kdf__libcrux_ml_kem_hash_functions_avx2_Simd256Hash_2size_t_768size_t(
     Eurydice_slice shared_secret, uint8_t ret[32U]) {
-  uint8_t ret0[32U];
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError dst;
-  Eurydice_slice_to_array2(&dst, shared_secret, Eurydice_slice, uint8_t[32U],
-                           void *);
-  core_result__core__result__Result_T__E___unwrap__uint8_t_32size_t__core_array_TryFromSliceError(
-      dst, ret0);
-  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+  uint8_t out[32U] = {0U};
+  core_slice___Slice_T___copy_from_slice(
+      Eurydice_array_to_slice((size_t)32U, out, uint8_t, Eurydice_slice),
+      shared_secret, uint8_t, void *);
+  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
 }
 
 K___libcrux_ml_kem_types_MlKemCiphertext___768size_t___uint8_t_32size_t_
