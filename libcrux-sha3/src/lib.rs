@@ -227,12 +227,13 @@ pub mod portable {
     /// An incremental API for SHAKE
     pub mod incremental {
         use generic_keccak::{
-            absorb_final, squeeze_first_five_blocks, squeeze_first_three_blocks, squeeze_next_block,
+            absorb_final, squeeze_first_block, squeeze_first_five_blocks,
+            squeeze_first_three_blocks, squeeze_next_block,
         };
 
         use super::*;
 
-        /// Initialise the SHAKE state.
+        /// Crate a new SHAKE-128 state object.
         #[inline(always)]
         pub fn shake128_init() -> KeccakState1 {
             KeccakState1 {
@@ -262,6 +263,31 @@ pub mod portable {
         #[inline(always)]
         pub fn shake128_squeeze_next_block(s: &mut KeccakState1, out0: &mut [u8]) {
             squeeze_next_block::<1, u64, 168>(&mut s.state, [out0])
+        }
+
+        /// Crate a new SHAKE-256 state object.
+        #[inline(always)]
+        pub fn shake256_init() -> KeccakState1 {
+            KeccakState1 {
+                state: KeccakState::<1, u64>::new(),
+            }
+        }
+        /// Absorb some data for SHAKE-256 for the last time
+        #[inline(always)]
+        pub fn shake256_absorb_final(s: &mut KeccakState1, data0: &[u8]) {
+            absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data0]);
+        }
+
+        /// Squeeze the first SHAKE-256 block
+        #[inline(always)]
+        pub fn shake256_squeeze_first_block(s: &mut KeccakState1, out0: &mut [u8]) {
+            squeeze_first_block::<1, u64, 136>(&mut s.state, [out0])
+        }
+
+        /// Squeeze the next SHAKE-256 block
+        #[inline(always)]
+        pub fn shake256_squeeze_next_block(s: &mut KeccakState1, out0: &mut [u8]) {
+            squeeze_next_block::<1, u64, 136>(&mut s.state, [out0])
         }
     }
 }

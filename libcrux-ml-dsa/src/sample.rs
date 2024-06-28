@@ -2,7 +2,7 @@ use crate::{
     arithmetic::PolynomialRingElement,
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     encoding,
-    hash_functions::{H, H_128},
+    hash_functions::{H_one_shot, H, H_128},
 };
 
 #[inline(always)]
@@ -143,17 +143,17 @@ pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
 #[allow(non_snake_case)]
 #[inline(always)]
 fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
-    // TODO: Use incremental API to squeeze one block at a time.
-    let randomness = H::<272>(&seed);
+    let mut state = H::new(&seed);
+    let randomness = H::squeeze_first_block(&mut state);
 
     let mut out = PolynomialRingElement::ZERO;
 
     let mut sampled = 0;
-    let done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
+    let mut done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
 
-    // TODO: Remove this panic using the incremental API.
-    if !done {
-        panic!("Not enough randomness for sampling short vector.");
+    while !done {
+        let randomness = H::squeeze_next_block(&mut state);
+        done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
     }
 
     out
@@ -179,8 +179,8 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
 #[inline(always)]
 fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     match GAMMA1_EXPONENT {
-        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
-        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
+        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H_one_shot::<576>(&seed)),
+        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H_one_shot::<640>(&seed)),
         _ => unreachable!(),
     }
 }
@@ -207,10 +207,11 @@ pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: 
 pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement {
-    // TODO: Use incremental API to squeeze one block at a time.
-    let mut randomness = H::<136>(&seed).into_iter();
+    let mut state = H::new(&seed);
 
-    let mut signs: u64 = 0;
+    let mut randomness = H::squeeze_first_block(&mut state).into_iter();
+
+    let mut signs = 0;
     for i in 0..8 {
         signs |= (randomness.next().unwrap() as u64) << (8 * i);
     }
@@ -221,15 +222,13 @@ pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
         // TODO: Rewrite this without using `break`. It's doable, just probably
         // not as nice.
         let sample_at = loop {
-            let i = match randomness.next() {
-                Some(byte) => byte as usize,
-
-                // TODO: We need to incrementally sample here instead of panicking.
-                None => panic!("Insufficient randomness to sample challenge ring element."),
-            };
-
-            if i <= index {
-                break i;
+            if let Some(byte) = randomness.next() {
+                let i = byte as usize;
+                if i <= index {
+                    break i;
+                }
+            } else {
+                randomness = H::squeeze_next_block(&mut state).into_iter();
             }
         };
 
