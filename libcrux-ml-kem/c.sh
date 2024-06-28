@@ -19,7 +19,7 @@ clean=0
 config=c.yaml
 out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
-features=
+features="--cargo-arg=--features=pre-verification"
 
 # Parse command line arguments.
 all_args=("$@")
@@ -32,7 +32,7 @@ while [ $# -gt 0 ]; do
     --config) config="$2"; shift ;;
     --out) out="$2"; shift ;;
     --glue) glue="$2"; shift ;;
-    --mlkem768) features="--cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+    --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
     esac
     shift
 done
@@ -81,7 +81,11 @@ clang-format --style=Google -i intrinsics/*.h
 [[ -z "$CHARON_REV" && -d $CHARON_HOME/.git ]] && export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
 [[ -z "$EURYDICE_REV" && -d $EURYDICE_HOME/.git ]] && export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
 [[ -z "$KRML_REV" && -d $KRML_HOME/.git ]] && export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
-[[ -z "$FSTAR_REV" && -d $FSTAR_HOME/.git ]] && export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
+if [[ -z "$FSTAR_REV" && -d $FSTAR_HOME/.git ]]; then
+    export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
+else
+    export FSTAR_REV=$(fstar.exe --version | grep commit | sed 's/commit=\(.*\)/\1/')
+fi
 rm -f code_gen.txt
 echo "This code was generated with the following tools:" >> code_gen.txt
 echo -n "Charon: " >> code_gen.txt
