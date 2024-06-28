@@ -165,6 +165,8 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
     domain_separator: &mut u16,
 ) -> [PolynomialRingElement; DIMENSION] {
     let mut error = [PolynomialRingElement::ZERO; DIMENSION];
+
+    #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
         seed[64] = *domain_separator as u8;
         seed[65] = (*domain_separator >> 8) as u8;
@@ -192,6 +194,7 @@ pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: 
 ) -> [PolynomialRingElement; DIMENSION] {
     let mut error = [PolynomialRingElement::ZERO; DIMENSION];
 
+    #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
         seed[64] = *domain_separator as u8;
         seed[65] = (*domain_separator >> 8) as u8;

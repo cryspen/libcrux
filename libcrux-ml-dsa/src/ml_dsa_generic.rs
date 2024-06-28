@@ -123,7 +123,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
         for i in 0..ROWS_IN_A {
             for (j, hint) in self.hint[i].into_iter().enumerate() {
-                if hint == true {
+                if hint {
                     hint_serialized[true_hints_seen] = j as u8;
                     true_hints_seen += 1;
                 }
@@ -188,8 +188,12 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
             previous_true_hints_seen = current_true_hints_seen;
         }
 
-        for j in previous_true_hints_seen..MAX_ONES_IN_HINT {
-            if hint_serialized[j] != 0 {
+        for bit in hint_serialized
+            .iter()
+            .take(MAX_ONES_IN_HINT)
+            .skip(previous_true_hints_seen)
+        {
+            if *bit != 0 {
                 // ensures padding indices are zero
                 return Err(VerificationError::MalformedHintError);
             }
@@ -373,6 +377,7 @@ pub(crate) fn verify<
         SIGNATURE_SIZE,
     >(signature_serialized)?;
 
+    // We use if-else branches because early returns will not go through hax.
     if !vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,

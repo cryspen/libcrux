@@ -15,7 +15,7 @@ pub(crate) mod H {
     #[inline(always)]
     pub(crate) fn new(seed: &[u8]) -> KeccakState1 {
         let mut state = incremental::shake256_init();
-        incremental::shake256_absorb_final(&mut state, &seed);
+        incremental::shake256_absorb_final(&mut state, seed);
 
         state
     }

@@ -79,8 +79,8 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     // TODO: We can break out of this loop early if need be, but the most
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
-    for i in 0..DIMENSION {
-        exceeds |= vector[i].infinity_norm_exceeds(value);
+    for ring_element in vector.iter() {
+        exceeds |= ring_element.infinity_norm_exceeds(value);
     }
 
     exceeds
@@ -312,7 +312,7 @@ pub(crate) fn make_hint<const DIMENSION: usize, const GAMMA2: i32>(
 pub(crate) fn use_hint_value<const GAMMA2: i32>(r: i32, hint: bool) -> i32 {
     let (r0, r1) = decompose::<GAMMA2>(r);
 
-    if hint == false {
+    if !hint {
         return r1;
     }
 
@@ -324,12 +324,10 @@ pub(crate) fn use_hint_value<const GAMMA2: i32>(r: i32, hint: bool) -> i32 {
                 } else {
                     r1 + 1
                 }
+            } else if r1 == 0 {
+                43
             } else {
-                if r1 == 0 {
-                    43
-                } else {
-                    r1 - 1
-                }
+                r1 - 1
             }
         }
 

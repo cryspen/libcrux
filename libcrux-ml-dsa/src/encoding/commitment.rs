@@ -27,7 +27,7 @@ fn serialize<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT
                 let coefficient2 = coefficients[2] as u8;
                 let coefficient3 = coefficients[3] as u8;
 
-                out[3 * i + 0] = (coefficient1 << 6) | coefficient0;
+                out[3 * i] = (coefficient1 << 6) | coefficient0;
                 out[3 * i + 1] = (coefficient2 << 4) | coefficient1 >> 2;
                 out[3 * i + 2] = (coefficient3 << 2) | coefficient2 >> 4;
             }
@@ -50,9 +50,9 @@ pub(crate) fn serialize_vector<
     let mut serialized = [0u8; OUTPUT_SIZE];
     let mut offset: usize = 0;
 
-    for i in 0..DIMENSION {
+    for ring_element in vector.iter() {
         serialized[offset..offset + RING_ELEMENT_SIZE]
-            .copy_from_slice(&serialize::<RING_ELEMENT_SIZE>(vector[i]));
+            .copy_from_slice(&serialize::<RING_ELEMENT_SIZE>(*ring_element));
         offset += RING_ELEMENT_SIZE;
     }
 

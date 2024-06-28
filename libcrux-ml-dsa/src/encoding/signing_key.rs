@@ -27,11 +27,11 @@ pub(crate) fn generate_serialized<
     let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];
     let mut offset = 0;
 
-    signing_key_serialized[offset..offset + SEED_FOR_A_SIZE].copy_from_slice(&seed_for_A);
+    signing_key_serialized[offset..offset + SEED_FOR_A_SIZE].copy_from_slice(seed_for_A);
     offset += SEED_FOR_A_SIZE;
 
     signing_key_serialized[offset..offset + SEED_FOR_SIGNING_SIZE]
-        .copy_from_slice(&seed_for_signing);
+        .copy_from_slice(seed_for_signing);
     offset += SEED_FOR_SIGNING_SIZE;
 
     let verification_key_hash = H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(verification_key);
@@ -39,23 +39,23 @@ pub(crate) fn generate_serialized<
         .copy_from_slice(&verification_key_hash);
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;
 
-    for i in 0..COLUMNS_IN_A {
+    for ring_element in s1.iter() {
         signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(s1[i]),
+            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
         );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
-    for i in 0..ROWS_IN_A {
+    for ring_element in s2.iter() {
         signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(s2[i]),
+            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
         );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
-    for i in 0..ROWS_IN_A {
+    for ring_element in t0.iter() {
         signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
-            .copy_from_slice(&encoding::t0::serialize(t0[i]));
+            .copy_from_slice(&encoding::t0::serialize(*ring_element));
         offset += RING_ELEMENT_OF_T0S_SIZE;
     }
 
