@@ -5,7 +5,7 @@ use crate::{
         SEED_FOR_SIGNING_SIZE,
     },
     encoding,
-    hash_functions::H_one_shot,
+    hash_functions::H,
 };
 
 #[allow(non_snake_case)]
@@ -34,7 +34,7 @@ pub(crate) fn generate_serialized<
         .copy_from_slice(&seed_for_signing);
     offset += SEED_FOR_SIGNING_SIZE;
 
-    let verification_key_hash = H_one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(verification_key);
+    let verification_key_hash = H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(verification_key);
     signing_key_serialized[offset..offset + BYTES_FOR_VERIFICATION_KEY_HASH]
         .copy_from_slice(&verification_key_hash);
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;

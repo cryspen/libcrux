@@ -2,7 +2,7 @@ use crate::{
     arithmetic::PolynomialRingElement,
     constants::FIELD_MODULUS,
     encoding,
-    hash_functions::{H_one_shot, H, H_128},
+    hash_functions::{H, H_128},
 };
 
 #[inline(always)]
@@ -179,8 +179,8 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
 #[inline(always)]
 fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     match GAMMA1_EXPONENT {
-        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H_one_shot::<576>(&seed)),
-        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H_one_shot::<640>(&seed)),
+        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::one_shot::<576>(&seed)),
+        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::one_shot::<640>(&seed)),
         _ => unreachable!(),
     }
 }
@@ -236,7 +236,6 @@ pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement {
     let mut state = H::new(&seed);
-
     let randomness = H::squeeze_first_block(&mut state);
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());

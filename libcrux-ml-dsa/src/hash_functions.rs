@@ -1,15 +1,16 @@
 #![allow(non_snake_case)]
-pub(crate) fn H_one_shot<const OUTPUT_LENGTH: usize>(input: &[u8]) -> [u8; OUTPUT_LENGTH] {
-    let mut out = [0u8; OUTPUT_LENGTH];
-    libcrux_sha3::portable::shake256(&mut out, input);
-
-    out
-}
 
 pub(crate) mod H {
-    use libcrux_sha3::portable::{incremental, KeccakState1};
+    use libcrux_sha3::portable::{incremental, shake256, KeccakState1};
 
     const BLOCK_SIZE: usize = 136;
+
+    pub(crate) fn one_shot<const OUTPUT_LENGTH: usize>(input: &[u8]) -> [u8; OUTPUT_LENGTH] {
+        let mut out = [0u8; OUTPUT_LENGTH];
+        shake256(&mut out, input);
+
+        out
+    }
 
     #[inline(always)]
     pub(crate) fn new(seed: &[u8]) -> KeccakState1 {
