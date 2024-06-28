@@ -373,56 +373,55 @@ pub(crate) fn verify<
         SIGNATURE_SIZE,
     >(signature_serialized)?;
 
-    if vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
+    if !vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        // TODO: These early returns won't go through verification, fix them.
-        return Err(VerificationError::SignerResponseExceedsBoundError);
+        let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+
+        let verification_key_hash =
+            H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(&verification_key_serialized);
+        let message_representative = {
+            let mut hash_input = verification_key_hash.to_vec();
+            hash_input.extend_from_slice(message);
+
+            H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
+        };
+
+        let verifier_challenge_as_ntt =
+            ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
+                signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
+                    .try_into()
+                    .unwrap(),
+            ));
+
+        let w_approx = compute_w_approx::<ROWS_IN_A, COLUMNS_IN_A>(
+            &A_as_ntt,
+            signature.signer_response,
+            verifier_challenge_as_ntt,
+            t1,
+        );
+
+        let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
+            let commitment = use_hint::<ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
+            let commitment_serialized = encoding::commitment::serialize_vector::<
+                ROWS_IN_A,
+                COMMITMENT_RING_ELEMENT_SIZE,
+                COMMITMENT_VECTOR_SIZE,
+            >(commitment);
+
+            let mut hash_input = message_representative.to_vec();
+            hash_input.extend_from_slice(&commitment_serialized);
+
+            H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
+        };
+
+        if signature.commitment_hash != commitment_hash {
+            Err(VerificationError::CommitmentHashesDontMatchError)
+        } else {
+            Ok(())
+        }
+    } else {
+        Err(VerificationError::SignerResponseExceedsBoundError)
     }
-
-    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
-
-    let verification_key_hash =
-        H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(&verification_key_serialized);
-    let message_representative = {
-        let mut hash_input = verification_key_hash.to_vec();
-        hash_input.extend_from_slice(message);
-
-        H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
-    };
-
-    let verifier_challenge_as_ntt =
-        ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
-            signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
-
-    let w_approx = compute_w_approx::<ROWS_IN_A, COLUMNS_IN_A>(
-        &A_as_ntt,
-        signature.signer_response,
-        verifier_challenge_as_ntt,
-        t1,
-    );
-
-    let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
-        let commitment = use_hint::<ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
-        let commitment_serialized = encoding::commitment::serialize_vector::<
-            ROWS_IN_A,
-            COMMITMENT_RING_ELEMENT_SIZE,
-            COMMITMENT_VECTOR_SIZE,
-        >(commitment);
-
-        let mut hash_input = message_representative.to_vec();
-        hash_input.extend_from_slice(&commitment_serialized);
-
-        H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
-    };
-
-    if signature.commitment_hash != commitment_hash {
-        return Err(VerificationError::CommitmentHashesDontMatchError);
-    }
-
-    Ok(())
 }
