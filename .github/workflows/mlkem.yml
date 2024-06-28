@@ -48,10 +48,10 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
-      - run: echo 'EXCLUDE_FEATURES="--exclude-features simd256"' > $GITHUB_ENV
+      - run: echo 'EXCLUDE_FEATURES=--exclude-features simd256' > $GITHUB_ENV
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: echo 'EXCLUDE_FEATURES="--exclude-features simd128"' > $GITHUB_ENV
+      - run: echo 'EXCLUDE_FEATURES=--exclude-features simd128' > $GITHUB_ENV
         if: ${{ matrix.os != 'macos-latest' }}
 
       - name: 🛠️ Setup Rust Nightly
