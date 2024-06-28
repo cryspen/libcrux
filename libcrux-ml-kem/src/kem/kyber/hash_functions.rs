@@ -9,7 +9,7 @@ use libcrux_sha3::portable::{
         shake128_absorb_final, shake128_init, shake128_squeeze_first_three_blocks,
         shake128_squeeze_next_block,
     },
-    KeccakState1,
+    KeccakState,
 };
 pub(crate) fn G(input: &[u8]) -> [u8; G_DIGEST_SIZE] {
     let mut digest = [0u8; G_DIGEST_SIZE];
@@ -44,7 +44,7 @@ pub(crate) fn PRF<const LEN: usize>(input: &[u8]) -> [u8; LEN] {
 // }
 
 #[inline(always)]
-pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> [KeccakState1; K] {
+pub(crate) fn absorb<const K: usize>(input: [[u8; 34]; K]) -> [KeccakState; K] {
     debug_assert!(K == 2 || K == 3 || K == 4);
 
     let mut state = [shake128_init(); K];
@@ -71,7 +71,7 @@ const THREE_BLOCKS: usize = BLOCK_SIZE * 3;
 
 #[inline(always)]
 pub(crate) fn squeeze_three_blocks<const K: usize>(
-    xof_state: &mut [KeccakState1; K],
+    xof_state: &mut [KeccakState; K],
 ) -> [[u8; THREE_BLOCKS]; K] {
     debug_assert!(K == 2 || K == 3 || K == 4);
 
@@ -96,7 +96,7 @@ pub(crate) fn squeeze_three_blocks<const K: usize>(
 
 #[inline(always)]
 pub(crate) fn squeeze_block<const K: usize>(
-    xof_state: &mut [KeccakState1; K],
+    xof_state: &mut [KeccakState; K],
 ) -> [[u8; BLOCK_SIZE]; K] {
     debug_assert!(K == 2 || K == 3 || K == 4);
 
@@ -111,6 +111,6 @@ pub(crate) fn squeeze_block<const K: usize>(
 ///
 /// **NOTE:** That this needs to be done manually for now.
 #[inline(always)]
-pub(crate) fn free_state<const K: usize>(_xof_state: [KeccakState1; K]) {
+pub(crate) fn free_state<const K: usize>(_xof_state: [KeccakState; K]) {
     // xof_state.free_memory();
 }

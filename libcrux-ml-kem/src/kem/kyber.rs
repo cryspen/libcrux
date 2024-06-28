@@ -22,8 +22,11 @@ mod serialize;
 mod types;
 
 // Variants
+#[cfg(feature = "mlkem1024")]
 pub mod kyber1024;
+#[cfg(feature = "mlkem512")]
 pub mod kyber512;
+#[cfg(feature = "mlkem768")]
 pub mod kyber768;
 
 pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};

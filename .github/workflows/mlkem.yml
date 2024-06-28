@@ -47,6 +47,12 @@ jobs:
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
 
+      - run: echo 'EXCLUDE_FEATURES="--exclude-features simd256"' > $GITHUB_ENV
+        if: ${{ matrix.os == 'macos-latest' }}
+
+      - run: echo 'EXCLUDE_FEATURES="--exclude-features simd128"' > $GITHUB_ENV
+        if: ${{ matrix.os != 'macos-latest' }}
+
       - name: 🛠️ Setup Rust Nightly
         run: rustup toolchain install nightly
 
@@ -150,6 +156,15 @@ jobs:
           cargo clean
           cargo test --features kyber --verbose $RUST_TARGET_FLAG
 
+      - name: 🏃🏻‍♀️ Cargo Check Features
+        run: |
+          cargo clean
+          cargo hack check --feature-powerset $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Cargo Test Features
+        run: |
+          cargo clean
+          cargo hack test --each-feature $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
 
   benchmarks:
     strategy:

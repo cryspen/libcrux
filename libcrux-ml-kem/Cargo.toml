@@ -73,3 +73,14 @@ required-features = ["mlkem768"]
 [[example]]
 name = "keygen"
 required-features = ["mlkem768"]
+
+[package.metadata."docs.rs"]
+features = ["pre-verification", "kyber"]
+rustdoc-args = ["--cfg", "doc_cfg"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(hax)',
+    'cfg(eurydice)',
+    'cfg(doc_cfg)',
+] }

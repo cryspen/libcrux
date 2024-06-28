@@ -4,6 +4,7 @@ macro_rules! cfg_verified {
     ($($item:item)*) => {
         $(
             #[cfg(not(feature = "pre-verification"))]
+            #[allow(missing_docs)]
             $item
         )*
     }

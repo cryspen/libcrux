@@ -41,7 +41,7 @@ pub type MlKem768Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_768>;
 pub type MlKem768PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_768>;
 /// An ML-KEM 768 Public key
 pub type MlKem768PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_768>;
-/// Am ML-KEM 768 Key pair
+/// An ML-KEM 768 Key pair
 pub type MlKem768KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_768, CPA_PKE_PUBLIC_KEY_SIZE_768>;
 
 // Instantiate the different functions.
@@ -227,9 +227,9 @@ pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768Publ
 /// This function uses CPU feature detection to pick the most efficient version
 /// on each platform. To use a specific version with your own feature detection
 /// use one of the following
-/// - [`generate_key_pair_avx2`]
-/// - [`generate_key_pair_neon`]
-/// - [`generate_key_pair_portable`]
+/// - `generate_key_pair_avx2`
+/// - `generate_key_pair_neon`
+/// - `generate_key_pair_portable`
 ///
 /// This function returns an [`MlKem768KeyPair`].
 #[cfg(not(eurydice))]

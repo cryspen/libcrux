@@ -54,10 +54,14 @@
 //! to an, as yet, unverified implementation of Kyber as submitted in Round 3 of
 //! the NIST PQ competition.
 //!
+
 #![no_std]
+#![deny(missing_docs)]
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms, unused_lifetimes, unused_qualifications)]
 #![allow(clippy::needless_range_loop)]
+// Enable doc cfg feature for doc builds. They use nightly.
+#![cfg_attr(doc_cfg, feature(doc_cfg))]
 
 /// Feature gating helper macros
 #[macro_use]
@@ -100,12 +104,17 @@ cfg_pre_verification! {
     mod types;
     mod vector;
 
-    #[cfg(feature = "mlkem1024")]
-    pub mod mlkem1024;
     #[cfg(feature = "mlkem512")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
     pub mod mlkem512;
+
     #[cfg(feature = "mlkem768")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mlkem768")))]
     pub mod mlkem768;
+
+    #[cfg(feature = "mlkem1024")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mlkem1024")))]
+    pub mod mlkem1024;
 
     pub use constants::SHARED_SECRET_SIZE;
 
@@ -115,6 +124,8 @@ cfg_pre_verification! {
     pub use types::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 
     cfg_kyber! {
+        #[cfg(feature = "mlkem512")]
+        #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem512"))))]
         pub mod kyber512 {
             //! Kyber 512 (NIST PQC Round 3)
             pub use crate::mlkem512::generate_key_pair;
@@ -123,6 +134,8 @@ cfg_pre_verification! {
             pub use crate::mlkem512::validate_public_key;
         }
 
+        #[cfg(feature = "mlkem768")]
+        #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem768"))))]
         pub mod kyber768 {
             //! Kyber 768 (NIST PQC Round 3)
             pub use crate::mlkem768::generate_key_pair;
@@ -131,6 +144,8 @@ cfg_pre_verification! {
             pub use crate::mlkem768::validate_public_key;
         }
 
+        #[cfg(feature = "mlkem1024")]
+        #[cfg_attr(docsrs, doc(cfg(all(feature = "kyber", feature = "mlkem1024"))))]
         pub mod kyber1024 {
             //! Kyber 1024 (NIST PQC Round 3)
             pub use crate::mlkem1024::generate_key_pair;
@@ -153,16 +168,19 @@ cfg_verified! {
 
     // Variants
     #[cfg(feature = "mlkem512")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
     pub mod mlkem512 {
         pub use crate::kem::kyber::kyber512::*;
     }
 
     #[cfg(feature = "mlkem768")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mlkem768")))]
     pub mod mlkem768 {
         pub use crate::kem::kyber::kyber768::*;
     }
 
     #[cfg(feature = "mlkem1024")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "mlkem1024")))]
     pub mod mlkem1024 {
         pub use crate::kem::kyber::kyber1024::*;
     }
