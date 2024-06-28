@@ -10,7 +10,6 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-#include "karamel/lowstar_endianness.h"
 #include "karamel/target.h"
 
 // SLICES, ARRAYS, ETC.
@@ -77,7 +76,7 @@ typedef struct {
 
 #define Eurydice_array_eq(sz, a1, a2, t, _, _ret_t) \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
-#define core_array_equality___core__cmp__PartialEq__Array_B__N___for__Array_A__N____eq \
+#define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq \
   Eurydice_array_eq
 
 #define core_slice___Slice_T___split_at(slice, mid, element_type, ret_t) \
@@ -106,10 +105,12 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 // CORE STUFF (conversions, endianness, ...)
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
-  store64_le(buf, v);
+  memcpy(buf, &v, sizeof(v));
 }
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
-  return load64_le(buf);
+  uint64_t v;
+  memcpy(&v, buf, sizeof(v));
+  return v;
 }
 
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
@@ -127,7 +128,6 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-
 
 // static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
 //   return (*p) & v;
@@ -149,7 +149,7 @@ static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
 
 // See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter \
+#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter \
   Eurydice_into_iter
 
 #if defined(__cplusplus)

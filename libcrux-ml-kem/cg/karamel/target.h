@@ -4,25 +4,6 @@
 #ifndef __KRML_TARGET_H
 #define __KRML_TARGET_H
 
-#include <assert.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-/* Since KaRaMeL emits the inline keyword unconditionally, we follow the
- * guidelines at https://gcc.gnu.org/onlinedocs/gcc/Inline.html and make this
- * __inline__ to ensure the code compiles with -std=c90 and earlier. */
-#ifdef __GNUC__
-#  define inline __inline__
-#endif
-
-/******************************************************************************/
-/* Macros that KaRaMeL will generate.                                         */
-/******************************************************************************/
-
 /* For "bare" targets that do not have a C stdlib, the user might want to use
  * [-add-early-include '"mydefinitions.h"'] and override these. */
 #ifndef KRML_HOST_PRINTF
@@ -40,160 +21,6 @@
 
 #ifndef KRML_HOST_EXIT
 #  define KRML_HOST_EXIT exit
-#endif
-
-#ifndef KRML_HOST_MALLOC
-#  define KRML_HOST_MALLOC malloc
-#endif
-
-#ifndef KRML_HOST_CALLOC
-#  define KRML_HOST_CALLOC calloc
-#endif
-
-#ifndef KRML_HOST_FREE
-#  define KRML_HOST_FREE free
-#endif
-
-#ifndef KRML_HOST_IGNORE
-#  define KRML_HOST_IGNORE(x) (void)(x)
-#endif
-
-#ifndef KRML_MAYBE_UNUSED_VAR
-#  define KRML_MAYBE_UNUSED_VAR(x) KRML_HOST_IGNORE(x)
-#endif
-
-#ifndef KRML_MAYBE_UNUSED
-#  if defined(__GNUC__)
-#    define KRML_MAYBE_UNUSED __attribute__((unused))
-#  else
-#    define KRML_MAYBE_UNUSED
-#  endif
-#endif
-
-#ifndef KRML_NOINLINE
-#  if defined(_MSC_VER)
-#    define KRML_NOINLINE __declspec(noinline)
-#  elif defined (__GNUC__)
-#    define KRML_NOINLINE __attribute__((noinline,unused))
-#  else
-#    define KRML_NOINLINE
-#    warning "The KRML_NOINLINE macro is not defined for this toolchain!"
-#    warning "The compiler may defeat side-channel resistance with optimizations."
-#    warning "Please locate target.h and try to fill it out with a suitable definition for this compiler."
-#  endif
-#endif
-
-#ifndef KRML_PRE_ALIGN
-#  ifdef _MSC_VER
-#    define KRML_PRE_ALIGN(X) __declspec(align(X))
-#  else
-#    define KRML_PRE_ALIGN(X)
-#  endif
-#endif
-
-#ifndef KRML_POST_ALIGN
-#  ifdef _MSC_VER
-#    define KRML_POST_ALIGN(X)
-#  else
-#    define KRML_POST_ALIGN(X) __attribute__((aligned(X)))
-#  endif
-#endif
-
-/* MinGW-W64 does not support C11 aligned_alloc, but it supports
- * MSVC's _aligned_malloc.
- */
-#ifndef KRML_ALIGNED_MALLOC
-#  ifdef __MINGW32__
-#    include <_mingw.h>
-#  endif
-#  if (                                                                        \
-      defined(_MSC_VER) ||                                                     \
-      (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)))
-#    define KRML_ALIGNED_MALLOC(X, Y) _aligned_malloc(Y, X)
-#  else
-#    define KRML_ALIGNED_MALLOC(X, Y) aligned_alloc(X, Y)
-#  endif
-#endif
-
-/* Since aligned allocations with MinGW-W64 are done with
- * _aligned_malloc (see above), such pointers must be freed with
- * _aligned_free.
- */
-#ifndef KRML_ALIGNED_FREE
-#  ifdef __MINGW32__
-#    include <_mingw.h>
-#  endif
-#  if (                                                                        \
-      defined(_MSC_VER) ||                                                     \
-      (defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)))
-#    define KRML_ALIGNED_FREE(X) _aligned_free(X)
-#  else
-#    define KRML_ALIGNED_FREE(X) free(X)
-#  endif
-#endif
-
-#ifndef KRML_HOST_TIME
-
-#  include <time.h>
-
-/* Prims_nat not yet in scope */
-inline static int32_t krml_time(void) {
-  return (int32_t)time(NULL);
-}
-
-#  define KRML_HOST_TIME krml_time
-#endif
-
-/* In statement position, exiting is easy. */
-#define KRML_EXIT                                                              \
-  do {                                                                         \
-    KRML_HOST_PRINTF("Unimplemented function at %s:%d\n", __FILE__, __LINE__); \
-    KRML_HOST_EXIT(254);                                                       \
-  } while (0)
-
-/* In expression position, use the comma-operator and a malloc to return an
- * expression of the right size. KaRaMeL passes t as the parameter to the macro.
- */
-#define KRML_EABORT(t, msg)                                                    \
-  (KRML_HOST_PRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, msg),  \
-   KRML_HOST_EXIT(255), *((t *)KRML_HOST_MALLOC(sizeof(t))))
-
-/* In FStar.Buffer.fst, the size of arrays is uint32_t, but it's a number of
- * *elements*. Do an ugly, run-time check (some of which KaRaMeL can eliminate).
- */
-#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
-#  define _KRML_CHECK_SIZE_PRAGMA                                              \
-    _Pragma("GCC diagnostic ignored \"-Wtype-limits\"")
-#else
-#  define _KRML_CHECK_SIZE_PRAGMA
-#endif
-
-#define KRML_CHECK_SIZE(size_elt, sz)                                          \
-  do {                                                                         \
-    _KRML_CHECK_SIZE_PRAGMA                                                    \
-    if (((size_t)(sz)) > ((size_t)(SIZE_MAX / (size_elt)))) {                  \
-      KRML_HOST_PRINTF(                                                        \
-          "Maximum allocatable size exceeded, aborting before overflow at "    \
-          "%s:%d\n",                                                           \
-          __FILE__, __LINE__);                                                 \
-      KRML_HOST_EXIT(253);                                                     \
-    }                                                                          \
-  } while (0)
-
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#  define KRML_HOST_SNPRINTF(buf, sz, fmt, arg)                                \
-    _snprintf_s(buf, sz, _TRUNCATE, fmt, arg)
-#else
-#  define KRML_HOST_SNPRINTF(buf, sz, fmt, arg) snprintf(buf, sz, fmt, arg)
-#endif
-
-#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
-#  define KRML_DEPRECATED(x) __attribute__((deprecated(x)))
-#elif defined(__GNUC__)
-/* deprecated attribute is not defined in GCC < 4.5. */
-#  define KRML_DEPRECATED(x)
-#elif defined(_MSC_VER)
-#  define KRML_DEPRECATED(x) __declspec(deprecated(x))
 #endif
 
 /* Macros for prettier unrolling of loops */
@@ -277,7 +104,7 @@ inline static int32_t krml_time(void) {
   } while (0)
 
 #ifndef KRML_UNROLL_MAX
-#  define KRML_UNROLL_MAX 16
+#  define KRML_UNROLL_MAX 0
 #endif
 
 /* 1 is the number of loop iterations, i.e. (n - z)/k as evaluated by krml */

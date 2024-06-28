@@ -20,6 +20,7 @@ config=c.yaml
 out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
 features="--cargo-arg=--features=pre-verification"
+eurydice_glue=1
 
 # Parse command line arguments.
 all_args=("$@")
@@ -33,6 +34,7 @@ while [ $# -gt 0 ]; do
     --out) out="$2"; shift ;;
     --glue) glue="$2"; shift ;;
     --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
+    --no-glue) eurydice_glue=0 ;;
     esac
     shift
 done
@@ -71,7 +73,9 @@ fi
 
 echo "Running eurydice ..."
 $EURYDICE_HOME/eurydice --config ../$config ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
-cp $EURYDICE_HOME/include/eurydice_glue.h .
+if [[ "$eurydice_glue" = 1 ]]; then
+    cp $EURYDICE_HOME/include/eurydice_glue.h .
+fi
 
 clang-format --style=Google -i *.c *.h
 clang-format --style=Google -i internal/*.h
