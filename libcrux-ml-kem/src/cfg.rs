@@ -1,8 +1,9 @@
-/// Macro to simplify feature gating of verified code
+/// Macro to simplify feature gating of verified code that should only be enabled
+/// when unverified code is disabled.
 macro_rules! cfg_verified {
     ($($item:item)*) => {
         $(
-            #[cfg(all(feature = "std", not(feature = "pre-verification")))]
+            #[cfg(not(feature = "pre-verification"))]
             $item
         )*
     }

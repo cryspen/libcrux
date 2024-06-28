@@ -3,7 +3,6 @@
 
 #[cfg(not(hax))]
 #[doc(hidden)]
-#[macro_export]
 macro_rules! cloop {
     (for ($i:ident, $chunk:ident) in $val:ident.$values:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
         for $i in 0..$val.$values.len() / ($($chunk_size)*) {
@@ -39,7 +38,6 @@ macro_rules! cloop {
 
 #[cfg(hax)]
 #[doc(hidden)]
-#[macro_export]
 macro_rules! cloop {
     (for ($i:ident, $chunk:ident) in $val:ident.$values:ident.chunks_exact($($chunk_size:expr),*).enumerate() $body:block) => {
         for ($i, $chunk) in $val.$values.chunks_exact($($chunk_size),*).enumerate() $body
@@ -57,3 +55,5 @@ macro_rules! cloop {
         for $i in ($start..$end).step_by($step) $body
     };
 }
+
+pub(super) use cloop;

@@ -2,8 +2,8 @@ use super::{
     arithmetic::{FieldElement, PolynomialRingElement},
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
     hash_functions::*,
+    helper::cloop,
 };
-use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
 
 /// If `bytes` contains a set of uniformly random bytes, this function

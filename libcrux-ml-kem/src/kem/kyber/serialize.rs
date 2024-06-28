@@ -5,8 +5,8 @@ use super::{
         decompress_ciphertext_coefficient, decompress_message_coefficient,
     },
     constants::{BYTES_PER_RING_ELEMENT, SHARED_SECRET_SIZE},
+    helper::cloop,
 };
-use crate::cloop;
 use crate::hax_utils::hax_debug_assert;
 
 #[inline(always)]

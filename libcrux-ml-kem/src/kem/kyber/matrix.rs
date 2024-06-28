@@ -4,10 +4,10 @@ use super::{
         PolynomialRingElement,
     },
     constants::COEFFICIENTS_IN_RING_ELEMENT,
+    helper::cloop,
     ntt::{invert_ntt_montgomery, ntt_multiply},
     sampling::sample_from_xof,
 };
-use crate::cloop;
 
 #[inline(always)]
 #[allow(non_snake_case)]

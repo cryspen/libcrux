@@ -63,11 +63,16 @@
 #[macro_use]
 mod cfg;
 
-#[cfg(feature = "std")]
-extern crate std;
-
 pub(crate) mod hax_utils;
 
+// Not-yet verified ML-KEM implementation.
+// This implementation has 3 different variant.
+// - portable
+// - neon
+// - avx2
+//
+// When #221 is finished, the pre-verification feature will be removed and this
+// implementation will be promoted to the default one.
 cfg_pre_verification! {
     // This module is declared here since otherwise, hax reports the following error:
     //
@@ -136,10 +141,16 @@ cfg_pre_verification! {
     }
 }
 
-#[cfg(all(feature = "std", not(feature = "pre-verification")))]
-mod kem;
-
+// Verified ML-KEM implementation.
+// The proofs are in
+// - correctness: ../proofs/fstar/extraction-edited
+// - secret independence: ../proofs/fstar/extraction-secret-independent
+//
+// When #221 is completed, this code will be removed and replaced with the, then
+// verified, code above.
 cfg_verified! {
+    mod kem;
+
     // Variants
     #[cfg(feature = "mlkem512")]
     pub mod mlkem512 {
@@ -151,20 +162,15 @@ cfg_verified! {
         pub use crate::kem::kyber::kyber768::*;
     }
 
-
     #[cfg(feature = "mlkem1024")]
     pub mod mlkem1024 {
         pub use crate::kem::kyber::kyber1024::*;
     }
 
     pub const SHARED_SECRET_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
-
     pub use kem::kyber::MlKemSharedSecret;
-
     pub const ENCAPS_SEED_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
-
     pub const KEY_GENERATION_SEED_SIZE: usize = kem::kyber::KEY_GENERATION_SEED_SIZE;
     // These types all have type aliases for the different variants.
-
     pub use kem::kyber::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};
 }

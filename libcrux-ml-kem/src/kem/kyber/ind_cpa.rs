@@ -1,9 +1,8 @@
-use std::usize;
-
 use super::{
     arithmetic::{to_unsigned_representative, PolynomialRingElement},
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::{G, PRF},
+    helper::cloop,
     matrix::*,
     ntt::*,
     sampling::sample_from_binomial_distribution,
@@ -15,7 +14,6 @@ use super::{
         serialize_uncompressed_ring_element,
     },
 };
-use crate::cloop;
 
 /// Pad the `slice` with `0`s at the end.
 #[inline(always)]
