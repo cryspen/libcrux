@@ -4,15 +4,17 @@ open Core
 open FStar.Mul
 
 /// The Keccak state for the incremental API.
-type t_KeccakState = { f_state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) }
+type t_KeccakState = {
+  f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 4) Core.Core_arch.X86.t____m256i
+}
 
 /// Initialise the state and perform up to 4 absorbs at the same time,
-/// using two [`KeccakState4`].
+/// using two [`KeccakState`].
 /// **PANICS** when `N` is not 2, 3, or 4.
 val v__shake128_absorb_finalxN (v_N: usize) (input: t_Array (t_Array u8 (sz 34)) v_N)
     : Prims.Pure t_KeccakState Prims.l_True (fun _ -> Prims.l_True)
 
-/// Squeeze up to 3 x 4 (N) blocks in parallel, using two [`KeccakState4`].
+/// Squeeze up to 3 x 4 (N) blocks in parallel, using two [`KeccakState`].
 /// Each block is of size `LEN`.
 /// **PANICS** when `N` is not 2, 3, or 4.
 val v__shake128_squeeze3xN (v_LEN v_N: usize) (state: t_KeccakState)
@@ -20,7 +22,7 @@ val v__shake128_squeeze3xN (v_LEN v_N: usize) (state: t_KeccakState)
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-/// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState4`].
+/// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState`].
 /// Each block is of size `LEN`.
 /// **PANICS** when `N` is not 2, 3, or 4.
 val v__shake128_squeezexN (v_LEN v_N: usize) (state: t_KeccakState)

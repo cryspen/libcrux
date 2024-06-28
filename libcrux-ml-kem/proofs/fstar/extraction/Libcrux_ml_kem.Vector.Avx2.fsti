@@ -14,7 +14,7 @@ val to_i16_array (v: t_SIMD256Vector)
 val zero: Prims.unit -> Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
+let impl: Libcrux_ml_kem.Vector.Traits.t_Operations #t_SIMD256Vector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;

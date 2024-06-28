@@ -439,9 +439,10 @@ pub mod neon {
             #[cfg(feature = "simd128")]
             type KeccakState2Internal = GenericState<2, crate::simd::arm64::uint64x2_t>;
 
+            /// The Keccak state for the incremental API.
             #[allow(dead_code)]
             #[cfg(not(feature = "simd128"))]
-            pub struct KeccakState2 {
+            pub struct KeccakState {
                 state: [crate::portable::KeccakState; 2],
             }
 
@@ -789,9 +790,10 @@ pub mod avx2 {
             #[cfg(feature = "simd256")]
             use libcrux_intrinsics::avx2::*;
 
+            /// The Keccak state for the incremental API.
             #[cfg(feature = "simd256")]
-            pub struct KeccakState4 {
-                state: KeccakState<4, Vec256>,
+            pub struct KeccakState {
+                state: GenericState<4, Vec256>,
             }
 
             /// The Keccak state for the incremental API.
@@ -803,7 +805,7 @@ pub mod avx2 {
 
             /// The Keccak state for the incremental API.
             #[cfg(not(any(feature = "simd256", feature = "simd128")))]
-            pub type KeccakState4 = [crate::portable::KeccakState; 4];
+            pub type KeccakState = [crate::portable::KeccakState; 4];
 
             /// Initialise the [`KeccakState`].
             #[inline(always)]
@@ -828,7 +830,7 @@ pub mod avx2 {
                 // }
                 #[cfg(feature = "simd256")]
                 KeccakState {
-                    state: KeccakState::new(),
+                    state: GenericState::new(),
                 }
             }
 
@@ -871,7 +873,7 @@ pub mod avx2 {
             }
 
             /// Initialise the state and perform up to 4 absorbs at the same time,
-            /// using two [`KeccakState4`].
+            /// using two [`KeccakState`].
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
             #[inline(always)]
@@ -943,7 +945,7 @@ pub mod avx2 {
                 );
             }
 
-            /// Squeeze up to 3 x 4 (N) blocks in parallel, using two [`KeccakState4`].
+            /// Squeeze up to 3 x 4 (N) blocks in parallel, using two [`KeccakState`].
             /// Each block is of size `LEN`.
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
@@ -1035,7 +1037,7 @@ pub mod avx2 {
                 squeeze_next_block::<4, Vec256, 168>(&mut s.state, [out0, out1, out2, out3]);
             }
 
-            /// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState4`].
+            /// Squeeze up to 4 (N) blocks in parallel, using two [`KeccakState`].
             /// Each block is of size `LEN`.
             ///
             /// **PANICS** when `N` is not 2, 3, or 4.
