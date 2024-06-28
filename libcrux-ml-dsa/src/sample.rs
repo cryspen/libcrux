@@ -1,6 +1,6 @@
 use crate::{
     arithmetic::PolynomialRingElement,
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::FIELD_MODULUS,
     encoding,
     hash_functions::{H_one_shot, H, H_128},
 };
@@ -21,12 +21,12 @@ fn rejection_sample_less_than_field_modulus(
 
             let potential_coefficient = ((b2 << 16) | (b1 << 8) | b0) & 0x00_7F_FF_FF;
 
-            if potential_coefficient < FIELD_MODULUS && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if potential_coefficient < FIELD_MODULUS && *sampled < out.coefficients.len() {
                 out.coefficients[*sampled] = potential_coefficient;
                 *sampled += 1;
             }
 
-            if *sampled == COEFFICIENTS_IN_RING_ELEMENT {
+            if *sampled == out.coefficients.len() {
                 done = true;
             }
         }
@@ -66,7 +66,7 @@ fn rejection_sample_less_than_eta_equals_2(
             let try_0 = byte & 0xF;
             let try_1 = byte >> 4;
 
-            if try_0 < 15 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_0 < 15 && *sampled < out.coefficients.len() {
                 let try_0 = try_0 as i32;
 
                 // (try_0 * 26) >> 7 computes ⌊try_0 / 5⌋
@@ -77,7 +77,7 @@ fn rejection_sample_less_than_eta_equals_2(
                 *sampled += 1;
             }
 
-            if try_1 < 15 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_1 < 15 && *sampled < out.coefficients.len() {
                 let try_1 = try_1 as i32;
                 let try_1_mod_5 = try_1 - ((try_1 * 26) >> 7) * 5;
 
@@ -86,7 +86,7 @@ fn rejection_sample_less_than_eta_equals_2(
                 *sampled += 1;
             }
 
-            if *sampled == COEFFICIENTS_IN_RING_ELEMENT {
+            if *sampled == out.coefficients.len() {
                 done = true;
             }
         }
@@ -108,17 +108,17 @@ fn rejection_sample_less_than_eta_equals_4(
             let try_0 = byte & 0xF;
             let try_1 = byte >> 4;
 
-            if try_0 < 9 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_0 < 9 && *sampled < out.coefficients.len() {
                 out.coefficients[*sampled] = 4 - (try_0 as i32);
                 *sampled += 1;
             }
 
-            if try_1 < 9 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_1 < 9 && *sampled < out.coefficients.len() {
                 out.coefficients[*sampled] = 4 - (try_1 as i32);
                 *sampled += 1;
             }
 
-            if *sampled == COEFFICIENTS_IN_RING_ELEMENT {
+            if *sampled == out.coefficients.len() {
                 done = true;
             }
         }
@@ -258,7 +258,7 @@ pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
 mod tests {
     use super::*;
 
-    use crate::arithmetic::FieldElement;
+    use crate::{arithmetic::FieldElement, constants::COEFFICIENTS_IN_RING_ELEMENT};
 
     #[test]
     fn test_sample_ring_element_uniform() {
