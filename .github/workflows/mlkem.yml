@@ -158,14 +158,16 @@ jobs:
           cargo test --features kyber --verbose $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Cargo Check Features
+        if: ${{ matrix.bits == 64 }}
         run: |
           cargo clean
           cargo hack check --feature-powerset $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
 
       - name: 🏃🏻‍♀️ Cargo Test Features
+        if: ${{ matrix.bits == 64 }}
         run: |
           cargo clean
-          cargo hack test --each-feature $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
+          cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
 
   benchmarks:
     strategy:

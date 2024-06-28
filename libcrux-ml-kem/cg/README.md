@@ -11,7 +11,7 @@ While running the commands separately is possible, it is not recommended because
 the script sets all necessary configuration flags.
 
 ```bash
-./c.sh --config cg.yaml --out cg --mlkem768 --no-glue
+./c.sh --config cg.yaml --out cg --mlkem768 --no-glue --no-unrolling
 ```
 
 ## Build

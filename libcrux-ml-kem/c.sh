@@ -21,6 +21,7 @@ out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
 features="--cargo-arg=--features=pre-verification"
 eurydice_glue=1
+unrolling=16
 
 # Parse command line arguments.
 all_args=("$@")
@@ -35,6 +36,7 @@ while [ $# -gt 0 ]; do
     --glue) glue="$2"; shift ;;
     --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
     --no-glue) eurydice_glue=0 ;;
+    --no-unrolling) unrolling=0 ;;
     esac
     shift
 done
@@ -72,7 +74,7 @@ if [[ "$clean" = 1 ]]; then
 fi
 
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../$config ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
 fi
