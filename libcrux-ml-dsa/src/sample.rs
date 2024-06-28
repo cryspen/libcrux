@@ -204,40 +204,54 @@ pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: 
 }
 
 #[inline(always)]
+fn inside_out_shuffle(
+    randomness: &[u8],
+    out_index: &mut usize,
+    signs: &mut u64,
+    result: &mut PolynomialRingElement,
+) -> bool {
+    let mut done = false;
+
+    for byte in randomness {
+        if !done {
+            let sample_at = *byte as usize;
+            if sample_at <= *out_index {
+                result.coefficients[*out_index] = result.coefficients[sample_at];
+                *out_index += 1;
+
+                result.coefficients[sample_at] = 1 - 2 * ((*signs & 1) as i32);
+                *signs >>= 1;
+            }
+
+            if *out_index == result.coefficients.len() {
+                done = true;
+            }
+        }
+    }
+
+    done
+}
+#[inline(always)]
 pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement {
     let mut state = H::new(&seed);
 
-    let mut randomness = H::squeeze_first_block(&mut state).into_iter();
+    let randomness = H::squeeze_first_block(&mut state);
 
-    let mut signs = 0;
-    for i in 0..8 {
-        signs |= (randomness.next().unwrap() as u64) << (8 * i);
+    let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
+
+    let mut result = PolynomialRingElement::ZERO;
+
+    let mut out_index = result.coefficients.len() - NUMBER_OF_ONES;
+    let mut done = inside_out_shuffle(&randomness[8..], &mut out_index, &mut signs, &mut result);
+
+    while !done {
+        let randomness = H::squeeze_next_block(&mut state);
+        done = inside_out_shuffle(&randomness, &mut out_index, &mut signs, &mut result);
     }
 
-    let mut out = PolynomialRingElement::ZERO;
-
-    for index in (out.coefficients.len() - NUMBER_OF_ONES)..out.coefficients.len() {
-        // TODO: Rewrite this without using `break`. It's doable, just probably
-        // not as nice.
-        let sample_at = loop {
-            if let Some(byte) = randomness.next() {
-                let i = byte as usize;
-                if i <= index {
-                    break i;
-                }
-            } else {
-                randomness = H::squeeze_next_block(&mut state).into_iter();
-            }
-        };
-
-        out.coefficients[index] = out.coefficients[sample_at];
-        out.coefficients[sample_at] = 1 - 2 * ((signs & 1) as i32);
-        signs >>= 1;
-    }
-
-    out
+    result
 }
 
 #[cfg(test)]
