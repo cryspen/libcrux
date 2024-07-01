@@ -279,7 +279,7 @@ macro_rules! instantiate {
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable, vector::portable::PortableVector "Portable ML-KEM 512"}
+instantiate! {portable, ind_cca::instantiations::portable, vector::portable::PortableVector, "Portable ML-KEM 512"}
 #[cfg(feature = "simd256")]
 instantiate! {avx2, ind_cca::instantiations::avx2, vector::SIMD256Vector, "AVX2 Optimised ML-KEM 512"}
 #[cfg(feature = "simd128")]
