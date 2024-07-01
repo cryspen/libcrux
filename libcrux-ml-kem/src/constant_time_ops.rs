@@ -37,7 +37,7 @@ fn compare<const SIZE: usize>(lhs: &[u8], rhs: &[u8]) -> u8 {
 
     let mut r: u8 = 0;
     for i in 0..SIZE {
-        r = r | (lhs[i] ^ rhs[i]);
+        r |= r (lhs[i] ^ rhs[i]);
     }
 
     is_non_zero(r)
