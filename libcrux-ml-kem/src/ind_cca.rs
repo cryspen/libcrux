@@ -62,6 +62,9 @@ fn serialize_kem_secret_key<const K: usize, const SERIALIZED_KEY_LEN: usize, Has
     out
 }
 
+#[cfg_attr(hax, requires(
+    RANKED_BYTES_PER_RING_ELEMENT < PUBLIC_KEY_SIZE
+))]
 #[inline(always)]
 fn validate_public_key<
     const K: usize,
@@ -149,8 +152,10 @@ fn encapsulate<
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
+    fstar!("assume (Libcrux_ml_kem.Hash_functions.f_H_pre #v_Hasher #v_K (Rust_primitives.unsize (Libcrux_ml_kem.Types.impl_18__as_slice #v_PUBLIC_KEY_SIZE public_key <: t_Array u8 v_PUBLIC_KEY_SIZE) <: t_Slice u8))");
     to_hash[H_DIGEST_SIZE..].copy_from_slice(&Hasher::H(public_key.as_slice()));
 
+    fstar!("assume (Libcrux_ml_kem.Hash_functions.f_G_pre #v_Hasher #v_K (Rust_primitives.unsize to_hash <: t_Slice u8))");
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
@@ -229,7 +234,7 @@ pub(crate) fn decapsulate<
     assume!(SHARED_SECRET_SIZE < IMPLICIT_REJECTION_HASH_INPUT_SIZE);
     assume!(CIPHERTEXT_SIZE == IMPLICIT_REJECTION_HASH_INPUT_SIZE - SHARED_SECRET_SIZE);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
-    fstar!("assume (Libcrux_ml_kem.Hash_functions.f_PRF_pre #v_Hasher #v_K (sz 32) (Rust_primitives.unsize to_hash <: t_Slice u8))");
+    fstar!("assume (Libcrux_ml_kem.Hash_functions.f_PRF_pre #v_Hasher #v_K #(_ by (FStar.Tactics.Typeclasses.tcresolve ())) #(sz 32) (Rust_primitives.unsize to_hash <: t_Slice u8))");
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
 
     let expected_ciphertext = crate::ind_cpa::encrypt::<
