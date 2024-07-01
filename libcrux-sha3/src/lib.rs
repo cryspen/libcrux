@@ -275,7 +275,7 @@ pub mod portable {
             squeeze_next_block::<1, u64, 168>(&mut s.state, [out0])
         }
 
-        /// Crate a new SHAKE-256 state object.
+        /// Create a new SHAKE-256 state object.
         #[inline(always)]
         pub fn shake256_init() -> KeccakState1 {
             KeccakState1 {
