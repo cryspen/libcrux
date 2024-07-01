@@ -13,6 +13,7 @@ set -e
 set -o pipefail
 
 ALLOWLIST="pqcp/allowlist.txt"
+LIBCRUX_HOME="$(pwd)"
 
 if [[ -z "$TARGET_DIRECTORY" ]]; then
     echo "Please set TARGET_DIRECTORY to the libcrux-ml-kem PQ code packages repository"
@@ -28,4 +29,4 @@ cargo test
 cargo clean
 
 git add .
-git commit -sm "mlkem-rust-libcrux PQ code packages update ($(date))"
+git commit -sm "mlkem-rust-libcrux PQ code packages update ($(date)) - libcrux revision $(git -C $LIBCRUX_HOME rev-parse HEAD)"
