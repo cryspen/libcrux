@@ -171,8 +171,8 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
             {
                 // the true hints seen should be increasing
                 //
-                // TODO: These returns won't pass through hax, they'll need
-                // to be rewritten.
+                // TODO: This return won't pass through hax; it'll need
+                // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
                 return Err(VerificationError::MalformedHintError);
             }
 
@@ -180,6 +180,8 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
                 if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1] {
                     // indices of true hints for a specific polynomial should be
                     // increasing
+                    // TODO: This return won't pass through hax; it'll need
+                    // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
                     return Err(VerificationError::MalformedHintError);
                 }
 
@@ -195,6 +197,8 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
         {
             if *bit != 0 {
                 // ensures padding indices are zero
+                // TODO: This return won't pass through hax; it'll need
+                // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
                 return Err(VerificationError::MalformedHintError);
             }
         }
@@ -261,7 +265,9 @@ pub(crate) fn sign<
 
     let mut attempt = 0;
 
-    // TODO: This loop will have to be rewritten to go through hax.
+    // TODO: This style of rejection sampling, with the break and the continues,
+    // won't pass through hax; it'll need to be rewritten.
+    // See https://github.com/cryspen/libcrux/issues/341
     let (commitment_hash, signer_response, hint) = loop {
         attempt += 1;
 

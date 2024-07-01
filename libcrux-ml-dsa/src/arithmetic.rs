@@ -129,12 +129,14 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
     montgomery_reduce((fe as i64) * (fer as i64))
 }
 
+#[inline(always)]
 fn reduce(fe: FieldElement) -> FieldElement {
     let quotient = (fe + (1 << 22)) >> 23;
 
     fe - (quotient * FIELD_MODULUS)
 }
 
+#[inline(always)]
 pub(crate) fn shift_coefficients_left_then_reduce(
     re: PolynomialRingElement,
     shift_by: usize,

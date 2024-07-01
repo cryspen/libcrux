@@ -54,6 +54,7 @@ macro_rules! wycheproof_sign_test {
                     // TODO: else, the generated signature is invalid; we can
                     // check that our own implementation agrees with this judgement,
                     // but in order to do so we'd need the verification key.
+                    // This is being tracked in https://github.com/cryspen/libcrux/issues/340
                 }
             }
         }
