@@ -29,14 +29,27 @@ libcrux-intrinsics = { version = "0.0.2-pre.2", path = "../libcrux-intrinsics" }
 hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/" }
 
 [features]
+# By default all variants and std are enabled.
 default = ["std", "mlkem512", "mlkem768", "mlkem1024"]
+
+# Hardware features can be force enabled.
+# It is not recommended to use these. This crate performs CPU feature detection
+# and enables the features when they are available.
 simd128 = ["libcrux-sha3/simd128"]
 simd256 = ["libcrux-sha3/simd256"]
+
+# Features for the different key sizes of ML-KEM
 mlkem512 = []
 mlkem768 = []
 mlkem1024 = []
-std = []
+
+# Enable Round 3 Kyber in addition to ML-KEM
 kyber = []
+
+# Code that is not yet verified
+pre-verification = []
+
+std = []
 
 [dev-dependencies]
 rand = { version = "0.8" }
@@ -48,3 +61,26 @@ criterion = "0.5"
 [[bench]]
 name = "ml-kem"
 harness = false
+
+[[example]]
+name = "encapsulate"
+required-features = ["mlkem768"]
+
+[[example]]
+name = "decapsulate"
+required-features = ["mlkem768"]
+
+[[example]]
+name = "keygen"
+required-features = ["mlkem768"]
+
+[package.metadata."docs.rs"]
+features = ["pre-verification", "kyber"]
+rustdoc-args = ["--cfg", "doc_cfg"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(hax)',
+    'cfg(eurydice)',
+    'cfg(doc_cfg)',
+] }

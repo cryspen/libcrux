@@ -101,11 +101,17 @@ class extractAction(argparse.Action):
         )
 
         # Extract ml-kem
-        include_str = "+** -libcrux_ml_kem::types::index_impls::**"
+        include_str = (
+            "+** -libcrux_ml_kem::types::index_impls::** -libcrux_ml_kem::kem::**"
+        )
         interface_include = "+**"
         cargo_hax_into = [
             "cargo",
             "hax",
+            "-C",
+            "--features",
+            "pre-verification",
+            ";",
             "into",
             "-i",
             include_str,

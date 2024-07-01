@@ -7,11 +7,11 @@ open FStar.Mul
 /// It's only used for SHAKE128.
 /// All other functions don't actually use any members.
 type t_PortableHash (v_K: usize) = {
-  f_shake128_state:t_Array Libcrux_sha3.Portable.t_KeccakState1 v_K
+  f_shake128_state:t_Array Libcrux_sha3.Portable.t_KeccakState v_K
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K) v_K =
+let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #(t_PortableHash v_K) v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
     f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);
@@ -107,13 +107,13 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
             in
             ()
         in
-        let state:t_Array Libcrux_sha3.Portable.t_KeccakState1 v_K =
+        let state:t_Array Libcrux_sha3.Portable.t_KeccakState v_K =
           Rust_primitives.Hax.repeat (Libcrux_sha3.Portable.Incremental.shake128_init ()
               <:
-              Libcrux_sha3.Portable.t_KeccakState1)
+              Libcrux_sha3.Portable.t_KeccakState)
             v_K
         in
-        let state:t_Array Libcrux_sha3.Portable.t_KeccakState1 v_K =
+        let state:t_Array Libcrux_sha3.Portable.t_KeccakState v_K =
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                   usize)
                 ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
@@ -123,18 +123,18 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
               Core.Ops.Range.t_Range usize)
             state
             (fun state i ->
-                let state:t_Array Libcrux_sha3.Portable.t_KeccakState1 v_K = state in
+                let state:t_Array Libcrux_sha3.Portable.t_KeccakState v_K = state in
                 let i:usize = i in
                 Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
                   i
                   (Libcrux_sha3.Portable.Incremental.shake128_absorb_final (state.[ i ]
                         <:
-                        Libcrux_sha3.Portable.t_KeccakState1)
+                        Libcrux_sha3.Portable.t_KeccakState)
                       (Rust_primitives.unsize (input.[ i ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                     <:
-                    Libcrux_sha3.Portable.t_KeccakState1)
+                    Libcrux_sha3.Portable.t_KeccakState)
                 <:
-                t_Array Libcrux_sha3.Portable.t_KeccakState1 v_K)
+                t_Array Libcrux_sha3.Portable.t_KeccakState v_K)
         in
         { f_shake128_state = state } <: t_PortableHash v_K);
     f_shake128_squeeze_three_blocks_pre = (fun (self: t_PortableHash v_K) -> true);
@@ -178,11 +178,11 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
             (fun temp_0_ i ->
                 let out, self:(t_Array (t_Array u8 (sz 504)) v_K & t_PortableHash v_K) = temp_0_ in
                 let i:usize = i in
-                let tmp0, tmp1:(Libcrux_sha3.Portable.t_KeccakState1 & t_Array u8 (sz 504)) =
+                let tmp0, tmp1:(Libcrux_sha3.Portable.t_KeccakState & t_Array u8 (sz 504)) =
                   Libcrux_sha3.Portable.Incremental.shake128_squeeze_first_three_blocks (self
                         .f_shake128_state.[ i ]
                       <:
-                      Libcrux_sha3.Portable.t_KeccakState1)
+                      Libcrux_sha3.Portable.t_KeccakState)
                     (out.[ i ] <: t_Array u8 (sz 504))
                 in
                 let self:t_PortableHash v_K =
@@ -245,11 +245,11 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K
           (fun temp_0_ i ->
               let out, self:(t_Array (t_Array u8 (sz 168)) v_K & t_PortableHash v_K) = temp_0_ in
               let i:usize = i in
-              let tmp0, tmp1:(Libcrux_sha3.Portable.t_KeccakState1 & t_Array u8 (sz 168)) =
+              let tmp0, tmp1:(Libcrux_sha3.Portable.t_KeccakState & t_Array u8 (sz 168)) =
                 Libcrux_sha3.Portable.Incremental.shake128_squeeze_next_block (self.f_shake128_state.[
                       i ]
                     <:
-                    Libcrux_sha3.Portable.t_KeccakState1)
+                    Libcrux_sha3.Portable.t_KeccakState)
                   (out.[ i ] <: t_Array u8 (sz 168))
               in
               let self:t_PortableHash v_K =

@@ -48,50 +48,6 @@ files:
       monomorphizations_using:
         - [libcrux_sha3, "*"]
 
-  # Common parts of SHA3 (this catches stuff that hasn't matched above). Must
-  # # come after the (more precise) patterns above concerning platform-specific hash_functions
-  # - name: libcrux_sha3_internal
-  #   api:
-  #     patterns:
-  #       - [libcrux_sha3, "*"]
-  #     monomorphizations_of:
-  #       - [libcrux_sha3, "*"]
-  #     monomorphizations_using:
-  #       - [libcrux_sha3, "*"]
-  #   inline_static: true
-
-  # MLKEM: HASH FUNCTIONS (as used by mlkem)
-
-  # - name: libcrux_mlkem_avx2
-  #   api:
-  #     - [libcrux_ml_kem, vector, avx2, "*"]
-  #     - [libcrux_ml_kem, hash_functions, avx2, "*"]
-  #   private:
-  #     monomorphizations_using:
-  #       - [libcrux_ml_kem, vector, avx2, "*"]
-  #       - [libcrux_ml_kem, hash_functions, avx2, "*"]
-  #     monomorphizations_of:
-  #       - [libcrux_ml_kem, vector, avx2, "*"]
-  #       - [libcrux_ml_kem, hash_functions, avx2, "*"]
-
-  # # This covers slightly more than the two bundles above, but this greatly
-  # # simplifies our lives.
-  # - name: libcrux_mlkem_portable
-  #   inline_static: true
-  #   api:
-  #     patterns:
-  #       - [libcrux_ml_kem, vector, "*"]
-  #       - [libcrux_ml_kem, hash_functions, portable, "*"]
-  #       - [ libcrux_ml_kem, polynomial, "*" ]
-  #     monomorphizations_using:
-  #       - [ libcrux_ml_kem, polynomial, "*" ]
-  #       - [libcrux_ml_kem, vector, "*"]
-  #       - [libcrux_ml_kem, hash_functions, portable, "*"]
-  #     monomorphizations_of:
-  #       - [ libcrux_ml_kem, polynomial, "*" ]
-  #       - [libcrux_ml_kem, vector, "*"]
-  #       - [libcrux_ml_kem, hash_functions, portable, "*"]
-
   # MLKEM: MISC NON-ARCHITECTURE SPECIFIC HEADERS
   - name: libcrux_core
     inline_static: true
@@ -139,7 +95,6 @@ files:
         - [libcrux_ml_kem, "*"]
         - [libcrux_ml_kem, vector, "*"]
         - [libcrux_ml_kem, hash_functions, portable, "*"]
-        # - [libcrux_ml_kem, polynomial, "*" ]
         - [libcrux_ml_kem, mlkem768, portable, "*"]
         - [libcrux_ml_kem, ind_cca, instantiations, portable, "*"]
       monomorphizations_of:

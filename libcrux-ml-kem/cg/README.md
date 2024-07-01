@@ -5,10 +5,14 @@ This folder contains the extracted ML-KEM C code.
 ## Generating C code
 
 The C code is generated from Rust using [Charon], [Eurydice] and [Karamel].
-The [c.sh](../c.sh) bash script drives the extraction, using the [c.yaml](../c.yaml)
+The [c.sh](../c.sh) bash script drives the extraction, using the [cg.yaml](../cg.yaml)
 configuration file.
 While running the commands separately is possible, it is not recommended because
 the script sets all necessary configuration flags.
+
+```bash
+./c.sh --config cg.yaml --out cg --mlkem768 --no-glue --no-unrolling
+```
 
 ## Build
 

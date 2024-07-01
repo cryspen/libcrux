@@ -2,15 +2,20 @@
 
 use super::{Operations, FIELD_MODULUS};
 
-// mod rejsample;
-mod simd128ops;
+// mod sampling;
+mod arithmetic;
+mod compress;
+mod ntt;
+mod serialize;
+mod vector_type;
 
-pub(crate) use simd128ops::SIMD128Vector;
-use simd128ops::*;
+use arithmetic::*;
+use compress::*;
+use ntt::*;
+use serialize::*;
+pub(crate) use vector_type::SIMD128Vector;
+use vector_type::*;
 
-// This is an empty shell, calling into standalone functions in `simd128ops`.
-// This is due to limitations in F* and hax to deal with large trait implementations
-// See hacspec/hax#638 for more details.
 impl Operations for SIMD128Vector {
     #[inline(always)]
     fn ZERO() -> Self {
