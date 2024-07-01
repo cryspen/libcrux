@@ -243,7 +243,7 @@ pub mod portable {
 
         use super::*;
 
-        /// Crate a new SHAKE-128 state object.
+        /// Create a new SHAKE-128 state object.
         #[inline(always)]
         pub fn shake128_init() -> KeccakState {
             KeccakState {
