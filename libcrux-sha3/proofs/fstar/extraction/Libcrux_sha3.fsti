@@ -17,7 +17,7 @@ type t_Algorithm =
   | Algorithm_Sha512 : t_Algorithm
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_1: Core.Convert.t_From u32 t_Algorithm =
+let impl_1: Core.Convert.t_From #u32 #t_Algorithm =
   {
     f_from_pre = (fun (v: t_Algorithm) -> true);
     f_from_post = (fun (v: t_Algorithm) (out: u32) -> true);
@@ -35,21 +35,8 @@ let discriminant_Algorithm_Sha512: u32 = 4ul
 
 val t_Algorithm_cast_to_repr (x: t_Algorithm) : Prims.Pure u32 Prims.l_True (fun _ -> Prims.l_True)
 
-/// A SHA3 224 Digest
-unfold
-let t_Sha3_224Digest = t_Array u8 (sz 28)
-
-/// A SHA3 256 Digest
-unfold
-let t_Sha3_256Digest = t_Array u8 (sz 32)
-
-/// A SHA3 384 Digest
-unfold
-let t_Sha3_384Digest = t_Array u8 (sz 48)
-
-/// A SHA3 512 Digest
-unfold
-let t_Sha3_512Digest = t_Array u8 (sz 64)
+val from__panic_cold_explicit: Prims.unit
+  -> Prims.Pure Rust_primitives.Hax.t_Never Prims.l_True (fun _ -> Prims.l_True)
 
 /// Returns the output size of a digest.
 val digest_size (mode: t_Algorithm) : Prims.Pure usize Prims.l_True (fun _ -> Prims.l_True)
@@ -99,7 +86,7 @@ val shake256 (v_BYTES: usize) (data: t_Slice u8)
     : Prims.Pure (t_Array u8 v_BYTES) Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Core.Convert.t_From t_Algorithm u32 =
+let impl: Core.Convert.t_From #t_Algorithm #u32 =
   {
     f_from_pre = (fun (v: u32) -> true);
     f_from_post = (fun (v: u32) (out: t_Algorithm) -> true);
@@ -112,7 +99,7 @@ let impl: Core.Convert.t_From t_Algorithm u32 =
       | 3ul -> Algorithm_Sha384 <: t_Algorithm
       | 4ul -> Algorithm_Sha512 <: t_Algorithm
       | _ ->
-        Rust_primitives.Hax.never_to_any (Core.Panicking.panic "explicit panic"
+        Rust_primitives.Hax.never_to_any (from__panic_cold_explicit ()
             <:
             Rust_primitives.Hax.t_Never)
   }

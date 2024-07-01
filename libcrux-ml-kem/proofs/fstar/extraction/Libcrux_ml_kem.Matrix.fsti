@@ -23,21 +23,6 @@ val compute_As_plus_e
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-/// The following functions compute various expressions involving
-/// vectors and matrices. The computation of these expressions has been
-/// abstracted away into these functions in order to save on loop iterations.
-/// Compute v − InverseNTT(sᵀ ◦ NTT(u))
-val compute_message
-      (v_K: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (v: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      (secret_as_ntt u_as_ntt:
-          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 /// Compute InverseNTT(tᵀ ◦ r̂) + e₂ + message
 val compute_ring_element_v
       (v_K: usize)
@@ -58,6 +43,21 @@ val compute_vector_u
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
       (r_as_ntt error_1_: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// The following functions compute various expressions involving
+/// vectors and matrices. The computation of these expressions has been
+/// abstracted away into these functions in order to save on loop iterations.
+/// Compute v − InverseNTT(sᵀ ◦ NTT(u))
+val compute_message
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (v: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      (secret_as_ntt u_as_ntt:
+          t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 

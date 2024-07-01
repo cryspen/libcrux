@@ -71,13 +71,13 @@ shake128_34_504(benchmark::State &state)
 
     Eurydice_slice last[4] = {EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34), EURYDICE_SLICE(input, 0, 34)};
     Eurydice_slice out[4] = {EURYDICE_SLICE(digest0, 0, 504), EURYDICE_SLICE(digest1, 0, 504), EURYDICE_SLICE(digest2, 0, 504), EURYDICE_SLICE(digest3, 0, 504)};
-    libcrux_sha3_avx2_x4_incremental_KeccakState4 st = libcrux_sha3_avx2_x4_incremental_shake128_init();
+    libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_shake128_init();
     libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(&st, last);
     libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(&st, out);
 
     for (auto _ : state)
     {
-        libcrux_sha3_avx2_x4_incremental_KeccakState4 st = libcrux_sha3_avx2_x4_incremental_shake128_init();
+        libcrux_sha3_avx2_x4_incremental_KeccakState st = libcrux_sha3_avx2_x4_incremental_shake128_init();
         libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(&st, last);
         libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(&st, out);
     }

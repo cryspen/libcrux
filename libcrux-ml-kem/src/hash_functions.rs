@@ -47,7 +47,7 @@ pub(crate) mod portable {
             shake128_absorb_final, shake128_init, shake128_squeeze_first_three_blocks,
             shake128_squeeze_next_block,
         },
-        KeccakState1,
+        KeccakState,
     };
 
     /// The state.
@@ -55,7 +55,7 @@ pub(crate) mod portable {
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
     pub(crate) struct PortableHash<const K: usize> {
-        shake128_state: [KeccakState1; K],
+        shake128_state: [KeccakState; K],
     }
 
     impl<const K: usize> Hash<K> for PortableHash<K> {
@@ -132,7 +132,7 @@ pub(crate) mod portable {
 pub(crate) mod avx2 {
     use super::*;
     use libcrux_sha3::{
-        avx2::x4::{self, incremental::KeccakState4},
+        avx2::x4::{self, incremental::KeccakState},
         portable,
     };
 
@@ -141,7 +141,7 @@ pub(crate) mod avx2 {
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
     pub(crate) struct Simd256Hash {
-        shake128_state: KeccakState4,
+        shake128_state: KeccakState,
     }
 
     impl<const K: usize> Hash<K> for Simd256Hash {
@@ -314,14 +314,14 @@ pub(crate) mod avx2 {
 /// A SIMD128 implementation of [`Hash`] for NEON
 pub(crate) mod neon {
     use super::*;
-    use libcrux_sha3::neon::x2::{self, incremental::KeccakState2};
+    use libcrux_sha3::neon::x2::{self, incremental::KeccakState};
 
     /// The state.
     ///
     /// It's only used for SHAKE128.
     /// All other functions don't actually use any members.
     pub(crate) struct Simd128Hash {
-        shake128_state: [KeccakState2; 2],
+        shake128_state: [KeccakState; 2],
     }
 
     impl<const K: usize> Hash<K> for Simd128Hash {

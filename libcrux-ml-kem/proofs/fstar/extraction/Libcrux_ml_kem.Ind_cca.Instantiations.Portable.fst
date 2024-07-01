@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions.Portable in
+  let open Libcrux_ml_kem.Ind_cca in
   let open Libcrux_ml_kem.Vector in
   ()
 
@@ -21,7 +22,8 @@ let decapsulate
     v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2
     v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
     #Libcrux_ml_kem.Vector.Portable.t_PortableVector
-    #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K) private_key ciphertext
+    #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K) #Libcrux_ml_kem.Ind_cca.t_MlKem
+    private_key ciphertext
 
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
@@ -33,7 +35,8 @@ let encapsulate
     v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR
     v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE
     #Libcrux_ml_kem.Vector.Portable.t_PortableVector
-    #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K) public_key randomness
+    #(Libcrux_ml_kem.Hash_functions.Portable.t_PortableHash v_K) #Libcrux_ml_kem.Ind_cca.t_MlKem
+    public_key randomness
 
 let validate_public_key
       (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
