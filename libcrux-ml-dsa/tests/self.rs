@@ -1,5 +1,5 @@
 use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87};
-use rand::{rngs::OsRng, RngCore};
+use rand::{rngs::OsRng, Rng, RngCore};
 
 fn random_array<const L: usize>() -> [u8; L] {
     let mut rng = OsRng;
@@ -21,10 +21,23 @@ fn random_message() -> Vec<u8> {
 }
 
 fn modify_signing_key<const SIGNING_KEY_SIZE: usize>(signing_key: &mut [u8; SIGNING_KEY_SIZE]) {
-    // TODO: See if we can make it more dynamic than this.
-    for byte in signing_key[128..].iter_mut() {
-        *byte = 1;
-    }
+    let option = rand::thread_rng().gen_range(0..2);
+
+    let position = match option {
+        // Change the seed used for generating A
+        0 => rand::thread_rng().gen_range(0..32),
+
+        // Change the verification key hash
+        1 => rand::thread_rng().gen_range(64..128),
+
+        // TODO: Changing s1, s2, and t0 could still result in valid
+        // signatures. Look into this further.
+        _ => unreachable!(),
+    };
+
+    let random_byte = random_array::<1>()[0];
+
+    signing_key[position] ^= random_byte;
 }
 
 macro_rules! impl_consistency_test {
