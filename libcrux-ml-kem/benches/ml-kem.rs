@@ -7,6 +7,23 @@ use rand_core::RngCore;
 
 use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 
+macro_rules! init {
+    ($version:path, $bench:expr, $c:expr) => {{
+        let mut group = $c.benchmark_group(format!("ML-KEM {} {}", stringify!($version), $bench));
+        group.measurement_time(Duration::from_secs(10));
+
+        use $version as version;
+        #[cfg(feature = "pre-verification")]
+        fun!("portable", version::portable, group);
+        #[cfg(all(feature = "simd128", feature = "pre-verification"))]
+        fun!("neon", version::neon, group);
+        #[cfg(all(feature = "simd256", feature = "pre-verification"))]
+        fun!("neon", version::avx2, group);
+        #[cfg(not(feature = "pre-verification"))]
+        fun!("verified", version, group);
+    }};
+}
+
 pub fn key_generation(c: &mut Criterion) {
     let mut rng = OsRng;
 
@@ -24,34 +41,9 @@ pub fn key_generation(c: &mut Criterion) {
         };
     }
 
-    let mut group = c.benchmark_group("ML-KEM 512 Key Generation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem512::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem512::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem512::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 768 Key Generation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem768::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem768::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem768::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 1024 Key Generation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem1024::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem1024::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem1024::avx2, group);
+    init!(mlkem512, "Key Generation", c);
+    init!(mlkem768, "Key Generation", c);
+    init!(mlkem1024, "Key Generation", c);
 }
 
 pub fn pk_validation(c: &mut Criterion) {
@@ -78,34 +70,9 @@ pub fn pk_validation(c: &mut Criterion) {
         };
     }
 
-    let mut group = c.benchmark_group("ML-KEM 512 PK Validation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem512::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem512::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem512::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 768 PK Validation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem768::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem768::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem768::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 1024 PK Validation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem1024::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem1024::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem1024::avx2, group);
+    init!(mlkem512, "PK Validation", c);
+    init!(mlkem768, "PK Validation", c);
+    init!(mlkem1024, "PK Validation", c);
 }
 
 pub fn encapsulation(c: &mut Criterion) {
@@ -130,34 +97,9 @@ pub fn encapsulation(c: &mut Criterion) {
         };
     }
 
-    let mut group = c.benchmark_group("ML-KEM 512 Encapsulation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem512::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem512::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem512::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 768 Encapsulation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem768::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem768::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem768::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 1024 Encapsulation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem1024::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem1024::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem1024::avx2, group);
+    init!(mlkem512, "Encapsulation", c);
+    init!(mlkem768, "Encapsulation", c);
+    init!(mlkem1024, "Encapsulation", c);
 }
 
 pub fn decapsulation(c: &mut Criterion) {
@@ -187,34 +129,9 @@ pub fn decapsulation(c: &mut Criterion) {
         };
     }
 
-    let mut group = c.benchmark_group("ML-KEM 512 Decapsulation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem512::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem512::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem512::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 768 Decapsulation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem768::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem768::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem768::avx2, group);
-    drop(group);
-
-    let mut group = c.benchmark_group("ML-KEM 1024 Decapsulation");
-    group.measurement_time(Duration::from_secs(10));
-
-    fun!("portable", mlkem1024::portable, group);
-    #[cfg(feature = "simd128")]
-    fun!("neon", mlkem1024::neon, group);
-    #[cfg(feature = "simd256")]
-    fun!("neon", mlkem1024::avx2, group);
+    init!(mlkem512, "Decapsulation", c);
+    init!(mlkem768, "Decapsulation", c);
+    init!(mlkem1024, "Decapsulation", c);
 }
 
 pub fn comparisons(c: &mut Criterion) {
