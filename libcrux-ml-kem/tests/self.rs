@@ -209,6 +209,7 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
     };
 }
 
+
 #[cfg(feature = "mlkem512")]
 impl_consistency!(
     consistency_512,
@@ -231,91 +232,94 @@ impl_consistency!(
     libcrux_ml_kem::mlkem1024::decapsulate
 );
 
+#[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_portable,
-    mlkem512::portable::generate_key_pair,
-    mlkem512::portable::encapsulate,
-    mlkem512::portable::generate_key_pair_unpacked,
-    mlkem512::portable::encapsulate_unpacked,
-    mlkem512::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::portable::generate_key_pair,
+    libcrux_ml_kem::mlkem512::portable::encapsulate,
+    libcrux_ml_kem::mlkem512::portable::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem512::portable::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem512::portable::decapsulate_unpacked
 );
 
-#[cfg(all(feature = "mlkem512", feature = "simd128"))]
+#[cfg(all(feature = "mlkem512", feature = "pre-verification", feature = "simd128"))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_neon,
-    mlkem512::neon::generate_key_pair,
-    mlkem512::neon::encapsulate,
-    mlkem512::neon::generate_key_pair_unpacked,
-    mlkem512::neon::encapsulate_unpacked,
-    mlkem512::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::neon::generate_key_pair,
+    libcrux_ml_kem::mlkem512::neon::encapsulate,
+    libcrux_ml_kem::mlkem512::neon::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem512::neon::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem512::neon::decapsulate_unpacked
 );
 
-#[cfg(all(feature = "mlkem512", feature = "simd256"))]
+#[cfg(all(feature = "mlkem512", feature = "pre-verification", feature = "simd256"))]
 impl_consistency_unpacked!(
     consistency_unpacked_512_avx2,
-    mlkem512::avx2::generate_key_pair,
-    mlkem512::avx2::encapsulate,
-    mlkem512::avx2::generate_key_pair_unpacked,
-    mlkem512::avx2::encapsulate_unpacked,
-    mlkem512::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem512::avx2::generate_key_pair,
+    libcrux_ml_kem::mlkem512::avx2::encapsulate,
+    libcrux_ml_kem::mlkem512::avx2::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem512::avx2::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem512::avx2::decapsulate_unpacked
 );
 
+#[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_portable,
-    mlkem1024::portable::generate_key_pair,
-    mlkem1024::portable::encapsulate,
-    mlkem1024::portable::generate_key_pair_unpacked,
-    mlkem1024::portable::encapsulate_unpacked,
-    mlkem1024::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::portable::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::portable::encapsulate,
+    libcrux_ml_kem::mlkem1024::portable::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem1024::portable::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem1024::portable::decapsulate_unpacked
 );
 
-#[cfg(all(feature = "mlkem1024", feature = "simd128"))]
+#[cfg(all(feature = "mlkem1024", feature = "pre-verification", feature = "simd128"))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_neon,
-    mlkem1024::neon::generate_key_pair,
-    mlkem1024::neon::encapsulate,
-    mlkem1024::neon::generate_key_pair_unpacked,
-    mlkem1024::neon::encapsulate_unpacked,
-    mlkem1024::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::neon::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::neon::encapsulate,
+    libcrux_ml_kem::mlkem1024::neon::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem1024::neon::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem1024::neon::decapsulate_unpacked
 );
 
-#[cfg(all(feature = "mlkem1024", feature = "simd256"))]
+#[cfg(all(feature = "mlkem1024", feature = "pre-verification", feature = "simd256"))]
 impl_consistency_unpacked!(
     consistency_unpacked_1024_avx2,
-    mlkem1024::avx2::generate_key_pair,
-    mlkem1024::avx2::encapsulate,
-    mlkem1024::avx2::generate_key_pair_unpacked,
-    mlkem1024::avx2::encapsulate_unpacked,
-    mlkem1024::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem1024::avx2::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::avx2::encapsulate,
+    libcrux_ml_kem::mlkem1024::avx2::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem1024::avx2::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem1024::avx2::decapsulate_unpacked
 );
 
+#[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_portable,
-    mlkem768::portable::generate_key_pair,
-    mlkem768::portable::encapsulate,
-    mlkem768::portable::generate_key_pair_unpacked,
-    mlkem768::portable::encapsulate_unpacked,
-    mlkem768::portable::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::portable::generate_key_pair,
+    libcrux_ml_kem::mlkem768::portable::encapsulate,
+    libcrux_ml_kem::mlkem768::portable::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem768::portable::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem768::portable::decapsulate_unpacked
 );
 
-#[cfg(all(feature = "mlkem768", feature = "simd128"))]
+#[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd128"))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_neon,
-    mlkem768::neon::generate_key_pair,
-    mlkem768::neon::encapsulate,
-    mlkem768::neon::generate_key_pair_unpacked,
-    mlkem768::neon::encapsulate_unpacked,
-    mlkem768::neon::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::neon::generate_key_pair,
+    libcrux_ml_kem::mlkem768::neon::encapsulate,
+    libcrux_ml_kem::mlkem768::neon::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem768::neon::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem768::neon::decapsulate_unpacked
 );
 
-#[cfg(all(feature = "mlkem768", feature = "simd256"))]
+#[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd256"))]
 impl_consistency_unpacked!(
     consistency_unpacked_768_avx2,
-    mlkem768::avx2::generate_key_pair,
-    mlkem768::avx2::encapsulate,
-    mlkem768::avx2::generate_key_pair_unpacked,
-    mlkem768::avx2::encapsulate_unpacked,
-    mlkem768::avx2::decapsulate_unpacked
+    libcrux_ml_kem::mlkem768::avx2::generate_key_pair,
+    libcrux_ml_kem::mlkem768::avx2::encapsulate,
+    libcrux_ml_kem::mlkem768::avx2::generate_key_pair_unpacked,
+    libcrux_ml_kem::mlkem768::avx2::encapsulate_unpacked,
+    libcrux_ml_kem::mlkem768::avx2::decapsulate_unpacked
 );
 
 #[cfg(feature = "mlkem512")]

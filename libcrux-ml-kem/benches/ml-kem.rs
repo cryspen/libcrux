@@ -20,7 +20,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
-    #[cfg(feature = "simd256")]
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd256"))]
     group.bench_function("libcrux avx2 unpacked (external random)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
@@ -29,7 +29,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
-    #[cfg(feature = "simd128")]
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd128"))]
     group.bench_function("libcrux neon unpacked (external random)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
@@ -38,6 +38,7 @@ pub fn comparisons_key_generation(c: &mut Criterion) {
         })
     });
 
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
     group.bench_function("libcrux portable unpacked (external random)", |b| {
         let mut seed = [0; 64];
         rng.fill_bytes(&mut seed);
@@ -87,6 +88,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         )
     });
 
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
     group.bench_function("libcrux unpacked portable (external random)", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
@@ -105,7 +107,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         )
     });
 
-    #[cfg(feature = "simd128")]
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd128"))]
     group.bench_function("libcrux unpacked neon (external random)", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
@@ -124,7 +126,7 @@ pub fn comparisons_encapsulation(c: &mut Criterion) {
         )
     });
 
-    #[cfg(feature = "simd256")]
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd256"))]
     group.bench_function("libcrux unpacked avx2 (external random)", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
@@ -167,6 +169,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
         )
     });
 
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
     group.bench_function("libcrux unpacked portable", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
@@ -190,7 +193,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
         )
     });
 
-    #[cfg(feature = "simd128")]
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd128"))]
     group.bench_function("libcrux unpacked neon", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
@@ -213,7 +216,7 @@ pub fn comparisons_decapsulation(c: &mut Criterion) {
         )
     });
 
-    #[cfg(feature = "simd256")]
+    #[cfg(all(feature = "mlkem768", feature = "pre-verification", feature = "simd256"))]
     group.bench_function("libcrux unpacked avx2", |b| {
         let mut seed1 = [0; 64];
         OsRng.fill_bytes(&mut seed1);
