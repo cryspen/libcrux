@@ -35,7 +35,15 @@ fn modify_signing_key<const SIGNING_KEY_SIZE: usize>(signing_key: &mut [u8; SIGN
         _ => unreachable!(),
     };
 
-    let random_byte = random_array::<1>()[0];
+    let random_byte = {
+        let byte = random_array::<1>()[0];
+
+        if byte == 0 {
+            byte + 1
+        } else {
+            byte
+        }
+    };
 
     signing_key[position] ^= random_byte;
 }
@@ -59,7 +67,7 @@ macro_rules! impl_consistency_test {
     };
 }
 
-macro_rules! impl_invalid_signing_key_test {
+macro_rules! impl_modified_signing_key_test {
     ($name:ident, $key_gen:expr, $signing_key_size: expr, $sign:expr, $verify:expr) => {
         #[test]
         fn $name() {
@@ -98,22 +106,22 @@ impl_consistency_test!(
     ml_dsa_87::verify
 );
 
-impl_invalid_signing_key_test!(
-    invalid_signing_key_44,
+impl_modified_signing_key_test!(
+    modified_signing_key_44,
     ml_dsa_44::generate_key_pair,
     ml_dsa_44::SIGNING_KEY_SIZE,
     ml_dsa_44::sign,
     ml_dsa_44::verify
 );
-impl_invalid_signing_key_test!(
-    invalid_signing_key_65,
+impl_modified_signing_key_test!(
+    modified_signing_key_65,
     ml_dsa_65::generate_key_pair,
     ml_dsa_65::SIGNING_KEY_SIZE,
     ml_dsa_65::sign,
     ml_dsa_65::verify
 );
-impl_invalid_signing_key_test!(
-    invalid_signing_key_87,
+impl_modified_signing_key_test!(
+    modified_signing_key_87,
     ml_dsa_87::generate_key_pair,
     ml_dsa_87::SIGNING_KEY_SIZE,
     ml_dsa_87::sign,
