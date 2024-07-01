@@ -54,15 +54,6 @@ val sample_from_uniform_distribution_next
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val sample_from_binomial_distribution
-      (v_ETA: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (randomness: t_Slice u8)
-    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 /// Given a series of uniformly random bytes in `randomness`, for some number `eta`,
 /// the `sample_from_binomial_distribution_{eta}` functions sample
 /// a ring element from a binomial distribution centered at 0 that uses two sets
@@ -115,6 +106,15 @@ val sample_from_binomial_distribution_3_
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 3 *! sz 64 <: usize))
+      (fun _ -> Prims.l_True)
+
+val sample_from_binomial_distribution
+      (v_ETA: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (randomness: t_Slice u8)
+    : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
+      Prims.l_True
       (fun _ -> Prims.l_True)
 
 val sample_from_xof

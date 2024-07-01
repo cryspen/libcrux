@@ -1,7 +1,7 @@
 /// This tests a single one of the Kyber 768 KATs that are also tested in BoringSSL.
 /// The values are taken from https://github.com/google/boringssl/blob/master/crypto/kyber/kyber_tests.txt.
 #[test]
-#[cfg(feature = "kyber")]
+#[cfg(all(feature = "kyber", feature = "mlkem768", feature = "pre-verification"))]
 fn kyber768_single_kat() {
     use libcrux_ml_kem::kyber768;
     let key_pair = kyber768::generate_key_pair(hex::decode("7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d8626ed79d451140800e03b59b956f8210e556067407d13dc90fa9e8b872bfb8f").unwrap().try_into().unwrap());

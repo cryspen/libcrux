@@ -9,33 +9,16 @@ let _ =
   let open Libcrux_ml_kem.Vector.Portable in
   ()
 
-/// Values having this type hold a representative 'x' of the Kyber field.
-/// We use 'fe' as a shorthand for this type.
-unfold
-let t_FieldElement = i16
-
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
-/// We use 'fer' as a shorthand for this type.
-unfold
-let t_FieldElementTimesMontgomeryR = i16
-
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
-/// We use 'mfe' as a shorthand for this type
-unfold
-let t_MontgomeryFieldElement = i16
-
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
-let v_BARRETT_MULTIPLIER: i32 = Rust_primitives.Hax.dropped_body
+let v_BARRETT_MULTIPLIER: i32 = 20159l
 
-let v_BARRETT_R: i32 = Rust_primitives.Hax.dropped_body
+let v_BARRETT_SHIFT: i32 = 26l
 
-let v_BARRETT_SHIFT: i32 = Rust_primitives.Hax.dropped_body
+let v_BARRETT_R: i32 = 1l <<! v_BARRETT_SHIFT
 
-let v_MONTGOMERY_R: i32 = Rust_primitives.Hax.dropped_body
+let v_MONTGOMERY_SHIFT: u8 = 16uy
 
-let v_MONTGOMERY_SHIFT: u8 = Rust_primitives.Hax.dropped_body
+let v_MONTGOMERY_R: i32 = 1l <<! v_MONTGOMERY_SHIFT
 
 /// Signed Barrett Reduction
 /// Given an input `value`, `barrett_reduce` outputs a representative `result`
@@ -54,18 +37,6 @@ val barrett_reduce_element (value: i16)
           let result:i16 = result in
           result >. (Core.Ops.Arith.Neg.neg Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) &&
           result <. Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS)
-
-val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
-    : Prims.Pure i16
-      (requires
-        (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
-        coefficient_bits =. 11uy) &&
-        fe <. (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u16))
-      (ensures
-        fun result ->
-          let result:i16 = result in
-          result >=. 0s &&
-          result <. (Core.Num.impl__i16__pow 2s (cast (coefficient_bits <: u8) <: u32) <: i16))
 
 /// The `compress_*` functions implement the `Compress` function specified in the NIST FIPS
 /// 203 standard (Page 18, Expression 4.5), which is defined as:
@@ -105,14 +76,17 @@ val get_n_least_significant_bits (n: u8) (value: u32)
           let result:u32 = result in
           result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into #u8 #u32 n <: u32) <: u32))
 
-/// If `fe` is some field element 'x' of the Kyber field and `fer` is congruent to
-/// `y · MONTGOMERY_R`, this procedure outputs a value that is congruent to
-/// `x · y`, as follows:
-///    `fe · fer ≡ x · y · MONTGOMERY_R (mod FIELD_MODULUS)`
-/// `montgomery_reduce` takes the value `x · y · MONTGOMERY_R` and outputs a representative
-/// `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod FIELD_MODULUS)`.
-val montgomery_multiply_fe_by_fer (fe fer: i16)
-    : Prims.Pure i16 Prims.l_True (fun _ -> Prims.l_True)
+val compress_ciphertext_coefficient (coefficient_bits: u8) (fe: u16)
+    : Prims.Pure i16
+      (requires
+        (coefficient_bits =. 4uy || coefficient_bits =. 5uy || coefficient_bits =. 10uy ||
+        coefficient_bits =. 11uy) &&
+        fe <. (cast (Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) <: u16))
+      (ensures
+        fun result ->
+          let result:i16 = result in
+          result >=. 0s &&
+          result <. (Core.Num.impl__i16__pow 2s (cast (coefficient_bits <: u8) <: u32) <: i16))
 
 /// Signed Montgomery Reduction
 /// Given an input `value`, `montgomery_reduce` outputs a representative `o`
@@ -146,6 +120,15 @@ val montgomery_reduce_element (value: i32)
             <:
             i16) &&
           result <=. ((3s *! Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS <: i16) /! 2s <: i16))
+
+/// If `fe` is some field element 'x' of the Kyber field and `fer` is congruent to
+/// `y · MONTGOMERY_R`, this procedure outputs a value that is congruent to
+/// `x · y`, as follows:
+///    `fe · fer ≡ x · y · MONTGOMERY_R (mod FIELD_MODULUS)`
+/// `montgomery_reduce` takes the value `x · y · MONTGOMERY_R` and outputs a representative
+/// `x · y · MONTGOMERY_R * MONTGOMERY_R^{-1} ≡ x · y (mod FIELD_MODULUS)`.
+val montgomery_multiply_fe_by_fer (fe fer: i16)
+    : Prims.Pure i16 Prims.l_True (fun _ -> Prims.l_True)
 
 /// Compute the product of two Kyber binomials with respect to the
 /// modulus `X² - zeta`.
@@ -206,36 +189,6 @@ val decompress_ciphertext_coefficient
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val deserialize_1_ (v: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val deserialize_10_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val deserialize_11_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val deserialize_12_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val deserialize_4_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-val deserialize_5_ (bytes: t_Slice u8)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val from_i16_array (array: t_Slice i16)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
       Prims.l_True
@@ -285,13 +238,6 @@ val ntt_layer_3_step (v: Libcrux_ml_kem.Vector.Portable.t_PortableVector) (zeta:
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val ntt_multiply
-      (lhs rhs: Libcrux_ml_kem.Vector.Portable.t_PortableVector)
-      (zeta0 zeta1 zeta2 zeta3: i16)
-    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 val serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.t_PortableVector)
     : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -323,8 +269,45 @@ val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.t_PortableVector)
 val zero: Prims.unit
   -> Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector Prims.l_True (fun _ -> Prims.l_True)
 
+val deserialize_1_ (v: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_10_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_11_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_12_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_4_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_5_ (bytes: t_Slice u8)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val ntt_multiply
+      (lhs rhs: Libcrux_ml_kem.Vector.Portable.t_PortableVector)
+      (zeta0 zeta1 zeta2 zeta3: i16)
+    : Prims.Pure Libcrux_ml_kem.Vector.Portable.t_PortableVector
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Libcrux_ml_kem.Vector.Traits.t_Operations Libcrux_ml_kem.Vector.Portable.t_PortableVector =
+let impl: Libcrux_ml_kem.Vector.Traits.t_Operations #Libcrux_ml_kem.Vector.Portable.t_PortableVector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;

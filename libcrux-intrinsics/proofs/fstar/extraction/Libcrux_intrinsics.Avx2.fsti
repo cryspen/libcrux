@@ -3,12 +3,6 @@ module Libcrux_intrinsics.Avx2
 open Core
 open FStar.Mul
 
-unfold
-let t_Vec128 = Core.Core_arch.X86.t____m128i
-
-unfold
-let t_Vec256 = Core.Core_arch.X86.t____m256i
-
 val mm256_add_epi16 (lhs rhs: Core.Core_arch.X86.t____m256i)
     : Prims.Pure Core.Core_arch.X86.t____m256i Prims.l_True (fun _ -> Prims.l_True)
 

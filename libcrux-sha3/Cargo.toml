@@ -30,3 +30,6 @@ harness = false
 criterion = "0.5.1"
 hex = "0.4.3"
 rand = "0.8.5"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }

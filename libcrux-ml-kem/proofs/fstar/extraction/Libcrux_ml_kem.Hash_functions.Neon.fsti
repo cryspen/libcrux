@@ -7,11 +7,11 @@ open FStar.Mul
 /// It's only used for SHAKE128.
 /// All other functions don't actually use any members.
 type t_Simd128Hash = {
-  f_shake128_state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2)
+  f_shake128_state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2)
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
+let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #t_Simd128Hash v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
     f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);
@@ -214,7 +214,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
             in
             ()
         in
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) =
+        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
           let list =
             [
               Libcrux_sha3.Neon.X2.Incremental.shake128_init ();
@@ -224,67 +224,67 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
           FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 2);
           Rust_primitives.Hax.array_of_list 2 list
         in
-        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) =
+        let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
           match cast (v_K <: usize) <: u8 with
           | 2uy ->
-            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) =
+            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
                 (sz 0)
                 (Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_final (state.[ sz 0 ]
                       <:
-                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                     (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                     (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
             in
             state
           | 3uy ->
-            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) =
+            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
                 (sz 0)
                 (Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_final (state.[ sz 0 ]
                       <:
-                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                     (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                     (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
             in
-            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) =
+            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
                 (sz 1)
                 (Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_final (state.[ sz 1 ]
                       <:
-                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                     (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                     (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
             in
             state
           | 4uy ->
-            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) =
+            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
                 (sz 0)
                 (Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_final (state.[ sz 0 ]
                       <:
-                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                     (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                     (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
             in
-            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 (sz 2) =
+            let state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize state
                 (sz 1)
                 (Libcrux_sha3.Neon.X2.Incremental.shake128_absorb_final (state.[ sz 1 ]
                       <:
-                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                      Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                     (Rust_primitives.unsize (input.[ sz 2 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                     (Rust_primitives.unsize (input.[ sz 3 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
             in
             state
           | _ -> state
@@ -327,13 +327,13 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
           t_Simd128Hash) =
           match cast (v_K <: usize) <: u8 with
           | 2uy ->
-            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
+            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState &
               t_Array u8 (sz 504) &
               t_Array u8 (sz 504)) =
               Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_first_three_blocks (self
                     .f_shake128_state.[ sz 0 ]
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                 out0
                 out1
             in
@@ -365,13 +365,13 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
               t_Array u8 (sz 504) &
               t_Simd128Hash)
           | 3uy ->
-            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
+            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState &
               t_Array u8 (sz 504) &
               t_Array u8 (sz 504)) =
               Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_first_three_blocks (self
                     .f_shake128_state.[ sz 0 ]
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                 out0
                 out1
             in
@@ -390,13 +390,13 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
             let out0:t_Array u8 (sz 504) = tmp1 in
             let out1:t_Array u8 (sz 504) = tmp2 in
             let _:Prims.unit = () in
-            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
+            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState &
               t_Array u8 (sz 504) &
               t_Array u8 (sz 504)) =
               Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_first_three_blocks (self
                     .f_shake128_state.[ sz 1 ]
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                 out2
                 out3
             in
@@ -431,13 +431,13 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
               t_Array u8 (sz 504) &
               t_Simd128Hash)
           | 4uy ->
-            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
+            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState &
               t_Array u8 (sz 504) &
               t_Array u8 (sz 504)) =
               Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_first_three_blocks (self
                     .f_shake128_state.[ sz 0 ]
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                 out0
                 out1
             in
@@ -456,13 +456,13 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
             let out0:t_Array u8 (sz 504) = tmp1 in
             let out1:t_Array u8 (sz 504) = tmp2 in
             let _:Prims.unit = () in
-            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
+            let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState &
               t_Array u8 (sz 504) &
               t_Array u8 (sz 504)) =
               Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_first_three_blocks (self
                     .f_shake128_state.[ sz 1 ]
                   <:
-                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                  Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
                 out2
                 out3
             in
@@ -544,13 +544,12 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
         t_Simd128Hash) =
         match cast (v_K <: usize) <: u8 with
         | 2uy ->
-          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
-            t_Array u8 (sz 168) &
+          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 168) &
             t_Array u8 (sz 168)) =
             Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_next_block (self.f_shake128_state.[ sz
                   0 ]
                 <:
-                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
               out0
               out1
           in
@@ -582,13 +581,12 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
             t_Array u8 (sz 168) &
             t_Simd128Hash)
         | 3uy ->
-          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
-            t_Array u8 (sz 168) &
+          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 168) &
             t_Array u8 (sz 168)) =
             Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_next_block (self.f_shake128_state.[ sz
                   0 ]
                 <:
-                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
               out0
               out1
           in
@@ -607,13 +605,12 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
           let out0:t_Array u8 (sz 168) = tmp1 in
           let out1:t_Array u8 (sz 168) = tmp2 in
           let _:Prims.unit = () in
-          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
-            t_Array u8 (sz 168) &
+          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 168) &
             t_Array u8 (sz 168)) =
             Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_next_block (self.f_shake128_state.[ sz
                   1 ]
                 <:
-                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
               out2
               out3
           in
@@ -648,13 +645,12 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
             t_Array u8 (sz 168) &
             t_Simd128Hash)
         | 4uy ->
-          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
-            t_Array u8 (sz 168) &
+          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 168) &
             t_Array u8 (sz 168)) =
             Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_next_block (self.f_shake128_state.[ sz
                   0 ]
                 <:
-                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
               out0
               out1
           in
@@ -673,13 +669,12 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
           let out0:t_Array u8 (sz 168) = tmp1 in
           let out1:t_Array u8 (sz 168) = tmp2 in
           let _:Prims.unit = () in
-          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2 &
-            t_Array u8 (sz 168) &
+          let tmp0, tmp1, tmp2:(Libcrux_sha3.Neon.X2.Incremental.t_KeccakState & t_Array u8 (sz 168) &
             t_Array u8 (sz 168)) =
             Libcrux_sha3.Neon.X2.Incremental.shake128_squeeze_next_block (self.f_shake128_state.[ sz
                   1 ]
                 <:
-                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState2)
+                Libcrux_sha3.Neon.X2.Incremental.t_KeccakState)
               out2
               out3
           in

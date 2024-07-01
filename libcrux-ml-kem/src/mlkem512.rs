@@ -40,12 +40,13 @@ pub type MlKem512Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>;
 pub type MlKem512PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_512>;
 /// An ML-KEM 512 Public key
 pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
-/// Am ML-KEM 512 Key pair
+/// An ML-KEM 512 Key pair
 pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>;
 
 // Instantiate the different functions.
 macro_rules! instantiate {
-    ($modp:ident, $p:path) => {
+    ($modp:ident, $p:path, $doc:expr) => {
+        #[doc = $doc]
         pub mod $modp {
             use super::*;
             use $p as p;
@@ -196,11 +197,11 @@ macro_rules! instantiate {
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable}
+instantiate! {portable, ind_cca::instantiations::portable, "Portable ML-KEM 512"}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2}
+instantiate! {avx2, ind_cca::instantiations::avx2, "AVX2 Optimised ML-KEM 512"}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::instantiations::neon}
+instantiate! {neon, ind_cca::instantiations::neon, "Neon Optimised ML-KEM 512"}
 
 /// Validate a public key.
 ///
