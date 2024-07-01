@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 pub(crate) mod H {
-    use libcrux_sha3::portable::{incremental, shake256, KeccakState1};
+    use libcrux_sha3::portable::{incremental, shake256, KeccakState};
 
     const BLOCK_SIZE: usize = 136;
 
@@ -13,7 +13,7 @@ pub(crate) mod H {
     }
 
     #[inline(always)]
-    pub(crate) fn new(seed: &[u8]) -> KeccakState1 {
+    pub(crate) fn new(seed: &[u8]) -> KeccakState {
         let mut state = incremental::shake256_init();
         incremental::shake256_absorb_final(&mut state, seed);
 
@@ -21,7 +21,7 @@ pub(crate) mod H {
     }
 
     #[inline(always)]
-    pub(crate) fn squeeze_first_block(state: &mut KeccakState1) -> [u8; BLOCK_SIZE] {
+    pub(crate) fn squeeze_first_block(state: &mut KeccakState) -> [u8; BLOCK_SIZE] {
         let mut out = [0u8; BLOCK_SIZE];
         incremental::shake256_squeeze_first_block(state, &mut out);
 
@@ -29,7 +29,7 @@ pub(crate) mod H {
     }
 
     #[inline(always)]
-    pub(crate) fn squeeze_next_block(state: &mut KeccakState1) -> [u8; BLOCK_SIZE] {
+    pub(crate) fn squeeze_next_block(state: &mut KeccakState) -> [u8; BLOCK_SIZE] {
         let mut out = [0u8; BLOCK_SIZE];
         incremental::shake256_squeeze_next_block(state, &mut out);
 

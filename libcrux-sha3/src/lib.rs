@@ -277,26 +277,26 @@ pub mod portable {
 
         /// Create a new SHAKE-256 state object.
         #[inline(always)]
-        pub fn shake256_init() -> KeccakState1 {
-            KeccakState1 {
-                state: KeccakState::<1, u64>::new(),
+        pub fn shake256_init() -> KeccakState {
+            KeccakState {
+                state: GenericState::<1, u64>::new(),
             }
         }
         /// Absorb some data for SHAKE-256 for the last time
         #[inline(always)]
-        pub fn shake256_absorb_final(s: &mut KeccakState1, data0: &[u8]) {
+        pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8]) {
             absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data0]);
         }
 
         /// Squeeze the first SHAKE-256 block
         #[inline(always)]
-        pub fn shake256_squeeze_first_block(s: &mut KeccakState1, out0: &mut [u8]) {
+        pub fn shake256_squeeze_first_block(s: &mut KeccakState, out0: &mut [u8]) {
             squeeze_first_block::<1, u64, 136>(&mut s.state, [out0])
         }
 
         /// Squeeze the next SHAKE-256 block
         #[inline(always)]
-        pub fn shake256_squeeze_next_block(s: &mut KeccakState1, out0: &mut [u8]) {
+        pub fn shake256_squeeze_next_block(s: &mut KeccakState, out0: &mut [u8]) {
             squeeze_next_block::<1, u64, 136>(&mut s.state, [out0])
         }
     }
@@ -480,8 +480,8 @@ pub mod neon {
                 // XXX: These functions could alternatively implement the same with
                 //      the portable implementation
                 // {
-                //     let s0 = KeccakState1::new();
-                //     let s1 = KeccakState1::new();
+                //     let s0 = KeccakState::new();
+                //     let s1 = KeccakState::new();
                 //     [s0, s1]
                 // }
                 #[cfg(feature = "simd128")]
@@ -848,10 +848,10 @@ pub mod avx2 {
                 // }
                 // #[cfg(not(any(feature = "simd128", feature = "simd256")))]
                 // {
-                //     let s0 = KeccakState1::new();
-                //     let s1 = KeccakState1::new();
-                //     let s2 = KeccakState1::new();
-                //     let s3 = KeccakState1::new();
+                //     let s0 = KeccakState::new();
+                //     let s1 = KeccakState::new();
+                //     let s2 = KeccakState::new();
+                //     let s3 = KeccakState::new();
                 //     [s0, s1, s2, s3]
                 // }
                 #[cfg(feature = "simd256")]
