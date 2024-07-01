@@ -27,6 +27,7 @@ pub type MlKemSharedSecret = [u8; SHARED_SECRET_SIZE];
 
 /// This module instantiates the functions in this file and multiplexes between
 /// different implementations at runtime.
+#[cfg(not(eurydice))]
 pub(crate) mod multiplexing;
 
 /// This module instantiates the functions in this file for each platform.
@@ -300,11 +301,15 @@ impl Variant for MlKem {
         shared_secret: &[u8],
         _: &MlKemCiphertext<CIPHERTEXT_SIZE>,
     ) -> [u8; 32] {
-        shared_secret.try_into().unwrap()
+        let mut out = [0u8; 32];
+        out.copy_from_slice(shared_secret);
+        out
     }
 
     #[inline(always)]
     fn entropy_preprocess<const K: usize, Hasher: Hash<K>>(randomness: &[u8]) -> [u8; 32] {
-        randomness.try_into().unwrap()
+        let mut out = [0u8; 32];
+        out.copy_from_slice(randomness);
+        out
     }
 }

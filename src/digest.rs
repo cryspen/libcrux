@@ -380,7 +380,7 @@ pub fn shake256<const LEN: usize>(data: &[u8]) -> [u8; LEN] {
 pub mod incremental_x4 {
 
     /// Incremental state
-    #[cfg_attr(hax, hax_lib_macros::opaque_type)]
+    #[cfg_attr(hax, hax_lib::opaque_type)]
     pub struct Shake128StateX4 {
         state: crate::hacl::sha3::incremental_x4::Shake128StateX4,
     }

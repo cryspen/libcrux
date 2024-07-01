@@ -6,7 +6,7 @@ use libc::{c_char, c_void, sysctlbyname, uname, utsname};
 fn cstr(src: &[i8]) -> &str {
     // default to length if no `0` present
     let end = src.iter().position(|&c| c == 0).unwrap_or(src.len());
-    unsafe { core::str::from_utf8_unchecked(core::mem::transmute(&src[0..end])) }
+    unsafe { core::str::from_utf8_unchecked(core::mem::transmute::<&[i8], &[u8]>(&src[0..end])) }
 }
 
 /// Check that we're actually on an ARM mac.

@@ -40,12 +40,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@cargo-hack
 
       - name: Update dependencies
         run: cargo update
 
       - run: echo "RUST_TARGET_FLAG=" > $GITHUB_ENV
         if: ${{ matrix.bits == 64 }}
+
+      - run: echo 'EXCLUDE_FEATURES=--exclude-features simd256' > $GITHUB_ENV
+        if: ${{ matrix.os == 'macos-latest' }}
+
+      - run: echo 'EXCLUDE_FEATURES=--exclude-features simd128' > $GITHUB_ENV
+        if: ${{ matrix.os != 'macos-latest' }}
 
       - name: 🛠️ Setup Rust Nightly
         run: rustup toolchain install nightly
@@ -150,6 +157,17 @@ jobs:
           cargo clean
           cargo test --features kyber --verbose $RUST_TARGET_FLAG
 
+      - name: 🏃🏻‍♀️ Cargo Check Features
+        if: ${{ matrix.bits == 64 }}
+        run: |
+          cargo clean
+          cargo hack check --feature-powerset $EXCLUDE_FEATURES --verbose --no-dev-deps $RUST_TARGET_FLAG
+
+      - name: 🏃🏻‍♀️ Cargo Test Features
+        if: ${{ matrix.bits == 64 }}
+        run: |
+          cargo clean
+          cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
 
   benchmarks:
     strategy:

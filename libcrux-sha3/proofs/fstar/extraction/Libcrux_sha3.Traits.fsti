@@ -11,8 +11,8 @@ let _ =
 
 /// A Keccak Item
 /// This holds the internal state and depends on the architecture.
-class t_KeccakStateItem (v_Self: Type0) (v_N: usize) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_7919791445461910775:Libcrux_sha3.Traits.Internal.t_KeccakItem
+class t_KeccakStateItem (#v_Self: Type0) (v_N: usize) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_1179490486619621168:Libcrux_sha3.Traits.Internal.t_KeccakItem
     v_Self v_N
 }
 
@@ -23,5 +23,4 @@ let impl
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
           Libcrux_sha3.Traits.Internal.t_KeccakItem v_T v_N)
-    : t_KeccakStateItem v_T v_N =
-  { _super_7919791445461910775 = FStar.Tactics.Typeclasses.solve; __marker_trait = () }
+    : t_KeccakStateItem #v_T v_N = { _super_1179490486619621168 = FStar.Tactics.Typeclasses.solve }

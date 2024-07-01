@@ -15,6 +15,7 @@ members = [
     "libcrux-hmac",
     "libcrux-hkdf",
     "libcrux-ecdh",
+    "libcrux-psq",
 ]
 
 [workspace.package]
