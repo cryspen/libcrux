@@ -102,7 +102,7 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 
 [[package]]
 name = "benchmarks"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "chacha20poly1305",
  "criterion",
@@ -903,7 +903,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "lib25519"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "bindgen",
  "cc",
@@ -919,7 +919,7 @@ checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
 
 [[package]]
 name = "libcrux"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "clap",
  "getrandom",
@@ -948,7 +948,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-ecdh"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "hex",
  "libcrux",
@@ -970,7 +970,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-hacl"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "bindgen",
  "cc",
@@ -981,14 +981,14 @@ dependencies = [
 
 [[package]]
 name = "libcrux-hkdf"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "libcrux-hacl",
 ]
 
 [[package]]
 name = "libcrux-hmac"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "libcrux-hacl",
  "libcrux-hkdf",
@@ -996,11 +996,11 @@ dependencies = [
 
 [[package]]
 name = "libcrux-intrinsics"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 
 [[package]]
 name = "libcrux-kem"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "hex",
  "libcrux",
@@ -1013,7 +1013,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-ml-dsa"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "criterion",
  "hex",
@@ -1026,7 +1026,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-ml-kem"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "criterion",
  "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
@@ -1042,14 +1042,14 @@ dependencies = [
 
 [[package]]
 name = "libcrux-platform"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "libc",
 ]
 
 [[package]]
 name = "libcrux-pqclean"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "bindgen",
  "cc",
@@ -1058,7 +1058,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-psq"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "classic-mceliece-rust",
  "criterion",
@@ -1070,7 +1070,7 @@ dependencies = [
 
 [[package]]
 name = "libcrux-sha3"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "criterion",
  "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
@@ -1093,7 +1093,7 @@ dependencies = [
 
 [[package]]
 name = "libjade-sys"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 dependencies = [
  "bindgen",
  "cc",

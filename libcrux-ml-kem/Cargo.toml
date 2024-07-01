@@ -6,7 +6,7 @@ license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme.workspace = true
+readme = "Readme.md"
 exclude = [
     "/tests",
     "/implementation_notes.pdf",
@@ -19,14 +19,14 @@ exclude = [
 
 [dependencies]
 rand_core = { version = "0.6" }
-libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
-libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
-libcrux-intrinsics = { version = "0.0.2-pre.2", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-alpha.1", path = "../sys/platform" }
+libcrux-sha3 = { version = "0.0.2-alpha.1", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.2-alpha.1", path = "../libcrux-intrinsics" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
 [target.'cfg(hax)'.dependencies]
-hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/" }
+hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [features]
 # By default all variants and std are enabled.
