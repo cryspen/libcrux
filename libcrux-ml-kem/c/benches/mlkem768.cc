@@ -112,7 +112,7 @@ kyber768_decapsulation_unpacked(benchmark::State &state)
 
   for (auto _ : state)
   {
-    libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked_portable(&key_pair, &ctxt.fst, sharedSecret2);
+    libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
   }
 }
 
@@ -272,7 +272,7 @@ kyber768_decapsulation_avx2_unpacked(benchmark::State &state)
 
   for (auto _ : state)
   {
-    libcrux_ml_kem_mlkem768_avx2_decapsulate_unpacked_portable(&key_pair, &ctxt.fst, sharedSecret2);
+    libcrux_ml_kem_mlkem768_avx2_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
   }
 }
 

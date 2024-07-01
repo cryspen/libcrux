@@ -530,7 +530,7 @@ TEST(MlKem768TestAvx2Unpacked, NISTKnownAnswerTest)
                          LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE));
 
         uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
-        libcrux_ml_kem_mlkem768_avx2_decapsulate_unpacked_portable(&key_pair, &ctxt.fst, sharedSecret2);
+        libcrux_ml_kem_mlkem768_avx2_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
 
         EXPECT_EQ(0,
                   memcmp(ctxt.snd,
