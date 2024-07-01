@@ -45,6 +45,9 @@ fn modify_signing_key<const SIGNING_KEY_SIZE: usize>(signing_key: &mut [u8; SIGN
         }
     };
 
+    dbg!(option);
+    dbg!(position);
+
     signing_key[position] ^= random_byte;
 }
 
