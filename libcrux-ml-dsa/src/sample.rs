@@ -226,9 +226,7 @@ fn inside_out_shuffle(
                 *signs >>= 1;
             }
 
-            if *out_index == result.coefficients.len() {
-                done = true;
-            }
+            done = *out_index == result.coefficients.len();
         }
     }
 
