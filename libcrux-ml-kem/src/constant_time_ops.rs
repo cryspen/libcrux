@@ -54,7 +54,7 @@ fn compare(lhs: &[u8], rhs: &[u8]) -> u8 {
     hax_lib::implies(selector == 0, || result == lhs) &&
     hax_lib::implies(selector != 0, || result == rhs)
 ))]
-pub(crate) fn select(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
+fn select_ct(lhs: &[u8], rhs: &[u8], selector: u8) -> [u8; SHARED_SECRET_SIZE] {
     hax_debug_assert!(lhs.len() == rhs.len());
     hax_debug_assert!(lhs.len() == SHARED_SECRET_SIZE);
 
@@ -84,8 +84,8 @@ pub(crate) fn select_shared_secret_in_constant_time(
     selector: u8,
 ) -> [u8; SHARED_SECRET_SIZE] {
     #[cfg(eurydice)]
-    return select(lhs, rhs, selector);
+    return select_ct(lhs, rhs, selector);
 
     #[cfg(not(eurydice))]
-    core::hint::black_box(select(lhs, rhs, selector))
+    core::hint::black_box(select_ct(lhs, rhs, selector))
 }
