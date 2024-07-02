@@ -12,6 +12,7 @@ pub(crate) fn expand_to_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
 ) -> [[PolynomialRingElement; COLUMNS_IN_A]; ROWS_IN_A] {
     let mut A = [[PolynomialRingElement::ZERO; COLUMNS_IN_A]; ROWS_IN_A];
 
+    #[allow(clippy::needless_range_loop)]
     for i in 0..ROWS_IN_A {
         for j in 0..COLUMNS_IN_A {
             seed[32] = j as u8;
@@ -76,8 +77,9 @@ pub(crate) fn vector_times_ring_element<const DIMENSION: usize>(
 ) -> [PolynomialRingElement; DIMENSION] {
     let mut result = [PolynomialRingElement::ZERO; DIMENSION];
 
-    for (i, vector_element) in vector.iter().enumerate() {
-        result[i] = invert_ntt_montgomery(ntt_multiply_montgomery(&vector_element, ring_element));
+    for (i, vector_ring_element) in vector.iter().enumerate() {
+        result[i] =
+            invert_ntt_montgomery(ntt_multiply_montgomery(vector_ring_element, ring_element));
     }
 
     result
@@ -126,7 +128,7 @@ pub(crate) fn compute_w_approx<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(&ring_element, &ntt(signer_response[j]));
+            let product = ntt_multiply_montgomery(ring_element, &ntt(signer_response[j]));
 
             result[i] = result[i].add(&product);
         }

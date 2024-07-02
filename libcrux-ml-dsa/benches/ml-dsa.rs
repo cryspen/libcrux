@@ -60,7 +60,7 @@ pub fn comparisons_verification(c: &mut Criterion) {
     let mut message = [0u8; 511];
     rng.fill_bytes(&mut message);
 
-    group.bench_function("libcrux portable (external random)", |b| {
+    group.bench_function("libcrux portable", |b| {
         let mut randomness = [0; 32];
         rng.fill_bytes(&mut randomness);
         let keypair = ml_dsa_65::generate_key_pair(randomness);
@@ -72,7 +72,7 @@ pub fn comparisons_verification(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("pqclean reference implementation (internal random)", |b| {
+    group.bench_function("pqclean reference implementation", |b| {
         let (vk, sk) = pqcrypto_dilithium::dilithium3::keypair();
         let signature = pqcrypto_dilithium::dilithium3::detached_sign(&message, &sk);
         b.iter(|| {

@@ -27,7 +27,7 @@ pub(crate) fn generate_key_pair<
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
-    let seed_expanded = H::<128>(&randomness);
+    let seed_expanded = H::one_shot::<128>(&randomness);
 
     let (seed_for_A, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
@@ -123,7 +123,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
         for i in 0..ROWS_IN_A {
             for (j, hint) in self.hint[i].into_iter().enumerate() {
-                if hint == true {
+                if hint {
                     hint_serialized[true_hints_seen] = j as u8;
                     true_hints_seen += 1;
                 }
@@ -171,8 +171,8 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
             {
                 // the true hints seen should be increasing
                 //
-                // TODO: These returns won't pass through hax, they'll need
-                // to be rewritten.
+                // TODO: This return won't pass through hax; it'll need
+                // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
                 return Err(VerificationError::MalformedHintError);
             }
 
@@ -180,6 +180,8 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
                 if j > previous_true_hints_seen && hint_serialized[j] <= hint_serialized[j - 1] {
                     // indices of true hints for a specific polynomial should be
                     // increasing
+                    // TODO: This return won't pass through hax; it'll need
+                    // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
                     return Err(VerificationError::MalformedHintError);
                 }
 
@@ -188,9 +190,15 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
             previous_true_hints_seen = current_true_hints_seen;
         }
 
-        for j in previous_true_hints_seen..MAX_ONES_IN_HINT {
-            if hint_serialized[j] != 0 {
+        for bit in hint_serialized
+            .iter()
+            .take(MAX_ONES_IN_HINT)
+            .skip(previous_true_hints_seen)
+        {
+            if *bit != 0 {
                 // ensures padding indices are zero
+                // TODO: This return won't pass through hax; it'll need
+                // to be rewritten. See https://github.com/cryspen/libcrux/issues/341
                 return Err(VerificationError::MalformedHintError);
             }
         }
@@ -224,36 +232,23 @@ pub(crate) fn sign<
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> [u8; SIGNATURE_SIZE] {
-    let (seed_for_A, remaining_signing_key) = signing_key.split_at(SEED_FOR_A_SIZE);
-    let (seed_for_signing, remaining_signing_key) =
-        remaining_signing_key.split_at(SEED_FOR_SIGNING_SIZE);
-    let (verification_key_hash, remaining_signing_key) =
-        remaining_signing_key.split_at(BYTES_FOR_VERIFICATION_KEY_HASH);
+    let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
+        encoding::signing_key::deserialize_then_ntt::<
+            ROWS_IN_A,
+            COLUMNS_IN_A,
+            ETA,
+            ERROR_RING_ELEMENT_SIZE,
+            SIGNING_KEY_SIZE,
+        >(signing_key);
 
-    let (s1_serialized, remaining_signing_key) =
-        remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * COLUMNS_IN_A);
-    let (s2_serialized, t0_serialized) =
-        remaining_signing_key.split_at(ERROR_RING_ELEMENT_SIZE * ROWS_IN_A);
+    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
-    let s1_as_ntt = encoding::error::deserialize_to_vector_then_ntt::<
-        COLUMNS_IN_A,
-        ETA,
-        ERROR_RING_ELEMENT_SIZE,
-    >(s1_serialized);
-    let s2_as_ntt =
-        encoding::error::deserialize_to_vector_then_ntt::<ROWS_IN_A, ETA, ERROR_RING_ELEMENT_SIZE>(
-            s2_serialized,
-        );
-
-    let t0_as_ntt = encoding::t0::deserialize_to_vector_then_ntt::<ROWS_IN_A>(t0_serialized);
-
-    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_A));
-
+    // TODO: Remove the use of to_vec with an incremental SHAKE-256 absorb API.
     let message_representative = {
         let mut hash_input = verification_key_hash.to_vec();
         hash_input.extend_from_slice(message);
 
-        H::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
+        H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
     };
 
     let mask_seed: [u8; MASK_SEED_SIZE] = {
@@ -261,7 +256,7 @@ pub(crate) fn sign<
         hash_input.extend_from_slice(&randomness);
         hash_input.extend_from_slice(&message_representative);
 
-        H::<MASK_SEED_SIZE>(&hash_input[..])
+        H::one_shot::<MASK_SEED_SIZE>(&hash_input[..])
     };
 
     let mut domain_separator_for_mask: u16 = 0;
@@ -270,16 +265,18 @@ pub(crate) fn sign<
 
     let mut attempt = 0;
 
+    // TODO: This style of rejection sampling, with the break and the continues,
+    // won't pass through hax; it'll need to be rewritten.
+    // See https://github.com/cryspen/libcrux/issues/341
     let (commitment_hash, signer_response, hint) = loop {
         attempt += 1;
-        if attempt >= 576 {
-            // Depending on the mode, one try has a chance between 1/7 and 1/4
-            // of succeeding.  Thus it is safe to say that 576 iterations
-            // are enough as (6/7)⁵⁷⁶ < 2⁻¹²⁸[1].
-            //
-            // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
-            panic!("At least 576 signing attempts were made; this should only happen 1 in 2^{{128}} times: something is wrong.")
-        }
+
+        // Depending on the mode, one try has a chance between 1/7 and 1/4
+        // of succeeding.  Thus it is safe to say that 576 iterations
+        // are enough as (6/7)⁵⁷⁶ < 2⁻¹²⁸[1].
+        //
+        // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
+        debug_assert!(attempt < 576);
 
         let mask = sample_mask_vector::<COLUMNS_IN_A, GAMMA1_EXPONENT>(
             into_padded_array(&mask_seed),
@@ -300,7 +297,7 @@ pub(crate) fn sign<
             let mut hash_input = message_representative.to_vec();
             hash_input.extend_from_slice(&commitment_serialized);
 
-            H::<COMMITMENT_HASH_SIZE>(&hash_input[..])
+            H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
         };
 
         let verifier_challenge_as_ntt =
@@ -386,55 +383,56 @@ pub(crate) fn verify<
         SIGNATURE_SIZE,
     >(signature_serialized)?;
 
-    if vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
+    // We use if-else branches because early returns will not go through hax.
+    if !vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        // TODO: These early returns won't go through verification, fix them.
-        return Err(VerificationError::SignerResponseExceedsBoundError);
+        let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+
+        let verification_key_hash =
+            H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(&verification_key_serialized);
+        let message_representative = {
+            let mut hash_input = verification_key_hash.to_vec();
+            hash_input.extend_from_slice(message);
+
+            H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
+        };
+
+        let verifier_challenge_as_ntt =
+            ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
+                signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
+                    .try_into()
+                    .unwrap(),
+            ));
+
+        let w_approx = compute_w_approx::<ROWS_IN_A, COLUMNS_IN_A>(
+            &A_as_ntt,
+            signature.signer_response,
+            verifier_challenge_as_ntt,
+            t1,
+        );
+
+        let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
+            let commitment = use_hint::<ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
+            let commitment_serialized = encoding::commitment::serialize_vector::<
+                ROWS_IN_A,
+                COMMITMENT_RING_ELEMENT_SIZE,
+                COMMITMENT_VECTOR_SIZE,
+            >(commitment);
+
+            let mut hash_input = message_representative.to_vec();
+            hash_input.extend_from_slice(&commitment_serialized);
+
+            H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
+        };
+
+        if signature.commitment_hash != commitment_hash {
+            Err(VerificationError::CommitmentHashesDontMatchError)
+        } else {
+            Ok(())
+        }
+    } else {
+        Err(VerificationError::SignerResponseExceedsBoundError)
     }
-
-    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
-
-    let verification_key_hash = H::<BYTES_FOR_VERIFICATION_KEY_HASH>(&verification_key_serialized);
-    let message_representative = {
-        let mut hash_input = verification_key_hash.to_vec();
-        hash_input.extend_from_slice(message);
-
-        H::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
-    };
-
-    let verifier_challenge_as_ntt =
-        ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
-            signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                .try_into()
-                .unwrap(),
-        ));
-
-    let w_approx = compute_w_approx::<ROWS_IN_A, COLUMNS_IN_A>(
-        &A_as_ntt,
-        signature.signer_response,
-        verifier_challenge_as_ntt,
-        t1,
-    );
-
-    let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
-        let commitment = use_hint::<ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
-        let commitment_serialized = encoding::commitment::serialize_vector::<
-            ROWS_IN_A,
-            COMMITMENT_RING_ELEMENT_SIZE,
-            COMMITMENT_VECTOR_SIZE,
-        >(commitment);
-
-        let mut hash_input = message_representative.to_vec();
-        hash_input.extend_from_slice(&commitment_serialized);
-
-        H::<COMMITMENT_HASH_SIZE>(&hash_input[..])
-    };
-
-    if signature.commitment_hash != commitment_hash {
-        return Err(VerificationError::CommitmentHashesDontMatchError);
-    }
-
-    Ok(())
 }
