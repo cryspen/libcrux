@@ -4,7 +4,18 @@
 //! formally verified using [hax](https://cryspen.com/hax) and
 //! [F*](https://fstar-lang.org).
 //!
+#![cfg_attr(
+    feature = "pre-verification",
+    doc = r##"
+Functions in this crate use CPU feature detection to pick the most efficient version
+on each platform. To use a specific version with your own feature detection
+use e.g. one of the following
+- `mlkem768::avx2::generate_key_pair`,
+- `mlkem768::neon::generate_key_pair`,
+- `mlkem768::portable::generate_key_pair`,
 
+analogously for encapsulation and decapsulation."##
+)]
 #![cfg_attr(
     feature = "mlkem768",
     doc = r##"
