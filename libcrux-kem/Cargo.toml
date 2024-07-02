@@ -12,9 +12,9 @@ readme.workspace = true
 path = "src/kem.rs"
 
 [dependencies]
-libcrux-ml-kem = { version = "0.0.2-pre.2", path = "../libcrux-ml-kem" }
-libcrux-sha3 = { version = "0.0.2-pre.2", path = "../libcrux-sha3" }
-libcrux-ecdh = { version = "0.0.2-pre.2", path = "../libcrux-ecdh" }
+libcrux-ml-kem = { version = "0.0.2-alpha.1", path = "../libcrux-ml-kem" }
+libcrux-sha3 = { version = "0.0.2-alpha.1", path = "../libcrux-sha3" }
+libcrux-ecdh = { version = "0.0.2-alpha.1", path = "../libcrux-ecdh" }
 rand = { version = "0.8" }
 
 [features]
@@ -23,6 +23,6 @@ kyber = ["libcrux-ml-kem/kyber"]
 pre-verification = ["libcrux-ml-kem/pre-verification"]
 
 [dev-dependencies]
-libcrux-kem = { version = "0.0.2-pre.2", path = "./", features = ["tests"] }
-libcrux = { version = "0.0.2-pre.2", path = "../", features = ["rand"] }
+libcrux-kem = { version = "0.0.2-alpha.1", path = "./", features = ["tests"] }
+libcrux = { version = "0.0.2-alpha.1", path = "../", features = ["rand"] }
 hex = { version = "0.4.3", features = ["serde"] }
