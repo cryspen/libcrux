@@ -8,6 +8,7 @@ homepage.workspace = true
 repository.workspace = true
 readme.workspace = true
 description = "pqclean wrapper for libcrux tests and benchmarks."
+publish = false
 
 [dependencies]
 

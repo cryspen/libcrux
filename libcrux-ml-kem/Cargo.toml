@@ -7,6 +7,7 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme = "Readme.md"
+description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
     "/tests",
     "/implementation_notes.pdf",
