@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Constant_time_ops
 open Core
 open FStar.Mul
 
-let is_non_zero (value: u8) =
+let inz (value: u8) =
   let value:u16 = cast (value <: u8) <: u16 in
   let result:u16 =
     ((value |. (Core.Num.impl__u16__wrapping_add (~.value <: u16) 1us <: u16) <: u16) >>! 8l <: u16) &.
@@ -11,12 +11,17 @@ let is_non_zero (value: u8) =
   in
   cast (result <: u16) <: u8
 
-let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8) =
+let is_non_zero (value: u8) = Core.Hint.black_box #u8 (inz value <: u8)
+
+let compare (lhs rhs: t_Slice u8) =
   let (r: u8):u8 = 0uy in
   let r:u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
-          ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_CIPHERTEXT_SIZE }
+          ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = Core.Slice.impl__len #u8 lhs <: usize
+            }
             <:
             Core.Ops.Range.t_Range usize)
         <:
@@ -29,7 +34,10 @@ let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_
   in
   is_non_zero r
 
-let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
+let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
+  Core.Hint.black_box #u8 (compare lhs rhs <: u8)
+
+let select (lhs rhs: t_Slice u8) (selector: u8) =
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
@@ -54,3 +62,6 @@ let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
           t_Array u8 (sz 32))
   in
   out
+
+let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
+  Core.Hint.black_box #(t_Array u8 (sz 32)) (select lhs rhs selector <: t_Array u8 (sz 32))
