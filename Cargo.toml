@@ -28,7 +28,8 @@ repository = "https://github.com/cryspen/libcrux"
 readme = "Readme.md"
 
 [workspace.metadata.release]
-allow-branch = "main"
+# TODO: drop dev as soon as we merged everything back to main.
+allow-branch = ["main", "dev"]
 
 [package]
 name = "libcrux"
