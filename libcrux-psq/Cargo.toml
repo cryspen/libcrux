@@ -13,7 +13,7 @@ description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
 path = "src/psq.rs"
 
 [dependencies]
-libcrux-kem = { version = "0.0.2-alpha.1", path = "../libcrux-kem" }
+libcrux-kem = { version = "0.0.2-alpha.1", path = "../libcrux-kem", features = ["pre-verification"] }
 libcrux-hkdf = { version = "=0.0.2-alpha.1", path = "../libcrux-hkdf" }
 libcrux-hmac = { version = "=0.0.2-alpha.1", path = "../libcrux-hmac" }
 classic-mceliece-rust = { version = "2.0.0", features = [
