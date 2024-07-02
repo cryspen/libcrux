@@ -34,8 +34,11 @@ const ETA2_RANDOMNESS_SIZE: usize = ETA2 * 64;
 const IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize = SHARED_SECRET_SIZE + CPA_PKE_CIPHERTEXT_SIZE_1024;
 
 // Kyber 1024 types
+/// An ML-KEM 1024 Ciphertext
 pub type MlKem1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
+/// An ML-KEM 1024 Private key
 pub type MlKem1024PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_1024>;
+/// An ML-KEM 1024 Public key
 pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
 /// Validate a public key.
@@ -55,6 +58,9 @@ pub fn validate_public_key(public_key: MlKem1024PublicKey) -> Option<MlKem1024Pu
 }
 
 /// Generate ML-KEM 1024 Key Pair
+///
+/// Generate an ML-KEM key pair. The input is a byte array of size
+/// [`crate::KEY_GENERATION_SEED_SIZE`].
 pub fn generate_key_pair(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024> {
@@ -69,9 +75,11 @@ pub fn generate_key_pair(
     >(randomness)
 }
 
-pub type MlKem1024State = MlKemState<RANK_1024>;
+#[allow(unused)]
+pub(crate) type MlKem1024State = MlKemState<RANK_1024>;
 
-pub fn generate_key_pair_unpacked(
+#[allow(unused)]
+pub(crate) fn generate_key_pair_unpacked(
     randomness: [u8; KEY_GENERATION_SEED_SIZE],
 ) -> (MlKem1024State, MlKem1024PublicKey) {
     generate_keypair_unpacked::<
@@ -86,6 +94,10 @@ pub fn generate_key_pair_unpacked(
 }
 
 /// Encapsulate ML-KEM 1024
+///
+/// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+/// The input is a reference to an [`MlKem1024PublicKey`] and [`crate::SHARED_SECRET_SIZE`]
+/// bytes of `randomness`.
 pub fn encapsulate(
     public_key: &MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>,
     randomness: [u8; SHARED_SECRET_SIZE],
@@ -111,6 +123,9 @@ pub fn encapsulate(
 }
 
 /// Decapsulate ML-KEM 1024
+///
+/// Generates an [`MlKemSharedSecret`].
+/// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
 pub fn decapsulate(
     secret_key: &MlKemPrivateKey<SECRET_KEY_SIZE_1024>,
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
@@ -135,7 +150,8 @@ pub fn decapsulate(
     >(secret_key, ciphertext)
 }
 
-pub fn decapsulate_unpacked(
+#[allow(unused)]
+pub(crate) fn decapsulate_unpacked(
     state: &MlKem1024State,
     ciphertext: &MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>,
 ) -> [u8; SHARED_SECRET_SIZE] {
