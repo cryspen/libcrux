@@ -24,7 +24,7 @@
 
  use libcrux_ml_kem::*;
 
- // This example use ML-KEM 768. The other variants can be used the same way.
+ // This example uses ML-KEM 768. The other variants can be used the same way.
 
  // Generate a key pair.
  let randomness = random_array();
@@ -170,24 +170,33 @@ cfg_verified! {
     #[cfg(feature = "mlkem512")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mlkem512")))]
     pub mod mlkem512 {
+        //! ML-KEM 512
         pub use crate::kem::kyber::kyber512::*;
     }
 
     #[cfg(feature = "mlkem768")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mlkem768")))]
     pub mod mlkem768 {
+        //! ML-KEM 768
         pub use crate::kem::kyber::kyber768::*;
     }
 
     #[cfg(feature = "mlkem1024")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mlkem1024")))]
     pub mod mlkem1024 {
+        //! ML-KEM 1024
         pub use crate::kem::kyber::kyber1024::*;
     }
 
+    /// The size of an ML-KEM shared secret.
     pub const SHARED_SECRET_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
+    /// An ML-KEM shared secret.
+    ///
+    /// A byte array of size [`SHARED_SECRET_SIZE`].
     pub use kem::kyber::MlKemSharedSecret;
+    /// Seed size for encapsulation
     pub const ENCAPS_SEED_SIZE: usize = kem::kyber::constants::SHARED_SECRET_SIZE;
+    /// Seed size for key generation
     pub const KEY_GENERATION_SEED_SIZE: usize = kem::kyber::KEY_GENERATION_SEED_SIZE;
     // These types all have type aliases for the different variants.
     pub use kem::kyber::{MlKemCiphertext, MlKemKeyPair, MlKemPrivateKey, MlKemPublicKey};

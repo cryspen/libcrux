@@ -1,4 +1,4 @@
-//! ML-KEM 512
+//! ML-KEM 768
 //!
 use super::{constants::*, ind_cca::*, *};
 
