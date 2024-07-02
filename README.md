@@ -30,3 +30,7 @@ KEMs:
       candidate in the NIST PQ competition,
     * `XWingKemDraft02`, a hybrid post-quantum KEM, combining `X25519`
       and `ML-KEM 768` based KEMs
+
+For x25519 and ML-KEM, we use `libcrux`'s optimized implementations,
+the Classic McEliece-based protocol uses crate
+[`classic-mceliece-rust`](https://crates.io/crates/classic-mceliece-rust).
