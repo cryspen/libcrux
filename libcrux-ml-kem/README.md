@@ -1,6 +1,6 @@
 # ML-KEM
 
-This crate implements all three ML-KEM variants 512, 768, and 1024. It is
+This crate implements all three ML-KEM ([FIPS 203](https://csrc.nist.gov/pubs/fips/203/ipd) (Initial Public Draft)) variants 512, 768, and 1024. It is
 formally verified using [hax](https://cryspen.com/hax) and
  [F*](https://fstar-lang.org).
 
