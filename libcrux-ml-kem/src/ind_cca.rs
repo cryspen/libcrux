@@ -233,10 +233,7 @@ pub(crate) fn decapsulate<
         Hasher,
     >(ind_cpa_public_key, decrypted, pseudorandomness);
 
-    let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
-        ciphertext.as_ref(),
-        &expected_ciphertext,
-    );
+    let selector = compare_ciphertexts_in_constant_time(ciphertext.as_ref(), &expected_ciphertext);
 
     let implicit_rejection_shared_secret =
         Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
