@@ -34,3 +34,14 @@ KEMs:
 For x25519 and ML-KEM, we use `libcrux`'s optimized implementations,
 the Classic McEliece-based protocol uses crate
 [`classic-mceliece-rust`](https://crates.io/crates/classic-mceliece-rust).
+
+# Running benchmarks
+To run a set of benchmarks comparing the underlying KEMs run
+```sh
+cargo bench
+```
+
+To get a comparison of public key and message sizes in bytes run
+```sh
+cargo run --example sizes
+```
