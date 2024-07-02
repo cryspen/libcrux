@@ -22,14 +22,14 @@ Where
   
 The crate implements the protocol based on several different internal
 KEMs:
-    * `X25519`, an elliptic-curve Diffie-Hellman KEM (not post-quantum
-      secure; for performance comparison)
-    * `ML-KEM 768`, a lattice-based post-quantum KEM, in the process
-      of being standardized by NIST
-    * `Classic McEliece`, a code-based post-quantum KEM & Round 4
-      candidate in the NIST PQ competition,
-    * `XWingKemDraft02`, a hybrid post-quantum KEM, combining `X25519`
-      and `ML-KEM 768` based KEMs
+* `X25519`, an elliptic-curve Diffie-Hellman KEM (not post-quantum
+ secure; for performance comparison)
+* `ML-KEM 768`, a lattice-based post-quantum KEM, in the process
+ of being standardized by NIST
+* `Classic McEliece`, a code-based post-quantum KEM & Round 4
+ candidate in the NIST PQ competition,
+* `XWingKemDraft02`, a hybrid post-quantum KEM, combining `X25519`
+ and `ML-KEM 768` based KEMs
 
 For x25519 and ML-KEM, we use `libcrux`'s optimized implementations,
 the Classic McEliece-based protocol uses crate
