@@ -4584,7 +4584,7 @@ libcrux_ml_kem_ind_cca_decapsulate__libcrux_ml_kem_vector_portable_vector_type_P
       libcrux_ml_kem_types___core__convert__AsRef__Slice_u8___for_libcrux_ml_kem__types__MlKemCiphertext_SIZE___1__as_ref___1088size_t(
           ciphertext);
   uint8_t selector =
-      libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time___1088size_t(
+      libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
           uu____7, Eurydice_array_to_slice((size_t)1088U, expected_ciphertext,
                                            uint8_t, Eurydice_slice));
   uint8_t implicit_rejection_shared_secret[32U];
