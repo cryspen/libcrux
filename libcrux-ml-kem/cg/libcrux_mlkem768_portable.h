@@ -32,6 +32,9 @@ typedef struct libcrux_ml_kem_hash_functions_neon_Simd128Hash_s {
   (LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE + \
    LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE)
 
+typedef struct libcrux_ml_kem_ind_cca_MlKem_s {
+} libcrux_ml_kem_ind_cca_MlKem;
+
 typedef uint8_t libcrux_ml_kem_ind_cca_MlKemSharedSecret[32U];
 
 static const int16_t libcrux_ml_kem_polynomial_ZETAS_TIMES_MONTGOMERY_R[128U] =
