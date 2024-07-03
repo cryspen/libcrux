@@ -8,6 +8,7 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 description = "Libcrux KEM implementation"
+exclude = ["/tests"]
 
 [lib]
 path = "src/kem.rs"
@@ -24,6 +25,5 @@ kyber = ["libcrux-ml-kem/kyber"]
 pre-verification = ["libcrux-ml-kem/pre-verification"]
 
 [dev-dependencies]
-libcrux-kem = { version = "0.0.2-alpha.1", path = "./", features = ["tests"] }
-libcrux = { version = "0.0.2-alpha.1", path = "../", features = ["rand"] }
+libcrux-kem = { path = "./", features = ["tests"] }
 hex = { version = "0.4.3", features = ["serde"] }
