@@ -14,10 +14,9 @@
 //! * [`Algorithm::XWingKemDraft02`]\: Hybrid x25519 - ML-KEM 768 [draft xwing kem for hpke](https://www.ietf.org/archive/id/draft-connolly-cfrg-xwing-kem-02.html).
 //!
 //! ```
-//! use libcrux::{drbg::Drbg, digest::Algorithm::Sha256};
 //! use libcrux_kem::*;
 //!
-//! let mut rng = Drbg::new(Sha256).unwrap();
+//! let mut rng = rand_core::OsRng;
 //! let (sk_a, pk_a) = key_gen(Algorithm::MlKem768, &mut rng).unwrap();
 //! let received_pk = pk_a.encode();
 //!
