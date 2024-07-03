@@ -8,6 +8,7 @@ homepage.workspace = true
 repository.workspace = true
 readme.workspace = true
 description = "sys crate for lib25519 on linux and macOS."
+publish = false
 
 [dependencies]
 libc = "0.2"

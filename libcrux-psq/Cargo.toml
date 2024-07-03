@@ -8,6 +8,7 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
+publish = false
 
 [lib]
 path = "src/psq.rs"
