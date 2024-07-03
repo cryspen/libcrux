@@ -76,18 +76,23 @@ let ntt_multiply_binomials (a0, a1: (i16 & i16)) (b0, b1: (i16 & i16)) (zeta: i1
 let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   let sampled:usize = sz 0 in
   let result, sampled:(t_Slice i16 & usize) =
-    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Slice.Iter.t_Chunks
-            u8)
-          (Core.Slice.impl__chunks #u8 a (sz 3) <: Core.Slice.Iter.t_Chunks u8)
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = (Core.Slice.impl__len #u8 a <: usize) /! sz 3 <: usize
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
         <:
-        Core.Slice.Iter.t_Chunks u8)
+        Core.Ops.Range.t_Range usize)
       (result, sampled <: (t_Slice i16 & usize))
-      (fun temp_0_ bytes ->
+      (fun temp_0_ i ->
           let result, sampled:(t_Slice i16 & usize) = temp_0_ in
-          let bytes:t_Slice u8 = bytes in
-          let b1:i16 = cast (bytes.[ sz 0 ] <: u8) <: i16 in
-          let b2:i16 = cast (bytes.[ sz 1 ] <: u8) <: i16 in
-          let b3:i16 = cast (bytes.[ sz 2 ] <: u8) <: i16 in
+          let i:usize = i in
+          let b1:i16 = cast (a.[ (i *! sz 3 <: usize) +! sz 0 <: usize ] <: u8) <: i16 in
+          let b2:i16 = cast (a.[ (i *! sz 3 <: usize) +! sz 1 <: usize ] <: u8) <: i16 in
+          let b3:i16 = cast (a.[ (i *! sz 3 <: usize) +! sz 2 <: usize ] <: u8) <: i16 in
           let d1:i16 = ((b2 &. 15s <: i16) <<! 8l <: i16) |. b1 in
           let d2:i16 = (b3 <<! 4l <: i16) |. (b2 >>! 4l <: i16) in
           let result, sampled:(t_Slice i16 & usize) =

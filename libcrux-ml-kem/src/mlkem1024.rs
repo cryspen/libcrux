@@ -42,12 +42,13 @@ pub type MlKem1024Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_1024>;
 pub type MlKem1024PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_1024>;
 /// An ML-KEM 1024 Public key
 pub type MlKem1024PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_1024>;
-/// Am ML-KEM 1024 Key pair
+/// An ML-KEM 1024 Key pair
 pub type MlKem1024KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_1024, CPA_PKE_PUBLIC_KEY_SIZE_1024>;
 
 // Instantiate the different functions.
 macro_rules! instantiate {
-    ($modp:ident, $p:path) => {
+    ($modp:ident, $p:path, $doc:expr) => {
+        #[doc = $doc]
         pub mod $modp {
             use super::*;
             use $p as p;
@@ -111,6 +112,33 @@ macro_rules! instantiate {
                 >(public_key, randomness)
             }
 
+            /// Encapsulate Kyber 1024
+            ///
+            /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
+            /// bytes of `randomness`.
+            #[cfg(feature = "kyber")]
+            pub fn kyber_encapsulate(
+                public_key: &MlKem1024PublicKey,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
+                p::kyber_encapsulate::<
+                    RANK_1024,
+                    CPA_PKE_CIPHERTEXT_SIZE_1024,
+                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    T_AS_NTT_ENCODED_SIZE_1024,
+                    C1_SIZE_1024,
+                    C2_SIZE_1024,
+                    VECTOR_U_COMPRESSION_FACTOR_1024,
+                    VECTOR_V_COMPRESSION_FACTOR_1024,
+                    C1_BLOCK_SIZE_1024,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
             /// Decapsulate ML-KEM 1024
             ///
             /// Generates an [`MlKemSharedSecret`].
@@ -138,17 +166,46 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
+
+            /// Decapsulate Kyber 1024
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
+            #[cfg(feature = "kyber")]
+            pub fn kyber_decapsulate(
+                private_key: &MlKem1024PrivateKey,
+                ciphertext: &MlKem1024Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::kyber_decapsulate::<
+                    RANK_1024,
+                    SECRET_KEY_SIZE_1024,
+                    CPA_PKE_SECRET_KEY_SIZE_1024,
+                    CPA_PKE_PUBLIC_KEY_SIZE_1024,
+                    CPA_PKE_CIPHERTEXT_SIZE_1024,
+                    T_AS_NTT_ENCODED_SIZE_1024,
+                    C1_SIZE_1024,
+                    C2_SIZE_1024,
+                    VECTOR_U_COMPRESSION_FACTOR_1024,
+                    VECTOR_V_COMPRESSION_FACTOR_1024,
+                    C1_BLOCK_SIZE_1024,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
         }
     };
 }
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable}
+instantiate! {portable, ind_cca::instantiations::portable, "Portable ML-KEM 1024"}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2}
+instantiate! {avx2, ind_cca::instantiations::avx2, "AVX2 Optimised ML-KEM 1024"}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::instantiations::neon}
+instantiate! {neon, ind_cca::instantiations::neon, "Neon Optimised ML-KEM 1024"}
 
 /// Validate a public key.
 ///
@@ -242,4 +299,64 @@ pub fn decapsulate(
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(private_key, ciphertext)
+}
+
+#[cfg(all(not(eurydice), feature = "kyber"))]
+pub(crate) mod kyber {
+    use super::*;
+
+    /// Encapsulate Kyber 1024
+    ///
+    /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
+    /// bytes of `randomness`.
+    pub fn encapsulate(
+        public_key: &MlKem1024PublicKey,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
+        multiplexing::kyber_encapsulate::<
+            RANK_1024,
+            CPA_PKE_CIPHERTEXT_SIZE_1024,
+            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+            T_AS_NTT_ENCODED_SIZE_1024,
+            C1_SIZE_1024,
+            C2_SIZE_1024,
+            VECTOR_U_COMPRESSION_FACTOR_1024,
+            VECTOR_V_COMPRESSION_FACTOR_1024,
+            C1_BLOCK_SIZE_1024,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key, randomness)
+    }
+
+    /// Decapsulate Kyber 1024
+    ///
+    /// Generates an [`MlKemSharedSecret`].
+    /// The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
+    #[cfg(all(not(eurydice), feature = "kyber"))]
+    pub fn decapsulate(
+        private_key: &MlKem1024PrivateKey,
+        ciphertext: &MlKem1024Ciphertext,
+    ) -> MlKemSharedSecret {
+        multiplexing::kyber_decapsulate::<
+            RANK_1024,
+            SECRET_KEY_SIZE_1024,
+            CPA_PKE_SECRET_KEY_SIZE_1024,
+            CPA_PKE_PUBLIC_KEY_SIZE_1024,
+            CPA_PKE_CIPHERTEXT_SIZE_1024,
+            T_AS_NTT_ENCODED_SIZE_1024,
+            C1_SIZE_1024,
+            C2_SIZE_1024,
+            VECTOR_U_COMPRESSION_FACTOR_1024,
+            VECTOR_V_COMPRESSION_FACTOR_1024,
+            C1_BLOCK_SIZE_1024,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext)
+    }
 }

@@ -1,4 +1,5 @@
-use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768, MlKemCiphertext, MlKemPrivateKey};
+use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
+
 use libcrux_sha3::shake256;
 use rand::{rngs::OsRng, thread_rng, RngCore};
 
@@ -33,9 +34,9 @@ macro_rules! impl_consistency {
     };
 }
 
-fn modify_ciphertext<const LEN: usize>(
-    mut ciphertext: MlKemCiphertext<LEN>,
-) -> MlKemCiphertext<LEN> {
+fn modify_ciphertext<const LEN: usize>(ciphertext: MlKemCiphertext<LEN>) -> MlKemCiphertext<LEN> {
+    let mut raw_ciphertext = [0u8; LEN];
+    raw_ciphertext.copy_from_slice(ciphertext.as_ref());
     let mut random_u32: usize = thread_rng().next_u32().try_into().unwrap();
 
     let mut random_byte: u8 = (random_u32 & 0xFF) as u8;
@@ -45,9 +46,13 @@ fn modify_ciphertext<const LEN: usize>(
     random_u32 >>= 8;
 
     let position = random_u32 % MlKemCiphertext::<LEN>::len();
-    ciphertext[position] ^= random_byte;
+    raw_ciphertext[position] ^= random_byte;
 
-    ciphertext
+    let ciphertext: [u8; LEN] = raw_ciphertext[0..MlKemCiphertext::<LEN>::len()]
+        .try_into()
+        .unwrap();
+
+    ciphertext.into()
 }
 
 macro_rules! impl_modified_ciphertext {
@@ -76,7 +81,8 @@ fn modify_secret_key<const LEN: usize>(
     secret_key: &MlKemPrivateKey<LEN>,
     modify_implicit_rejection_value: bool,
 ) -> MlKemPrivateKey<LEN> {
-    let mut raw_secret_key: MlKemPrivateKey<LEN> = secret_key.as_slice().into();
+    let mut raw_secret_key = [0u8; LEN];
+    raw_secret_key.copy_from_slice(secret_key.as_slice());
 
     let mut random_u32: usize = thread_rng().next_u32().try_into().unwrap();
 
@@ -94,7 +100,11 @@ fn modify_secret_key<const LEN: usize>(
 
     raw_secret_key[position] ^= random_byte;
 
-    raw_secret_key
+    let secret_key: [u8; LEN] = raw_secret_key[0..MlKemPrivateKey::<LEN>::len()]
+        .try_into()
+        .unwrap();
+
+    secret_key.into()
 }
 
 fn compute_implicit_rejection_shared_secret<const CLEN: usize, const LEN: usize>(
@@ -162,78 +172,88 @@ macro_rules! impl_modified_ciphertext_and_implicit_rejection_value {
     };
 }
 
+#[cfg(feature = "mlkem512")]
 impl_consistency!(
     consistency_512,
-    mlkem512::generate_key_pair,
-    mlkem512::encapsulate,
-    mlkem512::decapsulate
+    libcrux_ml_kem::mlkem512::generate_key_pair,
+    libcrux_ml_kem::mlkem512::encapsulate,
+    libcrux_ml_kem::mlkem512::decapsulate
 );
+#[cfg(feature = "mlkem768")]
 impl_consistency!(
     consistency_768,
-    mlkem768::generate_key_pair,
-    mlkem768::encapsulate,
-    mlkem768::decapsulate
+    libcrux_ml_kem::mlkem768::generate_key_pair,
+    libcrux_ml_kem::mlkem768::encapsulate,
+    libcrux_ml_kem::mlkem768::decapsulate
 );
+#[cfg(feature = "mlkem1024")]
 impl_consistency!(
     consistency_1024,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem1024::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::encapsulate,
+    libcrux_ml_kem::mlkem1024::decapsulate
 );
-
+#[cfg(feature = "mlkem512")]
 impl_modified_ciphertext!(
     modified_ciphertext_512,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem512::generate_key_pair,
+    libcrux_ml_kem::mlkem512::encapsulate,
+    libcrux_ml_kem::mlkem512::decapsulate
 );
+#[cfg(feature = "mlkem768")]
 impl_modified_ciphertext!(
     modified_ciphertext_768,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem768::generate_key_pair,
+    libcrux_ml_kem::mlkem768::encapsulate,
+    libcrux_ml_kem::mlkem768::decapsulate
 );
+#[cfg(feature = "mlkem1024")]
 impl_modified_ciphertext!(
     modified_ciphertext_1024,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem1024::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::encapsulate,
+    libcrux_ml_kem::mlkem1024::decapsulate
 );
-
+#[cfg(feature = "mlkem512")]
 impl_modified_secret_key!(
     modified_secret_key_512,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem512::generate_key_pair,
+    libcrux_ml_kem::mlkem512::encapsulate,
+    libcrux_ml_kem::mlkem512::decapsulate
 );
+#[cfg(feature = "mlkem768")]
 impl_modified_secret_key!(
     modified_secret_key_768,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem768::generate_key_pair,
+    libcrux_ml_kem::mlkem768::encapsulate,
+    libcrux_ml_kem::mlkem768::decapsulate
 );
+#[cfg(feature = "mlkem1024")]
 impl_modified_secret_key!(
     modified_secret_key_1024,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem1024::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::encapsulate,
+    libcrux_ml_kem::mlkem1024::decapsulate
 );
 
+#[cfg(feature = "mlkem512")]
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_512,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem512::generate_key_pair,
+    libcrux_ml_kem::mlkem512::encapsulate,
+    libcrux_ml_kem::mlkem512::decapsulate
 );
+#[cfg(feature = "mlkem768")]
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_768,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem768::generate_key_pair,
+    libcrux_ml_kem::mlkem768::encapsulate,
+    libcrux_ml_kem::mlkem768::decapsulate
 );
+#[cfg(feature = "mlkem1024")]
 impl_modified_ciphertext_and_implicit_rejection_value!(
     modified_ciphertext_and_implicit_rejection_value_1024,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem1024::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::encapsulate,
+    libcrux_ml_kem::mlkem1024::decapsulate
 );

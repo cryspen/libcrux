@@ -6,10 +6,10 @@ open FStar.Mul
 /// The state.
 /// It's only used for SHAKE128.
 /// All other functions don't actually use any members.
-type t_Simd256Hash = { f_shake128_state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 }
+type t_Simd256Hash = { f_shake128_state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
+let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #t_Simd256Hash v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
     f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);
@@ -201,13 +201,13 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
             in
             ()
         in
-        let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 =
+        let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState =
           Libcrux_sha3.Avx2.X4.Incremental.shake128_init ()
         in
-        let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 =
+        let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState =
           match cast (v_K <: usize) <: u8 with
           | 2uy ->
-            let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 =
+            let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState =
               Libcrux_sha3.Avx2.X4.Incremental.shake128_absorb_final state
                 (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                 (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
@@ -216,7 +216,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
             in
             state
           | 3uy ->
-            let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 =
+            let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState =
               Libcrux_sha3.Avx2.X4.Incremental.shake128_absorb_final state
                 (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                 (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
@@ -225,7 +225,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
             in
             state
           | 4uy ->
-            let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 =
+            let state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState =
               Libcrux_sha3.Avx2.X4.Incremental.shake128_absorb_final state
                 (Rust_primitives.unsize (input.[ sz 0 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
                 (Rust_primitives.unsize (input.[ sz 1 ] <: t_Array u8 (sz 34)) <: t_Slice u8)
@@ -265,7 +265,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
         let out1:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
         let out2:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
         let out3:t_Array u8 (sz 504) = Rust_primitives.Hax.repeat 0uy (sz 504) in
-        let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 &
+        let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState &
           t_Array u8 (sz 504) &
           t_Array u8 (sz 504) &
           t_Array u8 (sz 504) &
@@ -349,7 +349,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
       let out1:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
       let out2:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
       let out3:t_Array u8 (sz 168) = Rust_primitives.Hax.repeat 0uy (sz 168) in
-      let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 &
+      let tmp0, tmp1, tmp2, tmp3, tmp4:(Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState &
         t_Array u8 (sz 168) &
         t_Array u8 (sz 168) &
         t_Array u8 (sz 168) &

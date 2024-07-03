@@ -44,6 +44,7 @@ pub(crate) fn theta_rho<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakSta
         T::xor5(s.st[0][3], s.st[1][3], s.st[2][3], s.st[3][3], s.st[4][3]),
         T::xor5(s.st[0][4], s.st[1][4], s.st[2][4], s.st[3][4], s.st[4][4]),
     ];
+    #[allow(clippy::identity_op)]
     let t: [T; 5] = [
         T::rotate_left1_and_xor(c[(0 + 4) % 5], c[(0 + 1) % 5]),
         T::rotate_left1_and_xor(c[(1 + 4) % 5], c[(1 + 1) % 5]),
@@ -89,7 +90,7 @@ const _PI: [usize; 24] = [
 
 #[inline(always)]
 pub(crate) fn pi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
-    let old = s.st.clone();
+    let old = s.st;
     s.st[0][1] = old[1][1];
     s.st[0][2] = old[2][2];
     s.st[0][3] = old[3][3];
@@ -119,6 +120,8 @@ pub(crate) fn pi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T
 #[inline(always)]
 pub(crate) fn chi<const N: usize, T: KeccakStateItem<N>>(s: &mut KeccakState<N, T>) {
     let old = s.st;
+
+    #[allow(clippy::needless_range_loop)]
     for i in 0..5 {
         for j in 0..5 {
             s.st[i][j] = T::and_not_xor(s.st[i][j], old[i][(j + 2) % 5], old[i][(j + 1) % 5]);
@@ -191,9 +194,9 @@ pub(crate) fn absorb_final<
     let last_len = last[0].len();
     let mut blocks = [[0u8; 200]; N];
     for i in 0..N {
-        blocks[i][0..last_len].copy_from_slice(&last[i]);
+        blocks[i][0..last_len].copy_from_slice(last[i]);
         blocks[i][last_len] = DELIM;
-        blocks[i][RATE - 1] = blocks[i][RATE - 1] | 128u8;
+        blocks[i][RATE - 1] |= 0x80;
     }
     T::load_block_full::<RATE>(&mut s.st, blocks);
     keccakf1600(s)

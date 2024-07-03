@@ -7,16 +7,17 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme.workspace = true
+description = "Libcrux SHA-3 implementation"
 exclude = ["/proofs", "/c.sh", "/c.yaml"]
 
 [dependencies]
-libcrux-platform = { version = "0.0.2-pre.2", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.2-pre.2", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-alpha.1", path = "../sys/platform" }
+libcrux-intrinsics = { version = "0.0.2-alpha.1", path = "../libcrux-intrinsics" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
 [target.'cfg(hax)'.dependencies]
-hax-lib = { version = "0.1.0-pre.1", git = "https://github.com/hacspec/hax/" }
+hax-lib = { version = "0.1.0-alpha.1", git = "https://github.com/hacspec/hax/" }
 
 [features]
 simd128 = []
@@ -30,3 +31,6 @@ harness = false
 criterion = "0.5.1"
 hex = "0.4.3"
 rand = "0.8.5"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }

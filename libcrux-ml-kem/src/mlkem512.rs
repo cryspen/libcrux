@@ -40,12 +40,13 @@ pub type MlKem512Ciphertext = MlKemCiphertext<CPA_PKE_CIPHERTEXT_SIZE_512>;
 pub type MlKem512PrivateKey = MlKemPrivateKey<SECRET_KEY_SIZE_512>;
 /// An ML-KEM 512 Public key
 pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
-/// Am ML-KEM 512 Key pair
+/// An ML-KEM 512 Key pair
 pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>;
 
 // Instantiate the different functions.
 macro_rules! instantiate {
-    ($modp:ident, $p:path) => {
+    ($modp:ident, $p:path, $doc:expr) => {
+        #[doc = $doc]
         pub mod $modp {
             use super::*;
             use $p as p;
@@ -107,6 +108,33 @@ macro_rules! instantiate {
                 >(public_key, randomness)
             }
 
+            /// Encapsulate Kyber 512
+            ///
+            /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+            /// bytes of `randomness`.
+            #[cfg(feature = "kyber")]
+            pub fn kyber_encapsulate(
+                public_key: &MlKem512PublicKey,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                p::kyber_encapsulate::<
+                    RANK_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
             /// Decapsulate ML-KEM 512
             ///
             /// Generates an [`MlKemSharedSecret`].
@@ -134,17 +162,46 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
+
+            /// Decapsulate Kyber 512
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+            #[cfg(feature = "kyber")]
+            pub fn kyber_decapsulate(
+                private_key: &MlKem512PrivateKey,
+                ciphertext: &MlKem512Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::kyber_decapsulate::<
+                    RANK_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
         }
     };
 }
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable}
+instantiate! {portable, ind_cca::instantiations::portable, "Portable ML-KEM 512"}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2}
+instantiate! {avx2, ind_cca::instantiations::avx2, "AVX2 Optimised ML-KEM 512"}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::instantiations::neon}
+instantiate! {neon, ind_cca::instantiations::neon, "Neon Optimised ML-KEM 512"}
 
 /// Validate a public key.
 ///
@@ -165,7 +222,7 @@ pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512Publ
 
 /// Generate ML-KEM 512 Key Pair
 ///
-/// Generate an ML-KEM key pair. The input is a byte array of size
+/// The input is a byte array of size
 /// [`KEY_GENERATION_SEED_SIZE`].
 ///
 /// This function returns an [`MlKem512KeyPair`].
@@ -236,4 +293,64 @@ pub fn decapsulate(
         ETA2_RANDOMNESS_SIZE,
         IMPLICIT_REJECTION_HASH_INPUT_SIZE,
     >(private_key, ciphertext)
+}
+
+#[cfg(all(not(eurydice), feature = "kyber"))]
+pub(crate) mod kyber {
+    use super::*;
+    /// Encapsulate Kyber 512
+    ///
+    /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+    /// The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+    /// bytes of `randomness`.
+
+    pub fn encapsulate(
+        public_key: &MlKem512PublicKey,
+        randomness: [u8; SHARED_SECRET_SIZE],
+    ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+        multiplexing::kyber_encapsulate::<
+            RANK_512,
+            CPA_PKE_CIPHERTEXT_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            T_AS_NTT_ENCODED_SIZE_512,
+            C1_SIZE_512,
+            C2_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+            C1_BLOCK_SIZE_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+        >(public_key, randomness)
+    }
+
+    /// Decapsulate Kyber 512
+    ///
+    /// Generates an [`MlKemSharedSecret`].
+    /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+
+    pub fn decapsulate(
+        private_key: &MlKem512PrivateKey,
+        ciphertext: &MlKem512Ciphertext,
+    ) -> MlKemSharedSecret {
+        multiplexing::kyber_decapsulate::<
+            RANK_512,
+            SECRET_KEY_SIZE_512,
+            CPA_PKE_SECRET_KEY_SIZE_512,
+            CPA_PKE_PUBLIC_KEY_SIZE_512,
+            CPA_PKE_CIPHERTEXT_SIZE_512,
+            T_AS_NTT_ENCODED_SIZE_512,
+            C1_SIZE_512,
+            C2_SIZE_512,
+            VECTOR_U_COMPRESSION_FACTOR_512,
+            VECTOR_V_COMPRESSION_FACTOR_512,
+            C1_BLOCK_SIZE_512,
+            ETA1,
+            ETA1_RANDOMNESS_SIZE,
+            ETA2,
+            ETA2_RANDOMNESS_SIZE,
+            IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+        >(private_key, ciphertext)
+    }
 }

@@ -157,13 +157,14 @@ let validate_public_key
 let decapsulate
       (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: t_Variant v_Scheme)
       (private_key: Libcrux_ml_kem.Types.t_MlKemPrivateKey v_SECRET_KEY_SIZE)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
@@ -251,31 +252,49 @@ let decapsulate
       decrypted pseudorandomness
   in
   let selector:u8 =
-    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
-      (Core.Convert.f_as_ref #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_in_constant_time (Core.Convert.f_as_ref #(Libcrux_ml_kem.Types.t_MlKemCiphertext
+            v_CIPHERTEXT_SIZE)
           #(t_Slice u8)
           ciphertext
         <:
         t_Slice u8)
       (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
   in
-  Libcrux_ml_kem.Constant_time_ops.select_shared_secret_in_constant_time shared_secret
+  let implicit_rejection_shared_secret:t_Array u8 (sz 32) =
+    f_kdf #v_Scheme
+      v_K
+      v_CIPHERTEXT_SIZE
+      #v_Hasher
+      (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
+      ciphertext
+  in
+  let shared_secret:t_Array u8 (sz 32) =
+    f_kdf #v_Scheme v_K v_CIPHERTEXT_SIZE #v_Hasher shared_secret ciphertext
+  in
+  Libcrux_ml_kem.Constant_time_ops.select_shared_secret_in_constant_time (Rust_primitives.unsize shared_secret
+
+      <:
+      t_Slice u8)
     (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
     selector
 
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
-      (#v_Vector #v_Hasher: Type0)
-      (#[FStar.Tactics.Typeclasses.tcresolve ()]
-          i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#v_Vector #v_Hasher #v_Scheme: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()]
+          i4:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
+      (#[FStar.Tactics.Typeclasses.tcresolve ()] i5: t_Variant v_Scheme)
       (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
       (randomness: t_Array u8 (sz 32))
      =
+  let randomness:t_Array u8 (sz 32) =
+    f_entropy_preprocess #v_Scheme v_K #v_Hasher (Rust_primitives.unsize randomness <: t_Slice u8)
+  in
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
     Libcrux_ml_kem.Utils.into_padded_array (sz 64) (Rust_primitives.unsize randomness <: t_Slice u8)
   in
@@ -323,14 +342,15 @@ let encapsulate
         <:
         t_Slice u8) randomness pseudorandomness
   in
-  let shared_secret_array:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
-  let shared_secret_array:t_Array u8 (sz 32) =
-    Core.Slice.impl__copy_from_slice #u8 shared_secret_array shared_secret
+  let ciphertext:Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE =
+    Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+      #(t_Array u8 v_CIPHERTEXT_SIZE)
+      ciphertext
   in
-  Core.Convert.f_from #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
-    #(t_Array u8 v_CIPHERTEXT_SIZE)
-    ciphertext,
-  shared_secret_array
+  let shared_secret_array:t_Array u8 (sz 32) =
+    f_kdf #v_Scheme v_K v_CIPHERTEXT_SIZE #v_Hasher shared_secret ciphertext
+  in
+  ciphertext, shared_secret_array
   <:
   (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
 

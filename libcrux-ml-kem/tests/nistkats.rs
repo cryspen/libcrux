@@ -1,4 +1,3 @@
-use libcrux_ml_kem::{mlkem1024, mlkem512, mlkem768};
 use serde::Deserialize;
 use serde_json;
 use std::{fs::File, io::BufReader, path::Path};
@@ -6,7 +5,7 @@ use std::{fs::File, io::BufReader, path::Path};
 use libcrux_sha3::*;
 
 #[derive(Deserialize)]
-struct KyberNISTKAT {
+struct MlKemNISTKAT {
     #[serde(with = "hex::serde")]
     key_generation_seed: [u8; 64],
 
@@ -27,16 +26,16 @@ struct KyberNISTKAT {
 }
 
 macro_rules! impl_nist_known_answer_tests {
-    ($name:ident, $parameter_set: literal, $key_gen_derand:expr, $encapsulate_derand:expr, $decapsulate_derand: expr) => {
+    ($name:ident, $variant:literal, $parameter_set: literal, $key_gen_derand:expr, $encapsulate_derand:expr, $decapsulate_derand: expr) => {
         #[test]
         fn $name() {
             let katfile_path = Path::new("tests")
                 .join("kats")
-                .join(format!("nistkats_{}.json", $parameter_set));
+            .join(format!("nistkats_{}_{}.json", $variant, $parameter_set));
             let katfile = File::open(katfile_path).expect("Could not open KAT file.");
             let reader = BufReader::new(katfile);
 
-            let nist_kats: Vec<KyberNISTKAT> =
+            let nist_kats: Vec<MlKemNISTKAT> =
                 serde_json::from_reader(reader).expect("Could not deserialize KAT file.");
 
             for kat in nist_kats {
@@ -62,33 +61,91 @@ macro_rules! impl_nist_known_answer_tests {
         }
     };
 }
-
+#[cfg(feature = "mlkem512")]
 impl_nist_known_answer_tests!(
-    kyber512_nist_known_answer_tests,
+    mlkem512_nist_known_answer_tests,
+    "mlkem",
     512,
-    mlkem512::generate_key_pair,
-    mlkem512::encapsulate,
-    mlkem512::decapsulate
+    libcrux_ml_kem::mlkem512::generate_key_pair,
+    libcrux_ml_kem::mlkem512::encapsulate,
+    libcrux_ml_kem::mlkem512::decapsulate
 );
+#[cfg(feature = "mlkem768")]
 impl_nist_known_answer_tests!(
-    kyber768_nist_known_answer_tests,
+    mlkem768_nist_known_answer_tests,
+    "mlkem",
     768,
-    mlkem768::generate_key_pair,
-    mlkem768::encapsulate,
-    mlkem768::decapsulate
-);
-impl_nist_known_answer_tests!(
-    kyber1024_nist_known_answer_tests,
-    1024,
-    mlkem1024::generate_key_pair,
-    mlkem1024::encapsulate,
-    mlkem1024::decapsulate
+    libcrux_ml_kem::mlkem768::generate_key_pair,
+    libcrux_ml_kem::mlkem768::encapsulate,
+    libcrux_ml_kem::mlkem768::decapsulate
 );
 
+#[cfg(feature = "mlkem1024")]
+impl_nist_known_answer_tests!(
+    mlkem1024_nist_known_answer_tests,
+    "mlkem",
+    1024,
+    libcrux_ml_kem::mlkem1024::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::encapsulate,
+    libcrux_ml_kem::mlkem1024::decapsulate
+);
+
+#[cfg(all(feature = "mlkem512", feature = "pre-verification"))]
+impl_nist_known_answer_tests!(
+    mlkem512_nist_kats_portable,
+    "mlkem",
+    512,
+    libcrux_ml_kem::mlkem512::portable::generate_key_pair,
+    libcrux_ml_kem::mlkem512::portable::encapsulate,
+    libcrux_ml_kem::mlkem512::portable::decapsulate
+);
+
+#[cfg(all(feature = "mlkem768", feature = "pre-verification"))]
+impl_nist_known_answer_tests!(
+    mlkem768_nist_kats_portable,
+    "mlkem",
+    768,
+    libcrux_ml_kem::mlkem768::portable::generate_key_pair,
+    libcrux_ml_kem::mlkem768::portable::encapsulate,
+    libcrux_ml_kem::mlkem768::portable::decapsulate
+);
+
+#[cfg(all(feature = "mlkem1024", feature = "pre-verification"))]
+impl_nist_known_answer_tests!(
+    mlkem1024_nist_kats_portable,
+    "mlkem",
+    1024,
+    libcrux_ml_kem::mlkem1024::portable::generate_key_pair,
+    libcrux_ml_kem::mlkem1024::portable::encapsulate,
+    libcrux_ml_kem::mlkem1024::portable::decapsulate
+);
+
+#[cfg(all(feature = "mlkem512", feature = "kyber", feature = "pre-verification"))]
+impl_nist_known_answer_tests!(
+    kyber512_nist_kats_portable,
+    "kyber",
+    512,
+    libcrux_ml_kem::kyber512::generate_key_pair,
+    libcrux_ml_kem::kyber512::encapsulate,
+    libcrux_ml_kem::kyber512::decapsulate
+);
+
+#[cfg(all(feature = "mlkem768", feature = "kyber", feature = "pre-verification"))]
 impl_nist_known_answer_tests!(
     kyber768_nist_kats_portable,
+    "kyber",
     768,
-    mlkem768::portable::generate_key_pair,
-    mlkem768::portable::encapsulate,
-    mlkem768::portable::decapsulate
+    libcrux_ml_kem::kyber768::generate_key_pair,
+    libcrux_ml_kem::kyber768::encapsulate,
+    libcrux_ml_kem::kyber768::decapsulate
+);
+
+#[cfg(all(feature = "mlkem1024", feature = "kyber", feature = "pre-verification"))]
+impl_nist_known_answer_tests!(
+    kyber1024_nist_kats_portable,
+    "kyber",
+    1024,
+    libcrux_ml_kem::kyber1024::generate_key_pair,
+    libcrux_ml_kem::kyber1024::encapsulate,
+    libcrux_ml_kem::kyber1024::decapsulate
 );

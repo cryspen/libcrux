@@ -1,0 +1,30 @@
+[package]
+name = "libcrux-psq"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
+
+[lib]
+path = "src/psq.rs"
+
+[dependencies]
+libcrux-kem = { version = "0.0.2-alpha.1", path = "../libcrux-kem" }
+libcrux-hkdf = { version = "=0.0.2-alpha.1", path = "../libcrux-hkdf" }
+libcrux-hmac = { version = "=0.0.2-alpha.1", path = "../libcrux-hmac" }
+classic-mceliece-rust = { version = "2.0.0", features = [
+    "mceliece460896f",
+    "zeroize",
+] }
+rand = { version = "0.8" }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "psq"
+harness = false
