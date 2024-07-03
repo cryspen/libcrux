@@ -11,12 +11,12 @@ pub(crate) fn generate_serialized<const ROWS_IN_A: usize, const VERIFICATION_KEY
     t1: [PolynomialRingElement; ROWS_IN_A],
 ) -> [u8; VERIFICATION_KEY_SIZE] {
     let mut verification_key_serialized = [0u8; VERIFICATION_KEY_SIZE];
-    verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(&seed_for_A);
+    verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed_for_A);
 
-    for i in 0..ROWS_IN_A {
+    for (i, ring_element) in t1.iter().enumerate() {
         let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
         verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
-            .copy_from_slice(&t1::serialize(t1[i]));
+            .copy_from_slice(&t1::serialize(*ring_element));
     }
 
     verification_key_serialized
