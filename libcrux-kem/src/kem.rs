@@ -16,7 +16,7 @@
 //! ```
 //! use libcrux_kem::*;
 //!
-//! let mut rng = rand_core::OsRng;
+//! let mut rng = rand::rngs::OsRng;
 //! let (sk_a, pk_a) = key_gen(Algorithm::MlKem768, &mut rng).unwrap();
 //! let received_pk = pk_a.encode();
 //!

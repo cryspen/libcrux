@@ -1008,7 +1008,6 @@ dependencies = [
  "libcrux-ml-kem",
  "libcrux-sha3",
  "rand",
- "rand_core",
 ]
 
 [[package]]
