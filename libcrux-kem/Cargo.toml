@@ -8,6 +8,7 @@ edition.workspace = true
 repository.workspace = true
 readme.workspace = true
 description = "Libcrux KEM implementation"
+exclude = ["/tests"]
 
 [lib]
 path = "src/kem.rs"
