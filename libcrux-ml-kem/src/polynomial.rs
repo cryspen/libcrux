@@ -1,5 +1,8 @@
 use crate::vector::{to_standard_domain, Operations, FIELD_ELEMENTS_IN_VECTOR};
 
+use hax_lib::*;
+use hax_lib::int::*;
+
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [
     -1044, -758, -359, -1517, 1493, 1422, 287, 202, -171, 622, 1577, 182, 962, -1202, -1474, 1468,
     573, -1325, 264, 383, -829, 1458, -1602, -130, -681, 1017, 732, 608, -1542, 411, -205, -1571,
@@ -22,6 +25,7 @@ pub(crate) struct PolynomialRingElement<Vector: Operations> {
 impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
+        fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_ZERO_pre #v_Vector ())");
         Self {
             // FIXME:  The THIR body of item DefId(0:415 ~ libcrux_ml_kem[9000]::polynomial::{impl#0}::ZERO::{constant#0}) was stolen.
             coefficients: [Vector::ZERO(); 16],
@@ -30,8 +34,18 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
 
     #[inline(always)]
     pub(crate) fn from_i16_array(a: &[i16]) -> Self {
+        assume!(VECTORS_IN_RING_ELEMENT * 16 <= a.len());
         let mut result = PolynomialRingElement::ZERO();
         for i in 0..VECTORS_IN_RING_ELEMENT {
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_from_i16_array_pre #v_Vector
+                (a.[ {
+                    Core.Ops.Range.f_start = i *! sz 16 <: usize;
+                    Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! sz 16 <: usize
+                    }
+                    <:
+                    Core.Ops.Range.t_Range usize ]
+                <:
+                t_Slice i16))");
             result.coefficients[i] = Vector::from_i16_array(&a[i * 16..(i + 1) * 16]);
         }
         result
@@ -42,22 +56,39 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
         for i in 0..self.coefficients.len() {
+            fstar!("assume (Vector.Traits.f_add_pre #v_Vector
+                (self.f_coefficients.[ i ] <: v_Vector)
+                (rhs.f_coefficients.[ i ] <: v_Vector))");
             self.coefficients[i] = Vector::add(self.coefficients[i], &rhs.coefficients[i]);
-        }
+        };
+        ()
     }
 
     #[inline(always)]
     pub fn poly_barrett_reduce(&mut self) {
         for i in 0..VECTORS_IN_RING_ELEMENT {
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce_pre #v_Vector
+                (self.f_coefficients.[ i ] <: v_Vector))");
             self.coefficients[i] = Vector::barrett_reduce(self.coefficients[i]);
-        }
+        };
+        ()
     }
 
     #[inline(always)]
     pub(crate) fn subtract_reduce(&self, mut b: Self) -> Self {
         for i in 0..VECTORS_IN_RING_ELEMENT {
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant_pre #v_Vector
+              (b.f_coefficients.[ i ] <: v_Vector)
+              1441s)");
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(b.coefficients[i], 1441);
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_sub_pre #v_Vector
+                        (self.f_coefficients.[ i ] <: v_Vector)
+                        coefficient_normal_form)");
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce_pre #v_Vector
+                    (Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector
+                        (self.f_coefficients.[ i ] <: v_Vector)
+                        coefficient_normal_form))");
             b.coefficients[i] =
                 Vector::barrett_reduce(Vector::sub(self.coefficients[i], &coefficient_normal_form));
         }
@@ -67,6 +98,9 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     pub(crate) fn add_message_error_reduce(&self, message: &Self, mut result: Self) -> Self {
         for i in 0..VECTORS_IN_RING_ELEMENT {
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant_pre #v_Vector
+                (result.f_coefficients.[ i ] <: v_Vector)
+                1441s)");
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(result.coefficients[i], 1441);
 
@@ -86,8 +120,13 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
             // ));
             // ```
 
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_add_pre #v_Vector
+              (self.f_coefficients.[ i ] <: v_Vector)
+              (message.f_coefficients.[ i ] <: v_Vector))");
             let tmp = Vector::add(self.coefficients[i], &message.coefficients[i]);
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_add_pre #v_Vector coefficient_normal_form tmp)");
             let tmp = Vector::add(coefficient_normal_form, &tmp);
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce_pre #v_Vector tmp)");
             result.coefficients[i] = Vector::barrett_reduce(tmp);
         }
         result
@@ -96,14 +135,27 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     #[inline(always)]
     pub(crate) fn add_error_reduce(&mut self, error: &Self) {
         for j in 0..VECTORS_IN_RING_ELEMENT {
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant_pre #v_Vector
+                (self.f_coefficients.[ j ] <: v_Vector)
+                1441s)");
             let coefficient_normal_form =
                 Vector::montgomery_multiply_by_constant(self.coefficients[j], 1441);
 
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_add_pre #v_Vector
+                coefficient_normal_form
+                (error.f_coefficients.[ j ] <: v_Vector))");
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce_pre #v_Vector
+                (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+                    coefficient_normal_form
+                    (error.f_coefficients.[ j ] <: v_Vector)
+                    <:
+                    v_Vector))");
             self.coefficients[j] = Vector::barrett_reduce(Vector::add(
                 coefficient_normal_form,
                 &error.coefficients[j],
             ));
-        }
+        };
+        ()
     }
 
     #[inline(always)]
@@ -113,11 +165,21 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
             // calling to_montgomery_domain() on them should return a mod q.
             let coefficient_normal_form = to_standard_domain::<Vector>(self.coefficients[j]);
 
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_add_pre #v_Vector
+                coefficient_normal_form
+                (error.f_coefficients.[ j ] <: v_Vector))");
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce_pre #v_Vector
+                (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+                    coefficient_normal_form
+                    (error.f_coefficients.[ j ] <: v_Vector)
+                    <:
+                    v_Vector))");
             self.coefficients[j] = Vector::barrett_reduce(Vector::add(
                 coefficient_normal_form,
                 &error.coefficients[j],
             ));
-        }
+        };
+        ()
     }
 
     /// Given two `KyberPolynomialRingElement`s in their NTT representations,
@@ -168,6 +230,29 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         let mut out = PolynomialRingElement::ZERO();
 
         for i in 0..VECTORS_IN_RING_ELEMENT {
+            hax_lib::assert!(64 + 4 * i < 128);
+            hax_lib::assert!(64 + 4 * i + 1 < 128);
+            hax_lib::assert!(64 + 4 * i + 2 < 128);
+            hax_lib::assert!(64 + 4 * i + 3 < 128);
+            fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_ntt_multiply_pre #v_Vector
+                (self.f_coefficients.[ i ] <: v_Vector)
+                (rhs.f_coefficients.[ i ] <: v_Vector)
+                (v_ZETAS_TIMES_MONTGOMERY_R.[ sz 64 +! (sz 4 *! i <: usize) <: usize ] <: i16)
+                (v_ZETAS_TIMES_MONTGOMERY_R.[ (sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 1
+                    <:
+                    usize ]
+                  <:
+                  i16)
+                (v_ZETAS_TIMES_MONTGOMERY_R.[ (sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 2
+                    <:
+                    usize ]
+                  <:
+                  i16)
+                (v_ZETAS_TIMES_MONTGOMERY_R.[ (sz 64 +! (sz 4 *! i <: usize) <: usize) +! sz 3
+                    <:
+                    usize ]
+                  <:
+                  i16))");
             out.coefficients[i] = Vector::ntt_multiply(
                 &self.coefficients[i],
                 &rhs.coefficients[i],
