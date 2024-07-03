@@ -444,7 +444,24 @@ fn main() {
 
                 let pk_bytes = lint.public_key().expect("Error reading public key.");
                 eprintln!("alg: {alg:?}");
+
+                // Decode the public key.
+                // This verifies that it's a valid key.
                 let result_key = PublicKey::decode(alg, &pk_bytes);
+
+                // Now we also check the frequency of 0s and 1s in the public key.
+                // These are the distribution checks.
+                let result_key = result_key.map(|key| {
+                    // Only when we have a valid key, we check this.
+                    let bytes = match &key {
+                        PublicKey::MlKem1024(k) => k.as_slice() as &[u8],
+                        PublicKey::MlKem768(k) => k.as_slice() as &[u8],
+                        PublicKey::MlKem512(k) => k.as_slice() as &[u8],
+                    };
+
+                    let zeroes = bytes.iter().filter(|&b| *b == 0).count();
+                    let ones = bytes.iter().filter(|&b| *b == 0).count();
+                });
 
                 let mut lint_result = LintResult {
                     lintName: lint.lintName.clone(),
