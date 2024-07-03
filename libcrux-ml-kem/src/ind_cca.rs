@@ -72,7 +72,21 @@ fn validate_public_key<
             &public_key[RANKED_BYTES_PER_RING_ELEMENT..],
         );
 
-    *public_key == public_key_serialized
+    let mut valid = *public_key == public_key_serialized;
+
+    if valid {
+        // Do some additional checks on the distribution of the key.
+        let seed = &public_key[RANKED_BYTES_PER_RING_ELEMENT..];
+
+        // ML_KEM_DIS_01: # zeroes <= 11
+        let zeroes_bytes = seed.iter().filter(|&b| *b == 0).count();
+        valid &= zeroes_bytes <= 11;
+
+        // ML_KEM_DIS_02: not more than 2 sequential elements are the same
+        
+    }
+
+    valid
 }
 
 /// Generate a key pair.
