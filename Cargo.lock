@@ -951,10 +951,10 @@ name = "libcrux-ecdh"
 version = "0.0.2-alpha.1"
 dependencies = [
  "hex",
- "libcrux",
  "libcrux-hacl",
  "pretty_env_logger",
  "rand",
+ "rand_core",
  "serde",
  "serde_json",
 ]
