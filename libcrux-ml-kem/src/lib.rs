@@ -74,6 +74,9 @@ analogously for encapsulation and decapsulation."##
 // Enable doc cfg feature for doc builds. They use nightly.
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 /// Feature gating helper macros
 #[macro_use]
 mod cfg;

@@ -74,19 +74,78 @@ fn validate_public_key<
 
     let mut valid = *public_key == public_key_serialized;
 
+    #[cfg(all(feature = "std", test))]
+    if !valid {
+        std::eprintln!("Invalid public key");
+    }
+
+    // Do some additional checks on the distribution of the key.
+    // XXX: This is for linting only and not usually performed.
+    // Move to a different function
     if valid {
-        // Do some additional checks on the distribution of the key.
         let seed = &public_key[RANKED_BYTES_PER_RING_ELEMENT..];
 
         // ML_KEM_DIS_01: # zeroes <= 11
         let zeroes_bytes = seed.iter().filter(|&b| *b == 0).count();
         valid &= zeroes_bytes <= 11;
+        #[cfg(all(feature = "std", test))]
+        if !valid {
+            std::eprintln!("too many zeroes in public key");
+        }
 
         // ML_KEM_DIS_02: not more than 2 sequential elements are the same
-        
+        valid &= no_sequential_elements(seed);
+
+        // ML_KEM_DIS_03: not more than 27 values over or under 128
+        let over_128 = seed.iter().filter(|&b| *b > 128).count();
+        let under_128 = seed.iter().filter(|&b| *b < 128).count();
+        let balanced = over_128 <= 27 && under_128 <= 27;
+        #[cfg(all(feature = "std", test))]
+        if !balanced {
+            std::eprintln!("too large or small values in public key");
+        }
+
+        valid &= balanced;
+
+        // ML_KEM_DIS_04: not more than 14, 18, 21 same elements in A'
+        // ML_KEM_DIS_05: no more than 3 sequential elements in A (not transposed - not fully defined)
+        // ML_KEM_DIS_06: no more than 656, 1369, 2338 over or under 1664
     }
 
     valid
+}
+
+fn no_sequential_elements(seed: &[u8]) -> bool {
+    let mut current_value = seed[0];
+    let mut current_len = 1;
+    let mut _longest_value = current_value;
+    let mut longest_len = current_len;
+
+    for &byte in seed.iter().skip(1) {
+        if byte == current_value {
+            // Count the values
+            current_len += 1;
+            if current_len > longest_len {
+                _longest_value = current_value;
+                longest_len = current_len;
+            }
+        } else {
+            // Value changed
+            current_value = byte;
+            current_len = 1;
+        }
+    }
+
+    if longest_len > 2 {
+        #[cfg(all(feature = "std", test))]
+        std::eprintln!(
+            "too many sequential values in public key ({_longest_value} {longest_len}x)"
+        );
+
+        false
+    } else {
+        true
+    }
 }
 
 /// Generate a key pair.
