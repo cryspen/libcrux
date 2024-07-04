@@ -14,6 +14,7 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
+#include "libcrux_ct_ops.h"
 #include "libcrux_sha3_portable.h"
 
 #define LIBCRUX_ML_KEM_HASH_FUNCTIONS_BLOCK_SIZE ((size_t)168U)
@@ -31,9 +32,6 @@ typedef struct libcrux_ml_kem_hash_functions_neon_Simd128Hash_s {
 #define LIBCRUX_ML_KEM_IND_CCA_KEY_GENERATION_SEED_SIZE        \
   (LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE + \
    LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE)
-
-typedef struct libcrux_ml_kem_ind_cca_MlKem_s {
-} libcrux_ml_kem_ind_cca_MlKem;
 
 typedef uint8_t libcrux_ml_kem_ind_cca_MlKemSharedSecret[32U];
 
