@@ -1,0 +1,12 @@
+name: Dismiss old reviews when re-requested
+
+on:
+  pull_request:
+    types: [review_requested]
+  workflow_dispatch:
+
+jobs:
+  review_requested:
+    permissions:
+      pull-requests: write
+    uses: cryspen/actions/.github/workflows/dismiss-old-reviews.yml@main
