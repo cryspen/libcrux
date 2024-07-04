@@ -54,7 +54,7 @@ fn ntt_at_layer(
                 ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             );
             re.coefficients[j + step] = re.coefficients[j] - t;
-            re.coefficients[j] = re.coefficients[j] + t;
+            re.coefficients[j] += t;
         }
     }
 
@@ -93,7 +93,7 @@ fn invert_ntt_at_layer(
         for j in offset..offset + step {
             let a_minus_b = re.coefficients[j + step] - re.coefficients[j];
 
-            re.coefficients[j] = re.coefficients[j] + re.coefficients[j + step];
+            re.coefficients[j] += re.coefficients[j + step];
             re.coefficients[j + step] =
                 montgomery_multiply_fe_by_fer(a_minus_b, ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
         }
