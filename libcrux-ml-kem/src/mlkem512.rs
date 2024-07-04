@@ -49,8 +49,10 @@ pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
 pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>;
 
 /// An Unpacked ML-KEM 512 Public key
+#[allow(type_alias_bounds)]
 pub type MlKem512PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_512, Vector>;
 /// Am Unpacked ML-KEM 512 Key pair
+#[allow(type_alias_bounds)]
 pub type MlKem512KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_512, Vector>;
 
 // Instantiate the different functions.
@@ -221,7 +223,7 @@ macro_rules! instantiate {
             /// Encapsulate ML-KEM 512 (unpacked)
             ///
             /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
-            /// The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked<$vec>`],
+            /// The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
             pub fn encapsulate_unpacked(
                 public_key: &MlKem512PublicKeyUnpacked<$vec>,
@@ -248,7 +250,7 @@ macro_rules! instantiate {
             /// Decapsulate ML-KEM 512 (unpacked)
             ///
             /// Generates an [`MlKemSharedSecret`].
-            /// The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked<$vec>`]
+            /// The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
             /// and an [`MlKem512Ciphertext`].
             pub fn decapsulate_unpacked(
                 private_key: &MlKem512KeyPairUnpacked<$vec>,
