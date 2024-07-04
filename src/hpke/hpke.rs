@@ -1,10 +1,11 @@
 #![allow(non_camel_case_types, non_snake_case, unused_imports)]
 
-use crate::ecdh::{self, x25519};
-use crate::kem;
+use libcrux_ecdh::{self, secret_to_public, x25519_derive, X25519PublicKey};
+use libcrux_ml_kem::mlkem768;
+
 use crate::kem::{
-    kyber::kyber768, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey,
-    X25519MlKem768Draft00PublicKey, XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
+    self, Ct, PublicKey, Ss, X25519MlKem768Draft00PrivateKey, X25519MlKem768Draft00PublicKey,
+    XWingKemDraft02PrivateKey, XWingKemDraft02PublicKey,
 };
 
 use super::aead::*;
@@ -422,11 +423,11 @@ pub fn SetupBaseS(
             let (ss2, enc2) = Kyber768Draft00_Encap(kyber.as_ref(), randomness[32..64].to_vec())?;
             let ct = crate::kem::Ct::X25519MlKem768Draft00(
                 enc2.as_slice().try_into().unwrap(),
-                crate::ecdh::x25519::PublicKey(enc1.try_into().unwrap()),
+                libcrux_ecdh::X25519PublicKey(enc1.try_into().unwrap()),
             );
             let ss = crate::kem::Ss::X25519MlKem768Draft00(
                 ss2.as_slice().try_into().unwrap(),
-                crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
+                libcrux_ecdh::X25519PublicKey(ss1.try_into().unwrap()),
             );
             (ss.encode(), ct.encode())
         }
@@ -436,19 +437,24 @@ pub fn SetupBaseS(
             let XWingKemDraft02PublicKey { pk_m, pk_x } =
                 XWingKemDraft02PublicKey::decode(pkR).map_err(|_| HpkeError::EncapError)?;
 
-            let (ct_m, ss_m) = kyber768::encapsulate(
+            let (ct_m, ss_m) = mlkem768::encapsulate(
                 &pk_m,
                 randomness[0..32]
                     .try_into()
                     .map_err(|_| HpkeError::EncapError)?,
             );
-            let ek_x = x25519::PrivateKey(
+            let ek_x = libcrux_ecdh::X25519PrivateKey(
                 randomness[..32]
                     .try_into()
                     .map_err(|_| HpkeError::EncapError)?,
             );
-            let ct_x = x25519::secret_to_public(&ek_x).map_err(|_| HpkeError::EncapError)?;
-            let ss_x = x25519::derive(&pk_x, &ek_x).map_err(|_| HpkeError::EncapError)?;
+            let ct_x: [u8; 32] = secret_to_public(libcrux_ecdh::Algorithm::X25519, &ek_x)
+                .map_err(|_| HpkeError::EncapError)?
+                .try_into()
+                .expect("should have received the right number of bytes on success");
+            let ct_x = X25519PublicKey(ct_x);
+
+            let ss_x = x25519_derive(&pk_x, &ek_x).map_err(|_| HpkeError::EncapError)?;
 
             let ct = Ct::XWingKemDraft02(
                 ct_m.as_slice()
@@ -517,7 +523,7 @@ pub fn SetupBaseR(
             let ss2 = Kyber768Draft00_Decap(kyber.as_ref(), &enc[32..])?;
             let ss = crate::kem::Ss::X25519MlKem768Draft00(
                 ss2.as_slice().try_into().unwrap(),
-                crate::ecdh::x25519::PublicKey(ss1.try_into().unwrap()),
+                libcrux_ecdh::X25519PublicKey(ss1.try_into().unwrap()),
             );
             ss.encode()
         }

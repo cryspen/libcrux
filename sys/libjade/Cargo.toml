@@ -6,14 +6,14 @@ authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 repository.workspace = true
-readme.workspace = true
+readme = "Readme.md"
 description = "Rust bindings for libjade, a formally verified cryptographic library written in jasmin."
 
 [dependencies]
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
-libcrux-platform = { version = "=0.0.2-pre.2", path = "../platform" }
+libcrux-platform = { version = "=0.0.2-alpha.1", path = "../platform" }
 
 [target.'cfg(not(windows))'.build-dependencies]
 bindgen = { version = "0.69", optional = true }

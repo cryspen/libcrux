@@ -1,6 +1,30 @@
 //! Obtain particular CPU features for AArch64 on macOS
 
-use libc::{c_void, sysctlbyname};
+use libc::{c_char, c_void, sysctlbyname, uname, utsname};
+
+#[allow(dead_code)]
+fn cstr(src: &[i8]) -> &str {
+    // default to length if no `0` present
+    let end = src.iter().position(|&c| c == 0).unwrap_or(src.len());
+    unsafe { core::str::from_utf8_unchecked(core::mem::transmute::<&[i8], &[u8]>(&src[0..end])) }
+}
+
+/// Check that we're actually on an ARM mac.
+/// When this returns false, no other function in here must be called.
+pub(crate) fn actually_arm() -> bool {
+    let mut buf = utsname {
+        sysname: [c_char::default(); 256],
+        nodename: [c_char::default(); 256],
+        release: [c_char::default(); 256],
+        version: [c_char::default(); 256],
+        machine: [c_char::default(); 256],
+    };
+    let error = unsafe { uname(&mut buf) };
+    // buf.machine == "arm"
+    // It could also be "arm64".
+    let arm = buf.machine[0] == 97 && buf.machine[1] == 114 && buf.machine[2] == 109;
+    error == 0 && arm
+}
 
 #[inline(always)]
 fn check(feature: &[i8]) -> bool {
@@ -20,6 +44,12 @@ fn check(feature: &[i8]) -> bool {
 
 #[inline(always)]
 fn sysctl() {
+    // Check that we're actually on arm and set everything to false if not.
+    // This may happen when running on an intel mac.
+    if !actually_arm() {
+        return;
+    }
+
     // hw.optional.AdvSIMD
     const ADV_SIMD_STR: [i8; 20] = [
         0x68, 0x77, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x2e, 0x41, 0x64, 0x76,

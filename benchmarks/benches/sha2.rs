@@ -10,7 +10,7 @@ macro_rules! impl_comp {
     ($fun:ident, $libcrux:expr, $ring:expr, $rust_crypto:ty, $openssl:expr) => {
         // Comparing libcrux performance for different payload sizes and other implementations.
         fn $fun(c: &mut Criterion) {
-            const PAYLOAD_SIZES: [usize; 1] = [1024 * 1024 * 10];
+            const PAYLOAD_SIZES: [usize; 5] = [100, 1024, 2048, 4096, 8192];
 
             let mut group = c.benchmark_group(stringify!($fun).replace("_", " "));
 

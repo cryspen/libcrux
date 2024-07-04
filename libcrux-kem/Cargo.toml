@@ -1,0 +1,29 @@
+[package]
+name = "libcrux-kem"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+description = "Libcrux KEM implementation"
+exclude = ["/tests"]
+
+[lib]
+path = "src/kem.rs"
+
+[dependencies]
+libcrux-ml-kem = { version = "0.0.2-alpha.1", path = "../libcrux-ml-kem" }
+libcrux-sha3 = { version = "0.0.2-alpha.1", path = "../libcrux-sha3" }
+libcrux-ecdh = { version = "0.0.2-alpha.1", path = "../libcrux-ecdh" }
+rand = { version = "0.8" }
+
+[features]
+tests = []                                             # Expose functions for testing.
+kyber = ["libcrux-ml-kem/kyber"]
+pre-verification = ["libcrux-ml-kem/pre-verification"]
+
+[dev-dependencies]
+libcrux-kem = { path = "./", features = ["tests"] }
+hex = { version = "0.4.3", features = ["serde"] }

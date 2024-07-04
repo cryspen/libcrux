@@ -20,7 +20,7 @@ FetchContent_MakeAvailable(benchmark)
 FetchContent_Declare(
   boringssl
   GIT_REPOSITORY https://boringssl.googlesource.com/boringssl
-  GIT_TAG        1e3da32f3754b1b9136247ee26308cfd959cbeba
+  GIT_TAG        1eda2363f9e79aaa5febe91d31b6756ae4f24f30
 )
 FetchContent_MakeAvailable(boringssl)
 

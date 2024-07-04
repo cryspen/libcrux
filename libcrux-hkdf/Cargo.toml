@@ -1,0 +1,17 @@
+[package]
+name = "libcrux-hkdf"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+edition.workspace = true
+repository.workspace = true
+readme.workspace = true
+description = "Libcrux HKDF implementation"
+
+[lib]
+path = "src/hkdf.rs"
+
+[dependencies]
+libcrux-hacl = { version = "=0.0.2-alpha.1", path = "../sys/hacl" }
+
