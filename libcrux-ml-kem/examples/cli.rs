@@ -82,7 +82,7 @@ impl Lint {
 }
 
 #[derive(Subcommand)]
-enum GenerateCli {
+enum Cmd {
     GenerateKey {
         /// Optionally, a file name to store the keys into.
         ///
@@ -151,7 +151,7 @@ struct Cli {
     ///
     /// When no output files are given, `mlkem.pub` and `mlkem` are used.
     #[command(subcommand)]
-    cmd: GenerateCli,
+    cmd: Cmd,
 
     /// The key length, 512, 768, or 1024
     ///
@@ -190,17 +190,17 @@ impl KeyPair {
 
     fn private_key_slice(&self) -> &[u8] {
         match self {
-            KeyPair::MlKem1024(k) => k.pk(),
-            KeyPair::MlKem768(k) => k.pk(),
-            KeyPair::MlKem512(k) => k.pk(),
+            KeyPair::MlKem1024(k) => k.sk(),
+            KeyPair::MlKem768(k) => k.sk(),
+            KeyPair::MlKem512(k) => k.sk(),
         }
     }
 
     fn public_key_slice(&self) -> &[u8] {
         match self {
-            KeyPair::MlKem1024(k) => k.sk(),
-            KeyPair::MlKem768(k) => k.sk(),
-            KeyPair::MlKem512(k) => k.sk(),
+            KeyPair::MlKem1024(k) => k.pk(),
+            KeyPair::MlKem768(k) => k.pk(),
+            KeyPair::MlKem512(k) => k.pk(),
         }
     }
 }
@@ -347,7 +347,7 @@ fn main() {
     let mut rng = rand::rngs::OsRng;
 
     match cli.cmd {
-        GenerateCli::GenerateKey { out: file } => {
+        Cmd::GenerateKey { out: file } => {
             // Generate a key pair and write it out.
             let (sk_name, pk_name) = match file {
                 Some(n) => (format!("{n}.priv"), format!("{n}.pub")),
@@ -358,7 +358,7 @@ fn main() {
             key_pair.write_to_file(sk_name, pk_name);
         }
 
-        GenerateCli::Encaps { key, ct: out, ss } => {
+        Cmd::Encaps { key, ct: out, ss } => {
             let pk = bytes_from_file(key);
             let pk = PublicKey::decode(alg, &pk).expect("Error decoding public key");
 
@@ -376,7 +376,7 @@ fn main() {
             ciphertext.write_to_file(ct_out);
             write_to_file(ss_out, &shared_secret);
         }
-        GenerateCli::Decaps { key, ss: out, ct } => {
+        Cmd::Decaps { key, ss: out, ct } => {
             let sk = bytes_from_file(key);
             let sk = PrivateKey::decode(alg, &sk).expect("Error decoding private key");
 
@@ -392,7 +392,7 @@ fn main() {
 
             write_to_file(out, &shared_secret);
         }
-        GenerateCli::Lint {
+        Cmd::Lint {
             file,
             name,
             result,
@@ -428,8 +428,6 @@ fn main() {
                     alg,
                     validity,
                 );
-                let lint = lint;
-
                 println!("Writing lint to {file}");
                 let mut file =
                     File::create(file.clone()).expect(&format!("Can not create file {file}"));
@@ -485,7 +483,7 @@ fn main() {
                 if !lint.valid && result_key.is_err() {
                     lint_result.result = "Pass".to_owned();
                     print_status(
-                        "Pass: invalid lint lead to pk validation error.",
+                        "Pass: lint with invalid PK lead to pk validation error.",
                         &pk_bytes,
                         &lint,
                     );

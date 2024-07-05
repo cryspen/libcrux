@@ -1,5 +1,7 @@
 //! ML-KEM 768
 //!
+use vector::portable::PortableVector;
+
 use super::{constants::*, ind_cca::*, *};
 
 // Kyber 768 parameters
@@ -237,6 +239,25 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_SEED_SIZE]) -> MlKem768
         ETA1,
         ETA1_RANDOMNESS_SIZE,
     >(randomness)
+}
+
+/// Fake a public key.
+pub fn fake_key_pair(
+    private_key: [&[i16]; RANK_768],
+    public_key: [&[i16]; RANK_768],
+    seed: &[u8],
+) -> MlKem768KeyPair {
+    generate_fake_key_pair::<
+        RANK_768,
+        CPA_PKE_SECRET_KEY_SIZE_768,
+        SECRET_KEY_SIZE_768,
+        CPA_PKE_PUBLIC_KEY_SIZE_768,
+        RANKED_BYTES_PER_RING_ELEMENT_768,
+        ETA1,
+        ETA1_RANDOMNESS_SIZE,
+        PortableVector,
+        hash_functions::portable::PortableHash<RANK_768>,
+    >(private_key, public_key, seed)
 }
 
 /// Encapsulate ML-KEM 768

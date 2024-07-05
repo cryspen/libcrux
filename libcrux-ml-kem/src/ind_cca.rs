@@ -1,3 +1,5 @@
+use std::eprintln;
+
 use crate::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
@@ -63,6 +65,9 @@ fn validate_public_key<
 >(
     public_key: &[u8; PUBLIC_KEY_SIZE],
 ) -> bool {
+    #[cfg(all(feature = "std"))]
+    eprintln!("Validating public key ...");
+
     let deserialized_pk = deserialize_ring_elements_reduced::<PUBLIC_KEY_SIZE, K, Vector>(
         &public_key[..RANKED_BYTES_PER_RING_ELEMENT],
     );
@@ -74,21 +79,25 @@ fn validate_public_key<
 
     let mut valid = *public_key == public_key_serialized;
 
-    #[cfg(all(feature = "std", test))]
+    #[cfg(all(feature = "std"))]
     if !valid {
         std::eprintln!("Invalid public key");
+    } else {
+        std::eprintln!("Public key is in the correct domain");
     }
 
     // Do some additional checks on the distribution of the key.
     // XXX: This is for linting only and not usually performed.
     // Move to a different function
     if valid {
+        #[cfg(all(feature = "std"))]
+        eprintln!("Checking distribution lints ...");
         let seed = &public_key[RANKED_BYTES_PER_RING_ELEMENT..];
 
         // ML_KEM_DIS_01: # zeroes <= 11
         let zeroes_bytes = seed.iter().filter(|&b| *b == 0).count();
         valid &= zeroes_bytes <= 11;
-        #[cfg(all(feature = "std", test))]
+        #[cfg(all(feature = "std"))]
         if !valid {
             std::eprintln!("too many zeroes in public key");
         }
@@ -100,7 +109,7 @@ fn validate_public_key<
         let over_128 = seed.iter().filter(|&b| *b > 128).count();
         let under_128 = seed.iter().filter(|&b| *b < 128).count();
         let balanced = over_128 <= 27 && under_128 <= 27;
-        #[cfg(all(feature = "std", test))]
+        #[cfg(all(feature = "std"))]
         if !balanced {
             std::eprintln!("too large or small values in public key");
         }
@@ -137,7 +146,7 @@ fn no_sequential_elements(seed: &[u8]) -> bool {
     }
 
     if longest_len > 2 {
-        #[cfg(all(feature = "std", test))]
+        #[cfg(all(feature = "std"))]
         std::eprintln!(
             "too many sequential values in public key ({_longest_value} {longest_len}x)"
         );
@@ -146,6 +155,40 @@ fn no_sequential_elements(seed: &[u8]) -> bool {
     } else {
         true
     }
+}
+
+/// Generate a fake key pair that only encodes the input values.
+pub(crate) fn generate_fake_key_pair<
+    const K: usize,
+    const CPA_PRIVATE_KEY_SIZE: usize,
+    const PRIVATE_KEY_SIZE: usize,
+    const PUBLIC_KEY_SIZE: usize,
+    const BYTES_PER_RING_ELEMENT: usize,
+    const ETA1: usize,
+    const ETA1_RANDOMNESS_SIZE: usize,
+    Vector: Operations,
+    Hasher: Hash<K>,
+>(
+    private_key: [&[i16]; K],
+    public_key: [&[i16]; K],
+    seed: &[u8],
+) -> MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE> {
+    let pk =
+        public_key.map(|v| crate::polynomial::PolynomialRingElement::<Vector>::from_i16_array(v));
+
+    // pk := (Encode_12(tˆ mod^{+}q) || ρ)
+    let public_key_serialized =
+        serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(pk, seed);
+
+    // sk := Encode_12(sˆ mod^{+}q)
+    let sk =
+        private_key.map(|v| crate::polynomial::PolynomialRingElement::<Vector>::from_i16_array(v));
+    let secret_key_serialized = crate::ind_cpa::serialize_secret_key(sk);
+
+    let private_key: MlKemPrivateKey<PRIVATE_KEY_SIZE> =
+        MlKemPrivateKey::from(secret_key_serialized);
+
+    MlKemKeyPair::from(private_key, MlKemPublicKey::from(public_key_serialized))
 }
 
 /// Generate a key pair.

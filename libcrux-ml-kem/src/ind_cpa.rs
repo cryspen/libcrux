@@ -1,3 +1,5 @@
+use std::eprintln;
+
 use crate::{
     constants::{BYTES_PER_RING_ELEMENT, COEFFICIENTS_IN_RING_ELEMENT, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -38,7 +40,7 @@ pub(crate) fn serialize_public_key<
 
 /// Call [`serialize_uncompressed_ring_element`] for each ring element.
 #[inline(always)]
-fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
+pub(crate) fn serialize_secret_key<const K: usize, const OUT_LEN: usize, Vector: Operations>(
     key: [PolynomialRingElement<Vector>; K],
 ) -> [u8; OUT_LEN] {
     let mut out = [0u8; OUT_LEN];
@@ -173,6 +175,9 @@ pub(crate) fn generate_keypair<
 
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
+
+    eprintln!("pk: {:x?}", t_as_ntt);
+    eprintln!("sk: {:x?}", secret_as_ntt);
 
     // pk := (Encode_12(tˆ mod^{+}q) || ρ)
     let public_key_serialized =
