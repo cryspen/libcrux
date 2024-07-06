@@ -1,3 +1,2 @@
-pub(crate) mod traits;
-
 pub(crate) mod portable;
+pub(crate) mod traits;
