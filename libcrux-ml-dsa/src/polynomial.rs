@@ -1,17 +1,19 @@
 use crate::{
-    arithmetic::FieldElement,
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    vector::traits::{Operations, COEFFICIENTS_PER_VECTOR},
 };
 
-#[derive(Clone, Copy, Debug)]
+pub(crate) const VECTORS_IN_RING_ELEMENT: usize =
+    super::constants::COEFFICIENTS_IN_RING_ELEMENT / COEFFICIENTS_PER_VECTOR;
+
+#[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement {
-    pub(crate) coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT],
+    pub(crate) coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT],
 }
 
 impl PolynomialRingElement {
     pub const ZERO: Self = Self {
-        // FIXME: hax issue, 256 is COEFFICIENTS_IN_RING_ELEMENT
-        coefficients: [0i32; 256],
+        coefficients: [0; COEFFICIENTS_IN_RING_ELEMENT],
     };
 
     #[inline(always)]
@@ -69,5 +71,65 @@ impl PolynomialRingElement {
         }
 
         exceeds
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct VectorPolynomialRingElement<Vector: Operations> {
+    pub(crate) coefficients: [Vector; VECTORS_IN_RING_ELEMENT],
+}
+impl<Vector: Operations> VectorPolynomialRingElement<Vector> {
+    #[allow(non_snake_case)]
+    pub(crate) fn ZERO() -> Self {
+        Self {
+            coefficients: [Vector::ZERO(); VECTORS_IN_RING_ELEMENT],
+        }
+    }
+
+    pub(crate) fn to_polynomial_ring_element(&self) -> PolynomialRingElement {
+        let mut counter = 0;
+        let mut out = PolynomialRingElement::ZERO;
+
+        for coefficient_vector in self.coefficients {
+            for coefficient in Vector::to_i32_array(coefficient_vector) {
+                out.coefficients[counter] = coefficient;
+                counter += 1;
+            }
+        }
+
+        out
+    }
+
+    pub(crate) fn from_polynomial_ring_element(re: PolynomialRingElement) -> Self {
+        let mut out = Self::ZERO();
+
+        for (i, coefficients) in re.coefficients.chunks(COEFFICIENTS_PER_VECTOR).enumerate() {
+            out.coefficients[i] = Vector::from_i32_array(coefficients);
+        }
+
+        out
+    }
+
+    #[inline(always)]
+    pub(crate) fn add(&self, rhs: &Self) -> Self {
+        let mut sum = Self::ZERO();
+
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            sum.coefficients[i] = Vector::add(self.coefficients[i], &rhs.coefficients[i]);
+        }
+
+        sum
+    }
+
+    #[inline(always)]
+    pub(crate) fn subtract(&self, rhs: &Self) -> Self {
+        let mut difference = Self::ZERO();
+
+        for i in 0..VECTORS_IN_RING_ELEMENT {
+            difference.coefficients[i] =
+                Vector::subtract(self.coefficients[i], &rhs.coefficients[i]);
+        }
+
+        difference
     }
 }

@@ -8,6 +8,7 @@ mod ntt;
 mod polynomial;
 mod sample;
 mod utils;
+mod vector;
 
 pub use ml_dsa_generic::VerificationError;
 
