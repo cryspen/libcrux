@@ -1,4 +1,4 @@
-use crate::arithmetic::PolynomialRingElement;
+use crate::polynomial::PolynomialRingElement;
 
 #[inline(always)]
 fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(

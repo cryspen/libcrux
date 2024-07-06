@@ -1,7 +1,8 @@
 use crate::{
-    arithmetic::{shift_coefficients_left_then_reduce, PolynomialRingElement},
+    arithmetic::shift_coefficients_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
+    polynomial::PolynomialRingElement,
     sample::sample_ring_element_uniform,
 };
 

@@ -1,9 +1,7 @@
 use super::{
-    arithmetic::{
-        montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElementTimesMontgomeryR,
-        PolynomialRingElement,
-    },
+    arithmetic::{montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElementTimesMontgomeryR},
     constants::COEFFICIENTS_IN_RING_ELEMENT,
+    polynomial::PolynomialRingElement,
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [

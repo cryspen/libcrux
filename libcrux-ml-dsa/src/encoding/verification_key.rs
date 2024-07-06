@@ -1,7 +1,7 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::{RING_ELEMENT_OF_T1S_SIZE, SEED_FOR_A_SIZE},
     encoding::t1,
+    polynomial::PolynomialRingElement,
 };
 
 #[allow(non_snake_case)]

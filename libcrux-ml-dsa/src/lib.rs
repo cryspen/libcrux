@@ -5,6 +5,7 @@ mod hash_functions;
 mod matrix;
 mod ml_dsa_generic;
 mod ntt;
+mod polynomial;
 mod sample;
 mod utils;
 
