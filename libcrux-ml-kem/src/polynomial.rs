@@ -41,7 +41,6 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
     /// sum of their constituent coefficients.
     #[inline(always)]
     pub(crate) fn add_to_ring_element<const K: usize>(&mut self, rhs: &Self) {
-        panic!();
         for i in 0..self.coefficients.len() {
             self.coefficients[i] = Vector::add(self.coefficients[i], &rhs.coefficients[i]);
         }
