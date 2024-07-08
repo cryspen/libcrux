@@ -1,15 +1,9 @@
-#[cfg(not(target_arch = "wasm32"))]
-use libcrux::drbg;
 use libcrux_ecdh::{self, key_gen};
-#[cfg(target_arch = "wasm32")]
 use rand_core::OsRng;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn derive_rand() {
-    #[cfg(not(target_arch = "wasm32"))]
-    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
-    #[cfg(target_arch = "wasm32")]
     let mut rng = OsRng;
 
     let (private_a, public_a) = key_gen(libcrux_ecdh::Algorithm::P256, &mut rng).unwrap();

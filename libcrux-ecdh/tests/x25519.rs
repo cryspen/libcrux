@@ -3,28 +3,22 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use test_util::*;
 
-#[cfg(not(target_arch = "wasm32"))]
-use libcrux::drbg;
-#[cfg(target_arch = "wasm32")]
 use rand_core::OsRng;
 
-use libcrux::ecdh::{self, key_gen, Algorithm, Error};
+use libcrux_ecdh::{self, key_gen, Algorithm, Error};
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 #[test]
 fn derive() {
     let _ = pretty_env_logger::try_init();
 
-    #[cfg(not(target_arch = "wasm32"))]
-    let mut rng = drbg::Drbg::new(libcrux::digest::Algorithm::Sha256).unwrap();
-    #[cfg(target_arch = "wasm32")]
     let mut rng = OsRng;
 
     let (private_a, public_a) = key_gen(Algorithm::X25519, &mut rng).unwrap();
     let (private_b, public_b) = key_gen(Algorithm::X25519, &mut rng).unwrap();
 
-    let shared_a = ecdh::derive(Algorithm::X25519, &public_b, &private_a).unwrap();
-    let shared_b = ecdh::derive(Algorithm::X25519, &public_a, &private_b).unwrap();
+    let shared_a = libcrux_ecdh::derive(Algorithm::X25519, &public_b, &private_a).unwrap();
+    let shared_b = libcrux_ecdh::derive(Algorithm::X25519, &public_a, &private_b).unwrap();
     assert_eq!(shared_a, shared_b);
 }
 
@@ -122,7 +116,7 @@ fn wycheproof() {
             let private = hex_str_to_bytes(&test.private);
             let shared = hex_str_to_bytes(&test.shared);
 
-            match ecdh::derive(Algorithm::X25519, &public, &private) {
+            match libcrux_ecdh::derive(Algorithm::X25519, &public, &private) {
                 Ok(r) => {
                     assert!(valid);
                     assert_eq!(r[..], shared[..]);

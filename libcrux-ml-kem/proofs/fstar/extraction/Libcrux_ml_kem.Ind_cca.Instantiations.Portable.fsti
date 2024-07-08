@@ -8,7 +8,7 @@ let _ =
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions.Portable in
   let open Libcrux_ml_kem.Ind_cca in
-  let open Libcrux_ml_kem.Vector in
+  let open Libcrux_ml_kem.Vector.Portable in
   ()
 
 /// Portable decapsulate
