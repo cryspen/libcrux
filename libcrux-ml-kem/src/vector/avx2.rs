@@ -9,7 +9,7 @@ mod portable;
 mod sampling;
 mod serialize;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct SIMD256Vector {
     elements: Vec256,
 }
