@@ -3,6 +3,9 @@ use crate::{
     helper::cloop, polynomial::PolynomialRingElement, vector::Operations,
 };
 
+use hax_lib::*;
+use hax_lib::int::*;
+
 /// If `bytes` contains a set of uniformly random bytes, this function
 /// uniformly samples a ring element `â` that is treated as being the NTT representation
 /// of the corresponding polynomial `a`.
@@ -51,10 +54,58 @@ fn sample_from_uniform_distribution_next<Vector: Operations, const K: usize, con
     for i in 0..K {
         for r in 0..N / 24 {
             if sampled_coefficients[i] < COEFFICIENTS_IN_RING_ELEMENT {
+                fstar!("assume (Libcrux_ml_kem.Vector.Traits.f_rej_sample_pre #v_Vector
+                      ((randomness.[ i ] <: t_Array u8 v_N).[ {
+                            Core.Ops.Range.f_start = r *! sz 24 <: usize;
+                            Core.Ops.Range.f_end = (r *! sz 24 <: usize) +! sz 24 <: usize
+                          }
+                          <:
+                          Core.Ops.Range.t_Range usize ]
+                        <:
+                        t_Slice u8)
+                      ((out.[ i ] <: t_Array i16 (sz 272)).[ {
+                            Core.Ops.Range.f_start = sampled_coefficients.[ i ] <: usize;
+                            Core.Ops.Range.f_end
+                            =
+                            (sampled_coefficients.[ i ] <: usize) +! sz 16 <: usize
+                          }
+                          <:
+                          Core.Ops.Range.t_Range usize ]
+                        <:
+                        t_Slice i16))");
+                fstar!("assume (Seq.length (Libcrux_ml_kem.Vector.Traits.f_rej_sample #v_Vector
+                        ((randomness.[ i ] <: t_Array u8 v_N).[ {
+                              Core.Ops.Range.f_start = r *! sz 24 <: usize;
+                              Core.Ops.Range.f_end = (r *! sz 24 <: usize) +! sz 24 <: usize
+                            }
+                            <:
+                            Core.Ops.Range.t_Range usize ]
+                          <:
+                          t_Slice u8)
+                        ((out.[ i ] <: t_Array i16 (sz 272)).[ {
+                              Core.Ops.Range.f_start = sampled_coefficients.[ i ] <: usize;
+                              Core.Ops.Range.f_end
+                              =
+                              (sampled_coefficients.[ i ] <: usize) +! sz 16 <: usize
+                            }
+                            <:
+                            Core.Ops.Range.t_Range usize ]
+                          <:
+                          t_Slice i16))._1 == Seq.length ((out.[ i ] <: t_Array i16 (sz 272)).[ {
+                              Core.Ops.Range.f_start = sampled_coefficients.[ i ] <: usize;
+                              Core.Ops.Range.f_end
+                              =
+                              (sampled_coefficients.[ i ] <: usize) +! sz 16 <: usize
+                            } 
+                            <:
+                            Core.Ops.Range.t_Range usize ]
+                          <:
+                          t_Slice i16))");
                 let sampled = Vector::rej_sample(
                     &randomness[i][r * 24..(r * 24) + 24],
                     &mut out[i][sampled_coefficients[i]..sampled_coefficients[i] + 16],
                 );
+                assume!(sampled_coefficients[i].lift() + sampled.lift() <= usize::MAX.lift());
                 sampled_coefficients[i] += sampled;
             }
         }
@@ -77,7 +128,9 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
     let mut sampled_coefficients: [usize; K] = [0; K];
     let mut out: [[i16; 272]; K] = [[0; 272]; K];
 
+    fstar!("assume (Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb_pre #v_Hasher #v_K seeds)");
     let mut xof_state = Hasher::shake128_init_absorb(seeds);
+    fstar!("assume (Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_three_blocks_pre #v_Hasher #v_K xof_state)");
     let randomness = xof_state.shake128_squeeze_three_blocks();
 
     let mut done = sample_from_uniform_distribution_next::<Vector, K, THREE_BLOCKS>(
@@ -91,7 +144,9 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
     // https://eprint.iacr.org/2023/708.pdf
     // To avoid failing here, we squeeze more blocks out of the state until
     // we have enough.
+    fstar!("admit ()");
     while !done {
+        fstar!("assume (Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_block_pre #v_Hasher #v_K xof_state)");
         let randomness = xof_state.shake128_squeeze_block();
         done = sample_from_uniform_distribution_next::<Vector, K, BLOCK_SIZE>(
             randomness,
@@ -151,7 +206,7 @@ pub(super) fn sample_from_xof<const K: usize, Vector: Operations, Hasher: Hash<K
 ///
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-#[cfg_attr(hax, hax_lib::requires(randomness.len() == 2 * 64))]
+#[cfg_attr(hax, requires(randomness.len() == 2 * 64))]
 // TODO: Remove or replace with something that works and is useful for the proof.
 // #[cfg_attr(hax, hax_lib::ensures(|result|
 //     hax_lib::forall(|i:usize|
@@ -188,7 +243,7 @@ fn sample_from_binomial_distribution_2<Vector: Operations>(
     PolynomialRingElement::from_i16_array(&sampled_i16s)
 }
 
-#[cfg_attr(hax, hax_lib::requires(randomness.len() == 3 * 64))]
+#[cfg_attr(hax, requires(randomness.len() == 3 * 64))]
 // TODO: Remove or replace with something that works and is useful for the proof.
 // #[cfg_attr(hax, hax_lib::ensures(|result|
 //     hax_lib::forall(|i:usize|
@@ -225,6 +280,7 @@ fn sample_from_binomial_distribution_3<Vector: Operations>(
     PolynomialRingElement::from_i16_array(&sampled_i16s)
 }
 
+#[cfg_attr(hax, requires(ETA.lift() * 64.lift() <= usize::MAX.lift()))]
 #[inline(always)]
 pub(super) fn sample_from_binomial_distribution<const ETA: usize, Vector: Operations>(
     randomness: &[u8],
