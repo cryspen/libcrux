@@ -18,11 +18,18 @@ pub(crate) trait Operations: Copy + Clone {
     fn subtract(lhs: &Self, rhs: &Self) -> Self;
 
     // Modular operations
+    fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;
     fn montgomery_multiply_by_constant(vector: Self, c: i32) -> Self;
 
     // NTT
-    fn ntt_at_layer_1(vector: Self, zeta1: i32, zeta2: i32) -> Self;
+    fn ntt_at_layer_0(vector: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
+    fn ntt_at_layer_1(vector: Self, zeta0: i32, zeta1: i32) -> Self;
     fn ntt_at_layer_2(vector: Self, zeta: i32) -> Self;
+
+    // Inverse NTT
+    fn invert_ntt_at_layer_0(vector: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
+    fn invert_ntt_at_layer_1(vector: Self, zeta0: i32, zeta1: i32) -> Self;
+    fn invert_ntt_at_layer_2(vector: Self, zeta: i32) -> Self;
 }
 
 // hax does not support trait with default implementations, so we use the
