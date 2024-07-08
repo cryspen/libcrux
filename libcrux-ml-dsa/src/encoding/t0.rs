@@ -3,9 +3,9 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::{BITS_IN_LOWER_PART_OF_T, RING_ELEMENT_OF_T0S_SIZE},
     ntt::ntt,
+    polynomial::PolynomialRingElement,
 };
 
 // If t0 is a signed representative, change it to an unsigned one and
@@ -153,7 +153,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<const DIMENSION: usize>(
 mod tests {
     use super::*;
 
-    use crate::arithmetic::PolynomialRingElement;
+    use crate::polynomial::PolynomialRingElement;
 
     #[test]
     fn test_serialize() {

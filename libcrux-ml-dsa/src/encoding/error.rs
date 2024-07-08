@@ -1,6 +1,6 @@
 // Functions for serializing and deserializing an error ring element.
 
-use crate::{arithmetic::PolynomialRingElement, ntt::ntt};
+use crate::{ntt::ntt, polynomial::PolynomialRingElement};
 
 #[inline(always)]
 fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(

@@ -1,8 +1,8 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::FIELD_MODULUS,
     encoding,
     hash_functions::{H, H_128},
+    polynomial::PolynomialRingElement,
 };
 
 #[inline(always)]

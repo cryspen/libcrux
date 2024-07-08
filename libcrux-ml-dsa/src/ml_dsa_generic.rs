@@ -1,7 +1,6 @@
 use crate::{
     arithmetic::{
         decompose_vector, make_hint, power2round_vector, use_hint, vector_infinity_norm_exceeds,
-        PolynomialRingElement,
     },
     constants::*,
     encoding,
@@ -11,6 +10,7 @@ use crate::{
         subtract_vectors, vector_times_ring_element,
     },
     ntt::ntt,
+    polynomial::PolynomialRingElement,
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
     utils::into_padded_array,
 };

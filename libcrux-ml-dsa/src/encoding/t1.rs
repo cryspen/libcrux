@@ -1,6 +1,6 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::{BITS_IN_UPPER_PART_OF_T, RING_ELEMENT_OF_T1S_SIZE},
+    polynomial::PolynomialRingElement,
 };
 
 // Each coefficient takes up 10 bits.
