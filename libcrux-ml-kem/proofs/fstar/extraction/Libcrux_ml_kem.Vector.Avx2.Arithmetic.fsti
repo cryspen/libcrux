@@ -13,7 +13,7 @@ val bitwise_and_with_constant (vector: u8) (constant: i16)
 val multiply_by_constant (vector: u8) (constant: i16)
     : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
-val shift_right (v_SHIFT_BY: i32) (vector: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
+val shift_right (#v_SHIFT_BY: i32) (vector: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 
 val sub (lhs rhs: u8) : Prims.Pure u8 Prims.l_True (fun _ -> Prims.l_True)
 

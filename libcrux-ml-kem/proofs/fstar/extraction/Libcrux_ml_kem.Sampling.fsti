@@ -45,8 +45,8 @@ let _ =
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val sample_from_uniform_distribution_next
       (#v_Vector: Type0)
-      (v_K v_N: usize)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector |}
+      (#v_K #v_N: usize)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Array (t_Array u8 v_N) v_K)
       (sampled_coefficients: t_Array usize v_K)
       (out: t_Array (t_Array i16 (sz 272)) v_K)
@@ -94,7 +94,7 @@ val sample_from_uniform_distribution_next
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 val sample_from_binomial_distribution_2_
       (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 2 *! sz 64 <: usize))
@@ -102,26 +102,31 @@ val sample_from_binomial_distribution_2_
 
 val sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (requires (Core.Slice.impl__len #u8 randomness <: usize) =. (sz 3 *! sz 64 <: usize))
       (fun _ -> Prims.l_True)
 
 val sample_from_binomial_distribution
-      (v_ETA: usize)
+      (#v_ETA: usize)
       (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector |}
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (randomness: t_Slice u8)
     : Prims.Pure (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-      Prims.l_True
+      (requires
+        ((Rust_primitives.Hax.Int.from_machine v_ETA <: Hax_lib.Int.t_Int) *
+          (Rust_primitives.Hax.Int.from_machine 64l <: Hax_lib.Int.t_Int)
+          <:
+          Hax_lib.Int.t_Int) <=
+        (Rust_primitives.Hax.Int.from_machine Core.Num.impl__usize__MAX <: Hax_lib.Int.t_Int))
       (fun _ -> Prims.l_True)
 
 val sample_from_xof
-      (v_K: usize)
+      (#v_K: usize)
       (#v_Vector #v_Hasher: Type0)
-      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector |}
-      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K |}
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (seeds: t_Array (t_Array u8 (sz 34)) v_K)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       Prims.l_True

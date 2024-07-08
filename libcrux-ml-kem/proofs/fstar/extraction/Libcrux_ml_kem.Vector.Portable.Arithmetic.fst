@@ -263,7 +263,7 @@ let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portab
   in
   v
 
-let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+let shift_right (#v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)

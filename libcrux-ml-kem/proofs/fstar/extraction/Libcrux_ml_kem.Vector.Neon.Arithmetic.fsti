@@ -46,7 +46,7 @@ val multiply_by_constant (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vec
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
+val shift_right (#v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
     : Prims.Pure Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
       Prims.l_True
       (fun _ -> Prims.l_True)

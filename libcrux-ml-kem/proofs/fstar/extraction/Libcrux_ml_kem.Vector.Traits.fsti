@@ -3,9 +3,9 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
-class t_Operations (#v_Self: Type0) = {
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy #v_Self;
-  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone #v_Self;
+class t_Operations (v_Self: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
   f_ZERO_pre:Prims.unit -> bool;
   f_ZERO_post:Prims.unit -> v_Self -> bool;
   f_ZERO:x0: Prims.unit -> Prims.Pure v_Self (f_ZERO_pre x0) (fun result -> f_ZERO_post x0 result);
@@ -33,12 +33,12 @@ class t_Operations (#v_Self: Type0) = {
     -> Prims.Pure v_Self
         (f_bitwise_and_with_constant_pre x0 x1)
         (fun result -> f_bitwise_and_with_constant_post x0 x1 result);
-  f_shift_right_pre:v_SHIFT_BY: i32 -> v_Self -> bool;
-  f_shift_right_post:v_SHIFT_BY: i32 -> v_Self -> v_Self -> bool;
-  f_shift_right:v_SHIFT_BY: i32 -> x0: v_Self
+  f_shift_right_pre:#v_SHIFT_BY: i32 -> v_Self -> bool;
+  f_shift_right_post:#v_SHIFT_BY: i32 -> v_Self -> v_Self -> bool;
+  f_shift_right:#v_SHIFT_BY: i32 -> x0: v_Self
     -> Prims.Pure v_Self
-        (f_shift_right_pre v_SHIFT_BY x0)
-        (fun result -> f_shift_right_post v_SHIFT_BY x0 result);
+        (f_shift_right_pre #v_SHIFT_BY x0)
+        (fun result -> f_shift_right_post #v_SHIFT_BY x0 result);
   f_cond_subtract_3329_pre:v_Self -> bool;
   f_cond_subtract_3329_post:v_Self -> v_Self -> bool;
   f_cond_subtract_3329_:x0: v_Self
@@ -59,18 +59,18 @@ class t_Operations (#v_Self: Type0) = {
   f_compress_1_post:v_Self -> v_Self -> bool;
   f_compress_1_:x0: v_Self
     -> Prims.Pure v_Self (f_compress_1_pre x0) (fun result -> f_compress_1_post x0 result);
-  f_compress_pre:v_COEFFICIENT_BITS: i32 -> v_Self -> bool;
-  f_compress_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> bool;
-  f_compress:v_COEFFICIENT_BITS: i32 -> x0: v_Self
+  f_compress_pre:#v_COEFFICIENT_BITS: i32 -> v_Self -> bool;
+  f_compress_post:#v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> bool;
+  f_compress:#v_COEFFICIENT_BITS: i32 -> x0: v_Self
     -> Prims.Pure v_Self
-        (f_compress_pre v_COEFFICIENT_BITS x0)
-        (fun result -> f_compress_post v_COEFFICIENT_BITS x0 result);
-  f_decompress_ciphertext_coefficient_pre:v_COEFFICIENT_BITS: i32 -> v_Self -> bool;
-  f_decompress_ciphertext_coefficient_post:v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> bool;
-  f_decompress_ciphertext_coefficient:v_COEFFICIENT_BITS: i32 -> x0: v_Self
+        (f_compress_pre #v_COEFFICIENT_BITS x0)
+        (fun result -> f_compress_post #v_COEFFICIENT_BITS x0 result);
+  f_decompress_ciphertext_coefficient_pre:#v_COEFFICIENT_BITS: i32 -> v_Self -> bool;
+  f_decompress_ciphertext_coefficient_post:#v_COEFFICIENT_BITS: i32 -> v_Self -> v_Self -> bool;
+  f_decompress_ciphertext_coefficient:#v_COEFFICIENT_BITS: i32 -> x0: v_Self
     -> Prims.Pure v_Self
-        (f_decompress_ciphertext_coefficient_pre v_COEFFICIENT_BITS x0)
-        (fun result -> f_decompress_ciphertext_coefficient_post v_COEFFICIENT_BITS x0 result);
+        (f_decompress_ciphertext_coefficient_pre #v_COEFFICIENT_BITS x0)
+        (fun result -> f_decompress_ciphertext_coefficient_post #v_COEFFICIENT_BITS x0 result);
   f_ntt_layer_1_step_pre:v_Self -> i16 -> i16 -> i16 -> i16 -> bool;
   f_ntt_layer_1_step_post:v_Self -> i16 -> i16 -> i16 -> i16 -> v_Self -> bool;
   f_ntt_layer_1_step:x0: v_Self -> x1: i16 -> x2: i16 -> x3: i16 -> x4: i16
@@ -189,14 +189,14 @@ let v_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u32 = 62209ul
 
 let v_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353s
 
-val decompress_1_ (#v_T: Type0) {| i1: t_Operations #v_T |} (v: v_T)
+val decompress_1_ (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
-val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations #v_T |} (v: v_T) (fer: i16)
+val montgomery_multiply_fe (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T) (fer: i16)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
-val to_standard_domain (#v_T: Type0) {| i1: t_Operations #v_T |} (v: v_T)
+val to_standard_domain (#v_T: Type0) {| i1: t_Operations v_T |} (v: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)
 
-val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations #v_T |} (a: v_T)
+val to_unsigned_representative (#v_T: Type0) {| i1: t_Operations v_T |} (a: v_T)
     : Prims.Pure v_T Prims.l_True (fun _ -> Prims.l_True)

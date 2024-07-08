@@ -11,7 +11,7 @@ let _ =
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
-#Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;
@@ -104,19 +104,20 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
         Libcrux_ml_kem.Vector.Portable.Arithmetic.bitwise_and_with_constant v c);
     f_shift_right_pre
     =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    (fun (#v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true
+    );
     f_shift_right_post
     =
     (fun
-        (v_SHIFT_BY: i32)
+        (#v_SHIFT_BY: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         true);
     f_shift_right
     =
-    (fun (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
-        Libcrux_ml_kem.Vector.Portable.Arithmetic.shift_right v_SHIFT_BY v);
+    (fun (#v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Arithmetic.shift_right #v_SHIFT_BY v);
     f_cond_subtract_3329_pre
     =
     (fun (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
@@ -177,14 +178,14 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
     f_compress_pre
     =
     (fun
-        (v_COEFFICIENT_BITS: i32)
+        (#v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         true);
     f_compress_post
     =
     (fun
-        (v_COEFFICIENT_BITS: i32)
+        (#v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
@@ -192,21 +193,21 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
     f_compress
     =
     (fun
-        (v_COEFFICIENT_BITS: i32)
+        (#v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        Libcrux_ml_kem.Vector.Portable.Compress.compress v_COEFFICIENT_BITS v);
+        Libcrux_ml_kem.Vector.Portable.Compress.compress #v_COEFFICIENT_BITS v);
     f_decompress_ciphertext_coefficient_pre
     =
     (fun
-        (v_COEFFICIENT_BITS: i32)
+        (#v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
         true);
     f_decompress_ciphertext_coefficient_post
     =
     (fun
-        (v_COEFFICIENT_BITS: i32)
+        (#v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         (out: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
@@ -214,10 +215,10 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
     f_decompress_ciphertext_coefficient
     =
     (fun
-        (v_COEFFICIENT_BITS: i32)
+        (#v_COEFFICIENT_BITS: i32)
         (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
         ->
-        Libcrux_ml_kem.Vector.Portable.Compress.decompress_ciphertext_coefficient v_COEFFICIENT_BITS
+        Libcrux_ml_kem.Vector.Portable.Compress.decompress_ciphertext_coefficient #v_COEFFICIENT_BITS
           v);
     f_ntt_layer_1_step_pre
     =

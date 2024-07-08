@@ -46,7 +46,7 @@ val compress_message_coefficient (fe: u16)
                 result =. 0uy <: bool))
 
 val compress
-      (v_COEFFICIENT_BITS: i32)
+      (#v_COEFFICIENT_BITS: i32)
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
@@ -58,7 +58,7 @@ val compress_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (fun _ -> Prims.l_True)
 
 val decompress_ciphertext_coefficient
-      (v_COEFFICIENT_BITS: i32)
+      (#v_COEFFICIENT_BITS: i32)
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True

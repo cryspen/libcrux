@@ -51,7 +51,7 @@ let rejection_sample (input: t_Slice u8) (output: t_Slice i16) =
         t_Slice u8)
   in
   let upper_coefficients:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l potential_coefficients
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 #1l potential_coefficients
   in
   let upper_coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm_shuffle_epi8 upper_coefficients upper_shuffles

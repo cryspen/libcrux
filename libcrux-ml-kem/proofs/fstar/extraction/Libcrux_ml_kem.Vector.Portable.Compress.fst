@@ -23,7 +23,7 @@ let compress_message_coefficient (fe: u16) =
   cast ((shifted_positive_in_range >>! 15l <: i16) &. 1s <: i16) <: u8
 
 let compress
-      (v_COEFFICIENT_BITS: i32)
+      (#v_COEFFICIENT_BITS: i32)
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
@@ -104,7 +104,7 @@ let compress_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   v
 
 let decompress_ciphertext_coefficient
-      (v_COEFFICIENT_BITS: i32)
+      (#v_COEFFICIENT_BITS: i32)
       (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
      =
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =

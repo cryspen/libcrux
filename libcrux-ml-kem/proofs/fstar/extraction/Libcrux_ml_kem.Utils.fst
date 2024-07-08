@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Utils
 open Core
 open FStar.Mul
 
-let into_padded_array (v_LEN: usize) (slice: t_Slice u8) =
+let into_padded_array (#v_LEN: usize) (slice: t_Slice u8) =
   let _:Prims.unit =
     if true
     then

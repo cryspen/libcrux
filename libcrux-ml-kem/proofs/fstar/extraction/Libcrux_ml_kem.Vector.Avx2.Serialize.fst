@@ -24,7 +24,7 @@ let deserialize_1_ (bytes: t_Slice u8) =
   let coefficients_in_msb:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients shift_lsb_to_msb
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 15l coefficients_in_msb
+  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 #15l coefficients_in_msb
 
 let deserialize_10_ (bytes: t_Slice u8) =
   let shift_lsbs_to_msbs:u8 =
@@ -69,12 +69,12 @@ let deserialize_10_ (bytes: t_Slice u8) =
   in
   let coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi128_si256 lower_coefficients in
   let coefficients:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 1l coefficients upper_coefficients
+    Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 #1l coefficients upper_coefficients
   in
   let coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients shift_lsbs_to_msbs
   in
-  let coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 6l coefficients in
+  let coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 #6l coefficients in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((1s <<! 10l <: i16) -! 1s <: i16) <: u8)
 
@@ -121,12 +121,12 @@ let deserialize_12_ (bytes: t_Slice u8) =
   in
   let coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi128_si256 lower_coefficients in
   let coefficients:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 1l coefficients upper_coefficients
+    Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 #1l coefficients upper_coefficients
   in
   let coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients shift_lsbs_to_msbs
   in
-  let coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 4l coefficients in
+  let coefficients:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 #4l coefficients in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((1s <<! 12l <: i16) -! 1s <: i16) <: u8)
 
@@ -152,7 +152,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 coefficients shift_lsbs_to_msbs
   in
   let coefficients_in_lsb:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 4l coefficients_in_msb
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 #4l coefficients_in_msb
   in
   Libcrux_intrinsics.Avx2_extract.mm256_and_si256 coefficients_in_lsb
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 ((1s <<! 4l <: i16) -! 1s <: i16) <: u8)
@@ -167,7 +167,7 @@ let deserialize_5_ (bytes: t_Slice u8) =
   in
   let coefficients_loaded:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi128_si256 coefficients in
   let coefficients_loaded:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 1l coefficients_loaded coefficients
+    Libcrux_intrinsics.Avx2_extract.mm256_inserti128_si256 #1l coefficients_loaded coefficients
   in
   let coefficients:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 coefficients_loaded
@@ -186,12 +186,12 @@ let deserialize_5_ (bytes: t_Slice u8) =
         <:
         u8)
   in
-  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 11l coefficients
+  Libcrux_intrinsics.Avx2_extract.mm256_srli_epi16 #11l coefficients
 
 let serialize_1_ (vector: u8) =
-  let lsb_to_msb:u8 = Libcrux_intrinsics.Avx2_extract.mm256_slli_epi16 15l vector in
+  let lsb_to_msb:u8 = Libcrux_intrinsics.Avx2_extract.mm256_slli_epi16 #15l vector in
   let low_msbs:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 lsb_to_msb in
-  let high_msbs:u8 = Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l lsb_to_msb in
+  let high_msbs:u8 = Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 #1l lsb_to_msb in
   let msbs:u8 = Libcrux_intrinsics.Avx2_extract.mm_packs_epi16 low_msbs high_msbs in
   let bits_packed:i32 = Libcrux_intrinsics.Avx2_extract.mm_movemask_epi8 msbs in
   let serialized:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
@@ -222,7 +222,7 @@ let serialize_10_ (vector: u8) =
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 12l 0l 12l 0l 12l 0l 12l <: u8)
   in
   let adjacent_4_combined:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 12l adjacent_4_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 #12l adjacent_4_combined
   in
   let adjacent_8_combined:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 adjacent_4_combined
@@ -251,7 +251,7 @@ let serialize_10_ (vector: u8) =
         t_Slice u8)
   in
   let upper_8_:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l adjacent_8_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 #1l adjacent_8_combined
   in
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -297,7 +297,7 @@ let serialize_12_ (vector: u8) =
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 8l 0l 8l 0l 8l 0l 8l <: u8)
   in
   let adjacent_4_combined:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 8l adjacent_4_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 #8l adjacent_4_combined
   in
   let adjacent_8_combined:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi8 adjacent_4_combined
@@ -308,7 +308,7 @@ let serialize_12_ (vector: u8) =
   in
   let lower_8_:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_8_combined in
   let upper_8_:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l adjacent_8_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 #1l adjacent_8_combined
   in
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -371,17 +371,17 @@ let serialize_5_ (vector: u8) =
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 22l 0l 22l 0l 22l 0l 22l <: u8)
   in
   let adjacent_4_combined:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 22l adjacent_4_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 #22l adjacent_4_combined
   in
   let adjacent_8_combined:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 8l adjacent_4_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_shuffle_epi32 #8l adjacent_4_combined
   in
   let adjacent_8_combined:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_sllv_epi32 adjacent_8_combined
       (Libcrux_intrinsics.Avx2_extract.mm256_set_epi32 0l 0l 0l 12l 0l 0l 0l 12l <: u8)
   in
   let adjacent_8_combined:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 12l adjacent_8_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_srli_epi64 #12l adjacent_8_combined
   in
   let lower_8_:u8 = Libcrux_intrinsics.Avx2_extract.mm256_castsi256_si128 adjacent_8_combined in
   let serialized:t_Array u8 (sz 32) =
@@ -402,7 +402,7 @@ let serialize_5_ (vector: u8) =
         t_Slice u8)
   in
   let upper_8_:u8 =
-    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 1l adjacent_8_combined
+    Libcrux_intrinsics.Avx2_extract.mm256_extracti128_si256 #1l adjacent_8_combined
   in
   let serialized:t_Array u8 (sz 32) =
     Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized

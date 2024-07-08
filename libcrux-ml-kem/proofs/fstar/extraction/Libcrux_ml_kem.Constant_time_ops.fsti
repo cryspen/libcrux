@@ -21,7 +21,7 @@ val is_non_zero (value: u8)
 
 /// Return 1 if the bytes of `lhs` and `rhs` do not exactly
 /// match and 0 otherwise.
-val compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
+val compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8)
     : Prims.Pure u8
       Prims.l_True
       (ensures

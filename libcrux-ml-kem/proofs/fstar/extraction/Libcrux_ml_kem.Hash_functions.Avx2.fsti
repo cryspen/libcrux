@@ -9,7 +9,7 @@ open FStar.Mul
 type t_Simd256Hash = { f_shake128_state:Libcrux_sha3.Avx2.X4.Incremental.t_KeccakState4 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #t_Simd256Hash v_K =
+let impl (#v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd256Hash v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
     f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);
@@ -27,26 +27,26 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #t_Simd256Hash v_K 
         let digest:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
         let digest:t_Array u8 (sz 32) = Libcrux_sha3.Portable.sha256 digest input in
         digest);
-    f_PRF_pre = (fun (v_LEN: usize) (input: t_Slice u8) -> true);
-    f_PRF_post = (fun (v_LEN: usize) (input: t_Slice u8) (out: t_Array u8 v_LEN) -> true);
+    f_PRF_pre = (fun (#v_LEN: usize) (input: t_Slice u8) -> true);
+    f_PRF_post = (fun (#v_LEN: usize) (input: t_Slice u8) (out: t_Array u8 v_LEN) -> true);
     f_PRF
     =
-    (fun (v_LEN: usize) (input: t_Slice u8) ->
+    (fun (#v_LEN: usize) (input: t_Slice u8) ->
         let digest:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
         let digest:t_Array u8 v_LEN = Libcrux_sha3.Portable.shake256 digest input in
         digest);
-    f_PRFxN_pre = (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> true);
+    f_PRFxN_pre = (fun (#v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> true);
     f_PRFxN_post
     =
     (fun
-        (v_LEN: usize)
+        (#v_LEN: usize)
         (input: t_Array (t_Array u8 (sz 33)) v_K)
         (out4: t_Array (t_Array u8 v_LEN) v_K)
         ->
         true);
     f_PRFxN
     =
-    (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) ->
+    (fun (#v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) ->
         let _:Prims.unit =
           if true
           then

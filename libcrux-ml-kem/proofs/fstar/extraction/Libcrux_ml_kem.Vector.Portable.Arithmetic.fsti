@@ -116,7 +116,7 @@ val multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portab
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-val shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+val shift_right (#v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
       (fun _ -> Prims.l_True)

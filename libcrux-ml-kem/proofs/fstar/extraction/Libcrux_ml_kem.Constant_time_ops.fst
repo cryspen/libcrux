@@ -11,7 +11,7 @@ let is_non_zero (value: u8) =
   in
   cast (result <: u16) <: u8
 
-let compare_ciphertexts_in_constant_time (v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8) =
+let compare_ciphertexts_in_constant_time (#v_CIPHERTEXT_SIZE: usize) (lhs rhs: t_Slice u8) =
   let (r: u8):u8 = 0uy in
   let r:u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range

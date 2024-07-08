@@ -12,10 +12,10 @@ let _ =
 
 let sample_from_uniform_distribution_next
       (#v_Vector: Type0)
-      (v_K v_N: usize)
+      (#v_K #v_N: usize)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (randomness: t_Array (t_Array u8 v_N) v_K)
       (sampled_coefficients: t_Array usize v_K)
       (out: t_Array (t_Array i16 (sz 272)) v_K)
@@ -54,6 +54,59 @@ let sample_from_uniform_distribution_next
                   <:
                   bool
                 then
+                  let _:Prims.unit =
+                    assume (Libcrux_ml_kem.Vector.Traits.f_rej_sample_pre #v_Vector
+                          ((randomness.[ i ] <: t_Array u8 v_N).[ {
+                                Core.Ops.Range.f_start = r *! sz 24 <: usize;
+                                Core.Ops.Range.f_end = (r *! sz 24 <: usize) +! sz 24 <: usize
+                              }
+                              <:
+                              Core.Ops.Range.t_Range usize ]
+                            <:
+                            t_Slice u8)
+                          ((out.[ i ] <: t_Array i16 (sz 272)).[ {
+                                Core.Ops.Range.f_start = sampled_coefficients.[ i ] <: usize;
+                                Core.Ops.Range.f_end
+                                =
+                                (sampled_coefficients.[ i ] <: usize) +! sz 16 <: usize
+                              }
+                              <:
+                              Core.Ops.Range.t_Range usize ]
+                            <:
+                            t_Slice i16))
+                  in
+                  let _:Prims.unit =
+                    assume (Seq.length (Libcrux_ml_kem.Vector.Traits.f_rej_sample #v_Vector
+                              ((randomness.[ i ] <: t_Array u8 v_N).[ {
+                                    Core.Ops.Range.f_start = r *! sz 24 <: usize;
+                                    Core.Ops.Range.f_end = (r *! sz 24 <: usize) +! sz 24 <: usize
+                                  }
+                                  <:
+                                  Core.Ops.Range.t_Range usize ]
+                                <:
+                                t_Slice u8)
+                              ((out.[ i ] <: t_Array i16 (sz 272)).[ {
+                                    Core.Ops.Range.f_start = sampled_coefficients.[ i ] <: usize;
+                                    Core.Ops.Range.f_end
+                                    =
+                                    (sampled_coefficients.[ i ] <: usize) +! sz 16 <: usize
+                                  }
+                                  <:
+                                  Core.Ops.Range.t_Range usize ]
+                                <:
+                                t_Slice i16))
+                            ._1 ==
+                        Seq.length ((out.[ i ] <: t_Array i16 (sz 272)).[ {
+                                Core.Ops.Range.f_start = sampled_coefficients.[ i ] <: usize;
+                                Core.Ops.Range.f_end
+                                =
+                                (sampled_coefficients.[ i ] <: usize) +! sz 16 <: usize
+                              }
+                              <:
+                              Core.Ops.Range.t_Range usize ]
+                            <:
+                            t_Slice i16))
+                  in
                   let tmp0, out1:(t_Slice i16 & usize) =
                     Libcrux_ml_kem.Vector.Traits.f_rej_sample #v_Vector
                       ((randomness.[ i ] <: t_Array u8 v_N).[ {
@@ -94,6 +147,22 @@ let sample_from_uniform_distribution_next
                         t_Array i16 (sz 272))
                   in
                   let sampled:usize = out1 in
+                  let _:Prims.unit =
+                    Hax_lib.v_assume (((Rust_primitives.Hax.Int.from_machine (sampled_coefficients.[
+                                  i ]
+                                <:
+                                usize)
+                            <:
+                            Hax_lib.Int.t_Int) +
+                          (Rust_primitives.Hax.Int.from_machine sampled <: Hax_lib.Int.t_Int)
+                          <:
+                          Hax_lib.Int.t_Int) <=
+                        (Rust_primitives.Hax.Int.from_machine Core.Num.impl__usize__MAX
+                          <:
+                          Hax_lib.Int.t_Int)
+                        <:
+                        bool)
+                  in
                   let sampled_coefficients:t_Array usize v_K =
                     Rust_primitives.Hax.Monomorphized_update_at.update_at_usize sampled_coefficients
                       i
@@ -145,7 +214,7 @@ let sample_from_binomial_distribution_2_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
@@ -218,7 +287,7 @@ let sample_from_binomial_distribution_3_
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
   let sampled_i16s:t_Array i16 (sz 256) = Rust_primitives.Hax.repeat 0s (sz 256) in
@@ -283,11 +352,11 @@ let sample_from_binomial_distribution_3_
     (Rust_primitives.unsize sampled_i16s <: t_Slice i16)
 
 let sample_from_binomial_distribution
-      (v_ETA: usize)
+      (#v_ETA: usize)
       (#v_Vector: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i1:
-          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (randomness: t_Slice u8)
      =
   match cast (v_ETA <: usize) <: u32 with
@@ -300,14 +369,14 @@ let sample_from_binomial_distribution
         Rust_primitives.Hax.t_Never)
 
 let sample_from_xof
-      (v_K: usize)
+      (#v_K: usize)
       (#v_Vector #v_Hasher: Type0)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i2:
-          Libcrux_ml_kem.Vector.Traits.t_Operations #v_Vector)
+          Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
-          Libcrux_ml_kem.Hash_functions.t_Hash #v_Hasher v_K)
+          Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
       (seeds: t_Array (t_Array u8 (sz 34)) v_K)
      =
   let (sampled_coefficients: t_Array usize v_K):t_Array usize v_K =
@@ -316,20 +385,34 @@ let sample_from_xof
   let (out: t_Array (t_Array i16 (sz 272)) v_K):t_Array (t_Array i16 (sz 272)) v_K =
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0s (sz 272) <: t_Array i16 (sz 272)) v_K
   in
+  let _:Prims.unit =
+    assume (Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb_pre #v_Hasher #v_K seeds)
+  in
   let xof_state:v_Hasher =
-    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb #v_Hasher v_K seeds
+    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb #v_Hasher #v_K seeds
+  in
+  let _:Prims.unit =
+    assume (Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_three_blocks_pre #v_Hasher
+          #v_K
+          xof_state)
   in
   let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 504)) v_K) =
-    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_three_blocks #v_Hasher v_K xof_state
+    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_three_blocks #v_Hasher #v_K xof_state
   in
   let xof_state:v_Hasher = tmp0 in
   let randomness:t_Array (t_Array u8 (sz 504)) v_K = out1 in
   let tmp0, tmp1, out1:(t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool) =
-    sample_from_uniform_distribution_next #v_Vector v_K (sz 504) randomness sampled_coefficients out
+    sample_from_uniform_distribution_next #v_Vector
+      #v_K
+      #(sz 504)
+      randomness
+      sampled_coefficients
+      out
   in
   let sampled_coefficients:t_Array usize v_K = tmp0 in
   let out:t_Array (t_Array i16 (sz 272)) v_K = tmp1 in
   let done:bool = out1 in
+  let _:Prims.unit = admit () in
   let done, out, sampled_coefficients, xof_state:(bool & t_Array (t_Array i16 (sz 272)) v_K &
     t_Array usize v_K &
     v_Hasher) =
@@ -349,15 +432,20 @@ let sample_from_xof
             v_Hasher) =
             temp_0_
           in
+          let _:Prims.unit =
+            assume (Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_block_pre #v_Hasher
+                  #v_K
+                  xof_state)
+          in
           let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 168)) v_K) =
-            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_block #v_Hasher v_K xof_state
+            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_block #v_Hasher #v_K xof_state
           in
           let xof_state:v_Hasher = tmp0 in
           let randomness:t_Array (t_Array u8 (sz 168)) v_K = out1 in
           let tmp0, tmp1, out1:(t_Array usize v_K & t_Array (t_Array i16 (sz 272)) v_K & bool) =
             sample_from_uniform_distribution_next #v_Vector
-              v_K
-              (sz 168)
+              #v_K
+              #(sz 168)
               randomness
               sampled_coefficients
               out
@@ -370,7 +458,7 @@ let sample_from_xof
           (bool & t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K & v_Hasher))
   in
   Core.Array.impl_23__map #(t_Array i16 (sz 272))
-    v_K
+    #v_K
     #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
     out
     (fun s ->

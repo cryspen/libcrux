@@ -11,7 +11,7 @@ type t_Simd128Hash = {
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #t_Simd128Hash v_K =
+let impl (#v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash t_Simd128Hash v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
     f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);
@@ -29,11 +29,11 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #t_Simd128Hash v_K 
         let digest:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
         let digest:t_Array u8 (sz 32) = Libcrux_sha3.Neon.sha256 digest input in
         digest);
-    f_PRF_pre = (fun (v_LEN: usize) (input: t_Slice u8) -> true);
-    f_PRF_post = (fun (v_LEN: usize) (input: t_Slice u8) (out: t_Array u8 v_LEN) -> true);
+    f_PRF_pre = (fun (#v_LEN: usize) (input: t_Slice u8) -> true);
+    f_PRF_post = (fun (#v_LEN: usize) (input: t_Slice u8) (out: t_Array u8 v_LEN) -> true);
     f_PRF
     =
-    (fun (v_LEN: usize) (input: t_Slice u8) ->
+    (fun (#v_LEN: usize) (input: t_Slice u8) ->
         let digest:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
         let dummy:t_Array u8 v_LEN = Rust_primitives.Hax.repeat 0uy v_LEN in
         let tmp0, tmp1:(t_Array u8 v_LEN & t_Array u8 v_LEN) =
@@ -43,18 +43,18 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #t_Simd128Hash v_K 
         let dummy:t_Array u8 v_LEN = tmp1 in
         let _:Prims.unit = () in
         digest);
-    f_PRFxN_pre = (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> true);
+    f_PRFxN_pre = (fun (#v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) -> true);
     f_PRFxN_post
     =
     (fun
-        (v_LEN: usize)
+        (#v_LEN: usize)
         (input: t_Array (t_Array u8 (sz 33)) v_K)
         (out4: t_Array (t_Array u8 v_LEN) v_K)
         ->
         true);
     f_PRFxN
     =
-    (fun (v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) ->
+    (fun (#v_LEN: usize) (input: t_Array (t_Array u8 (sz 33)) v_K) ->
         let _:Prims.unit =
           if true
           then

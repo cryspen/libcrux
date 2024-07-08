@@ -13,8 +13,8 @@ let multiply_by_constant (vector: u8) (constant: i16) =
   Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 vector
     (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 constant <: u8)
 
-let shift_right (v_SHIFT_BY: i32) (vector: u8) =
-  Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 v_SHIFT_BY vector
+let shift_right (#v_SHIFT_BY: i32) (vector: u8) =
+  Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 #v_SHIFT_BY vector
 
 let sub (lhs rhs: u8) = Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 lhs rhs
 
@@ -27,7 +27,7 @@ let barrett_reduce (vector: u8) =
     Libcrux_intrinsics.Avx2_extract.mm256_add_epi16 t
       (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 512s <: u8)
   in
-  let quotient:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 10l t in
+  let quotient:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 #10l t in
   let quotient_times_field_modulus:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_mullo_epi16 quotient
       (Libcrux_intrinsics.Avx2_extract.mm256_set1_epi16 Libcrux_ml_kem.Vector.Traits.v_FIELD_MODULUS
@@ -43,7 +43,7 @@ let cond_subtract_3329_ (vector: u8) =
   let vv_minus_field_modulus:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 vector field_modulus
   in
-  let sign_mask:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 15l vv_minus_field_modulus in
+  let sign_mask:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srai_epi16 #15l vv_minus_field_modulus in
   let conditional_add_field_modulus:u8 =
     Libcrux_intrinsics.Avx2_extract.mm256_and_si256 sign_mask field_modulus
   in
@@ -135,7 +135,7 @@ let montgomery_reduce_i32s (v: u8) =
         <:
         u8)
   in
-  let value_high:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srli_epi32 16l v in
+  let value_high:u8 = Libcrux_intrinsics.Avx2_extract.mm256_srli_epi32 #16l v in
   let result:u8 = Libcrux_intrinsics.Avx2_extract.mm256_sub_epi16 value_high k_times_modulus in
-  let result:u8 = Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 16l result in
-  Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 16l result
+  let result:u8 = Libcrux_intrinsics.Avx2_extract.mm256_slli_epi32 #16l result in
+  Libcrux_intrinsics.Avx2_extract.mm256_srai_epi32 #16l result
