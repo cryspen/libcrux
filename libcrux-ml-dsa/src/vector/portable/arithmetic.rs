@@ -19,7 +19,7 @@ pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 pub fn add(lhs: &PortableVector, rhs: &PortableVector) -> PortableVector {
     let mut sum = ZERO();
 
-    for i in 0..COEFFICIENTS_PER_VECTOR {
+    for i in 0..sum.coefficients.len() {
         sum.coefficients[i] = lhs.coefficients[i] + rhs.coefficients[i];
     }
 
@@ -74,4 +74,29 @@ pub(crate) fn montgomery_multiply_by_constant(
     }
 
     vector
+}
+
+#[inline(always)]
+pub(crate) fn montgomery_multiply(lhs: &PortableVector, rhs: &PortableVector) -> PortableVector {
+    let mut product = ZERO();
+
+    for i in 0..product.coefficients.len() {
+        product.coefficients[i] =
+            montgomery_reduce_element((lhs.coefficients[i] as i64) * (rhs.coefficients[i] as i64))
+    }
+
+    product
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_montgomery_reduce_element() {
+        assert_eq!(montgomery_reduce_element(10933346042510), -1553279);
+        assert_eq!(montgomery_reduce_element(-20392060523118), 1331779);
+        assert_eq!(montgomery_reduce_element(13704140696092), -1231016);
+        assert_eq!(montgomery_reduce_element(-631922212176), -2580954);
+    }
 }
