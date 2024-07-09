@@ -4,153 +4,156 @@
 #ifndef __LOWSTAR_ENDIANNESS_H
 #define __LOWSTAR_ENDIANNESS_H
 
-#include <string.h>
 #include <inttypes.h>
+#include <string.h>
 
 /******************************************************************************/
 /* Implementing C.fst (part 2: endian-ness macros)                            */
 /******************************************************************************/
 
 /* ... for Linux */
-#if defined(__linux__) || defined(__CYGWIN__) || defined (__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__)
-#  include <endian.h>
+#if defined(__linux__) || defined(__CYGWIN__) || \
+    defined(__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__)
+#include <endian.h>
 
 /* ... for OSX */
 #elif defined(__APPLE__)
-#  include <libkern/OSByteOrder.h>
-#  define htole64(x) OSSwapHostToLittleInt64(x)
-#  define le64toh(x) OSSwapLittleToHostInt64(x)
-#  define htobe64(x) OSSwapHostToBigInt64(x)
-#  define be64toh(x) OSSwapBigToHostInt64(x)
+#include <libkern/OSByteOrder.h>
+#define htole64(x) OSSwapHostToLittleInt64(x)
+#define le64toh(x) OSSwapLittleToHostInt64(x)
+#define htobe64(x) OSSwapHostToBigInt64(x)
+#define be64toh(x) OSSwapBigToHostInt64(x)
 
-#  define htole16(x) OSSwapHostToLittleInt16(x)
-#  define le16toh(x) OSSwapLittleToHostInt16(x)
-#  define htobe16(x) OSSwapHostToBigInt16(x)
-#  define be16toh(x) OSSwapBigToHostInt16(x)
+#define htole16(x) OSSwapHostToLittleInt16(x)
+#define le16toh(x) OSSwapLittleToHostInt16(x)
+#define htobe16(x) OSSwapHostToBigInt16(x)
+#define be16toh(x) OSSwapBigToHostInt16(x)
 
-#  define htole32(x) OSSwapHostToLittleInt32(x)
-#  define le32toh(x) OSSwapLittleToHostInt32(x)
-#  define htobe32(x) OSSwapHostToBigInt32(x)
-#  define be32toh(x) OSSwapBigToHostInt32(x)
+#define htole32(x) OSSwapHostToLittleInt32(x)
+#define le32toh(x) OSSwapLittleToHostInt32(x)
+#define htobe32(x) OSSwapHostToBigInt32(x)
+#define be32toh(x) OSSwapBigToHostInt32(x)
 
 /* ... for Solaris */
 #elif defined(__sun__)
-#  include <sys/byteorder.h>
-#  define htole64(x) LE_64(x)
-#  define le64toh(x) LE_64(x)
-#  define htobe64(x) BE_64(x)
-#  define be64toh(x) BE_64(x)
+#include <sys/byteorder.h>
+#define htole64(x) LE_64(x)
+#define le64toh(x) LE_64(x)
+#define htobe64(x) BE_64(x)
+#define be64toh(x) BE_64(x)
 
-#  define htole16(x) LE_16(x)
-#  define le16toh(x) LE_16(x)
-#  define htobe16(x) BE_16(x)
-#  define be16toh(x) BE_16(x)
+#define htole16(x) LE_16(x)
+#define le16toh(x) LE_16(x)
+#define htobe16(x) BE_16(x)
+#define be16toh(x) BE_16(x)
 
-#  define htole32(x) LE_32(x)
-#  define le32toh(x) LE_32(x)
-#  define htobe32(x) BE_32(x)
-#  define be32toh(x) BE_32(x)
+#define htole32(x) LE_32(x)
+#define le32toh(x) LE_32(x)
+#define htobe32(x) BE_32(x)
+#define be32toh(x) BE_32(x)
 
 /* ... for the BSDs */
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
-#  include <sys/endian.h>
+#include <sys/endian.h>
 #elif defined(__OpenBSD__)
-#  include <endian.h>
+#include <endian.h>
 
 /* ... for Windows (MSVC)... not targeting XBOX 360! */
 #elif defined(_MSC_VER)
 
-#  include <stdlib.h>
-#  define htobe16(x) _byteswap_ushort(x)
-#  define htole16(x) (x)
-#  define be16toh(x) _byteswap_ushort(x)
-#  define le16toh(x) (x)
+#include <stdlib.h>
+#define htobe16(x) _byteswap_ushort(x)
+#define htole16(x) (x)
+#define be16toh(x) _byteswap_ushort(x)
+#define le16toh(x) (x)
 
-#  define htobe32(x) _byteswap_ulong(x)
-#  define htole32(x) (x)
-#  define be32toh(x) _byteswap_ulong(x)
-#  define le32toh(x) (x)
+#define htobe32(x) _byteswap_ulong(x)
+#define htole32(x) (x)
+#define be32toh(x) _byteswap_ulong(x)
+#define le32toh(x) (x)
 
-#  define htobe64(x) _byteswap_uint64(x)
-#  define htole64(x) (x)
-#  define be64toh(x) _byteswap_uint64(x)
-#  define le64toh(x) (x)
+#define htobe64(x) _byteswap_uint64(x)
+#define htole64(x) (x)
+#define be64toh(x) _byteswap_uint64(x)
+#define le64toh(x) (x)
 
 /* ... for Windows (GCC-like, e.g. mingw or clang) */
-#elif (defined(_WIN32) || defined(_WIN64) || defined(__EMSCRIPTEN__)) &&       \
+#elif (defined(_WIN32) || defined(_WIN64) || defined(__EMSCRIPTEN__)) && \
     (defined(__GNUC__) || defined(__clang__))
 
-#  define htobe16(x) __builtin_bswap16(x)
-#  define htole16(x) (x)
-#  define be16toh(x) __builtin_bswap16(x)
-#  define le16toh(x) (x)
+#define htobe16(x) __builtin_bswap16(x)
+#define htole16(x) (x)
+#define be16toh(x) __builtin_bswap16(x)
+#define le16toh(x) (x)
 
-#  define htobe32(x) __builtin_bswap32(x)
-#  define htole32(x) (x)
-#  define be32toh(x) __builtin_bswap32(x)
-#  define le32toh(x) (x)
+#define htobe32(x) __builtin_bswap32(x)
+#define htole32(x) (x)
+#define be32toh(x) __builtin_bswap32(x)
+#define le32toh(x) (x)
 
-#  define htobe64(x) __builtin_bswap64(x)
-#  define htole64(x) (x)
-#  define be64toh(x) __builtin_bswap64(x)
-#  define le64toh(x) (x)
+#define htobe64(x) __builtin_bswap64(x)
+#define htole64(x) (x)
+#define be64toh(x) __builtin_bswap64(x)
+#define le64toh(x) (x)
 
 /* ... generic big-endian fallback code */
-/* ... AIX doesn't have __BYTE_ORDER__ (with XLC compiler) & is always big-endian */
-#elif (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) || defined(_AIX)
+/* ... AIX doesn't have __BYTE_ORDER__ (with XLC compiler) & is always
+ * big-endian */
+#elif (defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__) || \
+    defined(_AIX)
 
 /* byte swapping code inspired by:
  * https://github.com/rweather/arduinolibs/blob/master/libraries/Crypto/utility/EndianUtil.h
  * */
 
-#  define htobe32(x) (x)
-#  define be32toh(x) (x)
-#  define htole32(x)                                                           \
-    (__extension__({                                                           \
-      uint32_t _temp = (x);                                                    \
-      ((_temp >> 24) & 0x000000FF) | ((_temp >> 8) & 0x0000FF00) |             \
-          ((_temp << 8) & 0x00FF0000) | ((_temp << 24) & 0xFF000000);          \
-    }))
-#  define le32toh(x) (htole32((x)))
+#define htobe32(x) (x)
+#define be32toh(x) (x)
+#define htole32(x)                                                  \
+  (__extension__({                                                  \
+    uint32_t _temp = (x);                                           \
+    ((_temp >> 24) & 0x000000FF) | ((_temp >> 8) & 0x0000FF00) |    \
+        ((_temp << 8) & 0x00FF0000) | ((_temp << 24) & 0xFF000000); \
+  }))
+#define le32toh(x) (htole32((x)))
 
-#  define htobe64(x) (x)
-#  define be64toh(x) (x)
-#  define htole64(x)                                                           \
-    (__extension__({                                                           \
-      uint64_t __temp = (x);                                                   \
-      uint32_t __low = htobe32((uint32_t)__temp);                              \
-      uint32_t __high = htobe32((uint32_t)(__temp >> 32));                     \
-      (((uint64_t)__low) << 32) | __high;                                      \
-    }))
-#  define le64toh(x) (htole64((x)))
+#define htobe64(x) (x)
+#define be64toh(x) (x)
+#define htole64(x)                                       \
+  (__extension__({                                       \
+    uint64_t __temp = (x);                               \
+    uint32_t __low = htobe32((uint32_t)__temp);          \
+    uint32_t __high = htobe32((uint32_t)(__temp >> 32)); \
+    (((uint64_t)__low) << 32) | __high;                  \
+  }))
+#define le64toh(x) (htole64((x)))
 
 /* ... generic little-endian fallback code */
 #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
-#  define htole32(x) (x)
-#  define le32toh(x) (x)
-#  define htobe32(x)                                                           \
-    (__extension__({                                                           \
-      uint32_t _temp = (x);                                                    \
-      ((_temp >> 24) & 0x000000FF) | ((_temp >> 8) & 0x0000FF00) |             \
-          ((_temp << 8) & 0x00FF0000) | ((_temp << 24) & 0xFF000000);          \
-    }))
-#  define be32toh(x) (htobe32((x)))
+#define htole32(x) (x)
+#define le32toh(x) (x)
+#define htobe32(x)                                                  \
+  (__extension__({                                                  \
+    uint32_t _temp = (x);                                           \
+    ((_temp >> 24) & 0x000000FF) | ((_temp >> 8) & 0x0000FF00) |    \
+        ((_temp << 8) & 0x00FF0000) | ((_temp << 24) & 0xFF000000); \
+  }))
+#define be32toh(x) (htobe32((x)))
 
-#  define htole64(x) (x)
-#  define le64toh(x) (x)
-#  define htobe64(x)                                                           \
-    (__extension__({                                                           \
-      uint64_t __temp = (x);                                                   \
-      uint32_t __low = htobe32((uint32_t)__temp);                              \
-      uint32_t __high = htobe32((uint32_t)(__temp >> 32));                     \
-      (((uint64_t)__low) << 32) | __high;                                      \
-    }))
-#  define be64toh(x) (htobe64((x)))
+#define htole64(x) (x)
+#define le64toh(x) (x)
+#define htobe64(x)                                       \
+  (__extension__({                                       \
+    uint64_t __temp = (x);                               \
+    uint32_t __low = htobe32((uint32_t)__temp);          \
+    uint32_t __high = htobe32((uint32_t)(__temp >> 32)); \
+    (((uint64_t)__low) << 32) | __high;                  \
+  }))
+#define be64toh(x) (htobe64((x)))
 
 /* ... couldn't determine endian-ness of the target platform */
 #else
-#  error "Please define __BYTE_ORDER__!"
+#error "Please define __BYTE_ORDER__!"
 
 #endif /* defined(__linux__) || ... */
 
@@ -175,17 +178,11 @@ inline static uint64_t load64(uint8_t *b) {
   return x;
 }
 
-inline static void store16(uint8_t *b, uint16_t i) {
-  memcpy(b, &i, 2);
-}
+inline static void store16(uint8_t *b, uint16_t i) { memcpy(b, &i, 2); }
 
-inline static void store32(uint8_t *b, uint32_t i) {
-  memcpy(b, &i, 4);
-}
+inline static void store32(uint8_t *b, uint32_t i) { memcpy(b, &i, 4); }
 
-inline static void store64(uint8_t *b, uint64_t i) {
-  memcpy(b, &i, 8);
-}
+inline static void store64(uint8_t *b, uint64_t i) { memcpy(b, &i, 8); }
 
 /* Legacy accessors so that this header can serve as an implementation of
  * C.Endianness */
