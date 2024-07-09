@@ -1,4 +1,4 @@
-name: KEM
+name: ECDH
 
 on:
   push:
