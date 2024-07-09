@@ -1,12 +1,17 @@
+use hax_lib::*;
+
 // C extraction:
 // A couple helper functions and definitions -- this file ends up being bundled in
 // libcrux_core.{c,h}, so if you need something that has to be shared across multiple mlkem
 // instances / implementations, it can go in here.
 
 /// Pad the `slice` with `0`s at the end.
+#[cfg_attr(hax, requires(
+    slice.len() <= LEN
+))]
 #[inline(always)]
 pub(crate) fn into_padded_array<const LEN: usize>(slice: &[u8]) -> [u8; LEN] {
-    debug_assert!(slice.len() <= LEN);
+    std::debug_assert!(slice.len() <= LEN);
     let mut out = [0u8; LEN];
     out[0..slice.len()].copy_from_slice(slice);
     out
