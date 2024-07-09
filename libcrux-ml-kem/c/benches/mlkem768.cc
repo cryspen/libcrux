@@ -90,11 +90,11 @@ kyber768_encapsulation_unpacked(benchmark::State &state)
 
   auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(randomness);
   generate_random(randomness, 32);
-  auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+  auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, randomness);
 
   for (auto _ : state)
   {
-    ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+    ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, randomness);
   }
 }
 
@@ -106,7 +106,7 @@ kyber768_decapsulation_unpacked(benchmark::State &state)
 
   auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair_unpacked(randomness);
   generate_random(randomness, 32);
-  auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+  auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, randomness);
 
   uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
 
@@ -250,11 +250,11 @@ kyber768_encapsulation_avx2_unpacked(benchmark::State &state)
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair_unpacked(randomness);
   generate_random(randomness, 32);
-  auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+  auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, randomness);
 
   for (auto _ : state)
   {
-    ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+    ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, randomness);
   }
 }
 
@@ -266,7 +266,7 @@ kyber768_decapsulation_avx2_unpacked(benchmark::State &state)
 
   auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair_unpacked(randomness);
   generate_random(randomness, 32);
-  auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, EURYDICE_SLICE(key_pair.public_key_hash, 0, 32), randomness);
+  auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, randomness);
 
   uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
 

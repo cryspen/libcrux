@@ -211,7 +211,7 @@ TEST(MlKem768TestPortableUnpacked, ConsistencyTest)
 
     uint8_t randomness2[32];
     generate_random(randomness2, 32);
-    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, mk_slice(key_pair.public_key_hash, 32), randomness2);
+    auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, randomness2);
 
     uint8_t sharedSecret2[LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE];
     libcrux_ml_kem_mlkem768_portable_decapsulate_unpacked(&key_pair, &ctxt.fst, sharedSecret2);
@@ -348,7 +348,7 @@ TEST(MlKem768TestPortableUnpacked, NISTKnownAnswerTest)
 
         // We can't check the keys because we don't really have them.
 
-        auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, mk_slice(key_pair.public_key_hash, 32), kat.encapsulation_seed.data());
+        auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate_unpacked(&key_pair.public_key, kat.encapsulation_seed.data());
 
         uint8_t ct_hash[32];
         libcrux_sha3_sha256(
@@ -516,7 +516,7 @@ TEST(MlKem768TestAvx2Unpacked, NISTKnownAnswerTest)
 
         // We can't check the keys because we don't really have them.
 
-        auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, mk_slice(key_pair.public_key_hash, 32), kat.encapsulation_seed.data());
+        auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate_unpacked(&key_pair.public_key, kat.encapsulation_seed.data());
 
         uint8_t ct_hash[32];
         libcrux_sha3_sha256(
