@@ -3,8 +3,8 @@ use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
     simd::{
-        portable::PortableVector,
-        traits::{montgomery_multiply_by_fer, Operations, COEFFICIENTS_PER_VECTOR},
+        portable::PortableSIMDUnit,
+        traits::{montgomery_multiply_by_fer, Operations, COEFFICIENTS_IN_SIMD_UNIT},
     },
 };
 
@@ -38,14 +38,14 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
 ];
 
 #[inline(always)]
-fn ntt_at_layer_0<Vector: Operations>(
+fn ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
 ) {
     *zeta_i += 1;
 
     for round in 0..re.simd_units.len() {
-        re.simd_units[round] = Vector::ntt_at_layer_0(
+        re.simd_units[round] = SIMDUnit::ntt_at_layer_0(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
@@ -59,14 +59,14 @@ fn ntt_at_layer_0<Vector: Operations>(
     *zeta_i -= 1;
 }
 #[inline(always)]
-fn ntt_at_layer_1<Vector: Operations>(
+fn ntt_at_layer_1<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
 ) {
     *zeta_i += 1;
 
     for round in 0..re.simd_units.len() {
-        re.simd_units[round] = Vector::ntt_at_layer_1(
+        re.simd_units[round] = SIMDUnit::ntt_at_layer_1(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
@@ -78,20 +78,20 @@ fn ntt_at_layer_1<Vector: Operations>(
     *zeta_i -= 1;
 }
 #[inline(always)]
-fn ntt_at_layer_2<Vector: Operations>(
+fn ntt_at_layer_2<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
 ) {
     for round in 0..re.simd_units.len() {
         *zeta_i += 1;
         re.simd_units[round] =
-            Vector::ntt_at_layer_2(re.simd_units[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+            SIMDUnit::ntt_at_layer_2(re.simd_units[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
     }
 }
 #[inline(always)]
-fn ntt_at_layer_3_plus<Vector: Operations>(
+fn ntt_at_layer_3_plus<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
     layer: usize,
 ) {
     let step = 1 << layer;
@@ -99,17 +99,17 @@ fn ntt_at_layer_3_plus<Vector: Operations>(
     for round in 0..(128 >> layer) {
         *zeta_i += 1;
 
-        let offset = (round * step * 2) / COEFFICIENTS_PER_VECTOR;
-        let step_by = step / COEFFICIENTS_PER_VECTOR;
+        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
 
         for j in offset..offset + step_by {
-            let t = montgomery_multiply_by_fer::<Vector>(
+            let t = montgomery_multiply_by_fer::<SIMDUnit>(
                 re.simd_units[j + step_by],
                 ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             );
 
-            re.simd_units[j + step_by] = Vector::subtract(&re.simd_units[j], &t);
-            re.simd_units[j] = Vector::add(&re.simd_units[j], &t);
+            re.simd_units[j + step_by] = SIMDUnit::subtract(&re.simd_units[j], &t);
+            re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &t);
         }
     }
 }
@@ -117,29 +117,29 @@ fn ntt_at_layer_3_plus<Vector: Operations>(
 pub(crate) fn ntt(re: PolynomialRingElement) -> PolynomialRingElement {
     let mut zeta_i = 0;
 
-    let mut v_re = SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(re);
+    let mut v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
-    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 7);
-    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 6);
-    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 5);
-    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 4);
-    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 3);
-    ntt_at_layer_2::<PortableVector>(&mut zeta_i, &mut v_re);
-    ntt_at_layer_1::<PortableVector>(&mut zeta_i, &mut v_re);
-    ntt_at_layer_0::<PortableVector>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 7);
+    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 6);
+    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 5);
+    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 4);
+    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 3);
+    ntt_at_layer_2::<PortableSIMDUnit>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_1::<PortableSIMDUnit>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_0::<PortableSIMDUnit>(&mut zeta_i, &mut v_re);
 
     v_re.to_polynomial_ring_element()
 }
 
 #[inline(always)]
-fn invert_ntt_at_layer_0<Vector: Operations>(
+fn invert_ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
 ) {
     *zeta_i -= 1;
 
     for round in 0..re.simd_units.len() {
-        re.simd_units[round] = Vector::invert_ntt_at_layer_0(
+        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_0(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
@@ -153,14 +153,14 @@ fn invert_ntt_at_layer_0<Vector: Operations>(
     *zeta_i += 1;
 }
 #[inline(always)]
-fn invert_ntt_at_layer_1<Vector: Operations>(
+fn invert_ntt_at_layer_1<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
 ) {
     *zeta_i -= 1;
 
-    for round in 0..(256 / COEFFICIENTS_PER_VECTOR) {
-        re.simd_units[round] = Vector::invert_ntt_at_layer_1(
+    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
+        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_1(
             re.simd_units[round],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
@@ -171,20 +171,22 @@ fn invert_ntt_at_layer_1<Vector: Operations>(
     *zeta_i += 1;
 }
 #[inline(always)]
-fn invert_ntt_at_layer_2<Vector: Operations>(
+fn invert_ntt_at_layer_2<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
 ) {
-    for round in 0..(256 / COEFFICIENTS_PER_VECTOR) {
+    for round in 0..(256 / COEFFICIENTS_IN_SIMD_UNIT) {
         *zeta_i -= 1;
-        re.simd_units[round] =
-            Vector::invert_ntt_at_layer_2(re.simd_units[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+        re.simd_units[round] = SIMDUnit::invert_ntt_at_layer_2(
+            re.simd_units[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+        );
     }
 }
 #[inline(always)]
-fn invert_ntt_at_layer_3_plus<Vector: Operations>(
+fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations>(
     zeta_i: &mut usize,
-    re: &mut SIMDPolynomialRingElement<Vector>,
+    re: &mut SIMDPolynomialRingElement<SIMDUnit>,
     layer: usize,
 ) {
     let step = 1 << layer;
@@ -192,12 +194,12 @@ fn invert_ntt_at_layer_3_plus<Vector: Operations>(
     for round in 0..(128 >> layer) {
         *zeta_i -= 1;
 
-        let offset = (round * step * 2) / COEFFICIENTS_PER_VECTOR;
-        let step_by = step / COEFFICIENTS_PER_VECTOR;
+        let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
+        let step_by = step / COEFFICIENTS_IN_SIMD_UNIT;
 
         for j in offset..offset + step_by {
-            let a_minus_b = Vector::subtract(&re.simd_units[j + step_by], &re.simd_units[j]);
-            re.simd_units[j] = Vector::add(&re.simd_units[j], &re.simd_units[j + step_by]);
+            let a_minus_b = SIMDUnit::subtract(&re.simd_units[j + step_by], &re.simd_units[j]);
+            re.simd_units[j] = SIMDUnit::add(&re.simd_units[j], &re.simd_units[j + step_by]);
             re.simd_units[j + step_by] =
                 montgomery_multiply_by_fer(a_minus_b, ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
         }
@@ -208,16 +210,16 @@ fn invert_ntt_at_layer_3_plus<Vector: Operations>(
 pub(crate) fn invert_ntt_montgomery(re: PolynomialRingElement) -> PolynomialRingElement {
     let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT;
 
-    let mut v_re = SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(re);
+    let mut v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
     invert_ntt_at_layer_0(&mut zeta_i, &mut v_re);
     invert_ntt_at_layer_1(&mut zeta_i, &mut v_re);
     invert_ntt_at_layer_2(&mut zeta_i, &mut v_re);
-    invert_ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 3);
-    invert_ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 4);
-    invert_ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 5);
-    invert_ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 6);
-    invert_ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 7);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 3);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 4);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 5);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 6);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 7);
 
     for i in 0..v_re.simd_units.len() {
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
@@ -226,7 +228,7 @@ pub(crate) fn invert_ntt_montgomery(re: PolynomialRingElement) -> PolynomialRing
         // - Divide the elements by 256 and
         // - Convert the elements form montgomery domain to the standard domain.
         v_re.simd_units[i] =
-            PortableVector::montgomery_multiply_by_constant(v_re.simd_units[i], 41_978);
+            PortableSIMDUnit::montgomery_multiply_by_constant(v_re.simd_units[i], 41_978);
     }
 
     v_re.to_polynomial_ring_element()
@@ -237,14 +239,14 @@ pub(crate) fn ntt_multiply_montgomery(
     lhs: &PolynomialRingElement,
     rhs: &PolynomialRingElement,
 ) -> PolynomialRingElement {
-    let v_lhs = SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(*lhs);
-    let v_rhs = SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(*rhs);
+    let v_lhs = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(*lhs);
+    let v_rhs = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(*rhs);
 
     let mut v_out = SIMDPolynomialRingElement::ZERO();
 
     for i in 0..v_out.simd_units.len() {
         v_out.simd_units[i] =
-            PortableVector::montgomery_multiply(v_lhs.simd_units[i], v_rhs.simd_units[i]);
+            PortableSIMDUnit::montgomery_multiply(v_lhs.simd_units[i], v_rhs.simd_units[i]);
     }
 
     v_out.to_polynomial_ring_element()

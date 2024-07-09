@@ -2,21 +2,21 @@ use crate::simd::traits::Operations;
 
 mod arithmetic;
 mod ntt;
-mod vector_type;
+mod type_definition;
 
-pub(crate) use vector_type::PortableVector;
+pub(crate) use type_definition::PortableSIMDUnit;
 
-impl Operations for PortableVector {
+impl Operations for PortableSIMDUnit {
     fn ZERO() -> Self {
-        vector_type::ZERO()
+        type_definition::ZERO()
     }
 
     fn from_i32_array(array: &[i32]) -> Self {
-        vector_type::from_i32_array(array)
+        type_definition::from_i32_array(array)
     }
 
-    fn to_i32_array(vector: Self) -> [i32; 8] {
-        vector_type::to_i32_array(vector)
+    fn to_i32_array(simd_unit: Self) -> [i32; 8] {
+        type_definition::to_i32_array(simd_unit)
     }
 
     fn add(lhs: &Self, rhs: &Self) -> Self {
@@ -27,30 +27,36 @@ impl Operations for PortableVector {
         arithmetic::subtract(lhs, rhs)
     }
 
-    fn montgomery_multiply_by_constant(vector: Self, c: i32) -> Self {
-        arithmetic::montgomery_multiply_by_constant(vector, c)
+    fn montgomery_multiply_by_constant(simd_unit: Self, c: i32) -> Self {
+        arithmetic::montgomery_multiply_by_constant(simd_unit, c)
     }
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
         arithmetic::montgomery_multiply(&lhs, &rhs)
     }
 
-    fn ntt_at_layer_0(vector: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
-        ntt::ntt_at_layer_0(vector, zeta0, zeta1, zeta2, zeta3)
+    fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
+        ntt::ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3)
     }
-    fn ntt_at_layer_1(vector: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::ntt_at_layer_1(vector, zeta0, zeta1)
+    fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
+        ntt::ntt_at_layer_1(simd_unit, zeta0, zeta1)
     }
-    fn ntt_at_layer_2(vector: Self, zeta: i32) -> Self {
-        ntt::ntt_at_layer_2(vector, zeta)
+    fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
+        ntt::ntt_at_layer_2(simd_unit, zeta)
     }
 
-    fn invert_ntt_at_layer_0(vector: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
-        ntt::invert_ntt_at_layer_0(vector, zeta0, zeta1, zeta2, zeta3)
+    fn invert_ntt_at_layer_0(
+        simd_unit: Self,
+        zeta0: i32,
+        zeta1: i32,
+        zeta2: i32,
+        zeta3: i32,
+    ) -> Self {
+        ntt::invert_ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3)
     }
-    fn invert_ntt_at_layer_1(vector: Self, zeta0: i32, zeta1: i32) -> Self {
-        ntt::invert_ntt_at_layer_1(vector, zeta0, zeta1)
+    fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
+        ntt::invert_ntt_at_layer_1(simd_unit, zeta0, zeta1)
     }
-    fn invert_ntt_at_layer_2(vector: Self, zeta: i32) -> Self {
-        ntt::invert_ntt_at_layer_2(vector, zeta)
+    fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
+        ntt::invert_ntt_at_layer_2(simd_unit, zeta)
     }
 }

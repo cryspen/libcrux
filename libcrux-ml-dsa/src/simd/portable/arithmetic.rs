@@ -1,7 +1,5 @@
-use super::vector_type::*;
-use crate::simd::traits::{
-    COEFFICIENTS_PER_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
-};
+use super::type_definition::*;
+use crate::simd::traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R};
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -16,7 +14,7 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
-pub fn add(lhs: &PortableVector, rhs: &PortableVector) -> PortableVector {
+pub fn add(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
     let mut sum = ZERO();
 
     for i in 0..sum.coefficients.len() {
@@ -27,10 +25,10 @@ pub fn add(lhs: &PortableVector, rhs: &PortableVector) -> PortableVector {
 }
 
 #[inline(always)]
-pub fn subtract(lhs: &PortableVector, rhs: &PortableVector) -> PortableVector {
+pub fn subtract(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
     let mut difference = ZERO();
 
-    for i in 0..COEFFICIENTS_PER_VECTOR {
+    for i in 0..difference.coefficients.len() {
         difference.coefficients[i] = lhs.coefficients[i] - rhs.coefficients[i];
     }
 
@@ -65,19 +63,22 @@ pub(crate) fn montgomery_multiply_fe_by_fer(
 
 #[inline(always)]
 pub(crate) fn montgomery_multiply_by_constant(
-    mut vector: PortableVector,
+    mut simd_unit: PortableSIMDUnit,
     c: i32,
-) -> PortableVector {
-    for i in 0..COEFFICIENTS_PER_VECTOR {
-        vector.coefficients[i] =
-            montgomery_reduce_element((vector.coefficients[i] as i64) * (c as i64))
+) -> PortableSIMDUnit {
+    for i in 0..simd_unit.coefficients.len() {
+        simd_unit.coefficients[i] =
+            montgomery_reduce_element((simd_unit.coefficients[i] as i64) * (c as i64))
     }
 
-    vector
+    simd_unit
 }
 
 #[inline(always)]
-pub(crate) fn montgomery_multiply(lhs: &PortableVector, rhs: &PortableVector) -> PortableVector {
+pub(crate) fn montgomery_multiply(
+    lhs: &PortableSIMDUnit,
+    rhs: &PortableSIMDUnit,
+) -> PortableSIMDUnit {
     let mut product = ZERO();
 
     for i in 0..product.coefficients.len() {

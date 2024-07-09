@@ -1,10 +1,7 @@
 use crate::{
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    simd::traits::{Operations, COEFFICIENTS_PER_VECTOR},
+    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT},
 };
-
-pub(crate) const SIMD_UNITS_IN_RING_ELEMENT: usize =
-    super::constants::COEFFICIENTS_IN_RING_ELEMENT / COEFFICIENTS_PER_VECTOR;
 
 #[derive(Clone, Copy)]
 pub(crate) struct PolynomialRingElement {
@@ -74,15 +71,18 @@ impl PolynomialRingElement {
     }
 }
 
+pub(crate) const SIMD_UNITS_IN_RING_ELEMENT: usize =
+    crate::constants::COEFFICIENTS_IN_RING_ELEMENT / COEFFICIENTS_IN_SIMD_UNIT;
+
 #[derive(Clone, Copy)]
-pub(crate) struct SIMDPolynomialRingElement<Vector: Operations> {
-    pub(crate) simd_units: [Vector; SIMD_UNITS_IN_RING_ELEMENT],
+pub(crate) struct SIMDPolynomialRingElement<SIMDUnit: Operations> {
+    pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
-impl<Vector: Operations> SIMDPolynomialRingElement<Vector> {
+impl<SIMDUnit: Operations> SIMDPolynomialRingElement<SIMDUnit> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
-            simd_units: [Vector::ZERO(); SIMD_UNITS_IN_RING_ELEMENT],
+            simd_units: [SIMDUnit::ZERO(); SIMD_UNITS_IN_RING_ELEMENT],
         }
     }
 
@@ -91,7 +91,7 @@ impl<Vector: Operations> SIMDPolynomialRingElement<Vector> {
         let mut out = PolynomialRingElement::ZERO;
 
         for unit in self.simd_units {
-            for coefficient in Vector::to_i32_array(unit) {
+            for coefficient in SIMDUnit::to_i32_array(unit) {
                 out.coefficients[counter] = coefficient;
                 counter += 1;
             }
@@ -103,8 +103,12 @@ impl<Vector: Operations> SIMDPolynomialRingElement<Vector> {
     pub(crate) fn from_polynomial_ring_element(re: PolynomialRingElement) -> Self {
         let mut out = Self::ZERO();
 
-        for (i, coefficients) in re.coefficients.chunks(COEFFICIENTS_PER_VECTOR).enumerate() {
-            out.simd_units[i] = Vector::from_i32_array(coefficients);
+        for (i, coefficients) in re
+            .coefficients
+            .chunks(COEFFICIENTS_IN_SIMD_UNIT)
+            .enumerate()
+        {
+            out.simd_units[i] = SIMDUnit::from_i32_array(coefficients);
         }
 
         out
@@ -115,7 +119,7 @@ impl<Vector: Operations> SIMDPolynomialRingElement<Vector> {
         let mut sum = Self::ZERO();
 
         for i in 0..sum.simd_units.len() {
-            sum.simd_units[i] = Vector::add(&self.simd_units[i], &rhs.simd_units[i]);
+            sum.simd_units[i] = SIMDUnit::add(&self.simd_units[i], &rhs.simd_units[i]);
         }
 
         sum
@@ -126,7 +130,7 @@ impl<Vector: Operations> SIMDPolynomialRingElement<Vector> {
         let mut difference = Self::ZERO();
 
         for i in 0..difference.simd_units.len() {
-            difference.simd_units[i] = Vector::subtract(&self.simd_units[i], &rhs.simd_units[i]);
+            difference.simd_units[i] = SIMDUnit::subtract(&self.simd_units[i], &rhs.simd_units[i]);
         }
 
         difference
