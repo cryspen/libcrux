@@ -32,6 +32,9 @@ macro_rules! instantiate {
             }
 
             /// Portable public key validation
+            #[cfg_attr(hax, hax_lib::requires(
+                RANKED_BYTES_PER_RING_ELEMENT < PUBLIC_KEY_SIZE
+            ))]
             pub(crate) fn validate_public_key<
                 const K: usize,
                 const RANKED_BYTES_PER_RING_ELEMENT: usize,
@@ -86,6 +89,9 @@ macro_rules! instantiate {
             }
 
             /// Portable decapsulate
+            #[cfg_attr(hax, hax_lib::requires(
+               CPA_SECRET_KEY_SIZE <= SECRET_KEY_SIZE
+            ))]
             pub fn decapsulate<
                 const K: usize,
                 const SECRET_KEY_SIZE: usize,
