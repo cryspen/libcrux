@@ -176,7 +176,7 @@ macro_rules! instantiate {
                 >(private_key, ciphertext)
             }
 
-            /// Decapsulate ML-KEM 512
+            /// Decapsulate Kyber 512
             ///
             /// Generates an [`MlKemSharedSecret`].
             /// The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
@@ -306,7 +306,7 @@ pub fn validate_public_key(public_key: MlKem512PublicKey) -> Option<MlKem512Publ
 
 /// Generate ML-KEM 512 Key Pair
 ///
-/// Generate an ML-KEM key pair. The input is a byte array of size
+/// The input is a byte array of size
 /// [`KEY_GENERATION_SEED_SIZE`].
 ///
 /// This function returns an [`MlKem512KeyPair`].

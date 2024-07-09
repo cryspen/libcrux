@@ -14,6 +14,9 @@ extern "C" {
 
 // SLICES, ARRAYS, ETC.
 
+// The MSVC C++ compiler does not support compound literals.
+// This CLITERAL is used to turn `(type){...}` into `type{...}` when using a C++
+// compiler.
 #if defined(__cplusplus)
 #define CLITERAL(type) type
 #else
@@ -30,6 +33,10 @@ extern "C" {
 // - if you need to use `len` for a C style function (e.g. memcpy, memcmp), you
 // need to multiply it
 //   by sizeof t, where t is the type of the elements.
+//
+// Empty slices have `len == 0` and `ptr` always needs to be valid pointer that
+// is not NULL (otherwise the construction in EURYDICE_SLICE computes `NULL +
+// start`).
 typedef struct {
   void *ptr;
   size_t len;

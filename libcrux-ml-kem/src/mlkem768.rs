@@ -1,4 +1,4 @@
-//! ML-KEM 512
+//! ML-KEM 768
 //!
 
 use super::{
@@ -311,13 +311,6 @@ pub fn validate_public_key(public_key: MlKem768PublicKey) -> Option<MlKem768Publ
 ///
 /// Generate an ML-KEM key pair. The input is a byte array of size
 /// [`KEY_GENERATION_SEED_SIZE`].
-///
-/// This function uses CPU feature detection to pick the most efficient version
-/// on each platform. To use a specific version with your own feature detection
-/// use one of the following
-/// - `generate_key_pair_avx2`
-/// - `generate_key_pair_neon`
-/// - `generate_key_pair_portable`
 ///
 /// This function returns an [`MlKem768KeyPair`].
 #[cfg(not(eurydice))]

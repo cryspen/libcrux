@@ -1,6 +1,6 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::{BITS_IN_UPPER_PART_OF_T, RING_ELEMENT_OF_T1S_SIZE},
+    polynomial::PolynomialRingElement,
 };
 
 // Each coefficient takes up 10 bits.
@@ -36,7 +36,7 @@ pub(crate) fn deserialize(serialized: &[u8]) -> PolynomialRingElement {
         let byte3 = bytes[3] as i32;
         let byte4 = bytes[4] as i32;
 
-        out.coefficients[4 * i + 0] = ((byte0 >> 0) | (byte1 << 8)) & mask;
+        out.coefficients[4 * i] = (byte0 | (byte1 << 8)) & mask;
         out.coefficients[4 * i + 1] = ((byte1 >> 2) | (byte2 << 6)) & mask;
         out.coefficients[4 * i + 2] = ((byte2 >> 4) | (byte3 << 4)) & mask;
         out.coefficients[4 * i + 3] = ((byte3 >> 6) | (byte4 << 2)) & mask;

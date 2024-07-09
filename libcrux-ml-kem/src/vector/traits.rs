@@ -63,7 +63,7 @@ pub trait Operations: Copy + Clone {
     fn rej_sample(a: &[u8], out: &mut [i16]) -> usize;
 }
 
-// hax does not support trait with default implementations, so we use the following patter
+// hax does not support trait with default implementations, so we use the following pattern
 pub fn montgomery_multiply_fe<T: Operations>(v: T, fer: i16) -> T {
     T::montgomery_multiply_by_constant(v, fer)
 }
