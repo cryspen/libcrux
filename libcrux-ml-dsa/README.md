@@ -1,6 +1,6 @@
 # ML-KEM
 
-This crate implements all three ML-DSA ([FIPS 203](https://csrc.nist.gov/pubs/fips/204/ipd) (Initial Public Draft)) variants 44, 65, and 87.
+This crate implements all three ML-DSA ([FIPS 204](https://csrc.nist.gov/pubs/fips/204/ipd) (Initial Public Draft)) variants 44, 65, and 87.
 
 Currenly, these implementations are unverified and do not contain any architecture-specific code (i.e. they are portable).
 
