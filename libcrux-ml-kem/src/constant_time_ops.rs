@@ -20,6 +20,10 @@ fn is_non_zero(value: u8) -> u8 {
 
 /// Return 1 if the bytes of `lhs` and `rhs` do not exactly
 /// match and 0 otherwise.
+#[cfg_attr(hax, hax_lib::requires(
+    CIPHERTEXT_SIZE < lhs.len() &&
+    CIPHERTEXT_SIZE < rhs.len()
+))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::implies(lhs == rhs, || result == 0) &&
     hax_lib::implies(lhs != rhs, || result == 1)
@@ -41,6 +45,10 @@ pub(crate) fn compare_ciphertexts_in_constant_time<const CIPHERTEXT_SIZE: usize>
 
 /// If `selector` is not zero, return the bytes in `rhs`; return the bytes in
 /// `lhs` otherwise.
+#[cfg_attr(hax, hax_lib::requires(
+    SHARED_SECRET_SIZE < lhs.len() &&
+    SHARED_SECRET_SIZE < rhs.len()
+))]
 #[cfg_attr(hax, hax_lib::ensures(|result|
     hax_lib::implies(selector == 0, || result == lhs) &&
     hax_lib::implies(selector != 0, || result == rhs)
