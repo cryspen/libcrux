@@ -79,7 +79,6 @@ pub fn key_generation(c: &mut Criterion) {
             let _kp = mlkem768::portable::generate_key_pair_unpacked(seed);
         })
     });
-
 }
 
 pub fn pk_validation(c: &mut Criterion) {
@@ -112,7 +111,6 @@ pub fn pk_validation(c: &mut Criterion) {
 }
 
 pub fn encapsulation(c: &mut Criterion) {
-
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("libcrux {} (external random)", $name), |b| {
@@ -148,7 +146,6 @@ pub fn encapsulation(c: &mut Criterion) {
             |keypair| {
                 let (_shared_secret, _ciphertext) = mlkem768::portable::encapsulate_unpacked(
                     &keypair.public_key,
-                    &keypair.public_key_hash,
                     seed2,
                 );
             },
@@ -171,7 +168,6 @@ pub fn encapsulation(c: &mut Criterion) {
             |keypair| {
                 let (_shared_secret, _ciphertext) = mlkem768::neon::encapsulate_unpacked(
                     &keypair.public_key,
-                    &keypair.public_key_hash,
                     seed2,
                 );
             },
@@ -194,18 +190,15 @@ pub fn encapsulation(c: &mut Criterion) {
             |keypair| {
                 let (_shared_secret, _ciphertext) = mlkem768::avx2::encapsulate_unpacked(
                     &keypair.public_key,
-                    &keypair.public_key_hash,
                     seed2,
                 );
             },
             BatchSize::SmallInput,
         )
     });
-
 }
 
 pub fn decapsulation(c: &mut Criterion) {
-
     macro_rules! fun {
         ($name:expr, $p:path, $group:expr) => {
             $group.bench_function(format!("libcrux {}", $name), |b| {
@@ -246,7 +239,6 @@ pub fn decapsulation(c: &mut Criterion) {
                 let keypair = mlkem768::portable::generate_key_pair_unpacked(seed1);
                 let (ciphertext, _shared_secret) = mlkem768::portable::encapsulate_unpacked(
                     &keypair.public_key,
-                    &keypair.public_key_hash,
                     seed2,
                 );
                 (keypair, ciphertext)
@@ -274,7 +266,6 @@ pub fn decapsulation(c: &mut Criterion) {
                 let keypair = mlkem768::neon::generate_key_pair_unpacked(seed1);
                 let (ciphertext, _shared_secret) = mlkem768::neon::encapsulate_unpacked(
                     &keypair.public_key,
-                    &keypair.public_key_hash,
                     seed2,
                 );
                 (keypair, ciphertext)
@@ -301,7 +292,6 @@ pub fn decapsulation(c: &mut Criterion) {
                 let keypair = mlkem768::avx2::generate_key_pair_unpacked(seed1);
                 let (ciphertext, _shared_secret) = mlkem768::avx2::encapsulate_unpacked(
                     &keypair.public_key,
-                    &keypair.public_key_hash,
                     seed2,
                 );
                 (keypair, ciphertext)

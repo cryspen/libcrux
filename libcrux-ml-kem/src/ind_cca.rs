@@ -274,12 +274,11 @@ pub(crate) fn generate_keypair_unpacked<
         &ind_cpa_public_key.seed_for_A,
     );
     let public_key_hash = Hasher::H(&pk_serialized);
+    let implicit_rejection_value : [u8; 32] = implicit_rejection_value.try_into().unwrap();
 
     MlKemKeyPairUnpacked {
-        private_key: ind_cpa_private_key,
-        public_key: ind_cpa_public_key,
-        public_key_hash: public_key_hash,
-        implicit_rejection_value: implicit_rejection_value.try_into().unwrap(),
+        private_key: MlKemPrivateKeyUnpacked {ind_cpa_private_key, implicit_rejection_value},
+        public_key: MlKemPublicKeyUnpacked {ind_cpa_public_key, public_key_hash}
     }
 }
 
@@ -302,11 +301,10 @@ pub(crate) fn encapsulate_unpacked<
     Hasher: Hash<K>,
 >(
     public_key: &MlKemPublicKeyUnpacked<K, Vector>,
-    public_key_hash: &[u8],
     randomness: [u8; SHARED_SECRET_SIZE],
 ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
     let mut to_hash: [u8; 2 * H_DIGEST_SIZE] = into_padded_array(&randomness);
-    to_hash[H_DIGEST_SIZE..].copy_from_slice(public_key_hash);
+    to_hash[H_DIGEST_SIZE..].copy_from_slice(&public_key.public_key_hash);
 
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
@@ -326,7 +324,7 @@ pub(crate) fn encapsulate_unpacked<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(public_key, randomness, pseudorandomness);
+    >(&public_key.ind_cpa_public_key, randomness, pseudorandomness);
     let mut shared_secret_array = [0u8; SHARED_SECRET_SIZE];
     shared_secret_array.copy_from_slice(shared_secret);
     (MlKemCiphertext::from(ciphertext), shared_secret_array)
@@ -363,16 +361,16 @@ pub(crate) fn decapsulate_unpacked<
         VECTOR_U_COMPRESSION_FACTOR,
         VECTOR_V_COMPRESSION_FACTOR,
         Vector,
-    >(&key_pair.private_key, &ciphertext.value);
+    >(&key_pair.private_key.ind_cpa_private_key, &ciphertext.value);
 
     let mut to_hash: [u8; SHARED_SECRET_SIZE + H_DIGEST_SIZE] = into_padded_array(&decrypted);
-    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&key_pair.public_key_hash);
+    to_hash[SHARED_SECRET_SIZE..].copy_from_slice(&key_pair.public_key.public_key_hash);
 
     let hashed = Hasher::G(&to_hash);
     let (shared_secret, pseudorandomness) = hashed.split_at(SHARED_SECRET_SIZE);
 
     let mut to_hash: [u8; IMPLICIT_REJECTION_HASH_INPUT_SIZE] =
-        into_padded_array(&key_pair.implicit_rejection_value);
+        into_padded_array(&key_pair.private_key.implicit_rejection_value);
     to_hash[SHARED_SECRET_SIZE..].copy_from_slice(ciphertext.as_ref());
     let implicit_rejection_shared_secret: [u8; SHARED_SECRET_SIZE] = Hasher::PRF(&to_hash);
 
@@ -391,7 +389,7 @@ pub(crate) fn decapsulate_unpacked<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(&key_pair.public_key, decrypted, pseudorandomness);
+    >(&key_pair.public_key.ind_cpa_public_key, decrypted, pseudorandomness);
 
     let selector = compare_ciphertexts_in_constant_time(
         ciphertext.as_ref(),

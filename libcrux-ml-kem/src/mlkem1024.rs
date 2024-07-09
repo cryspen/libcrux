@@ -232,7 +232,6 @@ macro_rules! instantiate {
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
             pub fn encapsulate_unpacked(
                 public_key: &MlKem1024PublicKeyUnpacked<$vec>,
-                public_key_hash: &[u8],
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKem1024Ciphertext, MlKemSharedSecret) {
                 p::encapsulate_unpacked::<
@@ -249,7 +248,7 @@ macro_rules! instantiate {
                     ETA1_RANDOMNESS_SIZE,
                     ETA2,
                     ETA2_RANDOMNESS_SIZE,
-                >(public_key, public_key_hash, randomness)
+                >(public_key, randomness)
             }
 
             /// Decapsulate ML-KEM 1024 (unpacked)

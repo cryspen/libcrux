@@ -263,7 +263,6 @@ macro_rules! instantiate {
                 const ETA2_RANDOMNESS_SIZE: usize,
             >(
                 public_key: &MlKemPublicKeyUnpacked<K>,
-                public_key_hash: &[u8],
                 randomness: [u8; SHARED_SECRET_SIZE],
             ) -> (MlKemCiphertext<CIPHERTEXT_SIZE>, MlKemSharedSecret) {
                 crate::ind_cca::encapsulate_unpacked::<
@@ -282,7 +281,7 @@ macro_rules! instantiate {
                     ETA2_RANDOMNESS_SIZE,
                     $vector,
                     $hash,
-                >(public_key, public_key_hash, randomness)
+                >(public_key, randomness)
             }
 
             /// Portable decapsulate
