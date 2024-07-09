@@ -34,6 +34,10 @@ impl Operations for PortableSIMDUnit {
         arithmetic::montgomery_multiply(&lhs, &rhs)
     }
 
+    fn power2round(simd_unit: Self) -> (Self, Self) {
+        arithmetic::power2round(simd_unit)
+    }
+
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
         ntt::ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3)
     }

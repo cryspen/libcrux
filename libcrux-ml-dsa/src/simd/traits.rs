@@ -21,6 +21,9 @@ pub(crate) trait Operations: Copy + Clone {
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;
     fn montgomery_multiply_by_constant(simd_unit: Self, c: i32) -> Self;
 
+    // Decomposition operations
+    fn power2round(simd_unit: Self) -> (Self, Self);
+
     // NTT
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self;

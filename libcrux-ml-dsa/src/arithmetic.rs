@@ -1,5 +1,8 @@
-use crate::constants::{BITS_IN_LOWER_PART_OF_T, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
-use crate::polynomial::PolynomialRingElement;
+use crate::{
+    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    simd::{portable::PortableSIMDUnit, traits::Operations},
+};
 
 #[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
@@ -47,35 +50,9 @@ pub(crate) fn shift_coefficients_left_then_reduce(
     out
 }
 
-// Splits t ∈ {0, ..., q-1} into t0 and t1 with a = t1*2ᴰ + t0
-// and -2ᴰ⁻¹ < t0 < 2ᴰ⁻¹.  Returns t0 and t1 computed as.
-//
-// - t0 = t mod± 2ᵈ
-// - t1 = (t - t0) / 2ᵈ.
-//
-// We assume the input t is in the signed representative range and convert it
-// to the standard unsigned range.
-#[inline(always)]
-fn power2round(t: i32) -> (i32, i32) {
-    debug_assert!(t > -FIELD_MODULUS && t < FIELD_MODULUS, "t is {}", t);
-
-    // Convert the signed representative to the standard unsigned one.
-    let t = t + ((t >> 31) & FIELD_MODULUS);
-
-    // t0 = t - (2^{BITS_IN_LOWER_PART_OF_T} * t1)
-    // t1 = ⌊(t - 1)/2^{BITS_IN_LOWER_PART_OF_T} + 1/2⌋
-    //
-    // See Lemma 10 of the implementation notes document for more information
-    // on what these compute.
-    let t1 = (t - 1 + (1 << (BITS_IN_LOWER_PART_OF_T - 1))) >> BITS_IN_LOWER_PART_OF_T;
-    let t0 = t - (t1 << BITS_IN_LOWER_PART_OF_T);
-
-    (t0, t1)
-}
-
 #[inline(always)]
 pub(crate) fn power2round_vector<const DIMENSION: usize>(
-    t: [PolynomialRingElement; DIMENSION],
+    vector_t: [PolynomialRingElement; DIMENSION],
 ) -> (
     [PolynomialRingElement; DIMENSION],
     [PolynomialRingElement; DIMENSION],
@@ -83,13 +60,26 @@ pub(crate) fn power2round_vector<const DIMENSION: usize>(
     let mut vector_t0 = [PolynomialRingElement::ZERO; DIMENSION];
     let mut vector_t1 = [PolynomialRingElement::ZERO; DIMENSION];
 
-    for i in 0..DIMENSION {
-        for (j, coefficient) in t[i].coefficients.into_iter().enumerate() {
-            let (c0, c1) = power2round(coefficient);
+    for (i, ring_element) in vector_t.iter().enumerate() {
+        // These conversions are rather unsightly, but are very temporary and
+        // will be removed once the entire codebase is switched to use
+        // SIMDPolynomialRingElement
+        let mut t0_simd_ring_element = SIMDPolynomialRingElement::ZERO();
+        let mut t1_simd_ring_element = SIMDPolynomialRingElement::ZERO();
 
-            vector_t0[i].coefficients[j] = c0;
-            vector_t1[i].coefficients[j] = c1;
+        for (j, simd_unit) in SIMDPolynomialRingElement::from_polynomial_ring_element(*ring_element)
+            .simd_units
+            .iter()
+            .enumerate()
+        {
+            let (t0_simd_unit, t1_simd_unit) = PortableSIMDUnit::power2round(*simd_unit);
+
+            t0_simd_ring_element.simd_units[j] = t0_simd_unit;
+            t1_simd_ring_element.simd_units[j] = t1_simd_unit;
         }
+
+        vector_t0[i] = t0_simd_ring_element.to_polynomial_ring_element();
+        vector_t1[i] = t1_simd_ring_element.to_polynomial_ring_element();
     }
 
     (vector_t0, vector_t1)
@@ -262,14 +252,6 @@ pub(crate) fn use_hint<const DIMENSION: usize, const GAMMA2: i32>(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_power2round() {
-        assert_eq!(power2round(669975), (-1769, 82));
-        assert_eq!(power2round(1843331), (131, 225));
-        assert_eq!(power2round(-1568816), (4049, 831));
-        assert_eq!(power2round(-4022142), (131, 532));
-    }
 
     #[test]
     fn test_decompose() {
