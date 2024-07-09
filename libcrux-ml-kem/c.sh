@@ -79,8 +79,11 @@ if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
 fi
 
-clang-format --style=Google -i *.c *.h
-clang-format --style=Google -i internal/*.h
+find . -type f -name "*.c" -exec clang-format --style=Google -i "{}" \;
+find . -type f -name "*.h" -exec clang-format --style=Google -i "{}" \;
+if [ -d "internal" ]; then
+    clang-format --style=Google -i internal/*.h
+fi
 clang-format --style=Google -i intrinsics/*.h
 
 # Write out infos about the used tools

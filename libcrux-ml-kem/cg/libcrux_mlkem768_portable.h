@@ -14,6 +14,7 @@ extern "C" {
 
 #include "eurydice_glue.h"
 #include "libcrux_core.h"
+#include "libcrux_ct_ops.h"
 #include "libcrux_sha3_portable.h"
 
 #define LIBCRUX_ML_KEM_HASH_FUNCTIONS_BLOCK_SIZE ((size_t)168U)

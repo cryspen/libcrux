@@ -1,8 +1,10 @@
 use crate::{
-    arithmetic::{shift_coefficients_left_then_reduce, PolynomialRingElement},
+    arithmetic::shift_coefficients_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
+    polynomial::{PolynomialRingElement, VectorPolynomialRingElement},
     sample::sample_ring_element_uniform,
+    vector::portable::PortableVector,
 };
 
 #[allow(non_snake_case)]
@@ -12,6 +14,7 @@ pub(crate) fn expand_to_A<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize>(
 ) -> [[PolynomialRingElement; COLUMNS_IN_A]; ROWS_IN_A] {
     let mut A = [[PolynomialRingElement::ZERO; COLUMNS_IN_A]; ROWS_IN_A];
 
+    // Mutable iterators won't go through hax, so we need these range loops.
     #[allow(clippy::needless_range_loop)]
     for i in 0..ROWS_IN_A {
         for j in 0..COLUMNS_IN_A {
@@ -94,7 +97,14 @@ pub(crate) fn add_vectors<const DIMENSION: usize>(
     let mut result = [PolynomialRingElement::ZERO; DIMENSION];
 
     for i in 0..DIMENSION {
-        result[i] = lhs[i].add(&rhs[i]);
+        let lhs_vectorized =
+            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(lhs[i]);
+        let rhs_vectorized =
+            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(rhs[i]);
+
+        result[i] = lhs_vectorized
+            .add(&rhs_vectorized)
+            .to_polynomial_ring_element();
     }
 
     result
@@ -109,7 +119,14 @@ pub(crate) fn subtract_vectors<const DIMENSION: usize>(
     let mut result = [PolynomialRingElement::ZERO; DIMENSION];
 
     for i in 0..DIMENSION {
-        result[i] = lhs[i].sub(&rhs[i]);
+        let lhs_vectorized =
+            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(lhs[i]);
+        let rhs_vectorized =
+            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(rhs[i]);
+
+        result[i] = lhs_vectorized
+            .subtract(&rhs_vectorized)
+            .to_polynomial_ring_element();
     }
 
     result

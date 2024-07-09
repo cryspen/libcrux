@@ -128,12 +128,9 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm256_andnot_si256(a, b) \
   (_mm256_andnot_si256(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm256_xor_si256(a, b) (_mm256_xor_si256(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm_movemask_epi8(a) (_mm_movemask_epi8(a))
-
 
 // Shift operations
 #define libcrux_intrinsics_avx2_mm256_srai_epi16(a, b, _) \
@@ -151,7 +148,6 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm256_slli_epi64_(a, b) \
   (_mm256_slli_epi64(b, a))
 
-
 #define libcrux_intrinsics_avx2_mm256_slli_epi64(a, b, c) \
   (libcrux_intrinsics_avx2_mm256_slli_epi64_(a, b))
 
@@ -163,10 +159,8 @@ typedef __m256i core_core_arch_x86___m256i;
 
 #define libcrux_intrinsics_avx2_mm256_sllv_epi32(a, b) (_mm256_sllv_epi32(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm256_srli_epi64_(a, b) \
   (_mm256_srli_epi64(b, a))
-
 
 #define libcrux_intrinsics_avx2_mm256_srli_epi64(a, b, c) \
   (libcrux_intrinsics_avx2_mm256_srli_epi64_(a, b))
@@ -176,25 +170,19 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm256_unpacklo_epi32(a, b) \
   (_mm256_unpacklo_epi32(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm256_unpacklo_epi64(a, b) \
   (_mm256_unpacklo_epi64(a, b))
-
 
 #define libcrux_intrinsics_avx2_mm256_unpackhi_epi32(a, b) \
   (_mm256_unpackhi_epi32(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm256_unpackhi_epi64(a, b) \
   (_mm256_unpackhi_epi64(a, b))
-
 
 #define libcrux_intrinsics_avx2_mm256_packs_epi32(a, b) \
   (_mm256_packs_epi32(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm_packs_epi16(a, b) (_mm_packs_epi16(a, b))
-
 
 #define libcrux_intrinsics_avx2_mm256_shuffle_epi32(a, b, _) \
   (_mm256_shuffle_epi32(b, a))
@@ -217,13 +205,10 @@ typedef __m256i core_core_arch_x86___m256i;
 #define libcrux_intrinsics_avx2_mm256_shuffle_epi8(a, b) \
   (_mm256_shuffle_epi8(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm256_permutevar8x32_epi32(a, b) \
   (_mm256_permutevar8x32_epi32(a, b))
 
-
 #define libcrux_intrinsics_avx2_mm_shuffle_epi8(a, b) (_mm_shuffle_epi8(a, b))
-
 
 #if defined(__cplusplus)
 }

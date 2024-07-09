@@ -1,4 +1,4 @@
-use crate::arithmetic::PolynomialRingElement;
+use crate::polynomial::PolynomialRingElement;
 
 #[inline(always)]
 fn serialize<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT_SIZE] {
@@ -63,7 +63,7 @@ pub(crate) fn serialize_vector<
 mod tests {
     use super::*;
 
-    use crate::arithmetic::PolynomialRingElement;
+    use crate::polynomial::PolynomialRingElement;
 
     #[test]
     fn test_serialize_commitment() {

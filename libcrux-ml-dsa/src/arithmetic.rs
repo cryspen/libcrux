@@ -1,73 +1,5 @@
 use crate::constants::{BITS_IN_LOWER_PART_OF_T, COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
-
-#[derive(Clone, Copy, Debug)]
-pub struct PolynomialRingElement {
-    pub(crate) coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT],
-}
-
-impl PolynomialRingElement {
-    pub const ZERO: Self = Self {
-        // FIXME: hax issue, 256 is COEFFICIENTS_IN_RING_ELEMENT
-        coefficients: [0i32; 256],
-    };
-
-    #[inline(always)]
-    pub(crate) fn add(&self, rhs: &Self) -> Self {
-        let mut sum = Self::ZERO;
-
-        for i in 0..rhs.coefficients.len() {
-            sum.coefficients[i] = self.coefficients[i] + rhs.coefficients[i];
-        }
-
-        sum
-    }
-
-    #[inline(always)]
-    pub(crate) fn sub(&self, rhs: &Self) -> Self {
-        let mut difference = Self::ZERO;
-
-        for i in 0..rhs.coefficients.len() {
-            difference.coefficients[i] = self.coefficients[i] - rhs.coefficients[i];
-        }
-
-        difference
-    }
-
-    // TODO: Revisit this function when doing the range analysis and testing
-    // additional KATs.
-    #[inline(always)]
-    pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
-        let mut exceeds = false;
-
-        // It is ok to leak which coefficient violates the bound since
-        // the probability for each coefficient is independent of secret
-        // data but we must not leak the sign of the centralized representative.
-        //
-        // TODO: We can break out of this loop early if need be, but the most
-        // straightforward way to do so (returning false) will not go through hax;
-        // revisit if performance is impacted.
-        for coefficient in self.coefficients.into_iter() {
-            debug_assert!(
-                coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS,
-                "coefficient is {}",
-                coefficient
-            );
-            // This norm is calculated using the absolute value of the
-            // signed representative in the range:
-            //
-            // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
-            //
-            // So if the coefficient is negative, get its absolute value, but
-            // don't convert it into a different representation.
-            let sign = coefficient >> 31;
-            let normalized = coefficient - (sign & (2 * coefficient));
-
-            exceeds |= normalized >= bound;
-        }
-
-        exceeds
-    }
-}
+use crate::polynomial::PolynomialRingElement;
 
 #[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
@@ -86,48 +18,13 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     exceeds
 }
 
-#[inline(always)]
-pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
-    value & ((1 << n) - 1)
-}
-
 /// Values having this type hold a representative 'x' of the ML-DSA field.
 pub(crate) type FieldElement = i32;
-
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
-/// We use 'mfe' as a shorthand for this type
-pub(crate) type MontgomeryFieldElement = i32;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
-
-const MONTGOMERY_SHIFT: u8 = 32;
-const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449; // FIELD_MODULUS^{-1} mod 2^32
-
-#[inline(always)]
-pub(crate) fn montgomery_reduce(value: i64) -> MontgomeryFieldElement {
-    let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
-        * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i32;
-
-    let k_times_modulus = (k as i64) * (FIELD_MODULUS as i64);
-
-    let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i32;
-    let value_high = (value >> MONTGOMERY_SHIFT) as i32;
-
-    value_high - c
-}
-
-#[inline(always)]
-pub(crate) fn montgomery_multiply_fe_by_fer(
-    fe: FieldElement,
-    fer: FieldElementTimesMontgomeryR,
-) -> FieldElement {
-    montgomery_reduce((fe as i64) * (fer as i64))
-}
 
 #[inline(always)]
 fn reduce(fe: FieldElement) -> FieldElement {
@@ -365,14 +262,6 @@ pub(crate) fn use_hint<const DIMENSION: usize, const GAMMA2: i32>(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_montgomery_reduce() {
-        assert_eq!(montgomery_reduce(10933346042510), -1553279);
-        assert_eq!(montgomery_reduce(-20392060523118), 1331779);
-        assert_eq!(montgomery_reduce(13704140696092), -1231016);
-        assert_eq!(montgomery_reduce(-631922212176), -2580954);
-    }
 
     #[test]
     fn test_power2round() {

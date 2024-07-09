@@ -1,11 +1,11 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::{
         BYTES_FOR_VERIFICATION_KEY_HASH, RING_ELEMENT_OF_T0S_SIZE, SEED_FOR_A_SIZE,
         SEED_FOR_SIGNING_SIZE,
     },
     encoding,
     hash_functions::H,
+    polynomial::PolynomialRingElement,
 };
 
 #[allow(non_snake_case)]
