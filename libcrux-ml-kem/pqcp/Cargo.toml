@@ -1,6 +1,6 @@
 [package]
 name = "libcrux-ml-kem"
-version = "0.0.2-pre.2"
+version = "0.0.2-alpha.1"
 authors = ["Cryspen"]
 license = "Apache-2.0"
 homepage = "https://github.com/cryspen/libcrux"
@@ -9,11 +9,14 @@ repository = "https://github.com/cryspen/libcrux"
 readme = "Readme.md"
 exclude = ["/tests"]
 
+[workspace]
+member = ["."]
+
 [dependencies]
 rand_core = { version = "0.6" }
-libcrux-platform = { git = "https://github.com/cryspen/libcrux", version = "0.0.2-pre.2", branch = "dev" }
-libcrux-sha3 = { git = "https://github.com/cryspen/libcrux", version = "0.0.2-pre.2", branch = "dev" }
-libcrux-intrinsics = { git = "https://github.com/cryspen/libcrux", version = "0.0.2-pre.2", branch = "dev" }
+libcrux-platform = { version = "0.0.2-alpha.1" }
+libcrux-sha3 = { version = "0.0.2-alpha.1" }
+libcrux-intrinsics = {  version = "0.0.2-alpha.1" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.

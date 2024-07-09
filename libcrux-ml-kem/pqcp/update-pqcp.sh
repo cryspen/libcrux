@@ -9,11 +9,12 @@
 # `cargo test`, a signed-off commit is created in the target
 # repository.
 
-set -e
+set -e -x
 set -o pipefail
 
-ALLOWLIST="pqcp/allowlist.txt"
-LIBCRUX_HOME="$(pwd)"
+cwd=$(cd $(dirname $0); pwd -P)
+ALLOWLIST="$cwd/allowlist.txt"
+LIBCRUX_HOME="$cwd/../.."
 
 if [[ -z "$TARGET_DIRECTORY" ]]; then
     echo "Please set TARGET_DIRECTORY to the libcrux-ml-kem PQ code packages repository"
@@ -28,5 +29,6 @@ cd "$TARGET_DIRECTORY"
 cargo test
 cargo clean
 
+git switch -c $1
 git add .
 git commit -sm "mlkem-rust-libcrux PQ code packages update ($(date)) - libcrux revision $(git -C $LIBCRUX_HOME rev-parse HEAD)"

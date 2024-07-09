@@ -1,0 +1,3 @@
+[submodule "libcrux-ml-kem/pqcp/repo"]
+	path = libcrux-ml-kem/pqcp/repo
+	url = git@github.com:pq-code-package/mlkem-rust-libcrux.git
