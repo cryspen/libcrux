@@ -175,23 +175,14 @@ pub(crate) fn generate_keypair_unpacked<
     // tˆ := Aˆ ◦ sˆ + eˆ
     let t_as_ntt = compute_As_plus_e(&A_transpose, &secret_as_ntt, &error_as_ntt);
 
-    let mut A = core::array::from_fn(|_i| {
-        core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
-    });
-    for i in 0..K {
-        for j in 0..K {
-            A[i][j] = A_transpose[j][i];
-        }
-    }
-    //  We would like to write the following but it is not supported by Eurydice yet.
-    //    let A = core::array::from_fn(|i| {
-    //        core::array::from_fn(|j| A_transpose[j][i])
-    //    });
-
     let seed_for_A: [u8; 32] = seed_for_A.try_into().unwrap();
+
+    // For encapsulation, we need to store A not Aˆ, and so we untranspose A
+    // However, we pass A_transpose here and let the IND-CCA layer do the untranspose.
+    // We could do it here, but then we would pay the performance cost (if any) for the packed API as well.
     let pk = IndCpaPublicKeyUnpacked {
         t_as_ntt,
-        A,
+        A: A_transpose,
         seed_for_A
     };
     let sk = IndCpaPrivateKeyUnpacked { secret_as_ntt };

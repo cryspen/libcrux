@@ -4,6 +4,7 @@ use crate::{
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
+    polynomial::PolynomialRingElement,
     ind_cpa::serialize_public_key,
     serialize::deserialize_ring_elements_reduced,
     types::{unpacked::*, *},
@@ -265,10 +266,29 @@ pub(crate) fn generate_keypair_unpacked<
 ) -> MlKemKeyPairUnpacked<K, Vector> {
     let ind_cpa_keypair_randomness = &randomness[0..CPA_PKE_KEY_GENERATION_SEED_SIZE];
     let implicit_rejection_value = &randomness[CPA_PKE_KEY_GENERATION_SEED_SIZE..];
-    let (ind_cpa_private_key, ind_cpa_public_key) =
+    let (ind_cpa_private_key, mut ind_cpa_public_key) =
         crate::ind_cpa::generate_keypair_unpacked::<K, ETA1, ETA1_RANDOMNESS_SIZE, Vector, Hasher>(
             ind_cpa_keypair_randomness,
         );
+
+    // We need to un-transpose the A_transpose matrix provided by IND-CPA
+    //  We would like to write the following but it is not supported by Eurydice yet.
+    //  https://github.com/AeneasVerif/eurydice/issues/39
+    //
+    //    let A = core::array::from_fn(|i| {
+    //        core::array::from_fn(|j| A_transpose[j][i])
+    //    });
+
+    let mut A = core::array::from_fn(|_i| {
+        core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
+    });
+    for i in 0..K {
+        for j in 0..K {
+            A[i][j] = ind_cpa_public_key.A[j][i].clone();
+        }
+    }
+    ind_cpa_public_key.A = A;
+
     let pk_serialized = serialize_public_key::<K, BYTES_PER_RING_ELEMENT, PUBLIC_KEY_SIZE, Vector>(
         &ind_cpa_public_key.t_as_ntt,
         &ind_cpa_public_key.seed_for_A,
