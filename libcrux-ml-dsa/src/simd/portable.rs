@@ -1,4 +1,4 @@
-use crate::vector::traits::Operations;
+use crate::simd::traits::Operations;
 
 mod arithmetic;
 mod ntt;

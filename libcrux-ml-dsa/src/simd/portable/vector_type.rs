@@ -1,4 +1,4 @@
-use crate::vector::traits::COEFFICIENTS_PER_VECTOR;
+use crate::simd::traits::COEFFICIENTS_PER_VECTOR;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.

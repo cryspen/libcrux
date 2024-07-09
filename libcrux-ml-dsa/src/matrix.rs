@@ -2,9 +2,9 @@ use crate::{
     arithmetic::shift_coefficients_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
-    polynomial::{PolynomialRingElement, VectorPolynomialRingElement},
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
     sample::sample_ring_element_uniform,
-    vector::portable::PortableVector,
+    simd::portable::PortableVector,
 };
 
 #[allow(non_snake_case)]
@@ -98,9 +98,9 @@ pub(crate) fn add_vectors<const DIMENSION: usize>(
 
     for i in 0..DIMENSION {
         let lhs_vectorized =
-            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(lhs[i]);
+            SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(lhs[i]);
         let rhs_vectorized =
-            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(rhs[i]);
+            SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(rhs[i]);
 
         result[i] = lhs_vectorized
             .add(&rhs_vectorized)
@@ -120,9 +120,9 @@ pub(crate) fn subtract_vectors<const DIMENSION: usize>(
 
     for i in 0..DIMENSION {
         let lhs_vectorized =
-            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(lhs[i]);
+            SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(lhs[i]);
         let rhs_vectorized =
-            VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(rhs[i]);
+            SIMDPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(rhs[i]);
 
         result[i] = lhs_vectorized
             .subtract(&rhs_vectorized)

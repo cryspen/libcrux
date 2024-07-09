@@ -1,5 +1,5 @@
 use super::vector_type::*;
-use crate::vector::traits::{
+use crate::simd::traits::{
     COEFFICIENTS_PER_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
 };
 
