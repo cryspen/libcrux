@@ -393,7 +393,7 @@ pub(crate) fn decapsulate_unpacked<
         Hasher,
     >(&key_pair.public_key, decrypted, pseudorandomness);
 
-    let selector = compare_ciphertexts_in_constant_time::<CIPHERTEXT_SIZE>(
+    let selector = compare_ciphertexts_in_constant_time(
         ciphertext.as_ref(),
         &expected_ciphertext,
     );
