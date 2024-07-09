@@ -45,39 +45,7 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0);
 
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x0, uint8_t x1);
 
-static inline uint8_t libcrux_ml_kem_constant_time_ops_is_non_zero(
-    uint8_t value) {
-  uint16_t value0 = (uint16_t)value;
-  uint16_t uu____0 = value0;
-  uint16_t result = (((uint32_t)uu____0 |
-                      (uint32_t)core_num__u16_7__wrapping_add(~value0, 1U)) &
-                     0xFFFFU) >>
-                        8U &
-                    1U;
-  return (uint8_t)result;
-}
-
 #define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
-
-static inline void
-libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
-    Eurydice_slice lhs, Eurydice_slice rhs, uint8_t selector,
-    uint8_t ret[32U]) {
-  uint8_t mask = core_num__u8_6__wrapping_sub(
-      libcrux_ml_kem_constant_time_ops_is_non_zero(selector), 1U);
-  uint8_t out[32U] = {0U};
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE;
-       i++) {
-    size_t i0 = i;
-    uint8_t uu____0 =
-        (uint32_t)Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t) &
-        (uint32_t)mask;
-    uint8_t *uu____1 =
-        &Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t);
-    out[i0] = (uint32_t)uu____0 | ((uint32_t)uu____1[0U] & (uint32_t)~mask);
-  }
-  memcpy(ret, out, (size_t)32U * sizeof(uint8_t));
-}
 
 #define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
 
@@ -253,21 +221,6 @@ static inline uint8_t *
 libcrux_ml_kem_types__libcrux_ml_kem__types__MlKemPublicKey_SIZE__18__as_slice___1184size_t(
     libcrux_ml_kem_types_MlKemPublicKey____1184size_t *self) {
   return self->value;
-}
-
-static inline uint8_t
-libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time___1088size_t(
-    Eurydice_slice lhs, Eurydice_slice rhs) {
-  uint8_t r = 0U;
-  for (size_t i = (size_t)0U; i < (size_t)1088U; i++) {
-    size_t i0 = i;
-    uint8_t uu____0 =
-        Eurydice_slice_index(lhs, i0, uint8_t, uint8_t *, uint8_t);
-    r = (uint32_t)r |
-        ((uint32_t)uu____0 ^
-         (uint32_t)Eurydice_slice_index(rhs, i0, uint8_t, uint8_t *, uint8_t));
-  }
-  return libcrux_ml_kem_constant_time_ops_is_non_zero(r);
 }
 
 static inline void libcrux_ml_kem_utils_into_padded_array___33size_t(

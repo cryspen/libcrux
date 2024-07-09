@@ -7,14 +7,16 @@ homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
 readme.workspace = true
+description = "Libcrux Pre-Shared post-Quantum key establishement protocol"
+publish = false
 
 [lib]
 path = "src/psq.rs"
 
 [dependencies]
-libcrux-kem = { version = "0.0.2-pre.2", path = "../libcrux-kem" }
-libcrux-hkdf = { version = "=0.0.2-pre.2", path = "../libcrux-hkdf" }
-libcrux-hmac = { version = "=0.0.2-pre.2", path = "../libcrux-hmac" }
+libcrux-kem = { version = "0.0.2-alpha.1", path = "../libcrux-kem", features = ["pre-verification"] }
+libcrux-hkdf = { version = "=0.0.2-alpha.1", path = "../libcrux-hkdf" }
+libcrux-hmac = { version = "=0.0.2-alpha.1", path = "../libcrux-hmac" }
 classic-mceliece-rust = { version = "2.0.0", features = [
     "mceliece460896f",
     "zeroize",

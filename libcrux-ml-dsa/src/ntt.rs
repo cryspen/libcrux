@@ -1,9 +1,11 @@
-use super::{
-    arithmetic::{
-        montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElementTimesMontgomeryR,
-        PolynomialRingElement,
-    },
+use crate::{
+    arithmetic::{montgomery_multiply_fe_by_fer, montgomery_reduce, FieldElementTimesMontgomeryR},
     constants::COEFFICIENTS_IN_RING_ELEMENT,
+    polynomial::{PolynomialRingElement, VectorPolynomialRingElement, VECTORS_IN_RING_ELEMENT},
+    vector::{
+        portable::PortableVector,
+        traits::{montgomery_multiply_by_fer, Operations, COEFFICIENTS_PER_VECTOR},
+    },
 };
 
 const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
@@ -36,6 +38,62 @@ const ZETAS_TIMES_MONTGOMERY_R: [FieldElementTimesMontgomeryR; 256] = [
 ];
 
 #[inline(always)]
+pub(crate) fn ntt_at_layer_1<Vector: Operations>(
+    zeta_i: &mut usize,
+    re: &mut VectorPolynomialRingElement<Vector>,
+) {
+    *zeta_i += 1;
+
+    for round in 0..VECTORS_IN_RING_ELEMENT {
+        re.coefficients[round] = Vector::ntt_at_layer_1(
+            re.coefficients[round],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
+        );
+
+        *zeta_i += 2;
+    }
+
+    *zeta_i -= 1;
+}
+#[inline(always)]
+pub(crate) fn ntt_at_layer_2<Vector: Operations>(
+    zeta_i: &mut usize,
+    re: &mut VectorPolynomialRingElement<Vector>,
+) {
+    for round in 0..VECTORS_IN_RING_ELEMENT {
+        *zeta_i += 1;
+        re.coefficients[round] =
+            Vector::ntt_at_layer_2(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
+    }
+}
+#[inline(always)]
+pub(crate) fn ntt_at_layer_3_plus<Vector: Operations>(
+    zeta_i: &mut usize,
+    re: &mut VectorPolynomialRingElement<Vector>,
+    layer: usize,
+) {
+    let step = 1 << layer;
+
+    for round in 0..(128 >> layer) {
+        *zeta_i += 1;
+
+        let offset = (round * step * 2) / COEFFICIENTS_PER_VECTOR;
+        let step_by = step / COEFFICIENTS_PER_VECTOR;
+
+        for j in offset..offset + step_by {
+            let t = montgomery_multiply_by_fer::<Vector>(
+                re.coefficients[j + step_by],
+                ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
+            );
+
+            re.coefficients[j + step_by] = Vector::subtract(&re.coefficients[j], &t);
+            re.coefficients[j] = Vector::add(&re.coefficients[j], &t);
+        }
+    }
+}
+
+#[inline(always)]
 fn ntt_at_layer(
     zeta_i: &mut usize,
     mut re: PolynomialRingElement,
@@ -54,7 +112,7 @@ fn ntt_at_layer(
                 ZETAS_TIMES_MONTGOMERY_R[*zeta_i],
             );
             re.coefficients[j + step] = re.coefficients[j] - t;
-            re.coefficients[j] = re.coefficients[j] + t;
+            re.coefficients[j] += t;
         }
     }
 
@@ -62,16 +120,21 @@ fn ntt_at_layer(
 }
 
 #[inline(always)]
-pub(crate) fn ntt(mut re: PolynomialRingElement) -> PolynomialRingElement {
+pub(crate) fn ntt(re: PolynomialRingElement) -> PolynomialRingElement {
     let mut zeta_i = 0;
 
-    re = ntt_at_layer(&mut zeta_i, re, 7);
-    re = ntt_at_layer(&mut zeta_i, re, 6);
-    re = ntt_at_layer(&mut zeta_i, re, 5);
-    re = ntt_at_layer(&mut zeta_i, re, 4);
-    re = ntt_at_layer(&mut zeta_i, re, 3);
-    re = ntt_at_layer(&mut zeta_i, re, 2);
-    re = ntt_at_layer(&mut zeta_i, re, 1);
+    let mut v_re = VectorPolynomialRingElement::<PortableVector>::from_polynomial_ring_element(re);
+
+    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 7);
+    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 6);
+    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 5);
+    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 4);
+    ntt_at_layer_3_plus::<PortableVector>(&mut zeta_i, &mut v_re, 3);
+    ntt_at_layer_2::<PortableVector>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_1::<PortableVector>(&mut zeta_i, &mut v_re);
+
+    let mut re = v_re.to_polynomial_ring_element();
+
     re = ntt_at_layer(&mut zeta_i, re, 0);
 
     re
@@ -93,7 +156,7 @@ fn invert_ntt_at_layer(
         for j in offset..offset + step {
             let a_minus_b = re.coefficients[j + step] - re.coefficients[j];
 
-            re.coefficients[j] = re.coefficients[j] + re.coefficients[j + step];
+            re.coefficients[j] += re.coefficients[j + step];
             re.coefficients[j + step] =
                 montgomery_multiply_fe_by_fer(a_minus_b, ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
         }

@@ -3,9 +3,9 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    arithmetic::PolynomialRingElement,
     constants::{BITS_IN_LOWER_PART_OF_T, RING_ELEMENT_OF_T0S_SIZE},
     ntt::ntt,
+    polynomial::PolynomialRingElement,
 };
 
 // If t0 is a signed representative, change it to an unsigned one and
@@ -29,7 +29,7 @@ pub(crate) fn serialize(re: PolynomialRingElement) -> [u8; RING_ELEMENT_OF_T0S_S
         let coefficient6 = change_t0_interval(coefficients[6]);
         let coefficient7 = change_t0_interval(coefficients[7]);
 
-        serialized[13 * i + 0] = coefficient0 as u8;
+        serialized[13 * i] = coefficient0 as u8;
 
         serialized[13 * i + 1] = (coefficient0 >> 8) as u8;
         serialized[13 * i + 1] |= (coefficient1 << 5) as u8;
@@ -87,9 +87,9 @@ fn deserialize(serialized: &[u8]) -> PolynomialRingElement {
         let byte11 = bytes[11] as i32;
         let byte12 = bytes[12] as i32;
 
-        re.coefficients[8 * i + 0] = byte0;
-        re.coefficients[8 * i + 0] |= byte1 << 8;
-        re.coefficients[8 * i + 0] &= BITS_IN_LOWER_PART_OF_T_MASK;
+        re.coefficients[8 * i] = byte0;
+        re.coefficients[8 * i] |= byte1 << 8;
+        re.coefficients[8 * i] &= BITS_IN_LOWER_PART_OF_T_MASK;
 
         re.coefficients[8 * i + 1] = byte1 >> 5;
         re.coefficients[8 * i + 1] |= byte2 << 3;
@@ -123,7 +123,7 @@ fn deserialize(serialized: &[u8]) -> PolynomialRingElement {
         re.coefficients[8 * i + 7] |= byte12 << 5;
         re.coefficients[8 * i + 7] &= BITS_IN_LOWER_PART_OF_T_MASK;
 
-        re.coefficients[8 * i + 0] = change_t0_interval(re.coefficients[8 * i + 0]);
+        re.coefficients[8 * i] = change_t0_interval(re.coefficients[8 * i]);
         re.coefficients[8 * i + 1] = change_t0_interval(re.coefficients[8 * i + 1]);
         re.coefficients[8 * i + 2] = change_t0_interval(re.coefficients[8 * i + 2]);
         re.coefficients[8 * i + 3] = change_t0_interval(re.coefficients[8 * i + 3]);
@@ -153,7 +153,7 @@ pub(crate) fn deserialize_to_vector_then_ntt<const DIMENSION: usize>(
 mod tests {
     use super::*;
 
-    use crate::arithmetic::PolynomialRingElement;
+    use crate::polynomial::PolynomialRingElement;
 
     #[test]
     fn test_serialize() {

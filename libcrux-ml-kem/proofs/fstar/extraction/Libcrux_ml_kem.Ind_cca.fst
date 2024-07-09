@@ -252,8 +252,8 @@ let decapsulate
       decrypted pseudorandomness
   in
   let selector:u8 =
-    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_in_constant_time v_CIPHERTEXT_SIZE
-      (Core.Convert.f_as_ref #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_in_constant_time (Core.Convert.f_as_ref #(Libcrux_ml_kem.Types.t_MlKemCiphertext
+            v_CIPHERTEXT_SIZE)
           #(t_Slice u8)
           ciphertext
         <:

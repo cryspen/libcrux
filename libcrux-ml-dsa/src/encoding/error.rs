@@ -1,6 +1,6 @@
 // Functions for serializing and deserializing an error ring element.
 
-use crate::{arithmetic::PolynomialRingElement, ntt::ntt};
+use crate::{ntt::ntt, polynomial::PolynomialRingElement};
 
 #[inline(always)]
 fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
@@ -19,7 +19,7 @@ fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
         let coefficient6 = (ETA - coefficients[6]) as u8;
         let coefficient7 = (ETA - coefficients[7]) as u8;
 
-        serialized[3 * i + 0] = (coefficient2 << 6) | (coefficient1 << 3) | coefficient0;
+        serialized[3 * i] = (coefficient2 << 6) | (coefficient1 << 3) | coefficient0;
         serialized[3 * i + 1] =
             (coefficient5 << 7) | (coefficient4 << 4) | (coefficient3 << 1) | (coefficient2 >> 2);
         serialized[3 * i + 2] = (coefficient7 << 5) | (coefficient6 << 2) | (coefficient5 >> 1);
@@ -65,7 +65,7 @@ fn deserialize_when_eta_is_2(serialized: &[u8]) -> PolynomialRingElement {
         let byte1 = bytes[1] as i32;
         let byte2 = bytes[2] as i32;
 
-        re.coefficients[8 * i + 0] = (byte0 >> 0) & 7;
+        re.coefficients[8 * i] = byte0 & 7;
         re.coefficients[8 * i + 1] = (byte0 >> 3) & 7;
         re.coefficients[8 * i + 2] = ((byte0 >> 6) | (byte1 << 2)) & 7;
         re.coefficients[8 * i + 3] = (byte1 >> 1) & 7;
@@ -74,7 +74,7 @@ fn deserialize_when_eta_is_2(serialized: &[u8]) -> PolynomialRingElement {
         re.coefficients[8 * i + 6] = (byte2 >> 2) & 7;
         re.coefficients[8 * i + 7] = (byte2 >> 5) & 7;
 
-        re.coefficients[8 * i + 0] = ETA - re.coefficients[8 * i + 0];
+        re.coefficients[8 * i] = ETA - re.coefficients[8 * i];
         re.coefficients[8 * i + 1] = ETA - re.coefficients[8 * i + 1];
         re.coefficients[8 * i + 2] = ETA - re.coefficients[8 * i + 2];
         re.coefficients[8 * i + 3] = ETA - re.coefficients[8 * i + 3];
@@ -92,8 +92,8 @@ fn deserialize_when_eta_is_4(serialized: &[u8]) -> PolynomialRingElement {
     let mut re = PolynomialRingElement::ZERO;
     const ETA: i32 = 4;
 
-    for (i, byte) in serialized.into_iter().enumerate() {
-        re.coefficients[2 * i + 0] = ETA - ((byte & 0xF) as i32);
+    for (i, byte) in serialized.iter().enumerate() {
+        re.coefficients[2 * i] = ETA - ((byte & 0xF) as i32);
         re.coefficients[2 * i + 1] = ETA - ((byte >> 4) as i32);
     }
 

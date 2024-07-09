@@ -1,8 +1,8 @@
 use crate::{
-    arithmetic::PolynomialRingElement,
-    constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
+    constants::FIELD_MODULUS,
     encoding,
     hash_functions::{H, H_128},
+    polynomial::PolynomialRingElement,
 };
 
 #[inline(always)]
@@ -21,12 +21,12 @@ fn rejection_sample_less_than_field_modulus(
 
             let potential_coefficient = ((b2 << 16) | (b1 << 8) | b0) & 0x00_7F_FF_FF;
 
-            if potential_coefficient < FIELD_MODULUS && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if potential_coefficient < FIELD_MODULUS && *sampled < out.coefficients.len() {
                 out.coefficients[*sampled] = potential_coefficient;
                 *sampled += 1;
             }
 
-            if *sampled == COEFFICIENTS_IN_RING_ELEMENT {
+            if *sampled == out.coefficients.len() {
                 done = true;
             }
         }
@@ -66,7 +66,7 @@ fn rejection_sample_less_than_eta_equals_2(
             let try_0 = byte & 0xF;
             let try_1 = byte >> 4;
 
-            if try_0 < 15 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_0 < 15 && *sampled < out.coefficients.len() {
                 let try_0 = try_0 as i32;
 
                 // (try_0 * 26) >> 7 computes ⌊try_0 / 5⌋
@@ -77,7 +77,7 @@ fn rejection_sample_less_than_eta_equals_2(
                 *sampled += 1;
             }
 
-            if try_1 < 15 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_1 < 15 && *sampled < out.coefficients.len() {
                 let try_1 = try_1 as i32;
                 let try_1_mod_5 = try_1 - ((try_1 * 26) >> 7) * 5;
 
@@ -86,7 +86,7 @@ fn rejection_sample_less_than_eta_equals_2(
                 *sampled += 1;
             }
 
-            if *sampled == COEFFICIENTS_IN_RING_ELEMENT {
+            if *sampled == out.coefficients.len() {
                 done = true;
             }
         }
@@ -108,17 +108,17 @@ fn rejection_sample_less_than_eta_equals_4(
             let try_0 = byte & 0xF;
             let try_1 = byte >> 4;
 
-            if try_0 < 9 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_0 < 9 && *sampled < out.coefficients.len() {
                 out.coefficients[*sampled] = 4 - (try_0 as i32);
                 *sampled += 1;
             }
 
-            if try_1 < 9 && *sampled < COEFFICIENTS_IN_RING_ELEMENT {
+            if try_1 < 9 && *sampled < out.coefficients.len() {
                 out.coefficients[*sampled] = 4 - (try_1 as i32);
                 *sampled += 1;
             }
 
-            if *sampled == COEFFICIENTS_IN_RING_ELEMENT {
+            if *sampled == out.coefficients.len() {
                 done = true;
             }
         }
@@ -143,17 +143,17 @@ pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
 #[allow(non_snake_case)]
 #[inline(always)]
 fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
-    // TODO: Use incremental API to squeeze one block at a time.
-    let randomness = H::<272>(&seed);
+    let mut state = H::new(&seed);
+    let randomness = H::squeeze_first_block(&mut state);
 
     let mut out = PolynomialRingElement::ZERO;
 
     let mut sampled = 0;
-    let done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
+    let mut done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
 
-    // TODO: Remove this panic using the incremental API.
-    if !done {
-        panic!("Not enough randomness for sampling short vector.");
+    while !done {
+        let randomness = H::squeeze_next_block(&mut state);
+        done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
     }
 
     out
@@ -165,6 +165,8 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
     domain_separator: &mut u16,
 ) -> [PolynomialRingElement; DIMENSION] {
     let mut error = [PolynomialRingElement::ZERO; DIMENSION];
+
+    #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
         seed[64] = *domain_separator as u8;
         seed[65] = (*domain_separator >> 8) as u8;
@@ -179,8 +181,8 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
 #[inline(always)]
 fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     match GAMMA1_EXPONENT {
-        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::<576>(&seed)),
-        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::<640>(&seed)),
+        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::one_shot::<576>(&seed)),
+        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::one_shot::<640>(&seed)),
         _ => unreachable!(),
     }
 }
@@ -192,6 +194,7 @@ pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: 
 ) -> [PolynomialRingElement; DIMENSION] {
     let mut error = [PolynomialRingElement::ZERO; DIMENSION];
 
+    #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
         seed[64] = *domain_separator as u8;
         seed[65] = (*domain_separator >> 8) as u8;
@@ -204,48 +207,58 @@ pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: 
 }
 
 #[inline(always)]
+fn inside_out_shuffle(
+    randomness: &[u8],
+    out_index: &mut usize,
+    signs: &mut u64,
+    result: &mut PolynomialRingElement,
+) -> bool {
+    let mut done = false;
+
+    for byte in randomness {
+        if !done {
+            let sample_at = *byte as usize;
+            if sample_at <= *out_index {
+                result.coefficients[*out_index] = result.coefficients[sample_at];
+                *out_index += 1;
+
+                result.coefficients[sample_at] = 1 - 2 * ((*signs & 1) as i32);
+                *signs >>= 1;
+            }
+
+            done = *out_index == result.coefficients.len();
+        }
+    }
+
+    done
+}
+#[inline(always)]
 pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement {
-    // TODO: Use incremental API to squeeze one block at a time.
-    let mut randomness = H::<136>(&seed).into_iter();
+    let mut state = H::new(&seed);
+    let randomness = H::squeeze_first_block(&mut state);
 
-    let mut signs: u64 = 0;
-    for i in 0..8 {
-        signs |= (randomness.next().unwrap() as u64) << (8 * i);
+    let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
+
+    let mut result = PolynomialRingElement::ZERO;
+
+    let mut out_index = result.coefficients.len() - NUMBER_OF_ONES;
+    let mut done = inside_out_shuffle(&randomness[8..], &mut out_index, &mut signs, &mut result);
+
+    while !done {
+        let randomness = H::squeeze_next_block(&mut state);
+        done = inside_out_shuffle(&randomness, &mut out_index, &mut signs, &mut result);
     }
 
-    let mut out = PolynomialRingElement::ZERO;
-
-    for index in (out.coefficients.len() - NUMBER_OF_ONES)..out.coefficients.len() {
-        // TODO: Rewrite this without using `break`. It's doable, just probably
-        // not as nice.
-        let sample_at = loop {
-            let i = match randomness.next() {
-                Some(byte) => byte as usize,
-
-                // TODO: We need to incrementally sample here instead of panicking.
-                None => panic!("Insufficient randomness to sample challenge ring element."),
-            };
-
-            if i <= index {
-                break i;
-            }
-        };
-
-        out.coefficients[index] = out.coefficients[sample_at];
-        out.coefficients[sample_at] = 1 - 2 * ((signs & 1) as i32);
-        signs >>= 1;
-    }
-
-    out
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use crate::arithmetic::FieldElement;
+    use crate::{arithmetic::FieldElement, constants::COEFFICIENTS_IN_RING_ELEMENT};
 
     #[test]
     fn test_sample_ring_element_uniform() {
@@ -287,6 +300,54 @@ mod tests {
         assert_eq!(
             sample_ring_element_uniform(seed).coefficients,
             expected_coefficients
+        );
+
+        // This seed and the expected coefficients were taken from the
+        // "Signature Verification -- ML-DSA-65.txt" file in the "PQC Intermediate Values"
+        // package found here:
+        //
+        // https://csrc.nist.gov/Projects/post-quantum-cryptography/post-quantum-cryptography-standardization/example-files
+        let seed = [
+            0x6C, 0x84, 0x14, 0x38, 0x08, 0x56, 0xCB, 0x52, 0xD7, 0x9C, 0x4B, 0x29, 0x13, 0x9F,
+            0xB1, 0x83, 0x9B, 0x86, 0x06, 0xF5, 0x94, 0x8B, 0x9D, 0x72, 0xA9, 0x56, 0xDC, 0xF1,
+            0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
+        ];
+        let actual_coefficients = sample_ring_element_uniform(seed).coefficients;
+
+        assert_eq!(actual_coefficients[0], 1_165_602);
+        assert_eq!(
+            actual_coefficients[1..],
+            [
+                3634040, 7110348, 6039535, 8209112, 8342684, 3376761, 2760752, 201874, 5788205,
+                6315920, 5758613, 4180208, 3498018, 4506185, 6197602, 4825715, 1413018, 4001908,
+                5200822, 2321616, 43264, 357657, 3357947, 5478400, 1625148, 7950715, 241908,
+                5817357, 6314876, 3963827, 2765806, 7187638, 5098494, 4495365, 4124864, 1563629,
+                6643348, 2155850, 813048, 5462957, 5416878, 5407763, 685417, 1482758, 2211367,
+                7400454, 5644271, 599228, 1192002, 3950753, 1943948, 4147278, 7709236, 4455786,
+                5969957, 4873849, 2497883, 7702897, 1951031, 2746827, 541648, 6820767, 4343169,
+                7809196, 3075663, 2498997, 7516711, 6073110, 3812366, 6180662, 2140253, 955825,
+                1183827, 3824805, 961270, 2848570, 553317, 945650, 846350, 7115358, 7684494,
+                3452277, 2829465, 7560733, 7765663, 8046459, 6122871, 2186559, 1063033, 8249483,
+                1394306, 664161, 7734307, 4722290, 3791427, 2435952, 263490, 1006165, 3331598,
+                1364040, 995391, 2074495, 1907554, 2358279, 2270487, 634762, 7962901, 5614697,
+                5786521, 5116667, 1430717, 7455972, 2533159, 7947550, 7739229, 4927600, 241260,
+                7369022, 6744571, 6680687, 1961030, 2093028, 4786791, 6246262, 4051533, 3634060,
+                2403470, 2802259, 3645990, 6976210, 4921899, 5421392, 2002756, 6710071, 2947573,
+                1575303, 4408913, 1184854, 3248924, 8314261, 5273575, 2035537, 3057717, 4276424,
+                5822730, 2723413, 7019988, 818534, 2429970, 1355058, 7224104, 2099984, 7006142,
+                1252024, 1322417, 4242718, 1761064, 2157891, 4952775, 2413792, 4326818, 7109905,
+                5383105, 6756494, 6255540, 2899390, 3086583, 7685346, 4041101, 5334956, 4513393,
+                6517963, 4356627, 2904889, 2415412, 7209635, 6858378, 3366617, 2446291, 206235,
+                1998054, 4488129, 4659437, 1338118, 4922652, 6007451, 5557143, 4798024, 86509,
+                3799432, 5945739, 1001428, 7172374, 2827278, 7428682, 963842, 7199121, 6413373,
+                6585976, 4442989, 8150284, 459638, 1681794, 4346128, 7943864, 6962572, 7466591,
+                3401623, 6306091, 4245753, 5519446, 1599041, 2410812, 1955008, 5812175, 7440355,
+                253888, 4607519, 700571, 7817367, 5129683, 8046724, 1180791, 5121466, 8184965,
+                6029940, 3191617, 5335654, 7208397, 7752286, 4052684, 1826096, 1681526, 5923139,
+                4148306, 4764105, 1496019, 8215829, 7787085, 2322997, 4716898, 7780010, 6832169,
+                5960634, 644622, 2145941, 7046161, 5644191, 5390778, 1364486, 3472707, 4379141,
+                897129, 6882711, 5430079
+            ]
         );
     }
 
