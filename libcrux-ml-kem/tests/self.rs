@@ -45,10 +45,8 @@ macro_rules! impl_consistency_unpacked {
             let key_pair = $key_gen(randomness);
             let randomness = random_array();
             let (ciphertext, shared_secret) = $encaps(key_pair.public_key(), randomness);
-            let (ciphertext_unpacked, shared_secret_unpacked) = $encaps_unpacked(
-                &key_pair_unpacked.public_key,
-                randomness,
-            );
+            let (ciphertext_unpacked, shared_secret_unpacked) =
+                $encaps_unpacked(&key_pair_unpacked.public_key, randomness);
             assert_eq!(
                 shared_secret, shared_secret_unpacked,
                 "lhs: shared_secret, rhs: shared_secret_unpacked"
