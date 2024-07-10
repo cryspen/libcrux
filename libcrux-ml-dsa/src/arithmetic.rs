@@ -18,48 +18,13 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     exceeds
 }
 
-#[inline(always)]
-pub(crate) fn get_n_least_significant_bits(n: u8, value: u64) -> u64 {
-    value & ((1 << n) - 1)
-}
-
 /// Values having this type hold a representative 'x' of the ML-DSA field.
 pub(crate) type FieldElement = i32;
-
-/// If 'x' denotes a value of type `fe`, values having this type hold a
-/// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
-/// We use 'mfe' as a shorthand for this type
-pub(crate) type MontgomeryFieldElement = i32;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
-
-const MONTGOMERY_SHIFT: u8 = 32;
-const INVERSE_OF_MODULUS_MOD_MONTGOMERY_R: u64 = 58_728_449; // FIELD_MODULUS^{-1} mod 2^32
-
-#[inline(always)]
-pub(crate) fn montgomery_reduce(value: i64) -> MontgomeryFieldElement {
-    let t = get_n_least_significant_bits(MONTGOMERY_SHIFT, value as u64)
-        * INVERSE_OF_MODULUS_MOD_MONTGOMERY_R;
-    let k = get_n_least_significant_bits(MONTGOMERY_SHIFT, t) as i32;
-
-    let k_times_modulus = (k as i64) * (FIELD_MODULUS as i64);
-
-    let c = (k_times_modulus >> MONTGOMERY_SHIFT) as i32;
-    let value_high = (value >> MONTGOMERY_SHIFT) as i32;
-
-    value_high - c
-}
-
-#[inline(always)]
-pub(crate) fn montgomery_multiply_fe_by_fer(
-    fe: FieldElement,
-    fer: FieldElementTimesMontgomeryR,
-) -> FieldElement {
-    montgomery_reduce((fe as i64) * (fer as i64))
-}
 
 #[inline(always)]
 fn reduce(fe: FieldElement) -> FieldElement {
@@ -297,14 +262,6 @@ pub(crate) fn use_hint<const DIMENSION: usize, const GAMMA2: i32>(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_montgomery_reduce() {
-        assert_eq!(montgomery_reduce(10933346042510), -1553279);
-        assert_eq!(montgomery_reduce(-20392060523118), 1331779);
-        assert_eq!(montgomery_reduce(13704140696092), -1231016);
-        assert_eq!(montgomery_reduce(-631922212176), -2580954);
-    }
 
     #[test]
     fn test_power2round() {

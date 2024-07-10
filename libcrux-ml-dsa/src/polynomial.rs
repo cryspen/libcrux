@@ -114,7 +114,7 @@ impl<Vector: Operations> VectorPolynomialRingElement<Vector> {
     pub(crate) fn add(&self, rhs: &Self) -> Self {
         let mut sum = Self::ZERO();
 
-        for i in 0..VECTORS_IN_RING_ELEMENT {
+        for i in 0..sum.coefficients.len() {
             sum.coefficients[i] = Vector::add(&self.coefficients[i], &rhs.coefficients[i]);
         }
 
@@ -125,7 +125,7 @@ impl<Vector: Operations> VectorPolynomialRingElement<Vector> {
     pub(crate) fn subtract(&self, rhs: &Self) -> Self {
         let mut difference = Self::ZERO();
 
-        for i in 0..VECTORS_IN_RING_ELEMENT {
+        for i in 0..difference.coefficients.len() {
             difference.coefficients[i] =
                 Vector::subtract(&self.coefficients[i], &rhs.coefficients[i]);
         }
