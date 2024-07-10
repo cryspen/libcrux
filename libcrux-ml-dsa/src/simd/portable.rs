@@ -2,6 +2,7 @@ use crate::simd::traits::Operations;
 
 mod arithmetic;
 mod ntt;
+mod sample;
 mod simd_unit_type;
 
 pub(crate) use simd_unit_type::PortableSIMDUnit;
@@ -40,6 +41,10 @@ impl Operations for PortableSIMDUnit {
 
     fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
+    }
+
+    fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
+        sample::rejection_sample_less_than_field_modulus(randomness, out)
     }
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {

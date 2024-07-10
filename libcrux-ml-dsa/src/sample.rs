@@ -1,32 +1,28 @@
 use crate::{
-    constants::FIELD_MODULUS,
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
     hash_functions::{H, H_128},
     polynomial::PolynomialRingElement,
+    simd::{portable::PortableSIMDUnit, traits::Operations},
 };
 
 #[inline(always)]
 fn rejection_sample_less_than_field_modulus(
     randomness: &[u8],
-    sampled: &mut usize,
-    out: &mut PolynomialRingElement,
+    sampled_coefficients: &mut usize,
+    out: &mut [i32; 263],
 ) -> bool {
     let mut done = false;
 
-    for bytes in randomness.chunks(3) {
+    for random_bytes in randomness.chunks(24) {
         if !done {
-            let b0 = bytes[0] as i32;
-            let b1 = bytes[1] as i32;
-            let b2 = bytes[2] as i32;
+            let sampled = PortableSIMDUnit::rejection_sample_less_than_field_modulus(
+                random_bytes,
+                &mut out[*sampled_coefficients..],
+            );
+            *sampled_coefficients += sampled;
 
-            let potential_coefficient = ((b2 << 16) | (b1 << 8) | b0) & 0x00_7F_FF_FF;
-
-            if potential_coefficient < FIELD_MODULUS && *sampled < out.coefficients.len() {
-                out.coefficients[*sampled] = potential_coefficient;
-                *sampled += 1;
-            }
-
-            if *sampled == out.coefficients.len() {
+            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
                 done = true;
             }
         }
@@ -34,13 +30,20 @@ fn rejection_sample_less_than_field_modulus(
 
     done
 }
-
 #[inline(always)]
 pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingElement {
     let mut state = H_128::new(seed);
     let randomness = H_128::squeeze_first_five_blocks(&mut state);
 
-    let mut out = PolynomialRingElement::ZERO;
+    // Every call to |rejection_sample_less_than_field_modulus|
+    // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
+    // this latter function performs no bounds checking and can write up to 8
+    // elements to its output. It is therefore possible that 255 elements have
+    // already been sampled and we call the function again.
+    //
+    // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
+    // = 263 elements.
+    let mut out = [0i32; 263];
 
     let mut sampled = 0;
     let mut done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
@@ -50,7 +53,9 @@ pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingEleme
         done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
     }
 
-    out
+    PolynomialRingElement {
+        coefficients: out[0..256].try_into().unwrap(),
+    }
 }
 
 #[inline(always)]

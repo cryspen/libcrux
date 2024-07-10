@@ -25,6 +25,13 @@ pub(crate) trait Operations: Copy + Clone {
     // Decomposition operations
     fn power2round(simd_unit: Self) -> (Self, Self);
 
+    // Sampling
+
+    // Since each SIMD unit can hold 8 coefficients, and each coefficient needs
+    // (at least) 3 bytes to be sampled, we expect that |randomness| holds 24 bytes,
+    // and that |out| holds 8 i32s.
+    fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize;
+
     // NTT
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self;

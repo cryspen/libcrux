@@ -51,6 +51,20 @@ impl<SIMDUnit: Operations> SIMDPolynomialRingElement<SIMDUnit> {
         }
     }
 
+    #[inline(always)]
+    pub(crate) fn from_i32_array(array: &[i32]) -> Self {
+        debug_assert!(array.len() == 256);
+
+        let mut array_chunks = array.chunks(COEFFICIENTS_IN_SIMD_UNIT);
+
+        let mut result = Self::ZERO();
+
+        for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            result.simd_units[i] = SIMDUnit::from_i32_array(&array_chunks.next().unwrap());
+        }
+        result
+    }
+
     pub(crate) fn infinity_norm_exceeds(&self, bound: i32) -> bool {
         let mut exceeds = false;
 
