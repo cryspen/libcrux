@@ -6,9 +6,9 @@
 
 /* For alloca, when using KaRaMeL's -falloca */
 #if (defined(_WIN32) || defined(_WIN64))
-#  include <malloc.h>
+#include <malloc.h>
 #elif (defined(sun))
-#  include <alloca.h>
+#include <alloca.h>
 #endif
 
 /* If some globals need to be initialized before the main, then karamel will
