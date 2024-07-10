@@ -196,7 +196,7 @@ pub mod unpacked {
     use crate::{polynomial::PolynomialRingElement, vector::traits::Operations};
 
     /// An unpacked ML-KEM IND-CPA Private Key
-    pub struct IndCpaPrivateKeyUnpacked<const K: usize, Vector: Operations> {
+    pub(crate) struct IndCpaPrivateKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) secret_as_ntt: [PolynomialRingElement<Vector>; K],
     }
 
@@ -207,7 +207,7 @@ pub mod unpacked {
     }
 
     /// An unpacked ML-KEM IND-CPA Private Key
-    pub struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
+    pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
         pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
         pub(crate) seed_for_A: [u8; 32],
         pub(crate) A: [[PolynomialRingElement<Vector>; K]; K],

@@ -61,7 +61,6 @@ pub type MlKem768KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK
 // Instantiate the different functions.
 macro_rules! instantiate {
     ($modp:ident, $p:path, $vec:path, $doc:expr) => {
-        /// Provides $modp implementations of ML-KEM 768
         #[doc = $doc]
         pub mod $modp {
             use super::*;

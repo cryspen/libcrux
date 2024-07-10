@@ -279,6 +279,7 @@ pub(crate) fn generate_keypair_unpacked<
     //        core::array::from_fn(|j| A_transpose[j][i])
     //    });
 
+    #[allow(non_snake_case)]
     let mut A = core::array::from_fn(|_i| {
         core::array::from_fn(|_j| PolynomialRingElement::<Vector>::ZERO())
     });
