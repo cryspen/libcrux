@@ -33,7 +33,7 @@ let v_VECTORS_IN_RING_ELEMENT: usize =
   Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
 
 type t_PolynomialRingElement
-  (v_Vector: Type0) {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+  (v_Vector: Type0) (i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
   = { f_coefficients:t_Array v_Vector (sz 16) }
 
 val impl__ZERO:
@@ -64,7 +64,7 @@ val impl__add_standard_error_reduce
 /// sum of their constituent coefficients.
 val impl__add_to_ring_element
       (#v_Vector: Type0)
-      (#v_K: usize)
+      (v_K: usize)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (self rhs: t_PolynomialRingElement v_Vector)
     : Prims.Pure (t_PolynomialRingElement v_Vector) Prims.l_True (fun _ -> Prims.l_True)
