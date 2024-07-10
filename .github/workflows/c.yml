@@ -57,5 +57,5 @@ jobs:
 
       - name: 🏃🏻‍♀️ Benchmark
         run: ./build/ml_kem_bench
-        if: ${{ matrix.os != 'windows-latest' && github.event_name == 'merge_group' }}
+        if: ${{ matrix.os != 'windows-latest' && (github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch') }}
 
