@@ -5,6 +5,7 @@ on:
     branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main", "dev" ]
+  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -51,3 +52,17 @@ jobs:
     - name: Run tests
       working-directory: specs
       run: cargo test --verbose
+
+mq_status:
+    if: |
+      always() &&
+      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
