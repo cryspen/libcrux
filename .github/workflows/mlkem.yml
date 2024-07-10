@@ -170,6 +170,7 @@ jobs:
           cargo hack test --each-feature $EXCLUDE_FEATURES --verbose $RUST_TARGET_FLAG
 
   benchmarks:
+    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
     strategy:
       fail-fast: true
       matrix:
