@@ -1,5 +1,5 @@
 use super::arithmetic::*;
-use super::type_definition::*;
+use super::simd_unit_type::*;
 
 #[inline(always)]
 pub fn ntt_at_layer_0(

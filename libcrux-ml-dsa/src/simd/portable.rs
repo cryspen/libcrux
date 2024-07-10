@@ -2,21 +2,21 @@ use crate::simd::traits::Operations;
 
 mod arithmetic;
 mod ntt;
-mod type_definition;
+mod simd_unit_type;
 
-pub(crate) use type_definition::PortableSIMDUnit;
+pub(crate) use simd_unit_type::PortableSIMDUnit;
 
 impl Operations for PortableSIMDUnit {
     fn ZERO() -> Self {
-        type_definition::ZERO()
+        simd_unit_type::ZERO()
     }
 
     fn from_i32_array(array: &[i32]) -> Self {
-        type_definition::from_i32_array(array)
+        simd_unit_type::from_i32_array(array)
     }
 
     fn to_i32_array(simd_unit: Self) -> [i32; 8] {
-        type_definition::to_i32_array(simd_unit)
+        simd_unit_type::to_i32_array(simd_unit)
     }
 
     fn add(lhs: &Self, rhs: &Self) -> Self {

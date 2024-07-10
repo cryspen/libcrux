@@ -1,4 +1,4 @@
-use super::type_definition::*;
+use super::simd_unit_type::*;
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
     simd::traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
