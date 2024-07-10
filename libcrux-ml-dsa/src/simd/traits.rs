@@ -13,9 +13,10 @@ pub(crate) trait Operations: Copy + Clone {
     fn from_i32_array(array: &[i32]) -> Self;
     fn to_i32_array(simd_unit: Self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT];
 
-    // Basic arithmetic
+    // Arithmetic
     fn add(lhs: &Self, rhs: &Self) -> Self;
     fn subtract(lhs: &Self, rhs: &Self) -> Self;
+    fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool;
 
     // Modular operations
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;

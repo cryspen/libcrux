@@ -7,7 +7,7 @@ use crate::{
 #[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     vector: [PolynomialRingElement; DIMENSION],
-    value: i32,
+    bound: i32,
 ) -> bool {
     let mut exceeds = false;
 
@@ -15,7 +15,10 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     // straightforward way to do so (returning false) will not go through hax;
     // revisit if performance is impacted.
     for ring_element in vector.iter() {
-        exceeds |= ring_element.infinity_norm_exceeds(value);
+        let simd_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(
+            *ring_element,
+        );
+        exceeds |= simd_re.infinity_norm_exceeds(bound);
     }
 
     exceeds

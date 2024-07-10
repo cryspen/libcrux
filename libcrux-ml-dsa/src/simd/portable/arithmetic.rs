@@ -132,6 +132,41 @@ pub fn power2round(simd_unit: PortableSIMDUnit) -> (PortableSIMDUnit, PortableSI
     (t0_simd_unit, t1_simd_unit)
 }
 
+// TODO: Revisit this function when doing the range analysis and testing
+// additional KATs.
+#[inline(always)]
+pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
+    let mut exceeds = false;
+
+    // It is ok to leak which coefficient violates the bound since
+    // the probability for each coefficient is independent of secret
+    // data but we must not leak the sign of the centralized representative.
+    //
+    // TODO: We can break out of this loop early if need be, but the most
+    // straightforward way to do so (returning false) will not go through hax;
+    // revisit if performance is impacted.
+    for coefficient in simd_unit.coefficients.into_iter() {
+        debug_assert!(
+            coefficient > -FIELD_MODULUS && coefficient < FIELD_MODULUS,
+            "coefficient is {}",
+            coefficient
+        );
+        // This norm is calculated using the absolute value of the
+        // signed representative in the range:
+        //
+        // -FIELD_MODULUS / 2 < r <= FIELD_MODULUS / 2.
+        //
+        // So if the coefficient is negative, get its absolute value, but
+        // don't convert it into a different representation.
+        let sign = coefficient >> 31;
+        let normalized = coefficient - (sign & (2 * coefficient));
+
+        exceeds |= normalized >= bound;
+    }
+
+    exceeds
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
