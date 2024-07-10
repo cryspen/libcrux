@@ -98,3 +98,17 @@ jobs:
         run: |
           cargo clean
           cargo test --verbose --release $RUST_TARGET_FLAG
+
+  mq_status:
+    if: |
+      always() &&
+      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Successful
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+      - name: Failing
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
