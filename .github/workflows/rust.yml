@@ -222,12 +222,8 @@ jobs:
     if: |
       always() &&
       github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
-    needs: [benchmarks, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
+    needs: [benchmarks]
+    uses: cryspen/actions/.github/workflows/merge-queue-status.yml@jonas/merge-queue-status
+    with:
+      needs_json: "${{toJSON(needs)}}"
+
