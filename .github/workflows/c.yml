@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -50,6 +51,30 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
 
+  benchmark:
+    if: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: libcrux-ml-kem/c
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔨 Build Release
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+
       # FIXME: Benchmarks on Windows CI are not working right now.
       # - name: 🏃🏻‍♀️ Benchmark
       #   run: ./build/Release/ml_kem_bench
@@ -62,13 +87,8 @@ jobs:
   mq_status:
     if: |
       always() &&
-      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
+      (github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group')
+    needs: [benchmark]
+    uses: cryspen/actions/.github/workflows/merge-queue-status.yml@jonas/merge-queue-status
+    with:
+      needs_json: "${{toJSON(needs)}}"
