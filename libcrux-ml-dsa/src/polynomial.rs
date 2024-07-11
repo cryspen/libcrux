@@ -51,7 +51,8 @@ impl<SIMDUnit: Operations> SIMDPolynomialRingElement<SIMDUnit> {
         }
     }
 
-    #[inline(always)]
+    // This is useful for debugging.
+    #[allow(dead_code)]
     pub(crate) fn from_i32_array(array: &[i32]) -> Self {
         debug_assert!(array.len() == 256);
 
