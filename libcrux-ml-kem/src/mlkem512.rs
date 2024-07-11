@@ -1,6 +1,11 @@
 //! ML-KEM 512
-
-use super::{constants::*, ind_cca::*, *};
+use super::{
+    constants::*,
+    ind_cca::*,
+    types::{unpacked::*, *},
+    vector::traits::VectorType,
+    *,
+};
 
 // Kyber 512 parameters
 const RANK_512: usize = 2;
@@ -43,9 +48,16 @@ pub type MlKem512PublicKey = MlKemPublicKey<CPA_PKE_PUBLIC_KEY_SIZE_512>;
 /// An ML-KEM 512 Key pair
 pub type MlKem512KeyPair = MlKemKeyPair<SECRET_KEY_SIZE_512, CPA_PKE_PUBLIC_KEY_SIZE_512>;
 
+/// An Unpacked ML-KEM 512 Public key
+#[allow(type_alias_bounds)]
+pub type MlKem512PublicKeyUnpacked<Vector: VectorType> = MlKemPublicKeyUnpacked<RANK_512, Vector>;
+/// Am Unpacked ML-KEM 512 Key pair
+#[allow(type_alias_bounds)]
+pub type MlKem512KeyPairUnpacked<Vector: VectorType> = MlKemKeyPairUnpacked<RANK_512, Vector>;
+
 // Instantiate the different functions.
 macro_rules! instantiate {
-    ($modp:ident, $p:path, $doc:expr) => {
+    ($modp:ident, $p:path, $vec:path, $doc:expr) => {
         #[doc = $doc]
         pub mod $modp {
             use super::*;
@@ -191,17 +203,87 @@ macro_rules! instantiate {
                     IMPLICIT_REJECTION_HASH_INPUT_SIZE,
                 >(private_key, ciphertext)
             }
+
+            /// Generate ML-KEM 512 Key Pair in "unpacked" form
+            pub fn generate_key_pair_unpacked(
+                randomness: [u8; KEY_GENERATION_SEED_SIZE],
+            ) -> MlKem512KeyPairUnpacked<$vec> {
+                p::generate_keypair_unpacked::<
+                    RANK_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    RANKED_BYTES_PER_RING_ELEMENT_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                >(randomness)
+            }
+
+            /// Encapsulate ML-KEM 512 (unpacked)
+            ///
+            /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+            /// The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
+            /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+            pub fn encapsulate_unpacked(
+                public_key: &MlKem512PublicKeyUnpacked<$vec>,
+                randomness: [u8; SHARED_SECRET_SIZE],
+            ) -> (MlKem512Ciphertext, MlKemSharedSecret) {
+                p::encapsulate_unpacked::<
+                    RANK_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                >(public_key, randomness)
+            }
+
+            /// Decapsulate ML-KEM 512 (unpacked)
+            ///
+            /// Generates an [`MlKemSharedSecret`].
+            /// The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
+            /// and an [`MlKem512Ciphertext`].
+            pub fn decapsulate_unpacked(
+                private_key: &MlKem512KeyPairUnpacked<$vec>,
+                ciphertext: &MlKem512Ciphertext,
+            ) -> MlKemSharedSecret {
+                p::decapsulate_unpacked::<
+                    RANK_512,
+                    SECRET_KEY_SIZE_512,
+                    CPA_PKE_SECRET_KEY_SIZE_512,
+                    CPA_PKE_PUBLIC_KEY_SIZE_512,
+                    CPA_PKE_CIPHERTEXT_SIZE_512,
+                    T_AS_NTT_ENCODED_SIZE_512,
+                    C1_SIZE_512,
+                    C2_SIZE_512,
+                    VECTOR_U_COMPRESSION_FACTOR_512,
+                    VECTOR_V_COMPRESSION_FACTOR_512,
+                    C1_BLOCK_SIZE_512,
+                    ETA1,
+                    ETA1_RANDOMNESS_SIZE,
+                    ETA2,
+                    ETA2_RANDOMNESS_SIZE,
+                    IMPLICIT_REJECTION_HASH_INPUT_SIZE,
+                >(private_key, ciphertext)
+            }
         }
     };
 }
 
 // Instantiations
 
-instantiate! {portable, ind_cca::instantiations::portable, "Portable ML-KEM 512"}
+instantiate! {portable, ind_cca::instantiations::portable, vector::portable::PortableVector, "Portable ML-KEM 512"}
 #[cfg(feature = "simd256")]
-instantiate! {avx2, ind_cca::instantiations::avx2, "AVX2 Optimised ML-KEM 512"}
+instantiate! {avx2, ind_cca::instantiations::avx2, vector::SIMD256Vector, "AVX2 Optimised ML-KEM 512"}
 #[cfg(feature = "simd128")]
-instantiate! {neon, ind_cca::instantiations::neon, "Neon Optimised ML-KEM 512"}
+instantiate! {neon, ind_cca::instantiations::neon, vector::SIMD128Vector, "Neon Optimised ML-KEM 512"}
 
 /// Validate a public key.
 ///

@@ -9,7 +9,7 @@
 
 /* Access 64-bit fields within the int128. */
 #define HIGH64_OF(x) ((x)->high)
-#define LOW64_OF(x)  ((x)->low)
+#define LOW64_OF(x) ((x)->low)
 
 /* A series of definitions written using pointers. */
 
@@ -41,9 +41,7 @@ inline static uint128_t load128_le(uint8_t *b) {
   return r;
 }
 
-inline static void store128_le(uint8_t *b, uint128_t n) {
-  store128_le_(b, &n);
-}
+inline static void store128_le(uint8_t *b, uint128_t n) { store128_le_(b, &n); }
 
 inline static uint128_t load128_be(uint8_t *b) {
   uint128_t r;
@@ -51,17 +49,15 @@ inline static uint128_t load128_be(uint8_t *b) {
   return r;
 }
 
-inline static void store128_be(uint8_t *b, uint128_t n) {
-  store128_be_(b, &n);
-}
+inline static void store128_be(uint8_t *b, uint128_t n) { store128_be_(b, &n); }
 
 #else /* !defined(KRML_STRUCT_PASSING) */
 
-#  define print128 print128_
-#  define load128_le load128_le_
-#  define store128_le store128_le_
-#  define load128_be load128_be_
-#  define store128_be store128_be_
+#define print128 print128_
+#define load128_le load128_le_
+#define store128_le store128_le_
+#define load128_be load128_be_
+#define store128_be store128_be_
 
 #endif /* KRML_STRUCT_PASSING */
 

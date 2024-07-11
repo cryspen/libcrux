@@ -83,9 +83,7 @@ inline static uint128_t FStar_UInt128_logxor(uint128_t x, uint128_t y) {
   return x ^ y;
 }
 
-inline static uint128_t FStar_UInt128_lognot(uint128_t x) {
-  return ~x;
-}
+inline static uint128_t FStar_UInt128_lognot(uint128_t x) { return ~x; }
 
 inline static uint128_t FStar_UInt128_shift_left(uint128_t x, uint32_t y) {
   return x << y;
@@ -104,7 +102,7 @@ inline static uint64_t FStar_UInt128_uint128_to_uint64(uint128_t x) {
 }
 
 inline static uint128_t FStar_UInt128_mul_wide(uint64_t x, uint64_t y) {
-  return ((uint128_t) x) * y;
+  return ((uint128_t)x) * y;
 }
 
 inline static uint128_t FStar_UInt128_eq_mask(uint128_t x, uint128_t y) {
@@ -115,19 +113,20 @@ inline static uint128_t FStar_UInt128_eq_mask(uint128_t x, uint128_t y) {
 }
 
 inline static uint128_t FStar_UInt128_gte_mask(uint128_t x, uint128_t y) {
-  uint64_t mask =
-      (FStar_UInt64_gte_mask(x >> 64, y >> 64) &
-       ~(FStar_UInt64_eq_mask(x >> 64, y >> 64))) |
-      (FStar_UInt64_eq_mask(x >> 64, y >> 64) & FStar_UInt64_gte_mask((uint64_t)x, (uint64_t)y));
+  uint64_t mask = (FStar_UInt64_gte_mask(x >> 64, y >> 64) &
+                   ~(FStar_UInt64_eq_mask(x >> 64, y >> 64))) |
+                  (FStar_UInt64_eq_mask(x >> 64, y >> 64) &
+                   FStar_UInt64_gte_mask((uint64_t)x, (uint64_t)y));
   return ((uint128_t)mask) << 64 | mask;
 }
 
 inline static uint64_t FStar_UInt128___proj__Mkuint128__item__low(uint128_t x) {
-  return (uint64_t) x;
+  return (uint64_t)x;
 }
 
-inline static uint64_t FStar_UInt128___proj__Mkuint128__item__high(uint128_t x) {
-  return (uint64_t) (x >> 64);
+inline static uint64_t FStar_UInt128___proj__Mkuint128__item__high(
+    uint128_t x) {
+  return (uint64_t)(x >> 64);
 }
 
 inline static uint128_t FStar_UInt128_add_underspec(uint128_t x, uint128_t y) {
@@ -138,17 +137,11 @@ inline static uint128_t FStar_UInt128_sub_underspec(uint128_t x, uint128_t y) {
   return x - y;
 }
 
-inline static bool FStar_UInt128_eq(uint128_t x, uint128_t y) {
-  return x == y;
-}
+inline static bool FStar_UInt128_eq(uint128_t x, uint128_t y) { return x == y; }
 
-inline static bool FStar_UInt128_gt(uint128_t x, uint128_t y) {
-  return x > y;
-}
+inline static bool FStar_UInt128_gt(uint128_t x, uint128_t y) { return x > y; }
 
-inline static bool FStar_UInt128_lt(uint128_t x, uint128_t y) {
-  return x < y;
-}
+inline static bool FStar_UInt128_lt(uint128_t x, uint128_t y) { return x < y; }
 
 inline static bool FStar_UInt128_gte(uint128_t x, uint128_t y) {
   return x >= y;
@@ -159,7 +152,7 @@ inline static bool FStar_UInt128_lte(uint128_t x, uint128_t y) {
 }
 
 inline static uint128_t FStar_UInt128_mul32(uint64_t x, uint32_t y) {
-  return (uint128_t) x * (uint128_t) y;
+  return (uint128_t)x * (uint128_t)y;
 }
 
 #endif
