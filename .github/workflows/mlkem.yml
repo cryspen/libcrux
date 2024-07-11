@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -252,7 +253,7 @@ jobs:
     if: |
       always() &&
       github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
-    needs: [benchmarks, build]
+    needs: [benchmarks]
     runs-on: ubuntu-latest
     steps:
       - name: Successful

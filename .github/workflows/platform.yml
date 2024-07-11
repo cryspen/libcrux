@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: ["main", "dev", "*"]
   workflow_dispatch:
-  merge_group:
 
 env:
   CARGO_TERM_COLOR: always
@@ -76,16 +75,3 @@ jobs:
         if: ${{ matrix.bits == 32 &&  matrix.os == 'windows-latest' }}
         run: cargo test --verbose --release --target i686-pc-windows-msvc -- --nocapture
 
-  mq_status:
-    if: |
-      always() &&
-      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
-    needs: [platform]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Successful
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        run: exit 0
-      - name: Failing
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1

@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if:  ${{ github.event_name != 'merge_group' }}
     strategy:
       fail-fast: false
       matrix:
@@ -221,7 +222,7 @@ jobs:
   mq_status:
     if: |
       always() &&
-      github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group'
+      (github.event_name ==  'workflow_dispatch' || github.event_name ==  'merge_group')
     needs: [benchmarks]
     uses: cryspen/actions/.github/workflows/merge-queue-status.yml@jonas/merge-queue-status
     with:
