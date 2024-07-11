@@ -43,7 +43,7 @@ val compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8)
 
 /// If `selector` is not zero, return the bytes in `rhs`; return the bytes in
 /// `lhs` otherwise.
-val select (lhs rhs: t_Slice u8) (selector: u8)
+val select_ct (lhs rhs: t_Slice u8) (selector: u8)
     : Prims.Pure (t_Array u8 (sz 32))
       Prims.l_True
       (ensures

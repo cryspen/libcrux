@@ -11,7 +11,7 @@ type t_PortableHash (v_K: usize) = {
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #(t_PortableHash v_K) v_K =
+let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash (t_PortableHash v_K) v_K =
   {
     f_G_pre = (fun (input: t_Slice u8) -> true);
     f_G_post = (fun (input: t_Slice u8) (out: t_Array u8 (sz 64)) -> true);
@@ -68,6 +68,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #(t_PortableHash v_
         let out:t_Array (t_Array u8 v_LEN) v_K =
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                   usize)
+                #FStar.Tactics.Typeclasses.solve
                 ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                   <:
                   Core.Ops.Range.t_Range usize)
@@ -116,6 +117,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #(t_PortableHash v_
         let state:t_Array Libcrux_sha3.Portable.t_KeccakState v_K =
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                   usize)
+                #FStar.Tactics.Typeclasses.solve
                 ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                   <:
                   Core.Ops.Range.t_Range usize)
@@ -169,6 +171,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #(t_PortableHash v_
         let out, self:(t_Array (t_Array u8 (sz 504)) v_K & t_PortableHash v_K) =
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                   usize)
+                #FStar.Tactics.Typeclasses.solve
                 ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                   <:
                   Core.Ops.Range.t_Range usize)
@@ -236,6 +239,7 @@ let impl (v_K: usize) : Libcrux_ml_kem.Hash_functions.t_Hash #(t_PortableHash v_
       let out, self:(t_Array (t_Array u8 (sz 168)) v_K & t_PortableHash v_K) =
         Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                 usize)
+              #FStar.Tactics.Typeclasses.solve
               ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                 <:
                 Core.Ops.Range.t_Range usize)

@@ -7,7 +7,10 @@ let get_n_least_significant_bits (n: u8) (value: u32) = value &. ((1ul <<! n <: 
 
 let barrett_reduce_element (value: i16) =
   let t:i32 =
-    ((Core.Convert.f_from #i32 #i16 value <: i32) *! v_BARRETT_MULTIPLIER <: i32) +!
+    ((Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) *!
+      v_BARRETT_MULTIPLIER
+      <:
+      i32) +!
     (v_BARRETT_R >>! 1l <: i32)
   in
   let quotient:i16 = cast (t >>! v_BARRETT_SHIFT <: i32) <: i16 in
@@ -34,6 +37,7 @@ let add (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -69,6 +73,7 @@ let barrett_reduce (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVect
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -108,6 +113,7 @@ let bitwise_and_with_constant
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -140,6 +146,7 @@ let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portabl
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -197,6 +204,7 @@ let montgomery_multiply_by_constant
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -235,6 +243,7 @@ let multiply_by_constant (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portab
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -267,6 +276,7 @@ let shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -301,6 +311,7 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let lhs:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR

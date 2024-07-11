@@ -7,6 +7,7 @@ let _ =
   (* This module has implicit dependencies, here we make them explicit. *)
   (* The implicit dependencies arise from typeclasses instances. *)
   let open Libcrux_ml_kem.Hash_functions in
+  let open Libcrux_ml_kem.Polynomial in
   let open Libcrux_ml_kem.Types in
   let open Libcrux_ml_kem.Vector.Traits in
   ()
@@ -45,7 +46,7 @@ val validate_public_key
 /// (Draft FIPS 203) and the Round 3 CRYSTALS-Kyber submission in the
 /// NIST PQ competition.
 /// cf. FIPS 203 (Draft), section 1.3
-class t_Variant (#v_Self: Type0) = {
+class t_Variant (v_Self: Type0) = {
   f_kdf_pre:
       v_K: usize ->
       v_CIPHERTEXT_SIZE: usize ->
@@ -71,8 +72,8 @@ class t_Variant (#v_Self: Type0) = {
       x0: t_Slice u8 ->
       x1: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE
     -> Prims.Pure (t_Array u8 (sz 32))
-        (f_kdf_pre v_K v_CIPHERTEXT_SIZE v_Hasher i1 x0 x1)
-        (fun result -> f_kdf_post v_K v_CIPHERTEXT_SIZE v_Hasher i1 x0 x1 result);
+        (f_kdf_pre v_K v_CIPHERTEXT_SIZE #v_Hasher #i1 x0 x1)
+        (fun result -> f_kdf_post v_K v_CIPHERTEXT_SIZE #v_Hasher #i1 x0 x1 result);
   f_entropy_preprocess_pre:
       v_K: usize ->
       #v_Hasher: Type0 ->
@@ -92,12 +93,12 @@ class t_Variant (#v_Self: Type0) = {
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |} ->
       x0: t_Slice u8
     -> Prims.Pure (t_Array u8 (sz 32))
-        (f_entropy_preprocess_pre v_K v_Hasher i3 x0)
-        (fun result -> f_entropy_preprocess_post v_K v_Hasher i3 x0 result)
+        (f_entropy_preprocess_pre v_K #v_Hasher #i3 x0)
+        (fun result -> f_entropy_preprocess_post v_K #v_Hasher #i3 x0 result)
 }
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: t_Variant #t_MlKem =
+let impl: t_Variant t_MlKem =
   {
     f_kdf_pre
     =
@@ -203,6 +204,7 @@ val encapsulate
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Packed API
 /// Generate a key pair.
 /// Depending on the `Vector` and `Hasher` used, this requires different hardware
 /// features
@@ -214,5 +216,38 @@ val generate_keypair
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (randomness: t_Array u8 (sz 64))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val encapsulate_unpacked
+      (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
+          usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked v_K v_Vector)
+      (randomness: t_Array u8 (sz 32))
+    : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE & t_Array u8 (sz 32))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val decapsulate_unpacked
+      (v_K v_SECRET_KEY_SIZE v_CPA_SECRET_KEY_SIZE v_PUBLIC_KEY_SIZE v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE v_IMPLICIT_REJECTION_HASH_INPUT_SIZE:
+          usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (key_pair: Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked v_K v_Vector)
+      (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
+val generate_keypair_unpacked
+      (v_K v_CPA_PRIVATE_KEY_SIZE v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
+          usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (randomness: t_Array u8 (sz 64))
+    : Prims.Pure (Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked v_K v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)

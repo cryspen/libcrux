@@ -55,6 +55,69 @@ val deserialize_then_decompress_u
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+/// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
+val deserialize_secret_key
+      (v_K: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (secret_key: t_Slice u8)
+    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+/// Call [`serialize_uncompressed_ring_element`] for each ring element.
+val serialize_secret_key
+      (v_K v_OUT_LEN: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
+
+/// Concatenate `t` and `ρ` into the public key.
+val serialize_public_key
+      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+      (seed_for_a: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+
+/// This function implements <strong>Algorithm 14</strong> of the
+/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
+/// Algorithm 14 is reproduced below:
+/// ```plaintext
+/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
+/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
+/// Output: message m ∈ 𝔹^{32}.
+/// c₁ ← c[0 : 32dᵤk]
+/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
+/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
+/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
+/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
+/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
+/// m ← ByteEncode₁(Compress₁(w))
+/// return m
+/// ```
+/// The NIST FIPS 203 standard can be found at
+/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+val decrypt_unpacked
+      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
+          usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (secret_key: Libcrux_ml_kem.Types.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
+val decrypt
+      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
+          usize)
+      (#v_Vector: Type0)
+      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      (secret_key: t_Slice u8)
+      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
+
 /// This function implements <strong>Algorithm 13</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE encryption algorithm.
 /// Algorithm 13 is reproduced below:
@@ -90,6 +153,17 @@ val deserialize_then_decompress_u
 /// ```
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+val encrypt_unpacked
+      (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
+          usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (public_key: Libcrux_ml_kem.Types.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (message: t_Array u8 (sz 32))
+      (randomness: t_Slice u8)
+    : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
+
 val encrypt
       (v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_LEN v_C2_LEN v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR v_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
           usize)
@@ -100,60 +174,6 @@ val encrypt
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
     : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Call [`deserialize_to_uncompressed_ring_element`] for each ring element.
-val deserialize_secret_key
-      (v_K: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: t_Slice u8)
-    : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
-/// This function implements <strong>Algorithm 14</strong> of the
-/// NIST FIPS 203 specification; this is the Kyber CPA-PKE decryption algorithm.
-/// Algorithm 14 is reproduced below:
-/// ```plaintext
-/// Input: decryption key dkₚₖₑ ∈ 𝔹^{384k}.
-/// Input: ciphertext c ∈ 𝔹^{32(dᵤk + dᵥ)}.
-/// Output: message m ∈ 𝔹^{32}.
-/// c₁ ← c[0 : 32dᵤk]
-/// c₂ ← c[32dᵤk : 32(dᵤk + dᵥ)]
-/// u ← Decompress_{dᵤ}(ByteDecode_{dᵤ}(c₁))
-/// v ← Decompress_{dᵥ}(ByteDecode_{dᵥ}(c₂))
-/// ŝ ← ByteDecode₁₂(dkₚₖₑ)
-/// w ← v - NTT-¹(ŝᵀ ◦ NTT(u))
-/// m ← ByteEncode₁(Compress₁(w))
-/// return m
-/// ```
-/// The NIST FIPS 203 standard can be found at
-/// <https://csrc.nist.gov/pubs/fips/203/ipd>.
-val decrypt
-      (v_K v_CIPHERTEXT_SIZE v_VECTOR_U_ENCODED_SIZE v_U_COMPRESSION_FACTOR v_V_COMPRESSION_FACTOR:
-          usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: t_Slice u8)
-      (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
-    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Call [`serialize_uncompressed_ring_element`] for each ring element.
-val serialize_secret_key
-      (v_K v_OUT_LEN: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (key: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-    : Prims.Pure (t_Array u8 v_OUT_LEN) Prims.l_True (fun _ -> Prims.l_True)
-
-/// Concatenate `t` and `ρ` into the public key.
-val serialize_public_key
-      (v_K v_RANKED_BYTES_PER_RING_ELEMENT v_PUBLIC_KEY_SIZE: usize)
-      (#v_Vector: Type0)
-      {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (tt_as_ntt: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      (seed_for_a: t_Slice u8)
-    : Prims.Pure (t_Array u8 v_PUBLIC_KEY_SIZE) Prims.l_True (fun _ -> Prims.l_True)
 
 /// This function implements most of <strong>Algorithm 12</strong> of the
 /// NIST FIPS 203 specification; this is the Kyber CPA-PKE key generation algorithm.
@@ -188,6 +208,18 @@ val serialize_public_key
 /// ```
 /// The NIST FIPS 203 standard can be found at
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
+val generate_keypair_unpacked
+      (v_K v_ETA1 v_ETA1_RANDOMNESS_SIZE: usize)
+      (#v_Vector #v_Hasher: Type0)
+      {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
+      {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
+      (key_generation_seed: t_Slice u8)
+    : Prims.Pure
+      (Libcrux_ml_kem.Types.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
+        Libcrux_ml_kem.Types.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 val generate_keypair
       (v_K v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE v_RANKED_BYTES_PER_RING_ELEMENT v_ETA1 v_ETA1_RANDOMNESS_SIZE:
           usize)

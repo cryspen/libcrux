@@ -29,6 +29,7 @@ let compress
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -66,6 +67,7 @@ let compress_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
@@ -110,6 +112,7 @@ let decompress_ciphertext_coefficient
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR

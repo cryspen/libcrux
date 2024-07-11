@@ -1,0 +1,24 @@
+{
+    "fstar_exe": "fstar.exe",
+    "options": [
+        "--warn_error",
+        "-274-321-331",
+        "--cache_checked_modules",
+        "--query_stats",
+        "--record_hints",
+        "--log_queries",
+        "--cache_dir",
+        ".cache",
+        "--no_location_info",
+        "--use_hints"
+    ],
+    "include_dirs": [
+        "${HACL_HOME}/lib",
+        "${HAX_HOME}/proof-libs/fstar/rust_primitives",
+        "${HAX_HOME}/proof-libs/fstar/core",
+        "${HAX_HOME}/hax-lib/proofs/fstar/extraction",
+        "../../../../sys/platform/proofs/fstar/extraction",
+        "../../../../libcrux-sha3/proofs/fstar/extraction",
+        "../../../../libcrux-intrinsics/proofs/fstar/extraction"
+    ]
+}

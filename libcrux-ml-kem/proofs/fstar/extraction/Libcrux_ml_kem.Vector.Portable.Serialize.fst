@@ -8,6 +8,7 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   let result:t_Array u8 (sz 2) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -32,6 +33,7 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   let result:t_Array u8 (sz 2) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 8; Core.Ops.Range.f_end = sz 16 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -1557,6 +1559,7 @@ let deserialize_1_ (v: t_Slice u8) =
   let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -1583,6 +1586,7 @@ let deserialize_1_ (v: t_Slice u8) =
   let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 8;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR

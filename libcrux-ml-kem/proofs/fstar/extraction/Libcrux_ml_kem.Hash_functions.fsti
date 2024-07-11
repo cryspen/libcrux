@@ -9,7 +9,7 @@ open FStar.Mul
 /// - AVX2
 /// - NEON
 /// - Portable
-class t_Hash (#v_Self: Type0) (v_K: usize) = {
+class t_Hash (v_Self: Type0) (v_K: usize) = {
   f_G_pre:t_Slice u8 -> bool;
   f_G_post:t_Slice u8 -> t_Array u8 (sz 64) -> bool;
   f_G:x0: t_Slice u8

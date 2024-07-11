@@ -11,7 +11,7 @@ let _ =
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
 let impl: Libcrux_ml_kem.Vector.Traits.t_Operations
-#Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
   {
     _super_11581440318597584651 = FStar.Tactics.Typeclasses.solve;
     _super_9442900250278684536 = FStar.Tactics.Typeclasses.solve;

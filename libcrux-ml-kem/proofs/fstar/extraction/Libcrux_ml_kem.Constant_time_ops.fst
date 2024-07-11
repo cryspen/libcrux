@@ -18,6 +18,7 @@ let compare (lhs rhs: t_Slice u8) =
   let r:u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Core.Slice.impl__len #u8 lhs <: usize
@@ -37,12 +38,13 @@ let compare (lhs rhs: t_Slice u8) =
 let compare_ciphertexts_in_constant_time (lhs rhs: t_Slice u8) =
   Core.Hint.black_box #u8 (compare lhs rhs <: u8)
 
-let select (lhs rhs: t_Slice u8) (selector: u8) =
+let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
   let mask:u8 = Core.Num.impl__u8__wrapping_sub (is_non_zero selector <: u8) 1uy in
   let out:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let out:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE
@@ -64,4 +66,4 @@ let select (lhs rhs: t_Slice u8) (selector: u8) =
   out
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
-  Core.Hint.black_box #(t_Array u8 (sz 32)) (select lhs rhs selector <: t_Array u8 (sz 32))
+  Core.Hint.black_box #(t_Array u8 (sz 32)) (select_ct lhs rhs selector <: t_Array u8 (sz 32))

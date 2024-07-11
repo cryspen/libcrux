@@ -18,8 +18,12 @@ let ntt_layer_int_vec_step
       (zeta_r: i16)
      =
   let t:v_Vector = Libcrux_ml_kem.Vector.Traits.montgomery_multiply_fe #v_Vector b zeta_r in
-  let b:v_Vector = Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector a t in
-  let a:v_Vector = Libcrux_ml_kem.Vector.Traits.f_add #v_Vector a t in
+  let b:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector #FStar.Tactics.Typeclasses.solve a t
+  in
+  let a:v_Vector =
+    Libcrux_ml_kem.Vector.Traits.f_add #v_Vector #FStar.Tactics.Typeclasses.solve a t
+  in
   a, b <: (v_Vector & v_Vector)
 
 let ntt_at_layer_1_
@@ -35,6 +39,7 @@ let ntt_at_layer_1_
     usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -56,6 +61,7 @@ let ntt_at_layer_1_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 round
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_1_step #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
                     (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
                     (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 1 <: usize
@@ -94,6 +100,7 @@ let ntt_at_layer_2_
     usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -115,6 +122,7 @@ let ntt_at_layer_2_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 round
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_2_step #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
                     (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
                     (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i +! sz 1 <: usize
@@ -145,6 +153,7 @@ let ntt_at_layer_3_
     usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -166,6 +175,7 @@ let ntt_at_layer_3_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 round
                 (Libcrux_ml_kem.Vector.Traits.f_ntt_layer_3_step #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ round ] <: v_Vector)
                     (Libcrux_ml_kem.Polynomial.v_ZETAS_TIMES_MONTGOMERY_R.[ zeta_i ] <: i16)
                   <:
@@ -204,6 +214,7 @@ let ntt_at_layer_4_plus
     usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 128 >>! layer <: usize }
             <:
             Core.Ops.Range.t_Range usize)
@@ -222,6 +233,7 @@ let ntt_at_layer_4_plus
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                     usize)
+                  #FStar.Tactics.Typeclasses.solve
                   ({
                       Core.Ops.Range.f_start = offset_vec;
                       Core.Ops.Range.f_end = offset_vec +! step_vec <: usize
@@ -285,6 +297,7 @@ let ntt_at_layer_7_
   let re, hax_temp_output:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = step }
             <:
             Core.Ops.Range.t_Range usize)
@@ -296,6 +309,7 @@ let ntt_at_layer_7_
           let j:usize = j in
           let t:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_multiply_by_constant #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j +! step <: usize ] <: v_Vector)
               (-1600s)
           in
@@ -308,6 +322,7 @@ let ntt_at_layer_7_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 (j +! step <: usize)
                 (Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j ] <: v_Vector)
                     t
                   <:
@@ -325,6 +340,7 @@ let ntt_at_layer_7_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 j
                 (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ j ] <: v_Vector)
                     t
                   <:

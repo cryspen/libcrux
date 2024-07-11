@@ -34,8 +34,10 @@ let compute_As_plus_e
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_Iter
               (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
                 (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__iter #(t_Array
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
                   (Rust_primitives.unsize matrix_A
@@ -66,8 +68,10 @@ let compute_As_plus_e
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
                     (Core.Slice.Iter.t_Iter
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
+                  #FStar.Tactics.Typeclasses.solve
                   (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
                         (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
+                      #FStar.Tactics.Typeclasses.solve
                       (Core.Slice.impl__iter #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
                             v_Vector)
                           (Rust_primitives.unsize row
@@ -142,6 +146,7 @@ let compute_ring_element_v
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
@@ -192,8 +197,10 @@ let compute_vector_u
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_Iter
               (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
                 (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__iter #(t_Array
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
                   (Rust_primitives.unsize a_as_ntt
@@ -224,8 +231,10 @@ let compute_vector_u
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
                     (Core.Slice.Iter.t_Iter
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)))
+                  #FStar.Tactics.Typeclasses.solve
                   (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_Iter
                         (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector))
+                      #FStar.Tactics.Typeclasses.solve
                       (Core.Slice.impl__iter #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
                             v_Vector)
                           (Rust_primitives.unsize row
@@ -310,6 +319,7 @@ let compute_message
   let result:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
@@ -369,6 +379,7 @@ let sample_matrix_A
     (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
@@ -385,6 +396,7 @@ let sample_matrix_A
           let seeds:t_Array (t_Array u8 (sz 34)) v_K =
             Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                     usize)
+                  #FStar.Tactics.Typeclasses.solve
                   ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
                     <:
                     Core.Ops.Range.t_Range usize)
@@ -424,10 +436,13 @@ let sample_matrix_A
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
                   (Core.Array.Iter.t_IntoIter
                       (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K))
+                #FStar.Tactics.Typeclasses.solve
                 (Core.Iter.Traits.Iterator.f_enumerate #(Core.Array.Iter.t_IntoIter
                         (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+                    #FStar.Tactics.Typeclasses.solve
                     (Core.Iter.Traits.Collect.f_into_iter #(t_Array
                             (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
+                        #FStar.Tactics.Typeclasses.solve
                         sampled
                       <:
                       Core.Array.Iter.t_IntoIter

@@ -19,7 +19,11 @@ let impl__ZERO
   {
     f_coefficients
     =
-    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Vector.Traits.f_ZERO #v_Vector () <: v_Vector)
+    Rust_primitives.Hax.repeat (Libcrux_ml_kem.Vector.Traits.f_ZERO #v_Vector
+          #FStar.Tactics.Typeclasses.solve
+          ()
+        <:
+        v_Vector)
       (sz 16)
   }
   <:
@@ -35,6 +39,7 @@ let impl__add_error_reduce
   let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
             <:
             Core.Ops.Range.t_Range usize)
@@ -46,6 +51,7 @@ let impl__add_error_reduce
           let j:usize = j in
           let coefficient_normal_form:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               (self.f_coefficients.[ j ] <: v_Vector)
               1441s
           in
@@ -57,7 +63,9 @@ let impl__add_error_reduce
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_coefficients
                 j
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+                        #FStar.Tactics.Typeclasses.solve
                         coefficient_normal_form
                         (error.f_coefficients.[ j ] <: v_Vector)
                       <:
@@ -82,6 +90,7 @@ let impl__add_message_error_reduce
   let result:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
             <:
             Core.Ops.Range.t_Range usize)
@@ -93,16 +102,21 @@ let impl__add_message_error_reduce
           let i:usize = i in
           let coefficient_normal_form:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               (result.f_coefficients.[ i ] <: v_Vector)
               1441s
           in
           let tmp:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               (self.f_coefficients.[ i ] <: v_Vector)
               (message.f_coefficients.[ i ] <: v_Vector)
           in
           let tmp:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_add #v_Vector coefficient_normal_form tmp
+            Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient_normal_form
+              tmp
           in
           let result:t_PolynomialRingElement v_Vector =
             {
@@ -111,7 +125,11 @@ let impl__add_message_error_reduce
               =
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result.f_coefficients
                 i
-                (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector tmp <: v_Vector)
+                (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
+                    tmp
+                  <:
+                  v_Vector)
             }
             <:
             t_PolynomialRingElement v_Vector
@@ -130,6 +148,7 @@ let impl__add_standard_error_reduce
   let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
             <:
             Core.Ops.Range.t_Range usize)
@@ -151,7 +170,9 @@ let impl__add_standard_error_reduce
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_coefficients
                 j
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+                        #FStar.Tactics.Typeclasses.solve
                         coefficient_normal_form
                         (error.f_coefficients.[ j ] <: v_Vector)
                       <:
@@ -177,6 +198,7 @@ let impl__add_to_ring_element
   let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end
@@ -201,6 +223,7 @@ let impl__add_to_ring_element
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_coefficients
               i
               (Libcrux_ml_kem.Vector.Traits.f_add #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
                   (self.f_coefficients.[ i ] <: v_Vector)
                   (rhs.f_coefficients.[ i ] <: v_Vector)
                 <:
@@ -224,6 +247,7 @@ let impl__from_i16_array
   let result:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
             <:
             Core.Ops.Range.t_Range usize)
@@ -240,6 +264,7 @@ let impl__from_i16_array
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result.f_coefficients
               i
               (Libcrux_ml_kem.Vector.Traits.f_from_i16_array #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
                   (a.[ {
                         Core.Ops.Range.f_start = i *! sz 16 <: usize;
                         Core.Ops.Range.f_end = (i +! sz 1 <: usize) *! sz 16 <: usize
@@ -269,6 +294,7 @@ let impl__ntt_multiply
   let out:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
             <:
             Core.Ops.Range.t_Range usize)
@@ -285,6 +311,7 @@ let impl__ntt_multiply
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize out.f_coefficients
               i
               (Libcrux_ml_kem.Vector.Traits.f_ntt_multiply #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
                   (self.f_coefficients.[ i ] <: v_Vector)
                   (rhs.f_coefficients.[ i ] <: v_Vector)
                   (v_ZETAS_TIMES_MONTGOMERY_R.[ sz 64 +! (sz 4 *! i <: usize) <: usize ] <: i16)
@@ -323,6 +350,7 @@ let impl__poly_barrett_reduce
   let self, hax_temp_output:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
             <:
             Core.Ops.Range.t_Range usize)
@@ -339,6 +367,7 @@ let impl__poly_barrett_reduce
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize self.f_coefficients
               i
               (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
                   (self.f_coefficients.[ i ] <: v_Vector)
                 <:
                 v_Vector)
@@ -360,6 +389,7 @@ let impl__subtract_reduce
   let b:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_VECTORS_IN_RING_ELEMENT }
             <:
             Core.Ops.Range.t_Range usize)
@@ -371,6 +401,7 @@ let impl__subtract_reduce
           let i:usize = i in
           let coefficient_normal_form:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_montgomery_multiply_by_constant #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               (b.f_coefficients.[ i ] <: v_Vector)
               1441s
           in
@@ -382,7 +413,9 @@ let impl__subtract_reduce
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize b.f_coefficients
                 i
                 (Libcrux_ml_kem.Vector.Traits.f_barrett_reduce #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     (Libcrux_ml_kem.Vector.Traits.f_sub #v_Vector
+                        #FStar.Tactics.Typeclasses.solve
                         (self.f_coefficients.[ i ] <: v_Vector)
                         coefficient_normal_form
                       <:

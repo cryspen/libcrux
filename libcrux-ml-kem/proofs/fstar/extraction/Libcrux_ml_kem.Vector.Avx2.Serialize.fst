@@ -301,6 +301,7 @@ let serialize_10_ (vector: Core.Core_arch.X86.t____m256i) =
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
         #(t_Array u8 (sz 20))
+        #FStar.Tactics.Typeclasses.solve
         (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 20 }
             <:
             Core.Ops.Range.t_Range usize ]
@@ -379,6 +380,7 @@ let serialize_12_ (vector: Core.Core_arch.X86.t____m256i) =
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
         #(t_Array u8 (sz 24))
+        #FStar.Tactics.Typeclasses.solve
         (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 24 }
             <:
             Core.Ops.Range.t_Range usize ]
@@ -462,6 +464,7 @@ let serialize_5_ (vector: Core.Core_arch.X86.t____m256i) =
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
         #(t_Array u8 (sz 10))
+        #FStar.Tactics.Typeclasses.solve
         (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 10 }
             <:
             Core.Ops.Range.t_Range usize ]
@@ -504,6 +507,7 @@ let serialize_4_ (vector: Core.Core_arch.X86.t____m256i) =
     #Core.Array.t_TryFromSliceError
     (Core.Convert.f_try_into #(t_Slice u8)
         #(t_Array u8 (sz 8))
+        #FStar.Tactics.Typeclasses.solve
         (serialized.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
             <:
             Core.Ops.Range.t_Range usize ]
