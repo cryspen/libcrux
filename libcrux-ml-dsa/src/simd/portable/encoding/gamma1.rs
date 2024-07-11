@@ -1,6 +1,77 @@
 use crate::simd::portable::simd_unit_type::*;
 
 #[inline(always)]
+fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_BYTES: usize>(
+    simd_unit: PortableSIMDUnit,
+) -> [u8; OUTPUT_BYTES] {
+    const GAMMA1: i32 = 1 << 17;
+
+    let mut serialized = [0u8; OUTPUT_BYTES];
+
+    for (i, coefficients) in simd_unit.coefficients.chunks_exact(4).enumerate() {
+        let coefficient0 = GAMMA1 - coefficients[0];
+        let coefficient1 = GAMMA1 - coefficients[1];
+        let coefficient2 = GAMMA1 - coefficients[2];
+        let coefficient3 = GAMMA1 - coefficients[3];
+
+        serialized[9 * i] = coefficient0 as u8;
+        serialized[9 * i + 1] = (coefficient0 >> 8) as u8;
+
+        serialized[9 * i + 2] = (coefficient0 >> 16) as u8;
+        serialized[9 * i + 2] |= (coefficient1 << 2) as u8;
+
+        serialized[9 * i + 3] = (coefficient1 >> 6) as u8;
+
+        serialized[9 * i + 4] = (coefficient1 >> 14) as u8;
+        serialized[9 * i + 4] |= (coefficient2 << 4) as u8;
+
+        serialized[9 * i + 5] = (coefficient2 >> 4) as u8;
+
+        serialized[9 * i + 6] = (coefficient2 >> 12) as u8;
+        serialized[9 * i + 6] |= (coefficient3 << 6) as u8;
+
+        serialized[9 * i + 7] = (coefficient3 >> 2) as u8;
+        serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
+    }
+
+    serialized
+}
+#[inline(always)]
+fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_BYTES: usize>(
+    simd_unit: PortableSIMDUnit,
+) -> [u8; OUTPUT_BYTES] {
+    const GAMMA1: i32 = 1 << 19;
+
+    let mut serialized = [0u8; OUTPUT_BYTES];
+
+    for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
+        let coefficient0 = GAMMA1 - coefficients[0];
+        let coefficient1 = GAMMA1 - coefficients[1];
+
+        serialized[5 * i] = coefficient0 as u8;
+        serialized[5 * i + 1] = (coefficient0 >> 8) as u8;
+
+        serialized[5 * i + 2] = (coefficient0 >> 16) as u8;
+        serialized[5 * i + 2] |= (coefficient1 << 4) as u8;
+
+        serialized[5 * i + 3] = (coefficient1 >> 4) as u8;
+        serialized[5 * i + 4] = (coefficient1 >> 12) as u8;
+    }
+
+    serialized
+}
+#[inline(always)]
+pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
+    simd_unit: PortableSIMDUnit,
+) -> [u8; OUTPUT_BYTES] {
+    match GAMMA1_EXPONENT {
+        17 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_BYTES>(simd_unit),
+        19 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_BYTES>(simd_unit),
+        _ => unreachable!(),
+    }
+}
+
+#[inline(always)]
 fn deserialize_when_gamma1_is_2_pow_17(serialized: &[u8]) -> PortableSIMDUnit {
     // Each set of 9 bytes deserializes to 4 elements, and since each PortableSIMDUnit
     // can hold 8, we process 18 bytes in this function.

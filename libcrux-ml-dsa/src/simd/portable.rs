@@ -54,6 +54,11 @@ impl Operations for PortableSIMDUnit {
         sample::rejection_sample_less_than_eta_equals_4(randomness, out)
     }
 
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
+        simd_unit: Self,
+    ) -> [u8; OUTPUT_BYTES] {
+        encoding::gamma1::serialize::<GAMMA1_EXPONENT, OUTPUT_BYTES>(simd_unit)
+    }
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
         encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized)
     }

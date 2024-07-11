@@ -4,72 +4,40 @@ use crate::{
 };
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
+pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
     re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
-    const GAMMA1: i32 = 1 << 17;
+) -> [u8; OUTPUT_BYTES] {
+    let mut serialized = [0u8; OUTPUT_BYTES];
 
-    for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
-        let coefficient0 = GAMMA1 - coefficients[0];
-        let coefficient1 = GAMMA1 - coefficients[1];
-        let coefficient2 = GAMMA1 - coefficients[2];
-        let coefficient3 = GAMMA1 - coefficients[3];
+    let mut v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
-        serialized[9 * i] = coefficient0 as u8;
-        serialized[9 * i + 1] = (coefficient0 >> 8) as u8;
-
-        serialized[9 * i + 2] = (coefficient0 >> 16) as u8;
-        serialized[9 * i + 2] |= (coefficient1 << 2) as u8;
-
-        serialized[9 * i + 3] = (coefficient1 >> 6) as u8;
-
-        serialized[9 * i + 4] = (coefficient1 >> 14) as u8;
-        serialized[9 * i + 4] |= (coefficient2 << 4) as u8;
-
-        serialized[9 * i + 5] = (coefficient2 >> 4) as u8;
-
-        serialized[9 * i + 6] = (coefficient2 >> 12) as u8;
-        serialized[9 * i + 6] |= (coefficient3 << 6) as u8;
-
-        serialized[9 * i + 7] = (coefficient3 >> 2) as u8;
-        serialized[9 * i + 8] = (coefficient3 >> 10) as u8;
-    }
-
-    serialized
-}
-
-#[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
-    const GAMMA1: i32 = 1 << 19;
-
-    for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient0 = GAMMA1 - coefficients[0];
-        let coefficient1 = GAMMA1 - coefficients[1];
-
-        serialized[5 * i] = coefficient0 as u8;
-        serialized[5 * i + 1] = (coefficient0 >> 8) as u8;
-
-        serialized[5 * i + 2] = (coefficient0 >> 16) as u8;
-        serialized[5 * i + 2] |= (coefficient1 << 4) as u8;
-
-        serialized[5 * i + 3] = (coefficient1 >> 4) as u8;
-        serialized[5 * i + 4] = (coefficient1 >> 12) as u8;
-    }
-
-    serialized
-}
-
-#[inline(always)]
-pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
     match GAMMA1_EXPONENT {
-        17 => serialize_when_gamma1_is_2_pow_17(re),
-        19 => serialize_when_gamma1_is_2_pow_19(re),
+        17 => {
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 18;
+
+            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&PortableSIMDUnit::gamma1_serialize::<
+                        GAMMA1_EXPONENT,
+                        OUTPUT_BYTES_PER_SIMD_UNIT,
+                    >(*simd_unit));
+            }
+
+            serialized
+        }
+        19 => {
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 20;
+
+            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&PortableSIMDUnit::gamma1_serialize::<
+                        GAMMA1_EXPONENT,
+                        OUTPUT_BYTES_PER_SIMD_UNIT,
+                    >(*simd_unit));
+            }
+
+            serialized
+        }
         _ => unreachable!(),
     }
 }
