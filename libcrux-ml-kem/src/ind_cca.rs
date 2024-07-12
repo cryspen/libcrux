@@ -5,12 +5,37 @@ use crate::{
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
     polynomial::PolynomialRingElement,
-    ind_cpa::{unpacked::*,serialize_public_key},
+    ind_cpa::serialize_public_key,
     serialize::deserialize_ring_elements_reduced,
     types::*,
     utils::into_padded_array,
     vector::Operations,
 };
+
+#[allow(non_snake_case)]
+/// Types for the unpacked API.
+pub mod unpacked {
+    use crate::{ind_cpa::unpacked::*, vector::traits::Operations};
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K,Vector>,
+        pub(crate) implicit_rejection_value: [u8; 32],
+    }
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K,Vector>,
+        pub(crate) public_key_hash: [u8; 32]
+    }
+
+    /// An unpacked ML-KEM KeyPair
+    pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
+        pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
+        pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
+    }
+}
+use unpacked::*;
 
 /// Seed size for key generation
 pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
