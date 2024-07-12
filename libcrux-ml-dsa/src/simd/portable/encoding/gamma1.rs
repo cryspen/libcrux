@@ -1,12 +1,12 @@
 use crate::simd::portable::simd_unit_type::*;
 
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_BYTES: usize>(
+fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_SIZE: usize>(
     simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_BYTES] {
+) -> [u8; OUTPUT_SIZE] {
     const GAMMA1: i32 = 1 << 17;
 
-    let mut serialized = [0u8; OUTPUT_BYTES];
+    let mut serialized = [0u8; OUTPUT_SIZE];
 
     for (i, coefficients) in simd_unit.coefficients.chunks_exact(4).enumerate() {
         let coefficient0 = GAMMA1 - coefficients[0];
@@ -37,12 +37,12 @@ fn serialize_when_gamma1_is_2_pow_17<const OUTPUT_BYTES: usize>(
     serialized
 }
 #[inline(always)]
-fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_BYTES: usize>(
+fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_SIZE: usize>(
     simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_BYTES] {
+) -> [u8; OUTPUT_SIZE] {
     const GAMMA1: i32 = 1 << 19;
 
-    let mut serialized = [0u8; OUTPUT_BYTES];
+    let mut serialized = [0u8; OUTPUT_SIZE];
 
     for (i, coefficients) in simd_unit.coefficients.chunks_exact(2).enumerate() {
         let coefficient0 = GAMMA1 - coefficients[0];
@@ -61,12 +61,12 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_BYTES: usize>(
     serialized
 }
 #[inline(always)]
-pub(crate) fn serialize<const OUTPUT_BYTES: usize>(
+pub(crate) fn serialize<const OUTPUT_SIZE: usize>(
     simd_unit: PortableSIMDUnit,
-) -> [u8; OUTPUT_BYTES] {
-    match OUTPUT_BYTES {
-        18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_BYTES>(simd_unit),
-        20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_BYTES>(simd_unit),
+) -> [u8; OUTPUT_SIZE] {
+    match OUTPUT_SIZE {
+        18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_SIZE>(simd_unit),
+        20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_SIZE>(simd_unit),
         _ => unreachable!(),
     }
 }
