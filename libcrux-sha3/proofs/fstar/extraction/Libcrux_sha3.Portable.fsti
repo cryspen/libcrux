@@ -24,4 +24,4 @@ val shake256 (digest data: t_Slice u8)
     : Prims.Pure (t_Slice u8) Prims.l_True (fun _ -> Prims.l_True)
 
 /// The Keccak state for the incremental API.
-type t_KeccakState = //{ f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64 }
+type t_KeccakState = { f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 1) u64 }
