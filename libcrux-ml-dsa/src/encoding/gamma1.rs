@@ -18,7 +18,6 @@ pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>
             for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
                     .copy_from_slice(&PortableSIMDUnit::gamma1_serialize::<
-                        GAMMA1_EXPONENT,
                         OUTPUT_BYTES_PER_SIMD_UNIT,
                     >(*simd_unit));
             }
@@ -31,7 +30,6 @@ pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>
             for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
                     .copy_from_slice(&PortableSIMDUnit::gamma1_serialize::<
-                        GAMMA1_EXPONENT,
                         OUTPUT_BYTES_PER_SIMD_UNIT,
                     >(*simd_unit));
             }

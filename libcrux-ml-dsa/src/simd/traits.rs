@@ -40,10 +40,8 @@ pub(crate) trait Operations: Copy + Clone {
     fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize;
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize;
 
-    // Deserialization
-    fn gamma1_serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
-        simd_unit: Self,
-    ) -> [u8; OUTPUT_BYTES];
+    // Serialization
+    fn gamma1_serialize<const OUTPUT_BYTES: usize>(simd_unit: Self) -> [u8; OUTPUT_BYTES];
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self;
 
     // NTT

@@ -61,12 +61,12 @@ fn serialize_when_gamma1_is_2_pow_19<const OUTPUT_BYTES: usize>(
     serialized
 }
 #[inline(always)]
-pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
+pub(crate) fn serialize<const OUTPUT_BYTES: usize>(
     simd_unit: PortableSIMDUnit,
 ) -> [u8; OUTPUT_BYTES] {
-    match GAMMA1_EXPONENT {
-        17 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_BYTES>(simd_unit),
-        19 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_BYTES>(simd_unit),
+    match OUTPUT_BYTES {
+        18 => serialize_when_gamma1_is_2_pow_17::<OUTPUT_BYTES>(simd_unit),
+        20 => serialize_when_gamma1_is_2_pow_19::<OUTPUT_BYTES>(simd_unit),
         _ => unreachable!(),
     }
 }
