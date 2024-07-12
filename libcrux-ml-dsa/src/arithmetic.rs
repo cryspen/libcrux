@@ -24,33 +24,24 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     exceeds
 }
 
-/// Values having this type hold a representative 'x' of the ML-DSA field.
-pub(crate) type FieldElement = i32;
-
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 #[inline(always)]
-fn reduce(fe: FieldElement) -> FieldElement {
-    let quotient = (fe + (1 << 22)) >> 23;
-
-    fe - (quotient * FIELD_MODULUS)
-}
-
-#[inline(always)]
-pub(crate) fn shift_coefficients_left_then_reduce(
+pub(crate) fn shift_left_then_reduce(
     re: PolynomialRingElement,
     shift_by: usize,
 ) -> PolynomialRingElement {
-    let mut out = PolynomialRingElement::ZERO;
+    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
+    let mut out = SIMDPolynomialRingElement::ZERO();
 
-    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        out.coefficients[i] = reduce(re.coefficients[i] << shift_by);
+    for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+        out.simd_units[i] = PortableSIMDUnit::shift_left_then_reduce(*simd_unit, shift_by);
     }
 
-    out
+    out.to_polynomial_ring_element()
 }
 
 #[inline(always)]

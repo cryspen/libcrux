@@ -167,6 +167,24 @@ pub fn infinity_norm_exceeds(simd_unit: PortableSIMDUnit, bound: i32) -> bool {
     exceeds
 }
 
+#[inline(always)]
+fn reduce_element(fe: FieldElement) -> FieldElement {
+    let quotient = (fe + (1 << 22)) >> 23;
+
+    fe - (quotient * FIELD_MODULUS)
+}
+
+#[inline(always)]
+pub fn shift_left_then_reduce(simd_unit: PortableSIMDUnit, shift_by: usize) -> PortableSIMDUnit {
+    let mut out = ZERO();
+
+    for i in 0..simd_unit.coefficients.len() {
+        out.coefficients[i] = reduce_element(simd_unit.coefficients[i] << shift_by);
+    }
+
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

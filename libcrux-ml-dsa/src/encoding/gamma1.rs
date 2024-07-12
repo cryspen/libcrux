@@ -9,7 +9,7 @@ pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>
 ) -> [u8; OUTPUT_BYTES] {
     let mut serialized = [0u8; OUTPUT_BYTES];
 
-    let mut v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
+    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
     match GAMMA1_EXPONENT {
         17 => {

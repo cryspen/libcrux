@@ -35,6 +35,9 @@ impl Operations for PortableSIMDUnit {
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
         arithmetic::montgomery_multiply(&lhs, &rhs)
     }
+    fn shift_left_then_reduce(simd_unit: Self, shift_by: usize) -> Self {
+        arithmetic::shift_left_then_reduce(simd_unit, shift_by)
+    }
 
     fn power2round(simd_unit: Self) -> (Self, Self) {
         arithmetic::power2round(simd_unit)
