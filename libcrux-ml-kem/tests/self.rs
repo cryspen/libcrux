@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use libcrux_ml_kem::{MlKemCiphertext, MlKemPrivateKey};
 
 use libcrux_sha3::shake256;

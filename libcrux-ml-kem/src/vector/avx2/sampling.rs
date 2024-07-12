@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use super::{
     super::{rej_sample_table::REJECTION_SAMPLE_SHUFFLE_TABLE, traits::FIELD_MODULUS},
     serialize::{deserialize_12, serialize_1},

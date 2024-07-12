@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /// Macro to simplify feature gating of verified code that should only be enabled
 /// when unverified code is disabled.
 macro_rules! cfg_verified {

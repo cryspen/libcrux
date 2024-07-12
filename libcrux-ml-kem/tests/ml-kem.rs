@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 //! Tests for ML-KEM
 
 /// These tests are from https://github.com/C2SP/CCTV/

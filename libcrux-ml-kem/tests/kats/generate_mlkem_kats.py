@@ -1,5 +1,9 @@
 #! /usr/bin/env python3
 
+# SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # This file is a modified version of:
 # https://github.com/bwesterb/draft-schwabe-cfrg-kyber/blob/main/kyber_test.py
 # It generates Known Answer Tests (KATs) for ML-KEM.

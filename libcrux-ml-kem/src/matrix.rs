@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::{
     hash_functions::Hash, helper::cloop, invert_ntt::invert_ntt_montgomery,
     polynomial::PolynomialRingElement, sampling::sample_from_xof, vector::Operations,

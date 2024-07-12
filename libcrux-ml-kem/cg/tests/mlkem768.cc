@@ -1,10 +1,6 @@
-/*
- *    Copyright 2023 Cryspen Sarl
- *
- *    Licensed under the Apache License, Version 2.0 or MIT.
- *    - http://www.apache.org/licenses/LICENSE-2.0
- *    - http://opensource.org/licenses/MIT
- */
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
 
 #include <fstream>
 #include <gtest/gtest.h>

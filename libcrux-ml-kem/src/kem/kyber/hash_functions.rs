@@ -1,5 +1,9 @@
 #![allow(non_snake_case)]
 
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use super::constants::H_DIGEST_SIZE;
 const G_DIGEST_SIZE: usize = 64;
 

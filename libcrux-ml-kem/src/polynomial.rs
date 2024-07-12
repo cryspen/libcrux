@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::vector::{to_standard_domain, Operations, FIELD_ELEMENTS_IN_VECTOR};
 
 pub(crate) const ZETAS_TIMES_MONTGOMERY_R: [i16; 128] = [

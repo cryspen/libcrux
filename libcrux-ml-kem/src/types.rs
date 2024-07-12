@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 macro_rules! impl_generic_struct {
     ($name:ident, $doc:expr) => {
         #[doc = $doc]

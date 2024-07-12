@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::{
     hax_utils::hax_debug_assert,
     polynomial::{PolynomialRingElement, ZETAS_TIMES_MONTGOMERY_R},

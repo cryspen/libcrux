@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use serde::Deserialize;
 use serde_json;
 use std::{fs::File, io::BufReader, path::Path};

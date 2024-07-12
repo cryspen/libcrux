@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef __KRMLLIB_H
 #define __KRMLLIB_H
 

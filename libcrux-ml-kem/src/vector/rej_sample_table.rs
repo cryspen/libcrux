@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // This table is taken from PQClean. It is used in rej_sample
 // It implements the following logic:
 // let mut index : [u8;16] = [0u8; 16];

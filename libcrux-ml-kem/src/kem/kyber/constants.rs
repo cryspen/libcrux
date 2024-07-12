@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /// Field modulus: 3329
 pub(crate) const FIELD_MODULUS: i32 = 3329;
 

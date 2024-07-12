@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 pub const MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS: i16 = 1353;
 pub const FIELD_MODULUS: i16 = 3329;
 pub const FIELD_ELEMENTS_IN_VECTOR: usize = 16;

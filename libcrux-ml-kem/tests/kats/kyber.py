@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # This file is:
 # https://github.com/bwesterb/draft-schwabe-cfrg-kyber/blob/main/kyber.py
 

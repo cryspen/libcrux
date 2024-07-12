@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // C extraction:
 // A couple helper functions and definitions -- this file ends up being bundled in
 // libcrux_core.{c,h}, so if you need something that has to be shared across multiple mlkem
