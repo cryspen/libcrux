@@ -3,8 +3,9 @@
 
 use super::{
     constants::*,
+    ind_cpa::unpacked::*,
     ind_cca::*,
-    types::{unpacked::*, *},
+    types::*,
     vector::traits::VectorType,
     *,
 };

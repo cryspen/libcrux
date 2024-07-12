@@ -13,10 +13,47 @@ use crate::{
         deserialize_then_decompress_ring_element_v, deserialize_to_uncompressed_ring_element,
         serialize_uncompressed_ring_element,
     },
-    types::unpacked::*,
     utils::into_padded_array,
     vector::Operations,
 };
+
+#[allow(non_snake_case)]
+/// Types for the unpacked API.
+pub mod unpacked {
+    use crate::{polynomial::PolynomialRingElement, vector::traits::Operations};
+
+    /// An unpacked ML-KEM IND-CPA Private Key
+    pub(crate) struct IndCpaPrivateKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) secret_as_ntt: [PolynomialRingElement<Vector>; K],
+    }
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K,Vector>,
+        pub(crate) implicit_rejection_value: [u8; 32],
+    }
+
+    /// An unpacked ML-KEM IND-CPA Private Key
+    pub(crate) struct IndCpaPublicKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) t_as_ntt: [PolynomialRingElement<Vector>; K],
+        pub(crate) seed_for_A: [u8; 32],
+        pub(crate) A: [[PolynomialRingElement<Vector>; K]; K],
+    }
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K,Vector>,
+        pub(crate) public_key_hash: [u8; 32]
+    }
+
+    /// An unpacked ML-KEM KeyPair
+    pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
+        pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
+        pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
+    }
+}
+
+use unpacked::*;
 
 /// Concatenate `t` and `ρ` into the public key.
 #[inline(always)]
