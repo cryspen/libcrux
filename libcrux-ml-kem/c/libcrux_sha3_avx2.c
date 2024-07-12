@@ -9,10 +9,12 @@
 
 #include "internal/libcrux_core.h"
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i zero(void) {
   return libcrux_intrinsics_avx2_mm256_set1_epi64x((int64_t)0);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _veor5q_u64(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
             core_core_arch_x86___m256i c, core_core_arch_x86___m256i d,
@@ -24,6 +26,7 @@ _veor5q_u64(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
   return libcrux_intrinsics_avx2_mm256_xor_si256(abcd, e);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor5(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
      core_core_arch_x86___m256i c, core_core_arch_x86___m256i d,
@@ -31,6 +34,7 @@ xor5(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
   return _veor5q_u64(a, b, c, d, e);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___1int32_t_63int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -40,6 +44,7 @@ rotate_left___1int32_t_63int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)63, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vrax1q_u64(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b) {
   core_core_arch_x86___m256i uu____0 = a;
@@ -47,11 +52,13 @@ _vrax1q_u64(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b) {
       uu____0, rotate_left___1int32_t_63int32_t(b));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i rotate_left1_and_xor(
     core_core_arch_x86___m256i a, core_core_arch_x86___m256i b) {
   return _vrax1q_u64(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vbcaxq_u64(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
             core_core_arch_x86___m256i c) {
@@ -60,12 +67,14 @@ _vbcaxq_u64(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
       uu____0, libcrux_intrinsics_avx2_mm256_andnot_si256(c, b));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 and_not_xor(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b,
             core_core_arch_x86___m256i c) {
   return _vbcaxq_u64(a, b, c);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _veorq_n_u64(core_core_arch_x86___m256i a, uint64_t c) {
   core_core_arch_x86___m256i c0 =
@@ -73,16 +82,19 @@ _veorq_n_u64(core_core_arch_x86___m256i a, uint64_t c) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(a, c0);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_constant(core_core_arch_x86___m256i a, uint64_t c) {
   return _veorq_n_u64(a, c);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor0(core_core_arch_x86___m256i a, core_core_arch_x86___m256i b) {
   return libcrux_intrinsics_avx2_mm256_xor_si256(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void slice_4(Eurydice_slice a[4U], size_t start,
                                     size_t len, Eurydice_slice ret[4U]) {
   Eurydice_slice uu____0 = Eurydice_slice_subslice(
@@ -110,6 +122,7 @@ static KRML_MUSTINLINE void slice_4(Eurydice_slice a[4U], size_t start,
                                     Eurydice_slice);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void slice_n(Eurydice_slice a[4U], size_t start,
                                     size_t len, Eurydice_slice ret[4U]) {
   Eurydice_slice uu____0[4U];
@@ -119,6 +132,7 @@ static KRML_MUSTINLINE void slice_n(Eurydice_slice a[4U], size_t start,
   memcpy(ret, ret0, (size_t)4U * sizeof(Eurydice_slice));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE
     K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_
     split_at_mut_4(Eurydice_slice out[4U], size_t mid) {
@@ -162,12 +176,14 @@ static KRML_MUSTINLINE
   return lit;
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE
     K___Eurydice_slice_uint8_t_4size_t__Eurydice_slice_uint8_t_4size_t_
     split_at_mut_n(Eurydice_slice a[4U], size_t mid) {
   return split_at_mut_4(a, mid);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
     new__core_core_arch_x86___m256i_4size_t(void) {
@@ -201,6 +217,7 @@ static KRML_MUSTINLINE
   return lit;
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void load_block___136size_t(
     core_core_arch_x86___m256i (*s)[5U], Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
@@ -410,6 +427,7 @@ static KRML_MUSTINLINE void load_block___136size_t(
   }
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void load_block___136size_t0(
     core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]) {
   core_core_arch_x86___m256i(*uu____0)[5U] = a;
@@ -418,6 +436,7 @@ static KRML_MUSTINLINE void load_block___136size_t0(
   load_block___136size_t(uu____0, uu____1);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___36int32_t_28int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -427,6 +446,7 @@ rotate_left___36int32_t_28int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)28, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___36int32_t_28int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -434,12 +454,14 @@ _vxarq_u64___36int32_t_28int32_t(core_core_arch_x86___m256i a,
   return rotate_left___36int32_t_28int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___36int32_t_28int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___36int32_t_28int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___3int32_t_61int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -449,6 +471,7 @@ rotate_left___3int32_t_61int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)61, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___3int32_t_61int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -456,12 +479,14 @@ _vxarq_u64___3int32_t_61int32_t(core_core_arch_x86___m256i a,
   return rotate_left___3int32_t_61int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___3int32_t_61int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___3int32_t_61int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___41int32_t_23int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -471,6 +496,7 @@ rotate_left___41int32_t_23int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)23, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___41int32_t_23int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -478,12 +504,14 @@ _vxarq_u64___41int32_t_23int32_t(core_core_arch_x86___m256i a,
   return rotate_left___41int32_t_23int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___41int32_t_23int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___41int32_t_23int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___18int32_t_46int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -493,6 +521,7 @@ rotate_left___18int32_t_46int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)46, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___18int32_t_46int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -500,12 +529,14 @@ _vxarq_u64___18int32_t_46int32_t(core_core_arch_x86___m256i a,
   return rotate_left___18int32_t_46int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___18int32_t_46int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___18int32_t_46int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___1int32_t_63int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -513,12 +544,14 @@ _vxarq_u64___1int32_t_63int32_t(core_core_arch_x86___m256i a,
   return rotate_left___1int32_t_63int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___1int32_t_63int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___1int32_t_63int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___44int32_t_20int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -528,6 +561,7 @@ rotate_left___44int32_t_20int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)20, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___44int32_t_20int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -535,12 +569,14 @@ _vxarq_u64___44int32_t_20int32_t(core_core_arch_x86___m256i a,
   return rotate_left___44int32_t_20int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___44int32_t_20int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___44int32_t_20int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___10int32_t_54int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -550,6 +586,7 @@ rotate_left___10int32_t_54int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)54, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___10int32_t_54int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -557,12 +594,14 @@ _vxarq_u64___10int32_t_54int32_t(core_core_arch_x86___m256i a,
   return rotate_left___10int32_t_54int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___10int32_t_54int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___10int32_t_54int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___45int32_t_19int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -572,6 +611,7 @@ rotate_left___45int32_t_19int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)19, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___45int32_t_19int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -579,12 +619,14 @@ _vxarq_u64___45int32_t_19int32_t(core_core_arch_x86___m256i a,
   return rotate_left___45int32_t_19int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___45int32_t_19int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___45int32_t_19int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___2int32_t_62int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -594,6 +636,7 @@ rotate_left___2int32_t_62int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)62, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___2int32_t_62int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -601,12 +644,14 @@ _vxarq_u64___2int32_t_62int32_t(core_core_arch_x86___m256i a,
   return rotate_left___2int32_t_62int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___2int32_t_62int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___2int32_t_62int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___62int32_t_2int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -616,6 +661,7 @@ rotate_left___62int32_t_2int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)2, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___62int32_t_2int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -623,12 +669,14 @@ _vxarq_u64___62int32_t_2int32_t(core_core_arch_x86___m256i a,
   return rotate_left___62int32_t_2int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___62int32_t_2int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___62int32_t_2int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___6int32_t_58int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -638,6 +686,7 @@ rotate_left___6int32_t_58int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)58, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___6int32_t_58int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -645,12 +694,14 @@ _vxarq_u64___6int32_t_58int32_t(core_core_arch_x86___m256i a,
   return rotate_left___6int32_t_58int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___6int32_t_58int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___6int32_t_58int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___43int32_t_21int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -660,6 +711,7 @@ rotate_left___43int32_t_21int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)21, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___43int32_t_21int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -667,12 +719,14 @@ _vxarq_u64___43int32_t_21int32_t(core_core_arch_x86___m256i a,
   return rotate_left___43int32_t_21int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___43int32_t_21int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___43int32_t_21int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___15int32_t_49int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -682,6 +736,7 @@ rotate_left___15int32_t_49int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)49, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___15int32_t_49int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -689,12 +744,14 @@ _vxarq_u64___15int32_t_49int32_t(core_core_arch_x86___m256i a,
   return rotate_left___15int32_t_49int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___15int32_t_49int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___15int32_t_49int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___61int32_t_3int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -704,6 +761,7 @@ rotate_left___61int32_t_3int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)3, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___61int32_t_3int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -711,12 +769,14 @@ _vxarq_u64___61int32_t_3int32_t(core_core_arch_x86___m256i a,
   return rotate_left___61int32_t_3int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___61int32_t_3int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___61int32_t_3int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___28int32_t_36int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -726,6 +786,7 @@ rotate_left___28int32_t_36int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)36, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___28int32_t_36int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -733,12 +794,14 @@ _vxarq_u64___28int32_t_36int32_t(core_core_arch_x86___m256i a,
   return rotate_left___28int32_t_36int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___28int32_t_36int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___28int32_t_36int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___55int32_t_9int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -748,6 +811,7 @@ rotate_left___55int32_t_9int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)9, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___55int32_t_9int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -755,12 +819,14 @@ _vxarq_u64___55int32_t_9int32_t(core_core_arch_x86___m256i a,
   return rotate_left___55int32_t_9int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___55int32_t_9int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___55int32_t_9int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___25int32_t_39int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -770,6 +836,7 @@ rotate_left___25int32_t_39int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)39, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___25int32_t_39int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -777,12 +844,14 @@ _vxarq_u64___25int32_t_39int32_t(core_core_arch_x86___m256i a,
   return rotate_left___25int32_t_39int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___25int32_t_39int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___25int32_t_39int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___21int32_t_43int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -792,6 +861,7 @@ rotate_left___21int32_t_43int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)43, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___21int32_t_43int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -799,12 +869,14 @@ _vxarq_u64___21int32_t_43int32_t(core_core_arch_x86___m256i a,
   return rotate_left___21int32_t_43int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___21int32_t_43int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___21int32_t_43int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___56int32_t_8int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -814,6 +886,7 @@ rotate_left___56int32_t_8int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)8, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___56int32_t_8int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -821,12 +894,14 @@ _vxarq_u64___56int32_t_8int32_t(core_core_arch_x86___m256i a,
   return rotate_left___56int32_t_8int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___56int32_t_8int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___56int32_t_8int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___27int32_t_37int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -836,6 +911,7 @@ rotate_left___27int32_t_37int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)37, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___27int32_t_37int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -843,12 +919,14 @@ _vxarq_u64___27int32_t_37int32_t(core_core_arch_x86___m256i a,
   return rotate_left___27int32_t_37int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___27int32_t_37int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___27int32_t_37int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___20int32_t_44int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -858,6 +936,7 @@ rotate_left___20int32_t_44int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)44, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___20int32_t_44int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -865,12 +944,14 @@ _vxarq_u64___20int32_t_44int32_t(core_core_arch_x86___m256i a,
   return rotate_left___20int32_t_44int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___20int32_t_44int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___20int32_t_44int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___39int32_t_25int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -880,6 +961,7 @@ rotate_left___39int32_t_25int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)25, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___39int32_t_25int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -887,12 +969,14 @@ _vxarq_u64___39int32_t_25int32_t(core_core_arch_x86___m256i a,
   return rotate_left___39int32_t_25int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___39int32_t_25int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___39int32_t_25int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___8int32_t_56int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -902,6 +986,7 @@ rotate_left___8int32_t_56int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)56, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___8int32_t_56int32_t(core_core_arch_x86___m256i a,
                                 core_core_arch_x86___m256i b) {
@@ -909,12 +994,14 @@ _vxarq_u64___8int32_t_56int32_t(core_core_arch_x86___m256i a,
   return rotate_left___8int32_t_56int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___8int32_t_56int32_t(core_core_arch_x86___m256i a,
                                     core_core_arch_x86___m256i b) {
   return _vxarq_u64___8int32_t_56int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 rotate_left___14int32_t_50int32_t(core_core_arch_x86___m256i x) {
   core_core_arch_x86___m256i uu____0 = libcrux_intrinsics_avx2_mm256_slli_epi64(
@@ -924,6 +1011,7 @@ rotate_left___14int32_t_50int32_t(core_core_arch_x86___m256i x) {
                    (int32_t)50, x, core_core_arch_x86___m256i));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 _vxarq_u64___14int32_t_50int32_t(core_core_arch_x86___m256i a,
                                  core_core_arch_x86___m256i b) {
@@ -931,12 +1019,14 @@ _vxarq_u64___14int32_t_50int32_t(core_core_arch_x86___m256i a,
   return rotate_left___14int32_t_50int32_t(ab);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE core_core_arch_x86___m256i
 xor_and_rotate___14int32_t_50int32_t(core_core_arch_x86___m256i a,
                                      core_core_arch_x86___m256i b) {
   return _vxarq_u64___14int32_t_50int32_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void theta_rho__core_core_arch_x86___m256i_4size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
         *s) {
@@ -1048,6 +1138,7 @@ static KRML_MUSTINLINE void theta_rho__core_core_arch_x86___m256i_4size_t(
   s->st[4U][4U] = uu____32;
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void pi__core_core_arch_x86___m256i_4size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
         *s) {
@@ -1079,6 +1170,7 @@ static KRML_MUSTINLINE void pi__core_core_arch_x86___m256i_4size_t(
   s->st[4U][4U] = old[4U][1U];
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void chi__core_core_arch_x86___m256i_4size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
         *s) {
@@ -1093,6 +1185,7 @@ static KRML_MUSTINLINE void chi__core_core_arch_x86___m256i_4size_t(
                       s->st[i1][j] = uu____0;););
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void iota__core_core_arch_x86___m256i_4size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
         *s,
@@ -1102,6 +1195,7 @@ static KRML_MUSTINLINE void iota__core_core_arch_x86___m256i_4size_t(
   s->st[0U][0U] = uu____0;
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void keccakf1600__core_core_arch_x86___m256i_4size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
         *s) {
@@ -1114,6 +1208,7 @@ static KRML_MUSTINLINE void keccakf1600__core_core_arch_x86___m256i_4size_t(
   }
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 absorb_block__core_core_arch_x86___m256i_4size_t_136size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -1126,6 +1221,7 @@ absorb_block__core_core_arch_x86___m256i_4size_t_136size_t(
   keccakf1600__core_core_arch_x86___m256i_4size_t(s);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void load_block_full___136size_t(
     core_core_arch_x86___m256i (*s)[5U], uint8_t blocks[4U][200U]) {
   Eurydice_slice buf[4U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
@@ -1139,6 +1235,7 @@ static KRML_MUSTINLINE void load_block_full___136size_t(
   load_block___136size_t(s, buf);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void load_block_full___136size_t0(
     core_core_arch_x86___m256i (*a)[5U], uint8_t b[4U][200U]) {
   core_core_arch_x86___m256i(*uu____0)[5U] = a;
@@ -1147,6 +1244,7 @@ static KRML_MUSTINLINE void load_block_full___136size_t0(
   load_block_full___136size_t(uu____0, uu____1);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 absorb_final__core_core_arch_x86___m256i_4size_t_136size_t_31uint8_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -1173,6 +1271,7 @@ absorb_final__core_core_arch_x86___m256i_4size_t_136size_t_31uint8_t(
   keccakf1600__core_core_arch_x86___m256i_4size_t(s);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void store_block___136size_t(
     core_core_arch_x86___m256i (*s)[5U], Eurydice_slice out[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++) {
@@ -1372,6 +1471,7 @@ static KRML_MUSTINLINE void store_block___136size_t(
   }
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void store_block_full___136size_t(
     core_core_arch_x86___m256i (*s)[5U], uint8_t ret[4U][200U]) {
   uint8_t out0[200U] = {0U};
@@ -1398,6 +1498,7 @@ static KRML_MUSTINLINE void store_block_full___136size_t(
   memcpy(ret[3U], uu____3, (size_t)200U * sizeof(uint8_t));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void store_block_full___136size_t0(
     core_core_arch_x86___m256i (*a)[5U], uint8_t ret[4U][200U]) {
   uint8_t ret0[4U][200U];
@@ -1405,6 +1506,7 @@ static KRML_MUSTINLINE void store_block_full___136size_t0(
   memcpy(ret, ret0, (size_t)4U * sizeof(uint8_t[200U]));
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 squeeze_first_and_last__core_core_arch_x86___m256i_4size_t_136size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -1425,11 +1527,13 @@ squeeze_first_and_last__core_core_arch_x86___m256i_4size_t_136size_t(
           uint8_t, void *););
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void store_block___136size_t0(
     core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]) {
   store_block___136size_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 squeeze_first_block__core_core_arch_x86___m256i_4size_t_136size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -1438,6 +1542,7 @@ squeeze_first_block__core_core_arch_x86___m256i_4size_t_136size_t(
   store_block___136size_t0(s->st, out);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 squeeze_next_block__core_core_arch_x86___m256i_4size_t_136size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -1447,6 +1552,7 @@ squeeze_next_block__core_core_arch_x86___m256i_4size_t_136size_t(
   store_block___136size_t0(s->st, out);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 squeeze_last__core_core_arch_x86___m256i_4size_t_136size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -1468,6 +1574,7 @@ squeeze_last__core_core_arch_x86___m256i_4size_t_136size_t(
           uint8_t, void *););
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 keccak__core_core_arch_x86___m256i_4size_t_136size_t_31uint8_t(
     Eurydice_slice data[4U], Eurydice_slice out[4U]) {
@@ -1537,6 +1644,7 @@ keccak__core_core_arch_x86___m256i_4size_t_136size_t_31uint8_t(
   }
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 KRML_MUSTINLINE void libcrux_sha3_avx2_x4_shake256(
     Eurydice_slice input0, Eurydice_slice input1, Eurydice_slice input2,
     Eurydice_slice input3, Eurydice_slice out0, Eurydice_slice out1,
@@ -1546,12 +1654,14 @@ KRML_MUSTINLINE void libcrux_sha3_avx2_x4_shake256(
   keccak__core_core_arch_x86___m256i_4size_t_136size_t_31uint8_t(buf0, buf);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 KRML_MUSTINLINE
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
     libcrux_sha3_avx2_x4_incremental_shake128_init(void) {
   return new__core_core_arch_x86___m256i_4size_t();
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void load_block___168size_t(
     core_core_arch_x86___m256i (*s)[5U], Eurydice_slice blocks[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
@@ -1761,6 +1871,7 @@ static KRML_MUSTINLINE void load_block___168size_t(
   }
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void load_block_full___168size_t(
     core_core_arch_x86___m256i (*s)[5U], uint8_t blocks[4U][200U]) {
   Eurydice_slice buf[4U] = {Eurydice_array_to_slice((size_t)200U, blocks[0U],
@@ -1774,6 +1885,7 @@ static KRML_MUSTINLINE void load_block_full___168size_t(
   load_block___168size_t(s, buf);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void load_block_full___168size_t0(
     core_core_arch_x86___m256i (*a)[5U], uint8_t b[4U][200U]) {
   core_core_arch_x86___m256i(*uu____0)[5U] = a;
@@ -1782,6 +1894,7 @@ static KRML_MUSTINLINE void load_block_full___168size_t0(
   load_block_full___168size_t(uu____0, uu____1);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 KRML_MUSTINLINE void
 libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168size_t_31uint8_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -1808,6 +1921,7 @@ libcrux_sha3_generic_keccak_absorb_final__core_core_arch_x86___m256i_4size_t_168
   keccakf1600__core_core_arch_x86___m256i_4size_t(s);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 KRML_MUSTINLINE void libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
         *s,
@@ -1818,6 +1932,7 @@ KRML_MUSTINLINE void libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
       s, buf);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void store_block___168size_t(
     core_core_arch_x86___m256i (*s)[5U], Eurydice_slice out[4U]) {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++) {
@@ -2017,11 +2132,13 @@ static KRML_MUSTINLINE void store_block___168size_t(
   }
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void store_block___168size_t0(
     core_core_arch_x86___m256i (*a)[5U], Eurydice_slice b[4U]) {
   store_block___168size_t(a, b);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 squeeze_next_block__core_core_arch_x86___m256i_4size_t_168size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -2031,6 +2148,7 @@ squeeze_next_block__core_core_arch_x86___m256i_4size_t_168size_t(
   store_block___168size_t0(s->st, out);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 KRML_MUSTINLINE void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -2041,6 +2159,7 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
   squeeze_next_block__core_core_arch_x86___m256i_4size_t_168size_t(s, buf);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 static KRML_MUSTINLINE void
 squeeze_first_block__core_core_arch_x86___m256i_4size_t_168size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -2049,6 +2168,7 @@ squeeze_first_block__core_core_arch_x86___m256i_4size_t_168size_t(
   store_block___168size_t0(s->st, out);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 KRML_MUSTINLINE void
 libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m256i_4size_t_168size_t(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t
@@ -2071,6 +2191,7 @@ libcrux_sha3_generic_keccak_squeeze_first_three_blocks__core_core_arch_x86___m25
   squeeze_next_block__core_core_arch_x86___m256i_4size_t_168size_t(s, o2);
 }
 
+KRML_ATTRIBUTE_TARGET("avx2")
 KRML_MUSTINLINE void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
     libcrux_sha3_generic_keccak_KeccakState__core_core_arch_x86___m256i__4size_t

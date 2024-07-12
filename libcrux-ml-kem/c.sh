@@ -25,7 +25,7 @@ out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
 features="--cargo-arg=--features=pre-verification"
 eurydice_glue=1
-karamel_include=0 # disabling this for now, pending fix to KaRaMeL for "always_inline" conflicts
+karamel_include=1
 unrolling=16
 
 # Parse command line arguments.
@@ -85,8 +85,8 @@ if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
 fi
 
-echo "Copying karamel/include ..."
 if [[ "$karamel_include" = 1 ]]; then
+    echo "Copying karamel/include ..."
     mkdir -p karamel
     cp -R $KRML_HOME/include karamel/
 fi
