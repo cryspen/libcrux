@@ -236,7 +236,8 @@ fn compress_then_serialize_u<
                 &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN, Vector>(&re),
             );
         }
-    }
+    };
+    ()
 }
 
 /// This function implements <strong>Algorithm 13</strong> of the

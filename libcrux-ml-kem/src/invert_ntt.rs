@@ -20,7 +20,8 @@ pub(crate) fn invert_ntt_at_layer_1<Vector: Operations>(
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 3],
         );
         *zeta_i -= 3;
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -37,7 +38,8 @@ pub(crate) fn invert_ntt_at_layer_2<Vector: Operations>(
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i - 1],
         );
         *zeta_i -= 1;
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -50,7 +52,8 @@ pub(crate) fn invert_ntt_at_layer_3<Vector: Operations>(
         *zeta_i -= 1;
         re.coefficients[round] =
             Vector::inv_ntt_layer_3_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -88,7 +91,8 @@ pub(crate) fn invert_ntt_at_layer_4_plus<Vector: Operations>(
             re.coefficients[j] = x;
             re.coefficients[j + step_vec] = y;
         }
-    }
+    };
+    ()
 }
 
 #[inline(always)]

@@ -21,7 +21,8 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 3],
         );
         *zeta_i += 3;
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -39,7 +40,8 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
             ZETAS_TIMES_MONTGOMERY_R[*zeta_i + 1],
         );
         *zeta_i += 1;
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -53,7 +55,8 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
         *zeta_i += 1;
         re.coefficients[round] =
             Vector::ntt_layer_3_step(re.coefficients[round], ZETAS_TIMES_MONTGOMERY_R[*zeta_i]);
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -93,7 +96,8 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
             re.coefficients[j] = x;
             re.coefficients[j + step_vec] = y;
         }
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -103,7 +107,8 @@ pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<
         let t = Vector::multiply_by_constant(re.coefficients[j + step], -1600);
         re.coefficients[j + step] = Vector::sub(re.coefficients[j], &t);
         re.coefficients[j] = Vector::add(re.coefficients[j], &t);
-    }
+    };
+    ()
 }
 
 #[inline(always)]

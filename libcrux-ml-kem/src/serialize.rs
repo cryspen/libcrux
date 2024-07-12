@@ -169,7 +169,8 @@ fn compress_then_serialize_4<Vector: Operations>(
 
         let bytes = Vector::serialize_4(coefficient);
         serialized[8 * i..8 * i + 8].copy_from_slice(&bytes);
-    }
+    };
+    ()
 }
 
 #[inline(always)]
@@ -183,7 +184,8 @@ fn compress_then_serialize_5<Vector: Operations>(
 
         let bytes = Vector::serialize_5(coefficients);
         serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);
-    }
+    };
+    ()
 }
 
 #[inline(always)]
