@@ -26,11 +26,24 @@ pub(crate) trait Operations: Copy + Clone {
     fn power2round(simd_unit: Self) -> (Self, Self);
 
     // Sampling
+    //
+    // In the sampling functions, since each SIMD unit can hold 8 coefficients,
+    // we expect that |out| has the capacity for up to 8 coefficients.
 
-    // Since each SIMD unit can hold 8 coefficients, and each coefficient needs
-    // (at least) 3 bytes to be sampled, we expect that |randomness| holds 24 bytes,
-    // and that |out| holds 8 i32s.
+    // Since each coefficient could potentially be sampled with 3 bytes, we expect
+    // |randomness| to hold 24 bytes.
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize;
+
+    // Since each coefficient could potentially be sampled with half a byte,
+    // we expect |randomness| to hold 4 bytes.
+    fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize;
+    fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize;
+
+    // Deserialization
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
+        simd_unit: Self,
+    ) -> [u8; OUTPUT_BYTES];
+    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self;
 
     // NTT
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
