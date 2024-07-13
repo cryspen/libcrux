@@ -97,6 +97,10 @@ files:
 
   - name: libcrux_mlkem768_portable
     inline_static: true
+    private:
+      exact:
+        - [ libcrux_ml_kem, ind_cca, MlKem ]
+        - [ libcrux_ml_kem, ind_cca, Kyber ]
     api:
       patterns:
         - [libcrux_ml_kem, "*"]
