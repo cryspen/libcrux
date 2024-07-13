@@ -3,6 +3,49 @@ module Libcrux_ml_kem.Vector.Portable.Serialize
 open Core
 open FStar.Mul
 
+let deserialize_4_int (bytes: t_Slice u8) =
+  let v0:i16 = cast ((bytes.[ sz 0 ] <: u8) &. 15uy <: u8) <: i16 in
+  let v1:i16 = cast (((bytes.[ sz 0 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
+  let v2:i16 = cast ((bytes.[ sz 1 ] <: u8) &. 15uy <: u8) <: i16 in
+  let v3:i16 = cast (((bytes.[ sz 1 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
+  let v4:i16 = cast ((bytes.[ sz 2 ] <: u8) &. 15uy <: u8) <: i16 in
+  let v5:i16 = cast (((bytes.[ sz 2 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
+  let v6:i16 = cast ((bytes.[ sz 3 ] <: u8) &. 15uy <: u8) <: i16 in
+  let v7:i16 = cast (((bytes.[ sz 3 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
+  v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
+
+let serialize_10_int (v: t_Slice i16) =
+  let r0:u8 = cast ((v.[ sz 0 ] <: i16) &. 255s <: i16) <: u8 in
+  let r1:u8 =
+    ((cast ((v.[ sz 1 ] <: i16) &. 63s <: i16) <: u8) <<! 2l <: u8) |.
+    (cast (((v.[ sz 0 ] <: i16) >>! 8l <: i16) &. 3s <: i16) <: u8)
+  in
+  let r2:u8 =
+    ((cast ((v.[ sz 2 ] <: i16) &. 15s <: i16) <: u8) <<! 4l <: u8) |.
+    (cast (((v.[ sz 1 ] <: i16) >>! 6l <: i16) &. 15s <: i16) <: u8)
+  in
+  let r3:u8 =
+    ((cast ((v.[ sz 3 ] <: i16) &. 3s <: i16) <: u8) <<! 6l <: u8) |.
+    (cast (((v.[ sz 2 ] <: i16) >>! 4l <: i16) &. 63s <: i16) <: u8)
+  in
+  let r4:u8 = cast (((v.[ sz 3 ] <: i16) >>! 2l <: i16) &. 255s <: i16) <: u8 in
+  r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
+
+let serialize_4_int (v: t_Slice i16) =
+  let result0:u8 =
+    ((cast (v.[ sz 1 ] <: i16) <: u8) <<! 4l <: u8) |. (cast (v.[ sz 0 ] <: i16) <: u8)
+  in
+  let result1:u8 =
+    ((cast (v.[ sz 3 ] <: i16) <: u8) <<! 4l <: u8) |. (cast (v.[ sz 2 ] <: i16) <: u8)
+  in
+  let result2:u8 =
+    ((cast (v.[ sz 5 ] <: i16) <: u8) <<! 4l <: u8) |. (cast (v.[ sz 4 ] <: i16) <: u8)
+  in
+  let result3:u8 =
+    ((cast (v.[ sz 7 ] <: i16) <: u8) <<! 4l <: u8) |. (cast (v.[ sz 6 ] <: i16) <: u8)
+  in
+  result0, result1, result2, result3 <: (u8 & u8 & u8 & u8)
+
 let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let result:t_Array u8 (sz 2) = Rust_primitives.Hax.repeat 0uy (sz 2) in
   let result:t_Array u8 (sz 2) =
@@ -58,402 +101,106 @@ let serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
   result
 
 let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let r0_4_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 4
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r5_9_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 4;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r10_14_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 12
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let r15_19_:(u8 & u8 & u8 & u8 & u8) =
+    serialize_10_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 12;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
   let result:t_Array u8 (sz 20) = Rust_primitives.Hax.repeat 0uy (sz 20) in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 0)
-      (cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 0 ] <: i16) &. 255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 0) r0_4_._1
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 1)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 1 ] <: i16) &. 63s
-                <:
-                i16)
-            <:
-            u8) <<!
-          2l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 0 ] <: i16) >>! 8l
-                <:
-                i16) &.
-              3s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 1) r0_4_._2
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 2)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 2 ] <: i16) &. 15s
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 1 ] <: i16) >>! 6l
-                <:
-                i16) &.
-              15s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 2) r0_4_._3
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 3)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 3 ] <: i16) &. 3s
-                <:
-                i16)
-            <:
-            u8) <<!
-          6l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 2 ] <: i16) >>! 4l
-                <:
-                i16) &.
-              63s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 3) r0_4_._4
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 4)
-      (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 3 ] <: i16) >>! 2l
-              <:
-              i16) &.
-            255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 4) r0_4_._5
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 5)
-      (cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 4 ] <: i16) &. 255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 5) r5_9_._1
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 6)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 5 ] <: i16) &. 63s
-                <:
-                i16)
-            <:
-            u8) <<!
-          2l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 4 ] <: i16) >>! 8l
-                <:
-                i16) &.
-              3s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 6) r5_9_._2
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 7)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 6 ] <: i16) &. 15s
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 5 ] <: i16) >>! 6l
-                <:
-                i16) &.
-              15s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 7) r5_9_._3
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 8)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 7 ] <: i16) &. 3s
-                <:
-                i16)
-            <:
-            u8) <<!
-          6l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 6 ] <: i16) >>! 4l
-                <:
-                i16) &.
-              63s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 8) r5_9_._4
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 9)
-      (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 7 ] <: i16) >>! 2l
-              <:
-              i16) &.
-            255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 9) r5_9_._5
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 10)
-      (cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 0 <: usize ]
-              <:
-              i16) &.
-            255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 10) r10_14_._1
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 1 <: usize ]
-                  <:
-                  i16) &.
-                63s
-                <:
-                i16)
-            <:
-            u8) <<!
-          2l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 0 <: usize ]
-                  <:
-                  i16) >>!
-                8l
-                <:
-                i16) &.
-              3s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 11) r10_14_._2
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 12)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 2 <: usize ]
-                  <:
-                  i16) &.
-                15s
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 1 <: usize ]
-                  <:
-                  i16) >>!
-                6l
-                <:
-                i16) &.
-              15s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 12) r10_14_._3
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 13)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 3 <: usize ]
-                  <:
-                  i16) &.
-                3s
-                <:
-                i16)
-            <:
-            u8) <<!
-          6l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 2 <: usize ]
-                  <:
-                  i16) >>!
-                4l
-                <:
-                i16) &.
-              63s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 13) r10_14_._4
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 14)
-      (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 3 <: usize ]
-                <:
-                i16) >>!
-              2l
-              <:
-              i16) &.
-            255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 14) r10_14_._5
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 15)
-      (cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 4 <: usize ]
-              <:
-              i16) &.
-            255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 15) r15_19_._1
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 16)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 5 <: usize ]
-                  <:
-                  i16) &.
-                63s
-                <:
-                i16)
-            <:
-            u8) <<!
-          2l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 4 <: usize ]
-                  <:
-                  i16) >>!
-                8l
-                <:
-                i16) &.
-              3s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 16) r15_19_._2
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 17)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 6 <: usize ]
-                  <:
-                  i16) &.
-                15s
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 5 <: usize ]
-                  <:
-                  i16) >>!
-                6l
-                <:
-                i16) &.
-              15s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 17) r15_19_._3
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 18)
-      (((cast ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 7 <: usize ]
-                  <:
-                  i16) &.
-                3s
-                <:
-                i16)
-            <:
-            u8) <<!
-          6l
-          <:
-          u8) |.
-        (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 6 <: usize ]
-                  <:
-                  i16) >>!
-                4l
-                <:
-                i16) &.
-              63s
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 18) r15_19_._4
   in
   let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 19)
-      (cast (((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 7 <: usize ]
-                <:
-                i16) >>!
-              2l
-              <:
-              i16) &.
-            255s
-            <:
-            i16)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 19) r15_19_._5
   in
   result
 
@@ -1214,126 +961,50 @@ let serialize_12_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
   result
 
 let serialize_4_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
+  let result0_3_:(u8 & u8 & u8 & u8) =
+    serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
+  let result4_7_:(u8 & u8 & u8 & u8) =
+    serialize_4_int (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  in
   let result:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 0)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 1 ] <: i16) <: u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 0 ] <: i16) <: u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 0) result0_3_._1
   in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 1)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 3 ] <: i16) <: u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 2 ] <: i16) <: u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 1) result0_3_._2
   in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 2)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 5 ] <: i16) <: u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 4 ] <: i16) <: u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 2) result0_3_._3
   in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 3)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 7 ] <: i16) <: u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 6 ] <: i16) <: u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 3) result0_3_._4
   in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 4)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 1 <: usize ]
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 0 <: usize ]
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 4) result4_7_._1
   in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 5)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 3 <: usize ]
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 2 <: usize ]
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 5) result4_7_._2
   in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 6)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 5 <: usize ]
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 4 <: usize ]
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 6) result4_7_._3
   in
   let result:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 7)
-      (((cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 7 <: usize ]
-                <:
-                i16)
-            <:
-            u8) <<!
-          4l
-          <:
-          u8) |.
-        (cast (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ sz 8 +! sz 6 <: usize ]
-              <:
-              i16)
-          <:
-          u8)
-        <:
-        u8)
+    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 7) result4_7_._4
   in
   result
 
@@ -2390,6 +2061,20 @@ let deserialize_12_ (bytes: t_Slice u8) =
   re
 
 let deserialize_4_ (bytes: t_Slice u8) =
+  let v0_7_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_4_int (bytes.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 4 }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
+  let v8_15_:(i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16) =
+    deserialize_4_int (bytes.[ { Core.Ops.Range.f_start = sz 4; Core.Ops.Range.f_end = sz 8 }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice u8)
+  in
   let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     Libcrux_ml_kem.Vector.Portable.Vector_type.zero ()
   in
@@ -2401,7 +2086,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 0)
-        (cast ((bytes.[ sz 0 ] <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._1
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2414,7 +2099,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 1)
-        (cast (((bytes.[ sz 0 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._2
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2427,7 +2112,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 2)
-        (cast ((bytes.[ sz 1 ] <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._3
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2440,7 +2125,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 3)
-        (cast (((bytes.[ sz 1 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._4
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2453,7 +2138,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 4)
-        (cast ((bytes.[ sz 2 ] <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._5
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2466,7 +2151,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 5)
-        (cast (((bytes.[ sz 2 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._6
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2479,7 +2164,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 6)
-        (cast ((bytes.[ sz 3 ] <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._7
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2492,7 +2177,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 7)
-        (cast (((bytes.[ sz 3 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v0_7_._8
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2505,7 +2190,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 8)
-        (cast ((bytes.[ sz 4 ] <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._1
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2518,7 +2203,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 9)
-        (cast (((bytes.[ sz 4 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._2
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2531,7 +2216,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 10)
-        (cast ((bytes.[ sz 5 ] <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._3
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2544,7 +2229,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 11)
-        (cast (((bytes.[ sz 5 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._4
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2557,7 +2242,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 12)
-        (cast ((bytes.[ sz 6 ] <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._5
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2570,7 +2255,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 13)
-        (cast (((bytes.[ sz 6 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._6
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2583,7 +2268,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 14)
-        (cast ((bytes.[ sz 7 ] <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._7
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
@@ -2596,7 +2281,7 @@ let deserialize_4_ (bytes: t_Slice u8) =
       Rust_primitives.Hax.Monomorphized_update_at.update_at_usize v
           .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
         (sz 15)
-        (cast (((bytes.[ sz 7 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16)
+        v8_15_._8
     }
     <:
     Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector

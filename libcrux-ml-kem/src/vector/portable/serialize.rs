@@ -31,121 +31,174 @@ pub(crate) fn deserialize_1(v: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
+pub(crate) fn serialize_4_int(v: &[i16]) -> (u8, u8, u8, u8) {
+    let result0 = ((v[1] as u8) << 4) | (v[0] as u8);
+    let result1 = ((v[3] as u8) << 4) | (v[2] as u8);
+    let result2 = ((v[5] as u8) << 4) | (v[4] as u8);
+    let result3 = ((v[7] as u8) << 4) | (v[6] as u8);
+    (result0, result1, result2, result3)
+}
+
+#[inline(always)]
 pub(crate) fn serialize_4(v: PortableVector) -> [u8; 8] {
+    let result0_3 = serialize_4_int(&v.elements[0..8]);
+    let result4_7 = serialize_4_int(&v.elements[8..16]);
     let mut result = [0u8; 8];
-
-    result[0] = ((v.elements[1] as u8) << 4) | (v.elements[0] as u8);
-    result[1] = ((v.elements[3] as u8) << 4) | (v.elements[2] as u8);
-    result[2] = ((v.elements[5] as u8) << 4) | (v.elements[4] as u8);
-    result[3] = ((v.elements[7] as u8) << 4) | (v.elements[6] as u8);
-
-    result[4] = ((v.elements[8 + 1] as u8) << 4) | (v.elements[8 + 0] as u8);
-    result[5] = ((v.elements[8 + 3] as u8) << 4) | (v.elements[8 + 2] as u8);
-    result[6] = ((v.elements[8 + 5] as u8) << 4) | (v.elements[8 + 4] as u8);
-    result[7] = ((v.elements[8 + 7] as u8) << 4) | (v.elements[8 + 6] as u8);
-
+    result[0] = result0_3.0;
+    result[1] = result0_3.1;
+    result[2] = result0_3.2;
+    result[3] = result0_3.3;
+    result[4] = result4_7.0;
+    result[5] = result4_7.1;
+    result[6] = result4_7.2;
+    result[7] = result4_7.3;
     result
+}
+
+#[inline(always)]
+pub(crate) fn deserialize_4_int(bytes: &[u8]) -> (i16,i16,i16,i16,i16,i16,i16,i16) {
+    let v0 = (bytes[0] & 0x0F) as i16;
+    let v1 = ((bytes[0] >> 4) & 0x0F) as i16;
+    let v2 = (bytes[1] & 0x0F) as i16;
+    let v3 = ((bytes[1] >> 4) & 0x0F) as i16;
+    let v4 = (bytes[2] & 0x0F) as i16;
+    let v5 = ((bytes[2] >> 4) & 0x0F) as i16;
+    let v6 = (bytes[3] & 0x0F) as i16;
+    let v7 = ((bytes[3] >> 4) & 0x0F) as i16;
+    (v0,v1,v2,v3,v4,v5,v6,v7)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
+    let v0_7 = deserialize_4_int(&bytes[0..4]);
+    let v8_15 = deserialize_4_int(&bytes[4..8]);
     let mut v = zero();
+    v.elements[0] = v0_7.0;
+    v.elements[1] = v0_7.1;
+    v.elements[2] = v0_7.2;
+    v.elements[3] = v0_7.3;
+    v.elements[4] = v0_7.4;
+    v.elements[5] = v0_7.5;
+    v.elements[6] = v0_7.6;
+    v.elements[7] = v0_7.7;
 
-    v.elements[0] = (bytes[0] & 0x0F) as i16;
-    v.elements[1] = ((bytes[0] >> 4) & 0x0F) as i16;
-    v.elements[2] = (bytes[1] & 0x0F) as i16;
-    v.elements[3] = ((bytes[1] >> 4) & 0x0F) as i16;
-    v.elements[4] = (bytes[2] & 0x0F) as i16;
-    v.elements[5] = ((bytes[2] >> 4) & 0x0F) as i16;
-    v.elements[6] = (bytes[3] & 0x0F) as i16;
-    v.elements[7] = ((bytes[3] >> 4) & 0x0F) as i16;
-
-    v.elements[8] = (bytes[4] & 0x0F) as i16;
-    v.elements[9] = ((bytes[4] >> 4) & 0x0F) as i16;
-    v.elements[10] = (bytes[5] & 0x0F) as i16;
-    v.elements[11] = ((bytes[5] >> 4) & 0x0F) as i16;
-    v.elements[12] = (bytes[6] & 0x0F) as i16;
-    v.elements[13] = ((bytes[6] >> 4) & 0x0F) as i16;
-    v.elements[14] = (bytes[7] & 0x0F) as i16;
-    v.elements[15] = ((bytes[7] >> 4) & 0x0F) as i16;
-
+    v.elements[8] = v8_15.0;
+    v.elements[9] = v8_15.1;
+    v.elements[10] = v8_15.2;
+    v.elements[11] = v8_15.3;
+    v.elements[12] = v8_15.4;
+    v.elements[13] = v8_15.5;
+    v.elements[14] = v8_15.6;
+    v.elements[15] = v8_15.7;
     v
+}
+
+#[inline(always)]
+pub(crate) fn serialize_5_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
+    let r0 = ( (v[1] & 0x7) << 5 | v[0]) as u8;
+    let r1 = (((v[3] & 1) << 7) | (v[2] << 2) | (v[1] >> 3)) as u8;
+    let r2 = (((v[4] & 0xF) << 4) | (v[3] >> 1)) as u8;
+    let r3 = (((v[6] & 0x3) << 6) | (v[5] << 1) | (v[4] >> 4)) as u8;
+    let r4 = ( (v[7] << 3) | (v[6] >> 2)) as u8;
+    (r0,r1,r2,r3,r4)
 }
 
 #[inline(always)]
 pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
+    let r0_4 = serialize_5_int(&v.elements[0..8]);
+    let r5_9 = serialize_5_int(&v.elements[8..16]);
+
     let mut result = [0u8; 10];
-
-    result[0] = ((v.elements[1] & 0x7) << 5 | v.elements[0]) as u8;
-    result[1] = (((v.elements[3] & 1) << 7) | (v.elements[2] << 2) | (v.elements[1] >> 3)) as u8;
-    result[2] = (((v.elements[4] & 0xF) << 4) | (v.elements[3] >> 1)) as u8;
-    result[3] = (((v.elements[6] & 0x3) << 6) | (v.elements[5] << 1) | (v.elements[4] >> 4)) as u8;
-    result[4] = ((v.elements[7] << 3) | (v.elements[6] >> 2)) as u8;
-
-    result[5] = ((v.elements[8 + 1] & 0x7) << 5 | v.elements[8 + 0]) as u8;
-    result[6] = (((v.elements[8 + 3] & 1) << 7)
-        | (v.elements[8 + 2] << 2)
-        | (v.elements[8 + 1] >> 3)) as u8;
-    result[7] = (((v.elements[8 + 4] & 0xF) << 4) | (v.elements[8 + 3] >> 1)) as u8;
-    result[8] = (((v.elements[8 + 6] & 0x3) << 6)
-        | (v.elements[8 + 5] << 1)
-        | (v.elements[8 + 4] >> 4)) as u8;
-    result[9] = ((v.elements[8 + 7] << 3) | (v.elements[8 + 6] >> 2)) as u8;
-
+    result[0] = r0_4.0;
+    result[1] = r0_4.1;
+    result[2] = r0_4.2;
+    result[3] = r0_4.3;
+    result[4] = r0_4.4;
+    result[5] = r5_9.0;
+    result[6] = r5_9.1;
+    result[7] = r5_9.2;
+    result[8] = r5_9.3;
+    result[9] = r5_9.4;
     result
 }
 
 #[inline(always)]
+pub(crate) fn deserialize_5_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, i16, i16) {
+    let v0 = (bytes[0] & 0x1F) as i16;
+    let v1 = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i16;
+    let v2 = ((bytes[1] >> 2) & 0x1F) as i16;
+    let v3 = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i16;
+    let v4 = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i16;
+    let v5 = ((bytes[3] >> 1) & 0x1F) as i16;
+    let v6 = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i16;
+    let v7 = (bytes[4] >> 3) as i16;
+    (v0,v1,v2,v3,v4,v5,v6,v7)
+}
+
+#[inline(always)]
 pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
+    let v0_7 = deserialize_5_int(&bytes[0..5]);
+    let v8_15 = deserialize_5_int(&bytes[5..10]);
+
     let mut v = zero();
-
-    v.elements[0] = (bytes[0] & 0x1F) as i16;
-    v.elements[1] = ((bytes[1] & 0x3) << 3 | (bytes[0] >> 5)) as i16;
-    v.elements[2] = ((bytes[1] >> 2) & 0x1F) as i16;
-    v.elements[3] = (((bytes[2] & 0xF) << 1) | (bytes[1] >> 7)) as i16;
-    v.elements[4] = (((bytes[3] & 1) << 4) | (bytes[2] >> 4)) as i16;
-    v.elements[5] = ((bytes[3] >> 1) & 0x1F) as i16;
-    v.elements[6] = (((bytes[4] & 0x7) << 2) | (bytes[3] >> 6)) as i16;
-    v.elements[7] = (bytes[4] >> 3) as i16;
-
-    v.elements[8] = (bytes[5 + 0] & 0x1F) as i16;
-    v.elements[9] = ((bytes[5 + 1] & 0x3) << 3 | (bytes[5 + 0] >> 5)) as i16;
-    v.elements[10] = ((bytes[5 + 1] >> 2) & 0x1F) as i16;
-    v.elements[11] = (((bytes[5 + 2] & 0xF) << 1) | (bytes[5 + 1] >> 7)) as i16;
-    v.elements[12] = (((bytes[5 + 3] & 1) << 4) | (bytes[5 + 2] >> 4)) as i16;
-    v.elements[13] = ((bytes[5 + 3] >> 1) & 0x1F) as i16;
-    v.elements[14] = (((bytes[5 + 4] & 0x7) << 2) | (bytes[5 + 3] >> 6)) as i16;
-    v.elements[15] = (bytes[5 + 4] >> 3) as i16;
-
+    v.elements[0] = v0_7.0;
+    v.elements[1] = v0_7.1;
+    v.elements[2] = v0_7.2;
+    v.elements[3] = v0_7.3;
+    v.elements[4] = v0_7.4;
+    v.elements[5] = v0_7.5;
+    v.elements[6] = v0_7.6;
+    v.elements[7] = v0_7.7;
+    v.elements[8] = v8_15.0;
+    v.elements[9] = v8_15.1;
+    v.elements[10] = v8_15.2;
+    v.elements[11] = v8_15.3;
+    v.elements[12] = v8_15.4;
+    v.elements[13] = v8_15.5;
+    v.elements[14] = v8_15.6;
+    v.elements[15] = v8_15.7;
     v
 }
 
 #[inline(always)]
+pub(crate) fn serialize_10_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
+    let r0 =  (v[0] & 0xFF) as u8;
+    let r1 = ((v[1] & 0x3F) as u8) << 2 | ((v[0] >> 8) & 0x03) as u8;
+    let r2 = ((v[2] & 0x0F) as u8) << 4 | ((v[1] >> 6) & 0x0F) as u8;
+    let r3 = ((v[3] & 0x03) as u8) << 6 | ((v[2] >> 4) & 0x3F) as u8;
+    let r4 = ((v[3] >> 2) & 0xFF) as u8;
+    (r0,r1,r2,r3,r4)
+}
+
+#[inline(always)]
 pub(crate) fn serialize_10(v: PortableVector) -> [u8; 20] {
+    let r0_4 = serialize_10_int(&v.elements[0..4]);
+    let r5_9 = serialize_10_int(&v.elements[4..8]);
+    let r10_14 = serialize_10_int(&v.elements[8..12]);
+    let r15_19 = serialize_10_int(&v.elements[12..16]);
+
     let mut result = [0u8; 20];
 
-    result[0] = (v.elements[0] & 0xFF) as u8;
-    result[1] = ((v.elements[1] & 0x3F) as u8) << 2 | ((v.elements[0] >> 8) & 0x03) as u8;
-    result[2] = ((v.elements[2] & 0x0F) as u8) << 4 | ((v.elements[1] >> 6) & 0x0F) as u8;
-    result[3] = ((v.elements[3] & 0x03) as u8) << 6 | ((v.elements[2] >> 4) & 0x3F) as u8;
-    result[4] = ((v.elements[3] >> 2) & 0xFF) as u8;
-    result[5] = (v.elements[4] & 0xFF) as u8;
-    result[6] = ((v.elements[5] & 0x3F) as u8) << 2 | ((v.elements[4] >> 8) & 0x03) as u8;
-    result[7] = ((v.elements[6] & 0x0F) as u8) << 4 | ((v.elements[5] >> 6) & 0x0F) as u8;
-    result[8] = ((v.elements[7] & 0x03) as u8) << 6 | ((v.elements[6] >> 4) & 0x3F) as u8;
-    result[9] = ((v.elements[7] >> 2) & 0xFF) as u8;
-
-    result[10] = (v.elements[8 + 0] & 0xFF) as u8;
-    result[11] = ((v.elements[8 + 1] & 0x3F) as u8) << 2 | ((v.elements[8 + 0] >> 8) & 0x03) as u8;
-    result[12] = ((v.elements[8 + 2] & 0x0F) as u8) << 4 | ((v.elements[8 + 1] >> 6) & 0x0F) as u8;
-    result[13] = ((v.elements[8 + 3] & 0x03) as u8) << 6 | ((v.elements[8 + 2] >> 4) & 0x3F) as u8;
-    result[14] = ((v.elements[8 + 3] >> 2) & 0xFF) as u8;
-    result[15] = (v.elements[8 + 4] & 0xFF) as u8;
-    result[16] = ((v.elements[8 + 5] & 0x3F) as u8) << 2 | ((v.elements[8 + 4] >> 8) & 0x03) as u8;
-    result[17] = ((v.elements[8 + 6] & 0x0F) as u8) << 4 | ((v.elements[8 + 5] >> 6) & 0x0F) as u8;
-    result[18] = ((v.elements[8 + 7] & 0x03) as u8) << 6 | ((v.elements[8 + 6] >> 4) & 0x3F) as u8;
-    result[19] = ((v.elements[8 + 7] >> 2) & 0xFF) as u8;
-
+    result[0] = r0_4.0;
+    result[1] = r0_4.1;
+    result[2] = r0_4.2;
+    result[3] = r0_4.3;
+    result[4] = r0_4.4;
+    result[5] = r5_9.0;
+    result[6] = r5_9.1;
+    result[7] = r5_9.2;
+    result[8] = r5_9.3;
+    result[9] = r5_9.4;
+    result[10] = r10_14.0;
+    result[11] = r10_14.1;
+    result[12] = r10_14.2;
+    result[13] = r10_14.3;
+    result[14] = r10_14.4;
+    result[15] = r15_19.0;
+    result[16] = r15_19.1;
+    result[17] = r15_19.2;
+    result[18] = r15_19.3;
+    result[19] = r15_19.4;
     result
 }
 
@@ -177,32 +230,52 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> PortableVector {
 }
 
 #[inline(always)]
+pub(crate) fn serialize_11_int(v: &[i16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8, u8, u8) {
+    let r0 =   v[0] as u8;
+    let r1 = ((v[1] & 0x1F) as u8) << 3 | ((v[0] >> 8) as u8);
+    let r2 = ((v[2] & 0x3) as u8) << 6 | ((v[1] >> 5) as u8);
+    let r3 = ((v[2] >> 2) & 0xFF) as u8;
+    let r4 = ((v[3] & 0x7F) as u8) << 1 | (v[2] >> 10) as u8;
+    let r5 = ((v[4] & 0xF) as u8) << 4 | (v[3] >> 7) as u8;
+    let r6 = ((v[5] & 0x1) as u8) << 7 | (v[4] >> 4) as u8;
+    let r7 = ((v[5] >> 1) & 0xFF) as u8;
+    let r8 = ((v[6] & 0x3F) as u8) << 2 | (v[5] >> 9) as u8;
+    let r9 = ((v[7] & 0x7) as u8) << 5 | (v[6] >> 6) as u8;
+    let r10 = (v[7] >> 3) as u8;
+    (r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10)
+}
+
+#[inline(always)]
 pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
+
+    let r0_10 = serialize_11_int(&v.elements[0..8]);
+    let r11_21 = serialize_11_int(&v.elements[8..16]);
+    
     let mut result = [0u8; 22];
 
-    result[0] = v.elements[0] as u8;
-    result[1] = ((v.elements[1] & 0x1F) as u8) << 3 | ((v.elements[0] >> 8) as u8);
-    result[2] = ((v.elements[2] & 0x3) as u8) << 6 | ((v.elements[1] >> 5) as u8);
-    result[3] = ((v.elements[2] >> 2) & 0xFF) as u8;
-    result[4] = ((v.elements[3] & 0x7F) as u8) << 1 | (v.elements[2] >> 10) as u8;
-    result[5] = ((v.elements[4] & 0xF) as u8) << 4 | (v.elements[3] >> 7) as u8;
-    result[6] = ((v.elements[5] & 0x1) as u8) << 7 | (v.elements[4] >> 4) as u8;
-    result[7] = ((v.elements[5] >> 1) & 0xFF) as u8;
-    result[8] = ((v.elements[6] & 0x3F) as u8) << 2 | (v.elements[5] >> 9) as u8;
-    result[9] = ((v.elements[7] & 0x7) as u8) << 5 | (v.elements[6] >> 6) as u8;
-    result[10] = (v.elements[7] >> 3) as u8;
+    result[0] =  r0_10.0;
+    result[1] =  r0_10.1;
+    result[2] =  r0_10.2;
+    result[3] =  r0_10.3;
+    result[4] =  r0_10.4;
+    result[5] =  r0_10.5;
+    result[6] =  r0_10.6;
+    result[7] =  r0_10.7;
+    result[8] =  r0_10.8;
+    result[9] =  r0_10.9;
+    result[10] = r0_10.10;
 
-    result[11] = v.elements[8 + 0] as u8;
-    result[12] = ((v.elements[8 + 1] & 0x1F) as u8) << 3 | ((v.elements[8 + 0] >> 8) as u8);
-    result[13] = ((v.elements[8 + 2] & 0x3) as u8) << 6 | ((v.elements[8 + 1] >> 5) as u8);
-    result[14] = ((v.elements[8 + 2] >> 2) & 0xFF) as u8;
-    result[15] = ((v.elements[8 + 3] & 0x7F) as u8) << 1 | (v.elements[8 + 2] >> 10) as u8;
-    result[16] = ((v.elements[8 + 4] & 0xF) as u8) << 4 | (v.elements[8 + 3] >> 7) as u8;
-    result[17] = ((v.elements[8 + 5] & 0x1) as u8) << 7 | (v.elements[8 + 4] >> 4) as u8;
-    result[18] = ((v.elements[8 + 5] >> 1) & 0xFF) as u8;
-    result[19] = ((v.elements[8 + 6] & 0x3F) as u8) << 2 | (v.elements[8 + 5] >> 9) as u8;
-    result[20] = ((v.elements[8 + 7] & 0x7) as u8) << 5 | (v.elements[8 + 6] >> 6) as u8;
-    result[21] = (v.elements[8 + 7] >> 3) as u8;
+    result[11] =  r11_21.0;
+    result[12] =  r11_21.1;
+    result[13] =  r11_21.2;
+    result[14] =  r11_21.3;
+    result[15] =  r11_21.4;
+    result[16] =  r11_21.5;
+    result[17] =  r11_21.6;
+    result[18] =  r11_21.7;
+    result[19] =  r11_21.8;
+    result[20] =  r11_21.9;
+    result[21] =  r11_21.10;
 
     result
 }

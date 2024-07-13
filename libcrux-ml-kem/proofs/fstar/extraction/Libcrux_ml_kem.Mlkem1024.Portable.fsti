@@ -42,7 +42,7 @@ val generate_key_pair (randomness: t_Array u8 (sz 64))
 val encapsulate_unpacked
       (public_key:
           Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector #Libcrux_ml_kem.Vector.Portable.impl)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (randomness: t_Array u8 (sz 32))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568) & t_Array u8 (sz 32))
       Prims.l_True
