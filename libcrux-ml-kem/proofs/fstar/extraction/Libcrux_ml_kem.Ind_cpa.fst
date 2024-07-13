@@ -204,7 +204,7 @@ let compress_then_serialize_u
       (input: t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
       (out: t_Slice u8)
      =
-  let out, hax_temp_output:t_Slice u8 =
+  let out:t_Slice u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Array.Iter.t_IntoIter (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                 v_K))
@@ -265,6 +265,7 @@ let compress_then_serialize_u
           <:
           t_Slice u8)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   out
 
 let deserialize_then_decompress_u

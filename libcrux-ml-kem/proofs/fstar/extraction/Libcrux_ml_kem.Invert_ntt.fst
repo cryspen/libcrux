@@ -38,8 +38,7 @@ let invert_ntt_at_layer_1_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
      =
-  let (re, zeta_i), hax_temp_output:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector &
-    usize) =
+  let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -88,6 +87,7 @@ let invert_ntt_at_layer_1_
           let zeta_i:usize = zeta_i -! sz 3 in
           re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let invert_ntt_at_layer_2_
@@ -99,8 +99,7 @@ let invert_ntt_at_layer_2_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
      =
-  let (re, zeta_i), hax_temp_output:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector &
-    usize) =
+  let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -141,6 +140,7 @@ let invert_ntt_at_layer_2_
           let zeta_i:usize = zeta_i -! sz 1 in
           re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let invert_ntt_at_layer_3_
@@ -152,8 +152,7 @@ let invert_ntt_at_layer_3_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (v__layer: usize)
      =
-  let (re, zeta_i), hax_temp_output:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector &
-    usize) =
+  let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -189,6 +188,7 @@ let invert_ntt_at_layer_3_
           in
           re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let invert_ntt_at_layer_4_plus
@@ -201,8 +201,7 @@ let invert_ntt_at_layer_4_plus
       (layer: usize)
      =
   let step:usize = sz 1 <<! layer in
-  let (re, zeta_i), hax_temp_output:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector &
-    usize) =
+  let re, zeta_i:(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -277,6 +276,7 @@ let invert_ntt_at_layer_4_plus
           in
           re, zeta_i <: (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector & usize))
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   zeta_i, re <: (usize & Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
 
 let invert_ntt_montgomery

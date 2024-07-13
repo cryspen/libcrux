@@ -1029,6 +1029,7 @@ version = "0.0.2-alpha.1"
 dependencies = [
  "criterion",
  "hax-lib 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
+ "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/)",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",

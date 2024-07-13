@@ -36,7 +36,7 @@ let impl__add_error_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
-  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
+  let self:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -78,6 +78,7 @@ let impl__add_error_reduce
           in
           self)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   self
 
 let impl__add_message_error_reduce
@@ -145,7 +146,7 @@ let impl__add_standard_error_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self error: t_PolynomialRingElement v_Vector)
      =
-  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
+  let self:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -185,6 +186,7 @@ let impl__add_standard_error_reduce
           in
           self)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   self
 
 let impl__add_to_ring_element
@@ -195,7 +197,7 @@ let impl__add_to_ring_element
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self rhs: t_PolynomialRingElement v_Vector)
      =
-  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
+  let self:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -234,6 +236,7 @@ let impl__add_to_ring_element
           <:
           t_PolynomialRingElement v_Vector)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   self
 
 let impl__from_i16_array
@@ -347,7 +350,7 @@ let impl__poly_barrett_reduce
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (self: t_PolynomialRingElement v_Vector)
      =
-  let self, hax_temp_output:t_PolynomialRingElement v_Vector =
+  let self:t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
           #FStar.Tactics.Typeclasses.solve
@@ -377,6 +380,7 @@ let impl__poly_barrett_reduce
           <:
           t_PolynomialRingElement v_Vector)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   self
 
 let impl__subtract_reduce
