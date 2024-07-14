@@ -35,6 +35,12 @@ val generate_key_pair (randomness: t_Array u8 (sz 64))
       Prims.l_True
       (fun _ -> Prims.l_True)
 
+let _ =
+    (* This module has implicit dependencies, here we make them explicit. *)
+    (* The implicit dependencies arise from typeclasses instances. *)
+    let open Libcrux_ml_kem.Vector.Portable in
+    ()
+
 /// Encapsulate ML-KEM 512 (unpacked)
 /// Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
@@ -42,8 +48,7 @@ val generate_key_pair (randomness: t_Array u8 (sz 64))
 val encapsulate_unpacked
       (public_key:
           Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
-    	    #Libcrux_ml_kem.Vector.Portable.impl)
+            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (randomness: t_Array u8 (sz 32))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 768) & t_Array u8 (sz 32))
       Prims.l_True
