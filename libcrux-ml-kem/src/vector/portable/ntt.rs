@@ -2,6 +2,18 @@ use super::arithmetic::*;
 use super::vector_type::*;
 
 #[inline(always)]
+pub(crate) fn ntt_step(
+    v: &mut PortableVector,
+    zeta: i16,
+    i: usize,
+    j:usize
+) {
+    let t = montgomery_multiply_fe_by_fer(v.elements[j], zeta);
+    v.elements[j] = v.elements[i] - t;
+    v.elements[i] = v.elements[i] + t;
+}
+
+#[inline(always)]
 pub(crate) fn ntt_layer_1_step(
     mut v: PortableVector,
     zeta0: i16,
@@ -9,117 +21,53 @@ pub(crate) fn ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> PortableVector {
-    // First 8 elements.
-    let t = montgomery_multiply_fe_by_fer(v.elements[2], zeta0);
-    v.elements[2] = v.elements[0] - t;
-    v.elements[0] = v.elements[0] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[3], zeta0);
-    v.elements[3] = v.elements[1] - t;
-    v.elements[1] = v.elements[1] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta1);
-    v.elements[6] = v.elements[4] - t;
-    v.elements[4] = v.elements[4] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta1);
-    v.elements[7] = v.elements[5] - t;
-    v.elements[5] = v.elements[5] + t;
-
-    // Next 8 elements.
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 2], zeta2);
-    v.elements[8 + 2] = v.elements[8 + 0] - t;
-    v.elements[8 + 0] = v.elements[8 + 0] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 3], zeta2);
-    v.elements[8 + 3] = v.elements[8 + 1] - t;
-    v.elements[8 + 1] = v.elements[8 + 1] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 6], zeta3);
-    v.elements[8 + 6] = v.elements[8 + 4] - t;
-    v.elements[8 + 4] = v.elements[8 + 4] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 7], zeta3);
-    v.elements[8 + 7] = v.elements[8 + 5] - t;
-    v.elements[8 + 5] = v.elements[8 + 5] + t;
-
-    v
-}
-
-#[inline(always)]
-pub(crate) fn ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVector {
-    let t = montgomery_multiply_fe_by_fer(v.elements[8], zeta);
-    v.elements[8] = v.elements[0] - t;
-    v.elements[0] = v.elements[0] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[9], zeta);
-    v.elements[9] = v.elements[1] - t;
-    v.elements[1] = v.elements[1] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[10], zeta);
-    v.elements[10] = v.elements[2] - t;
-    v.elements[2] = v.elements[2] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[11], zeta);
-    v.elements[11] = v.elements[3] - t;
-    v.elements[3] = v.elements[3] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[12], zeta);
-    v.elements[12] = v.elements[4] - t;
-    v.elements[4] = v.elements[4] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[13], zeta);
-    v.elements[13] = v.elements[5] - t;
-    v.elements[5] = v.elements[5] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[14], zeta);
-    v.elements[14] = v.elements[6] - t;
-    v.elements[6] = v.elements[6] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[15], zeta);
-    v.elements[15] = v.elements[7] - t;
-    v.elements[7] = v.elements[7] + t;
-
+    ntt_step(&mut v, zeta0, 0, 2);
+    ntt_step(&mut v, zeta0, 1, 3);
+    ntt_step(&mut v, zeta1, 4, 6);
+    ntt_step(&mut v, zeta1, 5, 7);
+    ntt_step(&mut v, zeta2, 8, 10);
+    ntt_step(&mut v, zeta2, 9, 11);
+    ntt_step(&mut v, zeta3, 12, 14);
+    ntt_step(&mut v, zeta3, 13, 15);
     v
 }
 
 #[inline(always)]
 pub(crate) fn ntt_layer_2_step(mut v: PortableVector, zeta0: i16, zeta1: i16) -> PortableVector {
-    // First 8 elements.
-    let t = montgomery_multiply_fe_by_fer(v.elements[4], zeta0);
-    v.elements[4] = v.elements[0] - t;
-    v.elements[0] = v.elements[0] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[5], zeta0);
-    v.elements[5] = v.elements[1] - t;
-    v.elements[1] = v.elements[1] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[6], zeta0);
-    v.elements[6] = v.elements[2] - t;
-    v.elements[2] = v.elements[2] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[7], zeta0);
-    v.elements[7] = v.elements[3] - t;
-    v.elements[3] = v.elements[3] + t;
-
-    // Next 8 elements.
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 4], zeta1);
-    v.elements[8 + 4] = v.elements[8 + 0] - t;
-    v.elements[8 + 0] = v.elements[8 + 0] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 5], zeta1);
-    v.elements[8 + 5] = v.elements[8 + 1] - t;
-    v.elements[8 + 1] = v.elements[8 + 1] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 6], zeta1);
-    v.elements[8 + 6] = v.elements[8 + 2] - t;
-    v.elements[8 + 2] = v.elements[8 + 2] + t;
-
-    let t = montgomery_multiply_fe_by_fer(v.elements[8 + 7], zeta1);
-    v.elements[8 + 7] = v.elements[8 + 3] - t;
-    v.elements[8 + 3] = v.elements[8 + 3] + t;
-
+    ntt_step(&mut v, zeta0, 0, 4);
+    ntt_step(&mut v, zeta0, 1, 5);
+    ntt_step(&mut v, zeta0, 2, 6);
+    ntt_step(&mut v, zeta0, 3, 7);
+    ntt_step(&mut v, zeta1, 8, 12);
+    ntt_step(&mut v, zeta1, 9, 13);
+    ntt_step(&mut v, zeta1, 10, 14);
+    ntt_step(&mut v, zeta1, 11, 15);
     v
+}
+
+#[inline(always)]
+pub(crate) fn ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVector {
+    ntt_step(&mut v, zeta, 0, 8);
+    ntt_step(&mut v, zeta, 1, 9);
+    ntt_step(&mut v, zeta, 2, 10);
+    ntt_step(&mut v, zeta, 3, 11);
+    ntt_step(&mut v, zeta, 4, 12);
+    ntt_step(&mut v, zeta, 5, 13);
+    ntt_step(&mut v, zeta, 6, 14);
+    ntt_step(&mut v, zeta, 7, 15);
+    v
+}
+
+#[inline(always)]
+pub(crate) fn inv_ntt_step(
+    v: &mut PortableVector,
+    zeta: i16,
+    i: usize,
+    j: usize
+) {
+    let a_minus_b = v.elements[j] - v.elements[i];
+    v.elements[i] = barrett_reduce_element(v.elements[i] + v.elements[j]);
+    v.elements[j] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
 }
 
 #[inline(always)]
@@ -130,40 +78,14 @@ pub(crate) fn inv_ntt_layer_1_step(
     zeta2: i16,
     zeta3: i16,
 ) -> PortableVector {
-    // First 8 elements.
-    let a_minus_b = v.elements[2] - v.elements[0];
-    v.elements[0] = barrett_reduce_element(v.elements[0] + v.elements[2]);
-    v.elements[2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = v.elements[3] - v.elements[1];
-    v.elements[1] = barrett_reduce_element(v.elements[1] + v.elements[3]);
-    v.elements[3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = v.elements[6] - v.elements[4];
-    v.elements[4] = barrett_reduce_element(v.elements[4] + v.elements[6]);
-    v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    let a_minus_b = v.elements[7] - v.elements[5];
-    v.elements[5] = barrett_reduce_element(v.elements[5] + v.elements[7]);
-    v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    // Next 8 elements.
-    let a_minus_b = v.elements[8 + 2] - v.elements[8 + 0];
-    v.elements[8 + 0] = barrett_reduce_element(v.elements[8 + 0] + v.elements[8 + 2]);
-    v.elements[8 + 2] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
-
-    let a_minus_b = v.elements[8 + 3] - v.elements[8 + 1];
-    v.elements[8 + 1] = barrett_reduce_element(v.elements[8 + 1] + v.elements[8 + 3]);
-    v.elements[8 + 3] = montgomery_multiply_fe_by_fer(a_minus_b, zeta2);
-
-    let a_minus_b = v.elements[8 + 6] - v.elements[8 + 4];
-    v.elements[8 + 4] = barrett_reduce_element(v.elements[8 + 4] + v.elements[8 + 6]);
-    v.elements[8 + 6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
-
-    let a_minus_b = v.elements[8 + 7] - v.elements[8 + 5];
-    v.elements[8 + 5] = barrett_reduce_element(v.elements[8 + 5] + v.elements[8 + 7]);
-    v.elements[8 + 7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta3);
-
+    inv_ntt_step(&mut v, zeta0, 0, 2);
+    inv_ntt_step(&mut v, zeta0, 1, 3);
+    inv_ntt_step(&mut v, zeta1, 4, 6);
+    inv_ntt_step(&mut v, zeta1, 5, 7);
+    inv_ntt_step(&mut v, zeta2, 8, 10);
+    inv_ntt_step(&mut v, zeta2, 9, 11);
+    inv_ntt_step(&mut v, zeta3, 12, 14);
+    inv_ntt_step(&mut v, zeta3, 13, 15);
     v
 }
 
@@ -173,77 +95,27 @@ pub(crate) fn inv_ntt_layer_2_step(
     zeta0: i16,
     zeta1: i16,
 ) -> PortableVector {
-    // First 8 elements.
-    let a_minus_b = v.elements[4] - v.elements[0];
-    v.elements[0] = v.elements[0] + v.elements[4];
-    v.elements[4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = v.elements[5] - v.elements[1];
-    v.elements[1] = v.elements[1] + v.elements[5];
-    v.elements[5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = v.elements[6] - v.elements[2];
-    v.elements[2] = v.elements[2] + v.elements[6];
-    v.elements[6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    let a_minus_b = v.elements[7] - v.elements[3];
-    v.elements[3] = v.elements[3] + v.elements[7];
-    v.elements[7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta0);
-
-    // Next 8 elements.
-    let a_minus_b = v.elements[8 + 4] - v.elements[8 + 0];
-    v.elements[8 + 0] = v.elements[8 + 0] + v.elements[8 + 4];
-    v.elements[8 + 4] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    let a_minus_b = v.elements[8 + 5] - v.elements[8 + 1];
-    v.elements[8 + 1] = v.elements[8 + 1] + v.elements[8 + 5];
-    v.elements[8 + 5] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    let a_minus_b = v.elements[8 + 6] - v.elements[8 + 2];
-    v.elements[8 + 2] = v.elements[8 + 2] + v.elements[8 + 6];
-    v.elements[8 + 6] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
-    let a_minus_b = v.elements[8 + 7] - v.elements[8 + 3];
-    v.elements[8 + 3] = v.elements[8 + 3] + v.elements[8 + 7];
-    v.elements[8 + 7] = montgomery_multiply_fe_by_fer(a_minus_b, zeta1);
-
+    inv_ntt_step(&mut v, zeta0, 0, 4);
+    inv_ntt_step(&mut v, zeta0, 1, 5);
+    inv_ntt_step(&mut v, zeta0, 2, 6);
+    inv_ntt_step(&mut v, zeta0, 3, 7);
+    inv_ntt_step(&mut v, zeta1, 8, 12);
+    inv_ntt_step(&mut v, zeta1, 9, 13);
+    inv_ntt_step(&mut v, zeta1, 10, 14);
+    inv_ntt_step(&mut v, zeta1, 11, 15);
     v
 }
 
 #[inline(always)]
 pub(crate) fn inv_ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVector {
-    let a_minus_b = v.elements[8] - v.elements[0];
-    v.elements[0] = v.elements[0] + v.elements[8];
-    v.elements[8] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = v.elements[9] - v.elements[1];
-    v.elements[1] = v.elements[1] + v.elements[9];
-    v.elements[9] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = v.elements[10] - v.elements[2];
-    v.elements[2] = v.elements[2] + v.elements[10];
-    v.elements[10] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = v.elements[11] - v.elements[3];
-    v.elements[3] = v.elements[3] + v.elements[11];
-    v.elements[11] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = v.elements[12] - v.elements[4];
-    v.elements[4] = v.elements[4] + v.elements[12];
-    v.elements[12] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = v.elements[13] - v.elements[5];
-    v.elements[5] = v.elements[5] + v.elements[13];
-    v.elements[13] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = v.elements[14] - v.elements[6];
-    v.elements[6] = v.elements[6] + v.elements[14];
-    v.elements[14] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
-    let a_minus_b = v.elements[15] - v.elements[7];
-    v.elements[7] = v.elements[7] + v.elements[15];
-    v.elements[15] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
-
+    inv_ntt_step(&mut v, zeta, 0, 8);
+    inv_ntt_step(&mut v, zeta, 1, 9);
+    inv_ntt_step(&mut v, zeta, 2, 10);
+    inv_ntt_step(&mut v, zeta, 3, 11);
+    inv_ntt_step(&mut v, zeta, 4, 12);
+    inv_ntt_step(&mut v, zeta, 5, 13);
+    inv_ntt_step(&mut v, zeta, 6, 14);
+    inv_ntt_step(&mut v, zeta, 7, 15);
     v
 }
 
@@ -269,18 +141,38 @@ pub(crate) fn inv_ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> Portable
 /// <https://csrc.nist.gov/pubs/fips/203/ipd>.
 #[inline(always)]
 pub(crate) fn ntt_multiply_binomials(
-    (a0, a1): (FieldElement, FieldElement),
-    (b0, b1): (FieldElement, FieldElement),
+    a: &PortableVector,
+    b: &PortableVector,
     zeta: FieldElementTimesMontgomeryR,
-) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
-    (
+    i: usize,
+    j: usize,
+    out: &mut PortableVector
+) {
+    let o0 = 
         montgomery_reduce_element(
-            (a0 as i32) * (b0 as i32)
-                + (montgomery_reduce_element((a1 as i32) * (b1 as i32)) as i32) * (zeta as i32),
-        ),
-        montgomery_reduce_element((a0 as i32) * (b1 as i32) + (a1 as i32) * (b0 as i32)),
-    )
+            (a.elements[i] as i32) * (b.elements[i] as i32)
+                + (montgomery_reduce_element((a.elements[j] as i32) * (b.elements[j] as i32)) as i32) * (zeta as i32),
+        );
+    let o1 = 
+        montgomery_reduce_element((a.elements[i] as i32) * (b.elements[j] as i32) + (a.elements[j] as i32) * (b.elements[i] as i32));
+    out.elements[i] = o0;
+    out.elements[j] = o1;
 }
+
+// #[inline(always)]
+// pub(crate) fn ntt_multiply_binomials(
+//     (a0, a1): (FieldElement, FieldElement),
+//     (b0, b1): (FieldElement, FieldElement),
+//     zeta: FieldElementTimesMontgomeryR,
+// ) -> (MontgomeryFieldElement, MontgomeryFieldElement) {
+//     (
+//         montgomery_reduce_element(
+//             (a0 as i32) * (b0 as i32)
+//                 + (montgomery_reduce_element((a1 as i32) * (b1 as i32)) as i32) * (zeta as i32),
+//         ),
+//         montgomery_reduce_element((a0 as i32) * (b1 as i32) + (a1 as i32) * (b0 as i32)),
+//     )
+// }
 
 #[inline(always)]
 pub(crate) fn ntt_multiply(
@@ -292,72 +184,13 @@ pub(crate) fn ntt_multiply(
     zeta3: i16,
 ) -> PortableVector {
     let mut out = zero();
-
-    // First 8 elements.
-    let product = ntt_multiply_binomials(
-        (lhs.elements[0], lhs.elements[1]),
-        (rhs.elements[0], rhs.elements[1]),
-        zeta0,
-    );
-    out.elements[0] = product.0;
-    out.elements[1] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[2], lhs.elements[3]),
-        (rhs.elements[2], rhs.elements[3]),
-        -zeta0,
-    );
-    out.elements[2] = product.0;
-    out.elements[3] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[4], lhs.elements[5]),
-        (rhs.elements[4], rhs.elements[5]),
-        zeta1,
-    );
-    out.elements[4] = product.0;
-    out.elements[5] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[6], lhs.elements[7]),
-        (rhs.elements[6], rhs.elements[7]),
-        -zeta1,
-    );
-    out.elements[6] = product.0;
-    out.elements[7] = product.1;
-
-    // Next 8 elements.
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 0], lhs.elements[8 + 1]),
-        (rhs.elements[8 + 0], rhs.elements[8 + 1]),
-        zeta2,
-    );
-    out.elements[8 + 0] = product.0;
-    out.elements[8 + 1] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 2], lhs.elements[8 + 3]),
-        (rhs.elements[8 + 2], rhs.elements[8 + 3]),
-        -zeta2,
-    );
-    out.elements[8 + 2] = product.0;
-    out.elements[8 + 3] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 4], lhs.elements[8 + 5]),
-        (rhs.elements[8 + 4], rhs.elements[8 + 5]),
-        zeta3,
-    );
-    out.elements[8 + 4] = product.0;
-    out.elements[8 + 5] = product.1;
-
-    let product = ntt_multiply_binomials(
-        (lhs.elements[8 + 6], lhs.elements[8 + 7]),
-        (rhs.elements[8 + 6], rhs.elements[8 + 7]),
-        -zeta3,
-    );
-    out.elements[8 + 6] = product.0;
-    out.elements[8 + 7] = product.1;
-
+    ntt_multiply_binomials(lhs, rhs, zeta0, 0, 1, &mut out);
+    ntt_multiply_binomials(lhs, rhs, -zeta0, 2, 3, &mut out);
+    ntt_multiply_binomials(lhs, rhs, zeta1, 4, 5, &mut out);
+    ntt_multiply_binomials(lhs, rhs, -zeta1, 6, 7, &mut out);
+    ntt_multiply_binomials(lhs, rhs, zeta2, 8, 9, &mut out);
+    ntt_multiply_binomials(lhs, rhs, -zeta2, 10, 11, &mut out);
+    ntt_multiply_binomials(lhs, rhs, zeta3, 12, 13, &mut out);
+    ntt_multiply_binomials(lhs, rhs, -zeta3, 14, 15, &mut out);
     out
 }
