@@ -229,6 +229,12 @@ macro_rules! instantiate {
             /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
             /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+            #[cfg_attr(hax,hax_lib::fstar::before("
+let _ =
+    (* This module has implicit dependencies, here we make them explicit. *)
+    (* The implicit dependencies arise from typeclasses instances. *)
+    let open Libcrux_ml_kem.Vector.Portable in
+    ()"))]
             pub fn encapsulate_unpacked(
                 public_key: &MlKem1024PublicKeyUnpacked<$vec>,
                 randomness: [u8; SHARED_SECRET_SIZE],
