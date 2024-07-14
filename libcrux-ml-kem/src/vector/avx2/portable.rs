@@ -43,12 +43,9 @@ pub(crate) fn serialize_11_int(v: &[i16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8
 
 #[inline(always)]
 pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
-
     let r0_10 = serialize_11_int(&v.elements[0..8]);
     let r11_21 = serialize_11_int(&v.elements[8..16]);
-    
     let mut result = [0u8; 22];
-
     result[0] =  r0_10.0;
     result[1] =  r0_10.1;
     result[2] =  r0_10.2;
@@ -60,7 +57,6 @@ pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     result[8] =  r0_10.8;
     result[9] =  r0_10.9;
     result[10] = r0_10.10;
-
     result[11] =  r11_21.0;
     result[12] =  r11_21.1;
     result[13] =  r11_21.2;
@@ -72,7 +68,6 @@ pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     result[19] =  r11_21.8;
     result[20] =  r11_21.9;
     result[21] =  r11_21.10;
-
     result
 }
 

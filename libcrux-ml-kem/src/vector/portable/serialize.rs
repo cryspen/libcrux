@@ -4,29 +4,24 @@ use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 #[inline(always)]
 pub(crate) fn serialize_1(v: PortableVector) -> [u8; 2] {
     let mut result = [0u8; 2];
-
     for i in 0..8 {
         result[0] |= (v.elements[i] as u8) << i;
     }
-
     for i in 8..16 {
         result[1] |= (v.elements[i] as u8) << (i - 8);
     }
-
     result
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_1(v: &[u8]) -> PortableVector {
     let mut result = zero();
-
     for i in 0..8 {
         result.elements[i] = ((v[0] >> i) & 0x1) as i16;
     }
     for i in 8..FIELD_ELEMENTS_IN_VECTOR {
         result.elements[i] = ((v[1] >> (i - 8)) & 0x1) as i16;
     }
-
     result
 }
 
@@ -81,7 +76,6 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
     v.elements[5] = v0_7.5;
     v.elements[6] = v0_7.6;
     v.elements[7] = v0_7.7;
-
     v.elements[8] = v8_15.0;
     v.elements[9] = v8_15.1;
     v.elements[10] = v8_15.2;
@@ -107,7 +101,6 @@ pub(crate) fn serialize_5_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
 pub(crate) fn serialize_5(v: PortableVector) -> [u8; 10] {
     let r0_4 = serialize_5_int(&v.elements[0..8]);
     let r5_9 = serialize_5_int(&v.elements[8..16]);
-
     let mut result = [0u8; 10];
     result[0] = r0_4.0;
     result[1] = r0_4.1;
@@ -139,7 +132,6 @@ pub(crate) fn deserialize_5_int(bytes: &[u8]) -> (i16, i16, i16, i16, i16, i16, 
 pub(crate) fn deserialize_5(bytes: &[u8]) -> PortableVector {
     let v0_7 = deserialize_5_int(&bytes[0..5]);
     let v8_15 = deserialize_5_int(&bytes[5..10]);
-
     let mut v = zero();
     v.elements[0] = v0_7.0;
     v.elements[1] = v0_7.1;
@@ -176,9 +168,7 @@ pub(crate) fn serialize_10(v: PortableVector) -> [u8; 20] {
     let r5_9 = serialize_10_int(&v.elements[4..8]);
     let r10_14 = serialize_10_int(&v.elements[8..12]);
     let r15_19 = serialize_10_int(&v.elements[12..16]);
-
     let mut result = [0u8; 20];
-
     result[0] = r0_4.0;
     result[1] = r0_4.1;
     result[2] = r0_4.2;
@@ -258,12 +248,9 @@ pub(crate) fn serialize_11_int(v: &[i16]) -> (u8, u8, u8, u8, u8, u8, u8, u8, u8
 
 #[inline(always)]
 pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
-
     let r0_10 = serialize_11_int(&v.elements[0..8]);
     let r11_21 = serialize_11_int(&v.elements[8..16]);
-    
     let mut result = [0u8; 22];
-
     result[0] =  r0_10.0;
     result[1] =  r0_10.1;
     result[2] =  r0_10.2;
@@ -275,7 +262,6 @@ pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     result[8] =  r0_10.8;
     result[9] =  r0_10.9;
     result[10] = r0_10.10;
-
     result[11] =  r11_21.0;
     result[12] =  r11_21.1;
     result[13] =  r11_21.2;
@@ -287,7 +273,6 @@ pub(crate) fn serialize_11(v: PortableVector) -> [u8; 22] {
     result[19] =  r11_21.8;
     result[20] =  r11_21.9;
     result[21] =  r11_21.10;
-
     result
 }
 
@@ -351,10 +336,7 @@ pub(crate) fn serialize_12(v: PortableVector) -> [u8; 24] {
     let r15_17 = serialize_12_int(&v.elements[10..12]);
     let r18_20 = serialize_12_int(&v.elements[12..14]);
     let r21_23 = serialize_12_int(&v.elements[14..16]);
-
-
     let mut result = [0u8; 24];
-
     result[0] = r0_2.0;
     result[1] = r0_2.1;
     result[2] = r0_2.2;
@@ -379,7 +361,6 @@ pub(crate) fn serialize_12(v: PortableVector) -> [u8; 24] {
     result[21] = r21_23.0;
     result[22] = r21_23.1;
     result[23] = r21_23.2;
-
     result
 }
 
@@ -403,9 +384,7 @@ pub(crate) fn deserialize_12(bytes: &[u8]) -> PortableVector {
     let v10_11 = deserialize_12_int(&bytes[15..18]);
     let v12_13 = deserialize_12_int(&bytes[18..21]);
     let v14_15 = deserialize_12_int(&bytes[21..24]);
-
     let mut re = zero();
-
     re.elements[0] = v0_1.0;
     re.elements[1] = v0_1.1;
     re.elements[2] = v2_3.0;
@@ -414,7 +393,6 @@ pub(crate) fn deserialize_12(bytes: &[u8]) -> PortableVector {
     re.elements[5] = v4_5.1;
     re.elements[6] = v6_7.0;
     re.elements[7] = v6_7.1;
-
     re.elements[8] = v8_9.0;
     re.elements[9] = v8_9.1;
     re.elements[10] = v10_11.0;
@@ -423,6 +401,5 @@ pub(crate) fn deserialize_12(bytes: &[u8]) -> PortableVector {
     re.elements[13] = v12_13.1;
     re.elements[14] = v14_15.0;
     re.elements[15] = v14_15.1;
-
     re
 }
