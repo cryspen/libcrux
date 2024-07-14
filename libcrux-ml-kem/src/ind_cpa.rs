@@ -230,6 +230,8 @@ fn compress_then_serialize_u<
     input: [PolynomialRingElement<Vector>; K],
     out: &mut [u8],
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
             out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(

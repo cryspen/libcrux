@@ -11,6 +11,8 @@ pub(crate) fn ntt_at_layer_1<Vector: Operations>(
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         *zeta_i += 1;
         re.coefficients[round] = Vector::ntt_layer_1_step(
@@ -32,6 +34,8 @@ pub(crate) fn ntt_at_layer_2<Vector: Operations>(
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         *zeta_i += 1;
         re.coefficients[round] = Vector::ntt_layer_2_step(
@@ -51,6 +55,8 @@ pub(crate) fn ntt_at_layer_3<Vector: Operations>(
     _layer: usize,
     _initial_coefficient_bound: usize,
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..16 {
         *zeta_i += 1;
         re.coefficients[round] =
@@ -80,6 +86,8 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
     debug_assert!(layer >= 4);
     let step = 1 << layer;
 
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for round in 0..(128 >> layer) {
         *zeta_i += 1;
 
@@ -103,6 +111,8 @@ pub(crate) fn ntt_at_layer_4_plus<Vector: Operations>(
 #[inline(always)]
 pub(crate) fn ntt_at_layer_7<Vector: Operations>(re: &mut PolynomialRingElement<Vector>) {
     let step = VECTORS_IN_RING_ELEMENT / 2;
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for j in 0..step {
         let t = Vector::multiply_by_constant(re.coefficients[j + step], -1600);
         re.coefficients[j + step] = Vector::sub(re.coefficients[j], &t);
