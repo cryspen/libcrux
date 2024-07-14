@@ -13,6 +13,12 @@ class t_Operations (v_Self: Type0) = {
   f_from_i16_array_post:t_Slice i16 -> v_Self -> bool;
   f_from_i16_array:x0: t_Slice i16
     -> Prims.Pure v_Self (f_from_i16_array_pre x0) (fun result -> f_from_i16_array_post x0 result);
+  f_to_i16_array_pre:v_Self -> bool;
+  f_to_i16_array_post:v_Self -> t_Array i16 (sz 16) -> bool;
+  f_to_i16_array:x0: v_Self
+    -> Prims.Pure (t_Array i16 (sz 16))
+        (f_to_i16_array_pre x0)
+        (fun result -> f_to_i16_array_post x0 result);
   f_add_pre:v_Self -> v_Self -> bool;
   f_add_post:v_Self -> v_Self -> v_Self -> bool;
   f_add:x0: v_Self -> x1: v_Self

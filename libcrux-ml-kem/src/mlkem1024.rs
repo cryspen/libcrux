@@ -234,6 +234,7 @@ let _ =
     (* This module has implicit dependencies, here we make them explicit. *)
     (* The implicit dependencies arise from typeclasses instances. *)
     let open Libcrux_ml_kem.Vector.Portable in
+    let open Libcrux_ml_kem.Vector.Neon in
     ()"))]
             pub fn encapsulate_unpacked(
                 public_key: &MlKem1024PublicKeyUnpacked<$vec>,

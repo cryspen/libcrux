@@ -1,4 +1,4 @@
-module Libcrux_ml_kem.Mlkem1024.Portable
+module Libcrux_ml_kem.Mlkem1024.Neon
 #set-options "--fuel 0 --ifuel 1 --z3rlimit 15"
 open Core
 open FStar.Mul
@@ -49,7 +49,7 @@ let _ =
 val encapsulate_unpacked
       (public_key:
           Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (randomness: t_Array u8 (sz 32))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568) & t_Array u8 (sz 32))
       Prims.l_True
@@ -62,7 +62,7 @@ val encapsulate_unpacked
 val decapsulate_unpacked
       (private_key:
           Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
-            Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+            Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -70,6 +70,6 @@ val decapsulate_unpacked
 val generate_key_pair_unpacked (randomness: t_Array u8 (sz 64))
     : Prims.Pure
       (Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
-          Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+          Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)

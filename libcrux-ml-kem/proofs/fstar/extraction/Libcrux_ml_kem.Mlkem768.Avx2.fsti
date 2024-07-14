@@ -39,6 +39,7 @@ let _ =
     (* This module has implicit dependencies, here we make them explicit. *)
     (* The implicit dependencies arise from typeclasses instances. *)
     let open Libcrux_ml_kem.Vector.Portable in
+    let open Libcrux_ml_kem.Vector.Neon in
     ()
 
 /// Encapsulate ML-KEM 768 (unpacked)

@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Avx2
 open Core
 open FStar.Mul
 
-type t_SIMD256Vector = { f_elements:Core.Core_arch.X86.t____m256i }
+type t_SIMD256Vector = { f_elements:u8 }
 
 val from_i16_array (array: t_Slice i16)
     : Prims.Pure t_SIMD256Vector Prims.l_True (fun _ -> Prims.l_True)
@@ -24,6 +24,9 @@ let impl: Libcrux_ml_kem.Vector.Traits.t_Operations t_SIMD256Vector =
     f_from_i16_array_pre = (fun (array: t_Slice i16) -> true);
     f_from_i16_array_post = (fun (array: t_Slice i16) (out: t_SIMD256Vector) -> true);
     f_from_i16_array = (fun (array: t_Slice i16) -> from_i16_array array);
+    f_to_i16_array_pre = (fun (x: t_SIMD256Vector) -> true);
+    f_to_i16_array_post = (fun (x: t_SIMD256Vector) (out: t_Array i16 (sz 16)) -> true);
+    f_to_i16_array = (fun (x: t_SIMD256Vector) -> to_i16_array x);
     f_add_pre = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) -> true);
     f_add_post = (fun (lhs: t_SIMD256Vector) (rhs: t_SIMD256Vector) (out: t_SIMD256Vector) -> true);
     f_add

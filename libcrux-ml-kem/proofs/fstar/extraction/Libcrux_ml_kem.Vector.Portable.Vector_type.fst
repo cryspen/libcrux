@@ -23,5 +23,7 @@ let from_i16_array (array: t_Slice i16) =
   <:
   t_PortableVector
 
+let to_i16_array (x: t_PortableVector) = x.f_elements
+
 let zero (_: Prims.unit) =
   { f_elements = Rust_primitives.Hax.repeat 0s (sz 16) } <: t_PortableVector

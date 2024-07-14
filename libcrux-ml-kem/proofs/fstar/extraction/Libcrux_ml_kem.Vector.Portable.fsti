@@ -28,6 +28,20 @@ Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
     f_from_i16_array
     =
     (fun (array: t_Slice i16) -> Libcrux_ml_kem.Vector.Portable.Vector_type.from_i16_array array);
+    f_to_i16_array_pre
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) -> true);
+    f_to_i16_array_post
+    =
+    (fun
+        (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
+        (out: t_Array i16 (sz 16))
+        ->
+        true);
+    f_to_i16_array
+    =
+    (fun (x: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) ->
+        Libcrux_ml_kem.Vector.Portable.Vector_type.to_i16_array x);
     f_add_pre
     =
     (fun
