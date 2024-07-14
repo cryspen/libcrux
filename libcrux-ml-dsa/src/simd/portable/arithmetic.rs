@@ -185,6 +185,32 @@ pub fn shift_left_then_reduce(simd_unit: PortableSIMDUnit, shift_by: usize) -> P
     out
 }
 
+#[inline(always)]
+fn compute_one_hint<const GAMMA2: i32>(low: i32, high: i32) -> i32 {
+    if (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0) {
+        1
+    } else {
+        0
+    }
+}
+
+#[inline(always)]
+pub fn compute_hint<const GAMMA2: i32>(
+    low: PortableSIMDUnit,
+    high: PortableSIMDUnit,
+) -> (usize, PortableSIMDUnit) {
+    let mut hint = ZERO();
+    let mut one_hints_count = 0;
+
+    for i in 0..hint.coefficients.len() {
+        hint.coefficients[i] =
+            compute_one_hint::<GAMMA2>(low.coefficients[i], high.coefficients[i]);
+        one_hints_count += hint.coefficients[i] as usize;
+    }
+
+    (one_hints_count, hint)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

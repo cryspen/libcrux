@@ -1,6 +1,6 @@
 use crate::{
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement, SIMD_UNITS_IN_RING_ELEMENT},
     simd::{portable::PortableSIMDUnit, traits::Operations},
 };
 
@@ -165,15 +165,6 @@ pub(crate) fn decompose_vector<const DIMENSION: usize, const GAMMA2: i32>(
 }
 
 #[inline(always)]
-fn compute_hint_value<const GAMMA2: i32>(low: i32, high: i32) -> i32 {
-    if (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0) {
-        1
-    } else {
-        0
-    }
-}
-
-#[inline(always)]
 pub(crate) fn make_hint<const DIMENSION: usize, const GAMMA2: i32>(
     low: [PolynomialRingElement; DIMENSION],
     high: [PolynomialRingElement; DIMENSION],
@@ -182,14 +173,22 @@ pub(crate) fn make_hint<const DIMENSION: usize, const GAMMA2: i32>(
     let mut true_hints = 0;
 
     for i in 0..DIMENSION {
-        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            hint[i][j] =
-                compute_hint_value::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
+        let v_low =
+            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(low[i]);
+        let v_high =
+            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(high[i]);
 
-            // From https://doc.rust-lang.org/std/primitive.bool.html:
-            // "If you cast a bool into an integer, true will be 1 and false will be 0."
-            true_hints += hint[i][j] as usize;
+        let mut v_hint = SIMDPolynomialRingElement::ZERO();
+
+        for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            let (one_hints_count, current_hint) =
+                PortableSIMDUnit::compute_hint::<GAMMA2>(v_low.simd_units[j], v_high.simd_units[j]);
+            v_hint.simd_units[j] = current_hint;
+
+            true_hints += one_hints_count;
         }
+
+        hint[i] = v_hint.to_polynomial_ring_element().coefficients;
     }
 
     (hint, true_hints)

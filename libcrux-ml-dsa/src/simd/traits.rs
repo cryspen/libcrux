@@ -17,6 +17,7 @@ pub(crate) trait Operations: Copy + Clone {
     fn add(lhs: &Self, rhs: &Self) -> Self;
     fn subtract(lhs: &Self, rhs: &Self) -> Self;
     fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool;
+    fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self);
 
     // Modular operations
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;
