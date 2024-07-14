@@ -1,32 +1,28 @@
 use crate::{
-    constants::FIELD_MODULUS,
+    constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
     hash_functions::{H, H_128},
     polynomial::PolynomialRingElement,
+    simd::{portable::PortableSIMDUnit, traits::Operations},
 };
 
 #[inline(always)]
 fn rejection_sample_less_than_field_modulus(
     randomness: &[u8],
-    sampled: &mut usize,
-    out: &mut PolynomialRingElement,
+    sampled_coefficients: &mut usize,
+    out: &mut [i32; 263],
 ) -> bool {
     let mut done = false;
 
-    for bytes in randomness.chunks(3) {
+    for random_bytes in randomness.chunks(24) {
         if !done {
-            let b0 = bytes[0] as i32;
-            let b1 = bytes[1] as i32;
-            let b2 = bytes[2] as i32;
+            let sampled = PortableSIMDUnit::rejection_sample_less_than_field_modulus(
+                random_bytes,
+                &mut out[*sampled_coefficients..],
+            );
+            *sampled_coefficients += sampled;
 
-            let potential_coefficient = ((b2 << 16) | (b1 << 8) | b0) & 0x00_7F_FF_FF;
-
-            if potential_coefficient < FIELD_MODULUS && *sampled < out.coefficients.len() {
-                out.coefficients[*sampled] = potential_coefficient;
-                *sampled += 1;
-            }
-
-            if *sampled == out.coefficients.len() {
+            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
                 done = true;
             }
         }
@@ -34,13 +30,20 @@ fn rejection_sample_less_than_field_modulus(
 
     done
 }
-
 #[inline(always)]
 pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingElement {
     let mut state = H_128::new(seed);
     let randomness = H_128::squeeze_first_five_blocks(&mut state);
 
-    let mut out = PolynomialRingElement::ZERO;
+    // Every call to |rejection_sample_less_than_field_modulus|
+    // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
+    // this latter function performs no bounds checking and can write up to 8
+    // elements to its output. It is therefore possible that 255 elements have
+    // already been sampled and we call the function again.
+    //
+    // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
+    // = 263 elements.
+    let mut out = [0i32; 263];
 
     let mut sampled = 0;
     let mut done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
@@ -50,43 +53,30 @@ pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingEleme
         done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
     }
 
-    out
+    PolynomialRingElement {
+        coefficients: out[0..256].try_into().unwrap(),
+    }
 }
 
 #[inline(always)]
 fn rejection_sample_less_than_eta_equals_2(
     randomness: &[u8],
-    sampled: &mut usize,
-    out: &mut PolynomialRingElement,
+    sampled_coefficients: &mut usize,
+    out: &mut [i32; 263],
 ) -> bool {
     let mut done = false;
 
-    for byte in randomness {
+    // Since each byte can be used to sample up to 2 coefficients, and since
+    // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
+    for random_bytes in randomness.chunks(4) {
         if !done {
-            let try_0 = byte & 0xF;
-            let try_1 = byte >> 4;
+            let sampled = PortableSIMDUnit::rejection_sample_less_than_eta_equals_2(
+                random_bytes,
+                &mut out[*sampled_coefficients..],
+            );
+            *sampled_coefficients += sampled;
 
-            if try_0 < 15 && *sampled < out.coefficients.len() {
-                let try_0 = try_0 as i32;
-
-                // (try_0 * 26) >> 7 computes ⌊try_0 / 5⌋
-                let try_0_mod_5 = try_0 - ((try_0 * 26) >> 7) * 5;
-
-                out.coefficients[*sampled] = 2 - try_0_mod_5;
-
-                *sampled += 1;
-            }
-
-            if try_1 < 15 && *sampled < out.coefficients.len() {
-                let try_1 = try_1 as i32;
-                let try_1_mod_5 = try_1 - ((try_1 * 26) >> 7) * 5;
-
-                out.coefficients[*sampled] = 2 - try_1_mod_5;
-
-                *sampled += 1;
-            }
-
-            if *sampled == out.coefficients.len() {
+            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
                 done = true;
             }
         }
@@ -94,31 +84,25 @@ fn rejection_sample_less_than_eta_equals_2(
 
     done
 }
-
 #[inline(always)]
 fn rejection_sample_less_than_eta_equals_4(
     randomness: &[u8],
-    sampled: &mut usize,
-    out: &mut PolynomialRingElement,
+    sampled_coefficients: &mut usize,
+    out: &mut [i32; 263],
 ) -> bool {
     let mut done = false;
 
-    for byte in randomness {
+    // Since each byte can be used to sample up to 2 coefficients, and since
+    // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
+    for random_bytes in randomness.chunks(4) {
         if !done {
-            let try_0 = byte & 0xF;
-            let try_1 = byte >> 4;
+            let sampled = PortableSIMDUnit::rejection_sample_less_than_eta_equals_4(
+                random_bytes,
+                &mut out[*sampled_coefficients..],
+            );
+            *sampled_coefficients += sampled;
 
-            if try_0 < 9 && *sampled < out.coefficients.len() {
-                out.coefficients[*sampled] = 4 - (try_0 as i32);
-                *sampled += 1;
-            }
-
-            if try_1 < 9 && *sampled < out.coefficients.len() {
-                out.coefficients[*sampled] = 4 - (try_1 as i32);
-                *sampled += 1;
-            }
-
-            if *sampled == out.coefficients.len() {
+            if *sampled_coefficients >= COEFFICIENTS_IN_RING_ELEMENT {
                 done = true;
             }
         }
@@ -126,12 +110,11 @@ fn rejection_sample_less_than_eta_equals_4(
 
     done
 }
-
 #[inline(always)]
 pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
     randomness: &[u8],
     sampled: &mut usize,
-    out: &mut PolynomialRingElement,
+    out: &mut [i32; 263],
 ) -> bool {
     match ETA {
         2 => rejection_sample_less_than_eta_equals_2(randomness, sampled, out),
@@ -139,14 +122,21 @@ pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
         _ => unreachable!(),
     }
 }
-
 #[allow(non_snake_case)]
 #[inline(always)]
 fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
     let mut state = H::new(&seed);
     let randomness = H::squeeze_first_block(&mut state);
 
-    let mut out = PolynomialRingElement::ZERO;
+    // Every call to |rejection_sample_less_than_field_modulus|
+    // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
+    // this latter function performs no bounds checking and can write up to 8
+    // elements to its output. It is therefore possible that 255 elements have
+    // already been sampled and we call the function again.
+    //
+    // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
+    // = 263 elements.
+    let mut out = [0i32; 263];
 
     let mut sampled = 0;
     let mut done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
@@ -156,9 +146,10 @@ fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRing
         done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
     }
 
-    out
+    PolynomialRingElement {
+        coefficients: out[0..256].try_into().unwrap(),
+    }
 }
-
 #[inline(always)]
 pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
     mut seed: [u8; 66],
@@ -186,7 +177,6 @@ fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(seed: [u8; 66]) -> Pol
         _ => unreachable!(),
     }
 }
-
 #[inline(always)]
 pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: usize>(
     mut seed: [u8; 66],
