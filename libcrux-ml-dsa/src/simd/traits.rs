@@ -41,13 +41,25 @@ pub(crate) trait Operations: Copy + Clone {
     fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize;
 
     // Encoding operations
+
+    // Gamma1
     fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self;
 
+    // Commitment
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
 
+    // Error
     fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
     fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self;
+
+    // t0
+    fn t0_serialize(simd_unit: Self) -> [u8; 13];
+    fn t0_deserialize(serialized: &[u8]) -> Self;
+
+    // t1
+    fn t1_serialize(simd_unit: Self) -> [u8; 10];
+    fn t1_deserialize(serialized: &[u8]) -> Self;
 
     // NTT
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;

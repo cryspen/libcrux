@@ -75,6 +75,20 @@ impl Operations for PortableSIMDUnit {
         encoding::error::deserialize::<ETA>(serialized)
     }
 
+    fn t0_serialize(simd_unit: Self) -> [u8; 13] {
+        encoding::t0::serialize(simd_unit)
+    }
+    fn t0_deserialize(serialized: &[u8]) -> Self {
+        encoding::t0::deserialize(serialized)
+    }
+
+    fn t1_serialize(simd_unit: Self) -> [u8; 10] {
+        encoding::t1::serialize(simd_unit)
+    }
+    fn t1_deserialize(serialized: &[u8]) -> Self {
+        encoding::t1::deserialize(serialized)
+    }
+
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
         ntt::ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3)
     }
