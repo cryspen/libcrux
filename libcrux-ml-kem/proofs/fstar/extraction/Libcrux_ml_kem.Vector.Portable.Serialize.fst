@@ -88,14 +88,26 @@ let deserialize_12_int (bytes: t_Slice u8) =
   r0, r1 <: (i16 & i16)
 
 let deserialize_4_int (bytes: t_Slice u8) =
-  let v0:i16 = cast ((bytes.[ sz 0 ] <: u8) &. 15uy <: u8) <: i16 in
-  let v1:i16 = cast (((bytes.[ sz 0 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
-  let v2:i16 = cast ((bytes.[ sz 1 ] <: u8) &. 15uy <: u8) <: i16 in
-  let v3:i16 = cast (((bytes.[ sz 1 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
-  let v4:i16 = cast ((bytes.[ sz 2 ] <: u8) &. 15uy <: u8) <: i16 in
-  let v5:i16 = cast (((bytes.[ sz 2 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
-  let v6:i16 = cast ((bytes.[ sz 3 ] <: u8) &. 15uy <: u8) <: i16 in
-  let v7:i16 = cast (((bytes.[ sz 3 ] <: u8) >>! 4l <: u8) &. 15uy <: u8) <: i16 in
+  let input:u32 =
+    Core.Num.impl__u32__from_le_bytes (Core.Result.impl__unwrap #(t_Array u8 (sz 4))
+          #Core.Array.t_TryFromSliceError
+          (Core.Convert.f_try_into #(t_Slice u8)
+              #(t_Array u8 (sz 4))
+              #FStar.Tactics.Typeclasses.solve
+              bytes
+            <:
+            Core.Result.t_Result (t_Array u8 (sz 4)) Core.Array.t_TryFromSliceError)
+        <:
+        t_Array u8 (sz 4))
+  in
+  let v0:i16 = cast (input &. 15ul <: u32) <: i16 in
+  let v1:i16 = cast ((input >>! 4l <: u32) &. 15ul <: u32) <: i16 in
+  let v2:i16 = cast ((input >>! 8l <: u32) &. 15ul <: u32) <: i16 in
+  let v3:i16 = cast ((input >>! 12l <: u32) &. 15ul <: u32) <: i16 in
+  let v4:i16 = cast ((input >>! 16l <: u32) &. 15ul <: u32) <: i16 in
+  let v5:i16 = cast ((input >>! 20l <: u32) &. 15ul <: u32) <: i16 in
+  let v6:i16 = cast ((input >>! 24l <: u32) &. 15ul <: u32) <: i16 in
+  let v7:i16 = cast ((input >>! 28l <: u32) &. 15ul <: u32) <: i16 in
   v0, v1, v2, v3, v4, v5, v6, v7 <: (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
 
 let deserialize_5_int (bytes: t_Slice u8) =
@@ -219,38 +231,28 @@ let serialize_4_int (v: t_Slice i16) =
   result0, result1, result2, result3 <: (u8 & u8 & u8 & u8)
 
 let serialize_5_int (v: t_Slice i16) =
-  let r0:u8 =
-    cast ((((v.[ sz 1 ] <: i16) &. 7s <: i16) <<! 5l <: i16) |. (v.[ sz 0 ] <: i16) <: i16) <: u8
-  in
+  let r0:u8 = cast ((v.[ sz 0 ] <: i16) |. ((v.[ sz 1 ] <: i16) <<! 5l <: i16) <: i16) <: u8 in
   let r1:u8 =
-    cast (((((v.[ sz 3 ] <: i16) &. 1s <: i16) <<! 7l <: i16) |. ((v.[ sz 2 ] <: i16) <<! 2l <: i16)
-          <:
-          i16) |.
-        ((v.[ sz 1 ] <: i16) >>! 3l <: i16)
+    cast ((((v.[ sz 1 ] <: i16) >>! 3l <: i16) |. ((v.[ sz 2 ] <: i16) <<! 2l <: i16) <: i16) |.
+        ((v.[ sz 3 ] <: i16) <<! 7l <: i16)
         <:
         i16)
     <:
     u8
   in
   let r2:u8 =
-    cast ((((v.[ sz 4 ] <: i16) &. 15s <: i16) <<! 4l <: i16) |. ((v.[ sz 3 ] <: i16) >>! 1l <: i16)
-        <:
-        i16)
-    <:
-    u8
+    cast (((v.[ sz 3 ] <: i16) >>! 1l <: i16) |. ((v.[ sz 4 ] <: i16) <<! 4l <: i16) <: i16) <: u8
   in
   let r3:u8 =
-    cast (((((v.[ sz 6 ] <: i16) &. 3s <: i16) <<! 6l <: i16) |. ((v.[ sz 5 ] <: i16) <<! 1l <: i16)
-          <:
-          i16) |.
-        ((v.[ sz 4 ] <: i16) >>! 4l <: i16)
+    cast ((((v.[ sz 4 ] <: i16) >>! 4l <: i16) |. ((v.[ sz 5 ] <: i16) <<! 1l <: i16) <: i16) |.
+        ((v.[ sz 6 ] <: i16) <<! 6l <: i16)
         <:
         i16)
     <:
     u8
   in
   let r4:u8 =
-    cast (((v.[ sz 7 ] <: i16) <<! 3l <: i16) |. ((v.[ sz 6 ] <: i16) >>! 2l <: i16) <: i16) <: u8
+    cast (((v.[ sz 6 ] <: i16) >>! 2l <: i16) |. ((v.[ sz 7 ] <: i16) <<! 3l <: i16) <: i16) <: u8
   in
   r0, r1, r2, r3, r4 <: (u8 & u8 & u8 & u8 & u8)
 

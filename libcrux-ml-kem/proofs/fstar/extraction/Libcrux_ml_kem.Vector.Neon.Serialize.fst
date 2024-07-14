@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Vector.Neon.Serialize
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Libcrux_ml_kem.Vector.Portable in
+  ()
+
 let deserialize_1_ (a: t_Slice u8) =
   let one:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 1s in
   let low:u8 = Libcrux_intrinsics.Arm64_extract.v__vdupq_n_s16 (cast (a.[ sz 0 ] <: u8) <: i16) in
@@ -24,274 +30,6 @@ let deserialize_1_ (a: t_Slice u8) =
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
     =
     Libcrux_intrinsics.Arm64_extract.v__vandq_s16 high one
-  }
-  <:
-  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-
-let deserialize_10_ (v: t_Slice u8) =
-  let input0:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
-  let input1:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
-  let input2:t_Array u8 (sz 4) = Rust_primitives.Hax.repeat 0uy (sz 4) in
-  let input0:t_Array u8 (sz 8) =
-    Core.Slice.impl__copy_from_slice #u8
-      input0
-      (v.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let input1:t_Array u8 (sz 8) =
-    Core.Slice.impl__copy_from_slice #u8
-      input1
-      (v.[ { Core.Ops.Range.f_start = sz 8; Core.Ops.Range.f_end = sz 16 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let input2:t_Array u8 (sz 4) =
-    Core.Slice.impl__copy_from_slice #u8
-      input2
-      (v.[ { Core.Ops.Range.f_start = sz 16; Core.Ops.Range.f_end = sz 20 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let input0:u64 = Core.Num.impl__u64__from_le_bytes input0 in
-  let input1:u64 = Core.Num.impl__u64__from_le_bytes input1 in
-  let input2:u32 = Core.Num.impl__u32__from_le_bytes input2 in
-  let low:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let high:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 0)
-      (cast (input0 &. 1023uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 1)
-      (cast ((input0 >>! 10l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 2)
-      (cast ((input0 >>! 20l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 3)
-      (cast ((input0 >>! 30l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 4)
-      (cast ((input0 >>! 40l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 5)
-      (cast ((input0 >>! 50l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 6)
-      (cast (((input0 >>! 60l <: u64) |. (input1 <<! 4l <: u64) <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 7)
-      (cast ((input1 >>! 6l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 0)
-      (cast ((input1 >>! 16l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 1)
-      (cast ((input1 >>! 26l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 2)
-      (cast ((input1 >>! 36l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 3)
-      (cast ((input1 >>! 46l <: u64) &. 1023uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 4)
-      (cast (((cast (input1 >>! 56l <: u64) <: u32) |. (input2 <<! 8l <: u32) <: u32) &. 1023ul
-            <:
-            u32)
-        <:
-        i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 5)
-      (cast ((input2 >>! 2l <: u32) &. 1023ul <: u32) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 6)
-      (cast ((input2 >>! 12l <: u32) &. 1023ul <: u32) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 7)
-      (cast ((input2 >>! 22l <: u32) &. 1023ul <: u32) <: i16)
-  in
-  {
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize low <: t_Slice i16);
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize high <: t_Slice i16)
-  }
-  <:
-  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-
-let deserialize_11_ (v: t_Slice u8) =
-  let input0:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
-  let input1:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
-  let input2:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
-  let input0:t_Array u8 (sz 8) =
-    Core.Slice.impl__copy_from_slice #u8
-      input0
-      (v.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 8 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let input1:t_Array u8 (sz 8) =
-    Core.Slice.impl__copy_from_slice #u8
-      input1
-      (v.[ { Core.Ops.Range.f_start = sz 8; Core.Ops.Range.f_end = sz 16 }
-          <:
-          Core.Ops.Range.t_Range usize ]
-        <:
-        t_Slice u8)
-  in
-  let input2:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range input2
-      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 6 }
-        <:
-        Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (input2.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 6 }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          (v.[ { Core.Ops.Range.f_start = sz 16; Core.Ops.Range.f_end = sz 22 }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-        <:
-        t_Slice u8)
-  in
-  let input0:u64 = Core.Num.impl__u64__from_le_bytes input0 in
-  let input1:u64 = Core.Num.impl__u64__from_le_bytes input1 in
-  let input2:u64 = Core.Num.impl__u64__from_le_bytes input2 in
-  let low:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let high:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 0)
-      (cast (input0 &. 2047uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 1)
-      (cast ((input0 >>! 11l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 2)
-      (cast ((input0 >>! 22l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 3)
-      (cast ((input0 >>! 33l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 4)
-      (cast ((input0 >>! 44l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 5)
-      (cast (((input0 >>! 55l <: u64) |. (input1 <<! 9l <: u64) <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 6)
-      (cast ((input1 >>! 2l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 7)
-      (cast ((input1 >>! 13l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 0)
-      (cast ((input1 >>! 24l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 1)
-      (cast ((input1 >>! 35l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 2)
-      (cast ((input1 >>! 46l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 3)
-      (cast (((input1 >>! 57l <: u64) |. (input2 <<! 7l <: u64) <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 4)
-      (cast ((input2 >>! 4l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 5)
-      (cast ((input2 >>! 15l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 6)
-      (cast ((input2 >>! 26l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 7)
-      (cast ((input2 >>! 37l <: u64) &. 2047uL <: u64) <: i16)
-  in
-  {
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize low <: t_Slice i16);
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize high <: t_Slice i16)
   }
   <:
   Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
@@ -395,248 +133,6 @@ let deserialize_12_ (v: t_Slice u8) =
   {
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_low = low;
     Libcrux_ml_kem.Vector.Neon.Vector_type.f_high = high
-  }
-  <:
-  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-
-let deserialize_4_ (v: t_Slice u8) =
-  let input:u64 =
-    Core.Num.impl__u64__from_le_bytes (Core.Result.impl__unwrap #(t_Array u8 (sz 8))
-          #Core.Array.t_TryFromSliceError
-          (Core.Convert.f_try_into #(t_Slice u8)
-              #(t_Array u8 (sz 8))
-              #FStar.Tactics.Typeclasses.solve
-              v
-            <:
-            Core.Result.t_Result (t_Array u8 (sz 8)) Core.Array.t_TryFromSliceError)
-        <:
-        t_Array u8 (sz 8))
-  in
-  let low:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let high:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 0)
-      (cast (input &. 15uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 1)
-      (cast ((input >>! 4l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 2)
-      (cast ((input >>! 8l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 3)
-      (cast ((input >>! 12l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 4)
-      (cast ((input >>! 16l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 5)
-      (cast ((input >>! 20l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 6)
-      (cast ((input >>! 24l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 7)
-      (cast ((input >>! 28l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 0)
-      (cast ((input >>! 32l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 1)
-      (cast ((input >>! 36l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 2)
-      (cast ((input >>! 40l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 3)
-      (cast ((input >>! 44l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 4)
-      (cast ((input >>! 48l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 5)
-      (cast ((input >>! 52l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 6)
-      (cast ((input >>! 56l <: u64) &. 15uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 7)
-      (cast ((input >>! 60l <: u64) &. 15uL <: u64) <: i16)
-  in
-  {
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize low <: t_Slice i16);
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize high <: t_Slice i16)
-  }
-  <:
-  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
-
-let deserialize_5_ (v: t_Slice u8) =
-  let input0:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
-  let input0:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range input0
-      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
-        <:
-        Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (input0.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          (v.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-        <:
-        t_Slice u8)
-  in
-  let low64:u64 = Core.Num.impl__u64__from_le_bytes input0 in
-  let input1:t_Array u8 (sz 8) = Rust_primitives.Hax.repeat 0uy (sz 8) in
-  let input1:t_Array u8 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_range input1
-      ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
-        <:
-        Core.Ops.Range.t_Range usize)
-      (Core.Slice.impl__copy_from_slice #u8
-          (input1.[ { Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 5 }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-          (v.[ { Core.Ops.Range.f_start = sz 5; Core.Ops.Range.f_end = sz 10 }
-              <:
-              Core.Ops.Range.t_Range usize ]
-            <:
-            t_Slice u8)
-        <:
-        t_Slice u8)
-  in
-  let high64:u64 = Core.Num.impl__u64__from_le_bytes input1 in
-  let low:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let high:t_Array i16 (sz 8) = Rust_primitives.Hax.repeat 0s (sz 8) in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 0)
-      (cast (low64 &. 31uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 1)
-      (cast ((low64 >>! 5l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 2)
-      (cast ((low64 >>! 10l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 3)
-      (cast ((low64 >>! 15l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 4)
-      (cast ((low64 >>! 20l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 5)
-      (cast ((low64 >>! 25l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 6)
-      (cast ((low64 >>! 30l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let low:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize low
-      (sz 7)
-      (cast ((low64 >>! 35l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 0)
-      (cast (high64 &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 1)
-      (cast ((high64 >>! 5l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 2)
-      (cast ((high64 >>! 10l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 3)
-      (cast ((high64 >>! 15l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 4)
-      (cast ((high64 >>! 20l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 5)
-      (cast ((high64 >>! 25l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 6)
-      (cast ((high64 >>! 30l <: u64) &. 31uL <: u64) <: i16)
-  in
-  let high:t_Array i16 (sz 8) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize high
-      (sz 7)
-      (cast ((high64 >>! 35l <: u64) &. 31uL <: u64) <: i16)
-  in
-  {
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize low <: t_Slice i16);
-    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
-    =
-    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (Rust_primitives.unsize high <: t_Slice i16)
   }
   <:
   Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
@@ -1083,280 +579,168 @@ let serialize_4_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
   in
   Core.Num.impl__u64__to_le_bytes sum
 
+let deserialize_10_ (v: t_Slice u8) =
+  let output:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Traits.f_deserialize_10_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      v
+  in
+  let array:t_Array i16 (sz 16) =
+    Libcrux_ml_kem.Vector.Traits.f_to_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      output
+  in
+  {
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16);
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  }
+  <:
+  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+
+let deserialize_11_ (v: t_Slice u8) =
+  let output:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Traits.f_deserialize_11_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      v
+  in
+  let array:t_Array i16 (sz 16) =
+    Libcrux_ml_kem.Vector.Traits.f_to_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      output
+  in
+  {
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16);
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  }
+  <:
+  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+
+let deserialize_4_ (v: t_Slice u8) =
+  let input:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Traits.f_deserialize_4_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      v
+  in
+  let input_i16s:t_Array i16 (sz 16) =
+    Libcrux_ml_kem.Vector.Traits.f_to_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      input
+  in
+  {
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (input_i16s.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16);
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (input_i16s.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  }
+  <:
+  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+
+let deserialize_5_ (v: t_Slice u8) =
+  let output:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Traits.f_deserialize_5_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      v
+  in
+  let array:t_Array i16 (sz 16) =
+    Libcrux_ml_kem.Vector.Traits.f_to_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      output
+  in
+  {
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_low
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = sz 0;
+            Core.Ops.Range.f_end = sz 8
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16);
+    Libcrux_ml_kem.Vector.Neon.Vector_type.f_high
+    =
+    Libcrux_intrinsics.Arm64_extract.v__vld1q_s16 (array.[ {
+            Core.Ops.Range.f_start = sz 8;
+            Core.Ops.Range.f_end = sz 16
+          }
+          <:
+          Core.Ops.Range.t_Range usize ]
+        <:
+        t_Slice i16)
+  }
+  <:
+  Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector
+
 let serialize_11_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-  let input:t_Array i16 (sz 16) = Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array v in
-  let result:t_Array u8 (sz 22) = Rust_primitives.Hax.repeat 0uy (sz 22) in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 0)
-      (cast (input.[ sz 0 ] <: i16) <: u8)
+  let out_i16s:t_Array i16 (sz 16) = Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array v in
+  let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Traits.f_from_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      (Rust_primitives.unsize out_i16s <: t_Slice i16)
   in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 1)
-      (cast (((input.[ sz 0 ] <: i16) >>! 8l <: i16) |. ((input.[ sz 1 ] <: i16) <<! 3l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 2)
-      (cast (((input.[ sz 1 ] <: i16) >>! 5l <: i16) |. ((input.[ sz 2 ] <: i16) <<! 6l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 3)
-      (cast ((input.[ sz 2 ] <: i16) >>! 2l <: i16) <: u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 4)
-      (cast (((input.[ sz 2 ] <: i16) >>! 10l <: i16) |. ((input.[ sz 3 ] <: i16) <<! 1l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 5)
-      (cast (((input.[ sz 3 ] <: i16) >>! 7l <: i16) |. ((input.[ sz 4 ] <: i16) <<! 4l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 6)
-      (cast (((input.[ sz 4 ] <: i16) >>! 4l <: i16) |. ((input.[ sz 5 ] <: i16) <<! 7l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 7)
-      (cast ((input.[ sz 5 ] <: i16) >>! 1l <: i16) <: u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 8)
-      (cast (((input.[ sz 5 ] <: i16) >>! 9l <: i16) |. ((input.[ sz 6 ] <: i16) <<! 2l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 9)
-      (cast (((input.[ sz 6 ] <: i16) >>! 6l <: i16) |. ((input.[ sz 7 ] <: i16) <<! 5l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 10)
-      (cast ((input.[ sz 7 ] <: i16) >>! 3l <: i16) <: u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 0 <: usize)
-      (cast (input.[ sz 8 +! sz 0 <: usize ] <: i16) <: u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 1 <: usize)
-      (cast (((input.[ sz 8 +! sz 0 <: usize ] <: i16) >>! 8l <: i16) |.
-            ((input.[ sz 8 +! sz 1 <: usize ] <: i16) <<! 3l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 2 <: usize)
-      (cast (((input.[ sz 8 +! sz 1 <: usize ] <: i16) >>! 5l <: i16) |.
-            ((input.[ sz 8 +! sz 2 <: usize ] <: i16) <<! 6l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 3 <: usize)
-      (cast ((input.[ sz 8 +! sz 2 <: usize ] <: i16) >>! 2l <: i16) <: u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 4 <: usize)
-      (cast (((input.[ sz 8 +! sz 2 <: usize ] <: i16) >>! 10l <: i16) |.
-            ((input.[ sz 8 +! sz 3 <: usize ] <: i16) <<! 1l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 5 <: usize)
-      (cast (((input.[ sz 8 +! sz 3 <: usize ] <: i16) >>! 7l <: i16) |.
-            ((input.[ sz 8 +! sz 4 <: usize ] <: i16) <<! 4l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 6 <: usize)
-      (cast (((input.[ sz 8 +! sz 4 <: usize ] <: i16) >>! 4l <: i16) |.
-            ((input.[ sz 8 +! sz 5 <: usize ] <: i16) <<! 7l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 7 <: usize)
-      (cast ((input.[ sz 8 +! sz 5 <: usize ] <: i16) >>! 1l <: i16) <: u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 8 <: usize)
-      (cast (((input.[ sz 8 +! sz 5 <: usize ] <: i16) >>! 9l <: i16) |.
-            ((input.[ sz 8 +! sz 6 <: usize ] <: i16) <<! 2l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 9 <: usize)
-      (cast (((input.[ sz 8 +! sz 6 <: usize ] <: i16) >>! 6l <: i16) |.
-            ((input.[ sz 8 +! sz 7 <: usize ] <: i16) <<! 5l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let result:t_Array u8 (sz 22) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
-      (sz 11 +! sz 10 <: usize)
-      (cast ((input.[ sz 8 +! sz 7 <: usize ] <: i16) >>! 3l <: i16) <: u8)
-  in
-  result
+  Libcrux_ml_kem.Vector.Traits.f_serialize_11_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+    #FStar.Tactics.Typeclasses.solve
+    out
 
 let serialize_5_ (v: Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector) =
-  let res:t_Array u8 (sz 10) = Rust_primitives.Hax.repeat 0uy (sz 10) in
-  let out:t_Array i16 (sz 16) = Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array v in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 0)
-      (cast ((out.[ sz 0 ] <: i16) |. ((out.[ sz 1 ] <: i16) <<! 5l <: i16) <: i16) <: u8)
+  let out_i16s:t_Array i16 (sz 16) = Libcrux_ml_kem.Vector.Neon.Vector_type.to_i16_array v in
+  let out:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector =
+    Libcrux_ml_kem.Vector.Traits.f_from_i16_array #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+      #FStar.Tactics.Typeclasses.solve
+      (Rust_primitives.unsize out_i16s <: t_Slice i16)
   in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 1)
-      (cast ((((out.[ sz 1 ] <: i16) >>! 3l <: i16) |. ((out.[ sz 2 ] <: i16) <<! 2l <: i16) <: i16) |.
-            ((out.[ sz 3 ] <: i16) <<! 7l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 2)
-      (cast (((out.[ sz 3 ] <: i16) >>! 1l <: i16) |. ((out.[ sz 4 ] <: i16) <<! 4l <: i16) <: i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 3)
-      (cast ((((out.[ sz 4 ] <: i16) >>! 4l <: i16) |. ((out.[ sz 5 ] <: i16) <<! 1l <: i16) <: i16) |.
-            ((out.[ sz 6 ] <: i16) <<! 6l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 4)
-      (cast (((out.[ sz 6 ] <: i16) >>! 2l <: i16) |. ((out.[ sz 7 ] <: i16) <<! 3l <: i16) <: i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 5)
-      (cast ((out.[ sz 8 +! sz 0 <: usize ] <: i16) |.
-            ((out.[ sz 8 +! sz 1 <: usize ] <: i16) <<! 5l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 6)
-      (cast ((((out.[ sz 8 +! sz 1 <: usize ] <: i16) >>! 3l <: i16) |.
-              ((out.[ sz 8 +! sz 2 <: usize ] <: i16) <<! 2l <: i16)
-              <:
-              i16) |.
-            ((out.[ sz 8 +! sz 3 <: usize ] <: i16) <<! 7l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 7)
-      (cast (((out.[ sz 8 +! sz 3 <: usize ] <: i16) >>! 1l <: i16) |.
-            ((out.[ sz 8 +! sz 4 <: usize ] <: i16) <<! 4l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 8)
-      (cast ((((out.[ sz 8 +! sz 4 <: usize ] <: i16) >>! 4l <: i16) |.
-              ((out.[ sz 8 +! sz 5 <: usize ] <: i16) <<! 1l <: i16)
-              <:
-              i16) |.
-            ((out.[ sz 8 +! sz 6 <: usize ] <: i16) <<! 6l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  let res:t_Array u8 (sz 10) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize res
-      (sz 9)
-      (cast (((out.[ sz 8 +! sz 6 <: usize ] <: i16) >>! 2l <: i16) |.
-            ((out.[ sz 8 +! sz 7 <: usize ] <: i16) <<! 3l <: i16)
-            <:
-            i16)
-        <:
-        u8)
-  in
-  res
+  Libcrux_ml_kem.Vector.Traits.f_serialize_5_ #Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
+    #FStar.Tactics.Typeclasses.solve
+    out
