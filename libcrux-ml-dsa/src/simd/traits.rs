@@ -46,6 +46,9 @@ pub(crate) trait Operations: Copy + Clone {
 
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
 
+    fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE];
+    fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self;
+
     // NTT
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self;
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self;

@@ -58,7 +58,7 @@ impl Operations for PortableSIMDUnit {
     }
 
     fn gamma1_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        encoding::gamma1::serialize::<OUTPUT_SIZE>(simd_unit)
+        encoding::gamma1::serialize(simd_unit)
     }
     fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
         encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized)
@@ -66,6 +66,13 @@ impl Operations for PortableSIMDUnit {
 
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
         encoding::commitment::serialize(simd_unit)
+    }
+
+    fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
+        encoding::error::serialize(simd_unit)
+    }
+    fn error_deserialize<const ETA: usize>(serialized: &[u8]) -> Self {
+        encoding::error::deserialize::<ETA>(serialized)
     }
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
