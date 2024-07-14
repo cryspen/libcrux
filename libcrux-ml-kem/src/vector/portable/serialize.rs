@@ -52,14 +52,15 @@ pub(crate) fn serialize_4(v: PortableVector) -> [u8; 8] {
 
 #[inline(always)]
 pub(crate) fn deserialize_4_int(bytes: &[u8]) -> (i16,i16,i16,i16,i16,i16,i16,i16) {
-    let v0 = (bytes[0] & 0x0F) as i16;
-    let v1 = ((bytes[0] >> 4) & 0x0F) as i16;
-    let v2 = (bytes[1] & 0x0F) as i16;
-    let v3 = ((bytes[1] >> 4) & 0x0F) as i16;
-    let v4 = (bytes[2] & 0x0F) as i16;
-    let v5 = ((bytes[2] >> 4) & 0x0F) as i16;
-    let v6 = (bytes[3] & 0x0F) as i16;
-    let v7 = ((bytes[3] >> 4) & 0x0F) as i16;
+    let input = u32::from_le_bytes(bytes.try_into().unwrap());
+    let v0 = (input & 0x0f) as i16;
+    let v1 = ((input >> 4) & 0x0f) as i16;
+    let v2 = ((input >> 8) & 0x0f) as i16;
+    let v3 = ((input >> 12) & 0x0f) as i16;
+    let v4 = ((input >> 16) & 0x0f) as i16;
+    let v5 = ((input >> 20) & 0x0f) as i16;
+    let v6 = ((input >> 24) & 0x0f) as i16;
+    let v7 = ((input >> 28) & 0x0f) as i16;
     (v0,v1,v2,v3,v4,v5,v6,v7)
 }
 
@@ -89,11 +90,11 @@ pub(crate) fn deserialize_4(bytes: &[u8]) -> PortableVector {
 
 #[inline(always)]
 pub(crate) fn serialize_5_int(v: &[i16]) -> (u8, u8, u8, u8, u8) {
-    let r0 = ( (v[1] & 0x7) << 5 | v[0]) as u8;
-    let r1 = (((v[3] & 1) << 7) | (v[2] << 2) | (v[1] >> 3)) as u8;
-    let r2 = (((v[4] & 0xF) << 4) | (v[3] >> 1)) as u8;
-    let r3 = (((v[6] & 0x3) << 6) | (v[5] << 1) | (v[4] >> 4)) as u8;
-    let r4 = ( (v[7] << 3) | (v[6] >> 2)) as u8;
+    let r0 = (v[0] | v[1] << 5) as u8;
+    let r1 = (v[1] >> 3 | v[2] << 2 | v[3] << 7) as u8;
+    let r2 = (v[3] >> 1 | v[4] << 4) as u8;
+    let r3 = (v[4] >> 4 | v[5] << 1 | v[6] << 6) as u8;
+    let r4 = (v[6] >> 2 | v[7] << 3) as u8;
     (r0,r1,r2,r3,r4)
 }
 
