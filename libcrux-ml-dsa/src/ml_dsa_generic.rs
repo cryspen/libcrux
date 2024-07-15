@@ -9,7 +9,7 @@ use crate::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, expand_to_A,
         subtract_vectors, vector_times_ring_element,
     },
-    ntt::ntt,
+    ntt::ntt_simd,
     polynomial::PolynomialRingElement,
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
     simd::traits::Operations,
@@ -306,12 +306,15 @@ pub(crate) fn sign<
             H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
         };
 
-        let verifier_challenge_as_ntt =
-            ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
-                commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                    .try_into()
-                    .unwrap(),
-            ));
+        let verifier_challenge_as_ntt = ntt_simd(sample_challenge_ring_element::<
+            SIMDUnit,
+            ONES_IN_VERIFIER_CHALLENGE,
+        >(
+            commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
+                .try_into()
+                .unwrap(),
+        ))
+        .to_polynomial_ring_element();
 
         let challenge_times_s1 =
             vector_times_ring_element::<COLUMNS_IN_A>(&s1_as_ntt, &verifier_challenge_as_ntt);
@@ -378,10 +381,10 @@ pub(crate) fn verify<
     message: &[u8],
     signature_serialized: [u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
-    let (seed_for_A, t1) = encoding::verification_key::deserialize::<
-        ROWS_IN_A,
-        VERIFICATION_KEY_SIZE,
-    >(verification_key_serialized);
+    let (seed_for_A, t1) =
+        encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
+            verification_key_serialized,
+        );
 
     let signature = Signature::<COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
         GAMMA1_EXPONENT,
@@ -407,12 +410,14 @@ pub(crate) fn verify<
             H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
         };
 
-        let verifier_challenge_as_ntt =
-            ntt(sample_challenge_ring_element::<ONES_IN_VERIFIER_CHALLENGE>(
-                signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
-                    .try_into()
-                    .unwrap(),
-            ));
+        let verifier_challenge_as_ntt = ntt_simd(sample_challenge_ring_element::<
+            SIMDUnit,
+            ONES_IN_VERIFIER_CHALLENGE,
+        >(
+            signature.commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
+                .try_into()
+                .unwrap(),
+        ));
 
         let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
             &A_as_ntt,

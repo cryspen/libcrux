@@ -30,18 +30,17 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 #[inline(always)]
-pub(crate) fn shift_left_then_reduce(
-    re: PolynomialRingElement,
+pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations>(
+    re: SIMDPolynomialRingElement<SIMDUnit>,
     shift_by: usize,
-) -> PolynomialRingElement {
-    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
+) -> SIMDPolynomialRingElement<SIMDUnit> {
     let mut out = SIMDPolynomialRingElement::ZERO();
 
-    for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
-        out.simd_units[i] = PortableSIMDUnit::shift_left_then_reduce(*simd_unit, shift_by);
+    for (i, simd_unit) in re.simd_units.iter().enumerate() {
+        out.simd_units[i] = SIMDUnit::shift_left_then_reduce(*simd_unit, shift_by);
     }
 
-    out.to_polynomial_ring_element()
+    out
 }
 
 #[inline(always)]

@@ -214,7 +214,7 @@ fn inside_out_shuffle(
     randomness: &[u8],
     out_index: &mut usize,
     signs: &mut u64,
-    result: &mut PolynomialRingElement,
+    result: &mut [i32; 256],
 ) -> bool {
     let mut done = false;
 
@@ -222,31 +222,31 @@ fn inside_out_shuffle(
         if !done {
             let sample_at = *byte as usize;
             if sample_at <= *out_index {
-                result.coefficients[*out_index] = result.coefficients[sample_at];
+                result[*out_index] = result[sample_at];
                 *out_index += 1;
 
-                result.coefficients[sample_at] = 1 - 2 * ((*signs & 1) as i32);
+                result[sample_at] = 1 - 2 * ((*signs & 1) as i32);
                 *signs >>= 1;
             }
 
-            done = *out_index == result.coefficients.len();
+            done = *out_index == result.len();
         }
     }
 
     done
 }
 #[inline(always)]
-pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
+pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
-) -> PolynomialRingElement {
+) -> SIMDPolynomialRingElement<SIMDUnit> {
     let mut state = H::new(&seed);
     let randomness = H::squeeze_first_block(&mut state);
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
 
-    let mut result = PolynomialRingElement::ZERO;
+    let mut result = [0i32; 256];
 
-    let mut out_index = result.coefficients.len() - NUMBER_OF_ONES;
+    let mut out_index = result.len() - NUMBER_OF_ONES;
     let mut done = inside_out_shuffle(&randomness[8..], &mut out_index, &mut signs, &mut result);
 
     while !done {
@@ -254,7 +254,7 @@ pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
         done = inside_out_shuffle(&randomness, &mut out_index, &mut signs, &mut result);
     }
 
-    result
+    SIMDPolynomialRingElement::<SIMDUnit>::from_i32_array(&result)
 }
 
 #[cfg(test)]
@@ -434,7 +434,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<39>(seed).coefficients,
+            sample_challenge_ring_element::<PortableSIMDUnit, 39>(seed).to_i32_array(),
             expected_coefficients
         );
     }
@@ -460,7 +460,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<49>(seed).coefficients,
+            sample_challenge_ring_element::<PortableSIMDUnit, 49>(seed).to_i32_array(),
             expected_coefficients
         );
     }
@@ -486,7 +486,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<60>(seed).coefficients,
+            sample_challenge_ring_element::<PortableSIMDUnit, 60>(seed).to_i32_array(),
             expected_coefficients
         );
     }

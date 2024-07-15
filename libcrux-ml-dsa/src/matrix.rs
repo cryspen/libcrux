@@ -161,8 +161,8 @@ pub(crate) fn compute_w_approx<
 >(
     A_as_ntt: &[[SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
     signer_response: [PolynomialRingElement; COLUMNS_IN_A],
-    verifier_challenge_as_ntt: PolynomialRingElement,
-    t1: [PolynomialRingElement; ROWS_IN_A],
+    verifier_challenge_as_ntt: SIMDPolynomialRingElement<SIMDUnit>,
+    t1: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [PolynomialRingElement; ROWS_IN_A] {
     let mut result = [PolynomialRingElement::ZERO; ROWS_IN_A];
 
@@ -176,9 +176,11 @@ pub(crate) fn compute_w_approx<
             result[i] = result[i].add(&product);
         }
 
-        let t1_shifted = shift_left_then_reduce(t1[i], BITS_IN_LOWER_PART_OF_T);
-        let challenge_times_t1_shifted =
-            ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
+        let t1_shifted = shift_left_then_reduce::<SIMDUnit>(t1[i], BITS_IN_LOWER_PART_OF_T);
+        let challenge_times_t1_shifted = ntt_multiply_montgomery(
+            &verifier_challenge_as_ntt.to_polynomial_ring_element(),
+            &ntt(t1_shifted.to_polynomial_ring_element()),
+        );
         result[i] = invert_ntt_montgomery(result[i].sub(&challenge_times_t1_shifted));
     }
 
