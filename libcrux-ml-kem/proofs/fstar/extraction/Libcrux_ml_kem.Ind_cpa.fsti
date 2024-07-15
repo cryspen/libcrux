@@ -105,7 +105,7 @@ val decrypt_unpacked
           usize)
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
-      (secret_key: Libcrux_ml_kem.Types.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
+      (secret_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector)
       (ciphertext: t_Array u8 v_CIPHERTEXT_SIZE)
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
@@ -159,7 +159,7 @@ val encrypt_unpacked
       (#v_Vector #v_Hasher: Type0)
       {| i2: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
-      (public_key: Libcrux_ml_kem.Types.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (public_key: Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
       (message: t_Array u8 (sz 32))
       (randomness: t_Slice u8)
     : Prims.Pure (t_Array u8 v_CIPHERTEXT_SIZE) Prims.l_True (fun _ -> Prims.l_True)
@@ -215,8 +215,8 @@ val generate_keypair_unpacked
       {| i3: Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K |}
       (key_generation_seed: t_Slice u8)
     : Prims.Pure
-      (Libcrux_ml_kem.Types.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
-        Libcrux_ml_kem.Types.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
+      (Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked v_K v_Vector &
+        Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)
 

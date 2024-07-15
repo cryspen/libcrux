@@ -48,7 +48,7 @@ let _ =
 /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 val encapsulate_unpacked
       (public_key:
-          Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (randomness: t_Array u8 (sz 32))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568) & t_Array u8 (sz 32))
@@ -61,7 +61,7 @@ val encapsulate_unpacked
 /// and an [`MlKem1024Ciphertext`].
 val decapsulate_unpacked
       (private_key:
-          Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
             Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
     : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
@@ -69,7 +69,7 @@ val decapsulate_unpacked
 /// Generate ML-KEM 1024 Key Pair in "unpacked" form
 val generate_key_pair_unpacked (randomness: t_Array u8 (sz 64))
     : Prims.Pure
-      (Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
+      (Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
           Libcrux_ml_kem.Vector.Neon.Vector_type.t_SIMD128Vector)
       Prims.l_True
       (fun _ -> Prims.l_True)

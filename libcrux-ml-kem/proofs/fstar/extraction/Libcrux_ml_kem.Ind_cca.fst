@@ -460,7 +460,7 @@ let encapsulate_unpacked
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (public_key: Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked v_K v_Vector)
+      (public_key: Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K v_Vector)
       (randomness: t_Array u8 (sz 32))
      =
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
@@ -477,7 +477,7 @@ let encapsulate_unpacked
               Core.Ops.Range.t_RangeFrom usize ]
             <:
             t_Slice u8)
-          (Rust_primitives.unsize public_key.Libcrux_ml_kem.Types.Unpacked.f_public_key_hash
+          (Rust_primitives.unsize public_key.Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key_hash
             <:
             t_Slice u8)
         <:
@@ -498,7 +498,7 @@ let encapsulate_unpacked
     Libcrux_ml_kem.Ind_cpa.encrypt_unpacked v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE
       v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN
       v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher
-      public_key.Libcrux_ml_kem.Types.Unpacked.f_ind_cpa_public_key randomness pseudorandomness
+      public_key.Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key randomness pseudorandomness
   in
   let shared_secret_array:t_Array u8 (sz 32) = Rust_primitives.Hax.repeat 0uy (sz 32) in
   let shared_secret_array:t_Array u8 (sz 32) =
@@ -522,7 +522,7 @@ let decapsulate_unpacked
       (#[FStar.Tactics.Typeclasses.tcresolve ()]
           i3:
           Libcrux_ml_kem.Hash_functions.t_Hash v_Hasher v_K)
-      (key_pair: Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked v_K v_Vector)
+      (key_pair: Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K v_Vector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
      =
   let decrypted:t_Array u8 (sz 32) =
@@ -532,8 +532,8 @@ let decapsulate_unpacked
       v_VECTOR_U_COMPRESSION_FACTOR
       v_VECTOR_V_COMPRESSION_FACTOR
       #v_Vector
-      key_pair.Libcrux_ml_kem.Types.Unpacked.f_private_key
-        .Libcrux_ml_kem.Types.Unpacked.f_ind_cpa_private_key
+      key_pair.Libcrux_ml_kem.Ind_cca.Unpacked.f_private_key
+        .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_private_key
       ciphertext.Libcrux_ml_kem.Types.f_value
   in
   let (to_hash: t_Array u8 (sz 64)):t_Array u8 (sz 64) =
@@ -550,8 +550,8 @@ let decapsulate_unpacked
               Core.Ops.Range.t_RangeFrom usize ]
             <:
             t_Slice u8)
-          (Rust_primitives.unsize key_pair.Libcrux_ml_kem.Types.Unpacked.f_public_key
-                .Libcrux_ml_kem.Types.Unpacked.f_public_key_hash
+          (Rust_primitives.unsize key_pair.Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
+                .Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key_hash
             <:
             t_Slice u8)
         <:
@@ -571,8 +571,8 @@ let decapsulate_unpacked
   let (to_hash: t_Array u8 v_IMPLICIT_REJECTION_HASH_INPUT_SIZE):t_Array u8
     v_IMPLICIT_REJECTION_HASH_INPUT_SIZE =
     Libcrux_ml_kem.Utils.into_padded_array v_IMPLICIT_REJECTION_HASH_INPUT_SIZE
-      (Rust_primitives.unsize key_pair.Libcrux_ml_kem.Types.Unpacked.f_private_key
-            .Libcrux_ml_kem.Types.Unpacked.f_implicit_rejection_value
+      (Rust_primitives.unsize key_pair.Libcrux_ml_kem.Ind_cca.Unpacked.f_private_key
+            .Libcrux_ml_kem.Ind_cca.Unpacked.f_implicit_rejection_value
         <:
         t_Slice u8)
   in
@@ -607,8 +607,8 @@ let decapsulate_unpacked
     Libcrux_ml_kem.Ind_cpa.encrypt_unpacked v_K v_CIPHERTEXT_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE
       v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_C1_BLOCK_SIZE v_ETA1
       v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher
-      key_pair.Libcrux_ml_kem.Types.Unpacked.f_public_key
-        .Libcrux_ml_kem.Types.Unpacked.f_ind_cpa_public_key decrypted pseudorandomness
+      key_pair.Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
+        .Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key decrypted pseudorandomness
   in
   let selector:u8 =
     Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_in_constant_time (Core.Convert.f_as_ref #(Libcrux_ml_kem.Types.t_MlKemCiphertext
@@ -651,9 +651,9 @@ let generate_keypair_unpacked
       <:
       Core.Ops.Range.t_RangeFrom usize ]
   in
-  let ind_cpa_private_key, ind_cpa_public_key:(Libcrux_ml_kem.Types.Unpacked.t_IndCpaPrivateKeyUnpacked
+  let ind_cpa_private_key, ind_cpa_public_key:(Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPrivateKeyUnpacked
       v_K v_Vector &
-    Libcrux_ml_kem.Types.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector) =
+    Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector) =
     Libcrux_ml_kem.Ind_cpa.generate_keypair_unpacked v_K
       v_ETA1
       v_ETA1_RANDOMNESS_SIZE
@@ -716,7 +716,7 @@ let generate_keypair_unpacked
                       (Core.Clone.f_clone #(Libcrux_ml_kem.Polynomial.t_PolynomialRingElement
                             v_Vector)
                           #FStar.Tactics.Typeclasses.solve
-                          ((ind_cpa_public_key.Libcrux_ml_kem.Types.Unpacked.f_A.[ j ]
+                          ((ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_A.[ j ]
                               <:
                               t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
                                 v_K).[ i ]
@@ -732,18 +732,18 @@ let generate_keypair_unpacked
           <:
           t_Array (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K) v_K)
   in
-  let ind_cpa_public_key:Libcrux_ml_kem.Types.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
-    { ind_cpa_public_key with Libcrux_ml_kem.Types.Unpacked.f_A = v_A }
+  let ind_cpa_public_key:Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector =
+    { ind_cpa_public_key with Libcrux_ml_kem.Ind_cpa.Unpacked.f_A = v_A }
     <:
-    Libcrux_ml_kem.Types.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
+    Libcrux_ml_kem.Ind_cpa.Unpacked.t_IndCpaPublicKeyUnpacked v_K v_Vector
   in
   let pk_serialized:t_Array u8 v_PUBLIC_KEY_SIZE =
     Libcrux_ml_kem.Ind_cpa.serialize_public_key v_K
       v_BYTES_PER_RING_ELEMENT
       v_PUBLIC_KEY_SIZE
       #v_Vector
-      ind_cpa_public_key.Libcrux_ml_kem.Types.Unpacked.f_t_as_ntt
-      (Rust_primitives.unsize ind_cpa_public_key.Libcrux_ml_kem.Types.Unpacked.f_seed_for_A
+      ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_t_as_ntt
+      (Rust_primitives.unsize ind_cpa_public_key.Libcrux_ml_kem.Ind_cpa.Unpacked.f_seed_for_A
         <:
         t_Slice u8)
   in
@@ -764,22 +764,22 @@ let generate_keypair_unpacked
         Core.Result.t_Result (t_Array u8 (sz 32)) Core.Array.t_TryFromSliceError)
   in
   {
-    Libcrux_ml_kem.Types.Unpacked.f_private_key
+    Libcrux_ml_kem.Ind_cca.Unpacked.f_private_key
     =
     {
-      Libcrux_ml_kem.Types.Unpacked.f_ind_cpa_private_key = ind_cpa_private_key;
-      Libcrux_ml_kem.Types.Unpacked.f_implicit_rejection_value = implicit_rejection_value
+      Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_private_key = ind_cpa_private_key;
+      Libcrux_ml_kem.Ind_cca.Unpacked.f_implicit_rejection_value = implicit_rejection_value
     }
     <:
-    Libcrux_ml_kem.Types.Unpacked.t_MlKemPrivateKeyUnpacked v_K v_Vector;
-    Libcrux_ml_kem.Types.Unpacked.f_public_key
+    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPrivateKeyUnpacked v_K v_Vector;
+    Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key
     =
     {
-      Libcrux_ml_kem.Types.Unpacked.f_ind_cpa_public_key = ind_cpa_public_key;
-      Libcrux_ml_kem.Types.Unpacked.f_public_key_hash = public_key_hash
+      Libcrux_ml_kem.Ind_cca.Unpacked.f_ind_cpa_public_key = ind_cpa_public_key;
+      Libcrux_ml_kem.Ind_cca.Unpacked.f_public_key_hash = public_key_hash
     }
     <:
-    Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked v_K v_Vector
+    Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked v_K v_Vector
   }
   <:
-  Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked v_K v_Vector
+  Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked v_K v_Vector

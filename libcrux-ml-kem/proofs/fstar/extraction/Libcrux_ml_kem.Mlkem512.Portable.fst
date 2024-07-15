@@ -43,7 +43,7 @@ let generate_key_pair (randomness: t_Array u8 (sz 64)) =
 
 let encapsulate_unpacked
       (public_key:
-          Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (randomness: t_Array u8 (sz 32))
      =
@@ -53,7 +53,7 @@ let encapsulate_unpacked
 
 let decapsulate_unpacked
       (private_key:
-          Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 2)
             Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 768))
      =

@@ -45,7 +45,7 @@ let generate_key_pair (randomness: t_Array u8 (sz 64)) =
 
 let encapsulate_unpacked
       (public_key:
-          Libcrux_ml_kem.Types.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
       (randomness: t_Array u8 (sz 32))
      =
@@ -55,7 +55,7 @@ let encapsulate_unpacked
 
 let decapsulate_unpacked
       (private_key:
-          Libcrux_ml_kem.Types.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
+          Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemKeyPairUnpacked (sz 4)
             Libcrux_ml_kem.Vector.Avx2.t_SIMD256Vector)
       (ciphertext: Libcrux_ml_kem.Types.t_MlKemCiphertext (sz 1568))
      =
