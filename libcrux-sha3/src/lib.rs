@@ -254,7 +254,7 @@ pub mod portable {
         /// Absorb
         #[inline(always)]
         pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8]) {
-            absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0]);
+            absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0].into());
         }
 
         /// Squeeze three blocks
@@ -285,7 +285,7 @@ pub mod portable {
         /// Absorb some data for SHAKE-256 for the last time
         #[inline(always)]
         pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8]) {
-            absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data0]);
+            absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data0].into());
         }
 
         /// Squeeze the first SHAKE-256 block
@@ -450,6 +450,7 @@ pub mod neon {
 
         /// An incremental API to perform 2 operations in parallel
         pub mod incremental {
+            use crate::generic_keccak::Block;
             #[cfg(feature = "simd128")]
             use crate::generic_keccak::{
                 absorb_final, squeeze_first_three_blocks, squeeze_next_block,
@@ -504,10 +505,13 @@ pub mod neon {
                 //     shake128_absorb_final(&mut s1, data1);
                 // }
                 #[cfg(feature = "simd128")]
-                absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
-                    &mut s.state,
-                    [data0, data1],
-                );
+                {
+                    let block = Block::new([data0, data1]);
+                    absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
+                        &mut s.state,
+                        block,
+                    );
+                }
             }
 
             /// Initialise the state and perform up to 4 absorbs at the same time,

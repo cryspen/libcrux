@@ -29,6 +29,52 @@ impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
     }
 }
 
+/// An abstraction for abstraction a block.
+///
+/// This holds `N` references to byte slices that are being processed.
+pub(crate) struct Block<'a, const N: usize> {
+    blocks: [&'a [u8]; N],
+}
+
+impl<'a, const N: usize> Block<'a, N> {
+    /// Build a block.
+    pub(crate) fn new(blocks: [&'a [u8]; N]) -> Self {
+        // XXX: This should really return a result
+        #[cfg(debug_assertions)]
+        let len = blocks[0].len();
+        for block in blocks {
+            debug_assert!(block.len() == len);
+        }
+
+        Self { blocks }
+    }
+
+    pub(crate) fn len(&self) -> usize {
+        self.blocks[0].len()
+    }
+}
+
+impl<'a, const N: usize> Index<usize> for Block<'a, N> {
+    type Output = [u8];
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.blocks[index]
+    }
+}
+
+impl<'a, const N: usize> From<[&'a [u8]; N]> for Block<'a, N> {
+    fn from(blocks: [&'a [u8]; N]) -> Self {
+        Self { blocks }
+    }
+}
+
+/// An abstraction for abstraction a block.
+///
+/// This holds `N` references to mutable byte slices that are being processed.
+pub(crate) struct BlockMut<'a, const N: usize> {
+    blocks: [&'a mut [u8]; N],
+}
+
 /// From here, everything is generic
 ///
 const _ROTC: [usize; 24] = [
@@ -188,13 +234,13 @@ pub(crate) fn absorb_final<
     const DELIM: u8,
 >(
     s: &mut KeccakState<N, T>,
-    last: [&[u8]; N],
+    last: Block<N>,
 ) {
-    debug_assert!(N > 0 && last[0].len() < RATE);
-    let last_len = last[0].len();
+    debug_assert!(N > 0 && last.len() < RATE);
+    let last_len = last.len();
     let mut blocks = [[0u8; 200]; N];
     for i in 0..N {
-        blocks[i][0..last_len].copy_from_slice(last[i]);
+        blocks[i][0..last_len].copy_from_slice(&last[i]);
         blocks[i][last_len] = DELIM;
         blocks[i][RATE - 1] |= 0x80;
     }
@@ -291,7 +337,7 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
         absorb_block::<N, T, RATE>(&mut s, T::slice_n(data, i * RATE, RATE));
     }
     let rem = data[0].len() % RATE;
-    absorb_final::<N, T, RATE, DELIM>(&mut s, T::slice_n(data, data[0].len() - rem, rem));
+    absorb_final::<N, T, RATE, DELIM>(&mut s, T::slice_n(data, data[0].len() - rem, rem).into());
 
     let outlen = out[0].len();
     let blocks = outlen / RATE;
