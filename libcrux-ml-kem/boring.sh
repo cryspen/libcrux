@@ -9,12 +9,6 @@ cargo clean
 ./c.sh --config cg.yaml --out cg --mlkem768 \
     --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
-# Fixup code
-# TODO: This should go away as soon as the code generation is fixed.
-sed -i -E 's/.*libcrux_ml_kem_types_MlKemCiphertext_s.*//g' cg/libcrux_core.h
-sed -i -E 's/.*Eurydice_error_t_cg_array.*//g' cg/libcrux_core.h
-sed -i -E 's/.*libcrux_ml_kem_types_MlKemCiphertext;//g' cg/libcrux_core.h
-
 clang-format --style=Google -i cg/*.h
 
 if [[ -n "$BORINGSSL_HOME" ]]; then
