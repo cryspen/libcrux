@@ -1,6 +1,7 @@
 use crate::simd::traits::Operations;
 
 mod arithmetic;
+mod encoding;
 mod ntt;
 mod sample;
 mod simd_unit_type;
@@ -45,6 +46,21 @@ impl Operations for PortableSIMDUnit {
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
         sample::rejection_sample_less_than_field_modulus(randomness, out)
+    }
+    fn rejection_sample_less_than_eta_equals_2(randomness: &[u8], out: &mut [i32]) -> usize {
+        sample::rejection_sample_less_than_eta_equals_2(randomness, out)
+    }
+    fn rejection_sample_less_than_eta_equals_4(randomness: &[u8], out: &mut [i32]) -> usize {
+        sample::rejection_sample_less_than_eta_equals_4(randomness, out)
+    }
+
+    fn gamma1_serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
+        simd_unit: Self,
+    ) -> [u8; OUTPUT_BYTES] {
+        encoding::gamma1::serialize::<GAMMA1_EXPONENT, OUTPUT_BYTES>(simd_unit)
+    }
+    fn gamma1_deserialize<const GAMMA1_EXPONENT: usize>(serialized: &[u8]) -> Self {
+        encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(serialized)
     }
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
