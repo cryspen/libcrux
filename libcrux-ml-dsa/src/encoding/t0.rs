@@ -3,64 +3,23 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    constants::{BITS_IN_LOWER_PART_OF_T, RING_ELEMENT_OF_T0S_SIZE},
+    constants::RING_ELEMENT_OF_T0S_SIZE,
     ntt::ntt,
-    polynomial::PolynomialRingElement,
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    simd::{portable::PortableSIMDUnit, traits::Operations},
 };
-
-// If t0 is a signed representative, change it to an unsigned one and
-// vice versa.
-#[inline(always)]
-fn change_t0_interval(t0: i32) -> i32 {
-    (1 << (BITS_IN_LOWER_PART_OF_T - 1)) - t0
-}
 
 #[inline(always)]
 pub(crate) fn serialize(re: PolynomialRingElement) -> [u8; RING_ELEMENT_OF_T0S_SIZE] {
     let mut serialized = [0u8; RING_ELEMENT_OF_T0S_SIZE];
 
-    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
-        let coefficient0 = change_t0_interval(coefficients[0]);
-        let coefficient1 = change_t0_interval(coefficients[1]);
-        let coefficient2 = change_t0_interval(coefficients[2]);
-        let coefficient3 = change_t0_interval(coefficients[3]);
-        let coefficient4 = change_t0_interval(coefficients[4]);
-        let coefficient5 = change_t0_interval(coefficients[5]);
-        let coefficient6 = change_t0_interval(coefficients[6]);
-        let coefficient7 = change_t0_interval(coefficients[7]);
+    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
-        serialized[13 * i] = coefficient0 as u8;
+    const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
-        serialized[13 * i + 1] = (coefficient0 >> 8) as u8;
-        serialized[13 * i + 1] |= (coefficient1 << 5) as u8;
-
-        serialized[13 * i + 2] = (coefficient1 >> 3) as u8;
-
-        serialized[13 * i + 3] = (coefficient1 >> 11) as u8;
-        serialized[13 * i + 3] |= (coefficient2 << 2) as u8;
-
-        serialized[13 * i + 4] = (coefficient2 >> 6) as u8;
-        serialized[13 * i + 4] |= (coefficient3 << 7) as u8;
-
-        serialized[13 * i + 5] = (coefficient3 >> 1) as u8;
-
-        serialized[13 * i + 6] = (coefficient3 >> 9) as u8;
-        serialized[13 * i + 6] |= (coefficient4 << 4) as u8;
-
-        serialized[13 * i + 7] = (coefficient4 >> 4) as u8;
-
-        serialized[13 * i + 8] = (coefficient4 >> 12) as u8;
-        serialized[13 * i + 8] |= (coefficient5 << 1) as u8;
-
-        serialized[13 * i + 9] = (coefficient5 >> 7) as u8;
-        serialized[13 * i + 9] |= (coefficient6 << 6) as u8;
-
-        serialized[13 * i + 10] = (coefficient6 >> 2) as u8;
-
-        serialized[13 * i + 11] = (coefficient6 >> 10) as u8;
-        serialized[13 * i + 11] |= (coefficient7 << 3) as u8;
-
-        serialized[13 * i + 12] = (coefficient7 >> 5) as u8;
+    for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+        serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+            .copy_from_slice(&PortableSIMDUnit::t0_serialize(*simd_unit));
     }
 
     serialized
@@ -68,72 +27,15 @@ pub(crate) fn serialize(re: PolynomialRingElement) -> [u8; RING_ELEMENT_OF_T0S_S
 
 #[inline(always)]
 fn deserialize(serialized: &[u8]) -> PolynomialRingElement {
-    let mut re = PolynomialRingElement::ZERO;
+    let mut serialized_chunks = serialized.chunks(13);
 
-    const BITS_IN_LOWER_PART_OF_T_MASK: i32 = (1 << (BITS_IN_LOWER_PART_OF_T as i32)) - 1;
+    let mut result = SIMDPolynomialRingElement::ZERO();
 
-    for (i, bytes) in serialized.chunks_exact(13).enumerate() {
-        let byte0 = bytes[0] as i32;
-        let byte1 = bytes[1] as i32;
-        let byte2 = bytes[2] as i32;
-        let byte3 = bytes[3] as i32;
-        let byte4 = bytes[4] as i32;
-        let byte5 = bytes[5] as i32;
-        let byte6 = bytes[6] as i32;
-        let byte7 = bytes[7] as i32;
-        let byte8 = bytes[8] as i32;
-        let byte9 = bytes[9] as i32;
-        let byte10 = bytes[10] as i32;
-        let byte11 = bytes[11] as i32;
-        let byte12 = bytes[12] as i32;
-
-        re.coefficients[8 * i] = byte0;
-        re.coefficients[8 * i] |= byte1 << 8;
-        re.coefficients[8 * i] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i + 1] = byte1 >> 5;
-        re.coefficients[8 * i + 1] |= byte2 << 3;
-        re.coefficients[8 * i + 1] |= byte3 << 11;
-        re.coefficients[8 * i + 1] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i + 2] = byte3 >> 2;
-        re.coefficients[8 * i + 2] |= byte4 << 6;
-        re.coefficients[8 * i + 2] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i + 3] = byte4 >> 7;
-        re.coefficients[8 * i + 3] |= byte5 << 1;
-        re.coefficients[8 * i + 3] |= byte6 << 9;
-        re.coefficients[8 * i + 3] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i + 4] = byte6 >> 4;
-        re.coefficients[8 * i + 4] |= byte7 << 4;
-        re.coefficients[8 * i + 4] |= byte8 << 12;
-        re.coefficients[8 * i + 4] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i + 5] = byte8 >> 1;
-        re.coefficients[8 * i + 5] |= byte9 << 7;
-        re.coefficients[8 * i + 5] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i + 6] = byte9 >> 6;
-        re.coefficients[8 * i + 6] |= byte10 << 2;
-        re.coefficients[8 * i + 6] |= byte11 << 10;
-        re.coefficients[8 * i + 6] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i + 7] = byte11 >> 3;
-        re.coefficients[8 * i + 7] |= byte12 << 5;
-        re.coefficients[8 * i + 7] &= BITS_IN_LOWER_PART_OF_T_MASK;
-
-        re.coefficients[8 * i] = change_t0_interval(re.coefficients[8 * i]);
-        re.coefficients[8 * i + 1] = change_t0_interval(re.coefficients[8 * i + 1]);
-        re.coefficients[8 * i + 2] = change_t0_interval(re.coefficients[8 * i + 2]);
-        re.coefficients[8 * i + 3] = change_t0_interval(re.coefficients[8 * i + 3]);
-        re.coefficients[8 * i + 4] = change_t0_interval(re.coefficients[8 * i + 4]);
-        re.coefficients[8 * i + 5] = change_t0_interval(re.coefficients[8 * i + 5]);
-        re.coefficients[8 * i + 6] = change_t0_interval(re.coefficients[8 * i + 6]);
-        re.coefficients[8 * i + 7] = change_t0_interval(re.coefficients[8 * i + 7]);
+    for i in 0..result.simd_units.len() {
+        result.simd_units[i] = PortableSIMDUnit::t0_deserialize(&serialized_chunks.next().unwrap());
     }
 
-    re
+    result.to_polynomial_ring_element()
 }
 
 #[inline(always)]

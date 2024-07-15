@@ -1,6 +1,6 @@
 use crate::{
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement, SIMD_UNITS_IN_RING_ELEMENT},
     simd::{portable::PortableSIMDUnit, traits::Operations},
 };
 
@@ -24,33 +24,24 @@ pub(crate) fn vector_infinity_norm_exceeds<const DIMENSION: usize>(
     exceeds
 }
 
-/// Values having this type hold a representative 'x' of the ML-DSA field.
-pub(crate) type FieldElement = i32;
-
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R (mod FIELD_MODULUS).
 /// We use 'fer' as a shorthand for this type.
 pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 #[inline(always)]
-fn reduce(fe: FieldElement) -> FieldElement {
-    let quotient = (fe + (1 << 22)) >> 23;
-
-    fe - (quotient * FIELD_MODULUS)
-}
-
-#[inline(always)]
-pub(crate) fn shift_coefficients_left_then_reduce(
+pub(crate) fn shift_left_then_reduce(
     re: PolynomialRingElement,
     shift_by: usize,
 ) -> PolynomialRingElement {
-    let mut out = PolynomialRingElement::ZERO;
+    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
+    let mut out = SIMDPolynomialRingElement::ZERO();
 
-    for i in 0..COEFFICIENTS_IN_RING_ELEMENT {
-        out.coefficients[i] = reduce(re.coefficients[i] << shift_by);
+    for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+        out.simd_units[i] = PortableSIMDUnit::shift_left_then_reduce(*simd_unit, shift_by);
     }
 
-    out
+    out.to_polynomial_ring_element()
 }
 
 #[inline(always)]
@@ -174,37 +165,40 @@ pub(crate) fn decompose_vector<const DIMENSION: usize, const GAMMA2: i32>(
 }
 
 #[inline(always)]
-fn compute_hint_value<const GAMMA2: i32>(low: i32, high: i32) -> bool {
-    (low > GAMMA2) || (low < -GAMMA2) || (low == -GAMMA2 && high != 0)
-}
-
-#[inline(always)]
 pub(crate) fn make_hint<const DIMENSION: usize, const GAMMA2: i32>(
     low: [PolynomialRingElement; DIMENSION],
     high: [PolynomialRingElement; DIMENSION],
-) -> ([[bool; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
-    let mut hint = [[false; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
+) -> ([[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
+    let mut hint = [[0; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
     let mut true_hints = 0;
 
     for i in 0..DIMENSION {
-        for j in 0..COEFFICIENTS_IN_RING_ELEMENT {
-            hint[i][j] =
-                compute_hint_value::<GAMMA2>(low[i].coefficients[j], high[i].coefficients[j]);
+        let v_low =
+            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(low[i]);
+        let v_high =
+            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(high[i]);
 
-            // From https://doc.rust-lang.org/std/primitive.bool.html:
-            // "If you cast a bool into an integer, true will be 1 and false will be 0."
-            true_hints += hint[i][j] as usize;
+        let mut v_hint = SIMDPolynomialRingElement::ZERO();
+
+        for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
+            let (one_hints_count, current_hint) =
+                PortableSIMDUnit::compute_hint::<GAMMA2>(v_low.simd_units[j], v_high.simd_units[j]);
+            v_hint.simd_units[j] = current_hint;
+
+            true_hints += one_hints_count;
         }
+
+        hint[i] = v_hint.to_polynomial_ring_element().coefficients;
     }
 
     (hint, true_hints)
 }
 
 #[inline(always)]
-pub(crate) fn use_hint_value<const GAMMA2: i32>(r: i32, hint: bool) -> i32 {
+pub(crate) fn use_hint_value<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
     let (r0, r1) = decompose::<GAMMA2>(r);
 
-    if !hint {
+    if hint == 0 {
         return r1;
     }
 
@@ -237,7 +231,7 @@ pub(crate) fn use_hint_value<const GAMMA2: i32>(r: i32, hint: bool) -> i32 {
 
 #[inline(always)]
 pub(crate) fn use_hint<const DIMENSION: usize, const GAMMA2: i32>(
-    hint: [[bool; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
+    hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
     re_vector: [PolynomialRingElement; DIMENSION],
 ) -> [PolynomialRingElement; DIMENSION] {
     let mut result = [PolynomialRingElement::ZERO; DIMENSION];
@@ -269,10 +263,10 @@ mod tests {
 
     #[test]
     fn test_use_hint_value() {
-        assert_eq!(use_hint_value::<95_232>(7622170, false), 40);
-        assert_eq!(use_hint_value::<95_232>(2332762, true), 13);
+        assert_eq!(use_hint_value::<95_232>(7622170, 0), 40);
+        assert_eq!(use_hint_value::<95_232>(2332762, 1), 13);
 
-        assert_eq!(use_hint_value::<261_888>(7691572, false), 15);
-        assert_eq!(use_hint_value::<261_888>(6635697, true), 12);
+        assert_eq!(use_hint_value::<261_888>(7691572, 0), 15);
+        assert_eq!(use_hint_value::<261_888>(6635697, 1), 12);
     }
 }

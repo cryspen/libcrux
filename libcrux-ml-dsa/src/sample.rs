@@ -248,7 +248,7 @@ pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
 mod tests {
     use super::*;
 
-    use crate::{arithmetic::FieldElement, constants::COEFFICIENTS_IN_RING_ELEMENT};
+    use crate::constants::COEFFICIENTS_IN_RING_ELEMENT;
 
     #[test]
     fn test_sample_ring_element_uniform() {
@@ -257,7 +257,7 @@ mod tests {
             91, 80, 128, 195, 219, 203, 149, 170, 233, 16, 232, 209, 105, 4, 5,
         ];
 
-        let expected_coefficients: [FieldElement; COEFFICIENTS_IN_RING_ELEMENT] = [
+        let expected_coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT] = [
             886541, 1468422, 793958, 7610434, 3986512, 913782, 2546456, 5820798, 1940159, 10062,
             3303190, 3831326, 4834267, 3500674, 16909, 8314529, 7469249, 5611755, 6181076, 269257,
             3566448, 2968856, 7556314, 6685884, 129963, 8017973, 1087829, 5842199, 6867133, 442098,
