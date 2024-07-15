@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use libcrux_psq::{generate_key_pair, Algorithm};
+use libcrux_psq::psq::{generate_key_pair, Algorithm};
 use rand::thread_rng;
 
 fn main() {

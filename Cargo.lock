@@ -1061,6 +1061,8 @@ version = "0.0.2-alpha.1"
 dependencies = [
  "classic-mceliece-rust",
  "criterion",
+ "libcrux",
+ "libcrux-ecdh",
  "libcrux-hkdf",
  "libcrux-hmac",
  "libcrux-kem",
