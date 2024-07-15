@@ -6,7 +6,8 @@ SED=$(which gsed &>/dev/null && echo gsed || echo sed)
 
 # Extract the C code
 cargo clean
-./c.sh --config cg.yaml --out cg --mlkem768 --no-glue --no-unrolling --no-karamel_include
+./c.sh --config cg.yaml --out cg --mlkem768 \
+    --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
 # Fixup code
 # TODO: This should go away as soon as the code generation is fixed.
