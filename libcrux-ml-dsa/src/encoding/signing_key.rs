@@ -5,12 +5,14 @@ use crate::{
     },
     encoding,
     hash_functions::H,
-    polynomial::PolynomialRingElement,
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    simd::traits::Operations,
 };
 
 #[allow(non_snake_case)]
 #[inline(always)]
 pub(crate) fn generate_serialized<
+    SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -22,7 +24,7 @@ pub(crate) fn generate_serialized<
     verification_key: &[u8],
     s1: [PolynomialRingElement; COLUMNS_IN_A],
     s2: [PolynomialRingElement; ROWS_IN_A],
-    t0: [PolynomialRingElement; ROWS_IN_A],
+    t0: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [u8; SIGNING_KEY_SIZE] {
     let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];
     let mut offset = 0;
@@ -41,21 +43,21 @@ pub(crate) fn generate_serialized<
 
     for ring_element in s1.iter() {
         signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
+            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
         );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
     for ring_element in s2.iter() {
         signing_key_serialized[offset..offset + ERROR_RING_ELEMENT_SIZE].copy_from_slice(
-            &encoding::error::serialize::<ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
+            &encoding::error::serialize::<SIMDUnit, ETA, ERROR_RING_ELEMENT_SIZE>(*ring_element),
         );
         offset += ERROR_RING_ELEMENT_SIZE;
     }
 
     for ring_element in t0.iter() {
         signing_key_serialized[offset..offset + RING_ELEMENT_OF_T0S_SIZE]
-            .copy_from_slice(&encoding::t0::serialize(*ring_element));
+            .copy_from_slice(&encoding::t0::serialize::<SIMDUnit>(*ring_element));
         offset += RING_ELEMENT_OF_T0S_SIZE;
     }
 

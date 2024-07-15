@@ -7,16 +7,16 @@ use crate::{
 // Each coefficient takes up 10 bits.
 
 #[inline(always)]
-pub(crate) fn serialize(re: PolynomialRingElement) -> [u8; RING_ELEMENT_OF_T1S_SIZE] {
+pub(crate) fn serialize<SIMDUnit: Operations>(
+    re: SIMDPolynomialRingElement<SIMDUnit>,
+) -> [u8; RING_ELEMENT_OF_T1S_SIZE] {
     let mut serialized = [0u8; RING_ELEMENT_OF_T1S_SIZE];
-
-    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
     const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 10;
 
-    for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+    for (i, simd_unit) in re.simd_units.iter().enumerate() {
         serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-            .copy_from_slice(&PortableSIMDUnit::t1_serialize(*simd_unit));
+            .copy_from_slice(&SIMDUnit::t1_serialize(*simd_unit));
     }
 
     serialized
@@ -60,6 +60,8 @@ mod tests {
                 742, 512, 879, 534, 490,
             ],
         };
+        let simd_re =
+            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
         let expected_re_serialized = [
             127, 204, 105, 133, 208, 207, 165, 130, 49, 2, 83, 82, 115, 127, 53, 65, 213, 119, 93,
@@ -82,7 +84,10 @@ mod tests {
             122,
         ];
 
-        assert_eq!(serialize(re), expected_re_serialized);
+        assert_eq!(
+            serialize::<PortableSIMDUnit>(simd_re),
+            expected_re_serialized
+        );
     }
 
     #[test]

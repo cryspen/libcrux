@@ -12,11 +12,13 @@ use crate::{
     ntt::ntt,
     polynomial::PolynomialRingElement,
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
+    simd::traits::Operations,
     utils::into_padded_array,
 };
 
 #[allow(non_snake_case)]
 pub(crate) fn generate_key_pair<
+    SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -48,14 +50,16 @@ pub(crate) fn generate_key_pair<
 
     let t = compute_As1_plus_s2::<ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &s1, &s2);
 
-    let (t0, t1) = power2round_vector::<ROWS_IN_A>(t);
+    let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
 
     let verification_key_serialized = encoding::verification_key::generate_serialized::<
+        SIMDUnit,
         ROWS_IN_A,
         VERIFICATION_KEY_SIZE,
     >(seed_for_A, t1);
 
     let signing_key_serialized = encoding::signing_key::generate_serialized::<
+        SIMDUnit,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,

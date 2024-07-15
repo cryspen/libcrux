@@ -45,38 +45,29 @@ pub(crate) fn shift_left_then_reduce(
 }
 
 #[inline(always)]
-pub(crate) fn power2round_vector<const DIMENSION: usize>(
-    vector_t: [PolynomialRingElement; DIMENSION],
+pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
+    t: [PolynomialRingElement; DIMENSION],
 ) -> (
-    [PolynomialRingElement; DIMENSION],
-    [PolynomialRingElement; DIMENSION],
+    [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut vector_t0 = [PolynomialRingElement::ZERO; DIMENSION];
-    let mut vector_t1 = [PolynomialRingElement::ZERO; DIMENSION];
+    let mut t0 = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut t1 = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
-    for (i, ring_element) in vector_t.iter().enumerate() {
-        // These conversions are rather unsightly, but are very temporary and
-        // will be removed once the entire codebase is switched to use
-        // SIMDPolynomialRingElement
-        let mut t0_simd_ring_element = SIMDPolynomialRingElement::ZERO();
-        let mut t1_simd_ring_element = SIMDPolynomialRingElement::ZERO();
-
+    for (i, ring_element) in t.iter().enumerate() {
         for (j, simd_unit) in SIMDPolynomialRingElement::from_polynomial_ring_element(*ring_element)
             .simd_units
             .iter()
             .enumerate()
         {
-            let (t0_simd_unit, t1_simd_unit) = PortableSIMDUnit::power2round(*simd_unit);
+            let (t0_unit, t1_unit) = SIMDUnit::power2round(*simd_unit);
 
-            t0_simd_ring_element.simd_units[j] = t0_simd_unit;
-            t1_simd_ring_element.simd_units[j] = t1_simd_unit;
+            t0[i].simd_units[j] = t0_unit;
+            t1[i].simd_units[j] = t1_unit;
         }
-
-        vector_t0[i] = t0_simd_ring_element.to_polynomial_ring_element();
-        vector_t1[i] = t1_simd_ring_element.to_polynomial_ring_element();
     }
 
-    (vector_t0, vector_t1)
+    (t0, t1)
 }
 
 #[inline(always)]

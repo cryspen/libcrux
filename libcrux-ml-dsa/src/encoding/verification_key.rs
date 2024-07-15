@@ -1,14 +1,19 @@
 use crate::{
     constants::{RING_ELEMENT_OF_T1S_SIZE, SEED_FOR_A_SIZE},
     encoding::t1,
-    polynomial::PolynomialRingElement,
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    simd::traits::Operations,
 };
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn generate_serialized<const ROWS_IN_A: usize, const VERIFICATION_KEY_SIZE: usize>(
+pub(crate) fn generate_serialized<
+    SIMDUnit: Operations,
+    const ROWS_IN_A: usize,
+    const VERIFICATION_KEY_SIZE: usize,
+>(
     seed_for_A: &[u8],
-    t1: [PolynomialRingElement; ROWS_IN_A],
+    t1: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [u8; VERIFICATION_KEY_SIZE] {
     let mut verification_key_serialized = [0u8; VERIFICATION_KEY_SIZE];
     verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed_for_A);
@@ -16,7 +21,7 @@ pub(crate) fn generate_serialized<const ROWS_IN_A: usize, const VERIFICATION_KEY
     for (i, ring_element) in t1.iter().enumerate() {
         let offset = SEED_FOR_A_SIZE + (i * RING_ELEMENT_OF_T1S_SIZE);
         verification_key_serialized[offset..offset + RING_ELEMENT_OF_T1S_SIZE]
-            .copy_from_slice(&t1::serialize(*ring_element));
+            .copy_from_slice(&t1::serialize::<SIMDUnit>(*ring_element));
     }
 
     verification_key_serialized

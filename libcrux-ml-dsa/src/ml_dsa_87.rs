@@ -1,4 +1,4 @@
-use crate::{constants::*, VerificationError};
+use crate::{constants::*, simd::portable::PortableSIMDUnit, VerificationError};
 
 // ML-DSA-87 parameters
 
@@ -73,6 +73,7 @@ pub struct MLDSA87Signature(pub [u8; SIGNATURE_SIZE]);
 /// Generate an ML-DSA-87 Key Pair
 pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA87KeyPair {
     let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
+        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
