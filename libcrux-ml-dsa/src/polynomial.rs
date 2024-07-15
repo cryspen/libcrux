@@ -53,6 +53,19 @@ impl<SIMDUnit: Operations> SIMDPolynomialRingElement<SIMDUnit> {
 
     // This is useful for debugging.
     #[allow(dead_code)]
+    pub(crate) fn to_i32_array(&self) -> [i32; 256] {
+        let mut result = [0i32; 256];
+
+        for (i, simd_unit) in self.simd_units.iter().enumerate() {
+            result[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT]
+                .copy_from_slice(&SIMDUnit::to_i32_array(*simd_unit));
+        }
+
+        result
+    }
+
+    // This is useful for debugging.
+    #[allow(dead_code)]
     pub(crate) fn from_i32_array(array: &[i32]) -> Self {
         debug_assert!(array.len() == 256);
 

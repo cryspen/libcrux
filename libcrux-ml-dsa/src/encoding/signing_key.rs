@@ -22,8 +22,8 @@ pub(crate) fn generate_serialized<
     seed_for_A: &[u8],
     seed_for_signing: &[u8],
     verification_key: &[u8],
-    s1: [PolynomialRingElement; COLUMNS_IN_A],
-    s2: [PolynomialRingElement; ROWS_IN_A],
+    s1: [SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    s2: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
     t0: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [u8; SIGNING_KEY_SIZE] {
     let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];

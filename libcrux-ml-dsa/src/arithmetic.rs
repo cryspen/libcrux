@@ -46,7 +46,7 @@ pub(crate) fn shift_left_then_reduce(
 
 #[inline(always)]
 pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
-    t: [PolynomialRingElement; DIMENSION],
+    t: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> (
     [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
     [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
@@ -55,11 +55,7 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
     let mut t1 = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, ring_element) in t.iter().enumerate() {
-        for (j, simd_unit) in SIMDPolynomialRingElement::from_polynomial_ring_element(*ring_element)
-            .simd_units
-            .iter()
-            .enumerate()
-        {
+        for (j, simd_unit) in ring_element.simd_units.iter().enumerate() {
             let (t0_unit, t1_unit) = SIMDUnit::power2round(*simd_unit);
 
             t0[i].simd_units[j] = t0_unit;

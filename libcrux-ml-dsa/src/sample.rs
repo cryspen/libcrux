@@ -2,12 +2,12 @@ use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
     hash_functions::{H, H_128},
-    polynomial::PolynomialRingElement,
-    simd::{portable::PortableSIMDUnit, traits::Operations},
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    simd::traits::Operations,
 };
 
 #[inline(always)]
-fn rejection_sample_less_than_field_modulus(
+fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
@@ -16,7 +16,7 @@ fn rejection_sample_less_than_field_modulus(
 
     for random_bytes in randomness.chunks(24) {
         if !done {
-            let sampled = PortableSIMDUnit::rejection_sample_less_than_field_modulus(
+            let sampled = SIMDUnit::rejection_sample_less_than_field_modulus(
                 random_bytes,
                 &mut out[*sampled_coefficients..],
             );
@@ -31,7 +31,9 @@ fn rejection_sample_less_than_field_modulus(
     done
 }
 #[inline(always)]
-pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingElement {
+pub(crate) fn sample_ring_element_uniform<SIMDUnit: Operations>(
+    seed: [u8; 34],
+) -> SIMDPolynomialRingElement<SIMDUnit> {
     let mut state = H_128::new(seed);
     let randomness = H_128::squeeze_first_five_blocks(&mut state);
 
@@ -43,23 +45,29 @@ pub(crate) fn sample_ring_element_uniform(seed: [u8; 34]) -> PolynomialRingEleme
     //
     // To ensure we don't overflow the buffer in this case, we allocate 255 + 8
     // = 263 elements.
-    let mut out = [0i32; 263];
+    let mut coefficients = [0i32; 263];
 
     let mut sampled = 0;
-    let mut done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
+    let mut done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+        &randomness,
+        &mut sampled,
+        &mut coefficients,
+    );
 
     while !done {
         let randomness = H_128::squeeze_next_block(&mut state);
-        done = rejection_sample_less_than_field_modulus(&randomness, &mut sampled, &mut out);
+        done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
+            &randomness,
+            &mut sampled,
+            &mut coefficients,
+        );
     }
 
-    PolynomialRingElement {
-        coefficients: out[0..256].try_into().unwrap(),
-    }
+    SIMDPolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients[0..256])
 }
 
 #[inline(always)]
-fn rejection_sample_less_than_eta_equals_2(
+fn rejection_sample_less_than_eta_equals_2<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
@@ -70,7 +78,7 @@ fn rejection_sample_less_than_eta_equals_2(
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
     for random_bytes in randomness.chunks(4) {
         if !done {
-            let sampled = PortableSIMDUnit::rejection_sample_less_than_eta_equals_2(
+            let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_2(
                 random_bytes,
                 &mut out[*sampled_coefficients..],
             );
@@ -85,7 +93,7 @@ fn rejection_sample_less_than_eta_equals_2(
     done
 }
 #[inline(always)]
-fn rejection_sample_less_than_eta_equals_4(
+fn rejection_sample_less_than_eta_equals_4<SIMDUnit: Operations>(
     randomness: &[u8],
     sampled_coefficients: &mut usize,
     out: &mut [i32; 263],
@@ -96,7 +104,7 @@ fn rejection_sample_less_than_eta_equals_4(
     // a single SIMDUnit can hold 8 coefficients, we pass in 4 bytes of randomness.
     for random_bytes in randomness.chunks(4) {
         if !done {
-            let sampled = PortableSIMDUnit::rejection_sample_less_than_eta_equals_4(
+            let sampled = SIMDUnit::rejection_sample_less_than_eta_equals_4(
                 random_bytes,
                 &mut out[*sampled_coefficients..],
             );
@@ -111,25 +119,27 @@ fn rejection_sample_less_than_eta_equals_4(
     done
 }
 #[inline(always)]
-pub(crate) fn rejection_sample_less_than_eta<const ETA: usize>(
+pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: usize>(
     randomness: &[u8],
     sampled: &mut usize,
     out: &mut [i32; 263],
 ) -> bool {
     match ETA {
-        2 => rejection_sample_less_than_eta_equals_2(randomness, sampled, out),
-        4 => rejection_sample_less_than_eta_equals_4(randomness, sampled, out),
+        2 => rejection_sample_less_than_eta_equals_2::<SIMDUnit>(randomness, sampled, out),
+        4 => rejection_sample_less_than_eta_equals_4::<SIMDUnit>(randomness, sampled, out),
         _ => unreachable!(),
     }
 }
 #[allow(non_snake_case)]
 #[inline(always)]
-fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRingElement {
+fn sample_error_ring_element<SIMDUnit: Operations, const ETA: usize>(
+    seed: [u8; 66],
+) -> SIMDPolynomialRingElement<SIMDUnit> {
     let mut state = H::new(&seed);
     let randomness = H::squeeze_first_block(&mut state);
 
     // Every call to |rejection_sample_less_than_field_modulus|
-    // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
+    // will result in a call to |SIMDUnit::rejection_sample_less_than_field_modulus|;
     // this latter function performs no bounds checking and can write up to 8
     // elements to its output. It is therefore possible that 255 elements have
     // already been sampled and we call the function again.
@@ -139,23 +149,26 @@ fn sample_error_ring_element<const ETA: usize>(seed: [u8; 66]) -> PolynomialRing
     let mut out = [0i32; 263];
 
     let mut sampled = 0;
-    let mut done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
+    let mut done =
+        rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness, &mut sampled, &mut out);
 
     while !done {
         let randomness = H::squeeze_next_block(&mut state);
-        done = rejection_sample_less_than_eta::<ETA>(&randomness, &mut sampled, &mut out);
+        done = rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness, &mut sampled, &mut out);
     }
 
-    PolynomialRingElement {
-        coefficients: out[0..256].try_into().unwrap(),
-    }
+    SIMDPolynomialRingElement::<SIMDUnit>::from_i32_array(&out[0..256])
 }
 #[inline(always)]
-pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
+pub(crate) fn sample_error_vector<
+    SIMDUnit: Operations,
+    const DIMENSION: usize,
+    const ETA: usize,
+>(
     mut seed: [u8; 66],
     domain_separator: &mut u16,
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut error = [PolynomialRingElement::ZERO; DIMENSION];
+) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut error = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
@@ -163,7 +176,7 @@ pub(crate) fn sample_error_vector<const DIMENSION: usize, const ETA: usize>(
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        error[i] = sample_error_ring_element::<ETA>(seed);
+        error[i] = sample_error_ring_element::<SIMDUnit, ETA>(seed);
     }
 
     error
@@ -248,7 +261,7 @@ pub(crate) fn sample_challenge_ring_element<const NUMBER_OF_ONES: usize>(
 mod tests {
     use super::*;
 
-    use crate::constants::COEFFICIENTS_IN_RING_ELEMENT;
+    use crate::{constants::COEFFICIENTS_IN_RING_ELEMENT, simd::portable::PortableSIMDUnit};
 
     #[test]
     fn test_sample_ring_element_uniform() {
@@ -288,7 +301,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_ring_element_uniform(seed).coefficients,
+            sample_ring_element_uniform::<PortableSIMDUnit>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -302,7 +315,8 @@ mod tests {
             0xB1, 0x83, 0x9B, 0x86, 0x06, 0xF5, 0x94, 0x8B, 0x9D, 0x72, 0xA9, 0x56, 0xDC, 0xF1,
             0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
         ];
-        let actual_coefficients = sample_ring_element_uniform(seed).coefficients;
+        let actual_coefficients =
+            sample_ring_element_uniform::<PortableSIMDUnit>(seed).to_i32_array();
 
         assert_eq!(actual_coefficients[0], 1_165_602);
         assert_eq!(
@@ -365,7 +379,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element::<2>(seed).coefficients,
+            sample_error_ring_element::<PortableSIMDUnit, 2>(seed).to_i32_array(),
             expected_coefficients
         );
     }
@@ -394,7 +408,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element::<4>(seed).coefficients,
+            sample_error_ring_element::<PortableSIMDUnit, 4>(seed).to_i32_array(),
             expected_coefficients
         );
     }

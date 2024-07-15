@@ -131,6 +131,24 @@ pub(crate) fn ntt(re: PolynomialRingElement) -> PolynomialRingElement {
 }
 
 #[inline(always)]
+pub(crate) fn ntt_simd<SIMDUnit: Operations>(
+    mut re: SIMDPolynomialRingElement<SIMDUnit>,
+) -> SIMDPolynomialRingElement<SIMDUnit> {
+    let mut zeta_i = 0;
+
+    ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 6>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 5>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 4>(&mut zeta_i, &mut re);
+    ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
+    ntt_at_layer_2::<SIMDUnit>(&mut zeta_i, &mut re);
+    ntt_at_layer_1::<SIMDUnit>(&mut zeta_i, &mut re);
+    ntt_at_layer_0::<SIMDUnit>(&mut zeta_i, &mut re);
+
+    re
+}
+
+#[inline(always)]
 fn invert_ntt_at_layer_0<SIMDUnit: Operations>(
     zeta_i: &mut usize,
     re: &mut SIMDPolynomialRingElement<SIMDUnit>,
@@ -233,6 +251,33 @@ pub(crate) fn invert_ntt_montgomery(re: PolynomialRingElement) -> PolynomialRing
 }
 
 #[inline(always)]
+pub(crate) fn invert_ntt_montgomery_simd<SIMDUnit: Operations>(
+    mut re: SIMDPolynomialRingElement<SIMDUnit>,
+) -> SIMDPolynomialRingElement<SIMDUnit> {
+    let mut zeta_i = COEFFICIENTS_IN_RING_ELEMENT;
+
+    invert_ntt_at_layer_0(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_1(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_2(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 3>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 4>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 5>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 6>(&mut zeta_i, &mut re);
+    invert_ntt_at_layer_3_plus::<SIMDUnit, 7>(&mut zeta_i, &mut re);
+
+    for i in 0..re.simd_units.len() {
+        // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}
+        // we multiply by (MONTGOMERY_R^2) * (1/2^8) mod Q = 41,978 to both:
+        //
+        // - Divide the elements by 256 and
+        // - Convert the elements form montgomery domain to the standard domain.
+        re.simd_units[i] = SIMDUnit::montgomery_multiply_by_constant(re.simd_units[i], 41_978);
+    }
+
+    re
+}
+
+#[inline(always)]
 pub(crate) fn ntt_multiply_montgomery(
     lhs: &PolynomialRingElement,
     rhs: &PolynomialRingElement,
@@ -248,6 +293,20 @@ pub(crate) fn ntt_multiply_montgomery(
     }
 
     v_out.to_polynomial_ring_element()
+}
+
+#[inline(always)]
+pub(crate) fn ntt_multiply_montgomery_simd<SIMDUnit: Operations>(
+    lhs: &SIMDPolynomialRingElement<SIMDUnit>,
+    rhs: &SIMDPolynomialRingElement<SIMDUnit>,
+) -> SIMDPolynomialRingElement<SIMDUnit> {
+    let mut out = SIMDPolynomialRingElement::ZERO();
+
+    for i in 0..out.simd_units.len() {
+        out.simd_units[i] = SIMDUnit::montgomery_multiply(lhs.simd_units[i], rhs.simd_units[i]);
+    }
+
+    out
 }
 
 #[cfg(test)]

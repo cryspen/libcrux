@@ -96,6 +96,7 @@ pub fn sign(
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> MLDSA65Signature {
     let signature = crate::ml_dsa_generic::sign::<
+        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -122,6 +123,7 @@ pub fn verify(
     signature: MLDSA65Signature,
 ) -> Result<(), VerificationError> {
     crate::ml_dsa_generic::verify::<
+        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,

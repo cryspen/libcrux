@@ -8,17 +8,15 @@ use crate::{
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
+    re: SIMDPolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
-
-    let v_re = SIMDPolynomialRingElement::<SIMDUnit>::from_polynomial_ring_element(re);
 
     match ETA {
         2 => {
             const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 3;
 
-            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
                     .copy_from_slice(&SIMDUnit::error_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
                         *simd_unit,
@@ -30,7 +28,7 @@ pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZ
         4 => {
             const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 4;
 
-            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
                     .copy_from_slice(&SIMDUnit::error_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
                         *simd_unit,

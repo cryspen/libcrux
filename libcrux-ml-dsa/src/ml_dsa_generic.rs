@@ -37,18 +37,18 @@ pub(crate) fn generate_key_pair<
 
     let mut domain_separator: u16 = 0;
 
-    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_A));
+    let A_as_ntt = expand_to_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(seed_for_A));
 
-    let s1 = sample_error_vector::<COLUMNS_IN_A, ETA>(
+    let s1 = sample_error_vector::<SIMDUnit, COLUMNS_IN_A, ETA>(
         into_padded_array(seed_for_error_vectors),
         &mut domain_separator,
     );
-    let s2 = sample_error_vector::<ROWS_IN_A, ETA>(
+    let s2 = sample_error_vector::<SIMDUnit, ROWS_IN_A, ETA>(
         into_padded_array(seed_for_error_vectors),
         &mut domain_separator,
     );
 
-    let t = compute_As1_plus_s2::<ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &s1, &s2);
+    let t = compute_As1_plus_s2::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &s1, &s2);
 
     let (t0, t1) = power2round_vector::<SIMDUnit, ROWS_IN_A>(t);
 
@@ -217,6 +217,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
 #[allow(non_snake_case)]
 pub(crate) fn sign<
+    SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const ETA: usize,
@@ -245,7 +246,7 @@ pub(crate) fn sign<
             SIGNING_KEY_SIZE,
         >(signing_key);
 
-    let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+    let A_as_ntt = expand_to_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
     // TODO: Remove the use of to_vec with an incremental SHAKE-256 absorb API.
     let message_representative = {
@@ -287,7 +288,8 @@ pub(crate) fn sign<
             &mut domain_separator_for_mask,
         );
 
-        let A_times_mask = compute_A_times_mask(&A_as_ntt, &mask);
+        let A_times_mask =
+            compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &mask);
 
         let (w0, commitment) = decompose_vector::<ROWS_IN_A, GAMMA2>(A_times_mask);
 
@@ -357,6 +359,7 @@ pub(crate) fn sign<
 
 #[allow(non_snake_case)]
 pub(crate) fn verify<
+    SIMDUnit: Operations,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
     const SIGNATURE_SIZE: usize,
@@ -392,7 +395,8 @@ pub(crate) fn verify<
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
-        let A_as_ntt = expand_to_A::<ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
+        let A_as_ntt =
+            expand_to_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
         let verification_key_hash =
             H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(&verification_key_serialized);
@@ -410,7 +414,7 @@ pub(crate) fn verify<
                     .unwrap(),
             ));
 
-        let w_approx = compute_w_approx::<ROWS_IN_A, COLUMNS_IN_A>(
+        let w_approx = compute_w_approx::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(
             &A_as_ntt,
             signature.signer_response,
             verifier_challenge_as_ntt,
