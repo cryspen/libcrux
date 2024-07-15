@@ -90,8 +90,19 @@
 #endif
 #endif
 
-/* This may eventually become something stronger, once we figure out how to make it work with MSVC */
+#ifndef KRML_MUSTINLINE
+#if defined(_MSC_VER)
+#define KRML_MUSTINLINE inline __forceinline
+#elif defined(__GNUC__)
+#define KRML_MUSTINLINE inline __attribute__((always_inline))
+#else
 #define KRML_MUSTINLINE inline
+#warning \
+    "The KRML_MUSTINLINE macro defaults to plain inline for this toolchain!"
+#warning \
+    "Please locate target.h and try to fill it out with a suitable definition for this compiler."
+#endif
+#endif
 
 #ifndef KRML_PRE_ALIGN
 #ifdef _MSC_VER
