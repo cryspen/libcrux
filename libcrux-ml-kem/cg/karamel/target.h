@@ -24,9 +24,9 @@
 // caller to compile with the same target features as the function.
 #ifndef KRML_MUSTINLINE
 #if defined(_MSC_VER)
-#define KRML_MUSTINLINE __forceinline
+#define KRML_MUSTINLINE inline __forceinline
 #elif defined(__GNUC__)
-#define KRML_MUSTINLINE inline
+#define KRML_MUSTINLINE inline __attribute__((always_inline))
 #else
 #define KRML_MUSTINLINE
 #warning "The KRML_MUSTINLINE macro is not defined for this toolchain!"

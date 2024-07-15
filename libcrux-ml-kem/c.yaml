@@ -8,7 +8,6 @@ files:
       - [libcrux_intrinsics, arm64]
 
   - name: libcrux_intrinsics_avx2
-    target: "avx2"
     library: true
     inline_static: true
     api:
@@ -38,7 +37,6 @@ files:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
   - name: libcrux_sha3_avx2
-    target: "avx2"
     # This is needed solely for the benchmarking test -- otherwise these would
     # all be private. Note that the order matters! So we put these first so that
     # they match immediately (and get promoted to internal), then the rest of
@@ -120,7 +118,6 @@ files:
         - [libcrux_ml_kem, hash_functions, neon, "*"]
 
   - name: libcrux_mlkem_avx2
-    target: "avx2"
     api:
       - [libcrux_ml_kem, vector, avx2, "*"]
       - [libcrux_ml_kem, hash_functions, avx2, "*"]
@@ -173,7 +170,6 @@ files:
   # MLKEM-512
 
   - name: libcrux_mlkem512_avx2
-    target: "avx2"
     api:
       - [libcrux_ml_kem, mlkem512, avx2]
 
@@ -193,7 +189,6 @@ files:
   # MLKEM-768
 
   - name: libcrux_mlkem768_avx2
-    target: "avx2"
     api:
       - [libcrux_ml_kem, mlkem768, avx2]
 
@@ -213,7 +208,6 @@ files:
   # MLKEM-1024
 
   - name: libcrux_mlkem1024_avx2
-    target: "avx2"
     api:
       - [libcrux_ml_kem, mlkem1024, avx2]
 
