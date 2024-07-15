@@ -1,112 +1,64 @@
 // Functions for serializing and deserializing an error ring element.
 
-use crate::{ntt::ntt, polynomial::PolynomialRingElement};
-
-#[inline(always)]
-fn serialize_when_eta_is_2<const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
-    const ETA: i32 = 2;
-
-    for (i, coefficients) in re.coefficients.chunks_exact(8).enumerate() {
-        let coefficient0 = (ETA - coefficients[0]) as u8;
-        let coefficient1 = (ETA - coefficients[1]) as u8;
-        let coefficient2 = (ETA - coefficients[2]) as u8;
-        let coefficient3 = (ETA - coefficients[3]) as u8;
-        let coefficient4 = (ETA - coefficients[4]) as u8;
-        let coefficient5 = (ETA - coefficients[5]) as u8;
-        let coefficient6 = (ETA - coefficients[6]) as u8;
-        let coefficient7 = (ETA - coefficients[7]) as u8;
-
-        serialized[3 * i] = (coefficient2 << 6) | (coefficient1 << 3) | coefficient0;
-        serialized[3 * i + 1] =
-            (coefficient5 << 7) | (coefficient4 << 4) | (coefficient3 << 1) | (coefficient2 >> 2);
-        serialized[3 * i + 2] = (coefficient7 << 5) | (coefficient6 << 2) | (coefficient5 >> 1);
-    }
-
-    serialized
-}
-
-#[inline(always)]
-fn serialize_when_eta_is_4<const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
-) -> [u8; OUTPUT_SIZE] {
-    let mut serialized = [0u8; OUTPUT_SIZE];
-    const ETA: i32 = 4;
-
-    for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
-        let coefficient0 = (ETA - coefficients[0]) as u8;
-        let coefficient1 = (ETA - coefficients[1]) as u8;
-        serialized[i] = (coefficient1 << 4) | coefficient0;
-    }
-
-    serialized
-}
+use crate::{
+    ntt::ntt,
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    simd::{portable::PortableSIMDUnit, traits::Operations},
+};
 
 #[inline(always)]
 pub(crate) fn serialize<const ETA: usize, const OUTPUT_SIZE: usize>(
     re: PolynomialRingElement,
 ) -> [u8; OUTPUT_SIZE] {
+    let mut serialized = [0u8; OUTPUT_SIZE];
+
+    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
+
     match ETA {
-        2 => serialize_when_eta_is_2::<OUTPUT_SIZE>(re),
-        4 => serialize_when_eta_is_4::<OUTPUT_SIZE>(re),
+        2 => {
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 3;
+
+            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&PortableSIMDUnit::error_serialize::<
+                        OUTPUT_BYTES_PER_SIMD_UNIT,
+                    >(*simd_unit));
+            }
+
+            serialized
+        }
+        4 => {
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 4;
+
+            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&PortableSIMDUnit::error_serialize::<
+                        OUTPUT_BYTES_PER_SIMD_UNIT,
+                    >(*simd_unit));
+            }
+
+            serialized
+        }
         _ => unreachable!(),
     }
-}
-
-#[inline(always)]
-fn deserialize_when_eta_is_2(serialized: &[u8]) -> PolynomialRingElement {
-    let mut re = PolynomialRingElement::ZERO;
-    const ETA: i32 = 2;
-
-    for (i, bytes) in serialized.chunks_exact(3).enumerate() {
-        let byte0 = bytes[0] as i32;
-        let byte1 = bytes[1] as i32;
-        let byte2 = bytes[2] as i32;
-
-        re.coefficients[8 * i] = byte0 & 7;
-        re.coefficients[8 * i + 1] = (byte0 >> 3) & 7;
-        re.coefficients[8 * i + 2] = ((byte0 >> 6) | (byte1 << 2)) & 7;
-        re.coefficients[8 * i + 3] = (byte1 >> 1) & 7;
-        re.coefficients[8 * i + 4] = (byte1 >> 4) & 7;
-        re.coefficients[8 * i + 5] = ((byte1 >> 7) | (byte2 << 1)) & 7;
-        re.coefficients[8 * i + 6] = (byte2 >> 2) & 7;
-        re.coefficients[8 * i + 7] = (byte2 >> 5) & 7;
-
-        re.coefficients[8 * i] = ETA - re.coefficients[8 * i];
-        re.coefficients[8 * i + 1] = ETA - re.coefficients[8 * i + 1];
-        re.coefficients[8 * i + 2] = ETA - re.coefficients[8 * i + 2];
-        re.coefficients[8 * i + 3] = ETA - re.coefficients[8 * i + 3];
-        re.coefficients[8 * i + 4] = ETA - re.coefficients[8 * i + 4];
-        re.coefficients[8 * i + 5] = ETA - re.coefficients[8 * i + 5];
-        re.coefficients[8 * i + 6] = ETA - re.coefficients[8 * i + 6];
-        re.coefficients[8 * i + 7] = ETA - re.coefficients[8 * i + 7];
-    }
-
-    re
-}
-
-#[inline(always)]
-fn deserialize_when_eta_is_4(serialized: &[u8]) -> PolynomialRingElement {
-    let mut re = PolynomialRingElement::ZERO;
-    const ETA: i32 = 4;
-
-    for (i, byte) in serialized.iter().enumerate() {
-        re.coefficients[2 * i] = ETA - ((byte & 0xF) as i32);
-        re.coefficients[2 * i + 1] = ETA - ((byte >> 4) as i32);
-    }
-
-    re
 }
 
 #[inline(always)]
 fn deserialize<const ETA: usize>(serialized: &[u8]) -> PolynomialRingElement {
-    match ETA {
-        2 => deserialize_when_eta_is_2(serialized),
-        4 => deserialize_when_eta_is_4(serialized),
+    let mut serialized_chunks = match ETA {
+        2 => serialized.chunks(3),
+        4 => serialized.chunks(4),
         _ => unreachable!(),
+    };
+
+    let mut result = SIMDPolynomialRingElement::ZERO();
+
+    for i in 0..result.simd_units.len() {
+        result.simd_units[i] =
+            PortableSIMDUnit::error_deserialize::<ETA>(&serialized_chunks.next().unwrap());
     }
+
+    result.to_polynomial_ring_element()
 }
 
 #[inline(always)]

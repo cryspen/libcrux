@@ -1,38 +1,45 @@
-use crate::polynomial::PolynomialRingElement;
+use crate::{
+    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    simd::{portable::PortableSIMDUnit, traits::Operations},
+};
 
 #[inline(always)]
 fn serialize<const OUTPUT_SIZE: usize>(re: PolynomialRingElement) -> [u8; OUTPUT_SIZE] {
-    let mut out = [0u8; OUTPUT_SIZE];
+    let mut serialized = [0u8; OUTPUT_SIZE];
+
+    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
     match OUTPUT_SIZE {
         128 => {
             // The commitment has coefficients in [0,15] => each coefficient occupies
-            // 4 bits.
-            for (i, coefficients) in re.coefficients.chunks_exact(2).enumerate() {
-                let coefficient0 = coefficients[0] as u8;
-                let coefficient1 = coefficients[1] as u8;
+            // 4 bits. Each SIMD unit contains 8 elements, which means each
+            // SIMD unit will serialize to (8 * 4) / 8 = 4 bytes.
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 4;
 
-                out[i] = (coefficient1 << 4) | coefficient0;
+            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&PortableSIMDUnit::commitment_serialize::<
+                        OUTPUT_BYTES_PER_SIMD_UNIT,
+                    >(*simd_unit));
             }
 
-            out
+            serialized
         }
 
         192 => {
-            // The commitment has coefficients in [0,43] => each coefficient occupies
-            // 6 bits.
-            for (i, coefficients) in re.coefficients.chunks_exact(4).enumerate() {
-                let coefficient0 = coefficients[0] as u8;
-                let coefficient1 = coefficients[1] as u8;
-                let coefficient2 = coefficients[2] as u8;
-                let coefficient3 = coefficients[3] as u8;
+            // The commitment has coefficients in [0,15] => each coefficient occupies
+            // 6 bits. Each SIMD unit contains 8 elements, which means each
+            // SIMD unit will serialize to (8 * 6) / 8 = 6 bytes.
+            const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 6;
 
-                out[3 * i] = (coefficient1 << 6) | coefficient0;
-                out[3 * i + 1] = (coefficient2 << 4) | coefficient1 >> 2;
-                out[3 * i + 2] = (coefficient3 << 2) | coefficient2 >> 4;
+            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+                serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
+                    .copy_from_slice(&PortableSIMDUnit::commitment_serialize::<
+                        OUTPUT_BYTES_PER_SIMD_UNIT,
+                    >(*simd_unit));
             }
 
-            out
+            serialized
         }
 
         _ => unreachable!(),

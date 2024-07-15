@@ -1,5 +1,5 @@
 use crate::{
-    arithmetic::shift_coefficients_left_then_reduce,
+    arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
@@ -150,7 +150,7 @@ pub(crate) fn compute_w_approx<const ROWS_IN_A: usize, const COLUMNS_IN_A: usize
             result[i] = result[i].add(&product);
         }
 
-        let t1_shifted = shift_coefficients_left_then_reduce(t1[i], BITS_IN_LOWER_PART_OF_T);
+        let t1_shifted = shift_left_then_reduce(t1[i], BITS_IN_LOWER_PART_OF_T);
         let challenge_times_t1_shifted =
             ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
         result[i] = invert_ntt_montgomery(result[i].sub(&challenge_times_t1_shifted));

@@ -56,6 +56,7 @@ sha3_512_64(benchmark::State &state)
 }
 
 #ifdef LIBCRUX_X64
+__attribute__((target("avx2")))
 static void
 shake128_34_504(benchmark::State &state)
 {
@@ -80,6 +81,7 @@ shake128_34_504(benchmark::State &state)
     }
 }
 
+__attribute__((target("avx2")))
 static void
 shake256_1120_32(benchmark::State &state)
 {
@@ -103,6 +105,7 @@ shake256_1120_32(benchmark::State &state)
     }
 }
 
+__attribute__((target("avx2")))
 static void
 shake256_33_128(benchmark::State &state)
 {

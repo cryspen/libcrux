@@ -87,7 +87,7 @@ struct Signature<
 > {
     commitment_hash: [u8; COMMITMENT_HASH_SIZE],
     signer_response: [PolynomialRingElement; COLUMNS_IN_A],
-    hint: [[bool; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
+    hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 
 impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN_A: usize>
@@ -123,7 +123,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
         for i in 0..ROWS_IN_A {
             for (j, hint) in self.hint[i].into_iter().enumerate() {
-                if hint {
+                if hint == 1 {
                     hint_serialized[true_hints_seen] = j as u8;
                     true_hints_seen += 1;
                 }
@@ -159,7 +159,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
         // While there are several ways to encode the same hint vector, we
         // allow only one such encoding, to ensure strong unforgeability.
-        let mut hint = [[false; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
+        let mut hint = [[0; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A];
 
         let mut previous_true_hints_seen = 0usize;
 
@@ -185,7 +185,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
                     return Err(VerificationError::MalformedHintError);
                 }
 
-                hint[i][hint_serialized[j] as usize] = true;
+                hint[i][hint_serialized[j] as usize] = 1;
             }
             previous_true_hints_seen = current_true_hints_seen;
         }
