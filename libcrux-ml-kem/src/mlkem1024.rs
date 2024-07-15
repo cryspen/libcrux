@@ -2,8 +2,8 @@
 
 use super::{
     constants::*,
-    ind_cca::*,
-    types::{unpacked::*, *},
+    ind_cca::{unpacked::*,*},
+    types::*,
     vector::traits::VectorType,
     *,
 };

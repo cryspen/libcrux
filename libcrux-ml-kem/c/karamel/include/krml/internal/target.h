@@ -29,9 +29,8 @@
 #define KRML_HOST_PRINTF printf
 #endif
 
-#if ((defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
-     (defined(__cplusplus) && __cplusplus > 199711L)) &&           \
-    (!defined(KRML_HOST_EPRINTF))
+#if ((defined __STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && \
+     (!(defined KRML_HOST_EPRINTF)))
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
 #elif !(defined KRML_HOST_EPRINTF) && defined(_MSC_VER)
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
@@ -69,6 +68,14 @@
 #endif
 #endif
 
+#ifndef KRML_ATTRIBUTE_TARGET
+#if defined(__GNUC__)
+#define KRML_ATTRIBUTE_TARGET(x) __attribute__((target(x)))
+#else
+#define KRML_ATTRIBUTE_TARGET(x)
+#endif
+#endif
+
 #ifndef KRML_NOINLINE
 #if defined(_MSC_VER)
 #define KRML_NOINLINE __declspec(noinline)
@@ -78,6 +85,20 @@
 #define KRML_NOINLINE
 #warning "The KRML_NOINLINE macro is not defined for this toolchain!"
 #warning "The compiler may defeat side-channel resistance with optimizations."
+#warning \
+    "Please locate target.h and try to fill it out with a suitable definition for this compiler."
+#endif
+#endif
+
+#ifndef KRML_MUSTINLINE
+#if defined(_MSC_VER)
+#define KRML_MUSTINLINE inline __forceinline
+#elif defined(__GNUC__)
+#define KRML_MUSTINLINE inline __attribute__((always_inline))
+#else
+#define KRML_MUSTINLINE inline
+#warning \
+    "The KRML_MUSTINLINE macro defaults to plain inline for this toolchain!"
 #warning \
     "Please locate target.h and try to fill it out with a suitable definition for this compiler."
 #endif
@@ -259,10 +280,6 @@ inline static int32_t krml_time(void) { return (int32_t)time(NULL); }
   KRML_LOOP8(i, n, x)        \
   KRML_LOOP8(i, n, x)
 
-#define KRML_LOOP24(i, n, x) \
-  KRML_LOOP16(i, n, x)       \
-  KRML_LOOP8(i, n, x)
-
 #define KRML_UNROLL_FOR(i, z, n, k, x) \
   do {                                 \
     uint32_t i = z;                    \
@@ -277,7 +294,7 @@ inline static int32_t krml_time(void) { return (int32_t)time(NULL); }
   } while (0)
 
 #ifndef KRML_UNROLL_MAX
-#define KRML_UNROLL_MAX 24
+#define KRML_UNROLL_MAX 16
 #endif
 
 /* 1 is the number of loop iterations, i.e. (n - z)/k as evaluated by krml */
@@ -382,11 +399,4 @@ inline static int32_t krml_time(void) { return (int32_t)time(NULL); }
 #else
 #define KRML_MAYBE_FOR16(i, z, n, k, x) KRML_ACTUAL_FOR(i, z, n, k, x)
 #endif
-
-#if 24 <= KRML_UNROLL_MAX
-#define KRML_MAYBE_FOR24(i, z, n, k, x) KRML_UNROLL_FOR(i, z, 24, k, x)
-#else
-#define KRML_MAYBE_FOR24(i, z, n, k, x) KRML_ACTUAL_FOR(i, z, n, k, x)
-#endif
-
 #endif
