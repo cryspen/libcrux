@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use libcrux_psq::{
-    dh_binder::send_ecdh_binding,
+    ecdh_binder::send_ecdh_binding,
     psq::{generate_key_pair, Algorithm},
 };
 use rand::thread_rng;
