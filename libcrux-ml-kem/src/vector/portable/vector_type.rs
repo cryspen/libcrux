@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
 /// Values having this type hold a representative 'x' of the Kyber field.

@@ -1,5 +1,6 @@
-/* Copyright (c) INRIA and Microsoft Corporation. All rights reserved.
-   Licensed under the Apache 2.0 License. */
+// SPDX-FileCopyrightText: INRIA and Microsoft Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
 
 #ifndef __KRML_TARGET_H
 #define __KRML_TARGET_H

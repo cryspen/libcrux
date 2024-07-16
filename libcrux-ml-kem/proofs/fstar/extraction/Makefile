@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # This is a generically useful Makefile for F* that is self-contained
 #
 # It is tempting to factor this out into multiple Makefiles but that

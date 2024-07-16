@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /// This tests a single one of the Kyber 768 KATs that are also tested in BoringSSL.
 /// The values are taken from https://github.com/google/boringssl/blob/master/crypto/kyber/kyber_tests.txt.
 #[test]

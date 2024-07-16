@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 //! # ML-KEM
 //!
 //! This crate implements all three ML-KEM variants 512, 768, and 1024. It is

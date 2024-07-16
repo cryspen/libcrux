@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 //! Vectors for libcrux using aarch64 (neon) intrinsics
 
 use super::{Operations, FIELD_MODULUS};

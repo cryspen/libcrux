@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # This file is:
 # https://github.com/bwesterb/draft-schwabe-cfrg-kyber/blob/a03ab13c241a1a0b6adc676d27be79843b03abc8/kyber.py
 # with changes made to match the FIPS-203 draft as well as formatting changes

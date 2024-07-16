@@ -1,5 +1,9 @@
 #![allow(non_snake_case)]
 
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::constants::{G_DIGEST_SIZE, H_DIGEST_SIZE};
 
 /// The SHA3 block size.

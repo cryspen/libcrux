@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 N.B.: All measurements were taken on an M1 MacBook Air with 16 GB of memory.
 
 |           |   Key Generation (µs) |   Encapsulation (µs) |   Decapsulation (µs) |

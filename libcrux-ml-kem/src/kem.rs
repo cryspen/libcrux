@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // hacspec code: don't let clippy touch it.
 #[allow(clippy::all)]
 pub mod kyber;

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # cmake -B build -G "Ninja Multi-Config"
 # cmake --build build
 # # For release (benchmarks)

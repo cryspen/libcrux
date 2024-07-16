@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 use super::{
     arithmetic::{
         add_to_ring_element, barrett_reduce, montgomery_reduce, to_standard_domain,

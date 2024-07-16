@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Cryspen Sarl <info@cryspen.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /// Each field element needs floor(log_2(FIELD_MODULUS)) + 1 = 12 bits to represent
 pub(crate) const BITS_PER_COEFFICIENT: usize = 12;
 
