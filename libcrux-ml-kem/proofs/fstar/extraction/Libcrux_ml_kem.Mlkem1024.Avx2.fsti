@@ -46,6 +46,8 @@ let _ =
 /// Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
 /// The input is a reference to an unpacked public key of type [`MlKem1024PublicKeyUnpacked`],
 /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+/// TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
+/// https://github.com/hacspec/hax/issues/770
 val encapsulate_unpacked
       (public_key:
           Libcrux_ml_kem.Ind_cca.Unpacked.t_MlKemPublicKeyUnpacked (sz 4)
