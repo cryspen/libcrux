@@ -1,3 +1,17 @@
+//! A module for serializing and deserializing PortableVector
+//! Verification status: Lax
+
+// A general style adopted here is to first define an internal function
+// called serialize_N_int or deserialize_N_int that (de)serializes
+// the minimal number of inputs K such that N*K is a multiple of 8.
+// These functions are then called multiple times in the main function,
+// called serialize_N or deserialize_N.
+// This refactoring reduces redundancy, and also makes the code easier for
+// F* to handle. As a general rule, any function that modifes an array
+// more than 8 times with complex expressions starts to strain F*, so
+// we separate out the code that does the computation (in _int functions)
+// and code that updates arrays (in the outer functions).
+
 use super::vector_type::*;
 use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 

@@ -1,4 +1,5 @@
 use super::*;
+use crate::vector::portable::PortableVector;
 use libcrux_intrinsics::arm64::*;
 
 #[inline(always)]
@@ -43,8 +44,8 @@ pub(crate) fn serialize_4(v: SIMD128Vector) -> [u8; 8] {
 
 #[inline(always)]
 pub(crate) fn deserialize_4(v: &[u8]) -> SIMD128Vector {
-    let input = crate::vector::portable::PortableVector::deserialize_4(v);
-    let input_i16s = crate::vector::portable::PortableVector::to_i16_array(input);
+    let input = PortableVector::deserialize_4(v);
+    let input_i16s = PortableVector::to_i16_array(input);
     SIMD128Vector {
         low: _vld1q_s16(&input_i16s[0..8]),
         high: _vld1q_s16(&input_i16s[8..16]),
@@ -54,14 +55,14 @@ pub(crate) fn deserialize_4(v: &[u8]) -> SIMD128Vector {
 #[inline(always)]
 pub(crate) fn serialize_5(v: SIMD128Vector) -> [u8; 10] {
     let out_i16s = to_i16_array(v);
-    let out = crate::vector::portable::PortableVector::from_i16_array(&out_i16s);
-    crate::vector::portable::PortableVector::serialize_5(out)
+    let out = PortableVector::from_i16_array(&out_i16s);
+    PortableVector::serialize_5(out)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_5(v: &[u8]) -> SIMD128Vector {
-    let output = crate::vector::portable::PortableVector::deserialize_5(v);
-    let array = crate::vector::portable::PortableVector::to_i16_array(output);
+    let output = PortableVector::deserialize_5(v);
+    let array = PortableVector::to_i16_array(output);
     SIMD128Vector {
         low: _vld1q_s16(&array[0..8]),
         high: _vld1q_s16(&array[8..16]),
@@ -99,8 +100,8 @@ pub(crate) fn serialize_10(v: SIMD128Vector) -> [u8; 20] {
 
 #[inline(always)]
 pub(crate) fn deserialize_10(v: &[u8]) -> SIMD128Vector {
-    let output = crate::vector::portable::PortableVector::deserialize_10(v);
-    let array = crate::vector::portable::PortableVector::to_i16_array(output);
+    let output = PortableVector::deserialize_10(v);
+    let array = PortableVector::to_i16_array(output);
     SIMD128Vector {
         low: _vld1q_s16(&array[0..8]),
         high: _vld1q_s16(&array[8..16]),
@@ -110,14 +111,14 @@ pub(crate) fn deserialize_10(v: &[u8]) -> SIMD128Vector {
 #[inline(always)]
 pub(crate) fn serialize_11(v: SIMD128Vector) -> [u8; 22] {
     let out_i16s = to_i16_array(v);
-    let out = crate::vector::portable::PortableVector::from_i16_array(&out_i16s);
-    crate::vector::portable::PortableVector::serialize_11(out)
+    let out = PortableVector::from_i16_array(&out_i16s);
+    PortableVector::serialize_11(out)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_11(v: &[u8]) -> SIMD128Vector {
-    let output = crate::vector::portable::PortableVector::deserialize_11(v);
-    let array = crate::vector::portable::PortableVector::to_i16_array(output);
+    let output = PortableVector::deserialize_11(v);
+    let array = PortableVector::to_i16_array(output);
     SIMD128Vector {
         low: _vld1q_s16(&array[0..8]),
         high: _vld1q_s16(&array[8..16]),

@@ -1,4 +1,12 @@
 #![allow(non_snake_case)]
+//! This module contains the hash functions needed by ML-KEM 
+//! Verification Status: Interface-Only, Lax
+
+// TODO: Extract and verify the code, not just the interface, by relating to libcrux-sha3
+// Related Issue: https://github.com/cryspen/libcrux/issues/395 for extracting/checking libcrux-sha3
+// TODO: We need to manually pull out the code for G, H, PRFxN, etc. in each module to allow 
+// them to be properly abstracted in F*. We would like hax to do this automatically.
+// Related Issue: https://github.com/hacspec/hax/issues/616 
 
 use crate::constants::{G_DIGEST_SIZE, H_DIGEST_SIZE};
 
