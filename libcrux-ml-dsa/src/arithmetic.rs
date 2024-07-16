@@ -93,17 +93,17 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
     let mut true_hints = 0;
 
     for i in 0..DIMENSION {
-        let mut v_hint = PolynomialRingElement::ZERO();
+        let mut hint_simd = PolynomialRingElement::ZERO();
 
-        for j in 0..v_hint.simd_units.len() {
+        for j in 0..hint_simd.simd_units.len() {
             let (one_hints_count, current_hint) =
                 SIMDUnit::compute_hint::<GAMMA2>(low[i].simd_units[j], high[i].simd_units[j]);
-            v_hint.simd_units[j] = current_hint;
+            hint_simd.simd_units[j] = current_hint;
 
             true_hints += one_hints_count;
         }
 
-        hint[i] = v_hint.to_i32_array();
+        hint[i] = hint_simd.to_i32_array();
     }
 
     (hint, true_hints)
@@ -117,11 +117,11 @@ pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA
     let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for i in 0..DIMENSION {
-        let v_hint = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);
+        let hint_simd = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);
 
         for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
             result[i].simd_units[j] =
-                SIMDUnit::use_hint::<GAMMA2>(re_vector[i].simd_units[j], v_hint.simd_units[j]);
+                SIMDUnit::use_hint::<GAMMA2>(re_vector[i].simd_units[j], hint_simd.simd_units[j]);
         }
     }
 
