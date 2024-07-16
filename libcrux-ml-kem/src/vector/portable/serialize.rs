@@ -182,6 +182,12 @@ pub(crate) fn serialize_10(v: PortableVector) -> [u8; 20] {
     let r5_9 = serialize_10_int(&v.elements[4..8]);
     let r10_14 = serialize_10_int(&v.elements[8..12]);
     let r15_19 = serialize_10_int(&v.elements[12..16]);
+    // Here we could also do, the following, but it slows F* down:
+    // [r0_4.0, r0_4.1, r0_4.2, r0_4.3, r0_4.4,
+    //  r5_9.0, r5_9.1, r5_9.2, r5_9.3, r5_9.4,
+    //  r10_14.0, r10_14.1, r10_14.2, r10_14.3, r10_14.4,
+    //  r15_19.0, r15_19.1, r15_19.2, r15_19.3, r15_19.4 ]
+    // If we can fix the F* for this, the code would be more compact.
     let mut result = [0u8; 20];
     result[0] = r0_4.0;
     result[1] = r0_4.1;

@@ -339,68 +339,15 @@ let serialize_10_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVecto
         <:
         t_Slice i16)
   in
-  let result:t_Array u8 (sz 20) = Rust_primitives.Hax.repeat 0uy (sz 20) in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 0) r0_4_._1
+  let list =
+    [
+      r0_4_._1; r0_4_._2; r0_4_._3; r0_4_._4; r0_4_._5; r5_9_._1; r5_9_._2; r5_9_._3; r5_9_._4;
+      r5_9_._5; r10_14_._1; r10_14_._2; r10_14_._3; r10_14_._4; r10_14_._5; r15_19_._1; r15_19_._2;
+      r15_19_._3; r15_19_._4; r15_19_._5
+    ]
   in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 1) r0_4_._2
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 2) r0_4_._3
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 3) r0_4_._4
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 4) r0_4_._5
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 5) r5_9_._1
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 6) r5_9_._2
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 7) r5_9_._3
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 8) r5_9_._4
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 9) r5_9_._5
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 10) r10_14_._1
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 11) r10_14_._2
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 12) r10_14_._3
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 13) r10_14_._4
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 14) r10_14_._5
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 15) r15_19_._1
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 16) r15_19_._2
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 17) r15_19_._3
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 18) r15_19_._4
-  in
-  let result:t_Array u8 (sz 20) =
-    Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result (sz 19) r15_19_._5
-  in
-  result
+  FStar.Pervasives.assert_norm (Prims.eq2 (List.Tot.length list) 20);
+  Rust_primitives.Hax.array_of_list 20 list
 
 let serialize_11_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
   let r0_10_:(u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8) =
