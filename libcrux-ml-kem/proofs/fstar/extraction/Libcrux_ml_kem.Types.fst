@@ -37,10 +37,16 @@ let impl__new
   {
     f_sk
     =
-    Core.Convert.f_into #(t_Array u8 v_PRIVATE_KEY_SIZE) #(t_MlKemPrivateKey v_PRIVATE_KEY_SIZE) sk;
+    Core.Convert.f_into #(t_Array u8 v_PRIVATE_KEY_SIZE)
+      #(t_MlKemPrivateKey v_PRIVATE_KEY_SIZE)
+      #FStar.Tactics.Typeclasses.solve
+      sk;
     f_pk
     =
-    Core.Convert.f_into #(t_Array u8 v_PUBLIC_KEY_SIZE) #(t_MlKemPublicKey v_PUBLIC_KEY_SIZE) pk
+    Core.Convert.f_into #(t_Array u8 v_PUBLIC_KEY_SIZE)
+      #(t_MlKemPublicKey v_PUBLIC_KEY_SIZE)
+      #FStar.Tactics.Typeclasses.solve
+      pk
   }
   <:
   t_MlKemKeyPair v_PRIVATE_KEY_SIZE v_PUBLIC_KEY_SIZE

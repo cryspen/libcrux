@@ -3,7 +3,7 @@ module Libcrux_ml_kem.Vector.Traits
 open Core
 open FStar.Mul
 
-class t_Operations (#v_Self: Type0) = {
+class t_Operations (v_Self: Type0) = {
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_11581440318597584651:Core.Marker.t_Copy v_Self;
   [@@@ FStar.Tactics.Typeclasses.no_method]_super_9442900250278684536:Core.Clone.t_Clone v_Self;
   f_ZERO_pre:Prims.unit -> bool;
@@ -13,6 +13,12 @@ class t_Operations (#v_Self: Type0) = {
   f_from_i16_array_post:t_Slice i16 -> v_Self -> bool;
   f_from_i16_array:x0: t_Slice i16
     -> Prims.Pure v_Self (f_from_i16_array_pre x0) (fun result -> f_from_i16_array_post x0 result);
+  f_to_i16_array_pre:v_Self -> bool;
+  f_to_i16_array_post:v_Self -> t_Array i16 (sz 16) -> bool;
+  f_to_i16_array:x0: v_Self
+    -> Prims.Pure (t_Array i16 (sz 16))
+        (f_to_i16_array_pre x0)
+        (fun result -> f_to_i16_array_post x0 result);
   f_add_pre:v_Self -> v_Self -> bool;
   f_add_post:v_Self -> v_Self -> v_Self -> bool;
   f_add:x0: v_Self -> x1: v_Self
@@ -180,6 +186,16 @@ class t_Operations (#v_Self: Type0) = {
         (f_rej_sample_pre x0 x1)
         (fun result -> f_rej_sample_post x0 x1 result)
 }
+
+/// Internal vectors.
+/// Used in the unpacked API.
+class t_VectorType (v_Self: Type0) = {
+  [@@@ FStar.Tactics.Typeclasses.no_method]_super_14104493667227926613:t_Operations v_Self
+}
+
+[@@ FStar.Tactics.Typeclasses.tcinstance]
+let impl (#v_T: Type0) (#[FStar.Tactics.Typeclasses.tcresolve ()] i1: t_Operations v_T)
+    : t_VectorType v_T = { _super_14104493667227926613 = FStar.Tactics.Typeclasses.solve }
 
 let v_FIELD_ELEMENTS_IN_VECTOR: usize = sz 16
 

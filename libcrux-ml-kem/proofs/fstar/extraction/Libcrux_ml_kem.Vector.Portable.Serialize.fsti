@@ -3,6 +3,46 @@ module Libcrux_ml_kem.Vector.Portable.Serialize
 open Core
 open FStar.Mul
 
+val deserialize_10_int (bytes: t_Slice u8)
+    : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_11_int (bytes: t_Slice u8)
+    : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_12_int (bytes: t_Slice u8)
+    : Prims.Pure (i16 & i16) Prims.l_True (fun _ -> Prims.l_True)
+
+val deserialize_4_int (bytes: t_Slice u8)
+    : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val deserialize_5_int (bytes: t_Slice u8)
+    : Prims.Pure (i16 & i16 & i16 & i16 & i16 & i16 & i16 & i16)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val serialize_10_int (v: t_Slice i16)
+    : Prims.Pure (u8 & u8 & u8 & u8 & u8) Prims.l_True (fun _ -> Prims.l_True)
+
+val serialize_11_int (v: t_Slice i16)
+    : Prims.Pure (u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8 & u8)
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val serialize_12_int (v: t_Slice i16)
+    : Prims.Pure (u8 & u8 & u8) Prims.l_True (fun _ -> Prims.l_True)
+
+val serialize_4_int (v: t_Slice i16)
+    : Prims.Pure (u8 & u8 & u8 & u8) Prims.l_True (fun _ -> Prims.l_True)
+
+val serialize_5_int (v: t_Slice i16)
+    : Prims.Pure (u8 & u8 & u8 & u8 & u8) Prims.l_True (fun _ -> Prims.l_True)
+
 val serialize_1_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure (t_Array u8 (sz 2)) Prims.l_True (fun _ -> Prims.l_True)
 

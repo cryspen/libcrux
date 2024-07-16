@@ -20,7 +20,11 @@ val get_n_least_significant_bits (n: u8) (value: u32)
       (ensures
         fun result ->
           let result:u32 = result in
-          result <. (Core.Num.impl__u32__pow 2ul (Core.Convert.f_into #u8 #u32 n <: u32) <: u32))
+          result <.
+          (Core.Num.impl__u32__pow 2ul
+              (Core.Convert.f_into #u8 #u32 #FStar.Tactics.Typeclasses.solve n <: u32)
+            <:
+            u32))
 
 /// Signed Barrett Reduction
 /// Given an input `value`, `barrett_reduce` outputs a representative `result`
@@ -32,8 +36,10 @@ val get_n_least_significant_bits (n: u8) (value: u32)
 val barrett_reduce_element (value: i16)
     : Prims.Pure i16
       (requires
-        (Core.Convert.f_from #i32 #i16 value <: i32) >. (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) &&
-        (Core.Convert.f_from #i32 #i16 value <: i32) <. v_BARRETT_R)
+        (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) >.
+        (Core.Ops.Arith.Neg.neg v_BARRETT_R <: i32) &&
+        (Core.Convert.f_from #i32 #i16 #FStar.Tactics.Typeclasses.solve value <: i32) <. v_BARRETT_R
+      )
       (ensures
         fun result ->
           let result:i16 = result in

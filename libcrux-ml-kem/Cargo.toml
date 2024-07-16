@@ -36,8 +36,8 @@ default = ["std", "mlkem512", "mlkem768", "mlkem1024"]
 # Hardware features can be force enabled.
 # It is not recommended to use these. This crate performs CPU feature detection
 # and enables the features when they are available.
-simd128 = ["libcrux-sha3/simd128"]
-simd256 = ["libcrux-sha3/simd256"]
+simd128 = ["libcrux-sha3/simd128","libcrux-intrinsics/simd128"]
+simd256 = ["libcrux-sha3/simd256","libcrux-intrinsics/simd256"]
 
 # Features for the different key sizes of ML-KEM
 mlkem512 = []
