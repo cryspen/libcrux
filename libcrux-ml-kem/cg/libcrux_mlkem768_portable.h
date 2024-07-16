@@ -1649,20 +1649,34 @@ static KRML_MUSTINLINE
     K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t
     libcrux_ml_kem_vector_portable_serialize_deserialize_4_int(
         Eurydice_slice bytes) {
-  uint8_t ret[4U];
-  core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError dst;
-  Eurydice_slice_to_array2(&dst, bytes, Eurydice_slice, uint8_t[4U], void *);
-  core_result__core__result__Result_T__E___unwrap__uint8_t_4size_t__core_array_TryFromSliceError(
-      dst, ret);
-  uint32_t input = core_num__u32_8__from_le_bytes(ret);
-  int16_t v0 = (int16_t)(input & 15U);
-  int16_t v1 = (int16_t)(input >> 4U & 15U);
-  int16_t v2 = (int16_t)(input >> 8U & 15U);
-  int16_t v3 = (int16_t)(input >> 12U & 15U);
-  int16_t v4 = (int16_t)(input >> 16U & 15U);
-  int16_t v5 = (int16_t)(input >> 20U & 15U);
-  int16_t v6 = (int16_t)(input >> 24U & 15U);
-  int16_t v7 = (int16_t)(input >> 28U & 15U);
+  int16_t v0 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)0U, uint8_t, uint8_t *, uint8_t) &
+                         15U);
+  int16_t v1 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)0U, uint8_t, uint8_t *, uint8_t) >>
+                             4U &
+                         15U);
+  int16_t v2 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)1U, uint8_t, uint8_t *, uint8_t) &
+                         15U);
+  int16_t v3 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)1U, uint8_t, uint8_t *, uint8_t) >>
+                             4U &
+                         15U);
+  int16_t v4 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)2U, uint8_t, uint8_t *, uint8_t) &
+                         15U);
+  int16_t v5 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)2U, uint8_t, uint8_t *, uint8_t) >>
+                             4U &
+                         15U);
+  int16_t v6 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)3U, uint8_t, uint8_t *, uint8_t) &
+                         15U);
+  int16_t v7 = (int16_t)((uint32_t)Eurydice_slice_index(
+                             bytes, (size_t)3U, uint8_t, uint8_t *, uint8_t) >>
+                             4U &
+                         15U);
   return (CLITERAL(
       K___int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t_int16_t){
       .fst = v0,

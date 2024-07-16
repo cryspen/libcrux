@@ -37,8 +37,6 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x0, uint16_t x1);
 
 #define CORE_NUM__U32_8__BITS (32U)
 
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t x0[4U]);
-
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t x0[8U]);
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t x0, uint8_t x1[8U]);
@@ -314,30 +312,6 @@ static KRML_MUSTINLINE void libcrux_ml_kem_utils_into_padded_array___64size_t(
           uint8_t, core_ops_range_Range__size_t, Eurydice_slice),
       slice, uint8_t, void *);
   memcpy(ret, out, (size_t)64U * sizeof(uint8_t));
-}
-
-typedef struct
-    core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_24size_t__core_array_TryFromSliceError_tags tag;
-  union {
-    uint8_t case_Ok[4U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError;
-
-static inline void
-core_result__core__result__Result_T__E___unwrap__uint8_t_4size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError self,
-    uint8_t ret[4U]) {
-  if (self.tag == core_result_Ok) {
-    uint8_t f0[4U];
-    memcpy(f0, self.val.case_Ok, (size_t)4U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)4U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
 }
 
 typedef struct

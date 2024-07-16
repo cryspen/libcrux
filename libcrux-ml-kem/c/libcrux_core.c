@@ -365,20 +365,6 @@ void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_arr
   }
 }
 
-void core_result__core__result__Result_T__E___unwrap__uint8_t_4size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError self,
-    uint8_t ret[4U]) {
-  if (self.tag == core_result_Ok) {
-    uint8_t f0[4U];
-    memcpy(f0, self.val.case_Ok, (size_t)4U * sizeof(uint8_t));
-    memcpy(ret, f0, (size_t)4U * sizeof(uint8_t));
-  } else {
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__,
-                      "unwrap not Ok");
-    KRML_HOST_EXIT(255U);
-  }
-}
-
 void core_result__core__result__Result_T__E___unwrap__int16_t_16size_t__core_array_TryFromSliceError(
     core_result_Result__int16_t_16size_t__core_array_TryFromSliceError self,
     int16_t ret[16U]) {

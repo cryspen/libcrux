@@ -17,8 +17,6 @@ extern "C" {
 
 #define CORE_NUM__U32_8__BITS (32U)
 
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t x0[4U]);
-
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0);
 
 uint8_t libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
@@ -202,19 +200,6 @@ typedef struct
 void core_result__core__result__Result_T__E___unwrap__uint8_t_10size_t__core_array_TryFromSliceError(
     core_result_Result__uint8_t_10size_t__core_array_TryFromSliceError self,
     uint8_t ret[10U]);
-
-typedef struct
-    core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError_s {
-  core_result_Result__uint8_t_32size_t__core_array_TryFromSliceError_tags tag;
-  union {
-    uint8_t case_Ok[4U];
-    core_array_TryFromSliceError case_Err;
-  } val;
-} core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError;
-
-void core_result__core__result__Result_T__E___unwrap__uint8_t_4size_t__core_array_TryFromSliceError(
-    core_result_Result__uint8_t_4size_t__core_array_TryFromSliceError self,
-    uint8_t ret[4U]);
 
 typedef struct
     core_result_Result__int16_t_16size_t__core_array_TryFromSliceError_s {
