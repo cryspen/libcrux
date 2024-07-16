@@ -1,6 +1,9 @@
 //! A portable SHA3 implementation using the generic implementation.
 
-use crate::traits::internal::*;
+use crate::{
+    generic_keccak::{Block, BlockMut},
+    traits::internal::*,
+};
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
@@ -127,5 +130,13 @@ impl KeccakItem<1> for u64 {
     #[inline(always)]
     fn split_at_mut_n(a: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
         split_at_mut_1(a, mid)
+    }
+
+    #[inline(always)]
+    fn store<'a, const RATE: usize>(state: &[[Self; 5]; 5], out: &'a mut BlockMut<'a, 1>) {
+        let block = out.get_mut(0);
+        for i in 0..RATE / 8 {
+            block[8 * i..8 * i + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
+        }
     }
 }

@@ -6,6 +6,8 @@ pub trait KeccakStateItem<const N: usize>: internal::KeccakItem<N> {}
 impl<const N: usize, T: internal::KeccakItem<N>> KeccakStateItem<N> for T {}
 
 pub(crate) mod internal {
+    use crate::generic_keccak::{Block, BlockMut};
+
     /// A trait for multiplexing implementations.
     pub trait KeccakItem<const N: usize>: Clone + Copy {
         fn zero() -> Self;
@@ -17,6 +19,7 @@ pub(crate) mod internal {
         fn xor(a: Self, b: Self) -> Self;
         fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; N]);
         fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; N]);
+        fn store<'a, const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: &'a mut BlockMut<'a, N>);
         fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; N]);
         fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; N];
         fn slice_n(a: [&[u8]; N], start: usize, len: usize) -> [&[u8]; N];

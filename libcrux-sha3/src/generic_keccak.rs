@@ -36,6 +36,155 @@ pub(crate) struct Block<'a, const N: usize> {
     blocks: [&'a [u8]; N],
 }
 
+/// The internal keccak state that can also buffer inputs to absorb.
+/// This is used in the general xof APIs.
+#[cfg_attr(hax, hax_lib::opaque_type)]
+#[derive(Clone, Copy)]
+pub(crate) struct KeccakXofState<const N: usize, const RATE: usize, T: KeccakStateItem<N>> {
+    inner: KeccakState<N, T>,
+
+    // Buffer inputs on absorb.
+    buf: [[u8; RATE]; N],
+
+    // Buffered length.
+    buf_len: usize,
+
+    // Needs sponge.
+    sponge: bool,
+}
+
+impl<const N: usize, const RATE: usize, T: KeccakStateItem<N>> KeccakXofState<N, RATE, T> {
+    /// Generate a new keccak xof state.
+    pub(crate) fn new() -> Self {
+        Self {
+            inner: KeccakState::new(),
+            buf: [[0; RATE]; N],
+            buf_len: 0,
+            sponge: false,
+        }
+    }
+
+    /// Absorb
+    ///
+    /// This function takes any number of bytes to absorb and buffers if it's not enough.
+    /// The function assumes that all input slices in `blocks` have the same length.
+    ///
+    /// Only a multiple of `RATE` blocks are absorbed.
+    /// For the remaining bytes [`absorb_final`] needs to be called.
+    ///
+    /// This works best with relatively small `inputs`.
+    #[inline(always)]
+    pub(crate) fn absorb(&mut self, inputs: [&[u8]; N]) {
+        let input_len = inputs[0].len();
+
+        debug_assert!(N > 0);
+        debug_assert!(self.buf_len < RATE);
+        #[cfg(debug_assertions)]
+        {
+            for block in inputs {
+                debug_assert!(block.len() == input_len);
+            }
+        }
+
+        // Check if there are buffered bytes to absorb first and consume them.
+        let input_consumed = self.consume_buffer(input_len, inputs);
+
+        // Consume the (rest of the) input ...
+        for i in 0..input_len / RATE {
+            // We only get in here if `input_len / RATE > 0`.
+            T::load_block::<RATE>(
+                &mut self.inner.st,
+                T::slice_n(inputs, input_consumed * RATE + i * RATE, RATE),
+            );
+            keccakf1600(&mut self.inner);
+        }
+        // ... and buffer the rest if there's not enough input (left).
+        if input_len - input_consumed < RATE && input_len > input_consumed {
+            for i in 0..N {
+                self.buf[i][input_consumed..input_len].copy_from_slice(inputs[i]);
+            }
+        }
+    }
+
+    /// Consume the internal buffer and the required amount of the input to pad to
+    /// `RATE`.
+    ///
+    /// Returns the `consumed` amount of bytes from `inputs`.
+    fn consume_buffer(&mut self, input_len: usize, inputs: [&[u8]; N]) -> usize {
+        let mut consumed = 0;
+        if self.buf_len > 0 {
+            if self.buf_len + input_len >= RATE {
+                consumed = RATE - self.buf_len;
+                // We have enough to absorb something.
+                // XXX: This could be done more efficiently when we absorb from blocks
+                //      rather than concat them first.
+                let mut blocks = [[0u8; RATE]; N];
+                for i in 0..N {
+                    blocks[i][0..self.buf_len].copy_from_slice(&self.buf[i]);
+                    blocks[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed])
+                }
+                let borrowed: [&[u8]; N] = core::array::from_fn(|i| &blocks[i] as &[u8]);
+                T::load_block::<RATE>(&mut self.inner.st, borrowed);
+                keccakf1600(&mut self.inner);
+
+                // Now we absorbed the buffered bytes and the part of the inputs to
+                // fill up to `RATE`.
+                // Consume the rest of the inputs that we can and store the rest
+                // in the buffer
+                self.buf_len = 0;
+            }
+        }
+        consumed
+    }
+    /// Absorb a final block.
+    ///
+    /// The `inputs` block may be empty. Everything in the `inputs` block beyond
+    /// `RATE` bytes is ignored.
+    #[inline(always)]
+    pub(crate) fn absorb_final<const DELIM: u8>(&mut self, inputs: [&[u8]; N]) {
+        debug_assert!(N > 0 && inputs[0].len() < RATE);
+        let input_len = inputs[0].len();
+
+        debug_assert!(N > 0);
+        debug_assert!(self.buf_len < RATE);
+        #[cfg(debug_assertions)]
+        {
+            for block in inputs {
+                debug_assert!(block.len() == input_len);
+            }
+        }
+
+        // Check if there are buffered bytes to absorb first and consume them.
+        let consumed = self.consume_buffer(input_len, inputs);
+
+        // Consume the remaining bytes.
+        let mut blocks = [[0u8; 200]; N];
+        for i in 0..N {
+            blocks[i][0..input_len].copy_from_slice(&inputs[i][consumed..]);
+            blocks[i][input_len] = DELIM;
+            blocks[i][RATE - 1] |= 0x80;
+        }
+        T::load_block_full::<RATE>(&mut self.inner.st, blocks);
+        keccakf1600(&mut self.inner);
+    }
+
+    /// Squeeze `N` x `LEN` bytes.
+    #[inline(always)]
+    pub(crate) fn squeeze(&mut self, out: [&mut [u8]; N]) {
+        if self.sponge {
+            keccakf1600(&mut self.inner);
+        }
+
+        // We need a larger buffer to squeeze into.
+        // XXX: This could be done more efficiently.
+
+        let mut buf = [[0u8; RATE]; N];
+        // let out_buf: [&mut [u8]; N] = core::array::from_fn(|i| &mut buf[i] as &mut [u8]);
+        T::store::<RATE>(&self.inner.st, out_buf);
+        self.sponge = true;
+    }
+}
+
 impl<'a, const N: usize> Block<'a, N> {
     /// Build a block.
     pub(crate) fn new(blocks: [&'a [u8]; N]) -> Self {
@@ -51,6 +200,10 @@ impl<'a, const N: usize> Block<'a, N> {
 
     pub(crate) fn len(&self) -> usize {
         self.blocks[0].len()
+    }
+
+    pub(crate) fn get(&'a self, i: usize) -> &'a [u8] {
+        self.blocks[i]
     }
 }
 
@@ -73,6 +226,18 @@ impl<'a, const N: usize> From<[&'a [u8]; N]> for Block<'a, N> {
 /// This holds `N` references to mutable byte slices that are being processed.
 pub(crate) struct BlockMut<'a, const N: usize> {
     blocks: [&'a mut [u8]; N],
+}
+
+impl<'a, const N: usize> BlockMut<'a, N> {
+    /// Create a new mutable block
+    pub(crate) fn new(blocks: [&'a mut [u8]; N]) -> Self {
+        Self { blocks }
+    }
+
+    /// Get a mutable element
+    pub(crate) fn get_mut(&'a mut self, i: usize) -> &'a mut [u8] {
+        self.blocks[i]
+    }
 }
 
 /// From here, everything is generic
