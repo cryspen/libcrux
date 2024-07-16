@@ -61,7 +61,7 @@ pub fn send_ecdh_binding(
 
     let psk: [u8; DH_PSK_LENGTH] = libcrux_hkdf::expand(
         libcrux_hkdf::Algorithm::Sha256,
-        &prk,
+        prk,
         DH_PSK_CONTEXT,
         DH_PSK_LENGTH,
     )
@@ -80,7 +80,7 @@ pub fn send_ecdh_binding(
 
     let responder_bytes = libcrux_hkdf::expand(
         libcrux_hkdf::Algorithm::Sha256,
-        prk,
+        psk,
         AEAD_RESPONDER,
         AEAD_KEY_NONCE,
     )
@@ -150,7 +150,7 @@ pub fn receive_ecdh_binding(
 
     let psk: [u8; DH_PSK_LENGTH] = libcrux_hkdf::expand(
         libcrux_hkdf::Algorithm::Sha256,
-        &prk,
+        prk,
         DH_PSK_CONTEXT,
         DH_PSK_LENGTH,
     )
@@ -169,7 +169,7 @@ pub fn receive_ecdh_binding(
 
     let responder_bytes = libcrux_hkdf::expand(
         libcrux_hkdf::Algorithm::Sha256,
-        prk,
+        psk,
         AEAD_RESPONDER,
         AEAD_KEY_NONCE,
     )
