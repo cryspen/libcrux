@@ -1,25 +1,24 @@
-use crate::{
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
-    simd::{portable::PortableSIMDUnit, traits::Operations},
-};
+use crate::{polynomial::SIMDPolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>(
-    re: PolynomialRingElement,
+pub(crate) fn serialize<
+    SIMDUnit: Operations,
+    const GAMMA1_EXPONENT: usize,
+    const OUTPUT_BYTES: usize,
+>(
+    re: SIMDPolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_BYTES] {
     let mut serialized = [0u8; OUTPUT_BYTES];
-
-    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
     match GAMMA1_EXPONENT {
         17 => {
             const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 18;
 
-            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&PortableSIMDUnit::gamma1_serialize::<
-                        OUTPUT_BYTES_PER_SIMD_UNIT,
-                    >(*simd_unit));
+                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
+                        *simd_unit,
+                    ));
             }
 
             serialized
@@ -27,11 +26,11 @@ pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>
         19 => {
             const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 20;
 
-            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&PortableSIMDUnit::gamma1_serialize::<
-                        OUTPUT_BYTES_PER_SIMD_UNIT,
-                    >(*simd_unit));
+                    .copy_from_slice(&SIMDUnit::gamma1_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
+                        *simd_unit,
+                    ));
             }
 
             serialized
@@ -41,9 +40,9 @@ pub(crate) fn serialize<const GAMMA1_EXPONENT: usize, const OUTPUT_BYTES: usize>
 }
 
 #[inline(always)]
-pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(
+pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     serialized: &[u8],
-) -> PolynomialRingElement {
+) -> SIMDPolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = match GAMMA1_EXPONENT {
         17 => serialized.chunks(18),
         19 => serialized.chunks(20),
@@ -53,17 +52,18 @@ pub(crate) fn deserialize<const GAMMA1_EXPONENT: usize>(
     let mut result = SIMDPolynomialRingElement::ZERO();
 
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = PortableSIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(
-            &serialized_chunks.next().unwrap(),
-        );
+        result.simd_units[i] =
+            SIMDUnit::gamma1_deserialize::<GAMMA1_EXPONENT>(&serialized_chunks.next().unwrap());
     }
 
-    result.to_polynomial_ring_element()
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::simd::portable::PortableSIMDUnit;
 
     #[test]
     fn test_deserialize_when_gamma1_is_2_pow_17() {
@@ -129,7 +129,7 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<17>(&bytes).coefficients,
+            deserialize::<PortableSIMDUnit, 17>(&bytes).to_i32_array(),
             expected_coefficients
         );
     }
@@ -203,7 +203,7 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<19>(&bytes).coefficients,
+            deserialize::<PortableSIMDUnit, 19>(&bytes).to_i32_array(),
             expected_coefficients
         );
     }

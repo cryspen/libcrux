@@ -1,10 +1,14 @@
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, ml_dsa_generic::Signature,
-    polynomial::PolynomialRingElement, VerificationError,
+    polynomial::SIMDPolynomialRingElement, simd::traits::Operations, VerificationError,
 };
 
-impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN_A: usize>
-    Signature<COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>
+impl<
+        SIMDUnit: Operations,
+        const COMMITMENT_HASH_SIZE: usize,
+        const COLUMNS_IN_A: usize,
+        const ROWS_IN_A: usize,
+    > Signature<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>
 {
     #[allow(non_snake_case)]
     #[inline(always)]
@@ -24,7 +28,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
         for i in 0..COLUMNS_IN_A {
             signature[offset..offset + GAMMA1_RING_ELEMENT_SIZE].copy_from_slice(
-                &encoding::gamma1::serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE>(
+                &encoding::gamma1::serialize::<SIMDUnit, GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE>(
                     self.signer_response[i],
                 ),
             );
@@ -61,10 +65,10 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
         let (signer_response_serialized, hint_serialized) =
             rest_of_serialized.split_at(GAMMA1_RING_ELEMENT_SIZE * COLUMNS_IN_A);
 
-        let mut signer_response = [PolynomialRingElement::ZERO; COLUMNS_IN_A];
+        let mut signer_response = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
 
         for i in 0..COLUMNS_IN_A {
-            signer_response[i] = encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(
+            signer_response[i] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
                 &signer_response_serialized
                     [i * GAMMA1_RING_ELEMENT_SIZE..(i + 1) * GAMMA1_RING_ELEMENT_SIZE],
             );
@@ -118,7 +122,7 @@ impl<const COMMITMENT_HASH_SIZE: usize, const COLUMNS_IN_A: usize, const ROWS_IN
 
         Ok(Signature {
             commitment_hash: commitment_hash.try_into().unwrap(),
-            signer_response,
+            signer_response: signer_response,
             hint,
         })
     }

@@ -1,13 +1,10 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
-    ntt::{
-        invert_ntt_montgomery, invert_ntt_montgomery_simd, ntt, ntt_multiply_montgomery,
-        ntt_multiply_montgomery_simd, ntt_simd,
-    },
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
+    polynomial::SIMDPolynomialRingElement,
     sample::sample_ring_element_uniform,
-    simd::{portable::PortableSIMDUnit, traits::Operations},
+    simd::traits::Operations,
 };
 
 #[allow(non_snake_case)]
@@ -51,14 +48,12 @@ pub(crate) fn compute_As1_plus_s2<
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery_simd::<SIMDUnit>(
-                ring_element,
-                &ntt_simd::<SIMDUnit>(s1[j]),
-            );
+            let product =
+                ntt_multiply_montgomery::<SIMDUnit>(ring_element, &ntt::<SIMDUnit>(s1[j]));
             result[i] = SIMDPolynomialRingElement::add(&result[i], &product);
         }
 
-        result[i] = invert_ntt_montgomery_simd::<SIMDUnit>(result[i]);
+        result[i] = invert_ntt_montgomery::<SIMDUnit>(result[i]);
         result[i] = SIMDPolynomialRingElement::add(&result[i], &s2[i]);
     }
 
@@ -74,15 +69,14 @@ pub(crate) fn compute_A_times_mask<
     const COLUMNS_IN_A: usize,
 >(
     A_as_ntt: &[[SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    mask: &[PolynomialRingElement; COLUMNS_IN_A],
-) -> [PolynomialRingElement; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::ZERO; ROWS_IN_A];
+    mask: &[SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+) -> [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
+    let mut result = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product =
-                ntt_multiply_montgomery(&ring_element.to_polynomial_ring_element(), &ntt(mask[j]));
-            result[i] = result[i].add(&product);
+            let product = ntt_multiply_montgomery(&ring_element, &ntt(mask[j]));
+            result[i] = SIMDPolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
         }
 
         result[i] = invert_ntt_montgomery(result[i]);
@@ -93,11 +87,11 @@ pub(crate) fn compute_A_times_mask<
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn vector_times_ring_element<const DIMENSION: usize>(
-    vector: &[PolynomialRingElement; DIMENSION],
-    ring_element: &PolynomialRingElement,
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut result = [PolynomialRingElement::ZERO; DIMENSION];
+pub(crate) fn vector_times_ring_element<SIMDUnit: Operations, const DIMENSION: usize>(
+    vector: &[SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    ring_element: &SIMDPolynomialRingElement<SIMDUnit>,
+) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut result = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, vector_ring_element) in vector.iter().enumerate() {
         result[i] =
@@ -109,21 +103,14 @@ pub(crate) fn vector_times_ring_element<const DIMENSION: usize>(
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn add_vectors<const DIMENSION: usize>(
-    lhs: &[PolynomialRingElement; DIMENSION],
-    rhs: &[PolynomialRingElement; DIMENSION],
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut result = [PolynomialRingElement::ZERO; DIMENSION];
+pub(crate) fn add_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
+    lhs: &[SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    rhs: &[SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut result = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for i in 0..DIMENSION {
-        let lhs_vectorized =
-            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(lhs[i]);
-        let rhs_vectorized =
-            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(rhs[i]);
-
-        result[i] = lhs_vectorized
-            .add(&rhs_vectorized)
-            .to_polynomial_ring_element();
+        result[i] = SIMDPolynomialRingElement::<SIMDUnit>::add(&lhs[i], &rhs[i]);
     }
 
     result
@@ -131,21 +118,14 @@ pub(crate) fn add_vectors<const DIMENSION: usize>(
 
 #[allow(non_snake_case)]
 #[inline(always)]
-pub(crate) fn subtract_vectors<const DIMENSION: usize>(
-    lhs: &[PolynomialRingElement; DIMENSION],
-    rhs: &[PolynomialRingElement; DIMENSION],
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut result = [PolynomialRingElement::ZERO; DIMENSION];
+pub(crate) fn subtract_vectors<SIMDUnit: Operations, const DIMENSION: usize>(
+    lhs: &[SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    rhs: &[SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut result = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for i in 0..DIMENSION {
-        let lhs_vectorized =
-            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(lhs[i]);
-        let rhs_vectorized =
-            SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(rhs[i]);
-
-        result[i] = lhs_vectorized
-            .subtract(&rhs_vectorized)
-            .to_polynomial_ring_element();
+        result[i] = SIMDPolynomialRingElement::<SIMDUnit>::subtract(&lhs[i], &rhs[i]);
     }
 
     result
@@ -160,28 +140,26 @@ pub(crate) fn compute_w_approx<
     const COLUMNS_IN_A: usize,
 >(
     A_as_ntt: &[[SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A]; ROWS_IN_A],
-    signer_response: [PolynomialRingElement; COLUMNS_IN_A],
+    signer_response: [SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     verifier_challenge_as_ntt: SIMDPolynomialRingElement<SIMDUnit>,
     t1: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-) -> [PolynomialRingElement; ROWS_IN_A] {
-    let mut result = [PolynomialRingElement::ZERO; ROWS_IN_A];
+) -> [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A] {
+    let mut result = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
 
     for (i, row) in A_as_ntt.iter().enumerate() {
         for (j, ring_element) in row.iter().enumerate() {
-            let product = ntt_multiply_montgomery(
-                &ring_element.to_polynomial_ring_element(),
-                &ntt(signer_response[j]),
-            );
+            let product = ntt_multiply_montgomery(&ring_element, &ntt(signer_response[j]));
 
-            result[i] = result[i].add(&product);
+            result[i] = SIMDPolynomialRingElement::<SIMDUnit>::add(&result[i], &product);
         }
 
         let t1_shifted = shift_left_then_reduce::<SIMDUnit>(t1[i], BITS_IN_LOWER_PART_OF_T);
-        let challenge_times_t1_shifted = ntt_multiply_montgomery(
-            &verifier_challenge_as_ntt.to_polynomial_ring_element(),
-            &ntt(t1_shifted.to_polynomial_ring_element()),
-        );
-        result[i] = invert_ntt_montgomery(result[i].sub(&challenge_times_t1_shifted));
+        let challenge_times_t1_shifted =
+            ntt_multiply_montgomery(&verifier_challenge_as_ntt, &ntt(t1_shifted));
+        result[i] = invert_ntt_montgomery(SIMDPolynomialRingElement::<SIMDUnit>::subtract(
+            &result[i],
+            &challenge_times_t1_shifted,
+        ));
     }
 
     result

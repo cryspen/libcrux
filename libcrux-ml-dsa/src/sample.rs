@@ -2,7 +2,7 @@ use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
     hash_functions::{H, H_128},
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
+    polynomial::SIMDPolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -183,19 +183,29 @@ pub(crate) fn sample_error_vector<
 }
 
 #[inline(always)]
-fn sample_mask_ring_element<const GAMMA1_EXPONENT: usize>(seed: [u8; 66]) -> PolynomialRingElement {
+fn sample_mask_ring_element<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
+    seed: [u8; 66],
+) -> SIMDPolynomialRingElement<SIMDUnit> {
     match GAMMA1_EXPONENT {
-        17 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::one_shot::<576>(&seed)),
-        19 => encoding::gamma1::deserialize::<GAMMA1_EXPONENT>(&H::one_shot::<640>(&seed)),
+        17 => {
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&H::one_shot::<576>(&seed))
+        }
+        19 => {
+            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&H::one_shot::<640>(&seed))
+        }
         _ => unreachable!(),
     }
 }
 #[inline(always)]
-pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: usize>(
+pub(crate) fn sample_mask_vector<
+    SIMDUnit: Operations,
+    const DIMENSION: usize,
+    const GAMMA1_EXPONENT: usize,
+>(
     mut seed: [u8; 66],
     domain_separator: &mut u16,
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut error = [PolynomialRingElement::ZERO; DIMENSION];
+) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut error = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
@@ -203,7 +213,7 @@ pub(crate) fn sample_mask_vector<const DIMENSION: usize, const GAMMA1_EXPONENT: 
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        error[i] = sample_mask_ring_element::<GAMMA1_EXPONENT>(seed);
+        error[i] = sample_mask_ring_element::<SIMDUnit, GAMMA1_EXPONENT>(seed);
     }
 
     error

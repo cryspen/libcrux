@@ -3,10 +3,8 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    constants::RING_ELEMENT_OF_T0S_SIZE,
-    ntt::ntt,
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
-    simd::{portable::PortableSIMDUnit, traits::Operations},
+    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt, polynomial::SIMDPolynomialRingElement,
+    simd::traits::Operations,
 };
 
 #[inline(always)]
@@ -26,26 +24,26 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-fn deserialize(serialized: &[u8]) -> PolynomialRingElement {
+fn deserialize<SIMDUnit: Operations>(serialized: &[u8]) -> SIMDPolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = serialized.chunks(13);
 
     let mut result = SIMDPolynomialRingElement::ZERO();
 
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = PortableSIMDUnit::t0_deserialize(&serialized_chunks.next().unwrap());
+        result.simd_units[i] = SIMDUnit::t0_deserialize(&serialized_chunks.next().unwrap());
     }
 
-    result.to_polynomial_ring_element()
+    result
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<const DIMENSION: usize>(
+pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
     serialized: &[u8],
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut ring_elements = [PolynomialRingElement::ZERO; DIMENSION];
+) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut ring_elements = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
-        ring_elements[i] = ntt(deserialize(bytes));
+        ring_elements[i] = ntt(deserialize::<SIMDUnit>(bytes));
     }
 
     ring_elements
@@ -54,6 +52,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<const DIMENSION: usize>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::simd::portable::PortableSIMDUnit;
 
     #[test]
     fn test_serialize() {
@@ -157,6 +157,9 @@ mod tests {
             2487, -1527, 2834, -3089, 1724, 3858, -2130, 3301, -1565,
         ];
 
-        assert_eq!(deserialize(&serialized).coefficients, expected_coefficients);
+        assert_eq!(
+            deserialize::<PortableSIMDUnit>(&serialized).to_i32_array(),
+            expected_coefficients
+        );
     }
 }

@@ -12,28 +12,6 @@ impl PolynomialRingElement {
     pub const ZERO: Self = Self {
         coefficients: [0; COEFFICIENTS_IN_RING_ELEMENT],
     };
-
-    #[inline(always)]
-    pub(crate) fn add(&self, rhs: &Self) -> Self {
-        let mut sum = Self::ZERO;
-
-        for i in 0..rhs.coefficients.len() {
-            sum.coefficients[i] = self.coefficients[i] + rhs.coefficients[i];
-        }
-
-        sum
-    }
-
-    #[inline(always)]
-    pub(crate) fn sub(&self, rhs: &Self) -> Self {
-        let mut difference = Self::ZERO;
-
-        for i in 0..rhs.coefficients.len() {
-            difference.coefficients[i] = self.coefficients[i] - rhs.coefficients[i];
-        }
-
-        difference
-    }
 }
 
 pub(crate) const SIMD_UNITS_IN_RING_ELEMENT: usize =

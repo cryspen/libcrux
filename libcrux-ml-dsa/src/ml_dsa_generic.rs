@@ -9,20 +9,21 @@ use crate::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, expand_to_A,
         subtract_vectors, vector_times_ring_element,
     },
-    ntt::ntt_simd,
-    polynomial::PolynomialRingElement,
+    ntt::ntt,
+    polynomial::SIMDPolynomialRingElement,
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
     simd::traits::Operations,
     utils::into_padded_array,
 };
 
 pub(crate) struct Signature<
+    SIMDUnit: Operations,
     const COMMITMENT_HASH_SIZE: usize,
     const COLUMNS_IN_A: usize,
     const ROWS_IN_A: usize,
 > {
     pub commitment_hash: [u8; COMMITMENT_HASH_SIZE],
-    pub signer_response: [PolynomialRingElement; COLUMNS_IN_A],
+    pub signer_response: [SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 
@@ -118,6 +119,7 @@ pub(crate) fn sign<
 ) -> [u8; SIGNATURE_SIZE] {
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
         encoding::signing_key::deserialize_then_ntt::<
+            SIMDUnit,
             ROWS_IN_A,
             COLUMNS_IN_A,
             ETA,
@@ -162,7 +164,7 @@ pub(crate) fn sign<
         // [1]: https://github.com/cloudflare/circl/blob/main/sign/dilithium/mode2/internal/dilithium.go#L341
         debug_assert!(attempt < 576);
 
-        let mask = sample_mask_vector::<COLUMNS_IN_A, GAMMA1_EXPONENT>(
+        let mask = sample_mask_vector::<SIMDUnit, COLUMNS_IN_A, GAMMA1_EXPONENT>(
             into_padded_array(&mask_seed),
             &mut domain_separator_for_mask,
         );
@@ -170,10 +172,11 @@ pub(crate) fn sign<
         let A_times_mask =
             compute_A_times_mask::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(&A_as_ntt, &mask);
 
-        let (w0, commitment) = decompose_vector::<ROWS_IN_A, GAMMA2>(A_times_mask);
+        let (w0, commitment) = decompose_vector::<SIMDUnit, ROWS_IN_A, GAMMA2>(A_times_mask);
 
         let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
             let commitment_serialized = encoding::commitment::serialize_vector::<
+                SIMDUnit,
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
@@ -185,45 +188,56 @@ pub(crate) fn sign<
             H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
         };
 
-        let verifier_challenge_as_ntt = ntt_simd(sample_challenge_ring_element::<
+        let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
             SIMDUnit,
             ONES_IN_VERIFIER_CHALLENGE,
         >(
             commitment_hash[0..VERIFIER_CHALLENGE_SEED_SIZE]
                 .try_into()
                 .unwrap(),
-        ))
-        .to_polynomial_ring_element();
+        ));
 
-        let challenge_times_s1 =
-            vector_times_ring_element::<COLUMNS_IN_A>(&s1_as_ntt, &verifier_challenge_as_ntt);
-        let challenge_times_s2 =
-            vector_times_ring_element::<ROWS_IN_A>(&s2_as_ntt, &verifier_challenge_as_ntt);
+        let challenge_times_s1 = vector_times_ring_element::<SIMDUnit, COLUMNS_IN_A>(
+            &s1_as_ntt,
+            &verifier_challenge_as_ntt,
+        );
+        let challenge_times_s2 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+            &s2_as_ntt,
+            &verifier_challenge_as_ntt,
+        );
 
-        let signer_response = add_vectors::<COLUMNS_IN_A>(&mask, &challenge_times_s1);
+        let signer_response = add_vectors::<SIMDUnit, COLUMNS_IN_A>(&mask, &challenge_times_s1);
 
-        let w0_minus_challenge_times_s2 = subtract_vectors::<ROWS_IN_A>(&w0, &challenge_times_s2);
+        let w0_minus_challenge_times_s2 =
+            subtract_vectors::<SIMDUnit, ROWS_IN_A>(&w0, &challenge_times_s2);
 
-        if vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
+        if vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
             signer_response,
             (1 << GAMMA1_EXPONENT) - BETA,
         ) {
             continue;
         }
-        if vector_infinity_norm_exceeds::<ROWS_IN_A>(w0_minus_challenge_times_s2, GAMMA2 - BETA) {
+        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(
+            w0_minus_challenge_times_s2,
+            GAMMA2 - BETA,
+        ) {
             continue;
         }
 
-        let challenge_times_t0 =
-            vector_times_ring_element::<ROWS_IN_A>(&t0_as_ntt, &verifier_challenge_as_ntt);
-        if vector_infinity_norm_exceeds::<ROWS_IN_A>(challenge_times_t0, GAMMA2) {
+        let challenge_times_t0 = vector_times_ring_element::<SIMDUnit, ROWS_IN_A>(
+            &t0_as_ntt,
+            &verifier_challenge_as_ntt,
+        );
+        if vector_infinity_norm_exceeds::<SIMDUnit, ROWS_IN_A>(challenge_times_t0, GAMMA2) {
             continue;
         }
 
         let w0_minus_c_times_s2_plus_c_times_t0 =
-            add_vectors::<ROWS_IN_A>(&w0_minus_challenge_times_s2, &challenge_times_t0);
-        let (hint, ones_in_hint) =
-            make_hint::<ROWS_IN_A, GAMMA2>(w0_minus_c_times_s2_plus_c_times_t0, commitment);
+            add_vectors::<SIMDUnit, ROWS_IN_A>(&w0_minus_challenge_times_s2, &challenge_times_t0);
+        let (hint, ones_in_hint) = make_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(
+            w0_minus_c_times_s2_plus_c_times_t0,
+            commitment,
+        );
         if ones_in_hint > MAX_ONES_IN_HINT {
             continue;
         }
@@ -231,7 +245,7 @@ pub(crate) fn sign<
         break (commitment_hash, signer_response, hint);
     };
 
-    Signature::<COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
+    Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
         commitment_hash,
         signer_response,
         hint,
@@ -265,15 +279,16 @@ pub(crate) fn verify<
             verification_key_serialized,
         );
 
-    let signature = Signature::<COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
-        GAMMA1_EXPONENT,
-        GAMMA1_RING_ELEMENT_SIZE,
-        MAX_ONES_IN_HINT,
-        SIGNATURE_SIZE,
-    >(signature_serialized)?;
+    let signature =
+        Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A>::deserialize::<
+            GAMMA1_EXPONENT,
+            GAMMA1_RING_ELEMENT_SIZE,
+            MAX_ONES_IN_HINT,
+            SIGNATURE_SIZE,
+        >(signature_serialized)?;
 
     // We use if-else branches because early returns will not go through hax.
-    if !vector_infinity_norm_exceeds::<COLUMNS_IN_A>(
+    if !vector_infinity_norm_exceeds::<SIMDUnit, COLUMNS_IN_A>(
         signature.signer_response,
         (2 << GAMMA1_EXPONENT) - BETA,
     ) {
@@ -289,7 +304,7 @@ pub(crate) fn verify<
             H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
         };
 
-        let verifier_challenge_as_ntt = ntt_simd(sample_challenge_ring_element::<
+        let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
             SIMDUnit,
             ONES_IN_VERIFIER_CHALLENGE,
         >(
@@ -306,8 +321,9 @@ pub(crate) fn verify<
         );
 
         let commitment_hash: [u8; COMMITMENT_HASH_SIZE] = {
-            let commitment = use_hint::<ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
+            let commitment = use_hint::<SIMDUnit, ROWS_IN_A, GAMMA2>(signature.hint, w_approx);
             let commitment_serialized = encoding::commitment::serialize_vector::<
+                SIMDUnit,
                 ROWS_IN_A,
                 COMMITMENT_RING_ELEMENT_SIZE,
                 COMMITMENT_VECTOR_SIZE,
