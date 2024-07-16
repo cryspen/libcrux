@@ -1,8 +1,8 @@
-use crate::{polynomial::SIMDPolynomialRingElement, simd::traits::Operations};
+use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
 fn serialize<SIMDUnit: Operations, const OUTPUT_SIZE: usize>(
-    re: SIMDPolynomialRingElement<SIMDUnit>,
+    re: PolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
 
@@ -50,7 +50,7 @@ pub(crate) fn serialize_vector<
     const RING_ELEMENT_SIZE: usize,
     const OUTPUT_SIZE: usize,
 >(
-    vector: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
     let mut offset: usize = 0;
@@ -68,7 +68,7 @@ pub(crate) fn serialize_vector<
 mod tests {
     use super::*;
 
-    use crate::{polynomial::SIMDPolynomialRingElement, simd::portable::PortableSIMDUnit};
+    use crate::{polynomial::PolynomialRingElement, simd::portable::PortableSIMDUnit};
 
     #[test]
     fn test_serialize_commitment() {
@@ -87,7 +87,7 @@ mod tests {
             43, 32, 27, 34, 27, 15, 24, 4, 2, 42, 15, 9, 3, 17, 35, 0, 22, 43, 13, 15, 6, 38, 10,
             20, 37,
         ];
-        let re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
 
         let serialized = [
             170, 57, 148, 37, 42, 144, 203, 90, 162, 193, 73, 165, 38, 150, 130, 135, 82, 85, 217,
@@ -118,7 +118,7 @@ mod tests {
             12, 5, 3, 7, 15, 12, 13, 3, 4, 10, 1, 13, 3, 9, 6, 10, 13, 4, 4, 2, 9, 0, 4, 5, 7, 14,
             11, 2, 6, 3, 11, 6, 2, 0, 5, 8, 5, 9, 5, 9, 0, 2, 2, 3, 15, 0, 8, 11, 13, 2, 6, 11, 0,
         ];
-        let re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
 
         let serialized = [
             66, 56, 62, 122, 244, 61, 33, 201, 184, 76, 231, 73, 36, 245, 190, 182, 218, 211, 249,

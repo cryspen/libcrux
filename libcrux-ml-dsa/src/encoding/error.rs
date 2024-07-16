@@ -1,10 +1,10 @@
 // Functions for serializing and deserializing an error ring element.
 
-use crate::{ntt::ntt, polynomial::SIMDPolynomialRingElement, simd::traits::Operations};
+use crate::{ntt::ntt, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZE: usize>(
-    re: SIMDPolynomialRingElement<SIMDUnit>,
+    re: PolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
 
@@ -40,14 +40,14 @@ pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZ
 #[inline(always)]
 fn deserialize<SIMDUnit: Operations, const ETA: usize>(
     serialized: &[u8],
-) -> SIMDPolynomialRingElement<SIMDUnit> {
+) -> PolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = match ETA {
         2 => serialized.chunks(3),
         4 => serialized.chunks(4),
         _ => unreachable!(),
     };
 
-    let mut result = SIMDPolynomialRingElement::ZERO();
+    let mut result = PolynomialRingElement::ZERO();
 
     for i in 0..result.simd_units.len() {
         result.simd_units[i] =
@@ -65,8 +65,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<
     const RING_ELEMENT_SIZE: usize,
 >(
     serialized: &[u8],
-) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut ring_elements = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_SIZE).enumerate() {
         ring_elements[i] = ntt(deserialize::<SIMDUnit, ETA>(bytes));

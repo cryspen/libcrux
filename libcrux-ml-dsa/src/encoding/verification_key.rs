@@ -1,7 +1,7 @@
 use crate::{
     constants::{RING_ELEMENT_OF_T1S_SIZE, SEED_FOR_A_SIZE},
     encoding::t1,
-    polynomial::SIMDPolynomialRingElement,
+    polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -13,7 +13,7 @@ pub(crate) fn generate_serialized<
     const VERIFICATION_KEY_SIZE: usize,
 >(
     seed_for_A: &[u8],
-    t1: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    t1: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [u8; VERIFICATION_KEY_SIZE] {
     let mut verification_key_serialized = [0u8; VERIFICATION_KEY_SIZE];
     verification_key_serialized[0..SEED_FOR_A_SIZE].copy_from_slice(seed_for_A);
@@ -37,9 +37,9 @@ pub(crate) fn deserialize<
     serialized: [u8; VERIFICATION_KEY_SIZE],
 ) -> (
     [u8; SEED_FOR_A_SIZE],
-    [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) {
-    let mut t1 = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
+    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); ROWS_IN_A];
     let (seed_for_A, serialized_remaining) = serialized.split_at(SEED_FOR_A_SIZE);
 
     for i in 0..ROWS_IN_A {

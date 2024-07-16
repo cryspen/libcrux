@@ -3,13 +3,13 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt, polynomial::SIMDPolynomialRingElement,
+    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt, polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
-    re: SIMDPolynomialRingElement<SIMDUnit>,
+    re: PolynomialRingElement<SIMDUnit>,
 ) -> [u8; RING_ELEMENT_OF_T0S_SIZE] {
     let mut serialized = [0u8; RING_ELEMENT_OF_T0S_SIZE];
 
@@ -24,10 +24,10 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 }
 
 #[inline(always)]
-fn deserialize<SIMDUnit: Operations>(serialized: &[u8]) -> SIMDPolynomialRingElement<SIMDUnit> {
+fn deserialize<SIMDUnit: Operations>(serialized: &[u8]) -> PolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = serialized.chunks(13);
 
-    let mut result = SIMDPolynomialRingElement::ZERO();
+    let mut result = PolynomialRingElement::ZERO();
 
     for i in 0..result.simd_units.len() {
         result.simd_units[i] = SIMDUnit::t0_deserialize(&serialized_chunks.next().unwrap());
@@ -39,8 +39,8 @@ fn deserialize<SIMDUnit: Operations>(serialized: &[u8]) -> SIMDPolynomialRingEle
 #[inline(always)]
 pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
     serialized: &[u8],
-) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut ring_elements = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
         ring_elements[i] = ntt(deserialize::<SIMDUnit>(bytes));
@@ -78,7 +78,7 @@ mod tests {
             2683, 2743, 2888, -2104, 874, -1150, -2453, -125, -2561, -2011, -2384, 2259, -10, 836,
             -2773, 2487, -2292, -201, -3235, 1232, -3197,
         ];
-        let re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
 
         let expected_bytes = [
             48, 20, 208, 127, 245, 13, 88, 131, 180, 130, 230, 20, 9, 204, 230, 36, 180, 218, 74,

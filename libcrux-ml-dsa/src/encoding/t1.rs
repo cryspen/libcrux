@@ -1,5 +1,5 @@
 use crate::{
-    constants::RING_ELEMENT_OF_T1S_SIZE, polynomial::SIMDPolynomialRingElement,
+    constants::RING_ELEMENT_OF_T1S_SIZE, polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -7,7 +7,7 @@ use crate::{
 
 #[inline(always)]
 pub(crate) fn serialize<SIMDUnit: Operations>(
-    re: SIMDPolynomialRingElement<SIMDUnit>,
+    re: PolynomialRingElement<SIMDUnit>,
 ) -> [u8; RING_ELEMENT_OF_T1S_SIZE] {
     let mut serialized = [0u8; RING_ELEMENT_OF_T1S_SIZE];
 
@@ -23,10 +23,10 @@ pub(crate) fn serialize<SIMDUnit: Operations>(
 
 pub(crate) fn deserialize<SIMDUnit: Operations>(
     serialized: &[u8],
-) -> SIMDPolynomialRingElement<SIMDUnit> {
+) -> PolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = serialized.chunks(10);
 
-    let mut result = SIMDPolynomialRingElement::ZERO();
+    let mut result = PolynomialRingElement::ZERO();
 
     for i in 0..result.simd_units.len() {
         result.simd_units[i] = SIMDUnit::t1_deserialize(&serialized_chunks.next().unwrap());
@@ -60,7 +60,7 @@ mod tests {
             53, 346, 392, 710, 434, 72, 899, 610, 543, 937, 501, 41, 615, 97, 557, 168, 105, 665,
             179, 708, 137, 849, 508, 742, 512, 879, 534, 490,
         ];
-        let re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
 
         let expected_bytes = [
             127, 204, 105, 133, 208, 207, 165, 130, 49, 2, 83, 82, 115, 127, 53, 65, 213, 119, 93,

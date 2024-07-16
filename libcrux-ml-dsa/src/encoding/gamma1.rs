@@ -1,4 +1,4 @@
-use crate::{polynomial::SIMDPolynomialRingElement, simd::traits::Operations};
+use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
 pub(crate) fn serialize<
@@ -6,7 +6,7 @@ pub(crate) fn serialize<
     const GAMMA1_EXPONENT: usize,
     const OUTPUT_BYTES: usize,
 >(
-    re: SIMDPolynomialRingElement<SIMDUnit>,
+    re: PolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_BYTES] {
     let mut serialized = [0u8; OUTPUT_BYTES];
 
@@ -42,14 +42,14 @@ pub(crate) fn serialize<
 #[inline(always)]
 pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     serialized: &[u8],
-) -> SIMDPolynomialRingElement<SIMDUnit> {
+) -> PolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = match GAMMA1_EXPONENT {
         17 => serialized.chunks(18),
         19 => serialized.chunks(20),
         _ => unreachable!(),
     };
 
-    let mut result = SIMDPolynomialRingElement::ZERO();
+    let mut result = PolynomialRingElement::<SIMDUnit>::ZERO();
 
     for i in 0..result.simd_units.len() {
         result.simd_units[i] =

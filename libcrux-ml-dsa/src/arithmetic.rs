@@ -1,12 +1,12 @@
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement, SIMD_UNITS_IN_RING_ELEMENT},
+    polynomial::{PolynomialRingElement, SIMD_UNITS_IN_RING_ELEMENT},
     simd::traits::Operations,
 };
 
 #[inline(always)]
 pub(crate) fn vector_infinity_norm_exceeds<SIMDUnit: Operations, const DIMENSION: usize>(
-    vector: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
     bound: i32,
 ) -> bool {
     let mut exceeds = false;
@@ -28,10 +28,10 @@ pub(crate) type FieldElementTimesMontgomeryR = i32;
 
 #[inline(always)]
 pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations>(
-    re: SIMDPolynomialRingElement<SIMDUnit>,
+    re: PolynomialRingElement<SIMDUnit>,
     shift_by: usize,
-) -> SIMDPolynomialRingElement<SIMDUnit> {
-    let mut out = SIMDPolynomialRingElement::ZERO();
+) -> PolynomialRingElement<SIMDUnit> {
+    let mut out = PolynomialRingElement::ZERO();
 
     for (i, simd_unit) in re.simd_units.iter().enumerate() {
         out.simd_units[i] = SIMDUnit::shift_left_then_reduce(*simd_unit, shift_by);
@@ -42,13 +42,13 @@ pub(crate) fn shift_left_then_reduce<SIMDUnit: Operations>(
 
 #[inline(always)]
 pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
-    t: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    t: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> (
-    [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
-    [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut t0 = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut t1 = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut t0 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut t1 = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, ring_element) in t.iter().enumerate() {
         for (j, simd_unit) in ring_element.simd_units.iter().enumerate() {
@@ -64,13 +64,13 @@ pub(crate) fn power2round_vector<SIMDUnit: Operations, const DIMENSION: usize>(
 
 #[inline(always)]
 pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    t: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    t: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> (
-    [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
-    [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) {
-    let mut vector_low = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
-    let mut vector_high = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut vector_low = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut vector_high = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for i in 0..DIMENSION {
         for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
@@ -86,14 +86,14 @@ pub(crate) fn decompose_vector<SIMDUnit: Operations, const DIMENSION: usize, con
 
 #[inline(always)]
 pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
-    low: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
-    high: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
+    low: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+    high: [PolynomialRingElement<SIMDUnit>; DIMENSION],
 ) -> ([[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION], usize) {
     let mut hint = [[0; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION];
     let mut true_hints = 0;
 
     for i in 0..DIMENSION {
-        let mut v_hint = SIMDPolynomialRingElement::ZERO();
+        let mut v_hint = PolynomialRingElement::ZERO();
 
         for j in 0..v_hint.simd_units.len() {
             let (one_hints_count, current_hint) =
@@ -103,7 +103,7 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
             true_hints += one_hints_count;
         }
 
-        hint[i] = v_hint.to_polynomial_ring_element().coefficients;
+        hint[i] = v_hint.to_i32_array();
     }
 
     (hint, true_hints)
@@ -112,16 +112,12 @@ pub(crate) fn make_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMM
 #[inline(always)]
 pub(crate) fn use_hint<SIMDUnit: Operations, const DIMENSION: usize, const GAMMA2: i32>(
     hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; DIMENSION],
-    re_vector: [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION],
-) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut result = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    re_vector: [PolynomialRingElement<SIMDUnit>; DIMENSION],
+) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut result = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for i in 0..DIMENSION {
-        let v_hint = SIMDPolynomialRingElement::<SIMDUnit>::from_polynomial_ring_element(
-            PolynomialRingElement {
-                coefficients: hint[i],
-            },
-        );
+        let v_hint = PolynomialRingElement::<SIMDUnit>::from_i32_array(&hint[i]);
 
         for j in 0..SIMD_UNITS_IN_RING_ELEMENT {
             result[i].simd_units[j] =

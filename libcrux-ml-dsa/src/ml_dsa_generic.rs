@@ -10,7 +10,7 @@ use crate::{
         subtract_vectors, vector_times_ring_element,
     },
     ntt::ntt,
-    polynomial::SIMDPolynomialRingElement,
+    polynomial::PolynomialRingElement,
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
     simd::traits::Operations,
     utils::into_padded_array,
@@ -23,7 +23,7 @@ pub(crate) struct Signature<
     const ROWS_IN_A: usize,
 > {
     pub commitment_hash: [u8; COMMITMENT_HASH_SIZE],
-    pub signer_response: [SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    pub signer_response: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
     pub hint: [[i32; COEFFICIENTS_IN_RING_ELEMENT]; ROWS_IN_A],
 }
 

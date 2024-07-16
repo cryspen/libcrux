@@ -2,7 +2,7 @@ use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
     hash_functions::{H, H_128},
-    polynomial::SIMDPolynomialRingElement,
+    polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -33,7 +33,7 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 #[inline(always)]
 pub(crate) fn sample_ring_element_uniform<SIMDUnit: Operations>(
     seed: [u8; 34],
-) -> SIMDPolynomialRingElement<SIMDUnit> {
+) -> PolynomialRingElement<SIMDUnit> {
     let mut state = H_128::new(seed);
     let randomness = H_128::squeeze_first_five_blocks(&mut state);
 
@@ -63,7 +63,7 @@ pub(crate) fn sample_ring_element_uniform<SIMDUnit: Operations>(
         );
     }
 
-    SIMDPolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients[0..256])
+    PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients[0..256])
 }
 
 #[inline(always)]
@@ -134,7 +134,7 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: us
 #[inline(always)]
 fn sample_error_ring_element<SIMDUnit: Operations, const ETA: usize>(
     seed: [u8; 66],
-) -> SIMDPolynomialRingElement<SIMDUnit> {
+) -> PolynomialRingElement<SIMDUnit> {
     let mut state = H::new(&seed);
     let randomness = H::squeeze_first_block(&mut state);
 
@@ -157,7 +157,7 @@ fn sample_error_ring_element<SIMDUnit: Operations, const ETA: usize>(
         done = rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness, &mut sampled, &mut out);
     }
 
-    SIMDPolynomialRingElement::<SIMDUnit>::from_i32_array(&out[0..256])
+    PolynomialRingElement::<SIMDUnit>::from_i32_array(&out[0..256])
 }
 #[inline(always)]
 pub(crate) fn sample_error_vector<
@@ -167,8 +167,8 @@ pub(crate) fn sample_error_vector<
 >(
     mut seed: [u8; 66],
     domain_separator: &mut u16,
-) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut error = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut error = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
@@ -185,7 +185,7 @@ pub(crate) fn sample_error_vector<
 #[inline(always)]
 fn sample_mask_ring_element<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     seed: [u8; 66],
-) -> SIMDPolynomialRingElement<SIMDUnit> {
+) -> PolynomialRingElement<SIMDUnit> {
     match GAMMA1_EXPONENT {
         17 => {
             encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&H::one_shot::<576>(&seed))
@@ -204,8 +204,8 @@ pub(crate) fn sample_mask_vector<
 >(
     mut seed: [u8; 66],
     domain_separator: &mut u16,
-) -> [SIMDPolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut error = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut error = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
@@ -248,7 +248,7 @@ fn inside_out_shuffle(
 #[inline(always)]
 pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
-) -> SIMDPolynomialRingElement<SIMDUnit> {
+) -> PolynomialRingElement<SIMDUnit> {
     let mut state = H::new(&seed);
     let randomness = H::squeeze_first_block(&mut state);
 
@@ -264,7 +264,7 @@ pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, const NUMBER_O
         done = inside_out_shuffle(&randomness, &mut out_index, &mut signs, &mut result);
     }
 
-    SIMDPolynomialRingElement::<SIMDUnit>::from_i32_array(&result)
+    PolynomialRingElement::<SIMDUnit>::from_i32_array(&result)
 }
 
 #[cfg(test)]

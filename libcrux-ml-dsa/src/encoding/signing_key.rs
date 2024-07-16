@@ -5,7 +5,7 @@ use crate::{
     },
     encoding,
     hash_functions::H,
-    polynomial::SIMDPolynomialRingElement,
+    polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
 
@@ -22,9 +22,9 @@ pub(crate) fn generate_serialized<
     seed_for_A: &[u8],
     seed_for_signing: &[u8],
     verification_key: &[u8],
-    s1: [SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
-    s2: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
-    t0: [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    s1: [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A],
+    s2: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
+    t0: [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],
 ) -> [u8; SIGNING_KEY_SIZE] {
     let mut signing_key_serialized = [0u8; SIGNING_KEY_SIZE];
     let mut offset = 0;
@@ -76,12 +76,12 @@ pub(crate) fn deserialize_then_ntt<
 >(
     serialized: [u8; SIGNING_KEY_SIZE],
 ) -> (
-    [u8; SEED_FOR_A_SIZE],                               // seed_for_A
-    [u8; SEED_FOR_SIGNING_SIZE],                         // seed_for_signing
-    [u8; BYTES_FOR_VERIFICATION_KEY_HASH],               // verification_key_hash
-    [SIMDPolynomialRingElement<SIMDUnit>; COLUMNS_IN_A], // s1
-    [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // s2
-    [SIMDPolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // t0_as_ntt
+    [u8; SEED_FOR_A_SIZE],                           // seed_for_A
+    [u8; SEED_FOR_SIGNING_SIZE],                     // seed_for_signing
+    [u8; BYTES_FOR_VERIFICATION_KEY_HASH],           // verification_key_hash
+    [PolynomialRingElement<SIMDUnit>; COLUMNS_IN_A], // s1
+    [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // s2
+    [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],    // t0_as_ntt
 ) {
     let (seed_for_A, remaining_serialized) = serialized.split_at(SEED_FOR_A_SIZE);
     let (seed_for_signing, remaining_serialized) =

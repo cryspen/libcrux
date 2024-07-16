@@ -1,6 +1,6 @@
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT, encoding, ml_dsa_generic::Signature,
-    polynomial::SIMDPolynomialRingElement, simd::traits::Operations, VerificationError,
+    polynomial::PolynomialRingElement, simd::traits::Operations, VerificationError,
 };
 
 impl<
@@ -65,7 +65,7 @@ impl<
         let (signer_response_serialized, hint_serialized) =
             rest_of_serialized.split_at(GAMMA1_RING_ELEMENT_SIZE * COLUMNS_IN_A);
 
-        let mut signer_response = [SIMDPolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
+        let mut signer_response = [PolynomialRingElement::<SIMDUnit>::ZERO(); COLUMNS_IN_A];
 
         for i in 0..COLUMNS_IN_A {
             signer_response[i] = encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(

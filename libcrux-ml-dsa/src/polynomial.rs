@@ -1,27 +1,13 @@
-use crate::{
-    constants::COEFFICIENTS_IN_RING_ELEMENT,
-    simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT},
-};
-
-#[derive(Clone, Copy)]
-pub(crate) struct PolynomialRingElement {
-    pub(crate) coefficients: [i32; COEFFICIENTS_IN_RING_ELEMENT],
-}
-
-impl PolynomialRingElement {
-    pub const ZERO: Self = Self {
-        coefficients: [0; COEFFICIENTS_IN_RING_ELEMENT],
-    };
-}
+use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT};
 
 pub(crate) const SIMD_UNITS_IN_RING_ELEMENT: usize =
     crate::constants::COEFFICIENTS_IN_RING_ELEMENT / COEFFICIENTS_IN_SIMD_UNIT;
 
 #[derive(Clone, Copy)]
-pub(crate) struct SIMDPolynomialRingElement<SIMDUnit: Operations> {
+pub(crate) struct PolynomialRingElement<SIMDUnit: Operations> {
     pub(crate) simd_units: [SIMDUnit; SIMD_UNITS_IN_RING_ELEMENT],
 }
-impl<SIMDUnit: Operations> SIMDPolynomialRingElement<SIMDUnit> {
+impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
     #[allow(non_snake_case)]
     pub(crate) fn ZERO() -> Self {
         Self {
@@ -65,34 +51,6 @@ impl<SIMDUnit: Operations> SIMDPolynomialRingElement<SIMDUnit> {
         }
 
         exceeds
-    }
-
-    pub(crate) fn to_polynomial_ring_element(&self) -> PolynomialRingElement {
-        let mut counter = 0;
-        let mut out = PolynomialRingElement::ZERO;
-
-        for unit in self.simd_units {
-            for coefficient in SIMDUnit::to_i32_array(unit) {
-                out.coefficients[counter] = coefficient;
-                counter += 1;
-            }
-        }
-
-        out
-    }
-
-    pub(crate) fn from_polynomial_ring_element(re: PolynomialRingElement) -> Self {
-        let mut out = Self::ZERO();
-
-        for (i, coefficients) in re
-            .coefficients
-            .chunks(COEFFICIENTS_IN_SIMD_UNIT)
-            .enumerate()
-        {
-            out.simd_units[i] = SIMDUnit::from_i32_array(coefficients);
-        }
-
-        out
     }
 
     #[inline(always)]
