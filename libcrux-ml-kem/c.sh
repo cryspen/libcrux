@@ -11,6 +11,10 @@ if [[ -z "$EURYDICE_HOME" ]]; then
     echo "Please set EURYDICE_HOME to the Eurydice directory" 1>&2
     exit 1
 fi
+if [[ -z "$KRML_HOME" ]]; then
+    echo "Please set KRML_HOME to the KaRaMeL directory" 1>&2
+    exit 1
+fi
 
 portable_only=0
 no_hacl=0
@@ -21,6 +25,7 @@ out=c
 glue=$EURYDICE_HOME/include/eurydice_glue.h
 features="--cargo-arg=--features=pre-verification"
 eurydice_glue=1
+karamel_include=1
 unrolling=16
 
 # Parse command line arguments.
@@ -36,6 +41,7 @@ while [ $# -gt 0 ]; do
     --glue) glue="$2"; shift ;;
     --mlkem768) features="${features} --cargo-arg=--no-default-features --cargo-arg=--features=mlkem768" ;;
     --no-glue) eurydice_glue=0 ;;
+    --no-karamel_include) karamel_include=0 ;;
     --no-unrolling) unrolling=0 ;;
     esac
     shift
@@ -77,6 +83,12 @@ echo "Running eurydice ..."
 $EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
+fi
+
+if [[ "$karamel_include" = 1 ]]; then
+    echo "Copying karamel/include ..."
+    mkdir -p karamel
+    cp -R $KRML_HOME/include karamel/
 fi
 
 find . -type f -name "*.c" -exec clang-format --style=Google -i "{}" \;

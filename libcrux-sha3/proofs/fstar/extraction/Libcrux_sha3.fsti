@@ -17,7 +17,7 @@ type t_Algorithm =
   | Algorithm_Sha512 : t_Algorithm
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl_1: Core.Convert.t_From #u32 #t_Algorithm =
+let impl_1: Core.Convert.t_From u32 t_Algorithm =
   {
     f_from_pre = (fun (v: t_Algorithm) -> true);
     f_from_post = (fun (v: t_Algorithm) (out: u32) -> true);
@@ -86,7 +86,7 @@ val shake256 (v_BYTES: usize) (data: t_Slice u8)
     : Prims.Pure (t_Array u8 v_BYTES) Prims.l_True (fun _ -> Prims.l_True)
 
 [@@ FStar.Tactics.Typeclasses.tcinstance]
-let impl: Core.Convert.t_From #t_Algorithm #u32 =
+let impl: Core.Convert.t_From t_Algorithm u32 =
   {
     f_from_pre = (fun (v: u32) -> true);
     f_from_post = (fun (v: u32) (out: t_Algorithm) -> true);

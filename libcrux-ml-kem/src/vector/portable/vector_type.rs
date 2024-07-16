@@ -23,3 +23,8 @@ pub fn from_i16_array(array: &[i16]) -> PortableVector {
         elements: array[0..16].try_into().unwrap(),
     }
 }
+
+#[inline(always)]
+pub fn to_i16_array(x: PortableVector) -> [i16; 16] {
+    x.elements
+}

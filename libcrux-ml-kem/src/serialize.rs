@@ -6,9 +6,6 @@ use crate::{
     vector::{decompress_1, to_unsigned_representative, Operations},
 };
 
-#[cfg(hax)]
-use super::constants::COEFFICIENTS_IN_RING_ELEMENT;
-
 #[inline(always)]
 pub(super) fn compress_then_serialize_message<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
@@ -163,6 +160,8 @@ fn compress_then_serialize_4<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficient =
             Vector::compress::<4>(to_unsigned_representative::<Vector>(re.coefficients[i]));
@@ -170,6 +169,7 @@ fn compress_then_serialize_4<Vector: Operations>(
         let bytes = Vector::serialize_4(coefficient);
         serialized[8 * i..8 * i + 8].copy_from_slice(&bytes);
     }
+    ()
 }
 
 #[inline(always)]
@@ -177,6 +177,8 @@ fn compress_then_serialize_5<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
     serialized: &mut [u8],
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     for i in 0..VECTORS_IN_RING_ELEMENT {
         let coefficients =
             Vector::compress::<5>(to_unsigned_representative::<Vector>(re.coefficients[i]));
@@ -184,6 +186,7 @@ fn compress_then_serialize_5<Vector: Operations>(
         let bytes = Vector::serialize_5(coefficients);
         serialized[10 * i..10 * i + 10].copy_from_slice(&bytes);
     }
+    ()
 }
 
 #[inline(always)]

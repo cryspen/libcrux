@@ -62,6 +62,13 @@ let v_CPA_PKE_CIPHERTEXT_SIZE_768_: usize = v_C1_SIZE_768_ +! v_C2_SIZE_768_
 let v_IMPLICIT_REJECTION_HASH_INPUT_SIZE: usize =
   Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE +! v_CPA_PKE_CIPHERTEXT_SIZE_768_
 
+/// Validate a public key.
+/// Returns `Some(public_key)` if valid, and `None` otherwise.
+val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
+    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
+      Prims.l_True
+      (fun _ -> Prims.l_True)
+
 /// Decapsulate ML-KEM 768
 /// Generates an [`MlKemSharedSecret`].
 /// The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
@@ -81,22 +88,9 @@ val encapsulate
       Prims.l_True
       (fun _ -> Prims.l_True)
 
-/// Validate a public key.
-/// Returns `Some(public_key)` if valid, and `None` otherwise.
-val validate_public_key (public_key: Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184))
-    : Prims.Pure (Core.Option.t_Option (Libcrux_ml_kem.Types.t_MlKemPublicKey (sz 1184)))
-      Prims.l_True
-      (fun _ -> Prims.l_True)
-
 /// Generate ML-KEM 768 Key Pair
 /// Generate an ML-KEM key pair. The input is a byte array of size
 /// [`KEY_GENERATION_SEED_SIZE`].
-/// This function uses CPU feature detection to pick the most efficient version
-/// on each platform. To use a specific version with your own feature detection
-/// use one of the following
-/// - `generate_key_pair_avx2`
-/// - `generate_key_pair_neon`
-/// - `generate_key_pair_portable`
 /// This function returns an [`MlKem768KeyPair`].
 val generate_key_pair (randomness: t_Array u8 (sz 64))
     : Prims.Pure (Libcrux_ml_kem.Types.t_MlKemKeyPair (sz 2400) (sz 1184))

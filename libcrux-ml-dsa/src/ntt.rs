@@ -89,14 +89,13 @@ fn ntt_at_layer_2<SIMDUnit: Operations>(
     }
 }
 #[inline(always)]
-fn ntt_at_layer_3_plus<SIMDUnit: Operations>(
+fn ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
     zeta_i: &mut usize,
     re: &mut SIMDPolynomialRingElement<SIMDUnit>,
-    layer: usize,
 ) {
-    let step = 1 << layer;
+    let step = 1 << LAYER;
 
-    for round in 0..(128 >> layer) {
+    for round in 0..(128 >> LAYER) {
         *zeta_i += 1;
 
         let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
@@ -119,11 +118,11 @@ pub(crate) fn ntt(re: PolynomialRingElement) -> PolynomialRingElement {
 
     let mut v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
-    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 7);
-    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 6);
-    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 5);
-    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 4);
-    ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 3);
+    ntt_at_layer_3_plus::<PortableSIMDUnit, 7>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_3_plus::<PortableSIMDUnit, 6>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_3_plus::<PortableSIMDUnit, 5>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_3_plus::<PortableSIMDUnit, 4>(&mut zeta_i, &mut v_re);
+    ntt_at_layer_3_plus::<PortableSIMDUnit, 3>(&mut zeta_i, &mut v_re);
     ntt_at_layer_2::<PortableSIMDUnit>(&mut zeta_i, &mut v_re);
     ntt_at_layer_1::<PortableSIMDUnit>(&mut zeta_i, &mut v_re);
     ntt_at_layer_0::<PortableSIMDUnit>(&mut zeta_i, &mut v_re);
@@ -184,14 +183,13 @@ fn invert_ntt_at_layer_2<SIMDUnit: Operations>(
     }
 }
 #[inline(always)]
-fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations>(
+fn invert_ntt_at_layer_3_plus<SIMDUnit: Operations, const LAYER: usize>(
     zeta_i: &mut usize,
     re: &mut SIMDPolynomialRingElement<SIMDUnit>,
-    layer: usize,
 ) {
-    let step = 1 << layer;
+    let step = 1 << LAYER;
 
-    for round in 0..(128 >> layer) {
+    for round in 0..(128 >> LAYER) {
         *zeta_i -= 1;
 
         let offset = (round * step * 2) / COEFFICIENTS_IN_SIMD_UNIT;
@@ -215,11 +213,11 @@ pub(crate) fn invert_ntt_montgomery(re: PolynomialRingElement) -> PolynomialRing
     invert_ntt_at_layer_0(&mut zeta_i, &mut v_re);
     invert_ntt_at_layer_1(&mut zeta_i, &mut v_re);
     invert_ntt_at_layer_2(&mut zeta_i, &mut v_re);
-    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 3);
-    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 4);
-    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 5);
-    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 6);
-    invert_ntt_at_layer_3_plus::<PortableSIMDUnit>(&mut zeta_i, &mut v_re, 7);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit, 3>(&mut zeta_i, &mut v_re);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit, 4>(&mut zeta_i, &mut v_re);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit, 5>(&mut zeta_i, &mut v_re);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit, 6>(&mut zeta_i, &mut v_re);
+    invert_ntt_at_layer_3_plus::<PortableSIMDUnit, 7>(&mut zeta_i, &mut v_re);
 
     for i in 0..v_re.simd_units.len() {
         // After invert_ntt_at_layer, elements are of the form a * MONTGOMERY_R^{-1}

@@ -120,6 +120,12 @@ static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
   return v;
 }
 
+static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+  uint32_t v;
+  memcpy(&v, buf, sizeof(v));
+  return v;
+}
+
 static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);

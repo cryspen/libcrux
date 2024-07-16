@@ -4,13 +4,38 @@ use crate::{
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
-    polynomial::PolynomialRingElement,
     ind_cpa::serialize_public_key,
+    polynomial::PolynomialRingElement,
     serialize::deserialize_ring_elements_reduced,
-    types::{unpacked::*, *},
+    types::*,
     utils::into_padded_array,
     vector::Operations,
 };
+
+#[allow(non_snake_case)]
+/// Types for the unpacked API.
+pub mod unpacked {
+    use crate::{ind_cpa::unpacked::*, vector::traits::Operations};
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
+        pub(crate) implicit_rejection_value: [u8; 32],
+    }
+
+    /// An unpacked ML-KEM IND-CCA Private Key
+    pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
+        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K, Vector>,
+        pub(crate) public_key_hash: [u8; 32],
+    }
+
+    /// An unpacked ML-KEM KeyPair
+    pub struct MlKemKeyPairUnpacked<const K: usize, Vector: Operations> {
+        pub private_key: MlKemPrivateKeyUnpacked<K, Vector>,
+        pub public_key: MlKemPublicKeyUnpacked<K, Vector>,
+    }
+}
+use unpacked::*;
 
 /// Seed size for key generation
 pub const KEY_GENERATION_SEED_SIZE: usize = CPA_PKE_KEY_GENERATION_SEED_SIZE + SHARED_SECRET_SIZE;
@@ -295,11 +320,17 @@ pub(crate) fn generate_keypair_unpacked<
         &ind_cpa_public_key.seed_for_A,
     );
     let public_key_hash = Hasher::H(&pk_serialized);
-    let implicit_rejection_value : [u8; 32] = implicit_rejection_value.try_into().unwrap();
+    let implicit_rejection_value: [u8; 32] = implicit_rejection_value.try_into().unwrap();
 
     MlKemKeyPairUnpacked {
-        private_key: MlKemPrivateKeyUnpacked {ind_cpa_private_key, implicit_rejection_value},
-        public_key: MlKemPublicKeyUnpacked {ind_cpa_public_key, public_key_hash}
+        private_key: MlKemPrivateKeyUnpacked {
+            ind_cpa_private_key,
+            implicit_rejection_value,
+        },
+        public_key: MlKemPublicKeyUnpacked {
+            ind_cpa_public_key,
+            public_key_hash,
+        },
     }
 }
 
@@ -410,12 +441,13 @@ pub(crate) fn decapsulate_unpacked<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(&key_pair.public_key.ind_cpa_public_key, decrypted, pseudorandomness);
-
-    let selector = compare_ciphertexts_in_constant_time(
-        ciphertext.as_ref(),
-        &expected_ciphertext,
+    >(
+        &key_pair.public_key.ind_cpa_public_key,
+        decrypted,
+        pseudorandomness,
     );
+
+    let selector = compare_ciphertexts_in_constant_time(ciphertext.as_ref(), &expected_ciphertext);
 
     select_shared_secret_in_constant_time(
         shared_secret,

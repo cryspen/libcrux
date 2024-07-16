@@ -7,9 +7,9 @@ macro_rules! instantiate {
             };
 
             pub(crate) type MlKemKeyPairUnpacked<const K: usize> =
-                crate::types::unpacked::MlKemKeyPairUnpacked<K, $vector>;
+                crate::ind_cca::unpacked::MlKemKeyPairUnpacked<K, $vector>;
             pub(crate) type MlKemPublicKeyUnpacked<const K: usize> =
-                crate::types::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
+                crate::ind_cca::unpacked::MlKemPublicKeyUnpacked<K, $vector>;
 
             /// Portable generate key pair.
             pub(crate) fn generate_keypair<

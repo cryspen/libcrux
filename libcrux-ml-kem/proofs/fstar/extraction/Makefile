@@ -48,25 +48,8 @@ all:
 	$(MAKE) verify
 
 
-VERIFIED = \
-	Libcrux_ml_kem.Constants.fsti \
-	Libcrux_ml_kem.Kyber768.fst \
-	Libcrux_ml_kem.Kyber1024.fst \
-	Libcrux_ml_kem.Kyber512.fst
-
-
-UNVERIFIED = \
-	Libcrux_ml_kem.Types.fst \
-	Libcrux_ml_kem.fst \
-	Libcrux_ml_kem.Ind_cpa.fst \
-	Libcrux_ml_kem.Constant_time_ops.fst \
-	Libcrux_ml_kem.Hash_functions.fst \
-	Libcrux_ml_kem.Matrix.fst \
-	Libcrux_ml_kem.Ntt.fst \
-	Libcrux_ml_kem.Sampling.fst \
-	Libcrux_ml_kem.Serialize.fst
-# Libcrux.Digest.fsti
-# Libcrux.Digest.Incremental_x4.fsti
+VERIFIED = 
+UNVERIFIED = $(wildcard *.fst)
 
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(VERIFIED)))
 UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIED)))
@@ -78,6 +61,7 @@ ROOTS = $(UNVERIFIED) $(VERIFIED)
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives \
 	$(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) \
 	../../../../sys/platform/proofs/fstar/extraction/ \
+	../../../../libcrux-intrinsics/proofs/fstar/extraction/ \
 	../../../../libcrux-sha3/proofs/fstar/extraction/
 
 FSTAR_FLAGS = --cmi \

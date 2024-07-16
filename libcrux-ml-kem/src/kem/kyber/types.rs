@@ -153,7 +153,7 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
     pub fn sk(&self) -> &[u8; PRIVATE_KEY_SIZE] {
         self.sk.as_slice()
     }
-    
+
     /// Separate this key into the public and private key.
     pub fn into_parts(
         self,
