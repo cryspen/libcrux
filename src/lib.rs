@@ -14,5 +14,5 @@ pub enum Error {
 const PSK_LENGTH: usize = 32;
 type Psk = [u8; PSK_LENGTH];
 
-pub mod dh_binder;
+pub mod ecdh_binder;
 pub mod psq;

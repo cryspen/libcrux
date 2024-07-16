@@ -27,7 +27,7 @@ pub struct ECDHPsk {
     ts: Duration,
 }
 
-/// Generates a post-quantum pre-shared key bound to an ECDH key.
+/// Generates a post-quantum pre-shared key (PQ-PSK) bound to an ECDH key.
 ///
 /// The encapsulated PSK is valid for the given duration
 /// `psk_ttl`, based on milliseconds since the UNIX epoch until
@@ -121,6 +121,9 @@ pub fn send_ecdh_binding(
     ))
 }
 
+/// Derive an ECDH-bound PSK from a PQ-PSK message.
+///
+/// Errors if the PQ-PSK message lifetime is elapsed.
 pub fn receive_ecdh_binding(
     receiver_pqsk: &PrivateKey,
     receiver_pqpk: &PublicKey,
