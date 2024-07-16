@@ -3,7 +3,7 @@
 
 use super::{
     constants::*,
-    ind_cca::{unpacked::*,*},
+    ind_cca::{unpacked::*, *},
     types::*,
     vector::traits::VectorType,
     *,
@@ -227,13 +227,18 @@ macro_rules! instantiate {
             /// Generates an ([`MlKem768Ciphertext`], [`MlKemSharedSecret`]) tuple.
             /// The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked`],
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
-            #[cfg_attr(hax,hax_lib::fstar::before("
+            #[cfg_attr(
+                hax,
+                hax_lib::fstar::before(
+                    "
 let _ =
     (* This module has implicit dependencies, here we make them explicit. *)
     (* The implicit dependencies arise from typeclasses instances. *)
     let open Libcrux_ml_kem.Vector.Portable in
     let open Libcrux_ml_kem.Vector.Neon in
-    ()"))]
+    ()"
+                )
+            )]
             pub fn encapsulate_unpacked(
                 public_key: &MlKem768PublicKeyUnpacked<$vec>,
                 randomness: [u8; SHARED_SECRET_SIZE],

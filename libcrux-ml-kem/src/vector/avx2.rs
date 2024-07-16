@@ -44,7 +44,7 @@ impl Operations for SIMD256Vector {
         from_i16_array(array)
     }
 
-    fn to_i16_array(x:Self) -> [i16; 16] {
+    fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
     }
 

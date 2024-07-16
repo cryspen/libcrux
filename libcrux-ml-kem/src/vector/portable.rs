@@ -25,7 +25,7 @@ impl Operations for PortableVector {
         from_i16_array(array)
     }
 
-    fn to_i16_array(x:Self) -> [i16; 16] {
+    fn to_i16_array(x: Self) -> [i16; 16] {
         to_i16_array(x)
     }
 

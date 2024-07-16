@@ -202,7 +202,7 @@ pub(crate) fn generate_keypair_unpacked<
     let pk = IndCpaPublicKeyUnpacked {
         t_as_ntt,
         A: A_transpose,
-        seed_for_A
+        seed_for_A,
     };
     let sk = IndCpaPrivateKeyUnpacked { secret_as_ntt };
     (sk, pk)
@@ -412,7 +412,7 @@ pub(crate) fn encrypt<
     let public_key_unpacked = IndCpaPublicKeyUnpacked {
         t_as_ntt,
         A,
-        seed_for_A
+        seed_for_A,
     };
     encrypt_unpacked::<
         K,

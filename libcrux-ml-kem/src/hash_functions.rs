@@ -1,12 +1,12 @@
 #![allow(non_snake_case)]
-//! This module contains the hash functions needed by ML-KEM 
+//! This module contains the hash functions needed by ML-KEM
 //! Verification Status: Interface-Only, Lax
 
 // TODO: Extract and verify the code, not just the interface, by relating to libcrux-sha3
 // Related Issue: https://github.com/cryspen/libcrux/issues/395 for extracting/checking libcrux-sha3
-// TODO: We need to manually pull out the code for G, H, PRFxN, etc. in each module to allow 
+// TODO: We need to manually pull out the code for G, H, PRFxN, etc. in each module to allow
 // them to be properly abstracted in F*. We would like hax to do this automatically.
-// Related Issue: https://github.com/hacspec/hax/issues/616 
+// Related Issue: https://github.com/hacspec/hax/issues/616
 
 use crate::constants::{G_DIGEST_SIZE, H_DIGEST_SIZE};
 
@@ -89,7 +89,7 @@ pub(crate) mod portable {
     }
 
     #[inline(always)]
-    fn PRFxN<const K:usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
+    fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
         let mut out = [[0u8; LEN]; K];
@@ -100,20 +100,20 @@ pub(crate) mod portable {
     }
 
     #[inline(always)]
-    fn shake128_init_absorb<const K:usize>(input: [[u8; 34]; K]) -> PortableHash<K> {
+    fn shake128_init_absorb<const K: usize>(input: [[u8; 34]; K]) -> PortableHash<K> {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
         let mut shake128_state = [shake128_init(); K];
         for i in 0..K {
             shake128_absorb_final(&mut shake128_state[i], &input[i]);
         }
-        PortableHash {
-            shake128_state,
-        }
+        PortableHash { shake128_state }
     }
 
     #[inline(always)]
-    fn shake128_squeeze_three_blocks<const K:usize>(st: &mut PortableHash<K>) -> [[u8; THREE_BLOCKS]; K] {
+    fn shake128_squeeze_three_blocks<const K: usize>(
+        st: &mut PortableHash<K>,
+    ) -> [[u8; THREE_BLOCKS]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
         let mut out = [[0u8; THREE_BLOCKS]; K];
@@ -124,7 +124,7 @@ pub(crate) mod portable {
     }
 
     #[inline(always)]
-    fn shake128_squeeze_block<const K:usize>(st: &mut PortableHash<K>) -> [[u8; BLOCK_SIZE]; K] {
+    fn shake128_squeeze_block<const K: usize>(st: &mut PortableHash<K>) -> [[u8; BLOCK_SIZE]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
         let mut out = [[0u8; BLOCK_SIZE]; K];
@@ -152,7 +152,7 @@ pub(crate) mod portable {
 
         #[inline(always)]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            PRFxN::<K,LEN>(input)
+            PRFxN::<K, LEN>(input)
         }
 
         #[inline(always)]
@@ -211,7 +211,7 @@ pub(crate) mod avx2 {
     }
 
     #[inline(always)]
-    fn PRFxN<const K:usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
+    fn PRFxN<const K: usize, const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut out = [[0u8; LEN]; K];
         let mut out0 = [0u8; LEN];
@@ -222,16 +222,16 @@ pub(crate) mod avx2 {
         match K as u8 {
             2 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1,
-                    &mut out2, &mut out3,
+                    &input[0], &input[1], &input[0], &input[0], &mut out0, &mut out1, &mut out2,
+                    &mut out3,
                 );
                 out[0] = out0;
                 out[1] = out1;
             }
             3 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1,
-                    &mut out2, &mut out3,
+                    &input[0], &input[1], &input[2], &input[0], &mut out0, &mut out1, &mut out2,
+                    &mut out3,
                 );
                 out[0] = out0;
                 out[1] = out1;
@@ -239,8 +239,8 @@ pub(crate) mod avx2 {
             }
             4 => {
                 x4::shake256(
-                    &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1,
-                    &mut out2, &mut out3,
+                    &input[0], &input[1], &input[2], &input[3], &mut out0, &mut out1, &mut out2,
+                    &mut out3,
                 );
                 out[0] = out0;
                 out[1] = out1;
@@ -253,7 +253,7 @@ pub(crate) mod avx2 {
     }
 
     #[inline(always)]
-    fn shake128_init_absorb<const K:usize>(input: [[u8; 34]; K]) -> Simd256Hash  {
+    fn shake128_init_absorb<const K: usize>(input: [[u8; 34]; K]) -> Simd256Hash {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut state = x4::incremental::shake128_init();
 
@@ -282,7 +282,9 @@ pub(crate) mod avx2 {
     }
 
     #[inline(always)]
-    fn shake128_squeeze_three_blocks<const K:usize>(st: &mut Simd256Hash) -> [[u8; THREE_BLOCKS]; K] {
+    fn shake128_squeeze_three_blocks<const K: usize>(
+        st: &mut Simd256Hash,
+    ) -> [[u8; THREE_BLOCKS]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut out = [[0u8; THREE_BLOCKS]; K];
         let mut out0 = [0u8; THREE_BLOCKS];
@@ -318,7 +320,7 @@ pub(crate) mod avx2 {
     }
 
     #[inline(always)]
-    fn shake128_squeeze_block<const K:usize>(st: &mut Simd256Hash) -> [[u8; BLOCK_SIZE]; K] {
+    fn shake128_squeeze_block<const K: usize>(st: &mut Simd256Hash) -> [[u8; BLOCK_SIZE]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
         let mut out = [[0u8; BLOCK_SIZE]; K];
         let mut out0 = [0u8; BLOCK_SIZE];
@@ -352,7 +354,6 @@ pub(crate) mod avx2 {
         }
         out
     }
-    
 
     impl<const K: usize> Hash<K> for Simd256Hash {
         #[inline(always)]
@@ -372,7 +373,7 @@ pub(crate) mod avx2 {
 
         #[inline(always)]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            PRFxN::<K,LEN>(input)
+            PRFxN::<K, LEN>(input)
         }
 
         #[inline(always)]
@@ -490,7 +491,9 @@ pub(crate) mod neon {
     }
 
     #[inline(always)]
-    fn shake128_squeeze_three_blocks<const K: usize>(st: &mut Simd128Hash) -> [[u8; THREE_BLOCKS]; K] {
+    fn shake128_squeeze_three_blocks<const K: usize>(
+        st: &mut Simd128Hash,
+    ) -> [[u8; THREE_BLOCKS]; K] {
         debug_assert!(K == 2 || K == 3 || K == 4);
 
         let mut out = [[0u8; THREE_BLOCKS]; K];
@@ -619,7 +622,7 @@ pub(crate) mod neon {
 
         #[inline(always)]
         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K] {
-            PRFxN::<K,LEN>(input)
+            PRFxN::<K, LEN>(input)
         }
 
         #[inline(always)]

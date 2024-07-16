@@ -46,7 +46,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         // for the following bug https://github.com/hacspec/hax/issues/720
         for i in 0..self.coefficients.len() {
             self.coefficients[i] = Vector::add(self.coefficients[i], &rhs.coefficients[i]);
-        };
+        }
         ()
     }
 
@@ -56,7 +56,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
         // for the following bug https://github.com/hacspec/hax/issues/720
         for i in 0..VECTORS_IN_RING_ELEMENT {
             self.coefficients[i] = Vector::barrett_reduce(self.coefficients[i]);
-        };
+        }
         ()
     }
 
@@ -112,7 +112,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
                 coefficient_normal_form,
                 &error.coefficients[j],
             ));
-        };
+        }
         ()
     }
 
@@ -129,7 +129,7 @@ impl<Vector: Operations> PolynomialRingElement<Vector> {
                 coefficient_normal_form,
                 &error.coefficients[j],
             ));
-        };
+        }
         ()
     }
 

@@ -2,12 +2,7 @@ use super::arithmetic::*;
 use super::vector_type::*;
 
 #[inline(always)]
-pub(crate) fn ntt_step(
-    v: &mut PortableVector,
-    zeta: i16,
-    i: usize,
-    j:usize
-) {
+pub(crate) fn ntt_step(v: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let t = montgomery_multiply_fe_by_fer(v.elements[j], zeta);
     v.elements[j] = v.elements[i] - t;
     v.elements[i] = v.elements[i] + t;
@@ -59,12 +54,7 @@ pub(crate) fn ntt_layer_3_step(mut v: PortableVector, zeta: i16) -> PortableVect
 }
 
 #[inline(always)]
-pub(crate) fn inv_ntt_step(
-    v: &mut PortableVector,
-    zeta: i16,
-    i: usize,
-    j: usize
-) {
+pub(crate) fn inv_ntt_step(v: &mut PortableVector, zeta: i16, i: usize, j: usize) {
     let a_minus_b = v.elements[j] - v.elements[i];
     v.elements[i] = barrett_reduce_element(v.elements[i] + v.elements[j]);
     v.elements[j] = montgomery_multiply_fe_by_fer(a_minus_b, zeta);
@@ -146,15 +136,17 @@ pub(crate) fn ntt_multiply_binomials(
     zeta: FieldElementTimesMontgomeryR,
     i: usize,
     j: usize,
-    out: &mut PortableVector
+    out: &mut PortableVector,
 ) {
-    let o0 = 
-        montgomery_reduce_element(
-            (a.elements[i] as i32) * (b.elements[i] as i32)
-                + (montgomery_reduce_element((a.elements[j] as i32) * (b.elements[j] as i32)) as i32) * (zeta as i32),
-        );
-    let o1 = 
-        montgomery_reduce_element((a.elements[i] as i32) * (b.elements[j] as i32) + (a.elements[j] as i32) * (b.elements[i] as i32));
+    let o0 = montgomery_reduce_element(
+        (a.elements[i] as i32) * (b.elements[i] as i32)
+            + (montgomery_reduce_element((a.elements[j] as i32) * (b.elements[j] as i32)) as i32)
+                * (zeta as i32),
+    );
+    let o1 = montgomery_reduce_element(
+        (a.elements[i] as i32) * (b.elements[j] as i32)
+            + (a.elements[j] as i32) * (b.elements[i] as i32),
+    );
     out.elements[i] = o0;
     out.elements[j] = o1;
 }

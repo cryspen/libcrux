@@ -2,7 +2,7 @@
 
 use super::{
     constants::*,
-    ind_cca::{unpacked::*,*},
+    ind_cca::{unpacked::*, *},
     types::*,
     vector::traits::VectorType,
     *,
@@ -231,13 +231,18 @@ macro_rules! instantiate {
             /// the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
             /// TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
             /// https://github.com/hacspec/hax/issues/770
-            #[cfg_attr(hax,hax_lib::fstar::before("
+            #[cfg_attr(
+                hax,
+                hax_lib::fstar::before(
+                    "
 let _ =
     (* This module has implicit dependencies, here we make them explicit. *)
     (* The implicit dependencies arise from typeclasses instances. *)
     let open Libcrux_ml_kem.Vector.Portable in
     let open Libcrux_ml_kem.Vector.Neon in
-    ()"))]
+    ()"
+                )
+            )]
             pub fn encapsulate_unpacked(
                 public_key: &MlKem1024PublicKeyUnpacked<$vec>,
                 randomness: [u8; SHARED_SECRET_SIZE],
