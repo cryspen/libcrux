@@ -40,7 +40,7 @@ jobs:
       - name: ⤵ Clone hax repository
         uses: actions/checkout@v4
         with:
-          repository: hacspec/hacspec-v2
+          repository: hacspec/hax
           path: hax
 
       - name: ⤵ Install & confiure Cachix
@@ -53,11 +53,14 @@ jobs:
           nix profile install ./hax
 
       - name: 🏃 Extract ML-KEM crate
+        working-directory: libcrux-ml-kem
+        run: ./hax.py extract
+
+      - name: 🏃 Lax ML-KEM crate
+        working-directory: libcrux-ml-kem
         run: |
-          cd libcrux-ml-kem
-          ./hax.py extract
-          # env FSTAR_HOME=${{ github.workspace }}/fstar \
-          #     HACL_HOME=${{ github.workspace }}/hacl-star \
-          #     HAX_HOME=${{ github.workspace }}/hax \
-          #     PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
-          #     ./hax.py prove --admit
+          env FSTAR_HOME=${{ github.workspace }}/fstar \
+              HACL_HOME=${{ github.workspace }}/hacl-star \
+              HAX_HOME=${{ github.workspace }}/hax \
+              PATH="${PATH}:${{ github.workspace }}/fstar/bin" \
+              ./hax.py prove --admit
