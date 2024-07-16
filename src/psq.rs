@@ -1,9 +1,8 @@
-//! # PQ-PSK establishment protocol
+//! # PQ-PSK Component
 //!
-//! This crate implements a post-quantum (PQ) pre-shared key (PSK) establishment
-//! protocol.
-
-#![deny(missing_docs)]
+//! This module implements a post-quantum (PQ) pre-shared key (PSK) component
+//! that can be bound to an outer protocol in a post-quantum pre-shared key
+//! establishment protocol.
 
 use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
 use rand::{CryptoRng, Rng};
@@ -217,7 +216,9 @@ impl PublicKey<'_> {
         sctx: &[u8],
         rng: &mut (impl CryptoRng + Rng),
     ) -> Result<(PrePsk, Ciphertext), Error> {
-        let (ik, enc) = self.encapsulate(rng).map_err(|_| Error::GenerationError)?;
+        let (ik, enc) = self
+            .encapsulate(rng)
+            .map_err(|_| Error::PSQGenerationError)?;
         let mut info = self.encode();
         info.extend_from_slice(&enc.encode());
         info.extend_from_slice(sctx);
@@ -228,7 +229,7 @@ impl PublicKey<'_> {
             info,
             K0_LENGTH,
         )
-        .map_err(|_| Error::GenerationError)?;
+        .map_err(|_| Error::PSQGenerationError)?;
 
         Ok((
             k0.try_into()
@@ -248,7 +249,9 @@ impl PrivateKey<'_> {
         enc: &Ciphertext,
         sctx: &[u8],
     ) -> Result<PrePsk, Error> {
-        let ik = enc.decapsulate(self).map_err(|_| Error::DerivationError)?;
+        let ik = enc
+            .decapsulate(self)
+            .map_err(|_| Error::PSQDerivationError)?;
 
         let mut info = pk.encode();
         info.extend_from_slice(&enc.encode());
@@ -260,7 +263,7 @@ impl PrivateKey<'_> {
             info,
             K0_LENGTH,
         )
-        .map_err(|_| Error::DerivationError)?;
+        .map_err(|_| Error::PSQDerivationError)?;
         Ok(k0
             .try_into()
             .expect("should receive the correct number of bytes from HKDF"))

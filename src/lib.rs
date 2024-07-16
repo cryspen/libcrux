@@ -1,3 +1,12 @@
+//! # Modular PQ-PSK Protocol
+//!
+//! This crate implements a method to generate post-quantum pre-shared keys
+//! bound to specific outer protocol contexts. The goal is to harden the outer
+//! (potentially classical) protocol against harvest-now-decrypt-later quantum
+//! adversaries.
+
+#![deny(missing_docs)]
+
 #[derive(Debug)]
 /// PSQ Errors.
 pub enum Error {
@@ -6,9 +15,13 @@ pub enum Error {
     /// An invalid private key was provided
     InvalidPrivateKey,
     /// An error during PSK encapsulation
-    GenerationError,
+    PSQGenerationError,
     /// An error during PSK decapsulation
-    DerivationError,
+    PSQDerivationError,
+    /// An error during binder computation
+    BinderError,
+    /// An error in the underlying cryptographic algorithms
+    CryptoError,
 }
 
 const PSK_LENGTH: usize = 32;

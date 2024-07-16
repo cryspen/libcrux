@@ -1,3 +1,8 @@
+//! # ECDH Binder
+//!
+//! This module implements a protocol binder that binds a post-quantum
+//! pre-shared key component to an outer ECDH based key agreement.
+
 use libcrux::aead::{decrypt_detached, Algorithm};
 use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
 use std::time::{Duration, SystemTime};
@@ -12,13 +17,14 @@ use crate::{
 const DH_PSK_CONTEXT: &[u8] = b"DH-PSK";
 const DH_PSK_LENGTH: usize = 32;
 
-const AEAD_RESPONDER: &[u8] = b"AEAD-Responder";
+const AEAD_RECEIVER: &[u8] = b"AEAD-Responder";
 const AEAD_INITIATOR: &[u8] = b"AEAD-Initiator";
 const AEAD_KEY_NONCE: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305)
     + Algorithm::nonce_size(Algorithm::Chacha20Poly1305);
 
 const AEAD_KEY_LENGTH: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305);
 
+/// An ECDH-bound PSQ encapsulation.
 pub struct ECDHPsk {
     encapsulation: crate::psq::Ciphertext,
     initiator_dh_pk: Vec<u8>,
@@ -34,7 +40,7 @@ pub struct ECDHPsk {
 /// current system time. Parameter `sctx` is used to
 /// cryptographically bind the generated PSK to a given outer
 /// protocol context and may be considered public.
-pub fn send_ecdh_binding(
+pub fn send_ecdh_bound_psq(
     psq_pk: &PublicKey,
     receiver_dh_pk: &X25519PublicKey,
     initiator_dh_sk: &X25519PrivateKey,
@@ -43,15 +49,18 @@ pub fn send_ecdh_binding(
     rng: &mut (impl CryptoRng + Rng),
 ) -> Result<(Psk, ECDHPsk), Error> {
     let now = SystemTime::now();
-    let ts = now.duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let ts = now
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .expect("now cannot be before UNIX_EPOCH");
     let ts_seconds = ts.as_secs();
     let ts_subsec_millis = ts.subsec_millis();
     let mut ts_ttl = ts_seconds.to_be_bytes().to_vec();
     ts_ttl.extend_from_slice(&ts_subsec_millis.to_be_bytes());
     ts_ttl.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
-    let (ss_q, encapsulation) = psq_pk.gen_pq_psk(sctx, rng).unwrap();
-    let ss_dh = libcrux_ecdh::x25519_derive(receiver_dh_pk, initiator_dh_sk).unwrap();
+    let (ss_q, encapsulation) = psq_pk.gen_pq_psk(sctx, rng)?;
+    let ss_dh = libcrux_ecdh::x25519_derive(receiver_dh_pk, initiator_dh_sk)
+        .map_err(|_| Error::CryptoError)?;
 
     // ikm = ss_q || ss_dh
     let mut ikm = Vec::from(ss_q);
@@ -65,49 +74,20 @@ pub fn send_ecdh_binding(
         DH_PSK_CONTEXT,
         DH_PSK_LENGTH,
     )
-    .unwrap()
+    .map_err(|_| Error::CryptoError)?
     .try_into()
     .expect("should receive the correct number of bytes from HKDF");
 
-    let initiator_bytes = libcrux_hkdf::expand(
-        libcrux_hkdf::Algorithm::Sha256,
-        psk,
-        AEAD_INITIATOR,
-        AEAD_KEY_NONCE,
-    )
-    .unwrap();
-    let (k_initiator, n_initiator) = initiator_bytes.split_at(AEAD_KEY_LENGTH);
-
-    let responder_bytes = libcrux_hkdf::expand(
-        libcrux_hkdf::Algorithm::Sha256,
-        psk,
-        AEAD_RESPONDER,
-        AEAD_KEY_NONCE,
-    )
-    .unwrap();
-    let (k_responder, _n_responder) = responder_bytes.split_at(AEAD_KEY_LENGTH);
-
-    let k_initiator = libcrux::aead::Key::from_bytes(
-        libcrux::aead::Algorithm::Chacha20Poly1305,
-        k_initiator.to_vec(),
-    )
-    .unwrap();
-    let _k_responder = libcrux::aead::Key::from_bytes(
-        libcrux::aead::Algorithm::Chacha20Poly1305,
-        k_responder.to_vec(),
-    )
-    .unwrap();
+    // NOTE: Make this a real cipherstate and pass it outside?
+    let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(psk)?;
 
     let aad = ts_ttl;
     let initiator_dh_pk =
-        libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, initiator_dh_sk).unwrap();
-    let aead_mac = libcrux::aead::encrypt_detached(
-        &k_initiator,
-        &initiator_dh_pk,
-        libcrux::aead::Iv(n_initiator.try_into().unwrap()),
-        aad,
-    )
-    .unwrap();
+        libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, initiator_dh_sk)
+            .map_err(|_| Error::CryptoError)?;
+    let aead_mac =
+        libcrux::aead::encrypt_detached(&initiator_key, &initiator_dh_pk, initiator_iv, aad)
+            .map_err(|_| Error::CryptoError)?;
 
     Ok((
         psk,
@@ -124,7 +104,7 @@ pub fn send_ecdh_binding(
 /// Derive an ECDH-bound PSK from a PQ-PSK message.
 ///
 /// Errors if the PQ-PSK message lifetime is elapsed.
-pub fn receive_ecdh_binding(
+pub fn receive_ecdh_bound_psq(
     receiver_pqsk: &PrivateKey,
     receiver_pqpk: &PublicKey,
     receiver_dh_sk: &X25519PrivateKey,
@@ -138,12 +118,13 @@ pub fn receive_ecdh_binding(
         psk_ttl,
         ts,
     } = ecdh_psk_message;
-    let ss_q = receiver_pqsk
-        .derive_pq_psk(receiver_pqpk, encapsulation, sctx)
-        .unwrap();
-    let initiator_dh_pk_bytes: [u8; 32] = initiator_dh_pk[0..32].try_into().unwrap();
+    let ss_q = receiver_pqsk.derive_pq_psk(receiver_pqpk, encapsulation, sctx)?;
+    let initiator_dh_pk_bytes: [u8; 32] = initiator_dh_pk[0..32]
+        .try_into()
+        .map_err(|_| Error::InvalidPublicKey)?;
     let initiator_dh_pk_point = libcrux_ecdh::X25519PublicKey(initiator_dh_pk_bytes);
-    let ss_dh = libcrux_ecdh::x25519_derive(&initiator_dh_pk_point, receiver_dh_sk).unwrap();
+    let ss_dh = libcrux_ecdh::x25519_derive(&initiator_dh_pk_point, receiver_dh_sk)
+        .map_err(|_| Error::CryptoError)?;
 
     // ikm = ss_q || ss_dh
     let mut ikm = Vec::from(ss_q);
@@ -157,38 +138,12 @@ pub fn receive_ecdh_binding(
         DH_PSK_CONTEXT,
         DH_PSK_LENGTH,
     )
-    .unwrap()
+    .map_err(|_| Error::CryptoError)?
     .try_into()
     .expect("should receive the correct number of bytes from HKDF");
 
-    let initiator_bytes = libcrux_hkdf::expand(
-        libcrux_hkdf::Algorithm::Sha256,
-        psk,
-        AEAD_INITIATOR,
-        AEAD_KEY_NONCE,
-    )
-    .unwrap();
-    let (k_initiator, n_initiator) = initiator_bytes.split_at(AEAD_KEY_LENGTH);
-
-    let responder_bytes = libcrux_hkdf::expand(
-        libcrux_hkdf::Algorithm::Sha256,
-        psk,
-        AEAD_RESPONDER,
-        AEAD_KEY_NONCE,
-    )
-    .unwrap();
-    let (k_responder, _n_responder) = responder_bytes.split_at(AEAD_KEY_LENGTH);
-
-    let k_initiator = libcrux::aead::Key::from_bytes(
-        libcrux::aead::Algorithm::Chacha20Poly1305,
-        k_initiator.to_vec(),
-    )
-    .unwrap();
-    let _k_responder = libcrux::aead::Key::from_bytes(
-        libcrux::aead::Algorithm::Chacha20Poly1305,
-        k_responder.to_vec(),
-    )
-    .unwrap();
+    // NOTE: Make this a real cipherstate and pass it outside?
+    let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(psk)?;
 
     let ts_seconds = ts.as_secs();
     let ts_subsec_millis = ts.subsec_millis();
@@ -197,26 +152,63 @@ pub fn receive_ecdh_binding(
     ts_ttl.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
     let aad = ts_ttl;
-    let initiator_dh_pk_decrypted = decrypt_detached(
-        &k_initiator,
-        &aead_mac.1,
-        libcrux::aead::Iv(n_initiator.try_into().unwrap()),
-        aad,
-        &aead_mac.0,
-    )
-    .unwrap();
+    let initiator_dh_pk_decrypted =
+        decrypt_detached(&initiator_key, &aead_mac.1, initiator_iv, aad, &aead_mac.0)
+            .map_err(|_| Error::CryptoError)?;
 
     // validate TTL
     let now = SystemTime::now();
     let ts_since_epoch =
         Duration::from_secs(ts_seconds) + Duration::from_millis((ts_subsec_millis).into());
     if initiator_dh_pk_decrypted != *initiator_dh_pk
-        || now.duration_since(SystemTime::UNIX_EPOCH).unwrap() - ts_since_epoch >= *psk_ttl
+        || now
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("now cannot be before UNIX_EPOCH")
+            - ts_since_epoch
+            >= *psk_ttl
     {
-        Err(Error::DerivationError)
+        Err(Error::BinderError)
     } else {
         Ok(psk)
     }
+}
+
+fn derive_cipherstate(
+    psk: [u8; 32],
+) -> Result<
+    (
+        libcrux::aead::Iv,
+        libcrux::aead::Key,
+        libcrux::aead::Iv,
+        libcrux::aead::Key,
+    ),
+    Error,
+> {
+    let (initiator_iv, initiator_key) = derive_key_iv(psk, AEAD_INITIATOR)?;
+    let (receiver_iv, receiver_key) = derive_key_iv(psk, AEAD_RECEIVER)?;
+
+    Ok((initiator_iv, initiator_key, receiver_iv, receiver_key))
+}
+
+fn derive_key_iv(
+    psk: [u8; 32],
+    info: &[u8],
+) -> Result<(libcrux::aead::Iv, libcrux::aead::Key), Error> {
+    let key_iv_bytes =
+        libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, psk, info, AEAD_KEY_NONCE)
+            .map_err(|_| Error::CryptoError)?;
+    let (key_bytes, iv_bytes) = key_iv_bytes.split_at(AEAD_KEY_LENGTH);
+    let key = libcrux::aead::Key::from_bytes(
+        libcrux::aead::Algorithm::Chacha20Poly1305,
+        key_bytes.to_vec(),
+    )
+    .map_err(|_| Error::CryptoError)?;
+    let iv = libcrux::aead::Iv(
+        iv_bytes
+            .try_into()
+            .expect("should receive the correct number of bytes"),
+    );
+    Ok((iv, key))
 }
 
 #[cfg(test)]
@@ -231,10 +223,10 @@ mod tests {
         let (receiver_pqsk, receiver_pqpk) =
             crate::psq::generate_key_pair(crate::psq::Algorithm::MlKem768, &mut rng).unwrap();
         let (receiver_dh_sk, receiver_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
-        let (initiator_dh_sk, initiator_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+        let (initiator_dh_sk, _initiator_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
 
         let sctx = b"test context";
-        let (_psk_initiator, ecdh_psk_message) = send_ecdh_binding(
+        let (_psk_initiator, ecdh_psk_message) = send_ecdh_bound_psq(
             &receiver_pqpk,
             &receiver_dh_pk,
             &initiator_dh_sk,
@@ -244,7 +236,7 @@ mod tests {
         )
         .unwrap();
 
-        let _psk_receiver = receive_ecdh_binding(
+        let _psk_receiver = receive_ecdh_bound_psq(
             &receiver_pqsk,
             &receiver_pqpk,
             &receiver_dh_sk,
@@ -261,10 +253,10 @@ mod tests {
         let (receiver_pqsk, receiver_pqpk) =
             crate::psq::generate_key_pair(crate::psq::Algorithm::X25519, &mut rng).unwrap();
         let (receiver_dh_sk, receiver_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
-        let (initiator_dh_sk, initiator_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+        let (initiator_dh_sk, _initiator_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
 
         let sctx = b"test context";
-        let (_psk_initiator, ecdh_psk_message) = send_ecdh_binding(
+        let (_psk_initiator, ecdh_psk_message) = send_ecdh_bound_psq(
             &receiver_pqpk,
             &receiver_dh_pk,
             &initiator_dh_sk,
@@ -274,7 +266,7 @@ mod tests {
         )
         .unwrap();
 
-        let _psk_receiver = receive_ecdh_binding(
+        let _psk_receiver = receive_ecdh_bound_psq(
             &receiver_pqsk,
             &receiver_pqpk,
             &receiver_dh_sk,
@@ -291,10 +283,10 @@ mod tests {
         let (receiver_pqsk, receiver_pqpk) =
             crate::psq::generate_key_pair(crate::psq::Algorithm::X25519, &mut rng).unwrap();
         let (receiver_dh_sk, receiver_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
-        let (initiator_dh_sk, initiator_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+        let (initiator_dh_sk, _initiator_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
 
         let sctx = b"test context";
-        let (_psk_initiator, ecdh_psk_message) = send_ecdh_binding(
+        let (_psk_initiator, ecdh_psk_message) = send_ecdh_bound_psq(
             &receiver_pqpk,
             &receiver_dh_pk,
             &initiator_dh_sk,
@@ -306,7 +298,7 @@ mod tests {
 
         std::thread::sleep(Duration::from_secs(2));
 
-        let _psk_receiver = receive_ecdh_binding(
+        let _psk_receiver = receive_ecdh_bound_psq(
             &receiver_pqsk,
             &receiver_pqpk,
             &receiver_dh_sk,

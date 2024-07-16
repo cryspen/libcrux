@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use libcrux_psq::{
-    ecdh_binder::send_ecdh_binding,
+    ecdh_binder::send_ecdh_bound_psq,
     psq::{generate_key_pair, Algorithm},
 };
 use rand::thread_rng;
@@ -13,7 +13,7 @@ fn main() {
     let (initiator_dh_sk, initiator_dh_pk) = libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
 
     for _ in 0..100_000 {
-        let _ = core::hint::black_box(send_ecdh_binding(
+        let _ = core::hint::black_box(send_ecdh_bound_psq(
             &mlkem_keypair.1,
             &receiver_dh_pk,
             &initiator_dh_sk,
