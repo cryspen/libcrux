@@ -692,7 +692,7 @@ dependencies = [
 [[package]]
 name = "hax-lib"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#7be21f59fb68a39041dd135e3e6c8b23ad22b4ea"
+source = "git+https://github.com/hacspec/hax/?branch=main#717d606182c83dcb661ad65ba133e43c1eadcf6f"
 dependencies = [
  "hax-lib-macros 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
  "num-bigint",
@@ -712,7 +712,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#7be21f59fb68a39041dd135e3e6c8b23ad22b4ea"
+source = "git+https://github.com/hacspec/hax/?branch=main#717d606182c83dcb661ad65ba133e43c1eadcf6f"
 dependencies = [
  "hax-lib-macros-types 0.1.0-pre.1 (git+https://github.com/hacspec/hax/?branch=main)",
  "proc-macro-error",
@@ -736,7 +736,7 @@ dependencies = [
 [[package]]
 name = "hax-lib-macros-types"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/hacspec/hax/?branch=main#7be21f59fb68a39041dd135e3e6c8b23ad22b4ea"
+source = "git+https://github.com/hacspec/hax/?branch=main#717d606182c83dcb661ad65ba133e43c1eadcf6f"
 dependencies = [
  "proc-macro2",
  "quote",
