@@ -1,28 +1,22 @@
 // Functions for serializing and deserializing an error ring element.
 
-use crate::{
-    ntt::ntt,
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
-    simd::{portable::PortableSIMDUnit, traits::Operations},
-};
+use crate::{ntt::ntt, polynomial::PolynomialRingElement, simd::traits::Operations};
 
 #[inline(always)]
-pub(crate) fn serialize<const ETA: usize, const OUTPUT_SIZE: usize>(
-    re: PolynomialRingElement,
+pub(crate) fn serialize<SIMDUnit: Operations, const ETA: usize, const OUTPUT_SIZE: usize>(
+    re: PolynomialRingElement<SIMDUnit>,
 ) -> [u8; OUTPUT_SIZE] {
     let mut serialized = [0u8; OUTPUT_SIZE];
-
-    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
     match ETA {
         2 => {
             const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 3;
 
-            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&PortableSIMDUnit::error_serialize::<
-                        OUTPUT_BYTES_PER_SIMD_UNIT,
-                    >(*simd_unit));
+                    .copy_from_slice(&SIMDUnit::error_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
+                        *simd_unit,
+                    ));
             }
 
             serialized
@@ -30,11 +24,11 @@ pub(crate) fn serialize<const ETA: usize, const OUTPUT_SIZE: usize>(
         4 => {
             const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 4;
 
-            for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+            for (i, simd_unit) in re.simd_units.iter().enumerate() {
                 serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-                    .copy_from_slice(&PortableSIMDUnit::error_serialize::<
-                        OUTPUT_BYTES_PER_SIMD_UNIT,
-                    >(*simd_unit));
+                    .copy_from_slice(&SIMDUnit::error_serialize::<OUTPUT_BYTES_PER_SIMD_UNIT>(
+                        *simd_unit,
+                    ));
             }
 
             serialized
@@ -44,35 +38,38 @@ pub(crate) fn serialize<const ETA: usize, const OUTPUT_SIZE: usize>(
 }
 
 #[inline(always)]
-fn deserialize<const ETA: usize>(serialized: &[u8]) -> PolynomialRingElement {
+fn deserialize<SIMDUnit: Operations, const ETA: usize>(
+    serialized: &[u8],
+) -> PolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = match ETA {
         2 => serialized.chunks(3),
         4 => serialized.chunks(4),
         _ => unreachable!(),
     };
 
-    let mut result = SIMDPolynomialRingElement::ZERO();
+    let mut result = PolynomialRingElement::ZERO();
 
     for i in 0..result.simd_units.len() {
         result.simd_units[i] =
-            PortableSIMDUnit::error_deserialize::<ETA>(&serialized_chunks.next().unwrap());
+            SIMDUnit::error_deserialize::<ETA>(&serialized_chunks.next().unwrap());
     }
 
-    result.to_polynomial_ring_element()
+    result
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_to_vector_then_ntt<
+    SIMDUnit: Operations,
     const DIMENSION: usize,
     const ETA: usize,
     const RING_ELEMENT_SIZE: usize,
 >(
     serialized: &[u8],
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut ring_elements = [PolynomialRingElement::ZERO; DIMENSION];
+) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_SIZE).enumerate() {
-        ring_elements[i] = ntt(deserialize::<ETA>(bytes));
+        ring_elements[i] = ntt(deserialize::<SIMDUnit, ETA>(bytes));
     }
 
     ring_elements
@@ -81,6 +78,8 @@ pub(crate) fn deserialize_to_vector_then_ntt<
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::simd::portable::PortableSIMDUnit;
 
     #[test]
     fn test_deserialize_when_eta_is_2() {
@@ -107,7 +106,7 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<2>(&serialized).coefficients,
+            deserialize::<PortableSIMDUnit, 2>(&serialized).to_i32_array(),
             expected_coefficients
         );
     }
@@ -139,7 +138,7 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<4>(&serialized).coefficients,
+            deserialize::<PortableSIMDUnit, 4>(&serialized).to_i32_array(),
             expected_coefficients
         );
     }
