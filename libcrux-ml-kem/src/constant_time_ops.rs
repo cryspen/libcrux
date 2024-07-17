@@ -85,3 +85,19 @@ pub(crate) fn select_shared_secret_in_constant_time(
     #[cfg(not(eurydice))]
     core::hint::black_box(select_ct(lhs, rhs, selector))
 }
+
+#[cfg_attr(hax, hax_lib::requires(
+    lhs_c.len() == rhs_c.len() &&
+    lhs_s.len() == rhs_s.len() &&
+    lhs_s.len() == SHARED_SECRET_SIZE
+))]
+pub(crate) fn compare_ciphertexts_select_shared_secret_in_constant_time(
+    lhs_c: &[u8],
+    rhs_c: &[u8],
+    lhs_s: &[u8],
+    rhs_s: &[u8],
+) -> [u8; SHARED_SECRET_SIZE] {
+    let selector = compare_ciphertexts_in_constant_time(lhs_c, rhs_c);
+
+    select_shared_secret_in_constant_time(lhs_s, rhs_s, selector)
+}

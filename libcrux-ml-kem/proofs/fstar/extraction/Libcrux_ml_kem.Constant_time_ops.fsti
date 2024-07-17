@@ -35,3 +35,11 @@ val select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8)
         (Core.Slice.impl__len #u8 lhs <: usize) =. (Core.Slice.impl__len #u8 rhs <: usize) &&
         (Core.Slice.impl__len #u8 lhs <: usize) =. Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
       (fun _ -> Prims.l_True)
+
+val compare_ciphertexts_select_shared_secret_in_constant_time (lhs_c rhs_c lhs_s rhs_s: t_Slice u8)
+    : Prims.Pure (t_Array u8 (sz 32))
+      (requires
+        (Core.Slice.impl__len #u8 lhs_c <: usize) =. (Core.Slice.impl__len #u8 rhs_c <: usize) &&
+        (Core.Slice.impl__len #u8 lhs_s <: usize) =. (Core.Slice.impl__len #u8 rhs_s <: usize) &&
+        (Core.Slice.impl__len #u8 lhs_s <: usize) =. Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
+      (fun _ -> Prims.l_True)
