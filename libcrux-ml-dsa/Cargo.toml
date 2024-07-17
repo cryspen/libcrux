@@ -23,6 +23,9 @@ serde = { version = "1.0", features = ["derive"] }
 criterion = "0.5"
 pqcrypto-dilithium = { version = "0.5.0", default-features = false }
 
+[features]
+avx2 = []
+
 [[bench]]
 name = "ml-dsa"
 harness = false

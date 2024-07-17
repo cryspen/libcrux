@@ -1,4 +1,4 @@
-use crate::{constants::*, simd::portable::PortableSIMDUnit, VerificationError};
+use crate::{constants::*, VerificationError};
 
 // ML-DSA-87 parameters
 
@@ -70,10 +70,16 @@ pub struct MLDSA87KeyPair {
 
 pub struct MLDSA87Signature(pub [u8; SIGNATURE_SIZE]);
 
+// TODO: Multiplex more intelligently.
+#[cfg(feature = "avx2")]
+type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
+#[cfg(not(feature = "avx2"))]
+type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
+
 /// Generate an ML-DSA-87 Key Pair
 pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA87KeyPair {
     let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
-        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
+        SIMDUnit,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -95,7 +101,7 @@ pub fn sign(
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> MLDSA87Signature {
     let signature = crate::ml_dsa_generic::sign::<
-        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
+        SIMDUnit,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -122,7 +128,7 @@ pub fn verify(
     signature: MLDSA87Signature,
 ) -> Result<(), VerificationError> {
     crate::ml_dsa_generic::verify::<
-        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
+        SIMDUnit,
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
