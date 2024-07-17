@@ -10,8 +10,8 @@ pub(crate) trait Operations: Copy + Clone {
     #[allow(non_snake_case)]
     fn ZERO() -> Self;
 
-    fn from_i32_array(array: &[i32]) -> Self;
-    fn to_i32_array(simd_unit: Self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT];
+    fn from_coefficient_array(array: &[i32]) -> Self;
+    fn to_coefficient_array(&self) -> [i32; COEFFICIENTS_IN_SIMD_UNIT];
 
     // Arithmetic
     fn add(lhs: &Self, rhs: &Self) -> Self;
