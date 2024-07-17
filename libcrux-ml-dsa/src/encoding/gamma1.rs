@@ -63,10 +63,9 @@ pub(crate) fn deserialize<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
 mod tests {
     use super::*;
 
-    use crate::simd::portable::PortableSIMDUnit;
+    use crate::simd::{self, traits::Operations};
 
-    #[test]
-    fn test_deserialize_when_gamma1_is_2_pow_17() {
+    fn test_deserialize_generic<SIMDUnit: Operations>() {
         let bytes = [
             198, 32, 33, 79, 53, 132, 46, 198, 17, 233, 84, 94, 175, 136, 13, 127, 137, 254, 113,
             82, 68, 239, 94, 176, 179, 22, 102, 177, 253, 142, 176, 250, 96, 201, 11, 213, 230, 41,
@@ -129,13 +128,10 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<PortableSIMDUnit, 17>(&bytes).to_i32_array(),
+            deserialize::<SIMDUnit, 17>(&bytes).to_i32_array(),
             expected_coefficients
         );
-    }
 
-    #[test]
-    fn test_deserialize_when_gamma1_is_2_pow_19() {
         let bytes: [u8; 640] = [
             253, 11, 216, 60, 251, 71, 79, 187, 242, 250, 209, 44, 72, 206, 98, 3, 22, 91, 184, 22,
             197, 50, 249, 184, 253, 104, 8, 3, 9, 116, 147, 157, 110, 167, 67, 218, 30, 79, 58, 12,
@@ -203,8 +199,19 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<PortableSIMDUnit, 19>(&bytes).to_i32_array(),
+            deserialize::<SIMDUnit, 19>(&bytes).to_i32_array(),
             expected_coefficients
         );
+    }
+
+    #[test]
+    fn test_deserialize_portable() {
+        test_deserialize_generic::<simd::portable::PortableSIMDUnit>();
+    }
+
+    #[cfg(feature = "avx2")]
+    #[test]
+    fn test_deserialize_avx2() {
+        test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }
