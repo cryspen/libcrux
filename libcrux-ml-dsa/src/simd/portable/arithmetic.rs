@@ -1,8 +1,14 @@
-use super::simd_unit_type::*;
 use crate::{
     constants::BITS_IN_LOWER_PART_OF_T,
-    simd::traits::{FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
+    simd::{
+        portable::PortableSIMDUnit,
+        traits::{Operations, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R},
+    },
 };
+
+/// Values having this type hold a representative 'x' of the Kyber field.
+/// We use 'fe' as a shorthand for this type.
+pub(crate) type FieldElement = i32;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -18,7 +24,7 @@ pub(crate) const MONTGOMERY_SHIFT: u8 = 32;
 
 #[inline(always)]
 pub fn add(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
-    let mut sum = ZERO();
+    let mut sum = PortableSIMDUnit::ZERO();
 
     for i in 0..sum.coefficients.len() {
         sum.coefficients[i] = lhs.coefficients[i] + rhs.coefficients[i];
@@ -29,7 +35,7 @@ pub fn add(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
 
 #[inline(always)]
 pub fn subtract(lhs: &PortableSIMDUnit, rhs: &PortableSIMDUnit) -> PortableSIMDUnit {
-    let mut difference = ZERO();
+    let mut difference = PortableSIMDUnit::ZERO();
 
     for i in 0..difference.coefficients.len() {
         difference.coefficients[i] = lhs.coefficients[i] - rhs.coefficients[i];
@@ -82,7 +88,7 @@ pub(crate) fn montgomery_multiply(
     lhs: &PortableSIMDUnit,
     rhs: &PortableSIMDUnit,
 ) -> PortableSIMDUnit {
-    let mut product = ZERO();
+    let mut product = PortableSIMDUnit::ZERO();
 
     for i in 0..product.coefficients.len() {
         product.coefficients[i] =
@@ -119,8 +125,8 @@ fn power2round_element(t: i32) -> (i32, i32) {
 }
 
 pub fn power2round(simd_unit: PortableSIMDUnit) -> (PortableSIMDUnit, PortableSIMDUnit) {
-    let mut t0_simd_unit = ZERO();
-    let mut t1_simd_unit = ZERO();
+    let mut t0_simd_unit = PortableSIMDUnit::ZERO();
+    let mut t1_simd_unit = PortableSIMDUnit::ZERO();
 
     for (i, t) in simd_unit.coefficients.into_iter().enumerate() {
         let (t0, t1) = power2round_element(t);
@@ -176,7 +182,7 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 
 #[inline(always)]
 pub fn shift_left_then_reduce(simd_unit: PortableSIMDUnit, shift_by: usize) -> PortableSIMDUnit {
-    let mut out = ZERO();
+    let mut out = PortableSIMDUnit::ZERO();
 
     for i in 0..simd_unit.coefficients.len() {
         out.coefficients[i] = reduce_element(simd_unit.coefficients[i] << shift_by);
@@ -199,7 +205,7 @@ pub fn compute_hint<const GAMMA2: i32>(
     low: PortableSIMDUnit,
     high: PortableSIMDUnit,
 ) -> (usize, PortableSIMDUnit) {
-    let mut hint = ZERO();
+    let mut hint = PortableSIMDUnit::ZERO();
     let mut one_hints_count = 0;
 
     for i in 0..hint.coefficients.len() {
@@ -313,8 +319,8 @@ pub(crate) fn use_one_hint<const GAMMA2: i32>(r: i32, hint: i32) -> i32 {
 pub fn decompose<const GAMMA2: i32>(
     simd_unit: PortableSIMDUnit,
 ) -> (PortableSIMDUnit, PortableSIMDUnit) {
-    let mut low = ZERO();
-    let mut high = ZERO();
+    let mut low = PortableSIMDUnit::ZERO();
+    let mut high = PortableSIMDUnit::ZERO();
 
     for i in 0..low.coefficients.len() {
         let (low_part, high_part) = decompose_element::<GAMMA2>(simd_unit.coefficients[i]);
@@ -330,7 +336,7 @@ pub fn use_hint<const GAMMA2: i32>(
     simd_unit: PortableSIMDUnit,
     hint: PortableSIMDUnit,
 ) -> PortableSIMDUnit {
-    let mut result = ZERO();
+    let mut result = PortableSIMDUnit::ZERO();
 
     for i in 0..result.coefficients.len() {
         result.coefficients[i] =

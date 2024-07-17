@@ -1,4 +1,4 @@
-use crate::simd::traits::FIELD_MODULUS;
+use crate::constants::FIELD_MODULUS;
 
 #[inline(always)]
 pub fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {
