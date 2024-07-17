@@ -132,11 +132,19 @@ impl KeccakItem<1> for u64 {
         split_at_mut_1(a, mid)
     }
 
+    /// `out` has the exact size we want here. It must be less than `BLOCKSIZE`
     #[inline(always)]
-    fn store<'a, const RATE: usize>(state: &[[Self; 5]; 5], out: &'a mut BlockMut<'a, 1>) {
-        let block = out.get_mut(0);
-        for i in 0..RATE / 8 {
-            block[8 * i..8 * i + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
+    fn store<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 1]) {
+        debug_assert!(out.len() < BLOCKSIZE / 8, "{} >= {}", out.len(), BLOCKSIZE);
+        let num_blocks = out[0].len() / 8;
+        let last_block_len = out[0].len() % 8;
+        for i in 0..num_blocks {
+            out[0][i * 8..i * 8 + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
+        }
+        if last_block_len != 0 {
+            out[0][num_blocks * 8..num_blocks * 8 + last_block_len].copy_from_slice(
+                &state[num_blocks / 5][num_blocks % 5].to_le_bytes()[0..last_block_len],
+            );
         }
     }
 }

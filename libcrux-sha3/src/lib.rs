@@ -2,7 +2,7 @@
 //!
 //! A SHA3 implementation with optional simd optimisations.
 
-#![no_std]
+// #![no_std]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
@@ -87,6 +87,9 @@ pub fn hash<const LEN: usize>(algorithm: Algorithm, payload: &[u8]) -> [u8; LEN]
     }
     out
 }
+
+/// SHA3
+pub use hash as sha3;
 
 /// SHA3 224
 #[inline(always)]
@@ -254,7 +257,7 @@ pub mod portable {
         /// Absorb
         #[inline(always)]
         pub fn shake128_absorb_final(s: &mut KeccakState, data0: &[u8]) {
-            absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0].into());
+            absorb_final::<1, u64, 168, 0x1fu8>(&mut s.state, [data0]);
         }
 
         /// Squeeze three blocks
@@ -285,7 +288,7 @@ pub mod portable {
         /// Absorb some data for SHAKE-256 for the last time
         #[inline(always)]
         pub fn shake256_absorb_final(s: &mut KeccakState, data0: &[u8]) {
-            absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data0].into());
+            absorb_final::<1, u64, 136, 0x1fu8>(&mut s.state, [data0]);
         }
 
         /// Squeeze the first SHAKE-256 block
@@ -506,10 +509,9 @@ pub mod neon {
                 // }
                 #[cfg(feature = "simd128")]
                 {
-                    let block = Block::new([data0, data1]);
                     absorb_final::<2, crate::simd::arm64::uint64x2_t, 168, 0x1fu8>(
                         &mut s.state,
-                        block,
+                        [data0, data1],
                     );
                 }
             }

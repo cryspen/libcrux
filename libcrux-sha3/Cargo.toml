@@ -31,6 +31,7 @@ harness = false
 criterion = "0.5.1"
 hex = "0.4.3"
 rand = "0.8.5"
+cavp = { version = "0.0.2-alpha.1", path = "../cavp" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(hax)', 'cfg(eurydice)'] }

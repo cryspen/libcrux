@@ -190,4 +190,8 @@ impl KeccakItem<2> for uint64x2_t {
     fn split_at_mut_n(a: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
         split_at_mut_2(a, mid)
     }
+
+    fn store<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 2]) {
+        todo!()
+    }
 }
