@@ -212,6 +212,6 @@ mod tests {
     #[cfg(feature = "avx2")]
     #[test]
     fn test_deserialize_avx2() {
-        test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
+        test_deserialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }
