@@ -14,7 +14,7 @@ macro_rules! test {
             for test in tv.tests() {
                 eprintln!("test {c}");
                 c += 1;
-                let my_digest: $digest = sha3($algorithm, &test.msg);
+                let my_digest: $digest = sha3($algorithm, &test.msg[0..test.length / 8]);
                 assert_eq!(&my_digest, &test.digest[..]);
             }
         }

@@ -401,12 +401,14 @@ pub(crate) fn absorb_final<
     s: &mut KeccakState<N, T>,
     last: [&[u8]; N],
 ) {
-    debug_assert!(N > 0 && last.len() < RATE);
-    let last_len = last.len();
+    debug_assert!(N > 0 && last[0].len() < RATE);
+    let last_len = last[0].len();
     eprintln!("last_len: {last_len} ({:x?})", last);
     let mut blocks = [[0u8; 200]; N];
     for i in 0..N {
-        blocks[i][0..last_len].copy_from_slice(last[i]);
+        if last_len > 0 {
+            blocks[i][0..last_len].copy_from_slice(last[i]);
+        }
         blocks[i][last_len] = DELIM;
         blocks[i][RATE - 1] |= 0x80;
     }
