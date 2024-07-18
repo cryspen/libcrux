@@ -86,7 +86,7 @@ impl Ciphertext {
         match self {
             Ciphertext::X25519(ct) => {
                 if let PrivateKey::X25519(sk) = sk {
-                    let ss = ct.decapsulate(sk).unwrap();
+                    let ss = ct.decapsulate(sk)?;
                     Ok(SharedSecret::X25519(ss))
                 } else {
                     Err(Error::InvalidPrivateKey)
@@ -94,7 +94,7 @@ impl Ciphertext {
             }
             Ciphertext::MlKem768(ct) => {
                 if let PrivateKey::MlKem768(sk) = sk {
-                    let ss = ct.decapsulate(sk).unwrap();
+                    let ss = ct.decapsulate(sk)?;
                     Ok(SharedSecret::MlKem768(ss))
                 } else {
                     Err(Error::InvalidPrivateKey)
@@ -110,7 +110,7 @@ impl Ciphertext {
             }
             Ciphertext::XWingKemDraft02(ct) => {
                 if let PrivateKey::XWingKemDraft02(sk) = sk {
-                    let ss = ct.decapsulate(sk).unwrap();
+                    let ss = ct.decapsulate(sk)?;
                     Ok(SharedSecret::XWingKemDraft02(ss))
                 } else {
                     Err(Error::InvalidPrivateKey)
@@ -140,11 +140,11 @@ pub fn generate_key_pair(
 ) -> Result<(PrivateKey<'static>, PublicKey<'static>), Error> {
     match alg {
         Algorithm::X25519 => {
-            let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng).unwrap();
+            let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng)?;
             Ok((PrivateKey::X25519(sk), PublicKey::X25519(pk)))
         }
         Algorithm::MlKem768 => {
-            let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng).unwrap();
+            let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng)?;
             Ok((PrivateKey::MlKem768(sk), PublicKey::MlKem768(pk)))
         }
         Algorithm::ClassicMcEliece => {
@@ -155,7 +155,7 @@ pub fn generate_key_pair(
             ))
         }
         Algorithm::XWingKemDraft02 => {
-            let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng).unwrap();
+            let (sk, pk) = libcrux_kem::key_gen(alg.into(), rng)?;
             Ok((
                 PrivateKey::XWingKemDraft02(sk),
                 PublicKey::XWingKemDraft02(pk),
@@ -185,11 +185,11 @@ impl PublicKey<'_> {
     ) -> Result<(SharedSecret, Ciphertext), Error> {
         match self {
             PublicKey::X25519(pk) => {
-                let (ss, enc) = pk.encapsulate(rng).unwrap();
+                let (ss, enc) = pk.encapsulate(rng)?;
                 Ok((SharedSecret::X25519(ss), Ciphertext::X25519(enc)))
             }
             PublicKey::MlKem768(pk) => {
-                let (ss, enc) = pk.encapsulate(rng).unwrap();
+                let (ss, enc) = pk.encapsulate(rng)?;
                 Ok((SharedSecret::MlKem768(ss), Ciphertext::MlKem768(enc)))
             }
             PublicKey::ClassicMcEliece(pk) => {
@@ -200,7 +200,7 @@ impl PublicKey<'_> {
                 ))
             }
             PublicKey::XWingKemDraft02(pk) => {
-                let (ss, enc) = pk.encapsulate(rng).unwrap();
+                let (ss, enc) = pk.encapsulate(rng)?;
                 Ok((
                     SharedSecret::XWingKemDraft02(ss),
                     Ciphertext::XWingKemDraft02(enc),
@@ -231,11 +231,7 @@ impl PublicKey<'_> {
         )
         .map_err(|_| Error::PSQGenerationError)?;
 
-        Ok((
-            k0.try_into()
-                .expect("should receive the correct number of bytes from HKDF"),
-            enc,
-        ))
+        Ok((k0.try_into().map_err(|_| Error::CryptoError)?, enc))
     }
 }
 
@@ -264,9 +260,7 @@ impl PrivateKey<'_> {
             K0_LENGTH,
         )
         .map_err(|_| Error::PSQDerivationError)?;
-        Ok(k0
-            .try_into()
-            .expect("should receive the correct number of bytes from HKDF"))
+        Ok(k0.try_into().map_err(|_| Error::CryptoError)?)
     }
 }
 
