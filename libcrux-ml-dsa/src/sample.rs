@@ -205,7 +205,7 @@ pub(crate) fn sample_mask_vector<
     mut seed: [u8; 66],
     domain_separator: &mut u16,
 ) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
-    let mut error = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
+    let mut mask = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     #[allow(clippy::needless_range_loop)]
     for i in 0..DIMENSION {
@@ -213,10 +213,10 @@ pub(crate) fn sample_mask_vector<
         seed[65] = (*domain_separator >> 8) as u8;
         *domain_separator += 1;
 
-        error[i] = sample_mask_ring_element::<SIMDUnit, GAMMA1_EXPONENT>(seed);
+        mask[i] = sample_mask_ring_element::<SIMDUnit, GAMMA1_EXPONENT>(seed);
     }
 
-    error
+    mask
 }
 
 #[inline(always)]

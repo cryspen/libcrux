@@ -87,7 +87,7 @@ impl Operations for AVX2SIMDUnit {
     fn decompose<const GAMMA2: i32>(simd_unit: Self) -> (Self, Self) {
         let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
 
-        let (lower, upper) = PortableSIMDUnit::power2round(simd_unit);
+        let (lower, upper) = PortableSIMDUnit::decompose::<GAMMA2>(simd_unit);
 
         (Self::from_coefficient_array(&lower.to_coefficient_array()),
          Self::from_coefficient_array(&upper.to_coefficient_array()))
