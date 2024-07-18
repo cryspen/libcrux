@@ -164,13 +164,14 @@ pub fn receive_ecdh_bound_psq(
     let now = SystemTime::now();
     let ts_since_epoch =
         Duration::from_secs(ts_seconds) + Duration::from_millis((ts_subsec_millis).into());
-    if initiator_dh_pk_decrypted != *initiator_dh_pk
-        || now
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .map_err(|_| Error::OsError)?
-            - ts_since_epoch
-            >= *psk_ttl
-    {
+    let now = now
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .map_err(|_| Error::OsError)?;
+
+    if now < ts_since_epoch {
+        // time seems to have gone backwards
+        Err(Error::OsError)
+    } else if initiator_dh_pk_decrypted != *initiator_dh_pk || now - ts_since_epoch >= *psk_ttl {
         Err(Error::BinderError)
     } else {
         Ok(psk)
