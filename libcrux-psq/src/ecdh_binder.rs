@@ -26,11 +26,16 @@ const AEAD_KEY_NONCE: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305)
 
 const AEAD_KEY_LENGTH: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305);
 
+struct AeadMac {
+    tag: libcrux::aead::Tag,
+    ctxt: Vec<u8>,
+}
+
 /// An ECDH-bound PSQ encapsulation.
 pub struct ECDHPsk {
     encapsulation: crate::psq::Ciphertext,
     initiator_dh_pk: [u8; 32],
-    aead_mac: (libcrux::aead::Tag, Vec<u8>),
+    aead_mac: AeadMac,
     psk_ttl: Duration,
     ts: Duration,
 }
@@ -94,6 +99,10 @@ pub fn send_ecdh_bound_psq(
     let aead_mac =
         libcrux::aead::encrypt_detached(&initiator_key, &initiator_dh_pk, initiator_iv, aad)
             .map_err(|_| Error::CryptoError)?;
+    let aead_mac = AeadMac {
+        tag: aead_mac.0,
+        ctxt: aead_mac.1,
+    };
 
     Ok((
         psk,
@@ -158,9 +167,14 @@ pub fn receive_ecdh_bound_psq(
     ts_ttl[12..].copy_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
     let aad = ts_ttl;
-    let initiator_dh_pk_decrypted =
-        decrypt_detached(&initiator_key, &aead_mac.1, initiator_iv, aad, &aead_mac.0)
-            .map_err(|_| Error::CryptoError)?;
+    let initiator_dh_pk_decrypted = decrypt_detached(
+        &initiator_key,
+        &aead_mac.ctxt,
+        initiator_iv,
+        aad,
+        &aead_mac.tag,
+    )
+    .map_err(|_| Error::CryptoError)?;
 
     // validate TTL
     let now = SystemTime::now();

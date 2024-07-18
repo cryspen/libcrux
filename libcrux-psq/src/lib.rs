@@ -23,7 +23,7 @@ pub enum Error {
     /// An error in the underlying cryptographic algorithms
     CryptoError,
     /// Error relating to operating system environment
-    OsError
+    OsError,
 }
 
 impl From<libcrux_kem::Error> for Error {
