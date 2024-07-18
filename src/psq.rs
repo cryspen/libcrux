@@ -260,7 +260,7 @@ impl PrivateKey<'_> {
             K0_LENGTH,
         )
         .map_err(|_| Error::PSQDerivationError)?;
-        Ok(k0.try_into().map_err(|_| Error::CryptoError)?)
+        k0.try_into().map_err(|_| Error::CryptoError)
     }
 }
 
