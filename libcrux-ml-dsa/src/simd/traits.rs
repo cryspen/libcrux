@@ -142,6 +142,7 @@ mod tests {
     fn test_decompose_avx2() {
         test_decompose_generic::<crate::simd::avx2::AVX2SIMDUnit>();
     }
+    #[cfg(feature = "avx2")]
     #[test]
     fn test_power2round_avx2() {
         test_power2round_generic::<crate::simd::avx2::AVX2SIMDUnit>();
