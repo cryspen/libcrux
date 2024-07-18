@@ -1,6 +1,7 @@
 use crate::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
+        compare_ciphertexts_select_shared_secret_in_constant_time,
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
@@ -261,16 +262,15 @@ pub(crate) fn decapsulate<
         Hasher,
     >(ind_cpa_public_key, decrypted, pseudorandomness);
 
-    let selector = compare_ciphertexts_in_constant_time(ciphertext.as_ref(), &expected_ciphertext);
-
     let implicit_rejection_shared_secret =
         Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
     let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
 
-    select_shared_secret_in_constant_time(
+    compare_ciphertexts_select_shared_secret_in_constant_time(
+        ciphertext.as_ref(),
+        &expected_ciphertext,
         &shared_secret,
         &implicit_rejection_shared_secret,
-        selector,
     )
 }
 
