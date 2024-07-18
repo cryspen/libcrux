@@ -22,6 +22,8 @@ pub enum Error {
     BinderError,
     /// An error in the underlying cryptographic algorithms
     CryptoError,
+    /// Error relating to operating system environment
+    OsError
 }
 
 const PSK_LENGTH: usize = 32;
