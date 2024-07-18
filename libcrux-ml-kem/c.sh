@@ -79,8 +79,39 @@ if [[ "$clean" = 1 ]]; then
     rm -rf internal/*.h
 fi
 
+# Write out infos about the used tools
+[[ -z "$CHARON_REV" && -d $CHARON_HOME/.git ]] && export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
+[[ -z "$EURYDICE_REV" && -d $EURYDICE_HOME/.git ]] && export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
+[[ -z "$KRML_REV" && -d $KRML_HOME/.git ]] && export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
+[[ -z "$LIBCRUX_REV" ]] && export LIBCRUX_REV=$(git rev-parse HEAD)
+if [[ -z "$FSTAR_REV" && -d $FSTAR_HOME/.git ]]; then
+    export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
+else
+    export FSTAR_REV=$(fstar.exe --version | grep commit | sed 's/commit=\(.*\)/\1/')
+fi
+rm -f code_gen.txt
+echo "This code was generated with the following revisions:" >> code_gen.txt
+echo -n "Charon: " >> code_gen.txt
+echo "$CHARON_REV" >> code_gen.txt
+echo -n "Eurydice: " >> code_gen.txt
+echo "$EURYDICE_REV" >> code_gen.txt
+echo -n "Karamel: " >> code_gen.txt
+echo "$KRML_REV" >> code_gen.txt
+echo -n "F*: " >> code_gen.txt
+echo "$FSTAR_REV" >> code_gen.txt
+echo -n "Libcrux: " >> code_gen.txt
+echo "$LIBCRUX_REV" >> code_gen.txt
+
+# Generate header
+cat spdx-header.txt > header.txt
+sed -e 's/^/ * /' code_gen.txt >> header.txt
+echo " */" >> header.txt
+
+# Run eurydice to extract the C code
 echo "Running eurydice ..."
-$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
+$EURYDICE_HOME/eurydice --config ../$config -funroll-loops $unrolling \
+    --header header.txt \
+    ../../libcrux_ml_kem.llbc ../../libcrux_sha3.llbc
 if [[ "$eurydice_glue" = 1 ]]; then
     cp $EURYDICE_HOME/include/eurydice_glue.h .
 fi
@@ -97,23 +128,3 @@ if [ -d "internal" ]; then
     clang-format --style=Google -i internal/*.h
 fi
 clang-format --style=Google -i intrinsics/*.h
-
-# Write out infos about the used tools
-[[ -z "$CHARON_REV" && -d $CHARON_HOME/.git ]] && export CHARON_REV=$(git -C $CHARON_HOME rev-parse HEAD)
-[[ -z "$EURYDICE_REV" && -d $EURYDICE_HOME/.git ]] && export EURYDICE_REV=$(git -C $EURYDICE_HOME rev-parse HEAD)
-[[ -z "$KRML_REV" && -d $KRML_HOME/.git ]] && export KRML_REV=$(git -C $KRML_HOME rev-parse HEAD)
-if [[ -z "$FSTAR_REV" && -d $FSTAR_HOME/.git ]]; then
-    export FSTAR_REV=$(git -C $FSTAR_HOME rev-parse HEAD)
-else
-    export FSTAR_REV=$(fstar.exe --version | grep commit | sed 's/commit=\(.*\)/\1/')
-fi
-rm -f code_gen.txt
-echo "This code was generated with the following tools:" >> code_gen.txt
-echo -n "Charon: " >> code_gen.txt
-echo "$CHARON_REV" >> code_gen.txt
-echo -n "Eurydice: " >> code_gen.txt
-echo "$EURYDICE_REV" >> code_gen.txt
-echo -n "Karamel: " >> code_gen.txt
-echo "$KRML_REV" >> code_gen.txt
-echo -n "F*: " >> code_gen.txt
-echo "$FSTAR_REV" >> code_gen.txt
