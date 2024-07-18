@@ -1,7 +1,9 @@
 //! # ECDH Binder
 //!
 //! This module implements a protocol binder that binds a post-quantum
-//! pre-shared key component to an outer ECDH based key agreement.
+//! pre-shared key component to an outer ECDH based key agreement. At
+//! the moment, the implementation supports only X25519 keys for the
+//! outer protocol.
 
 use libcrux::aead::{decrypt_detached, Algorithm};
 use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
