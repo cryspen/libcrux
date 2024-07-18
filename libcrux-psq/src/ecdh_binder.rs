@@ -5,7 +5,7 @@
 //! the moment, the implementation supports only X25519 keys for the
 //! outer protocol.
 
-use libcrux::aead::{decrypt_detached, Algorithm};
+use libcrux::aead::{decrypt, Algorithm};
 use libcrux_ecdh::{X25519PrivateKey, X25519PublicKey};
 use std::time::{Duration, SystemTime};
 
@@ -28,7 +28,7 @@ const AEAD_KEY_LENGTH: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305);
 
 struct AeadMac {
     tag: libcrux::aead::Tag,
-    ctxt: Vec<u8>,
+    ctxt: [u8; 48],
 }
 
 /// An ECDH-bound PSQ encapsulation.
@@ -96,12 +96,14 @@ pub fn send_ecdh_bound_psq(
         &libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, initiator_dh_sk)
             .map_err(|_| Error::CryptoError)?,
     );
-    let aead_mac =
-        libcrux::aead::encrypt_detached(&initiator_key, &initiator_dh_pk, initiator_iv, aad)
-            .map_err(|_| Error::CryptoError)?;
+    let mut ctxt = [0u8; 48];
+    ctxt[0..32].copy_from_slice(&initiator_dh_pk);
+
+    let aead_mac = libcrux::aead::encrypt(&initiator_key, &mut ctxt, initiator_iv, &aad)
+        .map_err(|_| Error::CryptoError)?;
     let aead_mac = AeadMac {
-        tag: aead_mac.0,
-        ctxt: aead_mac.1,
+        tag: aead_mac,
+        ctxt: ctxt.to_owned(),
     };
 
     Ok((
@@ -167,14 +169,15 @@ pub fn receive_ecdh_bound_psq(
     ts_ttl[12..].copy_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
     let aad = ts_ttl;
-    let initiator_dh_pk_decrypted = decrypt_detached(
+    let mut initiator_dh_pk_decrypted = aead_mac.ctxt.to_owned();
+    decrypt(
         &initiator_key,
-        &aead_mac.ctxt,
+        &mut initiator_dh_pk_decrypted,
         initiator_iv,
-        aad,
+        &aad,
         &aead_mac.tag,
     )
-    .map_err(|_| Error::CryptoError)?;
+    .unwrap();
 
     // validate TTL
     let now = SystemTime::now();
@@ -187,7 +190,9 @@ pub fn receive_ecdh_bound_psq(
     if now < ts_since_epoch {
         // time seems to have gone backwards
         Err(Error::OsError)
-    } else if initiator_dh_pk_decrypted != *initiator_dh_pk || now - ts_since_epoch >= *psk_ttl {
+    } else if initiator_dh_pk_decrypted[0..32] != *initiator_dh_pk
+        || now - ts_since_epoch >= *psk_ttl
+    {
         Err(Error::BinderError)
     } else {
         Ok(psk)
@@ -219,11 +224,8 @@ fn derive_key_iv(
         libcrux_hkdf::expand(libcrux_hkdf::Algorithm::Sha256, psk, info, AEAD_KEY_NONCE)
             .map_err(|_| Error::CryptoError)?;
     let (key_bytes, iv_bytes) = key_iv_bytes.split_at(AEAD_KEY_LENGTH);
-    let key = libcrux::aead::Key::from_bytes(
-        libcrux::aead::Algorithm::Chacha20Poly1305,
-        key_bytes.to_vec(),
-    )
-    .map_err(|_| Error::CryptoError)?;
+    let key = libcrux::aead::Key::from_slice(libcrux::aead::Algorithm::Chacha20Poly1305, key_bytes)
+        .map_err(|_| Error::CryptoError)?;
     let iv = libcrux::aead::Iv(iv_bytes.try_into().map_err(|_| Error::CryptoError)?);
     Ok((iv, key))
 }
