@@ -62,7 +62,6 @@ impl<T: Tv> TestVector<T> {
                 line = line.strip_prefix("[").ok_or(Error::Read)?;
                 log::debug!("line {line}");
                 T::H::read_header::<T>(line, &mut header)?;
-                // section.push(line.to_string());
 
                 // Continue with the next line
                 continue;
