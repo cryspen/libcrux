@@ -1,65 +1,56 @@
 use crate::simd::traits::Operations;
-use libcrux_intrinsics::avx2::*;
+use libcrux_intrinsics;
 
 use crate::simd::portable::PortableSIMDUnit;
 
+mod arithmetic;
+
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
-    pub(crate) coefficients: Vec256,
+    pub(crate) coefficients: libcrux_intrinsics::avx2::Vec256,
 }
 
 impl Operations for AVX2SIMDUnit {
     fn ZERO() -> Self {
         Self {
-            coefficients: mm256_setzero_si256(),
+            coefficients: libcrux_intrinsics::avx2::mm256_setzero_si256(),
         }
     }
 
     fn from_coefficient_array(coefficient_array: &[i32]) -> Self {
         Self {
-            coefficients: mm256_loadu_si256_i32(coefficient_array),
+            coefficients: libcrux_intrinsics::avx2::mm256_loadu_si256_i32(coefficient_array),
         }
     }
 
     fn to_coefficient_array(&self) -> [i32; 8] {
         let mut coefficient_array = [0i32; 8];
-        mm256_storeu_si256_i32(&mut coefficient_array, self.coefficients);
+        libcrux_intrinsics::avx2::mm256_storeu_si256_i32(&mut coefficient_array, self.coefficients);
 
         coefficient_array
     }
 
     fn add(lhs: &Self, rhs: &Self) -> Self {
-        let lhs = PortableSIMDUnit::from_coefficient_array(&lhs.to_coefficient_array());
-        let rhs = PortableSIMDUnit::from_coefficient_array(&rhs.to_coefficient_array());
-
-        let result = PortableSIMDUnit::add(&lhs, &rhs);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: arithmetic::add(lhs.coefficients, rhs.coefficients)
+        }
     }
 
     fn subtract(lhs: &Self, rhs: &Self) -> Self {
-        let lhs = PortableSIMDUnit::from_coefficient_array(&lhs.to_coefficient_array());
-        let rhs = PortableSIMDUnit::from_coefficient_array(&rhs.to_coefficient_array());
-
-        let result = PortableSIMDUnit::subtract(&lhs, &rhs);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: arithmetic::subtract(lhs.coefficients, rhs.coefficients)
+        }
     }
 
-    fn montgomery_multiply_by_constant(simd_unit: Self, c: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::montgomery_multiply_by_constant(simd_unit, c);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+    fn montgomery_multiply_by_constant(simd_unit: Self, constant: i32) -> Self {
+        Self {
+            coefficients: arithmetic::montgomery_multiply_by_constant(simd_unit.coefficients, constant)
+        }
     }
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
-        let lhs = PortableSIMDUnit::from_coefficient_array(&lhs.to_coefficient_array());
-        let rhs = PortableSIMDUnit::from_coefficient_array(&rhs.to_coefficient_array());
-
-        let result = PortableSIMDUnit::montgomery_multiply(lhs, rhs);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients)
+        }
     }
     fn shift_left_then_reduce(simd_unit: Self, shift_by: usize) -> Self {
         let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());

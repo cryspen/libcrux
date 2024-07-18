@@ -213,6 +213,10 @@ pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_sub_epi16(lhs, rhs) }
 }
+pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unsafe { _mm256_sub_epi32(lhs, rhs) }
+}
+
 pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_sub_epi16(lhs, rhs) }
 }
@@ -243,6 +247,10 @@ pub fn mm256_mulhi_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
 
 pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epu32(lhs, rhs) }
+}
+
+pub fn mm256_mul_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unsafe { _mm256_mul_epi32(lhs, rhs) }
 }
 
 pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
