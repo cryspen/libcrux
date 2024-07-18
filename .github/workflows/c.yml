@@ -46,8 +46,6 @@ jobs:
 
       - name: Extract C (header only)
         run: |
-          rustup install stable
-          rustup default stable
           ./boring.sh
 
       - name: Upload header only C extraction
