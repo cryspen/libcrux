@@ -78,7 +78,7 @@ pub fn send_ecdh_bound_psq(
     )
     .map_err(|_| Error::CryptoError)?
     .try_into()
-    .expect("should receive the correct number of bytes from HKDF");
+    .map_err(|_| Error::CryptoError)?;
 
     // NOTE: Make this a real cipherstate and pass it outside?
     let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(psk)?;
@@ -143,7 +143,7 @@ pub fn receive_ecdh_bound_psq(
     )
     .map_err(|_| Error::CryptoError)?
     .try_into()
-    .expect("should receive the correct number of bytes from HKDF");
+    .map_err(|_| Error::CryptoError)?;
 
     // NOTE: Make this a real cipherstate and pass it outside?
     let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(psk)?;
@@ -207,11 +207,7 @@ fn derive_key_iv(
         key_bytes.to_vec(),
     )
     .map_err(|_| Error::CryptoError)?;
-    let iv = libcrux::aead::Iv(
-        iv_bytes
-            .try_into()
-            .expect("should receive the correct number of bytes"),
-    );
+    let iv = libcrux::aead::Iv(iv_bytes.try_into().map_err(|_| Error::CryptoError)?);
     Ok((iv, key))
 }
 

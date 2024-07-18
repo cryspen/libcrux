@@ -26,6 +26,12 @@ pub enum Error {
     OsError
 }
 
+impl From<libcrux_kem::Error> for Error {
+    fn from(_value: libcrux_kem::Error) -> Self {
+        Self::CryptoError
+    }
+}
+
 const PSK_LENGTH: usize = 32;
 type Psk = [u8; PSK_LENGTH];
 
