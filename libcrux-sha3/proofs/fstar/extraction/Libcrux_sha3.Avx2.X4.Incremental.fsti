@@ -4,9 +4,7 @@ open Core
 open FStar.Mul
 
 /// The Keccak state for the incremental API.
-type t_KeccakState = {
-  f_state:Libcrux_sha3.Generic_keccak.t_KeccakState (sz 4) Core.Core_arch.X86.t____m256i
-}
+type t_KeccakState = { f_state:t_Array Libcrux_sha3.Neon.X2.Incremental.t_KeccakState (sz 2) }
 
 /// Initialise the state and perform up to 4 absorbs at the same time,
 /// using two [`KeccakState`].

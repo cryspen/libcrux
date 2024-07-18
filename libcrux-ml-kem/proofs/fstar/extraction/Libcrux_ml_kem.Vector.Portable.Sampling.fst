@@ -8,6 +8,7 @@ let rej_sample (a: t_Slice u8) (result: t_Slice i16) =
   let result, sampled:(t_Slice i16 & usize) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = (Core.Slice.impl__len #u8 a <: usize) /! sz 3 <: usize

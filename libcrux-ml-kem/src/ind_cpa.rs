@@ -202,7 +202,7 @@ pub(crate) fn generate_keypair_unpacked<
     let pk = IndCpaPublicKeyUnpacked {
         t_as_ntt,
         A: A_transpose,
-        seed_for_A
+        seed_for_A,
     };
     let sk = IndCpaPrivateKeyUnpacked { secret_as_ntt };
     (sk, pk)
@@ -249,13 +249,16 @@ fn compress_then_serialize_u<
     input: [PolynomialRingElement<Vector>; K],
     out: &mut [u8],
 ) {
+    // The semicolon and parentheses at the end of loop are a workaround
+    // for the following bug https://github.com/hacspec/hax/issues/720
     cloop! {
         for (i, re) in input.into_iter().enumerate() {
             out[i * (OUT_LEN / K)..(i + 1) * (OUT_LEN / K)].copy_from_slice(
                 &compress_then_serialize_ring_element_u::<COMPRESSION_FACTOR, BLOCK_LEN, Vector>(&re),
             );
         }
-    }
+    };
+    ()
 }
 
 /// This function implements <strong>Algorithm 13</strong> of the
@@ -409,7 +412,7 @@ pub(crate) fn encrypt<
     let public_key_unpacked = IndCpaPublicKeyUnpacked {
         t_as_ntt,
         A,
-        seed_for_A
+        seed_for_A,
     };
     encrypt_unpacked::<
         K,

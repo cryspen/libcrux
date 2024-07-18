@@ -1,11 +1,12 @@
 use crate::{
     constant_time_ops::{
         compare_ciphertexts_in_constant_time, select_shared_secret_in_constant_time,
+        compare_ciphertexts_select_shared_secret_in_constant_time,
     },
     constants::{CPA_PKE_KEY_GENERATION_SEED_SIZE, H_DIGEST_SIZE, SHARED_SECRET_SIZE},
     hash_functions::Hash,
-    polynomial::PolynomialRingElement,
     ind_cpa::serialize_public_key,
+    polynomial::PolynomialRingElement,
     serialize::deserialize_ring_elements_reduced,
     types::*,
     utils::into_padded_array,
@@ -19,14 +20,14 @@ pub mod unpacked {
 
     /// An unpacked ML-KEM IND-CCA Private Key
     pub struct MlKemPrivateKeyUnpacked<const K: usize, Vector: Operations> {
-        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K,Vector>,
+        pub(crate) ind_cpa_private_key: IndCpaPrivateKeyUnpacked<K, Vector>,
         pub(crate) implicit_rejection_value: [u8; 32],
     }
 
     /// An unpacked ML-KEM IND-CCA Private Key
     pub struct MlKemPublicKeyUnpacked<const K: usize, Vector: Operations> {
-        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K,Vector>,
-        pub(crate) public_key_hash: [u8; 32]
+        pub(crate) ind_cpa_public_key: IndCpaPublicKeyUnpacked<K, Vector>,
+        pub(crate) public_key_hash: [u8; 32],
     }
 
     /// An unpacked ML-KEM KeyPair
@@ -261,16 +262,15 @@ pub(crate) fn decapsulate<
         Hasher,
     >(ind_cpa_public_key, decrypted, pseudorandomness);
 
-    let selector = compare_ciphertexts_in_constant_time(ciphertext.as_ref(), &expected_ciphertext);
-
     let implicit_rejection_shared_secret =
         Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(&implicit_rejection_shared_secret, ciphertext);
     let shared_secret = Scheme::kdf::<K, CIPHERTEXT_SIZE, Hasher>(shared_secret, ciphertext);
 
-    select_shared_secret_in_constant_time(
+    compare_ciphertexts_select_shared_secret_in_constant_time(
+        ciphertext.as_ref(),
+        &expected_ciphertext,
         &shared_secret,
         &implicit_rejection_shared_secret,
-        selector,
     )
 }
 
@@ -320,11 +320,17 @@ pub(crate) fn generate_keypair_unpacked<
         &ind_cpa_public_key.seed_for_A,
     );
     let public_key_hash = Hasher::H(&pk_serialized);
-    let implicit_rejection_value : [u8; 32] = implicit_rejection_value.try_into().unwrap();
+    let implicit_rejection_value: [u8; 32] = implicit_rejection_value.try_into().unwrap();
 
     MlKemKeyPairUnpacked {
-        private_key: MlKemPrivateKeyUnpacked {ind_cpa_private_key, implicit_rejection_value},
-        public_key: MlKemPublicKeyUnpacked {ind_cpa_public_key, public_key_hash}
+        private_key: MlKemPrivateKeyUnpacked {
+            ind_cpa_private_key,
+            implicit_rejection_value,
+        },
+        public_key: MlKemPublicKeyUnpacked {
+            ind_cpa_public_key,
+            public_key_hash,
+        },
     }
 }
 
@@ -435,12 +441,13 @@ pub(crate) fn decapsulate_unpacked<
         ETA2_RANDOMNESS_SIZE,
         Vector,
         Hasher,
-    >(&key_pair.public_key.ind_cpa_public_key, decrypted, pseudorandomness);
-
-    let selector = compare_ciphertexts_in_constant_time(
-        ciphertext.as_ref(),
-        &expected_ciphertext,
+    >(
+        &key_pair.public_key.ind_cpa_public_key,
+        decrypted,
+        pseudorandomness,
     );
+
+    let selector = compare_ciphertexts_in_constant_time(ciphertext.as_ref(), &expected_ciphertext);
 
     select_shared_secret_in_constant_time(
         shared_secret,

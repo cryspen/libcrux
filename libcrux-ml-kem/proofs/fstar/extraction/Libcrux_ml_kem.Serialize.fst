@@ -21,6 +21,7 @@ let compress_then_serialize_10_
   let serialized:t_Array u8 v_OUT_LEN =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
@@ -35,6 +36,7 @@ let compress_then_serialize_10_
           let i:usize = i in
           let coefficient:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               10l
               (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
@@ -42,7 +44,9 @@ let compress_then_serialize_10_
                 v_Vector)
           in
           let bytes:t_Array u8 (sz 20) =
-            Libcrux_ml_kem.Vector.Traits.f_serialize_10_ #v_Vector coefficient
+            Libcrux_ml_kem.Vector.Traits.f_serialize_10_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient
           in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -81,6 +85,7 @@ let compress_then_serialize_11_
   let serialized:t_Array u8 v_OUT_LEN =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
@@ -95,6 +100,7 @@ let compress_then_serialize_11_
           let i:usize = i in
           let coefficient:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               11l
               (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
@@ -102,7 +108,9 @@ let compress_then_serialize_11_
                 v_Vector)
           in
           let bytes:t_Array u8 (sz 22) =
-            Libcrux_ml_kem.Vector.Traits.f_serialize_11_ #v_Vector coefficient
+            Libcrux_ml_kem.Vector.Traits.f_serialize_11_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient
           in
           let serialized:t_Array u8 v_OUT_LEN =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -137,9 +145,10 @@ let compress_then_serialize_4_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
      =
-  let serialized, hax_temp_output:t_Slice u8 =
+  let serialized:t_Slice u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
@@ -154,6 +163,7 @@ let compress_then_serialize_4_
           let i:usize = i in
           let coefficient:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               4l
               (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
@@ -161,7 +171,9 @@ let compress_then_serialize_4_
                 v_Vector)
           in
           let bytes:t_Array u8 (sz 8) =
-            Libcrux_ml_kem.Vector.Traits.f_serialize_4_ #v_Vector coefficient
+            Libcrux_ml_kem.Vector.Traits.f_serialize_4_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient
           in
           let serialized:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -186,6 +198,7 @@ let compress_then_serialize_4_
           in
           serialized)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
 let compress_then_serialize_5_
@@ -196,9 +209,10 @@ let compress_then_serialize_5_
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (serialized: t_Slice u8)
      =
-  let serialized, hax_temp_output:t_Slice u8 =
+  let serialized:t_Slice u8 =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
@@ -213,6 +227,7 @@ let compress_then_serialize_5_
           let i:usize = i in
           let coefficients:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_compress #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               5l
               (Libcrux_ml_kem.Vector.Traits.to_unsigned_representative #v_Vector
                   (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
@@ -220,7 +235,9 @@ let compress_then_serialize_5_
                 v_Vector)
           in
           let bytes:t_Array u8 (sz 10) =
-            Libcrux_ml_kem.Vector.Traits.f_serialize_5_ #v_Vector coefficients
+            Libcrux_ml_kem.Vector.Traits.f_serialize_5_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficients
           in
           let serialized:t_Slice u8 =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -245,6 +262,7 @@ let compress_then_serialize_5_
           in
           serialized)
   in
+  let hax_temp_output:Prims.unit = () <: Prims.unit in
   serialized
 
 let compress_then_serialize_message
@@ -258,6 +276,7 @@ let compress_then_serialize_message
   let serialized:t_Array u8 (sz 32) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -272,10 +291,14 @@ let compress_then_serialize_message
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
           in
           let coefficient_compressed:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_compress_1_ #v_Vector coefficient
+            Libcrux_ml_kem.Vector.Traits.f_compress_1_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient
           in
           let bytes:t_Array u8 (sz 2) =
-            Libcrux_ml_kem.Vector.Traits.f_serialize_1_ #v_Vector coefficient_compressed
+            Libcrux_ml_kem.Vector.Traits.f_serialize_1_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient_compressed
           in
           let serialized:t_Array u8 (sz 32) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized
@@ -356,7 +379,9 @@ let deserialize_then_decompress_10_
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 serialized (sz 20)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -369,7 +394,9 @@ let deserialize_then_decompress_10_
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
           let coefficient:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_deserialize_10_ #v_Vector bytes
+            Libcrux_ml_kem.Vector.Traits.f_deserialize_10_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -380,6 +407,7 @@ let deserialize_then_decompress_10_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
                 (Libcrux_ml_kem.Vector.Traits.f_decompress_ciphertext_coefficient #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     10l
                     coefficient
                   <:
@@ -405,7 +433,9 @@ let deserialize_then_decompress_11_
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 serialized (sz 22)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -418,7 +448,9 @@ let deserialize_then_decompress_11_
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
           let coefficient:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_deserialize_11_ #v_Vector bytes
+            Libcrux_ml_kem.Vector.Traits.f_deserialize_11_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -429,6 +461,7 @@ let deserialize_then_decompress_11_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
                 (Libcrux_ml_kem.Vector.Traits.f_decompress_ciphertext_coefficient #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     11l
                     coefficient
                   <:
@@ -454,7 +487,9 @@ let deserialize_then_decompress_4_
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 serialized (sz 8)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -467,7 +502,9 @@ let deserialize_then_decompress_4_
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
           let coefficient:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_deserialize_4_ #v_Vector bytes
+            Libcrux_ml_kem.Vector.Traits.f_deserialize_4_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -478,6 +515,7 @@ let deserialize_then_decompress_4_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
                 (Libcrux_ml_kem.Vector.Traits.f_decompress_ciphertext_coefficient #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     4l
                     coefficient
                   <:
@@ -503,7 +541,9 @@ let deserialize_then_decompress_5_
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 serialized (sz 10)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -523,7 +563,11 @@ let deserialize_then_decompress_5_
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Vector.Traits.f_deserialize_5_ #v_Vector bytes <: v_Vector)
+                (Libcrux_ml_kem.Vector.Traits.f_deserialize_5_ #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
+                    bytes
+                  <:
+                  v_Vector)
             }
             <:
             Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector
@@ -537,6 +581,7 @@ let deserialize_then_decompress_5_
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
                 (Libcrux_ml_kem.Vector.Traits.f_decompress_ciphertext_coefficient #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
                     5l
                     (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
                   <:
@@ -562,6 +607,7 @@ let deserialize_then_decompress_message
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = sz 16 }
             <:
             Core.Ops.Range.t_Range usize)
@@ -573,6 +619,7 @@ let deserialize_then_decompress_message
           let i:usize = i in
           let coefficient_compressed:v_Vector =
             Libcrux_ml_kem.Vector.Traits.f_deserialize_1_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
               (serialized.[ {
                     Core.Ops.Range.f_start = sz 2 *! i <: usize;
                     Core.Ops.Range.f_end = (sz 2 *! i <: usize) +! sz 2 <: usize
@@ -648,7 +695,9 @@ let deserialize_to_reduced_ring_element
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 serialized (sz 24)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -661,7 +710,9 @@ let deserialize_to_reduced_ring_element
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector = re in
           let i, bytes:(usize & t_Slice u8) = temp_1_ in
           let coefficient:v_Vector =
-            Libcrux_ml_kem.Vector.Traits.f_deserialize_12_ #v_Vector bytes
+            Libcrux_ml_kem.Vector.Traits.f_deserialize_12_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              bytes
           in
           let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
             {
@@ -671,7 +722,9 @@ let deserialize_to_reduced_ring_element
               Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                   .Libcrux_ml_kem.Polynomial.f_coefficients
                 i
-                (Libcrux_ml_kem.Vector.Traits.f_cond_subtract_3329_ #v_Vector coefficient
+                (Libcrux_ml_kem.Vector.Traits.f_cond_subtract_3329_ #v_Vector
+                    #FStar.Tactics.Typeclasses.solve
+                    coefficient
                   <:
                   v_Vector)
             }
@@ -702,7 +755,9 @@ let deserialize_ring_elements_reduced
   let deserialized_pk:t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8
                   public_key
                   Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT
@@ -742,7 +797,9 @@ let deserialize_to_uncompressed_ring_element
   let re:Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 serialized (sz 24)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -761,7 +818,11 @@ let deserialize_to_uncompressed_ring_element
             Rust_primitives.Hax.Monomorphized_update_at.update_at_usize re
                 .Libcrux_ml_kem.Polynomial.f_coefficients
               i
-              (Libcrux_ml_kem.Vector.Traits.f_deserialize_12_ #v_Vector bytes <: v_Vector)
+              (Libcrux_ml_kem.Vector.Traits.f_deserialize_12_ #v_Vector
+                  #FStar.Tactics.Typeclasses.solve
+                  bytes
+                <:
+                v_Vector)
             <:
             t_Array v_Vector (sz 16)
           }
@@ -781,6 +842,7 @@ let serialize_uncompressed_ring_element
   let serialized:t_Array u8 (sz 384) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({
               Core.Ops.Range.f_start = sz 0;
               Core.Ops.Range.f_end = Libcrux_ml_kem.Polynomial.v_VECTORS_IN_RING_ELEMENT
@@ -798,7 +860,9 @@ let serialize_uncompressed_ring_element
               (re.Libcrux_ml_kem.Polynomial.f_coefficients.[ i ] <: v_Vector)
           in
           let bytes:t_Array u8 (sz 24) =
-            Libcrux_ml_kem.Vector.Traits.f_serialize_12_ #v_Vector coefficient
+            Libcrux_ml_kem.Vector.Traits.f_serialize_12_ #v_Vector
+              #FStar.Tactics.Typeclasses.solve
+              coefficient
           in
           let serialized:t_Array u8 (sz 384) =
             Rust_primitives.Hax.Monomorphized_update_at.update_at_range serialized

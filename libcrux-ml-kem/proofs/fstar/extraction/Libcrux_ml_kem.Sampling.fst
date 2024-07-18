@@ -23,6 +23,7 @@ let sample_from_uniform_distribution_next
   let out, sampled_coefficients:(t_Array (t_Array i16 (sz 272)) v_K & t_Array usize v_K) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
@@ -36,6 +37,7 @@ let sample_from_uniform_distribution_next
           let i:usize = i in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
                   usize)
+                #FStar.Tactics.Typeclasses.solve
                 ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_N /! sz 24 <: usize }
                   <:
                   Core.Ops.Range.t_Range usize)
@@ -56,6 +58,7 @@ let sample_from_uniform_distribution_next
                 then
                   let tmp0, out1:(t_Slice i16 & usize) =
                     Libcrux_ml_kem.Vector.Traits.f_rej_sample #v_Vector
+                      #FStar.Tactics.Typeclasses.solve
                       ((randomness.[ i ] <: t_Array u8 v_N).[ {
                             Core.Ops.Range.f_start = r *! sz 24 <: usize;
                             Core.Ops.Range.f_end = (r *! sz 24 <: usize) +! sz 24 <: usize
@@ -113,6 +116,7 @@ let sample_from_uniform_distribution_next
   let done, sampled_coefficients:(bool & t_Array usize v_K) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
             usize)
+          #FStar.Tactics.Typeclasses.solve
           ({ Core.Ops.Range.f_start = sz 0; Core.Ops.Range.f_end = v_K }
             <:
             Core.Ops.Range.t_Range usize)
@@ -152,7 +156,9 @@ let sample_from_binomial_distribution_2_
   let sampled_i16s:t_Array i16 (sz 256) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 randomness (sz 4)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -179,7 +185,9 @@ let sample_from_binomial_distribution_2_
           let coin_toss_outcomes:u32 = even_bits +! odd_bits in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
                   (Core.Ops.Range.t_Range u32))
+                #FStar.Tactics.Typeclasses.solve
                 (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range u32)
+                    #FStar.Tactics.Typeclasses.solve
                     ({
                         Core.Ops.Range.f_start = 0ul;
                         Core.Ops.Range.f_end = Core.Num.impl__u32__BITS
@@ -225,7 +233,9 @@ let sample_from_binomial_distribution_3_
   let sampled_i16s:t_Array i16 (sz 256) =
     Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Enumerate.t_Enumerate
             (Core.Slice.Iter.t_ChunksExact u8))
+          #FStar.Tactics.Typeclasses.solve
           (Core.Iter.Traits.Iterator.f_enumerate #(Core.Slice.Iter.t_ChunksExact u8)
+              #FStar.Tactics.Typeclasses.solve
               (Core.Slice.impl__chunks_exact #u8 randomness (sz 3)
                 <:
                 Core.Slice.Iter.t_ChunksExact u8)
@@ -250,7 +260,9 @@ let sample_from_binomial_distribution_3_
           let coin_toss_outcomes:u32 = (first_bits +! second_bits <: u32) +! third_bits in
           Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Iter.Adapters.Step_by.t_StepBy
                   (Core.Ops.Range.t_Range i32))
+                #FStar.Tactics.Typeclasses.solve
                 (Core.Iter.Traits.Iterator.f_step_by #(Core.Ops.Range.t_Range i32)
+                    #FStar.Tactics.Typeclasses.solve
                     ({ Core.Ops.Range.f_start = 0l; Core.Ops.Range.f_end = 24l }
                       <:
                       Core.Ops.Range.t_Range i32)
@@ -317,10 +329,16 @@ let sample_from_xof
     Rust_primitives.Hax.repeat (Rust_primitives.Hax.repeat 0s (sz 272) <: t_Array i16 (sz 272)) v_K
   in
   let xof_state:v_Hasher =
-    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb #v_Hasher v_K seeds
+    Libcrux_ml_kem.Hash_functions.f_shake128_init_absorb #v_Hasher
+      #v_K
+      #FStar.Tactics.Typeclasses.solve
+      seeds
   in
   let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 504)) v_K) =
-    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_three_blocks #v_Hasher v_K xof_state
+    Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_three_blocks #v_Hasher
+      #v_K
+      #FStar.Tactics.Typeclasses.solve
+      xof_state
   in
   let xof_state:v_Hasher = tmp0 in
   let randomness:t_Array (t_Array u8 (sz 504)) v_K = out1 in
@@ -350,7 +368,10 @@ let sample_from_xof
             temp_0_
           in
           let tmp0, out1:(v_Hasher & t_Array (t_Array u8 (sz 168)) v_K) =
-            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_block #v_Hasher v_K xof_state
+            Libcrux_ml_kem.Hash_functions.f_shake128_squeeze_block #v_Hasher
+              #v_K
+              #FStar.Tactics.Typeclasses.solve
+              xof_state
           in
           let xof_state:v_Hasher = tmp0 in
           let randomness:t_Array (t_Array u8 (sz 168)) v_K = out1 in

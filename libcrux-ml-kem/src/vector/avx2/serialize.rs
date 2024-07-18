@@ -1,4 +1,5 @@
 use super::*;
+use crate::vector::portable::PortableVector;
 
 #[inline(always)]
 pub(crate) fn serialize_1(vector: Vec256) -> [u8; 2] {
@@ -514,17 +515,17 @@ pub(crate) fn deserialize_10(bytes: &[u8]) -> Vec256 {
 
 #[inline(always)]
 pub(crate) fn serialize_11(vector: Vec256) -> [u8; 22] {
-    let array = to_i16_array(SIMD256Vector { elements: vector });
-    let input = portable::from_i16_array(array);
-
-    portable::serialize_11(input)
+    let mut array = [0i16; 16];
+    mm256_storeu_si256_i16(&mut array, vector);
+    let input = PortableVector::from_i16_array(&array);
+    PortableVector::serialize_11(input)
 }
 
 #[inline(always)]
 pub(crate) fn deserialize_11(bytes: &[u8]) -> Vec256 {
-    let output = portable::deserialize_11(bytes);
-
-    from_i16_array(&portable::to_i16_array(output)).elements
+    let output = PortableVector::deserialize_11(bytes);
+    let array = PortableVector::to_i16_array(output);
+    mm256_loadu_si256_i16(&array)
 }
 
 #[inline(always)]

@@ -189,4 +189,3 @@ impl<const PRIVATE_KEY_SIZE: usize, const PUBLIC_KEY_SIZE: usize>
         (self.sk, self.pk)
     }
 }
-
