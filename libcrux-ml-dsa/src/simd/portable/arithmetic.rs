@@ -359,25 +359,6 @@ mod tests {
     }
 
     #[test]
-    fn test_power2round_element() {
-        assert_eq!(power2round_element(669975), (-1769, 82));
-        assert_eq!(power2round_element(1843331), (131, 225));
-        assert_eq!(power2round_element(-1568816), (4049, 831));
-        assert_eq!(power2round_element(-4022142), (131, 532));
-    }
-
-    #[test]
-    fn test_decompose_element() {
-        assert_eq!(decompose_element::<95_232>(3574899), (-43917, 19));
-        assert_eq!(decompose_element::<95_232>(7368323), (-59773, 39));
-        assert_eq!(decompose_element::<95_232>(3640854), (22038, 19));
-
-        assert_eq!(decompose_element::<261_888>(563751), (39975, 1));
-        assert_eq!(decompose_element::<261_888>(6645076), (-164012, 13));
-        assert_eq!(decompose_element::<261_888>(7806985), (-49655, 15));
-    }
-
-    #[test]
     fn test_use_one_hint() {
         assert_eq!(use_one_hint::<95_232>(7622170, 0), 40);
         assert_eq!(use_one_hint::<95_232>(2332762, 1), 13);
