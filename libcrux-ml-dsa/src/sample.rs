@@ -327,8 +327,7 @@ mod tests {
             0xB1, 0x83, 0x9B, 0x86, 0x06, 0xF5, 0x94, 0x8B, 0x9D, 0x72, 0xA9, 0x56, 0xDC, 0xF1,
             0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
         ];
-        let actual_coefficients =
-            sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array();
+        let actual_coefficients = sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array();
 
         assert_eq!(actual_coefficients[0], 1_165_602);
         assert_eq!(

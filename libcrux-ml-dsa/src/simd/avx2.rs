@@ -32,24 +32,27 @@ impl Operations for AVX2SIMDUnit {
 
     fn add(lhs: &Self, rhs: &Self) -> Self {
         Self {
-            coefficients: arithmetic::add(lhs.coefficients, rhs.coefficients)
+            coefficients: arithmetic::add(lhs.coefficients, rhs.coefficients),
         }
     }
 
     fn subtract(lhs: &Self, rhs: &Self) -> Self {
         Self {
-            coefficients: arithmetic::subtract(lhs.coefficients, rhs.coefficients)
+            coefficients: arithmetic::subtract(lhs.coefficients, rhs.coefficients),
         }
     }
 
     fn montgomery_multiply_by_constant(simd_unit: Self, constant: i32) -> Self {
         Self {
-            coefficients: arithmetic::montgomery_multiply_by_constant(simd_unit.coefficients, constant)
+            coefficients: arithmetic::montgomery_multiply_by_constant(
+                simd_unit.coefficients,
+                constant,
+            ),
         }
     }
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self {
         Self {
-            coefficients: arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients)
+            coefficients: arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients),
         }
     }
     fn shift_left_then_reduce(simd_unit: Self, shift_by: usize) -> Self {
@@ -65,8 +68,10 @@ impl Operations for AVX2SIMDUnit {
 
         let (lower, upper) = PortableSIMDUnit::power2round(simd_unit);
 
-        (Self::from_coefficient_array(&lower.to_coefficient_array()),
-         Self::from_coefficient_array(&upper.to_coefficient_array()))
+        (
+            Self::from_coefficient_array(&lower.to_coefficient_array()),
+            Self::from_coefficient_array(&upper.to_coefficient_array()),
+        )
     }
 
     fn infinity_norm_exceeds(simd_unit: Self, bound: i32) -> bool {
@@ -80,8 +85,10 @@ impl Operations for AVX2SIMDUnit {
 
         let (lower, upper) = PortableSIMDUnit::decompose::<GAMMA2>(simd_unit);
 
-        (Self::from_coefficient_array(&lower.to_coefficient_array()),
-         Self::from_coefficient_array(&upper.to_coefficient_array()))
+        (
+            Self::from_coefficient_array(&lower.to_coefficient_array()),
+            Self::from_coefficient_array(&upper.to_coefficient_array()),
+        )
     }
 
     fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {
@@ -90,8 +97,10 @@ impl Operations for AVX2SIMDUnit {
 
         let (count, hint) = PortableSIMDUnit::compute_hint::<GAMMA2>(low, high);
 
-        (count,
-         Self::from_coefficient_array(&hint.to_coefficient_array()))
+        (
+            count,
+            Self::from_coefficient_array(&hint.to_coefficient_array()),
+        )
     }
     fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self {
         let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
