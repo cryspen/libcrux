@@ -47,16 +47,44 @@ all:
 	rm -f .depend && $(MAKE) .depend
 	$(MAKE) verify
 
-
 VERIFIED = 
-UNVERIFIED = $(wildcard *.fst)
+PANIC_FREE = Libcrux_ml_kem.Constant_time_ops.fst \
+			 Libcrux_ml_kem.Constants.fsti \
+			 Libcrux_ml_kem.Hash_functions.Avx2.fsti \
+			 Libcrux_ml_kem.Hash_functions.fsti \
+			 Libcrux_ml_kem.Hash_functions.Neon.fsti \
+			 Libcrux_ml_kem.Hash_functions.Portable.fsti \
+			 Libcrux_ml_kem.Ind_cca.Instantiations.Avx2.fst \
+			 Libcrux_ml_kem.Ind_cca.Instantiations.Neon.fst \
+			 Libcrux_ml_kem.Ind_cca.Instantiations.Portable.fst \
+			 Libcrux_ml_kem.Ind_cca.Multiplexing.fst \
+			 Libcrux_ml_kem.Ind_cca.Unpacked.fsti \
+			 Libcrux_ml_kem.Ind_cpa.Unpacked.fsti \
+			 Libcrux_ml_kem.Mlkem512.Avx2.fst \
+			 Libcrux_ml_kem.Mlkem512.fst \
+			 Libcrux_ml_kem.Mlkem512.Neon.fst \
+			 Libcrux_ml_kem.Mlkem512.Portable.fst \
+			 Libcrux_ml_kem.Mlkem768.Avx2.fst \
+			 Libcrux_ml_kem.Mlkem768.fst \
+			 Libcrux_ml_kem.Mlkem768.Neon.fst \
+			 Libcrux_ml_kem.Mlkem768.Portable.fst \
+			 Libcrux_ml_kem.Mlkem1024.Avx2.fst \
+			 Libcrux_ml_kem.Mlkem1024.fst \
+			 Libcrux_ml_kem.Mlkem1024.Neon.fst \
+			 Libcrux_ml_kem.Mlkem1024.Portable.fst \
+			 Libcrux_ml_kem.Types.fst \
+			 Libcrux_ml_kem.Types.Unpacked.fsti \
+			 Libcrux_ml_kem.Utils.fst
+			 
+UNVERIFIED = $(filter-out $(PANIC_FREE),$(wildcard *.fst))
 
 VERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(VERIFIED)))
+PANIC_FREE_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(PANIC_FREE)))
 UNVERIFIED_CHECKED = $(addsuffix .checked, $(addprefix $(CACHE_DIR)/,$(UNVERIFIED)))
 
 # By default, we process all the files in the current directory. Here, we
 # *extend* the set of relevant files with the tests.
-ROOTS = $(UNVERIFIED) $(VERIFIED)
+ROOTS = $(UNVERIFIED) $(PANIC_FREE) $(VERIFIED)
 
 FSTAR_INCLUDE_DIRS = $(HACL_HOME)/lib $(HAX_PROOF_LIBS_HOME)/rust_primitives \
 	$(HAX_PROOF_LIBS_HOME)/core $(HAX_LIBS_HOME) \
@@ -89,7 +117,7 @@ $(UNVERIFIED_CHECKED): OTHERFLAGS=--admit_smt_queries true
 $(CACHE_DIR)/%.checked: | .depend $(HINT_DIR) $(CACHE_DIR)
 	$(FSTAR) $(OTHERFLAGS) $< $(ENABLE_HINTS) --hint_file $(HINT_DIR)/$(notdir $*).hints
 
-verify: $(UNVERIFIED_CHECKED) $(VERIFIED_CHECKED)
+verify: $(UNVERIFIED_CHECKED) $(PANIC_FREE_CHECKED) $(VERIFIED_CHECKED)
 
 # Targets for interactive mode
 
