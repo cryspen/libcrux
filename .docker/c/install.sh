@@ -38,11 +38,11 @@ unzip karamel.zip
 rm -rf karamel.zip
 mv karamel-65aab550cf3ba36d52ae6ad1ad962bb573406395/ karamel
 
-curl -L https://github.com/AeneasVerif/eurydice/archive/e888878c640c71e2cd0456ed51d70c9b054470e6.zip \
+curl -L https://github.com/AeneasVerif/eurydice/archive/f415f299462ee62cdddcb42ae16b10bb6a7e4f0a.zip \
     --output eurydice.zip
 unzip eurydice.zip
 rm -rf eurydice.zip
-mv eurydice-e888878c640c71e2cd0456ed51d70c9b054470e6/ eurydice
+mv eurydice-f415f299462ee62cdddcb42ae16b10bb6a7e4f0a/ eurydice
 
 echo "export FSTAR_HOME=$HOME/fstar" >>$HOME/.profile
 echo "export HACL_HOME=$HOME/hacl-star" >>$HOME/.profile
