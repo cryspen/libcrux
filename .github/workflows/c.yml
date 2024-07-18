@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: c-extraction
-          path: ./c/
+          path: c
           if-no-files-found: error
 
   extract-header-only:
