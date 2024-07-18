@@ -67,3 +67,7 @@ let select_ct (lhs rhs: t_Slice u8) (selector: u8) =
 
 let select_shared_secret_in_constant_time (lhs rhs: t_Slice u8) (selector: u8) =
   Core.Hint.black_box #(t_Array u8 (sz 32)) (select_ct lhs rhs selector <: t_Array u8 (sz 32))
+
+let compare_ciphertexts_select_shared_secret_in_constant_time (lhs_c rhs_c lhs_s rhs_s: t_Slice u8) =
+  let selector:u8 = compare_ciphertexts_in_constant_time lhs_c rhs_c in
+  select_shared_secret_in_constant_time lhs_s rhs_s selector

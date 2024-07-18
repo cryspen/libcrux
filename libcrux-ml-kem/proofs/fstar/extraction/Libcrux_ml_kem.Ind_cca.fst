@@ -260,16 +260,6 @@ let decapsulate
       v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE #v_Vector #v_Hasher ind_cpa_public_key
       decrypted pseudorandomness
   in
-  let selector:u8 =
-    Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_in_constant_time (Core.Convert.f_as_ref #(Libcrux_ml_kem.Types.t_MlKemCiphertext
-            v_CIPHERTEXT_SIZE)
-          #(t_Slice u8)
-          #FStar.Tactics.Typeclasses.solve
-          ciphertext
-        <:
-        t_Slice u8)
-      (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
-  in
   let implicit_rejection_shared_secret:t_Array u8 (sz 32) =
     f_kdf #v_Scheme
       #FStar.Tactics.Typeclasses.solve
@@ -288,12 +278,16 @@ let decapsulate
       shared_secret
       ciphertext
   in
-  Libcrux_ml_kem.Constant_time_ops.select_shared_secret_in_constant_time (Rust_primitives.unsize shared_secret
-
+  Libcrux_ml_kem.Constant_time_ops.compare_ciphertexts_select_shared_secret_in_constant_time (Core.Convert.f_as_ref
+        #(Libcrux_ml_kem.Types.t_MlKemCiphertext v_CIPHERTEXT_SIZE)
+        #(t_Slice u8)
+        #FStar.Tactics.Typeclasses.solve
+        ciphertext
       <:
       t_Slice u8)
+    (Rust_primitives.unsize expected_ciphertext <: t_Slice u8)
+    (Rust_primitives.unsize shared_secret <: t_Slice u8)
     (Rust_primitives.unsize implicit_rejection_shared_secret <: t_Slice u8)
-    selector
 
 let encapsulate
       (v_K v_CIPHERTEXT_SIZE v_PUBLIC_KEY_SIZE v_T_AS_NTT_ENCODED_SIZE v_C1_SIZE v_C2_SIZE v_VECTOR_U_COMPRESSION_FACTOR v_VECTOR_V_COMPRESSION_FACTOR v_VECTOR_U_BLOCK_LEN v_ETA1 v_ETA1_RANDOMNESS_SIZE v_ETA2 v_ETA2_RANDOMNESS_SIZE:
