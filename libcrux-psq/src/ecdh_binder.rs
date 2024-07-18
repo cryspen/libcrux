@@ -50,8 +50,7 @@ pub fn send_ecdh_bound_psq(
 ) -> Result<(Psk, ECDHPsk), Error> {
     let now = SystemTime::now();
     let ts = now
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .expect("now cannot be before UNIX_EPOCH");
+        .duration_since(SystemTime::UNIX_EPOCH).map_err(|_| Error::OsError)?;
     let ts_seconds = ts.as_secs();
     let ts_subsec_millis = ts.subsec_millis();
     let mut ts_ttl = ts_seconds.to_be_bytes().to_vec();
@@ -162,8 +161,7 @@ pub fn receive_ecdh_bound_psq(
         Duration::from_secs(ts_seconds) + Duration::from_millis((ts_subsec_millis).into());
     if initiator_dh_pk_decrypted != *initiator_dh_pk
         || now
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .expect("now cannot be before UNIX_EPOCH")
+            .duration_since(SystemTime::UNIX_EPOCH).map_err(|_| Error::OsError)?
             - ts_since_epoch
             >= *psk_ttl
     {
