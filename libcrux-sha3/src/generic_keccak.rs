@@ -194,7 +194,9 @@ pub(crate) fn absorb_final<
     let last_len = last[0].len();
     let mut blocks = [[0u8; 200]; N];
     for i in 0..N {
-        blocks[i][0..last_len].copy_from_slice(last[i]);
+        if last_len > 0 {
+            blocks[i][0..last_len].copy_from_slice(last[i]);
+        }
         blocks[i][last_len] = DELIM;
         blocks[i][RATE - 1] |= 0x80;
     }

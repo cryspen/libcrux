@@ -47,8 +47,15 @@ impl Operations for PortableSIMDUnit {
         arithmetic::infinity_norm_exceeds(simd_unit, bound)
     }
 
+    fn decompose<const GAMMA2: i32>(simd_unit: Self) -> (Self, Self) {
+        arithmetic::decompose::<GAMMA2>(simd_unit)
+    }
+
     fn compute_hint<const GAMMA2: i32>(low: Self, high: Self) -> (usize, Self) {
         arithmetic::compute_hint::<GAMMA2>(low, high)
+    }
+    fn use_hint<const GAMMA2: i32>(simd_unit: Self, hint: Self) -> Self {
+        arithmetic::use_hint::<GAMMA2>(simd_unit, hint)
     }
 
     fn rejection_sample_less_than_field_modulus(randomness: &[u8], out: &mut [i32]) -> usize {

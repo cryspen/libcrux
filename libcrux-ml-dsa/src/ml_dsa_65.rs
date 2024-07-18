@@ -1,4 +1,4 @@
-use crate::{constants::*, VerificationError};
+use crate::{constants::*, simd::portable::PortableSIMDUnit, VerificationError};
 
 // ML-DSA-65-specific parameters
 
@@ -74,6 +74,7 @@ pub struct MLDSA65Signature(pub [u8; SIGNATURE_SIZE]);
 /// Generate an ML-DSA-65 Key Pair
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> MLDSA65KeyPair {
     let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
+        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -95,6 +96,7 @@ pub fn sign(
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> MLDSA65Signature {
     let signature = crate::ml_dsa_generic::sign::<
+        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -121,6 +123,7 @@ pub fn verify(
     signature: MLDSA65Signature,
 ) -> Result<(), VerificationError> {
     crate::ml_dsa_generic::verify::<
+        PortableSIMDUnit, // TODO: Multiplex this based on platform detection.
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
