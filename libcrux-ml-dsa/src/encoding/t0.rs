@@ -3,49 +3,47 @@
 // ---------------------------------------------------------------------------
 
 use crate::{
-    constants::RING_ELEMENT_OF_T0S_SIZE,
-    ntt::ntt,
-    polynomial::{PolynomialRingElement, SIMDPolynomialRingElement},
-    simd::{portable::PortableSIMDUnit, traits::Operations},
+    constants::RING_ELEMENT_OF_T0S_SIZE, ntt::ntt, polynomial::PolynomialRingElement,
+    simd::traits::Operations,
 };
 
 #[inline(always)]
-pub(crate) fn serialize(re: PolynomialRingElement) -> [u8; RING_ELEMENT_OF_T0S_SIZE] {
+pub(crate) fn serialize<SIMDUnit: Operations>(
+    re: PolynomialRingElement<SIMDUnit>,
+) -> [u8; RING_ELEMENT_OF_T0S_SIZE] {
     let mut serialized = [0u8; RING_ELEMENT_OF_T0S_SIZE];
-
-    let v_re = SIMDPolynomialRingElement::<PortableSIMDUnit>::from_polynomial_ring_element(re);
 
     const OUTPUT_BYTES_PER_SIMD_UNIT: usize = 13;
 
-    for (i, simd_unit) in v_re.simd_units.iter().enumerate() {
+    for (i, simd_unit) in re.simd_units.iter().enumerate() {
         serialized[i * OUTPUT_BYTES_PER_SIMD_UNIT..(i + 1) * OUTPUT_BYTES_PER_SIMD_UNIT]
-            .copy_from_slice(&PortableSIMDUnit::t0_serialize(*simd_unit));
+            .copy_from_slice(&SIMDUnit::t0_serialize(*simd_unit));
     }
 
     serialized
 }
 
 #[inline(always)]
-fn deserialize(serialized: &[u8]) -> PolynomialRingElement {
+fn deserialize<SIMDUnit: Operations>(serialized: &[u8]) -> PolynomialRingElement<SIMDUnit> {
     let mut serialized_chunks = serialized.chunks(13);
 
-    let mut result = SIMDPolynomialRingElement::ZERO();
+    let mut result = PolynomialRingElement::ZERO();
 
     for i in 0..result.simd_units.len() {
-        result.simd_units[i] = PortableSIMDUnit::t0_deserialize(&serialized_chunks.next().unwrap());
+        result.simd_units[i] = SIMDUnit::t0_deserialize(&serialized_chunks.next().unwrap());
     }
 
-    result.to_polynomial_ring_element()
+    result
 }
 
 #[inline(always)]
-pub(crate) fn deserialize_to_vector_then_ntt<const DIMENSION: usize>(
+pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSION: usize>(
     serialized: &[u8],
-) -> [PolynomialRingElement; DIMENSION] {
-    let mut ring_elements = [PolynomialRingElement::ZERO; DIMENSION];
+) -> [PolynomialRingElement<SIMDUnit>; DIMENSION] {
+    let mut ring_elements = [PolynomialRingElement::<SIMDUnit>::ZERO(); DIMENSION];
 
     for (i, bytes) in serialized.chunks(RING_ELEMENT_OF_T0S_SIZE).enumerate() {
-        ring_elements[i] = ntt(deserialize(bytes));
+        ring_elements[i] = ntt(deserialize::<SIMDUnit>(bytes));
     }
 
     ring_elements
@@ -55,36 +53,34 @@ pub(crate) fn deserialize_to_vector_then_ntt<const DIMENSION: usize>(
 mod tests {
     use super::*;
 
-    use crate::polynomial::PolynomialRingElement;
+    use crate::simd::portable::PortableSIMDUnit;
 
     #[test]
     fn test_serialize() {
-        let re = PolynomialRingElement {
-            coefficients: [
-                -1072, -3712, -3423, -27, 1995, 3750, -922, 3806, 2356, 3801, -1709, -2709, 1191,
-                108, -593, -3081, -949, -926, 3107, -3820, 379, 3747, -2910, -2370, 939, 3218,
-                -3190, 1311, 1110, -2717, -1191, -1019, -2478, -1860, -4018, 2615, -3208, 337,
-                -3406, -1225, -261, -329, -3624, -726, -3159, 3407, 4042, 2124, 2921, 1507, 279,
-                -2830, -2850, -4011, 402, 1510, -2648, -168, 18, 652, 3443, 1723, 3112, -1605,
-                -3885, 3174, 832, -3424, 2886, 3815, 2064, 1757, 3298, 3365, -1489, -1021, 1594,
-                3630, -3352, 1055, -2914, -816, 864, -1251, 2628, -3199, 549, -1966, 419, 685,
-                -3414, -3673, -3939, -1422, -3994, 4073, 86, -1703, 1179, 758, -3588, 3427, -1798,
-                -2139, -456, -547, -3741, 3191, -2432, 1213, -3415, -3825, -1993, -763, -1757, 887,
-                1587, -1995, -887, -873, 1152, -1897, 2738, 2867, 1952, 3834, 3562, 3118, -768,
-                1400, 3883, 2636, 456, -3884, -1726, -3232, 2373, -1039, 591, 1975, 1634, 459,
-                -595, 2864, 3619, 3288, -2180, 4048, -2469, 1826, 1764, -1345, 3761, 2320, 3935,
-                -1219, -1397, 214, -1008, 299, -3270, -2628, 1070, 2904, 1597, 3471, 2383, -417,
-                -3456, 327, 3997, 1662, -3363, 2033, 1180, 1625, 923, -1911, -3511, -41, 1525,
-                -3882, -3104, 3023, 3794, -1028, 3818, -3216, -2875, -1755, -354, -3137, -1546,
-                -3535, -1156, 1802, -1081, 3726, 3067, 773, 2408, 72, 810, 3607, -1524, 3478, 3409,
-                3377, 3159, 159, -706, -60, 1462, 2224, 2279, 2373, -3027, -78, 405, -4078, 2697,
-                3474, -3611, 3632, 1229, 2396, -3729, -1110, 290, -2861, 3018, 122, 1177, -3123,
-                -3583, 2683, 2743, 2888, -2104, 874, -1150, -2453, -125, -2561, -2011, -2384, 2259,
-                -10, 836, -2773, 2487, -2292, -201, -3235, 1232, -3197,
-            ],
-        };
+        let coefficients = [
+            -1072, -3712, -3423, -27, 1995, 3750, -922, 3806, 2356, 3801, -1709, -2709, 1191, 108,
+            -593, -3081, -949, -926, 3107, -3820, 379, 3747, -2910, -2370, 939, 3218, -3190, 1311,
+            1110, -2717, -1191, -1019, -2478, -1860, -4018, 2615, -3208, 337, -3406, -1225, -261,
+            -329, -3624, -726, -3159, 3407, 4042, 2124, 2921, 1507, 279, -2830, -2850, -4011, 402,
+            1510, -2648, -168, 18, 652, 3443, 1723, 3112, -1605, -3885, 3174, 832, -3424, 2886,
+            3815, 2064, 1757, 3298, 3365, -1489, -1021, 1594, 3630, -3352, 1055, -2914, -816, 864,
+            -1251, 2628, -3199, 549, -1966, 419, 685, -3414, -3673, -3939, -1422, -3994, 4073, 86,
+            -1703, 1179, 758, -3588, 3427, -1798, -2139, -456, -547, -3741, 3191, -2432, 1213,
+            -3415, -3825, -1993, -763, -1757, 887, 1587, -1995, -887, -873, 1152, -1897, 2738,
+            2867, 1952, 3834, 3562, 3118, -768, 1400, 3883, 2636, 456, -3884, -1726, -3232, 2373,
+            -1039, 591, 1975, 1634, 459, -595, 2864, 3619, 3288, -2180, 4048, -2469, 1826, 1764,
+            -1345, 3761, 2320, 3935, -1219, -1397, 214, -1008, 299, -3270, -2628, 1070, 2904, 1597,
+            3471, 2383, -417, -3456, 327, 3997, 1662, -3363, 2033, 1180, 1625, 923, -1911, -3511,
+            -41, 1525, -3882, -3104, 3023, 3794, -1028, 3818, -3216, -2875, -1755, -354, -3137,
+            -1546, -3535, -1156, 1802, -1081, 3726, 3067, 773, 2408, 72, 810, 3607, -1524, 3478,
+            3409, 3377, 3159, 159, -706, -60, 1462, 2224, 2279, 2373, -3027, -78, 405, -4078, 2697,
+            3474, -3611, 3632, 1229, 2396, -3729, -1110, 290, -2861, 3018, 122, 1177, -3123, -3583,
+            2683, 2743, 2888, -2104, 874, -1150, -2453, -125, -2561, -2011, -2384, 2259, -10, 836,
+            -2773, 2487, -2292, -201, -3235, 1232, -3197,
+        ];
+        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
 
-        let expected_re_serialized = [
+        let expected_bytes = [
             48, 20, 208, 127, 245, 13, 88, 131, 180, 130, 230, 20, 9, 204, 230, 36, 180, 218, 74,
             157, 181, 40, 95, 148, 76, 224, 181, 211, 115, 118, 15, 118, 95, 232, 186, 130, 215,
             22, 202, 85, 204, 109, 216, 241, 112, 165, 186, 58, 245, 41, 221, 159, 174, 153, 232,
@@ -109,7 +105,7 @@ mod tests {
             114, 203, 81, 128, 188, 172, 90, 39, 25, 122, 156, 12, 71, 57, 204, 234, 227,
         ];
 
-        assert_eq!(serialize(re), expected_re_serialized);
+        assert_eq!(serialize::<PortableSIMDUnit>(re), expected_bytes);
     }
 
     #[test]
@@ -161,6 +157,9 @@ mod tests {
             2487, -1527, 2834, -3089, 1724, 3858, -2130, 3301, -1565,
         ];
 
-        assert_eq!(deserialize(&serialized).coefficients, expected_coefficients);
+        assert_eq!(
+            deserialize::<PortableSIMDUnit>(&serialized).to_i32_array(),
+            expected_coefficients
+        );
     }
 }
