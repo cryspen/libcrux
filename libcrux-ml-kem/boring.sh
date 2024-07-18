@@ -5,7 +5,7 @@ set -e
 SED=$(which gsed &>/dev/null && echo gsed || echo sed)
 
 # Extract the C code
-cargo clean
+# cargo clean
 ./c.sh --config cg.yaml --out cg --mlkem768 \
     --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
