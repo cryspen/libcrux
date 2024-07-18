@@ -20,6 +20,7 @@ jobs:
     defaults:
       run:
         working-directory: libcrux-ml-kem
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 

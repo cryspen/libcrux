@@ -16,7 +16,7 @@ while [ $# -gt 0 ]; do
 done
 
 # Extract the C code
-if [[ "$no_clean" = 0]]; then
+if [[ "$no_clean" = 0 ]]; then
     cargo clean
 fi
 ./c.sh --config cg.yaml --out cg --mlkem768 \
