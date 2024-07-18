@@ -27,7 +27,7 @@ const AEAD_KEY_LENGTH: usize = Algorithm::key_size(Algorithm::Chacha20Poly1305);
 /// An ECDH-bound PSQ encapsulation.
 pub struct ECDHPsk {
     encapsulation: crate::psq::Ciphertext,
-    initiator_dh_pk: Vec<u8>,
+    initiator_dh_pk: [u8; 32],
     aead_mac: (libcrux::aead::Tag, Vec<u8>),
     psk_ttl: Duration,
     ts: Duration,
@@ -84,9 +84,11 @@ pub fn send_ecdh_bound_psq(
     let (initiator_iv, initiator_key, _receiver_iv, _receiver_key) = derive_cipherstate(psk)?;
 
     let aad = ts_ttl;
-    let initiator_dh_pk =
-        libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, initiator_dh_sk)
-            .map_err(|_| Error::CryptoError)?;
+    let mut initiator_dh_pk = [0u8; 32];
+    initiator_dh_pk.copy_from_slice(
+        &libcrux_ecdh::secret_to_public(libcrux_ecdh::Algorithm::X25519, initiator_dh_sk)
+            .map_err(|_| Error::CryptoError)?,
+    );
     let aead_mac =
         libcrux::aead::encrypt_detached(&initiator_key, &initiator_dh_pk, initiator_iv, aad)
             .map_err(|_| Error::CryptoError)?;
@@ -121,9 +123,7 @@ pub fn receive_ecdh_bound_psq(
         ts,
     } = ecdh_psk_message;
     let ss_q = receiver_pqsk.derive_pq_psk(receiver_pqpk, encapsulation, sctx)?;
-    let initiator_dh_pk_bytes: [u8; 32] = initiator_dh_pk[0..32]
-        .try_into()
-        .map_err(|_| Error::InvalidPublicKey)?;
+    let initiator_dh_pk_bytes: [u8; 32] = initiator_dh_pk.to_owned();
     let initiator_dh_pk_point = libcrux_ecdh::X25519PublicKey(initiator_dh_pk_bytes);
     let ss_dh = libcrux_ecdh::x25519_derive(&initiator_dh_pk_point, receiver_dh_sk)
         .map_err(|_| Error::CryptoError)?;
