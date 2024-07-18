@@ -1,10 +1,20 @@
 use core::fmt;
 use std::{
-    fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
-    str::Split,
 };
+
+/// Read a test vector file.
+pub fn read_file<Ty: Tv>(file: &str) -> Result<TestVector<Ty>, Error> {
+    let reader = BufReader::new(File::open(file).map_err(|_| Error::FileOpen)?);
+    TestVector::read(reader)
+}
+
+/// Read a test vector from a string.
+pub fn read_string<Ty: Tv>(tv: &str) -> Result<TestVector<Ty>, Error> {
+    let reader = BufReader::new(tv.as_bytes());
+    TestVector::read(reader)
+}
 
 /// Errors
 #[derive(Debug, Clone, Copy)]
@@ -19,18 +29,6 @@ pub struct TestVector<TestType: Tv> {
     pub header: TestType::H,
     pub tests: Vec<TestType::T>,
 }
-
-// impl<T: Tv> fmt::Display for TestVector<T> {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         write!(f, "\nheader: {}", self.header)?;
-
-//         write!(f, "\ntests:\n")?;
-//         for test in &self.tests {
-//             write!(f, "{}\n", test)?;
-//         }
-//         Ok(())
-//     }
-// }
 
 impl<T: Tv> TestVector<T> {
     /// Forward the read to the underlying type `T`.
@@ -142,7 +140,7 @@ impl Tv for Sha3 {
 }
 
 impl Header for Sha3Header {
-    fn read_header<Ty: Tv<H = Self>>(line: &str, test: &mut Self) -> Result<(), Error>
+    fn read_header<Ty: Tv<H = Self>>(_line: &str, _test: &mut Self) -> Result<(), Error>
     where
         Self: Sized,
     {
@@ -201,7 +199,7 @@ impl Tv for ShakeMsg {
 }
 
 impl Header for ShakeMsgHeader {
-    fn read_header<Ty: Tv<H = Self>>(line: &str, test: &mut Self) -> Result<(), Error>
+    fn read_header<Ty: Tv<H = Self>>(_line: &str, _test: &mut Self) -> Result<(), Error>
     where
         Self: Sized,
     {
@@ -339,56 +337,62 @@ impl Test for ShakeVariableOutTest {
     }
 }
 
-trait FromStr {
-    fn from_str(s: &str) -> Result<Self, Error>
-    where
-        Self: Sized;
-}
+// Currently unused utilities.
+#[allow(unused)]
+mod utils {
+    use super::*;
 
-impl FromStr for usize {
-    fn from_str(s: &str) -> Result<Self, Error> {
-        s.parse().map_err(|_| Error::Read)
+    trait FromStr {
+        fn from_str(s: &str) -> Result<Self, Error>
+        where
+            Self: Sized;
     }
-}
 
-impl FromStr for Vec<u8> {
-    fn from_str(s: &str) -> Result<Self, Error> {
-        hex::decode(s).map_err(|_| Error::Read)
+    impl FromStr for usize {
+        fn from_str(s: &str) -> Result<Self, Error> {
+            s.parse().map_err(|_| Error::Read)
+        }
     }
-}
 
-/// A key-value pair
-///
-/// This is represented as `key = value` in the rsp file with `value: T`
-struct KeyValue<T: FromStr> {
-    key: String,
-    value: T,
-}
-
-impl<T: FromStr> KeyValue<T> {
-    fn new(key: String, value: T) -> Self {
-        Self { key, value }
+    impl FromStr for Vec<u8> {
+        fn from_str(s: &str) -> Result<Self, Error> {
+            hex::decode(s).map_err(|_| Error::Read)
+        }
     }
-}
 
-/// Read key value pair
-fn read_kv_string<T: FromStr>(kv: &str) -> Result<KeyValue<T>, Error> {
-    let mut key_value = kv.split("=");
-    let key = key_value.next().map(|v| v.trim()).ok_or(Error::Read)?;
-    log::debug!("key: {key:?}");
-    let value = key_value.next().map(|v| v.trim()).ok_or(Error::Read)?;
-    log::debug!("value: {value:?}");
-    Ok(KeyValue::new(key.to_string(), T::from_str(value)?))
-}
-
-/// Read key value pair with type
-fn read_kv_type<T: FromStr>(kv: &str, key: &str) -> Result<KeyValue<T>, Error> {
-    let kv = read_kv_string(kv)?;
-    if kv.key != key {
-        log::error!("Expected key {key} but got {}", kv.key);
-        return Err(Error::Read);
+    /// A key-value pair
+    ///
+    /// This is represented as `key = value` in the rsp file with `value: T`
+    struct KeyValue<T: FromStr> {
+        key: String,
+        value: T,
     }
-    Ok(kv)
+
+    impl<T: FromStr> KeyValue<T> {
+        fn new(key: String, value: T) -> Self {
+            Self { key, value }
+        }
+    }
+
+    /// Read key value pair
+    fn read_kv_string<T: FromStr>(kv: &str) -> Result<KeyValue<T>, Error> {
+        let mut key_value = kv.split("=");
+        let key = key_value.next().map(|v| v.trim()).ok_or(Error::Read)?;
+        log::debug!("key: {key:?}");
+        let value = key_value.next().map(|v| v.trim()).ok_or(Error::Read)?;
+        log::debug!("value: {value:?}");
+        Ok(KeyValue::new(key.to_string(), T::from_str(value)?))
+    }
+
+    /// Read key value pair with type
+    fn read_kv_type<T: FromStr>(kv: &str, key: &str) -> Result<KeyValue<T>, Error> {
+        let kv = read_kv_string(kv)?;
+        if kv.key != key {
+            log::error!("Expected key {key} but got {}", kv.key);
+            return Err(Error::Read);
+        }
+        Ok(kv)
+    }
 }
 
 /// Helper to convert strings to bytes
@@ -403,18 +407,6 @@ fn to_usize(mut value: std::str::Split<&str>) -> Result<usize, Error> {
     let next = value.next().map(|v| v.trim());
     log::debug!("value: {next:?}");
     Ok(next.map(|v| v.parse().ok()).flatten().ok_or(Error::Read)?)
-}
-
-/// Read a test vector file.
-pub fn read_file<Ty: Tv>(file: &str) -> Result<TestVector<Ty>, Error> {
-    let reader = BufReader::new(File::open(file).map_err(|_| Error::FileOpen)?);
-    TestVector::read(reader)
-}
-
-/// Read a test vector from a string.
-pub fn read_string<Ty: Tv>(tv: &str) -> Result<TestVector<Ty>, Error> {
-    let reader = BufReader::new(tv.as_bytes());
-    TestVector::read(reader)
 }
 
 #[cfg(test)]
