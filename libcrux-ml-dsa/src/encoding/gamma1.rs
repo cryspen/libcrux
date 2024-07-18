@@ -204,6 +204,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "avx2"))]
     #[test]
     fn test_deserialize_portable() {
         test_deserialize_generic::<simd::portable::PortableSIMDUnit>();

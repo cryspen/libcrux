@@ -271,10 +271,12 @@ pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, const NUMBER_O
 mod tests {
     use super::*;
 
-    use crate::{constants::COEFFICIENTS_IN_RING_ELEMENT, simd::portable::PortableSIMDUnit};
+    use crate::{
+        constants::COEFFICIENTS_IN_RING_ELEMENT,
+        simd::{self, traits::Operations},
+    };
 
-    #[test]
-    fn test_sample_ring_element_uniform() {
+    fn test_sample_ring_element_uniform_generic<SIMDUnit: Operations>() {
         let seed: [u8; 34] = [
             33, 192, 250, 216, 117, 61, 16, 12, 248, 51, 213, 110, 64, 57, 119, 80, 164, 83, 73,
             91, 80, 128, 195, 219, 203, 149, 170, 233, 16, 232, 209, 105, 4, 5,
@@ -311,7 +313,7 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_ring_element_uniform::<PortableSIMDUnit>(seed).to_i32_array(),
+            sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array(),
             expected_coefficients
         );
 
@@ -326,7 +328,7 @@ mod tests {
             0x01, 0x16, 0xDA, 0x9E, 0x01, 0x00,
         ];
         let actual_coefficients =
-            sample_ring_element_uniform::<PortableSIMDUnit>(seed).to_i32_array();
+            sample_ring_element_uniform::<SIMDUnit>(seed).to_i32_array();
 
         assert_eq!(actual_coefficients[0], 1_165_602);
         assert_eq!(
@@ -365,8 +367,8 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_sample_error_ring_element_when_eta_is_2() {
+    fn test_sample_error_ring_element_generic<SIMDUnit: Operations>() {
+        // When ETA = 2
         let seed: [u8; 66] = [
             51, 203, 133, 235, 126, 210, 169, 81, 4, 134, 147, 168, 252, 67, 176, 99, 130, 186,
             254, 103, 241, 199, 173, 78, 121, 232, 12, 244, 4, 143, 8, 174, 122, 170, 124, 35, 53,
@@ -389,13 +391,11 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element::<PortableSIMDUnit, 2>(seed).to_i32_array(),
+            sample_error_ring_element::<SIMDUnit, 2>(seed).to_i32_array(),
             expected_coefficients
         );
-    }
 
-    #[test]
-    fn test_sample_error_ring_element_when_eta_is_4() {
+        // When ETA = 4
         let seed: [u8; 66] = [
             236, 4, 148, 239, 41, 178, 188, 226, 130, 212, 6, 144, 208, 180, 180, 105, 47, 148, 75,
             195, 181, 177, 5, 140, 204, 68, 24, 132, 169, 19, 68, 118, 67, 203, 13, 152, 29, 194,
@@ -418,13 +418,13 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_error_ring_element::<PortableSIMDUnit, 4>(seed).to_i32_array(),
+            sample_error_ring_element::<SIMDUnit, 4>(seed).to_i32_array(),
             expected_coefficients
         );
     }
 
-    #[test]
-    fn test_sample_challenge_ring_element_when_tau_is_39() {
+    fn test_sample_challenge_ring_element_generic<SIMDUnit: Operations>() {
+        // When TAU = 39
         let seed: [u8; 32] = [
             3, 9, 159, 119, 236, 6, 207, 7, 103, 108, 187, 137, 222, 35, 37, 30, 79, 224, 204, 186,
             41, 38, 148, 188, 201, 50, 105, 155, 129, 217, 124, 57,
@@ -444,13 +444,11 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<PortableSIMDUnit, 39>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, 39>(seed).to_i32_array(),
             expected_coefficients
         );
-    }
 
-    #[test]
-    fn test_sample_challenge_ring_element_when_tau_is_49() {
+        // When TAU = 49
         let seed: [u8; 32] = [
             147, 7, 165, 152, 200, 20, 4, 38, 107, 110, 111, 176, 108, 84, 109, 201, 232, 125, 52,
             83, 160, 120, 106, 44, 76, 41, 76, 144, 8, 184, 4, 74,
@@ -470,13 +468,11 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<PortableSIMDUnit, 49>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, 49>(seed).to_i32_array(),
             expected_coefficients
         );
-    }
 
-    #[test]
-    fn test_sample_challenge_ring_element_when_tau_is_60() {
+        // When TAU = 60
         let seed: [u8; 32] = [
             188, 193, 17, 175, 172, 179, 13, 23, 90, 238, 237, 230, 143, 113, 24, 65, 250, 86, 234,
             229, 251, 57, 199, 158, 9, 4, 102, 249, 11, 68, 140, 107,
@@ -496,8 +492,40 @@ mod tests {
         ];
 
         assert_eq!(
-            sample_challenge_ring_element::<PortableSIMDUnit, 60>(seed).to_i32_array(),
+            sample_challenge_ring_element::<SIMDUnit, 60>(seed).to_i32_array(),
             expected_coefficients
         );
+    }
+
+    #[cfg(not(feature = "avx2"))]
+    #[test]
+    fn test_sample_ring_element_uniform_portable() {
+        test_sample_ring_element_uniform_generic::<simd::portable::PortableSIMDUnit>();
+    }
+    #[cfg(not(feature = "avx2"))]
+    #[test]
+    fn test_sample_error_ring_element_portable() {
+        test_sample_error_ring_element_generic::<simd::portable::PortableSIMDUnit>();
+    }
+    #[cfg(not(feature = "avx2"))]
+    #[test]
+    fn test_sample_challenge_ring_element_portable() {
+        test_sample_challenge_ring_element_generic::<simd::portable::PortableSIMDUnit>();
+    }
+
+    #[cfg(feature = "avx2")]
+    #[test]
+    fn test_sample_ring_element_uniform_avx2() {
+        test_sample_ring_element_uniform_generic::<simd::avx2::AVX2SIMDUnit>();
+    }
+    #[cfg(feature = "avx2")]
+    #[test]
+    fn test_sample_error_ring_element_avx2() {
+        test_sample_error_ring_element_generic::<simd::avx2::AVX2SIMDUnit>();
+    }
+    #[cfg(feature = "avx2")]
+    #[test]
+    fn test_sample_challenge_ring_element_avx2() {
+        test_sample_challenge_ring_element_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }

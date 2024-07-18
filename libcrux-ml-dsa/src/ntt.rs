@@ -246,10 +246,13 @@ pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simd::portable::PortableSIMDUnit;
 
-    #[test]
-    fn test_ntt() {
+    use crate::{
+        polynomial::PolynomialRingElement,
+        simd::{self, traits::Operations},
+    };
+
+    fn test_ntt_generic<SIMDUnit: Operations>() {
         let coefficients = [
             245230, -429681, -35753, 256940, 138755, -82158, -453212, -296769, 106884, -496329,
             -275542, 350156, 295061, 462432, 162727, 219494, 43263, -84315, -100731, 5560, -38846,
@@ -278,7 +281,7 @@ mod tests {
             -391807, 392057, -132521, -441664, -349459, -373059, -296519, 274235, 42417, 47385,
             -104540, 142532, 246380, -515363, -422665,
         ];
-        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
 
         let expected_coefficients = [
             -17129289, -17188287, -11027856, -7293060, -14589541, -12369669, -1420304, -9409026,
@@ -315,8 +318,7 @@ mod tests {
         assert_eq!(ntt(re).to_i32_array(), expected_coefficients);
     }
 
-    #[test]
-    fn test_invert_ntt_montgomery() {
+    fn test_invert_ntt_montgomery_generic<SIMDUnit: Operations>() {
         let coefficients = [
             -1799977, -2102152, -2642101, -635466, -1853482, 642462, 1199623, -2231752, -3968977,
             1443304, 1461464, 2556315, 4140492, -1725885, 4153465, -556916, -2133612, 1372025,
@@ -348,7 +350,7 @@ mod tests {
             -3881813, 2536840, -2924666, 2425664, 2635292, 2752536, -136653, 4057087, -633680,
             3039079, -2733512, 1734173, -2109687,
         ];
-        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
 
         let expected_coefficients = [
             3966085, -2067161, 579114, -3597478, 2232818, -17588, 1194752, -1205114, -4058138,
@@ -386,5 +388,27 @@ mod tests {
             invert_ntt_montgomery(re).to_i32_array(),
             expected_coefficients
         );
+    }
+
+    #[cfg(not(feature = "avx2"))]
+    #[test]
+    fn test_ntt_portable() {
+        test_ntt_generic::<simd::portable::PortableSIMDUnit>();
+    }
+    #[cfg(not(feature = "avx2"))]
+    #[test]
+    fn test_invert_ntt_montgomery_portable() {
+        test_invert_ntt_montgomery_generic::<simd::portable::PortableSIMDUnit>();
+    }
+
+    #[cfg(feature = "avx2")]
+    #[test]
+    fn test_ntt_avx2() {
+        test_ntt_generic::<simd::avx2::AVX2SIMDUnit>();
+    }
+    #[cfg(feature = "avx2")]
+    #[test]
+    fn test_invert_ntt_montgomery_avx2() {
+        test_invert_ntt_montgomery_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }

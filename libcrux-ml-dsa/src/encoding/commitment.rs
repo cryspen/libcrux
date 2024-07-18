@@ -135,6 +135,7 @@ mod tests {
         assert_eq!(serialize::<SIMDUnit, 128>(re), serialized);
     }
 
+    #[cfg(not(feature = "avx2"))]
     #[test]
     fn test_serialize_portable() {
         test_serialize_generic::<simd::portable::PortableSIMDUnit>();
