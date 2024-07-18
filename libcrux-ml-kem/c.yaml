@@ -79,6 +79,8 @@ files:
         - [libcrux_sha3, keccakx1]
         - [libcrux_sha3, shake128]
         - [libcrux_sha3, shake256]
+        - [libcrux_sha3, shake128_ema]
+        - [libcrux_sha3, shake256_ema]
         - [libcrux_sha3, sha224_ema]
         - [libcrux_sha3, sha256_ema]
         - [libcrux_sha3, sha384_ema]
