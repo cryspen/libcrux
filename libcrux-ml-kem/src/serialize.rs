@@ -6,12 +6,8 @@ use crate::{
 };
 
 use hax_lib::*;
-use hax_lib::int::*;
 
 #[inline(always)]
-#[cfg_attr(hax, requires(
-    32 + 2 <= SHARED_SECRET_SIZE
-))]
 pub(super) fn compress_then_serialize_message<Vector: Operations>(
     re: PolynomialRingElement<Vector>,
 ) -> [u8; SHARED_SECRET_SIZE] {
@@ -118,6 +114,10 @@ fn deserialize_to_reduced_ring_element<Vector: Operations>(
 ///
 /// This function MUST NOT be used on secret inputs.
 #[inline(always)]
+#[cfg_attr(hax, requires(
+    public_key.len() == PUBLIC_KEY_SIZE &&
+    PUBLIC_KEY_SIZE / BYTES_PER_RING_ELEMENT == K
+))]
 pub(super) fn deserialize_ring_elements_reduced<
     const PUBLIC_KEY_SIZE: usize,
     const K: usize,
@@ -131,8 +131,8 @@ pub(super) fn deserialize_ring_elements_reduced<
             .chunks_exact(BYTES_PER_RING_ELEMENT)
             .enumerate()
         {
-            // Core.Iter.Traits.Iterator.f_enumerate is supposed to keep track on iteration index,
-            // part of https://github.com/hacspec/hax/issues/394
+            // Core.Iter.Traits.Iterator.f_enumerate is supposed to keep track on iteration index and
+            // chunk length. This issue is part of https://github.com/hacspec/hax/issues/394
             assume!(i < K);
             assume!(ring_element.len() == BYTES_PER_RING_ELEMENT);
             

@@ -69,9 +69,7 @@ val compress_then_serialize_message
       (#v_Vector: Type0)
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
-    : Prims.Pure (t_Array u8 (sz 32))
-      (requires (sz 32 +! sz 2 <: usize) <=. Libcrux_ml_kem.Constants.v_SHARED_SECRET_SIZE)
-      (fun _ -> Prims.l_True)
+    : Prims.Pure (t_Array u8 (sz 32)) Prims.l_True (fun _ -> Prims.l_True)
 
 val compress_then_serialize_ring_element_u
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -210,7 +208,9 @@ val deserialize_ring_elements_reduced
       {| i1: Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector |}
       (public_key: t_Slice u8)
     : Prims.Pure (t_Array (Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector) v_K)
-      Prims.l_True
+      (requires
+        (Core.Slice.impl__len #u8 public_key <: usize) =. v_PUBLIC_KEY_SIZE &&
+        (v_PUBLIC_KEY_SIZE /! Libcrux_ml_kem.Constants.v_BYTES_PER_RING_ELEMENT <: usize) =. v_K)
       (fun _ -> Prims.l_True)
 
 val deserialize_to_uncompressed_ring_element
