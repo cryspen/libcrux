@@ -1,6 +1,9 @@
+use core::fmt;
 use std::{
+    fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
+    str::Split,
 };
 
 /// Errors
@@ -10,17 +13,35 @@ pub enum Error {
     Read,
 }
 
-/// The test vector representation in the file
-struct HashTv {}
+/// A CAVP test vector.
+#[derive(Debug, Clone, Default)]
+pub struct TestVector<TestType: Tv> {
+    pub header: TestType::H,
+    pub tests: Vec<TestType::T>,
+}
 
-impl HashTv {
-    fn read(mut reader: impl BufRead) -> Result<TestVector, Error> {
-        let mut tv = TestVector::default();
+// impl<T: Tv> fmt::Display for TestVector<T> {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         write!(f, "\nheader: {}", self.header)?;
 
-        let mut test = Sha3Test::default();
+//         write!(f, "\ntests:\n")?;
+//         for test in &self.tests {
+//             write!(f, "{}\n", test)?;
+//         }
+//         Ok(())
+//     }
+// }
+
+impl<T: Tv> TestVector<T> {
+    /// Forward the read to the underlying type `T`.
+    fn read(mut reader: impl BufRead) -> Result<Self, Error> {
+        let mut tv = Self::default();
+        let mut test = T::T::default();
+        let mut header = T::H::default();
 
         // Read a single entry
         loop {
+            log::debug!("reading next line ...");
             let mut line = String::new();
             let bytes_read = reader.read_line(&mut line).map_err(|_| Error::Read)?;
             if bytes_read == 0 {
@@ -42,12 +63,19 @@ impl HashTv {
                 line = line.strip_suffix("]").ok_or(Error::Read)?;
                 line = line.strip_prefix("[").ok_or(Error::Read)?;
                 log::debug!("line {line}");
-                tv.out_len = read_kv_type(line, "L")?.value;
-                test = Sha3Test::default();
+                T::H::read_header::<T>(line, &mut header)?;
+                // section.push(line.to_string());
 
                 // Continue with the next line
                 continue;
             }
+
+            // We're done with the header, set it.
+            tv.header = header.clone();
+            // log::debug!("header: {:?}", header);
+
+            // Set parameters
+            // test.out_len = out_len;
 
             // Read a test case
             //
@@ -56,26 +84,258 @@ impl HashTv {
             // ... = ...
             //
             // ```
-            let mut key_value = line.split("=");
-            let key = key_value.next().map(|v| v.trim());
-            log::debug!("key: {key:?}");
-            match key {
-                Some("Len") => {
-                    test.length = to_usize(key_value)?;
-                }
-                Some("Msg") => {
-                    test.msg = to_bytes(key_value)?;
-                }
-                Some("MD") => {
-                    test.digest = to_bytes(key_value)?;
-                    tv.tests.push(test.clone());
-
-                    // This is the last value
-                    continue;
-                }
-                _ => return Err(Error::Read),
-            }
+            T::T::read_test(line, &mut test, &mut tv)?;
         }
+    }
+}
+
+// This module only helps hiding the test trait.
+mod helper {
+    use super::*;
+
+    /// The trait to use globally
+    pub trait Tv: Default {
+        type T: Test + Clone;
+        type H: Header + Clone;
+    }
+
+    /// Helper trait for reading tests
+    pub trait Test: Default + Clone {
+        /// Read test vector specific test values
+        fn read_test<Ty: Tv<T = Self>>(
+            line: &str,
+            test: &mut Self,
+            tv: &mut TestVector<Ty>,
+        ) -> Result<(), Error>
+        where
+            Self: Sized;
+    }
+
+    /// Heper trait for reading headers
+    pub trait Header: Default + Clone {
+        /// Read test vector specific header values
+        fn read_header<Ty: Tv<H = Self>>(line: &str, header: &mut Self) -> Result<(), Error>
+        where
+            Self: Sized;
+    }
+}
+use helper::*;
+
+/// A SHA3 test.
+#[derive(Debug, Clone, Default)]
+pub struct Sha3Test {
+    /// Note that `msg_length` is not necessary the same as `msg.len()`
+    pub msg_length: usize,
+    pub msg: Vec<u8>,
+    pub digest: Vec<u8>,
+}
+
+/// Empty SHA3 header.
+#[derive(Debug, Clone, Default)]
+pub struct Sha3Header {}
+
+#[derive(Debug, Clone, Default)]
+pub struct Sha3 {}
+impl Tv for Sha3 {
+    type T = Sha3Test;
+    type H = Sha3Header;
+}
+
+impl Header for Sha3Header {
+    fn read_header<Ty: Tv<H = Self>>(line: &str, test: &mut Self) -> Result<(), Error>
+    where
+        Self: Sized,
+    {
+        // We don't read anything here for now.
+        Ok(())
+    }
+}
+
+impl Test for Sha3Test {
+    fn read_test<Ty: Tv<T = Self>>(
+        line: &str,
+        test: &mut Self,
+        tv: &mut TestVector<Ty>,
+    ) -> Result<(), Error> {
+        let mut key_value = line.split("=");
+        let key = key_value.next().map(|v| v.trim());
+        log::debug!("key: {key:?}");
+
+        match key {
+            Some("Len") => {
+                test.msg_length = to_usize(key_value)?;
+            }
+            Some("Msg") => {
+                test.msg = to_bytes(key_value)?;
+            }
+            Some("MD") => {
+                test.digest = to_bytes(key_value)?;
+                tv.tests.push(test.clone());
+            }
+            _ => return Err(Error::Read),
+        }
+
+        Ok(())
+    }
+}
+
+/// A Shake msg test.
+#[derive(Debug, Clone, Default)]
+pub struct ShakeMsgTest {
+    /// Note that `msg_length` is not necessary the same as `msg.len()`
+    pub msg_length: usize,
+    pub msg: Vec<u8>,
+    pub digest: Vec<u8>,
+}
+
+/// Empty Shake msg header
+#[derive(Debug, Clone, Default)]
+pub struct ShakeMsgHeader {}
+
+/// A Shake msg test.
+#[derive(Debug, Clone, Default)]
+pub struct ShakeMsg {}
+impl Tv for ShakeMsg {
+    type T = ShakeMsgTest;
+    type H = ShakeMsgHeader;
+}
+
+impl Header for ShakeMsgHeader {
+    fn read_header<Ty: Tv<H = Self>>(line: &str, test: &mut Self) -> Result<(), Error>
+    where
+        Self: Sized,
+    {
+        // We don't read anything here for now.
+        Ok(())
+    }
+}
+
+impl Test for ShakeMsgTest {
+    fn read_test<Ty: Tv<T = Self>>(
+        line: &str,
+        test: &mut Self,
+        tv: &mut TestVector<Ty>,
+    ) -> Result<(), Error>
+    where
+        Self: Sized,
+    {
+        let mut key_value = line.split("=");
+        let key = key_value.next().map(|v| v.trim());
+        log::debug!("key: {key:?}");
+
+        match key {
+            Some("Len") => {
+                test.msg_length = to_usize(key_value)?;
+            }
+            Some("Msg") => {
+                test.msg = to_bytes(key_value)?;
+            }
+            Some("Output") => {
+                test.digest = to_bytes(key_value)?;
+                tv.tests.push(test.clone());
+            }
+            _ => return Err(Error::Read),
+        }
+
+        Ok(())
+    }
+}
+
+/// A Shake test with variable output length.
+#[derive(Debug, Clone, Default)]
+pub struct ShakeVariableOutTest {
+    /// We ignore the COUNT for now
+    // pub count: usize,
+
+    /// Output length
+    pub out_len: usize,
+
+    /// Note that `msg_length` is not necessary the same as `msg.len()`
+    pub msg_length: usize,
+
+    /// The input message
+    pub msg: Vec<u8>,
+
+    /// The expected output
+    pub digest: Vec<u8>,
+}
+
+impl fmt::Display for ShakeVariableOutTest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "out_len: {}\n", self.out_len)?;
+        write!(f, "msg_length: {}\n", self.msg_length)?;
+        write!(f, "msg: {}\n", hex::encode(&self.msg))?;
+        write!(f, "digest: {}\n", hex::encode(&self.digest))
+    }
+}
+
+/// Shake variable out header
+#[derive(Debug, Clone, Default)]
+pub struct ShakeVariableOutHeader {
+    /// The length of the input message.
+    pub input_length: usize,
+}
+
+/// A Shake msg test.
+#[derive(Debug, Clone, Default)]
+pub struct ShakeVariableOut {}
+impl Tv for ShakeVariableOut {
+    type T = ShakeVariableOutTest;
+    type H = ShakeVariableOutHeader;
+}
+
+impl Header for ShakeVariableOutHeader {
+    fn read_header<Ty: Tv<H = Self>>(line: &str, header: &mut Self) -> Result<(), Error>
+    where
+        Self: Sized,
+    {
+        let mut key_value = line.split("=");
+        let key = key_value.next().map(|v| v.trim());
+        log::debug!("key: {key:?}");
+
+        match key {
+            Some("Input Length") => {
+                header.input_length = to_usize(key_value)?;
+            }
+            // We ignore everything else for now
+            _ => return Ok(()),
+        }
+
+        Ok(())
+    }
+}
+
+impl Test for ShakeVariableOutTest {
+    fn read_test<Ty: Tv<T = Self>>(
+        line: &str,
+        test: &mut Self,
+        tv: &mut TestVector<Ty>,
+    ) -> Result<(), Error>
+    where
+        Self: Sized,
+    {
+        let mut key_value = line.split("=");
+        let key = key_value.next().map(|v| v.trim());
+        log::debug!("key: {key:?}");
+
+        match key {
+            Some("Outputlen") => {
+                test.msg_length = to_usize(key_value)?;
+            }
+            Some("Msg") => {
+                test.msg = to_bytes(key_value)?;
+            }
+            Some("Output") => {
+                test.digest = to_bytes(key_value)?;
+                tv.tests.push(test.clone());
+            }
+            // We ignore these for now
+            Some("COUNT") => log::debug!("Ignoring COUNT"),
+            _ => return Err(Error::Read),
+        }
+        log::debug!("done reading {key:?}");
+
+        Ok(())
     }
 }
 
@@ -145,47 +405,22 @@ fn to_usize(mut value: std::str::Split<&str>) -> Result<usize, Error> {
     Ok(next.map(|v| v.parse().ok()).flatten().ok_or(Error::Read)?)
 }
 
-/// A SHA3 test.
-#[derive(Debug, Clone, Default)]
-pub struct Sha3Test {
-    pub length: usize,
-    pub msg: Vec<u8>,
-    pub digest: Vec<u8>,
-}
-
-/// A CAVP test vector.
-#[derive(Debug, Clone, Default)]
-pub struct TestVector {
-    out_len: usize,
-    tests: Vec<Sha3Test>,
-}
-
-impl TestVector {
-    /// Get the test slice
-    pub fn tests(&self) -> &[Sha3Test] {
-        &self.tests
-    }
-
-    /// Get the expected output length
-    pub fn out_len(&self) -> usize {
-        self.out_len
-    }
-}
-
 /// Read a test vector file.
-pub fn read_file(file: &str) -> Result<TestVector, Error> {
+pub fn read_file<Ty: Tv>(file: &str) -> Result<TestVector<Ty>, Error> {
     let reader = BufReader::new(File::open(file).map_err(|_| Error::FileOpen)?);
-    HashTv::read(reader)
+    TestVector::read(reader)
 }
 
 /// Read a test vector from a string.
-pub fn read_string(tv: &str) -> Result<TestVector, Error> {
+pub fn read_string<Ty: Tv>(tv: &str) -> Result<TestVector<Ty>, Error> {
     let reader = BufReader::new(tv.as_bytes());
-    HashTv::read(reader)
+    TestVector::read(reader)
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::*;
+
     #[test]
     fn sha3() {
         let _ = pretty_env_logger::try_init();
@@ -206,7 +441,53 @@ Len = 16
 Msg = d477
 MD = 94279e8f5ccdf6e17f292b59698ab4e614dfe696a46c46da78305fc6a3146ab7
 ";
-        let tv = super::read_string(tv).unwrap();
+        let tv: TestVector<Sha3> = super::read_string(tv).unwrap();
         eprintln!("tv: {tv:x?}");
+    }
+
+    #[test]
+    fn shake128() {
+        let _ = pretty_env_logger::try_init();
+        let tv = r"
+# Sample test vector for Shake128
+#  Generated on Thu Jan 28 14:46:45 2016
+
+[Outputlen = 128]
+
+Len = 0
+Msg = 00
+Output = 7f9c2ba4e88f827d616045507605853e
+
+Len = 8
+Msg = 0e
+Output = fa996dafaa208d72287c23bc4ed4bfd5
+";
+        let tv: TestVector<ShakeMsg> = super::read_string(tv).unwrap();
+        eprintln!("tv: {tv:x?}");
+    }
+
+    #[test]
+    fn shake128_variable_out() {
+        let _ = pretty_env_logger::try_init();
+        let tv = r"
+# Sample test vector for Shake128
+#  Generated on Thu Jan 28 14:46:47 2016
+
+[Tested for Output of byte-oriented messages]
+[Input Length = 128]
+[Minimum Output Length (bits) = 125]
+[Maximum Output Length (bits) = 1120]
+COUNT = 0
+Outputlen = 128
+Msg = 84e950051876050dc851fbd99e6247b8
+Output = 8599bd89f63a848c49ca593ec37a12c6
+
+COUNT = 1
+Outputlen = 128
+Msg = 9a335790abf769877c9e6cd3d5199e8c
+Output = 2ece1768a6ef6568a2dff699613f49d0
+";
+        let tv: TestVector<ShakeVariableOut> = super::read_string(tv).unwrap();
+        eprintln!("tv: {tv:?}");
     }
 }

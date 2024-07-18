@@ -163,11 +163,22 @@ pub fn sha512_ema(digest: &mut [u8], payload: &[u8]) {
 }
 
 /// SHAKE 128
+///
+/// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
+/// the output will only return `u32::MAX` bytes.
 #[inline(always)]
 pub fn shake128<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     let mut out = [0u8; BYTES];
     portable::shake128(&mut out, data);
     out
+}
+
+/// SHAKE 128
+///
+/// Writes `out.len()` bytes.
+#[inline(always)]
+pub fn shake128_ema(out: &mut [u8], data: &[u8]) {
+    portable::shake128(out, data);
 }
 
 /// SHAKE 256
@@ -181,7 +192,14 @@ pub fn shake256<const BYTES: usize>(data: &[u8]) -> [u8; BYTES] {
     out
 }
 
-mod incremental {}
+/// SHAKE 256
+///
+/// Note that the output length `BYTES` must fit into 32 bit. If it is longer,
+/// the output will only return `u32::MAX` bytes.
+#[inline(always)]
+pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
+    portable::shake256(out, data);
+}
 
 //  === The portable instantiation === //
 

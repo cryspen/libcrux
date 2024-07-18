@@ -1085,6 +1085,7 @@ dependencies = [
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
+ "pretty_env_logger",
  "rand",
 ]
 
