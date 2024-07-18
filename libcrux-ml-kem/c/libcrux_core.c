@@ -8,7 +8,7 @@
  * Eurydice: f415f299462ee62cdddcb42ae16b10bb6a7e4f0a
  * Karamel: 65aab550cf3ba36d52ae6ad1ad962bb573406395
  * F*: a32b316e521fa4f239b610ec8f1d15e78d62cbe8-dirty
- * Libcrux: fd115e1b6265143551fbd8d7924c933d055de75d
+ * Libcrux: 11774b3e1cb9b1450afd1fcbce4d90a8ad23319a
  */
 
 #include "internal/libcrux_core.h"
@@ -69,6 +69,18 @@ libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
     uint8_t ret[32U]) {
   uint8_t ret0[32U];
   select_ct(lhs, rhs, selector, ret0);
+  memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
+}
+
+void libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
+    Eurydice_slice lhs_c, Eurydice_slice rhs_c, Eurydice_slice lhs_s,
+    Eurydice_slice rhs_s, uint8_t ret[32U]) {
+  uint8_t selector =
+      libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
+          lhs_c, rhs_c);
+  uint8_t ret0[32U];
+  libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
+      lhs_s, rhs_s, selector, ret0);
   memcpy(ret, ret0, (size_t)32U * sizeof(uint8_t));
 }
 
