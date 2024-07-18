@@ -13,6 +13,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  extract:
+    if: ${{ github.event_name != 'merge_group' }}
+    runs-on: ubuntu-latest
+    container: franziskus/libcrux-c:latest
+    defaults:
+      run:
+        working-directory: libcrux-ml-kem
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract C
+        run: |
+          ./c.sh
+
+      - name: Extract C (header only)
+        run: |
+          ./boring.sh
+
   build:
     if: ${{ github.event_name != 'merge_group' }}
     strategy:
