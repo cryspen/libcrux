@@ -46,7 +46,7 @@ jobs:
 
       - name: Extract C (header only)
         run: |
-          ./boring.sh
+          ./boring.sh --no-clean
 
       - name: Upload header only C extraction
         uses: actions/upload-artifact@v4

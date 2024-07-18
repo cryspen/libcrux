@@ -4,8 +4,21 @@ set -e
 
 SED=$(which gsed &>/dev/null && echo gsed || echo sed)
 
+no_clean=0
+
+# Parse command line arguments.
+all_args=("$@")
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --no-clean) no_clean=1 ;;
+    esac
+    shift
+done
+
 # Extract the C code
-# cargo clean
+if [[ "$no_clean" = 0]]; then
+    cargo clean
+fi
 ./c.sh --config cg.yaml --out cg --mlkem768 \
     --no-glue --no-unrolling --no-karamel_include --no-karamel_include
 
