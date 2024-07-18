@@ -50,20 +50,23 @@ pub fn send_ecdh_bound_psq(
 ) -> Result<(Psk, ECDHPsk), Error> {
     let now = SystemTime::now();
     let ts = now
-        .duration_since(SystemTime::UNIX_EPOCH).map_err(|_| Error::OsError)?;
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .map_err(|_| Error::OsError)?;
     let ts_seconds = ts.as_secs();
     let ts_subsec_millis = ts.subsec_millis();
-    let mut ts_ttl = ts_seconds.to_be_bytes().to_vec();
-    ts_ttl.extend_from_slice(&ts_subsec_millis.to_be_bytes());
-    ts_ttl.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
+    let mut ts_ttl = [0u8; 28];
+    ts_ttl[0..8].copy_from_slice(&ts_seconds.to_be_bytes());
+    ts_ttl[8..12].copy_from_slice(&ts_subsec_millis.to_be_bytes());
+    ts_ttl[12..].copy_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
     let (ss_q, encapsulation) = psq_pk.gen_pq_psk(sctx, rng)?;
     let ss_dh = libcrux_ecdh::x25519_derive(receiver_dh_pk, initiator_dh_sk)
         .map_err(|_| Error::CryptoError)?;
 
     // ikm = ss_q || ss_dh
-    let mut ikm = Vec::from(ss_q);
-    ikm.extend_from_slice(&ss_dh.0);
+    let mut ikm = [0u8; 64];
+    ikm[0..32].copy_from_slice(&ss_q);
+    ikm[32..].copy_from_slice(&ss_dh.0);
 
     let prk = libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha256, b"", ikm);
 
@@ -126,8 +129,9 @@ pub fn receive_ecdh_bound_psq(
         .map_err(|_| Error::CryptoError)?;
 
     // ikm = ss_q || ss_dh
-    let mut ikm = Vec::from(ss_q);
-    ikm.extend_from_slice(&ss_dh.0);
+    let mut ikm = [0u8; 64];
+    ikm[0..32].copy_from_slice(&ss_q);
+    ikm[32..].copy_from_slice(&ss_dh.0);
 
     let prk = libcrux_hkdf::extract(libcrux_hkdf::Algorithm::Sha256, b"", ikm);
 
@@ -146,9 +150,10 @@ pub fn receive_ecdh_bound_psq(
 
     let ts_seconds = ts.as_secs();
     let ts_subsec_millis = ts.subsec_millis();
-    let mut ts_ttl = ts_seconds.to_be_bytes().to_vec();
-    ts_ttl.extend_from_slice(&ts_subsec_millis.to_be_bytes());
-    ts_ttl.extend_from_slice(&psk_ttl.as_millis().to_be_bytes());
+    let mut ts_ttl = [0u8; 28];
+    ts_ttl[0..8].copy_from_slice(&ts_seconds.to_be_bytes());
+    ts_ttl[8..12].copy_from_slice(&ts_subsec_millis.to_be_bytes());
+    ts_ttl[12..].copy_from_slice(&psk_ttl.as_millis().to_be_bytes());
 
     let aad = ts_ttl;
     let initiator_dh_pk_decrypted =
@@ -161,7 +166,8 @@ pub fn receive_ecdh_bound_psq(
         Duration::from_secs(ts_seconds) + Duration::from_millis((ts_subsec_millis).into());
     if initiator_dh_pk_decrypted != *initiator_dh_pk
         || now
-            .duration_since(SystemTime::UNIX_EPOCH).map_err(|_| Error::OsError)?
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .map_err(|_| Error::OsError)?
             - ts_since_epoch
             >= *psk_ttl
     {
