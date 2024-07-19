@@ -1,4 +1,4 @@
-use crate::{constants::*, types::*, VerificationError};
+use crate::{constants::*, ml_dsa_generic, types::*, VerificationError};
 
 // ML-DSA-44-specific parameters
 
@@ -66,10 +66,22 @@ type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
 #[cfg(not(feature = "avx2"))]
 type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
 
+#[cfg(feature = "avx2")]
+type Shake128 = crate::hash_functions::portable::PortableShake128;
+#[cfg(not(feature = "avx2"))]
+type Shake128 = crate::hash_functions::portable::PortableShake128;
+
+#[cfg(feature = "avx2")]
+type Shake256 = crate::hash_functions::portable::PortableShake256;
+#[cfg(not(feature = "avx2"))]
+type Shake256 = crate::hash_functions::portable::PortableShake256;
+
 /// Generate an ML-DSA-44 Key Pair
 pub fn generate_key_pair(randomness: [u8; 32]) -> MLDSA44KeyPair {
-    let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
+    let (signing_key, verification_key) = ml_dsa_generic::generate_key_pair::<
         SIMDUnit, // TODO: Multiplex this based on platform detection.
+        Shake128,
+        Shake256,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -90,8 +102,10 @@ pub fn sign(
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> MLDSA44Signature {
-    crate::ml_dsa_generic::sign::<
+    ml_dsa_generic::sign::<
         SIMDUnit, // TODO: Multiplex this based on platform detection.
+        Shake128,
+        Shake256,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -115,8 +129,10 @@ pub fn verify(
     message: &[u8],
     signature: &MLDSA44Signature,
 ) -> Result<(), VerificationError> {
-    crate::ml_dsa_generic::verify::<
+    ml_dsa_generic::verify::<
         SIMDUnit, // TODO: Multiplex this based on platform detection.
+        Shake128,
+        Shake256,
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,

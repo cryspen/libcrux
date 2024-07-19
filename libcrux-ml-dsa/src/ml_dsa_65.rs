@@ -68,10 +68,22 @@ type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
 #[cfg(not(feature = "avx2"))]
 type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
 
+#[cfg(feature = "avx2")]
+type Shake128 = crate::hash_functions::portable::PortableShake128;
+#[cfg(not(feature = "avx2"))]
+type Shake128 = crate::hash_functions::portable::PortableShake128;
+
+#[cfg(feature = "avx2")]
+type Shake256 = crate::hash_functions::portable::PortableShake256;
+#[cfg(not(feature = "avx2"))]
+type Shake256 = crate::hash_functions::portable::PortableShake256;
+
 /// Generate an ML-DSA-65 Key Pair
 pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> MLDSA65KeyPair {
     let (signing_key, verification_key) = crate::ml_dsa_generic::generate_key_pair::<
         SIMDUnit,
+        Shake128,
+        Shake256,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -94,6 +106,8 @@ pub fn sign(
 ) -> MLDSA65Signature {
     crate::ml_dsa_generic::sign::<
         SIMDUnit,
+        Shake128,
+        Shake256,
         ROWS_IN_A,
         COLUMNS_IN_A,
         ETA,
@@ -119,6 +133,8 @@ pub fn verify(
 ) -> Result<(), VerificationError> {
     crate::ml_dsa_generic::verify::<
         SIMDUnit,
+        Shake128,
+        Shake256,
         ROWS_IN_A,
         COLUMNS_IN_A,
         SIGNATURE_SIZE,
