@@ -22,7 +22,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
 
         for (i, simd_unit) in self.simd_units.iter().enumerate() {
             result[i * COEFFICIENTS_IN_SIMD_UNIT..(i + 1) * COEFFICIENTS_IN_SIMD_UNIT]
-                .copy_from_slice(&SIMDUnit::to_i32_array(*simd_unit));
+                .copy_from_slice(&simd_unit.to_coefficient_array());
         }
 
         result
@@ -38,7 +38,7 @@ impl<SIMDUnit: Operations> PolynomialRingElement<SIMDUnit> {
         let mut result = Self::ZERO();
 
         for i in 0..SIMD_UNITS_IN_RING_ELEMENT {
-            result.simd_units[i] = SIMDUnit::from_i32_array(&array_chunks.next().unwrap());
+            result.simd_units[i] = SIMDUnit::from_coefficient_array(&array_chunks.next().unwrap());
         }
         result
     }

@@ -11,3 +11,6 @@ proofs/fstar/extraction/.cache
 __pycache__
 kyber-crate/
 *.llbc
+
+# When using sed
+*.bak
