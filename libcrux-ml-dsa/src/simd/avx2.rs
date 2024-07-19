@@ -57,11 +57,9 @@ impl Operations for AVX2SIMDUnit {
         }
     }
     fn shift_left_then_reduce(simd_unit: Self, shift_by: usize) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::shift_left_then_reduce(simd_unit, shift_by);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: arithmetic::shift_left_then_reduce(simd_unit.coefficients, shift_by),
+        }
     }
 
     fn power2round(simd_unit: Self) -> (Self, Self) {
