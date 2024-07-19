@@ -34,7 +34,7 @@ pub(crate) fn deserialize<
     const ROWS_IN_A: usize,
     const VERIFICATION_KEY_SIZE: usize,
 >(
-    serialized: [u8; VERIFICATION_KEY_SIZE],
+    serialized: &[u8; VERIFICATION_KEY_SIZE],
 ) -> (
     [u8; SEED_FOR_A_SIZE],
     [PolynomialRingElement<SIMDUnit>; ROWS_IN_A],

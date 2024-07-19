@@ -130,25 +130,25 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_serialize_portable() {
         test_serialize_generic::<simd::portable::PortableSIMDUnit>();
     }
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_deserialize_portable() {
         test_deserialize_generic::<simd::portable::PortableSIMDUnit>();
     }
 
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_serialize_avx2() {
+    fn test_serialize_simd256() {
         test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_deserialize_avx2() {
+    fn test_deserialize_simd256() {
         test_deserialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }

@@ -135,15 +135,15 @@ mod tests {
         assert_eq!(serialize::<SIMDUnit, 128>(re), serialized);
     }
 
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_serialize_portable() {
         test_serialize_generic::<simd::portable::PortableSIMDUnit>();
     }
 
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_serialize_avx2() {
+    fn test_serialize_simd256() {
         test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }
