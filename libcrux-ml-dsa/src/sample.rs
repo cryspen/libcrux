@@ -1,7 +1,7 @@
 use crate::{
     constants::COEFFICIENTS_IN_RING_ELEMENT,
     encoding,
-    hash_functions::{H, H_128},
+    hash_functions::{self, shake128::Xof as _, shake256::Xof as _},
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -34,8 +34,8 @@ fn rejection_sample_less_than_field_modulus<SIMDUnit: Operations>(
 pub(crate) fn sample_ring_element_uniform<SIMDUnit: Operations>(
     seed: [u8; 34],
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut state = H_128::new(seed);
-    let randomness = H_128::squeeze_first_five_blocks(&mut state);
+    let mut state = hash_functions::portable::PortableShake128::init_absorb(&seed);
+    let randomness = state.squeeze_first_five_blocks();
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |PortableSIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -55,7 +55,7 @@ pub(crate) fn sample_ring_element_uniform<SIMDUnit: Operations>(
     );
 
     while !done {
-        let randomness = H_128::squeeze_next_block(&mut state);
+        let randomness = state.squeeze_next_block();
         done = rejection_sample_less_than_field_modulus::<SIMDUnit>(
             &randomness,
             &mut sampled,
@@ -135,8 +135,8 @@ pub(crate) fn rejection_sample_less_than_eta<SIMDUnit: Operations, const ETA: us
 fn sample_error_ring_element<SIMDUnit: Operations, const ETA: usize>(
     seed: [u8; 66],
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut state = H::new(&seed);
-    let randomness = H::squeeze_first_block(&mut state);
+    let mut state = hash_functions::portable::PortableShake256::init_absorb(&seed);
+    let randomness = state.squeeze_first_block();
 
     // Every call to |rejection_sample_less_than_field_modulus|
     // will result in a call to |SIMDUnit::rejection_sample_less_than_field_modulus|;
@@ -153,7 +153,7 @@ fn sample_error_ring_element<SIMDUnit: Operations, const ETA: usize>(
         rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness, &mut sampled, &mut out);
 
     while !done {
-        let randomness = H::squeeze_next_block(&mut state);
+        let randomness = state.squeeze_next_block();
         done = rejection_sample_less_than_eta::<SIMDUnit, ETA>(&randomness, &mut sampled, &mut out);
     }
 
@@ -182,17 +182,18 @@ pub(crate) fn sample_error_vector<
     error
 }
 
+// TODO: check performance, we sample large blobs here.
 #[inline(always)]
 fn sample_mask_ring_element<SIMDUnit: Operations, const GAMMA1_EXPONENT: usize>(
     seed: [u8; 66],
 ) -> PolynomialRingElement<SIMDUnit> {
     match GAMMA1_EXPONENT {
-        17 => {
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&H::one_shot::<576>(&seed))
-        }
-        19 => {
-            encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(&H::one_shot::<640>(&seed))
-        }
+        17 => encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
+            &hash_functions::portable::PortableShake256::shake256::<576>(&seed),
+        ),
+        19 => encoding::gamma1::deserialize::<SIMDUnit, GAMMA1_EXPONENT>(
+            &hash_functions::portable::PortableShake256::shake256::<640>(&seed),
+        ),
         _ => unreachable!(),
     }
 }
@@ -249,8 +250,8 @@ fn inside_out_shuffle(
 pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, const NUMBER_OF_ONES: usize>(
     seed: [u8; 32],
 ) -> PolynomialRingElement<SIMDUnit> {
-    let mut state = H::new(&seed);
-    let randomness = H::squeeze_first_block(&mut state);
+    let mut state = hash_functions::portable::PortableShake256::init_absorb(&seed);
+    let randomness = state.squeeze_first_block();
 
     let mut signs = u64::from_le_bytes(randomness[0..8].try_into().unwrap());
 
@@ -260,7 +261,7 @@ pub(crate) fn sample_challenge_ring_element<SIMDUnit: Operations, const NUMBER_O
     let mut done = inside_out_shuffle(&randomness[8..], &mut out_index, &mut signs, &mut result);
 
     while !done {
-        let randomness = H::squeeze_next_block(&mut state);
+        let randomness = state.squeeze_next_block();
         done = inside_out_shuffle(&randomness, &mut out_index, &mut signs, &mut result);
     }
 

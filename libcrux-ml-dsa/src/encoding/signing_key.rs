@@ -4,7 +4,7 @@ use crate::{
         SEED_FOR_SIGNING_SIZE,
     },
     encoding,
-    hash_functions::H,
+    hash_functions::{self, shake256::Xof as _},
     polynomial::PolynomialRingElement,
     simd::traits::Operations,
 };
@@ -36,7 +36,9 @@ pub(crate) fn generate_serialized<
         .copy_from_slice(seed_for_signing);
     offset += SEED_FOR_SIGNING_SIZE;
 
-    let verification_key_hash = H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(verification_key);
+    let verification_key_hash = hash_functions::portable::PortableShake256::shake256::<
+        BYTES_FOR_VERIFICATION_KEY_HASH,
+    >(verification_key);
     signing_key_serialized[offset..offset + BYTES_FOR_VERIFICATION_KEY_HASH]
         .copy_from_slice(&verification_key_hash);
     offset += BYTES_FOR_VERIFICATION_KEY_HASH;

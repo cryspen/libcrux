@@ -4,7 +4,7 @@ use crate::{
     },
     constants::*,
     encoding,
-    hash_functions::H,
+    hash_functions::{self, shake256::Xof},
     matrix::{
         add_vectors, compute_A_times_mask, compute_As1_plus_s2, compute_w_approx, expand_to_A,
         subtract_vectors, vector_times_ring_element,
@@ -41,7 +41,7 @@ pub(crate) fn generate_key_pair<
     randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE],
 ) -> ([u8; SIGNING_KEY_SIZE], [u8; VERIFICATION_KEY_SIZE]) {
     // 128 = SEED_FOR_A_SIZE + SEED_FOR_ERROR_VECTORS_SIZE + SEED_FOR_SIGNING_SIZE
-    let seed_expanded = H::one_shot::<128>(&randomness);
+    let seed_expanded = hash_functions::portable::PortableShake256::shake256::<128>(&randomness);
 
     let (seed_for_A, seed_expanded) = seed_expanded.split_at(SEED_FOR_A_SIZE);
     let (seed_for_error_vectors, seed_for_signing) =
@@ -135,7 +135,9 @@ pub(crate) fn sign<
         let mut hash_input = verification_key_hash.to_vec();
         hash_input.extend_from_slice(message);
 
-        H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
+        hash_functions::portable::PortableShake256::shake256::<MESSAGE_REPRESENTATIVE_SIZE>(
+            &hash_input[..],
+        )
     };
 
     let mask_seed: [u8; MASK_SEED_SIZE] = {
@@ -143,7 +145,7 @@ pub(crate) fn sign<
         hash_input.extend_from_slice(&randomness);
         hash_input.extend_from_slice(&message_representative);
 
-        H::one_shot::<MASK_SEED_SIZE>(&hash_input[..])
+        hash_functions::portable::PortableShake256::shake256::<MASK_SEED_SIZE>(&hash_input[..])
     };
 
     let mut domain_separator_for_mask: u16 = 0;
@@ -186,7 +188,9 @@ pub(crate) fn sign<
             let mut hash_input = message_representative.to_vec();
             hash_input.extend_from_slice(&commitment_serialized);
 
-            H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
+            hash_functions::portable::PortableShake256::shake256::<COMMITMENT_HASH_SIZE>(
+                &hash_input[..],
+            )
         };
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -298,13 +302,16 @@ pub(crate) fn verify<
         let A_as_ntt =
             expand_to_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
-        let verification_key_hash =
-            H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(verification_key_serialized);
+        let verification_key_hash = hash_functions::portable::PortableShake256::shake256::<
+            BYTES_FOR_VERIFICATION_KEY_HASH,
+        >(verification_key_serialized);
         let message_representative = {
             let mut hash_input = verification_key_hash.to_vec();
             hash_input.extend_from_slice(message);
 
-            H::one_shot::<MESSAGE_REPRESENTATIVE_SIZE>(&hash_input[..])
+            hash_functions::portable::PortableShake256::shake256::<MESSAGE_REPRESENTATIVE_SIZE>(
+                &hash_input[..],
+            )
         };
 
         let verifier_challenge_as_ntt = ntt(sample_challenge_ring_element::<
@@ -335,7 +342,9 @@ pub(crate) fn verify<
             let mut hash_input = message_representative.to_vec();
             hash_input.extend_from_slice(&commitment_serialized);
 
-            H::one_shot::<COMMITMENT_HASH_SIZE>(&hash_input[..])
+            hash_functions::portable::PortableShake256::shake256::<COMMITMENT_HASH_SIZE>(
+                &hash_input[..],
+            )
         };
 
         if signature.commitment_hash != commitment_hash {

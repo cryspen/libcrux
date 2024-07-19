@@ -2,6 +2,7 @@ mod arithmetic;
 mod constants;
 mod encoding;
 mod hash_functions;
+mod instantiations;
 mod matrix;
 mod ml_dsa_generic;
 mod ntt;
