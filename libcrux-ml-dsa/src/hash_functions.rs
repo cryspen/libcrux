@@ -100,7 +100,7 @@ pub(crate) mod portable {
 
 /// A SIMD256 implementation of [`shake128::Xof`] and [`shake256::Xof`] for AVX2.
 pub(crate) mod avx2 {
-    // FIXME: This is only a protable implementation for now.
+    // FIXME: This is only a portable implementation for now.
 
     use libcrux_sha3::portable::{
         incremental::{self, shake128_absorb_final, shake128_init},
@@ -172,7 +172,7 @@ pub(crate) mod avx2 {
 
 /// A SIMD256 implementation of [`shake128::Xof`] and [`shake256::Xof`] for Neon.
 pub(crate) mod neon {
-    // FIXME: This is only a protable implementation for now.
+    // FIXME: This is only a portable implementation for now.
 
     use libcrux_sha3::portable::{
         incremental::{self, shake128_absorb_final, shake128_init},
