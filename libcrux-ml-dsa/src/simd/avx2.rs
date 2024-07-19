@@ -4,6 +4,7 @@ use libcrux_intrinsics;
 use crate::simd::portable::PortableSIMDUnit;
 
 mod arithmetic;
+mod ntt;
 
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
@@ -172,25 +173,19 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3)
+        }
     }
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::ntt_at_layer_1(simd_unit, zeta0, zeta1);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1)
+        }
     }
     fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::ntt_at_layer_2(simd_unit, zeta);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::ntt_at_layer_2(simd_unit.coefficients, zeta)
+        }
     }
 
     fn invert_ntt_at_layer_0(
@@ -200,24 +195,18 @@ impl Operations for AVX2SIMDUnit {
         zeta2: i32,
         zeta3: i32,
     ) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::invert_ntt_at_layer_0(simd_unit, zeta0, zeta1, zeta2, zeta3);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3)
+        }
     }
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::invert_ntt_at_layer_1(simd_unit, zeta0, zeta1);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1)
+        }
     }
     fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        let result = PortableSIMDUnit::invert_ntt_at_layer_2(simd_unit, zeta);
-
-        Self::from_coefficient_array(&result.to_coefficient_array())
+        Self {
+            coefficients: ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta)
+        }
     }
 }

@@ -249,7 +249,7 @@ mod tests {
 
     use crate::{
         polynomial::PolynomialRingElement,
-        simd::{self, traits::Operations},
+        simd::traits::Operations,
     };
 
     fn test_ntt_generic<SIMDUnit: Operations>() {
@@ -391,24 +391,30 @@ mod tests {
     }
 
     #[cfg(not(feature = "simd256"))]
-    #[test]
-    fn test_ntt_portable() {
-        test_ntt_generic::<simd::portable::PortableSIMDUnit>();
-    }
-    #[cfg(not(feature = "simd256"))]
-    #[test]
-    fn test_invert_ntt_montgomery_portable() {
-        test_invert_ntt_montgomery_generic::<simd::portable::PortableSIMDUnit>();
+    mod portable {
+        use super::{test_ntt_generic, test_invert_ntt_montgomery_generic};
+
+        #[test]
+        fn test_ntt() {
+            test_ntt_generic::<crate::simd::portable::PortableSIMDUnit>();
+        }
+        #[test]
+        fn test_invert_ntt_montgomery() {
+            test_invert_ntt_montgomery_generic::<crate::simd::portable::PortableSIMDUnit>();
+        }
     }
 
     #[cfg(feature = "simd256")]
-    #[test]
-    fn test_ntt_simd256() {
-        test_ntt_generic::<simd::avx2::AVX2SIMDUnit>();
-    }
-    #[cfg(feature = "simd256")]
-    #[test]
-    fn test_invert_ntt_montgomery_simd256() {
-        test_invert_ntt_montgomery_generic::<simd::avx2::AVX2SIMDUnit>();
+    mod avx2 {
+        use super::{test_ntt_generic, test_invert_ntt_montgomery_generic};
+
+        #[test]
+        fn test_ntt() {
+            test_ntt_generic::<crate::simd::avx2::AVX2SIMDUnit>();
+        }
+        #[test]
+        fn test_invert_ntt_montgomery() {
+            test_invert_ntt_montgomery_generic::<crate::simd::avx2::AVX2SIMDUnit>();
+        }
     }
 }

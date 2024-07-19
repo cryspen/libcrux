@@ -157,24 +157,31 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "avx2"))]
-    #[test]
-    fn test_decompose_portable() {
-        test_decompose_generic::<crate::simd::portable::PortableSIMDUnit>();
-    }
-    #[test]
-    fn test_power2round_portable() {
-        test_power2round_generic::<crate::simd::portable::PortableSIMDUnit>();
+    #[cfg(not(feature = "simd256"))]
+    mod portable {
+        use super::{test_decompose_generic, test_power2round_generic};
+
+        #[test]
+        fn test_decompose() {
+            test_decompose_generic::<crate::simd::portable::PortableSIMDUnit>();
+        }
+        #[test]
+        fn test_power2round() {
+            test_power2round_generic::<crate::simd::portable::PortableSIMDUnit>();
+        }
     }
 
-    #[cfg(feature = "avx2")]
-    #[test]
-    fn test_decompose_avx2() {
-        test_decompose_generic::<crate::simd::avx2::AVX2SIMDUnit>();
-    }
-    #[cfg(feature = "avx2")]
-    #[test]
-    fn test_power2round_avx2() {
-        test_power2round_generic::<crate::simd::avx2::AVX2SIMDUnit>();
+    #[cfg(feature = "simd256")]
+    mod avx2 {
+        use super::{test_decompose_generic, test_power2round_generic};
+
+        #[test]
+        fn test_decompose() {
+            test_decompose_generic::<crate::simd::avx2::AVX2SIMDUnit>();
+        }
+        #[test]
+        fn test_power2round() {
+            test_power2round_generic::<crate::simd::avx2::AVX2SIMDUnit>();
+        }
     }
 }

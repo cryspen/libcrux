@@ -354,6 +354,10 @@ pub fn mm256_blend_epi16<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256
     debug_assert!(CONTROL >= 0 && CONTROL < 256);
     unsafe { _mm256_blend_epi16(lhs, rhs, CONTROL) }
 }
+pub fn mm256_blend_epi32<const CONTROL: i32>(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    debug_assert!(CONTROL >= 0 && CONTROL < 256);
+    unsafe { _mm256_blend_epi32(lhs, rhs, CONTROL) }
+}
 
 pub fn mm_movemask_epi8(vector: Vec128) -> i32 {
     unsafe { _mm_movemask_epi8(vector) }
