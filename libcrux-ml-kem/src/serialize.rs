@@ -204,13 +204,14 @@ pub(super) fn compress_then_serialize_ring_element_u<
 >(
     re: &PolynomialRingElement<Vector>,
 ) -> [u8; OUT_LEN] {
+    fstar!("assert (
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 10) \\/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 11))");
+    fstar!("Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)");
     match COMPRESSION_FACTOR as u32 {
         10 => compress_then_serialize_10(re),
-        // Why it needs assumption here?
-        11 => {assume!(OUT_LEN == 352); compress_then_serialize_11(re)},
-        // unreachable!() does't verify, Option enum works but we have
-        // to edit refrences!!?
-        _ => [0u8; OUT_LEN],
+        11 => compress_then_serialize_11(re),
+        _ => unreachable!(),
     }
 }
 
@@ -289,10 +290,14 @@ pub(super) fn compress_then_serialize_ring_element_v<
     re: PolynomialRingElement<Vector>,
     out: &mut [u8],
 ) {
+    fstar!("assert (
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 4) \\/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 5))");
+    fstar!("Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)");
     match COMPRESSION_FACTOR as u32 {
         4 => compress_then_serialize_4(re, out),
-        5 => {assume!(OUT_LEN == 160); compress_then_serialize_5(re, out)},
-        _ => (),
+        5 => compress_then_serialize_5(re, out),
+        _ => unreachable!(),
     }
 }
 
@@ -360,10 +365,14 @@ pub(super) fn deserialize_then_decompress_ring_element_u<
 >(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
+    fstar!("assert (
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 10) \\/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 11))");
+    fstar!("Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)");
     match COMPRESSION_FACTOR as u32 {
-        10 => {assume!(serialized.len() == 320); deserialize_then_decompress_10(serialized)},
-        11 => {assume!(serialized.len() == 352); deserialize_then_decompress_11(serialized)},
-        _ => PolynomialRingElement::<Vector>::ZERO(),
+        10 => deserialize_then_decompress_10(serialized),
+        11 => deserialize_then_decompress_11(serialized),
+        _ => unreachable!(),
     }
 }
 
@@ -429,9 +438,13 @@ pub(super) fn deserialize_then_decompress_ring_element_v<
 >(
     serialized: &[u8],
 ) -> PolynomialRingElement<Vector> {
+    fstar!("assert (
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 4) \\/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 5))");
+    fstar!("Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)");
     match COMPRESSION_FACTOR as u32 {
-        4 => {assume!(serialized.len() == 128); deserialize_then_decompress_4(serialized)},
-        5 => {assume!(serialized.len() == 160); deserialize_then_decompress_5(serialized)},
-        _ => PolynomialRingElement::<Vector>::ZERO(),
+        4 => deserialize_then_decompress_4(serialized),
+        5 => deserialize_then_decompress_5(serialized),
+        _ => unreachable!(),
     }
 }

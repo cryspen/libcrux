@@ -395,12 +395,21 @@ let compress_then_serialize_ring_element_u
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
      =
+  let _:Prims.unit =
+    assert ((v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 10) \/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 11))
+  in
+  let _:Prims.unit =
+    Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)
+  in
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
   | 10ul -> compress_then_serialize_10_ v_OUT_LEN #v_Vector re
-  | 11ul ->
-    let _:Prims.unit = Hax_lib.v_assume (v_OUT_LEN =. sz 352 <: bool) in
-    compress_then_serialize_11_ v_OUT_LEN #v_Vector re
-  | _ -> Rust_primitives.Hax.repeat 0uy v_OUT_LEN
+  | 11ul -> compress_then_serialize_11_ v_OUT_LEN #v_Vector re
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+        <:
+        Rust_primitives.Hax.t_Never)
 
 let compress_then_serialize_ring_element_v
       (v_COMPRESSION_FACTOR v_OUT_LEN: usize)
@@ -411,13 +420,25 @@ let compress_then_serialize_ring_element_v
       (re: Libcrux_ml_kem.Polynomial.t_PolynomialRingElement v_Vector)
       (out: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert ((v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 4) \/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 5))
+  in
+  let _:Prims.unit =
+    Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)
+  in
   let out, hax_temp_output:(t_Slice u8 & Prims.unit) =
     match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
     | 4ul -> compress_then_serialize_4_ #v_Vector re out, () <: (t_Slice u8 & Prims.unit)
-    | 5ul ->
-      let _:Prims.unit = Hax_lib.v_assume (v_OUT_LEN =. sz 160 <: bool) in
-      compress_then_serialize_5_ #v_Vector re out, () <: (t_Slice u8 & Prims.unit)
-    | _ -> out, (() <: Prims.unit) <: (t_Slice u8 & Prims.unit)
+    | 5ul -> compress_then_serialize_5_ #v_Vector re out, () <: (t_Slice u8 & Prims.unit)
+    | _ ->
+      out,
+      Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+          <:
+          Rust_primitives.Hax.t_Never)
+      <:
+      (t_Slice u8 & Prims.unit)
   in
   out
 
@@ -758,18 +779,21 @@ let deserialize_then_decompress_ring_element_u
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert ((v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 10) \/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 11))
+  in
+  let _:Prims.unit =
+    Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)
+  in
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
-  | 10ul ->
-    let _:Prims.unit =
-      Hax_lib.v_assume ((Core.Slice.impl__len #u8 serialized <: usize) =. sz 320 <: bool)
-    in
-    deserialize_then_decompress_10_ #v_Vector serialized
-  | 11ul ->
-    let _:Prims.unit =
-      Hax_lib.v_assume ((Core.Slice.impl__len #u8 serialized <: usize) =. sz 352 <: bool)
-    in
-    deserialize_then_decompress_11_ #v_Vector serialized
-  | _ -> Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+  | 10ul -> deserialize_then_decompress_10_ #v_Vector serialized
+  | 11ul -> deserialize_then_decompress_11_ #v_Vector serialized
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+        <:
+        Rust_primitives.Hax.t_Never)
 
 let deserialize_then_decompress_ring_element_v
       (v_COMPRESSION_FACTOR: usize)
@@ -779,18 +803,21 @@ let deserialize_then_decompress_ring_element_v
           Libcrux_ml_kem.Vector.Traits.t_Operations v_Vector)
       (serialized: t_Slice u8)
      =
+  let _:Prims.unit =
+    assert ((v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 4) \/
+        (v (cast (v_COMPRESSION_FACTOR <: usize) <: u32) == 5))
+  in
+  let _:Prims.unit =
+    Rust_primitives.Integers.mk_int_equiv_lemma #usize_inttype (v v_COMPRESSION_FACTOR)
+  in
   match cast (v_COMPRESSION_FACTOR <: usize) <: u32 with
-  | 4ul ->
-    let _:Prims.unit =
-      Hax_lib.v_assume ((Core.Slice.impl__len #u8 serialized <: usize) =. sz 128 <: bool)
-    in
-    deserialize_then_decompress_4_ #v_Vector serialized
-  | 5ul ->
-    let _:Prims.unit =
-      Hax_lib.v_assume ((Core.Slice.impl__len #u8 serialized <: usize) =. sz 160 <: bool)
-    in
-    deserialize_then_decompress_5_ #v_Vector serialized
-  | _ -> Libcrux_ml_kem.Polynomial.impl__ZERO #v_Vector ()
+  | 4ul -> deserialize_then_decompress_4_ #v_Vector serialized
+  | 5ul -> deserialize_then_decompress_5_ #v_Vector serialized
+  | _ ->
+    Rust_primitives.Hax.never_to_any (Core.Panicking.panic "internal error: entered unreachable code"
+
+        <:
+        Rust_primitives.Hax.t_Never)
 
 let deserialize_to_reduced_ring_element
       (#v_Vector: Type0)
