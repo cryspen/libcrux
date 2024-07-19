@@ -1,4 +1,4 @@
-#[cfg(feature = "avx2")]
+#[cfg(feature = "simd256")]
 pub(crate) mod avx2;
 
 pub(crate) mod portable;

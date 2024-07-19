@@ -390,25 +390,25 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_ntt_portable() {
         test_ntt_generic::<simd::portable::PortableSIMDUnit>();
     }
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_invert_ntt_montgomery_portable() {
         test_invert_ntt_montgomery_generic::<simd::portable::PortableSIMDUnit>();
     }
 
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_ntt_avx2() {
+    fn test_ntt_simd256() {
         test_ntt_generic::<simd::avx2::AVX2SIMDUnit>();
     }
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_invert_ntt_montgomery_avx2() {
+    fn test_invert_ntt_montgomery_simd256() {
         test_invert_ntt_montgomery_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }

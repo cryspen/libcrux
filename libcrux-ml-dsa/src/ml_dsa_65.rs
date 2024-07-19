@@ -63,19 +63,19 @@ pub type MLDSA65KeyPair = MLDSAKeyPair<VERIFICATION_KEY_SIZE, SIGNING_KEY_SIZE>;
 pub type MLDSA65Signature = MLDSASignature<SIGNATURE_SIZE>;
 
 // TODO: Multiplex more intelligently.
-#[cfg(feature = "avx2")]
+#[cfg(feature = "simd256")]
 type SIMDUnit = crate::simd::avx2::AVX2SIMDUnit;
-#[cfg(not(feature = "avx2"))]
+#[cfg(not(feature = "simd256"))]
 type SIMDUnit = crate::simd::portable::PortableSIMDUnit;
 
-#[cfg(feature = "avx2")]
+#[cfg(feature = "simd256")]
 type Shake128 = crate::hash_functions::portable::PortableShake128;
-#[cfg(not(feature = "avx2"))]
+#[cfg(not(feature = "simd256"))]
 type Shake128 = crate::hash_functions::portable::PortableShake128;
 
-#[cfg(feature = "avx2")]
+#[cfg(feature = "simd256")]
 type Shake256 = crate::hash_functions::portable::PortableShake256;
-#[cfg(not(feature = "avx2"))]
+#[cfg(not(feature = "simd256"))]
 type Shake256 = crate::hash_functions::portable::PortableShake256;
 
 /// Generate an ML-DSA-65 Key Pair

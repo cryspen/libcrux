@@ -99,7 +99,7 @@ pub(crate) mod portable {
 }
 
 /// A SIMD256 implementation of [`shake128::Xof`] and [`shake256::Xof`] for AVX2.
-pub(crate) mod avx2 {
+pub(crate) mod simd256 {
     // FIXME: This is only a portable implementation for now.
 
     use libcrux_sha3::portable::{

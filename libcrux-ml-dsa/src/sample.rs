@@ -509,7 +509,7 @@ mod tests {
         );
     }
 
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_sample_ring_element_uniform_portable() {
         test_sample_ring_element_uniform_generic::<
@@ -517,7 +517,7 @@ mod tests {
             hash_functions::portable::PortableShake128,
         >();
     }
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_sample_error_ring_element_portable() {
         test_sample_error_ring_element_generic::<
@@ -525,7 +525,7 @@ mod tests {
             hash_functions::portable::PortableShake256,
         >();
     }
-    #[cfg(not(feature = "avx2"))]
+    #[cfg(not(feature = "simd256"))]
     #[test]
     fn test_sample_challenge_ring_element_portable() {
         test_sample_challenge_ring_element_generic::<
@@ -534,25 +534,25 @@ mod tests {
         >();
     }
 
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_sample_ring_element_uniform_avx2() {
+    fn test_sample_ring_element_uniform_simd256() {
         test_sample_ring_element_uniform_generic::<
             simd::avx2::AVX2SIMDUnit,
             hash_functions::simd256::PortableShake128,
         >();
     }
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_sample_error_ring_element_avx2() {
+    fn test_sample_error_ring_element_simd256() {
         test_sample_error_ring_element_generic::<
             simd::avx2::AVX2SIMDUnit,
             hash_functions::simd256::PortableShake256,
         >();
     }
-    #[cfg(feature = "avx2")]
+    #[cfg(feature = "simd256")]
     #[test]
-    fn test_sample_challenge_ring_element_avx2() {
+    fn test_sample_challenge_ring_element_simd256() {
         test_sample_challenge_ring_element_generic::<
             simd::avx2::AVX2SIMDUnit,
             hash_functions::simd256::PortableShake256,
