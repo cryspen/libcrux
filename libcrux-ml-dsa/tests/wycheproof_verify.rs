@@ -4,12 +4,12 @@ use hex;
 
 use std::{fs::File, io::BufReader, path::Path};
 
-use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87};
+use libcrux_ml_dsa::{ml_dsa_44, ml_dsa_65, ml_dsa_87, MLDSASignature, MLDSAVerificationKey};
 
 include!("wycheproof/verify_schema.rs");
 
 macro_rules! wycheproof_sign_test {
-    ($name:ident, $parameter_set:literal, $verification_key_size:expr, $verification_key_object: expr, $signature_size: expr, $signature_object: expr, $verify:expr) => {
+    ($name:ident, $parameter_set:literal, $verification_key_object:ty, $signature_object:ty, $verify:expr) => {
         #[test]
         fn $name() {
             let katfile_path = Path::new("tests")
@@ -23,7 +23,7 @@ macro_rules! wycheproof_sign_test {
 
             for test_group in katfile_serialized.test_groups {
                 let verification_key_bytes = hex::decode(test_group.public_key).unwrap();
-                if verification_key_bytes.len() != $verification_key_size {
+                if verification_key_bytes.len() != <$verification_key_object>::len() {
                     // If the verification key size in the KAT does not match the
                     // verification key size in our implementation, ensure that the KAT
                     // key has a corresponding flag set staring that its length is incorrect.
@@ -37,13 +37,13 @@ macro_rules! wycheproof_sign_test {
                     continue;
                 }
                 let verification_key =
-                    $verification_key_object(verification_key_bytes.try_into().unwrap());
+                    MLDSAVerificationKey(verification_key_bytes.try_into().unwrap());
 
                 for test in test_group.tests {
                     let message = hex::decode(test.msg).unwrap();
 
                     let signature_bytes = hex::decode(test.sig).unwrap();
-                    if signature_bytes.len() != $signature_size {
+                    if signature_bytes.len() != <$signature_object>::len() {
                         // If the signature size in the KAT does not match the
                         // signature size in our implementation, ensure that the KAT
                         // signature has a corresponding flag set staring that its length
@@ -52,9 +52,9 @@ macro_rules! wycheproof_sign_test {
 
                         continue;
                     }
-                    let signature = $signature_object(signature_bytes.try_into().unwrap());
+                    let signature = MLDSASignature(signature_bytes.try_into().unwrap());
 
-                    let verification_result = $verify(verification_key, &message, signature);
+                    let verification_result = $verify(&verification_key, &message, &signature);
 
                     match test.result {
                         Result::Valid => assert!(verification_result.is_ok()),
@@ -69,27 +69,21 @@ macro_rules! wycheproof_sign_test {
 wycheproof_sign_test!(
     wycheproof_sign_44,
     44,
-    ml_dsa_44::VERIFICATION_KEY_SIZE,
     ml_dsa_44::MLDSA44VerificationKey,
-    ml_dsa_44::SIGNATURE_SIZE,
     ml_dsa_44::MLDSA44Signature,
     ml_dsa_44::verify
 );
 wycheproof_sign_test!(
     wycheproof_sign_65,
     65,
-    ml_dsa_65::VERIFICATION_KEY_SIZE,
     ml_dsa_65::MLDSA65VerificationKey,
-    ml_dsa_65::SIGNATURE_SIZE,
     ml_dsa_65::MLDSA65Signature,
     ml_dsa_65::verify
 );
 wycheproof_sign_test!(
     wycheproof_sign_87,
     87,
-    ml_dsa_87::VERIFICATION_KEY_SIZE,
     ml_dsa_87::MLDSA87VerificationKey,
-    ml_dsa_87::SIGNATURE_SIZE,
     ml_dsa_87::MLDSA87Signature,
     ml_dsa_87::verify
 );

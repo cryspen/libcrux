@@ -14,6 +14,7 @@ use crate::{
     sample::{sample_challenge_ring_element, sample_error_vector, sample_mask_vector},
     simd::traits::Operations,
     utils::into_padded_array,
+    MLDSASignature,
 };
 
 pub(crate) struct Signature<
@@ -113,10 +114,10 @@ pub(crate) fn sign<
     const SIGNING_KEY_SIZE: usize,
     const SIGNATURE_SIZE: usize,
 >(
-    signing_key: [u8; SIGNING_KEY_SIZE],
+    signing_key: &[u8; SIGNING_KEY_SIZE],
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
-) -> [u8; SIGNATURE_SIZE] {
+) -> MLDSASignature<SIGNATURE_SIZE> {
     let (seed_for_A, seed_for_signing, verification_key_hash, s1_as_ntt, s2_as_ntt, t0_as_ntt) =
         encoding::signing_key::deserialize_then_ntt::<
             SIMDUnit,
@@ -245,12 +246,14 @@ pub(crate) fn sign<
         break (commitment_hash, signer_response, hint);
     };
 
-    Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
+    let signature = Signature::<SIMDUnit, COMMITMENT_HASH_SIZE, COLUMNS_IN_A, ROWS_IN_A> {
         commitment_hash,
         signer_response,
         hint,
     }
-    .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>()
+    .serialize::<GAMMA1_EXPONENT, GAMMA1_RING_ELEMENT_SIZE, MAX_ONES_IN_HINT, SIGNATURE_SIZE>();
+
+    MLDSASignature(signature)
 }
 
 #[allow(non_snake_case)]
@@ -270,9 +273,9 @@ pub(crate) fn verify<
     const ONES_IN_VERIFIER_CHALLENGE: usize,
     const MAX_ONES_IN_HINT: usize,
 >(
-    verification_key_serialized: [u8; VERIFICATION_KEY_SIZE],
+    verification_key_serialized: &[u8; VERIFICATION_KEY_SIZE],
     message: &[u8],
-    signature_serialized: [u8; SIGNATURE_SIZE],
+    signature_serialized: &[u8; SIGNATURE_SIZE],
 ) -> Result<(), VerificationError> {
     let (seed_for_A, t1) =
         encoding::verification_key::deserialize::<SIMDUnit, ROWS_IN_A, VERIFICATION_KEY_SIZE>(
@@ -296,7 +299,7 @@ pub(crate) fn verify<
             expand_to_A::<SIMDUnit, ROWS_IN_A, COLUMNS_IN_A>(into_padded_array(&seed_for_A));
 
         let verification_key_hash =
-            H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(&verification_key_serialized);
+            H::one_shot::<BYTES_FOR_VERIFICATION_KEY_HASH>(verification_key_serialized);
         let message_representative = {
             let mut hash_input = verification_key_hash.to_vec();
             hash_input.extend_from_slice(message);

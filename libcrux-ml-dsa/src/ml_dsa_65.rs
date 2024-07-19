@@ -1,4 +1,4 @@
-use crate::{constants::*, VerificationError};
+use crate::{constants::*, types::*, VerificationError};
 
 // ML-DSA-65-specific parameters
 
@@ -42,34 +42,25 @@ const COMMITMENT_VECTOR_SIZE: usize = COMMITMENT_RING_ELEMENT_SIZE * ROWS_IN_A;
 
 const COMMITMENT_HASH_SIZE: usize = 48;
 
-pub const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
+const VERIFICATION_KEY_SIZE: usize = SEED_FOR_A_SIZE
     + (COEFFICIENTS_IN_RING_ELEMENT
         * ROWS_IN_A
         * (FIELD_MODULUS_MINUS_ONE_BIT_LENGTH - BITS_IN_LOWER_PART_OF_T))
         / 8;
 
-pub const SIGNING_KEY_SIZE: usize = SEED_FOR_A_SIZE
+const SIGNING_KEY_SIZE: usize = SEED_FOR_A_SIZE
     + SEED_FOR_SIGNING_SIZE
     + BYTES_FOR_VERIFICATION_KEY_HASH
     + (ROWS_IN_A + COLUMNS_IN_A) * ERROR_RING_ELEMENT_SIZE
     + ROWS_IN_A * RING_ELEMENT_OF_T0S_SIZE;
 
-pub const SIGNATURE_SIZE: usize =
+const SIGNATURE_SIZE: usize =
     COMMITMENT_HASH_SIZE + (COLUMNS_IN_A * GAMMA1_RING_ELEMENT_SIZE) + MAX_ONES_IN_HINT + ROWS_IN_A;
 
-#[derive(Clone, Copy)]
-pub struct MLDSA65SigningKey(pub [u8; SIGNING_KEY_SIZE]);
-
-#[derive(Clone, Copy)]
-pub struct MLDSA65VerificationKey(pub [u8; VERIFICATION_KEY_SIZE]);
-
-pub struct MLDSA65KeyPair {
-    pub signing_key: MLDSA65SigningKey,
-    pub verification_key: MLDSA65VerificationKey,
-}
-
-#[derive(Clone, Copy)]
-pub struct MLDSA65Signature(pub [u8; SIGNATURE_SIZE]);
+pub type MLDSA65SigningKey = MLDSASigningKey<SIGNING_KEY_SIZE>;
+pub type MLDSA65VerificationKey = MLDSAVerificationKey<VERIFICATION_KEY_SIZE>;
+pub type MLDSA65KeyPair = MLDSAKeyPair<VERIFICATION_KEY_SIZE, SIGNING_KEY_SIZE>;
+pub type MLDSA65Signature = MLDSASignature<SIGNATURE_SIZE>;
 
 // TODO: Multiplex more intelligently.
 #[cfg(feature = "avx2")]
@@ -90,18 +81,18 @@ pub fn generate_key_pair(randomness: [u8; KEY_GENERATION_RANDOMNESS_SIZE]) -> ML
     >(randomness);
 
     MLDSA65KeyPair {
-        signing_key: MLDSA65SigningKey(signing_key),
-        verification_key: MLDSA65VerificationKey(verification_key),
+        signing_key: MLDSASigningKey(signing_key),
+        verification_key: MLDSAVerificationKey(verification_key),
     }
 }
 
 /// Generate an ML-DSA-65 Signature
 pub fn sign(
-    signing_key: MLDSA65SigningKey,
+    signing_key: &MLDSA65SigningKey,
     message: &[u8],
     randomness: [u8; SIGNING_RANDOMNESS_SIZE],
 ) -> MLDSA65Signature {
-    let signature = crate::ml_dsa_generic::sign::<
+    crate::ml_dsa_generic::sign::<
         SIMDUnit,
         ROWS_IN_A,
         COLUMNS_IN_A,
@@ -117,16 +108,14 @@ pub fn sign(
         GAMMA1_RING_ELEMENT_SIZE,
         SIGNING_KEY_SIZE,
         SIGNATURE_SIZE,
-    >(signing_key.0, message, randomness);
-
-    MLDSA65Signature(signature)
+    >(&signing_key.0, message, randomness)
 }
 
 /// Verify an ML-DSA-65 Signature
 pub fn verify(
-    verification_key: MLDSA65VerificationKey,
+    verification_key: &MLDSA65VerificationKey,
     message: &[u8],
-    signature: MLDSA65Signature,
+    signature: &MLDSA65Signature,
 ) -> Result<(), VerificationError> {
     crate::ml_dsa_generic::verify::<
         SIMDUnit,
@@ -143,5 +132,5 @@ pub fn verify(
         COMMITMENT_HASH_SIZE,
         ONES_IN_VERIFIER_CHALLENGE,
         MAX_ONES_IN_HINT,
-    >(verification_key.0, message, signature.0)
+    >(&verification_key.0, message, &signature.0)
 }

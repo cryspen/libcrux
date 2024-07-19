@@ -74,7 +74,7 @@ pub(crate) fn deserialize_then_ntt<
     const ERROR_RING_ELEMENT_SIZE: usize,
     const SIGNING_KEY_SIZE: usize,
 >(
-    serialized: [u8; SIGNING_KEY_SIZE],
+    serialized: &[u8; SIGNING_KEY_SIZE],
 ) -> (
     [u8; SEED_FOR_A_SIZE],                           // seed_for_A
     [u8; SEED_FOR_SIGNING_SIZE],                     // seed_for_signing
