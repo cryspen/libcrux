@@ -6,7 +6,7 @@ license.workspace = true
 homepage.workspace = true
 edition.workspace = true
 repository.workspace = true
-readme = "Readme.md"
+readme = "README.md"
 description = "Libcrux ML-KEM & Kyber implementations"
 exclude = [
     "/tests",
