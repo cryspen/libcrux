@@ -21,5 +21,7 @@ pub(crate) mod internal {
         fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; N];
         fn slice_n(a: [&[u8]; N], start: usize, len: usize) -> [&[u8]; N];
         fn split_at_mut_n(a: [&mut [u8]; N], mid: usize) -> ([&mut [u8]; N], [&mut [u8]; N]);
+        fn store<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; N]);
+        fn print(&self) -> std::string::String;
     }
 }

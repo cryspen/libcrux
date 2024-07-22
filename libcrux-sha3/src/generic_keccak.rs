@@ -6,7 +6,7 @@ use core::ops::Index;
 use crate::traits::*;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct KeccakState<const N: usize, T: KeccakStateItem<N>> {
     st: [[T; 5]; 5],
 }
@@ -26,6 +26,278 @@ impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
         Self {
             st: [[T::zero(); 5]; 5],
         }
+    }
+}
+
+/// The internal keccak state that can also buffer inputs to absorb.
+/// This is used in the general xof APIs.
+#[cfg_attr(hax, hax_lib::opaque_type)]
+#[derive(Clone, Copy)]
+pub(crate) struct KeccakXofState<
+    const PARALLEL_LANES: usize,
+    const BLOCK_SIZE: usize,
+    STATE: KeccakStateItem<PARALLEL_LANES>,
+> {
+    inner: KeccakState<PARALLEL_LANES, STATE>,
+
+    // Buffer inputs on absorb.
+    buf: [[u8; BLOCK_SIZE]; PARALLEL_LANES],
+
+    // Buffered length.
+    buf_len: usize,
+
+    // Needs sponge.
+    sponge: bool,
+}
+
+impl<
+        const PARALLEL_LANES: usize,
+        const BLOCK_SIZE: usize,
+        STATE: KeccakStateItem<PARALLEL_LANES>,
+    > KeccakXofState<PARALLEL_LANES, BLOCK_SIZE, STATE>
+{
+    /// Generate a new keccak xof state.
+    pub(crate) fn new() -> Self {
+        Self {
+            inner: KeccakState::new(),
+            buf: [[0; BLOCK_SIZE]; PARALLEL_LANES],
+            buf_len: 0,
+            sponge: false,
+        }
+    }
+
+    /// Absorb
+    ///
+    /// This function takes any number of bytes to absorb and buffers if it's not enough.
+    /// The function assumes that all input slices in `blocks` have the same length.
+    ///
+    /// Only a multiple of `RATE` blocks are absorbed.
+    /// For the remaining bytes [`absorb_final`] needs to be called.
+    ///
+    /// This works best with relatively small `inputs`.
+    #[inline(always)]
+    pub(crate) fn absorb(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
+        println!("state before absorb (xof)");
+        for s in self.inner.st {
+            println!(
+                " {} {} {} {} {}",
+                STATE::print(&s[0]),
+                STATE::print(&s[1]),
+                STATE::print(&s[2]),
+                STATE::print(&s[3]),
+                STATE::print(&s[4])
+            );
+        }
+        let input_len = inputs[0].len();
+
+        debug_assert!(PARALLEL_LANES > 0);
+        debug_assert!(self.buf_len < BLOCK_SIZE);
+        #[cfg(debug_assertions)]
+        {
+            for block in inputs {
+                debug_assert!(block.len() == input_len);
+            }
+        }
+
+        // Check if there are buffered bytes to absorb first and consume them.
+        let input_consumed = self.consume_buffer(input_len, inputs);
+        eprintln!("consumed: {input_consumed}");
+        eprintln!("need to consume: {}", input_len / BLOCK_SIZE);
+
+        // Consume the (rest of the) input ...
+        for i in 0..input_len / BLOCK_SIZE {
+            // We only get in here if `input_len / RATE > 0`.
+            STATE::load_block::<BLOCK_SIZE>(
+                &mut self.inner.st,
+                STATE::slice_n(
+                    inputs,
+                    input_consumed * BLOCK_SIZE + i * BLOCK_SIZE,
+                    BLOCK_SIZE,
+                ),
+            );
+            keccakf1600(&mut self.inner);
+        }
+        // ... and buffer the rest if there's not enough input (left).
+        if input_len - input_consumed < BLOCK_SIZE && input_len > input_consumed {
+            eprintln!("buffering: {} bytes", input_len);
+            for i in 0..PARALLEL_LANES {
+                self.buf[i][input_consumed..input_len].copy_from_slice(inputs[i]);
+            }
+        }
+        println!("state after absorb (xof)");
+        for s in self.inner.st {
+            println!(
+                " {} {} {} {} {}",
+                STATE::print(&s[0]),
+                STATE::print(&s[1]),
+                STATE::print(&s[2]),
+                STATE::print(&s[3]),
+                STATE::print(&s[4])
+            );
+        }
+    }
+
+    /// Consume the internal buffer and the required amount of the input to pad to
+    /// `BLOCK_SIZE`.
+    ///
+    /// Returns the `consumed` amount of bytes from `inputs`.
+    fn consume_buffer(
+        &mut self,
+        input_len: usize,
+        inputs: [&[u8]; PARALLEL_LANES],
+    ) -> [&[u8]; PARALLEL_LANES] {
+        // let mut consumed = 0;
+        if self.buf_len > 0 {
+            if self.buf_len + input_len >= BLOCK_SIZE {
+                let consumed = BLOCK_SIZE - self.buf_len;
+                // We have enough to absorb something.
+                // XXX: This could be done more efficiently when we absorb from blocks
+                //      rather than concat them first.
+                let mut blocks = [[0u8; BLOCK_SIZE]; PARALLEL_LANES];
+                for i in 0..PARALLEL_LANES {
+                    blocks[i][0..self.buf_len].copy_from_slice(&self.buf[i]);
+                    blocks[i][self.buf_len..].copy_from_slice(&inputs[i][..consumed])
+                }
+                let borrowed: [&[u8]; PARALLEL_LANES] =
+                    core::array::from_fn(|i| &blocks[i] as &[u8]);
+                STATE::load_block::<BLOCK_SIZE>(&mut self.inner.st, borrowed);
+                keccakf1600(&mut self.inner);
+
+                // Now we absorbed the buffered bytes and the part of the inputs to
+                // fill up to `BLOCK_SIZE`.
+                // Consume the rest of the inputs that we can and store the rest
+                // in the buffer
+                self.buf_len = 0;
+            }
+        }
+        todo!()
+        // consumed
+    }
+    /// Absorb a final block.
+    ///
+    /// The `inputs` block may be empty. Everything in the `inputs` block beyond
+    /// `RATE` bytes is ignored.
+    #[inline(always)]
+    pub(crate) fn absorb_final<const DELIMITER: u8>(&mut self, inputs: [&[u8]; PARALLEL_LANES]) {
+        println!("state before absorb final (xof)");
+        for s in self.inner.st {
+            println!(
+                " {} {} {} {} {}",
+                STATE::print(&s[0]),
+                STATE::print(&s[1]),
+                STATE::print(&s[2]),
+                STATE::print(&s[3]),
+                STATE::print(&s[4])
+            );
+        }
+        debug_assert!(PARALLEL_LANES > 0 && inputs[0].len() < BLOCK_SIZE);
+        let input_len = inputs[0].len();
+
+        debug_assert!(PARALLEL_LANES > 0);
+        debug_assert!(self.buf_len < BLOCK_SIZE);
+        #[cfg(debug_assertions)]
+        {
+            for block in inputs {
+                debug_assert!(block.len() == input_len);
+            }
+        }
+
+        // Check if there are buffered bytes to absorb first and consume them.
+        let consumed = self.consume_buffer(input_len, inputs);
+        eprintln!("consumed: {consumed}");
+        eprintln!("buffer: {:x?}", self.buf);
+
+        // Consume the (rest of the) input ...
+        for i in 0..input_len / BLOCK_SIZE {
+            // We only get in here if `input_len / RATE > 0`.
+            STATE::load_block::<BLOCK_SIZE>(
+                &mut self.inner.st,
+                STATE::slice_n(
+                    inputs,
+                    input_consumed * BLOCK_SIZE + i * BLOCK_SIZE,
+                    BLOCK_SIZE,
+                ),
+            );
+            keccakf1600(&mut self.inner);
+        }
+        // ... and buffer the rest if there's not enough input (left).
+        if input_len - input_consumed < BLOCK_SIZE && input_len > input_consumed {
+            eprintln!("buffering: {} bytes", input_len);
+            for i in 0..PARALLEL_LANES {
+                self.buf[i][input_consumed..input_len].copy_from_slice(inputs[i]);
+            }
+        }
+
+        // Consume the remaining bytes.
+        let mut blocks = [[0u8; 200]; PARALLEL_LANES];
+        for i in 0..PARALLEL_LANES {
+            blocks[i][0..input_len].copy_from_slice(&inputs[i][consumed..]);
+            blocks[i][input_len] = DELIMITER;
+            blocks[i][BLOCK_SIZE - 1] |= 0x80;
+        }
+        eprintln!("loading: {blocks:x?}");
+        STATE::load_block_full::<BLOCK_SIZE>(&mut self.inner.st, blocks);
+        keccakf1600(&mut self.inner);
+
+        println!("state after absorb final (xof)");
+        for s in self.inner.st {
+            println!(
+                " {} {} {} {} {}",
+                STATE::print(&s[0]),
+                STATE::print(&s[1]),
+                STATE::print(&s[2]),
+                STATE::print(&s[3]),
+                STATE::print(&s[4])
+            );
+        }
+    }
+
+    /// Squeeze `N` x `LEN` bytes.
+    #[inline(always)]
+    pub(crate) fn squeeze(&mut self, out: [&mut [u8]; PARALLEL_LANES]) {
+        println!("state before squeeze (xof)");
+        for s in self.inner.st {
+            println!(
+                " {} {} {} {} {}",
+                STATE::print(&s[0]),
+                STATE::print(&s[1]),
+                STATE::print(&s[2]),
+                STATE::print(&s[3]),
+                STATE::print(&s[4])
+            );
+        }
+        if self.sponge {
+            // If we called `squeeze` before, call f1600 first.
+            // We do it this way around so that we don't call f1600 at the end
+            // when we don't need it.
+            keccakf1600(&mut self.inner);
+        }
+
+        // How many blocks do we need to squeeze out?
+        let out_len = out[0].len();
+        let blocks = out_len / BLOCK_SIZE;
+        let last = out_len - (out_len % BLOCK_SIZE);
+
+        // Squeeze out one to start with.
+        let (out0, mut out_rest) = STATE::split_at_mut_n(out, BLOCK_SIZE.min(out_len));
+        STATE::store::<BLOCK_SIZE>(&self.inner.st, out0);
+
+        // If we got asked for more than one block, squeeze out more.
+        for _ in 1..blocks {
+            // Here we know that we always have full blocks to write out.
+            let (out0, tmp) = STATE::split_at_mut_n(out_rest, BLOCK_SIZE);
+            keccakf1600(&mut self.inner);
+            STATE::store::<BLOCK_SIZE>(&self.inner.st, out0);
+            out_rest = tmp;
+        }
+
+        if last < out_len {
+            // Squeeze out the last partial block
+            keccakf1600(&mut self.inner);
+            STATE::store::<BLOCK_SIZE>(&self.inner.st, out_rest);
+        }
+
+        self.sponge = true;
     }
 }
 
@@ -299,6 +571,18 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
     let blocks = outlen / RATE;
     let last = outlen - (outlen % RATE);
 
+    println!("state before squeeze");
+    for s in s.st {
+        println!(
+            " {} {} {} {} {}",
+            T::print(&s[0]),
+            T::print(&s[1]),
+            T::print(&s[2]),
+            T::print(&s[3]),
+            T::print(&s[4])
+        );
+    }
+
     if blocks == 0 {
         squeeze_first_and_last::<N, T, RATE>(&s, out)
     } else {
@@ -313,4 +597,20 @@ pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, c
             squeeze_last::<N, T, RATE>(s, o1)
         }
     }
+}
+
+#[inline(always)]
+pub(crate) fn keccak_xof<
+    const PARALLEL_LANES: usize,
+    STATE: KeccakStateItem<PARALLEL_LANES>,
+    const BLOCK_SIZE: usize,
+    const DELIMITER: u8,
+>(
+    data: [&[u8]; PARALLEL_LANES],
+    out: [&mut [u8]; PARALLEL_LANES],
+) {
+    let mut state = KeccakXofState::<PARALLEL_LANES, BLOCK_SIZE, STATE>::new();
+    state.absorb(data);
+    state.absorb_final::<DELIMITER>([&[]; PARALLEL_LANES]);
+    state.squeeze(out);
 }

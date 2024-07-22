@@ -128,4 +128,26 @@ impl KeccakItem<1> for u64 {
     fn split_at_mut_n(a: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
         split_at_mut_1(a, mid)
     }
+
+    /// `out` has the exact size we want here. It must be less than or equal to `BLOCKSIZE`.
+    #[inline(always)]
+    fn store<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5], out: [&mut [u8]; 1]) {
+        debug_assert!(out.len() <= BLOCKSIZE / 8, "{} > {}", out.len(), BLOCKSIZE);
+
+        let num_blocks = out[0].len() / 8;
+        let last_block_len = out[0].len() % 8;
+
+        for i in 0..num_blocks {
+            out[0][i * 8..i * 8 + 8].copy_from_slice(&state[i / 5][i % 5].to_le_bytes());
+        }
+        if last_block_len != 0 {
+            out[0][num_blocks * 8..num_blocks * 8 + last_block_len].copy_from_slice(
+                &state[num_blocks / 5][num_blocks % 5].to_le_bytes()[0..last_block_len],
+            );
+        }
+    }
+
+    fn print(&self) -> std::string::String {
+        format!("{:x?}", self).to_string()
+    }
 }

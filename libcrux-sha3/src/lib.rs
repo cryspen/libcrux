@@ -2,7 +2,7 @@
 //!
 //! A SHA3 implementation with optional simd optimisations.
 
-#![no_std]
+// #![no_std]
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
@@ -205,7 +205,7 @@ pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
 /// A portable SHA3 implementations without platform dependent optimisations.
 pub mod portable {
     use super::*;
-    use generic_keccak::{keccak, KeccakState as GenericState};
+    use generic_keccak::{keccak_xof, KeccakState as GenericState};
 
     /// The Keccak state for the incremental API.
     #[derive(Clone, Copy)]
@@ -215,13 +215,14 @@ pub mod portable {
 
     #[inline(always)]
     fn keccakx1<const RATE: usize, const DELIM: u8>(data: [&[u8]; 1], out: [&mut [u8]; 1]) {
-        keccak::<1, u64, RATE, DELIM>(data, out)
+        keccak_xof::<1, u64, RATE, DELIM>(data, out);
     }
 
     /// A portable SHA3 224 implementation.
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
         keccakx1::<144, 0x06u8>([data], [digest]);
+        // generic_keccak::keccak::<1, u64, 144, 0x06u8>([data], [digest]);
     }
 
     /// A portable SHA3 256 implementation.
