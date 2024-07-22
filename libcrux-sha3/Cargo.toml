@@ -11,8 +11,8 @@ description = "Libcrux SHA-3 implementation"
 exclude = ["/proofs", "/c.sh", "/c.yaml"]
 
 [dependencies]
-libcrux-platform = { version = "0.0.2-alpha.1", path = "../sys/platform" }
-libcrux-intrinsics = { version = "0.0.2-alpha.1", path = "../libcrux-intrinsics" }
+libcrux-platform = { version = "0.0.2-alpha.2", path = "../sys/platform" }
+libcrux-intrinsics = { version = "0.0.2-alpha.2", path = "../libcrux-intrinsics" }
 
 # This is only required for verification.
 # The hax config is set by the hax toolchain.
@@ -31,7 +31,7 @@ harness = false
 criterion = "0.5.1"
 hex = "0.4.3"
 rand = "0.8.5"
-cavp = { version = "0.0.2-alpha.1", path = "../cavp" }
+cavp = { version = "0.0.2-alpha.2", path = "../cavp" }
 pretty_env_logger = "0.5.0"
 
 [lints.rust]
