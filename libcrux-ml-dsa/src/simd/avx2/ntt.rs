@@ -36,7 +36,13 @@ pub fn ntt_at_layer_2(simd_unit: Vec256, zeta: i32) -> Vec256 {
 }
 
 #[inline(always)]
-pub fn invert_ntt_at_layer_0(simd_unit: Vec256, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Vec256 {
+pub fn invert_ntt_at_layer_0(
+    simd_unit: Vec256,
+    zeta0: i32,
+    zeta1: i32,
+    zeta2: i32,
+    zeta3: i32,
+) -> Vec256 {
     let zetas = mm256_set_epi32(zeta3, 0, zeta2, 0, zeta1, 0, zeta0, 0);
 
     let add_by_signs = mm256_set_epi32(-1, 1, -1, 1, -1, 1, -1, 1);

@@ -4,8 +4,8 @@ use libcrux_intrinsics;
 use crate::simd::portable::PortableSIMDUnit;
 
 mod arithmetic;
-mod ntt;
 mod encoding;
+mod ntt;
 
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
@@ -171,17 +171,17 @@ impl Operations for AVX2SIMDUnit {
 
     fn ntt_at_layer_0(simd_unit: Self, zeta0: i32, zeta1: i32, zeta2: i32, zeta3: i32) -> Self {
         Self {
-            coefficients: ntt::ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3)
+            coefficients: ntt::ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3),
         }
     }
     fn ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
         Self {
-            coefficients: ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1)
+            coefficients: ntt::ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1),
         }
     }
     fn ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
         Self {
-            coefficients: ntt::ntt_at_layer_2(simd_unit.coefficients, zeta)
+            coefficients: ntt::ntt_at_layer_2(simd_unit.coefficients, zeta),
         }
     }
 
@@ -193,17 +193,23 @@ impl Operations for AVX2SIMDUnit {
         zeta3: i32,
     ) -> Self {
         Self {
-            coefficients: ntt::invert_ntt_at_layer_0(simd_unit.coefficients, zeta0, zeta1, zeta2, zeta3)
+            coefficients: ntt::invert_ntt_at_layer_0(
+                simd_unit.coefficients,
+                zeta0,
+                zeta1,
+                zeta2,
+                zeta3,
+            ),
         }
     }
     fn invert_ntt_at_layer_1(simd_unit: Self, zeta0: i32, zeta1: i32) -> Self {
         Self {
-            coefficients: ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1)
+            coefficients: ntt::invert_ntt_at_layer_1(simd_unit.coefficients, zeta0, zeta1),
         }
     }
     fn invert_ntt_at_layer_2(simd_unit: Self, zeta: i32) -> Self {
         Self {
-            coefficients: ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta)
+            coefficients: ntt::invert_ntt_at_layer_2(simd_unit.coefficients, zeta),
         }
     }
 }

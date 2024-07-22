@@ -69,7 +69,8 @@ pub fn shift_left_then_reduce(simd_unit: Vec256, shift_by: usize) -> Vec256 {
     let quotient = mm256_add_epi32(shifted, mm256_set1_epi32(1 << 22));
     let quotient = mm256_srai_epi32::<23>(quotient);
 
-    let quotient_times_field_modulus = mm256_mullo_epi32(quotient, mm256_set1_epi32(FIELD_MODULUS as i32));
+    let quotient_times_field_modulus =
+        mm256_mullo_epi32(quotient, mm256_set1_epi32(FIELD_MODULUS as i32));
 
     mm256_sub_epi32(shifted, quotient_times_field_modulus)
 }

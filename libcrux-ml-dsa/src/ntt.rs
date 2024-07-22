@@ -247,10 +247,7 @@ pub(crate) fn ntt_multiply_montgomery<SIMDUnit: Operations>(
 mod tests {
     use super::*;
 
-    use crate::{
-        polynomial::PolynomialRingElement,
-        simd::traits::Operations,
-    };
+    use crate::{polynomial::PolynomialRingElement, simd::traits::Operations};
 
     fn test_ntt_generic<SIMDUnit: Operations>() {
         let coefficients = [
@@ -392,7 +389,7 @@ mod tests {
 
     #[cfg(not(feature = "simd256"))]
     mod portable {
-        use super::{test_ntt_generic, test_invert_ntt_montgomery_generic};
+        use super::{test_invert_ntt_montgomery_generic, test_ntt_generic};
 
         #[test]
         fn test_ntt() {
@@ -406,7 +403,7 @@ mod tests {
 
     #[cfg(feature = "simd256")]
     mod avx2 {
-        use super::{test_ntt_generic, test_invert_ntt_montgomery_generic};
+        use super::{test_invert_ntt_montgomery_generic, test_ntt_generic};
 
         #[test]
         fn test_ntt() {
