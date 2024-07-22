@@ -79,10 +79,9 @@ pub(crate) fn deserialize_to_vector_then_ntt<
 mod tests {
     use super::*;
 
-    use crate::simd::portable::PortableSIMDUnit;
+    use crate::simd::{self, traits::Operations};
 
-    #[test]
-    fn test_deserialize_when_eta_is_2() {
+    fn test_deserialize_generic<SIMDUnit: Operations>() {
         let serialized = [
             220, 24, 44, 136, 134, 36, 11, 195, 72, 82, 34, 144, 36, 33, 9, 196, 22, 70, 100, 148,
             65, 32, 163, 1, 210, 40, 14, 224, 38, 72, 33, 41, 136, 156, 146, 80, 25, 37, 50, 92,
@@ -106,13 +105,10 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<PortableSIMDUnit, 2>(&serialized).to_i32_array(),
+            deserialize::<SIMDUnit, 2>(&serialized).to_i32_array(),
             expected_coefficients
         );
-    }
 
-    #[test]
-    fn test_deserialize_when_eta_is_4() {
         let serialized = [
             22, 103, 55, 49, 34, 65, 50, 129, 52, 65, 21, 85, 82, 69, 3, 55, 52, 101, 80, 64, 114,
             136, 53, 8, 135, 67, 64, 71, 131, 21, 117, 81, 23, 99, 17, 84, 51, 23, 117, 56, 52, 85,
@@ -138,8 +134,20 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<PortableSIMDUnit, 4>(&serialized).to_i32_array(),
+            deserialize::<SIMDUnit, 4>(&serialized).to_i32_array(),
             expected_coefficients
         );
+    }
+
+    #[cfg(not(feature = "simd256"))]
+    #[test]
+    fn test_deserialize_portable() {
+        test_deserialize_generic::<simd::portable::PortableSIMDUnit>();
+    }
+
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn test_deserialize_simd256() {
+        test_deserialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }

@@ -1,6 +1,7 @@
 use crate::{
     arithmetic::shift_left_then_reduce,
     constants::BITS_IN_LOWER_PART_OF_T,
+    hash_functions::shake128,
     ntt::{invert_ntt_montgomery, ntt, ntt_multiply_montgomery},
     polynomial::PolynomialRingElement,
     sample::sample_ring_element_uniform,
@@ -11,6 +12,7 @@ use crate::{
 #[inline(always)]
 pub(crate) fn expand_to_A<
     SIMDUnit: Operations,
+    Shake128: shake128::Xof,
     const ROWS_IN_A: usize,
     const COLUMNS_IN_A: usize,
 >(
@@ -25,7 +27,7 @@ pub(crate) fn expand_to_A<
             seed[32] = j as u8;
             seed[33] = i as u8;
 
-            A[i][j] = sample_ring_element_uniform::<SIMDUnit>(seed);
+            A[i][j] = sample_ring_element_uniform::<SIMDUnit, Shake128>(seed);
         }
     }
 

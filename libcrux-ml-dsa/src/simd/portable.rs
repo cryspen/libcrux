@@ -1,24 +1,30 @@
-use crate::simd::traits::Operations;
+use crate::simd::traits::{Operations, COEFFICIENTS_IN_SIMD_UNIT};
 
 mod arithmetic;
 mod encoding;
 mod ntt;
 mod sample;
-mod simd_unit_type;
 
-pub(crate) use simd_unit_type::PortableSIMDUnit;
+#[derive(Clone, Copy)]
+pub struct PortableSIMDUnit {
+    pub(crate) coefficients: [arithmetic::FieldElement; COEFFICIENTS_IN_SIMD_UNIT],
+}
 
 impl Operations for PortableSIMDUnit {
     fn ZERO() -> Self {
-        simd_unit_type::ZERO()
+        PortableSIMDUnit {
+            coefficients: [0i32; COEFFICIENTS_IN_SIMD_UNIT],
+        }
     }
 
-    fn from_i32_array(array: &[i32]) -> Self {
-        simd_unit_type::from_i32_array(array)
+    fn from_coefficient_array(array: &[i32]) -> Self {
+        PortableSIMDUnit {
+            coefficients: array[0..8].try_into().unwrap(),
+        }
     }
 
-    fn to_i32_array(simd_unit: Self) -> [i32; 8] {
-        simd_unit_type::to_i32_array(simd_unit)
+    fn to_coefficient_array(&self) -> [i32; 8] {
+        self.coefficients.try_into().unwrap()
     }
 
     fn add(lhs: &Self, rhs: &Self) -> Self {

@@ -53,10 +53,9 @@ pub(crate) fn deserialize_to_vector_then_ntt<SIMDUnit: Operations, const DIMENSI
 mod tests {
     use super::*;
 
-    use crate::simd::portable::PortableSIMDUnit;
+    use crate::simd::{self, traits::Operations};
 
-    #[test]
-    fn test_serialize() {
+    fn test_serialize_generic<SIMDUnit: Operations>() {
         let coefficients = [
             -1072, -3712, -3423, -27, 1995, 3750, -922, 3806, 2356, 3801, -1709, -2709, 1191, 108,
             -593, -3081, -949, -926, 3107, -3820, 379, 3747, -2910, -2370, 939, 3218, -3190, 1311,
@@ -78,7 +77,7 @@ mod tests {
             2683, 2743, 2888, -2104, 874, -1150, -2453, -125, -2561, -2011, -2384, 2259, -10, 836,
             -2773, 2487, -2292, -201, -3235, 1232, -3197,
         ];
-        let re = PolynomialRingElement::<PortableSIMDUnit>::from_i32_array(&coefficients);
+        let re = PolynomialRingElement::<SIMDUnit>::from_i32_array(&coefficients);
 
         let expected_bytes = [
             48, 20, 208, 127, 245, 13, 88, 131, 180, 130, 230, 20, 9, 204, 230, 36, 180, 218, 74,
@@ -105,11 +104,9 @@ mod tests {
             114, 203, 81, 128, 188, 172, 90, 39, 25, 122, 156, 12, 71, 57, 204, 234, 227,
         ];
 
-        assert_eq!(serialize::<PortableSIMDUnit>(re), expected_bytes);
+        assert_eq!(serialize::<SIMDUnit>(re), expected_bytes);
     }
-
-    #[test]
-    fn test_deserialize() {
+    fn test_deserialize_generic<SIMDUnit: Operations>() {
         let serialized = [
             142, 115, 136, 74, 18, 206, 88, 7, 0, 22, 20, 228, 219, 113, 49, 227, 242, 177, 86, 8,
             110, 150, 82, 137, 103, 225, 186, 160, 235, 159, 98, 45, 123, 187, 93, 112, 177, 99,
@@ -158,8 +155,30 @@ mod tests {
         ];
 
         assert_eq!(
-            deserialize::<PortableSIMDUnit>(&serialized).to_i32_array(),
+            deserialize::<SIMDUnit>(&serialized).to_i32_array(),
             expected_coefficients
         );
+    }
+
+    #[cfg(not(feature = "simd256"))]
+    #[test]
+    fn test_serialize_portable() {
+        test_serialize_generic::<simd::portable::PortableSIMDUnit>();
+    }
+    #[cfg(not(feature = "simd256"))]
+    #[test]
+    fn test_deserialize_portable() {
+        test_deserialize_generic::<simd::portable::PortableSIMDUnit>();
+    }
+
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn test_serialize_simd256() {
+        test_serialize_generic::<simd::avx2::AVX2SIMDUnit>();
+    }
+    #[cfg(feature = "simd256")]
+    #[test]
+    fn test_deserialize_simd256() {
+        test_deserialize_generic::<simd::avx2::AVX2SIMDUnit>();
     }
 }
