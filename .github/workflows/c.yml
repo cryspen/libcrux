@@ -68,15 +68,15 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: c-extraction
-          path: c-extraction
+          path: ~/c-extraction
 
       - uses: actions/checkout@v4
 
       - name: Diff Extraction
         run: |
           libcrux-ml-kem/headers_kill_revs.sh libcrux-ml-kem/c
-          libcrux-ml-kem/headers_kill_revs.sh c-extraction
-          diff -r libcrux-ml-kem/c c-extraction
+          libcrux-ml-kem/headers_kill_revs.sh ~/c-extraction
+          diff -r libcrux-ml-kem/c ~/c-extraction
 
   build:
     needs: [extract]
