@@ -1,5 +1,5 @@
 use super::arithmetic::*;
-use super::simd_unit_type::*;
+use crate::simd::portable::PortableSIMDUnit;
 
 #[inline(always)]
 pub fn ntt_at_layer_0(

@@ -1,6 +1,6 @@
 use crate::{
     constants::BITS_IN_UPPER_PART_OF_T,
-    simd::portable::simd_unit_type::{self, PortableSIMDUnit},
+    simd::{portable::PortableSIMDUnit, traits::Operations},
 };
 
 #[inline(always)]
@@ -25,7 +25,7 @@ pub fn serialize(simd_unit: PortableSIMDUnit) -> [u8; 10] {
 pub fn deserialize(serialized: &[u8]) -> PortableSIMDUnit {
     debug_assert!(serialized.len() == 10);
 
-    let mut simd_unit = simd_unit_type::ZERO();
+    let mut simd_unit = PortableSIMDUnit::ZERO();
     let mask = (1 << BITS_IN_UPPER_PART_OF_T) - 1;
 
     for (i, bytes) in serialized.chunks_exact(5).enumerate() {

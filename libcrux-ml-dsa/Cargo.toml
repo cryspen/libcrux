@@ -14,6 +14,7 @@ publish = false
 
 [dependencies]
 libcrux-sha3 = { version = "0.0.2-alpha.1", path = "../libcrux-sha3" }
+libcrux-intrinsics = { version = "0.0.2-alpha.1", path = "../libcrux-intrinsics" }
 
 [dev-dependencies]
 rand = { version = "0.8" }
@@ -21,7 +22,11 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
 criterion = "0.5"
-pqcrypto-dilithium = { version = "0.5.0", default-features = false }
+pqcrypto-dilithium = { version = "0.5.0" } #, default-features = false
+
+[features]
+simd128 = []
+simd256 = []
 
 [[bench]]
 name = "ml-dsa"

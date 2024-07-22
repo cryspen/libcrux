@@ -59,7 +59,7 @@ impl<
         const MAX_ONES_IN_HINT: usize,
         const SIGNATURE_SIZE: usize,
     >(
-        serialized: [u8; SIGNATURE_SIZE],
+        serialized: &[u8; SIGNATURE_SIZE],
     ) -> Result<Self, VerificationError> {
         let (commitment_hash, rest_of_serialized) = serialized.split_at(COMMITMENT_HASH_SIZE);
         let (signer_response_serialized, hint_serialized) =
