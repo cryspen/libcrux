@@ -1,6 +1,55 @@
 //! A portable SHA3 implementation using the generic implementation.
 
-use crate::traits::internal::*;
+use crate::traits::internal::{self, *};
+
+/// A portable buffer. A simple wrapper around a byte slice.
+#[derive(Clone, Copy)]
+pub(crate) struct Buf<'a> {
+    buf: &'a [u8],
+}
+
+impl<'a> Buffer for Buf<'a> {
+    fn len(&self) -> usize {
+        self.buf.len()
+    }
+
+    fn slice(&self, start: usize, len: usize) -> Self {
+        Self {
+            buf: &self.buf[start..start + len],
+        }
+    }
+}
+
+impl<'a> From<&'a [u8]> for Buf<'a> {
+    fn from(buf: &'a [u8]) -> Self {
+        Self { buf }
+    }
+}
+
+/// A portable block. A simple wrapper around a `[u8; 200]`.
+#[derive(Clone, Copy)]
+pub(crate) struct FullBuf {
+    buf: [u8; 200],
+
+    /// The length of the original buffer.
+    eob: usize,
+}
+
+impl<'a> internal::Block<Buf<'a>> for FullBuf {
+    fn init(b: Buf<'a>) -> Self {
+        let mut buf = [0u8; 200];
+        let eob = b.len();
+        if eob > 0 {
+            buf[0..b.len()].copy_from_slice(&b.buf);
+        }
+        Self { buf, eob }
+    }
+
+    fn set_constants<const DELIM: u8, const EOB: usize>(&mut self) {
+        self.buf[self.eob] = DELIM;
+        self.buf[EOB - 1] |= 0x80;
+    }
+}
 
 #[inline(always)]
 fn rotate_left<const LEFT: i32, const RIGHT: i32>(x: u64) -> u64 {
@@ -38,16 +87,18 @@ fn _veorq_n_u64(a: u64, c: u64) -> u64 {
 }
 
 #[inline(always)]
-pub(crate) fn load_block<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [&[u8]; 1]) {
-    debug_assert!(RATE <= blocks[0].len() && RATE % 8 == 0);
-    for i in 0..RATE / 8 {
-        s[i / 5][i % 5] ^= u64::from_le_bytes(blocks[0][8 * i..8 * i + 8].try_into().unwrap());
+pub(crate) fn load_block<'a, const BLOCK_SIZE: usize>(state: &mut [[u64; 5]; 5], blocks: Buf<'a>) {
+    // FIXME: check that `blocks` if big enough if we want to keep this function
+    debug_assert!(BLOCK_SIZE <= blocks.buf.len() && BLOCK_SIZE % 8 == 0);
+
+    for i in 0..BLOCK_SIZE / 8 {
+        state[i / 5][i % 5] ^= u64::from_le_bytes(blocks.buf[8 * i..8 * i + 8].try_into().unwrap());
     }
 }
 
 #[inline(always)]
-pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: [[u8; 200]; 1]) {
-    load_block::<RATE>(s, [&blocks[0] as &[u8]]);
+pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: FullBuf) {
+    load_block::<RATE>(s, Buf { buf: &blocks.buf });
 }
 
 #[inline(always)]
@@ -75,7 +126,7 @@ fn split_at_mut_1(out: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8
     ([out00], [out01])
 }
 
-impl KeccakItem<1> for u64 {
+impl<'a> KeccakItem<Buf<'a>, FullBuf, 1> for u64 {
     #[inline(always)]
     fn zero() -> Self {
         0
@@ -105,16 +156,16 @@ impl KeccakItem<1> for u64 {
         a ^ b
     }
     #[inline(always)]
-    fn load_block<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [&[u8]; 1]) {
-        load_block::<BLOCKSIZE>(a, b)
+    fn load_block<const BLOCKSIZE: usize>(state: &mut [[Self; 5]; 5], buf: Buf) {
+        load_block::<BLOCKSIZE>(state, buf)
     }
     #[inline(always)]
     fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 1]) {
         store_block::<BLOCKSIZE>(a, b)
     }
     #[inline(always)]
-    fn load_block_full<const BLOCKSIZE: usize>(a: &mut [[Self; 5]; 5], b: [[u8; 200]; 1]) {
-        load_block_full::<BLOCKSIZE>(a, b)
+    fn load_block_full<const BLOCKSIZE: usize>(state: &mut [[Self; 5]; 5], block: FullBuf) {
+        load_block_full::<BLOCKSIZE>(state, block)
     }
     #[inline(always)]
     fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 1] {
