@@ -1,4 +1,8 @@
 use classic_mceliece_rust::{decapsulate_boxed, encapsulate_boxed};
+use libcrux_psq::{
+    ecdh_binder::{receive_ecdh_bound_psq, send_ecdh_bound_psq},
+    psq::Algorithm,
+};
 use rand::thread_rng;
 use std::time::Duration;
 
@@ -142,115 +146,52 @@ pub fn comparisons_psq_key_generation(c: &mut Criterion) {
 
     group.bench_function("libcrux ML-KEM-768", |b| {
         b.iter(|| {
-            let _ = libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::MlKem768, &mut rng);
+            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::MlKem768, &mut rng);
         })
     });
     group.bench_function("libcrux X25519", |b| {
         b.iter(|| {
-            let _ = libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::X25519, &mut rng);
+            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::X25519, &mut rng);
         })
     });
     group.bench_function("libcrux XWingKemDraft02", |b| {
         b.iter(|| {
-            let _ =
-                libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::XWingKemDraft02, &mut rng);
+            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::XWingKemDraft02, &mut rng);
         })
     });
     group.bench_function("classic_mceliece_rust (mceliece460896f)", |b| {
         b.iter(|| {
-            let _ =
-                libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::ClassicMcEliece, &mut rng);
+            let _ = libcrux_psq::psq::generate_key_pair(Algorithm::ClassicMcEliece, &mut rng);
         })
     });
 }
 
-pub fn comparisons_psq_send(c: &mut Criterion) {
+pub fn comparisons_ecdh_psq_send(c: &mut Criterion) {
     let mut rng = thread_rng();
-    let mut group = c.benchmark_group("PSK-PQ Pre-Shared Key Send");
-    group.measurement_time(Duration::from_secs(15));
-
-    group.bench_function("libcrux ML-KEM-768", |b| {
-        b.iter_batched(
-            || libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::MlKem768, &mut rng).unwrap(),
-            |(_sk, pk)| {
-                let _ = pk.send_psk(
-                    b"bench context",
-                    Duration::from_secs(3600),
-                    &mut thread_rng(),
-                );
-            },
-            BatchSize::SmallInput,
-        )
-    });
-
-    group.bench_function("libcrux X25519", |b| {
-        b.iter_batched(
-            || libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::X25519, &mut rng).unwrap(),
-            |(_sk, pk)| {
-                let _ = pk.send_psk(
-                    b"bench context",
-                    Duration::from_secs(3600),
-                    &mut thread_rng(),
-                );
-            },
-            BatchSize::SmallInput,
-        )
-    });
-
-    group.bench_function("libcrux XWingKemDraft02", |b| {
-        b.iter_batched(
-            || {
-                libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::XWingKemDraft02, &mut rng)
-                    .unwrap()
-            },
-            |(_sk, pk)| {
-                let _ = pk.send_psk(
-                    b"bench context",
-                    Duration::from_secs(3600),
-                    &mut thread_rng(),
-                );
-            },
-            BatchSize::SmallInput,
-        )
-    });
-
-    group.bench_function("classic_mceliece_rust (mceliece460896f)", |b| {
-        b.iter_batched(
-            || {
-                libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::ClassicMcEliece, &mut rng)
-                    .unwrap()
-            },
-            |(_sk, pk)| {
-                let _ = pk.send_psk(
-                    b"bench context",
-                    Duration::from_secs(3600),
-                    &mut thread_rng(),
-                );
-            },
-            BatchSize::SmallInput,
-        )
-    });
-}
-
-pub fn comparisons_psq_receive(c: &mut Criterion) {
-    let mut rng = thread_rng();
-    let mut group = c.benchmark_group("PSK-PQ Pre-Shared Key Receive");
+    let mut group = c.benchmark_group("ECDH-bound PSK-PQ Pre-Shared Key Send");
     group.measurement_time(Duration::from_secs(15));
 
     group.bench_function("libcrux ML-KEM-768", |b| {
         b.iter_batched(
             || {
-                let (sk, pk) =
-                    libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::MlKem768, &mut rng)
-                        .unwrap();
+                let (_pqsk, pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::MlKem768, &mut rng).unwrap();
+                let (_receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
 
-                let (_psk, message) = pk
-                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
-                    .unwrap();
-                (pk, sk, message)
+                (pqpk, receiver_dh_pk, initiator_dh_sk)
             },
-            |(pk, sk, message)| {
-                let _ = sk.receive_psk(&pk, &message, b"bench context");
+            |(receiver_pqpk, receiver_dh_pk, initiator_dh_sk)| {
+                let _ = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
+                    &mut thread_rng(),
+                );
             },
             BatchSize::SmallInput,
         )
@@ -259,17 +200,24 @@ pub fn comparisons_psq_receive(c: &mut Criterion) {
     group.bench_function("libcrux X25519", |b| {
         b.iter_batched(
             || {
-                let (sk, pk) =
-                    libcrux_psq::generate_key_pair(libcrux_psq::Algorithm::X25519, &mut rng)
-                        .unwrap();
+                let (_pqsk, pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
+                let (_receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
 
-                let (_psk, message) = pk
-                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
-                    .unwrap();
-                (pk, sk, message)
+                (pqpk, receiver_dh_pk, initiator_dh_sk)
             },
-            |(pk, sk, message)| {
-                let _ = sk.receive_psk(&pk, &message, b"bench context");
+            |(receiver_pqpk, receiver_dh_pk, initiator_dh_sk)| {
+                let _ = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
+                    &mut thread_rng(),
+                );
             },
             BatchSize::SmallInput,
         )
@@ -278,19 +226,25 @@ pub fn comparisons_psq_receive(c: &mut Criterion) {
     group.bench_function("libcrux XWingKemDraft02", |b| {
         b.iter_batched(
             || {
-                let (sk, pk) = libcrux_psq::generate_key_pair(
-                    libcrux_psq::Algorithm::XWingKemDraft02,
-                    &mut rng,
-                )
-                .unwrap();
+                let (_pqsk, pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::XWingKemDraft02, &mut rng)
+                        .unwrap();
+                let (_receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
 
-                let (_psk, message) = pk
-                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
-                    .unwrap();
-                (pk, sk, message)
+                (pqpk, receiver_dh_pk, initiator_dh_sk)
             },
-            |(pk, sk, message)| {
-                let _ = sk.receive_psk(&pk, &message, b"bench context");
+            |(receiver_pqpk, receiver_dh_pk, initiator_dh_sk)| {
+                let _ = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
+                    &mut thread_rng(),
+                );
             },
             BatchSize::SmallInput,
         )
@@ -299,19 +253,193 @@ pub fn comparisons_psq_receive(c: &mut Criterion) {
     group.bench_function("classic_mceliece_rust (mceliece460896f)", |b| {
         b.iter_batched(
             || {
-                let (sk, pk) = libcrux_psq::generate_key_pair(
-                    libcrux_psq::Algorithm::ClassicMcEliece,
+                let (_pqsk, pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::ClassicMcEliece, &mut rng)
+                        .unwrap();
+                let (_receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                (pqpk, receiver_dh_pk, initiator_dh_sk)
+            },
+            |(receiver_pqpk, receiver_dh_pk, initiator_dh_sk)| {
+                let _ = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
+                    &mut thread_rng(),
+                );
+            },
+            BatchSize::SmallInput,
+        )
+    });
+}
+
+pub fn comparisons_ecdh_psq_receive(c: &mut Criterion) {
+    let mut rng = thread_rng();
+    let mut group = c.benchmark_group("ECDH-bound PSK-PQ Pre-Shared Key Receive");
+    group.measurement_time(Duration::from_secs(15));
+
+    group.bench_function("libcrux ML-KEM-768", |b| {
+        b.iter_batched(
+            || {
+                let (receiver_pqsk, receiver_pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::MlKem768, &mut rng).unwrap();
+                let (receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                let (_psk_initiator, ecdh_psk_message) = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
                     &mut rng,
                 )
                 .unwrap();
 
-                let (_psk, message) = pk
-                    .send_psk(b"bench context", Duration::from_secs(3600), &mut rng)
-                    .unwrap();
-                (pk, sk, message)
+                (
+                    receiver_pqsk,
+                    receiver_pqpk,
+                    receiver_dh_sk,
+                    ecdh_psk_message,
+                )
             },
-            |(pk, sk, message)| {
-                let _ = sk.receive_psk(&pk, &message, b"bench context");
+            |(receiver_pqsk, receiver_pqpk, receiver_dh_sk, ecdh_psk_message)| {
+                let _psk_receiver = receive_ecdh_bound_psq(
+                    &receiver_pqsk,
+                    &receiver_pqpk,
+                    &receiver_dh_sk,
+                    &ecdh_psk_message,
+                    b"bench context",
+                );
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("libcrux X25519", |b| {
+        b.iter_batched(
+            || {
+                let (receiver_pqsk, receiver_pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::X25519, &mut rng).unwrap();
+                let (receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                let (_psk_initiator, ecdh_psk_message) = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
+                    &mut rng,
+                )
+                .unwrap();
+
+                (
+                    receiver_pqsk,
+                    receiver_pqpk,
+                    receiver_dh_sk,
+                    ecdh_psk_message,
+                )
+            },
+            |(receiver_pqsk, receiver_pqpk, receiver_dh_sk, ecdh_psk_message)| {
+                let _psk_receiver = receive_ecdh_bound_psq(
+                    &receiver_pqsk,
+                    &receiver_pqpk,
+                    &receiver_dh_sk,
+                    &ecdh_psk_message,
+                    b"bench context",
+                );
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("libcrux XWingKemDraft02", |b| {
+        b.iter_batched(
+            || {
+                let (receiver_pqsk, receiver_pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::XWingKemDraft02, &mut rng)
+                        .unwrap();
+                let (receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                let (_psk_initiator, ecdh_psk_message) = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
+                    &mut rng,
+                )
+                .unwrap();
+
+                (
+                    receiver_pqsk,
+                    receiver_pqpk,
+                    receiver_dh_sk,
+                    ecdh_psk_message,
+                )
+            },
+            |(receiver_pqsk, receiver_pqpk, receiver_dh_sk, ecdh_psk_message)| {
+                let _psk_receiver = receive_ecdh_bound_psq(
+                    &receiver_pqsk,
+                    &receiver_pqpk,
+                    &receiver_dh_sk,
+                    &ecdh_psk_message,
+                    b"bench context",
+                );
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("classic_mceliece_rust (mceliece460896f)", |b| {
+        b.iter_batched(
+            || {
+                let (receiver_pqsk, receiver_pqpk) =
+                    libcrux_psq::psq::generate_key_pair(Algorithm::ClassicMcEliece, &mut rng)
+                        .unwrap();
+                let (receiver_dh_sk, receiver_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+                let (initiator_dh_sk, _initiator_dh_pk) =
+                    libcrux_ecdh::x25519_key_gen(&mut rng).unwrap();
+
+                let (_psk_initiator, ecdh_psk_message) = send_ecdh_bound_psq(
+                    &receiver_pqpk,
+                    &receiver_dh_pk,
+                    &initiator_dh_sk,
+                    Duration::from_secs(3600),
+                    b"bench context",
+                    &mut rng,
+                )
+                .unwrap();
+
+                (
+                    receiver_pqsk,
+                    receiver_pqpk,
+                    receiver_dh_sk,
+                    ecdh_psk_message,
+                )
+            },
+            |(receiver_pqsk, receiver_pqpk, receiver_dh_sk, ecdh_psk_message)| {
+                let _psk_receiver = receive_ecdh_bound_psq(
+                    &receiver_pqsk,
+                    &receiver_pqpk,
+                    &receiver_dh_sk,
+                    &ecdh_psk_message,
+                    b"bench context",
+                );
             },
             BatchSize::SmallInput,
         )
@@ -326,8 +454,8 @@ pub fn comparisons(c: &mut Criterion) {
 
     // PSQ protocol
     comparisons_psq_key_generation(c);
-    comparisons_psq_send(c);
-    comparisons_psq_receive(c);
+    comparisons_ecdh_psq_send(c);
+    comparisons_ecdh_psq_receive(c);
 }
 
 criterion_group!(benches, comparisons);
