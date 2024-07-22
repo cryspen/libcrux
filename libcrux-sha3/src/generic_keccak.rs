@@ -29,6 +29,9 @@ impl<const N: usize, T: KeccakStateItem<N>> KeccakState<N, T> {
     }
 }
 
+#[derive(Clone, Copy, Default)]
+pub struct SingleState<const PARALLEL_LANES: usize, const BLOCK_SIZE: usize> {}
+
 /// The internal keccak state that can also buffer inputs to absorb.
 /// This is used in the general xof APIs.
 #[cfg_attr(hax, hax_lib::opaque_type)]
@@ -41,7 +44,7 @@ pub(crate) struct KeccakXofState<
     inner: KeccakState<PARALLEL_LANES, STATE>,
 
     // Buffer inputs on absorb.
-    buf: [[u8; BLOCK_SIZE]; PARALLEL_LANES],
+    buf: SingleState<PARALLEL_LANES, BLOCK_SIZE>, // [[u8; BLOCK_SIZE]; PARALLEL_LANES]
 
     // Buffered length.
     buf_len: usize,
@@ -60,7 +63,7 @@ impl<
     pub(crate) fn new() -> Self {
         Self {
             inner: KeccakState::new(),
-            buf: [[0; BLOCK_SIZE]; PARALLEL_LANES],
+            buf: Default::default(),
             buf_len: 0,
             sponge: false,
         }
