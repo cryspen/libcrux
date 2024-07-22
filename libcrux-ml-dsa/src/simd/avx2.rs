@@ -5,6 +5,7 @@ use crate::simd::portable::PortableSIMDUnit;
 
 mod arithmetic;
 mod ntt;
+mod encoding;
 
 #[derive(Clone, Copy)]
 pub struct AVX2SIMDUnit {
@@ -132,9 +133,7 @@ impl Operations for AVX2SIMDUnit {
     }
 
     fn commitment_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {
-        let simd_unit = PortableSIMDUnit::from_coefficient_array(&simd_unit.to_coefficient_array());
-
-        PortableSIMDUnit::commitment_serialize::<{ OUTPUT_SIZE }>(simd_unit)
+        encoding::commitment::serialize::<OUTPUT_SIZE>(simd_unit.coefficients)
     }
 
     fn error_serialize<const OUTPUT_SIZE: usize>(simd_unit: Self) -> [u8; OUTPUT_SIZE] {

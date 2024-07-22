@@ -367,6 +367,9 @@ pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
     unsafe { _mm256_permutevar8x32_epi32(vector, control) }
 }
 
+pub fn mm256_srlv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
+    unsafe { _mm256_srlv_epi32(vector, counts) }
+}
 pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_sllv_epi32(vector, counts) }
 }
