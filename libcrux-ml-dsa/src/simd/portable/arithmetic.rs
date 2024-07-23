@@ -181,7 +181,9 @@ fn reduce_element(fe: FieldElement) -> FieldElement {
 }
 
 #[inline(always)]
-pub fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: PortableSIMDUnit) -> PortableSIMDUnit {
+pub fn shift_left_then_reduce<const SHIFT_BY: i32>(
+    simd_unit: PortableSIMDUnit,
+) -> PortableSIMDUnit {
     let mut out = PortableSIMDUnit::ZERO();
 
     for i in 0..simd_unit.coefficients.len() {
