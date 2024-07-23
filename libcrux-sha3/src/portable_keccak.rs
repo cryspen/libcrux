@@ -26,6 +26,23 @@ impl<'a> From<&'a [u8]> for Buf<'a> {
     }
 }
 
+/// A portable mutable buffer. A simple wrapper around a mutable byte slice.
+pub(crate) struct BufMut<'a> {
+    buf: &'a mut [u8],
+}
+
+impl<'a> BufferMut for Buf<'a> {
+    fn len(&self) -> usize {
+        self.buf.len()
+    }
+}
+
+impl<'a> BufferMut for BufMut<'a> {
+    fn len(&self) -> usize {
+        self.buf.len()
+    }
+}
+
 /// A portable block. A simple wrapper around a `[u8; 200]`.
 #[derive(Clone, Copy)]
 pub(crate) struct FullBuf {
@@ -35,12 +52,12 @@ pub(crate) struct FullBuf {
     eob: usize,
 }
 
-impl<'a> internal::Block<Buf<'a>> for FullBuf {
+impl<'a> internal::Block<Buf<'a>, BufMut<'a>> for FullBuf {
     fn init(b: Buf<'a>) -> Self {
         let mut buf = [0u8; 200];
-        let eob = b.len();
+        let eob = b.buf.len();
         if eob > 0 {
-            buf[0..b.len()].copy_from_slice(&b.buf);
+            buf[0..b.buf.len()].copy_from_slice(&b.buf);
         }
         Self { buf, eob }
     }
@@ -48,6 +65,10 @@ impl<'a> internal::Block<Buf<'a>> for FullBuf {
     fn set_constants<const DELIM: u8, const EOB: usize>(&mut self) {
         self.buf[self.eob] = DELIM;
         self.buf[EOB - 1] |= 0x80;
+    }
+
+    fn to_bytes<Bm: BufferMut>(self, out: BufMut) {
+        out.buf.copy_from_slice(&self.buf[0..out.buf.len()])
     }
 }
 
@@ -109,10 +130,10 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[u64; 5]; 5], out: [&mut [u8];
 }
 
 #[inline(always)]
-pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5]) -> [[u8; 200]; 1] {
-    let mut out = [0u8; 200];
-    store_block::<RATE>(s, [&mut out]);
-    [out]
+pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5]) -> FullBuf {
+    let mut buf = [0u8; 200];
+    store_block::<RATE>(s, [&mut buf]);
+    FullBuf { buf, eob: 0 }
 }
 
 #[inline(always)]
@@ -126,7 +147,11 @@ fn split_at_mut_1(out: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8
     ([out00], [out01])
 }
 
-impl<'a> KeccakItem<Buf<'a>, FullBuf, 1> for u64 {
+impl KeccakItem<1> for u64 {
+    type B<'a> = Buf<'a>;
+    type Bm<'a> = BufMut<'a>;
+    type Bl<'a> = FullBuf;
+
     #[inline(always)]
     fn zero() -> Self {
         0
@@ -168,12 +193,8 @@ impl<'a> KeccakItem<Buf<'a>, FullBuf, 1> for u64 {
         load_block_full::<BLOCKSIZE>(state, block)
     }
     #[inline(always)]
-    fn store_block_full<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5]) -> [[u8; 200]; 1] {
-        store_block_full::<BLOCKSIZE>(a)
-    }
-    #[inline(always)]
-    fn slice_n(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
-        slice_1(a, start, len)
+    fn store_block_full<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5]) -> FullBuf {
+        store_block_full::<BLOCKSIZE>(state)
     }
     #[inline(always)]
     fn split_at_mut_n(a: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {

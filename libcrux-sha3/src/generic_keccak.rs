@@ -3,7 +3,7 @@
 
 use core::{marker::PhantomData, ops::Index};
 
-use internal::{Block, Buffer};
+use internal::{Block, Buffer, BufferMut};
 
 use crate::traits::*;
 
@@ -364,7 +364,7 @@ pub(crate) fn squeeze_first_and_last<
     const RATE: usize,
 >(
     s: &KeccakState<BufferType, Bl, N, T>,
-    out: [&mut [u8]; N],
+    out: impl BufferMut,
 ) {
     let b = T::store_block_full::<RATE>(&s.st);
     for i in 0..N {
@@ -382,7 +382,7 @@ pub(crate) fn keccak<
     const DELIM: u8,
 >(
     data: BufferType,
-    out: [&mut [u8]; N],
+    out: impl BufferMut,
 ) {
     let mut s = KeccakState::<BufferType, Bl, N, T>::new();
     for i in 0..data.len() / RATE {
