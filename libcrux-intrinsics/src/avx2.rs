@@ -6,19 +6,25 @@ pub use core::arch::x86_64::*;
 pub type Vec256 = __m256i;
 pub type Vec128 = __m128i;
 
-pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
-    debug_assert_eq!(output.len(), 16);
-    unsafe {
-        _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
-    }
-}
-
 pub fn mm256_storeu_si256_u8(output: &mut [u8], vector: Vec256) {
     debug_assert_eq!(output.len(), 32);
     unsafe {
         _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
     }
 }
+pub fn mm256_storeu_si256_i16(output: &mut [i16], vector: Vec256) {
+    debug_assert_eq!(output.len(), 16);
+    unsafe {
+        _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
+    }
+}
+pub fn mm256_storeu_si256_i32(output: &mut [i32], vector: Vec256) {
+    debug_assert_eq!(output.len(), 8);
+    unsafe {
+        _mm256_storeu_si256(output.as_mut_ptr() as *mut Vec256, vector);
+    }
+}
+
 pub fn mm_storeu_si128(output: &mut [i16], vector: Vec128) {
     // debug_assert_eq!(output.len(), 8);
     unsafe {
@@ -42,9 +48,12 @@ pub fn mm256_loadu_si256_u8(input: &[u8]) -> Vec256 {
     debug_assert_eq!(input.len(), 32);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
-
 pub fn mm256_loadu_si256_i16(input: &[i16]) -> Vec256 {
     debug_assert_eq!(input.len(), 16);
+    unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
+}
+pub fn mm256_loadu_si256_i32(input: &[i32]) -> Vec256 {
+    debug_assert_eq!(input.len(), 8);
     unsafe { _mm256_loadu_si256(input.as_ptr() as *const Vec256) }
 }
 
@@ -204,6 +213,10 @@ pub fn mm256_add_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
 pub fn mm256_sub_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_sub_epi16(lhs, rhs) }
 }
+pub fn mm256_sub_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unsafe { _mm256_sub_epi32(lhs, rhs) }
+}
+
 pub fn mm_sub_epi16(lhs: Vec128, rhs: Vec128) -> Vec128 {
     unsafe { _mm_sub_epi16(lhs, rhs) }
 }
@@ -234,6 +247,10 @@ pub fn mm256_mulhi_epi16(lhs: Vec256, rhs: Vec256) -> Vec256 {
 
 pub fn mm256_mul_epu32(lhs: Vec256, rhs: Vec256) -> Vec256 {
     unsafe { _mm256_mul_epu32(lhs, rhs) }
+}
+
+pub fn mm256_mul_epi32(lhs: Vec256, rhs: Vec256) -> Vec256 {
+    unsafe { _mm256_mul_epi32(lhs, rhs) }
 }
 
 pub fn mm256_and_si256(lhs: Vec256, rhs: Vec256) -> Vec256 {
