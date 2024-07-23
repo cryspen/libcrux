@@ -1,5 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
+use pprof::criterion::{Output, PProfProfiler};
+
 pub fn curve_bench(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
     let mut group = c.benchmark_group("Curve 25519");
@@ -14,5 +16,9 @@ pub fn curve_bench(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, curve_bench);
+
+criterion_group!{name = benches;
+                 config = Criterion::default().with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
+                 targets = curve_bench}
+
 criterion_main!(benches);
