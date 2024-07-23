@@ -13,7 +13,7 @@ exclude = ["/tests"]
 [dependencies]
 log = "0.4"
 serde = { version = "1.0", features = ["derive"], optional = true }
-tls_codec = { version = "0.4.0", features = ["derive"], optional = true }
+tls_codec = { version = "0.4.1-pre.1", features = ["derive"], optional = true }
 zeroize = { version = "1.5", features = ["zeroize_derive"] }
 hpke-rs-crypto = { version = "0.2.0", path = "./traits" }
 
