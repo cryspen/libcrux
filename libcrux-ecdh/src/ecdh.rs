@@ -11,7 +11,7 @@
 //! ## P256
 //! For P256 the portable HACL implementation is used.
 
-mod hacl;
+pub mod hacl;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum LowLevelError {
