@@ -24,7 +24,7 @@ pub(crate) trait Operations: Copy + Clone {
     // Modular operations
     fn montgomery_multiply(lhs: Self, rhs: Self) -> Self;
     fn montgomery_multiply_by_constant(simd_unit: Self, c: i32) -> Self;
-    fn shift_left_then_reduce(simd_unit: Self, shift_by: usize) -> Self;
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self;
 
     // Decomposition operations
     fn power2round(simd_unit: Self) -> (Self, Self);

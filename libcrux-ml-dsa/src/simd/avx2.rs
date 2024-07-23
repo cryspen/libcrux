@@ -57,9 +57,9 @@ impl Operations for AVX2SIMDUnit {
             coefficients: arithmetic::montgomery_multiply(lhs.coefficients, rhs.coefficients),
         }
     }
-    fn shift_left_then_reduce(simd_unit: Self, shift_by: usize) -> Self {
+    fn shift_left_then_reduce<const SHIFT_BY: i32>(simd_unit: Self) -> Self {
         Self {
-            coefficients: arithmetic::shift_left_then_reduce(simd_unit.coefficients, shift_by),
+            coefficients: arithmetic::shift_left_then_reduce::<SHIFT_BY>(simd_unit.coefficients),
         }
     }
 
