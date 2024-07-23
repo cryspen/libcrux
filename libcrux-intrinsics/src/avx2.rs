@@ -180,6 +180,10 @@ pub fn mm_set1_epi16(constant: i16) -> Vec128 {
 pub fn mm256_set1_epi32(constant: i32) -> Vec256 {
     unsafe { _mm256_set1_epi32(constant) }
 }
+
+pub fn mm_set_epi32(input3: i32, input2: i32, input1: i32, input0: i32) -> Vec128 {
+    unsafe { _mm_set_epi32(input3, input2, input1, input0) }
+}
 pub fn mm256_set_epi32(
     input7: i32,
     input6: i32,
@@ -279,6 +283,10 @@ pub fn mm256_srli_epi32<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     unsafe { _mm256_srli_epi32(vector, SHIFT_BY) }
 }
 
+pub fn mm_srli_epi64<const SHIFT_BY: i32>(vector: Vec128) -> Vec128 {
+    debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
+    unsafe { _mm_srli_epi64(vector, SHIFT_BY) }
+}
 pub fn mm256_srli_epi64<const SHIFT_BY: i32>(vector: Vec256) -> Vec256 {
     debug_assert!(SHIFT_BY >= 0 && SHIFT_BY < 64);
     unsafe { _mm256_srli_epi64(vector, SHIFT_BY) }
@@ -369,6 +377,9 @@ pub fn mm256_permutevar8x32_epi32(vector: Vec256, control: Vec256) -> Vec256 {
 
 pub fn mm256_srlv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_srlv_epi32(vector, counts) }
+}
+pub fn mm_sllv_epi32(vector: Vec128, counts: Vec128) -> Vec128 {
+    unsafe { _mm_sllv_epi32(vector, counts) }
 }
 pub fn mm256_sllv_epi32(vector: Vec256, counts: Vec256) -> Vec256 {
     unsafe { _mm256_sllv_epi32(vector, counts) }
