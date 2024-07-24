@@ -4,16 +4,12 @@ use libcrux_intrinsics::avx2::*;
 pub fn serialize(simd_unit: Vec256) -> [u8; 10] {
     let mut serialized = [0u8; 24];
 
-    let adjacent_2_combined = mm256_sllv_epi32(
-        simd_unit,
-        mm256_set_epi32(0, 22, 0, 22, 0, 22, 0, 22),
-    );
+    let adjacent_2_combined =
+        mm256_sllv_epi32(simd_unit, mm256_set_epi32(0, 22, 0, 22, 0, 22, 0, 22));
     let adjacent_2_combined = mm256_srli_epi64::<22>(adjacent_2_combined);
 
-    let adjacent_4_combined = mm256_permutevar8x32_epi32(
-        adjacent_2_combined,
-        mm256_set_epi32(0, 0, 6, 4, 0, 0, 2, 0),
-    );
+    let adjacent_4_combined =
+        mm256_permutevar8x32_epi32(adjacent_2_combined, mm256_set_epi32(0, 0, 6, 4, 0, 0, 2, 0));
     let adjacent_4_combined = mm256_sllv_epi32(
         adjacent_4_combined,
         mm256_set_epi32(0, 12, 0, 12, 0, 12, 0, 12),
