@@ -5,16 +5,16 @@ use core::{marker::PhantomData, ops::Index};
 
 use internal::{Block, Buffer, BufferMut};
 
-use crate::{portable_keccak::BufMut, traits::*};
+use crate::traits::*;
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]
-pub(crate) struct KeccakState<'a, const N: usize, T: KeccakStateItem<'a, N>> {
+pub(crate) struct KeccakState<'a, const N: usize, T: KeccakStateItem<'a>> {
     st: [[T; 5]; 5],
     phantom: PhantomData<&'a ()>,
 }
 
-impl<'a, const N: usize, T: KeccakStateItem<'a, N>> Index<usize> for KeccakState<'a, N, T> {
+impl<'a, const N: usize, T: KeccakStateItem<'a>> Index<usize> for KeccakState<'a, N, T> {
     type Output = [T; 5];
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -22,7 +22,7 @@ impl<'a, const N: usize, T: KeccakStateItem<'a, N>> Index<usize> for KeccakState
     }
 }
 
-impl<'a, const N: usize, T: KeccakStateItem<'a, N>> KeccakState<'a, N, T> {
+impl<'a, const N: usize, T: KeccakStateItem<'a>> KeccakState<'a, N, T> {
     /// Create a new Shake128 x4 state.
     #[inline(always)]
     pub(crate) fn new() -> Self {
@@ -40,9 +40,7 @@ const _ROTC: [usize; 24] = [
 ];
 
 #[inline(always)]
-pub(crate) fn theta_rho<'a, const N: usize, T: KeccakStateItem<'a, N>>(
-    s: &mut KeccakState<'a, N, T>,
-) {
+pub(crate) fn theta_rho<'a, const N: usize, T: KeccakStateItem<'a>>(s: &mut KeccakState<'a, N, T>) {
     let c: [T; 5] = [
         T::xor5(s.st[0][0], s.st[1][0], s.st[2][0], s.st[3][0], s.st[4][0]),
         T::xor5(s.st[0][1], s.st[1][1], s.st[2][1], s.st[3][1], s.st[4][1]),
@@ -95,7 +93,7 @@ const _PI: [usize; 24] = [
 ];
 
 #[inline(always)]
-pub(crate) fn pi<'a, const N: usize, T: KeccakStateItem<'a, N>>(s: &mut KeccakState<'a, N, T>) {
+pub(crate) fn pi<'a, const N: usize, T: KeccakStateItem<'a>>(s: &mut KeccakState<'a, N, T>) {
     let old = s.st;
     s.st[0][1] = old[1][1];
     s.st[0][2] = old[2][2];
@@ -124,7 +122,7 @@ pub(crate) fn pi<'a, const N: usize, T: KeccakStateItem<'a, N>>(s: &mut KeccakSt
 }
 
 #[inline(always)]
-pub(crate) fn chi<'a, const N: usize, T: KeccakStateItem<'a, N>>(s: &mut KeccakState<'a, N, T>) {
+pub(crate) fn chi<'a, const N: usize, T: KeccakStateItem<'a>>(s: &mut KeccakState<'a, N, T>) {
     let old = s.st;
 
     #[allow(clippy::needless_range_loop)]
@@ -163,7 +161,7 @@ const ROUNDCONSTANTS: [u64; 24] = [
 ];
 
 #[inline(always)]
-pub(crate) fn iota<'a, const N: usize, T: KeccakStateItem<'a, N>>(
+pub(crate) fn iota<'a, const N: usize, T: KeccakStateItem<'a>>(
     s: &mut KeccakState<'a, N, T>,
     i: usize,
 ) {
@@ -171,7 +169,7 @@ pub(crate) fn iota<'a, const N: usize, T: KeccakStateItem<'a, N>>(
 }
 
 #[inline(always)]
-pub(crate) fn keccakf1600<'a, const N: usize, T: KeccakStateItem<'a, N>>(
+pub(crate) fn keccakf1600<'a, const N: usize, T: KeccakStateItem<'a>>(
     s: &mut KeccakState<'a, N, T>,
 ) {
     for i in 0..24 {
@@ -183,7 +181,7 @@ pub(crate) fn keccakf1600<'a, const N: usize, T: KeccakStateItem<'a, N>>(
 }
 
 #[inline(always)]
-pub(crate) fn absorb_block<'a, const N: usize, T: KeccakStateItem<'a, N>, const RATE: usize>(
+pub(crate) fn absorb_block<'a, const N: usize, T: KeccakStateItem<'a>, const RATE: usize>(
     s: &mut KeccakState<'a, N, T>,
     blocks: T::B,
 ) {
@@ -195,7 +193,7 @@ pub(crate) fn absorb_block<'a, const N: usize, T: KeccakStateItem<'a, N>, const 
 pub(crate) fn absorb_final<
     'a,
     const N: usize,
-    T: KeccakStateItem<'a, N>,
+    T: KeccakStateItem<'a>,
     const RATE: usize,
     const DELIM: u8,
 >(
@@ -211,12 +209,7 @@ pub(crate) fn absorb_final<
 }
 
 #[inline(always)]
-pub(crate) fn squeeze_first_block<
-    'a,
-    const N: usize,
-    T: KeccakStateItem<'a, N>,
-    const RATE: usize,
->(
+pub(crate) fn squeeze_first_block<'a, const N: usize, T: KeccakStateItem<'a>, const RATE: usize>(
     s: &KeccakState<'a, N, T>,
     out: T::Bm,
 ) {
@@ -224,12 +217,7 @@ pub(crate) fn squeeze_first_block<
 }
 
 #[inline(always)]
-pub(crate) fn squeeze_next_block<
-    'a,
-    const N: usize,
-    T: KeccakStateItem<'a, N>,
-    const RATE: usize,
->(
+pub(crate) fn squeeze_next_block<'a, const N: usize, T: KeccakStateItem<'a>, const RATE: usize>(
     s: &mut KeccakState<'a, N, T>,
     out: T::Bm,
 ) {
@@ -241,7 +229,7 @@ pub(crate) fn squeeze_next_block<
 pub(crate) fn squeeze_first_three_blocks<
     'a,
     const N: usize,
-    T: KeccakStateItem<'a, N>,
+    T: KeccakStateItem<'a>,
     const BLOCK_SIZE: usize,
 >(
     s: &mut KeccakState<'a, N, T>,
@@ -258,7 +246,7 @@ pub(crate) fn squeeze_first_three_blocks<
 pub(crate) fn squeeze_first_five_blocks<
     'a,
     const N: usize,
-    T: KeccakStateItem<'a, N>,
+    T: KeccakStateItem<'a>,
     const BLOCK_SIZE: usize,
 >(
     s: &mut KeccakState<'a, N, T>,
@@ -279,7 +267,7 @@ pub(crate) fn squeeze_first_five_blocks<
 }
 
 #[inline(always)]
-pub(crate) fn squeeze_last<'a, const N: usize, T: KeccakStateItem<'a, N>, const RATE: usize>(
+pub(crate) fn squeeze_last<'a, const N: usize, T: KeccakStateItem<'a>, const RATE: usize>(
     mut s: KeccakState<'a, N, T>,
     out: T::Bm,
 ) {
@@ -292,7 +280,7 @@ pub(crate) fn squeeze_last<'a, const N: usize, T: KeccakStateItem<'a, N>, const 
 pub(crate) fn squeeze_first_and_last<
     'a,
     const N: usize,
-    T: KeccakStateItem<'a, N>,
+    T: KeccakStateItem<'a>,
     const RATE: usize,
 >(
     s: &KeccakState<'a, N, T>,
@@ -306,7 +294,7 @@ pub(crate) fn squeeze_first_and_last<
 pub(crate) fn keccak<
     'a,
     const N: usize,
-    T: KeccakStateItem<'a, N>,
+    T: KeccakStateItem<'a>,
     const BLOCK_SIZE: usize,
     const DELIM: u8,
 >(

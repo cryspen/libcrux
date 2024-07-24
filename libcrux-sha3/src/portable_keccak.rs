@@ -136,18 +136,7 @@ pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5]) -> FullBuf 
     FullBuf { buf, eob: 0 }
 }
 
-#[inline(always)]
-fn slice_1(a: [&[u8]; 1], start: usize, len: usize) -> [&[u8]; 1] {
-    [&a[0][start..start + len]]
-}
-
-#[inline(always)]
-fn split_at_mut_1(out: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
-    let (out00, out01) = out[0].split_at_mut(mid);
-    ([out00], [out01])
-}
-
-impl<'a> KeccakItem<'a, 1> for u64 {
+impl<'a> KeccakItem<'a> for u64 {
     type B = Buf<'a>;
     type Bm = BufMut<'a>;
     type Bl = FullBuf;
@@ -195,9 +184,5 @@ impl<'a> KeccakItem<'a, 1> for u64 {
     #[inline(always)]
     fn store_block_full<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5]) -> FullBuf {
         store_block_full::<BLOCKSIZE>(state)
-    }
-    #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8]; 1]) {
-        split_at_mut_1(a, mid)
     }
 }

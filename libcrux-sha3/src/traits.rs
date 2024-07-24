@@ -1,13 +1,13 @@
 /// A Keccak Item
 /// This holds the internal state and depends on the architecture.
-pub trait KeccakStateItem<'a, const N: usize>: internal::KeccakItem<'a, N> {}
+pub trait KeccakStateItem<'a>: internal::KeccakItem<'a> {}
 
 // Implement the public trait for all items.
-impl<'a, const N: usize, T: internal::KeccakItem<'a, N>> KeccakStateItem<'a, N> for T {}
+impl<'a, T: internal::KeccakItem<'a>> KeccakStateItem<'a> for T {}
 
 pub(crate) mod internal {
     /// A trait for multiplexing implementations.
-    pub trait KeccakItem<'a, const N: usize>: Clone + Copy {
+    pub trait KeccakItem<'a>: Clone + Copy {
         type B: Buffer;
         type Bm: BufferMut;
         type Bl: Block<Self::B, Self::Bm>;
@@ -23,7 +23,6 @@ pub(crate) mod internal {
         fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: Self::Bm);
         fn load_block_full<const BLOCKSIZE: usize>(state: &mut [[Self; 5]; 5], block: Self::Bl);
         fn store_block_full<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5]) -> Self::Bl;
-        fn split_at_mut_n(a: [&mut [u8]; N], mid: usize) -> ([&mut [u8]; N], [&mut [u8]; N]);
     }
 
     /// A buffer.

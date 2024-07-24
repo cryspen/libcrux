@@ -1,6 +1,6 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::internal::{self, Block, Buffer, BufferMut, KeccakItem};
+use crate::traits::internal::{self, Buffer, BufferMut, KeccakItem};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -215,20 +215,7 @@ pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> F
     // FullBuf { buf0, buf1, eob: 0 }
 }
 
-#[inline(always)]
-fn slice_2(a: [&[u8]; 2], start: usize, len: usize) -> [&[u8]; 2] {
-    [&a[0][start..start + len], &a[1][start..start + len]]
-}
-
-#[inline(always)]
-fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
-    let [out0, out1] = out;
-    let (out00, out01) = out0.split_at_mut(mid);
-    let (out10, out11) = out1.split_at_mut(mid);
-    ([out00, out10], [out01, out11])
-}
-
-impl<'a> KeccakItem<'a, 2> for uint64x2_t {
+impl<'a> KeccakItem<'a> for uint64x2_t {
     type B = Buf<'a>;
     type Bm = BufMut<'a>;
     type Bl = FullBuf;
@@ -276,9 +263,5 @@ impl<'a> KeccakItem<'a, 2> for uint64x2_t {
     #[inline(always)]
     fn store_block_full<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5]) -> FullBuf {
         store_block_full::<BLOCKSIZE>(state)
-    }
-    #[inline(always)]
-    fn split_at_mut_n(a: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8]; 2]) {
-        split_at_mut_2(a, mid)
     }
 }
