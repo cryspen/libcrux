@@ -8,4 +8,5 @@
 # Run this from the repository root.
 
 grep -rl -e "This code was generated with the following revisions:" "$1" | xargs -d '\n' sed -i -f libcrux-ml-kem/header_kill_revs.sed
-rm "$1/code_gen.txt"
+rm -f "$1/code_gen.txt"
+rm -f "$1/header.txt"
