@@ -1,3 +1,4 @@
+#![no_std]
 #[cfg(all(feature = "simd128", not(hax)))]
 pub mod arm64;
 #[cfg(all(feature = "simd256", not(hax)))]
