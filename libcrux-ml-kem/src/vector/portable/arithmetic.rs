@@ -30,13 +30,30 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     value & ((1 << n) - 1)
 }
 
+#[cfg_attr(hax, hax_lib::requires(
+    MAX1 > 0 && MIN1 == -MAX1 && 
+    MAX2 > 0 && MIN2 == -MAX2 &&  
+    MAX3 > 0 && MIN3 == -MAX3 &&
+    MAX1 == MAX3 - MAX2 && MAX3 < i16::MAX
+))]
 #[inline(always)]
-pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+pub fn add<
+    const MIN1: i16, const MAX1: i16,
+    const MIN2: i16, const MAX2: i16,
+    const MIN3: i16, const MAX3: i16
+>(
+    lhs: PortableVector<MIN1, MAX1>,
+    rhs: PortableVector<MIN2, MAX2>,
+) -> PortableVector<MIN3, MAX3> {
+    let mut result = PortableVector {
+        elements: [hax_bounded_integers::BoundedI16::new(0); FIELD_ELEMENTS_IN_VECTOR]
+    };
+
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        lhs.elements[i] += rhs.elements[i];
+        result.elements[i] = (lhs.elements[i] + (rhs.elements[i])).into_checked();
     }
 
-    lhs
+    result
 }
 
 #[inline(always)]

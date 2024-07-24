@@ -2,11 +2,11 @@ use crate::vector::traits::FIELD_ELEMENTS_IN_VECTOR;
 
 /// Values having this type hold a representative 'x' of the Kyber field.
 /// We use 'fe' as a shorthand for this type.
-pub(crate) type FieldElement = i16;
+pub(crate) type FieldElement <const MIN:i16, const MAX:i16> = hax_bounded_integers::BoundedI16<MIN, MAX>;
 
 #[derive(Clone, Copy)]
-pub struct PortableVector {
-    pub(crate) elements: [FieldElement; FIELD_ELEMENTS_IN_VECTOR],
+pub struct PortableVector <const MIN:i16, const MAX: i16> {
+    pub(crate) elements: [FieldElement<MIN, MAX>; FIELD_ELEMENTS_IN_VECTOR],
 }
 
 #[allow(non_snake_case)]
