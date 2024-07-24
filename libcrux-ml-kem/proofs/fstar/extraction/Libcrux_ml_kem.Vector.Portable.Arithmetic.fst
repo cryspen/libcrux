@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Vector.Portable.Arithmetic
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Hax_bounded_integers in
+  ()
+
 let get_n_least_significant_bits (n: u8) (value: u32) = value &. ((1ul <<! n <: u32) -! 1ul <: u32)
 
 let barrett_reduce_element (value: i16) =
@@ -159,25 +165,7 @@ let cond_subtract_3329_ (v: Libcrux_ml_kem.Vector.Portable.Vector_type.t_Portabl
       (fun v i ->
           let v:Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector = v in
           let i:usize = i in
-          let _:Prims.unit =
-            if true
-            then
-              let _:Prims.unit =
-                if
-                  ~.(((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=. 0s
-                      <:
-                      bool) &&
-                    ((v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) <. 4096s
-                      <:
-                      bool))
-                then
-                  Rust_primitives.Hax.never_to_any (Core.Panicking.panic "assertion failed: v.elements[i] >= 0 && v.elements[i] < 4096"
-
-                      <:
-                      Rust_primitives.Hax.t_Never)
-              in
-              ()
-          in
+          let _:Prims.unit = () <: Prims.unit in
           if (v.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ] <: i16) >=. 3329s
           then
             {
@@ -342,3 +330,52 @@ let sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector) =
           Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
   in
   lhs
+
+let max_add
+      (v_MIN1 v_MAX1 v_MIN2 v_MAX2 v_MIN3 v_MAX3: i16)
+      (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN1 v_MAX1)
+      (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN2 v_MAX2)
+     =
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN3 v_MAX3 =
+    Libcrux_ml_kem.Vector.Portable.Vector_type.max_zero v_MIN3 v_MAX3 ()
+  in
+  let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN3 v_MAX3 =
+    Core.Iter.Traits.Iterator.f_fold (Core.Iter.Traits.Collect.f_into_iter #(Core.Ops.Range.t_Range
+            usize)
+          #FStar.Tactics.Typeclasses.solve
+          ({
+              Core.Ops.Range.f_start = sz 0;
+              Core.Ops.Range.f_end = Libcrux_ml_kem.Vector.Traits.v_FIELD_ELEMENTS_IN_VECTOR
+            }
+            <:
+            Core.Ops.Range.t_Range usize)
+        <:
+        Core.Ops.Range.t_Range usize)
+      result
+      (fun result i ->
+          let result:Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN3 v_MAX3 =
+            result
+          in
+          let i:usize = i in
+          {
+            result with
+            Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+            =
+            Rust_primitives.Hax.Monomorphized_update_at.update_at_usize result
+                .Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements
+              i
+              ((lhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
+                  <:
+                  Hax_bounded_integers.t_BoundedI16 v_MIN1 v_MAX1) +!
+                (rhs.Libcrux_ml_kem.Vector.Portable.Vector_type.f_elements.[ i ]
+                  <:
+                  Hax_bounded_integers.t_BoundedI16 v_MIN2 v_MAX2)
+                <:
+                Hax_bounded_integers.t_BoundedI16 v_MIN3 v_MAX3)
+            <:
+            t_Array (Hax_bounded_integers.t_BoundedI16 v_MIN3 v_MAX3) (sz 16)
+          }
+          <:
+          Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN3 v_MAX3)
+  in
+  result

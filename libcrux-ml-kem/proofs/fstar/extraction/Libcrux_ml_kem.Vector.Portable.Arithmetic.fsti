@@ -3,6 +3,12 @@ module Libcrux_ml_kem.Vector.Portable.Arithmetic
 open Core
 open FStar.Mul
 
+let _ =
+  (* This module has implicit dependencies, here we make them explicit. *)
+  (* The implicit dependencies arise from typeclasses instances. *)
+  let open Hax_bounded_integers in
+  ()
+
 /// This is calculated as ⌊(BARRETT_R / FIELD_MODULUS) + 1/2⌋
 let v_BARRETT_MULTIPLIER: i32 = 20159l
 
@@ -130,4 +136,18 @@ val shift_right (v_SHIFT_BY: i32) (v: Libcrux_ml_kem.Vector.Portable.Vector_type
 val sub (lhs rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector)
     : Prims.Pure Libcrux_ml_kem.Vector.Portable.Vector_type.t_PortableVector
       Prims.l_True
+      (fun _ -> Prims.l_True)
+
+val max_add
+      (v_MIN1 v_MAX1 v_MIN2 v_MAX2 v_MIN3 v_MAX3: i16)
+      (lhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN1 v_MAX1)
+      (rhs: Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN2 v_MAX2)
+    : Prims.Pure (Libcrux_ml_kem.Vector.Portable.Vector_type.t_MaxPortableVector v_MIN3 v_MAX3)
+      (requires
+        v_MAX1 >. 0s && v_MIN1 =. (Core.Ops.Arith.Neg.neg v_MAX1 <: i16) && v_MAX2 >. 0s &&
+        v_MIN2 =. (Core.Ops.Arith.Neg.neg v_MAX2 <: i16) &&
+        v_MAX3 >. 0s &&
+        v_MIN3 =. (Core.Ops.Arith.Neg.neg v_MAX3 <: i16) &&
+        v_MAX1 =. (v_MAX3 -! v_MAX2 <: i16) &&
+        v_MAX3 <. Core.Num.impl__i16__MAX)
       (fun _ -> Prims.l_True)

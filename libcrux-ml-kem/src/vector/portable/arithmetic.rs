@@ -2,6 +2,7 @@ use super::vector_type::*;
 use crate::vector::{
     traits::FIELD_ELEMENTS_IN_VECTOR, FIELD_MODULUS, INVERSE_OF_MODULUS_MOD_MONTGOMERY_R,
 };
+use hax_lib::*;
 
 /// If 'x' denotes a value of type `fe`, values having this type hold a
 /// representative y ≡ x·MONTGOMERY_R^(-1) (mod FIELD_MODULUS).
@@ -30,6 +31,15 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     value & ((1 << n) - 1)
 }
 
+#[inline(always)]
+pub fn add(mut lhs: PortableVector, rhs: &PortableVector) -> PortableVector {
+    for i in 0..FIELD_ELEMENTS_IN_VECTOR {
+        lhs.elements[i] += rhs.elements[i];
+    }
+
+    lhs
+}
+
 #[cfg_attr(hax, hax_lib::requires(
     MAX1 > 0 && MIN1 == -MAX1 && 
     MAX2 > 0 && MIN2 == -MAX2 &&  
@@ -37,17 +47,15 @@ pub(crate) fn get_n_least_significant_bits(n: u8, value: u32) -> u32 {
     MAX1 == MAX3 - MAX2 && MAX3 < i16::MAX
 ))]
 #[inline(always)]
-pub fn add<
+pub fn max_add<
     const MIN1: i16, const MAX1: i16,
     const MIN2: i16, const MAX2: i16,
     const MIN3: i16, const MAX3: i16
 >(
-    lhs: PortableVector<MIN1, MAX1>,
-    rhs: PortableVector<MIN2, MAX2>,
-) -> PortableVector<MIN3, MAX3> {
-    let mut result = PortableVector {
-        elements: [hax_bounded_integers::BoundedI16::new(0); FIELD_ELEMENTS_IN_VECTOR]
-    };
+    lhs: MaxPortableVector<MIN1, MAX1>,
+    rhs: MaxPortableVector<MIN2, MAX2>,
+) -> MaxPortableVector<MIN3, MAX3> {
+    let mut result = max_zero();
 
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
         result.elements[i] = (lhs.elements[i] + (rhs.elements[i])).into_checked();
@@ -104,7 +112,7 @@ pub fn shift_right<const SHIFT_BY: i32>(mut v: PortableVector) -> PortableVector
 #[inline(always)]
 pub fn cond_subtract_3329(mut v: PortableVector) -> PortableVector {
     for i in 0..FIELD_ELEMENTS_IN_VECTOR {
-        debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
+        hax_lib::debug_assert!(v.elements[i] >= 0 && v.elements[i] < 4096);
         if v.elements[i] >= 3329 {
             v.elements[i] -= 3329
         }

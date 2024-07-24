@@ -23,6 +23,15 @@ let from_i16_array (array: t_Slice i16) =
   <:
   t_PortableVector
 
+let max_zero (v_MIN: i16) (v_MAX: i16) (_: Prims.unit) =
+  {
+    f_elements
+    =
+    Rust_primitives.Hax.repeat (0s <: Hax_bounded_integers.t_BoundedI16 v_MIN v_MAX) (sz 16)
+  }
+  <:
+  t_MaxPortableVector v_MIN v_MAX
+
 let to_i16_array (x: t_PortableVector) = x.f_elements
 
 let zero (_: Prims.unit) =
