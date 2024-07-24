@@ -20,7 +20,7 @@ pub(crate) mod internal {
         fn xor_constant(a: Self, c: u64) -> Self;
         fn xor(a: Self, b: Self) -> Self;
         fn load_block<const BLOCKSIZE: usize>(state: &mut [[Self; 5]; 5], buf: Self::B);
-        fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; N]);
+        fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: Self::Bm);
         fn load_block_full<const BLOCKSIZE: usize>(state: &mut [[Self; 5]; 5], block: Self::Bl);
         fn store_block_full<const BLOCKSIZE: usize>(state: &[[Self; 5]; 5]) -> Self::Bl;
         fn split_at_mut_n(a: [&mut [u8]; N], mid: usize) -> ([&mut [u8]; N], [&mut [u8]; N]);
@@ -37,6 +37,9 @@ pub(crate) mod internal {
     /// This is depending on the implementation multiple lanes.
     pub trait BufferMut {
         fn len(&self) -> usize;
+        fn slice_mut(self, mid: usize) -> (Self, Self)
+        where
+            Self: Sized;
     }
 
     /// A full, owning block.

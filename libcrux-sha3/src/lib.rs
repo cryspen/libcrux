@@ -206,53 +206,53 @@ pub fn shake256_ema(out: &mut [u8], data: &[u8]) {
 pub mod portable {
     use super::*;
     use generic_keccak::{keccak, KeccakState as GenericState};
-    use portable_keccak::{Buf, FullBuf};
+    use portable_keccak::{Buf, BufMut, FullBuf};
 
     /// The Keccak state for the incremental API.
     #[derive(Clone, Copy)]
     pub struct KeccakState<'a> {
-        state: GenericState<Buf<'a>, FullBuf, 1, u64>,
+        state: GenericState<'a, 1, u64>,
     }
 
     #[inline(always)]
-    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[u8], out: [&mut [u8]; 1]) {
-        keccak::<Buf, FullBuf, 1, u64, RATE, DELIM>(data.into(), out)
+    fn keccakx1<const RATE: usize, const DELIM: u8>(data: &[u8], out: &mut [u8]) {
+        keccak::<1, u64, RATE, DELIM>(data.into(), BufMut { buf: out })
     }
 
     /// A portable SHA3 224 implementation.
     #[inline(always)]
     pub fn sha224(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<144, 0x06u8>(data, [digest]);
+        keccakx1::<144, 0x06u8>(data, digest);
     }
 
     /// A portable SHA3 256 implementation.
     #[inline(always)]
     pub fn sha256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x06u8>(data, [digest]);
+        keccakx1::<136, 0x06u8>(data, digest);
     }
 
     /// A portable SHA3 384 implementation.
     #[inline(always)]
     pub fn sha384(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<104, 0x06u8>(data, [digest]);
+        keccakx1::<104, 0x06u8>(data, digest);
     }
 
     /// A portable SHA3 512 implementation.
     #[inline(always)]
     pub fn sha512(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<72, 0x06u8>(data, [digest]);
+        keccakx1::<72, 0x06u8>(data, digest);
     }
 
     /// A portable SHAKE128 implementation.
     #[inline(always)]
     pub fn shake128(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<168, 0x1fu8>(data, [digest]);
+        keccakx1::<168, 0x1fu8>(data, digest);
     }
 
     /// A portable SHAKE256 implementation.
     #[inline(always)]
     pub fn shake256(digest: &mut [u8], data: &[u8]) {
-        keccakx1::<136, 0x1fu8>(data, [digest]);
+        keccakx1::<136, 0x1fu8>(data, digest);
     }
 
     // /// An incremental API for SHAKE

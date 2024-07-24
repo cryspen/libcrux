@@ -1,15 +1,12 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::{
-    portable_keccak::BufMut,
-    traits::internal::{self, Block, Buffer, KeccakItem},
-};
+use crate::traits::internal::{self, Block, Buffer, BufferMut, KeccakItem};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
 
 #[derive(Clone, Copy)]
-struct Buf<'a> {
+pub struct Buf<'a> {
     buf0: &'a [u8],
     buf1: &'a [u8],
 }
@@ -27,9 +24,35 @@ impl<'a> internal::Buffer for Buf<'a> {
     }
 }
 
+pub struct BufMut<'a> {
+    buf0: &'a mut [u8],
+    buf1: &'a mut [u8],
+}
+
+impl<'a> BufferMut for BufMut<'a> {
+    fn len(&self) -> usize {
+        self.buf0.len()
+    }
+
+    fn slice_mut(self, mid: usize) -> (Self, Self) {
+        let (first0, rest0) = self.buf0.split_at_mut(mid);
+        let (first1, rest1) = self.buf1.split_at_mut(mid);
+        (
+            Self {
+                buf0: first0,
+                buf1: first1,
+            },
+            Self {
+                buf0: rest0,
+                buf1: rest1,
+            },
+        )
+    }
+}
+
 /// A neon block. A simple wrapper around two `[u8; 200]`.
 #[derive(Clone, Copy)]
-pub(crate) struct FullBuf {
+pub struct FullBuf {
     buf0: [u8; 200],
     buf1: [u8; 200],
 
@@ -159,7 +182,7 @@ pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[uint64x2_t; 5]; 5], b
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mut [u8]; 2]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: BufMut) {
     for i in 0..RATE / 16 {
         let v0 = _vtrn1q_u64(
             s[(2 * i) / 5][(2 * i) % 5],
@@ -169,8 +192,8 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mu
             s[(2 * i) / 5][(2 * i) % 5],
             s[(2 * i + 1) / 5][(2 * i + 1) % 5],
         );
-        _vst1q_bytes_u64(&mut out[0][16 * i..16 * (i + 1)], v0);
-        _vst1q_bytes_u64(&mut out[1][16 * i..16 * (i + 1)], v1);
+        _vst1q_bytes_u64(&mut out.buf0[16 * i..16 * (i + 1)], v0);
+        _vst1q_bytes_u64(&mut out.buf1[16 * i..16 * (i + 1)], v1);
     }
     if RATE % 16 != 0 {
         debug_assert!(RATE % 8 == 0);
@@ -178,8 +201,8 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mu
         let j = (RATE / 8 - 1) % 5;
         let mut u = [0u8; 16];
         _vst1q_bytes_u64(&mut u, s[i][j]);
-        out[0][RATE - 8..RATE].copy_from_slice(&u[0..8]);
-        out[1][RATE - 8..RATE].copy_from_slice(&u[8..16]);
+        out.buf0[RATE - 8..RATE].copy_from_slice(&u[0..8]);
+        out.buf1[RATE - 8..RATE].copy_from_slice(&u[8..16]);
     }
 }
 
@@ -187,8 +210,9 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: [&mu
 pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> FullBuf {
     let mut buf0 = [0u8; 200];
     let mut buf1 = [0u8; 200];
-    store_block::<RATE>(s, [&mut buf0, &mut buf1]);
-    FullBuf { buf0, buf1, eob: 0 }
+    todo!();
+    // store_block::<RATE>(s, [&mut buf0, &mut buf1]);
+    // FullBuf { buf0, buf1, eob: 0 }
 }
 
 #[inline(always)]
@@ -242,7 +266,7 @@ impl<'a> KeccakItem<'a, 2> for uint64x2_t {
         load_block::<BLOCKSIZE>(state, buf)
     }
     #[inline(always)]
-    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 2]) {
+    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: BufMut) {
         store_block::<BLOCKSIZE>(a, b)
     }
     #[inline(always)]

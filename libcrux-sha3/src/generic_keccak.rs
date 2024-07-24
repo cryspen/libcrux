@@ -5,7 +5,7 @@ use core::{marker::PhantomData, ops::Index};
 
 use internal::{Block, Buffer, BufferMut};
 
-use crate::traits::*;
+use crate::{portable_keccak::BufMut, traits::*};
 
 #[cfg_attr(hax, hax_lib::opaque_type)]
 #[derive(Clone, Copy)]
@@ -218,7 +218,7 @@ pub(crate) fn squeeze_first_block<
     const RATE: usize,
 >(
     s: &KeccakState<'a, N, T>,
-    out: [&mut [u8]; N],
+    out: T::Bm,
 ) {
     T::store_block::<RATE>(&s.st, out)
 }
@@ -231,7 +231,7 @@ pub(crate) fn squeeze_next_block<
     const RATE: usize,
 >(
     s: &mut KeccakState<'a, N, T>,
-    out: [&mut [u8]; N],
+    out: T::Bm,
 ) {
     keccakf1600(s);
     T::store_block::<RATE>(&s.st, out)
@@ -242,16 +242,16 @@ pub(crate) fn squeeze_first_three_blocks<
     'a,
     const N: usize,
     T: KeccakStateItem<'a, N>,
-    const RATE: usize,
+    const BLOCK_SIZE: usize,
 >(
     s: &mut KeccakState<'a, N, T>,
-    out: [&mut [u8]; N],
+    out: T::Bm,
 ) {
-    let (o0, o1) = T::split_at_mut_n(out, RATE);
-    squeeze_first_block::<N, T, RATE>(s, o0);
-    let (o1, o2) = T::split_at_mut_n(o1, RATE);
-    squeeze_next_block::<N, T, RATE>(s, o1);
-    squeeze_next_block::<N, T, RATE>(s, o2);
+    let (o0, o1) = out.slice_mut(BLOCK_SIZE);
+    squeeze_first_block::<N, T, BLOCK_SIZE>(s, o0);
+    let (o1, o2) = o1.slice_mut(BLOCK_SIZE);
+    squeeze_next_block::<N, T, BLOCK_SIZE>(s, o1);
+    squeeze_next_block::<N, T, BLOCK_SIZE>(s, o2);
 }
 
 #[inline(always)]
@@ -259,35 +259,33 @@ pub(crate) fn squeeze_first_five_blocks<
     'a,
     const N: usize,
     T: KeccakStateItem<'a, N>,
-    const RATE: usize,
+    const BLOCK_SIZE: usize,
 >(
     s: &mut KeccakState<'a, N, T>,
-    out: [&mut [u8]; N],
+    out: T::Bm,
 ) {
-    let (o0, o1) = T::split_at_mut_n(out, RATE);
-    squeeze_first_block::<N, T, RATE>(s, o0);
-    let (o1, o2) = T::split_at_mut_n(o1, RATE);
+    let (o0, o1) = out.slice_mut(BLOCK_SIZE);
+    squeeze_first_block::<N, T, BLOCK_SIZE>(s, o0);
+    let (o1, o2) = o1.slice_mut(BLOCK_SIZE);
 
-    squeeze_next_block::<N, T, RATE>(s, o1);
-    let (o2, o3) = T::split_at_mut_n(o2, RATE);
+    squeeze_next_block::<N, T, BLOCK_SIZE>(s, o1);
+    let (o2, o3) = o2.slice_mut(BLOCK_SIZE);
 
-    squeeze_next_block::<N, T, RATE>(s, o2);
-    let (o3, o4) = T::split_at_mut_n(o3, RATE);
+    squeeze_next_block::<N, T, BLOCK_SIZE>(s, o2);
+    let (o3, o4) = o3.slice_mut(BLOCK_SIZE);
 
-    squeeze_next_block::<N, T, RATE>(s, o3);
-    squeeze_next_block::<N, T, RATE>(s, o4);
+    squeeze_next_block::<N, T, BLOCK_SIZE>(s, o3);
+    squeeze_next_block::<N, T, BLOCK_SIZE>(s, o4);
 }
 
 #[inline(always)]
 pub(crate) fn squeeze_last<'a, const N: usize, T: KeccakStateItem<'a, N>, const RATE: usize>(
     mut s: KeccakState<'a, N, T>,
-    out: [&mut [u8]; N],
+    out: T::Bm,
 ) {
     keccakf1600(&mut s);
     let b = T::store_block_full::<RATE>(&s.st);
-    for i in 0..N {
-        out[i].copy_from_slice(&b[i][0..out[i].len()]);
-    }
+    b.to_bytes(out);
 }
 
 #[inline(always)]
@@ -298,12 +296,10 @@ pub(crate) fn squeeze_first_and_last<
     const RATE: usize,
 >(
     s: &KeccakState<'a, N, T>,
-    out: impl BufferMut,
+    out: T::Bm,
 ) {
     let b = T::store_block_full::<RATE>(&s.st);
-    for i in 0..N {
-        out[i].copy_from_slice(&b[i][0..out[i].len()]);
-    }
+    b.to_bytes(out);
 }
 
 #[inline(always)]
@@ -311,35 +307,36 @@ pub(crate) fn keccak<
     'a,
     const N: usize,
     T: KeccakStateItem<'a, N>,
-    const RATE: usize,
+    const BLOCK_SIZE: usize,
     const DELIM: u8,
 >(
     data: T::B,
     out: T::Bm,
 ) {
     let mut s = KeccakState::<N, T>::new();
-    for i in 0..data.len() / RATE {
-        absorb_block::<N, T, RATE>(&mut s, data.slice(i * RATE, RATE));
+    for i in 0..data.len() / BLOCK_SIZE {
+        absorb_block::<N, T, BLOCK_SIZE>(&mut s, data.slice(i * BLOCK_SIZE, BLOCK_SIZE));
     }
-    let rem = data.len() % RATE;
-    absorb_final::<N, T, RATE, DELIM>(&mut s, data.slice(data.len() - rem, rem));
+    let rem = data.len() % BLOCK_SIZE;
+    absorb_final::<N, T, BLOCK_SIZE, DELIM>(&mut s, data.slice(data.len() - rem, rem));
 
-    let outlen = out[0].len();
-    let blocks = outlen / RATE;
-    let last = outlen - (outlen % RATE);
+    let outlen = out.len();
+    let blocks = outlen / BLOCK_SIZE;
+    let last = outlen - (outlen % BLOCK_SIZE);
 
     if blocks == 0 {
-        squeeze_first_and_last::<N, T, RATE>(&s, out)
+        squeeze_first_and_last::<N, T, BLOCK_SIZE>(&s, out)
     } else {
-        let (o0, mut o1) = T::split_at_mut_n(out, RATE);
-        squeeze_first_block::<N, T, RATE>(&s, o0);
+        // let (o0, mut o1) = T::split_at_mut_n(out, RATE);
+        let (out0, mut out_rest) = out.slice_mut(BLOCK_SIZE);
+        squeeze_first_block::<N, T, BLOCK_SIZE>(&s, out0);
         for _i in 1..blocks {
-            let (o, orest) = T::split_at_mut_n(o1, RATE);
-            squeeze_next_block::<N, T, RATE>(&mut s, o);
-            o1 = orest;
+            let (o, orest) = out_rest.slice_mut(BLOCK_SIZE);
+            squeeze_next_block::<N, T, BLOCK_SIZE>(&mut s, o);
+            out_rest = orest;
         }
         if last < outlen {
-            squeeze_last::<N, T, RATE>(s, o1)
+            squeeze_last::<N, T, BLOCK_SIZE>(s, out_rest)
         }
     }
 }

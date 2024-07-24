@@ -4,7 +4,7 @@ use crate::traits::internal::{self, *};
 
 /// A portable buffer. A simple wrapper around a byte slice.
 #[derive(Clone, Copy)]
-pub(crate) struct Buf<'a> {
+pub struct Buf<'a> {
     buf: &'a [u8],
 }
 
@@ -27,25 +27,24 @@ impl<'a> From<&'a [u8]> for Buf<'a> {
 }
 
 /// A portable mutable buffer. A simple wrapper around a mutable byte slice.
-pub(crate) struct BufMut<'a> {
-    buf: &'a mut [u8],
-}
-
-impl<'a> BufferMut for Buf<'a> {
-    fn len(&self) -> usize {
-        self.buf.len()
-    }
+pub struct BufMut<'a> {
+    pub(crate) buf: &'a mut [u8],
 }
 
 impl<'a> BufferMut for BufMut<'a> {
     fn len(&self) -> usize {
         self.buf.len()
     }
+
+    fn slice_mut(self, mid: usize) -> (Self, Self) {
+        let (first, rest) = self.buf.split_at_mut(mid);
+        (Self { buf: first }, Self { buf: rest })
+    }
 }
 
 /// A portable block. A simple wrapper around a `[u8; 200]`.
 #[derive(Clone, Copy)]
-pub(crate) struct FullBuf {
+pub struct FullBuf {
     buf: [u8; 200],
 
     /// The length of the original buffer.
@@ -123,16 +122,17 @@ pub(crate) fn load_block_full<const RATE: usize>(s: &mut [[u64; 5]; 5], blocks: 
 }
 
 #[inline(always)]
-pub(crate) fn store_block<const RATE: usize>(s: &[[u64; 5]; 5], out: [&mut [u8]; 1]) {
+pub(crate) fn store_block<const RATE: usize>(s: &[[u64; 5]; 5], out: BufMut) {
     for i in 0..RATE / 8 {
-        out[0][8 * i..8 * i + 8].copy_from_slice(&s[i / 5][i % 5].to_le_bytes());
+        out.buf[8 * i..8 * i + 8].copy_from_slice(&s[i / 5][i % 5].to_le_bytes());
     }
 }
 
 #[inline(always)]
 pub(crate) fn store_block_full<const RATE: usize>(s: &[[u64; 5]; 5]) -> FullBuf {
     let mut buf = [0u8; 200];
-    store_block::<RATE>(s, [&mut buf]);
+    let buf_mut = BufMut { buf: &mut buf };
+    store_block::<RATE>(s, buf_mut);
     FullBuf { buf, eob: 0 }
 }
 
@@ -185,7 +185,7 @@ impl<'a> KeccakItem<'a, 1> for u64 {
         load_block::<BLOCKSIZE>(state, buf)
     }
     #[inline(always)]
-    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: [&mut [u8]; 1]) {
+    fn store_block<const BLOCKSIZE: usize>(a: &[[Self; 5]; 5], b: BufMut) {
         store_block::<BLOCKSIZE>(a, b)
     }
     #[inline(always)]
