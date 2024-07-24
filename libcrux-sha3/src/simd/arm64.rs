@@ -7,8 +7,8 @@ pub type uint64x2_t = _uint64x2_t;
 
 #[derive(Clone, Copy)]
 pub struct Buf<'a> {
-    buf0: &'a [u8],
-    buf1: &'a [u8],
+    pub(crate) buf0: &'a [u8],
+    pub(crate) buf1: &'a [u8],
 }
 
 impl<'a> internal::Buffer for Buf<'a> {
@@ -25,8 +25,8 @@ impl<'a> internal::Buffer for Buf<'a> {
 }
 
 pub struct BufMut<'a> {
-    buf0: &'a mut [u8],
-    buf1: &'a mut [u8],
+    pub(crate) buf0: &'a mut [u8],
+    pub(crate) buf1: &'a mut [u8],
 }
 
 impl<'a> BufferMut for BufMut<'a> {
@@ -84,7 +84,8 @@ impl<'a> internal::Block<Buf<'a>, BufMut<'a>> for FullBuf {
     }
 
     fn to_bytes(self, out: BufMut<'a>) {
-        todo!()
+        out.buf0.copy_from_slice(&self.buf0[0..out.buf0.len()]);
+        out.buf1.copy_from_slice(&self.buf1[0..out.buf1.len()]);
     }
 }
 
@@ -210,9 +211,12 @@ pub(crate) fn store_block<const RATE: usize>(s: &[[uint64x2_t; 5]; 5], out: BufM
 pub(crate) fn store_block_full<const RATE: usize>(s: &[[uint64x2_t; 5]; 5]) -> FullBuf {
     let mut buf0 = [0u8; 200];
     let mut buf1 = [0u8; 200];
-    todo!();
-    // store_block::<RATE>(s, [&mut buf0, &mut buf1]);
-    // FullBuf { buf0, buf1, eob: 0 }
+    let buf_mut = BufMut {
+        buf0: &mut buf0,
+        buf1: &mut buf1,
+    };
+    store_block::<RATE>(s, buf_mut);
+    FullBuf { buf0, buf1, eob: 0 }
 }
 
 impl<'a> KeccakItem<'a> for uint64x2_t {

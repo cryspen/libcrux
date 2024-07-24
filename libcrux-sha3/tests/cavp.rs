@@ -16,6 +16,13 @@ macro_rules! sha3_test {
                 c += 1;
                 let my_digest: $digest = sha3($algorithm, &test.msg[0..test.msg_length / 8]);
                 assert_eq!(&my_digest, &test.digest[..]);
+
+                #[cfg(feature = "simd128")]
+                {
+                    let my_digest: $digest =
+                        neon::hash($algorithm, &test.msg[0..test.msg_length / 8]);
+                    assert_eq!(&my_digest, &test.digest[..]);
+                }
             }
         }
     };

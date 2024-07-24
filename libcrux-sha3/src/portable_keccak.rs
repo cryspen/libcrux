@@ -67,7 +67,7 @@ impl<'a> internal::Block<Buf<'a>, BufMut<'a>> for FullBuf {
     }
 
     fn to_bytes(self, out: BufMut) {
-        out.buf.copy_from_slice(&self.buf[0..out.buf.len()])
+        out.buf.copy_from_slice(&self.buf[0..out.buf.len()]);
     }
 }
 
