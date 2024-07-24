@@ -53,7 +53,7 @@ pub(crate) struct FullBuf {
 }
 
 impl<'a> internal::Block<Buf<'a>, BufMut<'a>> for FullBuf {
-    fn init(b: Buf<'a>) -> Self {
+    fn init(b: Buf) -> Self {
         let mut buf = [0u8; 200];
         let eob = b.buf.len();
         if eob > 0 {
@@ -67,7 +67,7 @@ impl<'a> internal::Block<Buf<'a>, BufMut<'a>> for FullBuf {
         self.buf[EOB - 1] |= 0x80;
     }
 
-    fn to_bytes<Bm: BufferMut>(self, out: BufMut) {
+    fn to_bytes(self, out: BufMut) {
         out.buf.copy_from_slice(&self.buf[0..out.buf.len()])
     }
 }
@@ -147,10 +147,10 @@ fn split_at_mut_1(out: [&mut [u8]; 1], mid: usize) -> ([&mut [u8]; 1], [&mut [u8
     ([out00], [out01])
 }
 
-impl KeccakItem<1> for u64 {
-    type B<'a> = Buf<'a>;
-    type Bm<'a> = BufMut<'a>;
-    type Bl<'a> = FullBuf;
+impl<'a> KeccakItem<'a, 1> for u64 {
+    type B = Buf<'a>;
+    type Bm = BufMut<'a>;
+    type Bl = FullBuf;
 
     #[inline(always)]
     fn zero() -> Self {

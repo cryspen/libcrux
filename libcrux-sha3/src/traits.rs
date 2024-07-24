@@ -1,16 +1,16 @@
 /// A Keccak Item
 /// This holds the internal state and depends on the architecture.
-pub trait KeccakStateItem<const N: usize>: internal::KeccakItem<N> {}
+pub trait KeccakStateItem<'a, const N: usize>: internal::KeccakItem<'a, N> {}
 
 // Implement the public trait for all items.
-impl<const N: usize, T: internal::KeccakItem<N>> KeccakStateItem<N> for T {}
+impl<'a, const N: usize, T: internal::KeccakItem<'a, N>> KeccakStateItem<'a, N> for T {}
 
 pub(crate) mod internal {
     /// A trait for multiplexing implementations.
-    pub trait KeccakItem<const N: usize>: Clone + Copy {
-        type B<'a>: Buffer;
-        type Bm<'a>: BufferMut;
-        type Bl<'a>: Block<Self::B<'a>, Self::Bm<'a>>;
+    pub trait KeccakItem<'a, const N: usize>: Clone + Copy {
+        type B: Buffer;
+        type Bm: BufferMut;
+        type Bl: Block<Self::B, Self::Bm>;
 
         fn zero() -> Self;
         fn xor5(a: Self, b: Self, c: Self, d: Self, e: Self) -> Self;

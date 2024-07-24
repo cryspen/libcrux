@@ -1,6 +1,9 @@
 use libcrux_intrinsics::arm64::*;
 
-use crate::traits::internal::{self, Block, Buffer, KeccakItem};
+use crate::{
+    portable_keccak::BufMut,
+    traits::internal::{self, Block, Buffer, KeccakItem},
+};
 
 #[allow(non_camel_case_types)]
 pub type uint64x2_t = _uint64x2_t;
@@ -34,7 +37,7 @@ pub(crate) struct FullBuf {
     eob: usize,
 }
 
-impl<'a> internal::Block<Buf<'a>> for FullBuf {
+impl<'a> internal::Block<Buf<'a>, BufMut<'a>> for FullBuf {
     fn init(b: Buf<'a>) -> Self {
         // XXX: This should load to intrinsics directly.
         let mut buf0 = [0u8; 200];
@@ -55,6 +58,10 @@ impl<'a> internal::Block<Buf<'a>> for FullBuf {
 
         self.buf0[EOB - 1] |= 0x80;
         self.buf1[EOB - 1] |= 0x80;
+    }
+
+    fn to_bytes(self, out: BufMut<'a>) {
+        todo!()
     }
 }
 
@@ -197,9 +204,9 @@ fn split_at_mut_2(out: [&mut [u8]; 2], mid: usize) -> ([&mut [u8]; 2], [&mut [u8
     ([out00, out10], [out01, out11])
 }
 
-impl KeccakItem<2> for uint64x2_t {
-    type B<'a> = Buf<'a>;
-    type Bm<'a> = BufMut<'a>;
+impl<'a> KeccakItem<'a, 2> for uint64x2_t {
+    type B = Buf<'a>;
+    type Bm = BufMut<'a>;
     type Bl = FullBuf;
 
     #[inline(always)]
